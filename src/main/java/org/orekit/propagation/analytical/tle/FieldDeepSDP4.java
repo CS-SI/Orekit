@@ -110,17 +110,17 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
     private T xh2;
     private T xh3;
 
-    private double d2201;
-    private double d2211;
-    private double d3210;
-    private double d3222;
-    private double d4410;
-    private double d4422;
-    private double d5220;
-    private double d5232;
-    private double d5421;
-    private double d5433;
-    private double xlamo;
+    private T d2201;
+    private T d2211;
+    private T d3210;
+    private T d3222;
+    private T d4410;
+    private T d4422;
+    private T d5220;
+    private T d5232;
+    private T d5421;
+    private T d5433;
+    private T xlamo;
 
     private T sse;
     private T ssi;
@@ -140,13 +140,13 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
     private T sl4;
     private T sgh4;
 
-    private double del1;
-    private double del2;
-    private double del3;
-    private double xfact;
-    private double xli;
-    private double xni;
-    private double atime;
+    private T del1;
+    private T del2;
+    private T del3;
+    private T xfact;
+    private T xli;
+    private T xni;
+    private T atime;
 
     private double pe;
     private double pinc;
@@ -154,7 +154,7 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
     private double pgh;
     private double ph;
 
-    private double[] derivs;
+    private T[] derivs;
 
     // CHECKSTYLE: resume JavadocVariable check
 
@@ -372,7 +372,7 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
 
         //        Start the resonant-synchronous tests and initialization
 
-        double bfact = 0;
+        T bfact = xnq.getField().getZero();
 
         // if mean motion is 1.893053 to 2.117652 revs/day, and eccentricity >= 0.5,
         // start of the 12-hour orbit, e > 0.5 section
@@ -430,59 +430,59 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
             final T g521;
             final T g532;
             if (tle.getE().getReal() < 0.7) {
-                g533 = tle.getE().multiply(  4988.61).add(  e0sq.multiply(  -9064.77)).add(  eoc.multiply( 5542.21)).add(   -919.2277);
+                g533 = tle.getE().multiply(  4988.61).add(  e0sq.multiply(  -9064.77)).add(  eoc.multiply(  5542.21)).add(  -919.2277);
                 g521 = tle.getE().multiply(4568.6173).add(  e0sq.multiply(-8491.4146)).add(  eoc.multiply( 5337.524)).add( -822.71072);
                 g532 = tle.getE().multiply(  4690.25).add(  e0sq.multiply(  -8624.77)).add(  eoc.multiply(   5341.4)).add(   -853.666);
             } else {
-                g533 = tle.getE().multiply(161616.52).add(  e0sq.multiply(-229838.2)).add(   eoc.multiply(109377.94)).add(  -37995.78);
+                g533 = tle.getE().multiply(161616.52).add(  e0sq.multiply( -229838.2)).add(  eoc.multiply(109377.94)).add(  -37995.78);
                 g521 = tle.getE().multiply(218913.95).add(  e0sq.multiply(-309468.16)).add(  eoc.multiply(146349.42)).add( -51752.104);
                 g532 = tle.getE().multiply(170470.89).add(  e0sq.multiply(-242699.48)).add(  eoc.multiply(115605.82)).add(  -40023.88);
             }
 
-            double temp1 = 3 * xnq * xnq * aqnv * aqnv;
-            double temp = temp1 * ROOT22;
-            d2201 = temp * f220 * g201;
-            d2211 = temp * f221 * g211;
-            temp1 *= aqnv;
-            temp = temp1 * ROOT32;
-            d3210 = temp * f321 * g310;
-            d3222 = temp * f322 * g322;
-            temp1 *= aqnv;
-            temp = 2 * temp1 * ROOT44;
-            d4410 = temp * f441 * g410;
-            d4422 = temp * f442 * g422;
-            temp1 *= aqnv;
-            temp = temp1 * ROOT52;
-            d5220 = temp * f522 * g520;
-            d5232 = temp * f523 * g532;
-            temp = 2 * temp1 * ROOT54;
-            d5421 = temp * f542 * g521;
-            d5433 = temp * f543 * g533;
-            xlamo = tle.getMeanAnomaly() + tle.getRaan() + tle.getRaan() - thgr - thgr;
-            bfact = xmdot + xnodot + xnodot - THDT - THDT;
-            bfact += ssl + ssh + ssh;
-        } else if ((xnq < 0.0052359877) && (xnq > 0.0034906585)) {
+            T temp1 = xnq.multiply(xnq).multiply(aqnv).multiply(aqnv).multiply(3);
+            T temp  = temp1.multiply(ROOT22);
+            d2201   = temp.multiply(f220).multiply(g201);
+            d2211   = temp.multiply(f221).multiply(g211);
+            temp1   = temp1.multiply(aqnv);
+            temp    = temp1.multiply(ROOT32);
+            d3210   = temp.multiply(f321).multiply(g310);
+            d3222   = temp.multiply(f322).multiply(g322);
+            temp1   = temp1.multiply(aqnv);
+            temp    = temp1.multiply(2 * ROOT44);
+            d4410   = temp.multiply(f441).multiply(g410);
+            d4422   = temp.multiply(f442).multiply(g422);
+            temp1   = temp1.multiply(aqnv);
+            temp    = temp1.multiply(ROOT52);
+            d5220   = temp.multiply(f522).multiply(g520);
+            d5232   = temp.multiply(f523).multiply(g532);
+            temp    = temp1.multiply(2 * ROOT54);
+            d5421   = temp.multiply(f542).multiply(g521);
+            d5433   = temp.multiply(f543).multiply(g533);
+            xlamo   = tle.getMeanAnomaly().add(tle.getRaan()).add(tle.getRaan()).subtract(thgr + thgr);
+            bfact   = xmdot.add(xnodot).add(xnodot).subtract(THDT + THDT);
+            bfact   = bfact.add(ssl).add(ssh).add(ssh);
+        } else if ((xnq.getReal() < 0.0052359877) && (xnq.getReal() > 0.0034906585)) {
             // if mean motion is .8 to 1.2 revs/day : (geosynch)
 
-            final double cosio_plus_1 = 1.0 + cosi0;
-            final double g200 = 1 + e0sq * (-2.5 + 0.8125  * e0sq);
-            final double g300 = 1 + e0sq * (-6   + 6.60937 * e0sq);
-            final double f311 = 0.9375 * sini0 * sini0 * (1 + 3 * cosi0) - 0.75 * cosio_plus_1;
-            final double g310 = 1 + 2 * e0sq;
-            final double f220 = 0.75 * cosio_plus_1 * cosio_plus_1;
-            final double f330 = 2.5 * f220 * cosio_plus_1;
+            final T cosio_plus_1 = cosi0.add(1.0);
+            final T g200 = e0sq.multiply(e0sq.multiply(0.8125).add(-2.5)).add(1);
+            final T g300 = e0sq.multiply(e0sq.multiply(6.60937).add(-6)).add(1);
+            final T f311 = sini0.multiply(0.9375).multiply(sini0.multiply(cosi0.multiply(3).add(1))).subtract(cosio_plus_1.multiply(0.75));
+            final T g310 = e0sq.multiply(2).add(1);
+            final T f220 = cosio_plus_1.multiply(cosio_plus_1).multiply(0.75);
+            final T f330 = f220.multiply(cosio_plus_1).multiply(2.5);
 
             resonant = true;
             synchronous = true;
 
             // Synchronous resonance terms initialization
-            del1 = 3 * xnq * xnq * aqnv * aqnv;
-            del2 = 2 * del1 * f220 * g200 * Q22;
-            del3 = 3 * del1 * f330 * g300 * Q33 * aqnv;
-            del1 = del1 * f311 * g310 * Q31 * aqnv;
-            xlamo = tle.getMeanAnomaly() + tle.getRaan() + tle.getPerigeeArgument() - thgr;
-            bfact = xmdot + omgdot + xnodot - THDT;
-            bfact = bfact + ssl + ssg + ssh;
+            del1 = xnq.multiply(xnq).multiply(aqnv).multiply(aqnv).multiply(3);
+            del2 = del1.multiply(f220).multiply(g200).multiply(2 * Q22);
+            del3 = del1.multiply(f330).multiply(g300).multiply(aqnv).multiply(3 * Q33);
+            del1 = del1.multiply(f311).multiply(g310).multiply(Q31).multiply(aqnv);
+            xlamo = tle.getMeanAnomaly().add(tle.getRaan()).add(tle.getPerigeeArgument()).subtract(thgr);
+            bfact = xmdot.add(omgdot).add(xnodot).subtract(THDT);
+            bfact = bfact.add(ssl).add(ssg).add(ssh);
         } else {
             // it's neither a high-e 12-hours orbit nor a geosynchronous:
             resonant = false;
@@ -490,14 +490,15 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
         }
 
         if (resonant) {
-            xfact = bfact - xnq;
+            xfact = bfact.subtract(xnq);
 
             // Initialize integrator
             xli   = xlamo;
             xni   = xnq;
-            atime = 0;
+            atime = xnq.getField().getZero();
         }
-        derivs = new double[2];
+        derivs[1] = xnq.getField().getZero();
+        derivs[2] = xnq.getField().getZero();
     }
 
     /** Computes secular terms from current coordinates and epoch.
@@ -505,11 +506,11 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
      */
     protected void deepSecularEffects(final T t)  {
 
-        xll    += ssl * t;
-        omgadf += ssg * t;
-        xnode  += ssh * t;
-        em      = tle.getE() + sse * t;
-        xinc    = tle.getI() + ssi * t;
+        xll     = xll.add(ssl.multiply(t));
+        omgadf  = omgadf.add(ssg.multiply(t));
+        xnode   = xnode.add(ssh.multiply(t));
+        em      = tle.getE().add(sse.multiply(t));
+        xinc    = tle.getI().add(ssi.multiply(t));
 
         if (resonant) {
             // If we're closer to t = 0 than to the currently-stored data
@@ -520,16 +521,16 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
             // Easiest way to arrange similar behavior in this code is
             // just to always do a restart,  if we're in Dundee-compliant
             // mode.
-            if (FastMath.abs(t) < FastMath.abs(t - atime) || isDundeeCompliant)  {
+            if (FastMath.abs(t).getReal() < FastMath.abs(t.subtract(atime)).getReal() || isDundeeCompliant)  {
                 // Epoch restart
-                atime = 0;
+                atime = xnq.getField().getZero();
                 xni = xnq;
                 xli = xlamo;
             }
             boolean lastIntegrationStep = false;
             // if |step|>|step max| then do one step at step max
             while (!lastIntegrationStep) {
-                double delt = t - atime;
+                double delt = t.subtract(atime).getReal();
                 if (delt > SECULAR_INTEGRATION_STEP) {
                     delt = SECULAR_INTEGRATION_STEP;
                 } else if (delt < -SECULAR_INTEGRATION_STEP) {
@@ -540,22 +541,22 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
 
                 computeSecularDerivs();
 
-                final double xldot = xni + xfact;
+                final T xldot = xni.add(xfact);
 
-                double xlpow = 1.;
-                xli += delt * xldot;
-                xni += delt * derivs[0];
+                T xlpow = xnq.getField().getZero().add(1.);
+                xli = xli.add(xldot.multiply(delt));
+                xni = xni.add(derivs[0].multiply(delt));
                 double delt_factor = delt;
-                xlpow *= xldot;
-                derivs[1] *= xlpow;
+                xlpow = xlpow.multiply(xldot);
+                derivs[1] = derivs[1].multiply(xlpow);
                 delt_factor *= delt / 2;
-                xli += delt_factor * derivs[0];
-                xni += delt_factor * derivs[1];
-                atime += delt;
+                xli = xli.add(derivs[0].multiply(delt_factor));
+                xni = xni.add(derivs[1].multiply(delt_factor));
+                atime = atime.add(delt);
             }
             xn = xni;
-            final double temp = -xnode + thgr + t * THDT;
-            xll = xli + temp + (synchronous ? -omgadf : temp);
+            final T temp = xnode.negate().add(thgr).add(t.multiply(THDT));
+            xll = xli.add(temp).add(synchronous ? omgadf.negate() : temp);
         }
     }
 
