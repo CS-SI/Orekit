@@ -118,7 +118,7 @@ abstract class FieldSDP4<T extends RealFieldElement<T>>  extends FieldTLEPropaga
      * @param date the current date
      * @return the ERA (rad)
      */
-    protected T thetaG(final FieldAbsoluteDate<T> date) {
+    protected double thetaG(final FieldAbsoluteDate<T> date) {
 
         // Reference:  The 1992 Astronomical Almanac, page B6.
         final double omega_E = 1.00273790934;
@@ -139,7 +139,7 @@ abstract class FieldSDP4<T extends RealFieldElement<T>>  extends FieldTLEPropaga
             GMST += seconds_per_day;
         }
 
-        return date.getField().getZero().add(MathUtils.TWO_PI * GMST / seconds_per_day);
+        return MathUtils.TWO_PI * GMST / seconds_per_day;
 
     }
 
