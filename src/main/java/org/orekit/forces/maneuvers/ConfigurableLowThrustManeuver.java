@@ -1,8 +1,8 @@
-/* Copyright 2002-2020 CS Group
+/* Copyright 2020 Exotrail
  * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * CS licenses this file to You under the Apache License, Version 2.0
+ * Exotrail licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -19,6 +19,7 @@ package org.orekit.forces.maneuvers;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.forces.maneuvers.propulsion.AbstractConstantThrustPropulsionModel;
 import org.orekit.forces.maneuvers.propulsion.BasicConstantThrustPropulsionModel;
+import org.orekit.forces.maneuvers.propulsion.ThrustDirectionAndAttitudeProvider;
 import org.orekit.forces.maneuvers.trigger.EventBasedManeuverTriggers;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.EventDetector;
@@ -30,7 +31,7 @@ import org.orekit.propagation.events.EventDetector;
  * See {@link org.orekit.forces.maneuvers.trigger.EventBasedManeuverTriggers EventBasedManeuverTriggers}
  * for more details on the detectors.
  * The attitude and the thrust direction are provided by an instance of ThrustDirectionProvider
- * See {@link org.orekit.forces.maneuvers.ThrustDirectionProvider ThrustDirectionProvider} 
+ * See {@link org.orekit.forces.maneuvers.propulsion.ThrustDirectionAndAttitudeProvider ThrustDirectionProvider} 
  * for more details on thrust direction and attitude.
  * @author Mikael Fillastre
  * @author Andrea Fiorentino
@@ -44,7 +45,7 @@ public class ConfigurableLowThrustManeuver extends Maneuver {
     public static String THRUST_MODEL_IDENTIFIER = "ConfigurableLowThrustManeuver";
 
     /** thrust direction and spaceraft attitude provided by an external object */
-    private final ThrustDirectionProvider thrustDirectionProvider;
+    private final ThrustDirectionAndAttitudeProvider thrustDirectionProvider;
 
     /** Constructor
      * See {@link org.orekit.forces.maneuvers.trigger.EventBasedManeuverTriggers EventBasedManeuverTriggers}
@@ -55,25 +56,25 @@ public class ConfigurableLowThrustManeuver extends Maneuver {
      * @param thrust the thrust force (N)
      * @param isp engine specific impulse (s)
      */
-    public ConfigurableLowThrustManeuver (final ThrustDirectionProvider thrustDirectionProvider,
+    public ConfigurableLowThrustManeuver (final ThrustDirectionAndAttitudeProvider thrustDirectionProvider,
             final AbstractDetector<? extends EventDetector> startFiringDetector,
             final AbstractDetector<? extends EventDetector> stopFiringDetector, final double thrust,
             final double isp) {
         super(thrustDirectionProvider.getManeuverAttitudeProvider(),
                 new EventBasedManeuverTriggers(startFiringDetector, stopFiringDetector),
                 buildBasicConstantThrustPropulsionModel(thrust, isp,
-                        thrustDirectionProvider.getFixedDirection()));
+                        thrustDirectionProvider.getThrusterAxisInSatelliteFrame()));
         this.thrustDirectionProvider = thrustDirectionProvider;
 
     }
 
     private static BasicConstantThrustPropulsionModel buildBasicConstantThrustPropulsionModel(
-            final double thrust, final double isp, final Vector3D fixedDirectionForAttitude) {
-        return new BasicConstantThrustPropulsionModel(thrust, isp, fixedDirectionForAttitude,
+            final double thrust, final double isp, final Vector3D thrusterAxisInSatelliteFrame) {
+        return new BasicConstantThrustPropulsionModel(thrust, isp, thrusterAxisInSatelliteFrame,
                 THRUST_MODEL_IDENTIFIER);
     }
 
-    public ThrustDirectionProvider getThrustDirectionProvider() {
+    public ThrustDirectionAndAttitudeProvider getThrustDirectionProvider() {
         return thrustDirectionProvider;
     }
 

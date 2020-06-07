@@ -1,8 +1,8 @@
-/* Copyright 2002-2020 CS Group
+/* Copyright 2020 Exotrail
  * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * CS licenses this file to You under the Apache License, Version 2.0
+ * Exotrail licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -26,8 +26,9 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.LofOffset;
+import org.orekit.errors.OrekitException;
 import org.orekit.forces.maneuvers.ConfigurableLowThrustManeuver;
-import org.orekit.forces.maneuvers.ThrustDirectionProvider;
+import org.orekit.forces.maneuvers.propulsion.ThrustDirectionAndAttitudeProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
@@ -258,18 +259,18 @@ public class ConfigurableLowThrustManeuverTest  {
 		return new LofOffset(frame, LOFType.TNW);
 	}
 
-	private static ThrustDirectionProvider buildVelocityThrustDirectionProvider() {
-		return ThrustDirectionProvider.buildFromFixedDirectionInSatelliteFrame(Vector3D.PLUS_I);
+	private static ThrustDirectionAndAttitudeProvider buildVelocityThrustDirectionProvider() {
+		return ThrustDirectionAndAttitudeProvider.buildFromFixedDirectionInSatelliteFrame(Vector3D.PLUS_I);
 	}
 
 	@Test
-	public void runTest() {
+	public void testNominalUseCase() {
 		/////////////////// initial conditions /////////////////////////////////
 		KeplerianOrbit intitOrbit = initOrbit();
 		double initMass = 20;
 		SpacecraftState initialState = new SpacecraftState(intitOrbit, initMass);
 		AbsoluteDate initialDate = intitOrbit.getDate();
-		double simulationDuration = 20 * 86400;
+		double simulationDuration = 2 * 86400;
 		AbsoluteDate finalDate = initialDate.shiftedBy(simulationDuration);
 
 		/////////////////// maneuvers configuration /////////////////////////////////
@@ -302,12 +303,45 @@ public class ConfigurableLowThrustManeuverTest  {
 		SpacecraftState finalStateNumerical = numericalPropagator.propagate(finalDate);
 
 		/////////////////// results check /////////////////////////////////
-		double expectedPropellantConsumption = -0.22;
-		double expectedDeltaSemiMajorAxisRealized = 166821;
+		double expectedPropellantConsumption = -0.022;
+		double expectedDeltaSemiMajorAxisRealized = 16397;
 		Assert.assertEquals(expectedPropellantConsumption,
 				finalStateNumerical.getMass() - initialState.getMass(), 0.005);
 		Assert.assertEquals(expectedDeltaSemiMajorAxisRealized,
 				finalStateNumerical.getA() - initialState.getA(), 100);
 	}
+	
+    @Test(expected = OrekitException.class)
+    public void testBackwardPropagationDisabled() {
+		/////////////////// initial conditions /////////////////////////////////
+		KeplerianOrbit intitOrbit = initOrbit();
+		double initMass = 20;
+		SpacecraftState initialState = new SpacecraftState(intitOrbit, initMass);
+		AbsoluteDate initialDate = intitOrbit.getDate();
+		double simulationDuration = - 2 * 86400; // backward
+		AbsoluteDate finalDate = initialDate.shiftedBy(simulationDuration);
+
+		/////////////////// maneuvers configuration /////////////////////////////////
+		double thrust = 2e-3;
+		double isp = 800;
+		double halfThrustArc = FastMath.PI / 4;
+		ApogeeCenteredIntervalDetector maneuver1StartDetector = new ApogeeCenteredIntervalDetector(
+				halfThrustArc, PositionAngle.MEAN, new ContinueOnEvent<>());
+
+		NegateDetector maneuver1StopDetector = BooleanDetector.notCombine(maneuver1StartDetector);
+
+		// thrust in velocity direction to increase semi-major-axis
+		ConfigurableLowThrustManeuver maneuver1 = new ConfigurableLowThrustManeuver(
+				buildVelocityThrustDirectionProvider(), maneuver1StartDetector,
+				maneuver1StopDetector, thrust, isp);
+
+		/////////////////// propagations /////////////////////////////////
+		// forward
+		NumericalPropagator numericalPropagatorForward = buildNumericalPropagator(intitOrbit);
+		numericalPropagatorForward.addForceModel(maneuver1);
+		numericalPropagatorForward.setInitialState(initialState);
+		numericalPropagatorForward.propagate(finalDate);
+		
+    }
 
 }

@@ -1,8 +1,8 @@
-/* Copyright 2002-2020 CS Group
+/* Copyright 2020 Exotrail
  * Licensed to CS Group (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * CS licenses this file to You under the Apache License, Version 2.0
+ * Exotrail licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -14,30 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.forces.maneuvers;
+package org.orekit.forces.maneuvers.propulsion;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
 
-/**
- * Simple implementation of VariableThrustDirectionVector, providing a constant direction
+/** Interface to compute the thrust direction of a maneuver
  * @author Mikael Fillastre
  * @author Andrea Fiorentino
  */
 
-public class ConstantThrustDirectionVector implements VariableThrustDirectionVector {
+public interface VariableThrustDirectionVector {
 
-    private final Vector3D direction;
-
-    public ConstantThrustDirectionVector (final Vector3D constantDirection) {
-        direction = constantDirection;
-    }
-
-    @Override
+    /** Compute the thrust direction corresponding to an orbital state.
+     * @param pvProv local position-velocity provider around current date
+     * @param date current date
+     * @param frame reference frame from which attitude is computed
+     * @return direction thrust direction at the specified date and position-velocity state
+     */
     public Vector3D computeThrustDirection(PVCoordinatesProvider pvProv, AbsoluteDate date,
-            Frame frame) {
-        return direction;
-    }
+            Frame frame);
 }

@@ -619,7 +619,7 @@ INVALID_PARAMETER_RANGE = paramètre invalide {0}: {1} n''est pas dans l''interv
 PARAMETER_NOT_SET = Le paramètre {0} de {1} est null
 
 # {0} is not implemented
-FUNCTION_NOT_IMPLEMENTED = {0} n'est pas implémenté
+FUNCTION_NOT_IMPLEMENTED = {0} n''est pas implémenté
 
 # Impossible to execute {0} with {1} set to {2}
-INVALID_TYPE_FOR_FUNCTION = Impossible d'appeler {0} avec {1} = {2}
+INVALID_TYPE_FOR_FUNCTION = Impossible d''appeler {0} avec {1} = {2}
