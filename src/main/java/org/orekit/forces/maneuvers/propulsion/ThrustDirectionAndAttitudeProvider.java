@@ -32,7 +32,7 @@ import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /** This class is used to both manage the attitude of the satellite and the direction of thrust.
- * TODO more comments
+ * TODO more comments how it is used, where, present alternatives
  * @author Mikael Fillastre
  * @author Andrea Fiorentino
  */
@@ -175,17 +175,17 @@ public class ThrustDirectionAndAttitudeProvider implements AttitudeProvider {
     public Attitude getAttitudeFromFrame(PVCoordinatesProvider pvProv, AbsoluteDate date,
             Frame frame) {
 
-        Rotation inertial2htrusterFrame;
+        Rotation inertial2ThrusterFrame;
         if (type.equals(ThrustDirectionProviderType.DIRECTION_IN_FRAME)) {
-            inertial2htrusterFrame = frame.getTransformTo(thrustDirectionFrame, date).getRotation();
+            inertial2ThrusterFrame = frame.getTransformTo(thrustDirectionFrame, date).getRotation();
         } else { // LOF
-            inertial2htrusterFrame = thrustDirectionLofType
+            inertial2ThrusterFrame = thrustDirectionLofType
                     .rotationFromInertial(pvProv.getPVCoordinates(date, frame));
         }
 
         Vector3D thrustDirection = variableDirectionInFrame.computeThrustDirection(pvProv, date,
                 frame);
-        Vector3D thrustDirectionInertial = inertial2htrusterFrame.applyInverseTo(thrustDirection);
+        Vector3D thrustDirectionInertial = inertial2ThrusterFrame.applyInverseTo(thrustDirection);
 
         Rotation attitude = new Rotation(getThrusterAxisInSatelliteFrame(), thrustDirectionInertial);
         Attitude att = new Attitude(date, frame, attitude.revert(), Vector3D.ZERO, Vector3D.ZERO);

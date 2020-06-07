@@ -79,21 +79,12 @@ public class ConfigurableLowThrustManeuver extends Maneuver {
     }
 
     /**
-     * Get the thrust vector (N) in S/C frame.
-     * 
-     * @return thrust vector (N) in S/C frame.
-     */
-    public Vector3D getThrustVector() {
-        return ((AbstractConstantThrustPropulsionModel) (getPropulsionModel())).getThrustVector();
-    }
-
-    /**
      * Get the thrust.
      * 
      * @return thrust force (N).
      */
     public double getThrust() {
-        return getThrustVector().getNorm();
+        return ((AbstractConstantThrustPropulsionModel) (getPropulsionModel())).getThrustVector().getNorm();
     }
 
     /**

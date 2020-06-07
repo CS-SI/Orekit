@@ -40,6 +40,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.BooleanDetector;
+import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.NegateDetector;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
@@ -51,6 +52,10 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 public class ConfigurableLowThrustManeuverTest  {
+	private double thrust = 2e-3;
+	private double isp = 800;
+	private double halfThrustArc = FastMath.PI / 4;
+	
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");
@@ -239,7 +244,11 @@ public class ConfigurableLowThrustManeuverTest  {
 		return propagator;
 	}
 
-	private static KeplerianOrbit initOrbit() throws IllegalArgumentException {
+	private static KeplerianOrbit buildInitOrbit() {
+		return buildInitOrbitWithAnomaly(FastMath.toRadians(0));
+	}
+	
+	private static KeplerianOrbit buildInitOrbitWithAnomaly(double anomaly) {
 		AbsoluteDate date = new AbsoluteDate(2020, 01, 01, TimeScalesFactory.getUTC());
 
 		double sma = Constants.EGM96_EARTH_EQUATORIAL_RADIUS + 700e3;
@@ -247,10 +256,9 @@ public class ConfigurableLowThrustManeuverTest  {
 		double inc = FastMath.toRadians(60);
 		double pa = FastMath.toRadians(0);
 		double raan = 0.;
-		double anomaly = FastMath.toRadians(0);
 
 		KeplerianOrbit kep = new KeplerianOrbit(sma, ecc, inc, pa, raan, anomaly,
-				PositionAngle.TRUE, FramesFactory.getCIRF(IERSConventions.IERS_2010, true), date,
+				PositionAngle.MEAN, FramesFactory.getCIRF(IERSConventions.IERS_2010, true), date,
 				Constants.EGM96_EARTH_MU);
 		return kep;
 	}
@@ -263,42 +271,46 @@ public class ConfigurableLowThrustManeuverTest  {
 		return ThrustDirectionAndAttitudeProvider.buildFromFixedDirectionInSatelliteFrame(Vector3D.PLUS_I);
 	}
 
+	private ConfigurableLowThrustManeuver buildApogeeManeuver() {
+
+		ApogeeCenteredIntervalDetector maneuverStartDetector = new ApogeeCenteredIntervalDetector(
+				halfThrustArc, PositionAngle.MEAN, new ContinueOnEvent<>());
+		NegateDetector maneuverStopDetector = BooleanDetector.notCombine(maneuverStartDetector);
+
+		// thrust in velocity direction to increase semi-major-axis
+		return new ConfigurableLowThrustManeuver(
+				buildVelocityThrustDirectionProvider(), maneuverStartDetector,
+				maneuverStopDetector, thrust, isp);
+	}
+	
+	private ConfigurableLowThrustManeuver buildPerigeeManeuver() {
+
+		PerigeeCenteredIntervalDetector maneuverStartDetector = new PerigeeCenteredIntervalDetector(
+				halfThrustArc, PositionAngle.MEAN, new ContinueOnEvent<>());
+
+		NegateDetector maneuverStopDetector = BooleanDetector.notCombine(maneuverStartDetector);
+
+		// thrust in velocity direction to increase semi-major-axis
+		return new ConfigurableLowThrustManeuver(
+				buildVelocityThrustDirectionProvider(), maneuverStartDetector,
+				maneuverStopDetector, thrust, isp);
+	}
+	
 	@Test
 	public void testNominalUseCase() {
 		/////////////////// initial conditions /////////////////////////////////
-		KeplerianOrbit intitOrbit = initOrbit();
+		KeplerianOrbit intitOrbit = buildInitOrbit();
 		double initMass = 20;
 		SpacecraftState initialState = new SpacecraftState(intitOrbit, initMass);
 		AbsoluteDate initialDate = intitOrbit.getDate();
 		double simulationDuration = 2 * 86400;
 		AbsoluteDate finalDate = initialDate.shiftedBy(simulationDuration);
 
-		/////////////////// maneuvers configuration /////////////////////////////////
-		// 2 maneuvers on opposite nodes to preserve eccentricity
-		double thrust = 2e-3;
-		double isp = 800;
-		double halfThrustArc = FastMath.PI / 4;
-		ApogeeCenteredIntervalDetector maneuver1StartDetector = new ApogeeCenteredIntervalDetector(
-				halfThrustArc, PositionAngle.MEAN, new ContinueOnEvent<>());
-		PerigeeCenteredIntervalDetector maneuver2StartDetector = new PerigeeCenteredIntervalDetector(
-				halfThrustArc, PositionAngle.MEAN, new ContinueOnEvent<>());
-
-		NegateDetector maneuver1StopDetector = BooleanDetector.notCombine(maneuver1StartDetector);
-		NegateDetector maneuver2StopDetector = BooleanDetector.notCombine(maneuver2StartDetector);
-
-		// thrust in velocity direction to increase semi-major-axis
-		ConfigurableLowThrustManeuver maneuver1Numerical = new ConfigurableLowThrustManeuver(
-				buildVelocityThrustDirectionProvider(), maneuver1StartDetector,
-				maneuver1StopDetector, thrust, isp);
-		ConfigurableLowThrustManeuver maneuver2Numerical = new ConfigurableLowThrustManeuver(
-				buildVelocityThrustDirectionProvider(), maneuver2StartDetector,
-				maneuver2StopDetector, thrust, isp);
-
 		/////////////////// propagations /////////////////////////////////
 
 		NumericalPropagator numericalPropagator = buildNumericalPropagator(intitOrbit);
-		numericalPropagator.addForceModel(maneuver1Numerical);
-		numericalPropagator.addForceModel(maneuver2Numerical);
+		numericalPropagator.addForceModel(buildApogeeManeuver());
+		numericalPropagator.addForceModel(buildPerigeeManeuver());
 		numericalPropagator.setInitialState(initialState);
 		SpacecraftState finalStateNumerical = numericalPropagator.propagate(finalDate);
 
@@ -314,34 +326,146 @@ public class ConfigurableLowThrustManeuverTest  {
     @Test(expected = OrekitException.class)
     public void testBackwardPropagationDisabled() {
 		/////////////////// initial conditions /////////////////////////////////
-		KeplerianOrbit intitOrbit = initOrbit();
+		KeplerianOrbit intitOrbit = buildInitOrbit();
 		double initMass = 20;
 		SpacecraftState initialState = new SpacecraftState(intitOrbit, initMass);
 		AbsoluteDate initialDate = intitOrbit.getDate();
 		double simulationDuration = - 2 * 86400; // backward
 		AbsoluteDate finalDate = initialDate.shiftedBy(simulationDuration);
 
-		/////////////////// maneuvers configuration /////////////////////////////////
-		double thrust = 2e-3;
-		double isp = 800;
-		double halfThrustArc = FastMath.PI / 4;
-		ApogeeCenteredIntervalDetector maneuver1StartDetector = new ApogeeCenteredIntervalDetector(
-				halfThrustArc, PositionAngle.MEAN, new ContinueOnEvent<>());
-
-		NegateDetector maneuver1StopDetector = BooleanDetector.notCombine(maneuver1StartDetector);
-
-		// thrust in velocity direction to increase semi-major-axis
-		ConfigurableLowThrustManeuver maneuver1 = new ConfigurableLowThrustManeuver(
-				buildVelocityThrustDirectionProvider(), maneuver1StartDetector,
-				maneuver1StopDetector, thrust, isp);
-
-		/////////////////// propagations /////////////////////////////////
-		// forward
+		/////////////////// propagation /////////////////////////////////
 		NumericalPropagator numericalPropagatorForward = buildNumericalPropagator(intitOrbit);
-		numericalPropagatorForward.addForceModel(maneuver1);
+		numericalPropagatorForward.addForceModel(buildApogeeManeuver());
 		numericalPropagatorForward.setInitialState(initialState);
 		numericalPropagatorForward.propagate(finalDate);
 		
     }
+    
+	@Test
+	public void testInitBefore() {
+		// thrust arc is around apogee which is on anomaly PI
+		/////////////////// initial conditions /////////////////////////////////
+		KeplerianOrbit intitOrbit = buildInitOrbitWithAnomaly(0);
+		double initMass = 20;
+		SpacecraftState initialState = new SpacecraftState(intitOrbit, initMass);
+		AbsoluteDate initialDate = intitOrbit.getDate();
+		double simulationDuration = 10;
+		AbsoluteDate finalDate = initialDate.shiftedBy(simulationDuration);
+
+		/////////////////// propagation /////////////////////////////////
+		NumericalPropagator numericalPropagatorForward = buildNumericalPropagator(intitOrbit);
+		numericalPropagatorForward.addForceModel(buildApogeeManeuver());
+		numericalPropagatorForward.setInitialState(initialState);
+		SpacecraftState finalState = numericalPropagatorForward.propagate(finalDate);
+		// check firing did not happened
+		Assert.assertTrue(finalState.getMass() == initialState.getMass()); 
+	}
+	
+	@Test
+	public void testInitNearStart() {
+		// thrust arc is around apogee which is on anomaly PI
+		/////////////////// initial conditions /////////////////////////////////
+		// we can start exactly on start due to angle conversion, the g fonction is equal to 1e-15
+		// so this is not exactly the test of the specific code.Anotyher test based on date will do that
+		KeplerianOrbit intitOrbit = buildInitOrbitWithAnomaly(FastMath.PI - halfThrustArc);
+		double initMass = 20;
+		SpacecraftState initialState = new SpacecraftState(intitOrbit, initMass);
+		AbsoluteDate initialDate = intitOrbit.getDate();
+		double simulationDuration = 10;
+		AbsoluteDate finalDate = initialDate.shiftedBy(simulationDuration);
+
+		/////////////////// propagation /////////////////////////////////
+		NumericalPropagator numericalPropagatorForward = buildNumericalPropagator(intitOrbit);
+		numericalPropagatorForward.addForceModel(buildApogeeManeuver());
+		numericalPropagatorForward.setInitialState(initialState);
+		SpacecraftState finalState = numericalPropagatorForward.propagate(finalDate);
+		// check firing happened
+		Assert.assertTrue(finalState.getMass() < initialState.getMass()); 
+	}
+	
+	@Test
+	public void testInitOnStart() {
+		/////////////////// initial conditions /////////////////////////////////
+		KeplerianOrbit intitOrbit = buildInitOrbitWithAnomaly(FastMath.PI - halfThrustArc);
+		double initMass = 20;
+		SpacecraftState initialState = new SpacecraftState(intitOrbit, initMass);
+		AbsoluteDate initialDate = intitOrbit.getDate();
+		double simulationDuration = 10;
+		AbsoluteDate finalDate = initialDate.shiftedBy(simulationDuration);
+
+
+		DateDetector maneuverStartDetector = new DateDetector(initialDate);
+		DateDetector maneuverStopDetector = new DateDetector(initialDate.shiftedBy(60));
+
+		ConfigurableLowThrustManeuver maneuver =  new ConfigurableLowThrustManeuver(
+				buildVelocityThrustDirectionProvider(), maneuverStartDetector,
+				maneuverStopDetector, thrust, isp);
+		
+		/////////////////// propagation /////////////////////////////////
+		NumericalPropagator numericalPropagatorForward = buildNumericalPropagator(intitOrbit);
+		numericalPropagatorForward.addForceModel(maneuver);
+		numericalPropagatorForward.setInitialState(initialState);
+		SpacecraftState finalState = numericalPropagatorForward.propagate(finalDate);
+		// check firing happened
+		Assert.assertTrue(finalState.getMass() < initialState.getMass()); 
+	}
+	
+	@Test
+	public void testInitFiring() {
+		// thrust arc is around apogee which is on anomaly PI
+		/////////////////// initial conditions /////////////////////////////////
+		KeplerianOrbit intitOrbit = buildInitOrbitWithAnomaly(FastMath.PI);
+		double initMass = 20;
+		SpacecraftState initialState = new SpacecraftState(intitOrbit, initMass);
+		AbsoluteDate initialDate = intitOrbit.getDate();
+		double simulationDuration = 10;
+		AbsoluteDate finalDate = initialDate.shiftedBy(simulationDuration);
+
+		/////////////////// propagation /////////////////////////////////
+		NumericalPropagator numericalPropagatorForward = buildNumericalPropagator(intitOrbit);
+		numericalPropagatorForward.addForceModel(buildApogeeManeuver());
+		numericalPropagatorForward.setInitialState(initialState);
+		SpacecraftState finalState = numericalPropagatorForward.propagate(finalDate);
+		// check firing happened
+		Assert.assertTrue(finalState.getMass() < initialState.getMass()); 
+	}
+	@Test
+	public void testInitOnStop() {
+		// thrust arc is around apogee which is on anomaly PI
+		/////////////////// initial conditions /////////////////////////////////
+		KeplerianOrbit intitOrbit = buildInitOrbitWithAnomaly(FastMath.PI + halfThrustArc);
+		double initMass = 20;
+		SpacecraftState initialState = new SpacecraftState(intitOrbit, initMass);
+		AbsoluteDate initialDate = intitOrbit.getDate();
+		double simulationDuration = 10;
+		AbsoluteDate finalDate = initialDate.shiftedBy(simulationDuration);
+
+		/////////////////// propagation /////////////////////////////////
+		NumericalPropagator numericalPropagatorForward = buildNumericalPropagator(intitOrbit);
+		numericalPropagatorForward.addForceModel(buildApogeeManeuver());
+		numericalPropagatorForward.setInitialState(initialState);
+		SpacecraftState finalState = numericalPropagatorForward.propagate(finalDate);
+		// check firing did not happened
+		Assert.assertTrue(finalState.getMass() == initialState.getMass()); 
+	}
+	@Test
+	public void testInitAfter() {
+		// thrust arc is around apogee which is on anomaly PI
+		/////////////////// initial conditions /////////////////////////////////
+		KeplerianOrbit intitOrbit = buildInitOrbitWithAnomaly(FastMath.PI + 2 * halfThrustArc);
+		double initMass = 20;
+		SpacecraftState initialState = new SpacecraftState(intitOrbit, initMass);
+		AbsoluteDate initialDate = intitOrbit.getDate();
+		double simulationDuration = 10;
+		AbsoluteDate finalDate = initialDate.shiftedBy(simulationDuration);
+
+		/////////////////// propagation /////////////////////////////////
+		NumericalPropagator numericalPropagatorForward = buildNumericalPropagator(intitOrbit);
+		numericalPropagatorForward.addForceModel(buildApogeeManeuver());
+		numericalPropagatorForward.setInitialState(initialState);
+		SpacecraftState finalState = numericalPropagatorForward.propagate(finalDate);
+		// check firing did not happened
+		Assert.assertTrue(finalState.getMass() == initialState.getMass()); 
+	}
 
 }
