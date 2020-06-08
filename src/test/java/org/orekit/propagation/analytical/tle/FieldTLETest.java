@@ -25,6 +25,7 @@ import java.text.ParseException;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.Decimal64Field;
@@ -33,6 +34,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -41,6 +43,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
 public class FieldTLETest {
@@ -179,13 +182,14 @@ public class FieldTLETest {
     @Test
     public <T extends RealFieldElement<T>> void testBug77TooLargeSecondDerivative() {
         try {
-            TLE tle = new TLE(5555, 'U', 1971, 86, "J", 0, 908,
-                              new AbsoluteDate(new DateComponents(2012, 26),
+            T T_zero = (T)Decimal64Field.getInstance().getZero();
+            FieldTLE<T> tle = new FieldTLE<T>(5555, 'U', 1971, 86, "J", 0, 908,
+                              new FieldAbsoluteDate<T>((Field<T>)Decimal64Field.getInstance(), new DateComponents(2012, 26),
                                                new TimeComponents(0.96078249 * Constants.JULIAN_DAY),
                                                TimeScalesFactory.getUTC()),
-                              taylorConvert(12.26882470, 1), taylorConvert(-0.00000004, 2), taylorConvert(0.99999e11, 3),
-                              0.0075476, FastMath.toRadians(74.0161), FastMath.toRadians(328.9888),
-                              FastMath.toRadians(228.9750), FastMath.toRadians(30.6709), 80454, 0.01234e-9);
+                              T_zero.add(taylorConvert(12.26882470, 1)), T_zero.add(taylorConvert(-0.00000004, 2)), T_zero.add(taylorConvert(0.99999e11, 3)),
+                              T_zero.add(0.0075476), T_zero.add(FastMath.toRadians(74.0161)), T_zero.add(FastMath.toRadians(328.9888)),
+                              T_zero.add(FastMath.toRadians(228.9750)), T_zero.add(FastMath.toRadians(30.6709)), 80454, T_zero.add(0.01234e-9));
             tle.getLine1();
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -198,13 +202,14 @@ public class FieldTLETest {
     @Test
     public <T extends RealFieldElement<T>> void testBug77TooLargeBStar() {
         try {
-            TLE tle = new TLE(5555, 'U', 1971, 86, "J", 0, 908,
-                              new AbsoluteDate(new DateComponents(2012, 26),
+            T T_zero = (T)Decimal64Field.getInstance().getZero();
+            FieldTLE<T> tle = new FieldTLE<T>(5555, 'U', 1971, 86, "J", 0, 908,
+                              new FieldAbsoluteDate<T>((Field<T>)Decimal64Field.getInstance(), new DateComponents(2012, 26),
                                                new TimeComponents(0.96078249 * Constants.JULIAN_DAY),
                                                TimeScalesFactory.getUTC()),
-                              taylorConvert(12.26882470, 1), taylorConvert(-0.00000004, 2), taylorConvert(0.00001e-9, 3),
-                              0.0075476, FastMath.toRadians(74.0161), FastMath.toRadians(328.9888),
-                              FastMath.toRadians(228.9750), FastMath.toRadians(30.6709), 80454, 0.99999e11);
+                              T_zero.add(taylorConvert(12.26882470, 1)), T_zero.add(taylorConvert(-0.00000004, 2)), T_zero.add(taylorConvert(0.00001e-9, 3)),
+                              T_zero.add(0.0075476), T_zero.add(FastMath.toRadians(74.0161)), T_zero.add(FastMath.toRadians(328.9888)),
+                              T_zero.add(FastMath.toRadians(228.9750)), T_zero.add(FastMath.toRadians(30.6709)), 80454, T_zero.add(0.99999e11));
             tle.getLine1();
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -217,13 +222,14 @@ public class FieldTLETest {
     @Test
     public <T extends RealFieldElement<T>> void testBug77TooLargeEccentricity() {
         try {
-            TLE tle = new TLE(5555, 'U', 1971, 86, "J", 0, 908,
-                              new AbsoluteDate(new DateComponents(2012, 26),
+            T T_zero = (T)Decimal64Field.getInstance().getZero();
+            FieldTLE<T> tle = new FieldTLE<T>(5555, 'U', 1971, 86, "J", 0, 908,
+                              new FieldAbsoluteDate<T>((Field<T>)Decimal64Field.getInstance(), new DateComponents(2012, 26),
                                                new TimeComponents(0.96078249 * Constants.JULIAN_DAY),
                                                TimeScalesFactory.getUTC()),
-                              taylorConvert(12.26882470, 1), taylorConvert(-0.00000004, 2), taylorConvert(0.00001e-9, 3),
-                              1.0075476, FastMath.toRadians(74.0161), FastMath.toRadians(328.9888),
-                              FastMath.toRadians(228.9750), FastMath.toRadians(30.6709), 80454, 0.01234e-9);
+                              T_zero.add(taylorConvert(12.26882470, 1)), T_zero.add(taylorConvert(-0.00000004, 2)), T_zero.add(taylorConvert(0.00001e-9, 3)),
+                              T_zero.add(1.0075476), T_zero.add(FastMath.toRadians(74.0161)), T_zero.add(FastMath.toRadians(328.9888)),
+                              T_zero.add(FastMath.toRadians(228.9750)), T_zero.add(FastMath.toRadians(30.6709)), 80454, T_zero.add(0.01234e-9));
             tle.getLine2();
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -238,13 +244,14 @@ public class FieldTLETest {
     @Test
     public <T extends RealFieldElement<T>> void testBug77TooLargeSatelliteNumber1() {
         try {
-            TLE tle = new TLE(1000000, 'U', 1971, 86, "J", 0, 908,
-                              new AbsoluteDate(new DateComponents(2012, 26),
+            T T_zero = (T)Decimal64Field.getInstance().getZero();
+            FieldTLE<T> tle = new FieldTLE<T>(1000000, 'U', 1971, 86, "J", 0, 908,
+                              new FieldAbsoluteDate<T>((Field<T>)Decimal64Field.getInstance(), new DateComponents(2012, 26),
                                                new TimeComponents(0.96078249 * Constants.JULIAN_DAY),
                                                TimeScalesFactory.getUTC()),
-                              taylorConvert(12.26882470, 1), taylorConvert(-0.00000004, 2), taylorConvert(0.00001e-9, 3),
-                              0.0075476, FastMath.toRadians(74.0161), FastMath.toRadians(328.9888),
-                              FastMath.toRadians(228.9750), FastMath.toRadians(30.6709), 80454, 0.01234e-9);
+                              T_zero.add(taylorConvert(12.26882470, 1)),  T_zero.add(taylorConvert(-0.00000004, 2)),  T_zero.add(taylorConvert(0.00001e-9, 3)),
+                              T_zero.add(0.0075476),  T_zero.add(FastMath.toRadians(74.0161)),  T_zero.add(FastMath.toRadians(328.9888)),
+                              T_zero.add(FastMath.toRadians(228.9750)),  T_zero.add(FastMath.toRadians(30.6709)), 80454,  T_zero.add(0.01234e-9));
             tle.getLine1();
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -257,13 +264,14 @@ public class FieldTLETest {
     @Test
     public <T extends RealFieldElement<T>> void testBug77TooLargeSatelliteNumber2() {
         try {
-            TLE tle = new TLE(1000000, 'U', 1971, 86, "J", 0, 908,
-                              new AbsoluteDate(new DateComponents(2012, 26),
+            T T_zero = (T)Decimal64Field.getInstance().getZero();
+            FieldTLE<T> tle = new FieldTLE<T>(1000000, 'U', 1971, 86, "J", 0, 908,
+                              new FieldAbsoluteDate<T>((Field<T>)Decimal64Field.getInstance(), new DateComponents(2012, 26),
                                                new TimeComponents(0.96078249 * Constants.JULIAN_DAY),
                                                TimeScalesFactory.getUTC()),
-                              taylorConvert(12.26882470, 1), taylorConvert(-0.00000004, 2), taylorConvert(0.00001e-9, 3),
-                              0.0075476, FastMath.toRadians(74.0161), FastMath.toRadians(328.9888),
-                              FastMath.toRadians(228.9750), FastMath.toRadians(30.6709), 80454, 0.01234e-9);
+                              T_zero.add(taylorConvert(12.26882470, 1)), T_zero.add(taylorConvert(-0.00000004, 2)), T_zero.add(taylorConvert(0.00001e-9, 3)),
+                              T_zero.add(0.0075476), T_zero.add(FastMath.toRadians(74.0161)), T_zero.add(FastMath.toRadians(328.9888)),
+                              T_zero.add(FastMath.toRadians(228.9750)), T_zero.add(FastMath.toRadians(30.6709)), 80454, T_zero.add(0.01234e-9));
             tle.getLine2();
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -280,21 +288,21 @@ public class FieldTLETest {
 
     @Test(expected=OrekitException.class)
     public <T extends RealFieldElement<T>> void testDifferentSatNumbers() {
-        new TLE("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
-                "2 27422  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
+        new FieldTLE<T>((Field<T>)Decimal64Field.getInstance(), "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
+                                                                "2 27422  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
     }
 
     @Test
     public void testChecksumOK() {
-        TLE.isFormatOK("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
-                       "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
+        FieldTLE.isFormatOK("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
+                            "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
     }
 
     @Test
     public void testWrongChecksum1() {
         try {
-            TLE.isFormatOK("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    21",
-                           "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
+            FieldTLE.isFormatOK("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    21",
+                                "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.TLE_CHECKSUM_ERROR, oe.getSpecifier());
@@ -309,8 +317,8 @@ public class FieldTLETest {
     @Test
     public void testWrongChecksum2() {
         try {
-            TLE.isFormatOK("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
-                           "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    61");
+            FieldTLE.isFormatOK("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
+                                "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    61");
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.TLE_CHECKSUM_ERROR, oe.getSpecifier());
@@ -323,18 +331,19 @@ public class FieldTLETest {
     }
 
     @Test
-    public void testSatCodeCompliance() throws IOException, OrekitException, ParseException {
+    public <T extends RealFieldElement<T>>void testSatCodeCompliance() throws IOException, OrekitException, ParseException {
 
         BufferedReader rEntry = null;
         BufferedReader rResults = null;
+        T T_zero = (T)Decimal64Field.getInstance().getZero();
 
         InputStream inEntry =
-            TLETest.class.getResourceAsStream("/tle/extrapolationTest-data/SatCode-entry");
+            FieldTLETest.class.getResourceAsStream("/tle/extrapolationTest-data/SatCode-entry");
         rEntry = new BufferedReader(new InputStreamReader(inEntry));
 
         try {
             InputStream inResults =
-                TLETest.class.getResourceAsStream("/tle/extrapolationTest-data/SatCode-results");
+                FieldTLETest.class.getResourceAsStream("/tle/extrapolationTest-data/SatCode-results");
             rResults = new BufferedReader(new InputStreamReader(inResults));
 
             try {
@@ -360,29 +369,28 @@ public class FieldTLETest {
                         String line2 = rEntry.readLine();
                         Assert.assertTrue(TLE.isFormatOK(line1, line2));
 
-                        TLE tle = new TLE(line1, line2);
+                        FieldTLE<T> tle = new FieldTLE<T>((Field<T>)Decimal64Field.getInstance(), line1, line2);
 
                         int satNum = Integer.parseInt(title[1]);
                         Assert.assertTrue(satNum==tle.getSatelliteNumber());
-                        TLEPropagator ex = TLEPropagator.selectExtrapolator(tle);
-
+                        FieldTLEPropagator<T> ex = FieldTLEPropagator.selectExtrapolator(tle);
                         for (rline = rResults.readLine(); (rline!=null)&&(rline.charAt(0)!='r'); rline = rResults.readLine()) {
 
                             String[] data = rline.split(" ");
                             double minFromStart = Double.parseDouble(data[0]);
-                            double pX = 1000*Double.parseDouble(data[1]);
-                            double pY = 1000*Double.parseDouble(data[2]);
-                            double pZ = 1000*Double.parseDouble(data[3]);
-                            double vX = 1000*Double.parseDouble(data[4]);
-                            double vY = 1000*Double.parseDouble(data[5]);
-                            double vZ = 1000*Double.parseDouble(data[6]);
-                            Vector3D testPos = new Vector3D(pX, pY, pZ);
-                            Vector3D testVel = new Vector3D(vX, vY, vZ);
+                            T pX = T_zero.add(1000*Double.parseDouble(data[1]));
+                            T pY = T_zero.add(1000*Double.parseDouble(data[2]));
+                            T pZ = T_zero.add(1000*Double.parseDouble(data[3]));
+                            T vX = T_zero.add(1000*Double.parseDouble(data[4]));
+                            T vY = T_zero.add(1000*Double.parseDouble(data[5]));
+                            T vZ = T_zero.add(1000*Double.parseDouble(data[6]));
+                            FieldVector3D<T> testPos = new FieldVector3D<T>(pX, pY, pZ);
+                            FieldVector3D<T> testVel = new FieldVector3D<T>(vX, vY, vZ);
 
-                            AbsoluteDate date = tle.getDate().shiftedBy(minFromStart * 60);
-                            PVCoordinates results = ex.getPVCoordinates(date);
-                            double normDifPos = testPos.subtract(results.getPosition()).getNorm();
-                            double normDifVel = testVel.subtract(results.getVelocity()).getNorm();
+                            FieldAbsoluteDate<T> date = tle.getDate().shiftedBy(minFromStart * 60);
+                            FieldPVCoordinates<T> results = ex.getPVCoordinates(date);
+                            double normDifPos = testPos.subtract(results.getPosition()).getNorm().getReal();
+                            double normDifVel = testVel.subtract(results.getVelocity()).getNorm().getReal();
 
                             cumulated += normDifPos;
                             Assert.assertEquals(0, normDifPos, 2e-3);
@@ -407,12 +415,12 @@ public class FieldTLETest {
 
     @Test
     public <T extends RealFieldElement<T>> void testZeroInclination() {
-        TLE tle = new TLE("1 26451U 00043A   10130.13784012 -.00000276  00000-0  10000-3 0  3866",
+        FieldTLE<T> tle = new FieldTLE<T>((Field<T>)Decimal64Field.getInstance(),"1 26451U 00043A   10130.13784012 -.00000276  00000-0  10000-3 0  3866",
                           "2 26451 000.0000 266.1044 0001893 160.7642 152.5985 01.00271160 35865");
-        TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
-        PVCoordinates pv = propagator.propagate(tle.getDate().shiftedBy(100)).getPVCoordinates();
-        Assert.assertEquals(42171546.979560345, pv.getPosition().getNorm(), 1.0e-3);
-        Assert.assertEquals(3074.1890089357994, pv.getVelocity().getNorm(), 1.0e-6);
+        FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tle);
+        FieldPVCoordinates<T> pv = propagator.propagate(tle.getDate().shiftedBy(100)).getPVCoordinates();
+        Assert.assertEquals(42171546.979560345, pv.getPosition().getNorm().getReal(), 1.0e-3);
+        Assert.assertEquals(3074.1890089357994, pv.getVelocity().getNorm().getReal(), 1.0e-6);
     }
 
     @Test
