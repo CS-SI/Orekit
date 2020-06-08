@@ -35,8 +35,9 @@ import org.orekit.time.FieldAbsoluteDate;
  * Maneuver triggers based on start and stop detectors. This allow a succession
  * of burn interval. The thruster starts firing when the start detector becomes
  * positive. The thruster stops firing when the stop detector becomes positive.
- * The 2 detectors should not be positive at the same time. They can be both
- * negative.
+ * The 2 detectors should not be positive at the same time. A date detector is
+ * not suited as it does not delimit an interval. They can be both negative at
+ * the same time.
  * @author Mikael Fillastre
  * @author Andrea Fiorentino
  */
@@ -63,6 +64,14 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
 
     public EventBasedManeuverTriggers(final AbstractDetector<? extends EventDetector> startFiringDetector,
             final AbstractDetector<? extends EventDetector> stopFiringDetector) {
+        if (startFiringDetector == null) {
+            throw new OrekitException(OrekitMessages.PARAMETER_NOT_SET, "stopFiringDetector",
+                    EventBasedManeuverTriggers.class.getSimpleName());
+        }
+        if (stopFiringDetector == null) {
+            throw new OrekitException(OrekitMessages.PARAMETER_NOT_SET, "startFiringDetector",
+                    EventBasedManeuverTriggers.class.getSimpleName());
+        }
         this.startFiringDetector = startFiringDetector.withHandler(this);
         this.stopFiringDetector = stopFiringDetector.withHandler(this);
         this.triggeredStart = null;
@@ -85,14 +94,6 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
         if (!initialized) {
 
             initialized = true;
-            if (stopFiringDetector == null) {
-                throw new OrekitException(OrekitMessages.PARAMETER_NOT_SET, "stopFiringDetector",
-                        EventBasedManeuverTriggers.class.getSimpleName());
-            }
-            if (startFiringDetector == null) {
-                throw new OrekitException(OrekitMessages.PARAMETER_NOT_SET, "startFiringDetector",
-                        EventBasedManeuverTriggers.class.getSimpleName());
-            }
             final AbsoluteDate sDate = initialState.getDate();
             if (sDate.compareTo(target) > 0) {
                 // backward propagation not managed because events on detectors can not be
@@ -131,14 +132,14 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
      */
     protected boolean isFiringOnInitialState(final SpacecraftState initialState) {
         // set the initial value of firing
-        final double insideThrustArcG = startFiringDetector.g(initialState);
+        final double insideThrustArcG = getStartFiringDetector().g(initialState);
         boolean isInsideThrustArc = false;
 
         if (insideThrustArcG == 0) {
             // bound of arc
             // check state for the next second (which can be forward or backward)
             final double nextSecond = 1;
-            final double nextValue = startFiringDetector.g(initialState.shiftedBy(nextSecond));
+            final double nextValue = getStartFiringDetector().g(initialState.shiftedBy(nextSecond));
             isInsideThrustArc = nextValue > 0;
         } else {
             isInsideThrustArc = insideThrustArcG > 0;
@@ -149,7 +150,7 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
     /** {@inheritDoc} */
     @Override
     public Stream<EventDetector> getEventsDetectors() {
-        return Stream.of(startFiringDetector, stopFiringDetector);
+        return Stream.of(getStartFiringDetector(), getStopFiringDetector());
     }
 
     /** {@inheritDoc} */
@@ -193,10 +194,10 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
         if (detectorManaged) {
             action = Action.RESET_EVENTS;
             if (increasing) {
-                if (detector.equals(startFiringDetector)) { // start of firing arc
+                if (detector.equals(getStartFiringDetector())) { // start of firing arc
                     setFiring(true, s.getDate());
                     action = Action.RESET_DERIVATIVES;
-                } else if (detector.equals(stopFiringDetector)) { // end of firing arc
+                } else if (detector.equals(getStopFiringDetector())) { // end of firing arc
                     setFiring(false, s.getDate());
                     action = Action.RESET_DERIVATIVES;
                 }
@@ -218,6 +219,7 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
             return false;
         } else if (date.isBefore(triggeredStart)) {
             // we are unambiguously before maneuver start
+            // robustness, we should not pass here
             return false;
         } else {
             // after start date
@@ -225,12 +227,13 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
                 // explicitly ignores state date, as propagator did not allow us to introduce
                 // discontinuity
                 return true;
-            } else if (triggeredStart.isAfter(getTriggeredEnd())) {
+            } else if (getTriggeredStart().isAfter(getTriggeredEnd())) {
                 // last event is a start of maneuver, end not set yet
                 // we are unambiguously before maneuver end
                 return true;
             } else if (date.isBefore(getTriggeredEnd())) {
                 // we are unambiguously before maneuver end
+                // robustness, we should not pass here
                 return true;
             } else {
                 // we are at or after maneuver end
