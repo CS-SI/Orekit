@@ -31,24 +31,28 @@ import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
-/** Maneuver triggers based on start and stop detectors.
- * This allow a succession of burn interval.
- * The thruster starts firing when the start detector becomes positive.
- * The thruster stops firing when the stop detector becomes positive.
- * The 2 detectors should not be positive at the same time.
- * They can be both negative.
+/**
+ * Maneuver triggers based on start and stop detectors. This allow a succession
+ * of burn interval. The thruster starts firing when the start detector becomes
+ * positive. The thruster stops firing when the stop detector becomes positive.
+ * The 2 detectors should not be positive at the same time. They can be both
+ * negative.
  * @author Mikael Fillastre
  * @author Andrea Fiorentino
  */
 public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandler<EventDetector> {
 
-    /** Detectors to start firing, only detect increasing sign change.*/
+    /** Detectors to start firing, only detect increasing sign change. */
     private final AbstractDetector<? extends EventDetector> startFiringDetector;
-    /** Detectors to stop firing, only detect increasing sign change.
-     * e.g. it can be a negate detector of the start detector*/
+    /**
+     * Detectors to stop firing, only detect increasing sign change. e.g. it can be
+     * a negate detector of the start detector
+     */
     private final AbstractDetector<? extends EventDetector> stopFiringDetector;
 
-    /** Flag for init method, called several times : force models + each detector.*/
+    /**
+     * Flag for init method, called several times : force models + each detector.
+     */
     private boolean initialized;
 
     /** Triggered date of engine start. */
@@ -57,8 +61,7 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
     /** Triggered date of engine stop. */
     private AbsoluteDate triggeredEnd;
 
-    public EventBasedManeuverTriggers (
-            final AbstractDetector<? extends EventDetector> startFiringDetector,
+    public EventBasedManeuverTriggers(final AbstractDetector<? extends EventDetector> startFiringDetector,
             final AbstractDetector<? extends EventDetector> stopFiringDetector) {
         this.startFiringDetector = startFiringDetector.withHandler(this);
         this.stopFiringDetector = stopFiringDetector.withHandler(this);
@@ -83,17 +86,23 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
 
             initialized = true;
             if (stopFiringDetector == null) {
-                throw new OrekitException(OrekitMessages.PARAMETER_NOT_SET, "stopFiringDetector", "EventBasedManeuverTriggers");
+                throw new OrekitException(OrekitMessages.PARAMETER_NOT_SET, "stopFiringDetector",
+                        EventBasedManeuverTriggers.class.getSimpleName());
             }
             if (startFiringDetector == null) {
-                throw new OrekitException(OrekitMessages.PARAMETER_NOT_SET, "startFiringDetector", "EventBasedManeuverTriggers");
+                throw new OrekitException(OrekitMessages.PARAMETER_NOT_SET, "startFiringDetector",
+                        EventBasedManeuverTriggers.class.getSimpleName());
             }
             final AbsoluteDate sDate = initialState.getDate();
             if (sDate.compareTo(target) > 0) {
-                // backward propagation not managed because events on detectors can not be reversed :
-                // the stop event of the maneuver in forward direction won't be the start in the backward.
-                // e.g. if a stop detector is combination of orbit position and system constraint
-                throw new OrekitException(OrekitMessages.FUNCTION_NOT_IMPLEMENTED, "EventBasedManeuverTriggers in backward propagation");
+                // backward propagation not managed because events on detectors can not be
+                // reversed :
+                // the stop event of the maneuver in forward direction won't be the start in the
+                // backward.
+                // e.g. if a stop detector is combination of orbit position and system
+                // constraint
+                throw new OrekitException(OrekitMessages.FUNCTION_NOT_IMPLEMENTED,
+                        "EventBasedManeuverTriggers in backward propagation");
             }
 
             checkInitialFiringState(initialState);
@@ -101,8 +110,9 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
         } // multiples calls to init : because it is a force model and by each detector
     }
 
-    /** Method to set the firing state on initialization.
-     * can be overloaded by sub classes.
+    /**
+     * Method to set the firing state on initialization. can be overloaded by sub
+     * classes.
      *
      * @param initialState
      */
@@ -112,8 +122,9 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
         }
     }
 
-    /** Method to check if the thruster is firing on initialization.
-     * can be called by sub classes
+    /**
+     * Method to check if the thruster is firing on initialization. can be called by
+     * sub classes
      *
      * @param initialState
      * @return true if firing
@@ -143,10 +154,10 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(
-            final Field<T> field) {
+    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
         // not implemented, it depends on the input detectors
-        throw new OrekitException(OrekitMessages.FUNCTION_NOT_IMPLEMENTED, "EventBasedManeuverTriggers.getFieldEventsDetectors");
+        throw new OrekitException(OrekitMessages.FUNCTION_NOT_IMPLEMENTED,
+                "EventBasedManeuverTriggers.getFieldEventsDetectors");
     }
 
     public void setFiring(final boolean firing, final AbsoluteDate date) {
@@ -169,8 +180,7 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
     }
 
     @Override
-    public <T extends RealFieldElement<T>> boolean isFiring(final FieldAbsoluteDate<T> date,
-            final T parameters[]) {
+    public <T extends RealFieldElement<T>> boolean isFiring(final FieldAbsoluteDate<T> date, final T parameters[]) {
         // Firing state does not depend on a parameter driver here
         return isFiring(date.toAbsoluteDate());
     }
@@ -195,7 +205,8 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
         return action;
     }
 
-    /** Check if maneuvering is on.
+    /**
+     * Check if maneuvering is on.
      *
      * @param date current date
      * @return true if maneuver is on at this date
