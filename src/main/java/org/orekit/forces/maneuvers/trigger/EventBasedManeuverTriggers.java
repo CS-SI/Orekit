@@ -36,19 +36,19 @@ import org.orekit.time.FieldAbsoluteDate;
  * The thruster starts firing when the start detector becomes positive.
  * The thruster stops firing when the stop detector becomes positive.
  * The 2 detectors should not be positive at the same time.
- * They can be both negative 
+ * They can be both negative.
  * @author Mikael Fillastre
  * @author Andrea Fiorentino
  */
 public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandler<EventDetector> {
 
-	/** detectors to start firing, only detect increasing sign change */
+    /** Detectors to start firing, only detect increasing sign change.*/
     private final AbstractDetector<? extends EventDetector> startFiringDetector;
-	/** detectors to stop firing, only detect increasing sign change. 
-	 * e.g. it can be a negate detector of the start detector*/
+    /** Detectors to stop firing, only detect increasing sign change.
+     * e.g. it can be a negate detector of the start detector*/
     private final AbstractDetector<? extends EventDetector> stopFiringDetector;
-    
-    /** flag for init method, called several times : force models + each detector */
+
+    /** Flag for init method, called several times : force models + each detector.*/
     private boolean initialized;
 
     /** Triggered date of engine start. */
@@ -81,7 +81,7 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
 
         if (!initialized) {
 
-        	initialized = true;
+            initialized = true;
             if (stopFiringDetector == null) {
                 throw new OrekitException(OrekitMessages.PARAMETER_NOT_SET, "stopFiringDetector", "EventBasedManeuverTriggers");
             }
@@ -90,10 +90,10 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
             }
             final AbsoluteDate sDate = initialState.getDate();
             if (sDate.compareTo(target) > 0) {
-            	// backward propagation not managed because events on detectors can not be reversed :
-            	// the stop event of the maneuver in forward direction won't be the start in the backward.
-            	// e.g. if a stop detector is combination of orbit position and system constraint
-            	throw new OrekitException(OrekitMessages.FUNCTION_NOT_IMPLEMENTED, "EventBasedManeuverTriggers in backward propagation");
+                // backward propagation not managed because events on detectors can not be reversed :
+                // the stop event of the maneuver in forward direction won't be the start in the backward.
+                // e.g. if a stop detector is combination of orbit position and system constraint
+                throw new OrekitException(OrekitMessages.FUNCTION_NOT_IMPLEMENTED, "EventBasedManeuverTriggers in backward propagation");
             }
 
             checkInitialFiringState(initialState);
@@ -101,11 +101,10 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
         } // multiples calls to init : because it is a force model and by each detector
     }
 
-    /**
-     * can be overloaded by sub classes
-     * 
+    /** Method to set the firing state on initialization.
+     * can be overloaded by sub classes.
+     *
      * @param initialState
-     * @param target
      */
     protected void checkInitialFiringState(final SpacecraftState initialState) {
         if (isFiringOnInitialState(initialState)) {
@@ -113,22 +112,22 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
         }
     }
 
-    /**
+    /** Method to check if the thruster is firing on initialization.
      * can be called by sub classes
-     * 
+     *
      * @param initialState
-     * @param target
+     * @return true if firing
      */
     protected boolean isFiringOnInitialState(final SpacecraftState initialState) {
         // set the initial value of firing
-        double insideThrustArcG = startFiringDetector.g(initialState);
+        final double insideThrustArcG = startFiringDetector.g(initialState);
         boolean isInsideThrustArc = false;
 
         if (insideThrustArcG == 0) {
             // bound of arc
             // check state for the next second (which can be forward or backward)
-            double nextSecond = 1;
-            double nextValue = startFiringDetector.g(initialState.shiftedBy(nextSecond));
+            final double nextSecond = 1;
+            final double nextValue = startFiringDetector.g(initialState.shiftedBy(nextSecond));
             isInsideThrustArc = nextValue > 0;
         } else {
             isInsideThrustArc = insideThrustArcG > 0;
@@ -146,16 +145,16 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
     @Override
     public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(
             final Field<T> field) {
-    	// not implemented, it depends on the input detectors
-    	throw new OrekitException(OrekitMessages.FUNCTION_NOT_IMPLEMENTED, "EventBasedManeuverTriggers.getFieldEventsDetectors");
+        // not implemented, it depends on the input detectors
+        throw new OrekitException(OrekitMessages.FUNCTION_NOT_IMPLEMENTED, "EventBasedManeuverTriggers.getFieldEventsDetectors");
     }
 
-    public void setFiring(boolean firing, AbsoluteDate date) {
+    public void setFiring(final boolean firing, final AbsoluteDate date) {
         if (firing != isFiring(date)) {
             if (firing) {
-            	if (!date.equals(triggeredEnd)) {
-            		triggeredStart = date;
-            	} // else no gap between stop and start, can not handle correctly : skip it
+                if (!date.equals(triggeredEnd)) {
+                    triggeredStart = date;
+                } // else no gap between stop and start, can not handle correctly : skip it
             } else {
                 triggeredEnd = date;
             }
@@ -177,9 +176,9 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
     }
 
     @Override
-    public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
+    public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
         Action action = Action.CONTINUE; // default not taken into account
-        boolean detectorManaged = getEventsDetectors()
+        final boolean detectorManaged = getEventsDetectors()
                 .anyMatch(managedDetector -> managedDetector.equals(detector));
         if (detectorManaged) {
             action = Action.RESET_EVENTS;
@@ -187,7 +186,7 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
                 if (detector.equals(startFiringDetector)) { // start of firing arc
                     setFiring(true, s.getDate());
                     action = Action.RESET_DERIVATIVES;
-                } else if (detector.equals(stopFiringDetector)) {// end of firing arc
+                } else if (detector.equals(stopFiringDetector)) { // end of firing arc
                     setFiring(false, s.getDate());
                     action = Action.RESET_DERIVATIVES;
                 }
@@ -196,9 +195,8 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
         return action;
     }
 
-    /**
-     * Check if maneuvering is on.
-     * 
+    /** Check if maneuvering is on.
+     *
      * @param date current date
      * @return true if maneuver is on at this date
      */

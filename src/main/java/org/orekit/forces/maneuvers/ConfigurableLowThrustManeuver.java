@@ -27,11 +27,11 @@ import org.orekit.propagation.events.EventDetector;
 /**
  * This class implements a configurable low thrust maneuver.
  * <p>The maneuver is composed of succession of a burn interval.
- * Burn intervals are defined by two detectors. 
+ * Burn intervals are defined by two detectors.
  * See {@link org.orekit.forces.maneuvers.trigger.EventBasedManeuverTriggers EventBasedManeuverTriggers}
  * for more details on the detectors.
  * The attitude and the thrust direction are provided by an instance of ThrustDirectionProvider
- * See {@link org.orekit.forces.maneuvers.propulsion.ThrustDirectionAndAttitudeProvider ThrustDirectionProvider} 
+ * See {@link org.orekit.forces.maneuvers.propulsion.ThrustDirectionAndAttitudeProvider ThrustDirectionProvider}
  * for more details on thrust direction and attitude.
  * @author Mikael Fillastre
  * @author Andrea Fiorentino
@@ -39,15 +39,13 @@ import org.orekit.propagation.events.EventDetector;
 
 public class ConfigurableLowThrustManeuver extends Maneuver {
 
-    /**
-     * to be used for ParameterDriver to make thrust non constant
-     */
-    public static String THRUST_MODEL_IDENTIFIER = "ConfigurableLowThrustManeuver";
+    /** To be used for ParameterDriver to make thrust non constant. */
+    private static String THRUST_MODEL_IDENTIFIER = "ConfigurableLowThrustManeuver";
 
-    /** thrust direction and spaceraft attitude provided by an external object */
+    /** Thrust direction and spaceraft attitude provided by an external object. */
     private final ThrustDirectionAndAttitudeProvider thrustDirectionProvider;
 
-    /** Constructor
+    /** Constructor.
      * See {@link org.orekit.forces.maneuvers.trigger.EventBasedManeuverTriggers EventBasedManeuverTriggers}
      * for requirements on detectors
      * @param thrustDirectionProvider thrust direction and attitude provider
@@ -80,7 +78,7 @@ public class ConfigurableLowThrustManeuver extends Maneuver {
 
     /**
      * Get the thrust.
-     * 
+     *
      * @return thrust force (N).
      */
     public double getThrust() {
@@ -89,7 +87,7 @@ public class ConfigurableLowThrustManeuver extends Maneuver {
 
     /**
      * Get the specific impulse.
-     * 
+     *
      * @return specific impulse (s).
      */
     public double getISP() {

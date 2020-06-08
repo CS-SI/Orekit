@@ -21,19 +21,23 @@ import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
 
-/** Interface to compute the thrust direction of a maneuver
+/**
+ * Interface to compute the thrust direction of a maneuver.
+ *
  * @author Mikael Fillastre
  * @author Andrea Fiorentino
  */
 
 public interface VariableThrustDirectionVector {
 
-    /** Compute the thrust direction corresponding to an orbital state.
+    /**
+     * Compute the thrust direction corresponding to an orbital state.
+     *
      * @param pvProv local position-velocity provider around current date
-     * @param date current date
-     * @param frame reference frame from which attitude is computed
-     * @return direction thrust direction at the specified date and position-velocity state
+     * @param date   current date
+     * @param frame  reference frame from which attitude is computed
+     * @return direction thrust direction at the specified date and
+     *         position-velocity state
      */
-    public Vector3D computeThrustDirection(PVCoordinatesProvider pvProv, AbsoluteDate date,
-            Frame frame);
+    Vector3D computeThrustDirection(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame);
 }

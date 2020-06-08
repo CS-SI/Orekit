@@ -22,13 +22,14 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /**
- * Simple implementation of VariableThrustDirectionVector, providing a constant direction
+ * Simple implementation of VariableThrustDirectionVector, providing a constant direction.
  * @author Mikael Fillastre
  * @author Andrea Fiorentino
  */
 
 public class ConstantThrustDirectionVector implements VariableThrustDirectionVector {
 
+    /** Constant direction. */
     private final Vector3D direction;
 
     public ConstantThrustDirectionVector (final Vector3D constantDirection) {
@@ -36,8 +37,8 @@ public class ConstantThrustDirectionVector implements VariableThrustDirectionVec
     }
 
     @Override
-    public Vector3D computeThrustDirection(PVCoordinatesProvider pvProv, AbsoluteDate date,
-            Frame frame) {
+    public Vector3D computeThrustDirection(final PVCoordinatesProvider pvProv, final AbsoluteDate date,
+            final Frame frame) {
         return direction;
     }
 }
