@@ -95,7 +95,7 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
     private double zcosgl;
     private double zsingl;
     private double zmos;
-    private double savtsn;
+    private T savtsn;
 
     private T ee2;
     private T e3;
@@ -148,11 +148,11 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
     private T xni;
     private T atime;
 
-    private double pe;
-    private double pinc;
-    private double pl;
-    private double pgh;
-    private double ph;
+    private T pe;
+    private T pinc;
+    private T pl;
+    private T pgh;
+    private T ph;
 
     private T[] derivs;
 
@@ -244,7 +244,7 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
         zmos = MathUtils.normalizeAngle(6.2565837 + 0.017201977 * daysSince1900, FastMath.PI);
 
         // Do solar terms
-        savtsn = 1e20;
+        savtsn = xnq.getField().getZero().add(1e20);
 
         double zcosi =  0.91744867;
         double zsini =  0.39785416;
@@ -571,133 +571,133 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
         // However,  the Dundee code _always_ recomputes,  so if
         // we're attempting to replicate its results,  we've gotta
         // recompute everything,  too.
-        if ((FastMath.abs(savtsn - t) >= 30.0) || isDundeeCompliant)  {
+        if ((FastMath.abs(savtsn.subtract(t).getReal()) >= 30.0) || isDundeeCompliant)  {
 
             savtsn = t;
 
             // Update solar perturbations for time T
-            double zm = zmos + ZNS * t;
-            double zf = zm + 2 * ZES * FastMath.sin(zm);
-            double sinzf = FastMath.sin(zf);
-            double f2 = 0.5 * sinzf * sinzf - 0.25;
-            double f3 = -0.5 * sinzf * FastMath.cos(zf);
-            final double ses = se2 * f2 + se3 * f3;
-            final double sis = si2 * f2 + si3 * f3;
-            final double sls = sl2 * f2 + sl3 * f3 + sl4 * sinzf;
-            final double sghs = sgh2 * f2 + sgh3 * f3 + sgh4 * sinzf;
-            final double shs = sh2 * f2 + sh3 * f3;
+            T zm = t.multiply(ZNS).add(zmos);
+            T zf = zm.add(FastMath.sin(zm).multiply(2 * ZES));
+            T sinzf = FastMath.sin(zf);
+            T f2 = sinzf.multiply(sinzf).multiply(0.5).subtract(0.25);
+            T f3 = sinzf.multiply(FastMath.cos(zf)).multiply(-0.5);
+            final T ses = se2.multiply(f2).add(se3.multiply(f3));
+            final T sis = si2.multiply(f2).add(si3.multiply(f3));
+            final T sls = sl2.multiply(f2).add(sl3.multiply(f3)).add(sl4.multiply(sinzf));
+            final T sghs = sgh2.multiply(f2).add(sgh3.multiply(f3)).add(sgh4.multiply(sinzf));
+            final T shs = sh2.multiply(f2).add(sh3.multiply(f3));
 
             // Update lunar perturbations for time T
-            zm = zmol + ZNL * t;
-            zf = zm + 2 * ZEL * FastMath.sin(zm);
+            zm = t.multiply(ZNL).add(zmol);
+            zf = zm.add(FastMath.sin(zm).multiply(2 * ZEL));
             sinzf = FastMath.sin(zf);
-            f2 =  0.5 * sinzf * sinzf - 0.25;
-            f3 = -0.5 * sinzf * FastMath.cos(zf);
-            final double sel = ee2 * f2 + e3 * f3;
-            final double sil = xi2 * f2 + xi3 * f3;
-            final double sll = xl2 * f2 + xl3 * f3 + xl4 * sinzf;
-            final double sghl = xgh2 * f2 + xgh3 * f3 + xgh4 * sinzf;
-            final double sh1 = xh2 * f2 + xh3 * f3;
+            f2 =  sinzf.multiply(sinzf).multiply(0.5).subtract(0.25);
+            f3 = sinzf.multiply(FastMath.cos(zf)).multiply(-0.5);
+            final T sel = ee2.multiply(f2).add(e3.multiply(f3));
+            final T sil = xi2.multiply(f2).add(xi3.multiply(f3));
+            final T sll = xl2.multiply(f2).add(xl3.multiply(f3)).add(xl4.multiply(sinzf));
+            final T sghl = xgh2.multiply(f2).add(xgh3.multiply(f3)).add(xgh4.multiply(sinzf));
+            final T sh1 = xh2.multiply(f2).add(xh3.multiply(f3));
 
             // Sum the solar and lunar contributions
-            pe   = ses  + sel;
-            pinc = sis  + sil;
-            pl   = sls  + sll;
-            pgh  = sghs + sghl;
-            ph   = shs  + sh1;
+            pe   = ses.add(sel);
+            pinc = sis.add(sil);
+            pl   = sls.add(sll);
+            pgh  = sghs.add(sghl);
+            ph   = shs.add(sh1);
         }
 
-        xinc += pinc;
+        xinc = xinc.add(pinc);
 
-        final double sinis = FastMath.sin( xinc);
-        final double cosis = FastMath.cos( xinc);
+        final T sinis = FastMath.sin( xinc);
+        final T cosis = FastMath.cos( xinc);
 
         /* Add solar/lunar perturbation correction to eccentricity: */
-        em     += pe;
-        xll    += pl;
-        omgadf += pgh;
-        xinc    = MathUtils.normalizeAngle(xinc, 0);
+        em     = em.add(pe);
+        xll    = xll.add(pl);
+        omgadf = omgadf.add(pgh);
+        xinc   = MathUtils.normalizeAngle(xinc, xnq.getField().getZero());
 
-        if (FastMath.abs(xinc) >= 0.2) {
+        if (FastMath.abs(xinc).getReal() >= 0.2) {
             // Apply periodics directly
-            final double temp_val = ph / sinis;
-            omgadf -= cosis * temp_val;
-            xnode += temp_val;
+            final T temp_val = ph.divide(sinis);
+            omgadf = omgadf.subtract(cosis.multiply(temp_val));
+            xnode  = xnode.add(temp_val);
         } else {
             // Apply periodics with Lyddane modification
-            final double sinok = FastMath.sin(xnode);
-            final double cosok = FastMath.cos(xnode);
-            final double alfdp =  ph * cosok + (pinc * cosis + sinis) * sinok;
-            final double betdp = -ph * sinok + (pinc * cosis + sinis) * cosok;
-            final double delta_xnode = MathUtils.normalizeAngle(FastMath.atan2(alfdp, betdp) - xnode, 0);
-            final double dls = -xnode * sinis * pinc;
-            omgadf += dls - cosis * delta_xnode;
-            xnode  += delta_xnode;
+            final T sinok = FastMath.sin(xnode);
+            final T cosok = FastMath.cos(xnode);
+            final T alfdp =  ph.multiply(cosok).add((pinc.multiply(cosis).add(sinis)).multiply(sinok));
+            final T betdp = ph.negate().multiply(sinok).add((pinc.multiply(cosis).add(sinis)).multiply(cosok));
+            final T delta_xnode = MathUtils.normalizeAngle(FastMath.atan2(alfdp, betdp).subtract(xnode), xnq.getField().getZero());
+            final T dls = xnode.negate().multiply(sinis).multiply(pinc);
+            omgadf = omgadf.add(dls.subtract(cosis.multiply(delta_xnode)));
+            xnode  = xnode.add(delta_xnode);
         }
     }
 
     /** Computes internal secular derivs. */
     private void computeSecularDerivs() {
 
-        final double sin_li = FastMath.sin(xli);
-        final double cos_li = FastMath.cos(xli);
-        final double sin_2li = 2. * sin_li * cos_li;
-        final double cos_2li = 2. * cos_li * cos_li - 1.;
+        final T sin_li = FastMath.sin(xli);
+        final T cos_li = FastMath.cos(xli);
+        final T sin_2li = sin_li.multiply(cos_li).multiply(2.);
+        final T cos_2li = cos_li.multiply(cos_li).multiply(2.).subtract(1.);
 
         // Dot terms calculated :
         if (synchronous)  {
-            final double sin_3li = sin_2li * cos_li + cos_2li * sin_li;
-            final double cos_3li = cos_2li * cos_li - sin_2li * sin_li;
-            final double term1a = del1 * (sin_li  * C_FASX2  - cos_li  * S_FASX2);
-            final double term2a = del2 * (sin_2li * C_2FASX4 - cos_2li * S_2FASX4);
-            final double term3a = del3 * (sin_3li * C_3FASX6 - cos_3li * S_3FASX6);
-            final double term1b = del1 * (cos_li  * C_FASX2  + sin_li  * S_FASX2);
-            final double term2b = 2.0 * del2 * (cos_2li * C_2FASX4 + sin_2li * S_2FASX4);
-            final double term3b = 3.0 * del3 * (cos_3li * C_3FASX6 + sin_3li * S_3FASX6);
-            derivs[0] = term1a + term2a + term3a;
-            derivs[1] = term1b + term2b + term3b;
+            final T sin_3li = sin_2li.multiply(cos_li).add(cos_2li.multiply(sin_li));
+            final T cos_3li = cos_2li.multiply(cos_li).subtract(sin_2li.multiply(sin_li));
+            final T term1a = del1.multiply(sin_li .multiply(C_FASX2) .subtract(cos_li .multiply(S_FASX2 )));
+            final T term2a = del2.multiply(sin_2li.multiply(C_2FASX4).subtract(cos_2li.multiply(S_2FASX4)));
+            final T term3a = del3.multiply(sin_3li.multiply(C_3FASX6).subtract(cos_3li.multiply(S_3FASX6)));
+            final T term1b = del1.multiply(cos_li .multiply(C_FASX2)      .add(sin_li .multiply(S_FASX2 )));
+            final T term2b = del2.multiply(cos_2li.multiply(C_2FASX4)     .add(sin_2li.multiply(S_2FASX4))).multiply(2.0);
+            final T term3b = del3.multiply(cos_3li.multiply(C_3FASX6)     .add(sin_3li.multiply(S_3FASX6))).multiply(3.0);
+            derivs[0] = term1a.add(term2a).add(term3a);
+            derivs[1] = term1b.add(term2b).add(term3b);
         } else {
             // orbit is a 12-hour resonant one
-            final double xomi = omegaq + omgdot * atime;
-            final double sin_omi = FastMath.sin(xomi);
-            final double cos_omi = FastMath.cos(xomi);
-            final double sin_li_m_omi = sin_li * cos_omi - sin_omi * cos_li;
-            final double sin_li_p_omi = sin_li * cos_omi + sin_omi * cos_li;
-            final double cos_li_m_omi = cos_li * cos_omi + sin_omi * sin_li;
-            final double cos_li_p_omi = cos_li * cos_omi - sin_omi * sin_li;
-            final double sin_2omi = 2. * sin_omi * cos_omi;
-            final double cos_2omi = 2. * cos_omi * cos_omi - 1.;
-            final double sin_2li_m_omi = sin_2li * cos_omi - sin_omi * cos_2li;
-            final double sin_2li_p_omi = sin_2li * cos_omi + sin_omi * cos_2li;
-            final double cos_2li_m_omi = cos_2li * cos_omi + sin_omi * sin_2li;
-            final double cos_2li_p_omi = cos_2li * cos_omi - sin_omi * sin_2li;
-            final double sin_2li_p_2omi = sin_2li * cos_2omi + sin_2omi * cos_2li;
-            final double cos_2li_p_2omi = cos_2li * cos_2omi - sin_2omi * sin_2li;
-            final double sin_2omi_p_li = sin_li * cos_2omi + sin_2omi * cos_li;
-            final double cos_2omi_p_li = cos_li * cos_2omi - sin_2omi * sin_li;
-            final double term1a = d2201 * (sin_2omi_p_li * C_G22 - cos_2omi_p_li * S_G22) +
-                                  d2211 * (sin_li * C_G22 - cos_li * S_G22) +
-                                  d3210 * (sin_li_p_omi * C_G32 - cos_li_p_omi * S_G32) +
-                                  d3222 * (sin_li_m_omi * C_G32 - cos_li_m_omi * S_G32) +
-                                  d5220 * (sin_li_p_omi * C_G52 - cos_li_p_omi * S_G52) +
-                                  d5232 * (sin_li_m_omi * C_G52 - cos_li_m_omi * S_G52);
-            final double term2a = d4410 * (sin_2li_p_2omi * C_G44 - cos_2li_p_2omi * S_G44) +
-                                  d4422 * (sin_2li * C_G44 - cos_2li * S_G44) +
-                                  d5421 * (sin_2li_p_omi * C_G54 - cos_2li_p_omi * S_G54) +
-                                  d5433 * (sin_2li_m_omi * C_G54 - cos_2li_m_omi * S_G54);
-            final double term1b = d2201 * (cos_2omi_p_li * C_G22 + sin_2omi_p_li * S_G22) +
-                                  d2211 * (cos_li * C_G22 + sin_li * S_G22) +
-                                  d3210 * (cos_li_p_omi * C_G32 + sin_li_p_omi * S_G32) +
-                                  d3222 * (cos_li_m_omi * C_G32 + sin_li_m_omi * S_G32) +
-                                  d5220 * (cos_li_p_omi * C_G52 + sin_li_p_omi * S_G52) +
-                                  d5232 * (cos_li_m_omi * C_G52 + sin_li_m_omi * S_G52);
-            final double term2b = 2.0 * (d4410 * (cos_2li_p_2omi * C_G44 + sin_2li_p_2omi * S_G44) +
-                                         d4422 * (cos_2li * C_G44 + sin_2li * S_G44) +
-                                         d5421 * (cos_2li_p_omi * C_G54 + sin_2li_p_omi * S_G54) +
-                                         d5433 * (cos_2li_m_omi * C_G54 + sin_2li_m_omi * S_G54));
+            final T xomi = omegaq.add(omgdot.multiply(atime));
+            final T sin_omi = FastMath.sin(xomi);
+            final T cos_omi = FastMath.cos(xomi);
+            final T sin_li_m_omi = sin_li.multiply(cos_omi).subtract(sin_omi.multiply(cos_li));
+            final T sin_li_p_omi = sin_li.multiply(cos_omi).add(     sin_omi.multiply(cos_li));
+            final T cos_li_m_omi = cos_li.multiply(cos_omi).add(     sin_omi.multiply(sin_li));
+            final T cos_li_p_omi = cos_li.multiply(cos_omi).subtract(sin_omi.multiply(sin_li));
+            final T sin_2omi = sin_omi.multiply(cos_omi).multiply(2.0);
+            final T cos_2omi = cos_omi.multiply(cos_omi).multiply(2.0).subtract(1.0);
+            final T sin_2li_m_omi  = sin_2li.multiply(cos_omi ).subtract(sin_omi .multiply(cos_2li));
+            final T sin_2li_p_omi  = sin_2li.multiply(cos_omi ).add(     sin_omi .multiply(cos_2li));
+            final T cos_2li_m_omi  = cos_2li.multiply(cos_omi ).add(     sin_omi .multiply(sin_2li));
+            final T cos_2li_p_omi  = cos_2li.multiply(cos_omi ).subtract(sin_omi .multiply(sin_2li));
+            final T sin_2li_p_2omi = sin_2li.multiply(cos_2omi).add(     sin_2omi.multiply(cos_2li));
+            final T cos_2li_p_2omi = cos_2li.multiply(cos_2omi).subtract(sin_2omi.multiply(sin_2li));
+            final T sin_2omi_p_li  = sin_li .multiply(cos_2omi).add(     sin_2omi.multiply(cos_li ));
+            final T cos_2omi_p_li  = cos_li .multiply(cos_2omi).subtract(sin_2omi.multiply(sin_li ));
+            final T term1a = d2201.multiply(sin_2omi_p_li .multiply(C_G22).subtract(cos_2omi_p_li .multiply(S_G22))) .add(
+                             d2211.multiply(sin_li        .multiply(C_G22).subtract(cos_li        .multiply(S_G22)))).add(
+                             d3210.multiply(sin_li_p_omi  .multiply(C_G32).subtract(cos_li_p_omi  .multiply(S_G32)))).add(
+                             d3222.multiply(sin_li_m_omi  .multiply(C_G32).subtract(cos_li_m_omi  .multiply(S_G32)))).add(
+                             d5220.multiply(sin_li_p_omi  .multiply(C_G52).subtract(cos_li_p_omi  .multiply(S_G52)))).add(
+                             d5232.multiply(sin_li_m_omi  .multiply(C_G52).subtract(cos_li_m_omi  .multiply(S_G52))));
+            final T term2a = d4410.multiply(sin_2li_p_2omi.multiply(C_G44).subtract(cos_2li_p_2omi.multiply(S_G44))) .add(
+                             d4422.multiply(sin_2li       .multiply(C_G44).subtract(cos_2li       .multiply(S_G44)))).add(
+                             d5421.multiply(sin_2li_p_omi .multiply(C_G54).subtract(cos_2li_p_omi .multiply(S_G54)))).add(
+                             d5433.multiply(sin_2li_m_omi .multiply(C_G54).subtract(cos_2li_m_omi .multiply(S_G54))));
+            final T term1b = d2201.multiply(cos_2omi_p_li .multiply(C_G22)     .add(sin_2omi_p_li .multiply(S_G22))) .add(
+                             d2211.multiply(cos_li        .multiply(C_G22)     .add(sin_li        .multiply(S_G22)))).add(
+                             d3210.multiply(cos_li_p_omi  .multiply(C_G32)     .add(sin_li_p_omi  .multiply(S_G32)))).add(
+                             d3222.multiply(cos_li_m_omi  .multiply(C_G32)     .add(sin_li_m_omi  .multiply(S_G32)))).add(
+                             d5220.multiply(cos_li_p_omi  .multiply(C_G52)     .add(sin_li_p_omi  .multiply(S_G52)))).add(
+                             d5232.multiply(cos_li_m_omi  .multiply(C_G52)     .add(sin_li_m_omi  .multiply(S_G52))));
+            final T term2b = d4410.multiply(cos_2li_p_2omi.multiply(C_G44)     .add(sin_2li_p_2omi.multiply(S_G44))) .add(
+                             d4422.multiply(cos_2li       .multiply(C_G44)     .add(sin_2li       .multiply(S_G44)))).add(
+                             d5421.multiply(cos_2li_p_omi .multiply(C_G54)     .add(sin_2li_p_omi .multiply(S_G54)))).add(
+                             d5433.multiply(cos_2li_m_omi .multiply(C_G54)     .add(sin_2li_m_omi .multiply(S_G54)))).multiply(2.0);
 
-            derivs[0] = term1a + term2a;
-            derivs[1] = term1b + term2b;
+            derivs[0] = term1a.add(term2a);
+            derivs[1] = term1b.add(term2b);
 
         }
     }
