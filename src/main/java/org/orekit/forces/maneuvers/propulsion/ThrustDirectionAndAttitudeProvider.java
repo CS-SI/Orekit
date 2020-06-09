@@ -32,9 +32,16 @@ import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /**
- * This class is used to both manage the attitude of the satellite and the
- * direction of thrust. TODO more comments how it is used, where, present
- * alternatives
+ * This class is used in to both manage the attitude of the satellite and the
+ * direction of thrust.
+ *
+ * It is used in ConfigurableLowThrustManeuver to set the spacecraft attitude
+ * according to the expected thrust direction.
+ *
+ * The direction can be variable or fixed, defined in the spaceraft frame, a
+ * Local Orbital Frame or a user frame.
+ *
+ * It is also possible to use an external attitude provider.
  *
  * @author Mikael Fillastre
  * @author Andrea Fiorentino
@@ -49,7 +56,7 @@ public class ThrustDirectionAndAttitudeProvider implements AttitudeProvider {
     private static final String FIELD_NAME_LOF_TYPE = "thrustDirectionLofType";
 
     /** Types, see builders for details. */
-    private enum ThrustDirectionProviderType {
+    private enum ThrustDirectionAndAttitudeProviderType {
         /** SATELLITE_ATTITUDE. */
         SATELLITE_ATTITUDE,
         /** CUSTOM_ATTITUDE. */
@@ -61,7 +68,7 @@ public class ThrustDirectionAndAttitudeProvider implements AttitudeProvider {
     }
 
     /** Type. */
-    private final ThrustDirectionProviderType type;
+    private final ThrustDirectionAndAttitudeProviderType type;
     /**
      * External attitude provider, for CUSTOM_ATTITUDE type. Set to null otherwise.
      */
@@ -83,7 +90,7 @@ public class ThrustDirectionAndAttitudeProvider implements AttitudeProvider {
      */
     private final LOFType thrustDirectionLofType;
 
-    private ThrustDirectionAndAttitudeProvider(final ThrustDirectionProviderType type,
+    private ThrustDirectionAndAttitudeProvider(final ThrustDirectionAndAttitudeProviderType type,
             final AttitudeProvider attitudeProvider, final VariableThrustDirectionVector variableDirectionInFrame,
             final Vector3D thrusterAxisInSatelliteFrame, final Frame frame, final LOFType thrustDirectionLofType) {
         this.type = type;
@@ -95,30 +102,30 @@ public class ThrustDirectionAndAttitudeProvider implements AttitudeProvider {
     }
 
     private static void checkParameterNotNull(final Object parameter, final String name,
-            final ThrustDirectionProviderType type) {
+            final ThrustDirectionAndAttitudeProviderType type) {
         if (parameter == null) {
             throw new OrekitException(OrekitMessages.PARAMETER_NOT_SET, name,
-                    "ThrustDirectionProvider-" + type.toString());
+                    "ThrustDirectionAndAttitudeProvider-" + type.toString());
         }
     }
 
     /**
-     * Build a ThrustDirectionProvider from a fixed direction in the satellite
-     * frame. The satellite attitude won't be managed by this object
+     * Build a ThrustDirectionAndAttitudeProvider from a fixed direction in the
+     * satellite frame. The satellite attitude won't be managed by this object
      *
      * @param direction constant direction in the satellite frame
      * @return a new instance
      */
     public static ThrustDirectionAndAttitudeProvider buildFromFixedDirectionInSatelliteFrame(final Vector3D direction) {
         final ThrustDirectionAndAttitudeProvider obj = new ThrustDirectionAndAttitudeProvider(
-                ThrustDirectionProviderType.SATELLITE_ATTITUDE, null, null, direction, null, null);
+                ThrustDirectionAndAttitudeProviderType.SATELLITE_ATTITUDE, null, null, direction, null, null);
         checkParameterNotNull(direction, "thrusterAxisInSatelliteFrame", obj.type);
         return obj;
     }
 
     /**
-     * Build a ThrustDirectionProvider where the attitude is provided by an
-     * external. Object the direction of thrust will be constant
+     * Build a ThrustDirectionAndAttitudeProvider where the attitude is provided by
+     * an external. Object the direction of thrust will be constant
      *
      * @param attitudeProvider the object that provide the satellite attitude
      * @param direction        thruster axis in satellite frame
@@ -127,14 +134,15 @@ public class ThrustDirectionAndAttitudeProvider implements AttitudeProvider {
     public static ThrustDirectionAndAttitudeProvider buildFromCustomAttitude(final AttitudeProvider attitudeProvider,
             final Vector3D direction) {
         final ThrustDirectionAndAttitudeProvider obj = new ThrustDirectionAndAttitudeProvider(
-                ThrustDirectionProviderType.CUSTOM_ATTITUDE, attitudeProvider, null, direction, null, null);
+                ThrustDirectionAndAttitudeProviderType.CUSTOM_ATTITUDE, attitudeProvider, null, direction, null, null);
         checkParameterNotNull(attitudeProvider, "attitudeProvider", obj.type);
         checkParameterNotNull(direction, "direction", obj.type);
         return obj;
     }
 
     /**
-     * Build a ThrustDirectionProvider by a variable direction in a custom frame.
+     * Build a ThrustDirectionAndAttitudeProvider by a variable direction in a
+     * custom frame.
      *
      * @param thrustDirectionFrame         reference frame for thrust direction
      * @param variableDirectionInFrame     the object providing the thrust direction
@@ -144,7 +152,7 @@ public class ThrustDirectionAndAttitudeProvider implements AttitudeProvider {
     public static ThrustDirectionAndAttitudeProvider buildFromDirectionInFrame(final Frame thrustDirectionFrame,
             final VariableThrustDirectionVector variableDirectionInFrame, final Vector3D thrusterAxisInSatelliteFrame) {
         final ThrustDirectionAndAttitudeProvider obj = new ThrustDirectionAndAttitudeProvider(
-                ThrustDirectionProviderType.DIRECTION_IN_FRAME, null, variableDirectionInFrame,
+                ThrustDirectionAndAttitudeProviderType.DIRECTION_IN_FRAME, null, variableDirectionInFrame,
                 thrusterAxisInSatelliteFrame, thrustDirectionFrame, null);
         checkParameterNotNull(variableDirectionInFrame, FIELD_NAME_VARIABLE_DIRECTION, obj.type);
         checkParameterNotNull(thrustDirectionFrame, FIELD_NAME_DIRECTION_FRAME, obj.type);
@@ -152,8 +160,8 @@ public class ThrustDirectionAndAttitudeProvider implements AttitudeProvider {
     }
 
     /**
-     * Build a ThrustDirectionProvider by a variable direction in a Local Orbital
-     * Frame.
+     * Build a ThrustDirectionAndAttitudeProvider by a variable direction in a Local
+     * Orbital Frame.
      *
      * @param thrustDirectionLofType       Local Orbital Frame type
      * @param variableDirectionInFrame     the object providing the thrust direction
@@ -163,7 +171,7 @@ public class ThrustDirectionAndAttitudeProvider implements AttitudeProvider {
     public static ThrustDirectionAndAttitudeProvider buildFromDirectionInLOF(final LOFType thrustDirectionLofType,
             final VariableThrustDirectionVector variableDirectionInFrame, final Vector3D thrusterAxisInSatelliteFrame) {
         final ThrustDirectionAndAttitudeProvider obj = new ThrustDirectionAndAttitudeProvider(
-                ThrustDirectionProviderType.DIRECTION_IN_LOF, null, variableDirectionInFrame,
+                ThrustDirectionAndAttitudeProviderType.DIRECTION_IN_LOF, null, variableDirectionInFrame,
                 thrusterAxisInSatelliteFrame, null, thrustDirectionLofType);
         checkParameterNotNull(variableDirectionInFrame, FIELD_NAME_VARIABLE_DIRECTION, obj.type);
         checkParameterNotNull(thrustDirectionLofType, FIELD_NAME_LOF_TYPE, obj.type);
@@ -184,7 +192,7 @@ public class ThrustDirectionAndAttitudeProvider implements AttitudeProvider {
                 return getAttitudeFromFrame(pvProv, date, frame);
             default:
                 throw new OrekitException(OrekitMessages.INVALID_TYPE_FOR_FUNCTION,
-                        "ThrustDirectionProvider.getAttitude", "type", type.toString());
+                        "ThrustDirectionAndAttitudeProvider.getAttitude", "type", type.toString());
         }
     }
 
@@ -192,14 +200,14 @@ public class ThrustDirectionAndAttitudeProvider implements AttitudeProvider {
     public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
             final FieldAbsoluteDate<T> date, final Frame frame) {
         throw new OrekitException(OrekitMessages.FUNCTION_NOT_IMPLEMENTED,
-                "ThrustDirectionProvider with RealFieldElement");
+                "ThrustDirectionAndAttitudeProvider with RealFieldElement");
     }
 
     public Attitude getAttitudeFromFrame(final PVCoordinatesProvider pvProv, final AbsoluteDate date,
             final Frame frame) {
 
         final Rotation inertial2ThrusterFrame;
-        if (type.equals(ThrustDirectionProviderType.DIRECTION_IN_FRAME)) {
+        if (type.equals(ThrustDirectionAndAttitudeProviderType.DIRECTION_IN_FRAME)) {
             inertial2ThrusterFrame = frame.getTransformTo(thrustDirectionFrame, date).getRotation();
         } else { // LOF
             inertial2ThrusterFrame = thrustDirectionLofType.rotationFromInertial(pvProv.getPVCoordinates(date, frame));
@@ -216,7 +224,7 @@ public class ThrustDirectionAndAttitudeProvider implements AttitudeProvider {
 
     public AttitudeProvider getManeuverAttitudeProvider() {
         AttitudeProvider attitudeProviderToReturn = null;
-        if (type != ThrustDirectionProviderType.SATELLITE_ATTITUDE) {
+        if (type != ThrustDirectionAndAttitudeProviderType.SATELLITE_ATTITUDE) {
             attitudeProviderToReturn = this;
         } // else default behavior
         return attitudeProviderToReturn;
