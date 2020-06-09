@@ -18,6 +18,7 @@ package org.orekit.propagation.analytical.tle;
 
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
@@ -497,8 +498,7 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
             xni   = xnq;
             atime = xnq.getField().getZero();
         }
-        derivs[1] = xnq.getField().getZero();
-        derivs[2] = xnq.getField().getZero();
+        derivs = MathArrays.buildArray(xnq.getField(), 2);
     }
 
     /** Computes secular terms from current coordinates and epoch.
@@ -523,8 +523,8 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
             // mode.
             if (FastMath.abs(t).getReal() < FastMath.abs(t.subtract(atime)).getReal() || isDundeeCompliant)  {
                 // Epoch restart
-                atime = xnq.getField().getZero();
-                xni = xnq;
+                atime = t.getField().getZero();
+                xni = t;
                 xli = xlamo;
             }
             boolean lastIntegrationStep = false;
@@ -543,7 +543,7 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
 
                 final T xldot = xni.add(xfact);
 
-                T xlpow = xnq.getField().getZero().add(1.);
+                T xlpow = t.getField().getZero().add(1.);
                 xli = xli.add(xldot.multiply(delt));
                 xni = xni.add(derivs[0].multiply(delt));
                 double delt_factor = delt;
@@ -616,7 +616,7 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
         em     = em.add(pe);
         xll    = xll.add(pl);
         omgadf = omgadf.add(pgh);
-        xinc   = MathUtils.normalizeAngle(xinc, xnq.getField().getZero());
+        xinc   = MathUtils.normalizeAngle(xinc, t.getField().getZero());
 
         if (FastMath.abs(xinc).getReal() >= 0.2) {
             // Apply periodics directly
@@ -629,7 +629,7 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
             final T cosok = FastMath.cos(xnode);
             final T alfdp =  ph.multiply(cosok).add((pinc.multiply(cosis).add(sinis)).multiply(sinok));
             final T betdp = ph.negate().multiply(sinok).add((pinc.multiply(cosis).add(sinis)).multiply(cosok));
-            final T delta_xnode = MathUtils.normalizeAngle(FastMath.atan2(alfdp, betdp).subtract(xnode), xnq.getField().getZero());
+            final T delta_xnode = MathUtils.normalizeAngle(FastMath.atan2(alfdp, betdp).subtract(xnode), t.getField().getZero());
             final T dls = xnode.negate().multiply(sinis).multiply(pinc);
             omgadf = omgadf.add(dls.subtract(cosis.multiply(delta_xnode)));
             xnode  = xnode.add(delta_xnode);
