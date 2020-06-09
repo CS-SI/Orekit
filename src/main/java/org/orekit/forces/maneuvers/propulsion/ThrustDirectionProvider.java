@@ -28,7 +28,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @author Andrea Fiorentino
  */
 
-public interface VariableThrustDirectionVector {
+public interface ThrustDirectionProvider {
 
     /**
      * Compute the thrust direction corresponding to an orbital state.

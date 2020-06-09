@@ -43,11 +43,11 @@ import org.orekit.time.FieldAbsoluteDate;
  */
 public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandler<EventDetector> {
 
-    /** Detectors to start firing, only detect increasing sign change. */
+    /** Detector to start firing, only detect increasing sign change. */
     private final AbstractDetector<? extends EventDetector> startFiringDetector;
     /**
-     * Detectors to stop firing, only detect increasing sign change. e.g. it can be
-     * a negate detector of the start detector
+     * Detector to stop firing, only detect increasing sign change. e.g. it can be a
+     * negate detector of the start detector
      */
     private final AbstractDetector<? extends EventDetector> stopFiringDetector;
 
@@ -62,6 +62,14 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
     /** Triggered date of engine stop. */
     private AbsoluteDate triggeredEnd;
 
+    /**
+     * Constructor.
+     * @param startFiringDetector Detector to start firing, only detect increasing
+     *                            sign change
+     * @param stopFiringDetector  Detector to stop firing, only detect increasing
+     *                            sign change. e.g. it can be a negate detector of
+     *                            the start detector.
+     */
     public EventBasedManeuverTriggers(final AbstractDetector<? extends EventDetector> startFiringDetector,
             final AbstractDetector<? extends EventDetector> stopFiringDetector) {
         if (startFiringDetector == null) {
@@ -79,10 +87,18 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
         initialized = false;
     }
 
+    /**
+     * Getter.
+     * @return Detectors to start firing,
+     */
     public AbstractDetector<? extends EventDetector> getStartFiringDetector() {
         return startFiringDetector;
     }
 
+    /**
+     * Getter.
+     * @return Detectors to stop firing
+     */
     public AbstractDetector<? extends EventDetector> getStopFiringDetector() {
         return stopFiringDetector;
     }
@@ -161,6 +177,12 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
                 "EventBasedManeuverTriggers.getFieldEventsDetectors");
     }
 
+    /**
+     * Set the firing start or end date depending on the firing flag. There is no
+     * effect if the firing state is not changing.
+     * @param firing true to start a maneuver, false to stop
+     * @param date   date of event
+     */
     public void setFiring(final boolean firing, final AbsoluteDate date) {
         if (firing != isFiring(date)) {
             if (firing) {
@@ -242,10 +264,18 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
         }
     }
 
+    /**
+     * Getter.
+     * @return Triggered date of engine stop
+     */
     public AbsoluteDate getTriggeredEnd() {
         return triggeredEnd;
     }
 
+    /**
+     * Getter.
+     * @return Triggered date of engine start
+     */
     public AbsoluteDate getTriggeredStart() {
         return triggeredStart;
     }

@@ -93,7 +93,7 @@ public class ThrustDirectionAndAttitudeProviderTest {
     public void attitudeFromDirectionInFrame() {
 
         final Vector3D fixedThrustDirection = new Vector3D(1, 2, 3).normalize();
-        final ConstantThrustDirectionVector thrustDirectionInertial = new ConstantThrustDirectionVector(
+        final ConstantThrustDirectionProvider thrustDirectionInertial = new ConstantThrustDirectionProvider(
                 fixedThrustDirection);
 
         final ThrustDirectionAndAttitudeProvider provider = ThrustDirectionAndAttitudeProvider
@@ -113,7 +113,7 @@ public class ThrustDirectionAndAttitudeProviderTest {
     @Test
     public void attitudeFromDirectionInLOF() {
         final Vector3D fixedThrustDirection = Vector3D.PLUS_I;
-        final ConstantThrustDirectionVector thrustDirectionTNW = new ConstantThrustDirectionVector(Vector3D.PLUS_I);
+        final ConstantThrustDirectionProvider thrustDirectionTNW = new ConstantThrustDirectionProvider(Vector3D.PLUS_I);
 
         final ThrustDirectionAndAttitudeProvider provider = ThrustDirectionAndAttitudeProvider
                 .buildFromDirectionInLOF(LOFType.TNW, thrustDirectionTNW, thrusterAxisInSatelliteFrame);

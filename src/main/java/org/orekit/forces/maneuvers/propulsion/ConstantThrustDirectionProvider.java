@@ -22,17 +22,22 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /**
- * Simple implementation of VariableThrustDirectionVector, providing a constant direction.
+ * Simple implementation of VariableThrustDirectionVector, providing a constant
+ * direction.
  * @author Mikael Fillastre
  * @author Andrea Fiorentino
  */
 
-public class ConstantThrustDirectionVector implements VariableThrustDirectionVector {
+public class ConstantThrustDirectionProvider implements ThrustDirectionProvider {
 
     /** Constant direction. */
     private final Vector3D direction;
 
-    public ConstantThrustDirectionVector (final Vector3D constantDirection) {
+    /**
+     * Constructor.
+     * @param constantDirection constant direction
+     */
+    public ConstantThrustDirectionProvider(final Vector3D constantDirection) {
         direction = constantDirection;
     }
 
