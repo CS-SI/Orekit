@@ -339,7 +339,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
         a0dp = a0.divide(delta0.negate().add(1.0));
 
         // Values of s and qms2t :
-        s4 = s4.getField().getZero().add(TLEConstants.S);  // unmodified value for s
+        s4 = a1.getField().getZero().add(TLEConstants.S);  // unmodified value for s
         T q0ms24 = s4.getField().getZero().add(TLEConstants.QOMS2T); // unmodified value for q0ms2T
 
         perige = a0dp.multiply(tle.getE().negate().add(1.0)).subtract(TLEConstants.NORMALIZED_EQUATORIAL_RADIUS).multiply(
