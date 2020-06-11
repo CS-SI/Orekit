@@ -21,7 +21,6 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
@@ -85,16 +84,6 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
 
     /** Name of the eccentricity parameter. */
     private static final String ECCENTRICITY = "eccentricity";
-
-    /** Pattern for line 1. */
-    private static final Pattern LINE_1_PATTERN =
-        Pattern.compile("1 [ 0-9]{5}[A-Z] [ 0-9]{5}[ A-Z]{3} [ 0-9]{5}[.][ 0-9]{8} (?:(?:[ 0+-][.][ 0-9]{8})|(?: [ +-][.][ 0-9]{7})) " +
-                        "[ +-][ 0-9]{5}[+-][ 0-9] [ +-][ 0-9]{5}[+-][ 0-9] [ 0-9] [ 0-9]{4}[ 0-9]");
-
-    /** Pattern for line 2. */
-    private static final Pattern LINE_2_PATTERN =
-        Pattern.compile("2 [ 0-9]{5} [ 0-9]{3}[.][ 0-9]{4} [ 0-9]{3}[.][ 0-9]{4} [ 0-9]{7} " +
-                        "[ 0-9]{3}[.][ 0-9]{4} [ 0-9]{3}[.][ 0-9]{4} [ 0-9]{2}[.][ 0-9]{13}[ 0-9]");
 
     /** International symbols for parsing. */
     private static final DecimalFormatSymbols SYMBOLS =
