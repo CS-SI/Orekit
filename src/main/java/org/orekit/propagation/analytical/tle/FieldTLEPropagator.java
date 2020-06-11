@@ -371,21 +371,21 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
         coef1 = coef.divide(psisq.pow(3.5));
 
         // C2 and C1 coefficients computation :
-        c2 = etasq.multiply(1.5).add(eeta.multiply(etasq.add(4.0))).multiply(coef1).multiply(xn0dp).add(
-             x3thm1.multiply(etasq.multiply(etasq.add(8.0)).multiply(3.0).add(8.0)).multiply(
-             tsi.divide(psisq).multiply(0.75 * TLEConstants.CK2)));
+        c2 = coef1.multiply(xn0dp).multiply(a0dp.multiply(
+                           etasq.multiply(1.5).add(eeta.multiply(etasq.add(4.0))).add(1.0)).add(
+                           tsi.divide(psisq).multiply(x3thm1).multiply(0.75 * TLEConstants.CK2).multiply(
+                           etasq.multiply(etasq.add(8.0)).multiply(3.0).add(8.0))));
         c1 = tle.getBStar().multiply(c2);
         sini0 = FastMath.sin(tle.getI());
 
         final T x1mth2 = theta2.negate().add(1.0);
 
         // C4 coefficient computation :
-        c4 = etasq.multiply(0.5).add(2.0).multiply(eta).multiply(beta02).multiply(a0dp).multiply(coef1).multiply(xn0dp).multiply(2.0).add(
-             tle.getE().multiply(etasq.multiply(2.0).add(0.5))).subtract(
-             tsi.divide(a0dp.multiply(psisq)).multiply(2.0 * TLEConstants.CK2).multiply(
-             etasq.multiply(0.5).add(2.0).multiply(etasq).add(eeta.multiply(2.0)).add(1.0).multiply(x3thm1).multiply(-3.0).add(
-             x1mth2.multiply(0.75).multiply(etasq.multiply(2.0).subtract(
-             FastMath.cos(tle.getPerigeeArgument().multiply(2.0)).multiply(etasq.add(1.0)).multiply(eeta))))));
+        c4 = xn0dp.multiply(coef1).multiply(a0dp).multiply(2.0).multiply(beta02).multiply(
+                           eta.multiply(etasq.multiply(0.5).add(2.0)).add(tle.getE().multiply(etasq.multiply(2.0).add(0.5))).subtract(
+                           tsi.divide(a0dp.multiply(psisq)).multiply(2 * TLEConstants.CK2).multiply(
+                           x3thm1.multiply(-3).multiply(etasq.multiply(eeta.multiply(-0.5).add(1.5)).add(eeta.multiply(-2.0)).add(1.0)).add(
+                           x1mth2.multiply(0.75).multiply(etasq.multiply(2.0).subtract(eeta.multiply(etasq.add(1.0)))).multiply(FastMath.cos(tle.getPerigeeArgument().multiply(2.0)))))));
 
         final T theta4 = theta2.multiply(theta2);
         final T temp1  = pinvsq.multiply(xn0dp).multiply(3 * TLEConstants.CK2);
@@ -408,7 +408,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
         final T xhdot1 = temp1.negate().multiply(cosi0);
 
         xnodot = xhdot1.add(temp2.multiply(0.5).multiply(theta2.multiply(19.0).negate().add(4.0)).add(
-                 temp3.multiply(2.0).multiply(theta2.multiply(7.0).negate().add(3.0)))).multiply(cosi0);
+                 temp3.multiply(2.0).multiply(theta2.multiply(7.0).negate().add(3.0))).multiply(cosi0));
         xnodcf = beta02.multiply(xhdot1).multiply(c1).multiply(3.5);
         t2cof = c1.multiply(1.5);
 

@@ -831,9 +831,10 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
         if (o == this) {
             return true;
         }
-        if (!(o instanceof TLE)) {
+        if (!(o instanceof FieldTLE)) {
             return false;
         }
+        @SuppressWarnings("unchecked")
         final FieldTLE<T> tle = (FieldTLE<T>) o;
         return satelliteNumber == tle.satelliteNumber &&
                 classification == tle.classification &&
@@ -843,16 +844,16 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
                 ephemerisType == tle.ephemerisType &&
                 elementNumber == tle.elementNumber &&
                 Objects.equals(epoch, tle.epoch) &&
-                meanMotion == tle.meanMotion &&
-                meanMotionFirstDerivative == tle.meanMotionFirstDerivative &&
-                meanMotionSecondDerivative == tle.meanMotionSecondDerivative &&
-                eccentricity == tle.eccentricity &&
-                inclination == tle.inclination &&
-                pa == tle.pa &&
-                raan == tle.raan &&
-                meanAnomaly == tle.meanAnomaly &&
+                meanMotion.getReal() == tle.meanMotion.getReal() &&
+                meanMotionFirstDerivative.getReal() == tle.meanMotionFirstDerivative.getReal() &&
+                meanMotionSecondDerivative.getReal() == tle.meanMotionSecondDerivative.getReal() &&
+                eccentricity.getReal() == tle.eccentricity.getReal() &&
+                inclination.getReal() == tle.inclination.getReal() &&
+                pa.getReal() == tle.pa.getReal() &&
+                raan.getReal() == tle.raan.getReal() &&
+                meanAnomaly.getReal() == tle.meanAnomaly.getReal() &&
                 revolutionNumberAtEpoch == tle.revolutionNumberAtEpoch &&
-                bStar == tle.bStar;
+                bStar.getReal() == tle.bStar.getReal();
     }
 
     /** Get a hashcode for this tle.

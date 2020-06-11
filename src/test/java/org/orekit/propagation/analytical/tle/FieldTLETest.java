@@ -17,6 +17,8 @@
 package org.orekit.propagation.analytical.tle;
 
 
+import static org.junit.Assert.fail;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,26 +27,25 @@ import java.text.ParseException;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.CombinatoricsUtils;
+import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.PVCoordinates;
 
 public class FieldTLETest {
  
@@ -178,6 +179,21 @@ public class FieldTLETest {
     @Test
     public void testEccentricityRange() {
         doTestEccentricityRange(Decimal64Field.getInstance());
+    }
+    
+    @Test
+    public void testDifferentFields() {
+        String line1 = "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20";
+        String line2 = "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62";
+        final DSFactory factory = new DSFactory(1, 1);
+        FieldTLE<DerivativeStructure> tleA = new FieldTLE<>(factory.getDerivativeField(), line1, line2);
+        FieldTLE<Decimal64> tleB = new FieldTLE<>(Decimal64Field.getInstance(), line1, line2);
+        try {
+            tleA.equals(tleB);
+            fail("an exception should have been thrown");
+        } catch (Exception e) {
+            // nothing to do
+        }    
     }
     
     public <T extends RealFieldElement<T>> void doTestTLEFormat(Field<T> field) {
@@ -674,7 +690,7 @@ public class FieldTLETest {
             }
         }
     }
-
+    
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");

@@ -108,8 +108,8 @@ public class FieldSGP4<T extends RealFieldElement<T>> extends FieldTLEPropagator
                     d2.multiply(d2).multiply(6.0)).add(c1sq.multiply(15.0).multiply(d2.multiply(2).add(c1sq))).multiply(0.2);
             sinM0 = FastMath.sin(tle.getMeanAnomaly());
             if (tle.getE().getReal() < 1e-4) {
-                omgcof = omgcof.getField().getZero();
-                xmcof = xmcof.getField().getZero();
+                omgcof = c1sq.getField().getZero();
+                xmcof = c1sq.getField().getZero();
             } else  {
                 final T c3 = coef.multiply(tsi).multiply(xn0dp).multiply(TLEConstants.A3OVK2 * TLEConstants.NORMALIZED_EQUATORIAL_RADIUS).multiply(sini0.divide(tle.getE()));
                 xmcof = coef.multiply(tle.getBStar()).divide(eeta).multiply(-TLEConstants.TWO_THIRD * TLEConstants.NORMALIZED_EQUATORIAL_RADIUS);

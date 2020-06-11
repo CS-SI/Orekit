@@ -247,10 +247,10 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
         // Do solar terms
         savtsn = xnq.getField().getZero().add(1e20);
 
-        double zcosi =  0.91744867;
-        double zsini =  0.39785416;
-        double zsing = -0.98088458;
-        double zcosg =  0.1945905;
+        T zcosi =  xnq.getField().getZero().add(0.91744867);
+        T zsini =  xnq.getField().getZero().add(0.39785416);
+        T zsing = xnq.getField().getZero().add(-0.98088458);
+        T zcosg =  xnq.getField().getZero().add(0.1945905);
 
         T se = xnq.getField().getZero();
         T sgh = xnq.getField().getZero();
@@ -264,11 +264,11 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
         // of the improved data that resulted from computing lunar terms.
         for (int iteration = 0; iteration < 2; ++iteration) {
             final T a1  = zcosh.multiply(zcosg).add(zsinh.multiply(zsing).multiply(zcosi));
-            final T a3  = zcosh.multiply(-zsing).add(zsinh.multiply(zcosg).multiply(zcosi));
-            final T a7  = zsinh.multiply(-zcosg).add(zcosh.multiply(zcosi).multiply(zsing));
-            final double a8 = zsing * zsini;
+            final T a3  = zcosh.multiply(zsing.negate()).add(zsinh.multiply(zcosg).multiply(zcosi));
+            final T a7  = zsinh.negate().multiply(zcosg).add(zcosh.multiply(zcosi).multiply(zsing));
+            final T a8 = zsing.multiply(zsini);
             final T a9  = zsinh.multiply(zsing).add(zcosh.multiply(zcosi).multiply(zcosg));
-            final double a10 = zcosg * zsini;
+            final T a10 = zcosg.multiply(zsini);
             final T a2  = cosi0.multiply(a7).add(sini0.multiply(a8));
             final T a4  = cosi0.multiply(a9).add(sini0.multiply(a10));
             final T a5  = sini0.negate().multiply(a7).add(cosi0.multiply(a8));
@@ -284,10 +284,10 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
             final T z31 = x1.multiply(x1).multiply(12).subtract(x3.multiply(x3).multiply(3));
             final T z32 = x1.multiply(x2).multiply(24).subtract(x3.multiply(x4).multiply(6));
             final T z33 = x2.multiply(x2).multiply(12).subtract(x4.multiply(x4).multiply(3));
-            final T z11 = a1.multiply(-6).multiply(a5).multiply(e0sq).multiply(x1.multiply(x7).multiply(-24).subtract(x3.multiply(x5).multiply(6)));
+            final T z11 = a1.multiply(-6).multiply(a5).add(e0sq.multiply(x1.multiply(x7).multiply(-24).add(x3.multiply(x5).multiply(-6))));
             final T z12 = a1.multiply(a6).add(a3.multiply(a5)).multiply(-6).add(
-                               e0sq.multiply(x2.multiply(x7).add(x1.multiply(x8))).multiply(-24).subtract(
-                               x3.multiply(x6).add(x4.multiply(x5)).multiply(6)));
+                                e0sq.multiply(x2.multiply(x7).add(x1.multiply(x8)).multiply(-24).add(
+                                x3.multiply(x6).add(x4.multiply(x5)).multiply(-6))));
             final T z13 = a3.multiply(a6).multiply(-6).add(e0sq.multiply(
                                x2.multiply(x8).multiply(-24).subtract(x4.multiply(x6).multiply(6))));
             final T z21 = a2.multiply(a5).multiply(6).add(e0sq.multiply(
@@ -351,10 +351,10 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
                 sh3 = xh3;
                 sl4 = xl4;
                 sgh4 = xgh4;
-                zcosg = zcosgl;
-                zsing = zsingl;
-                zcosi = zcosil;
-                zsini = zsinil;
+                zcosg = xnq.getField().getZero().add(zcosgl);
+                zsing = xnq.getField().getZero().add(zsingl);
+                zcosi = xnq.getField().getZero().add(zcosil);
+                zsini = xnq.getField().getZero().add(zsinil);
                 zcosh = cosq.multiply(zcoshl).add(sinq.multiply(zsinhl));
                 zsinh = sinq.multiply(zcoshl).subtract(cosq.multiply(zsinhl));
                 zn = ZNL;
@@ -364,7 +364,7 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
         } // end of solar - lunar - solar terms computation
 
         sse = sse.add(se);
-        ssi = si.add(si);
+        ssi = ssi.add(si);
         ssl = ssl.add(sl);
         ssg = ssg.add(sgh).subtract((tle.getI().getReal() < (FastMath.PI / 60.0)) ? xnq.getField().getZero() : (cosi0.divide(sini0).multiply(sh)));
         ssh = ssh.add((tle.getI().getReal() < (FastMath.PI / 60.0)) ? xnq.getField().getZero() : sh.divide(sini0));
@@ -388,8 +388,8 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
             final T f322  = sini0.multiply(-1.875).multiply(cosi0.multiply(2).subtract(theta2.multiply(3)).add(1));
             final T f441  = sini2.multiply(f220).multiply(35);
             final T f442  = sini2.multiply(sini2).multiply(39.3750);
-            final T f522  = sini0.multiply(sini2.multiply(cosi0.multiply(2).negate().subtract(theta2.multiply(5)).add(1)).add(
-                                    cosi0.multiply(4).add(theta2.multiply(6)).add(-2).multiply(0.33333333))).multiply(9.84359);
+            final T f522  = sini0.multiply(9.84375).multiply(sini2.multiply(cosi0.multiply(-2).add(theta2.multiply(-5)).add(1.0)).add(
+                                    cosi0.multiply(4.0).add(theta2.multiply(6.0)).add(-2).multiply(0.33333333)));
             final T f523  = sini0.multiply(sini2.multiply(cosi0.multiply(-4).add(theta2.multiply(10)).add(-2)).multiply(4.92187512).add(
                                     cosi0.multiply(2).subtract(theta2.multiply(3)).add(1).multiply(6.56250012)));
             final T f542  = sini0.multiply(29.53125).multiply(cosi0.multiply(-8).add(2).add(
@@ -524,7 +524,7 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
             if (FastMath.abs(t).getReal() < FastMath.abs(t.subtract(atime)).getReal() || isDundeeCompliant)  {
                 // Epoch restart
                 atime = t.getField().getZero();
-                xni = t;
+                xni = xnq;
                 xli = xlamo;
             }
             boolean lastIntegrationStep = false;
