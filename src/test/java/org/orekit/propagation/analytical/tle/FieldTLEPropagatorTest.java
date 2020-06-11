@@ -37,7 +37,6 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.FieldOrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
