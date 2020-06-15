@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.2" date="TBD" description="TBD">
+      <action dev="bryan" type="update" >
+        Improved Orekit performance by using new Hipparchus' differentiation classes.
+      </action>
       <action dev="bryan" type="update" issue="682">
         Changed visibility of OrbitType parameter drivers' names to public.
       </action>

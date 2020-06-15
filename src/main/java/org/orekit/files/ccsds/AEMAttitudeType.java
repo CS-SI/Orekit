@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
@@ -89,16 +90,16 @@ public enum AEMAttitudeType {
             // Initialize the array of attitude data
             final double[] data = new double[8];
 
-            final FieldRotation<DerivativeStructure> fieldRotation = coordinates.toDerivativeStructureRotation(1);
+            final FieldRotation<UnivariateDerivative1> fieldRotation = coordinates.toUnivariateDerivative1Rotation();
             // Quaternion components
             final double q0    = fieldRotation.getQ0().getValue();
             final double q1    = fieldRotation.getQ1().getValue();
             final double q2    = fieldRotation.getQ2().getValue();
             final double q3    = fieldRotation.getQ3().getValue();
-            final double q0Dot = fieldRotation.getQ0().getPartialDerivative(1);
-            final double q1Dot = fieldRotation.getQ1().getPartialDerivative(1);
-            final double q2Dot = fieldRotation.getQ2().getPartialDerivative(1);
-            final double q3Dot = fieldRotation.getQ3().getPartialDerivative(1);
+            final double q0Dot = fieldRotation.getQ0().getFirstDerivative();
+            final double q1Dot = fieldRotation.getQ1().getFirstDerivative();
+            final double q2Dot = fieldRotation.getQ2().getFirstDerivative();
+            final double q3Dot = fieldRotation.getQ3().getFirstDerivative();
 
             // Data index
             final int[] quaternionIndex = isFirst ? new int[] {0, 1, 2, 3, 4, 5, 6, 7} : new int[] {3, 0, 1, 2, 7, 4, 5, 6};
