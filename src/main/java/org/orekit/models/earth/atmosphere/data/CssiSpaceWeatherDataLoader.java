@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
+import java.util.NoSuchElementException;
 import java.util.TreeSet;
 
 import org.hipparchus.exception.Localizable;
@@ -462,8 +463,13 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
             throw new OrekitException(nfe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, lineNumber, name, line);
         }
 
-        firstDate = set.first().getDate();
-        lastDate = set.last().getDate();
+        try {
+            firstDate = set.first().getDate();
+            lastDate = set.last().getDate();
+        } catch (NoSuchElementException nse) {
+            throw new OrekitException(nse, OrekitMessages.NO_DATA_IN_FILE, name);
+        }
+        
         return;
     }
 
