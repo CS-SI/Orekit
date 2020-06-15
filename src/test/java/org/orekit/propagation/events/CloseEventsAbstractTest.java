@@ -82,7 +82,7 @@ public abstract class CloseEventsAbstractTest {
         // all three times. Then we get a non bracketing exception.
         Propagator propagator = getPropagator(10.0);
 
-        double t1 = 49, t2 = t1 + 1e-15, t3 = t1 + 4.9;
+        double t1 = 49, t2 = FastMath.nextUp(t1), t3 = t1 + 4.9;
         List<Event<EventDetector>> events = new ArrayList<>();
         TimeDetector detector1 = new TimeDetector(t1)
                 .withHandler(new Handler<>(events, Action.RESET_DERIVATIVES))
@@ -162,6 +162,112 @@ public abstract class CloseEventsAbstractTest {
         List<Event<EventDetector>> events2 = handler2.getEvents();
         Assert.assertEquals(1, events2.size());
         Assert.assertEquals(5, events2.get(0).getState().getDate().durationFrom(epoch), 0.0);
+    }
+
+    /**
+     * Previously there were some branches when tryAdvance() returned false but did not
+     * set {@code t0 = t}. This allowed the order of events to not be chronological and to
+     * detect events that should not have occurred, both of which are problems.
+     */
+    @Test
+    public void testSimultaneousEventsReset() {
+        // setup
+        double tol = 1e-10;
+        Propagator propagator = getPropagator(10);
+        boolean[] firstEventOccurred = {false};
+        List<Event<EventDetector>> events = new ArrayList<>();
+
+        TimeDetector detector1 = new TimeDetector(5)
+                .withMaxCheck(10)
+                .withThreshold(tol)
+                .withHandler(new Handler<EventDetector>(events, Action.RESET_STATE) {
+                    @Override
+                    public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
+                        firstEventOccurred[0] = true;
+                        return super.eventOccurred(s, detector, increasing);
+                    }
+
+                    @Override
+                    public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
+                        return oldState;
+                    }
+                });
+        propagator.addEventDetector(detector1);
+        // this detector changes it's g function definition when detector1 fires
+        FunctionalDetector detector2 = new FunctionalDetector()
+                .withMaxCheck(1)
+                .withThreshold(tol)
+                .withHandler(new RecordAndContinue<>(events))
+                .withFunction(state -> {
+                            if (firstEventOccurred[0]) {
+                                return new TimeDetector(1, 3, 5).g(state);
+                            }
+                            return new TimeDetector(5).g(state);
+                        }
+                );
+        propagator.addEventDetector(detector2);
+
+        // action
+        propagator.propagate(epoch.shiftedBy(20));
+
+        // verify
+        // order is important to make sure the test checks what it is supposed to
+        Assert.assertEquals(5, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
+        Assert.assertTrue(events.get(0).isIncreasing());
+        Assert.assertEquals(detector1, events.get(0).getDetector());
+        Assert.assertEquals(5, events.get(1).getState().getDate().durationFrom(epoch), 0.0);
+        Assert.assertTrue(events.get(1).isIncreasing());
+        Assert.assertEquals(detector2, events.get(1).getDetector());
+        Assert.assertEquals(2, events.size());
+    }
+
+    /**
+     * When two event detectors have a discontinuous event caused by a {@link
+     * Action#RESET_STATE} or {@link Action#RESET_DERIVATIVES}. The two event detectors
+     * would each say they had an event that had to be handled before the other one, but
+     * neither would actually back up at all. For #684.
+     */
+    @Test
+    public void testSimultaneousDiscontinuousEventsAfterReset() {
+        // setup
+        double t = FastMath.PI;
+        double tol = 1e-10;
+        Propagator propagator = getPropagator(10);
+        List<Event<EventDetector>> events = new ArrayList<>();
+        SpacecraftState newState = new SpacecraftState(new KeplerianOrbit(
+                42e6, 0, 0, 0, 0, 0, PositionAngle.TRUE, eci, epoch.shiftedBy(t), mu));
+
+        TimeDetector resetDetector = new TimeDetector(t)
+                .withHandler(new ResetHandler<>(events, newState))
+                .withMaxCheck(10)
+                .withThreshold(tol);
+        propagator.addEventDetector(resetDetector);
+        List<EventDetector> detectors = new ArrayList<>();
+        for (int i = 0; i < 2; i++) {
+            FunctionalDetector detector1 = new FunctionalDetector()
+                    .withFunction(s -> s.getA() - 10e6)
+                    .withThreshold(tol)
+                    .withMaxCheck(10)
+                    .withHandler(new RecordAndContinue<>(events));
+            propagator.addEventDetector(detector1);
+            detectors.add(detector1);
+        }
+
+        // action
+        propagator.propagate(epoch.shiftedBy(10));
+
+        // verify
+        Assert.assertEquals(t, events.get(0).getState().getDate().durationFrom(epoch), tol);
+        Assert.assertTrue(events.get(0).isIncreasing());
+        Assert.assertEquals(resetDetector, events.get(0).getDetector());
+        // next two events can occur in either order
+        Assert.assertEquals(t, events.get(1).getState().getDate().durationFrom(epoch), tol);
+        Assert.assertTrue(events.get(1).isIncreasing());
+        Assert.assertEquals(detectors.get(0), events.get(1).getDetector());
+        Assert.assertEquals(t, events.get(2).getState().getDate().durationFrom(epoch), tol);
+        Assert.assertTrue(events.get(2).isIncreasing());
+        Assert.assertEquals(detectors.get(1), events.get(2).getDetector());
+        Assert.assertEquals(events.size(), 3);
     }
 
     /**
@@ -1044,6 +1150,63 @@ public abstract class CloseEventsAbstractTest {
         List<Event<EventDetector>> events2 = handler2.getEvents();
         Assert.assertEquals(1, events2.size());
         Assert.assertEquals(-5, events2.get(0).getState().getDate().durationFrom(epoch), 0.0);
+    }
+
+    /**
+     * Previously there were some branches when tryAdvance() returned false but did not
+     * set {@code t0 = t}. This allowed the order of events to not be chronological and to
+     * detect events that should not have occurred, both of which are problems.
+     */
+    @Test
+    public void testSimultaneousEventsResetReverse() {
+        // setup
+        double tol = 1e-10;
+        Propagator propagator = getPropagator(10);
+        boolean[] firstEventOccurred = {false};
+        List<Event<EventDetector>> events = new ArrayList<>();
+
+        TimeDetector detector1 = new TimeDetector(-5)
+                .withMaxCheck(10)
+                .withThreshold(tol)
+                .withHandler(new Handler<EventDetector>(events, Action.RESET_STATE) {
+                    @Override
+                    public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
+                        firstEventOccurred[0] = true;
+                        return super.eventOccurred(s, detector, increasing);
+                    }
+
+                    @Override
+                    public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
+                        return oldState;
+                    }
+                });
+        propagator.addEventDetector(detector1);
+        // this detector changes it's g function definition when detector1 fires
+        FunctionalDetector detector2 = new FunctionalDetector()
+                .withMaxCheck(1)
+                .withThreshold(tol)
+                .withHandler(new RecordAndContinue<>(events))
+                .withFunction(state -> {
+                            if (firstEventOccurred[0]) {
+                                return new TimeDetector(-1, -3, -5).g(state);
+                            }
+                            return new TimeDetector(-5).g(state);
+                        }
+                );
+        propagator.addEventDetector(detector2);
+
+        // action
+        propagator.propagate(epoch.shiftedBy(-20));
+
+        // verify
+        // order is important to make sure the test checks what it is supposed to
+        Assert.assertEquals(-5, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
+        Assert.assertTrue(events.get(0).isIncreasing());
+        Assert.assertEquals(detector1, events.get(0).getDetector());
+        Assert.assertEquals(-5, events.get(1).getState().getDate().durationFrom(epoch), 0.0);
+        Assert.assertTrue(events.get(1).isIncreasing());
+        Assert.assertEquals(detector2, events.get(1).getDetector());
+        Assert.assertEquals(2, events.size());
     }
 
     /**
@@ -2025,6 +2188,38 @@ public abstract class CloseEventsAbstractTest {
             return this.action;
         }
 
+    }
+
+    private static class ResetHandler<T extends EventDetector> extends Handler<T> {
+
+        private final SpacecraftState newState;
+        private final int times;
+        private long i = 0;
+
+        public ResetHandler(List<Event<T>> events, SpacecraftState newState) {
+            this(events, newState, Integer.MAX_VALUE);
+        }
+
+        public ResetHandler(List<Event<T>> events, SpacecraftState newState, int times) {
+            super(events, Action.RESET_STATE);
+            this.newState = newState;
+            this.times = times;
+        }
+
+        @Override
+        public Action eventOccurred(final SpacecraftState s, final T detector, final boolean increasing) {
+            super.eventOccurred(s, detector, increasing);
+            if (i++ < times) {
+                return Action.RESET_STATE;
+            }
+            return Action.CONTINUE;
+        }
+
+        @Override
+        public SpacecraftState resetState(T detector, SpacecraftState oldState) {
+            Assert.assertEquals(0, newState.getDate().durationFrom(oldState.getDate()), 0);
+            return newState;
+        }
     }
 
 }
