@@ -614,3 +614,6 @@ NON_COPLANAR_POINTS = les observations ne sont pas dans le même plan
 
 # invalid parameter {0}: {1} not in range [{2}, {3}]
 INVALID_PARAMETER_RANGE = paramètre invalide {0}: {1} n''est pas dans l''intervalle [{2}, {3}]
+
+# No data could be parsed from file {0}
+NO_DATA_IN_FILE = Aucune donnée n'a pu être lue dans le fichier {1} 

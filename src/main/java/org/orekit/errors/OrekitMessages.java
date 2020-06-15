@@ -259,7 +259,8 @@ public enum OrekitMessages implements Localizable {
     EXCEPTIONAL_DATA_CONTEXT("Use of the ExceptionalDataContext detected. This is typically used to detect developer errors."),
     NON_DIFFERENT_DATES_FOR_OBSERVATIONS("observations {0}, {1} and {2} must have different dates"),
     NON_COPLANAR_POINTS("observations are not in the same plane"),
-    INVALID_PARAMETER_RANGE("invalid parameter {0}: {1} not in range [{2}, {3}]");
+    INVALID_PARAMETER_RANGE("invalid parameter {0}: {1} not in range [{2}, {3}]"),
+    NO_DATA_IN_FILE("No data could be parsed from file {0}");
 
     // CHECKSTYLE: resume JavadocVariable check
 
