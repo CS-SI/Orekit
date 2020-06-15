@@ -615,3 +615,6 @@ NON_COPLANAR_POINTS = <MISSING TRANSLATION>
 
 # invalid parameter {0}: {1} not in range [{2}, {3}]
 INVALID_PARAMETER_RANGE = <MISSING TRANSLATION>
+
+# No data could be parsed from file {0}
+NO_DATA_IN_FILE = <MISSING TRANSLATION>
