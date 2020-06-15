@@ -1333,7 +1333,7 @@ public class DSSTThirdBody implements DSSTForceModel {
      *
      * @author Lucian Barbulescu
      */
-    private class WnsjEtomjmsCoefficient {
+    private static class WnsjEtomjmsCoefficient {
 
         /** The value c.
          * <p>
@@ -1516,7 +1516,7 @@ public class DSSTThirdBody implements DSSTForceModel {
     *
     * @author Lucian Barbulescu
     */
-    private class FieldWnsjEtomjmsCoefficient <T extends RealFieldElement<T>> {
+    private static class FieldWnsjEtomjmsCoefficient <T extends RealFieldElement<T>> {
 
         /** The value c.
          * <p>
