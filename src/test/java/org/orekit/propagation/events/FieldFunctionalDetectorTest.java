@@ -25,7 +25,6 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
-import org.hipparchus.util.Decimal64;
 import org.hipparchus.util.Decimal64Field;
 import org.junit.Test;
 import org.orekit.frames.FramesFactory;

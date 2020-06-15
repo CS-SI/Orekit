@@ -911,12 +911,12 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
         final FieldVector3D<T> p0 = new FieldVector3D<>(p.getX().getValue(),
                                                         p.getY().getValue(),
                                                         p.getZ().getValue());
-        final FieldVector3D<T> p1 = new FieldVector3D<>(p.getX().getPartialDerivative(1),
-                                                        p.getY().getPartialDerivative(1),
-                                                        p.getZ().getPartialDerivative(1));
-        final FieldVector3D<T> p2 = new FieldVector3D<>(p.getX().getPartialDerivative(2),
-                                                        p.getY().getPartialDerivative(2),
-                                                        p.getZ().getPartialDerivative(2));
+        final FieldVector3D<T> p1 = new FieldVector3D<>(p.getX().getFirstDerivative(),
+                                                        p.getY().getFirstDerivative(),
+                                                        p.getZ().getFirstDerivative());
+        final FieldVector3D<T> p2 = new FieldVector3D<>(p.getX().getSecondDerivative(),
+                                                        p.getY().getSecondDerivative(),
+                                                        p.getZ().getSecondDerivative());
         return new TimeStampedFieldPVCoordinates<>(date, p0, p1, p2);
 
     }

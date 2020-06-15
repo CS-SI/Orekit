@@ -936,12 +936,12 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
         final Vector3D p0 = new Vector3D(p.getX().getValue(),
                                          p.getY().getValue(),
                                          p.getZ().getValue());
-        final Vector3D p1 = new Vector3D(p.getX().getPartialDerivative(1),
-                                         p.getY().getPartialDerivative(1),
-                                         p.getZ().getPartialDerivative(1));
-        final Vector3D p2 = new Vector3D(p.getX().getPartialDerivative(2),
-                                         p.getY().getPartialDerivative(2),
-                                         p.getZ().getPartialDerivative(2));
+        final Vector3D p1 = new Vector3D(p.getX().getFirstDerivative(),
+                                         p.getY().getFirstDerivative(),
+                                         p.getZ().getFirstDerivative());
+        final Vector3D p2 = new Vector3D(p.getX().getSecondDerivative(),
+                                         p.getY().getSecondDerivative(),
+                                         p.getZ().getSecondDerivative());
         return new TimeStampedPVCoordinates(date, p0, p1, p2);
 
     }
