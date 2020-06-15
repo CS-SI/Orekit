@@ -114,8 +114,8 @@ public class IntegratedEphemerisTest {
                 mapper.getStateJacobian(state, dYdY0.getDataRef());
                 mapper.getParametersJacobian(state, null); // no parameters, this is a no-op and should work
                 RealMatrix deltaId = dYdY0.subtract(MatrixUtils.createRealIdentityMatrix(6));
-                Assert.assertTrue(deltaId.getNorm() >  100);
-                Assert.assertTrue(deltaId.getNorm() < 3100);
+                Assert.assertTrue(deltaId.getNorm1() >  100);
+                Assert.assertTrue(deltaId.getNorm1() < 3100);
             }
 
         });

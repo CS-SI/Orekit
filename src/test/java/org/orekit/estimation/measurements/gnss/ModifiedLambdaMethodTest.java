@@ -84,7 +84,7 @@ public class ModifiedLambdaMethodTest extends AbstractLambdaMethodTest {
                                         multiply(getLow(reducer)).multiply(Z);
         
         //Check the covariance are the same
-        double norm                   = filteredCovariance.subtract(RebuiltCov).getNorm();
+        double norm                   = filteredCovariance.subtract(RebuiltCov).getNorm1();
         Assert.assertEquals(0.0, norm, 1e-11);
         
         //Check the floatAmbiguities have been well transform by Z transformation

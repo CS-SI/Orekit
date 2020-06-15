@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.InertialProvider;
@@ -150,16 +150,12 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
     * automatic differentiation.
     *
     * @param derivatives tropospheric delay derivatives
-    * @param freeStateParameters dimension of the state.
     *
     * @return Jacobian of the delay wrt state
     */
-    private double[][] phaseErrorJacobianState(final double[] derivatives, final int freeStateParameters) {
+    private double[][] phaseErrorJacobianState(final double[] derivatives) {
         final double[][] finiteDifferencesJacobian = new double[1][6];
-        for (int i = 0; i < freeStateParameters; i++) {
-            // First element is the value of the delay
-            finiteDifferencesJacobian[0][i] = derivatives[i + 1];
-        }
+        System.arraycopy(derivatives, 0, finiteDifferencesJacobian[0], 0, 6);
         return finiteDifferencesJacobian;
     }
 
@@ -190,14 +186,13 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
     * @return derivative of the delay wrt tropospheric model parameters
     */
     private double[] phaseErrorParameterDerivative(final double[] derivatives, final int freeStateParameters) {
-        // 0                               -> value of the delay
-        // 1 ... freeStateParameters       -> derivatives of the delay wrt state
-        // freeStateParameters + 1 ... n   -> derivatives of the delay wrt tropospheric parameters
-        final int dim = derivatives.length - 1 - freeStateParameters;
+        // 0 ... freeStateParameters - 1   -> derivatives of the delay wrt state
+        // freeStateParameters ... n       -> derivatives of the delay wrt tropospheric parameters
+        final int dim = derivatives.length - freeStateParameters;
         final double[] rangeError = new double[dim];
 
         for (int i = 0; i < dim; i++) {
-            rangeError[i] = derivatives[1 + freeStateParameters + i];
+            rangeError[i] = derivatives[freeStateParameters + i];
         }
 
         return rangeError;
@@ -220,14 +215,14 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
         final double[] oldValue = estimated.getEstimatedValue();
 
         // update estimated derivatives with Jacobian of the measure wrt state
-        final TroposphericDSConverter converter = new TroposphericDSConverter(state, 6, new InertialProvider(state.getFrame()));
-        final FieldSpacecraftState<DerivativeStructure> dsState = converter.getState(tropoModel);
-        final DerivativeStructure[] dsParameters = converter.getParameters(dsState, tropoModel);
-        final DerivativeStructure dsDelay = phaseErrorTroposphericModel(station, dsState, dsParameters, measurement.getWavelength());
-        final double[] derivatives = dsDelay.getAllDerivatives();
+        final TroposphericGradientConverter converter = new TroposphericGradientConverter(state, 6, new InertialProvider(state.getFrame()));
+        final FieldSpacecraftState<Gradient> gState = converter.getState(tropoModel);
+        final Gradient[] gParameters = converter.getParameters(gState, tropoModel);
+        final Gradient gDelay = phaseErrorTroposphericModel(station, gState, gParameters, measurement.getWavelength());
+        final double[] derivatives = gDelay.getGradient();
 
         // Update state derivatives
-        final double[][] djac = phaseErrorJacobianState(derivatives, converter.getFreeStateParameters());
+        final double[][] djac = phaseErrorJacobianState(derivatives);
         final double[][] stateDerivatives = estimated.getStateDerivatives(0);
         for (int irow = 0; irow < stateDerivatives.length; ++irow) {
             for (int jcol = 0; jcol < stateDerivatives[0].length; ++jcol) {
@@ -266,7 +261,7 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
         // Update estimated value taking into account the tropospheric delay.
         // The tropospheric delay is directly added to the phase.
         final double[] newValue = oldValue.clone();
-        newValue[0] = newValue[0] + dsDelay.getReal();
+        newValue[0] = newValue[0] + gDelay.getReal();
         estimated.setEstimatedValue(newValue);
     }
 
