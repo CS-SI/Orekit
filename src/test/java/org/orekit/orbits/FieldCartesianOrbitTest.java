@@ -149,7 +149,7 @@ public class FieldCartesianOrbitTest {
     @Test
     public void testInterpolationWithDerivatives() {
         doTestInterpolation(Decimal64Field.getInstance(), true,
-                            394, 2.15e-8, 3.21, 1.39e-9,
+                            394, 2.28e-8, 3.21, 1.39e-9,
                             2474, 6842, 6.55, 186);
     }
 

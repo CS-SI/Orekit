@@ -111,8 +111,8 @@ public class FieldCircularOrbitTest {
     @Test
     public void testInterpolationWithDerivatives() {
         doTestInterpolation(Decimal64Field.getInstance(), true,
-                            397, 2.27e-8,
-                            610, 3.24e-6,
+                            397, 1.88e-8,
+                            610, 3.52e-6,
                             4870, 115);
     }
 

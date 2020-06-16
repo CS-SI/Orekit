@@ -203,13 +203,13 @@ public class PositionTest {
             // Covariances
             final double[][] P = p.getCovarianceMatrix();
             // Substract with ref and get the norm
-            final double normP = MatrixUtils.createRealMatrix(P).subtract(MatrixUtils.createRealMatrix(Pref)).getNorm();
+            final double normP = MatrixUtils.createRealMatrix(P).subtract(MatrixUtils.createRealMatrix(Pref)).getNorm1();
             assertEquals(0., normP, eps);
             
             // Correlation coef
             final double[][] corrCoef = p.getCorrelationCoefficientsMatrix();
             // Substract with ref and get the norm
-            final double normCorrCoef = MatrixUtils.createRealMatrix(corrCoef).subtract(MatrixUtils.createRealMatrix(corrCoefRef)).getNorm();
+            final double normCorrCoef = MatrixUtils.createRealMatrix(corrCoef).subtract(MatrixUtils.createRealMatrix(corrCoefRef)).getNorm1();
             assertEquals(0., normCorrCoef, eps);
         }
     }
@@ -269,13 +269,13 @@ public class PositionTest {
             // Covariances
             final double[][] P = p.getCovarianceMatrix();
             // Substract with ref and get the norm
-            final double normP = MatrixUtils.createRealMatrix(P).subtract(MatrixUtils.createRealMatrix(Pref)).getNorm();
+            final double normP = MatrixUtils.createRealMatrix(P).subtract(MatrixUtils.createRealMatrix(Pref)).getNorm1();
             assertEquals(0., normP, eps);
             
             // Correlation coef
             final double[][] corrCoef = p.getCorrelationCoefficientsMatrix();
             // Substract with ref and get the norm
-            final double normCorrCoef = MatrixUtils.createRealMatrix(corrCoef).subtract(MatrixUtils.createRealMatrix(corrCoefRef)).getNorm();
+            final double normCorrCoef = MatrixUtils.createRealMatrix(corrCoef).subtract(MatrixUtils.createRealMatrix(corrCoefRef)).getNorm1();
             assertEquals(0., normCorrCoef, eps);
         }
     }
@@ -347,13 +347,13 @@ public class PositionTest {
             // Covariances
             final double[][] P = p.getCovarianceMatrix();
             // Substract with ref and get the norm
-            final double normP = MatrixUtils.createRealMatrix(P).subtract(MatrixUtils.createRealMatrix(Pref)).getNorm();
+            final double normP = MatrixUtils.createRealMatrix(P).subtract(MatrixUtils.createRealMatrix(Pref)).getNorm1();
             assertEquals(0., normP, eps);
             
             // Correlation coef
             final double[][] corrCoef = p.getCorrelationCoefficientsMatrix();
             // Substract with ref and get the norm
-            final double normCorrCoef = MatrixUtils.createRealMatrix(corrCoef).subtract(MatrixUtils.createRealMatrix(corrCoefRef)).getNorm();
+            final double normCorrCoef = MatrixUtils.createRealMatrix(corrCoef).subtract(MatrixUtils.createRealMatrix(corrCoefRef)).getNorm1();
             assertEquals(0., normCorrCoef, eps);
         }
         

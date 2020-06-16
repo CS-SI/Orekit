@@ -40,7 +40,9 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  * @author Luc Maisonobe
  * @author Bryan Cazabonne
  * @since 10.0
+ * @deprecated as of 10.2, replace by {@link DSSTGradientConverter}
  */
+@Deprecated
 class DSSTDSConverter extends AbstractDSConverter {
 
     /** Fixed dimension of the state. */

@@ -96,8 +96,8 @@ public class PropagatorsParallelizerTest {
                                         AbsoluteDate aCurr = interpolators.get(0).getCurrentState().getDate();
                                         AbsoluteDate nPrev = interpolators.get(1).getPreviousState().getDate();
                                         AbsoluteDate nCurr = interpolators.get(1).getCurrentState().getDate();
-                                        Assert.assertEquals(0.0, aPrev.durationFrom(nPrev), 1.0e-15);
-                                        Assert.assertEquals(0.0, aCurr.durationFrom(nCurr), 1.0e-15);
+                                        Assert.assertEquals(0.0, aPrev.durationFrom(nPrev), 3.0e-13);
+                                        Assert.assertEquals(0.0, aCurr.durationFrom(nCurr), 3.0e-13);
                                         Vector3D aPos = interpolators.get(0).getCurrentState().getPVCoordinates().getPosition();
                                         Vector3D nPos = interpolators.get(1).getCurrentState().getPVCoordinates().getPosition();
                                         Assert.assertTrue(Vector3D.distance(aPos, nPos) < 111.0);

@@ -16,8 +16,7 @@
  */
 package org.orekit.propagation.integration;
 
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -26,10 +25,10 @@ import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 /** Converter for states and parameters arrays
  *  for both {@link NumericalPropagator numerical} and {@link DSSTPropagator semi-analytical} propagators.
  *  @author Luc Maisonobe
- *  @deprecated as of 10.2, replaced by {@link AbstractGradientConverter}
+ *  @author Bryan Cazabonne
+ *  @since 10.2
  */
-@Deprecated
-public abstract class AbstractDSConverter {
+public abstract class AbstractGradientConverter {
 
     /** Dimension of the state. */
     private final int freeStateParameters;
@@ -37,7 +36,7 @@ public abstract class AbstractDSConverter {
     /** Simple constructor.
      * @param freeStateParameters number of free parameters
      */
-    protected AbstractDSConverter(final int freeStateParameters) {
+    protected AbstractGradientConverter(final int freeStateParameters) {
         this.freeStateParameters = freeStateParameters;
     }
 
@@ -50,37 +49,37 @@ public abstract class AbstractDSConverter {
 
     /** Add zero derivatives.
      * @param original original scalar
-     * @param factory factory for the extended derivatives
+     * @param freeParameters total number of free parameters in the gradient
      * @return extended scalar
      */
-    protected DerivativeStructure extend(final DerivativeStructure original, final DSFactory factory) {
-        final double[] originalDerivatives = original.getAllDerivatives();
-        final double[] extendedDerivatives = new double[factory.getCompiler().getSize()];
+    protected Gradient extend(final Gradient original, final int freeParameters) {
+        final double[] originalDerivatives = original.getGradient();
+        final double[] extendedDerivatives = new double[freeParameters];
         System.arraycopy(originalDerivatives, 0, extendedDerivatives, 0, originalDerivatives.length);
-        return factory.build(extendedDerivatives);
+        return new Gradient(original.getValue(), extendedDerivatives);
     }
 
     /** Add zero derivatives.
      * @param original original vector
-     * @param factory factory for the extended derivatives
+     * @param freeParameters total number of free parameters in the gradient
      * @return extended vector
      */
-    protected FieldVector3D<DerivativeStructure> extend(final FieldVector3D<DerivativeStructure> original, final DSFactory factory) {
-        return new FieldVector3D<>(extend(original.getX(), factory),
-                        extend(original.getY(), factory),
-                        extend(original.getZ(), factory));
+    protected FieldVector3D<Gradient> extend(final FieldVector3D<Gradient> original, final int freeParameters) {
+        return new FieldVector3D<>(extend(original.getX(), freeParameters),
+                                   extend(original.getY(), freeParameters),
+                                   extend(original.getZ(), freeParameters));
     }
 
     /** Add zero derivatives.
      * @param original original rotation
-     * @param factory factory for the extended derivatives
+     * @param freeParameters total number of free parameters in the gradient
      * @return extended rotation
      */
-    protected FieldRotation<DerivativeStructure> extend(final FieldRotation<DerivativeStructure> original, final DSFactory factory) {
-        return new FieldRotation<>(extend(original.getQ0(), factory),
-                        extend(original.getQ1(), factory),
-                        extend(original.getQ2(), factory),
-                        extend(original.getQ3(), factory),
-                        false);
+    protected FieldRotation<Gradient> extend(final FieldRotation<Gradient> original, final int freeParameters) {
+        return new FieldRotation<>(extend(original.getQ0(), freeParameters),
+                                   extend(original.getQ1(), freeParameters),
+                                   extend(original.getQ2(), freeParameters),
+                                   extend(original.getQ3(), freeParameters),
+                                   false);
     }
 }

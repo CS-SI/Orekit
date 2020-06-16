@@ -40,7 +40,9 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 /** Converter for states and parameters arrays.
  * @author Luc Maisonobe
  * @since 9.0
+ * @deprecated as of 10.2, replace by {@link NumericalGradientConverter}
  */
+@Deprecated
 class DSConverter extends AbstractDSConverter {
 
     /** Dimension of the state. */

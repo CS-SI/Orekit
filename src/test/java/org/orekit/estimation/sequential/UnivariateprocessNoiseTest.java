@@ -437,7 +437,7 @@ public class UnivariateprocessNoiseTest {
      * @return correlated gaussian random vectors generator
      */
     private CorrelatedRandomVectorGenerator createSampler(final RealMatrix covarianceMatrix) {
-        double small = 10e-20 * covarianceMatrix.getNorm();
+        double small = 10e-20 * covarianceMatrix.getNorm1();
         return new CorrelatedRandomVectorGenerator(
                 covarianceMatrix,
                 small,
@@ -583,7 +583,7 @@ public class UnivariateprocessNoiseTest {
         
         // Norm of diagonal and non-diagonal
         double dDiag = dLofDiag.getNorm();
-        double dNonDiag = lofQ.getNorm();
+        double dNonDiag = lofQ.getNorm1();
         
         // Print values ?
         if (print) {

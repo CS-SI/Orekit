@@ -756,8 +756,8 @@ public class EquinoctialOrbitTest {
     @Test
     public void testInterpolationWithDerivatives() {
         doTestInterpolation(true,
-                            397, 1.28e-8,
-                            610, 3.95e-6,
+                            397, 1.17e-8,
+                            610, 4.48e-6,
                             4870, 115);
     }
 
