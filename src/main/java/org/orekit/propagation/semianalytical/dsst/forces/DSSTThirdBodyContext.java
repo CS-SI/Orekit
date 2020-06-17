@@ -33,7 +33,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
  * @author Bryan Cazabonne
  * @since 10.0
  */
-class DSSTThirdBodyContext extends ForceModelContext {
+public class DSSTThirdBodyContext extends ForceModelContext {
 
     /** Max power for summation. */
     private static final int    MAX_POWER = 22;
