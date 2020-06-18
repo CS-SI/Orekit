@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -29,10 +29,8 @@ import java.util.TreeMap;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.analysis.differentiation.FDSFactory;
-import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
+import org.hipparchus.analysis.differentiation.FieldGradient;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -190,12 +188,6 @@ public class DSSTTesseral implements DSSTForceModel {
     /** Hansen objects for field elements. */
     private Map<Field<?>, FieldHansenObjects<?>> fieldHansen;
 
-    /** Factory for the DerivativeStructure instances. */
-    private DSFactory factory;
-
-    /** Factory for the DerivativeStructure instances. */
-    private Map<Field<?>, FDSFactory<?>> fieldFactory;
-
     /** Flag for force model initialization with field elements. */
     private boolean pendingInitialization;
 
@@ -305,7 +297,6 @@ public class DSSTTesseral implements DSSTForceModel {
 
         fieldShortPeriodTerms = new HashMap<>();
         fieldHansen           = new HashMap<>();
-        fieldFactory          = new HashMap<>();
 
     }
 
@@ -338,8 +329,6 @@ public class DSSTTesseral implements DSSTForceModel {
         getNonResonantTerms(type, context);
 
         hansen = new HansenObjects(ratio, maxEccPow, resOrders, type);
-
-        factory = new DSFactory(1, 1);
 
         mMax = FastMath.max(maxOrderTesseralSP, maxOrderMdailyTesseralSP);
 
@@ -380,7 +369,6 @@ public class DSSTTesseral implements DSSTForceModel {
 
             mMax = FastMath.max(maxOrderTesseralSP, maxOrderMdailyTesseralSP);
 
-            fieldFactory.put(field, new FDSFactory<>(field, 1, 1));
             fieldHansen.put(field, new FieldHansenObjects<>(ratio, maxEccPow, resOrders, type, field));
 
             pendingInitialization = false;
@@ -898,8 +886,8 @@ public class DSSTTesseral implements DSSTForceModel {
                 // Jacobi l-index from 2.7.1-(15)
                 final int l = FastMath.min(n - m, n - FastMath.abs(s));
                 // Jacobi polynomial and derivative
-                final DerivativeStructure jacobi =
-                        JacobiPolynomials.getValue(l, v, w, factory.variable(0, auxiliaryElements.getGamma()));
+                final Gradient jacobi =
+                        JacobiPolynomials.getValue(l, v, w, Gradient.variable(1, 0, auxiliaryElements.getGamma()));
 
                 // Geopotential coefficients
                 final double cnm = harmonics.getUnnormalizedCnm(n, m);
@@ -915,7 +903,7 @@ public class DSSTTesseral implements DSSTForceModel {
                 final double dKgsMhcx2 = 2. * dkJNS * gsMhc;
                 final double dUdaCoef  = (n + 1) * cf_2;
                 final double dUdlCoef  = j * cf_2;
-                final double dUdGaCoef = cf_0 * kJNS * (jacobi.getValue() * dGaMNS + gaMNS * jacobi.getPartialDerivative(1));
+                final double dUdGaCoef = cf_0 * kJNS * (jacobi.getValue() * dGaMNS + gaMNS * jacobi.getGradient()[0]);
 
                 // dU / da components
                 dUdaCos  += dUdaCoef * gcPhs;
@@ -1050,10 +1038,8 @@ public class DSSTTesseral implements DSSTForceModel {
                 // Jacobi l-index from 2.7.1-(15)
                 final int l = FastMath.min(n - m, n - FastMath.abs(s));
                 // Jacobi polynomial and derivative
-                @SuppressWarnings("unchecked")
-                final FDSFactory<T> fdsf = (FDSFactory<T>) fieldFactory.get(field);
-                final FieldDerivativeStructure<T> jacobi =
-                        JacobiPolynomials.getValue(l, v, w, fdsf.variable(0, auxiliaryElements.getGamma()));
+                final FieldGradient<T> jacobi =
+                        JacobiPolynomials.getValue(l, v, w, FieldGradient.variable(1, 0, auxiliaryElements.getGamma()));
 
                 // Geopotential coefficients
                 final T cnm = zero.add(harmonics.getUnnormalizedCnm(n, m));
@@ -1069,7 +1055,7 @@ public class DSSTTesseral implements DSSTForceModel {
                 final T dKgsMhcx2 = dkJNS.multiply(gsMhc).multiply(2.);
                 final T dUdaCoef  = cf_2.multiply(n + 1);
                 final T dUdlCoef  = cf_2.multiply(j);
-                final T dUdGaCoef = cf_0.multiply(kJNS).multiply(dGaMNS.multiply(jacobi.getValue()).add(gaMNS.multiply(jacobi.getPartialDerivative(1))));
+                final T dUdGaCoef = cf_0.multiply(kJNS).multiply(dGaMNS.multiply(jacobi.getValue()).add(gaMNS.multiply(jacobi.getGradient()[0])));
 
                 // dU / da components
                 dUdaCos  = dUdaCos.add(dUdaCoef.multiply(gcPhs));

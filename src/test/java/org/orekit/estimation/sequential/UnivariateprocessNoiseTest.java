@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -437,7 +437,7 @@ public class UnivariateprocessNoiseTest {
      * @return correlated gaussian random vectors generator
      */
     private CorrelatedRandomVectorGenerator createSampler(final RealMatrix covarianceMatrix) {
-        double small = 10e-20 * covarianceMatrix.getNorm();
+        double small = 10e-20 * covarianceMatrix.getNorm1();
         return new CorrelatedRandomVectorGenerator(
                 covarianceMatrix,
                 small,
@@ -583,7 +583,7 @@ public class UnivariateprocessNoiseTest {
         
         // Norm of diagonal and non-diagonal
         double dDiag = dLofDiag.getNorm();
-        double dNonDiag = lofQ.getNorm();
+        double dNonDiag = lofQ.getNorm1();
         
         // Print values ?
         if (print) {

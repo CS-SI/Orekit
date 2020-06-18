@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -24,6 +24,8 @@ import java.util.Map;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
+import org.hipparchus.analysis.differentiation.FieldGradient;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.analysis.polynomials.PolynomialsUtils;
 
@@ -56,8 +58,52 @@ public class JacobiPolynomials {
      * @param w w value
      * @param gamma γ value
      * @return value and derivatives of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup>(γ)
+     * @deprecated as of 10.2, replaced by {@link #getValue(int, int, int, Gradient)}
      */
+    @Deprecated
     public static DerivativeStructure getValue(final int l, final int v, final int w, final DerivativeStructure gamma) {
+
+        final List<PolynomialFunction> polyList;
+        synchronized (MAP) {
+
+            final JacobiKey key = new JacobiKey(v, w);
+
+            // Check the existence of the corresponding key in the map.
+            if (!MAP.containsKey(key)) {
+                MAP.put(key, new ArrayList<PolynomialFunction>());
+            }
+
+            polyList = MAP.get(key);
+
+        }
+
+        final PolynomialFunction polynomial;
+        synchronized (polyList) {
+            // If the l-th degree polynomial has not been computed yet, the polynomials
+            // up to this degree are computed.
+            for (int degree = polyList.size(); degree <= l; degree++) {
+                polyList.add(degree, PolynomialsUtils.createJacobiPolynomial(degree, v, w));
+            }
+            polynomial = polyList.get(l);
+        }
+
+        // compute value and derivative
+        return polynomial.value(gamma);
+
+    }
+
+    /** Returns the value and derivatives of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup> evaluated at γ.
+     * <p>
+     * This method is guaranteed to be thread-safe
+     * </p>
+     * @param l degree of the polynomial
+     * @param v v value
+     * @param w w value
+     * @param gamma γ value
+     * @return value and derivatives of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup>(γ)
+     * @since 10.2
+     */
+    public static Gradient getValue(final int l, final int v, final int w, final Gradient gamma) {
 
         final List<PolynomialFunction> polyList;
         synchronized (MAP) {
@@ -98,9 +144,55 @@ public class JacobiPolynomials {
      * @param w w value
      * @param gamma γ value
      * @return value and derivatives of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup>(γ)
+     * @deprecated as of 10.2, replace by {@link #getValue(int, int, int, FieldDerivativeStructure)}
      */
+    @Deprecated
     public static <T extends RealFieldElement<T>> FieldDerivativeStructure<T> getValue(final int l, final int v, final int w,
                                                                                        final FieldDerivativeStructure<T> gamma) {
+
+        final List<PolynomialFunction> polyList;
+        synchronized (MAP) {
+
+            final JacobiKey key = new JacobiKey(v, w);
+
+            // Check the existence of the corresponding key in the map.
+            if (!MAP.containsKey(key)) {
+                MAP.put(key, new ArrayList<PolynomialFunction>());
+            }
+
+            polyList = MAP.get(key);
+
+        }
+
+        final PolynomialFunction polynomial;
+        synchronized (polyList) {
+            // If the l-th degree polynomial has not been computed yet, the polynomials
+            // up to this degree are computed.
+            for (int degree = polyList.size(); degree <= l; degree++) {
+                polyList.add(degree, PolynomialsUtils.createJacobiPolynomial(degree, v, w));
+            }
+            polynomial = polyList.get(l);
+        }
+
+        // compute value and derivative
+        return polynomial.value(gamma);
+
+    }
+
+    /** Returns the value and derivatives of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup> evaluated at γ.
+     * <p>
+     * This method is guaranteed to be thread-safe
+     * </p>
+     * @param <T> the type of the field elements
+     * @param l degree of the polynomial
+     * @param v v value
+     * @param w w value
+     * @param gamma γ value
+     * @return value and derivatives of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup>(γ)
+     * @since 10.2
+     */
+    public static <T extends RealFieldElement<T>> FieldGradient<T> getValue(final int l, final int v, final int w,
+                                                                            final FieldGradient<T> gamma) {
 
         final List<PolynomialFunction> polyList;
         synchronized (MAP) {

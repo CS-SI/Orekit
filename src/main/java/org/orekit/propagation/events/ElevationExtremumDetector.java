@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
@@ -123,17 +123,17 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
         final Transform inertToTopo = s.getFrame().getTransformTo(topo, s.getDate());
         final TimeStampedPVCoordinates pvTopo = inertToTopo.transformPVCoordinates(s.getPVCoordinates());
 
-        // convert the coordinates to DerivativeStructure based vector
+        // convert the coordinates to UnivariateDerivative1 based vector
         // instead of having vector position, then vector velocity then vector acceleration
         // we get one vector and each coordinate is a DerivativeStructure containing
         // value, first time derivative (we don't need second time derivative here)
-        final FieldVector3D<DerivativeStructure> pvDS = pvTopo.toDerivativeStructureVector(1);
+        final FieldVector3D<UnivariateDerivative1> pvDS = pvTopo.toUnivariateDerivative1Vector();
 
         // compute elevation and its first time derivative
-        final DerivativeStructure elevation = pvDS.getZ().divide(pvDS.getNorm()).asin();
+        final UnivariateDerivative1 elevation = pvDS.getZ().divide(pvDS.getNorm()).asin();
 
         // return elevation first time derivative
-        return elevation.getPartialDerivative(1);
+        return elevation.getDerivative(1);
 
     }
 

@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,8 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -86,9 +85,6 @@ public class KeplerianOrbit extends Orbit {
 
     /** Name of the eccentricity parameter. */
     private static final String ECCENTRICITY = "eccentricity";
-
-    /** Factory for first time derivatives. */
-    private static final DSFactory FACTORY = new DSFactory(1, 1);
 
     /** First coefficient to compute Kepler equation solver starter. */
     private static final double A;
@@ -220,28 +216,28 @@ public class KeplerianOrbit extends Orbit {
         this.raanDot = raanDot;
 
         if (hasDerivatives()) {
-            final DerivativeStructure eDS        = FACTORY.build(e, eDot);
-            final DerivativeStructure anomalyDS  = FACTORY.build(anomaly,  anomalyDot);
-            final DerivativeStructure vDS;
+            final UnivariateDerivative1 eUD        = new UnivariateDerivative1(e, eDot);
+            final UnivariateDerivative1 anomalyUD  = new UnivariateDerivative1(anomaly,  anomalyDot);
+            final UnivariateDerivative1 vUD;
             switch (type) {
                 case MEAN :
-                    vDS = (a < 0) ?
-                          FieldKeplerianOrbit.hyperbolicEccentricToTrue(FieldKeplerianOrbit.meanToHyperbolicEccentric(anomalyDS, eDS), eDS) :
-                          FieldKeplerianOrbit.ellipticEccentricToTrue(FieldKeplerianOrbit.meanToEllipticEccentric(anomalyDS, eDS), eDS);
+                    vUD = (a < 0) ?
+                          FieldKeplerianOrbit.hyperbolicEccentricToTrue(FieldKeplerianOrbit.meanToHyperbolicEccentric(anomalyUD, eUD), eUD) :
+                          FieldKeplerianOrbit.ellipticEccentricToTrue(FieldKeplerianOrbit.meanToEllipticEccentric(anomalyUD, eUD), eUD);
                     break;
                 case ECCENTRIC :
-                    vDS = (a < 0) ?
-                          FieldKeplerianOrbit.hyperbolicEccentricToTrue(anomalyDS, eDS) :
-                          FieldKeplerianOrbit.ellipticEccentricToTrue(anomalyDS, eDS);
+                    vUD = (a < 0) ?
+                          FieldKeplerianOrbit.hyperbolicEccentricToTrue(anomalyUD, eUD) :
+                          FieldKeplerianOrbit.ellipticEccentricToTrue(anomalyUD, eUD);
                     break;
                 case TRUE :
-                    vDS = anomalyDS;
+                    vUD = anomalyUD;
                     break;
                 default : // this should never happen
                     throw new OrekitInternalError(null);
             }
-            this.v    = vDS.getValue();
-            this.vDot = vDS.getPartialDerivative(1);
+            this.v    = vUD.getValue();
+            this.vDot = vUD.getDerivative(1);
         } else {
             switch (type) {
                 case MEAN :
@@ -383,12 +379,12 @@ public class KeplerianOrbit extends Orbit {
             // mean anomaly derivative including Keplerian motion and convert to true anomaly
             final double MDot = getKeplerianMeanMotion() +
                                 jacobian[5][3] * aX + jacobian[5][4] * aY + jacobian[5][5] * aZ;
-            final DerivativeStructure eDS = FACTORY.build(e, eDot);
-            final DerivativeStructure MDS = FACTORY.build(getMeanAnomaly(), MDot);
-            final DerivativeStructure vDS = (a < 0) ?
-                                            FieldKeplerianOrbit.hyperbolicEccentricToTrue(FieldKeplerianOrbit.meanToHyperbolicEccentric(MDS, eDS), eDS) :
-                                            FieldKeplerianOrbit.ellipticEccentricToTrue(FieldKeplerianOrbit.meanToEllipticEccentric(MDS, eDS), eDS);
-            vDot = vDS.getPartialDerivative(1);
+            final UnivariateDerivative1 eUD = new UnivariateDerivative1(e, eDot);
+            final UnivariateDerivative1 MUD = new UnivariateDerivative1(getMeanAnomaly(), MDot);
+            final UnivariateDerivative1 vUD = (a < 0) ?
+                                            FieldKeplerianOrbit.hyperbolicEccentricToTrue(FieldKeplerianOrbit.meanToHyperbolicEccentric(MUD, eUD), eUD) :
+                                            FieldKeplerianOrbit.ellipticEccentricToTrue(FieldKeplerianOrbit.meanToEllipticEccentric(MUD, eUD), eUD);
+            vDot = vUD.getDerivative(1);
 
         } else {
             // acceleration is either almost zero or NaN,
@@ -529,12 +525,12 @@ public class KeplerianOrbit extends Orbit {
      * @since 9.0
      */
     public double getEccentricAnomalyDot() {
-        final DerivativeStructure eDS = FACTORY.build(e, eDot);
-        final DerivativeStructure vDS = FACTORY.build(v, vDot);
-        final DerivativeStructure EDS = (a < 0) ?
-                                        FieldKeplerianOrbit.trueToHyperbolicEccentric(vDS, eDS) :
-                                        FieldKeplerianOrbit.trueToEllipticEccentric(vDS, eDS);
-        return EDS.getPartialDerivative(1);
+        final UnivariateDerivative1 eUD = new UnivariateDerivative1(e, eDot);
+        final UnivariateDerivative1 vUD = new UnivariateDerivative1(v, vDot);
+        final UnivariateDerivative1 EUD = (a < 0) ?
+                                        FieldKeplerianOrbit.trueToHyperbolicEccentric(vUD, eUD) :
+                                        FieldKeplerianOrbit.trueToEllipticEccentric(vUD, eUD);
+        return EUD.getDerivative(1);
     }
 
     /** Get the mean anomaly.
@@ -551,12 +547,12 @@ public class KeplerianOrbit extends Orbit {
      * @since 9.0
      */
     public double getMeanAnomalyDot() {
-        final DerivativeStructure eDS = FACTORY.build(e, eDot);
-        final DerivativeStructure vDS = FACTORY.build(v, vDot);
-        final DerivativeStructure MDS = (a < 0) ?
-                                        FieldKeplerianOrbit.hyperbolicEccentricToMean(FieldKeplerianOrbit.trueToHyperbolicEccentric(vDS, eDS), eDS) :
-                                        FieldKeplerianOrbit.ellipticEccentricToMean(FieldKeplerianOrbit.trueToEllipticEccentric(vDS, eDS), eDS);
-        return MDS.getPartialDerivative(1);
+        final UnivariateDerivative1 eUD = new UnivariateDerivative1(e, eDot);
+        final UnivariateDerivative1 vUD = new UnivariateDerivative1(v, vDot);
+        final UnivariateDerivative1 MUD = (a < 0) ?
+                                        FieldKeplerianOrbit.hyperbolicEccentricToMean(FieldKeplerianOrbit.trueToHyperbolicEccentric(vUD, eUD), eUD) :
+                                        FieldKeplerianOrbit.ellipticEccentricToMean(FieldKeplerianOrbit.trueToEllipticEccentric(vUD, eUD), eUD);
+        return MUD.getDerivative(1);
     }
 
     /** Get the anomaly.

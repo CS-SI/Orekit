@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,16 +16,13 @@
  */
 package org.orekit.orbits;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.FDSFactory;
-import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
@@ -79,10 +76,6 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @since 9.0
  */
 public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldOrbit<T> {
-
-    /** Factory for first time derivatives. */
-    private static final Map<Field<? extends RealFieldElement<?>>, FDSFactory<? extends RealFieldElement<?>>> FACTORIES =
-                    new HashMap<>();
 
     /** Semi-major axis (m). */
     private final T a;
@@ -194,10 +187,6 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
                                                      getClass().getName());
         }
 
-        if (!FACTORIES.containsKey(a.getField())) {
-            FACTORIES.put(a.getField(), new FDSFactory<>(a.getField(), 1, 1));
-        }
-
         this.a     = a;
         this.aDot  = aDot;
         this.ex    = ex;
@@ -210,27 +199,25 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
         this.hyDot = hyDot;
 
         if (hasDerivatives()) {
-            @SuppressWarnings("unchecked")
-            final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
-            final FieldDerivativeStructure<T> exDS = factory.build(ex, exDot);
-            final FieldDerivativeStructure<T> eyDS = factory.build(ey, eyDot);
-            final FieldDerivativeStructure<T> lDS  = factory.build(l,  lDot);
-            final FieldDerivativeStructure<T> lvDS;
+            final FieldUnivariateDerivative1<T> exUD = new FieldUnivariateDerivative1<>(ex, exDot);
+            final FieldUnivariateDerivative1<T> eyUD = new FieldUnivariateDerivative1<>(ey, eyDot);
+            final FieldUnivariateDerivative1<T> lUD  = new FieldUnivariateDerivative1<>(l,  lDot);
+            final FieldUnivariateDerivative1<T> lvUD;
             switch (type) {
                 case MEAN :
-                    lvDS = eccentricToTrue(meanToEccentric(lDS, exDS, eyDS), exDS, eyDS);
+                    lvUD = eccentricToTrue(meanToEccentric(lUD, exUD, eyUD), exUD, eyUD);
                     break;
                 case ECCENTRIC :
-                    lvDS = eccentricToTrue(lDS, exDS, eyDS);
+                    lvUD = eccentricToTrue(lUD, exUD, eyUD);
                     break;
                 case TRUE :
-                    lvDS = lDS;
+                    lvUD = lUD;
                     break;
                 default : // this should never happen
                     throw new OrekitInternalError(null);
             }
-            this.lv    = lvDS.getValue();
-            this.lvDot = lvDS.getPartialDerivative(1);
+            this.lv    = lvUD.getValue();
+            this.lvDot = lvUD.getDerivative(1);
         } else {
             switch (type) {
                 case MEAN :
@@ -315,10 +302,6 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
 
         partialPV = pvCoordinates;
 
-        if (!FACTORIES.containsKey(a.getField())) {
-            FACTORIES.put(a.getField(), new FDSFactory<>(a.getField(), 1, 1));
-        }
-
         if (hasNonKeplerianAcceleration(pvCoordinates, mu)) {
             // we have a relevant acceleration, we can compute derivatives
 
@@ -340,13 +323,11 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
             // mean anomaly derivative including Keplerian motion and convert to true anomaly
             final T lMDot = getKeplerianMeanMotion().
                             add(jacobian[5][3].multiply(aX)).add(jacobian[5][4].multiply(aY)).add(jacobian[5][5].multiply(aZ));
-            @SuppressWarnings("unchecked")
-            final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
-            final FieldDerivativeStructure<T> exDS = factory.build(ex, exDot);
-            final FieldDerivativeStructure<T> eyDS = factory.build(ey, eyDot);
-            final FieldDerivativeStructure<T> lMDS = factory.build(getLM(), lMDot);
-            final FieldDerivativeStructure<T> lvDS = eccentricToTrue(meanToEccentric(lMDS, exDS, eyDS), exDS, eyDS);
-            lvDot = lvDS.getPartialDerivative(1);
+            final FieldUnivariateDerivative1<T> exUD = new FieldUnivariateDerivative1<>(ex, exDot);
+            final FieldUnivariateDerivative1<T> eyUD = new FieldUnivariateDerivative1<>(ey, eyDot);
+            final FieldUnivariateDerivative1<T> lMUD = new FieldUnivariateDerivative1<>(getLM(), lMDot);
+            final FieldUnivariateDerivative1<T> lvUD = eccentricToTrue(meanToEccentric(lMUD, exUD, eyUD), exUD, eyUD);
+            lvDot = lvUD.getDerivative(1);
 
         } else {
             // acceleration is either almost zero or NaN,
@@ -395,10 +376,6 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
         hx    = op.getHx();
         hy    = op.getHy();
         lv    = op.getLv();
-
-        if (!FACTORIES.containsKey(a.getField())) {
-            FACTORIES.put(a.getField(), new FDSFactory<>(a.getField(), 1, 1));
-        }
 
         aDot  = op.getADot();
         exDot = op.getEquinoctialExDot();
@@ -489,13 +466,11 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
             return null;
         }
 
-        @SuppressWarnings("unchecked")
-        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
-        final FieldDerivativeStructure<T> lVDS = factory.build(lv, lvDot);
-        final FieldDerivativeStructure<T> exDS = factory.build(ex, exDot);
-        final FieldDerivativeStructure<T> eyDS = factory.build(ey, eyDot);
-        final FieldDerivativeStructure<T> lEDS = trueToEccentric(lVDS, exDS, eyDS);
-        return lEDS.getPartialDerivative(1);
+        final FieldUnivariateDerivative1<T> lVUD = new FieldUnivariateDerivative1<>(lv, lvDot);
+        final FieldUnivariateDerivative1<T> exUD = new FieldUnivariateDerivative1<>(ex, exDot);
+        final FieldUnivariateDerivative1<T> eyUD = new FieldUnivariateDerivative1<>(ey, eyDot);
+        final FieldUnivariateDerivative1<T> lEUD = trueToEccentric(lVUD, exUD, eyUD);
+        return lEUD.getDerivative(1);
 
     }
 
@@ -511,13 +486,11 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
             return null;
         }
 
-        @SuppressWarnings("unchecked")
-        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
-        final FieldDerivativeStructure<T> lVDS = factory.build(lv, lvDot);
-        final FieldDerivativeStructure<T> exDS = factory.build(ex, exDot);
-        final FieldDerivativeStructure<T> eyDS = factory.build(ey, eyDot);
-        final FieldDerivativeStructure<T> lMDS = eccentricToMean(trueToEccentric(lVDS, exDS, eyDS), exDS, eyDS);
-        return lMDS.getPartialDerivative(1);
+        final FieldUnivariateDerivative1<T> lVUD = new FieldUnivariateDerivative1<>(lv, lvDot);
+        final FieldUnivariateDerivative1<T> exUD = new FieldUnivariateDerivative1<>(ex, exDot);
+        final FieldUnivariateDerivative1<T> eyUD = new FieldUnivariateDerivative1<>(ey, eyDot);
+        final FieldUnivariateDerivative1<T> lMUD = eccentricToMean(trueToEccentric(lVUD, exUD, eyUD), exUD, eyUD);
+        return lMUD.getDerivative(1);
 
     }
 

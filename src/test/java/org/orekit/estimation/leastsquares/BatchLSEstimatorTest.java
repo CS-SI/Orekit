@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -661,11 +661,11 @@ public class BatchLSEstimatorTest {
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                                               before.getPVCoordinates().getVelocity()),
                             1.0e-6);
-        EstimationTestUtils.checkFit(context, estimator, 3, 4,
+        EstimationTestUtils.checkFit(context, estimator, 4, 5,
                                      0.0, 3.0e-06,
-                                     0.0, 7.0e-06,
-                                     0.0, 2.1e-07,
-                                     0.0, 3.7e-11);
+                                     0.0, 7.2e-06,
+                                     0.0, 3.3e-07,
+                                     0.0, 7.7e-11);
 
         final Orbit determined = new KeplerianOrbit(parameters.get( 6).getValue(),
                                                     parameters.get( 7).getValue(),
@@ -837,8 +837,8 @@ public class BatchLSEstimatorTest {
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
                                      0.0, 2.9e-06,
                                      0.0, 8.1e-06,
-                                     0.0, 7.0e-07,
-                                     0.0, 3.1e-10);
+                                     0.0, 7.1e-07,
+                                     0.0, 3.2e-10);
 
         final Orbit determined = new KeplerianOrbit(parameters.get( 6).getValue(),
                                                     parameters.get( 7).getValue(),
@@ -1015,8 +1015,8 @@ public class BatchLSEstimatorTest {
         // we have low correlation between the two types of measurement. We can expect a good estimate.
         EstimationTestUtils.checkFit(context, estimator, 1, 2,
                                      0.0, 4.6e7,
-                                     0.0, 1.4e-6,
-                                     0.0, 5.9e-7,
+                                     0.0, 1.8e-6,
+                                     0.0, 5.8e-7,
                                      0.0, 2.7e-10);
     }
     

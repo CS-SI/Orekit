@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,6 +18,8 @@ package org.orekit.forces.gravity;
 
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -77,6 +79,42 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
             FieldAbsoluteDate<DerivativeStructure> dsDate = new FieldAbsoluteDate<>(field, date);
             FieldVector3D<DerivativeStructure> zero = FieldVector3D.getZero(field);
             FieldSpacecraftState<DerivativeStructure> dState =
+                            new FieldSpacecraftState<>(new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(dsDate,
+                                                                                                                     position,
+                                                                                                                     velocity,
+                                                                                                                     zero),
+                                                                                 frame, field.getZero().add(mu)),
+                                                      new FieldAttitude<>(frame,
+                                                                      new TimeStampedFieldAngularCoordinates<>(dsDate,
+                                                                                                               rotation,
+                                                                                                               zero,
+                                                                                                               zero)),
+                                                      mass);
+            return attractionModel.acceleration(dState, attractionModel.getParameters(field));
+
+        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+            return null;
+        }
+    }
+
+    @Override
+    protected FieldVector3D<Gradient> accelerationDerivativesGradient(final ForceModel forceModel,
+                                                                      final AbsoluteDate date, final  Frame frame,
+                                                                      final FieldVector3D<Gradient> position,
+                                                                      final FieldVector3D<Gradient> velocity,
+                                                                      final FieldRotation<Gradient> rotation,
+                                                                      final Gradient mass)
+        {
+        try {
+            java.lang.reflect.Field attractionModelField = SolidTides.class.getDeclaredField("attractionModel");
+            attractionModelField.setAccessible(true);
+            ForceModel attractionModel = (ForceModel) attractionModelField.get(forceModel);
+            double mu = GravityFieldFactory.getConstantNormalizedProvider(5, 5).getMu();
+            final int freeParameters = position.getX().getFreeParameters();
+            Field<Gradient> field = GradientField.getField(freeParameters);
+            FieldAbsoluteDate<Gradient> dsDate = new FieldAbsoluteDate<>(field, date);
+            FieldVector3D<Gradient> zero = FieldVector3D.getZero(field);
+            FieldSpacecraftState<Gradient> dState =
                             new FieldSpacecraftState<>(new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(dsDate,
                                                                                                                      position,
                                                                                                                      velocity,
@@ -224,6 +262,35 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
+    public void testStateJacobianVs80ImplementationGradientNoPoleTide()
+        {
+        Frame eme2000 = FramesFactory.getEME2000();
+        TimeScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate date = new AbsoluteDate(2964, 8, 12, 11, 30, 00.000, utc);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
+                                         FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
+                                         0, PositionAngle.MEAN, eme2000, date,
+                                         Constants.EIGEN5C_EARTH_MU);
+        Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        UT1Scale  ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
+        NormalizedSphericalHarmonicsProvider gravityField =
+                        GravityFieldFactory.getConstantNormalizedProvider(5, 5);
+
+        ForceModel forceModel = new SolidTides(itrf, gravityField.getAe(), gravityField.getMu(),
+                                               gravityField.getTideSystem(), false,
+                                               SolidTides.DEFAULT_STEP, SolidTides.DEFAULT_POINTS,
+                                               IERSConventions.IERS_2010, ut1,
+                                               CelestialBodyFactory.getSun(),
+                                               CelestialBodyFactory.getMoon());
+        Assert.assertTrue(forceModel.dependsOnPositionOnly());
+
+        checkStateJacobianVs80ImplementationGradient(new SpacecraftState(orbit), forceModel,
+                                             new LofOffset(orbit.getFrame(), LOFType.VVLH),
+                                             2.0e-15, false);
+
+    }
+
+    @Test
     public void testStateJacobianVs80ImplementationPoleTide()
         {
         Frame eme2000 = FramesFactory.getEME2000();
@@ -246,6 +313,34 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                                CelestialBodyFactory.getMoon());
 
         checkStateJacobianVs80Implementation(new SpacecraftState(orbit), forceModel,
+                                             new LofOffset(orbit.getFrame(), LOFType.VVLH),
+                                             2.0e-15, false);
+
+    }
+
+    @Test
+    public void testStateJacobianVs80ImplementationGradientPoleTide()
+        {
+        Frame eme2000 = FramesFactory.getEME2000();
+        TimeScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate date = new AbsoluteDate(2964, 8, 12, 11, 30, 00.000, utc);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
+                                         FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
+                                         0, PositionAngle.MEAN, eme2000, date,
+                                         Constants.EIGEN5C_EARTH_MU);
+        Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        UT1Scale  ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
+        NormalizedSphericalHarmonicsProvider gravityField =
+                        GravityFieldFactory.getConstantNormalizedProvider(5, 5);
+
+        ForceModel forceModel = new SolidTides(itrf, gravityField.getAe(), gravityField.getMu(),
+                                               gravityField.getTideSystem(), true,
+                                               SolidTides.DEFAULT_STEP, SolidTides.DEFAULT_POINTS,
+                                               IERSConventions.IERS_2010, ut1,
+                                               CelestialBodyFactory.getSun(),
+                                               CelestialBodyFactory.getMoon());
+
+        checkStateJacobianVs80ImplementationGradient(new SpacecraftState(orbit), forceModel,
                                              new LofOffset(orbit.getFrame(), LOFType.VVLH),
                                              2.0e-15, false);
 
@@ -279,6 +374,33 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
+    public void testStateJacobianVsFiniteDifferencesGradientNoPoleTide()
+        {
+        Frame eme2000 = FramesFactory.getEME2000();
+        TimeScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate date = new AbsoluteDate(2964, 8, 12, 11, 30, 00.000, utc);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
+                                         FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
+                                         0, PositionAngle.MEAN, eme2000, date,
+                                         Constants.EIGEN5C_EARTH_MU);
+        Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        UT1Scale  ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
+        NormalizedSphericalHarmonicsProvider gravityField =
+                        GravityFieldFactory.getConstantNormalizedProvider(5, 5);
+
+        ForceModel forceModel = new SolidTides(itrf, gravityField.getAe(), gravityField.getMu(),
+                                               gravityField.getTideSystem(), false,
+                                               SolidTides.DEFAULT_STEP, SolidTides.DEFAULT_POINTS,
+                                               IERSConventions.IERS_2010, ut1,
+                                               CelestialBodyFactory.getSun(),
+                                               CelestialBodyFactory.getMoon());
+
+        checkStateJacobianVsFiniteDifferencesGradient(new SpacecraftState(orbit), forceModel, Propagator.DEFAULT_LAW,
+                                              10.0, 2.0e-10, false);
+
+    }
+
+    @Test
     public void testStateJacobianVsFiniteDifferencesPoleTide()
         {
         Frame eme2000 = FramesFactory.getEME2000();
@@ -301,6 +423,33 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                                CelestialBodyFactory.getMoon());
 
         checkStateJacobianVsFiniteDifferences(new SpacecraftState(orbit), forceModel, Propagator.DEFAULT_LAW,
+                                              10.0, 2.0e-10, false);
+
+    }
+
+    @Test
+    public void testStateJacobianVsFiniteDifferencesGradientPoleTide()
+        {
+        Frame eme2000 = FramesFactory.getEME2000();
+        TimeScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate date = new AbsoluteDate(2964, 8, 12, 11, 30, 00.000, utc);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
+                                         FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
+                                         0, PositionAngle.MEAN, eme2000, date,
+                                         Constants.EIGEN5C_EARTH_MU);
+        Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        UT1Scale  ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
+        NormalizedSphericalHarmonicsProvider gravityField =
+                        GravityFieldFactory.getConstantNormalizedProvider(5, 5);
+
+        ForceModel forceModel = new SolidTides(itrf, gravityField.getAe(), gravityField.getMu(),
+                                               gravityField.getTideSystem(), true,
+                                               SolidTides.DEFAULT_STEP, SolidTides.DEFAULT_POINTS,
+                                               IERSConventions.IERS_2010, ut1,
+                                               CelestialBodyFactory.getSun(),
+                                               CelestialBodyFactory.getMoon());
+
+        checkStateJacobianVsFiniteDifferencesGradient(new SpacecraftState(orbit), forceModel, Propagator.DEFAULT_LAW,
                                               10.0, 2.0e-10, false);
 
     }

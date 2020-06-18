@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,8 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -82,9 +81,6 @@ public class CircularOrbit
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20170414L;
-
-    /** Factory for first time derivatives. */
-    private static final DSFactory FACTORY = new DSFactory(1, 1);
 
     /** Semi-major axis (m). */
     private final double a;
@@ -198,25 +194,25 @@ public class CircularOrbit
         this.raanDot = raanDot;
 
         if (hasDerivatives()) {
-            final DerivativeStructure exDS    = FACTORY.build(ex,    exDot);
-            final DerivativeStructure eyDS    = FACTORY.build(ey,    eyDot);
-            final DerivativeStructure alphaDS = FACTORY.build(alpha, alphaDot);
-            final DerivativeStructure alphavDS;
+            final UnivariateDerivative1 exUD    = new UnivariateDerivative1(ex,    exDot);
+            final UnivariateDerivative1 eyUD    = new UnivariateDerivative1(ey,    eyDot);
+            final UnivariateDerivative1 alphaUD = new UnivariateDerivative1(alpha, alphaDot);
+            final UnivariateDerivative1 alphavUD;
             switch (type) {
                 case MEAN :
-                    alphavDS = FieldCircularOrbit.eccentricToTrue(FieldCircularOrbit.meanToEccentric(alphaDS, exDS, eyDS), exDS, eyDS);
+                    alphavUD = FieldCircularOrbit.eccentricToTrue(FieldCircularOrbit.meanToEccentric(alphaUD, exUD, eyUD), exUD, eyUD);
                     break;
                 case ECCENTRIC :
-                    alphavDS = FieldCircularOrbit.eccentricToTrue(alphaDS, exDS, eyDS);
+                    alphavUD = FieldCircularOrbit.eccentricToTrue(alphaUD, exUD, eyUD);
                     break;
                 case TRUE :
-                    alphavDS = alphaDS;
+                    alphavUD = alphaUD;
                     break;
                 default :
                     throw new OrekitInternalError(null);
             }
-            this.alphaV    = alphavDS.getValue();
-            this.alphaVDot = alphavDS.getPartialDerivative(1);
+            this.alphaV    = alphavUD.getValue();
+            this.alphaVDot = alphavUD.getDerivative(1);
         } else {
             switch (type) {
                 case MEAN :
@@ -374,11 +370,11 @@ public class CircularOrbit
             // mean anomaly derivative including Keplerian motion and convert to true anomaly
             final double alphaMDot = getKeplerianMeanMotion() +
                                      jacobian[5][3] * aX + jacobian[5][4] * aY + jacobian[5][5] * aZ;
-            final DerivativeStructure exDS     = FACTORY.build(ex, exDot);
-            final DerivativeStructure eyDS     = FACTORY.build(ey, eyDot);
-            final DerivativeStructure alphaMDS = FACTORY.build(getAlphaM(), alphaMDot);
-            final DerivativeStructure alphavDS = FieldCircularOrbit.eccentricToTrue(FieldCircularOrbit.meanToEccentric(alphaMDS, exDS, eyDS), exDS, eyDS);
-            alphaVDot = alphavDS.getPartialDerivative(1);
+            final UnivariateDerivative1 exUD     = new UnivariateDerivative1(ex, exDot);
+            final UnivariateDerivative1 eyUD     = new UnivariateDerivative1(ey, eyDot);
+            final UnivariateDerivative1 alphaMUD = new UnivariateDerivative1(getAlphaM(), alphaMDot);
+            final UnivariateDerivative1 alphavUD = FieldCircularOrbit.eccentricToTrue(FieldCircularOrbit.meanToEccentric(alphaMUD, exUD, eyUD), exUD, eyUD);
+            alphaVDot = alphavUD.getDerivative(1);
 
         } else {
             // acceleration is either almost zero or NaN,
@@ -613,11 +609,11 @@ public class CircularOrbit
      * @since 9.0
      */
     public double getAlphaEDot() {
-        final DerivativeStructure alphaVDS = FACTORY.build(alphaV, alphaVDot);
-        final DerivativeStructure exDS     = FACTORY.build(ex,     exDot);
-        final DerivativeStructure eyDS     = FACTORY.build(ey,     eyDot);
-        final DerivativeStructure alphaEDS = FieldCircularOrbit.trueToEccentric(alphaVDS, exDS, eyDS);
-        return alphaEDS.getPartialDerivative(1);
+        final UnivariateDerivative1 alphaVUD = new UnivariateDerivative1(alphaV, alphaVDot);
+        final UnivariateDerivative1 exUD     = new UnivariateDerivative1(ex,     exDot);
+        final UnivariateDerivative1 eyUD     = new UnivariateDerivative1(ey,     eyDot);
+        final UnivariateDerivative1 alphaEUD = FieldCircularOrbit.trueToEccentric(alphaVUD, exUD, eyUD);
+        return alphaEUD.getDerivative(1);
     }
 
     /** Get the mean latitude argument.
@@ -635,11 +631,11 @@ public class CircularOrbit
      * @since 9.0
      */
     public double getAlphaMDot() {
-        final DerivativeStructure alphaVDS = FACTORY.build(alphaV, alphaVDot);
-        final DerivativeStructure exDS     = FACTORY.build(ex,     exDot);
-        final DerivativeStructure eyDS     = FACTORY.build(ey,     eyDot);
-        final DerivativeStructure alphaMDS = FieldCircularOrbit.eccentricToMean(FieldCircularOrbit.trueToEccentric(alphaVDS, exDS, eyDS), exDS, eyDS);
-        return alphaMDS.getPartialDerivative(1);
+        final UnivariateDerivative1 alphaVUD = new UnivariateDerivative1(alphaV, alphaVDot);
+        final UnivariateDerivative1 exUD     = new UnivariateDerivative1(ex,     exDot);
+        final UnivariateDerivative1 eyUD     = new UnivariateDerivative1(ey,     eyDot);
+        final UnivariateDerivative1 alphaMUD = FieldCircularOrbit.eccentricToMean(FieldCircularOrbit.trueToEccentric(alphaVUD, exUD, eyUD), exUD, eyUD);
+        return alphaMUD.getDerivative(1);
     }
 
     /** Get the latitude argument.

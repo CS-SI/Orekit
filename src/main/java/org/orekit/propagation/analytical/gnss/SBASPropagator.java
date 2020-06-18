@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,9 +16,9 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
@@ -59,9 +59,6 @@ public class SBASPropagator extends AbstractAnalyticalPropagator {
 
     /** The ECEF frame used for SBAS propagation. */
     private final Frame ecef;
-
-    /** Factory for the DerivativeStructure instances. */
-    private final DSFactory factory;
 
     /**
      * This nested class aims at building a SBASPropagator.
@@ -198,8 +195,6 @@ public class SBASPropagator extends AbstractAnalyticalPropagator {
         this.eci  = builder.eci;
         // Sets the Earth Centered Earth Fixed frame
         this.ecef = builder.ecef;
-
-        this.factory = new DSFactory(1, 2);
     }
 
     /**
@@ -213,15 +208,23 @@ public class SBASPropagator extends AbstractAnalyticalPropagator {
      */
     public PVCoordinates propagateInEcef(final AbsoluteDate date) {
         // Duration from SBAS ephemeris Reference date
-        final DerivativeStructure dt = factory.variable(0, getDT(date));
+        final UnivariateDerivative2 dt = new UnivariateDerivative2( getDT(date), 1.0, 0.0);
         // Satellite coordinates
-        final DerivativeStructure x = dt.multiply(dt.multiply(0.5 * sbasOrbit.getXDotDot()).add(sbasOrbit.getXDot())).add(sbasOrbit.getX());
-        final DerivativeStructure y = dt.multiply(dt.multiply(0.5 * sbasOrbit.getYDotDot()).add(sbasOrbit.getYDot())).add(sbasOrbit.getY());
-        final DerivativeStructure z = dt.multiply(dt.multiply(0.5 * sbasOrbit.getZDotDot()).add(sbasOrbit.getZDot())).add(sbasOrbit.getZ());
+        final UnivariateDerivative2 x = dt.multiply(dt.multiply(0.5 * sbasOrbit.getXDotDot()).add(sbasOrbit.getXDot())).add(sbasOrbit.getX());
+        final UnivariateDerivative2 y = dt.multiply(dt.multiply(0.5 * sbasOrbit.getYDotDot()).add(sbasOrbit.getYDot())).add(sbasOrbit.getY());
+        final UnivariateDerivative2 z = dt.multiply(dt.multiply(0.5 * sbasOrbit.getZDotDot()).add(sbasOrbit.getZDot())).add(sbasOrbit.getZ());
         // Returns the Earth-fixed coordinates
-        final FieldVector3D<DerivativeStructure> positionwithDerivatives =
+        final FieldVector3D<UnivariateDerivative2> positionwithDerivatives =
                         new FieldVector3D<>(x, y, z);
-        return new PVCoordinates(positionwithDerivatives);
+        return new PVCoordinates(new Vector3D(positionwithDerivatives.getX().getValue(),
+                                              positionwithDerivatives.getY().getValue(),
+                                              positionwithDerivatives.getZ().getValue()),
+                                 new Vector3D(positionwithDerivatives.getX().getFirstDerivative(),
+                                              positionwithDerivatives.getY().getFirstDerivative(),
+                                              positionwithDerivatives.getZ().getFirstDerivative()),
+                                 new Vector3D(positionwithDerivatives.getX().getSecondDerivative(),
+                                              positionwithDerivatives.getY().getSecondDerivative(),
+                                              positionwithDerivatives.getZ().getSecondDerivative()));
     }
 
     /** {@inheritDoc} */

@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -22,6 +22,7 @@ import java.text.ParseException;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
@@ -305,6 +306,67 @@ public class ECOM2Test extends AbstractForceModelTest {
     }
 
     @Test
+    public void testRealFieldGradient() {
+        
+        // Initial field Keplerian orbit
+        // The variables are the six orbital parameters
+        int freeParameters = 6;
+        Gradient a_0 = Gradient.variable(freeParameters, 0, 7e6);
+        Gradient e_0 = Gradient.variable(freeParameters, 1, 0.01);
+        Gradient i_0 = Gradient.variable(freeParameters, 2, 1.2);
+        Gradient R_0 = Gradient.variable(freeParameters, 3, 0.7);
+        Gradient O_0 = Gradient.variable(freeParameters, 4, 0.5);
+        Gradient n_0 = Gradient.variable(freeParameters, 5, 0.1);
+
+        Field<Gradient> field = a_0.getField();
+        Gradient zero = field.getZero();
+
+        // Initial date = J2000 epoch
+        FieldAbsoluteDate<Gradient> J2000 = new FieldAbsoluteDate<>(field);
+        
+        // J2000 frame
+        Frame EME = FramesFactory.getEME2000();
+
+        // Create initial field Keplerian orbit
+        FieldKeplerianOrbit<Gradient> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
+                                                                      PositionAngle.MEAN,
+                                                                      EME,
+                                                                      J2000,
+                                                                      zero.add(Constants.EIGEN5C_EARTH_MU));
+        
+        // Initial field and classical S/Cs
+        FieldSpacecraftState<Gradient> initialState = new FieldSpacecraftState<>(FKO);
+        SpacecraftState iSR = initialState.toSpacecraftState();
+
+        // Field integrator and classical integrator
+        ClassicalRungeKuttaFieldIntegrator<Gradient> integrator =
+                        new ClassicalRungeKuttaFieldIntegrator<>(field, zero.add(6));
+        ClassicalRungeKuttaIntegrator RIntegrator =
+                        new ClassicalRungeKuttaIntegrator(6);
+        OrbitType type = OrbitType.EQUINOCTIAL;
+        
+        // Field and classical numerical propagators
+        FieldNumericalPropagator<Gradient> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FNP.setOrbitType(type);
+        FNP.setInitialState(initialState);
+
+        NumericalPropagator NP = new NumericalPropagator(RIntegrator);
+        NP.setOrbitType(type);
+        NP.setInitialState(iSR);
+
+        // Set up the force model to test
+        final ECOM2 forceModel = new ECOM2(0, 0, 1e-7, CelestialBodyFactory.getSun(), Constants.EGM96_EARTH_EQUATORIAL_RADIUS);
+
+        FNP.addForceModel(forceModel);
+        NP.addForceModel(forceModel);
+        
+        // Do the test
+        checkRealFieldPropagationGradient(FKO, PositionAngle.MEAN, 300., NP, FNP,
+                                  1.0e-30, 1.3e-2, 9.6e-5, 1.4e-4,
+                                  1, false);
+    }
+
+    @Test
     public void testParameterDerivative() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
@@ -326,6 +388,27 @@ public class ECOM2Test extends AbstractForceModelTest {
     }
 
     @Test
+    public void testParameterDerivativeGradient() {
+
+        final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
+        final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
+        final SpacecraftState state =
+                new SpacecraftState(new CartesianOrbit(new PVCoordinates(pos, vel),
+                                                       FramesFactory.getGCRF(),
+                                                       new AbsoluteDate(2003, 3, 5, 0, 24, 0.0, TimeScalesFactory.getTAI()),
+                                                       Constants.EIGEN5C_EARTH_MU));
+
+        //Build the forceModel
+        final ECOM2 forceModel = new ECOM2(0, 0, 1e-7, CelestialBodyFactory.getSun(), Constants.EGM96_EARTH_EQUATORIAL_RADIUS);
+
+        Assert.assertFalse(forceModel.dependsOnPositionOnly());
+
+        checkParameterDerivativeGradient(state, forceModel, ECOM2.ECOM_COEFFICIENT + " B0", 1.0e-4, 3.0e-12);
+        checkParameterDerivativeGradient(state, forceModel, ECOM2.ECOM_COEFFICIENT + " D0", 1.0e-4, 3.0e-12);
+        checkParameterDerivativeGradient(state, forceModel, ECOM2.ECOM_COEFFICIENT + " Y0", 1.0e-4, 3.0e-12);
+    }
+
+    @Test
     public void testJacobianVsFiniteDifferences() {
 
         // initialization
@@ -344,6 +427,28 @@ public class ECOM2Test extends AbstractForceModelTest {
         SpacecraftState state = new SpacecraftState(orbit,
                                                     Propagator.DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
         checkStateJacobianVsFiniteDifferences(state, forceModel, Propagator.DEFAULT_LAW, 1.0, 5.0e-6, false);
+
+    }
+
+    @Test
+    public void testJacobianVsFiniteDifferencesGradient() {
+
+        // initialization
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+                                             new TimeComponents(13, 59, 27.816),
+                                             TimeScalesFactory.getUTC());
+        double i     = FastMath.toRadians(98.7);
+        double omega = FastMath.toRadians(93.0);
+        double OMEGA = FastMath.toRadians(15.0 * 22.5);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
+                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         Constants.EIGEN5C_EARTH_MU);
+
+        final ECOM2 forceModel = new ECOM2(2, 2, 1e-7, CelestialBodyFactory.getSun(), Constants.EGM96_EARTH_EQUATORIAL_RADIUS);
+
+        SpacecraftState state = new SpacecraftState(orbit,
+                                                    Propagator.DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
+        checkStateJacobianVsFiniteDifferencesGradient(state, forceModel, Propagator.DEFAULT_LAW, 1.0, 5.0e-6, false);
 
     }
 

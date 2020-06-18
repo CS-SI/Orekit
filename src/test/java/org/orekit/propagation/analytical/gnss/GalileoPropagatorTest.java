@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -107,7 +107,7 @@ public class GalileoPropagatorTest {
 
         // Checks
         Assert.assertEquals(0., pv0.getPosition().distance(pv1.getPosition()), 2.4e-8);
-        Assert.assertEquals(0., pv0.getVelocity().distance(pv1.getVelocity()), 2.7e-12);
+        Assert.assertEquals(0., pv0.getVelocity().distance(pv1.getVelocity()), 2.8e-12);
     }
 
     @Test

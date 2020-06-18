@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,6 +21,7 @@ import java.util.Map;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -468,7 +469,9 @@ public class GroundStation {
      * date (i.e. with clock, Earth and station offsets applied)
      * @see #getOffsetToInertial(Frame, FieldAbsoluteDate, DSFactory, Map)
      * @since 9.3
+     * @deprecated as of 10.2, replaced by {@link #getOffsetToInertial(Frame, AbsoluteDate, int, Map)}
      */
+    @Deprecated
     public FieldTransform<DerivativeStructure> getOffsetToInertial(final Frame inertial,
                                                                    final AbsoluteDate clockDate,
                                                                    final DSFactory factory,
@@ -495,7 +498,9 @@ public class GroundStation {
      * @return transform between offset frame and inertial frame, at specified date
      * @see #getOffsetToInertial(Frame, AbsoluteDate, DSFactory, Map)
      * @since 9.0
+     * @deprecated as of 10.2, replaced by {@link #getOffsetToInertial(Frame, FieldAbsoluteDate, int, Map)}
      */
+    @Deprecated
     public FieldTransform<DerivativeStructure> getOffsetToInertial(final Frame inertial,
                                                                    final FieldAbsoluteDate<DerivativeStructure> offsetCompensatedDate,
                                                                    final DSFactory factory,
@@ -530,6 +535,90 @@ public class GroundStation {
 
         // combine all transforms together
         final FieldTransform<DerivativeStructure> bodyToInert        = baseFrame.getParent().getTransformTo(inertial, offsetCompensatedDate);
+
+        return new FieldTransform<>(offsetCompensatedDate,
+                                    offsetToIntermediate,
+                                    new FieldTransform<>(offsetCompensatedDate, intermediateToBody, bodyToInert));
+
+    }
+
+    /** Get the transform between offset frame and inertial frame with derivatives.
+     * <p>
+     * As the East and North vectors are not well defined at pole, the derivatives
+     * of these two vectors diverge to infinity as we get closer to the pole.
+     * So this method should not be used for stations less than 0.0001 degree from
+     * either poles.
+     * </p>
+     * @param inertial inertial frame to transform to
+     * @param clockDate date of the transform as read by the ground station clock (i.e. clock offset <em>not</em> compensated)
+     * @param freeParameters total number of free parameters in the gradient
+     * @param indices indices of the estimated parameters in derivatives computations
+     * @return transform between offset frame and inertial frame, at <em>real</em> measurement
+     * date (i.e. with clock, Earth and station offsets applied)
+     * @see #getOffsetToInertial(Frame, FieldAbsoluteDate, DSFactory, Map)
+     * @since 10.2
+     */
+    public FieldTransform<Gradient> getOffsetToInertial(final Frame inertial,
+                                                        final AbsoluteDate clockDate,
+                                                        final int freeParameters,
+                                                        final Map<String, Integer> indices) {
+        // take clock offset into account
+        final Gradient offset = clockOffsetDriver.getValue(freeParameters, indices);
+        final FieldAbsoluteDate<Gradient> offsetCompensatedDate =
+                        new FieldAbsoluteDate<>(clockDate, offset.negate());
+
+        return getOffsetToInertial(inertial, offsetCompensatedDate, freeParameters, indices);
+    }
+
+    /** Get the transform between offset frame and inertial frame with derivatives.
+     * <p>
+     * As the East and North vectors are not well defined at pole, the derivatives
+     * of these two vectors diverge to infinity as we get closer to the pole.
+     * So this method should not be used for stations less than 0.0001 degree from
+     * either poles.
+     * </p>
+     * @param inertial inertial frame to transform to
+     * @param offsetCompensatedDate date of the transform, clock offset and its derivatives already compensated
+     * @param freeParameters total number of free parameters in the gradient
+     * @param indices indices of the estimated parameters in derivatives computations
+     * @return transform between offset frame and inertial frame, at specified date
+     * @see #getOffsetToInertial(Frame, AbsoluteDate, DSFactory, Map)
+     * @since 10.2
+     */
+    public FieldTransform<Gradient> getOffsetToInertial(final Frame inertial,
+                                                        final FieldAbsoluteDate<Gradient> offsetCompensatedDate,
+                                                        final int freeParameters,
+                                                        final Map<String, Integer> indices) {
+
+        final Field<Gradient>         field = offsetCompensatedDate.getField();
+        final FieldVector3D<Gradient> zero  = FieldVector3D.getZero(field);
+        final FieldVector3D<Gradient> plusI = FieldVector3D.getPlusI(field);
+        final FieldVector3D<Gradient> plusK = FieldVector3D.getPlusK(field);
+
+        // take Earth offsets into account
+        final FieldTransform<Gradient> intermediateToBody =
+                        estimatedEarthFrameProvider.getTransform(offsetCompensatedDate, freeParameters, indices).getInverse();
+
+        // take station offsets into account
+        final Gradient  x          = eastOffsetDriver.getValue(freeParameters, indices);
+        final Gradient  y          = northOffsetDriver.getValue(freeParameters, indices);
+        final Gradient  z          = zenithOffsetDriver.getValue(freeParameters, indices);
+        final BodyShape            baseShape  = baseFrame.getParentShape();
+        final Transform            baseToBody = baseFrame.getTransformTo(baseShape.getBodyFrame(), (AbsoluteDate) null);
+
+        FieldVector3D<Gradient> origin = baseToBody.transformPosition(new FieldVector3D<>(x, y, z));
+        origin = origin.add(computeDisplacement(offsetCompensatedDate.toAbsoluteDate(), origin.toVector3D()));
+        final FieldGeodeticPoint<Gradient> originGP = baseShape.transform(origin, baseShape.getBodyFrame(), offsetCompensatedDate);
+        final FieldTransform<Gradient> offsetToIntermediate =
+                        new FieldTransform<>(offsetCompensatedDate,
+                                             new FieldTransform<>(offsetCompensatedDate,
+                                                                  new FieldRotation<>(plusI, plusK,
+                                                                                      originGP.getEast(), originGP.getZenith()),
+                                                                  zero),
+                                             new FieldTransform<>(offsetCompensatedDate, origin));
+
+        // combine all transforms together
+        final FieldTransform<Gradient> bodyToInert = baseFrame.getParent().getTransformTo(inertial, offsetCompensatedDate);
 
         return new FieldTransform<>(offsetCompensatedDate,
                                     offsetToIntermediate,

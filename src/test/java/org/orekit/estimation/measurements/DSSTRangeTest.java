@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -76,11 +76,11 @@ public class DSSTRangeTest {
         }
         // Run test
         boolean isModifier = false;
-        double refErrorsPMedian = 5.1e-10;
-        double refErrorsPMean   = 1.9e-09;
+        double refErrorsPMedian = 5.2e-10;
+        double refErrorsPMean   = 2.1e-09;
         double refErrorsPMax    = 4.3e-08;
-        double refErrorsVMedian = 1.8e-04;
-        double refErrorsVMean   = 6.1e-04;
+        double refErrorsVMedian = 1.6e-04;
+        double refErrorsVMean   = 5.9e-04;
         double refErrorsVMax    = 2.6e-02;
         this.genericTestStateDerivatives(isModifier, printResults,
                                          refErrorsPMedian, refErrorsPMean, refErrorsPMax,

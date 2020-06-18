@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,9 +16,9 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
@@ -78,9 +78,6 @@ public abstract class AbstractGNSSPropagator extends AbstractAnalyticalPropagato
     /** The ECEF frame used for GNSS propagation. */
     private final Frame ecef;
 
-    /** Factory for the DerivativeStructure instances. */
-    private final DSFactory factory;
-
     /** Build a new instance.
      * @param gnssOrbit the common GNSS orbital elements to be used by the Abstract GNSS propagator
      * @param attitudeProvider provider for attitude computation
@@ -100,7 +97,6 @@ public abstract class AbstractGNSSPropagator extends AbstractAnalyticalPropagato
         this.cycleDuration = cycleDuration;
         this.mass          = mass;
         this.mu            = mu;
-        this.factory       = new DSFactory(1, 2);
         // Sets the Earth Centered Inertial frame
         this.eci  = eci;
         // Sets the Earth Centered Earth Fixed frame
@@ -139,45 +135,53 @@ public abstract class AbstractGNSSPropagator extends AbstractAnalyticalPropagato
      */
     public PVCoordinates propagateInEcef(final AbsoluteDate date) {
         // Duration from GNSS ephemeris Reference date
-        final DerivativeStructure tk = factory.variable(0, getTk(date));
+        final UnivariateDerivative2 tk = new UnivariateDerivative2(getTk(date), 1.0, 0.0);
         // Mean anomaly
-        final DerivativeStructure mk = tk.multiply(gnssOrbit.getMeanMotion()).add(gnssOrbit.getM0());
+        final UnivariateDerivative2 mk = tk.multiply(gnssOrbit.getMeanMotion()).add(gnssOrbit.getM0());
         // Eccentric Anomaly
-        final DerivativeStructure ek = getEccentricAnomaly(mk);
+        final UnivariateDerivative2 ek = getEccentricAnomaly(mk);
         // True Anomaly
-        final DerivativeStructure vk =  getTrueAnomaly(ek);
+        final UnivariateDerivative2 vk =  getTrueAnomaly(ek);
         // Argument of Latitude
-        final DerivativeStructure phik    = vk.add(gnssOrbit.getPa());
-        final DerivativeStructure twoPhik = phik.multiply(2);
-        final DerivativeStructure c2phi   = twoPhik.cos();
-        final DerivativeStructure s2phi   = twoPhik.sin();
+        final UnivariateDerivative2 phik    = vk.add(gnssOrbit.getPa());
+        final UnivariateDerivative2 twoPhik = phik.multiply(2);
+        final UnivariateDerivative2 c2phi   = twoPhik.cos();
+        final UnivariateDerivative2 s2phi   = twoPhik.sin();
         // Argument of Latitude Correction
-        final DerivativeStructure dphik = c2phi.multiply(gnssOrbit.getCuc()).add(s2phi.multiply(gnssOrbit.getCus()));
+        final UnivariateDerivative2 dphik = c2phi.multiply(gnssOrbit.getCuc()).add(s2phi.multiply(gnssOrbit.getCus()));
         // Radius Correction
-        final DerivativeStructure drk = c2phi.multiply(gnssOrbit.getCrc()).add(s2phi.multiply(gnssOrbit.getCrs()));
+        final UnivariateDerivative2 drk = c2phi.multiply(gnssOrbit.getCrc()).add(s2phi.multiply(gnssOrbit.getCrs()));
         // Inclination Correction
-        final DerivativeStructure dik = c2phi.multiply(gnssOrbit.getCic()).add(s2phi.multiply(gnssOrbit.getCis()));
+        final UnivariateDerivative2 dik = c2phi.multiply(gnssOrbit.getCic()).add(s2phi.multiply(gnssOrbit.getCis()));
         // Corrected Argument of Latitude
-        final DerivativeStructure uk = phik.add(dphik);
+        final UnivariateDerivative2 uk = phik.add(dphik);
         // Corrected Radius
-        final DerivativeStructure rk = ek.cos().multiply(-gnssOrbit.getE()).add(1).multiply(gnssOrbit.getSma()).add(drk);
+        final UnivariateDerivative2 rk = ek.cos().multiply(-gnssOrbit.getE()).add(1).multiply(gnssOrbit.getSma()).add(drk);
         // Corrected Inclination
-        final DerivativeStructure ik  = tk.multiply(gnssOrbit.getIDot()).add(gnssOrbit.getI0()).add(dik);
-        final DerivativeStructure cik = ik.cos();
+        final UnivariateDerivative2 ik  = tk.multiply(gnssOrbit.getIDot()).add(gnssOrbit.getI0()).add(dik);
+        final UnivariateDerivative2 cik = ik.cos();
         // Positions in orbital plane
-        final DerivativeStructure xk = uk.cos().multiply(rk);
-        final DerivativeStructure yk = uk.sin().multiply(rk);
+        final UnivariateDerivative2 xk = uk.cos().multiply(rk);
+        final UnivariateDerivative2 yk = uk.sin().multiply(rk);
         // Corrected longitude of ascending node
-        final DerivativeStructure omk = tk.multiply(gnssOrbit.getOmegaDot() - av).
+        final UnivariateDerivative2 omk = tk.multiply(gnssOrbit.getOmegaDot() - av).
                                         add(gnssOrbit.getOmega0() - av * gnssOrbit.getTime());
-        final DerivativeStructure comk = omk.cos();
-        final DerivativeStructure somk = omk.sin();
+        final UnivariateDerivative2 comk = omk.cos();
+        final UnivariateDerivative2 somk = omk.sin();
         // returns the Earth-fixed coordinates
-        final FieldVector3D<DerivativeStructure> positionwithDerivatives =
+        final FieldVector3D<UnivariateDerivative2> positionwithDerivatives =
                         new FieldVector3D<>(xk.multiply(comk).subtract(yk.multiply(somk).multiply(cik)),
                                             xk.multiply(somk).add(yk.multiply(comk).multiply(cik)),
                                             yk.multiply(ik.sin()));
-        return new PVCoordinates(positionwithDerivatives);
+        return new PVCoordinates(new Vector3D(positionwithDerivatives.getX().getValue(),
+                                              positionwithDerivatives.getY().getValue(),
+                                              positionwithDerivatives.getZ().getValue()),
+                                 new Vector3D(positionwithDerivatives.getX().getFirstDerivative(),
+                                              positionwithDerivatives.getY().getFirstDerivative(),
+                                              positionwithDerivatives.getZ().getFirstDerivative()),
+                                 new Vector3D(positionwithDerivatives.getX().getSecondDerivative(),
+                                              positionwithDerivatives.getY().getSecondDerivative(),
+                                              positionwithDerivatives.getZ().getSecondDerivative()));
     }
 
     /**
@@ -190,15 +194,15 @@ public abstract class AbstractGNSSPropagator extends AbstractAnalyticalPropagato
      * @param mk the mean anomaly (rad)
      * @return the eccentric anomaly (rad)
      */
-    private DerivativeStructure getEccentricAnomaly(final DerivativeStructure mk) {
+    private UnivariateDerivative2 getEccentricAnomaly(final UnivariateDerivative2 mk) {
 
         // reduce M to [-PI PI] interval
-        final double[] mlDerivatives = mk.getAllDerivatives();
-        mlDerivatives[0] = MathUtils.normalizeAngle(mlDerivatives[0], 0.0);
-        final DerivativeStructure reducedM = mk.getFactory().build(mlDerivatives);
+        final UnivariateDerivative2 reducedM = new UnivariateDerivative2(MathUtils.normalizeAngle(mk.getValue(), 0.0),
+                                                                         mk.getFirstDerivative(),
+                                                                         mk.getSecondDerivative());
 
         // compute start value according to A. W. Odell and R. H. Gooding S12 starter
-        DerivativeStructure ek;
+        UnivariateDerivative2 ek;
         if (FastMath.abs(reducedM.getValue()) < 1.0 / 6.0) {
             if (FastMath.abs(reducedM.getValue()) < Precision.SAFE_MIN) {
                 // this is an Orekit change to the S12 starter.
@@ -211,10 +215,10 @@ public abstract class AbstractGNSSPropagator extends AbstractAnalyticalPropagato
             }
         } else {
             if (reducedM.getValue() < 0) {
-                final DerivativeStructure w = reducedM.add(FastMath.PI);
+                final UnivariateDerivative2 w = reducedM.add(FastMath.PI);
                 ek = reducedM.add(w.multiply(-A).divide(w.subtract(B)).subtract(FastMath.PI).subtract(reducedM).multiply(gnssOrbit.getE()));
             } else {
-                final DerivativeStructure minusW = reducedM.subtract(FastMath.PI);
+                final UnivariateDerivative2 minusW = reducedM.subtract(FastMath.PI);
                 ek = reducedM.add(minusW.multiply(A).divide(minusW.add(B)).add(FastMath.PI).subtract(reducedM).multiply(gnssOrbit.getE()));
             }
         }
@@ -224,22 +228,22 @@ public abstract class AbstractGNSSPropagator extends AbstractAnalyticalPropagato
 
         // perform two iterations, each consisting of one Halley step and one Newton-Raphson step
         for (int j = 0; j < 2; ++j) {
-            final DerivativeStructure f;
-            DerivativeStructure fd;
-            final DerivativeStructure fdd  = ek.sin().multiply(gnssOrbit.getE());
-            final DerivativeStructure fddd = ek.cos().multiply(gnssOrbit.getE());
+            final UnivariateDerivative2 f;
+            UnivariateDerivative2 fd;
+            final UnivariateDerivative2 fdd  = ek.sin().multiply(gnssOrbit.getE());
+            final UnivariateDerivative2 fddd = ek.cos().multiply(gnssOrbit.getE());
             if (noCancellationRisk) {
                 f  = ek.subtract(fdd).subtract(reducedM);
                 fd = fddd.subtract(1).negate();
             } else {
                 f  = eMeSinE(ek).subtract(reducedM);
-                final DerivativeStructure s = ek.multiply(0.5).sin();
+                final UnivariateDerivative2 s = ek.multiply(0.5).sin();
                 fd = s.multiply(s).multiply(2 * gnssOrbit.getE()).add(e1);
             }
-            final DerivativeStructure dee = f.multiply(fd).divide(f.multiply(0.5).multiply(fdd).subtract(fd.multiply(fd)));
+            final UnivariateDerivative2 dee = f.multiply(fd).divide(f.multiply(0.5).multiply(fdd).subtract(fd.multiply(fd)));
 
             // update eccentric anomaly, using expressions that limit underflow problems
-            final DerivativeStructure w = fd.add(dee.multiply(0.5).multiply(fdd.add(dee.multiply(fdd).divide(3))));
+            final UnivariateDerivative2 w = fd.add(dee.multiply(0.5).multiply(fdd.add(dee.multiply(fdd).divide(3))));
             fd = fd.add(dee.multiply(fdd.add(dee.multiply(0.5).multiply(fdd))));
             ek = ek.subtract(f.subtract(dee.multiply(fd.subtract(w))).divide(fd));
         }
@@ -257,13 +261,13 @@ public abstract class AbstractGNSSPropagator extends AbstractAnalyticalPropagato
      * @param E eccentric anomaly
      * @return E - e sin(E)
      */
-    private DerivativeStructure eMeSinE(final DerivativeStructure E) {
-        DerivativeStructure x = E.sin().multiply(1 - gnssOrbit.getE());
-        final DerivativeStructure mE2 = E.negate().multiply(E);
-        DerivativeStructure term = E;
-        DerivativeStructure d    = E.getField().getZero();
+    private UnivariateDerivative2 eMeSinE(final UnivariateDerivative2 E) {
+        UnivariateDerivative2 x = E.sin().multiply(1 - gnssOrbit.getE());
+        final UnivariateDerivative2 mE2 = E.negate().multiply(E);
+        UnivariateDerivative2 term = E;
+        UnivariateDerivative2 d    = E.getField().getZero();
         // the inequality test below IS intentional and should NOT be replaced by a check with a small tolerance
-        for (DerivativeStructure x0 = d.add(Double.NaN); !Double.valueOf(x.getValue()).equals(Double.valueOf(x0.getValue()));) {
+        for (UnivariateDerivative2 x0 = d.add(Double.NaN); !Double.valueOf(x.getValue()).equals(Double.valueOf(x0.getValue()));) {
             d = d.add(2);
             term = term.multiply(mE2.divide(d.multiply(d.add(1))));
             x0 = x;
@@ -277,9 +281,9 @@ public abstract class AbstractGNSSPropagator extends AbstractAnalyticalPropagato
      * @param ek the eccentric anomaly (rad)
      * @return the true anomaly (rad)
      */
-    private DerivativeStructure getTrueAnomaly(final DerivativeStructure ek) {
-        final DerivativeStructure svk = ek.sin().multiply(FastMath.sqrt(1. - gnssOrbit.getE() * gnssOrbit.getE()));
-        final DerivativeStructure cvk = ek.cos().subtract(gnssOrbit.getE());
+    private UnivariateDerivative2 getTrueAnomaly(final UnivariateDerivative2 ek) {
+        final UnivariateDerivative2 svk = ek.sin().multiply(FastMath.sqrt(1. - gnssOrbit.getE() * gnssOrbit.getE()));
+        final UnivariateDerivative2 cvk = ek.cos().subtract(gnssOrbit.getE());
         return svk.atan2(cvk);
     }
 

@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,9 +20,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.MathUtils;
 import org.orekit.frames.FieldTransform;
@@ -119,22 +118,20 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
                 indices.put(driver.getName(), nbParams++);
             }
         }
-        final DSFactory                          factory = new DSFactory(nbParams, 1);
-        final Field<DerivativeStructure>         field   = factory.getDerivativeField();
-        final FieldVector3D<DerivativeStructure> zero    = FieldVector3D.getZero(field);
+        final FieldVector3D<Gradient> zero = FieldVector3D.getZero(GradientField.getField(nbParams));
 
-        // Coordinates of the spacecraft expressed as a derivative structure
-        final TimeStampedFieldPVCoordinates<DerivativeStructure> pvaDS = getCoordinates(state, 0, factory);
+        // Coordinates of the spacecraft expressed as a gradient
+        final TimeStampedFieldPVCoordinates<Gradient> pvaDS = getCoordinates(state, 0, nbParams);
 
-        // Transform between station and inertial frame, expressed as a derivative structure
+        // Transform between station and inertial frame, expressed as a gradient
         // The components of station's position in offset frame are the 3 last derivative parameters
-        final FieldTransform<DerivativeStructure> offsetToInertialDownlink =
-                        station.getOffsetToInertial(state.getFrame(), getDate(), factory, indices);
-        final FieldAbsoluteDate<DerivativeStructure> downlinkDateDS =
+        final FieldTransform<Gradient> offsetToInertialDownlink =
+                        station.getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
+        final FieldAbsoluteDate<Gradient> downlinkDateDS =
                         offsetToInertialDownlink.getFieldDate();
 
         // Station position/velocity in inertial frame at end of the downlink leg
-        final TimeStampedFieldPVCoordinates<DerivativeStructure> stationDownlink =
+        final TimeStampedFieldPVCoordinates<Gradient> stationDownlink =
                         offsetToInertialDownlink.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(downlinkDateDS,
                                                                                                             zero, zero, zero));
 
@@ -143,32 +140,32 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
         //  we will have delta == tauD and transitState will be the same as state)
 
         // Downlink delay
-        final DerivativeStructure tauD = signalTimeOfFlight(pvaDS, stationDownlink.getPosition(), downlinkDateDS);
+        final Gradient tauD = signalTimeOfFlight(pvaDS, stationDownlink.getPosition(), downlinkDateDS);
 
         // Transit state
-        final DerivativeStructure   delta        = downlinkDateDS.durationFrom(state.getDate());
-        final DerivativeStructure   deltaMTauD   = tauD.negate().add(delta);
-        final SpacecraftState       transitState = state.shiftedBy(deltaMTauD.getValue());
+        final Gradient        delta        = downlinkDateDS.durationFrom(state.getDate());
+        final Gradient        deltaMTauD   = tauD.negate().add(delta);
+        final SpacecraftState transitState = state.shiftedBy(deltaMTauD.getValue());
 
-        // Transit state (re)computed with derivative structures
-        final TimeStampedFieldPVCoordinates<DerivativeStructure> transitStateDS = pvaDS.shiftedBy(deltaMTauD);
+        // Transit state (re)computed with gradients
+        final TimeStampedFieldPVCoordinates<Gradient> transitStateDS = pvaDS.shiftedBy(deltaMTauD);
 
         // Station-satellite vector expressed in inertial frame
-        final FieldVector3D<DerivativeStructure> staSatInertial = transitStateDS.getPosition().subtract(stationDownlink.getPosition());
+        final FieldVector3D<Gradient> staSatInertial = transitStateDS.getPosition().subtract(stationDownlink.getPosition());
 
         // Field transform from inertial to reference frame at station's reception date
-        final FieldTransform<DerivativeStructure> inertialToReferenceDownlink =
+        final FieldTransform<Gradient> inertialToReferenceDownlink =
                         state.getFrame().getTransformTo(referenceFrame, downlinkDateDS);
 
         // Station-satellite vector in reference frame
-        final FieldVector3D<DerivativeStructure> staSatReference = inertialToReferenceDownlink.transformPosition(staSatInertial);
+        final FieldVector3D<Gradient> staSatReference = inertialToReferenceDownlink.transformPosition(staSatInertial);
 
         // Compute right ascension and declination
-        final DerivativeStructure baseRightAscension = staSatReference.getAlpha();
-        final double              twoPiWrap          = MathUtils.normalizeAngle(baseRightAscension.getReal(),
+        final Gradient baseRightAscension = staSatReference.getAlpha();
+        final double   twoPiWrap          = MathUtils.normalizeAngle(baseRightAscension.getReal(),
                                                                                 getObservedValue()[0]) - baseRightAscension.getReal();
-        final DerivativeStructure rightAscension     = baseRightAscension.add(twoPiWrap);
-        final DerivativeStructure declination        = staSatReference.getDelta();
+        final Gradient rightAscension     = baseRightAscension.add(twoPiWrap);
+        final Gradient declination        = staSatReference.getDelta();
 
         // Prepare the estimation
         final EstimatedMeasurement<AngularRaDec> estimated =
@@ -185,17 +182,17 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
 
         // Partial derivatives of right ascension/declination in reference frame with respect to state
         // (beware element at index 0 is the value, not a derivative)
-        final double[] raDerivatives  = rightAscension.getAllDerivatives();
-        final double[] decDerivatives = declination.getAllDerivatives();
+        final double[] raDerivatives  = rightAscension.getGradient();
+        final double[] decDerivatives = declination.getGradient();
         estimated.setStateDerivatives(0,
-                                      Arrays.copyOfRange(raDerivatives, 1, 7), Arrays.copyOfRange(decDerivatives, 1, 7));
+                                      Arrays.copyOfRange(raDerivatives, 0, 6), Arrays.copyOfRange(decDerivatives, 0, 6));
 
         // Partial derivatives with respect to parameters
         // (beware element at index 0 is the value, not a derivative)
         for (final ParameterDriver driver : getParametersDrivers()) {
             final Integer index = indices.get(driver.getName());
             if (index != null) {
-                estimated.setParameterDerivatives(driver, raDerivatives[index + 1], decDerivatives[index + 1]);
+                estimated.setParameterDerivatives(driver, raDerivatives[index], decDerivatives[index]);
             }
         }
 
