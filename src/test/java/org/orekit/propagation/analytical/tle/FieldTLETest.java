@@ -506,7 +506,6 @@ public class FieldTLETest {
                         int satNum = Integer.parseInt(title[1]);
                         Assert.assertTrue(satNum==tle.getSatelliteNumber());
                         FieldTLEPropagator<T> ex = FieldTLEPropagator.selectExtrapolator(tle);
-                        System.out.println(ex.getMode());
                         for (rline = rResults.readLine(); (rline!=null)&&(rline.charAt(0)!='r'); rline = rResults.readLine()) {
 
                             String[] data = rline.split(" ");
