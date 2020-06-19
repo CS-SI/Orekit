@@ -485,6 +485,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
     }
 
+
     /** Internal class for local propagation. */
     private class BasicStepInterpolator implements OrekitStepInterpolator {
 
