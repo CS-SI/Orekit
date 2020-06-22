@@ -194,7 +194,8 @@ public class TLEPartialDerivativesEquations implements AdditionalEquations {
         final FieldTLEPropagator<Gradient> gPropagator = converter.getPropagator();
 
         // Compute Jacobian
-        final FieldKeplerianOrbit<Gradient> gOrbit = (FieldKeplerianOrbit<Gradient>) OrbitType.KEPLERIAN.convertType(gPropagator.propagateOrbit(gPropagator.getTLE().getDate()));
+        final FieldKeplerianOrbit<Gradient> gOrbit = (FieldKeplerianOrbit<Gradient>) OrbitType.KEPLERIAN.convertType(gPropagator.propagateOrbit(
+                                                                                                                     gPropagator.getTLE().getDate()));
 
         final double[] derivativesA           = gOrbit.getA().getGradient();
         final double[] derivativesE           = gOrbit.getE().getGradient();
