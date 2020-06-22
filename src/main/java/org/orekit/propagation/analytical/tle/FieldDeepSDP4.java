@@ -39,6 +39,8 @@ import org.orekit.utils.Constants;
  * @author Felix R. Hoots, Ronald L. Roehrich, December 1980 (original fortran)
  * @author David A. Vallado, Paul Crawford, Richard Hujsak, T.S. Kelso (C++ translation and improvements)
  * @author Fabien Maussion (java translation)
+ * @author Thomas Paulet (field translation)
+ * @since 11.0
  */
 public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
 

@@ -41,7 +41,8 @@ import org.orekit.utils.ParameterDriversList;
  * The partial derivatives with respect to initial state are dimension 6 (orbit only).
  * </p>
  * @author Bryan Cazabonne
- * @since 10.0
+ * @author Thomas Paulet
+ * @since 11.0
  */
 public class TLEPartialDerivativesEquations implements AdditionalEquations {
 

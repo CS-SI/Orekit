@@ -55,6 +55,8 @@ import org.orekit.time.TimeScale;
  * <a href="https://www.celestrak.com/">CelesTrak website.</a></p>
  * @author Fabien Maussion
  * @author Luc Maisonobe
+ * @author Thomas Paulet (field translation)
+ * @since 11.0
  */
 public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped<T>, Serializable {
 

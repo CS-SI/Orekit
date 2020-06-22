@@ -31,6 +31,8 @@ import org.orekit.utils.ParameterDriversList;
  * </p>
  * @author Luc Maisonobe
  * @author Bryan Cazabonne
+ * @author Thomas Paulet
+ * @since 11.0
  * @see org.orekit.propagation.semianalytical.dsst.DSSTPartialDerivativesEquations
  * @see org.orekit.propagation.semianalytical.dsst.DSSTPropagator
  * @see SpacecraftState#getAdditionalState(String)
@@ -39,7 +41,6 @@ import org.orekit.utils.ParameterDriversList;
 public class AnalyticalJacobiansMapper extends AbstractJacobiansMapper {
 
     /** State dimension, fixed to 6.
-     * @since 9.0
      */
     public static final int STATE_DIMENSION = 6;
 
@@ -48,13 +49,6 @@ public class AnalyticalJacobiansMapper extends AbstractJacobiansMapper {
 
     /** Selected parameters for Jacobian computation. */
     private final ParameterDriversList parameters;
-
-    /** Parameters map. */
-    private Map<ParameterDriver, Integer> map;
-
-    /** Propagator computing state evolution. */
-    private final AbstractAnalyticalPropagator propagator;
-
 
     /** Simple constructor.
      * @param name name of the Jacobians
@@ -71,8 +65,6 @@ public class AnalyticalJacobiansMapper extends AbstractJacobiansMapper {
 
         this.parameters      = parameters;
         this.name            = name;
-        this.propagator      = propagator;
-        this.map             = map;
 
     }
 

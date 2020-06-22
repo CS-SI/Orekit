@@ -26,10 +26,11 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 
-/** Converter for TLE propagator and parameters arrays.
+/** Converter for TLE propagator.
  * @author Luc Maisonobe
  * @author Bryan Cazabonne
- * @since 10.2
+ * @author Thomas Paulet
+ * @since 11.0
  */
 class TLEGradientConverter extends AbstractGradientConverter {
 
@@ -58,14 +59,11 @@ class TLEGradientConverter extends AbstractGradientConverter {
         final Gradient gpa          = Gradient.variable(FREE_STATE_PARAMETERS, 4, propagator.getTLE().getPerigeeArgument());
         final Gradient gMeanAnomaly = Gradient.variable(FREE_STATE_PARAMETERS, 5, propagator.getTLE().getMeanAnomaly());
 
-        final Gradient gMu = Gradient.constant(FREE_STATE_PARAMETERS, TLEPropagator.getMU());
 
          // date
         final AbsoluteDate date = propagator.getTLE().getDate();
         final FieldAbsoluteDate<Gradient> dateField = new FieldAbsoluteDate<>(ga.getField(), date);
 
-        // mass never has derivatives
-        final Gradient gM = Gradient.constant(FREE_STATE_PARAMETERS, propagator.getMass(date));
 
 
         //Retrieving original TLE constants
@@ -99,9 +97,6 @@ class TLEGradientConverter extends AbstractGradientConverter {
 
         // no force model in analytical method
         final int nbParams = 0;
-
-        // cf DSSTGradientConverter si ajout des paramètres mu et B*
-
         return gPropagators.get(nbParams);
 
     }
