@@ -20,7 +20,7 @@ import org.hipparchus.linear.RealVector;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.MultivariateJacobianFunction;
 import org.hipparchus.util.Incrementor;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
-import org.orekit.propagation.integration.AbstractIntegratedPropagator;
+import org.orekit.propagation.AbstractPropagator;
 import org.orekit.utils.ParameterDriversList;
 
 /** Interface for models used in the batch least squares orbit determination process.
@@ -41,7 +41,7 @@ public interface BatchLSODModel extends MultivariateJacobianFunction {
      * @param point evaluation point
      * @return an array of new propagators
      */
-    AbstractIntegratedPropagator[] createPropagators(RealVector point);
+    AbstractPropagator[] createPropagators(RealVector point);
 
     /** Fetch a measurement that was evaluated during propagation.
      * @param index index of the measurement first component
