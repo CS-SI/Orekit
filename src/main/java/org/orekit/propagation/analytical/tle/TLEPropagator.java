@@ -529,9 +529,13 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      */
     protected abstract void sxpPropagate(double t);
 
+    public void setInitialState(final SpacecraftState initialState) {
+        resetInitialState(initialState);
+    }
+
     /** {@inheritDoc} */
     public void resetInitialState(final SpacecraftState state) {
-        throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
+        super.resetInitialState(state);
     }
 
     /** {@inheritDoc} */
