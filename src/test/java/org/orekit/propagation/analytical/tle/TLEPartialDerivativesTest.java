@@ -259,9 +259,7 @@ public class TLEPartialDerivativesTest {
   
         DSSTForceModel zonal = new DSSTZonal(provider, 4, 3, 9);
         
-        // Third Bodies (Moon and Sun) Force Models
-        DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), provider.getMu());
-        DSSTForceModel sun  = new DSSTThirdBody(CelestialBodyFactory.getSun(), provider.getMu());
+        
 
         // Solar Radiation Pressure
         DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 10., CelestialBodyFactory.getSun(),
@@ -269,7 +267,8 @@ public class TLEPartialDerivativesTest {
                                                             provider.getMu());
         
         
-        DSSTPropagator propagator2 = setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.KEPLERIAN, srp, tesseral, zonal, moon, sun);
+        DSSTPropagator propagator2 = setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.KEPLERIAN, srp, tesseral, zonal);
+        
         
         // Atmospheric drag is added if a LEO satellite is considered
         if (!isDeepSpace) {
@@ -282,6 +281,15 @@ public class TLEPartialDerivativesTest {
             DSSTForceModel drag = new DSSTAtmosphericDrag(atm, cd, area, provider.getMu());
             propagator2.addForceModel(drag);
             
+        }
+        
+        // Luni-solar attraction is added if deep-space satellite is considered
+        else {
+            // Third Bodies (Moon and Sun) Force Models
+            DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), provider.getMu());
+            DSSTForceModel sun  = new DSSTThirdBody(CelestialBodyFactory.getSun(), provider.getMu());
+            propagator2.addForceModel(sun);
+            propagator2.addForceModel(moon);
         }
         
         double[] steps = NumericalPropagator.tolerances(10000 * dP, orbit, OrbitType.KEPLERIAN)[0];
@@ -344,9 +352,6 @@ public class TLEPartialDerivativesTest {
         ForceModel gravityField =
             new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), gravityProvider);
         
-        // Third Bodies (Moon and Sun) Force Models
-        ForceModel moon = new ThirdBodyAttraction(CelestialBodyFactory.getMoon());
-        ForceModel sun  = new ThirdBodyAttraction(CelestialBodyFactory.getSun());
         
         // Solar Radiation Pressure 
         ExtendedPVCoordinatesProvider sunSRP = CelestialBodyFactory.getSun();
@@ -357,13 +362,23 @@ public class TLEPartialDerivativesTest {
                         new SolarRadiationPressure(sunSRP, earth.getEquatorialRadius(),
                                                    (RadiationSensitive) new IsotropicRadiationCNES95Convention(10.0, 0.5, 0.5));
         
-        NumericalPropagator propagator2 = setUpPropagator(orbit, dP, orbit.getType(), PositionAngle.MEAN, gravityField,  moon, sun, srp);
+        NumericalPropagator propagator2 = setUpPropagator(orbit, dP, orbit.getType(), PositionAngle.MEAN, gravityField, srp);
         
         // Atmospheric drag is added if a LEO satellite is considered
         if (!isDeepSpace) {
             ForceModel drag = new DragForce(new HarrisPriester(CelestialBodyFactory.getSun(), earth),
                                             new IsotropicDrag(10., 1.0));
             propagator2.addForceModel(drag);    
+        }
+        
+
+        // Luni-solar attraction is added if deep-space satellite is considered
+        else {
+         // Third Bodies (Moon and Sun) Force Models
+            ForceModel moon = new ThirdBodyAttraction(CelestialBodyFactory.getMoon());
+            ForceModel sun  = new ThirdBodyAttraction(CelestialBodyFactory.getSun());
+            propagator2.addForceModel(sun);
+            propagator2.addForceModel(moon);
         }
         
         double[] steps = NumericalPropagator.tolerances(100 * dP, orbit, orbit.getType())[0];
