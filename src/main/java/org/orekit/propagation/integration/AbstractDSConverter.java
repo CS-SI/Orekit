@@ -25,10 +25,9 @@ import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 
 /** Converter for states and parameters arrays
  *  for both {@link NumericalPropagator numerical} and {@link DSSTPropagator semi-analytical} propagators.
+ *  @since 10.2 this class is replaced by {@link AbstractGradientConverter}
  *  @author Luc Maisonobe
- *  @deprecated as of 10.2, replaced by {@link AbstractGradientConverter}
  */
-@Deprecated
 public abstract class AbstractDSConverter {
 
     /** Dimension of the state. */
