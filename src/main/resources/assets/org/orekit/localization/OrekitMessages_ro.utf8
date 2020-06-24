@@ -623,3 +623,6 @@ FUNCTION_NOT_IMPLEMENTED = <MISSING TRANSLATION>
 
 # Impossible to execute {0} with {1} set to {2}
 INVALID_TYPE_FOR_FUNCTION = <MISSING TRANSLATION>
+
+# No data could be parsed from file {0}
+NO_DATA_IN_FILE = <MISSING TRANSLATION>
