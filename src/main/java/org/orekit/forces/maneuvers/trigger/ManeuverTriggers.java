@@ -67,7 +67,7 @@ public interface ManeuverTriggers {
      * @param <T> extends RealFieldElement&lt;T&gt;
      * @return true if the maneuver is firing, false otherwise
      */
-    <T extends RealFieldElement<T>> boolean isFiring(FieldAbsoluteDate<T> date, T parameters[]);
+    <T extends RealFieldElement<T>> boolean isFiring(FieldAbsoluteDate<T> date, T[] parameters);
 
     /** Get the maneuver triggers parameter drivers.
      * @return maneuver triggers parameter drivers

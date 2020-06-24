@@ -204,7 +204,7 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> boolean isFiring(final FieldAbsoluteDate<T> date, final T parameters[]) {
+    public <T extends RealFieldElement<T>> boolean isFiring(final FieldAbsoluteDate<T> date, final T[] parameters) {
         // Firing state does not depend on a parameter driver here
         return isFiring(date.toAbsoluteDate());
     }

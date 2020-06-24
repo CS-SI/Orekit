@@ -159,7 +159,7 @@ public class DateBasedManeuverTriggers implements ManeuverTriggers {
 
     @Override
     public <T extends RealFieldElement<T>> boolean isFiring(final FieldAbsoluteDate<T> date,
-                                                            final T parameters[]) {
+                                                            final T[] parameters) {
         // Firing state does not depend on a parameter driver here
         return isFiring(date.toAbsoluteDate());
     }
