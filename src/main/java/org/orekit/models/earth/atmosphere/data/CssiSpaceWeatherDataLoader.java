@@ -1,5 +1,4 @@
-/* 
- * Copyright 2020 Clément Jonglez
+/* Copyright 2020 Clément Jonglez
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +25,7 @@ import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.NoSuchElementException;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.hipparchus.exception.Localizable;
@@ -48,7 +48,7 @@ import org.orekit.time.TimeStamped;
  * mentioned in the <a href="http://celestrak.com/SpaceData/SpaceWx-format.php">
  * Celestrak space weather data documentation</a>.
  * </p>
- * 
+ *
  * @author Clément Jonglez
  * @since 10.2
  */
@@ -59,11 +59,13 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
 
         /** Name of the file. Used in error messages. */
         private final String name;
+
         /** The input stream. */
         private final BufferedReader in;
 
         /** The last line read from the file. */
         private String line;
+
         /** The number of the last line read from the file. */
         private long lineNo;
 
@@ -157,7 +159,7 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
         /** Entry date. */
         private final AbsoluteDate date;
 
-        /** Array of 8 three-hourly Kp indices for this entry */
+        /** Array of 8 three-hourly Kp indices for this entry. */
         private final double[] threeHourlyKp;
 
         /**
@@ -165,7 +167,7 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
          */
         private final double kpSum;
 
-        /** Array of 8 three-hourly Ap indices for this entry */
+        /** Array of 8 three-hourly Ap indices for this entry. */
         private final double[] threeHourlyAp;
 
         /** Arithmetic average of the 8 Ap indices for the day. */
@@ -192,7 +194,22 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
         /** Last 81-day arithmetic average of F10.7 (observed). */
         private final double lst81Obs;
 
-        public LineParameters(AbsoluteDate date, final double[] threeHourlyKp, final double kpSum,
+        /**
+         * Constructor.
+         * @param date entry date
+         * @param threeHourlyKp array of 8 three-hourly Kp indices for this entry
+         * @param kpSum sum of the 8 Kp indices for the day expressed to the nearest third of a unit
+         * @param threeHourlyAp array of 8 three-hourly Ap indices for this entry
+         * @param apAvg arithmetic average of the 8 Ap indices for the day
+         * @param f107Adj 10.7-cm Solar Radio Flux (F10.7)
+         * @param fluxQualifier flux Qualifier
+         * @param ctr81Adj centered 81-day arithmetic average of F10.7
+         * @param lst81Adj last 81-day arithmetic average of F10.7
+         * @param f107Obs observed (unadjusted) value of F10.7
+         * @param ctr81Obs centered 81-day arithmetic average of F10.7 (observed)
+         * @param lst81Obs last 81-day arithmetic average of F10.7 (observed)
+         */
+        public LineParameters(final AbsoluteDate date, final double[] threeHourlyKp, final double kpSum,
                 final double[] threeHourlyAp, final double apAvg, final double f107Adj, final int fluxQualifier,
                 final double ctr81Adj, final double lst81Adj, final double f107Obs, final double ctr81Obs,
                 final double lst81Obs) {
@@ -224,7 +241,7 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
         }
 
         /**
-         * Gets the three-hourly Kp index at index i from the threeHourlyKp array
+         * Gets the three-hourly Kp index at index i from the threeHourlyKp array.
          * @param i index of the Kp index to retrieve [0-7]
          * @return the three hourly Kp index at index i
          */
@@ -249,7 +266,7 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
         }
 
         /**
-         * Gets the three-hourly Ap index at index i from the threeHourlyAp array
+         * Gets the three-hourly Ap index at index i from the threeHourlyAp array.
          * @param i index of the Ap to retrieve [0-7]
          * @return the three hourly Ap index at index i
          */
@@ -328,32 +345,36 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
     /** First available date. */
     private AbsoluteDate firstDate;
 
-    /** Date of last data before the prediction starts */
+    /** Date of last data before the prediction starts. */
     private AbsoluteDate lastObservedDate;
 
-    /** Date of last daily prediction before the monthly prediction starts */
+    /** Date of last daily prediction before the monthly prediction starts. */
     private AbsoluteDate lastDailyPredictedDate;
 
     /** Last available date. */
     private AbsoluteDate lastDate;
 
     /** Data set. */
-    private TreeSet<LineParameters> set;
+    private SortedSet<TimeStamped> set;
 
+    /**
+     * Constructor.
+     * @param utc UTC time scale
+     */
     public CssiSpaceWeatherDataLoader(final TimeScale utc) {
         this.utc = utc;
         firstDate = null;
         lastDailyPredictedDate = null;
         lastDate = null;
         lastObservedDate = null;
-        set = new TreeSet<LineParameters>(new ChronologicalComparator());
+        set = new TreeSet<>(new ChronologicalComparator());
     }
 
     /**
      * Getter for the data set.
      * @return the data set
      */
-    public TreeSet<LineParameters> getDataSet() {
+    public SortedSet<TimeStamped> getDataSet() {
         return set;
     }
 
@@ -374,7 +395,7 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
     }
 
     /**
-     * Gets the day (at data start) of the last daily data entry
+     * Gets the day (at data start) of the last daily data entry.
      * @return the last daily predicted date
      */
     public AbsoluteDate getLastDailyPredictedDate() {
@@ -382,7 +403,7 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
     }
 
     /**
-     * Gets the day (at data start) of the last observed data entry
+     * Gets the day (at data start) of the last observed data entry.
      * @return the last observed date
      */
     public AbsoluteDate getLastObservedDate() {
@@ -390,12 +411,12 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
     }
 
     /**
-     * checks if the string contains a floating point number
-     * 
+     * Checks if the string contains a floating point number.
+     *
      * @param strNum string to check
      * @return true if string contains a valid floating point number, else false
      */
-    private static boolean isNumeric(String strNum) {
+    private static boolean isNumeric(final String strNum) {
         if (strNum == null) {
             return false;
         }
@@ -487,8 +508,7 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
         } catch (NoSuchElementException nse) {
             throw new OrekitException(nse, OrekitMessages.NO_DATA_IN_FILE, name);
         }
-        
-        return;
+
     }
 
     /** {@inheritDoc} */

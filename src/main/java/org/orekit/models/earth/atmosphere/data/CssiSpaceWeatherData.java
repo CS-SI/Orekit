@@ -1,5 +1,4 @@
-/* 
- * Copyright 2020 Clément Jonglez
+/* Copyright 2020 Clément Jonglez
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,6 +31,7 @@ import org.orekit.models.earth.atmosphere.NRLMSISE00InputParameters;
 import org.orekit.models.earth.atmosphere.data.CssiSpaceWeatherDataLoader.LineParameters;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
+import org.orekit.time.TimeStamped;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ImmutableTimeStampedCache;
 
@@ -47,7 +47,7 @@ import org.orekit.utils.ImmutableTimeStampedCache;
  * mentioned in the <a href="http://celestrak.com/SpaceData/SpaceWx-format.php">
  * Celestrak space weather data documentation</a>.
  * </p>
- * 
+ *
  * @author Clément Jonglez
  * @since 10.2
  */
@@ -57,10 +57,11 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
     /** Serializable UID. */
     private static final long serialVersionUID = 4249411710645968978L;
 
+    /** Size of the list. */
     private static final int N_NEIGHBORS = 2;
 
     /** Data set. */
-    private final ImmutableTimeStampedCache<LineParameters> data;
+    private final transient ImmutableTimeStampedCache<TimeStamped> data;
 
     /** UTC time scale. */
     private final TimeScale utc;
@@ -68,10 +69,10 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
     /** First available date. */
     private final AbsoluteDate firstDate;
 
-    /** Date of last data before the prediction starts */
+    /** Date of last data before the prediction starts. */
     private final AbsoluteDate lastObservedDate;
 
-    /** Date of last daily prediction before the monthly prediction starts */
+    /** Date of last daily prediction before the monthly prediction starts. */
     private final AbsoluteDate lastDailyPredictedDate;
 
     /** Last available date. */
@@ -85,7 +86,7 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
 
     /**
      * Simple constructor. This constructor uses the default data context.
-     * 
+     *
      * @param fileName name of the CSSI space weather file.
      */
     @DefaultDataContext
@@ -108,7 +109,7 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
         this.utc = utc;
         final CssiSpaceWeatherDataLoader loader = new CssiSpaceWeatherDataLoader(utc);
         this.feed(loader);
-        data = new ImmutableTimeStampedCache<LineParameters>(N_NEIGHBORS, loader.getDataSet());
+        data = new ImmutableTimeStampedCache<>(N_NEIGHBORS, loader.getDataSet());
         firstDate = loader.getMinDate();
         lastDate = loader.getMaxDate();
         lastObservedDate = loader.getLastObservedDate();
@@ -127,7 +128,7 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
 
     /**
      * Find the data bracketing a specified date.
-     * 
+     *
      * @param date date to bracket
      */
     private void bracketDate(final AbsoluteDate date) {
@@ -136,14 +137,14 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
         }
 
         // don't search if the cached selection is fine
-        if ((previousParam != null) && (date.durationFrom(previousParam.getDate()) > 0)
-                && (date.durationFrom(nextParam.getDate()) <= 0)) {
+        if ((previousParam != null) && (date.durationFrom(previousParam.getDate()) > 0) &&
+                        (date.durationFrom(nextParam.getDate()) <= 0)) {
             return;
         }
 
-        List<LineParameters> neigbors = data.getNeighbors(date).collect(Collectors.toList());
-        previousParam = neigbors.get(0);
-        nextParam = neigbors.get(1);
+        final List<TimeStamped> neigbors = data.getNeighbors(date).collect(Collectors.toList());
+        previousParam = (LineParameters) neigbors.get(0);
+        nextParam = (LineParameters) neigbors.get(1);
         if (previousParam.getDate().compareTo(date) > 0) {
             /**
              * Throwing exception if neighbors are unbalanced because we are at the
@@ -155,8 +156,8 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
 
     /**
      * Performs a linear interpolation between two values The weights are computed
-     * from the time delta between previous date, current date, next date
-     * 
+     * from the time delta between previous date, current date, next date.
+     *
      * @param date          the current date
      * @param previousValue the value at previous date
      * @param nextValue     the value at next date
@@ -182,9 +183,8 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
         return getLinearInterpolation(date, previousParam.getF107Adj(), nextParam.getF107Adj());
     }
 
-    /** {@inheritDoc} */
-    /**
-     * TODO: not sure if the mean flux for DTM2000 should be computed differently
+    /** {@inheritDoc}
+     * FIXME not sure if the mean flux for DTM2000 should be computed differently
      * than the average flux for NRLMSISE00
      */
     public double getMeanFlux(final AbsoluteDate date) {
@@ -239,7 +239,7 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
 
     /**
      * Gets the daily flux on the current day.
-     * 
+     *
      * @param date the current date
      * @return the daily F10.7 flux (adjusted)
      */
@@ -283,8 +283,8 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
     }
 
     /**
-     * Gets the value of the three-hourly Ap index for the given date
-     * 
+     * Gets the value of the three-hourly Ap index for the given date.
+     *
      * @param date the current date
      * @return the current three-hourly Ap index
      */
@@ -316,8 +316,8 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
     /**
      * Gets the running average of the 8 three-hourly Ap indices prior to current
      * time If three-hourly data is available, the result is different than
-     * getDailyAp
-     * 
+     * getDailyAp.
+     *
      * @param date the current date
      * @return the 24 hours running average of the Ap index
      */
@@ -339,8 +339,8 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
     }
 
     /**
-     * Get the daily Ap index for the given date
-     * 
+     * Get the daily Ap index for the given date.
+     *
      * @param date the current date
      * @return the daily Ap index
      */
