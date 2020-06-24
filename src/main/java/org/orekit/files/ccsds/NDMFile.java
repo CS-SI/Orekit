@@ -82,7 +82,7 @@ public abstract class NDMFile {
      * Set the used gravitational coefficient.
      * @param mu the coefficient to set
      */
-    void setMu(final double mu) {
+    public void setMu(final double mu) {
         this.mu = mu;
     }
 
@@ -98,7 +98,7 @@ public abstract class NDMFile {
      * Set the CCSDS NDM (ADM or ODM) format version.
      * @param formatVersion the format version to be set
      */
-    void setFormatVersion(final double formatVersion) {
+    public void setFormatVersion(final double formatVersion) {
         this.formatVersion = formatVersion;
     }
 
@@ -114,7 +114,7 @@ public abstract class NDMFile {
      * Set the header comment.
      * @param headerComment header comment
      */
-    void setHeaderComment(final List<String> headerComment) {
+    public void setHeaderComment(final List<String> headerComment) {
         this.headerComment = new ArrayList<String>(headerComment);
     }
 
@@ -130,7 +130,7 @@ public abstract class NDMFile {
      * Set the file creation date and time in UTC.
      * @param creationDate the creation date to be set
      */
-    void setCreationDate(final AbsoluteDate creationDate) {
+    public void setCreationDate(final AbsoluteDate creationDate) {
         this.creationDate = creationDate;
     }
 
@@ -146,7 +146,7 @@ public abstract class NDMFile {
      * Set the file originator.
      * @param originator the originator to be set
      */
-    void setOriginator(final String originator) {
+    public void setOriginator(final String originator) {
         this.originator = originator;
     }
 
@@ -166,7 +166,7 @@ public abstract class NDMFile {
      * Set IERS conventions.
      * @param conventions IERS conventions to be set
      */
-    void setConventions(final IERSConventions conventions) {
+    public void setConventions(final IERSConventions conventions) {
         this.conventions = conventions;
     }
 
@@ -182,7 +182,7 @@ public abstract class NDMFile {
      * Set reference date for Mission Elapsed Time and Mission Relative Time time systems.
      * @param missionReferenceDate reference date for Mission Elapsed Time and Mission Relative Time time systems.
      */
-    void setMissionReferenceDate(final AbsoluteDate missionReferenceDate) {
+    public void setMissionReferenceDate(final AbsoluteDate missionReferenceDate) {
         this.missionReferenceDate = missionReferenceDate;
     }
 
@@ -198,7 +198,7 @@ public abstract class NDMFile {
      * Set the data context.
      * @param dataContext used for creating frames, time scales, etc.
      */
-    void setDataContext(final DataContext dataContext) {
+    public void setDataContext(final DataContext dataContext) {
         this.dataContext = dataContext;
     }
 
