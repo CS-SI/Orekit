@@ -29,7 +29,7 @@ import org.orekit.utils.ParameterDriver;
  *  - Parameter drivers (for estimation) for the thrust norm or the flow rate.
  * Note that both parameters CANNOT be selected at the same time since they depend on one another.
  * @author Maxime Journot
- *
+ * @since 10.2
  */
 public class BasicConstantThrustPropulsionModel extends AbstractConstantThrustPropulsionModel {
 

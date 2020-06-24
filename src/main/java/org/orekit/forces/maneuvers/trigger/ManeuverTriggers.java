@@ -31,6 +31,7 @@ import org.orekit.utils.ParameterDriver;
 
 /** Generic interface for the maneuver triggers used in a {@link Maneuver}.
  * @author Maxime Journot
+ * @since 10.2
  */
 public interface ManeuverTriggers {
 

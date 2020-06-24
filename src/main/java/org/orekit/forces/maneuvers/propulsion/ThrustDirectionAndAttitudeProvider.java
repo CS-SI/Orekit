@@ -45,6 +45,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  *
  * @author Mikael Fillastre
  * @author Andrea Fiorentino
+ * @since 10.2
  */
 public class ThrustDirectionAndAttitudeProvider implements AttitudeProvider {
 

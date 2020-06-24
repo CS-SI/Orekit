@@ -50,7 +50,7 @@ import org.orekit.utils.ParameterDriver;
  * The convention here is that the propulsion model drivers are given before the maneuver triggers when calling the
  * method {@link #getParametersDrivers()}
  * @author Maxime Journot
- *
+ * @since 10.2
  */
 public class Maneuver extends AbstractForceModel {
 

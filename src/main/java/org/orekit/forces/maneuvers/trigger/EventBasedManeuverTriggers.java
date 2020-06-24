@@ -40,6 +40,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * the same time.
  * @author Mikael Fillastre
  * @author Andrea Fiorentino
+ * @since 10.2
  */
 public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandler<EventDetector> {
 

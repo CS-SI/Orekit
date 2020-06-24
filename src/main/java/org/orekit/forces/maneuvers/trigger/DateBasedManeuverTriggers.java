@@ -32,6 +32,7 @@ import org.orekit.time.FieldAbsoluteDate;
 
 /** Maneuver triggers based on a start and end date, with no parameter drivers.
  * @author Maxime Journot
+ * @since 10.2
  */
 public class DateBasedManeuverTriggers implements ManeuverTriggers {
 

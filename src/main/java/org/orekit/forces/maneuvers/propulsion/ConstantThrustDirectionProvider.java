@@ -26,6 +26,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * direction.
  * @author Mikael Fillastre
  * @author Andrea Fiorentino
+ * @since 10.2
  */
 
 public class ConstantThrustDirectionProvider implements ThrustDirectionProvider {

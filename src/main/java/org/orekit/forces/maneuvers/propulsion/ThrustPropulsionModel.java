@@ -28,6 +28,7 @@ import org.orekit.utils.Constants;
 
 /** Interface for a thrust-based propulsion model.
  * @author Maxime Journot
+ * @since 10.2
  */
 public interface ThrustPropulsionModel extends PropulsionModel {
 

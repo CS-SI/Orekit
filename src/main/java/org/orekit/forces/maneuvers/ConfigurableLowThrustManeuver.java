@@ -37,6 +37,7 @@ import org.orekit.propagation.events.EventDetector;
  * ThrustDirectionProvider} for more details on thrust direction and attitude.
  * @author Mikael Fillastre
  * @author Andrea Fiorentino
+ * @since 10.2
  */
 
 public class ConfigurableLowThrustManeuver extends Maneuver {

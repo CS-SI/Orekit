@@ -30,7 +30,7 @@ import org.orekit.utils.Constants;
  * Indeed since the thrust is constant (i.e. not variable during the maneuver), most of the
  * calculated parameters (thrust vector, flow rate etc.) do not depend on current spacecraft state.
  * @author Maxime Journot
- *
+ * @since 10.2
  */
 public abstract class AbstractConstantThrustPropulsionModel implements ThrustPropulsionModel {
 

@@ -26,6 +26,7 @@ import org.orekit.utils.ParameterDriver;
 /** Thrust propulsion model with parameters (for estimation) represented by scale factors
  *  on the X, Y and Z axis of the spacecraft frame.
  * @author Maxime Journot
+ * @since 10.2
  */
 public class ScaledConstantThrustPropulsionModel extends AbstractConstantThrustPropulsionModel {
 
