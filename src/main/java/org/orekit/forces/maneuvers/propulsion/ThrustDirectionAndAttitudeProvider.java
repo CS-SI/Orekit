@@ -50,8 +50,10 @@ public class ThrustDirectionAndAttitudeProvider implements AttitudeProvider {
 
     /** Field name for error message. */
     private static final String FIELD_NAME_VARIABLE_DIRECTION = "variableDirectionInFrame";
+
     /** Field name for error message. */
     private static final String FIELD_NAME_DIRECTION_FRAME = "thrustDirectionFrame";
+
     /** Field name for error message. */
     private static final String FIELD_NAME_LOF_TYPE = "thrustDirectionLofType";
 
@@ -69,22 +71,27 @@ public class ThrustDirectionAndAttitudeProvider implements AttitudeProvider {
 
     /** Type. */
     private final ThrustDirectionAndAttitudeProviderType type;
+
     /**
      * External attitude provider, for CUSTOM_ATTITUDE type. Set to null otherwise.
      */
     private final AttitudeProvider attitudeProvider;
+
     /**
      * Direction provider, for DIRECTION_IN_LOF and DIRECTION_IN_FRAME types. Set to
      * null otherwise.
      */
     private final ThrustDirectionProvider variableDirectionInFrame;
+
     /** Thruster axis in satellite frame. */
     private final Vector3D thrusterAxisInSatelliteFrame;
+
     /**
      * Reference frame for thrust direction, for DIRECTION_IN_FRAME type. Set to
      * null otherwise.
      */
     private final Frame thrustDirectionFrame;
+
     /**
      * Local Orbital Frame type, for DIRECTION_IN_LOF type. Set to null otherwise.
      */
@@ -92,16 +99,17 @@ public class ThrustDirectionAndAttitudeProvider implements AttitudeProvider {
 
     /**
      * Internal constructor.
-     * @param type                         type
+     * @param type                         Type
      * @param attitudeProvider             External attitude provider, for
      *                                     CUSTOM_ATTITUDE type. Set to null
      *                                     otherwise
      * @param variableDirectionInFrame     Direction provider, for DIRECTION_IN_LOF
      *                                     and DIRECTION_IN_FRAME types. Set to null
      *                                     otherwise.
-     * @param thrusterAxisInSatelliteFrame
-     * @param frame
-     * @param thrustDirectionLofType
+     * @param thrusterAxisInSatelliteFrame Thruster axis in satellite frame
+     * @param frame                        Reference frame for thrust direction
+     * @param thrustDirectionLofType       Local Orbital Frame type, for DIRECTION_IN_LOF type
+     *                                     (set to null otherwise)
      */
     private ThrustDirectionAndAttitudeProvider(final ThrustDirectionAndAttitudeProviderType type,
             final AttitudeProvider attitudeProvider, final ThrustDirectionProvider variableDirectionInFrame,
@@ -198,13 +206,14 @@ public class ThrustDirectionAndAttitudeProvider implements AttitudeProvider {
     }
 
     /**
-     * Thruster axis in satellite frame
+     * Thruster axis in satellite frame.
      * @return field
      */
     public Vector3D getThrusterAxisInSatelliteFrame() {
         return thrusterAxisInSatelliteFrame;
     }
 
+    /** {@inheritDoc} */
     @Override
     public Attitude getAttitude(final PVCoordinatesProvider pvProv, final AbsoluteDate date, final Frame frame) {
         switch (type) {
@@ -219,6 +228,7 @@ public class ThrustDirectionAndAttitudeProvider implements AttitudeProvider {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
             final FieldAbsoluteDate<T> date, final Frame frame) {

@@ -88,7 +88,7 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
     }
 
     /**
-     * Getter.
+     * Getter for the start firing detector.
      * @return Detectors to start firing,
      */
     public AbstractDetector<? extends EventDetector> getStartFiringDetector() {
@@ -96,7 +96,7 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
     }
 
     /**
-     * Getter.
+     * Getter for the stop firing detector.
      * @return Detectors to stop firing
      */
     public AbstractDetector<? extends EventDetector> getStopFiringDetector() {
@@ -202,12 +202,14 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
         return isFiring(date);
     }
 
+    /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> boolean isFiring(final FieldAbsoluteDate<T> date, final T parameters[]) {
         // Firing state does not depend on a parameter driver here
         return isFiring(date.toAbsoluteDate());
     }
 
+    /** {@inheritDoc} */
     @Override
     public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
         Action action = Action.CONTINUE; // default not taken into account
@@ -265,7 +267,7 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
     }
 
     /**
-     * Getter.
+     * Getter for the triggered date of engine stop.
      * @return Triggered date of engine stop
      */
     public AbsoluteDate getTriggeredEnd() {
@@ -273,7 +275,7 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
     }
 
     /**
-     * Getter.
+     * Getter triggered date of engine start.
      * @return Triggered date of engine start
      */
     public AbsoluteDate getTriggeredStart() {

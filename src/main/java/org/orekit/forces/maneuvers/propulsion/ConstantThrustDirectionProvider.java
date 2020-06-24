@@ -43,7 +43,7 @@ public class ConstantThrustDirectionProvider implements ThrustDirectionProvider 
 
     @Override
     public Vector3D computeThrustDirection(final PVCoordinatesProvider pvProv, final AbsoluteDate date,
-            final Frame frame) {
+                                           final Frame frame) {
         return direction;
     }
 }
