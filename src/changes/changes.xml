@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.2" date="TBD" description="TBD">
+      <action dev="maxime" type="update" issue="690">
+        Increased visibility of setters in CCSDS OEM related classes.
+      </action>
       <action dev="bryan" type="update" >
         Improved Orekit performance by using new Hipparchus' differentiation classes.
       </action>
