@@ -104,7 +104,7 @@ public abstract class AbstractForceModelTest {
 
         final Vector3D reference = new Vector3D(  1 / (2 * hParam), gammaP1h.subtract(gammaM1h));
         final Vector3D delta = derivative.subtract(reference);
-        Assert.assertEquals(0, delta.getNorm(), tol * reference.getNorm());
+        Assert.assertEquals(0., delta.getNorm(), tol * reference.getNorm());
 
     }
 

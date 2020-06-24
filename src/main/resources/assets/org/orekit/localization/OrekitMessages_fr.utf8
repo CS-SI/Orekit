@@ -614,3 +614,12 @@ NON_COPLANAR_POINTS = les observations ne sont pas dans le même plan
 
 # invalid parameter {0}: {1} not in range [{2}, {3}]
 INVALID_PARAMETER_RANGE = paramètre invalide {0}: {1} n''est pas dans l''intervalle [{2}, {3}]
+
+# The parameter {0} should not be null in {1}
+PARAMETER_NOT_SET = Le paramètre {0} de {1} est null
+
+# {0} is not implemented
+FUNCTION_NOT_IMPLEMENTED = {0} n''est pas implémenté
+
+# Impossible to execute {0} with {1} set to {2}
+INVALID_TYPE_FOR_FUNCTION = Impossible d''appeler {0} avec {1} = {2}
