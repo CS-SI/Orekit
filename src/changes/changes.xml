@@ -25,6 +25,9 @@
         Added CssiSpaceWeatherLoader which provides three-hourly space weather
         data and implements DTM2000InputParameters and NRLMSISE00InputParameters
       </action>
+      <action dev="maxime" type="update" issue="690">
+        Increased visibility of setters in CCSDS OEM related classes.
+      </action>
       <action dev="bryan" type="update" >
         Improved Orekit performance by using new Hipparchus' differentiation classes.
       </action>
