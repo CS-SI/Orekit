@@ -28,7 +28,7 @@ The main categories are:
 ## Technical contact
 
 If for some reason you cannot use the public forums, you can reach the CS
-Systèmes d'Information Orekit team for any question (either technically
+GROUP Orekit team for any question (either technically
 oriented or administrative) at the following email address:
 [orekit@c-s.fr](mailto:orekit@c-s.fr)
 
@@ -38,8 +38,8 @@ If you want to discuss with the space division staff at CS GROUP,
 please use the following address:
 
     CS GROUP
-    BU E-space & Geoinformation
-    parc de la plaine - 5 rue Brindejonc des Moulinais
+    Space Business Unit
+    Parc de la Plaine - 6 rue Brindejonc des Moulinais
     BP 15872
     31506 Toulouse CEDEX 5
     FRANCE
