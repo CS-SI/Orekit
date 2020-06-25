@@ -51,6 +51,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.tle.TLE;
+import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -84,10 +85,10 @@ public class TLEEstimationTestUtils {
         };
 
         String line1 = "1 11783U 80032A   81068.32174371  .00000058  00000-0  00000+0 0  1077";
-        String line2 = " 2 11783  63.0555  73.3103 0068883  82.3147 278.5102  2.00559782  6392";
+        String line2 = "2 11783  63.0555  73.3103 0068883  82.3147 278.5102  2.00559782  6392";
         TLE tle = new TLE(line1, line2);
 
-        context.initialtle = tle;
+        context.initialTLE = tle;
 
         context.stations = Arrays.asList(//context.createStation(-18.59146, -173.98363,   76.0, "Leimatu`a"),
                                          context.createStation(-53.05388,  -75.01551, 1750.0, "Isla Desolación"),
@@ -159,7 +160,7 @@ public class TLEEstimationTestUtils {
         final TLE tle = new TLE(line1, line2);
 
         // Geo-stationary Satellite Orbit, tightly above the station (l0-L0)
-        context.initialtle = tle;
+        context.initialTLE = tle;
 
         context.stations = Arrays.asList(context.createStation(10.0, 45.0, 0.0, "Lat10_Long45") );
 
@@ -183,7 +184,7 @@ public class TLEEstimationTestUtils {
 
         // override orbital parameters
         double[] orbitArray = new double[6];
-        OrbitType.EQUINOCTIAL.mapOrbitToArray(initialOrbit,
+        OrbitType.CARTESIAN.mapOrbitToArray(initialOrbit,
                                               PositionAngle.MEAN,
                                               orbitArray, null);
         for (int i = 0; i < orbitArray.length; ++i) {
@@ -234,7 +235,7 @@ public class TLEEstimationTestUtils {
      * @param expectedDeltaVel Expected velocity difference between estimated orbit and initial orbit
      * @param velEps Tolerance on expected velocity difference
      */
-    public static void checkFit(final DSSTContext context, final BatchLSEstimator estimator,
+    public static void checkFit(final TLEContext context, final BatchLSEstimator estimator,
                                 final int iterations, final int evaluations,
                                 final double expectedRMS,      final double rmsEps,
                                 final double expectedMax,      final double maxEps,
@@ -269,6 +270,7 @@ public class TLEEstimationTestUtils {
                 max = FastMath.max(max, FastMath.abs(weightedResidual));
             }
         }
+        TLEPropagator propagator = TLEPropagator.selectExtrapolator(context.initialTLE);
 
         Assert.assertEquals(expectedRMS,
                             FastMath.sqrt(sum / k),
@@ -277,10 +279,10 @@ public class TLEEstimationTestUtils {
                             max,
                             maxEps);
         Assert.assertEquals(expectedDeltaPos,
-                            Vector3D.distance(context.initialOrbit.getPVCoordinates().getPosition(), estimatedPosition),
+                            Vector3D.distance(propagator.getInitialState().getPVCoordinates().getPosition(), estimatedPosition),
                             posEps);
         Assert.assertEquals(expectedDeltaVel,
-                            Vector3D.distance(context.initialOrbit.getPVCoordinates().getVelocity(), estimatedVelocity),
+                            Vector3D.distance(propagator.getInitialState().getPVCoordinates().getVelocity(), estimatedVelocity),
                             velEps);
 
     }

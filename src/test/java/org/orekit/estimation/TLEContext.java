@@ -24,12 +24,9 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.measurements.GroundStation;
-import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
-import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.displacement.StationDisplacement;
-import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.conversion.TLEPropagatorBuilder;
@@ -45,7 +42,7 @@ public class TLEContext {
     public NormalizedSphericalHarmonicsProvider gravity;
     public TimeScale                            utc;
     public UT1Scale                             ut1;
-    public TLE                                  initialtle;
+    public TLE                                  initialTLE;
     public StationDisplacement[]                displacements;
     public List<GroundStation>                  stations;
     // Stations for turn-around range
@@ -53,11 +50,10 @@ public class TLEContext {
     // Map value = slave station associated
     public Map<GroundStation, GroundStation>     TARstations;
 
-    public TLEPropagatorBuilder createBuilder(final OrbitType orbitType, final PositionAngle positionAngle,
-                                                    final double minStep, final double maxStep, final double dP) {
+    public TLEPropagatorBuilder createBuilder(final double minStep, final double maxStep, final double dP) {
 
         final TLEPropagatorBuilder propagatorBuilder =
-                        new TLEPropagatorBuilder(initialtle, positionAngle, dP);
+                        new TLEPropagatorBuilder(initialTLE, PositionAngle.MEAN, dP);
 
         return propagatorBuilder;
 
