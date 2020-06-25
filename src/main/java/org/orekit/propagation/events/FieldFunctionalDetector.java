@@ -99,8 +99,8 @@ public class FieldFunctionalDetector<T extends RealFieldElement<T>>
 
     /**
      * Create a new event detector with a new g function, keeping all other attributes the
-     * same. It is recommended to use {@link #withMaxCheck(T)} and {@link
-     * #withThreshold(T)} to set appropriate values for this g function.
+     * same. It is recommended to use {@link #withMaxCheck(RealFieldElement)} and {@link
+     * #withThreshold(RealFieldElement)} to set appropriate values for this g function.
      *
      * @param newGFunction the new g function.
      * @return a new detector with the new g function.

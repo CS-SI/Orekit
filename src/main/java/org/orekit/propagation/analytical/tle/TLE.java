@@ -258,7 +258,6 @@ public class TLE implements TimeStamped, Serializable {
      *     0 &lt;= ω &lt;= 2π
      *     0 &lt;= meanAnomaly &lt;= 2π
      * </pre>
-     * </p>
      *
      * @param satelliteNumber satellite number
      * @param classification classification (U for unclassified)
@@ -315,7 +314,6 @@ public class TLE implements TimeStamped, Serializable {
      *     0 &lt;= ω &lt;= 2π
      *     0 &lt;= meanAnomaly &lt;= 2π
      * </pre>
-     * </p>
      *
      * @param satelliteNumber satellite number
      * @param classification classification (U for unclassified)

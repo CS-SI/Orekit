@@ -155,7 +155,7 @@ public abstract class AbstractDragForceModel extends AbstractForceModel {
      * as {@link Atmosphere#getDensity(FieldAbsoluteDate, FieldVector3D, Frame)} in the
      * specific case of {@link DerivativeStructure} with respect to state, so
      * it is less general. However, it is *much* faster in this important case.
-     * <p>
+     * </p>
      * <p>
      * The derivatives should be computed with respect to position. The input
      * parameters already take into account the free parameters (6, 7 or 8 depending
@@ -231,7 +231,7 @@ public abstract class AbstractDragForceModel extends AbstractForceModel {
      * as {@link Atmosphere#getDensity(FieldAbsoluteDate, FieldVector3D, Frame)} in the
      * specific case of {@link Gradient} with respect to state, so
      * it is less general. However, it is *much* faster in this important case.
-     * <p>
+     * </p>
      * <p>
      * The derivatives should be computed with respect to position. The input
      * parameters already take into account the free parameters (6, 7 or 8 depending

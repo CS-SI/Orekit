@@ -132,7 +132,7 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
      * Method to set the firing state on initialization. can be overloaded by sub
      * classes.
      *
-     * @param initialState
+     * @param initialState initial spacecraft state
      */
     protected void checkInitialFiringState(final SpacecraftState initialState) {
         if (isFiringOnInitialState(initialState)) {
@@ -144,7 +144,7 @@ public class EventBasedManeuverTriggers implements ManeuverTriggers, EventHandle
      * Method to check if the thruster is firing on initialization. can be called by
      * sub classes
      *
-     * @param initialState
+     * @param initialState initial spacecraft state
      * @return true if firing
      */
     protected boolean isFiringOnInitialState(final SpacecraftState initialState) {
