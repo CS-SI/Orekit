@@ -625,4 +625,4 @@ FUNCTION_NOT_IMPLEMENTED = {0} n''est pas implémenté
 INVALID_TYPE_FOR_FUNCTION = Impossible d''appeler {0} avec {1} = {2}
 
 # No data could be parsed from file {0}
-NO_DATA_IN_FILE = Aucune donnée n'a pu être lue dans le fichier {1} 
+NO_DATA_IN_FILE = Aucune donnée n''a pu être lue dans le fichier {0}

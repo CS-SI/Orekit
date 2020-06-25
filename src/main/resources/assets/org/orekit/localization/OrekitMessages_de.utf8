@@ -625,4 +625,4 @@ FUNCTION_NOT_IMPLEMENTED = <MISSING TRANSLATION>
 INVALID_TYPE_FOR_FUNCTION = <MISSING TRANSLATION>
 
 # No data could be parsed from file {0}
-NO_DATA_IN_FILE = Keine gültigen Daten konnten aus der Datei {1} dekodiert werden. 
+NO_DATA_IN_FILE = Keine gültigen Daten konnten aus der Datei {0} dekodiert werden. 
