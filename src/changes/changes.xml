@@ -27,9 +27,10 @@
              around Lagrangian points using CR3BP model, a piece wise drag force model,
              a time span tropospheric estimated model, an estimated ionospheric model,
              an improved modelling of the GNSS phase measurement, several bug fixes
-             for date functionnalities, a configurable low thrust maneuver model
-             based on detectors, support for CSSI space weather data, , as well as several
-             other minor features and bug fixes. See the list below for a full description
+             for date functionnalities, a new organization of the maneuvers package,
+             a configurable low thrust maneuver model based on detectors,
+             support for CSSI space weather data, , as well as several other minor
+             features and bug fixes. See the list below for a full description
              of the changes.">
       <action dev="bryan" type="update" >
         Increased visibility of setters in CCSDS ADM related classes.
