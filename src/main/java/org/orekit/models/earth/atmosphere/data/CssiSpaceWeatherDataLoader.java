@@ -55,7 +55,7 @@ import org.orekit.time.TimeStamped;
 public class CssiSpaceWeatherDataLoader implements DataLoader {
 
     /** Helper class to parse line data and to raise exceptions if needed. */
-    public class LineReader {
+    public static class LineReader {
 
         /** Name of the file. Used in error messages. */
         private final String name;
@@ -214,9 +214,9 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
                 final double ctr81Adj, final double lst81Adj, final double f107Obs, final double ctr81Obs,
                 final double lst81Obs) {
             this.date = date;
-            this.threeHourlyKp = threeHourlyKp;
+            this.threeHourlyKp = threeHourlyKp.clone();
             this.kpSum = kpSum;
-            this.threeHourlyAp = threeHourlyAp;
+            this.threeHourlyAp = threeHourlyAp.clone();
             this.apAvg = apAvg;
             this.f107Adj = f107Adj;
             this.fluxQualifier = fluxQualifier;
@@ -237,7 +237,7 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
          * @return the array of eight three-hourly Kp indices
          */
         public double[] getThreeHourlyKp() {
-            return threeHourlyKp;
+            return threeHourlyKp.clone();
         }
 
         /**
@@ -262,7 +262,7 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
          * @return the array of eight three-hourly Ap indices
          */
         public double[] getThreeHourlyAp() {
-            return threeHourlyAp;
+            return threeHourlyAp.clone();
         }
 
         /**
