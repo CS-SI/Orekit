@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.2" date="TBD" description="TBD">
+      <action dev="bryan" type="update" >
+        Increased visibility of setters in CCSDS ADM related classes.
+      </action>
       <action dev="clement" type="add" issue="656">
         Added CssiSpaceWeatherLoader which provides three-hourly space weather
         data and implements DTM2000InputParameters and NRLMSISE00InputParameters

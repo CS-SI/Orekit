@@ -94,7 +94,7 @@ public class ADMMetaData {
      * Set the Time System.
      * @param timeSystem the time system to be set
      */
-    void setTimeSystem(final CcsdsTimeScale timeSystem) {
+    public void setTimeSystem(final CcsdsTimeScale timeSystem) {
         this.timeSystem = timeSystem;
     }
 
@@ -121,7 +121,7 @@ public class ADMMetaData {
      * Set the spacecraft name for which the attitude data are provided.
      * @param objectName the spacecraft name to be set
      */
-    void setObjectName(final String objectName) {
+    public void setObjectName(final String objectName) {
         this.objectName = objectName;
     }
 
@@ -137,7 +137,7 @@ public class ADMMetaData {
      * Set the spacecraft ID for which the attitude data are provided.
      * @param objectID the spacecraft ID to be set
      */
-    void setObjectID(final String objectID) {
+    public void setObjectID(final String objectID) {
         this.objectID = objectID;
     }
 
@@ -153,7 +153,7 @@ public class ADMMetaData {
      * Set the launch year.
      * @param launchYear launch year
      */
-    void setLaunchYear(final int launchYear) {
+    public void setLaunchYear(final int launchYear) {
         this.launchYear = launchYear;
     }
 
@@ -169,7 +169,7 @@ public class ADMMetaData {
      * Set the launch number.
      * @param launchNumber launch number
      */
-    void setLaunchNumber(final int launchNumber) {
+    public void setLaunchNumber(final int launchNumber) {
         this.launchNumber = launchNumber;
     }
 
@@ -185,7 +185,7 @@ public class ADMMetaData {
      * Set the piece of launch.
      * @param launchPiece piece of launch
      */
-    void setLaunchPiece(final String launchPiece) {
+    public void setLaunchPiece(final String launchPiece) {
         this.launchPiece = launchPiece;
     }
 
@@ -199,7 +199,7 @@ public class ADMMetaData {
     /** Set the origin of reference frame.
      * @param centerName the origin of reference frame to be set
      */
-    void setCenterName(final String centerName) {
+    public void setCenterName(final String centerName) {
         this.centerName = centerName;
     }
 
@@ -215,7 +215,7 @@ public class ADMMetaData {
      * Set the {@link CelestialBody} corresponding to the center name.
      * @param centerBody the {@link CelestialBody} to be set
      */
-    void setCenterBody(final CelestialBody centerBody) {
+    public void setCenterBody(final CelestialBody centerBody) {
         this.centerBody = centerBody;
     }
 
@@ -234,7 +234,7 @@ public class ADMMetaData {
      * attribute can be created through the {@link CelestialBodies}.
      * @param hasCreatableBody the boolean to be set.
      */
-    void setHasCreatableBody(final boolean hasCreatableBody) {
+    public void setHasCreatableBody(final boolean hasCreatableBody) {
         this.hasCreatableBody = hasCreatableBody;
     }
 
@@ -248,7 +248,7 @@ public class ADMMetaData {
     /** Set the meta-data comment.
      * @param comment comment to set
      */
-    void setComment(final List<String> comment) {
+    public void setComment(final List<String> comment) {
         this.comment = new ArrayList<String>(comment);
     }
 
