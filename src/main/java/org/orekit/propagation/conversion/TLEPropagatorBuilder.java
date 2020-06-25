@@ -76,6 +76,9 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
     /** Ballistic coefficient. */
     private double bStar;
 
+    /** Template TLE. */
+    private final TLE templateTLE;
+
     /** Build a new instance. This constructor uses the {@link DataContext#getDefault()
      * default data context}.
      * <p>
@@ -123,6 +126,7 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
                         .getInitialState().getOrbit(),
               positionAngle, positionScale, false,
               Propagator.getDefaultLaw(dataContext.getFrames()));
+        this.templateTLE             = templateTLE;
         this.satelliteNumber         = templateTLE.getSatelliteNumber();
         this.classification          = templateTLE.getClassification();
         this.launchYear              = templateTLE.getLaunchYear();
@@ -176,6 +180,13 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
                 getAttitudeProvider(),
                 Propagator.DEFAULT_MASS,
                 dataContext.getFrames().getTEME());
+    }
+
+    /** Getter for the template TLE.
+     * @return the template TLE
+     */
+    public TLE getTemplateTLE() {
+        return templateTLE;
     }
 
 }
