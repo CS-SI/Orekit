@@ -40,9 +40,11 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.PropagatorsParallelizer;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AnalyticalJacobiansMapper;
+import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPartialDerivativesEquations;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
-import org.orekit.propagation.conversion.IntegratedPropagatorBuilder;
+import org.orekit.propagation.conversion.FiniteDifferencePropagatorConverter;
+import org.orekit.propagation.conversion.TLEPropagatorBuilder;
 import org.orekit.propagation.sampling.MultiSatStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
@@ -66,7 +68,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 public class TLEBatchLSModel implements BatchLSODModel {
 
     /** Builders for propagators. */
-    private final IntegratedPropagatorBuilder[] builders;
+    private final TLEPropagatorBuilder[] builders;
 
     /** Array of each builder's selected propagation drivers. */
     private final ParameterDriversList[] estimatedPropagationParameters;
@@ -119,6 +121,24 @@ public class TLEBatchLSModel implements BatchLSODModel {
     /** Model function Jacobian. */
     private RealMatrix jacobian;
 
+    /** Samples of Spacecreft States. */
+    private HashMap<Integer, List<SpacecraftState>> samples;
+
+    /** Total time span of measures. */
+    private double duration;
+
+    /** Step size to build fitted propagator. */
+    private double stepsize;
+
+    /** Theshold to build fitted propagator. */
+    private double threshold;
+
+    /** Max iteration number to build fitted propagator. */
+    private int maxIterations;
+
+    /** positionOnly if true, consider only position data otherwise both position and velocity are used. */
+    private boolean positionOnly;
+
     /** Simple constructor.
      * @param propagatorBuilders builders to use for propagation
      * @param measurements measurements
@@ -126,13 +146,23 @@ public class TLEBatchLSModel implements BatchLSODModel {
      * @param observer observer to be notified at model calls
      * @param propagationType type of the orbit used for the propagation (mean or osculating)
      * @param stateType type of the elements used to define the orbital state (mean or osculating)
+     * @param duration total measurement time span to build fitted proapagtor
+     * @param stepsize size of step used for building fitted propagator
+     * @param threshold threshold used to build fitted propagtor
+     * @param maxIterations max iteration number to build fitted propagator
+     * @param positionOnly if true, consider only position data otherwise both position and velocity are used
      */
-    public TLEBatchLSModel(final IntegratedPropagatorBuilder[] propagatorBuilders,
+    public TLEBatchLSModel(final TLEPropagatorBuilder[] propagatorBuilders,
                      final List<ObservedMeasurement<?>> measurements,
                      final ParameterDriversList estimatedMeasurementsParameters,
                      final ModelObserver observer,
                      final PropagationType propagationType,
-                     final PropagationType stateType) {
+                     final PropagationType stateType,
+                     final double duration,
+                     final double stepsize,
+                     final double threshold,
+                     final int maxIterations,
+                     final boolean positionOnly) {
 
         this.builders                        = propagatorBuilders.clone();
         this.measurements                    = measurements;
@@ -142,8 +172,12 @@ public class TLEBatchLSModel implements BatchLSODModel {
         this.evaluations                     = new IdentityHashMap<>(measurements.size());
         this.observer                        = observer;
         this.mappers                         = new AnalyticalJacobiansMapper[builders.length];
+        this.duration                        = duration;
+        this.stepsize                        = stepsize;
+        this.threshold                       = threshold;
+        this.maxIterations                   = maxIterations;
+        this.positionOnly                    = positionOnly;
 
-        // allocate vector and matrix
         int rows = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
             rows += measurement.getDimension();
@@ -160,6 +194,22 @@ public class TLEBatchLSModel implements BatchLSODModel {
                 }
             }
             this.orbitsEndColumns[i] = columns;
+        }
+
+        // build sample map
+        samples = new HashMap<Integer, List<SpacecraftState>>();
+        final TLE[] templateTLEs = new TLE[builders.length];
+        for (int i = 0; i < builders.length; ++i) {
+            templateTLEs[i] = builders[i].getTemplateTLE();
+        }
+        final AbsoluteDate first  = measurements.get(0).getDate();
+        for (int i = 0; i < builders.length; ++i) {
+            final TLEPropagator propagator = TLEPropagator.selectExtrapolator(templateTLEs[i]);
+            final List<SpacecraftState> states = new ArrayList<SpacecraftState>();
+            for (double dt = 0; dt < this.duration; dt += this.stepsize) {
+                states.add(propagator.propagate(first.shiftedBy(dt)));
+            }
+            samples.put(i, states);
         }
 
         // Gather all the propagation drivers names in a list
@@ -331,8 +381,10 @@ public class TLEBatchLSModel implements BatchLSODModel {
                                 point.getEntry(propagationParameterColumns.get(selectedPropagationDrivers.getDrivers().get(j).getName()));
             }
 
-            // Build the propagator
-            propagators[i] = (TLEPropagator) builders[i].buildPropagator(propagatorArray);
+            // Build the fitted propagator matching with samples
+            final FiniteDifferencePropagatorConverter fitter = new FiniteDifferencePropagatorConverter(builders[i], this.threshold, this.maxIterations);
+            fitter.convert(samples.get(i), positionOnly);
+            propagators[i] = (TLEPropagator) fitter.getAdaptedPropagator();
         }
 
         return propagators;
@@ -475,5 +527,27 @@ public class TLEBatchLSModel implements BatchLSODModel {
         }
 
     }
+
+    /** Getter for the state samples.
+    * @return the state sample
+    */
+    public Map<Integer, List<SpacecraftState>> getSamples() {
+        return samples;
+    }
+
+    /** Setter for duration.
+     * @param myDuration the total measure time span
+     */
+    public void setDuration(final double myDuration) {
+        this.duration = myDuration;
+    }
+
+    /** Setter for stepsize.
+     * @param myStepsize the stepsize to create fitted propagator
+     */
+    public void setStepSize(final double myStepsize) {
+        this.stepsize = myStepsize;
+    }
+
 
 }
