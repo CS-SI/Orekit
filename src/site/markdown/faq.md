@@ -137,6 +137,7 @@ Math to Hipparchus
   Orekit 9.3.1 | Hipparchus          1.4
   Orekit 10.0  | Hipparchus          1.5
   Orekit 10.1  | Hipparchus          1.6
+  Orekit 10.2  | Hipparchus          1.7
 
 ### Maven failed to compile Orekit and complained about a missing artifact.
 
@@ -204,7 +205,7 @@ file from the forge, to unzip it anywhere you want, rename the `orekit-data-mast
 into `orekit-data` and add the following lines at the start of your program:
 
     File orekitData = new File("/path/to/the/folder/orekit-data");
-    DataProvidersManager manager = DataProvidersManager.getInstance();
+    DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
     manager.addProvider(new DirectoryCrawler(orekitData));
 
 Using a folder allows one to change the data in it after the initial download, e.g., adding new EOP files as they
