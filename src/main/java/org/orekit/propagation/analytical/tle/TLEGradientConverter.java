@@ -32,7 +32,7 @@ import org.orekit.utils.Constants;
  * @author Thomas Paulet
  * @since 11.0
  */
-class TLEGradientConverter extends AbstractGradientConverter {
+public class TLEGradientConverter extends AbstractGradientConverter {
 
     /** Fixed dimension of the state. */
     private static final int FREE_STATE_PARAMETERS = 6;
@@ -43,7 +43,7 @@ class TLEGradientConverter extends AbstractGradientConverter {
     /** Simple constructor.
      * @param propagator TLE propagator to convert.
      */
-    TLEGradientConverter(final TLEPropagator propagator) {
+    public TLEGradientConverter(final TLEPropagator propagator) {
 
         super(FREE_STATE_PARAMETERS);
 
