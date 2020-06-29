@@ -34,7 +34,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.conversion.IntegratedPropagatorBuilder;
+import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.propagation.integration.AbstractJacobiansMapper;
 import org.orekit.propagation.sampling.MultiSatStepHandler;
 import org.orekit.time.AbsoluteDate;
@@ -54,7 +54,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 public abstract class AbstractBatchLSModel implements BatchLSODModel {
 
     /** Builders for propagators. */
-    private final IntegratedPropagatorBuilder[] builders;
+    private final PropagatorBuilder[] builders;
 
     /** Array of each builder's selected propagation drivers. */
     private final ParameterDriversList[] estimatedPropagationParameters;
@@ -104,7 +104,7 @@ public abstract class AbstractBatchLSModel implements BatchLSODModel {
     /** Model function Jacobian. */
     private RealMatrix jacobian;
 
-    public AbstractBatchLSModel(final IntegratedPropagatorBuilder[] propagatorBuilders,
+    public AbstractBatchLSModel(final PropagatorBuilder[] propagatorBuilders,
                         final List<ObservedMeasurement<?>> measurements,
                         final ParameterDriversList estimatedMeasurementsParameters,
                         final ModelObserver observer) {
@@ -324,7 +324,7 @@ public abstract class AbstractBatchLSModel implements BatchLSODModel {
     /**Getter for propagator builders.
      * @return an array of the propagator builders
      */
-    public IntegratedPropagatorBuilder[] getBuilders() {
+    public PropagatorBuilder[] getBuilders() {
         return builders;
     }
 

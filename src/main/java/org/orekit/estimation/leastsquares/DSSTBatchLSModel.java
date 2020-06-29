@@ -137,7 +137,7 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
         final DSSTPropagator[] propagators = new DSSTPropagator[getBuilders().length];
         final int[] orbitsStartColumns = getOrbitsStartColumns();
         final Map<String, Integer> propagationParameterColumns = getPropagationParameterColumns();
-        final IntegratedPropagatorBuilder[] builders = getBuilders();
+        final IntegratedPropagatorBuilder[] builders = (IntegratedPropagatorBuilder[]) getBuilders();
 
         // Set up the propagators
         for (int i = 0; i < getBuilders().length; ++i) {
@@ -170,7 +170,6 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
         return propagators;
 
     }
-
 
     /** Configure the propagator to compute derivatives.
      * @param propagators {@link Propagator} to configure
@@ -220,7 +219,7 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
 
             final int p = observedMeasurement.getSatellites().get(k).getPropagatorIndex();
             final int[] orbitsStartColumns = getOrbitsStartColumns();
-            final IntegratedPropagatorBuilder[] builders = getBuilders();
+            final IntegratedPropagatorBuilder[] builders = (IntegratedPropagatorBuilder[]) getBuilders();
             final Map<String, Integer>  propagationParameterColumns = getPropagationParameterColumns();
 
             // partial derivatives of the current Cartesian coordinates with respect to current orbital state
