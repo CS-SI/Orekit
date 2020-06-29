@@ -122,7 +122,7 @@ public class TLEBatchLSModel implements BatchLSODModel {
     private RealMatrix jacobian;
 
     /** Samples of Spacecreft States. */
-    private HashMap<Integer, List<SpacecraftState>> samples;
+    private Map<Integer, List<SpacecraftState>> samples;
 
     /** Total time span of measures. */
     private double duration;
@@ -264,16 +264,19 @@ public class TLEBatchLSModel implements BatchLSODModel {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setEvaluationsCounter(final Incrementor evaluationsCounter) {
         this.evaluationsCounter = evaluationsCounter;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setIterationsCounter(final Incrementor iterationsCounter) {
         this.iterationsCounter = iterationsCounter;
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean isForwardPropagation() {
         return forwardPropagation;
     }
@@ -317,16 +320,19 @@ public class TLEBatchLSModel implements BatchLSODModel {
     }
 
     /** {@inheritDoc} */
+    @Override
     public int getIterationsCount() {
         return iterationsCounter.getCount();
     }
 
     /** {@inheritDoc} */
+    @Override
     public int getEvaluationsCount() {
         return evaluationsCounter.getCount();
     }
 
     /** {@inheritDoc} */
+    @Override
     public ParameterDriversList getSelectedPropagationDriversForBuilder(final int iBuilder) {
 
         // Lazy evaluation, create the list only if it hasn't been created yet
@@ -353,6 +359,7 @@ public class TLEBatchLSModel implements BatchLSODModel {
     }
 
     /** {@inheritDoc} */
+    @Override
     public TLEPropagator[] createPropagators(final RealVector point) {
 
         final TLEPropagator[] propagators = new TLEPropagator[builders.length];
@@ -445,6 +452,7 @@ public class TLEBatchLSModel implements BatchLSODModel {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void fetchEvaluatedMeasurement(final int index, final EstimatedMeasurement<?> evaluation) {
 
         // States and observed measurement

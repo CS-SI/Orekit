@@ -40,7 +40,6 @@ import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.SHMFormatReader;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.radiation.IsotropicRadiationCNES95Convention;
-import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -84,7 +83,7 @@ public class TLEPartialDerivativesTest {
     
     @Test
     public void testSDP4ProgationwrtDSST() throws FileNotFoundException, UnsupportedEncodingException {
-        doTestPropagationwrtDSST(1.0e-4, tleGPS, true);
+        doTestPropagationwrtDSST(1.0e-5, tleGPS, true);
     }
     
     @Test
@@ -106,7 +105,7 @@ public class TLEPartialDerivativesTest {
     public void testSGP4PropagationwrtNumerical() throws FileNotFoundException, UnsupportedEncodingException {
         doTestPropagationwrtNumerical(2.0e-2, tleSPOT, false);
     }
-    
+   
     @Test(expected=OrekitException.class)
     public void testNotInitialized() {
         String line1 = "1 37753U 11036A   12090.13205652 -.00000006  00000-0  00000+0 0  2272";
@@ -242,10 +241,16 @@ public class TLEPartialDerivativesTest {
         OrbitType.KEPLERIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngle.MEAN, stateVector, null);
         final AbsoluteDate target = initialState.getDate().shiftedBy(dt);
         final AnalyticalJacobiansMapper mapper = partials.getMapper();
-        PickUpHandler pickUp = new PickUpHandler(mapper, null);
-        propagator.setMasterMode(pickUp);
-        propagator.propagateOrbit(target);
-        double[][] dYdY0 = pickUp.getdYdY0();
+        double[][] dYdY0 =  new double[AnalyticalJacobiansMapper.STATE_DIMENSION][AnalyticalJacobiansMapper.STATE_DIMENSION];
+        mapper.computeDerivatives(initialState, dt);
+        mapper.getStateJacobian(initialState, dYdY0);
+        
+        System.out.println(dYdY0[0][0]);
+        System.out.println(dYdY0[0][1]);
+        System.out.println(dYdY0[3][3]);
+        System.out.println(dYdY0[4][4]);
+        System.out.println(dYdY0[5][5]);
+        System.out.println("-----------------------");
 
         // compute reference state Jacobian using finite differences
         double[][] dYdY0Ref = new double[6][6];
@@ -360,7 +365,7 @@ public class TLEPartialDerivativesTest {
                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         SolarRadiationPressure srp =
                         new SolarRadiationPressure(sunSRP, earth.getEquatorialRadius(),
-                                                   (RadiationSensitive) new IsotropicRadiationCNES95Convention(10.0, 0.5, 0.5));
+                                                   new IsotropicRadiationCNES95Convention(10.0, 0.5, 0.5));
         
         NumericalPropagator propagator2 = setUpPropagator(orbit, dP, orbit.getType(), PositionAngle.MEAN, gravityField, srp);
         
@@ -411,8 +416,7 @@ public class TLEPartialDerivativesTest {
                 }
             }
         }
-    }
-    
+    }    
     
 
     private void fillJacobianColumn(double[][] jacobian, int column,
@@ -521,9 +525,11 @@ public class TLEPartialDerivativesTest {
             return dYdY0;
         }
 
+        @Override
         public void init(SpacecraftState s0, AbsoluteDate t) {
         }
 
+        @Override
         public void handleStep(OrekitStepInterpolator interpolator, boolean isLast) {
             final SpacecraftState interpolated;
             if (pickUpDate == null) {
@@ -547,6 +553,7 @@ public class TLEPartialDerivativesTest {
 
             Assert.assertEquals(1, interpolated.getAdditionalStates().size());
             Assert.assertTrue(interpolated.getAdditionalStates().containsKey(mapper.getName()));
+            mapper.computeDerivatives(interpolated, 0.0);
             mapper.getStateJacobian(interpolated, dYdY0);
             mapper.getParametersJacobian(interpolated, dYdP);
 

@@ -80,9 +80,11 @@ public class TLEPartialDerivativesEquations implements AdditionalEquations {
         this.map                    = null;
         this.propagator             = propagator;
         this.initialized            = false;
+        propagator.addAdditionalEquations(this);
     }
 
     /** {@inheritDoc} */
+    @Override
     public String getName() {
         return name;
     }
@@ -185,6 +187,7 @@ public class TLEPartialDerivativesEquations implements AdditionalEquations {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double[] computeDerivatives(final SpacecraftState s, final double[] pDot) {
 
         // initialize Jacobians to zero
