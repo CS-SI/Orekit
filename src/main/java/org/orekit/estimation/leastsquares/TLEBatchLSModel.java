@@ -16,41 +16,29 @@
  */
 package org.orekit.estimation.leastsquares;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.hipparchus.linear.Array2DRowRealMatrix;
-import org.hipparchus.linear.ArrayRealVector;
-import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
-import org.hipparchus.util.FastMath;
-import org.hipparchus.util.Incrementor;
 import org.hipparchus.util.Pair;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.PropagationType;
+import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.PropagatorsParallelizer;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AnalyticalJacobiansMapper;
-import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPartialDerivativesEquations;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
-import org.orekit.propagation.conversion.FiniteDifferencePropagatorConverter;
-import org.orekit.propagation.conversion.TLEPropagatorBuilder;
-import org.orekit.propagation.sampling.MultiSatStepHandler;
+import org.orekit.propagation.conversion.IntegratedPropagatorBuilder;
+import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
 /** Bridge between {@link ObservedMeasurement measurements} and {@link
  * org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem
@@ -65,220 +53,28 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * @since 11.0
  *
  */
-public class TLEBatchLSModel implements BatchLSODModel {
-
-    /** Builders for propagators. */
-    private final TLEPropagatorBuilder[] builders;
-
-    /** Array of each builder's selected propagation drivers. */
-    private final ParameterDriversList[] estimatedPropagationParameters;
-
-    /** Estimated measurements parameters. */
-    private final ParameterDriversList estimatedMeasurementsParameters;
-
-    /** Measurements. */
-    private final List<ObservedMeasurement<?>> measurements;
-
-    /** Start columns for each estimated orbit. */
-    private final int[] orbitsStartColumns;
-
-    /** End columns for each estimated orbit. */
-    private final int[] orbitsEndColumns;
-
-    /** Map for propagation parameters columns. */
-    private final Map<String, Integer> propagationParameterColumns;
-
-    /** Map for measurements parameters columns. */
-    private final Map<String, Integer> measurementParameterColumns;
-
-    /** Last evaluations. */
-    private final Map<ObservedMeasurement<?>, EstimatedMeasurement<?>> evaluations;
-
-    /** Observer to be notified at orbit changes. */
-    private final ModelObserver observer;
-
-    /** Counter for the evaluations. */
-    private Incrementor evaluationsCounter;
-
-    /** Counter for the iterations. */
-    private Incrementor iterationsCounter;
-
-    /** Date of the first enabled measurement. */
-    private AbsoluteDate firstDate;
-
-    /** Date of the last enabled measurement. */
-    private AbsoluteDate lastDate;
-
-    /** Boolean indicating if the propagation will go forward or backward. */
-    private final boolean forwardPropagation;
+public class TLEBatchLSModel extends AbstractBatchLSModel {
 
     /** Mappers for Jacobians. */
     private AnalyticalJacobiansMapper[] mappers;
 
-    /** Model function value. */
-    private RealVector value;
-
-    /** Model function Jacobian. */
-    private RealMatrix jacobian;
-
     /** Samples of Spacecreft States. */
     private Map<Integer, List<SpacecraftState>> samples;
-
-    /** Total time span of measures. */
-    private double duration;
-
-    /** Step size to build fitted propagator. */
-    private double stepsize;
-
-    /** Theshold to build fitted propagator. */
-    private double threshold;
-
-    /** Max iteration number to build fitted propagator. */
-    private int maxIterations;
-
-    /** positionOnly if true, consider only position data otherwise both position and velocity are used. */
-    private boolean positionOnly;
 
     /** Simple constructor.
      * @param propagatorBuilders builders to use for propagation
      * @param measurements measurements
      * @param estimatedMeasurementsParameters estimated measurements parameters
      * @param observer observer to be notified at model calls
-     * @param propagationType type of the orbit used for the propagation (mean or osculating)
-     * @param stateType type of the elements used to define the orbital state (mean or osculating)
-     * @param duration total measurement time span to build fitted proapagtor
-     * @param stepsize size of step used for building fitted propagator
-     * @param threshold threshold used to build fitted propagtor
-     * @param maxIterations max iteration number to build fitted propagator
-     * @param positionOnly if true, consider only position data otherwise both position and velocity are used
      */
-    public TLEBatchLSModel(final TLEPropagatorBuilder[] propagatorBuilders,
+    public TLEBatchLSModel(final PropagatorBuilder[] propagatorBuilders,
                      final List<ObservedMeasurement<?>> measurements,
                      final ParameterDriversList estimatedMeasurementsParameters,
-                     final ModelObserver observer,
-                     final PropagationType propagationType,
-                     final PropagationType stateType,
-                     final double duration,
-                     final double stepsize,
-                     final double threshold,
-                     final int maxIterations,
-                     final boolean positionOnly) {
-
-        this.builders                        = propagatorBuilders.clone();
-        this.measurements                    = measurements;
-        this.estimatedMeasurementsParameters = estimatedMeasurementsParameters;
-        this.measurementParameterColumns     = new HashMap<>(estimatedMeasurementsParameters.getDrivers().size());
-        this.estimatedPropagationParameters  = new ParameterDriversList[builders.length];
-        this.evaluations                     = new IdentityHashMap<>(measurements.size());
-        this.observer                        = observer;
-        this.mappers                         = new AnalyticalJacobiansMapper[builders.length];
-        this.duration                        = duration;
-        this.stepsize                        = stepsize;
-        this.threshold                       = threshold;
-        this.maxIterations                   = maxIterations;
-        this.positionOnly                    = positionOnly;
-
-        int rows = 0;
-        for (final ObservedMeasurement<?> measurement : measurements) {
-            rows += measurement.getDimension();
-        }
-
-        this.orbitsStartColumns = new int[builders.length];
-        this.orbitsEndColumns   = new int[builders.length];
-        int columns = 0;
-        for (int i = 0; i < builders.length; ++i) {
-            this.orbitsStartColumns[i] = columns;
-            for (final ParameterDriver driver : builders[i].getOrbitalParametersDrivers().getDrivers()) {
-                if (driver.isSelected()) {
-                    ++columns;
-                }
-            }
-            this.orbitsEndColumns[i] = columns;
-        }
-
-        // build sample map
-        samples = new HashMap<Integer, List<SpacecraftState>>();
-        final TLE[] templateTLEs = new TLE[builders.length];
-        for (int i = 0; i < builders.length; ++i) {
-            templateTLEs[i] = builders[i].getTemplateTLE();
-        }
-        final AbsoluteDate first  = measurements.get(0).getDate();
-        for (int i = 0; i < builders.length; ++i) {
-            final TLEPropagator propagator = TLEPropagator.selectExtrapolator(templateTLEs[i]);
-            final List<SpacecraftState> states = new ArrayList<SpacecraftState>();
-            for (double dt = 0; dt < this.duration; dt += this.stepsize) {
-                states.add(propagator.propagate(first.shiftedBy(dt)));
-            }
-            samples.put(i, states);
-        }
-
-        // Gather all the propagation drivers names in a list
-        final List<String> estimatedPropagationParametersNames = new ArrayList<>();
-        for (int i = 0; i < builders.length; ++i) {
-            // The index i in array estimatedPropagationParameters (attribute of the class) is populated
-            // when the first call to getSelectedPropagationDriversForBuilder(i) is made
-            for (final DelegatingDriver delegating : getSelectedPropagationDriversForBuilder(i).getDrivers()) {
-                final String driverName = delegating.getName();
-                // Add the driver name if it has not been added yet
-                if (!estimatedPropagationParametersNames.contains(driverName)) {
-                    estimatedPropagationParametersNames.add(driverName);
-                }
-            }
-        }
-        // Populate the map of propagation drivers' columns and update the total number of columns
-        propagationParameterColumns = new HashMap<>(estimatedPropagationParametersNames.size());
-        for (final String driverName : estimatedPropagationParametersNames) {
-            propagationParameterColumns.put(driverName, columns);
-            ++columns;
-        }
-
-
-        // Populate the map of measurement drivers' columns and update the total number of columns
-        for (final ParameterDriver parameter : estimatedMeasurementsParameters.getDrivers()) {
-            measurementParameterColumns.put(parameter.getName(), columns);
-            ++columns;
-        }
-
-        // Initialize point and value
-        value    = new ArrayRealVector(rows);
-        jacobian = MatrixUtils.createRealMatrix(rows, columns);
-
-        // Decide whether the propagation will be done forward or backward.
-        // Minimize the duration between first measurement treated and orbit determination date
-        // Propagator builder number 0 holds the reference date for orbit determination
-        final AbsoluteDate refDate = builders[0].getInitialOrbitDate();
-
-        // Sort the measurement list chronologically
-        measurements.sort(new ChronologicalComparator());
-        firstDate = measurements.get(0).getDate();
-        lastDate  = measurements.get(measurements.size() - 1).getDate();
-
-        // Decide the direction of propagation
-        if (FastMath.abs(refDate.durationFrom(firstDate)) <= FastMath.abs(refDate.durationFrom(lastDate))) {
-            // Propagate forward from firstDate
-            forwardPropagation = true;
-        } else {
-            // Propagate backward from lastDate
-            forwardPropagation = false;
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void setEvaluationsCounter(final Incrementor evaluationsCounter) {
-        this.evaluationsCounter = evaluationsCounter;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void setIterationsCounter(final Incrementor iterationsCounter) {
-        this.iterationsCounter = iterationsCounter;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean isForwardPropagation() {
-        return forwardPropagation;
+                     final ModelObserver observer) {
+        super(propagatorBuilders, measurements,
+              estimatedMeasurementsParameters,
+              observer);
+        this.mappers                         = new AnalyticalJacobiansMapper[getBuilders().length];
     }
 
     /** {@inheritDoc} */
@@ -296,8 +92,11 @@ public class TLEBatchLSModel implements BatchLSODModel {
                         new PropagatorsParallelizer(Arrays.asList(propagators), configureMeasurements(point));
 
         // Reset value and Jacobian
+        final Map<ObservedMeasurement<?>, EstimatedMeasurement<?>> evaluations = getEvaluations();
+        final RealVector value = getValue();
         evaluations.clear();
         value.set(0.0);
+        final RealMatrix jacobian = getJacobian();
         for (int i = 0; i < jacobian.getRowDimension(); ++i) {
             for (int j = 0; j < jacobian.getColumnDimension(); ++j) {
                 jacobian.setEntry(i, j, 0.0);
@@ -305,7 +104,9 @@ public class TLEBatchLSModel implements BatchLSODModel {
         }
 
         // Run the propagation, gathering residuals on the fly
-        if (forwardPropagation) {
+        final AbsoluteDate firstDate = getFirstDate();
+        final AbsoluteDate lastDate = getLastDate();
+        if (isForwardPropagation()) {
             // Propagate forward from firstDate
             parallelizer.propagate(firstDate.shiftedBy(-1.0), lastDate.shiftedBy(+1.0));
         } else {
@@ -313,6 +114,7 @@ public class TLEBatchLSModel implements BatchLSODModel {
             parallelizer.propagate(lastDate.shiftedBy(+1.0), firstDate.shiftedBy(-1.0));
         }
 
+        final ModelObserver observer = getObserver();
         observer.modelCalled(orbits, evaluations);
 
         return new Pair<RealVector, RealMatrix>(value, jacobian);
@@ -321,54 +123,18 @@ public class TLEBatchLSModel implements BatchLSODModel {
 
     /** {@inheritDoc} */
     @Override
-    public int getIterationsCount() {
-        return iterationsCounter.getCount();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public int getEvaluationsCount() {
-        return evaluationsCounter.getCount();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public ParameterDriversList getSelectedPropagationDriversForBuilder(final int iBuilder) {
-
-        // Lazy evaluation, create the list only if it hasn't been created yet
-        if (estimatedPropagationParameters[iBuilder] == null) {
-
-            // Gather the drivers
-            final ParameterDriversList selectedPropagationDrivers = new ParameterDriversList();
-            for (final DelegatingDriver delegating : builders[iBuilder].getPropagationParametersDrivers().getDrivers()) {
-                if (delegating.isSelected()) {
-                    for (final ParameterDriver driver : delegating.getRawDrivers()) {
-                        selectedPropagationDrivers.add(driver);
-                    }
-                }
-            }
-
-            // List of propagation drivers are sorted in the BatchLSEstimator class.
-            // Hence we need to sort this list so the parameters' indexes match
-            selectedPropagationDrivers.sort();
-
-            // Add the list of selected propagation drivers to the array
-            estimatedPropagationParameters[iBuilder] = selectedPropagationDrivers;
-        }
-        return estimatedPropagationParameters[iBuilder];
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public TLEPropagator[] createPropagators(final RealVector point) {
 
-        final TLEPropagator[] propagators = new TLEPropagator[builders.length];
+        final TLEPropagator[] propagators = new TLEPropagator[getBuilders().length];
+        final int[] orbitsStartColumns = getOrbitsStartColumns();
+        final Map<String, Integer> propagationParameterColumns = getPropagationParameterColumns();
+        final IntegratedPropagatorBuilder[] builders = (IntegratedPropagatorBuilder[]) getBuilders();
 
         // Set up the propagators
-        for (int i = 0; i < builders.length; ++i) {
+        for (int i = 0; i < getBuilders().length; ++i) {
 
             // Get the number of selected orbital drivers in the builder
-            final int nbOrb    = orbitsEndColumns[i] - orbitsStartColumns[i];
+            final int nbOrb    = getOrbitsEndColumns()[i] - getOrbitsStartColumns()[i];
 
             // Get the list of selected propagation drivers in the builder and its size
             final ParameterDriversList selectedPropagationDrivers = getSelectedPropagationDriversForBuilder(i);
@@ -388,47 +154,11 @@ public class TLEBatchLSModel implements BatchLSODModel {
                                 point.getEntry(propagationParameterColumns.get(selectedPropagationDrivers.getDrivers().get(j).getName()));
             }
 
-            // Build the fitted propagator matching with samples
-            final FiniteDifferencePropagatorConverter fitter = new FiniteDifferencePropagatorConverter(builders[i], this.threshold, this.maxIterations);
-            fitter.convert(samples.get(i), positionOnly);
-            propagators[i] = (TLEPropagator) fitter.getAdaptedPropagator();
+            // Build the propagator
+            propagators[i] = (TLEPropagator) builders[i].buildPropagator(propagatorArray);
         }
 
         return propagators;
-
-    }
-
-    /** Configure the multi-satellites handler to handle measurements.
-     * @param point evaluation point
-     * @return multi-satellites handler to handle measurements
-     */
-    private MultiSatStepHandler configureMeasurements(final RealVector point) {
-
-        // Set up the measurement parameters
-        int index = orbitsEndColumns[builders.length - 1] + propagationParameterColumns.size();
-        for (final ParameterDriver parameter : estimatedMeasurementsParameters.getDrivers()) {
-            parameter.setNormalizedValue(point.getEntry(index++));
-        }
-
-        // Set up measurements handler
-        final List<PreCompensation> precompensated = new ArrayList<>();
-        for (final ObservedMeasurement<?> measurement : measurements) {
-            if (measurement.isEnabled()) {
-                precompensated.add(new PreCompensation(measurement, evaluations.get(measurement)));
-            }
-        }
-        precompensated.sort(new ChronologicalComparator());
-
-        // Assign first and last date
-        firstDate = precompensated.get(0).getDate();
-        lastDate  = precompensated.get(precompensated.size() - 1).getDate();
-
-        // Reverse the list in case of backward propagation
-        if (!forwardPropagation) {
-            Collections.reverse(precompensated);
-        }
-
-        return new MeasurementHandler(this, precompensated);
 
     }
 
@@ -436,16 +166,16 @@ public class TLEBatchLSModel implements BatchLSODModel {
      * @param propagators {@link Propagator} to configure
      * @return mapper for this propagator
      */
-    private AnalyticalJacobiansMapper configureDerivatives(final TLEPropagator propagators) {
+    protected AnalyticalJacobiansMapper configureDerivatives(final AbstractPropagator propagators) {
 
         final String equationName = TLEBatchLSModel.class.getName() + "-derivatives";
 
-        final TLEPartialDerivativesEquations partials = new TLEPartialDerivativesEquations(equationName, propagators);
+        final TLEPartialDerivativesEquations partials = new TLEPartialDerivativesEquations(equationName, (TLEPropagator) propagators);
 
         // add the derivatives to the initial state
         final SpacecraftState rawState = propagators.getInitialState();
         final SpacecraftState stateWithDerivatives = partials.setInitialJacobians(rawState);
-        propagators.setInitialState(stateWithDerivatives);
+        ((TLEPropagator) propagators).setInitialState(stateWithDerivatives);
 
         return partials.getMapper();
 
@@ -460,6 +190,7 @@ public class TLEBatchLSModel implements BatchLSODModel {
         final ObservedMeasurement<?> observedMeasurement = evaluation.getObservedMeasurement();
 
         // compute weighted residuals
+        final Map<ObservedMeasurement<?>, EstimatedMeasurement<?>> evaluations = getEvaluations();
         evaluations.put(observedMeasurement, evaluation);
         if (evaluation.getStatus() == EstimatedMeasurement.Status.REJECTED) {
             return;
@@ -469,6 +200,8 @@ public class TLEBatchLSModel implements BatchLSODModel {
         final double[] observed  = observedMeasurement.getObservedValue();
         final double[] sigma     = observedMeasurement.getTheoreticalStandardDeviation();
         final double[] weight    = evaluation.getObservedMeasurement().getBaseWeight();
+        final RealMatrix jacobian = getJacobian();
+        final RealVector value = getValue();
         for (int i = 0; i < evaluated.length; ++i) {
             value.setEntry(index + i, weight[i] * (evaluated[i] - observed[i]) / sigma[i]);
         }
@@ -476,6 +209,8 @@ public class TLEBatchLSModel implements BatchLSODModel {
         for (int k = 0; k < evaluationStates.length; ++k) {
 
             final int p = observedMeasurement.getSatellites().get(k).getPropagatorIndex();
+            final int[] orbitsStartColumns = getOrbitsStartColumns();
+            final IntegratedPropagatorBuilder[] builders = (IntegratedPropagatorBuilder[]) getBuilders();
 
             // partial derivatives of the current Cartesian coordinates with respect to current orbital state
             final double[][] aCY = new double[6][6];
@@ -487,6 +222,8 @@ public class TLEBatchLSModel implements BatchLSODModel {
             final RealMatrix dMdC = new Array2DRowRealMatrix(evaluation.getStateDerivatives(k), false);
             final RealMatrix dMdY = dMdC.multiply(dCdY);
 
+            // short period derivatives
+            mappers[p].computeDerivatives(evaluationStates[k], 0.0);
 
             // Jacobian of the measurement with respect to initial orbital state
             final double[][] aYY0 = new double[6][6];
@@ -503,26 +240,8 @@ public class TLEBatchLSModel implements BatchLSODModel {
                     }
                 }
             }
-
-            // Jacobian of the measurement with respect to propagation parameters
-            final ParameterDriversList selectedPropagationDrivers = getSelectedPropagationDriversForBuilder(p);
-            final int nbParams = selectedPropagationDrivers.getNbParams();
-            if ( nbParams > 0) {
-                final double[][] aYPp  = new double[6][nbParams];
-                mappers[p].getParametersJacobian(evaluationStates[k], aYPp);
-                final RealMatrix dYdPp = new Array2DRowRealMatrix(aYPp, false);
-                final RealMatrix dMdPp = dMdY.multiply(dYdPp);
-                for (int i = 0; i < dMdPp.getRowDimension(); ++i) {
-                    for (int j = 0; j < nbParams; ++j) {
-                        final ParameterDriver delegating = selectedPropagationDrivers.getDrivers().get(j);
-                        jacobian.addToEntry(index + i, propagationParameterColumns.get(delegating.getName()),
-                                            weight[i] * dMdPp.getEntry(i, j) / sigma[i] * delegating.getScale());
-                    }
-                }
-            }
-
         }
-
+        final Map<String, Integer> measurementParameterColumns = getMeasurementParameterColumns();
         // Jacobian of the measurement with respect to measurements parameters
         for (final ParameterDriver driver : observedMeasurement.getParametersDrivers()) {
             if (driver.isSelected()) {
@@ -542,20 +261,5 @@ public class TLEBatchLSModel implements BatchLSODModel {
     public Map<Integer, List<SpacecraftState>> getSamples() {
         return samples;
     }
-
-    /** Setter for duration.
-     * @param myDuration the total measure time span
-     */
-    public void setDuration(final double myDuration) {
-        this.duration = myDuration;
-    }
-
-    /** Setter for stepsize.
-     * @param myStepsize the stepsize to create fitted propagator
-     */
-    public void setStepSize(final double myStepsize) {
-        this.stepsize = myStepsize;
-    }
-
 
 }
