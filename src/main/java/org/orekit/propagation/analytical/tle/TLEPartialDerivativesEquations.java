@@ -18,11 +18,8 @@ package org.orekit.propagation.analytical.tle;
 
 import java.util.Map;
 
-import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.orbits.FieldKeplerianOrbit;
-import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.propagation.analytical.AnalyticalJacobiansMapper;
@@ -80,7 +77,6 @@ public class TLEPartialDerivativesEquations implements AdditionalEquations {
         this.map                    = null;
         this.propagator             = propagator;
         this.initialized            = false;
-        propagator.addAdditionalEquations(this);
     }
 
     /** {@inheritDoc} */
@@ -190,69 +186,7 @@ public class TLEPartialDerivativesEquations implements AdditionalEquations {
     @Override
     public double[] computeDerivatives(final SpacecraftState s, final double[] pDot) {
 
-        // initialize Jacobians to zero
-        final int dim = 6;
-        final double[][] dMeanElementRatedElement = new double[dim][dim];
-        final TLEGradientConverter converter = new TLEGradientConverter(propagator);
-        final FieldTLEPropagator<Gradient> gPropagator = converter.getPropagator();
-
-        // Compute Jacobian
-        final FieldKeplerianOrbit<Gradient> gOrbit = (FieldKeplerianOrbit<Gradient>) OrbitType.KEPLERIAN.convertType(gPropagator.propagateOrbit(
-                                                                                                                     gPropagator.getTLE().getDate()));
-
-        final double[] derivativesA           = gOrbit.getA().getGradient();
-        final double[] derivativesE           = gOrbit.getE().getGradient();
-        final double[] derivativesI           = gOrbit.getI().getGradient();
-        final double[] derivativesRAAN        = gOrbit.getRightAscensionOfAscendingNode().getGradient();
-        final double[] derivativesPA          = gOrbit.getPerigeeArgument().getGradient();
-        final double[] derivativesMeanAnomaly = gOrbit.getMeanAnomaly().getGradient();
-
-        // update Jacobian with respect to state
-        addToRow(derivativesA,            0, dMeanElementRatedElement);
-        addToRow(derivativesE,            1, dMeanElementRatedElement);
-        addToRow(derivativesI,            2, dMeanElementRatedElement);
-        addToRow(derivativesRAAN,         3, dMeanElementRatedElement);
-        addToRow(derivativesPA,           4, dMeanElementRatedElement);
-        addToRow(derivativesMeanAnomaly,  5, dMeanElementRatedElement);
-
-        // The variational equations of the complete state Jacobian matrix have the following form:
-
-        //                     [ Adot ] = [ dMeanElementRatedElement ] * [ A ]
-
-        // The A matrix and its derivative (Adot) are 6 * 6 matrices
-
-        // The following loops compute these expression taking care of the mapping of the
-        // A matrix into the single dimension array p and of the mapping of the
-        // Adot matrix into the single dimension array pDot.
-
-        final double[] p = s.getAdditionalState(getName());
-
-        for (int i = 0; i < dim; i++) {
-            final double[] dMeanElementRatedElementi = dMeanElementRatedElement[i];
-            for (int j = 0; j < dim; j++) {
-                pDot[j + dim * i] =
-                    dMeanElementRatedElementi[0] * p[j]           + dMeanElementRatedElementi[1] * p[j +     dim] + dMeanElementRatedElementi[2] * p[j + 2 * dim] +
-                    dMeanElementRatedElementi[3] * p[j + 3 * dim] + dMeanElementRatedElementi[4] * p[j + 4 * dim] + dMeanElementRatedElementi[5] * p[j + 5 * dim];
-            }
-        }
-
-
-        // these equations have no effect on the main propagator itself
         return null;
-
-    }
-
-    /** Fill Jacobians rows.
-     * @param derivatives derivatives of a component
-     * @param index component index (0 for a, 1 for ex, 2 for ey, 3 for hx, 4 for hy, 5 for l)
-     * @param dMeanElementRatedElement Jacobian of mean elements rate with respect to mean elements
-     */
-    private void addToRow(final double[] derivatives, final int index,
-                          final double[][] dMeanElementRatedElement) {
-
-        for (int i = 0; i < 6; i++) {
-            dMeanElementRatedElement[index][i] += derivatives[i];
-        }
 
     }
 

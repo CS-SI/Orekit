@@ -245,12 +245,20 @@ public class TLEPartialDerivativesTest {
         mapper.computeDerivatives(initialState, dt);
         mapper.getStateJacobian(initialState, dYdY0);
         
+        System.out.println("---------dY/dY0--------");
         System.out.println(dYdY0[0][0]);
         System.out.println(dYdY0[0][1]);
+        System.out.println(dYdY0[0][2]);
+        System.out.println(dYdY0[0][3]);
+        System.out.println(dYdY0[0][4]);
+        System.out.println(dYdY0[0][5]);
+        System.out.println("-diag-");
+        System.out.println(dYdY0[1][1]);
+        System.out.println(dYdY0[2][2]);
         System.out.println(dYdY0[3][3]);
-        System.out.println(dYdY0[4][4]);
-        System.out.println(dYdY0[5][5]);
-        System.out.println("-----------------------");
+        System.out.println("-hors diag-");
+        System.out.println(dYdY0[2][4]);
+        System.out.println(dYdY0[4][2]);
 
         // compute reference state Jacobian using finite differences
         double[][] dYdY0Ref = new double[6][6];
@@ -318,7 +326,21 @@ public class TLEPartialDerivativesTest {
             fillJacobianColumn(dYdY0Ref, i, OrbitType.KEPLERIAN, steps[i],
                                sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
         }
-
+        System.out.println("---------dY/dY0 ref--------");
+        System.out.println(dYdY0Ref[0][0]);
+        System.out.println(dYdY0Ref[0][1]);
+        System.out.println(dYdY0Ref[0][2]);
+        System.out.println(dYdY0Ref[0][3]);
+        System.out.println(dYdY0Ref[0][4]);
+        System.out.println(dYdY0Ref[0][5]);
+        System.out.println("-diag-");
+        System.out.println(dYdY0Ref[1][1]);
+        System.out.println(dYdY0Ref[2][2]);
+        System.out.println(dYdY0Ref[3][3]);
+        System.out.println("-hors diag-");
+        System.out.println(dYdY0Ref[2][4]);
+        System.out.println(dYdY0Ref[4][2]);
+        System.out.println("---------------------------");
         for (int i = 0; i < 6; ++i) {
             for (int j = 0; j < 6; ++j) {
                 if (stateVector[i] != 0) {

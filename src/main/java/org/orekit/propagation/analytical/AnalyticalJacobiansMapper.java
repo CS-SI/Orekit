@@ -127,13 +127,10 @@ public class AnalyticalJacobiansMapper extends AbstractJacobiansMapper {
     @Override
     public void getStateJacobian(final SpacecraftState state, final double[][] dYdY0) {
 
-        // extract additional state
-        final double[] p = state.getAdditionalState(name);
-
         for (int i = 0; i < STATE_DIMENSION; i++) {
             final double[] row = dYdY0[i];
             for (int j = 0; j < STATE_DIMENSION; j++) {
-                row[j] = p[i * STATE_DIMENSION + j] + pDot[i * STATE_DIMENSION + j];
+                row[j] = pDot[i * STATE_DIMENSION + j];
             }
         }
 
@@ -216,8 +213,7 @@ public class AnalyticalJacobiansMapper extends AbstractJacobiansMapper {
             final double[] dMeanElementRatedElementi = dMeanElementRatedElement[i];
             for (int j = 0; j < dim; j++) {
                 pDot[j + dim * i] =
-                    dMeanElementRatedElementi[0] * p[j]           + dMeanElementRatedElementi[1] * p[j +     dim] + dMeanElementRatedElementi[2] * p[j + 2 * dim] +
-                    dMeanElementRatedElementi[3] * p[j + 3 * dim] + dMeanElementRatedElementi[4] * p[j + 4 * dim] + dMeanElementRatedElementi[5] * p[j + 5 * dim];
+                    dMeanElementRatedElementi[j];
             }
         }
     }

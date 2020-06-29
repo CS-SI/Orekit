@@ -563,7 +563,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
     }
 
     /** {@inheritDoc} */
-    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date) {
+    public FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date) {
         return new FieldCartesianOrbit<T>(getPVCoordinates(date), teme, date, date.getField().getZero().add(TLEConstants.MU));
     }
 
