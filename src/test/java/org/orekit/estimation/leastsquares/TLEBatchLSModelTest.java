@@ -25,7 +25,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
-import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Incrementor;
 import org.hipparchus.util.Pair;
 import org.junit.Assert;
@@ -36,11 +35,9 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.TLEPropagatorBuilder;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
@@ -90,17 +87,8 @@ public class TLEBatchLSModelTest {
                 Assert.assertEquals(measurements.size(), newEvaluations.size());
             }
         };
-        final AbsoluteDate first  = measurements.get(0).getDate();
-        final AbsoluteDate second = measurements.get(1).getDate();
-        final AbsoluteDate last = measurements.get(measurements.size() - 1).getDate();
-        final double duration = FastMath.abs(first.durationFrom(last));
-        final double stepSize = FastMath.abs(first.durationFrom(second));
-        final double threshold = 1e-3;
-        final int maxIterations = 1000;
-        final boolean positionOnly = false;
         final TLEBatchLSModel model = new TLEBatchLSModel(builders, measurements, estimatedMeasurementsParameters,
-                                                          modelObserver, PropagationType.MEAN, PropagationType.MEAN,
-                                                          duration, stepSize, threshold, maxIterations, positionOnly);
+                                                          modelObserver);
         model.setIterationsCounter(new Incrementor(100));
         model.setEvaluationsCounter(new Incrementor(100));
         
@@ -161,17 +149,8 @@ public class TLEBatchLSModelTest {
                 // Do nothing here 
             }
         };
-        final AbsoluteDate first  = measurements.get(0).getDate();
-        final AbsoluteDate second = measurements.get(1).getDate();
-        final AbsoluteDate last = measurements.get(measurements.size() - 1).getDate();
-        final double duration = FastMath.abs(first.durationFrom(last));
-        final double stepSize = FastMath.abs(first.durationFrom(second));
-        final double threshold = 1e-3;
-        final int maxIterations = 1000;
-        final boolean positionOnly = false;
         final TLEBatchLSModel model = new TLEBatchLSModel(builders, measurements, estimatedMeasurementsParameters,
-                                                          modelObserver, PropagationType.MEAN, PropagationType.MEAN,
-                                                          duration, stepSize, threshold, maxIterations, positionOnly);
+                                                          modelObserver);
         // Test forward propagation flag to false
         assertEquals(false, model.isForwardPropagation());
     }

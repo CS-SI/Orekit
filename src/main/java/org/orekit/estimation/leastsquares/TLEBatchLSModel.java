@@ -31,11 +31,11 @@ import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.PropagatorsParallelizer;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.analytical.AnalyticalJacobiansMapper;
+import org.orekit.propagation.analytical.tle.TLEJacobiansMapper;
 import org.orekit.propagation.analytical.tle.TLEPartialDerivativesEquations;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
-import org.orekit.propagation.conversion.IntegratedPropagatorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
+import org.orekit.propagation.conversion.TLEPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -56,7 +56,7 @@ import org.orekit.utils.ParameterDriversList;
 public class TLEBatchLSModel extends AbstractBatchLSModel {
 
     /** Mappers for Jacobians. */
-    private AnalyticalJacobiansMapper[] mappers;
+    private TLEJacobiansMapper[] mappers;
 
     /** Samples of Spacecreft States. */
     private Map<Integer, List<SpacecraftState>> samples;
@@ -74,7 +74,7 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
         super(propagatorBuilders, measurements,
               estimatedMeasurementsParameters,
               observer);
-        this.mappers                         = new AnalyticalJacobiansMapper[getBuilders().length];
+        this.mappers                         = new TLEJacobiansMapper[getBuilders().length];
     }
 
     /** {@inheritDoc} */
@@ -128,7 +128,7 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
         final TLEPropagator[] propagators = new TLEPropagator[getBuilders().length];
         final int[] orbitsStartColumns = getOrbitsStartColumns();
         final Map<String, Integer> propagationParameterColumns = getPropagationParameterColumns();
-        final IntegratedPropagatorBuilder[] builders = (IntegratedPropagatorBuilder[]) getBuilders();
+        final TLEPropagatorBuilder[] builders = (TLEPropagatorBuilder[]) getBuilders();
 
         // Set up the propagators
         for (int i = 0; i < getBuilders().length; ++i) {
@@ -166,7 +166,7 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
      * @param propagators {@link Propagator} to configure
      * @return mapper for this propagator
      */
-    protected AnalyticalJacobiansMapper configureDerivatives(final AbstractPropagator propagators) {
+    protected TLEJacobiansMapper configureDerivatives(final AbstractPropagator propagators) {
 
         final String equationName = TLEBatchLSModel.class.getName() + "-derivatives";
 
@@ -210,7 +210,7 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
 
             final int p = observedMeasurement.getSatellites().get(k).getPropagatorIndex();
             final int[] orbitsStartColumns = getOrbitsStartColumns();
-            final IntegratedPropagatorBuilder[] builders = (IntegratedPropagatorBuilder[]) getBuilders();
+            final TLEPropagatorBuilder[] builders = (TLEPropagatorBuilder[]) getBuilders();
 
             // partial derivatives of the current Cartesian coordinates with respect to current orbital state
             final double[][] aCY = new double[6][6];

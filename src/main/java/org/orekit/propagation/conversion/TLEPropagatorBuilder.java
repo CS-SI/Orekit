@@ -17,14 +17,10 @@
 package org.orekit.propagation.conversion;
 
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathUtils;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.tle.TLE;
@@ -160,10 +156,12 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
 
         // create the orbit
         setParameters(normalizedParameters);
+        /*
         final Orbit orbit = createInitialOrbit();
 
         // we really need a Keplerian orbit type
         final KeplerianOrbit kep = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orbit);
+
 
         final TLE tle = new TLE(satelliteNumber, classification, launchYear, launchNumber, launchPiece,
                                 TLE.DEFAULT, elementNumber, orbit.getDate(),
@@ -174,9 +172,9 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
                                 MathUtils.normalizeAngle(kep.getMeanAnomaly(), FastMath.PI),
                                 revolutionNumberAtEpoch, bStar,
                                 dataContext.getTimeScales().getUTC());
-
+        */
         return TLEPropagator.selectExtrapolator(
-                tle,
+                templateTLE,
                 getAttitudeProvider(),
                 Propagator.DEFAULT_MASS,
                 dataContext.getFrames().getTEME());
