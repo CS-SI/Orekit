@@ -31,7 +31,7 @@ import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.PropagatorsParallelizer;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.conversion.IntegratedPropagatorBuilder;
+import org.orekit.propagation.conversion.ODPropagatorBuilder;
 import org.orekit.propagation.numerical.JacobiansMapper;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.PartialDerivativesEquations;
@@ -56,7 +56,7 @@ public class BatchLSModel extends AbstractBatchLSModel {
      * @param estimatedMeasurementsParameters estimated measurements parameters
      * @param observer observer to be notified at model calls
      */
-    public BatchLSModel(final IntegratedPropagatorBuilder[] propagatorBuilders,
+    public BatchLSModel(final ODPropagatorBuilder[] propagatorBuilders,
                  final List<ObservedMeasurement<?>> measurements,
                  final ParameterDriversList estimatedMeasurementsParameters,
                  final ModelObserver observer) {
@@ -119,7 +119,7 @@ public class BatchLSModel extends AbstractBatchLSModel {
         final NumericalPropagator[] propagators = new NumericalPropagator[getBuilders().length];
         final int[] orbitsStartColumns = getOrbitsStartColumns();
         final Map<String, Integer> propagationParameterColumns = getPropagationParameterColumns();
-        final IntegratedPropagatorBuilder[] builders = (IntegratedPropagatorBuilder[]) getBuilders();
+        final ODPropagatorBuilder[] builders = (ODPropagatorBuilder[]) getBuilders();
 
         // Set up the propagators
         for (int i = 0; i < getBuilders().length; ++i) {
@@ -201,7 +201,7 @@ public class BatchLSModel extends AbstractBatchLSModel {
 
             final int p = observedMeasurement.getSatellites().get(k).getPropagatorIndex();
             final int[] orbitsStartColumns = getOrbitsStartColumns();
-            final IntegratedPropagatorBuilder[] builders = (IntegratedPropagatorBuilder[]) getBuilders();
+            final ODPropagatorBuilder[] builders = (ODPropagatorBuilder[]) getBuilders();
             final Map<String, Integer>  propagationParameterColumns = getPropagationParameterColumns();
 
             // partial derivatives of the current Cartesian coordinates with respect to current orbital state

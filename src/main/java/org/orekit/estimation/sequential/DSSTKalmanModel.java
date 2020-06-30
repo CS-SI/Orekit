@@ -41,7 +41,7 @@ import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.conversion.IntegratedPropagatorBuilder;
+import org.orekit.propagation.conversion.ODPropagatorBuilder;
 import org.orekit.propagation.semianalytical.dsst.DSSTJacobiansMapper;
 import org.orekit.propagation.semianalytical.dsst.DSSTPartialDerivativesEquations;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
@@ -63,7 +63,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 public class DSSTKalmanModel implements KalmanODModel {
 
     /** Builders for propagators. */
-    private final List<IntegratedPropagatorBuilder> builders;
+    private final List<ODPropagatorBuilder> builders;
 
     /** Estimated orbital parameters. */
     private final ParameterDriversList allEstimatedOrbitalParameters;
@@ -138,7 +138,7 @@ public class DSSTKalmanModel implements KalmanODModel {
      * @param propagationType type of the orbit used for the propagation (mean or osculating)
      * @param stateType type of the elements used to define the orbital state (mean or osculating)
      */
-    public DSSTKalmanModel(final List<IntegratedPropagatorBuilder> propagatorBuilders,
+    public DSSTKalmanModel(final List<ODPropagatorBuilder> propagatorBuilders,
           final List<CovarianceMatrixProvider> covarianceMatricesProviders,
           final ParameterDriversList estimatedMeasurementParameters,
           final PropagationType propagationType,

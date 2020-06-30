@@ -28,7 +28,7 @@ import org.hipparchus.linear.RealVector;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
-import org.orekit.propagation.conversion.IntegratedPropagatorBuilder;
+import org.orekit.propagation.conversion.ODPropagatorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -42,7 +42,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 /**
  * Implementation of a Kalman filter to perform orbit determination.
  * <p>
- * The filter uses a {@link IntegratedPropagatorBuilder} to initialize its reference trajectory {@link NumericalPropagator}
+ * The filter uses a {@link ODPropagatorBuilder} to initialize its reference trajectory {@link NumericalPropagator}
  * or {@link DSSTPropagator} .
  * </p>
  * <p>
@@ -74,7 +74,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 public class KalmanEstimator {
 
     /** Builders for orbit propagators. */
-    private List<IntegratedPropagatorBuilder> propagatorBuilders;
+    private List<ODPropagatorBuilder> propagatorBuilders;
 
     /** Reference date. */
     private final AbsoluteDate referenceDate;
@@ -95,7 +95,7 @@ public class KalmanEstimator {
      * @param estimatedMeasurementParameters measurement parameters to estimate
      */
     KalmanEstimator(final MatrixDecomposer decomposer,
-                    final List<IntegratedPropagatorBuilder> propagatorBuilders,
+                    final List<ODPropagatorBuilder> propagatorBuilders,
                     final List<CovarianceMatrixProvider> processNoiseMatricesProviders,
                     final ParameterDriversList estimatedMeasurementParameters) {
 

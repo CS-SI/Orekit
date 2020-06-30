@@ -40,7 +40,7 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.conversion.IntegratedPropagatorBuilder;
+import org.orekit.propagation.conversion.ODPropagatorBuilder;
 import org.orekit.propagation.numerical.JacobiansMapper;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.PartialDerivativesEquations;
@@ -58,7 +58,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 public class KalmanModel implements KalmanODModel {
 
     /** Builders for propagators. */
-    private final List<IntegratedPropagatorBuilder> builders;
+    private final List<ODPropagatorBuilder> builders;
 
     /** Estimated orbital parameters. */
     private final ParameterDriversList allEstimatedOrbitalParameters;
@@ -125,7 +125,7 @@ public class KalmanModel implements KalmanODModel {
      * @param covarianceMatricesProviders providers for covariance matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
      */
-    public KalmanModel(final List<IntegratedPropagatorBuilder> propagatorBuilders,
+    public KalmanModel(final List<ODPropagatorBuilder> propagatorBuilders,
           final List<CovarianceMatrixProvider> covarianceMatricesProviders,
           final ParameterDriversList estimatedMeasurementParameters) {
 

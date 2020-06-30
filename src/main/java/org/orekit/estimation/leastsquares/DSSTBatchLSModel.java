@@ -32,7 +32,7 @@ import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.PropagatorsParallelizer;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.conversion.IntegratedPropagatorBuilder;
+import org.orekit.propagation.conversion.ODPropagatorBuilder;
 import org.orekit.propagation.semianalytical.dsst.DSSTJacobiansMapper;
 import org.orekit.propagation.semianalytical.dsst.DSSTPartialDerivativesEquations;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
@@ -71,7 +71,7 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
      * @param propagationType type of the orbit used for the propagation (mean or osculating)
      * @param stateType type of the elements used to define the orbital state (mean or osculating)
      */
-    public DSSTBatchLSModel(final IntegratedPropagatorBuilder[] propagatorBuilders,
+    public DSSTBatchLSModel(final ODPropagatorBuilder[] propagatorBuilders,
                      final List<ObservedMeasurement<?>> measurements,
                      final ParameterDriversList estimatedMeasurementsParameters,
                      final ModelObserver observer,
@@ -137,7 +137,7 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
         final DSSTPropagator[] propagators = new DSSTPropagator[getBuilders().length];
         final int[] orbitsStartColumns = getOrbitsStartColumns();
         final Map<String, Integer> propagationParameterColumns = getPropagationParameterColumns();
-        final IntegratedPropagatorBuilder[] builders = (IntegratedPropagatorBuilder[]) getBuilders();
+        final ODPropagatorBuilder[] builders = (ODPropagatorBuilder[]) getBuilders();
 
         // Set up the propagators
         for (int i = 0; i < getBuilders().length; ++i) {
@@ -219,7 +219,7 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
 
             final int p = observedMeasurement.getSatellites().get(k).getPropagatorIndex();
             final int[] orbitsStartColumns = getOrbitsStartColumns();
-            final IntegratedPropagatorBuilder[] builders = (IntegratedPropagatorBuilder[]) getBuilders();
+            final ODPropagatorBuilder[] builders = (ODPropagatorBuilder[]) getBuilders();
             final Map<String, Integer>  propagationParameterColumns = getPropagationParameterColumns();
 
             // partial derivatives of the current Cartesian coordinates with respect to current orbital state

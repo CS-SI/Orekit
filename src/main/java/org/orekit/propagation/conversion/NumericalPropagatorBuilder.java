@@ -44,7 +44,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implements IntegratedPropagatorBuilder {
+public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implements ODPropagatorBuilder {
 
     /** First order integrator builder for propagation. */
     private final ODEIntegratorBuilder builder;
@@ -231,7 +231,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
     }
 
     /** {@inheritDoc} */
-    public BatchLSModel buildLSModel(final IntegratedPropagatorBuilder[] builders,
+    public BatchLSModel buildLSModel(final ODPropagatorBuilder[] builders,
                             final List<ObservedMeasurement<?>> measurements,
                             final ParameterDriversList estimatedMeasurementsParameters,
                             final ModelObserver observer) {
@@ -239,7 +239,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
     }
 
     /** {@inheritDoc} */
-    public KalmanModel buildKalmanModel(final List<IntegratedPropagatorBuilder> propagatorBuilders,
+    public KalmanModel buildKalmanModel(final List<ODPropagatorBuilder> propagatorBuilders,
                                   final List<CovarianceMatrixProvider> covarianceMatricesProviders,
                                   final ParameterDriversList estimatedMeasurementsParameters) {
         return new KalmanModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters);

@@ -30,7 +30,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public interface IntegratedPropagatorBuilder extends PropagatorBuilder {
+public interface ODPropagatorBuilder extends PropagatorBuilder {
 
     /** Build a new {@link BatchLSODModel}.
      * @param builders builders to use for propagation
@@ -39,7 +39,7 @@ public interface IntegratedPropagatorBuilder extends PropagatorBuilder {
      * @param observer observer to be notified at model calls
      * @return a new model for the Batch Least Squares orbit determination
      */
-    BatchLSODModel buildLSModel(IntegratedPropagatorBuilder[] builders,
+    BatchLSODModel buildLSModel(ODPropagatorBuilder[] builders,
                        List<ObservedMeasurement<?>> measurements,
                        ParameterDriversList estimatedMeasurementsParameters,
                        ModelObserver observer);
@@ -50,7 +50,7 @@ public interface IntegratedPropagatorBuilder extends PropagatorBuilder {
      * @param estimatedMeasurementsParameters measurement parameters to estimate
      * @return a new model for Kalman Filter orbit determination
      */
-    KalmanODModel buildKalmanModel(List<IntegratedPropagatorBuilder> propagatorBuilders,
+    KalmanODModel buildKalmanModel(List<ODPropagatorBuilder> propagatorBuilders,
                                    List<CovarianceMatrixProvider> covarianceMatricesProviders,
                                    ParameterDriversList estimatedMeasurementsParameters);
 
