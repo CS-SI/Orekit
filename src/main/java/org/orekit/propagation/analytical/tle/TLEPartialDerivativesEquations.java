@@ -22,7 +22,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
-import org.orekit.propagation.analytical.AnalyticalJacobiansMapper;
 import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -147,7 +146,7 @@ public class TLEPartialDerivativesEquations implements AdditionalEquations {
 
         // store the matrices as a single dimension array
         initialized = true;
-        final AnalyticalJacobiansMapper mapper = getMapper();
+        final TLEJacobiansMapper mapper = getMapper();
         final double[] p = new double[mapper.getAdditionalStateDimension()];
         mapper.setInitialJacobians(s1, dY1dY0, dY1dP, p);
 
@@ -162,11 +161,11 @@ public class TLEPartialDerivativesEquations implements AdditionalEquations {
      * @see #setInitialJacobians(SpacecraftState)
      * @see #setInitialJacobians(SpacecraftState, double[][], double[][])
      */
-    public AnalyticalJacobiansMapper getMapper() {
+    public TLEJacobiansMapper getMapper() {
         if (!initialized) {
             throw new OrekitException(OrekitMessages.STATE_JACOBIAN_NOT_INITIALIZED);
         }
-        return new AnalyticalJacobiansMapper(name, selected, propagator, map);
+        return new TLEJacobiansMapper(name, selected, propagator, map);
     }
 
     /** Get the selected parameters, in Jacobian matrix column order.

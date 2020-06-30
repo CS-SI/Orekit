@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.analytical;
+package org.orekit.propagation.analytical.tle;
 
 import java.util.Map;
 
@@ -22,9 +22,6 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.analytical.tle.FieldTLEPropagator;
-import org.orekit.propagation.analytical.tle.TLEGradientConverter;
-import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.integration.AbstractJacobiansMapper;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -44,7 +41,7 @@ import org.orekit.utils.ParameterDriversList;
  * @see SpacecraftState#getAdditionalState(String)
  * @see org.orekit.propagation.AbstractPropagator
  */
-public class AnalyticalJacobiansMapper extends AbstractJacobiansMapper {
+public class TLEJacobiansMapper extends AbstractJacobiansMapper {
 
     /** State dimension, fixed to 6.
      */
@@ -60,7 +57,7 @@ public class AnalyticalJacobiansMapper extends AbstractJacobiansMapper {
     private final TLEPropagator propagator;
 
     /** Placeholder for the derivatives of state. */
-    private double[] pDot;
+    private double[] stateTransition;
 
 
     /** Simple constructor.
@@ -69,7 +66,7 @@ public class AnalyticalJacobiansMapper extends AbstractJacobiansMapper {
      * @param propagator the propagator that will handle the orbit propagation
      * @param map parameters map
      */
-    public AnalyticalJacobiansMapper(final String name,
+    public TLEJacobiansMapper(final String name,
                         final ParameterDriversList parameters,
                         final TLEPropagator propagator,
                         final Map<ParameterDriver, Integer> map) {
@@ -80,7 +77,7 @@ public class AnalyticalJacobiansMapper extends AbstractJacobiansMapper {
         this.name            = name;
         this.propagator      = propagator;
 
-        pDot = null;
+        stateTransition = null;
 
     }
 
@@ -130,10 +127,9 @@ public class AnalyticalJacobiansMapper extends AbstractJacobiansMapper {
         for (int i = 0; i < STATE_DIMENSION; i++) {
             final double[] row = dYdY0[i];
             for (int j = 0; j < STATE_DIMENSION; j++) {
-                row[j] = pDot[i * STATE_DIMENSION + j];
+                row[j] = stateTransition[i * STATE_DIMENSION + j];
             }
         }
-
     }
 
 
@@ -170,67 +166,65 @@ public class AnalyticalJacobiansMapper extends AbstractJacobiansMapper {
     public void computeDerivatives(final SpacecraftState s, final double dt) {
 
         final double[] p = s.getAdditionalState(name);
-        if (pDot == null) {
-            pDot = new double[p.length];
+        if (stateTransition == null) {
+            stateTransition = new double[p.length];
         }
 
         // initialize Jacobians to zero
         final int dim = 6;
-        final double[][] dMeanElementRatedElement = new double[dim][dim];
-        final TLEGradientConverter converter = new TLEGradientConverter(propagator);
-        final FieldTLEPropagator<Gradient> gPropagator = converter.getPropagator();
+        final double[][] grad = new double[dim][dim];
+        final TLEGradientConverter converter = new TLEGradientConverter();
+        final FieldTLE<Gradient> gTLE = converter.getGradientTLE(propagator.getTLE());
+        final FieldTLEPropagator<Gradient> gPropagator = FieldTLEPropagator.selectExtrapolator(gTLE);
 
         // Compute Jacobian
         final FieldKeplerianOrbit<Gradient> gOrbit = (FieldKeplerianOrbit<Gradient>) OrbitType.KEPLERIAN.convertType(gPropagator.propagateOrbit(
-                                                                                                                     gPropagator.getTLE().getDate().shiftedBy(dt)));
+                                                                                                        gPropagator.getTLE().getDate().shiftedBy(dt)));
 
-        final double[] derivativesA           = gOrbit.getA().getGradient();
+        final Gradient a = TLEGradientConverter.computeA(gOrbit.getKeplerianMeanMotion());
+        final double[] derivativesA           = a.getGradient();
+        final double[] derivativesMeanMotion  = gOrbit.getKeplerianMeanMotion().getGradient();
         final double[] derivativesE           = gOrbit.getE().getGradient();
         final double[] derivativesI           = gOrbit.getI().getGradient();
         final double[] derivativesRAAN        = gOrbit.getRightAscensionOfAscendingNode().getGradient();
         final double[] derivativesPA          = gOrbit.getPerigeeArgument().getGradient();
         final double[] derivativesMeanAnomaly = gOrbit.getMeanAnomaly().getGradient();
 
+        // as mean motion was used to build the gradient, chain derivative rule is applied to retrieve derivatives with respect to semi major axis
+        final double dAdMeanMotion = derivativesA[0];
+
         // update Jacobian with respect to state
-        addToRow(derivativesA,            0, dMeanElementRatedElement);
-        addToRow(derivativesE,            1, dMeanElementRatedElement);
-        addToRow(derivativesI,            2, dMeanElementRatedElement);
-        addToRow(derivativesRAAN,         3, dMeanElementRatedElement);
-        addToRow(derivativesPA,           4, dMeanElementRatedElement);
-        addToRow(derivativesMeanAnomaly,  5, dMeanElementRatedElement);
+        addToRow(derivativesA,            0, grad);
+        addToRow(derivativesE,            1, grad);
+        addToRow(derivativesI,            2, grad);
+        addToRow(derivativesRAAN,         3, grad);
+        addToRow(derivativesPA,           4, grad);
+        addToRow(derivativesMeanAnomaly,  5, grad);
 
-        // The variational equations of the complete state Jacobian matrix have the following form:
-
-        //                     [ Adot ] = [ dMeanElementRatedElement ] * [ A ]
-
-        // The A matrix and its derivative (Adot) are 6 * 6 matrices
-
-        // The following loops compute these expression taking care of the mapping of the
-        // A matrix into the single dimension array p and of the mapping of the
-        // Adot matrix into the single dimension array pDot.
-
+        // the previous derivatives correspond to state transition matrix with mean motion instead of semi major axis
         for (int i = 0; i < dim; i++) {
-            final double[] dMeanElementRatedElementi = dMeanElementRatedElement[i];
             for (int j = 0; j < dim; j++) {
-                pDot[j + dim * i] =
-                    dMeanElementRatedElementi[j];
+                stateTransition[j + dim * i] += grad[i][j];
+
+                // retrieving dElement/dA from dElement/dMeanMotion
+                if (j == 0) {
+                    stateTransition[j + dim * i] /= dAdMeanMotion;
+                }
             }
         }
     }
 
     /** Fill Jacobians rows.
      * @param derivatives derivatives of a component
-     * @param index component index (0 for a, 1 for ex, 2 for ey, 3 for hx, 4 for hy, 5 for l)
-     * @param dMeanElementRatedElement Jacobian of mean elements rate with respect to mean elements
+     * @param index component index (0 for a, 1 for e, 2 for i, 3 for RAAN, 4 for PA, 5 for M)
+     * @param grad Jacobian of mean elements rate with respect to mean elements
      */
 
     private void addToRow(final double[] derivatives, final int index,
-                          final double[][] dMeanElementRatedElement) {
+                          final double[][] grad) {
 
         for (int i = 0; i < 6; i++) {
-            dMeanElementRatedElement[index][i] += derivatives[i];
+            grad[index][i] += derivatives[i];
         }
-
     }
-
 }
