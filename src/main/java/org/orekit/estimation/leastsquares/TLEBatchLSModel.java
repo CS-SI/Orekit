@@ -34,8 +34,8 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLEJacobiansMapper;
 import org.orekit.propagation.analytical.tle.TLEPartialDerivativesEquations;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
+import org.orekit.propagation.conversion.ODPropagatorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
-import org.orekit.propagation.conversion.TLEPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -57,9 +57,6 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
 
     /** Mappers for Jacobians. */
     private TLEJacobiansMapper[] mappers;
-
-    /** Samples of Spacecreft States. */
-    private Map<Integer, List<SpacecraftState>> samples;
 
     /** Simple constructor.
      * @param propagatorBuilders builders to use for propagation
@@ -128,7 +125,7 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
         final TLEPropagator[] propagators = new TLEPropagator[getBuilders().length];
         final int[] orbitsStartColumns = getOrbitsStartColumns();
         final Map<String, Integer> propagationParameterColumns = getPropagationParameterColumns();
-        final TLEPropagatorBuilder[] builders = (TLEPropagatorBuilder[]) getBuilders();
+        final ODPropagatorBuilder[] builders = (ODPropagatorBuilder[]) getBuilders();
 
         // Set up the propagators
         for (int i = 0; i < getBuilders().length; ++i) {
@@ -210,7 +207,7 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
 
             final int p = observedMeasurement.getSatellites().get(k).getPropagatorIndex();
             final int[] orbitsStartColumns = getOrbitsStartColumns();
-            final TLEPropagatorBuilder[] builders = (TLEPropagatorBuilder[]) getBuilders();
+            final ODPropagatorBuilder[] builders = (ODPropagatorBuilder[]) getBuilders();
 
             // partial derivatives of the current Cartesian coordinates with respect to current orbital state
             final double[][] aCY = new double[6][6];
@@ -254,12 +251,4 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
         }
 
     }
-
-    /** Getter for the state samples.
-    * @return the state sample
-    */
-    public Map<Integer, List<SpacecraftState>> getSamples() {
-        return samples;
-    }
-
 }
