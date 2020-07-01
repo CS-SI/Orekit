@@ -83,9 +83,9 @@ public class TLEEstimationTestUtils {
                                   context.sun, context.moon,
                                   context.conventions, false)
         };
-
-        String line1 = "1 11783U 80032A   81068.32174371  .00000058  00000-0  00000+0 0  1077";
-        String line2 = "2 11783  63.0555  73.3103 0068883  82.3147 278.5102  2.00559782  6392";
+        
+        String line1 = "1 07276U 74026A   00001.50000000  .00000000  00000-0  00000-0 0  9997";
+        String line2 = "2 07276  45.0247 337.5718 1258400 287.7324  12.8013  2.44868412231812";
         TLE tle = new TLE(line1, line2);
 
         context.initialTLE = tle;
@@ -184,7 +184,7 @@ public class TLEEstimationTestUtils {
 
         // override orbital parameters
         double[] orbitArray = new double[6];
-        OrbitType.CARTESIAN.mapOrbitToArray(initialOrbit,
+        OrbitType.KEPLERIAN.mapOrbitToArray(initialOrbit,
                                               PositionAngle.MEAN,
                                               orbitArray, null);
         for (int i = 0; i < orbitArray.length; ++i) {
