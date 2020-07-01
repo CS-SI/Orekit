@@ -31,6 +31,7 @@ import org.orekit.estimation.sequential.CovarianceMatrixProvider;
 import org.orekit.estimation.sequential.KalmanODModel;
 import org.orekit.estimation.sequential.TLEKalmanODModel;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.tle.TLE;
@@ -55,27 +56,6 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
      * </p>
      */
     private static final double B_STAR_SCALE = FastMath.scalb(1.0, -20);
-
-    /** Satellite number. */
-    private final int satelliteNumber;
-
-    /** Classification (U for unclassified). */
-    private final char classification;
-
-    /** Launch year (all digits). */
-    private final int launchYear;
-
-    /** Launch number. */
-    private final int launchNumber;
-
-    /** Launch piece. */
-    private final String launchPiece;
-
-    /** Element number. */
-    private final int elementNumber;
-
-    /** Revolution number at epoch. */
-    private final int revolutionNumberAtEpoch;
 
     /** Data context used to access frames and time scales. */
     private final DataContext dataContext;
@@ -129,18 +109,11 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
                                 final PositionAngle positionAngle,
                                 final double positionScale,
                                 final DataContext dataContext) {
-        super(TLEPropagator.selectExtrapolator(templateTLE, dataContext.getFrames())
-                        .getInitialState().getOrbit(),
+        super(OrbitType.KEPLERIAN.convertType(TLEPropagator.selectExtrapolator(templateTLE, dataContext.getFrames())
+                        .getInitialState().getOrbit()),
               positionAngle, positionScale, false,
               Propagator.getDefaultLaw(dataContext.getFrames()));
         this.templateTLE             = templateTLE;
-        this.satelliteNumber         = templateTLE.getSatelliteNumber();
-        this.classification          = templateTLE.getClassification();
-        this.launchYear              = templateTLE.getLaunchYear();
-        this.launchNumber            = templateTLE.getLaunchNumber();
-        this.launchPiece             = templateTLE.getLaunchPiece();
-        this.elementNumber           = templateTLE.getElementNumber();
-        this.revolutionNumberAtEpoch = templateTLE.getRevolutionNumberAtEpoch();
         this.bStar                   = 0.0;
         this.dataContext = dataContext;
         try {
@@ -199,7 +172,7 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
     }
 
     /** {@inheritDoc} */
-    public BatchLSODModel buildLSModel(final PropagatorBuilder[] builders,
+    public BatchLSODModel buildLSModel(final ODPropagatorBuilder[] builders,
                                 final List<ObservedMeasurement<?>> measurements,
                                 final ParameterDriversList estimatedMeasurementsParameters,
                                 final ModelObserver observer) {
@@ -208,15 +181,14 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
     }
 
     /** {@inheritDoc} */
-    public KalmanODModel buildKalmanModel(final List<PropagatorBuilder> propagatorBuilders,
+    public KalmanODModel buildKalmanModel(final List<ODPropagatorBuilder> propagatorBuilders,
                                    final List<CovarianceMatrixProvider> covarianceMatricesProviders,
                                    final ParameterDriversList estimatedMeasurementsParameters) {
-        return new TLEKalmanODModel(propagatorBuidlers, covarianceMatricesProviders, estimatedMeasurementsParameters);
+        return new TLEKalmanODModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters);
     }
 
     /** {@inheritDoc} */
     public void resetOrbit(final Orbit newOrbit) {
-        // DO nothing yet
+        // TODO nothing yet, to be updated when implementng TLE Kalman Model
     }
-
 }
