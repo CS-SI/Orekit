@@ -23,7 +23,7 @@ package org.orekit.propagation.analytical.tle;
  *
  * @author Fabien Maussion
  */
-interface TLEConstants {
+public interface TLEConstants {
 
     /** Constant 1.0 / 3.0. */
     double ONE_THIRD = 1.0 / 3.0;
