@@ -84,8 +84,8 @@ public class TLEEstimationTestUtils {
                                   context.conventions, false)
         };
         
-        String line1 = "1 07276U 74026A   00001.50000000  .00000000  00000-0  00000-0 0  9997";
-        String line2 = "2 07276  45.0247 337.5718 1258400 287.7324  12.8013  2.44868412231812";
+        String line1 = "1 07276U 74026A   00055.48318287  .00000000  00000-0  22970+3 0  9994";
+        String line2 = "2 07276  71.6273  78.7838 1248323  14.0598   3.8405  4.72707036231812";
         TLE tle = new TLE(line1, line2);
 
         context.initialTLE = tle;
@@ -222,7 +222,7 @@ public class TLEEstimationTestUtils {
 
     /**
      * Checker for batch LS estimator validation
-     * @param context DSSTContext used for the test
+     * @param context TLEContext used for the test
      * @param estimator Batch LS estimator
      * @param iterations Number of iterations expected
      * @param evaluations Number of evaluations expected

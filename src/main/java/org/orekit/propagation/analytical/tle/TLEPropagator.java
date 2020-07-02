@@ -28,7 +28,9 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
@@ -205,7 +207,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
         initializeCommons();
         sxpInitialize();
         // set the initial state
-        final Orbit orbit = propagateOrbit(initialTLE.getDate());
+        final KeplerianOrbit orbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(propagateOrbit(initialTLE.getDate()));
         final Attitude attitude = attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
         super.resetInitialState(new SpacecraftState(orbit, attitude, mass));
     }
@@ -546,7 +548,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
 
     /** {@inheritDoc} */
     protected Orbit propagateOrbit(final AbsoluteDate date) {
-        return new CartesianOrbit(getPVCoordinates(date), teme, date, TLEConstants.MU);
+        return OrbitType.KEPLERIAN.convertType(new CartesianOrbit(getPVCoordinates(date), teme, date, TLEConstants.MU));
     }
 
     /** Get the underlying TLE.

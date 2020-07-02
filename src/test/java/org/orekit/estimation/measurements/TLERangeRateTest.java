@@ -94,7 +94,7 @@ public class TLERangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 2.3e-09);
+        Assert.assertEquals(0, maxRelativeError, 4.5e-09);
 
     }
 
@@ -154,7 +154,7 @@ public class TLERangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 4.2e-09);
+        Assert.assertEquals(0, maxRelativeError, 7.7e-08);
 
     }
 
@@ -220,7 +220,7 @@ public class TLERangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 3.8e-07);
+        Assert.assertEquals(0, maxRelativeError, 7.9e-07);
 
     }
 
@@ -286,7 +286,7 @@ public class TLERangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 3.8e-07);
+        Assert.assertEquals(0, maxRelativeError, 7.8e-07);
 
     }
 
@@ -343,7 +343,7 @@ public class TLERangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 2.1e-09);
+        Assert.assertEquals(0, maxRelativeError, 9.5e-08);
 
     }
 
@@ -413,7 +413,7 @@ public class TLERangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 3.8e-07);
+        Assert.assertEquals(0, maxRelativeError, 7.9e-07);
 
     }
 

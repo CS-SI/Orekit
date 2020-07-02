@@ -26,7 +26,9 @@ import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.Pair;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.PropagatorsParallelizer;
@@ -80,10 +82,10 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
 
         // Set up the propagators parallelizer
         final TLEPropagator[] propagators = createPropagators(point);
-        final Orbit[] orbits = new Orbit[propagators.length];
+        final KeplerianOrbit[] orbits = new KeplerianOrbit[propagators.length];
         for (int i = 0; i < propagators.length; ++i) {
             mappers[i] = configureDerivatives(propagators[i]);
-            orbits[i]  = propagators[i].getInitialState().getOrbit();
+            orbits[i]  = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(propagators[i].getInitialState().getOrbit());
         }
         final PropagatorsParallelizer parallelizer =
                         new PropagatorsParallelizer(Arrays.asList(propagators), configureMeasurements(point));

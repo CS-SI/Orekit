@@ -30,10 +30,12 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.sequential.CovarianceMatrixProvider;
 import org.orekit.estimation.sequential.KalmanODModel;
 import org.orekit.estimation.sequential.TLEKalmanODModel;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.utils.ParameterDriver;
@@ -140,28 +142,17 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
 
         // create the orbit
         setParameters(normalizedParameters);
-        /*
+
         final Orbit orbit = createInitialOrbit();
 
         // we really need a Keplerian orbit type
         final KeplerianOrbit kep = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orbit);
+        final SpacecraftState state = new SpacecraftState(kep);
 
-
-        final TLE tle = new TLE(satelliteNumber, classification, launchYear, launchNumber, launchPiece,
-                                TLE.DEFAULT, elementNumber, orbit.getDate(),
-                                kep.getKeplerianMeanMotion(), 0.0, 0.0,
-                                kep.getE(), MathUtils.normalizeAngle(orbit.getI(), FastMath.PI),
-                                MathUtils.normalizeAngle(kep.getPerigeeArgument(), FastMath.PI),
-                                MathUtils.normalizeAngle(kep.getRightAscensionOfAscendingNode(), FastMath.PI),
-                                MathUtils.normalizeAngle(kep.getMeanAnomaly(), FastMath.PI),
-                                revolutionNumberAtEpoch, bStar,
-                                dataContext.getTimeScales().getUTC());
-        */
-        return TLEPropagator.selectExtrapolator(
-                templateTLE,
-                getAttitudeProvider(),
-                Propagator.DEFAULT_MASS,
-                dataContext.getFrames().getTEME());
+        final TLEPropagator propagator = TLEPropagator.selectExtrapolator(templateTLE, getAttitudeProvider(),
+                                                                    Propagator.DEFAULT_MASS, dataContext.getFrames().getTEME());
+        propagator.resetInitialState(state);
+        return propagator;
     }
 
     /** Getter for the template TLE.

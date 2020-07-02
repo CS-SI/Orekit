@@ -177,7 +177,7 @@ public class TLERangeTest {
         final List<ObservedMeasurement<?>> measurements =
                         TLEEstimationTestUtils.createMeasurements(propagator,
                                                                new TLERangeMeasurementCreator(context),
-                                                               1.0, 3.0, 300.0);
+                                                               0.0, 1.0, 300.0);
 
         // Lists for results' storage - Used only for derivatives with respect to state
         // "final" value to be seen by "handleStep" function of the propagator
@@ -279,11 +279,11 @@ public class TLERangeTest {
             System.out.println("Relative errors max   : " +  relErrorsMax);
         }
 
-        Assert.assertEquals(0.0, absErrorsMedian, 4.4e-06);
-        Assert.assertEquals(0.0, absErrorsMin,    1.2e-04);
-        Assert.assertEquals(0.0, absErrorsMax,    1.6e-04);
-        Assert.assertEquals(0.0, relErrorsMedian, 3.3e-12);
-        Assert.assertEquals(0.0, relErrorsMax,    1.1e-11);
+        Assert.assertEquals(0.0, absErrorsMedian, 5.3e-04);
+        Assert.assertEquals(0.0, absErrorsMin,    5.0e-05);
+        Assert.assertEquals(0.0, absErrorsMax,    1.1e-03);
+        Assert.assertEquals(0.0, relErrorsMedian, 5.3e-11);
+        Assert.assertEquals(0.0, relErrorsMax,    8.9e-11);
 
 
     }
