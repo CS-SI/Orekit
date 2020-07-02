@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.analytical.tle;
 
-import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -29,14 +28,11 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
 import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.PVCoordinates;
 
@@ -564,27 +560,4 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     public Frame getFrame() {
         return teme;
     }
-
-    /** Transform TLEPropagator into FieldTLEPropagator<Gradient>.
-     * The Gradient Field linked to the new propagator is initiated
-     * with the keplerian elements of the original.
-     * @return FieldTLEPropagator<Gradient> associated to to the propagator
-     */
-    public FieldTLEPropagator<Gradient> toGradient() {
-
-        final int freeParameters = 6;
-        final Gradient ga     = Gradient.variable(freeParameters, 0, a);
-        final Gradient ge     = Gradient.variable(freeParameters, 1, e);
-        final Gradient gi     = Gradient.variable(freeParameters, 2, i);
-        final Gradient gxnode = Gradient.variable(freeParameters, 3, xnode);
-        final Gradient gomega = Gradient.variable(freeParameters, 4, omega);
-        final Gradient gxn    = Gradient.variable(freeParameters, 5, tle.getMeanAnomaly());
-
-        final FieldKeplerianOrbit<Gradient> gorbit = new FieldKeplerianOrbit<>(ga, ge, gi, gxnode, gomega, gxn,
-                            PositionAngle.MEAN, getFrame(), new FieldAbsoluteDate<>(ga.getField(), tle.getDate()),
-                            ga.getField().getZero().add(getMU()));
-
-        return FieldTLEPropagator.selectExtrapolator(new FieldTLE<>(gorbit.getA().getField(), tle.getLine1(), tle.getLine2()));
-    }
-
 }
