@@ -20,9 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -35,8 +32,6 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
-import org.orekit.data.DataProvider;
-import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.common.AbstractOrbitDetermination;
@@ -45,25 +40,20 @@ import org.orekit.estimation.common.ResultBatchLeastSquares;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
-import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.radiation.RadiationSensitive;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Transform;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEConstants;
-import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
+import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 import org.orekit.propagation.conversion.TLEPropagatorBuilder;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
-import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPropagatorBuilder> {
     
@@ -204,28 +194,45 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
         //orbit determination run.
-        ResultBatchLeastSquares odLageos2 = runBLS(input, false);
+        ResultBatchLeastSquares odLageos2 = runBLS(input, true);
 
         //test
         //definition of the accuracy for the test
-        final double distanceAccuracy = 579;
+        final double distanceAccuracy = 116;
         final double velocityAccuracy = 1.4;
 
         //test on the convergence
-        final int numberOfIte  = 9;
-        final int numberOfEval = 9;
+        final int numberOfIte  = 3;
+        final int numberOfEval = 3;
 
         Assert.assertEquals(numberOfIte, odLageos2.getNumberOfIteration());
         Assert.assertEquals(numberOfEval, odLageos2.getNumberOfEvaluation());
 
         //test on the estimated position and velocity
-        final Vector3D estimatedPos = odLageos2.getEstimatedPV().getPosition();
-        final Vector3D estimatedVel = odLageos2.getEstimatedPV().getVelocity();
+        TimeStampedPVCoordinates odPV = odLageos2.getEstimatedPV();
+
 
         //final Vector3D refPos = new Vector3D(-5532124.989973327, 10025700.01763335, -3578940.840115321);
         //final Vector3D refVel = new Vector3D(-3871.2736402553, -607.8775965705, 4280.9744110925);
         final Vector3D refPos = new Vector3D(-5532131.956902, 10025696.592156, -3578940.040009);
         final Vector3D refVel = new Vector3D(-3871.275109, -607.880985, 4280.972530);
+        
+        // calculate first guess and final error with respect to reference Position
+        final Transform temeToEme2000 = FramesFactory.getTEME().getTransformTo(FramesFactory.getEME2000(), odPV.getDate());
+        odPV = temeToEme2000.transformPVCoordinates(odPV);
+        final Vector3D estimatedPos = odPV.getPosition();
+        final Vector3D estimatedVel = odPV.getVelocity();
+        TimeStampedPVCoordinates firstGuessPV = TLEPropagator.selectExtrapolator(templateTLE).getInitialState().getPVCoordinates();
+        firstGuessPV = temeToEme2000.transformPVCoordinates(firstGuessPV);
+        final double firstGuessError = Vector3D.distance(firstGuessPV.getPosition(), refPos);
+        final double finalError = Vector3D.distance(estimatedPos, refPos);
+        System.out.println("      ");
+        System.out.println("------------------ First Guess Error with respect to Reference position---------------- ");
+        System.out.format("%n Position Error = %f (m)%n   ", firstGuessError);
+        System.out.println("      ");
+        System.out.println("--------------------- Final Error with respect to Reference position------------------- ");
+        System.out.format("%n Position Error = %f (m)%n%n", finalError);
+
         Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
         Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
 
@@ -247,6 +254,18 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
     public void testGNSS()
         throws URISyntaxException, IllegalArgumentException, IOException,
                OrekitException, ParseException {
+        
+        final File home       = new File(System.getProperty("user.home"));
+        final File orekitData = new File(home, "../home/thomas/orekit-data");
+        DataContext.
+        getDefault().
+        getDataProvidersManager().
+        addProvider(new DirectoryCrawler(orekitData));
+        
+        // initiate TLE
+        final String line1 = "1 22195U 92070B   16045.51027931 -.00000009  00000-0  00000+0 0  9990";
+        final String line2 = "2 22195  52.6508 132.9147 0137738 336.2706   1.6348  6.47294052551192";
+        templateTLE = new TLE(line1, line2);
 
         // input in resources directory
         final String inputPath = DSSTOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/GNSS/dsst_od_test_GPS07.in").toURI().getPath();
@@ -257,7 +276,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
         //orbit determination run.
-        ResultBatchLeastSquares odGNSS = runBLS(input, false);
+        ResultBatchLeastSquares odGNSS = runBLS(input, true);
 
         //test
         //definition of the accuracy for the test
@@ -272,10 +291,25 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         Assert.assertEquals(numberOfEval, odGNSS.getNumberOfEvaluation());
 
         //test on the estimated position and velocity (reference from IGS-MGEX file com18836.sp3)
-        final Vector3D estimatedPos = odGNSS.getEstimatedPV().getPosition();
-        final Vector3D estimatedVel = odGNSS.getEstimatedPV().getVelocity();
+        TimeStampedPVCoordinates odPV = odGNSS.getEstimatedPV();
+        final Transform temeToEme2000 = FramesFactory.getTEME().getTransformTo(FramesFactory.getEME2000(), odPV.getDate());
+        odPV = temeToEme2000.transformPVCoordinates(odPV);
+        final Vector3D estimatedPos = odPV.getPosition();
+        final Vector3D estimatedVel = odPV.getVelocity();
         final Vector3D refPos = new Vector3D(-2747606.680868164, 22572091.30648564, 13522761.402325712);
         final Vector3D refVel = new Vector3D(-2729.5151218788005, 1142.6629459030657, -2523.9055974487947);
+        
+        // calculate first guess and final error with respect to reference Position
+        TimeStampedPVCoordinates firstGuessPV = TLEPropagator.selectExtrapolator(templateTLE).getInitialState().getPVCoordinates();
+        firstGuessPV = temeToEme2000.transformPVCoordinates(firstGuessPV);
+        final double firstGuessError = Vector3D.distance(firstGuessPV.getPosition(), refPos);
+        final double finalError = Vector3D.distance(estimatedPos, refPos);
+        System.out.println("      ");
+        System.out.println("------------------ First Guess Error with respect to Reference position---------------- ");
+        System.out.format("%n Position Error = %f (m)%n   ", firstGuessError);
+        System.out.println("      ");
+        System.out.println("--------------------- Final Error with respect to Reference position------------------- ");
+        System.out.format("%n Position Error = %f (m)%n%n", finalError);
         Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
         Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
 

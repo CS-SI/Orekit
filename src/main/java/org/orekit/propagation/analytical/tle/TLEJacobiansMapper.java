@@ -183,7 +183,6 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
 
         final Gradient a = TLEGradientConverter.computeA(gOrbit.getKeplerianMeanMotion());
         final double[] derivativesA           = a.getGradient();
-        final double[] derivativesMeanMotion  = gOrbit.getKeplerianMeanMotion().getGradient();
         final double[] derivativesE           = gOrbit.getE().getGradient();
         final double[] derivativesI           = gOrbit.getI().getGradient();
         final double[] derivativesRAAN        = gOrbit.getRightAscensionOfAscendingNode().getGradient();
@@ -201,7 +200,7 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
         addToRow(derivativesPA,           4, grad);
         addToRow(derivativesMeanAnomaly,  5, grad);
 
-        // the previous derivatives correspond to state transition matrix with mean motion instead of semi major axis
+        // the previous derivatives correspond to state transition matrix with mean motion as 1rst element instead of semi major axis
         for (int i = 0; i < dim; i++) {
             for (int j = 0; j < dim; j++) {
                 stateTransition[j + dim * i] += grad[i][j];
@@ -226,5 +225,13 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
         for (int i = 0; i < 6; i++) {
             grad[index][i] += derivatives[i];
         }
+    }
+
+   /** Getter for initial propagator state.
+    * @return the propagator initial state
+    */
+
+    public SpacecraftState getInitialState() {
+        return propagator.getInitialState();
     }
 }

@@ -222,7 +222,8 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
             final RealMatrix dMdY = dMdC.multiply(dCdY);
 
             // compute state derivatives
-            mappers[p].computeDerivatives(evaluationStates[k], 0.0);
+            final double dt = mappers[p].getInitialState().getDate().durationFrom(evaluationStates[k].getDate());
+            mappers[p].computeDerivatives(evaluationStates[k], dt);
 
             // Jacobian of the measurement with respect to initial orbital state
             final double[][] aYY0 = new double[6][6];

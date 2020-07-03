@@ -357,9 +357,9 @@ estimator.Levenberg.Marquardt.initial.step.bound.factor = 1.0e6
 # the scale is often small (typically about 1 m for orbital positions
 # for example), then the threshold should not be too small. A value
 # of 10⁻³ is often quite accurate.
-estimator.normalized.parameters.convergence.threshold   = 1.0e-3
-estimator.max.iterations                                = 25
-estimator.max.evaluations                               = 35
+estimator.normalized.parameters.convergence.threshold   = 0.1
+estimator.max.iterations                                = 40
+estimator.max.evaluations                               = 40
 
 # comma-separated list of measurements files (in the same directory as this file)
 measurements.files = Lageos2_test.aer

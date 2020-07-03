@@ -19,7 +19,6 @@ package org.orekit.estimation.common;
 
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -62,7 +61,7 @@ public class ResultBatchLeastSquares {
         return numberOfEvaluation;
     }
 
-    public PVCoordinates getEstimatedPV() {
+    public TimeStampedPVCoordinates getEstimatedPV() {
         return estimatedPV;
     }
 
