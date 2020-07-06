@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.analytical.tle;
 
-import java.util.Map;
-
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
@@ -49,8 +47,6 @@ public class TLEPartialDerivativesEquations implements AdditionalEquations {
     /** Selected parameters for Jacobian computation. */
     private ParameterDriversList selected;
 
-    /** Parameters map. */
-    private Map<ParameterDriver, Integer> map;
 
     /** Name. */
     private final String name;
@@ -73,7 +69,6 @@ public class TLEPartialDerivativesEquations implements AdditionalEquations {
                                            final TLEPropagator propagator) {
         this.name                   = name;
         this.selected               = new ParameterDriversList();
-        this.map                    = null;
         this.propagator             = propagator;
         this.initialized            = false;
     }
@@ -82,6 +77,16 @@ public class TLEPartialDerivativesEquations implements AdditionalEquations {
     @Override
     public String getName() {
         return name;
+    }
+
+    /** Freeze the selected parameters from the force models.
+     */
+    private void freezeParametersSelection() {
+        if (selected == null) {
+
+            // create new selected parameter driver list
+            selected = new ParameterDriversList();
+        }
     }
 
 
@@ -101,6 +106,7 @@ public class TLEPartialDerivativesEquations implements AdditionalEquations {
      * @see #getSelectedParameters()
      */
     public SpacecraftState setInitialJacobians(final SpacecraftState s0) {
+        freezeParametersSelection();
         final int stateDimension = 6;
         final int nbParameters = 0;
         final double[][] dYdY0 = new double[stateDimension][stateDimension];
@@ -127,6 +133,7 @@ public class TLEPartialDerivativesEquations implements AdditionalEquations {
     public SpacecraftState setInitialJacobians(final SpacecraftState s1,
                                                final double[][] dY1dY0, final double[][] dY1dP) {
 
+        freezeParametersSelection();
 
         // Check dimensions
         final int stateDim = dY1dY0.length;
@@ -165,7 +172,7 @@ public class TLEPartialDerivativesEquations implements AdditionalEquations {
         if (!initialized) {
             throw new OrekitException(OrekitMessages.STATE_JACOBIAN_NOT_INITIALIZED);
         }
-        return new TLEJacobiansMapper(name, selected, propagator, map);
+        return new TLEJacobiansMapper(name, selected, propagator);
     }
 
     /** Get the selected parameters, in Jacobian matrix column order.
@@ -178,6 +185,7 @@ public class TLEPartialDerivativesEquations implements AdditionalEquations {
      * is lexicographic order
      */
     public ParameterDriversList getSelectedParameters() {
+        freezeParametersSelection();
         return selected;
     }
 

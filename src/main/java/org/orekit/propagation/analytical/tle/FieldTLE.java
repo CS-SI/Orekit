@@ -26,6 +26,7 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
@@ -157,6 +158,9 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
     /** The UTC scale. */
     private final TimeScale utc;
 
+    /** The parameters list. */
+    private T[] parameters;
+
     /** Simple constructor from unparsed two lines. This constructor uses the {@link
      * DataContext#getDefault() default data context}.
      *
@@ -232,6 +236,9 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
         this.line1 = line1;
         this.line2 = line2;
         this.utc = utc;
+
+        parameters = MathArrays.buildArray(field, 1);
+        parameters[0] = getBStar();
 
     }
 
@@ -384,6 +391,9 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
         this.line1 = null;
         this.line2 = null;
         this.utc = utc;
+
+        parameters = MathArrays.buildArray(epoch.getField(), 1);
+        parameters[0] = getBStar();
 
     }
 
@@ -870,6 +880,20 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
                 meanAnomaly,
                 revolutionNumberAtEpoch,
                 bStar);
+    }
+
+    /** Setter for the parameter list.
+     * @param parameters parameters to update
+     */
+    public void setParameters(final T[] parameters) {
+        this.parameters = parameters;
+    }
+
+    /** Getter for the parameter list.
+     * @return the parameter list
+     */
+    public T[] getParameters() {
+        return parameters;
     }
 
 }

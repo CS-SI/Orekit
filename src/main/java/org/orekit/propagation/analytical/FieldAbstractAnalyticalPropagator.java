@@ -29,6 +29,7 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.errors.OrekitException;
@@ -95,11 +96,13 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
     }
 
     /** {@inheritDoc} */
+    @Override
     public FieldBoundedPropagator<T> getGeneratedEphemeris() {
         return new FieldBoundedPropagatorView(lastPropagationStart, lastPropagationEnd);
     }
 
     /** {@inheritDoc} */
+    @Override
     public Collection<FieldEventDetector<T>> getEventsDetectors() {
         final List<FieldEventDetector<T>> list = new ArrayList<FieldEventDetector<T>>();
         for (final FieldEventState<?, T> state : eventsStates) {
@@ -109,10 +112,12 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
     }
 
     /** {@inheritDoc} */
+    @Override
     public void clearEventsDetectors() {
         eventsStates.clear();
     }
     /** {@inheritDoc} */
+    @Override
     public FieldSpacecraftState<T> propagate(final FieldAbsoluteDate<T> start, final FieldAbsoluteDate<T> target) {
         try {
 
@@ -343,6 +348,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
     }
 
     /** {@inheritDoc} */
+    @Override
     public <D extends FieldEventDetector<T>> void addEventDetector(final D detector) {
         eventsStates.add(new FieldEventState<D, T>(detector));
     }
@@ -356,9 +362,10 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
 
     /** Extrapolate an orbit up to a specific target date.
      * @param date target date for the orbit
+     * @param parameters model parameters
      * @return extrapolated parameters
      */
-    protected abstract FieldOrbit<T> propagateOrbit(FieldAbsoluteDate<T> date);
+    protected abstract FieldOrbit<T> propagateOrbit(FieldAbsoluteDate<T> date, T[] parameters);
 
     /** Propagate an orbit without any fancy features.
      * <p>This method is similar in spirit to the {@link #propagate} method,
@@ -372,7 +379,9 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
         try {
 
             // evaluate orbit
-            final FieldOrbit<T> orbit = propagateOrbit(date);
+            final T[] parameters;
+            parameters = MathArrays.buildArray(date.getField(), 1);
+            final FieldOrbit<T> orbit = propagateOrbit(date, parameters);
 
             // evaluate attitude
             final FieldAttitude<T> attitude =
@@ -390,8 +399,12 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
     private class FieldLocalPVProvider implements FieldPVCoordinatesProvider<T> {
 
         /** {@inheritDoc} */
+        @Override
         public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
-            return propagateOrbit(date).getPVCoordinates(frame);
+
+            final T[] parameters;
+            parameters = MathArrays.buildArray(date.getField(), 1);
+            return propagateOrbit(date, parameters).getPVCoordinates(frame);
         }
 
     }
@@ -434,46 +447,55 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
         }
 
         /** {@inheritDoc} */
+        @Override
         public FieldAbsoluteDate<T> getMinDate() {
             return minDate;
         }
 
         /** {@inheritDoc} */
+        @Override
         public FieldAbsoluteDate<T> getMaxDate() {
             return maxDate;
         }
 
         /** {@inheritDoc} */
-        protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> target) {
-            return FieldAbstractAnalyticalPropagator.this.propagateOrbit(target);
+        @Override
+        protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> target, final T[] parameters) {
+            return FieldAbstractAnalyticalPropagator.this.propagateOrbit(target, parameters);
         }
 
         /** {@inheritDoc} */
+        @Override
         public T getMass(final FieldAbsoluteDate<T> date) {
             return FieldAbstractAnalyticalPropagator.this.getMass(date);
         }
 
         /** {@inheritDoc} */
+        @Override
         public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
             return propagate(date).getPVCoordinates(frame);
         }
 
         /** {@inheritDoc} */
+        @Override
         public void resetInitialState(final FieldSpacecraftState<T> state) {
             FieldAbstractAnalyticalPropagator.this.resetInitialState(state);
         }
 
         /** {@inheritDoc} */
+        @Override
         protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward) {
             FieldAbstractAnalyticalPropagator.this.resetIntermediateState(state, forward);
         }
 
         /** {@inheritDoc} */
+        @Override
         public FieldSpacecraftState<T> getInitialState() {
             return FieldAbstractAnalyticalPropagator.this.getInitialState();
         }
 
         /** {@inheritDoc} */
+        @Override
         public Frame getFrame() {
             return FieldAbstractAnalyticalPropagator.this.getFrame();
         }
@@ -506,16 +528,19 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
         }
 
         /** {@inheritDoc} */
+        @Override
         public FieldSpacecraftState<T> getPreviousState() {
             return previousState;
         }
 
         /** {@inheritDoc} */
+        @Override
         public FieldSpacecraftState<T> getCurrentState() {
             return currentState;
         }
 
         /** {@inheritDoc} */
+        @Override
         public FieldSpacecraftState<T> getInterpolatedState(final FieldAbsoluteDate<T> date) {
 
             // compute the basic spacecraft state
@@ -527,6 +552,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
         }
 
         /** {@inheritDoc} */
+        @Override
         public boolean isForward() {
             return forward;
         }

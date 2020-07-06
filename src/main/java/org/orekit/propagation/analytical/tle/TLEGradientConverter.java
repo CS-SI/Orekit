@@ -23,6 +23,7 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.integration.AbstractGradientConverter;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 /** Converter for TLE propagator.
  * @author Luc Maisonobe
@@ -33,22 +34,30 @@ import org.orekit.time.FieldAbsoluteDate;
 public class TLEGradientConverter extends AbstractGradientConverter {
 
     /** Fixed dimension of the state. */
-    private static final int FREE_STATE_PARAMETERS = 7;
+    private static final int FREE_STATE_PARAMETERS = 6;
 
     /** States with various number of additional parameters for force models. */
     private final List<FieldTLEPropagator<Gradient>> gPropagators;
 
+    /** Initial TLE. */
+    private final TLE tle;
+
     /** Simple constructor.
+     * @param tle initial TLE
      */
-    public TLEGradientConverter() {
+    public TLEGradientConverter(final TLE tle) {
 
         super(FREE_STATE_PARAMETERS);
 
         // initialize the list with the state having 0 force model parameters
         gPropagators = new ArrayList<>();
+        this.tle = tle;
     }
 
-    public FieldTLE<Gradient> getGradientTLE(final TLE tle) {
+    /** Convert the initial TLE into a Gradient TLE.
+     * @return the gradient version of the initial TLE
+     */
+    public FieldTLE<Gradient> getGradientTLE() {
 
         final Gradient meanMotion   = Gradient.variable(FREE_STATE_PARAMETERS, 0, tle.getMeanMotion());
         final Gradient ge           = Gradient.variable(FREE_STATE_PARAMETERS, 1, tle.getE());
@@ -81,6 +90,23 @@ public class TLEGradientConverter extends AbstractGradientConverter {
 
         return gPropagators.get(0);
 
+    }
+
+    /** Get the model parameters.
+     * @param gPropagator Gradient propagator associated with parameters
+     * @return force model parameters
+     */
+    public Gradient[] getParameters(final FieldTLEPropagator<Gradient> gPropagator) {
+        final int freeParameters = gPropagator.getInitialState().getA().getFreeParameters();
+        final ParameterDriver[] drivers = tle.getParametersDrivers();
+        final Gradient[] parameters = new Gradient[drivers.length];
+        int index = FREE_STATE_PARAMETERS;
+        for (int i = 0; i < drivers.length; ++i) {
+            parameters[i] = drivers[i].isSelected() ?
+                            Gradient.variable(freeParameters, index++, drivers[i].getValue()) :
+                            Gradient.constant(freeParameters, drivers[i].getValue());
+        }
+        return parameters;
     }
 
     public static Gradient computeA(final Gradient meanMotion) {

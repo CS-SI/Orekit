@@ -86,7 +86,7 @@ public class TLEBatchLSEstimatorTest {
         Assert.assertEquals(6,       normalizedCovariances.getColumnDimension());
         Assert.assertEquals(6,       physicalCovariances.getRowDimension());
         Assert.assertEquals(6,       physicalCovariances.getColumnDimension());
-        Assert.assertEquals(0.01594, physicalCovariances.getEntry(0, 0), 1.0e-5);
+        Assert.assertEquals(0.00248, physicalCovariances.getEntry(0, 0), 1.0e-5);
 
     }
     
@@ -130,7 +130,7 @@ public class TLEBatchLSEstimatorTest {
         Assert.assertEquals(6,       normalizedCovariances.getColumnDimension());
         Assert.assertEquals(6,       physicalCovariances.getRowDimension());
         Assert.assertEquals(6,       physicalCovariances.getColumnDimension());
-        Assert.assertEquals(0.01603, physicalCovariances.getEntry(0, 0), 1.0e-5);
+        Assert.assertEquals(0.00250, physicalCovariances.getEntry(0, 0), 1.0e-5);
 
     }
 
@@ -368,8 +368,8 @@ public class TLEBatchLSEstimatorTest {
         TLEEstimationTestUtils.checkFit(context, estimator, 1, 2,
                                      0.0, 0.26,
                                      0.0, 0.52,
-                                     0.0, 4.4e-4,
-                                     0.0, 1.1e-7);
+                                     0.0, 6.28e-3,
+                                     0.0, 3.28e-6);
     }
 
 }

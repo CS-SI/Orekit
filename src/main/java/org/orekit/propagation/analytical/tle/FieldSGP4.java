@@ -89,9 +89,11 @@ public class FieldSGP4<T extends RealFieldElement<T>> extends FieldTLEPropagator
     }
 
     /** Initialization proper to each propagator (SGP or SDP).
+     * @param parameters model parameters
      */
-    protected void sxpInitialize() {
+    protected void sxpInitialize(final T[] parameters) {
 
+        final T bStar = parameters[0];
         // For perigee less than 220 kilometers, the equations are truncated to
         // linear variation in sqrt a and quadratic variation in mean anomaly.
         // Also, the c3 term, the delta omega term, and the delta m term are dropped.
@@ -114,8 +116,8 @@ public class FieldSGP4<T extends RealFieldElement<T>> extends FieldTLEPropagator
                 xmcof = c1sq.getField().getZero();
             } else  {
                 final T c3 = coef.multiply(tsi).multiply(xn0dp).multiply(TLEConstants.A3OVK2 * TLEConstants.NORMALIZED_EQUATORIAL_RADIUS).multiply(sini0.divide(tle.getE()));
-                xmcof = coef.multiply(tle.getBStar()).divide(eeta).multiply(-TLEConstants.TWO_THIRD * TLEConstants.NORMALIZED_EQUATORIAL_RADIUS);
-                omgcof = tle.getBStar().multiply(c3).multiply(FastMath.cos(tle.getPerigeeArgument()));
+                xmcof = coef.multiply(bStar).divide(eeta).multiply(-TLEConstants.TWO_THIRD * TLEConstants.NORMALIZED_EQUATORIAL_RADIUS);
+                omgcof = bStar.multiply(c3).multiply(FastMath.cos(tle.getPerigeeArgument()));
             }
         }
 
@@ -125,10 +127,12 @@ public class FieldSGP4<T extends RealFieldElement<T>> extends FieldTLEPropagator
 
     /** Propagation proper to each propagator (SGP or SDP).
      * @param tSince the offset from initial epoch (min)
+     * @param parameters model parameters
      */
-    protected void sxpPropagate(final T tSince) {
+    protected void sxpPropagate(final T tSince, final T[] parameters) {
 
         // Update for secular gravity and atmospheric drag.
+        final T bStar = parameters[0];
         final T xmdf = tle.getMeanAnomaly().add(xmdot.multiply(tSince));
         final T omgadf = tle.getPerigeeArgument().add(omgdot.multiply(tSince));
         final T xn0ddf = tle.getRaan().add(xnodot.multiply(tSince));
@@ -137,7 +141,7 @@ public class FieldSGP4<T extends RealFieldElement<T>> extends FieldTLEPropagator
         final T tsq = tSince.multiply(tSince);
         xnode = xn0ddf.add(xnodcf.multiply(tsq));
         T tempa = c1.multiply(tSince).negate().add(1.0);
-        T tempe = tle.getBStar().multiply(c4).multiply(tSince);
+        T tempe = bStar.multiply(c4).multiply(tSince);
         T templ = t2cof.multiply(tsq);
 
         if (!lessThan220) {
@@ -150,7 +154,7 @@ public class FieldSGP4<T extends RealFieldElement<T>> extends FieldTLEPropagator
             final T tcube = tsq.multiply(tSince);
             final T tfour = tSince.multiply(tcube);
             tempa = tempa.subtract(d2.multiply(tsq)).subtract(d3.multiply(tcube)).subtract(d4.multiply(tfour));
-            tempe = tempe.add(tle.getBStar().multiply(c5).multiply(FastMath.sin(xmp).subtract(sinM0)));
+            tempe = tempe.add(bStar.multiply(c5).multiply(FastMath.sin(xmp).subtract(sinM0)));
             templ = templ.add(t3cof.multiply(tcube)).add(tfour.multiply(t4cof.add(tSince.multiply(t5cof))));
         }
 

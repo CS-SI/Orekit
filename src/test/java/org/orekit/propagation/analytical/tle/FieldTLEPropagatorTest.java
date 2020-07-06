@@ -50,7 +50,6 @@ public class FieldTLEPropagatorTest {
 
     private double period;
 
-    
     @Test
     public void testSlaveMode() {
         doTestSlaveMode(Decimal64Field.getInstance());
@@ -195,11 +194,13 @@ public class FieldTLEPropagatorTest {
             return maxDistance;
         }
 
+        @Override
         public void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t, T step) {
             minDistance = Double.POSITIVE_INFINITY;
             maxDistance = Double.NEGATIVE_INFINITY;
         }
 
+        @Override
         public void handleStep(FieldSpacecraftState<T> currentState, boolean isLast)
             {
             // Get satellite attitude rotation, i.e rotation from inertial frame to satellite frame
@@ -253,7 +254,7 @@ public class FieldTLEPropagatorTest {
         FieldTLEPropagator<T> fieldpropagator = FieldTLEPropagator.selectExtrapolator(fieldtleGPS);
         FieldAbsoluteDate<T> fieldinitDate = fieldtleGPS.getDate();
         FieldAbsoluteDate<T> fieldendDate = fieldinitDate.shiftedBy(propagtime);        
-        FieldPVCoordinates<T> fieldfinalGPS = fieldpropagator.getPVCoordinates(fieldendDate);
+        FieldPVCoordinates<T> fieldfinalGPS = fieldpropagator.getPVCoordinates(fieldendDate, fieldtleGPS.getParameters());
         
         // propagate GPS orbit
         TLEPropagator propagator = TLEPropagator.selectExtrapolator(tleGPS);
@@ -265,7 +266,7 @@ public class FieldTLEPropagatorTest {
         fieldpropagator = FieldTLEPropagator.selectExtrapolator(fieldtleISS);
         fieldinitDate = fieldtleISS.getDate();
         fieldendDate = fieldinitDate.shiftedBy(propagtime);        
-        FieldPVCoordinates<T> fieldfinalISS = fieldpropagator.getPVCoordinates(fieldendDate);
+        FieldPVCoordinates<T> fieldfinalISS = fieldpropagator.getPVCoordinates(fieldendDate, fieldtleISS.getParameters());
         
         // propagate GPS orbit
         propagator = TLEPropagator.selectExtrapolator(tleISS);

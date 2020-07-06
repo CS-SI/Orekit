@@ -210,6 +210,7 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
             final int p = observedMeasurement.getSatellites().get(k).getPropagatorIndex();
             final int[] orbitsStartColumns = getOrbitsStartColumns();
             final ODPropagatorBuilder[] builders = (ODPropagatorBuilder[]) getBuilders();
+            final Map<String, Integer>  propagationParameterColumns = getPropagationParameterColumns();
 
             // partial derivatives of the current Cartesian coordinates with respect to current orbital state
             final double[][] aCY = new double[6][6];
@@ -237,6 +238,23 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
                     if (driver.isSelected()) {
                         jacobian.setEntry(index + i, jOrb++,
                                           weight[i] * dMdY0.getEntry(i, j) / sigma[i] * driver.getScale());
+                    }
+                }
+            }
+
+            // Jacobian of the measurement with respect to propagation parameters
+            final ParameterDriversList selectedPropagationDrivers = getSelectedPropagationDriversForBuilder(p);
+            final int nbParams = selectedPropagationDrivers.getNbParams();
+            if ( nbParams > 0) {
+                final double[][] aYPp  = new double[6][nbParams];
+                mappers[p].getParametersJacobian(evaluationStates[k], aYPp);
+                final RealMatrix dYdPp = new Array2DRowRealMatrix(aYPp, false);
+                final RealMatrix dMdPp = dMdY.multiply(dYdPp);
+                for (int i = 0; i < dMdPp.getRowDimension(); ++i) {
+                    for (int j = 0; j < nbParams; ++j) {
+                        final ParameterDriver delegating = selectedPropagationDrivers.getDrivers().get(j);
+                        jacobian.addToEntry(index + i, propagationParameterColumns.get(delegating.getName()),
+                                            weight[i] * dMdPp.getEntry(i, j) / sigma[i] * delegating.getScale());
                     }
                 }
             }

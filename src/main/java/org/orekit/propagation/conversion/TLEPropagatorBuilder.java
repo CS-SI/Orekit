@@ -18,11 +18,8 @@ package org.orekit.propagation.conversion;
 
 import java.util.List;
 
-import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.estimation.leastsquares.BatchLSODModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.leastsquares.TLEBatchLSModel;
@@ -40,30 +37,16 @@ import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.ParameterObserver;
 
 /** Builder for TLEPropagator.
  * @author Pascal Parraud
+ * @author Thomas Paulet
  * @since 6.0
  */
 public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements ODPropagatorBuilder {
 
-    /** Parameter name for B* coefficient. */
-    public static final String B_STAR = "BSTAR";
-
-    /** B* scaling factor.
-     * <p>
-     * We use a power of 2 to avoid numeric noise introduction
-     * in the multiplications/divisions sequences.
-     * </p>
-     */
-    private static final double B_STAR_SCALE = FastMath.scalb(1.0, -20);
-
     /** Data context used to access frames and time scales. */
     private final DataContext dataContext;
-
-    /** Ballistic coefficient. */
-    private double bStar;
 
     /** Template TLE. */
     private final TLE templateTLE;
@@ -116,24 +99,7 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
               positionAngle, positionScale, false,
               Propagator.getDefaultLaw(dataContext.getFrames()));
         this.templateTLE             = templateTLE;
-        this.bStar                   = 0.0;
         this.dataContext = dataContext;
-        try {
-            final ParameterDriver driver = new ParameterDriver(B_STAR, bStar, B_STAR_SCALE,
-                                                               Double.NEGATIVE_INFINITY,
-                                                               Double.POSITIVE_INFINITY);
-            driver.addObserver(new ParameterObserver() {
-                /** {@inheritDoc} */
-                @Override
-                public void valueChanged(final double previousValue, final ParameterDriver driver) {
-                    TLEPropagatorBuilder.this.bStar = driver.getValue();
-                }
-            });
-            addSupportedParameter(driver);
-        } catch (OrekitException oe) {
-            // this should never happen
-            throw new OrekitInternalError(oe);
-        }
 
     }
 

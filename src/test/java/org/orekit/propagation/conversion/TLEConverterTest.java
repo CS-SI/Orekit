@@ -67,6 +67,7 @@ public class TLEConverterTest {
         checkFit(leoTLE, 86400, 300, 1.0e-3, true, true, 4.102e-8);
     }
 
+    // TODO parameter drivers have been set in TLE class rather than TLEPropagatorBuilder.
     protected void checkFit(final TLE tle,
                             final double duration,
                             final double stepSize,
@@ -93,7 +94,7 @@ public class TLEConverterTest {
         FiniteDifferencePropagatorConverter fitter = new FiniteDifferencePropagatorConverter(builder, threshold, 1000);
 
         if (withBStar) {
-            fitter.convert(sample, positionOnly, TLEPropagatorBuilder.B_STAR);
+            fitter.convert(sample, positionOnly, TLE.B_STAR);
         } else {
             fitter.convert(sample, positionOnly);
         }

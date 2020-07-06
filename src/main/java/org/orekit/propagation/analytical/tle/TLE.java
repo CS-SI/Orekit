@@ -37,6 +37,7 @@ import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.ParameterDriver;
 
 /** This class is a container for a single set of TLE data.
  *
@@ -56,9 +57,6 @@ import org.orekit.time.TimeStamped;
  */
 public class TLE implements TimeStamped, Serializable {
 
-    /** Identifier for default type of ephemeris (SGP4/SDP4). */
-    public static final int DEFAULT = 0;
-
     /** Identifier for SGP type of ephemeris. */
     public static final int SGP = 1;
 
@@ -73,6 +71,20 @@ public class TLE implements TimeStamped, Serializable {
 
     /** Identifier for SDP8 type of ephemeris. */
     public static final int SDP8 = 5;
+
+    /** Identifier for default type of ephemeris (SGP4/SDP4). */
+    public static final int DEFAULT = 0;
+
+    /** Parameter name for B* coefficient. */
+    public static final String B_STAR = "BSTAR";
+
+    /** B* scaling factor.
+     * <p>
+     * We use a power of 2 to avoid numeric noise introduction
+     * in the multiplications/divisions sequences.
+     * </p>
+     */
+    private static final double B_STAR_SCALE = FastMath.scalb(1.0, -20);
 
     /** Name of the mean motion parameter. */
     private static final String MEAN_MOTION = "meanMotion";
@@ -163,6 +175,12 @@ public class TLE implements TimeStamped, Serializable {
     /** The UTC scale. */
     private final TimeScale utc;
 
+    /** Driver for ballistic coefficient parameter. */
+    private final ParameterDriver bStarParameterDriver;
+
+    /** Parameters list. */
+    private double[] parameters;
+
     /** Simple constructor from unparsed two lines. This constructor uses the {@link
      * DataContext#getDefault() default data context}.
      *
@@ -236,6 +254,13 @@ public class TLE implements TimeStamped, Serializable {
         this.line1 = line1;
         this.line2 = line2;
         this.utc = utc;
+
+        // create model parameter drivers
+        this.bStarParameterDriver = new ParameterDriver(B_STAR, getBStar(), B_STAR_SCALE,
+                                                        Double.NEGATIVE_INFINITY,
+                                                        Double.POSITIVE_INFINITY);
+        parameters = new double[1];
+        parameters[0] = getBStar();
 
     }
 
@@ -388,6 +413,12 @@ public class TLE implements TimeStamped, Serializable {
         this.line1 = null;
         this.line2 = null;
         this.utc = utc;
+
+        // create model parameter drivers
+        this.bStarParameterDriver = new ParameterDriver(B_STAR, getBStar(), B_STAR_SCALE,
+                                                        Double.NEGATIVE_INFINITY,
+                                                        Double.POSITIVE_INFINITY);
+        parameters = new double[7];
 
     }
 
@@ -898,6 +929,29 @@ public class TLE implements TimeStamped, Serializable {
                 meanAnomaly,
                 revolutionNumberAtEpoch,
                 bStar);
+    }
+
+    /** Get the drivers for TLE propagation SGP4 and SDP4.
+     * @return drivers for SGP4 and SDP4 model parameters
+     */
+    public ParameterDriver[] getParametersDrivers() {
+        return new ParameterDriver[] {
+            bStarParameterDriver
+        };
+    }
+
+    /** Setter for the parameter list.
+     * @param parameters parameters to update
+     */
+    public void setParameters(final double[] parameters) {
+        this.parameters = parameters;
+    }
+
+    /** Getter for the parameter list.
+     * @return the parameter list
+     */
+    public double[] getParameters() {
+        return parameters;
     }
 
 }

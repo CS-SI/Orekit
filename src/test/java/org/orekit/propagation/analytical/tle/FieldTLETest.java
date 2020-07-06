@@ -520,7 +520,7 @@ public class FieldTLETest {
                             FieldVector3D<T> testVel = new FieldVector3D<T>(vX, vY, vZ);
 
                             FieldAbsoluteDate<T> date = tle.getDate().shiftedBy(minFromStart * 60);
-                            FieldPVCoordinates<T> results = ex.getPVCoordinates(date);
+                            FieldPVCoordinates<T> results = ex.getPVCoordinates(date, tle.getParameters());
                             double normDifPos = testPos.subtract(results.getPosition()).getNorm().getReal();
                             double normDifVel = testVel.subtract(results.getVelocity()).getNorm().getReal();
 

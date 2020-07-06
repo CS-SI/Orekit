@@ -209,10 +209,11 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
         this.teme = teme;
         this.mass = mass;
         this.utc = initialTLE.getUtc();
-        initializeCommons();
-        sxpInitialize();
+
+        initializeCommons(tle.getParameters());
+        sxpInitialize(tle.getParameters());
         // set the initial state
-        final FieldOrbit<T> orbit = propagateOrbit(initialTLE.getDate());
+        final FieldOrbit<T> orbit = propagateOrbit(initialTLE.getDate(), tle.getParameters());
         final FieldAttitude<T> attitude = attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
         super.resetInitialState(new FieldSpacecraftState<T>(orbit, attitude, mass));
     }
@@ -309,20 +310,23 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
 
     /** Get the extrapolated position and velocity from an initial TLE.
      * @param date the final date
+     * @param parameters values of the model
      * @return the final PVCoordinates
      */
-    public FieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date) {
+    public FieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final T[] parameters) {
 
-        sxpPropagate(date.durationFrom(tle.getDate()).divide(60.0));
+        sxpPropagate(date.durationFrom(tle.getDate()).divide(60.0), parameters);
 
         // Compute PV with previous calculated parameters
         return computePVCoordinates();
     }
 
     /** Computation of the first commons parameters.
+     * @param parameters model parameters
      */
-    private void initializeCommons() {
+    private void initializeCommons(final T[] parameters) {
 
+        final T bStar = parameters[0];
         final T a1 = tle.getMeanMotion().multiply(60.0).reciprocal().multiply(TLEConstants.XKE).pow(TLEConstants.TWO_THIRD);
         cosi0 = FastMath.cos(tle.getI());
         theta2 = cosi0.multiply(cosi0);
@@ -377,7 +381,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
                            etasq.multiply(1.5).add(eeta.multiply(etasq.add(4.0))).add(1.0)).add(
                            tsi.divide(psisq).multiply(x3thm1).multiply(0.75 * TLEConstants.CK2).multiply(
                            etasq.multiply(etasq.add(8.0)).multiply(3.0).add(8.0))));
-        c1 = tle.getBStar().multiply(c2);
+        c1 = bStar.multiply(c2);
         sini0 = FastMath.sin(tle.getI());
 
         final T x1mth2 = theta2.negate().add(1.0);
@@ -539,13 +543,15 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
     }
 
     /** Initialization proper to each propagator (SGP or SDP).
+     * @param parameters model parameters
      */
-    protected abstract void sxpInitialize();
+    protected abstract void sxpInitialize(T[] parameters);
 
     /** Propagation proper to each propagator (SGP or SDP).
      * @param t the offset from initial epoch (min)
+     * @param parameters model parameters
      */
-    protected abstract void sxpPropagate(T t);
+    protected abstract void sxpPropagate(T t, T[] parameters);
 
     /** {@inheritDoc} */
     public void resetInitialState(final FieldSpacecraftState<T> state) {
@@ -563,8 +569,8 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
     }
 
     /** {@inheritDoc} */
-    public FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date) {
-        return new FieldCartesianOrbit<T>(getPVCoordinates(date), teme, date, date.getField().getZero().add(TLEConstants.MU));
+    public FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
+        return new FieldCartesianOrbit<T>(getPVCoordinates(date, parameters), teme, date, date.getField().getZero().add(TLEConstants.MU));
     }
 
     /** Get the underlying TLE.

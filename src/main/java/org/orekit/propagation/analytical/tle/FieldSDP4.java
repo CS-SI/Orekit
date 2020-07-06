@@ -74,17 +74,20 @@ abstract class FieldSDP4<T extends RealFieldElement<T>>  extends FieldTLEPropaga
     }
 
     /** Initialization proper to each propagator (SGP or SDP).
+     * @param parameters model parameters
      */
-    protected void sxpInitialize() {
+    protected void sxpInitialize(final T[] parameters) {
         luniSolarTermsComputation();
     }  // End of initialization
 
     /** Propagation proper to each propagator (SGP or SDP).
      * @param tSince the offset from initial epoch (minutes)
+     * @param parameters model parameters
      */
-    protected void sxpPropagate(final T tSince) {
+    protected void sxpPropagate(final T tSince, final T[] parameters) {
 
         // Update for secular gravity and atmospheric drag
+        final T bStar = parameters[0];
         omgadf = tle.getPerigeeArgument().add(omgdot.multiply(tSince));
         final T xnoddf = tle.getRaan().add(xnodot.multiply(tSince));
         final T tSinceSq = tSince.multiply(tSince);
@@ -98,7 +101,7 @@ abstract class FieldSDP4<T extends RealFieldElement<T>>  extends FieldTLEPropaga
 
         final T tempa = c1.multiply(tSince).negate().add(1.0);
         a  = xn.reciprocal().multiply(TLEConstants.XKE).pow(TLEConstants.TWO_THIRD).multiply(tempa).multiply(tempa);
-        em = em.subtract(tle.getBStar().multiply(c4).multiply(tSince));
+        em = em.subtract(bStar.multiply(c4).multiply(tSince));
 
         // Update for deep-space periodic effects
         xll = xll.add(xn0dp.multiply(t2cof).multiply(tSinceSq));

@@ -16,10 +16,9 @@
  */
 package org.orekit.propagation.analytical.tle;
 
-import java.util.Map;
-
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.orbits.FieldKeplerianOrbit;
+import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AbstractJacobiansMapper;
@@ -64,12 +63,10 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
      * @param name name of the Jacobians
      * @param parameters selected parameters for Jacobian computation
      * @param propagator the propagator that will handle the orbit propagation
-     * @param map parameters map
      */
     public TLEJacobiansMapper(final String name,
                         final ParameterDriversList parameters,
-                        final TLEPropagator propagator,
-                        final Map<ParameterDriver, Integer> map) {
+                        final TLEPropagator propagator) {
 
         super(name, parameters);
 
@@ -172,14 +169,17 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
 
         // initialize Jacobians to zero
         final int dim = 6;
-        final double[][] grad = new double[dim][dim];
-        final TLEGradientConverter converter = new TLEGradientConverter();
-        final FieldTLE<Gradient> gTLE = converter.getGradientTLE(propagator.getTLE());
+        final int paramDim = parameters.getNbParams();
+        final double[][] stateGrad = new double[dim][dim];
+        final double[][] paramGrad = new double[dim][paramDim];
+        final TLEGradientConverter converter = new TLEGradientConverter(propagator.getTLE());
+        final FieldTLE<Gradient> gTLE = converter.getGradientTLE();
         final FieldTLEPropagator<Gradient> gPropagator = FieldTLEPropagator.selectExtrapolator(gTLE);
 
         // Compute Jacobian
-        final FieldKeplerianOrbit<Gradient> gOrbit = (FieldKeplerianOrbit<Gradient>) OrbitType.KEPLERIAN.convertType(gPropagator.propagateOrbit(
-                                                                                                        gPropagator.getTLE().getDate().shiftedBy(dt)));
+        final Gradient[] dsParameters = converter.getParameters(gPropagator);
+        final FieldOrbit<Gradient> orbit = gPropagator.propagateOrbit(gPropagator.getTLE().getDate().shiftedBy(dt), dsParameters);
+        final FieldKeplerianOrbit<Gradient> gOrbit = (FieldKeplerianOrbit<Gradient>) OrbitType.KEPLERIAN.convertType(orbit);
 
         final Gradient a = TLEGradientConverter.computeA(gOrbit.getKeplerianMeanMotion());
         final double[] derivativesA           = a.getGradient();
@@ -193,22 +193,43 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
         final double dAdMeanMotion = derivativesA[0];
 
         // update Jacobian with respect to state
-        addToRow(derivativesA,            0, grad);
-        addToRow(derivativesE,            1, grad);
-        addToRow(derivativesI,            2, grad);
-        addToRow(derivativesRAAN,         3, grad);
-        addToRow(derivativesPA,           4, grad);
-        addToRow(derivativesMeanAnomaly,  5, grad);
+        addToRow(derivativesA,            0, stateGrad);
+        addToRow(derivativesE,            1, stateGrad);
+        addToRow(derivativesI,            2, stateGrad);
+        addToRow(derivativesRAAN,         3, stateGrad);
+        addToRow(derivativesPA,           4, stateGrad);
+        addToRow(derivativesMeanAnomaly,  5, stateGrad);
+
+        int index = converter.getFreeStateParameters();
+        int parameterIndex = 0;
+        for (ParameterDriver driver : parameters.getDrivers()) {
+            if (driver.isSelected()) {
+                paramGrad[0][parameterIndex] += derivativesA[index];
+                paramGrad[1][parameterIndex] += derivativesE[index];
+                paramGrad[2][parameterIndex] += derivativesI[index];
+                paramGrad[3][parameterIndex] += derivativesRAAN[index];
+                paramGrad[4][parameterIndex] += derivativesPA[index];
+                paramGrad[5][parameterIndex] += derivativesMeanAnomaly[index];
+                ++index;
+            }
+            ++parameterIndex;
+        }
 
         // the previous derivatives correspond to state transition matrix with mean motion as 1rst element instead of semi major axis
         for (int i = 0; i < dim; i++) {
             for (int j = 0; j < dim; j++) {
-                stateTransition[j + dim * i] += grad[i][j];
+                stateTransition[j + dim * i] = stateGrad[i][j];
 
                 // retrieving dElement/dA from dElement/dMeanMotion
                 if (j == 0) {
                     stateTransition[j + dim * i] /= dAdMeanMotion;
                 }
+            }
+        }
+        final int columnTop = dim * dim;
+        for (int k = 0; k < paramDim; k++) {
+            for (int i = 0; i < dim; ++i) {
+                stateTransition[columnTop + (i + dim * k)] = paramGrad[i][k];
             }
         }
     }
