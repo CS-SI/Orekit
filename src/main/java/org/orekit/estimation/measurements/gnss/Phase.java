@@ -174,10 +174,15 @@ public class Phase extends AbstractMeasurement<Phase> {
                                                             stationDownlink.toTimeStampedPVCoordinates()
                                                         });
 
+        // Clock offsets
+        final ObservableSatellite satellite = getSatellites().get(0);
+        final Gradient            dts       = satellite.getClockOffsetDriver().getValue(nbParams, indices);
+        final Gradient            dtg       = station.getClockOffsetDriver().getValue(nbParams, indices);
+
         // Phase value
-        final double              cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
+        final double   cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
         final Gradient ambiguity   = ambiguityDriver.getValue(nbParams, indices);
-        final Gradient phase       = tauD.multiply(cOverLambda).add(ambiguity);
+        final Gradient phase       = tauD.add(dtg).subtract(dts).multiply(cOverLambda).add(ambiguity);
 
         estimated.setEstimatedValue(phase.getValue());
 
