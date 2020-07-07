@@ -20,7 +20,7 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="10.2" date="2020-07-06"
+    <release version="10.2" date="2020-07-14"
              description="Version 10.2 is a minor release of Orekit.
              It includes both new features and bug fixes. New features introduced
              in 10.2 are: support for CCSDS ADM files, modelling of trajectories
