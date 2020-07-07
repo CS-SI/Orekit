@@ -117,8 +117,7 @@ public class Phase extends AbstractMeasurement<Phase> {
                                                                 final int evaluation,
                                                                 final SpacecraftState[] states) {
 
-        final ObservableSatellite satellite = getSatellites().get(0);
-        final SpacecraftState state = states[satellite.getPropagatorIndex()];
+        final SpacecraftState state = states[0];
 
         // Phase derivatives are computed with respect to spacecraft state in inertial frame
         // and station parameters
