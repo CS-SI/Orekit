@@ -32,6 +32,9 @@
              support for CSSI space weather data, , as well as several other minor
              features and bug fixes. See the list below for a full description
              of the changes.">
+      <action dev="bryan" type="fix" issue="661">
+        Fixed visibility of WindUpFactory.
+      </action>
       <action dev="bryan" type="update" >
         Increased visibility of setters in CCSDS ADM related classes.
       </action>

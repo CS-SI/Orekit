@@ -37,7 +37,7 @@ public class WindUpFactory {
 
     /** Simple constructor.
      */
-    WindUpFactory() {
+    public WindUpFactory() {
         this.modifiers = new HashMap<>();
     }
 
