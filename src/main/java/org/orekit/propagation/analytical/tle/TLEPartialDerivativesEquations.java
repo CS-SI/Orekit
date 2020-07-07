@@ -68,7 +68,7 @@ public class TLEPartialDerivativesEquations implements AdditionalEquations {
     public TLEPartialDerivativesEquations(final String name,
                                            final TLEPropagator propagator) {
         this.name                   = name;
-        this.selected               = new ParameterDriversList();
+        this.selected               = null;
         this.propagator             = propagator;
         this.initialized            = false;
     }
@@ -86,6 +86,9 @@ public class TLEPartialDerivativesEquations implements AdditionalEquations {
 
             // create new selected parameter driver list
             selected = new ParameterDriversList();
+            for (final ParameterDriver driver : propagator.getTLE().getParametersDrivers()) {
+                selected.add(driver);
+            }
         }
     }
 
@@ -108,9 +111,8 @@ public class TLEPartialDerivativesEquations implements AdditionalEquations {
     public SpacecraftState setInitialJacobians(final SpacecraftState s0) {
         freezeParametersSelection();
         final int stateDimension = 6;
-        final int nbParameters = 0;
         final double[][] dYdY0 = new double[stateDimension][stateDimension];
-        final double[][] dYdP  = new double[stateDimension][nbParameters];
+        final double[][] dYdP  = new double[stateDimension][selected.getNbParams()];
         for (int i = 0; i < stateDimension; ++i) {
             dYdY0[i][i] = 1.0;
         }

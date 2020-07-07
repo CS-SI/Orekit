@@ -16,9 +16,6 @@
  */
 package org.orekit.propagation.analytical.tle;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.integration.AbstractGradientConverter;
@@ -36,9 +33,6 @@ public class TLEGradientConverter extends AbstractGradientConverter {
     /** Fixed dimension of the state. */
     private static final int FREE_STATE_PARAMETERS = 6;
 
-    /** States with various number of additional parameters for force models. */
-    private final List<FieldTLEPropagator<Gradient>> gPropagators;
-
     /** Initial TLE. */
     private final TLE tle;
 
@@ -49,22 +43,22 @@ public class TLEGradientConverter extends AbstractGradientConverter {
 
         super(FREE_STATE_PARAMETERS);
 
-        // initialize the list with the state having 0 force model parameters
-        gPropagators = new ArrayList<>();
         this.tle = tle;
     }
 
     /** Convert the initial TLE into a Gradient TLE.
+     * @param nbParams number of model parameters
      * @return the gradient version of the initial TLE
      */
-    public FieldTLE<Gradient> getGradientTLE() {
+    public FieldTLE<Gradient> getGradientTLE(final int nbParams) {
 
-        final Gradient meanMotion   = Gradient.variable(FREE_STATE_PARAMETERS, 0, tle.getMeanMotion());
-        final Gradient ge           = Gradient.variable(FREE_STATE_PARAMETERS, 1, tle.getE());
-        final Gradient gi           = Gradient.variable(FREE_STATE_PARAMETERS, 2, tle.getI());
-        final Gradient graan        = Gradient.variable(FREE_STATE_PARAMETERS, 3, tle.getRaan());
-        final Gradient gpa          = Gradient.variable(FREE_STATE_PARAMETERS, 4, tle.getPerigeeArgument());
-        final Gradient gMeanAnomaly = Gradient.variable(FREE_STATE_PARAMETERS, 5, tle.getMeanAnomaly());
+        final int freeParameters = FREE_STATE_PARAMETERS + nbParams;
+        final Gradient meanMotion   = Gradient.variable(freeParameters, 0, tle.getMeanMotion());
+        final Gradient ge           = Gradient.variable(freeParameters, 1, tle.getE());
+        final Gradient gi           = Gradient.variable(freeParameters, 2, tle.getI());
+        final Gradient graan        = Gradient.variable(freeParameters, 3, tle.getRaan());
+        final Gradient gpa          = Gradient.variable(freeParameters, 4, tle.getPerigeeArgument());
+        final Gradient gMeanAnomaly = Gradient.variable(freeParameters, 5, tle.getMeanAnomaly());
 
         final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(ge.getField(), tle.getDate());
         final int satelliteNumber = tle.getSatelliteNumber();
@@ -74,10 +68,10 @@ public class TLEGradientConverter extends AbstractGradientConverter {
         final String launchPiece = tle.getLaunchPiece();
         final int ephemerisType = tle.getEphemerisType();
         final int elementNumber = tle.getElementNumber();
-        final Gradient meanMotionFirstDerivative = Gradient.constant(FREE_STATE_PARAMETERS, tle.getMeanMotionFirstDerivative());
-        final Gradient meanMotionSecondDerivative = Gradient.constant(FREE_STATE_PARAMETERS, tle.getMeanMotionSecondDerivative());
+        final Gradient meanMotionFirstDerivative = Gradient.constant(freeParameters, tle.getMeanMotionFirstDerivative());
+        final Gradient meanMotionSecondDerivative = Gradient.constant(freeParameters, tle.getMeanMotionSecondDerivative());
         final int revolutionNumberAtEpoch = tle.getRevolutionNumberAtEpoch();
-        final Gradient bStar = Gradient.constant(FREE_STATE_PARAMETERS, tle.getBStar());
+        final Gradient bStar = Gradient.constant(freeParameters, tle.getBStar());
         final FieldTLE<Gradient> gtle = new FieldTLE<>(satelliteNumber, classification,
                         launchYear, launchNumber, launchPiece, ephemerisType, elementNumber, fieldDate,
                         meanMotion, meanMotionFirstDerivative, meanMotionSecondDerivative, ge, gi, gpa, graan, gMeanAnomaly,
@@ -86,9 +80,21 @@ public class TLEGradientConverter extends AbstractGradientConverter {
         return gtle;
     }
 
+    /** Get the state with the number of parameters consistent with model.
+     * @return state with the number of parameters consistent with force model
+     */
     public FieldTLEPropagator<Gradient> getPropagator() {
 
-        return gPropagators.get(0);
+        // count the required number of parameters
+        int nbParams = 0;
+        for (final ParameterDriver driver : tle.getParametersDrivers()) {
+            if (driver.isSelected()) {
+                ++nbParams;
+            }
+        }
+        final FieldTLEPropagator<Gradient> p0 = FieldTLEPropagator.selectExtrapolator(getGradientTLE(nbParams));
+
+        return p0;
 
     }
 

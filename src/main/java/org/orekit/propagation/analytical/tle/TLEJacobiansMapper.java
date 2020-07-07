@@ -173,12 +173,11 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
         final double[][] stateGrad = new double[dim][dim];
         final double[][] paramGrad = new double[dim][paramDim];
         final TLEGradientConverter converter = new TLEGradientConverter(propagator.getTLE());
-        final FieldTLE<Gradient> gTLE = converter.getGradientTLE();
-        final FieldTLEPropagator<Gradient> gPropagator = FieldTLEPropagator.selectExtrapolator(gTLE);
+        final FieldTLEPropagator<Gradient> gPropagator = converter.getPropagator();
 
         // Compute Jacobian
-        final Gradient[] dsParameters = converter.getParameters(gPropagator);
-        final FieldOrbit<Gradient> orbit = gPropagator.propagateOrbit(gPropagator.getTLE().getDate().shiftedBy(dt), dsParameters);
+        final Gradient[] dSParameters = converter.getParameters(gPropagator);
+        final FieldOrbit<Gradient> orbit = gPropagator.propagateOrbit(gPropagator.getTLE().getDate().shiftedBy(dt), dSParameters);
         final FieldKeplerianOrbit<Gradient> gOrbit = (FieldKeplerianOrbit<Gradient>) OrbitType.KEPLERIAN.convertType(orbit);
 
         final Gradient a = TLEGradientConverter.computeA(gOrbit.getKeplerianMeanMotion());
@@ -202,7 +201,7 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
 
         int index = converter.getFreeStateParameters();
         int parameterIndex = 0;
-        for (ParameterDriver driver : parameters.getDrivers()) {
+        for (ParameterDriver driver : propagator.getTLE().getParametersDrivers()) {
             if (driver.isSelected()) {
                 paramGrad[0][parameterIndex] += derivativesA[index];
                 paramGrad[1][parameterIndex] += derivativesE[index];
@@ -218,7 +217,7 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
         // the previous derivatives correspond to state transition matrix with mean motion as 1rst element instead of semi major axis
         for (int i = 0; i < dim; i++) {
             for (int j = 0; j < dim; j++) {
-                stateTransition[j + dim * i] = stateGrad[i][j];
+                stateTransition[j + dim * i] += stateGrad[i][j];
 
                 // retrieving dElement/dA from dElement/dMeanMotion
                 if (j == 0) {
@@ -229,7 +228,7 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
         final int columnTop = dim * dim;
         for (int k = 0; k < paramDim; k++) {
             for (int i = 0; i < dim; ++i) {
-                stateTransition[columnTop + (i + dim * k)] = paramGrad[i][k];
+                stateTransition[columnTop + (i + dim * k)] += paramGrad[i][k];
             }
         }
     }

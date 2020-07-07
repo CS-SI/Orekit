@@ -17,7 +17,9 @@
 package org.orekit.propagation.analytical.tle;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.text.ParseException;
 
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
@@ -66,6 +68,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
 
 public class TLEPartialDerivativesTest {
     
@@ -89,6 +93,15 @@ public class TLEPartialDerivativesTest {
     public void testSDP4PropagationwrtNumerical() throws FileNotFoundException, UnsupportedEncodingException {
         doTestPropagationwrtNumerical(1.0e-3, tleGPS, true);
     }
+    
+    @Test
+    public void testSDP4BStarDerivatives() throws ParseException, IOException {
+        doTestParametersDerivatives(TLE.B_STAR,
+                                    2.4e-3,
+                                    tleGPS,
+                                    PropagationType.MEAN);
+    }
+    
     /*
     @Test
     public void testSGP4PropagationwrtKeplerian() throws FileNotFoundException, UnsupportedEncodingException {
@@ -440,8 +453,107 @@ public class TLEPartialDerivativesTest {
                 }
             }
         }
-    }    
+    }
     
+    private void doTestParametersDerivatives(String parameterName, double tolerance, TLE tle,
+                                             PropagationType type) {
+
+        double dt = 900;       
+        // compute state Jacobian using PartialDerivatives
+        TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
+        TLEPartialDerivativesEquations partials = new TLEPartialDerivativesEquations("partials", propagator);
+        SpacecraftState initialState = partials.setInitialJacobians(propagator.getInitialState());
+        final double[] stateVector = new double[6];
+        OrbitType.KEPLERIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngle.MEAN, stateVector, null);
+        final TLEJacobiansMapper mapper = partials.getMapper();
+        double[][] dYdP =  new double[TLEJacobiansMapper.STATE_DIMENSION][mapper.getParameters()];
+        mapper.computeDerivatives(initialState, dt);
+        mapper.getParametersJacobian(initialState, dYdP);
+
+        // compute reference Jacobian using finite differences
+        
+        OrbitType orbitType = OrbitType.KEPLERIAN;
+        TLEPropagator propagator2 = TLEPropagator.selectExtrapolator(tle);
+        final KeplerianOrbit initialOrbit = (KeplerianOrbit) propagator2.getInitialState().getOrbit();
+        double[][] dYdPRef = new double[6][1];
+
+
+        ParameterDriversList bound = new ParameterDriversList();
+
+        for (final ParameterDriver driver : tle.getParametersDrivers()) {
+            if (driver.getName().equals(parameterName)) {
+                driver.setSelected(true);
+                bound.add(driver);
+            } else {
+                driver.setSelected(false);
+            }
+        }
+        
+        ParameterDriver selected = bound.getDrivers().get(0);
+        double p0 = selected.getReferenceValue();
+        double h  = selected.getScale();
+        selected.setValue(p0 - 4 * h);
+        propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType),
+                                                   initialState.getFrame(), initialState.getDate(),
+                                                   initialState.getMu(), // the mu may have been reset above
+                                                   initialState.getAttitude()));
+        SpacecraftState sM4h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
+        selected.setValue(p0 - 3 * h);
+        propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType),
+                                                   initialState.getFrame(), initialState.getDate(),
+                                                   initialState.getMu(), // the mu may have been reset above
+                                                   initialState.getAttitude()));
+        SpacecraftState sM3h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
+        selected.setValue(p0 - 2 * h);
+        propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType),
+                                                   initialState.getFrame(), initialState.getDate(),
+                                                   initialState.getMu(), // the mu may have been reset above
+                                                   initialState.getAttitude()));
+        SpacecraftState sM2h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
+        selected.setValue(p0 - 1 * h);
+        propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType),
+                                                   initialState.getFrame(), initialState.getDate(),
+                                                   initialState.getMu(), // the mu may have been reset above
+                                                   initialState.getAttitude()));
+        SpacecraftState sM1h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
+        selected.setValue(p0 + 1 * h);
+        propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType),
+                                                   initialState.getFrame(), initialState.getDate(),
+                                                   initialState.getMu(), // the mu may have been reset above
+                                                   initialState.getAttitude()));
+        SpacecraftState sP1h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
+        selected.setValue(p0 + 2 * h);
+        propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType),
+                                                   initialState.getFrame(), initialState.getDate(),
+                                                   initialState.getMu(), // the mu may have been reset above
+                                                   initialState.getAttitude()));
+        SpacecraftState sP2h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
+        selected.setValue(p0 + 3 * h);
+        propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType),
+                                                   initialState.getFrame(), initialState.getDate(),
+                                                   initialState.getMu(), // the mu may have been reset above
+                                                   initialState.getAttitude()));
+        SpacecraftState sP3h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
+        selected.setValue(p0 + 4 * h);
+        propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType),
+                                                   initialState.getFrame(), initialState.getDate(),
+                                                   initialState.getMu(), // the mu may have been reset above
+                                                   initialState.getAttitude()));
+        SpacecraftState sP4h = propagator2.propagate(initialOrbit.getDate().shiftedBy(dt));
+        fillJacobianColumn(dYdPRef, 0, orbitType, h,
+                           sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
+
+        for (int i = 0; i < 6; ++i) {
+            Assert.assertEquals(dYdPRef[i][0], dYdP[i][0], FastMath.abs(dYdPRef[i][0] * tolerance));
+        }
+        
+        System.out.println("-------------------dY/dP ------------------");
+        System.out.format("%f       %f      %f      %f      %f      %f %n", dYdP[0][0], dYdP[1][0], dYdP[2][0], dYdP[3][0], dYdP[4][0], dYdP[5][0]);
+        
+        System.out.println("-------------------dY/dP ref------------------");
+        System.out.format("%f       %f      %f      %f      %f      %f %n", dYdPRef[0][0], dYdPRef[1][0], dYdPRef[2][0], dYdPRef[3][0], dYdPRef[4][0], dYdPRef[5][0]);
+
+    }
 
     private void fillJacobianColumn(double[][] jacobian, int column,
                                     OrbitType orbitType, double h,

@@ -184,7 +184,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         final String line1 = "1 22195U 92070B   16045.51027931 -.00000009  00000-0  00000+0 0  9990";
         final String line2 = "2 22195  52.6508 132.9147 0137738 336.2706   1.6348  6.47294052551192";
         templateTLE = new TLE(line1, line2);
-        templateTLE.getParametersDrivers()[0].setSelected(false);
+        templateTLE.getParametersDrivers()[0].setSelected(true);
 
         // input in resources directory
         final String inputPath = TLEOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/tle_od_test_Lageos2.in").toURI().getPath();
@@ -203,8 +203,8 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         final double velocityAccuracy = 1.4;
 
         //test on the convergence
-        final int numberOfIte  = 5;
-        final int numberOfEval = 5;
+        final int numberOfIte  = 3;
+        final int numberOfEval = 3;
 
         Assert.assertEquals(numberOfIte, odLageos2.getNumberOfIteration());
         Assert.assertEquals(numberOfEval, odLageos2.getNumberOfEvaluation());
@@ -240,7 +240,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         //test on statistic for the range residuals
         final long nbRange = 258;
         //final double[] RefStatRange = { -2.795816, 6.171529, 0.310848, 1.657809 };
-        final double[] RefStatRange = { -2.431135, 2.218644, 0.038483, 0.982017 };
+        final double[] RefStatRange = { -295.1214, 307.5015, 0.038483, 117.8985 };
         Assert.assertEquals(nbRange, odLageos2.getRangeStat().getN());
         Assert.assertEquals(RefStatRange[0], odLageos2.getRangeStat().getMin(),               distanceAccuracy);
         Assert.assertEquals(RefStatRange[1], odLageos2.getRangeStat().getMax(),               distanceAccuracy);

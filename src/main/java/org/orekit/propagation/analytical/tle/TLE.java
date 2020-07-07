@@ -38,6 +38,7 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterObserver;
 
 /** This class is a container for a single set of TLE data.
  *
@@ -256,11 +257,19 @@ public class TLE implements TimeStamped, Serializable {
         this.utc = utc;
 
         // create model parameter drivers
+        parameters = new double[1];
+        parameters[0] = getBStar();
         this.bStarParameterDriver = new ParameterDriver(B_STAR, getBStar(), B_STAR_SCALE,
                                                         Double.NEGATIVE_INFINITY,
                                                         Double.POSITIVE_INFINITY);
-        parameters = new double[1];
-        parameters[0] = getBStar();
+
+        bStarParameterDriver.addObserver(new ParameterObserver() {
+            /** {@inheridDoc} */
+            @Override
+            public void valueChanged(final double previousValue, final ParameterDriver driver) {
+                parameters[0] = driver.getValue();
+            }
+        });
 
     }
 
@@ -415,10 +424,19 @@ public class TLE implements TimeStamped, Serializable {
         this.utc = utc;
 
         // create model parameter drivers
+        parameters = new double[1];
+        parameters[0]  = getBStar();
+
         this.bStarParameterDriver = new ParameterDriver(B_STAR, getBStar(), B_STAR_SCALE,
                                                         Double.NEGATIVE_INFINITY,
                                                         Double.POSITIVE_INFINITY);
-        parameters = new double[7];
+        bStarParameterDriver.addObserver(new ParameterObserver() {
+            /** {@inheridDoc} */
+            @Override
+            public void valueChanged(final double previousValue, final ParameterDriver driver) {
+                parameters[0] = driver.getValue();
+            }
+        });
 
     }
 

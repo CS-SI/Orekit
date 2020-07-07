@@ -98,6 +98,9 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
                         .getInitialState().getOrbit()),
               positionAngle, positionScale, false,
               Propagator.getDefaultLaw(dataContext.getFrames()));
+        for (final ParameterDriver driver : templateTLE.getParametersDrivers()) {
+            addSupportedParameter(driver);
+        }
         this.templateTLE             = templateTLE;
         this.dataContext = dataContext;
 

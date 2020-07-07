@@ -555,7 +555,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
 
     /** {@inheritDoc} */
     public void resetInitialState(final FieldSpacecraftState<T> state) {
-        throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
+        super.resetInitialState(state);
     }
 
     /** {@inheritDoc} */
