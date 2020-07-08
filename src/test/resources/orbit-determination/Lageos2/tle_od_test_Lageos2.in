@@ -357,7 +357,7 @@ estimator.Levenberg.Marquardt.initial.step.bound.factor = 1.0e6
 # the scale is often small (typically about 1 m for orbital positions
 # for example), then the threshold should not be too small. A value
 # of 10⁻³ is often quite accurate.
-estimator.normalized.parameters.convergence.threshold   = 10
+estimator.normalized.parameters.convergence.threshold   = 100
 estimator.max.iterations                                = 40
 estimator.max.evaluations                               = 40
 

@@ -230,13 +230,6 @@ public class TLEPartialDerivativesTest {
             fillJacobianColumn(dYdY0Ref, i, OrbitType.KEPLERIAN, steps[i],
                                sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
         }
-        System.out.println("-------------------dY/dY0 ref Kep------------------");
-        System.out.format("%f       %f      %f      %f      %f      %f %n", dYdY0Ref[0][0], dYdY0Ref[0][1], dYdY0Ref[0][2], dYdY0Ref[0][3], dYdY0Ref[0][4], dYdY0Ref[0][5]);
-        System.out.format("%f       %f      %f      %f      %f      %f %n", dYdY0Ref[1][0], dYdY0Ref[1][1], dYdY0Ref[1][2], dYdY0Ref[1][3], dYdY0Ref[1][4], dYdY0Ref[1][5]);
-        System.out.format("%f       %f      %f      %f      %f      %f %n", dYdY0Ref[2][0], dYdY0Ref[2][1], dYdY0Ref[2][2], dYdY0Ref[2][3], dYdY0Ref[2][4], dYdY0Ref[2][5]);
-        System.out.format("%f       %f      %f      %f      %f      %f %n", dYdY0Ref[3][0], dYdY0Ref[3][1], dYdY0Ref[3][2], dYdY0Ref[3][3], dYdY0Ref[3][4], dYdY0Ref[3][5]);
-        System.out.format("%f       %f      %f      %f      %f      %f %n", dYdY0Ref[4][0], dYdY0Ref[4][1], dYdY0Ref[4][2], dYdY0Ref[4][3], dYdY0Ref[4][4], dYdY0Ref[4][5]);
-        System.out.format("%f       %f      %f      %f      %f      %f %n", dYdY0Ref[5][0], dYdY0Ref[5][1], dYdY0Ref[5][2], dYdY0Ref[5][3], dYdY0Ref[5][4], dYdY0Ref[5][5]);
 
         for (int i = 0; i < 6; ++i) {
             for (int j = 0; j < 6; ++j) {
@@ -460,6 +453,16 @@ public class TLEPartialDerivativesTest {
 
         double dt = 900;       
         // compute state Jacobian using PartialDerivatives
+        ParameterDriversList bound = new ParameterDriversList();
+
+        for (final ParameterDriver driver : tle.getParametersDrivers()) {
+            if (driver.getName().equals(parameterName)) {
+                driver.setSelected(true);
+                bound.add(driver);
+            } else {
+                driver.setSelected(false);
+            }
+        }
         TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
         TLEPartialDerivativesEquations partials = new TLEPartialDerivativesEquations("partials", propagator);
         SpacecraftState initialState = partials.setInitialJacobians(propagator.getInitialState());
@@ -477,18 +480,6 @@ public class TLEPartialDerivativesTest {
         final KeplerianOrbit initialOrbit = (KeplerianOrbit) propagator2.getInitialState().getOrbit();
         double[][] dYdPRef = new double[6][1];
 
-
-        ParameterDriversList bound = new ParameterDriversList();
-
-        for (final ParameterDriver driver : tle.getParametersDrivers()) {
-            if (driver.getName().equals(parameterName)) {
-                driver.setSelected(true);
-                bound.add(driver);
-            } else {
-                driver.setSelected(false);
-            }
-        }
-        
         ParameterDriver selected = bound.getDrivers().get(0);
         double p0 = selected.getReferenceValue();
         double h  = selected.getScale();
@@ -543,15 +534,15 @@ public class TLEPartialDerivativesTest {
         fillJacobianColumn(dYdPRef, 0, orbitType, h,
                            sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
 
+        System.out.println("-------------------dY/dP ------------------");
+        System.out.format("%.15f       %.15f      %.15f      %.15f      %.15f      %.15f %n", dYdP[0][0], dYdP[1][0], dYdP[2][0], dYdP[3][0], dYdP[4][0], dYdP[5][0]);
+        
+        System.out.println("-------------------dY/dP ref------------------");
+        System.out.format("%.15f       %.15f      %.15f      %.15f      %.15f      %.15f %n", dYdPRef[0][0], dYdPRef[1][0], dYdPRef[2][0], dYdPRef[3][0], dYdPRef[4][0], dYdPRef[5][0]);
+        
         for (int i = 0; i < 6; ++i) {
             Assert.assertEquals(dYdPRef[i][0], dYdP[i][0], FastMath.abs(dYdPRef[i][0] * tolerance));
         }
-        
-        System.out.println("-------------------dY/dP ------------------");
-        System.out.format("%f       %f      %f      %f      %f      %f %n", dYdP[0][0], dYdP[1][0], dYdP[2][0], dYdP[3][0], dYdP[4][0], dYdP[5][0]);
-        
-        System.out.println("-------------------dY/dP ref------------------");
-        System.out.format("%f       %f      %f      %f      %f      %f %n", dYdPRef[0][0], dYdPRef[1][0], dYdPRef[2][0], dYdPRef[3][0], dYdPRef[4][0], dYdPRef[5][0]);
 
     }
 

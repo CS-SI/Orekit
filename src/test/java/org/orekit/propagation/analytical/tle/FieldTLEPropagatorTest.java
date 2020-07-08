@@ -25,6 +25,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -77,7 +78,10 @@ public class FieldTLEPropagatorTest {
         String line2 = "2 37753  55.0032 176.5796 0004733  13.2285 346.8266  2.00565440  5153";
         FieldTLE<T> tle = new FieldTLE<>(field, line1, line2);
         
-        FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tle);
+        final T[] parameters;
+        parameters = MathArrays.buildArray(field, 1);
+        parameters[0].add(tle.getBStar());
+        FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tle, parameters);
         FieldAbsoluteDate<T> initDate = tle.getDate();
         FieldSpacecraftState<T> initialState = propagator.getInitialState();
 
@@ -102,7 +106,10 @@ public class FieldTLEPropagatorTest {
         String line2 = "2 37753  55.0032 176.5796 0004733  13.2285 346.8266  2.00565440  5153";
         FieldTLE<T> tle = new FieldTLE<>(field, line1, line2);
         
-        FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tle);
+        final T[] parameters;
+        parameters = MathArrays.buildArray(field, 1);
+        parameters[0].add(tle.getBStar());
+        FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tle, parameters);
         propagator.setEphemerisMode();
 
         FieldAbsoluteDate<T> initDate = tle.getDate();
@@ -159,16 +166,19 @@ public class FieldTLEPropagatorTest {
         FieldDistanceChecker<T> checker = new FieldDistanceChecker<T>(itrf);
 
         // with Earth pointing attitude, distance should be small
+        final T[] parameters;
+        parameters = MathArrays.buildArray(field, 1);
+        parameters[0].add(tle.getBStar());
         FieldTLEPropagator<T> propagator =
                 FieldTLEPropagator.selectExtrapolator(tle,
                                                  new BodyCenterPointing(FramesFactory.getTEME(), earth),
-                                                 T_zero.add(Propagator.DEFAULT_MASS));
+                                                 T_zero.add(Propagator.DEFAULT_MASS), parameters);
         propagator.setMasterMode(T_zero.add(900.0), checker);
         propagator.propagate(tle.getDate().shiftedBy(period));
         Assert.assertEquals(0.0, checker.getMaxDistance(), 2.0e-7);
 
         // with default attitude mode, distance should be large
-        propagator = FieldTLEPropagator.selectExtrapolator(tle);
+        propagator = FieldTLEPropagator.selectExtrapolator(tle, parameters);
         propagator.setMasterMode(T_zero.add(900.0), checker);
         propagator.propagate(tle.getDate().shiftedBy(period));
         Assert.assertEquals(1.5219e7, checker.getMinDistance(), 1000.0);
@@ -251,10 +261,13 @@ public class FieldTLEPropagatorTest {
         TLE tleISS = new TLE(line3, line4);
         
         // propagate Field GPS orbit
-        FieldTLEPropagator<T> fieldpropagator = FieldTLEPropagator.selectExtrapolator(fieldtleGPS);
+        final T[] parametersGPS;
+        parametersGPS = MathArrays.buildArray(field, 1);
+        parametersGPS[0] = field.getZero().add(fieldtleGPS.getBStar());
+        FieldTLEPropagator<T> fieldpropagator = FieldTLEPropagator.selectExtrapolator(fieldtleGPS, parametersGPS);
         FieldAbsoluteDate<T> fieldinitDate = fieldtleGPS.getDate();
         FieldAbsoluteDate<T> fieldendDate = fieldinitDate.shiftedBy(propagtime);        
-        FieldPVCoordinates<T> fieldfinalGPS = fieldpropagator.getPVCoordinates(fieldendDate, fieldtleGPS.getParameters());
+        FieldPVCoordinates<T> fieldfinalGPS = fieldpropagator.getPVCoordinates(fieldendDate, parametersGPS);
         
         // propagate GPS orbit
         TLEPropagator propagator = TLEPropagator.selectExtrapolator(tleGPS);
@@ -262,13 +275,16 @@ public class FieldTLEPropagatorTest {
         AbsoluteDate endDate = initDate.shiftedBy(propagtime);        
         PVCoordinates finalGPS = propagator.getPVCoordinates(endDate);
         
-        // propagate Field GPS orbit
-        fieldpropagator = FieldTLEPropagator.selectExtrapolator(fieldtleISS);
+        // propagate Field ISS orbit
+        final T[] parametersISS;
+        parametersISS = MathArrays.buildArray(field, 1);
+        parametersISS[0] = field.getZero().add(fieldtleISS.getBStar());
+        fieldpropagator = FieldTLEPropagator.selectExtrapolator(fieldtleISS, parametersISS);
         fieldinitDate = fieldtleISS.getDate();
         fieldendDate = fieldinitDate.shiftedBy(propagtime);        
-        FieldPVCoordinates<T> fieldfinalISS = fieldpropagator.getPVCoordinates(fieldendDate, fieldtleISS.getParameters());
+        FieldPVCoordinates<T> fieldfinalISS = fieldpropagator.getPVCoordinates(fieldendDate, parametersISS);
         
-        // propagate GPS orbit
+        // propagate ISS orbit
         propagator = TLEPropagator.selectExtrapolator(tleISS);
         initDate = tleISS.getDate();
         endDate = initDate.shiftedBy(propagtime);        

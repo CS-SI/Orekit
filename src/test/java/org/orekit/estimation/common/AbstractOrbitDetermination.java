@@ -40,6 +40,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.QRDecomposer;
 import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.EvaluationRmsChecker;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.GaussNewtonOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
@@ -135,8 +136,8 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
-import org.orekit.propagation.conversion.ODPropagatorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
+import org.orekit.propagation.conversion.ODPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScale;
@@ -318,6 +319,10 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
 
         // estimator
         final BatchLSEstimator estimator = createEstimator(parser, propagatorBuilder);
+        final double relTol = 0.01;
+        final double absTol = 0.01;
+        final EvaluationRmsChecker rmsChecker = new EvaluationRmsChecker(relTol, absTol);
+        estimator.setConvergenceChecker(rmsChecker);
 
         final Map<String, StationData>    stations                 = createStationsData(parser, conventions, body);
         final PVData                      pvData                   = createPVData(parser);

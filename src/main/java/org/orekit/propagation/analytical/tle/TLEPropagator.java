@@ -37,7 +37,6 @@ import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
 
 
 /** This class provides elements to propagate TLE's.
@@ -66,17 +65,6 @@ import org.orekit.utils.ParameterDriver;
  * @see TLE
  */
 public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
-
-    /** Parameter name for B* coefficient. */
-    public static final String B_STAR = "BSTAR";
-
-    /** B* scaling factor.
-     * <p>
-     * We use a power of 2 to avoid numeric noise introduction
-     * in the multiplications/divisions sequences.
-     * </p>
-     */
-    private static final double B_STAR_SCALE = FastMath.scalb(1.0, -20);
 
     // CHECKSTYLE: stop VisibilityModifier check
 
@@ -177,9 +165,6 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
 
     // CHECKSTYLE: resume VisibilityModifier check
 
-    /** Driver for ballistic coefficient parameter. */
-    private final ParameterDriver bStarParameterDriver;
-
     /** TLE frame. */
     private final Frame teme;
 
@@ -219,9 +204,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
         this.teme = teme;
         this.mass = mass;
         this.utc = initialTLE.getUtc();
-        this.bStarParameterDriver = new ParameterDriver(B_STAR, tle.getBStar(), B_STAR_SCALE,
-                                                               Double.NEGATIVE_INFINITY,
-                                                               Double.POSITIVE_INFINITY);
+
         initializeCommons();
         sxpInitialize();
         // set the initial state
@@ -581,12 +564,4 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
         return teme;
     }
 
-    /** Get the drivers for TLE propagation SGP4 and SDP4.
-     * @return drivers for SGP4 and SDP4 model parameters
-     */
-    public ParameterDriver[] getParametersDrivers() {
-        return new ParameterDriver[] {
-            bStarParameterDriver
-        };
-    }
 }

@@ -38,7 +38,6 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterObserver;
 
 /** This class is a container for a single set of TLE data.
  *
@@ -164,9 +163,6 @@ public class TLE implements TimeStamped, Serializable {
     /** Revolution number at epoch. */
     private final int revolutionNumberAtEpoch;
 
-    /** Ballistic coefficient. */
-    private final double bStar;
-
     /** First line. */
     private String line1;
 
@@ -178,9 +174,6 @@ public class TLE implements TimeStamped, Serializable {
 
     /** Driver for ballistic coefficient parameter. */
     private final ParameterDriver bStarParameterDriver;
-
-    /** Parameters list. */
-    private double[] parameters;
 
     /** Simple constructor from unparsed two lines. This constructor uses the {@link
      * DataContext#getDefault() default data context}.
@@ -247,7 +240,7 @@ public class TLE implements TimeStamped, Serializable {
         meanAnomaly  = FastMath.toRadians(parseDouble(line2, 43, 8));
 
         revolutionNumberAtEpoch = parseInteger(line2, 63, 5);
-        bStar = Double.parseDouble((line1.substring(53, 54) + '.' +
+        final double bStarValue = Double.parseDouble((line1.substring(53, 54) + '.' +
                                     line1.substring(54, 59) + 'e' +
                                     line1.substring(59, 61)).replace(' ', '0'));
 
@@ -257,19 +250,9 @@ public class TLE implements TimeStamped, Serializable {
         this.utc = utc;
 
         // create model parameter drivers
-        parameters = new double[1];
-        parameters[0] = getBStar();
-        this.bStarParameterDriver = new ParameterDriver(B_STAR, getBStar(), B_STAR_SCALE,
+        this.bStarParameterDriver = new ParameterDriver(B_STAR, bStarValue, B_STAR_SCALE,
                                                         Double.NEGATIVE_INFINITY,
                                                         Double.POSITIVE_INFINITY);
-
-        bStarParameterDriver.addObserver(new ParameterObserver() {
-            /** {@inheridDoc} */
-            @Override
-            public void valueChanged(final double previousValue, final ParameterDriver driver) {
-                parameters[0] = driver.getValue();
-            }
-        });
 
     }
 
@@ -416,7 +399,6 @@ public class TLE implements TimeStamped, Serializable {
         this.meanAnomaly = MathUtils.normalizeAngle(meanAnomaly, FastMath.PI);
 
         this.revolutionNumberAtEpoch = revolutionNumberAtEpoch;
-        this.bStar = bStar;
 
         // don't build the line until really needed
         this.line1 = null;
@@ -424,19 +406,9 @@ public class TLE implements TimeStamped, Serializable {
         this.utc = utc;
 
         // create model parameter drivers
-        parameters = new double[1];
-        parameters[0]  = getBStar();
-
-        this.bStarParameterDriver = new ParameterDriver(B_STAR, getBStar(), B_STAR_SCALE,
+        this.bStarParameterDriver = new ParameterDriver(B_STAR, bStar, B_STAR_SCALE,
                                                         Double.NEGATIVE_INFINITY,
                                                         Double.POSITIVE_INFINITY);
-        bStarParameterDriver.addObserver(new ParameterObserver() {
-            /** {@inheridDoc} */
-            @Override
-            public void valueChanged(final double previousValue, final ParameterDriver driver) {
-                parameters[0] = driver.getValue();
-            }
-        });
 
     }
 
@@ -506,7 +478,7 @@ public class TLE implements TimeStamped, Serializable {
         buffer.append(formatExponentMarkerFree("meanMotionSecondDerivative", n2, 5, ' ', 8, true));
 
         buffer.append(' ');
-        buffer.append(formatExponentMarkerFree("B*", bStar, 5, ' ', 8, true));
+        buffer.append(formatExponentMarkerFree("B*", getBStar(), 5, ' ', 8, true));
 
         buffer.append(' ');
         buffer.append(ephemerisType);
@@ -788,7 +760,7 @@ public class TLE implements TimeStamped, Serializable {
      * @return bStar
      */
     public double getBStar() {
-        return bStar;
+        return bStarParameterDriver.getValue();
     }
 
     /** Get a string representation of this TLE set.
@@ -921,7 +893,7 @@ public class TLE implements TimeStamped, Serializable {
                 raan == tle.raan &&
                 meanAnomaly == tle.meanAnomaly &&
                 revolutionNumberAtEpoch == tle.revolutionNumberAtEpoch &&
-                bStar == tle.bStar;
+                getBStar() == tle.getBStar();
     }
 
     /** Get a hashcode for this tle.
@@ -946,7 +918,7 @@ public class TLE implements TimeStamped, Serializable {
                 raan,
                 meanAnomaly,
                 revolutionNumberAtEpoch,
-                bStar);
+                getBStar());
     }
 
     /** Get the drivers for TLE propagation SGP4 and SDP4.
@@ -956,20 +928,6 @@ public class TLE implements TimeStamped, Serializable {
         return new ParameterDriver[] {
             bStarParameterDriver
         };
-    }
-
-    /** Setter for the parameter list.
-     * @param parameters parameters to update
-     */
-    public void setParameters(final double[] parameters) {
-        this.parameters = parameters;
-    }
-
-    /** Getter for the parameter list.
-     * @return the parameter list
-     */
-    public double[] getParameters() {
-        return parameters;
     }
 
 }

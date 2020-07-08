@@ -177,13 +177,14 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
      * @param initialTLE the TLE to propagate.
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
+     * @param parameters SGP4 and SDP4 model parameters
      * @see #DeepSDP4(TLE, AttitudeProvider, double, Frame)
      */
     @DefaultDataContext
     public FieldDeepSDP4(final FieldTLE<T> initialTLE, final AttitudeProvider attitudeProvider,
-                    final T mass) {
+                    final T mass, final T[] parameters) {
         this(initialTLE, attitudeProvider, mass,
-                DataContext.getDefault().getFrames().getTEME());
+                DataContext.getDefault().getFrames().getTEME(), parameters);
     }
 
     /** Constructor for a unique initial TLE.
@@ -191,13 +192,15 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
      * @param teme the TEME frame to use for propagation.
+     * @param parameters SGP4 and SDP4 model parameters
      * @since 10.1
      */
     public FieldDeepSDP4(final FieldTLE<T> initialTLE,
                     final AttitudeProvider attitudeProvider,
                     final T mass,
-                    final Frame teme) {
-        super(initialTLE, attitudeProvider, mass, teme);
+                    final Frame teme,
+                    final T[] parameters) {
+        super(initialTLE, attitudeProvider, mass, teme, parameters);
     }
 
     /** Computes luni - solar terms from initial coordinates and epoch.

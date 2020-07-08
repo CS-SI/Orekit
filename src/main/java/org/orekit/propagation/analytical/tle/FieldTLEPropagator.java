@@ -181,14 +181,16 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
      * @param initialTLE the unique TLE to propagate
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
+     * @param parameters SGP4 and SDP4 model parameters
      * @see #TLEPropagator(TLE, AttitudeProvider, double, Frame)
      */
     @DefaultDataContext
     protected FieldTLEPropagator(final FieldTLE<T> initialTLE,
                             final AttitudeProvider attitudeProvider,
-                            final T mass) {
+                            final T mass,
+                            final T[] parameters) {
         this(initialTLE, attitudeProvider, mass,
-                DataContext.getDefault().getFrames().getTEME());
+                DataContext.getDefault().getFrames().getTEME(), parameters);
     }
 
     /** Protected constructor for derived classes.
@@ -196,13 +198,15 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
      * @param teme the TEME frame to use for propagation.
+     * @param parameters SGP4 and SDP4 model parameters
 
      * @since 10.1
      */
     protected FieldTLEPropagator(final FieldTLE<T> initialTLE,
                             final AttitudeProvider attitudeProvider,
                             final T mass,
-                            final Frame teme) {
+                            final Frame teme,
+                            final T[] parameters) {
         super(initialTLE.getE().getField(), attitudeProvider);
         setStartDate(initialTLE.getDate());  //requires a FieldTLE class.
         this.tle  = initialTLE;
@@ -210,10 +214,10 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
         this.mass = mass;
         this.utc = initialTLE.getUtc();
 
-        initializeCommons(tle.getParameters());
-        sxpInitialize(tle.getParameters());
+        initializeCommons(parameters);
+        sxpInitialize(parameters);
         // set the initial state
-        final FieldOrbit<T> orbit = propagateOrbit(initialTLE.getDate(), tle.getParameters());
+        final FieldOrbit<T> orbit = propagateOrbit(initialTLE.getDate(), parameters);
         final FieldAttitude<T> attitude = attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
         super.resetInitialState(new FieldSpacecraftState<T>(orbit, attitude, mass));
     }
@@ -223,28 +227,31 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
      * <p>This method uses the {@link DataContext#getDefault() default data context}.
      *
      * @param tle the TLE to propagate.
+     * @param parameters SGP4 and SDP4 model parameters
      * @return the correct propagator.
          * @param <T> elements type
      * @see #selectExtrapolator(TLE, Frames)
      */
     @DefaultDataContext
-    public static <T extends RealFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle) {
-        return selectExtrapolator(tle, DataContext.getDefault().getFrames());
+    public static <T extends RealFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle, final T[] parameters) {
+        return selectExtrapolator(tle, DataContext.getDefault().getFrames(), parameters);
     }
 
     /** Selects the extrapolator to use with the selected TLE.
      * @param tle the TLE to propagate.
      * @param frames set of Frames to use in the propagator.
+     * @param parameters SGP4 and SDP4 model parameters
      * @return the correct propagator.
          * @param <T> elements type
      * @since 10.1
      */
-    public static <T extends RealFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle, final Frames frames) {
+    public static <T extends RealFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle, final Frames frames, final T[] parameters) {
         return selectExtrapolator(
                 tle,
                 Propagator.getDefaultLaw(frames),
                 tle.getE().getField().getZero().add(DEFAULT_MASS),
-                frames.getTEME());
+                frames.getTEME(),
+                parameters);
     }
 
     /** Selects the extrapolator to use with the selected TLE.
@@ -254,6 +261,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
      * @param tle the TLE to propagate.
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
+     * @param parameters SGP4 and SDP4 model parameters
      * @return the correct propagator.
          * @param <T> elements type
      * @see #selectExtrapolator(TLE, AttitudeProvider, double, Frame)
@@ -261,9 +269,10 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
     @DefaultDataContext
     public static <T extends RealFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle,
                                                    final AttitudeProvider attitudeProvider,
-                                                   final T mass) {
+                                                   final T mass,
+                                                   final T[] parameters) {
         return selectExtrapolator(tle, attitudeProvider, mass,
-                DataContext.getDefault().getFrames().getTEME());
+                DataContext.getDefault().getFrames().getTEME(), parameters);
     }
 
     /** Selects the extrapolator to use with the selected TLE.
@@ -271,6 +280,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
      * @param teme the TEME frame to use for propagation.
+     * @param parameters SGP4 and SDP4 model parameters
      * @return the correct propagator.
          * @param <T> elements type
      * @since 10.1
@@ -278,7 +288,8 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
     public static <T extends RealFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle,
                                                    final AttitudeProvider attitudeProvider,
                                                    final T mass,
-                                                   final Frame teme) {
+                                                   final Frame teme,
+                                                   final T[] parameters) {
 
         final T a1 = tle.getMeanMotion().multiply(60.0).reciprocal().multiply(TLEConstants.XKE).pow(TLEConstants.TWO_THIRD);
         final T cosi0 = FastMath.cos(tle.getI());
@@ -295,9 +306,9 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
 
         // Period >= 225 minutes is deep space
         if (MathUtils.TWO_PI / (xn0dp.multiply(TLEConstants.MINUTES_PER_DAY).getReal()) >= (1.0 / 6.4)) {
-            return new FieldDeepSDP4<T>(tle, attitudeProvider, mass, teme);
+            return new FieldDeepSDP4<T>(tle, attitudeProvider, mass, teme, parameters);
         } else {
-            return new FieldSGP4<T>(tle, attitudeProvider, mass, teme);
+            return new FieldSGP4<T>(tle, attitudeProvider, mass, teme, parameters);
         }
     }
 

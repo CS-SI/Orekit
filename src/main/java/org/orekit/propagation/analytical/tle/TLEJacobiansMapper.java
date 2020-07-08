@@ -136,13 +136,10 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
 
         if (parameters.getNbParams() != 0) {
 
-            // extract the additional state
-            final double[] p = state.getAdditionalState(name);
-
             for (int i = 0; i < STATE_DIMENSION; i++) {
                 final double[] row = dYdP[i];
                 for (int j = 0; j < parameters.getNbParams(); j++) {
-                    row[j] = p[STATE_DIMENSION * STATE_DIMENSION + (j + parameters.getNbParams() * i)];
+                    row[j] = stateTransition[STATE_DIMENSION * STATE_DIMENSION + (j + parameters.getNbParams() * i)];
                 }
             }
 
@@ -174,9 +171,9 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
         final double[][] paramGrad = new double[dim][paramDim];
         final TLEGradientConverter converter = new TLEGradientConverter(propagator.getTLE());
         final FieldTLEPropagator<Gradient> gPropagator = converter.getPropagator();
+        final Gradient[] dSParameters = converter.getParameters(gPropagator.getTLE());
 
         // Compute Jacobian
-        final Gradient[] dSParameters = converter.getParameters(gPropagator);
         final FieldOrbit<Gradient> orbit = gPropagator.propagateOrbit(gPropagator.getTLE().getDate().shiftedBy(dt), dSParameters);
         final FieldKeplerianOrbit<Gradient> gOrbit = (FieldKeplerianOrbit<Gradient>) OrbitType.KEPLERIAN.convertType(orbit);
 

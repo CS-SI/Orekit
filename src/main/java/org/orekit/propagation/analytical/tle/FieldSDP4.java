@@ -65,12 +65,14 @@ abstract class FieldSDP4<T extends RealFieldElement<T>>  extends FieldTLEPropaga
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
      * @param teme the TEME frame to use for propagation.
+     * @param parameters SGP4 and SDP4 model parameters
      */
     protected FieldSDP4(final FieldTLE<T> initialTLE,
                    final AttitudeProvider attitudeProvider,
                    final T mass,
-                   final Frame teme) {
-        super(initialTLE, attitudeProvider, mass, teme);
+                   final Frame teme,
+                   final T[] parameters) {
+        super(initialTLE, attitudeProvider, mass, teme, parameters);
     }
 
     /** Initialization proper to each propagator (SGP or SDP).

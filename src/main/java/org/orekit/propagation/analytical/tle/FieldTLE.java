@@ -26,7 +26,6 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
@@ -40,6 +39,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
+import org.orekit.utils.ParameterDriver;
 
 /** This class is a container for a single set of TLE data.
  *
@@ -78,6 +78,17 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
 
     /** Identifier for SDP8 type of ephemeris. */
     public static final int SDP8 = 5;
+
+    /** Parameter name for B* coefficient. */
+    public static final String B_STAR = "BSTAR";
+
+    /** B* scaling factor.
+     * <p>
+     * We use a power of 2 to avoid numeric noise introduction
+     * in the multiplications/divisions sequences.
+     * </p>
+     */
+    private static final double B_STAR_SCALE = FastMath.scalb(1.0, -20);
 
     /** Name of the mean motion parameter. */
     private static final String MEAN_MOTION = "meanMotion";
@@ -146,9 +157,6 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
     /** Revolution number at epoch. */
     private final int revolutionNumberAtEpoch;
 
-    /** Ballistic coefficient. */
-    private final T bStar;
-
     /** First line. */
     private String line1;
 
@@ -158,8 +166,8 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
     /** The UTC scale. */
     private final TimeScale utc;
 
-    /** The parameters list. */
-    private T[] parameters;
+    /** Driver for ballistic coefficient parameter. */
+    private final ParameterDriver bStarParameterDriver;
 
     /** Simple constructor from unparsed two lines. This constructor uses the {@link
      * DataContext#getDefault() default data context}.
@@ -228,17 +236,18 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
         meanAnomaly  = field.getZero().add(FastMath.toRadians(parseDouble(line2, 43, 8)));
 
         revolutionNumberAtEpoch = parseInteger(line2, 63, 5);
-        bStar = field.getZero().add(Double.parseDouble((line1.substring(53, 54) + '.' +
-                                    line1.substring(54, 59) + 'e' +
-                                    line1.substring(59, 61)).replace(' ', '0')));
+        final double bStarValue = Double.parseDouble((line1.substring(53, 54) + '.' +
+                        line1.substring(54, 59) + 'e' +
+                        line1.substring(59, 61)).replace(' ', '0'));
 
         // save the lines
         this.line1 = line1;
         this.line2 = line2;
         this.utc = utc;
 
-        parameters = MathArrays.buildArray(field, 1);
-        parameters[0] = getBStar();
+        this.bStarParameterDriver = new ParameterDriver(B_STAR, bStarValue, B_STAR_SCALE,
+                                                        Double.NEGATIVE_INFINITY,
+                                                        Double.POSITIVE_INFINITY);
 
     }
 
@@ -291,7 +300,7 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
                final T meanMotion, final T meanMotionFirstDerivative,
                final T meanMotionSecondDerivative, final T e, final T i,
                final T pa, final T raan, final T meanAnomaly,
-               final int revolutionNumberAtEpoch, final T bStar) {
+               final int revolutionNumberAtEpoch, final double bStar) {
         this(satelliteNumber, classification, launchYear, launchNumber, launchPiece,
                 ephemerisType, elementNumber, epoch, meanMotion,
                 meanMotionFirstDerivative, meanMotionSecondDerivative, e, i, pa, raan,
@@ -347,7 +356,7 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
                final T meanMotion, final T meanMotionFirstDerivative,
                final T meanMotionSecondDerivative, final T e, final T i,
                final T pa, final T raan, final T meanAnomaly,
-               final int revolutionNumberAtEpoch, final T bStar,
+               final int revolutionNumberAtEpoch, final double bStar,
                final TimeScale utc) {
 
         // identification
@@ -385,15 +394,14 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
         this.meanAnomaly = MathUtils.normalizeAngle(meanAnomaly, meanAnomaly.getField().getZero().add(FastMath.PI));
 
         this.revolutionNumberAtEpoch = revolutionNumberAtEpoch;
-        this.bStar = bStar;
+        this.bStarParameterDriver = new ParameterDriver(B_STAR, bStar, B_STAR_SCALE,
+                                                       Double.NEGATIVE_INFINITY,
+                                                       Double.POSITIVE_INFINITY);
 
         // don't build the line until really needed
         this.line1 = null;
         this.line2 = null;
         this.utc = utc;
-
-        parameters = MathArrays.buildArray(epoch.getField(), 1);
-        parameters[0] = getBStar();
 
     }
 
@@ -463,7 +471,7 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
         buffer.append(formatExponentMarkerFree("meanMotionSecondDerivative", n2, 5, ' ', 8, true));
 
         buffer.append(' ');
-        buffer.append(formatExponentMarkerFree("B*", bStar.getReal(), 5, ' ', 8, true));
+        buffer.append(formatExponentMarkerFree("B*", getBStar(), 5, ' ', 8, true));
 
         buffer.append(' ');
         buffer.append(ephemerisType);
@@ -621,6 +629,15 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
         return (year > 2056) ? (year - 100) : year;
     }
 
+    /** Get the drivers for TLE propagation SGP4 and SDP4.
+     * @return drivers for SGP4 and SDP4 model parameters
+     */
+    public ParameterDriver[] getParametersDrivers() {
+        return new ParameterDriver[] {
+            bStarParameterDriver
+        };
+    }
+
     /** Get the satellite id.
      * @return the satellite number
      */
@@ -744,8 +761,8 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
     /** Get the ballistic coefficient.
      * @return bStar
      */
-    public T getBStar() {
-        return bStar;
+    public double getBStar() {
+        return bStarParameterDriver.getValue();
     }
 
     /** Get a string representation of this TLE set.
@@ -854,7 +871,7 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
                 raan.getReal() == tle.raan.getReal() &&
                 meanAnomaly.getReal() == tle.meanAnomaly.getReal() &&
                 revolutionNumberAtEpoch == tle.revolutionNumberAtEpoch &&
-                bStar.getReal() == tle.bStar.getReal();
+                getBStar() == tle.getBStar();
     }
 
     /** Get a hashcode for this tle.
@@ -879,21 +896,7 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
                 raan,
                 meanAnomaly,
                 revolutionNumberAtEpoch,
-                bStar);
-    }
-
-    /** Setter for the parameter list.
-     * @param parameters parameters to update
-     */
-    public void setParameters(final T[] parameters) {
-        this.parameters = parameters;
-    }
-
-    /** Getter for the parameter list.
-     * @return the parameter list
-     */
-    public T[] getParameters() {
-        return parameters;
+                getBStar());
     }
 
 }
