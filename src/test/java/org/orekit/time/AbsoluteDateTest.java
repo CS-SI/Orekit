@@ -1154,9 +1154,13 @@ public class AbsoluteDateTest {
         check(AbsoluteDate.FUTURE_INFINITY, "5881610-07-11T23:59:59.999Z");
         check(AbsoluteDate.PAST_INFINITY, "-5877490-03-03T00:00:00Z");
         // test NaN
-        // \uFFFD is "�", the unicode replacement character
-        // that is what DecimalFormat uses instead of "NaN"
-        check(date.shiftedBy(Double.NaN), "2009-01-01T00:00:\uFFFDZ");
+        if ("1.8".equals(System.getProperty("java.specification.version"))) {
+            // \uFFFD is "�", the unicode replacement character
+            // that is what DecimalFormat uses instead of "NaN"
+            check(date.shiftedBy(Double.NaN), "2009-01-01T00:00:\uFFFDZ");
+        } else {
+            check(date.shiftedBy(Double.NaN), "2009-01-01T00:00:NaNZ");
+        }
     }
 
     private void check(final AbsoluteDate d, final String s) {
@@ -1260,9 +1264,13 @@ public class AbsoluteDateTest {
         checkToString(AbsoluteDate.FUTURE_INFINITY, "5881610-07-11T23:59:59.999");
         checkToString(AbsoluteDate.PAST_INFINITY, "-5877490-03-03T00:00:00.000");
         // test NaN
-        // \uFFFD is "�", the unicode replacement character
-        // that is what DecimalFormat uses instead of "NaN"
-        checkToString(date.shiftedBy(Double.NaN), "2009-01-01T00:00:\uFFFD");
+        if ("1.8".equals(System.getProperty("java.specification.version"))) {
+            // \uFFFD is "�", the unicode replacement character
+            // that is what DecimalFormat used instead of "NaN" up to Java 8
+            checkToString(date.shiftedBy(Double.NaN), "2009-01-01T00:00:\uFFFD");
+        } else {
+            checkToString(date.shiftedBy(Double.NaN), "2009-01-01T00:00:NaN");
+        }
     }
 
     private void checkToString(final AbsoluteDate d, final String s) {
