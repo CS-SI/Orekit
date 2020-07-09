@@ -319,8 +319,8 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
 
         // estimator
         final BatchLSEstimator estimator = createEstimator(parser, propagatorBuilder);
-        final double relTol = 0.01;
-        final double absTol = 0.01;
+        final double relTol = 0.001;
+        final double absTol = 0.001;
         final EvaluationRmsChecker rmsChecker = new EvaluationRmsChecker(relTol, absTol);
         estimator.setConvergenceChecker(rmsChecker);
 
