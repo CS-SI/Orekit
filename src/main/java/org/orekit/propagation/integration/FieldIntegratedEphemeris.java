@@ -18,6 +18,7 @@ package org.orekit.propagation.integration;
 
 import java.util.List;
 import java.util.Map;
+
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.ode.FieldDenseOutputModel;
 import org.hipparchus.ode.FieldODEStateAndDerivative;
@@ -169,16 +170,19 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date) {
+    @Override
+    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
         return basicPropagate(date).getOrbit();
     }
 
     /** {@inheritDoc} */
+    @Override
     protected T getMass(final FieldAbsoluteDate<T> date) {
         return basicPropagate(date).getMass();
     }
 
     /** {@inheritDoc} */
+    @Override
     public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
         return propagate(date).getPVCoordinates(frame);
     }
@@ -186,6 +190,7 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
     /** Get the first date of the range.
      * @return the first date of the range
      */
+    @Override
     public FieldAbsoluteDate<T> getMinDate() {
         return minDate;
     }
@@ -193,6 +198,7 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
     /** Get the last date of the range.
      * @return the last date of the range
      */
+    @Override
     public FieldAbsoluteDate<T> getMaxDate() {
         return maxDate;
     }
@@ -203,16 +209,19 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
     }
 
     /** {@inheritDoc} */
+    @Override
     public void resetInitialState(final FieldSpacecraftState<T> state) {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward) {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
     /** {@inheritDoc} */
+    @Override
     public FieldSpacecraftState<T> getInitialState() {
         return updateAdditionalStates(basicPropagate(getMinDate()));
     }
@@ -236,11 +245,13 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
         }
 
         /** {@inheritDoc} */
+        @Override
         public String getName() {
             return name;
         }
 
         /** {@inheritDoc} */
+        @Override
         public T[] getAdditionalState(final FieldSpacecraftState<T> state) {
 
             // extract the part of the interpolated array corresponding to the additional state

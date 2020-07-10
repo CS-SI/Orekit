@@ -437,6 +437,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * must be defined with an osculating orbit.</p>
      * @see #resetInitialState(FieldSpacecraftState, PropagationType)
      */
+    @Override
     public void resetInitialState(final FieldSpacecraftState<T> state) {
         resetInitialState(state, PropagationType.OSCULATING);
     }
@@ -456,6 +457,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward) {
         final FieldEHModel<T> newModel = computeMeanParameters((FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(state.getOrbit()),
                                                        state.getMass());
@@ -533,7 +535,8 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
     }
 
     /** {@inheritDoc} */
-    public FieldCartesianOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date) {
+    @Override
+    public FieldCartesianOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
         // compute Cartesian parameters, taking derivatives into account
         // to make sure velocity and acceleration are consistent
         final FieldEHModel<T> current = models.get(date);
@@ -959,6 +962,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
     }
 
     /** {@inheritDoc} */
+    @Override
     protected T getMass(final FieldAbsoluteDate<T> date) {
         return models.get(date).mass;
     }

@@ -180,7 +180,7 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
     }
 
     /** {@inheritDoc} */
-    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date) {
+    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
         // propagate orbit
         FieldOrbit<T> orbit = states.get(date).getOrbit();
         do {
