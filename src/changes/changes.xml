@@ -20,6 +20,12 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="10.3" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="701">
+        Fixed wrong handling of propagation parameters by Kalman filter in multi-satellite
+        context
+      </action>
+    </release>
     <release version="10.2" date="TBD" description="TBD">
       <action dev="bryan" type="update" >
         Increased visibility of setters in CCSDS ADM related classes.

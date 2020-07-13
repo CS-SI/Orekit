@@ -83,6 +83,9 @@ public class DSSTKalmanModel implements KalmanODModel {
     /** End columns for each estimated orbit. */
     private final int[] orbitsEndColumns;
 
+    /** Map for propagation parameters columns. */
+    private final Map<String, Integer> propagationParameterColumns;
+
     /** Map for measurements parameters columns. */
     private final Map<String, Integer> measurementParameterColumns;
 
@@ -202,7 +205,7 @@ public class DSSTKalmanModel implements KalmanODModel {
         estimatedPropagationParametersNames.sort(Comparator.naturalOrder());
 
         // Populate the map of propagation drivers' columns and update the total number of columns
-        final Map<String, Integer> propagationParameterColumns = new HashMap<>(estimatedPropagationParametersNames.size());
+        propagationParameterColumns = new HashMap<>(estimatedPropagationParametersNames.size());
         for (final String driverName : estimatedPropagationParametersNames) {
             propagationParameterColumns.put(driverName, columns);
             ++columns;
@@ -752,8 +755,8 @@ public class DSSTKalmanModel implements KalmanODModel {
                 final RealMatrix dMdPp = dMdY.multiply(dYdPp);
                 for (int i = 0; i < dMdPp.getRowDimension(); ++i) {
                     for (int j = 0; j < nbParams; ++j) {
-                        final ParameterDriver delegating = allEstimatedPropagationParameters.getDrivers().get(j);
-                        measurementMatrix.setEntry(i, orbitsEndColumns[p] + j,
+                        final ParameterDriver delegating = estimatedPropagationParameters[p].getDrivers().get(j);
+                        measurementMatrix.setEntry(i, propagationParameterColumns.get(delegating.getName()),
                                                    dMdPp.getEntry(i, j) / sigma[i] * delegating.getScale());
                     }
                 }
