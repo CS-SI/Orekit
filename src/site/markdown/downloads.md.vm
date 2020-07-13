@@ -14,7 +14,7 @@
 
 # Downloads
 
-## Development Library version
+<h2>Development Library version</h2>
 
 The development version of the Orekit library is always available to
 download from our version control system. We use [ Git](http://git-scm.com/)
@@ -29,7 +29,7 @@ development environment:
 
     git clone -b develop https://gitlab.orekit.org/orekit/orekit.git
 
-## Released Library versions
+<h2>Released Library versions</h2>
 
 Orekit is provided both in several packaging systems. You can pick up
 the one that better suits your needs. Source packages are the most complete
@@ -65,7 +65,7 @@ version ${version.key} downloads (release date: ${version.value})
 
 #end
 
-## Data
+<h2>Data</h2>
 
 For convenience, a zip archive containing some configuration data is available
 for download. Similar files can be custom made by users with updated data.
