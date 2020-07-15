@@ -1,5 +1,5 @@
 /* Copyright 2010-2011 Centre National d'Études Spatiales
- * Licensed to CS Group (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,7 +19,7 @@ package org.orekit.propagation.numerical;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -256,20 +256,20 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         final double[][] dAccdPos   = new double[dim][dim];
         final double[][] dAccdVel   = new double[dim][dim];
 
-        final DSConverter fullConverter    = new DSConverter(s, 6, propagator.getAttitudeProvider());
-        final DSConverter posOnlyConverter = new DSConverter(s, 3, propagator.getAttitudeProvider());
+        final NumericalGradientConverter fullConverter    = new NumericalGradientConverter(s, 6, propagator.getAttitudeProvider());
+        final NumericalGradientConverter posOnlyConverter = new NumericalGradientConverter(s, 3, propagator.getAttitudeProvider());
 
         // compute acceleration Jacobians, finishing with the largest force: Newtonian attraction
         for (final ForceModel forceModel : propagator.getAllForceModels()) {
 
-            final DSConverter converter = forceModel.dependsOnPositionOnly() ? posOnlyConverter : fullConverter;
-            final FieldSpacecraftState<DerivativeStructure> dsState = converter.getState(forceModel);
-            final DerivativeStructure[] parameters = converter.getParameters(dsState, forceModel);
+            final NumericalGradientConverter converter = forceModel.dependsOnPositionOnly() ? posOnlyConverter : fullConverter;
+            final FieldSpacecraftState<Gradient> dsState = converter.getState(forceModel);
+            final Gradient[] parameters = converter.getParameters(dsState, forceModel);
 
-            final FieldVector3D<DerivativeStructure> acceleration = forceModel.acceleration(dsState, parameters);
-            final double[] derivativesX = acceleration.getX().getAllDerivatives();
-            final double[] derivativesY = acceleration.getY().getAllDerivatives();
-            final double[] derivativesZ = acceleration.getZ().getAllDerivatives();
+            final FieldVector3D<Gradient> acceleration = forceModel.acceleration(dsState, parameters);
+            final double[] derivativesX = acceleration.getX().getGradient();
+            final double[] derivativesY = acceleration.getY().getGradient();
+            final double[] derivativesZ = acceleration.getZ().getGradient();
 
             // update Jacobians with respect to state
             addToRow(derivativesX, 0, converter.getFreeStateParameters(), dAccdPos, dAccdVel);
@@ -280,10 +280,10 @@ public class PartialDerivativesEquations implements AdditionalEquations {
             for (ParameterDriver driver : forceModel.getParametersDrivers()) {
                 if (driver.isSelected()) {
                     final int parameterIndex = map.get(driver);
-                    ++index;
                     dAccdParam[0][parameterIndex] += derivativesX[index];
                     dAccdParam[1][parameterIndex] += derivativesY[index];
                     dAccdParam[2][parameterIndex] += derivativesZ[index];
+                    ++index;
                 }
             }
 
@@ -375,6 +375,14 @@ public class PartialDerivativesEquations implements AdditionalEquations {
 
     }
 
+    /** Get the flag for the initialization of the state jacobian.
+     * @return true if the state jacobian is initialized
+     * @since 10.2
+     */
+    public boolean isInitialize() {
+        return initialized;
+    }
+
     /** Fill Jacobians rows.
      * @param derivatives derivatives of a component of acceleration (along either x, y or z)
      * @param index component index (0 for x, 1 for y, 2 for z)
@@ -387,11 +395,11 @@ public class PartialDerivativesEquations implements AdditionalEquations {
                           final double[][] dAccdPos, final double[][] dAccdVel) {
 
         for (int i = 0; i < 3; ++i) {
-            dAccdPos[index][i] += derivatives[i + 1];
+            dAccdPos[index][i] += derivatives[i];
         }
         if (freeStateParameters > 3) {
             for (int i = 0; i < 3; ++i) {
-                dAccdVel[index][i] += derivatives[i + 4];
+                dAccdVel[index][i] += derivatives[i + 3];
             }
         }
 

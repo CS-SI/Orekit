@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,7 +20,10 @@ package org.orekit.utils;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.exception.MathIllegalArgumentException;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -115,6 +118,26 @@ public class AngularCoordinatesTest {
         Assert.assertEquals(0.0, Rotation.distance(ac.getRotation(), rebuilt.getRotation()), 1.0e-15);
         Assert.assertEquals(0.0, Vector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()), 1.0e-15);
         Assert.assertEquals(0.0, Vector3D.distance(ac.getRotationAcceleration(), rebuilt.getRotationAcceleration()), 1.0e-15);
+    }
+
+    @Test
+    public void testUnivariateDerivative1() {
+        RandomGenerator random = new Well1024a(0x1633878dddac047dl);
+
+        Rotation r    = randomRotation(random);
+        Vector3D o    = randomVector(random, 1.0e-2);
+        Vector3D oDot = randomVector(random, 1.0e-2);
+        AngularCoordinates ac = new AngularCoordinates(r, o, oDot);
+        FieldRotation<UnivariateDerivative1> rotationUD = ac.toUnivariateDerivative1Rotation();
+        FieldRotation<DerivativeStructure>   rotationDS = ac.toDerivativeStructureRotation(1);
+        Assert.assertEquals(rotationDS.getQ0().getReal(), rotationUD.getQ0().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ1().getReal(), rotationUD.getQ1().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ2().getReal(), rotationUD.getQ2().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ3().getReal(), rotationUD.getQ3().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ0().getPartialDerivative(1), rotationUD.getQ0().getFirstDerivative(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ1().getPartialDerivative(1), rotationUD.getQ1().getFirstDerivative(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ2().getPartialDerivative(1), rotationUD.getQ2().getFirstDerivative(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ3().getPartialDerivative(1), rotationUD.getQ3().getFirstDerivative(), 1.0e-15);
     }
 
     @Test

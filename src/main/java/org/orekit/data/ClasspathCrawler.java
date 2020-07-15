@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -94,17 +94,15 @@ public class ClasspathCrawler implements DataProvider {
             if (!"".equals(name)) {
 
                 final String convertedName = name.replace('\\', '/');
-                final InputStream stream = classLoader.getResourceAsStream(convertedName);
-                if (stream == null) {
-                    throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_RESOURCE, name);
-                }
-
-                listElements.add(convertedName);
-                try {
-                    stream.close();
+                try (InputStream stream = classLoader.getResourceAsStream(convertedName)) {
+                    if (stream == null) {
+                        throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_RESOURCE, name);
+                    }
+                    listElements.add(convertedName);
                 } catch (IOException exc) {
                     // ignore this error
                 }
+
             }
         }
 

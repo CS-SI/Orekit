@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -30,9 +30,11 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.FieldODEIntegrator;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince54FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
@@ -73,8 +75,10 @@ import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
+import org.orekit.propagation.events.FieldAltitudeDetector;
 import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.FieldLatitudeCrossingDetector;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
@@ -1039,6 +1043,54 @@ public class FieldDSSTPropagatorTest {
         final FieldSpacecraftState<T> computedOsculatingState = dsstPropagator.computeOsculatingState(meanState, attitudeProvider, forces);
         Assert.assertEquals(0.0, FieldVector3D.distance(osculatingState.getPVCoordinates().getPosition(), computedOsculatingState.getPVCoordinates().getPosition()).getReal(),
                             5.0e-6);
+    }
+
+    @Test
+    public void testIssue613() {
+        doTestIssue613(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestIssue613(final Field<T> field) {
+        final T zero = field.getZero();
+        // Spacecraft state
+        final FieldSpacecraftState<T> state = getLEOState(field);
+
+        // Body frame
+        final Frame itrf = FramesFactory .getITRF(IERSConventions.IERS_2010, true);
+
+        // Earth
+        final UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(4, 4);
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING, itrf);
+        // Detectors
+        final List<FieldEventDetector<T>> events = new ArrayList<>();
+        events.add(new FieldAltitudeDetector<>(zero.add(85.5), earth));
+        events.add(new FieldLatitudeCrossingDetector<>(field, earth, 0.0));
+
+        // Force models
+        final List<DSSTForceModel> forceModels = new ArrayList<>();
+        forceModels.add(new DSSTZonal(provider));
+        forceModels.add(new DSSTTesseral(itrf, Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider));
+        forceModels.add(new DSSTThirdBody(CelestialBodyFactory.getMoon(), provider.getMu()));
+        forceModels.add(new DSSTThirdBody(CelestialBodyFactory.getSun(), provider.getMu()));
+
+        // Set up DSST propagator
+        final double[][] tol = FieldDSSTPropagator.tolerances(zero.add(10.0), state.getOrbit());
+        final FieldODEIntegrator<T> integrator = new DormandPrince54FieldIntegrator<>(field, 60.0, 3600.0, tol[0], tol[1]);
+        final FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(field, integrator, PropagationType.OSCULATING);
+        for (DSSTForceModel force : forceModels) {
+            propagator.addForceModel(force);
+        }
+        for (FieldEventDetector<T> event : events) {
+            propagator.addEventDetector(event);
+        }
+        propagator.setInitialState(state);
+
+        // Propagation
+        final FieldSpacecraftState<T> finalState = propagator.propagate(state.getDate().shiftedBy(86400.0));
+
+        // Verify is the propagation is correctly performed
+        Assert.assertEquals(finalState.getMu().getReal(), 3.986004415E14, Double.MIN_VALUE);
     }
 
     private <T extends RealFieldElement<T>> FieldSpacecraftState<T> getGEOState(final Field<T> field) {

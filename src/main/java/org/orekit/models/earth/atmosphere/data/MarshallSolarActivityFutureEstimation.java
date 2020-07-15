@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -508,71 +508,74 @@ public class MarshallSolarActivityFutureEstimation extends AbstractSelfFeedingLo
                 break;
         }
 
-        // read the data
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
         boolean inData = false;
         DateComponents fileDate = null;
-        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-            line = line.trim();
-            if (line.length() > 0) {
-                final Matcher matcher = dataPattern.matcher(line);
-                if (matcher.matches()) {
+        // read the data
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
 
-                    // we are in the data section
-                    inData = true;
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                line = line.trim();
+                if (line.length() > 0) {
+                    final Matcher matcher = dataPattern.matcher(line);
+                    if (matcher.matches()) {
 
-                    // extract the data from the line
-                    final int year = Integer.parseInt(matcher.group(1));
-                    final Month month = Month.parseMonth(matcher.group(2));
-                    final AbsoluteDate date = new AbsoluteDate(year, month, 1, this.utc);
-                    if (fileDate == null) {
-                        // the first entry of each file correspond exactly to 6 months before file publication
-                        // so we compute the file date by adding 6 months to its first entry
-                        if (month.getNumber() > 6) {
-                            fileDate = new DateComponents(year + 1, month.getNumber() - 6, 1);
-                        } else {
-                            fileDate = new DateComponents(year, month.getNumber() + 6, 1);
+                        // we are in the data section
+                        inData = true;
+
+                        // extract the data from the line
+                        final int year = Integer.parseInt(matcher.group(1));
+                        final Month month = Month.parseMonth(matcher.group(2));
+                        final AbsoluteDate date = new AbsoluteDate(year, month, 1, this.utc);
+                        if (fileDate == null) {
+                            // the first entry of each file correspond exactly to 6 months before file publication
+                            // so we compute the file date by adding 6 months to its first entry
+                            if (month.getNumber() > 6) {
+                                fileDate = new DateComponents(year + 1, month.getNumber() - 6, 1);
+                            } else {
+                                fileDate = new DateComponents(year, month.getNumber() + 6, 1);
+                            }
                         }
-                    }
 
-                    // check if there is already an entry for this date or not
-                    boolean addEntry = false;
-                    final Iterator<TimeStamped> iterator = data.tailSet(date).iterator();
-                    if (iterator.hasNext()) {
-                        final LineParameters existingEntry = (LineParameters) iterator.next();
-                        if (existingEntry.getDate().equals(date)) {
-                            // there is an entry for this date
-                            if (existingEntry.getFileDate().compareTo(fileDate) < 0) {
-                                // the entry was read from an earlier file
-                                // we replace it with the new entry as it is fresher
-                                iterator.remove();
+                        // check if there is already an entry for this date or not
+                        boolean addEntry = false;
+                        final Iterator<TimeStamped> iterator = data.tailSet(date).iterator();
+                        if (iterator.hasNext()) {
+                            final LineParameters existingEntry = (LineParameters) iterator.next();
+                            if (existingEntry.getDate().equals(date)) {
+                                // there is an entry for this date
+                                if (existingEntry.getFileDate().compareTo(fileDate) < 0) {
+                                    // the entry was read from an earlier file
+                                    // we replace it with the new entry as it is fresher
+                                    iterator.remove();
+                                    addEntry = true;
+                                }
+                            } else {
+                                // it is the first entry we get for this date
                                 addEntry = true;
                             }
                         } else {
                             // it is the first entry we get for this date
                             addEntry = true;
                         }
-                    } else {
-                        // it is the first entry we get for this date
-                        addEntry = true;
-                    }
-                    if (addEntry) {
-                        // we must add the new entry
-                        data.add(new LineParameters(fileDate, date,
-                                                    Double.parseDouble(matcher.group(f107Group)),
-                                                    Double.parseDouble(matcher.group(apGroup))));
-                    }
+                        if (addEntry) {
+                            // we must add the new entry
+                            data.add(new LineParameters(fileDate, date,
+                                                        Double.parseDouble(matcher.group(f107Group)),
+                                                        Double.parseDouble(matcher.group(apGroup))));
+                        }
 
-                } else {
-                    if (inData) {
-                        // we have already read some data, so we are not in the header anymore
-                        // however, we don't recognize this non-empty line,
-                        // we consider the file is corrupted
-                        throw new OrekitException(OrekitMessages.NOT_A_MARSHALL_SOLAR_ACTIVITY_FUTURE_ESTIMATION_FILE,
-                                                  name);
+                    } else {
+                        if (inData) {
+                            // we have already read some data, so we are not in the header anymore
+                            // however, we don't recognize this non-empty line,
+                            // we consider the file is corrupted
+                            throw new OrekitException(OrekitMessages.NOT_A_MARSHALL_SOLAR_ACTIVITY_FUTURE_ESTIMATION_FILE,
+                                                      name);
+                        }
                     }
                 }
             }
+
         }
 
         if (data.isEmpty()) {

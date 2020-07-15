@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -296,6 +296,9 @@ public enum ObservationType {
     /** Pseudorange IRNSS S B+C for Rinex3. */
     C9X(MeasurementType.PSEUDO_RANGE, SignalCode.X, Frequency.I09),
 
+    /** Pseudorange for Rinex3. */
+    C0(MeasurementType.PSEUDO_RANGE, SignalCode.CODELESS),
+
     /** Pseudorange GPS L1 C/A / GLONASS G1 C/A for Rinex2. */
     CA(MeasurementType.PSEUDO_RANGE, SignalCode.C, Frequency.G01, Frequency.R01),
 
@@ -487,6 +490,9 @@ public enum ObservationType {
 
     /** Doppler IRNSS S B+C for Rinex3. */
     D9X(MeasurementType.DOPPLER, SignalCode.X, Frequency.I09),
+
+    /** Doppler for Rinex3. */
+    D0(MeasurementType.DOPPLER, SignalCode.CODELESS),
 
     /** Doppler GPS L1 C/A / GLONASS G1 C/A for Rinex2. */
     DA(MeasurementType.DOPPLER, SignalCode.C, Frequency.G01, Frequency.R01),
@@ -680,6 +686,9 @@ public enum ObservationType {
     /** Carrier-phase IRNSS S B+C for Rinex3. */
     L9X(MeasurementType.CARRIER_PHASE, SignalCode.X, Frequency.I09),
 
+    /** Carrier-phase for Rinex3. */
+    L0(MeasurementType.CARRIER_PHASE, SignalCode.CODELESS),
+
     /** Signal-strength Galileo E1 A for Rinex3. */
     S1A(MeasurementType.SIGNAL_STRENGTH, SignalCode.A, Frequency.E01),
 
@@ -859,6 +868,9 @@ public enum ObservationType {
 
     /** Signal-strength IRNSS S B+C for Rinex3. */
     S9X(MeasurementType.SIGNAL_STRENGTH, SignalCode.X, Frequency.I09),
+
+    /** Signal-strength for Rinex3. */
+    S0(MeasurementType.SIGNAL_STRENGTH, SignalCode.CODELESS),
 
     /** Signal-strength GPS L1 C/A / GLONASS G1 C/A for Rinex2. */
     SA(MeasurementType.SIGNAL_STRENGTH, SignalCode.C, Frequency.G01, Frequency.R01),

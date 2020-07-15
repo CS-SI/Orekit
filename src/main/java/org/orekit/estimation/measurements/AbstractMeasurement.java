@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -23,6 +23,7 @@ import java.util.List;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -318,7 +319,9 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
      * @param firstDerivative index of the first derivative
      * @param factory factory for building the derivatives
      * @return Cartesian coordinates as derivatives
+     * @deprecated as of 10.2, replaced by {@link #getCoordinates(SpacecraftState, int, int)}
      */
+    @Deprecated
     public static TimeStampedFieldPVCoordinates<DerivativeStructure> getCoordinates(final SpacecraftState state,
                                                                                     final int firstDerivative,
                                                                                     final DSFactory factory) {
@@ -346,6 +349,52 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
                         new FieldVector3D<>(factory.constant(a.getX()),
                                             factory.constant(a.getY()),
                                             factory.constant(a.getZ()));
+
+        return new TimeStampedFieldPVCoordinates<>(state.getDate(), pDS, vDS, aDS);
+
+    }
+
+    /** Get Cartesian coordinates as derivatives.
+     * <p>
+     * The position will correspond to variables {@code firstDerivative},
+     * {@code firstDerivative + 1} and {@code firstDerivative + 2}.
+     * The velocity will correspond to variables {@code firstDerivative + 3},
+     * {@code firstDerivative + 4} and {@code firstDerivative + 5}.
+     * The acceleration will correspond to constants.
+     * </p>
+     * @param state state of the satellite considered
+     * @param firstDerivative index of the first derivative
+     * @param freeParameters total number of free parameters in the gradient
+     * @return Cartesian coordinates as derivatives
+     * @since 10.2
+     */
+    public static TimeStampedFieldPVCoordinates<Gradient> getCoordinates(final SpacecraftState state,
+                                                                         final int firstDerivative,
+                                                                         final int freeParameters) {
+
+        // Position of the satellite expressed as a gradient
+        // The components of the position are the 3 first derivative parameters
+        final Vector3D p = state.getPVCoordinates().getPosition();
+        final FieldVector3D<Gradient> pDS =
+                        new FieldVector3D<>(Gradient.variable(freeParameters, firstDerivative + 0, p.getX()),
+                                            Gradient.variable(freeParameters, firstDerivative + 1, p.getY()),
+                                            Gradient.variable(freeParameters, firstDerivative + 2, p.getZ()));
+
+        // Velocity of the satellite expressed as a gradient
+        // The components of the velocity are the 3 second derivative parameters
+        final Vector3D v = state.getPVCoordinates().getVelocity();
+        final FieldVector3D<Gradient> vDS =
+                        new FieldVector3D<>(Gradient.variable(freeParameters, firstDerivative + 3, v.getX()),
+                                            Gradient.variable(freeParameters, firstDerivative + 4, v.getY()),
+                                            Gradient.variable(freeParameters, firstDerivative + 5, v.getZ()));
+
+        // Acceleration of the satellite
+        // The components of the acceleration are not derivative parameters
+        final Vector3D a = state.getPVCoordinates().getAcceleration();
+        final FieldVector3D<Gradient> aDS =
+                        new FieldVector3D<>(Gradient.constant(freeParameters, a.getX()),
+                                            Gradient.constant(freeParameters, a.getY()),
+                                            Gradient.constant(freeParameters, a.getZ()));
 
         return new TimeStampedFieldPVCoordinates<>(state.getDate(), pDS, vDS, aDS);
 

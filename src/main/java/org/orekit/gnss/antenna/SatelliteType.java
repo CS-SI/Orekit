@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,6 +18,7 @@ package org.orekit.gnss.antenna;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -372,12 +373,15 @@ public enum SatelliteType {
         }
     };
 
+    /** Pattern for satellite antenna code. */
+    private static final Pattern PATTERN = Pattern.compile("[-_ ]");
+
     /** Parsing map. */
     private static final Map<String, SatelliteType> NAMES_MAP = new HashMap<>();
     static {
         for (final SatelliteType satelliteAntennaCode : values()) {
             NAMES_MAP.put(satelliteAntennaCode.getName(), satelliteAntennaCode);
-            NAMES_MAP.put(satelliteAntennaCode.getName().replaceAll("[-_ ]", ""), satelliteAntennaCode);
+            NAMES_MAP.put(PATTERN.matcher(satelliteAntennaCode.getName()).replaceAll(""), satelliteAntennaCode);
         }
     }
 

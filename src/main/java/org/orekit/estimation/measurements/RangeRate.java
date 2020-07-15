@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,9 +20,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.frames.FieldTransform;
 import org.orekit.propagation.SpacecraftState;
@@ -118,22 +117,20 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
                 indices.put(driver.getName(), nbParams++);
             }
         }
-        final DSFactory factory = new DSFactory(nbParams, 1);
-        final Field<DerivativeStructure> field = factory.getDerivativeField();
-        final FieldVector3D<DerivativeStructure> zero = FieldVector3D.getZero(field);
+        final FieldVector3D<Gradient> zero = FieldVector3D.getZero(GradientField.getField(nbParams));
 
-        // Coordinates of the spacecraft expressed as a derivative structure
-        final TimeStampedFieldPVCoordinates<DerivativeStructure> pvaDS = getCoordinates(state, 0, factory);
+        // Coordinates of the spacecraft expressed as a gradient
+        final TimeStampedFieldPVCoordinates<Gradient> pvaDS = getCoordinates(state, 0, nbParams);
 
-        // transform between station and inertial frame, expressed as a derivative structure
+        // transform between station and inertial frame, expressed as a gradient
         // The components of station's position in offset frame are the 3 last derivative parameters
-        final FieldTransform<DerivativeStructure> offsetToInertialDownlink =
-                        station.getOffsetToInertial(state.getFrame(), getDate(), factory, indices);
-        final FieldAbsoluteDate<DerivativeStructure> downlinkDateDS =
+        final FieldTransform<Gradient> offsetToInertialDownlink =
+                        station.getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
+        final FieldAbsoluteDate<Gradient> downlinkDateDS =
                         offsetToInertialDownlink.getFieldDate();
 
         // Station position in inertial frame at end of the downlink leg
-        final TimeStampedFieldPVCoordinates<DerivativeStructure> stationDownlink =
+        final TimeStampedFieldPVCoordinates<Gradient> stationDownlink =
                         offsetToInertialDownlink.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(downlinkDateDS,
                                                                                                             zero, zero, zero));
 
@@ -142,15 +139,15 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         //  we will have delta == tauD and transitState will be the same as state)
 
         // Downlink delay
-        final DerivativeStructure tauD = signalTimeOfFlight(pvaDS, stationDownlink.getPosition(), downlinkDateDS);
+        final Gradient tauD = signalTimeOfFlight(pvaDS, stationDownlink.getPosition(), downlinkDateDS);
 
         // Transit state
-        final DerivativeStructure   delta        = downlinkDateDS.durationFrom(state.getDate());
-        final DerivativeStructure   deltaMTauD   = tauD.negate().add(delta);
-        final SpacecraftState       transitState = state.shiftedBy(deltaMTauD.getValue());
+        final Gradient        delta        = downlinkDateDS.durationFrom(state.getDate());
+        final Gradient        deltaMTauD   = tauD.negate().add(delta);
+        final SpacecraftState transitState = state.shiftedBy(deltaMTauD.getValue());
 
-        // Transit state (re)computed with derivative structures
-        final TimeStampedFieldPVCoordinates<DerivativeStructure> transitPV = pvaDS.shiftedBy(deltaMTauD);
+        // Transit state (re)computed with gradients
+        final TimeStampedFieldPVCoordinates<Gradient> transitPV = pvaDS.shiftedBy(deltaMTauD);
 
         // one-way (downlink) range-rate
         final EstimatedMeasurement<RangeRate> evalOneWay1 =
@@ -159,19 +156,19 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         final EstimatedMeasurement<RangeRate> estimated;
         if (twoway) {
             // one-way (uplink) light time correction
-            final FieldTransform<DerivativeStructure> offsetToInertialApproxUplink =
+            final FieldTransform<Gradient> offsetToInertialApproxUplink =
                             station.getOffsetToInertial(state.getFrame(),
-                                                        downlinkDateDS.shiftedBy(tauD.multiply(-2)), factory, indices);
-            final FieldAbsoluteDate<DerivativeStructure> approxUplinkDateDS =
+                                                        downlinkDateDS.shiftedBy(tauD.multiply(-2)), nbParams, indices);
+            final FieldAbsoluteDate<Gradient> approxUplinkDateDS =
                             offsetToInertialApproxUplink.getFieldDate();
 
-            final TimeStampedFieldPVCoordinates<DerivativeStructure> stationApproxUplink =
+            final TimeStampedFieldPVCoordinates<Gradient> stationApproxUplink =
                             offsetToInertialApproxUplink.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(approxUplinkDateDS,
                                                                                                                     zero, zero, zero));
 
-            final DerivativeStructure tauU = signalTimeOfFlight(stationApproxUplink, transitPV.getPosition(), transitPV.getDate());
+            final Gradient tauU = signalTimeOfFlight(stationApproxUplink, transitPV.getPosition(), transitPV.getDate());
 
-            final TimeStampedFieldPVCoordinates<DerivativeStructure> stationUplink =
+            final TimeStampedFieldPVCoordinates<Gradient> stationUplink =
                             stationApproxUplink.shiftedBy(transitPV.getDate().durationFrom(approxUplinkDateDS).subtract(tauU));
 
             final EstimatedMeasurement<RangeRate> evalOneWay2 =
@@ -230,8 +227,8 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
      * @see #evaluate(SpacecraftStatet)
      */
     private EstimatedMeasurement<RangeRate> oneWayTheoreticalEvaluation(final int iteration, final int evaluation, final boolean downlink,
-                                                                        final TimeStampedFieldPVCoordinates<DerivativeStructure> stationPV,
-                                                                        final TimeStampedFieldPVCoordinates<DerivativeStructure> transitPV,
+                                                                        final TimeStampedFieldPVCoordinates<Gradient> stationPV,
+                                                                        final TimeStampedFieldPVCoordinates<Gradient> transitPV,
                                                                         final SpacecraftState transitState,
                                                                         final Map<String, Integer> indices) {
 
@@ -246,30 +243,30 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
                                                             });
 
         // range rate value
-        final FieldVector3D<DerivativeStructure> stationPosition  = stationPV.getPosition();
-        final FieldVector3D<DerivativeStructure> relativePosition = stationPosition.subtract(transitPV.getPosition());
+        final FieldVector3D<Gradient> stationPosition  = stationPV.getPosition();
+        final FieldVector3D<Gradient> relativePosition = stationPosition.subtract(transitPV.getPosition());
 
-        final FieldVector3D<DerivativeStructure> stationVelocity  = stationPV.getVelocity();
-        final FieldVector3D<DerivativeStructure> relativeVelocity = stationVelocity.subtract(transitPV.getVelocity());
+        final FieldVector3D<Gradient> stationVelocity  = stationPV.getVelocity();
+        final FieldVector3D<Gradient> relativeVelocity = stationVelocity.subtract(transitPV.getVelocity());
 
         // radial direction
-        final FieldVector3D<DerivativeStructure> lineOfSight      = relativePosition.normalize();
+        final FieldVector3D<Gradient> lineOfSight      = relativePosition.normalize();
 
         // range rate
-        final DerivativeStructure rangeRate = FieldVector3D.dotProduct(relativeVelocity, lineOfSight);
+        final Gradient rangeRate = FieldVector3D.dotProduct(relativeVelocity, lineOfSight);
 
         estimated.setEstimatedValue(rangeRate.getValue());
 
         // compute partial derivatives of (rr) with respect to spacecraft state Cartesian coordinates
-        final double[] derivatives = rangeRate.getAllDerivatives();
-        estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 1, 7));
+        final double[] derivatives = rangeRate.getGradient();
+        estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 0, 6));
 
         // set partial derivatives with respect to parameters
         // (beware element at index 0 is the value, not a derivative)
         for (final ParameterDriver driver : getParametersDrivers()) {
             final Integer index = indices.get(driver.getName());
             if (index != null) {
-                estimated.setParameterDerivatives(driver, derivatives[index + 1]);
+                estimated.setParameterDerivatives(driver, derivatives[index]);
             }
         }
 

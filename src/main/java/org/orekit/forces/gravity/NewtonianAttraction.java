@@ -1,5 +1,5 @@
 /* Copyright 2010-2011 Centre National d'Études Spatiales
- * Licensed to CS Group (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -23,8 +23,6 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -57,15 +55,9 @@ public class NewtonianAttraction extends AbstractForceModel {
      * @param mu central attraction coefficient (m^3/s^2)
      */
     public NewtonianAttraction(final double mu) {
-        try {
-            gmParameterDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                                                    mu, MU_SCALE,
-                                                    0.0, Double.POSITIVE_INFINITY);
-        } catch (OrekitException oe) {
-            // this should never occur as valueChanged above never throws an exception
-            throw new OrekitInternalError(oe);
-        }
-
+        gmParameterDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+                                                mu, MU_SCALE,
+                                                0.0, Double.POSITIVE_INFINITY);
     }
 
     /** {@inheritDoc} */

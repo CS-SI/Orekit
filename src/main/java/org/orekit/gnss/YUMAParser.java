@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -25,6 +25,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 import org.hipparchus.util.Pair;
 import org.orekit.annotation.DefaultDataContext;
@@ -79,6 +80,9 @@ public class YUMAParser extends AbstractSelfFeedingLoader implements DataLoader 
 
     /** Default supported files name pattern. */
     private static final String DEFAULT_SUPPORTED_NAMES = ".*\\.alm$";
+
+    /** Pattern for delimiting regular expressions. */
+    private static final Pattern SEPARATOR = Pattern.compile(":");
 
     // Fields
     /** the list of all the almanacs read from the file. */
@@ -172,9 +176,7 @@ public class YUMAParser extends AbstractSelfFeedingLoader implements DataLoader 
         prnList.clear();
 
         // Creates the reader
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
-
-        try {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
             // Gathers data to create one GPSAlmanac from 13 consecutive lines
             final List<Pair<String, String>> entries =
                     new ArrayList<>(KEY.length);
@@ -182,7 +184,7 @@ public class YUMAParser extends AbstractSelfFeedingLoader implements DataLoader 
             // Reads the data one line at a time
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 // Try to split the line into 2 tokens as key:value
-                final String[] token = line.trim().split(":");
+                final String[] token = SEPARATOR.split(line.trim());
                 // If the line is made of 2 tokens
                 if (token.length == 2) {
                     // Adds these tokens as an entry to the entries

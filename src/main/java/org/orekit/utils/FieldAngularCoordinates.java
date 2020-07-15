@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,6 +21,8 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FDSFactory;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -402,6 +404,39 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
         }
 
         return new FieldRotation<>(q0DS, q1DS, q2DS, q3DS, false);
+
+    }
+
+    /** Transform the instance to a {@link FieldRotation}&lt;{@link UnivariateDerivative1}&gt;.
+     * <p>
+     * The {@link UnivariateDerivative1} coordinates correspond to time-derivatives up
+     * to the order 1.
+     * </p>
+     * @return rotation with time-derivatives embedded within the coordinates
+     */
+    public FieldRotation<FieldUnivariateDerivative1<T>> toUnivariateDerivative1Rotation() {
+
+        // quaternion components
+        final T q0 = rotation.getQ0();
+        final T q1 = rotation.getQ1();
+        final T q2 = rotation.getQ2();
+        final T q3 = rotation.getQ3();
+
+        // first time-derivatives of the quaternion
+        final T oX    = rotationRate.getX();
+        final T oY    = rotationRate.getY();
+        final T oZ    = rotationRate.getZ();
+        final T q0Dot = q0.linearCombination(q1.negate(), oX, q2.negate(), oY, q3.negate(), oZ).multiply(0.5);
+        final T q1Dot = q0.linearCombination(q0,          oX, q3.negate(), oY, q2,          oZ).multiply(0.5);
+        final T q2Dot = q0.linearCombination(q3,          oX, q0,          oY, q1.negate(), oZ).multiply(0.5);
+        final T q3Dot = q0.linearCombination(q2.negate(), oX, q1,          oY, q0,          oZ).multiply(0.5);
+
+        final FieldUnivariateDerivative1<T> q0UD = new FieldUnivariateDerivative1<>(q0, q0Dot);
+        final FieldUnivariateDerivative1<T> q1UD = new FieldUnivariateDerivative1<>(q1, q1Dot);
+        final FieldUnivariateDerivative1<T> q2UD = new FieldUnivariateDerivative1<>(q2, q2Dot);
+        final FieldUnivariateDerivative1<T> q3UD = new FieldUnivariateDerivative1<>(q3, q3Dot);
+
+        return new FieldRotation<>(q0UD, q1UD, q2UD, q3UD, false);
 
     }
 

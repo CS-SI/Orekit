@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -22,6 +22,7 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.FDSFactory;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
+import org.hipparchus.analysis.differentiation.FieldGradient;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
@@ -332,9 +333,9 @@ public class FieldHansenTesseralLinear <T extends RealFieldElement<T>> {
         //Ensure that only the needed terms are computed
         final int maxRoots = FastMath.min(4, N0 - Nmin + 4);
         for (int i = 0; i < maxRoots; i++) {
-            final FieldDerivativeStructure<T> hansenKernel = hansenInit[i].getValue(e2, chi, chi2);
+            final FieldGradient<T> hansenKernel = hansenInit[i].getValueGradient(e2, chi, chi2);
             this.hansenRoot[0][i] = hansenKernel.getValue();
-            this.hansenDerivRoot[0][i] = hansenKernel.getPartialDerivative(1);
+            this.hansenDerivRoot[0][i] = hansenKernel.getPartialDerivative(0);
         }
 
         for (int i = 1; i < numSlices; i++) {
@@ -497,7 +498,10 @@ public class FieldHansenTesseralLinear <T extends RealFieldElement<T>> {
          * @param chi &Chi;
          * @param chi2 &Chi;²
          * @return the value of the Hansen coefficient and its derivative for e²
+         * @deprecated as of 10.2, replaced by {@link #getValueGradient(RealFieldElement, RealFieldElement, RealFieldElement)}
          */
+        @SuppressWarnings("unused")
+        @Deprecated
         public FieldDerivativeStructure<T> getValue(final T e2, final T chi, final T chi2) {
 
             final T zero = e2.getField().getZero();
@@ -509,6 +513,29 @@ public class FieldHansenTesseralLinear <T extends RealFieldElement<T>> {
             final T derivative = coef.multiply(chi2).multiply(value).
                             add(FastMath.pow(chi2, -mnm1 - 1).multiply(serie.getPartialDerivative(1)).divide(chi));
             return factory.build(value, derivative);
+        }
+
+        /** Computes the value of Hansen kernel and its derivative at e².
+         * <p>
+         * The formulae applied are described in Danielson 2.7.3-10 and
+         * 3.3-5
+         * </p>
+         * @param e2 e²
+         * @param chi &Chi;
+         * @param chi2 &Chi;²
+         * @return the value of the Hansen coefficient and its derivative for e²
+         */
+        private FieldGradient<T> getValueGradient(final T e2, final T chi, final T chi2) {
+
+            final T zero = e2.getField().getZero();
+            //Estimation of the serie expansion at e2
+            final FieldGradient<T> serie = polynomial.value(FieldGradient.variable(1, 0, e2));
+
+            final T value      =  FastMath.pow(chi2, -mnm1 - 1).multiply(serie.getValue()).divide(chi);
+            final T coef       = zero.subtract(mnm1 + 1.5);
+            final T derivative = coef.multiply(chi2).multiply(value).
+                            add(FastMath.pow(chi2, -mnm1 - 1).multiply(serie.getPartialDerivative(0)).divide(chi));
+            return new FieldGradient<T>(value, derivative);
         }
 
         /** Generate the serie expansion in e².

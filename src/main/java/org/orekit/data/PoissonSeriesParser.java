@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -228,6 +228,9 @@ public class PoissonSeriesParser {
 
     /** Pattern for fields with Doodson number. */
     private static final String  DOODSON_TYPE_PATTERN = "\\p{Digit}{2,3}[.,]\\p{Digit}{3}";
+
+    /** Pattern for String replacement. */
+    private static final Pattern PATTERN = Pattern.compile("[.,]");
 
     /** Parser for the polynomial part. */
     private final PolynomialParser polynomialParser;
@@ -522,10 +525,9 @@ public class PoissonSeriesParser {
         }
         final Pattern regularLinePattern = Pattern.compile(builder.toString());
 
-        try {
+        // setup the reader
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
 
-            // setup the reader
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
             int lineNumber    =  0;
             int expectedIndex = -1;
             int nTerms        = -1;
@@ -569,7 +571,7 @@ public class PoissonSeriesParser {
                     final int cP       = (firstDoodson < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstDoodson + 3));
                     final int cNprime  = (firstDoodson < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstDoodson + 4));
                     final int cPs      = (firstDoodson < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstDoodson + 5));
-                    final int nDoodson = (doodson      < 0) ? 0 : Integer.parseInt(regularMatcher.group(doodson).replaceAll("[.,]", ""));
+                    final int nDoodson = (doodson      < 0) ? 0 : Integer.parseInt(PATTERN.matcher(regularMatcher.group(doodson)).replaceAll(""));
 
                     // get the tide multiplier
                     int cGamma   = (gamma < 0) ? 0 : Integer.parseInt(regularMatcher.group(gamma));

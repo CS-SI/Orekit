@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -626,6 +626,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      * @param initialState initial state
      * @param tEnd target date at which state should be propagated
      */
+    @SuppressWarnings("unchecked")
     @Override
     protected void beforeIntegration(final FieldSpacecraftState<T> initialState,
                                      final FieldAbsoluteDate<T> tEnd) {
@@ -646,6 +647,11 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
         // if required, insert the special short periodics step handler
         if (type == PropagationType.OSCULATING) {
             final FieldShortPeriodicsHandler spHandler = new FieldShortPeriodicsHandler(forceModels);
+            // Compute short periodic coefficients for this point
+            for (DSSTForceModel forceModel : forceModels) {
+                forceModel.updateShortPeriodTerms(forceModel.getParameters(field), initialState);
+
+            }
             final Collection<FieldODEStepHandler<T>> stepHandlers = new ArrayList<FieldODEStepHandler<T>>();
             stepHandlers.add(spHandler);
             final FieldODEIntegrator<T> integrator = getIntegrator();
@@ -1091,27 +1097,6 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
          */
         FieldShortPeriodicsHandler(final List<DSSTForceModel> forceModels) {
             this.forceModels = forceModels;
-        }
-
-        /** {@inheritDoc} */
-        @SuppressWarnings("unchecked")
-        @Override
-        public void init(final FieldODEStateAndDerivative<T> initialState, final T finalTime) {
-
-            // Zero
-            final T zero = field.getZero();
-            // Build the mean state interpolated at initial point
-            final FieldSpacecraftState<T> meanStates = mapper.mapArrayToState(zero,
-                                                                              initialState.getPrimaryState(),
-                                                                              initialState.getPrimaryDerivative(),
-                                                                              PropagationType.MEAN);
-
-            // Compute short periodic coefficients for this point
-            for (DSSTForceModel forceModel : forceModels) {
-                forceModel.updateShortPeriodTerms(forceModel.getParameters(field), meanStates);
-
-            }
-
         }
 
         /** {@inheritDoc} */

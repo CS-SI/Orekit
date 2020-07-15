@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
@@ -67,8 +68,8 @@ public class NeQuickModel implements IonosphericModel {
     /** Serializable UID. */
     private static final long serialVersionUID = 201928051L;
 
-    /** Splitter for MODIP and CCIR files. */
-    private static final String SPLITER = "\\s+";
+    /** Pattern for delimiting regular expressions. */
+    private static final Pattern SEPARATOR = Pattern.compile("\\s+");
 
     /** Mean Earth radius in m (Ref Table 2.5.2). */
     private static final double RE = 6371200.0;
@@ -753,7 +754,7 @@ public class NeQuickModel implements IonosphericModel {
 
                     // Read grid data
                     if (line.length() > 0) {
-                        final String[] modip_line = line.split(SPLITER);
+                        final String[] modip_line = SEPARATOR.split(line);
                         for (int column = 0; column < modip_line.length; column++) {
                             array[lineNumber - 1][column] = Double.valueOf(modip_line[column]);
                         }
@@ -765,9 +766,6 @@ public class NeQuickModel implements IonosphericModel {
                 throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                           lineNumber, name, line);
             }
-
-            // Close the stream after reading
-            input.close();
 
             // Clone parsed grid
             grid = array.clone();
@@ -901,7 +899,7 @@ public class NeQuickModel implements IonosphericModel {
 
                     // Read grid data
                     if (line.length() > 0) {
-                        final String[] ccir_line = line.split(SPLITER);
+                        final String[] ccir_line = SEPARATOR.split(line);
                         for (int i = 0; i < ccir_line.length; i++) {
 
                             if (index < NUMBER_F2_COEFFICIENTS) {
@@ -939,9 +937,6 @@ public class NeQuickModel implements IonosphericModel {
                 throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                           lineNumber, name, line);
             }
-
-            // Close the stream after reading
-            input.close();
 
             f2Loader  = f2Temp.clone();
             fm3Loader = fm3Temp.clone();

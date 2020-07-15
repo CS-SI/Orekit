@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,28 +16,14 @@
  */
 package org.orekit.forces.radiation;
 
-import java.util.stream.Stream;
-
-import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.Precision;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.forces.AbstractForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.AbstractDetector;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldAbstractDetector;
-import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
@@ -51,7 +37,7 @@ import org.orekit.utils.ParameterDriver;
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Pascal Parraud
  */
-public class SolarRadiationPressure extends AbstractForceModel {
+public class SolarRadiationPressure extends AbstractRadiationForceModel {
 
     /** Reference distance for the solar radiation pressure (m). */
     private static final double D_REF = 149597870000.0;
@@ -67,9 +53,6 @@ public class SolarRadiationPressure extends AbstractForceModel {
 
     /** Sun model. */
     private final ExtendedPVCoordinatesProvider sun;
-
-    /** Central body model. */
-    private final double equatorialRadius;
 
     /** Spacecraft. */
     private final RadiationSensitive spacecraft;
@@ -107,16 +90,10 @@ public class SolarRadiationPressure extends AbstractForceModel {
                                   final ExtendedPVCoordinatesProvider sun,
                                   final double equatorialRadius,
                                   final RadiationSensitive spacecraft) {
+        super(sun, equatorialRadius);
         this.kRef = pRef * dRef * dRef;
         this.sun  = sun;
-        this.equatorialRadius = equatorialRadius;
         this.spacecraft = spacecraft;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean dependsOnPositionOnly() {
-        return false;
     }
 
     /** {@inheritDoc} */
@@ -289,74 +266,8 @@ public class SolarRadiationPressure extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public Stream<EventDetector> getEventsDetectors() {
-        return Stream.of(new UmbraDetector(), new PenumbraDetector());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
-        return Stream.of(new FieldUmbraDetector<>(field), new FieldPenumbraDetector<>(field));
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public ParameterDriver[] getParametersDrivers() {
         return spacecraft.getRadiationParametersDrivers();
-    }
-
-    /** Get the useful angles for eclipse computation.
-     * @param sunPosition Sun position in the selected frame
-     * @param position the satellite's position in the selected frame
-     * @return the 3 angles {(satCentral, satSun), Central body apparent radius, Sun apparent radius}
-     */
-    private double[] getEclipseAngles(final Vector3D sunPosition, final Vector3D position) {
-        final double[] angle = new double[3];
-
-        final Vector3D satSunVector = sunPosition.subtract(position);
-
-        // Sat-Sun / Sat-CentralBody angle
-        angle[0] = Vector3D.angle(satSunVector, position.negate());
-
-        // Central body apparent radius
-        final double r = position.getNorm();
-        if (r <= equatorialRadius) {
-            throw new OrekitException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE, r);
-        }
-        angle[1] = FastMath.asin(equatorialRadius / r);
-
-        // Sun apparent radius
-        angle[2] = FastMath.asin(Constants.SUN_RADIUS / satSunVector.getNorm());
-
-        return angle;
-    }
-
-    /** Get the useful angles for eclipse computation.
-     * @param sunPosition Sun position in the selected frame
-     * @param position the satellite's position in the selected frame.
-     * @param <T> extends RealFieldElement
-     * @return the 3 angles {(satCentral, satSun), Central body apparent radius, Sun apparent radius}
-     */
-    private <T extends RealFieldElement<T>> T[] getEclipseAngles(final FieldVector3D<T> sunPosition, final FieldVector3D<T> position) {
-        final T[] angle = MathArrays.buildArray(position.getX().getField(), 3);
-
-        final FieldVector3D<T> mP           = position.negate();
-        final FieldVector3D<T> satSunVector = mP.add(sunPosition);
-
-        // Sat-Sun / Sat-CentralBody angle
-        angle[0] = FieldVector3D.angle(satSunVector, mP);
-
-        // Central body apparent radius
-        final T r = position.getNorm();
-        if (r.getReal() <= equatorialRadius) {
-            throw new OrekitException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE, r);
-        }
-        angle[1] = r.reciprocal().multiply(equatorialRadius).asin();
-
-        // Sun apparent radius
-        angle[2] = satSunVector.getNorm().reciprocal().multiply(Constants.SUN_RADIUS).asin();
-
-        return angle;
     }
 
     /** Compute min of two values, one double and one field element.
@@ -377,234 +288,6 @@ public class SolarRadiationPressure extends AbstractForceModel {
      */
     private <T extends RealFieldElement<T>> T max(final double d, final T f) {
         return (f.getReal() <= d) ? f.getField().getZero().add(d) : f;
-    }
-
-    /** This class defines the umbra entry/exit detector. */
-    private class UmbraDetector extends AbstractDetector<UmbraDetector> {
-
-        /** Build a new instance. */
-        UmbraDetector() {
-            super(60.0, 1.0e-3, DEFAULT_MAX_ITER, new EventHandler<UmbraDetector>() {
-
-                /** {@inheritDoc} */
-                public Action eventOccurred(final SpacecraftState s, final UmbraDetector detector,
-                                            final boolean increasing) {
-                    return Action.RESET_DERIVATIVES;
-                }
-
-            });
-        }
-
-        /** Private constructor with full parameters.
-         * <p>
-         * This constructor is private as users are expected to use the builder
-         * API with the various {@code withXxx()} methods to set up the instance
-         * in a readable manner without using a huge amount of parameters.
-         * </p>
-         * @param maxCheck maximum checking interval (s)
-         * @param threshold convergence threshold (s)
-         * @param maxIter maximum number of iterations in the event time search
-         * @param handler event handler to call at event occurrences
-         * @since 6.1
-         */
-        private UmbraDetector(final double maxCheck, final double threshold,
-                              final int maxIter, final EventHandler<? super UmbraDetector> handler) {
-            super(maxCheck, threshold, maxIter, handler);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        protected UmbraDetector create(final double newMaxCheck, final double newThreshold,
-                                       final int newMaxIter, final EventHandler<? super UmbraDetector> newHandler) {
-            return new UmbraDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
-        }
-
-        /** The G-function is the difference between the Sun-Sat-Central-Body angle and
-         * the central body apparent radius.
-         * @param s the current state information : date, kinematics, attitude
-         * @return value of the g function
-         */
-        public double g(final SpacecraftState s) {
-            final double[] angle = getEclipseAngles(sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition(),
-                                                    s.getPVCoordinates().getPosition());
-            return angle[0] - angle[1] + angle[2] - ANGULAR_MARGIN;
-        }
-
-    }
-
-    /** This class defines the penumbra entry/exit detector. */
-    private class PenumbraDetector extends AbstractDetector<PenumbraDetector> {
-
-        /** Build a new instance. */
-        PenumbraDetector() {
-            super(60.0, 1.0e-3, DEFAULT_MAX_ITER, new EventHandler<PenumbraDetector>() {
-
-                /** {@inheritDoc} */
-                public Action eventOccurred(final SpacecraftState s, final PenumbraDetector detector,
-                                            final boolean increasing) {
-                    return Action.RESET_DERIVATIVES;
-                }
-
-            });
-        }
-
-        /** Private constructor with full parameters.
-         * <p>
-         * This constructor is private as users are expected to use the builder
-         * API with the various {@code withXxx()} methods to set up the instance
-         * in a readable manner without using a huge amount of parameters.
-         * </p>
-         * @param maxCheck maximum checking interval (s)
-         * @param threshold convergence threshold (s)
-         * @param maxIter maximum number of iterations in the event time search
-         * @param handler event handler to call at event occurrences
-         * @since 6.1
-         */
-        private PenumbraDetector(final double maxCheck, final double threshold,
-                                 final int maxIter, final EventHandler<? super PenumbraDetector> handler) {
-            super(maxCheck, threshold, maxIter, handler);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        protected PenumbraDetector create(final double newMaxCheck, final double newThreshold,
-                                          final int newMaxIter, final EventHandler<? super PenumbraDetector> newHandler) {
-            return new PenumbraDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
-        }
-
-        /** The G-function is the difference between the Sun-Sat-Central-Body angle and
-         * the sum of the central body and Sun's apparent radius.
-         * @param s the current state information : date, kinematics, attitude
-         * @return value of the g function
-         */
-        public double g(final SpacecraftState s) {
-            final double[] angle = getEclipseAngles(sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition(),
-                                                    s.getPVCoordinates().getPosition());
-            return angle[0] - angle[1] - angle[2] + ANGULAR_MARGIN;
-        }
-
-    }
-
-    /** This class defines the umbra entry/exit detector.
-     * @since 9.2
-     */
-    private class FieldUmbraDetector<T extends RealFieldElement<T>>
-        extends FieldAbstractDetector<FieldUmbraDetector<T>, T> {
-
-        /** Build a new instance.
-         * @param field field to which elements belong
-         */
-        FieldUmbraDetector(final Field<T> field) {
-            super(field.getZero().add(60.0), field.getZero().add(1.0e-3),
-                  DEFAULT_MAX_ITER, new FieldEventHandler<FieldUmbraDetector<T>, T>() {
-
-                      /** {@inheritDoc} */
-                      public Action eventOccurred(final FieldSpacecraftState<T> s,
-                                                  final FieldUmbraDetector<T> detector,
-                                                  final boolean increasing) {
-                          return Action.RESET_DERIVATIVES;
-                      }
-
-                  });
-        }
-
-        /** Private constructor with full parameters.
-         * <p>
-         * This constructor is private as users are expected to use the builder
-         * API with the various {@code withXxx()} methods to set up the instance
-         * in a readable manner without using a huge amount of parameters.
-         * </p>
-         * @param maxCheck maximum checking interval (s)
-         * @param threshold convergence threshold (s)
-         * @param maxIter maximum number of iterations in the event time search
-         * @param handler event handler to call at event occurrences
-         */
-        private FieldUmbraDetector(final T maxCheck, final T threshold,
-                                   final int maxIter,
-                                   final FieldEventHandler<? super FieldUmbraDetector<T>, T> handler) {
-            super(maxCheck, threshold, maxIter, handler);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        protected FieldUmbraDetector<T> create(final T newMaxCheck, final T newThreshold,
-                                               final int newMaxIter,
-                                               final FieldEventHandler<? super FieldUmbraDetector<T>, T> newHandler) {
-            return new FieldUmbraDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler);
-        }
-
-        /** The G-function is the difference between the Sun-Sat-Central-Body angle and
-         * the central body apparent radius.
-         * @param s the current state information : date, kinematics, attitude
-         * @return value of the g function
-         */
-        public T g(final FieldSpacecraftState<T> s) {
-            final T[] angle = getEclipseAngles(sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition(),
-                                               s.getPVCoordinates().getPosition());
-            return angle[0].subtract(angle[1]).add(angle[2]).subtract(ANGULAR_MARGIN);
-        }
-
-    }
-
-    /** This class defines the penumbra entry/exit detector.
-     * @since 9.2
-     */
-    private class FieldPenumbraDetector<T extends RealFieldElement<T>>
-          extends FieldAbstractDetector<FieldPenumbraDetector<T>, T> {
-
-        /** Build a new instance.
-         * @param field field to which elements belong
-         */
-        FieldPenumbraDetector(final Field<T> field) {
-            super(field.getZero().add(60.0), field.getZero().add(1.0e-3),
-                  DEFAULT_MAX_ITER, new FieldEventHandler<FieldPenumbraDetector<T>, T>() {
-
-                      /** {@inheritDoc} */
-                      public Action eventOccurred(final FieldSpacecraftState<T> s,
-                                                  final FieldPenumbraDetector<T> detector,
-                                                  final boolean increasing) {
-                          return Action.RESET_DERIVATIVES;
-                      }
-
-                  });
-        }
-
-        /** Private constructor with full parameters.
-         * <p>
-         * This constructor is private as users are expected to use the builder
-         * API with the various {@code withXxx()} methods to set up the instance
-         * in a readable manner without using a huge amount of parameters.
-         * </p>
-         * @param maxCheck maximum checking interval (s)
-         * @param threshold convergence threshold (s)
-         * @param maxIter maximum number of iterations in the event time search
-         * @param handler event handler to call at event occurrences
-         */
-        private FieldPenumbraDetector(final T maxCheck, final T threshold,
-                                      final int maxIter,
-                                      final FieldEventHandler<? super FieldPenumbraDetector<T>, T> handler) {
-            super(maxCheck, threshold, maxIter, handler);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        protected FieldPenumbraDetector<T> create(final T newMaxCheck, final T newThreshold,
-                                                  final int newMaxIter,
-                                                  final FieldEventHandler<? super FieldPenumbraDetector<T>, T> newHandler) {
-            return new FieldPenumbraDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler);
-        }
-
-        /** The G-function is the difference between the Sun-Sat-Central-Body angle and
-         * the sum of the central body and Sun's apparent radius.
-         * @param s the current state information : date, kinematics, attitude
-         * @return value of the g function
-         */
-        public T g(final FieldSpacecraftState<T> s) {
-            final T[] angle = getEclipseAngles(sun.getPVCoordinates(s.getDate(), s.getFrame()).getPosition(),
-                                               s.getPVCoordinates().getPosition());
-            return angle[0].subtract(angle[1]).subtract(angle[2]).add(ANGULAR_MARGIN);
-        }
-
     }
 
 }

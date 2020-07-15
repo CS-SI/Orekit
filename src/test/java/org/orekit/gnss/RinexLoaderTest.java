@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -712,7 +712,24 @@ public class RinexLoaderTest {
         Assert.assertEquals(0.0,                    ods.get(4).getDate().durationFrom(t0), 1.0e-15);
         Assert.assertEquals(ObservationType.L1C,    ods.get(4).getObservationData().get(1).getObservationType());
         Assert.assertEquals(335849.135,           ods.get(4).getObservationData().get(1).getValue(), 1.0e-15);
-        
+    }
+
+    @Test
+    public void testIssue605() {
+        // Test observation type C0, L0, S0 and D0
+        RinexLoader  loader = load("rinex/embe083.06o");
+        AbsoluteDate t0 = new AbsoluteDate(2016, 3, 24, 13, 10, 36.0, TimeScalesFactory.getGPS());
+        List<ObservationDataSet> ods = loader.getObservationDataSets();
+        Assert.assertEquals(5, ods.size());
+
+        // Test Glonass
+        Assert.assertEquals(SatelliteSystem.GLONASS, ods.get(3).getSatelliteSystem());
+        Assert.assertEquals(12,                      ods.get(3).getPrnNumber());
+        Assert.assertEquals(0.0,                     ods.get(3).getDate().durationFrom(t0), 1.0e-15);
+        Assert.assertEquals(20427680.259,            ods.get(3).getObservationData().get(0).getValue(), 1.0e-15);
+        Assert.assertEquals(-885349.430,             ods.get(3).getObservationData().get(1).getValue(), 1.0e-15);
+        Assert.assertEquals(22397545.647,            ods.get(3).getObservationData().get(3).getValue(), 1.0e-15);
+        Assert.assertEquals(37.594,                  ods.get(3).getObservationData().get(4).getValue(), 1.0e-15);
     }
 
     private void checkObservation(final ObservationDataSet obser,

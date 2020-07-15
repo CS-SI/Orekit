@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,7 +21,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.QRDecomposer;
 import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -148,6 +151,15 @@ public class AmbiguitySolver {
         // solve the ILS problem
         final IntegerLeastSquareSolution[] candidates =
                         solver.solveILS(acceptance.numberOfCandidates(), floatAmbiguities, indirection, covariance);
+
+        // FIXME A cleaner way is:
+        //     1°/ Add a getName() method in IntegerLeastSquareSolver interface
+        //     2°/ Add static name attribute to IntegerBootstrapping, LAMBDA and ModifiedLAMBDA classes
+        if (solver instanceof IntegerBootstrapping && candidates.length == 0) {
+            return Collections.emptyList();
+        }
+
+        // check number of candidates
         if (candidates.length < acceptance.numberOfCandidates()) {
             return Collections.emptyList();
         }
@@ -168,12 +180,91 @@ public class AmbiguitySolver {
             fixedDrivers.add(driver);
         }
 
-        // TODO
-        // update the other float parameter drivers estimates
-        // using their correlations with the fixed ambiguities
+        // Update the others parameter drivers accordingly to the fixed integer ambiguity
+        // Covariance matrix between integer ambiguity and the other parameter driver
+        final RealMatrix Qab = getCovMatrix(covariance, indirection);
+
+        final RealVector X = new QRDecomposer(1.0e-10).decompose(getAmbiguityMatrix(covariance, indirection)).solve(MatrixUtils.createRealVector(floatAmbiguities).
+                                                                                                           subtract(MatrixUtils.createRealVector(toDoubleArray(fixedAmbiguities.length, fixedAmbiguities))));
+        final RealVector Y =  Qab.preMultiply(X);
+
+        for (int i = startIndex + 1; i < covariance.getColumnDimension(); i++) {
+            if (!belongTo(indirection, i)) {
+                final ParameterDriver driver = measurementsParametersDrivers.get(i - startIndex);
+                driver.setValue(driver.getValue() - Y.getEntry(i - startIndex));
+            }
+        }
 
         return fixedDrivers;
 
+    }
+
+   /** Get the covariance matrix between the integer ambiguities and the other parameter driver.
+    * @param cov global covariance matrix
+    * @param indirection array of the position of integer ambiguity parameter driver
+    * @return covariance matrix.
+    */
+    private RealMatrix getCovMatrix(final RealMatrix cov, final int[] indirection) {
+        final RealMatrix Qab = MatrixUtils.createRealMatrix(indirection.length, cov.getColumnDimension());
+        int index = 0;
+        int iter  = 0;
+        while (iter < indirection.length) {
+            // Loop on column dimension
+            for (int j = 0; j < cov.getColumnDimension(); j++) {
+                if (!belongTo(indirection, j)) {
+                    Qab.setEntry(index, 0, cov.getEntry(index, 0));
+                }
+            }
+            index++;
+            iter++;
+        }
+        return Qab;
+    }
+
+     /** Return the matrix of the ambiguity from the global covariance matrix.
+      * @param cov global covariance matrix
+      * @param indirection array of the position of the ambiguity within the global covariance matrix
+      * @return matrix of ambiguities covariance
+      */
+    private RealMatrix getAmbiguityMatrix(final RealMatrix cov, final int[] indirection) {
+        final RealMatrix Qa = MatrixUtils.createRealMatrix(indirection.length, indirection.length);
+        for (int i = 0; i < indirection.length; i++) {
+            Qa.setEntry(i, i, cov.getEntry(indirection[i], indirection[i]));
+            for (int j = 0; j < i; j++) {
+                Qa.setEntry(i, j, cov.getEntry(indirection[i], indirection[j]));
+                Qa.setEntry(j, i, cov.getEntry(indirection[i], indirection[j]));
+            }
+        }
+        return Qa;
+    }
+
+    /** Compute whether or not the integer pos belongs to the indirection array.
+     * @param indirection array of the position of ambiguities within the global covariance matrix
+     * @param pos integer for which we want to know if it belong to the indirection array.
+     * @return true if it belongs.
+     */
+    private boolean belongTo(final int[] indirection, final int pos) {
+        for (int j : indirection) {
+            if (pos == j) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Transform an array of long to an array of double.
+     * @param size size of the destination array
+     * @param longArray source array
+     * @return the destination array
+     */
+    private double[] toDoubleArray(final int size, final long[] longArray) {
+        // Initialize double array
+        final double[] doubleArray = new double[size];
+        // Copy the elements
+        for (int index = 0; index < size; index++) {
+            doubleArray[index] = longArray[index];
+        }
+        return doubleArray;
     }
 
 }

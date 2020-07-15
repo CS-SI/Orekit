@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -169,6 +169,38 @@ public abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
         return solutions.size();
     }
 
+    /**Get the maximum of distance among the solutions found.
+     * getting last of solutions as they are sorted in SortesSet
+     * @return greatest distance of the solutions
+     * @since 10.2
+     */
+    protected double getMaxDistance() {
+        return solutions.last().getSquaredDistance();
+    }
+
+    /** Get a reference to the Z  inverse transformation matrix.
+     * <p>
+     * BEWARE: the returned value is a reference to an internal array,
+     * it is <em>only</em> intended for subclasses use (hence the
+     * method is protected and not public).
+     * BEWARE: for the MODIFIED LAMBDA METHOD, the returned matrix Z is such that
+     * Q = Z'L'DLZ where Q is the covariance matrix and ' refers to the transposition operation
+     * @return array of integer corresponding to Z matrix
+     * @since 10.2
+     */
+    protected int[] getZInverseTransformationReference() {
+        return zInverseTransformation;
+    }
+
+    /** Get the size of the problem. In the ILS problem, the integer returned
+     * is the size of the covariance matrix.
+     * @return the size of the ILS problem
+     * @since 10.2
+     */
+    protected int getSize() {
+        return n;
+    }
+
     /** Perform Lᵀ.D.L = Q decomposition of the covariance matrix.
      */
     protected abstract void ltdlDecomposition();
@@ -277,7 +309,7 @@ public abstract class AbstractLambdaMethod implements IntegerLeastSquareSolver {
     /** Recover ambiguities prior to the Z-transformation.
      * @return recovered ambiguities
      */
-    private IntegerLeastSquareSolution[] recoverAmbiguities() {
+    protected IntegerLeastSquareSolution[] recoverAmbiguities() {
 
         final IntegerLeastSquareSolution[] recovered = new IntegerLeastSquareSolution[solutions.size()];
 

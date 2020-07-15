@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -462,12 +462,12 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
                     // generate additional point at the end of the slot
                     existingDate = entryN;
                     generationDate = entryN.getDate().shiftedBy(getMeanStep() * (neighborsSize - cache.size()));
-                    appendAtEnd(generateAndCheck(existingDate, generationDate));
+                    appendAtEnd(generateAndCheck(existingDate, generationDate), date);
                 } else {
                     // generate additional point at the start of the slot
                     existingDate = entry0;
                     generationDate = entry0.getDate().shiftedBy(-getMeanStep() * (neighborsSize - cache.size()));
-                    insertAtStart(generateAndCheck(existingDate, generationDate));
+                    insertAtStart(generateAndCheck(existingDate, generationDate), date);
                 }
 
             }
@@ -590,9 +590,9 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
                             // generated data and add it to the slot
                             try {
                                 if (firstNeighbor < 0) {
-                                    insertAtStart(generateAndCheck(existingDate, generationDate));
+                                    insertAtStart(generateAndCheck(existingDate, generationDate), central);
                                 } else {
-                                    appendAtEnd(generateAndCheck(existingDate, generationDate));
+                                    appendAtEnd(generateAndCheck(existingDate, generationDate), central);
                                 }
                             } catch (TimeStampedCacheException tce) {
                                 if (simplyRebalance) {
@@ -706,8 +706,9 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
 
         /** Insert data at slot start.
          * @param data data to insert
+         * @param requestedDate use for the error message.
          */
-        private void insertAtStart(final List<T> data) {
+        private void insertAtStart(final List<T> data, final AbsoluteDate requestedDate) {
 
             // insert data at start
             boolean inserted = false;
@@ -723,8 +724,9 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
             }
 
             if (!inserted) {
-                throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
-                                                              cache.get(0).getData().getDate());
+                throw new TimeStampedCacheException(
+                        OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
+                        cache.get(0).getData().getDate(), requestedDate);
             }
 
             // evict excess data at end
@@ -742,8 +744,9 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
 
         /** Append data at slot end.
          * @param data data to append
+         * @param requestedDate use for error message.
          */
-        private void appendAtEnd(final List<T> data) {
+        private void appendAtEnd(final List<T> data, final AbsoluteDate requestedDate) {
 
             // append data at end
             boolean appended = false;
@@ -760,8 +763,10 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
             }
 
             if (!appended) {
-                throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER,
-                                                    cache.get(cache.size() - 1).getData().getDate());
+                throw new TimeStampedCacheException(
+                        OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER,
+                        cache.get(cache.size() - 1).getData().getDate(),
+                        requestedDate);
             }
 
             // evict excess data at start

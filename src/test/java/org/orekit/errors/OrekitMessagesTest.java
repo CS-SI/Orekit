@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,7 +16,6 @@
  */
 package org.orekit.errors;
 
-
 import java.text.MessageFormat;
 import java.util.Enumeration;
 import java.util.Locale;
@@ -27,27 +26,25 @@ import org.junit.Test;
 
 public class OrekitMessagesTest {
 
-    private final String[] LANGUAGES_LIST =  { "da", "de", "el", "en", "es", "fr", "gl", "it", "no", "ro" };
+    private final String[] LANGUAGES_LIST = { "da", "de", "el", "en", "es", "fr", "gl", "it", "no", "ro" };
 
     @Test
     public void testMessageNumber() {
-        Assert.assertEquals(193, OrekitMessages.values().length);
+        Assert.assertEquals(209, OrekitMessages.values().length);
     }
 
     @Test
     public void testAllKeysPresentInPropertiesFiles() {
         for (final String language : LANGUAGES_LIST) {
-            ResourceBundle bundle =
-                ResourceBundle.getBundle("assets/org/orekit/localization/OrekitMessages",
-                                         new Locale(language), new OrekitMessages.UTF8Control());
+            ResourceBundle bundle = ResourceBundle.getBundle("assets/org/orekit/localization/OrekitMessages",
+                    new Locale(language), new OrekitMessages.UTF8Control());
             for (OrekitMessages message : OrekitMessages.values()) {
                 final String messageKey = message.toString();
                 boolean keyPresent = false;
                 for (final Enumeration<String> keys = bundle.getKeys(); keys.hasMoreElements();) {
                     keyPresent |= messageKey.equals(keys.nextElement());
                 }
-                Assert.assertTrue("missing key \"" + message.name() + "\" for language " + language,
-                                  keyPresent);
+                Assert.assertTrue("missing key \"" + message.name() + "\" for language " + language, keyPresent);
             }
             Assert.assertEquals(language, bundle.getLocale().getLanguage());
         }
@@ -57,9 +54,8 @@ public class OrekitMessagesTest {
     @Test
     public void testAllPropertiesCorrespondToKeys() {
         for (final String language : LANGUAGES_LIST) {
-            ResourceBundle bundle =
-                ResourceBundle.getBundle("assets/org/orekit/localization/OrekitMessages",
-                                         new Locale(language), new OrekitMessages.UTF8Control());
+            ResourceBundle bundle = ResourceBundle.getBundle("assets/org/orekit/localization/OrekitMessages",
+                    new Locale(language), new OrekitMessages.UTF8Control());
             for (final Enumeration<String> keys = bundle.getKeys(); keys.hasMoreElements();) {
                 final String propertyKey = keys.nextElement();
                 try {
@@ -94,11 +90,10 @@ public class OrekitMessagesTest {
         for (final String language : LANGUAGES_LIST) {
             Locale locale = new Locale(language);
             for (OrekitMessages message : OrekitMessages.values()) {
-                MessageFormat source     = new MessageFormat(message.getSourceString());
+                MessageFormat source = new MessageFormat(message.getSourceString());
                 MessageFormat translated = new MessageFormat(message.getLocalizedString(locale));
-                Assert.assertEquals(message.name() + " (" + language + ")",
-                                    source.getFormatsByArgumentIndex().length,
-                                    translated.getFormatsByArgumentIndex().length);
+                Assert.assertEquals(message.name() + " (" + language + ")", source.getFormatsByArgumentIndex().length,
+                        translated.getFormatsByArgumentIndex().length);
             }
         }
     }

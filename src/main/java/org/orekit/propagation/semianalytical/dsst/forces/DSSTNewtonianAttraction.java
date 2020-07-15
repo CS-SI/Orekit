@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -24,8 +24,6 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.OrbitType;
@@ -65,14 +63,9 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
      * @param mu central attraction coefficient (m^3/s^2)
      */
     public DSSTNewtonianAttraction(final double mu) {
-        try {
-            gmParameterDriver = new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                                                    mu, MU_SCALE,
-                                                    0.0, Double.POSITIVE_INFINITY);
-        } catch (OrekitException oe) {
-            // this should never occur as valueChanged above never throws an exception
-            throw new OrekitInternalError(oe);
-        }
+        gmParameterDriver = new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+                                                mu, MU_SCALE,
+                                                0.0, Double.POSITIVE_INFINITY);
     }
 
     /** Get the central attraction coefficient μ.

@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -756,8 +756,8 @@ public class CircularOrbitTest {
     @Test
     public void testInterpolationWithDerivatives() {
         doTestInterpolation(true,
-                            397, 2.27e-8,
-                            610, 3.24e-6,
+                            397, 1.88e-8,
+                            610, 3.52e-6,
                             4870, 115);
     }
 
@@ -1108,7 +1108,7 @@ public class CircularOrbitTest {
     @Test
     public void testEquatorialRetrograde() {
         Vector3D position = new Vector3D(10000000.0, 0.0, 0.0);
-        Vector3D velocity = new Vector3D(0.0, -6500.0, 0.0);
+        Vector3D velocity = new Vector3D(0.0, -6500.0, 1.0e-10);
         double r2 = position.getNormSq();
         double r  = FastMath.sqrt(r2);
         Vector3D acceleration = new Vector3D(-mu / (r * r2), position,
@@ -1119,7 +1119,7 @@ public class CircularOrbitTest {
         Assert.assertEquals(-738.145, orbit.getADot(), 1.0e-3);
         Assert.assertEquals(0.05995861, orbit.getE(), 1.0e-8);
         Assert.assertEquals(-6.523e-5, orbit.getEDot(), 1.0e-8);
-        Assert.assertEquals(FastMath.PI, orbit.getI(), 1.0e-15);
+        Assert.assertEquals(FastMath.PI, orbit.getI(), 2.0e-14);
         Assert.assertEquals(-4.615e-5, orbit.getIDot(), 1.0e-8);
         Assert.assertTrue(Double.isNaN(orbit.getHx()));
         Assert.assertTrue(Double.isNaN(orbit.getHxDot()));

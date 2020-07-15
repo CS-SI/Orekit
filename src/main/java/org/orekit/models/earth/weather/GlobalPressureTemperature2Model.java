@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -28,6 +28,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.ToDoubleFunction;
+import java.util.regex.Pattern;
 
 import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
 import org.hipparchus.util.FastMath;
@@ -83,6 +84,9 @@ public class GlobalPressureTemperature2Model implements WeatherModel {
 
     /** Default supported files name pattern. */
     public static final String DEFAULT_SUPPORTED_NAMES = "gpt2_\\d+.grd";
+
+    /** Pattern for delimiting regular expressions. */
+    private static final Pattern SEPARATOR = Pattern.compile("\\s+");
 
     /** Standard gravity constant [m/s²]. */
     private static final double G = Constants.G0_STANDARD_GRAVITY;
@@ -354,7 +358,6 @@ public class GlobalPressureTemperature2Model implements WeatherModel {
             String line      = null;
             try (InputStreamReader isr = new InputStreamReader(input, StandardCharsets.UTF_8);
                  BufferedReader    br = new BufferedReader(isr)) {
-                final String splitter = "\\s+";
 
                 for (line = br.readLine(); line != null; line = br.readLine()) {
                     ++lineNumber;
@@ -362,7 +365,7 @@ public class GlobalPressureTemperature2Model implements WeatherModel {
 
                     // read grid data
                     if (line.length() > 0 && !line.startsWith("%")) {
-                        final GridEntry entry = new GridEntry(line.split(splitter));
+                        final GridEntry entry = new GridEntry(SEPARATOR.split(line));
                         latSample.add(entry.latKey);
                         lonSample.add(entry.lonKey);
                         entries.add(entry);

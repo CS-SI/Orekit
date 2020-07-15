@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -453,7 +453,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             }
 
             // convert space flight dynamics API to math API
-            final ODEState mathInitialState = createInitialState(getInitialIntegrationState());
+            final SpacecraftState initialIntegrationState = getInitialIntegrationState();
+            final ODEState mathInitialState = createInitialState(initialIntegrationState);
             final ExpandableODE mathODE = createODE(integrator, mathInitialState);
             equationsMapper = mathODE.getMapper();
 
@@ -464,7 +465,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
             // mathematical integration
             final ODEStateAndDerivative mathFinalState;
-            beforeIntegration(getInitialState(), tEnd);
+            beforeIntegration(initialIntegrationState, tEnd);
             mathFinalState = integrator.integrate(mathODE, mathInitialState,
                                                   tEnd.durationFrom(getInitialState().getDate()));
             afterIntegration();

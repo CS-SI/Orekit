@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -232,12 +232,11 @@ public class FundamentalNutationArguments implements Serializable {
             throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, name);
         }
 
-        try {
+        // setup the reader
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
 
             final DefinitionParser definitionParser = new DefinitionParser();
 
-            // setup the reader
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
             int lineNumber = 0;
 
             // look for the reference date and the 14 polynomials

@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -166,12 +166,11 @@ public class ITRFVersionLoader implements ItrfVersionProvider {
             final Pattern patternDI = Pattern.compile(START + NON_BLANK_FIELD + CALENDAR_DATE + INFINITY_DATE + ITRF + END);
             final Pattern patternDD = Pattern.compile(START + NON_BLANK_FIELD + CALENDAR_DATE + CALENDAR_DATE + ITRF + END);
 
-            // set up a reader for line-oriented bulletin A files
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
+
             int lineNumber =  0;
             String line = null;
-
-            try {
+            // set up a reader for line-oriented bulletin A files
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
                 for (line = reader.readLine(); line != null; line = reader.readLine()) {
 
                     lineNumber++;

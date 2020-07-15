@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Group (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,6 +19,7 @@ package org.orekit.forces.gravity;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -27,10 +28,6 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.hipparchus.random.GaussianRandomGenerator;
-import org.hipparchus.random.RandomGenerator;
-import org.hipparchus.random.UncorrelatedRandomVectorGenerator;
-import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -84,6 +81,33 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
             final DerivativeStructure r = r2.sqrt();
             //speed squared
             final DerivativeStructure s2 = velocity.getNormSq();
+            final double c2 = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT;
+            //eq. 3.146
+            return new FieldVector3D<>(r.reciprocal().multiply(4 * gm).subtract(s2),
+                                       position,
+                                       position.dotProduct(velocity).multiply(4),
+                                       velocity).scalarMultiply(r2.multiply(r).multiply(c2).reciprocal().multiply(gm));
+
+        } catch (IllegalArgumentException | SecurityException e) {
+            return null;
+        }
+    }
+
+    @Override
+    protected FieldVector3D<Gradient> accelerationDerivativesGradient(final ForceModel forceModel,
+                                                                      final AbsoluteDate date, final  Frame frame,
+                                                                      final FieldVector3D<Gradient> position,
+                                                                      final FieldVector3D<Gradient> velocity,
+                                                                      final FieldRotation<Gradient> rotation,
+                                                                      final Gradient mass)
+        {
+        try {
+            double gm = forceModel.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).getValue();
+            //radius
+            final Gradient r2 = position.getNormSq();
+            final Gradient r = r2.sqrt();
+            //speed squared
+            final Gradient s2 = velocity.getNormSq();
             final double c2 = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT;
             //eq. 3.146
             return new FieldVector3D<>(r.reciprocal().multiply(4 * gm).subtract(s2),
@@ -156,6 +180,24 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         ));
 
         checkStateJacobianVs80Implementation(s, relativity,
+                                             new LofOffset(s.getFrame(), LOFType.VVLH),
+                                             1.0e-50, false);
+    }
+
+    @Test
+    public void testJacobianVs80ImplementationGradient() {
+        double gm = Constants.EIGEN5C_EARTH_MU;
+        Relativity relativity = new Relativity(gm);
+        final Vector3D p = new Vector3D(3777828.75000531, -5543949.549783845, 2563117.448578311);
+        final Vector3D v = new Vector3D(489.0060271721, -2849.9328929417, -6866.4671013153);
+        SpacecraftState s = new SpacecraftState(new CartesianOrbit(
+                new PVCoordinates(p, v),
+                frame,
+                date,
+                gm
+        ));
+
+        checkStateJacobianVs80ImplementationGradient(s, relativity,
                                              new LofOffset(s.getFrame(), LOFType.VVLH),
                                              1.0e-50, false);
     }
@@ -264,99 +306,74 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
 
         FNP.addForceModel(forceModel);
         NP.addForceModel(forceModel);
+        
+        // Do the test
+        checkRealFieldPropagation(FKO, PositionAngle.MEAN, 1005., NP, FNP,
+                                  1.0e-15, 5.0e-10, 3.0e-11, 3.0e-10,
+                                  1, false);
+    }
 
-        FieldAbsoluteDate<DerivativeStructure> target = J2000.shiftedBy(1000.);
-        FieldSpacecraftState<DerivativeStructure> finalState_DS = FNP.propagate(target);
-        SpacecraftState finalState_R = NP.propagate(target.toAbsoluteDate());
-        FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getPVCoordinates();
-        PVCoordinates finPVC_R = finalState_R.getPVCoordinates();
+    /**Testing if the propagation between the FieldPropagation and the propagation
+     * is equivalent.
+     * Also testing if propagating X+dX with the propagation is equivalent to
+     * propagation X with the FieldPropagation and then applying the taylor
+     * expansion of dX to the result.*/
+    @Test
+    public void RealFieldGradientTest() {
 
-        Assert.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getX(), finPVC_R.getPosition().getX(), FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
-        Assert.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getY(), finPVC_R.getPosition().getY(), FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
-        Assert.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getZ(), finPVC_R.getPosition().getZ(), FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
+        final int freeParameters = 6;
+        Gradient a_0 = Gradient.variable(freeParameters, 0, 7e7);
+        Gradient e_0 = Gradient.variable(freeParameters, 1, 0.4);
+        Gradient i_0 = Gradient.variable(freeParameters, 2, 85 * FastMath.PI / 180);
+        Gradient R_0 = Gradient.variable(freeParameters, 3, 0.7);
+        Gradient O_0 = Gradient.variable(freeParameters, 4, 0.5);
+        Gradient n_0 = Gradient.variable(freeParameters, 5, 0.1);
+        Gradient mu  = Gradient.constant(freeParameters, Constants.EIGEN5C_EARTH_MU);
 
-        long number = 23091991;
-        RandomGenerator RG = new Well19937a(number);
-        GaussianRandomGenerator NGG = new GaussianRandomGenerator(RG);
-        UncorrelatedRandomVectorGenerator URVG = new UncorrelatedRandomVectorGenerator(new double[] {0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 },
-                                                                                       new double[] {1e3, 0.01, 0.01, 0.01, 0.01, 0.01},
-                                                                                       NGG);
-        double a_R = a_0.getReal();
-        double e_R = e_0.getReal();
-        double i_R = i_0.getReal();
-        double R_R = R_0.getReal();
-        double O_R = O_0.getReal();
-        double n_R = n_0.getReal();
-        for (int ii = 0; ii < 1; ii++){
-            double[] rand_next = URVG.nextVector();
-            double a_shift = a_R + rand_next[0];
-            double e_shift = e_R + rand_next[1];
-            double i_shift = i_R + rand_next[2];
-            double R_shift = R_R + rand_next[3];
-            double O_shift = O_R + rand_next[4];
-            double n_shift = n_R + rand_next[5];
+        Field<Gradient> field = a_0.getField();
+        Gradient zero = field.getZero();
 
-            KeplerianOrbit shiftedOrb = new KeplerianOrbit(a_shift, e_shift, i_shift, R_shift, O_shift, n_shift,
-                                                           PositionAngle.MEAN,
-                                                           EME,
-                                                           J2000.toAbsoluteDate(),
-                                                           Constants.EIGEN5C_EARTH_MU
-                                                           );
+        FieldAbsoluteDate<Gradient> J2000 = new FieldAbsoluteDate<>(field);
 
-            SpacecraftState shift_iSR = new SpacecraftState(shiftedOrb);
+        Frame EME = FramesFactory.getEME2000();
 
-            NumericalPropagator shift_NP = new NumericalPropagator(RIntegrator);
+        FieldKeplerianOrbit<Gradient> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
+                                                                      PositionAngle.MEAN,
+                                                                      EME,
+                                                                      J2000,
+                                                                      mu);
 
-            shift_NP.setInitialState(shift_iSR);
+        FieldSpacecraftState<Gradient> initialState = new FieldSpacecraftState<>(FKO);
 
-            shift_NP.addForceModel(forceModel);
-
-            SpacecraftState finalState_shift = shift_NP.propagate(target.toAbsoluteDate());
+        SpacecraftState iSR = initialState.toSpacecraftState();
+        OrbitType type = OrbitType.KEPLERIAN;
+        double[][] tolerance = NumericalPropagator.tolerances(0.001, FKO.toOrbit(), type);
 
 
-            PVCoordinates finPVC_shift = finalState_shift.getPVCoordinates();
+        AdaptiveStepsizeFieldIntegrator<Gradient> integrator =
+                        new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
+        integrator.setInitialStepSize(zero.add(60));
+        AdaptiveStepsizeIntegrator RIntegrator =
+                        new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
+        RIntegrator.setInitialStepSize(60);
 
-            //position check
+        FieldNumericalPropagator<Gradient> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FNP.setOrbitType(type);
+        FNP.setInitialState(initialState);
 
-            FieldVector3D<DerivativeStructure> pos_DS = finPVC_DS.getPosition();
-            double x_DS = pos_DS.getX().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double y_DS = pos_DS.getY().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double z_DS = pos_DS.getZ().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
+        NumericalPropagator NP = new NumericalPropagator(RIntegrator);
+        NP.setOrbitType(type);
+        NP.setInitialState(iSR);
 
-            //System.out.println(pos_DS.getX().getPartialDerivative(1));
+        final Relativity forceModel = new Relativity(Constants.EIGEN5C_EARTH_MU);
 
-            double x = finPVC_shift.getPosition().getX();
-            double y = finPVC_shift.getPosition().getY();
-            double z = finPVC_shift.getPosition().getZ();
-            Assert.assertEquals(x_DS, x, FastMath.abs(x - pos_DS.getX().getReal()) * 1e-8);
-            Assert.assertEquals(y_DS, y, FastMath.abs(y - pos_DS.getY().getReal()) * 1e-8);
-            Assert.assertEquals(z_DS, z, FastMath.abs(z - pos_DS.getZ().getReal()) * 1e-8);
-
-            //velocity check
-
-            FieldVector3D<DerivativeStructure> vel_DS = finPVC_DS.getVelocity();
-            double vx_DS = vel_DS.getX().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double vy_DS = vel_DS.getY().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double vz_DS = vel_DS.getZ().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double vx = finPVC_shift.getVelocity().getX();
-            double vy = finPVC_shift.getVelocity().getY();
-            double vz = finPVC_shift.getVelocity().getZ();
-            Assert.assertEquals(vx_DS, vx, FastMath.abs(vx) * 1e-9);
-            Assert.assertEquals(vy_DS, vy, FastMath.abs(vy) * 1e-9);
-            Assert.assertEquals(vz_DS, vz, FastMath.abs(vz) * 1e-9);
-            //acceleration check
-
-            FieldVector3D<DerivativeStructure> acc_DS = finPVC_DS.getAcceleration();
-            double ax_DS = acc_DS.getX().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double ay_DS = acc_DS.getY().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double az_DS = acc_DS.getZ().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double ax = finPVC_shift.getAcceleration().getX();
-            double ay = finPVC_shift.getAcceleration().getY();
-            double az = finPVC_shift.getAcceleration().getZ();
-            Assert.assertEquals(ax_DS, ax, FastMath.abs(ax) * 1e-8);
-            Assert.assertEquals(ay_DS, ay, FastMath.abs(ay) * 1e-8);
-            Assert.assertEquals(az_DS, az, FastMath.abs(az) * 1e-8);
-        }
+        FNP.addForceModel(forceModel);
+        NP.addForceModel(forceModel);
+        
+        // Do the test
+        checkRealFieldPropagationGradient(FKO, PositionAngle.MEAN, 1005., NP, FNP,
+                                  1.0e-15, 1.3e-2, 2.9e-4, 4.4e-3,
+                                  1, false);
     }
 
     /**Same test as the previous one but not adding the ForceModel to the NumericalPropagator

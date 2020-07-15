@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -94,7 +94,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = false;
         boolean isFiniteDifferences  = true;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    5.9e-9, 2.0e-8, 3.5e-7, 7.3e-5, 3.4e-4, 1.2e-2);
+                                    6.2e-9, 2.0e-8, 3.1e-7, 8.0e-5, 2.6e-4, 5.0e-3);
     }
 
     /**
@@ -130,7 +130,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = true;
         boolean isFiniteDifferences  = true;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    3.1e-8, 9.9e-8, 1.8e-6, 7.5e-5, 2.6e-4, 0.5e-2);
+                                    3.1e-8, 9.9e-8, 1.8e-6, 7.3e-5, 3.2e-4, 1.2e-2);
     }
 
     /**

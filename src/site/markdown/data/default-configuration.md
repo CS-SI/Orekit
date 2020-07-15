@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2020 CS Group
+<!--- Copyright 2002-2020 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -82,7 +82,7 @@ for example, he or she will simply download the corresponding file from IERS ser
 and drop it in the data storage system Orekit is configured to use, without any change
 to the data file itself.
 
-Custom data formats can be used, see the [./custom-formats.html](Custom data formats) page.
+Custom data formats can be used, see the [Custom data formats](./custom-formats.html) page.
 
 ## Low level data handling in Orekit
 

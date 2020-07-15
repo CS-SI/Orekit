@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -124,10 +124,10 @@ public class GroundStationTest {
         changed.getZenithOffsetDriver().setSelected(false);
 
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
-                                     0.0, 6.6e-7,
+                                     0.0, 6.7e-7,
                                      0.0, 1.8e-6,
                                      0.0, 1.3e-7,
-                                     0.0, 5.7e-11);
+                                     0.0, 5.9e-11);
         Assert.assertEquals(deltaClock, changed.getClockOffsetDriver().getValue(), 8.2e-11);
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
@@ -203,8 +203,8 @@ public class GroundStationTest {
         moved.getZenithOffsetDriver().setSelected(true);
 
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
-                                     0.0, 5.6e-7,
-                                     0.0, 1.4e-6,
+                                     0.0, 5.8e-7,
+                                     0.0, 1.8e-6,
                                      0.0, 4.8e-7,
                                      0.0, 2.6e-10);
         Assert.assertEquals(deltaTopo.getX(), moved.getEastOffsetDriver().getValue(),   4.5e-7);
@@ -365,12 +365,12 @@ public class GroundStationTest {
         final double computedXpDot = station.getPolarDriftXDriver().getValue()  / Constants.ARC_SECONDS_TO_RADIANS * Constants.JULIAN_DAY;
         final double computedYp    = station.getPolarOffsetYDriver().getValue() / Constants.ARC_SECONDS_TO_RADIANS;
         final double computedYpDot = station.getPolarDriftYDriver().getValue()  / Constants.ARC_SECONDS_TO_RADIANS * Constants.JULIAN_DAY;
-        Assert.assertEquals(dut10, computedDut1,  4.3e-10);
-        Assert.assertEquals(lod,   computedLOD,   4.9e-10);
-        Assert.assertEquals(xp0,   computedXp,    5.6e-9);
-        Assert.assertEquals(xpDot, computedXpDot, 7.2e-9);
-        Assert.assertEquals(yp0,   computedYp,    1.1e-9);
-        Assert.assertEquals(ypDot, computedYpDot, 2.8e-11);
+        Assert.assertEquals(0.0, FastMath.abs(dut10 - computedDut1),  4.3e-10);
+        Assert.assertEquals(0.0, FastMath.abs(lod - computedLOD),     4.9e-10);
+        Assert.assertEquals(0.0, FastMath.abs(xp0 - computedXp),      5.7e-9);
+        Assert.assertEquals(0.0, FastMath.abs(xpDot - computedXpDot), 7.3e-9);
+        Assert.assertEquals(0.0, FastMath.abs(yp0 - computedYp),      1.1e-9);
+        Assert.assertEquals(0.0, FastMath.abs(ypDot - computedYpDot), 6.2e-11);
 
         // thresholds to use if orbit is estimated
         // (i.e. when commenting out the loop above that sets orbital parameters drivers to "not selected")
@@ -1266,6 +1266,7 @@ public class GroundStationTest {
     }
 
     @Test
+    @Deprecated
     public void testNoReferenceDate() {
         Utils.setDataRoot("regular-data");
         final Frame eme2000 = FramesFactory.getEME2000();
@@ -1309,6 +1310,51 @@ public class GroundStationTest {
         
     }
 
+    @Test
+    public void testNoReferenceDateGradient() {
+        Utils.setDataRoot("regular-data");
+        final Frame eme2000 = FramesFactory.getEME2000();
+        final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+        final OneAxisEllipsoid earth =
+                        new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                             Constants.WGS84_EARTH_FLATTENING,
+                                             FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        final GroundStation station = new GroundStation(new TopocentricFrame(earth,
+                                                                             new GeodeticPoint(0.1, 0.2, 100),
+                                                                             "dummy"));
+        try {
+            station.getOffsetToInertial(eme2000, date);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER, oe.getSpecifier());
+            Assert.assertEquals("prime-meridian-offset", (String) oe.getParts()[0]);
+        }
+        
+        try {
+            int freeParameters = 9;
+            Map<String, Integer> indices = new HashMap<>();
+            for (final ParameterDriver driver : Arrays.asList(station.getPrimeMeridianOffsetDriver(),
+                                                              station.getPrimeMeridianDriftDriver(),
+                                                              station.getPolarOffsetXDriver(),
+                                                              station.getPolarDriftXDriver(),
+                                                              station.getPolarOffsetYDriver(),
+                                                              station.getPolarDriftYDriver(),
+                                                              station.getClockOffsetDriver(),
+                                                              station.getEastOffsetDriver(),
+                                                              station.getNorthOffsetDriver(),
+                                                              station.getZenithOffsetDriver())) {
+                indices.put(driver.getName(), indices.size());
+            }
+            station.getOffsetToInertial(eme2000, date, freeParameters, indices);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER, oe.getSpecifier());
+            Assert.assertEquals("prime-meridian-offset", (String) oe.getParts()[0]);
+        }
+        
+    }
+
+    @Deprecated
     private void doTestCartesianDerivatives(double latitude, double longitude, double altitude, double stepFactor,
                                             double relativeTolerancePositionValue, double relativeTolerancePositionDerivative,
                                             double relativeToleranceVelocityValue, double relativeToleranceVelocityDerivative,
@@ -1419,6 +1465,7 @@ public class GroundStationTest {
 
     }
 
+    @Deprecated
     private void doTestAngularDerivatives(double latitude, double longitude, double altitude, double stepFactor,
                                           double toleranceRotationValue,     double toleranceRotationDerivative,
                                           double toleranceRotationRateValue, double toleranceRotationRateDerivative,

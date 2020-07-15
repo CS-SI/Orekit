@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -39,19 +39,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Maxime Journot
  * @since 9.0
  */
-public class TDMFile {
-
-    /** CCSDS Format version. */
-    private double formatVersion;
-
-    /** Header comments. The list contains a string for each line of comment. */
-    private List<String> headerComment;
-
-    /** File creation date and time in UTC. */
-    private AbsoluteDate creationDate;
-
-    /** Creating agency or operator. */
-    private String originator;
+public class TDMFile extends NDMFile {
 
     /** List of observation blocks. */
     private List<ObservationsBlock> observationsBlocks;
@@ -59,62 +47,6 @@ public class TDMFile {
     /** OEMFile constructor. */
     public TDMFile() {
         observationsBlocks = new ArrayList<>();
-    }
-
-    /** Get the CCSDS TDM format version.
-     * @return format version
-     */
-    public double getFormatVersion() {
-        return formatVersion;
-    }
-
-    /** Set the CCSDS ODM (OPM, OMM or OEM) format version.
-     * @param formatVersion the format version to be set
-     */
-    public void setFormatVersion(final double formatVersion) {
-        this.formatVersion = formatVersion;
-    }
-
-    /** Get the header comment.
-     * @return header comment
-     */
-    public List<String> getHeaderComment() {
-        return headerComment;
-    }
-
-    /** Set the header comment.
-     * @param headerComment header comment
-     */
-    public void setHeaderComment(final List<String> headerComment) {
-        this.headerComment = new ArrayList<>(headerComment);
-    }
-
-    /** Get the file creation date and time in UTC.
-     * @return the file creation date and time in UTC.
-     */
-    public AbsoluteDate getCreationDate() {
-        return creationDate;
-    }
-
-    /** Set the file creation date and time in UTC.
-     * @param creationDate the creation date to be set
-     */
-    public void setCreationDate(final AbsoluteDate creationDate) {
-        this.creationDate = creationDate;
-    }
-
-    /** Get the file originator.
-     * @return originator the file originator.
-     */
-    public String getOriginator() {
-        return originator;
-    }
-
-    /** Set the file originator.
-     * @param originator the originator to be set
-     */
-    public void setOriginator(final String originator) {
-        this.originator = originator;
     }
 
     /** Add a block to the list of observations blocks. */

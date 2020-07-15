@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Group (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,21 +16,22 @@
  */
 package org.orekit;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.FastMath;
-import org.hipparchus.util.Precision;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.SelfDescribing;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.hamcrest.TypeSafeMatcher;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
-import java.util.Arrays;
-
-import static org.hamcrest.CoreMatchers.either;
 import static org.hamcrest.CoreMatchers.is;
 
 /**
@@ -355,8 +356,45 @@ public class OrekitMatchers {
      */
     public static Matcher<Double> numberCloseTo(double number, double absTol,
                                                 int ulps) {
-        return either(closeTo(number, absTol)).or(
-                relativelyCloseTo(number, ulps));
+        Collection<Matcher<Double>> matchers = new ArrayList<>(2);
+        matchers.add(closeTo(number, absTol));
+        matchers.add(relativelyCloseTo(number, ulps));
+        return anyOf(matchers);
+    }
+
+    /**
+     * Create a matcher that matches if at least one of the given matchers match. Gives
+     * better descriptions that {@link org.hamcrest.CoreMatchers#anyOf(Iterable)}.
+     *
+     * @param matchers to try.
+     * @param <T>      type of object to match.
+     * @return a new matcher.
+     */
+    public static <T> Matcher<T> anyOf(Collection<? extends Matcher<? super T>> matchers) {
+        return new TypeSafeDiagnosingMatcher<T>() {
+            @Override
+            protected boolean matchesSafely(final T item,
+                                            final Description mismatchDescription) {
+                boolean first = true;
+                for (Matcher<? super T> matcher : matchers) {
+                    if (matcher.matches(item)) {
+                        return true;
+                    } else {
+                        if (!first) {
+                            mismatchDescription.appendText(" and ");
+                        }
+                        matcher.describeMismatch(item, mismatchDescription);
+                    }
+                    first = false;
+                }
+                return false;
+            }
+
+            @Override
+            public void describeTo(final Description description) {
+                description.appendList("(", " or ", ")", matchers);
+            }
+        };
     }
 
     /* Copid from Hamcrest's IsCloseTo under the new BSD license.

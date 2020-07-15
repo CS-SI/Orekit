@@ -27,6 +27,7 @@
       <Class name="~.*\.Ephemeris$" />
       <Class name="~.*\.GlobalIonosphereMapModel$" />
       <Class name="~.*\.MarshallSolarActivityFutureEstimation$" />
+      <Class name="~.*\.CssiSpaceWeatherData$" />
       <Class name="~.*\.IntegratedEphemeris$" />
       <Class name="~.*\.DSSTPropagator\$MeanPlusShortPeriodicMapper$" />
       <Class name="~.*\.NumericalPropagator\$OsculatingMapper$" />
@@ -294,3 +295,4 @@
   </Match>
 
 </FindBugsFilter>
+

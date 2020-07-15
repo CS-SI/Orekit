@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -599,6 +599,10 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         // if required, insert the special short periodics step handler
         if (type == PropagationType.OSCULATING) {
             final ShortPeriodicsHandler spHandler = new ShortPeriodicsHandler(forceModels);
+            // Compute short periodic coefficients for this point
+            for (DSSTForceModel forceModel : forceModels) {
+                forceModel.updateShortPeriodTerms(forceModel.getParameters(), initialState);
+            }
             final Collection<ODEStepHandler> stepHandlers = new ArrayList<ODEStepHandler>();
             stepHandlers.add(spHandler);
             final ODEIntegrator integrator = getIntegrator();
@@ -1041,21 +1045,6 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
          */
         ShortPeriodicsHandler(final List<DSSTForceModel> forceModels) {
             this.forceModels = forceModels;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void init(final ODEStateAndDerivative initialState, final double finalTime) {
-            // Build the mean state interpolated at initial point
-            final SpacecraftState meanStates = mapper.mapArrayToState(0.0,
-                                                                      initialState.getPrimaryState(),
-                                                                      initialState.getPrimaryDerivative(),
-                                                                      PropagationType.MEAN);
-
-            // Compute short periodic coefficients for this point
-            for (DSSTForceModel forceModel : forceModels) {
-                forceModel.updateShortPeriodTerms(forceModel.getParameters(), meanStates);
-            }
         }
 
         /** {@inheritDoc} */

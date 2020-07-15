@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -35,12 +35,18 @@ public enum Keyword {
     // Common NDM (Navigation Data Message) CCSDS keywords
     // ---------------------------------------------------
 
-    /** Comments specific to a ODM file. */
+    /** Comments specific to ODM and ADM file. */
     COMMENT,
-    /** CCSDS OEM format version. */
+    /** File creation date in UTC. */
     CREATION_DATE,
     /** Creating agency or operator. */
     ORIGINATOR,
+    /** Spacecraft name for which the orbit state is provided. */
+    OBJECT_NAME,
+    /** Object identifier of the object for which the orbit state is provided. */
+    OBJECT_ID,
+    /** Origin of reference frame. */
+    CENTER_NAME,
     /** Time system used for state vector, maneuver, and covariance data. */
     TIME_SYSTEM,
     /** Epoch of state vector and optional Keplerian elements.
@@ -65,6 +71,19 @@ public enum Keyword {
     META_START,
     /** Keyword used to delineate the end of a Meta-data block. */
     META_STOP,
+    /** Maneuver duration (If = 0, impulsive maneuver). */
+    MAN_DURATION,
+    /** Coordinate system for velocity increment vector. Its value can either be RSW, RTN (both
+     * indicating "Radial, Transverse, Normal") or TNW. */
+    MAN_REF_FRAME,
+    /** Start of useable time span covered by ephemerides data, it may be
+     * necessary to allow for proper interpolation. */
+    USEABLE_START_TIME,
+    /** End of useable time span covered by ephemerides data, it may be
+     * necessary to allow for proper interpolation. */
+    USEABLE_STOP_TIME,
+    /** The interpolation degree. */
+    INTERPOLATION_DEGREE,
 
     // -------------------------------------------
     // Orbit Data Messages (ODM) specific keywords
@@ -74,14 +93,8 @@ public enum Keyword {
     CCSDS_OPM_VERS,
     /** CCSDS OMM format version. */
     CCSDS_OMM_VERS,
-    /** File creation date in UTC. */
+    /** CCSDS OEM format version. */
     CCSDS_OEM_VERS,
-    /** Spacecraft name for which the orbit state is provided. */
-    OBJECT_NAME,
-    /** Object identifier of the object for which the orbit state is provided. */
-    OBJECT_ID,
-    /** Origin of reference frame. */
-    CENTER_NAME,
     /** Name of the reference frame in which the state vector and optional Keplerian element data are given. */
     REF_FRAME,
     /** Epoch of reference frame, if not intrinsic to the definition of the reference frame. */
@@ -191,13 +204,8 @@ public enum Keyword {
     CZ_DOT_Z_DOT,
     /** Epoch of ignition. */
     MAN_EPOCH_IGNITION,
-    /** Maneuver duration (If = 0, impulsive maneuver). */
-    MAN_DURATION,
     /** Mass change during maneuver (value is &lt; 0). */
     MAN_DELTA_MASS,
-    /** Coordinate system for velocity increment vector. Its value can either be RSW, RTN (both
-     * indicating "Radial, Transverse, Normal") or TNW. */
-    MAN_REF_FRAME,
     /** First component of the velocity increment. */
     MAN_DV_1,
     /** Second component of the velocity increment. */
@@ -206,19 +214,118 @@ public enum Keyword {
     MAN_DV_3,
     /** This keyword must appear before the first line of the covariance matrix data. */
     COVARIANCE_START,
-    /** Start of useable time span covered by ephemerides data, it may be
-     * necessary to allow for proper interpolation. */
-    USEABLE_START_TIME,
-    /** End of useable time span covered by ephemerides data, it may be
-     * necessary to allow for proper interpolation. */
-    USEABLE_STOP_TIME,
     /** The interpolation method to be used. */
     INTERPOLATION,
-    /** The interpolation degree. */
-    INTERPOLATION_DEGREE,
     /** This keyword must appear after the last line of the covariance matrix data. */
     COVARIANCE_STOP,
 
+    // -------------------------------------------
+    // Attitude Data Messages (ADM) specific keywords
+    // -------------------------------------------
+
+    /** CCSDS APM format version. */
+    CCSDS_APM_VERS,
+    /** CCSDS AEM format version. */
+    CCSDS_AEM_VERS,
+    /** Name of the reference frame specifying one frame of the transformation. */
+    Q_FRAME_A,
+    /** Name of the reference frame specifying the second portion of the transformation. */
+    Q_FRAME_B,
+    /** Rotation direction of the attitude quaternion. */
+    Q_DIR,
+    /** e1 * sin(φ/2)   φ = rotation angle. */
+    Q1,
+    /** e2 * sin(φ/2)   φ = rotation angle. */
+    Q2,
+    /** e3 * sin(φ/2)   φ = rotation angle. */
+    Q3,
+    /** cos(φ/2)   φ = rotation angle. */
+    QC,
+    /** Derivative of Q1. */
+    Q1_DOT,
+    /** Derivative of Q2. */
+    Q2_DOT,
+    /** Derivative of Q3. */
+    Q3_DOT,
+    /** Derivative of QC. */
+    QC_DOT,
+    /**  Name of the reference frame specifying one frame of the transformation. */
+    EULER_FRAME_A,
+    /** Name of the reference frame specifying the second portion of the transformation. */
+    EULER_FRAME_B,
+    /** Rotation direction of the attitude Euler angle. */
+    EULER_DIR,
+    /** Rotation order of the EULER_FRAME_A to EULER_FRAME_B or vice versa. */
+    EULER_ROT_SEQ,
+    /** The value of this keyword expresses the relevant keyword to use that denotes the
+     *  frame of reference in which the X_RATE, Y_RATE and Z_RATE are expressed. */
+    RATE_FRAME,
+    /** X body rotation angle. */
+    X_ANGLE,
+    /** Y body rotation angle. */
+    Y_ANGLE,
+    /** Z body rotation angle. */
+    Z_ANGLE,
+    /** X body rotation rate. */
+    X_RATE,
+    /** Y body rotation rate. */
+    Y_RATE,
+    /** Z body rotation rate. */
+    Z_RATE,
+    /**  Name of the reference frame specifying one frame of the transformation. */
+    SPIN_FRAME_A,
+    /** Name of the reference frame specifying the second portion of the transformation. */
+    SPIN_FRAME_B,
+    /** Rotation direction of the Spin angles .*/
+    SPIN_DIR,
+    /** Right ascension of spin axis vector. */
+    SPIN_ALPHA,
+    /** Declination of the spin axis vector.*/
+    SPIN_DELTA,
+    /** Phase of the satellite about the spin axis. */
+    SPIN_ANGLE,
+    /** Angular velocity of satellite around spin axis. */
+    SPIN_ANGLE_VEL,
+    /** Nutation angle of spin axis. */
+    NUTATION,
+    /** Body nutation period of the spin axis. */
+    NUTATION_PER,
+    /** Inertial nutation phase. */
+    NUTATION_PHASE,
+    /** Coordinate system for the inertia tensor. */
+    INERTIA_REF_FRAME,
+    /** Moment of Inertia about the 1-axis. */
+    I11,
+    /** Moment of Inertia about the 2-axis. */
+    I22,
+    /** Moment of Inertia about the 3-axis. */
+    I33,
+    /** Inertia Cross Product of the 1 and 2 axes. */
+    I12,
+    /** Inertia Cross Product of the 1 and 3 axes. */
+    I13,
+    /** Inertia Cross Product of the 2 and 3 axes. */
+    I23,
+    /** Epoch of start of maneuver. */
+    MAN_EPOCH_START,
+    /** First component of the torque vector. */
+    MAN_TOR_1,
+    /** Second component of the torque vector. */
+    MAN_TOR_2,
+    /** Third component of the torque vector. */
+    MAN_TOR_3,
+    /** Name of the reference frame specifying one frame of the transformation. */
+    REF_FRAME_A,
+    /** Name of the reference frame specifying the second portion of the transformation. */
+    REF_FRAME_B,
+    /** Rotation direction of the attitude. */
+    ATTITUDE_DIR,
+    /** The format of the data lines in the message. */
+    ATTITUDE_TYPE,
+    /** The placement of the scalar portion of the quaternion (QC) in the attitude data. */
+    QUATERNION_TYPE,
+    /** Recommended interpolation method for attitude ephemeris data. */
+    INTERPOLATION_METHOD,
 
     // ----------------------------------------------
     // Tracking Data Messages (TDM) specific keywords

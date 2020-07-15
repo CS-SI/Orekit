@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -63,6 +63,43 @@ public class OceanLoadingCoefficientsBLQFactory extends AbstractSelfFeedingLoade
 
     /** Default supported files name pattern for Onsala Space Observatory files in BLQ format. */
     public static final String DEFAULT_BLQ_SUPPORTED_NAMES = "^.+\\.blq$";
+
+    /** Pattern for fields with real type. */
+    private static final String  REAL_TYPE_PATTERN = "[-+]?(?:(?:\\p{Digit}+(?:\\.\\p{Digit}*)?)|(?:\\.\\p{Digit}+))(?:[eE][-+]?\\p{Digit}+)?";
+
+    /** Pattern for extracted real fields. */
+    private static final String  REAL_FIELD_PATTERN = "\\p{Space}*(" + REAL_TYPE_PATTERN + ")";
+
+    /** Pattern for end of line. */
+    private static final String  END_OF_LINE_PATTERN = "\\p{Space}*$";
+
+    /** Pattern for site name and coordinates lines. */
+    private static final String  SITE_LINE_PATTERN = "^\\$\\$ *([^,]*),\\p{Space}*(?:RADI TANG)?\\p{Space}*lon/lat:" +
+                                                     REAL_FIELD_PATTERN +
+                                                     REAL_FIELD_PATTERN +
+                                                     REAL_FIELD_PATTERN +
+                                                     END_OF_LINE_PATTERN;
+
+    /** Pattern for coefficients lines. */
+    private static final String  DATA_LINE_PATTERN = "^" +
+                                                     REAL_FIELD_PATTERN + // M₂ tide
+                                                     REAL_FIELD_PATTERN + // S₂ tide
+                                                     REAL_FIELD_PATTERN + // N₂ tide
+                                                     REAL_FIELD_PATTERN + // K₂ tide
+                                                     REAL_FIELD_PATTERN + // K₁ tide
+                                                     REAL_FIELD_PATTERN + // O₁ tide
+                                                     REAL_FIELD_PATTERN + // P₁ tide
+                                                     REAL_FIELD_PATTERN + // Q₁ tide
+                                                     REAL_FIELD_PATTERN + // Mf tide
+                                                     REAL_FIELD_PATTERN + // Mm tide
+                                                     REAL_FIELD_PATTERN + // Ssa tide
+                                                     END_OF_LINE_PATTERN;
+
+    /** Pattern for site name and coordinates lines. */
+    private static final Pattern SITE_PATTERN = Pattern.compile(SITE_LINE_PATTERN);
+
+    /** Pattern for coefficients lines. */
+    private static final Pattern DATA_PATTERN = Pattern.compile(DATA_LINE_PATTERN);
 
     /** Main tides. */
     private static final Tide[][] TIDES = {
@@ -242,48 +279,10 @@ public class OceanLoadingCoefficientsBLQFactory extends AbstractSelfFeedingLoade
      */
     private class BLQParser implements DataLoader {
 
-        /** Pattern for fields with real type. */
-        private static final String  REAL_TYPE_PATTERN = "[-+]?(?:(?:\\p{Digit}+(?:\\.\\p{Digit}*)?)|(?:\\.\\p{Digit}+))(?:[eE][-+]?\\p{Digit}+)?";
-
-        /** Pattern for extracted real fields. */
-        private static final String  REAL_FIELD_PATTERN = "\\p{Space}*(" + REAL_TYPE_PATTERN + ")";
-
-        /** Pattern for end of line. */
-        private static final String  END_OF_LINE_PATTERN = "\\p{Space}*$";
-
-        /** Pattern for site name and coordinates lines. */
-        private static final String  SITE_LINE_PATTERN = "^\\$\\$ *([^,]*),\\p{Space}*(?:RADI TANG)?\\p{Space}*lon/lat:" +
-                                                         REAL_FIELD_PATTERN +
-                                                         REAL_FIELD_PATTERN +
-                                                         REAL_FIELD_PATTERN +
-                                                         END_OF_LINE_PATTERN;
-
-        /** Pattern for coefficients lines. */
-        private static final String  DATA_LINE_PATTERN = "^" +
-                                                         REAL_FIELD_PATTERN + // M₂ tide
-                                                         REAL_FIELD_PATTERN + // S₂ tide
-                                                         REAL_FIELD_PATTERN + // N₂ tide
-                                                         REAL_FIELD_PATTERN + // K₂ tide
-                                                         REAL_FIELD_PATTERN + // K₁ tide
-                                                         REAL_FIELD_PATTERN + // O₁ tide
-                                                         REAL_FIELD_PATTERN + // P₁ tide
-                                                         REAL_FIELD_PATTERN + // Q₁ tide
-                                                         REAL_FIELD_PATTERN + // Mf tide
-                                                         REAL_FIELD_PATTERN + // Mm tide
-                                                         REAL_FIELD_PATTERN + // Ssa tide
-                                                         END_OF_LINE_PATTERN;
-
-        /** Pattern for site name and coordinates lines. */
-        private final Pattern sitePattern;
-
-        /** Pattern for coefficients lines. */
-        private final Pattern dataPattern;
-
         /** Simple constructor.
          */
         BLQParser() {
-            sitePattern = Pattern.compile(SITE_LINE_PATTERN);
-            dataPattern = Pattern.compile(DATA_LINE_PATTERN);
+            // empty constructor
         }
 
         /** {@inheritDoc} */
@@ -319,7 +318,7 @@ public class OceanLoadingCoefficientsBLQFactory extends AbstractSelfFeedingLoade
 
                     if (dataLine < 0) {
                         // we are looking for a site line
-                        final Matcher matcher = sitePattern.matcher(line);
+                        final Matcher matcher = SITE_PATTERN.matcher(line);
                         if (matcher.matches()) {
                             // the current line is a site description line
                             siteName = matcher.group(1);
@@ -331,7 +330,7 @@ public class OceanLoadingCoefficientsBLQFactory extends AbstractSelfFeedingLoade
                         }
                     } else {
                         // we are looking for a data line
-                        final Matcher matcher = dataPattern.matcher(line);
+                        final Matcher matcher = DATA_PATTERN.matcher(line);
                         if (!matcher.matches()) {
                             throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                       lineNumber, name, line);

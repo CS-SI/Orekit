@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,6 +17,9 @@
 package org.orekit.time;
 
 import java.io.Serializable;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.utils.Constants;
@@ -262,6 +265,53 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
             return new DateComponents(j2000).toString() + 'T' + new TimeComponents(hour, minute, second).toString();
         }
         return date.toString() + 'T' + time.toString();
+    }
+
+    /**
+     * Represent the given date and time as a string according to the format in RFC 3339.
+     * RFC3339 is a restricted subset of ISO 8601 with a well defined grammar. This method
+     * includes enough precision to represent the point in time without rounding up to the
+     * next minute.
+     *
+     * <p>RFC3339 is unable to represent BC years, years of 10000 or more, time zone
+     * offsets of 100 hours or more, or NaN. In these cases the value returned from this
+     * method will not be valid RFC3339 format.
+     *
+     * @return RFC 3339 format string.
+     * @see <a href="https://tools.ietf.org/html/rfc3339#page-8">RFC 3339</a>
+     * @see AbsoluteDate#toStringRfc3339(TimeScale)
+     * @see #toString(int)
+     */
+    public String toStringRfc3339() {
+        final DateComponents d = this.getDate();
+        final TimeComponents t = this.getTime();
+        // date
+        final String dateString = String.format("%04d-%02d-%02dT",
+                d.getYear(), d.getMonth(), d.getDay());
+        // time
+        final String timeString;
+        if (t.getSecondsInLocalDay() != 0) {
+            final DecimalFormat format = new DecimalFormat("00.##############", new DecimalFormatSymbols(Locale.US));
+            timeString = String.format("%02d:%02d:", t.getHour(), t.getMinute()) +
+                    format.format(t.getSecond());
+        } else {
+            // shortcut for midnight local time
+            timeString = "00:00:00";
+        }
+        // offset
+        final int minutesFromUTC = t.getMinutesFromUTC();
+        final String timeZoneString;
+        if (minutesFromUTC == 0) {
+            timeZoneString = "Z";
+        } else {
+            // sign must be accounted for separately because there is no -0 in Java.
+            final String sign = minutesFromUTC < 0 ? "-" : "+";
+            final int utcOffset = FastMath.abs(minutesFromUTC);
+            final int hourOffset = utcOffset / 60;
+            final int minuteOffset = utcOffset % 60;
+            timeZoneString = sign + String.format("%02d:%02d", hourOffset, minuteOffset);
+        }
+        return dateString + timeString + timeZoneString;
     }
 
 }

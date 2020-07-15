@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
@@ -127,6 +128,9 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
 
     /** Serializable UID. */
     private static final long serialVersionUID = 201928052L;
+
+    /** Pattern for delimiting regular expressions. */
+    private static final Pattern SEPARATOR = Pattern.compile("\\s+");
 
     /** Threshold for latitude and longitude difference. */
     private static final double THRESHOLD = 0.001;
@@ -525,7 +529,6 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
             String line      = null;
             try (InputStreamReader isr = new InputStreamReader(input, StandardCharsets.UTF_8);
                  BufferedReader    br = new BufferedReader(isr)) {
-                final String splitter = "\\s+";
 
                 // Placeholders for parsed data
                 int               interval    = 3600;
@@ -616,7 +619,7 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
                                         !line.endsWith(END) &&
                                         !line.endsWith(EPOCH)) {
                                         line = line.trim();
-                                        final String[] readLine = line.split(splitter);
+                                        final String[] readLine = SEPARATOR.split(line);
                                         for (final String s : readLine) {
                                             values.add(Double.valueOf(s));
                                         }
@@ -629,7 +632,7 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
                             // Here, we are parsing the last line of TEC data for a given latitude
                             // The size of this line is lower than 60.
                             line = line.trim();
-                            final String[] readLine = line.split(splitter);
+                            final String[] readLine = SEPARATOR.split(line);
                             for (final String s : readLine) {
                                 values.add(Double.valueOf(s));
                             }

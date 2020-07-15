@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,6 +18,7 @@ package org.orekit.propagation.semianalytical.dsst.utilities.hansen;
 
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.semianalytical.dsst.utilities.NewcombOperators;
@@ -323,9 +324,9 @@ public class HansenTesseralLinear {
         //Ensure that only the needed terms are computed
         final int maxRoots = FastMath.min(4, N0 - Nmin + 4);
         for (int i = 0; i < maxRoots; i++) {
-            final DerivativeStructure hansenKernel = hansenInit[i].getValue(e2, chi, chi2);
+            final Gradient hansenKernel = hansenInit[i].getValueGradient(e2, chi, chi2);
             this.hansenRoot[0][i] = hansenKernel.getValue();
-            this.hansenDerivRoot[0][i] = hansenKernel.getPartialDerivative(1);
+            this.hansenDerivRoot[0][i] = hansenKernel.getPartialDerivative(0);
         }
 
         for (int i = 1; i < numSlices; i++) {
@@ -487,7 +488,10 @@ public class HansenTesseralLinear {
          * @param chi &Chi;
          * @param chi2 &Chi;²
          * @return the value of the Hansen coefficient and its derivative for e²
+         * @deprecated as of 10.2, replaced by {@link #getValueGradient(double, double, double)}
          */
+        @SuppressWarnings("unused")
+        @Deprecated
         public DerivativeStructure getValue(final double e2, final double chi, final double chi2) {
 
             //Estimation of the serie expansion at e2
@@ -498,6 +502,28 @@ public class HansenTesseralLinear {
             final double derivative = coef * chi2 * value +
                                       FastMath.pow(chi2, -mnm1 - 1) * serie.getPartialDerivative(1) / chi;
             return factory.build(value, derivative);
+        }
+
+        /** Computes the value of Hansen kernel and its derivative at e².
+         * <p>
+         * The formulae applied are described in Danielson 2.7.3-10 and
+         * 3.3-5
+         * </p>
+         * @param e2 e²
+         * @param chi &Chi;
+         * @param chi2 &Chi;²
+         * @return the value of the Hansen coefficient and its derivative for e²
+         */
+        public Gradient getValueGradient(final double e2, final double chi, final double chi2) {
+
+            //Estimation of the serie expansion at e2
+            final Gradient serie = polynomial.value(Gradient.variable(1, 0, e2));
+
+            final double value      =  FastMath.pow(chi2, -mnm1 - 1) * serie.getValue() / chi;
+            final double coef       = -(mnm1 + 1.5);
+            final double derivative = coef * chi2 * value +
+                                      FastMath.pow(chi2, -mnm1 - 1) * serie.getPartialDerivative(0) / chi;
+            return new Gradient(value, derivative);
         }
 
         /** Generate the serie expansion in e².

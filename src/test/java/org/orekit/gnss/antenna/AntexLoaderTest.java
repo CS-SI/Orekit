@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -257,6 +257,17 @@ public class AntexLoaderTest {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
             Assert.assertEquals(21, ((Integer) oe.getParts()[0]).intValue());
             Assert.assertEquals("END OF FREQUENCY", ((String) oe.getParts()[2]).substring(60).trim());
+        }
+    }
+
+    @Test
+    public void testCorruptedFile() {
+        try {
+            new AntexLoader("^igs14-corrupted\\.atx$");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            Assert.assertEquals(21, ((Integer) oe.getParts()[0]).intValue());
         }
     }
 

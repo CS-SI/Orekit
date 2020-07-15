@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2020 CS Group
+<!--- Copyright 2002-2020 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -67,6 +67,9 @@
     * analytical models for small maneuvers without propagation
     * impulse maneuvers for any propagator type
     * continuous maneuvers for numerical propagator type
+    * configurable low thrust maneuver model based on detectors
+    * propulsion models intended to be used with maneuver class
+    * interface for the maneuver triggers
 
   * Propagation
 
@@ -95,6 +98,7 @@
           later use
         * propagation in non-inertial frames (e.g. for Lagrange point halo orbits)
     * semi-analytical propagation model (DSST) with customizable force models
+    * trajectories around Lagragian points using CR3BP model
     * tabulated ephemerides
         * file based
         * memory based
@@ -158,6 +162,7 @@
         * space referenced attitudes (inertial, celestial body-pointed, spin-stabilized)
         * tabulated attitudes, either respective to inertial frame or respective to Local Orbital Frames
         * specific law for GNSS satellites: GPS (block IIA, block IIF, block IIF), GLONASS, GALILEO, BEIDOU (GEO, IGSO, MEO)
+    * loading of CCSDS Attitude Data Messages (both AEM, and APM types are supported)
 
   * Orbit determination
   
@@ -233,12 +238,14 @@
   * Earth models
   
     * atmospheric models (DTM2000, Jacchia-Bowman 2008, NRL MSISE 2000, Harris-Priester and simple exponential models), and Marshall solar Activity Future Estimation, optionally with lift component
+    * support for CSSI space weather data
     * tropospheric delay (modified Saastamoinen, Mendes-Pavlis, Vienna 1, Vienna 3, estimated, fixed)
     * tropospheric refraction correction angle (Recommendation ITU-R P.834-7 and Saemundssen's formula quoted by Meeus)
     * tropospheric model for laser ranging (Marini-Murray)
     * Klobuchar ionospheric model (including parsing α and β coefficients from University of Bern Astronomical Institute files)
     * Global Ionospheric Map model
     * NeQuick ionospheric model
+    * Estimated ionospheric model
     * Global Pression and Temperature models (GPT and GPT2)
     * geomagnetic field (WMM, IGRF)
     * geoid model from any gravity field
@@ -291,7 +298,7 @@ interoperability in space systems.
 
 ## Maintained library
 
-Orekit has been in development since 2002 inside [CS Group](http://www.c-s.fr/)
+Orekit has been in development since 2002 inside [CS GROUP](http://www.c-s.fr/)
 and is still used and maintained by its
 experts and an open community. It is ruled by a meritocratic governance
 model and the Project Management Committee involves actors from

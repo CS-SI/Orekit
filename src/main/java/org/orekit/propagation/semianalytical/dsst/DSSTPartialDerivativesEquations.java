@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,7 +19,7 @@ package org.orekit.propagation.semianalytical.dsst;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -263,24 +263,24 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
         final int dim = 6;
         final double[][] dMeanElementRatedParam   = new double[dim][paramDim];
         final double[][] dMeanElementRatedElement = new double[dim][dim];
-        final DSSTDSConverter converter = new DSSTDSConverter(s, propagator.getAttitudeProvider());
+        final DSSTGradientConverter converter = new DSSTGradientConverter(s, propagator.getAttitudeProvider());
 
         // Compute Jacobian
         for (final DSSTForceModel forceModel : propagator.getAllForceModels()) {
 
-            final FieldSpacecraftState<DerivativeStructure> dsState = converter.getState(forceModel);
-            final DerivativeStructure[] parameters = converter.getParameters(dsState, forceModel);
-            final FieldAuxiliaryElements<DerivativeStructure> auxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), I);
+            final FieldSpacecraftState<Gradient> dsState = converter.getState(forceModel);
+            final Gradient[] parameters = converter.getParameters(dsState, forceModel);
+            final FieldAuxiliaryElements<Gradient> auxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), I);
 
             // "field" initialization of the force model if it was not done before
             forceModel.initialize(auxiliaryElements, propagationType, parameters);
-            final DerivativeStructure[] meanElementRate = forceModel.getMeanElementRate(dsState, auxiliaryElements, parameters);
-            final double[] derivativesA  = meanElementRate[0].getAllDerivatives();
-            final double[] derivativesEx = meanElementRate[1].getAllDerivatives();
-            final double[] derivativesEy = meanElementRate[2].getAllDerivatives();
-            final double[] derivativesHx = meanElementRate[3].getAllDerivatives();
-            final double[] derivativesHy = meanElementRate[4].getAllDerivatives();
-            final double[] derivativesL  = meanElementRate[5].getAllDerivatives();
+            final Gradient[] meanElementRate = forceModel.getMeanElementRate(dsState, auxiliaryElements, parameters);
+            final double[] derivativesA  = meanElementRate[0].getGradient();
+            final double[] derivativesEx = meanElementRate[1].getGradient();
+            final double[] derivativesEy = meanElementRate[2].getGradient();
+            final double[] derivativesHx = meanElementRate[3].getGradient();
+            final double[] derivativesHy = meanElementRate[4].getGradient();
+            final double[] derivativesL  = meanElementRate[5].getGradient();
 
             // update Jacobian with respect to state
             addToRow(derivativesA,  0, dMeanElementRatedElement);
@@ -294,13 +294,13 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
             for (ParameterDriver driver : forceModel.getParametersDrivers()) {
                 if (driver.isSelected()) {
                     final int parameterIndex = map.get(driver);
-                    ++index;
                     dMeanElementRatedParam[0][parameterIndex] += derivativesA[index];
                     dMeanElementRatedParam[1][parameterIndex] += derivativesEx[index];
                     dMeanElementRatedParam[2][parameterIndex] += derivativesEy[index];
                     dMeanElementRatedParam[3][parameterIndex] += derivativesHx[index];
                     dMeanElementRatedParam[4][parameterIndex] += derivativesHy[index];
                     dMeanElementRatedParam[5][parameterIndex] += derivativesL[index];
+                    ++index;
                 }
             }
 
@@ -363,7 +363,7 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
                           final double[][] dMeanElementRatedElement) {
 
         for (int i = 0; i < 6; i++) {
-            dMeanElementRatedElement[index][i] += derivatives[i + 1];
+            dMeanElementRatedElement[index][i] += derivatives[i];
         }
 
     }

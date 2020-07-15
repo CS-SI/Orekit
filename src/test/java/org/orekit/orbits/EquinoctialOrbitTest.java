@@ -1,5 +1,5 @@
- /* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+ /* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -756,8 +756,8 @@ public class EquinoctialOrbitTest {
     @Test
     public void testInterpolationWithDerivatives() {
         doTestInterpolation(true,
-                            397, 1.28e-8,
-                            610, 3.95e-6,
+                            397, 1.17e-8,
+                            610, 4.48e-6,
                             4870, 115);
     }
 

@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,6 +18,7 @@ package org.orekit.forces;
 
 
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -38,6 +39,13 @@ public abstract class AbstractLegacyForceModelTest extends AbstractForceModelTes
                                                                                   final FieldVector3D<DerivativeStructure> velocity,
                                                                                   final FieldRotation<DerivativeStructure> rotation,
                                                                                   final DerivativeStructure mass);
+
+    protected abstract FieldVector3D<Gradient> accelerationDerivativesGradient(ForceModel forceModel,
+                                                                               final AbsoluteDate date, final  Frame frame,
+                                                                               final FieldVector3D<Gradient> position,
+                                                                               final FieldVector3D<Gradient> velocity,
+                                                                               final FieldRotation<Gradient> rotation,
+                                                                               final Gradient mass);
 
     protected void checkStateJacobianVs80Implementation(final SpacecraftState state, final ForceModel forceModel,
                                                         final AttitudeProvider attitudeProvider,
@@ -88,6 +96,72 @@ public abstract class AbstractLegacyForceModelTest extends AbstractForceModelTes
         Vector3D dFdVZRes = new Vector3D(dsNew.getX().getPartialDerivative(0, 0, 0, 0, 0, 1),
                                          dsNew.getY().getPartialDerivative(0, 0, 0, 0, 0, 1),
                                          dsNew.getZ().getPartialDerivative(0, 0, 0, 0, 0, 1));
+        if (print) {
+            System.out.println("dF/dPX ref norm: " + dFdPXRef.getNorm() + ", abs error: " + Vector3D.distance(dFdPXRef, dFdPXRes) + ", rel error: " + (Vector3D.distance(dFdPXRef, dFdPXRes) / dFdPXRef.getNorm()));
+            System.out.println("dF/dPY ref norm: " + dFdPYRef.getNorm() + ", abs error: " + Vector3D.distance(dFdPYRef, dFdPYRes) + ", rel error: " + (Vector3D.distance(dFdPYRef, dFdPYRes) / dFdPYRef.getNorm()));
+            System.out.println("dF/dPZ ref norm: " + dFdPZRef.getNorm() + ", abs error: " + Vector3D.distance(dFdPZRef, dFdPZRes) + ", rel error: " + (Vector3D.distance(dFdPZRef, dFdPZRes) / dFdPZRef.getNorm()));
+            System.out.println("dF/dVX ref norm: " + dFdVXRef.getNorm() + ", abs error: " + Vector3D.distance(dFdVXRef, dFdVXRes) + ", rel error: " + (Vector3D.distance(dFdVXRef, dFdVXRes) / dFdVXRef.getNorm()));
+            System.out.println("dF/dVY ref norm: " + dFdVYRef.getNorm() + ", abs error: " + Vector3D.distance(dFdVYRef, dFdVYRes) + ", rel error: " + (Vector3D.distance(dFdVYRef, dFdVYRes) / dFdVYRef.getNorm()));
+            System.out.println("dF/dVZ ref norm: " + dFdVZRef.getNorm() + ", abs error: " + Vector3D.distance(dFdVZRef, dFdVZRes) + ", rel error: " + (Vector3D.distance(dFdVZRef, dFdVZRes) / dFdVZRef.getNorm()));
+        }
+        checkdFdP(dFdPXRef, dFdPXRes, checkTolerance);
+        checkdFdP(dFdPYRef, dFdPYRes, checkTolerance);
+        checkdFdP(dFdPZRef, dFdPZRes, checkTolerance);
+        checkdFdP(dFdVXRef, dFdVXRes, checkTolerance);
+        checkdFdP(dFdVYRef, dFdVYRes, checkTolerance);
+        checkdFdP(dFdVZRef, dFdVZRes, checkTolerance);
+
+    }
+
+    protected void checkStateJacobianVs80ImplementationGradient(final SpacecraftState state, final ForceModel forceModel,
+                                                                final AttitudeProvider attitudeProvider,
+                                                                final double checkTolerance, final boolean print)
+        {
+        FieldSpacecraftState<Gradient> fState = toGradient(state, attitudeProvider);
+        FieldVector3D<Gradient> gNew = forceModel.acceleration(fState,
+                                                                           forceModel.getParameters(fState.getDate().getField()));
+        FieldVector3D<Gradient> gOld = accelerationDerivativesGradient(forceModel, fState.getDate().toAbsoluteDate(),
+                                                                       fState.getFrame(),
+                                                                       fState.getPVCoordinates().getPosition(),
+                                                                       fState.getPVCoordinates().getVelocity(),
+                                                                       fState.getAttitude().getRotation(),
+                                                                       fState.getMass());
+        Vector3D dFdPXRef = new Vector3D(gOld.getX().getPartialDerivative(0),
+                                         gOld.getY().getPartialDerivative(0),
+                                         gOld.getZ().getPartialDerivative(0));
+        Vector3D dFdPXRes = new Vector3D(gNew.getX().getPartialDerivative(0),
+                                         gNew.getY().getPartialDerivative(0),
+                                         gNew.getZ().getPartialDerivative(0));
+        Vector3D dFdPYRef = new Vector3D(gOld.getX().getPartialDerivative(1),
+                                         gOld.getY().getPartialDerivative(1),
+                                         gOld.getZ().getPartialDerivative(1));
+        Vector3D dFdPYRes = new Vector3D(gNew.getX().getPartialDerivative(1),
+                                         gNew.getY().getPartialDerivative(1),
+                                         gNew.getZ().getPartialDerivative(1));
+        Vector3D dFdPZRef = new Vector3D(gOld.getX().getPartialDerivative(2),
+                                         gOld.getY().getPartialDerivative(2),
+                                         gOld.getZ().getPartialDerivative(2));
+        Vector3D dFdPZRes = new Vector3D(gNew.getX().getPartialDerivative(2),
+                                         gNew.getY().getPartialDerivative(2),
+                                         gNew.getZ().getPartialDerivative(2));
+        Vector3D dFdVXRef = new Vector3D(gOld.getX().getPartialDerivative(3),
+                                         gOld.getY().getPartialDerivative(3),
+                                         gOld.getZ().getPartialDerivative(3));
+        Vector3D dFdVXRes = new Vector3D(gNew.getX().getPartialDerivative(3),
+                                         gNew.getY().getPartialDerivative(3),
+                                         gNew.getZ().getPartialDerivative(3));
+        Vector3D dFdVYRef = new Vector3D(gOld.getX().getPartialDerivative(4),
+                                         gOld.getY().getPartialDerivative(4),
+                                         gOld.getZ().getPartialDerivative(4));
+        Vector3D dFdVYRes = new Vector3D(gNew.getX().getPartialDerivative(4),
+                                         gNew.getY().getPartialDerivative(4),
+                                         gNew.getZ().getPartialDerivative(4));
+        Vector3D dFdVZRef = new Vector3D(gOld.getX().getPartialDerivative(5),
+                                         gOld.getY().getPartialDerivative(5),
+                                         gOld.getZ().getPartialDerivative(5));
+        Vector3D dFdVZRes = new Vector3D(gNew.getX().getPartialDerivative(5),
+                                         gNew.getY().getPartialDerivative(5),
+                                         gNew.getZ().getPartialDerivative(5));
         if (print) {
             System.out.println("dF/dPX ref norm: " + dFdPXRef.getNorm() + ", abs error: " + Vector3D.distance(dFdPXRef, dFdPXRes) + ", rel error: " + (Vector3D.distance(dFdPXRef, dFdPXRes) / dFdPXRef.getNorm()));
             System.out.println("dF/dPY ref norm: " + dFdPYRef.getNorm() + ", abs error: " + Vector3D.distance(dFdPYRef, dFdPYRes) + ", rel error: " + (Vector3D.distance(dFdPYRef, dFdPYRes) / dFdPYRef.getNorm()));

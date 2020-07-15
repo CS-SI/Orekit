@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -25,8 +25,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -65,18 +63,11 @@ public class SingleBodyRelativeAttraction extends AbstractForceModel {
      * {@link CelestialBodies#getMoon()})
      */
     public SingleBodyRelativeAttraction(final CelestialBody body) {
+        gmDriver = new ParameterDriver(body.getName() + ATTRACTION_COEFFICIENT_SUFFIX,
+                                       body.getGM(), MU_SCALE,
+                                       0.0, Double.POSITIVE_INFINITY);
 
         this.body = body;
-
-        try {
-            gmDriver = new ParameterDriver(body.getName() + ATTRACTION_COEFFICIENT_SUFFIX,
-                                           body.getGM(), MU_SCALE,
-                                           0.0, Double.POSITIVE_INFINITY);
-        } catch (OrekitException oe) {
-            // this should never occur as valueChanged above never throws an exception
-            throw new OrekitInternalError(oe);
-        }
-
     }
 
     /** {@inheritDoc} */

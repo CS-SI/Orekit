@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -57,6 +58,9 @@ public class AntexLoader {
 
     /** Default supported files name pattern for antex files. */
     public static final String DEFAULT_ANTEX_SUPPORTED_NAMES = "^\\w{5}(?:_\\d{4})?\\.atx$";
+
+    /** Pattern for delimiting regular expressions. */
+    private static final Pattern SEPARATOR = Pattern.compile("\\s+");
 
     /** Satellites antennas. */
     private final List<TimeSpanMap<SatelliteAntenna>> satellitesAntennas;
@@ -181,10 +185,10 @@ public class AntexLoader {
         public void loadData(final InputStream input, final String name)
             throws IOException, OrekitException {
 
+            int                              lineNumber           = 0;
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
 
                 // placeholders for parsed data
-                int                              lineNumber           = 0;
                 SatelliteSystem                  satelliteSystem      = null;
                 String                           antennaType          = null;
                 SatelliteType                    satelliteType        = null;
@@ -399,7 +403,7 @@ public class AntexLoader {
                             break;
                         default :
                             if (inFrequency) {
-                                final String[] fields = line.trim().split("\\s+");
+                                final String[] fields = SEPARATOR.split(line.trim());
                                 if (fields.length != grid1D.length + 1) {
                                     throw new OrekitException(OrekitMessages.WRONG_COLUMNS_NUMBER,
                                                               name, lineNumber, grid1D.length + 1, fields.length);
@@ -426,7 +430,11 @@ public class AntexLoader {
                     }
                 }
 
+            } catch (NumberFormatException nfe) {
+                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                          lineNumber, name, "tot");
             }
+
         }
 
         /** Extract a string from a line.

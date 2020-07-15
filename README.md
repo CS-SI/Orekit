@@ -17,7 +17,7 @@ handle them (conversions, propagations, pointing, ...).
 
 ### Official releases
 
-[Official Orekit releases](https://gitlab.orekit.org/orekit/orekit/releases)
+[Official Orekit releases](https://gitlab.orekit.org/orekit/orekit/-/releases)
 are available on our [Gitlab instance](https://gitlab.orekit.org/). They are
 also available in the
 [Maven repository](https://mvnrepository.com/artifact/org.orekit/orekit).
@@ -83,6 +83,6 @@ More detailed information is available in the
 
 ## License
 
-Orekit is licensed by [CS Group](https://www.c-s.fr/) under
+Orekit is licensed by [CS GROUP](https://www.c-s.fr/) under
 the [Apache License, version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
 A copy of this license is provided in the [LICENSE.txt](LICENSE.txt) file.

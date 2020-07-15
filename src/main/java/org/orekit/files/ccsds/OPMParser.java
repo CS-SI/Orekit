@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -186,8 +186,8 @@ public class OPMParser extends ODMParser {
     /** {@inheritDoc} */
     public OPMFile parse(final InputStream stream, final String fileName) {
 
-        try {
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
+
             // initialize internal data structures
             final ParseInfo pi = new ParseInfo();
             pi.fileName = fileName;
@@ -309,7 +309,6 @@ public class OPMParser extends ODMParser {
             if (pi.maneuver != null) {
                 file.addManeuver(pi.maneuver);
             }
-            reader.close();
             return file;
         } catch (IOException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));

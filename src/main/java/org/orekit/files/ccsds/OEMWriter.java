@@ -1,5 +1,5 @@
 /* Copyright 2016 Applied Defense Solutions (ADS)
- * Licensed to CS Group (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * ADS licenses this file to You under the Apache License, Version 2.0
@@ -56,11 +56,7 @@ public class OEMWriter implements EphemerisFileWriter {
     /** Default originator field value if user specifies none. **/
     public static final String DEFAULT_ORIGINATOR = "OREKIT";
 
-    /**
-     * The space object ID we want to export, or null if we will process
-     * whichever space object is in an {@link EphemerisFile} with only one space
-     * object in it.
-     */
+    /** The interpolation method for ephemeris data. */
     private final InterpolationMethod interpolationMethod;
 
     /** Originator name, usually the organization and/or country. **/

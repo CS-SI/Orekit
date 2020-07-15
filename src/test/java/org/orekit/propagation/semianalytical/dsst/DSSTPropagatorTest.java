@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -27,9 +27,11 @@ import java.util.Set;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince54Integrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -71,8 +73,10 @@ import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.AltitudeDetector;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.LatitudeCrossingDetector;
 import org.orekit.propagation.events.NodeDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -926,6 +930,49 @@ public class DSSTPropagatorTest {
                                               computedOsculatingState.getPVCoordinates().getPosition()),
                             5.0e-6);
 
+    }
+
+    @Test
+    public void testIssue613() {
+        // Spacecraft state
+        final SpacecraftState state = getLEOState();
+
+        // Body frame
+        final Frame itrf = FramesFactory .getITRF(IERSConventions.IERS_2010, true);
+        
+        // Earth
+        final UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(4, 4);
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING, itrf);
+        // Detectors
+        final List<EventDetector> events = new ArrayList<>();
+        events.add(new AltitudeDetector(85.5, earth));
+        events.add(new LatitudeCrossingDetector(earth, 0.0));
+
+        // Force models
+        final List<DSSTForceModel> forceModels = new ArrayList<>();
+        forceModels.add(new DSSTZonal(provider));
+        forceModels.add(new DSSTTesseral(itrf, Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider));
+        forceModels.add(new DSSTThirdBody(CelestialBodyFactory.getMoon(), provider.getMu()));
+        forceModels.add(new DSSTThirdBody(CelestialBodyFactory.getSun(), provider.getMu()));
+
+        // Set up DSST propagator
+        final double[][] tol = DSSTPropagator.tolerances(10.0, state.getOrbit());
+        final ODEIntegrator integrator = new DormandPrince54Integrator(60.0, 3600.0, tol[0], tol[1]);
+        final DSSTPropagator propagator = new DSSTPropagator(integrator, PropagationType.OSCULATING);
+        for (DSSTForceModel force : forceModels) {
+            propagator.addForceModel(force);
+        }
+        for (EventDetector event : events) {
+            propagator.addEventDetector(event);
+        }
+        propagator.setInitialState(state);
+
+        // Propagation
+        final SpacecraftState finalState = propagator.propagate(state.getDate().shiftedBy(86400.0));
+
+        // Verify is the propagation is correctly performed
+        Assert.assertEquals(finalState.getMu(), 3.986004415E14, Double.MIN_VALUE);
     }
 
     @Test

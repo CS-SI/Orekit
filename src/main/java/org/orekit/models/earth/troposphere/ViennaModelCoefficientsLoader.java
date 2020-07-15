@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
 import org.hipparchus.util.FastMath;
@@ -89,6 +90,9 @@ public class ViennaModelCoefficientsLoader extends AbstractSelfFeedingLoader
 
     /** Default supported files name pattern. */
     public static final String DEFAULT_SUPPORTED_NAMES = "VMF*_\\\\*\\*\\.*H$";
+
+    /** Pattern for delimiting regular expressions. */
+    private static final Pattern SEPARATOR = Pattern.compile("\\s+");
 
     /** The hydrostatic and wet a coefficients loaded. */
     private double[] coefficientsA;
@@ -267,10 +271,8 @@ public class ViennaModelCoefficientsLoader extends AbstractSelfFeedingLoader
     public void loadData(final InputStream input, final String name)
         throws IOException, ParseException {
 
-        // Open stream and parse data
-        final BufferedReader br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
         int lineNumber = 0;
-        final String splitter = "\\s+";
+        String line = null;
 
         // Initialize Lists
         final ArrayList<Double> latitudes  = new ArrayList<>();
@@ -280,14 +282,16 @@ public class ViennaModelCoefficientsLoader extends AbstractSelfFeedingLoader
         final ArrayList<Double> zhd        = new ArrayList<>();
         final ArrayList<Double> zwd        = new ArrayList<>();
 
-        for (String line = br.readLine(); line != null; line = br.readLine()) {
-            ++lineNumber;
-            line = line.trim();
+        // Open stream and parse data
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
 
-            try {
+            for (line = br.readLine(); line != null; line = br.readLine()) {
+                ++lineNumber;
+                line = line.trim();
+
                 // Fill latitudes and longitudes lists
                 if (line.length() > 0 && line.startsWith("! Range/resolution:")) {
-                    final String[] range_line = line.split(splitter);
+                    final String[] range_line = SEPARATOR.split(line);
 
                     // Latitudes list
                     for (double lat = Double.parseDouble(range_line[2]); lat <= Double.parseDouble(range_line[3]); lat = lat + Double.parseDouble(range_line[6])) {
@@ -308,22 +312,18 @@ public class ViennaModelCoefficientsLoader extends AbstractSelfFeedingLoader
 
                 // Fill ah, aw, zhd and zwd lists
                 if (line.length() > 0 && !line.startsWith("!")) {
-                    final String[] values_line = line.split(splitter);
+                    final String[] values_line = SEPARATOR.split(line);
                     ah.add(Double.valueOf(values_line[2]));
                     aw.add(Double.valueOf(values_line[3]));
                     zhd.add(Double.valueOf(values_line[4]));
                     zwd.add(Double.valueOf(values_line[5]));
                 }
-
-            } catch (NumberFormatException nfe) {
-                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                          lineNumber, name, line);
             }
 
+        } catch (NumberFormatException nfe) {
+            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                      lineNumber, name, line);
         }
-
-        // Close the stream after reading
-        input.close();
 
         final int dimLat = latitudes.size();
         final int dimLon = longitudes.size();

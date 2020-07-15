@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,6 +17,9 @@
 package org.orekit.time;
 
 
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -96,6 +99,56 @@ public class DateTimeComponentsTest {
     public void testLocalTime() {
         final DateTimeComponents dtc = DateTimeComponents.parseDateTime("2000-02-29T03:04:05.000+00:01");
         Assert.assertEquals(1, dtc.getTime().getMinutesFromUTC());
+    }
+
+    /**
+     * This test is for offsets from UTC. The corresponding test in AbsoluteDateTest
+     * handles UTC.
+     */
+    @Test
+    public void testToStringRfc3339() {
+        // setup
+        int m = 779; // 12 hours, 59 minutes
+        final double sixtyOne = FastMath.nextDown(61.0);
+
+        // action + verify
+        check(2009, 1, 1, 12, 0, 0, m, "2009-01-01T12:00:00+12:59");
+        check(2009, 1, 1, 12, 0, 0, -m, "2009-01-01T12:00:00-12:59");
+        check(2009, 1, 1, 12, 0, 0, 1, "2009-01-01T12:00:00+00:01");
+        check(2009, 1, 1, 12, 0, 0, -1, "2009-01-01T12:00:00-00:01");
+        // 00:00:00 local time
+        check(2009, 1, 1, 0, 0, 0, 59, "2009-01-01T00:00:00+00:59");
+        check(2009, 1, 1, 0, 0, 0, -59, "2009-01-01T00:00:00-00:59");
+        check(2009, 1, 1, 0, 0, 0, 0, "2009-01-01T00:00:00Z");
+        // 00:00:00 UTC, but in a time zone
+        check(2009, 1, 2, 1, 0, 0, 60, "2009-01-02T01:00:00+01:00");
+        check(2009, 1, 1, 23, 0, 0, -60, "2009-01-01T23:00:00-01:00");
+        // leap seconds
+        check(2009, 12, 31, 23, 59, sixtyOne, m, "2009-12-31T23:59:60.99999999999999+12:59");
+        check(2009, 12, 31, 23, 59, sixtyOne, -m, "2009-12-31T23:59:60.99999999999999-12:59");
+        check(9999, 2, 3, 4, 5, 60.5, 60, "9999-02-03T04:05:60.5+01:00");
+        check(9999, 2, 3, 4, 5, 60.5, -60, "9999-02-03T04:05:60.5-01:00");
+        // time zone offsets larger than 99:59?
+        // TimeComponents should limit time zone offset to valid values.
+        // toString will just format the values given
+        check(2009, 1, 1, 12, 0, 0, 100*60, "2009-01-01T12:00:00+100:00");
+        check(2009, 1, 1, 12, 0, 0, -100*60, "2009-01-01T12:00:00-100:00");
+        // same for negative years
+        check(-1, 1, 1, 12, 0, 0, m, "-001-01-01T12:00:00+12:59");
+        check(-1, 1, 1, 12, 0, 0, -m, "-001-01-01T12:00:00-12:59");
+        check(-1000, 1, 1, 12, 0, 0, m, "-1000-01-01T12:00:00+12:59");
+        check(-1000, 1, 1, 12, 0, 0, -m, "-1000-01-01T12:00:00-12:59");
+    }
+
+    private static void check(
+            int year, int month, int day, int hour, int minute, double second,
+            int minutesFromUtc,
+            String expected) {
+        DateTimeComponents actual = new DateTimeComponents(
+                new DateComponents(year, month, day),
+                new TimeComponents(hour, minute, second, minutesFromUtc));
+
+        MatcherAssert.assertThat(actual.toStringRfc3339(), CoreMatchers.is(expected));
     }
 
 }

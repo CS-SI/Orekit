@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,6 +21,7 @@ import static org.junit.Assert.assertFalse;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -104,6 +105,42 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
         }
     }
 
+    @Override
+    protected FieldVector3D<Gradient> accelerationDerivativesGradient(final ForceModel forceModel, final AbsoluteDate date,
+                                                                      final Frame frame,
+                                                                      final FieldVector3D<Gradient> position,
+                                                                      final FieldVector3D<Gradient> velocity,
+                                                                      final FieldRotation<Gradient> rotation,
+                                                                      final Gradient mass) {
+        try {
+            java.lang.reflect.Field refInertialFrameField = InertialForces.class.getDeclaredField("referenceInertialFrame");
+            refInertialFrameField.setAccessible(true);
+            Frame refInertialFrame = (Frame) refInertialFrameField.get(forceModel);
+
+            final Field<Gradient> field = position.getX().getField();
+            final FieldTransform<Gradient> inertToStateFrame = refInertialFrame.getTransformTo(frame,
+                                                                                               new FieldAbsoluteDate<>(field, date));
+            final FieldVector3D<Gradient>  a1                = inertToStateFrame.getCartesian().getAcceleration();
+            final FieldRotation<Gradient>  r1                = inertToStateFrame.getAngular().getRotation();
+            final FieldVector3D<Gradient>  o1                = inertToStateFrame.getAngular().getRotationRate();
+            final FieldVector3D<Gradient>  oDot1             = inertToStateFrame.getAngular().getRotationAcceleration();
+
+            final FieldVector3D<Gradient>  p2                = position;
+            final FieldVector3D<Gradient>  v2                = velocity;
+
+            final FieldVector3D<Gradient> crossCrossP        = FieldVector3D.crossProduct(o1,    FieldVector3D.crossProduct(o1, p2));
+            final FieldVector3D<Gradient> crossV             = FieldVector3D.crossProduct(o1,    v2);
+            final FieldVector3D<Gradient> crossDotP          = FieldVector3D.crossProduct(oDot1, p2);
+
+            // we intentionally DON'T include s.getPVCoordinates().getAcceleration()
+            // because we want only the coupling effect of the frames transforms
+            return r1.applyTo(a1).subtract(new FieldVector3D<>(2, crossV, 1, crossCrossP, 1, crossDotP));
+
+        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+            return null;
+        }
+    }
+
     @Test
     public void testJacobianVs80Implementation() {
         // initialization
@@ -123,7 +160,27 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
                                              Propagator.DEFAULT_LAW,
                                              1.0e-50, false);
     }
-    
+
+    @Test
+    public void testJacobianVs80ImplementationGradient() {
+        // initialization
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+                                             new TimeComponents(13, 59, 27.816),
+                                             TimeScalesFactory.getUTC());
+        double i     = FastMath.toRadians(98.7);
+        double omega = FastMath.toRadians(93.0);
+        double OMEGA = FastMath.toRadians(15.0 * 22.5);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
+                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         Constants.EIGEN5C_EARTH_MU);
+        final AbsolutePVCoordinates pva = new AbsolutePVCoordinates(orbit.getFrame(), orbit.getPVCoordinates());
+        final InertialForces forceModel = new InertialForces(pva.getFrame());
+        assertFalse(forceModel.dependsOnPositionOnly());
+        checkStateJacobianVs80ImplementationGradient(new SpacecraftState(pva), forceModel,
+                                             Propagator.DEFAULT_LAW,
+                                             1.0e-50, false);
+    }
+
     @Test
     public void RealFieldTest() {
         DSFactory factory = new DSFactory(6, 5);

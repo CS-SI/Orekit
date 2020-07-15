@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Group (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -66,6 +66,15 @@ public class NegateDetector extends AbstractDetector<NegateDetector> {
                            final EventDetector original) {
         super(newMaxCheck, newThreshold, newMaxIter, newHandler);
         this.original = original;
+    }
+
+    /**
+     * Get the delegate event detector.
+     * @return the delegate event detector
+     * @since 10.2
+     */
+    public EventDetector getOriginal() {
+        return original;
     }
 
     @Override

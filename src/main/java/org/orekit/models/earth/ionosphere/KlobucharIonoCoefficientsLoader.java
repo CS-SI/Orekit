@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
+import java.util.regex.Pattern;
 
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.AbstractSelfFeedingLoader;
@@ -70,6 +71,9 @@ public class KlobucharIonoCoefficientsLoader extends AbstractSelfFeedingLoader
 
     /** Default supported files name pattern. */
     public static final String DEFAULT_SUPPORTED_NAMES = "CGIM*0\\.*N$";
+
+    /** Pattern for delimiting regular expressions. */
+    private static final Pattern SEPARATOR = Pattern.compile("\\s+");
 
     /** The alpha coefficients loaded. */
     private double[] alpha;
@@ -181,18 +185,18 @@ public class KlobucharIonoCoefficientsLoader extends AbstractSelfFeedingLoader
     public void loadData(final InputStream input, final String name)
         throws IOException, ParseException {
 
-        // Open stream and parse data
-        final BufferedReader br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
         int lineNumber = 0;
-        final String splitter = "\\s+";
-        for (String line = br.readLine(); line != null; line = br.readLine()) {
-            ++lineNumber;
-            line = line.trim();
+        String line = null;
+        // Open stream and parse data
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
 
-            try {
+            for (line = br.readLine(); line != null; line = br.readLine()) {
+                ++lineNumber;
+                line = line.trim();
+
                 // Read alphas
                 if (line.length() > 0 && line.endsWith("ALPHA")) {
-                    final String[] alpha_line = line.split(splitter);
+                    final String[] alpha_line = SEPARATOR.split(line);
                     alpha = new double[4];
                     for (int j = 0; j < 4; j++) {
                         alpha[j] = Double.parseDouble(alpha_line[j].replace("D", "E"));
@@ -201,16 +205,17 @@ public class KlobucharIonoCoefficientsLoader extends AbstractSelfFeedingLoader
 
                 // Read betas
                 if (line.length() > 0 && line.endsWith("BETA")) {
-                    final String[] beta_line = line.split(splitter);
+                    final String[] beta_line = SEPARATOR.split(line);
                     beta = new double[4];
                     for (int j = 0; j < 4; j++) {
                         beta[j] = Double.parseDouble(beta_line[j].replace("D", "E"));
                     }
                 }
-            } catch (NumberFormatException nfe) {
-                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                          lineNumber, name, line);
             }
+
+        } catch (NumberFormatException nfe) {
+            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                      lineNumber, name, line);
         }
 
         // Check that alphas and betas were found
@@ -218,7 +223,5 @@ public class KlobucharIonoCoefficientsLoader extends AbstractSelfFeedingLoader
             throw new OrekitException(OrekitMessages.NO_KLOBUCHAR_ALPHA_BETA_IN_FILE, name);
         }
 
-        // Close the stream after reading
-        input.close();
     }
 }

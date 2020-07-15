@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,8 +19,7 @@ package org.orekit.models.earth.tessellation;
 import java.util.Arrays;
 import java.util.List;
 
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -51,9 +50,6 @@ public class AlongTrackAiming implements TileAiming {
     /** Indicator for orbit type. */
     private final boolean retrogradeOrbit;
 
-    /** Factory for the DerivativeStructure instances. */
-    private final DSFactory factory;
-
     /** Simple constructor.
      * @param ellipsoid ellipsoid body on which the zone is defined
      * @param orbit orbit along which tiles should be aligned
@@ -63,7 +59,6 @@ public class AlongTrackAiming implements TileAiming {
     public AlongTrackAiming(final OneAxisEllipsoid ellipsoid, final Orbit orbit, final boolean isAscending) {
         this.halfTrack       = findHalfTrack(orbit, ellipsoid, isAscending);
         this.retrogradeOrbit = orbit.getPVCoordinates().getMomentum().getZ() < 0;
-        this.factory         = new DSFactory(1, 1);
     }
 
     /** {@inheritDoc} */
@@ -112,7 +107,7 @@ public class AlongTrackAiming implements TileAiming {
                                             velocity.getX(), velocity.getY(), velocity.getZ()
                                         });
         }
-        final DerivativeStructure[] p  = interpolator.value(factory.variable(0, gp.getLatitude()));
+        final Gradient[] p  = interpolator.value(Gradient.variable(1, 0, gp.getLatitude()));
 
         // extract interpolated ground position/velocity
         final Vector3D position = new Vector3D(p[0].getValue(),

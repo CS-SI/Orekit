@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -22,6 +22,8 @@ import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -242,6 +244,22 @@ public class FieldPVCoordinatesTest {
     }
 
     @Test
+    public void testUnivariateDerivative1Vector() {
+        FieldVector3D<FieldUnivariateDerivative1<Decimal64>> fv =
+                        new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64( 1), new Decimal64( 0.1), new Decimal64( 10)),
+                                                 new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
+                                                 new FieldVector3D<>(new Decimal64(10), new Decimal64(-1.0), new Decimal64(-100))).
+                                                 toUnivariateDerivative1Vector();
+        Assert.assertEquals(1, fv.getX().getOrder());
+        Assert.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
+        Assert.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
+        Assert.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
+        Assert.assertEquals(  -1.0, fv.getX().getDerivative(1).getReal(), 1.0e-15);
+        Assert.assertEquals(  -0.1, fv.getY().getDerivative(1).getReal(), 1.0e-15);
+        Assert.assertEquals( -10.0, fv.getZ().getDerivative(1).getReal(), 1.0e-15);
+    }
+
+    @Test
     public void testToDerivativeStructureVector2() {
         FieldVector3D<FieldDerivativeStructure<Decimal64>> fv =
                         new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64( 1), new Decimal64( 0.1), new Decimal64( 10)),
@@ -269,6 +287,33 @@ public class FieldPVCoordinatesTest {
                                                                   new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
                                                                   new FieldVector3D<>(new Decimal64(10), new Decimal64(-1.0), new Decimal64(-100))).
                                          shiftedBy(dt).getPosition();
+            Assert.assertEquals(p.getX().doubleValue(), fv.getX().taylor(dt).doubleValue(), 1.0e-14);
+            Assert.assertEquals(p.getY().doubleValue(), fv.getY().taylor(dt).doubleValue(), 1.0e-14);
+            Assert.assertEquals(p.getZ().doubleValue(), fv.getZ().taylor(dt).doubleValue(), 1.0e-14);
+        }
+    }
+
+    @Test
+    public void testUnivariateDerivative2Vector() {
+        FieldVector3D<FieldUnivariateDerivative2<Decimal64>> fv =
+                        new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64( 1),  new Decimal64(0.1),  new Decimal64(10)),
+                                                 new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
+                                                 new FieldVector3D<>(new Decimal64(10), new Decimal64(-1.0), new Decimal64(-100))).toUnivariateDerivative2Vector();
+        Assert.assertEquals(2, fv.getX().getOrder());
+        Assert.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
+        Assert.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
+        Assert.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
+        Assert.assertEquals(  -1.0, fv.getX().getDerivative(1).getReal(), 1.0e-15);
+        Assert.assertEquals(  -0.1, fv.getY().getDerivative(1).getReal(), 1.0e-15);
+        Assert.assertEquals( -10.0, fv.getZ().getDerivative(1).getReal(), 1.0e-15);
+        Assert.assertEquals(  10.0, fv.getX().getDerivative(2).getReal(), 1.0e-15);
+        Assert.assertEquals(  -1.0, fv.getY().getDerivative(2).getReal(), 1.0e-15);
+        Assert.assertEquals(-100.0, fv.getZ().getDerivative(2).getReal(), 1.0e-15);
+
+        for (double dt = 0; dt < 10; dt += 0.125) {
+            FieldVector3D<Decimal64> p = new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64( 1),  new Decimal64(0.1),  new Decimal64(10)),
+                                                                  new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
+                                                                  new FieldVector3D<>(new Decimal64(10), new Decimal64(-1.0), new Decimal64(-100))).shiftedBy(dt).getPosition();
             Assert.assertEquals(p.getX().doubleValue(), fv.getX().taylor(dt).doubleValue(), 1.0e-14);
             Assert.assertEquals(p.getY().doubleValue(), fv.getY().taylor(dt).doubleValue(), 1.0e-14);
             Assert.assertEquals(p.getZ().doubleValue(), fv.getZ().taylor(dt).doubleValue(), 1.0e-14);
@@ -344,6 +389,33 @@ public class FieldPVCoordinatesTest {
 
     }
 
+
+    @Test
+    public void testToUnivariateDerivative1PV() {
+        FieldPVCoordinates<FieldUnivariateDerivative1<Decimal64>> fv =
+                        new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64( 1), new Decimal64( 0.1), new Decimal64( 10)),
+                                                 new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
+                                                 new FieldVector3D<>(new Decimal64(10), new Decimal64(-1.0), new Decimal64(-100))).
+                                                 toUnivariateDerivative1PV();
+        Assert.assertEquals(1, fv.getPosition().getX().getOrder());
+        Assert.assertEquals(   1.0, fv.getPosition().getX().getReal(),     1.0e-10);
+        Assert.assertEquals(   0.1, fv.getPosition().getY().getReal(),     1.0e-10);
+        Assert.assertEquals(  10.0, fv.getPosition().getZ().getReal(),     1.0e-10);
+        Assert.assertEquals(  -1.0, fv.getVelocity().getX().getReal(),     1.0e-10);
+        Assert.assertEquals(  -0.1, fv.getVelocity().getY().getReal(),     1.0e-10);
+        Assert.assertEquals( -10.0, fv.getVelocity().getZ().getReal(),     1.0e-10);
+        Assert.assertEquals(  10.0, fv.getAcceleration().getX().getReal(), 1.0e-10);
+        Assert.assertEquals(  -1.0, fv.getAcceleration().getY().getReal(), 1.0e-10);
+        Assert.assertEquals(-100.0, fv.getAcceleration().getZ().getReal(), 1.0e-10);
+
+        Assert.assertEquals(fv.getVelocity().getX().getReal(),     fv.getPosition().getX().getDerivative(1).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getVelocity().getY().getReal(),     fv.getPosition().getY().getDerivative(1).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getVelocity().getZ().getReal(),     fv.getPosition().getZ().getDerivative(1).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getAcceleration().getX().getReal(), fv.getVelocity().getX().getDerivative(1).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getAcceleration().getY().getReal(), fv.getVelocity().getY().getDerivative(1).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getAcceleration().getZ().getReal(), fv.getVelocity().getZ().getDerivative(1).getReal(), 1.0e-10);
+    }
+
     @Test
     public void testToDerivativeStructurePV2() {
         FieldPVCoordinates<FieldDerivativeStructure<Decimal64>> fv =
@@ -385,6 +457,47 @@ public class FieldPVCoordinatesTest {
             Assert.assertEquals(p.getZ(), fv.getPosition().getZ().taylor(dt).getReal(), 1.0e-14);
         }
 
+    }
+
+    @Test
+    public void testToUnivariateDerivative2PV() {
+        FieldPVCoordinates<FieldUnivariateDerivative2<Decimal64>> fv =
+                        new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64( 1), new Decimal64( 0.1), new Decimal64( 10)),
+                                                 new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
+                                                 new FieldVector3D<>(new Decimal64(10), new Decimal64(-1.0), new Decimal64(-100))).
+                                                 toUnivariateDerivative2PV();
+        Assert.assertEquals(2, fv.getPosition().getX().getOrder());
+        Assert.assertEquals(   1.0, fv.getPosition().getX().getReal(),     1.0e-10);
+        Assert.assertEquals(   0.1, fv.getPosition().getY().getReal(),     1.0e-10);
+        Assert.assertEquals(  10.0, fv.getPosition().getZ().getReal(),     1.0e-10);
+        Assert.assertEquals(  -1.0, fv.getVelocity().getX().getReal(),     1.0e-10);
+        Assert.assertEquals(  -0.1, fv.getVelocity().getY().getReal(),     1.0e-10);
+        Assert.assertEquals( -10.0, fv.getVelocity().getZ().getReal(),     1.0e-10);
+        Assert.assertEquals(  10.0, fv.getAcceleration().getX().getReal(), 1.0e-10);
+        Assert.assertEquals(  -1.0, fv.getAcceleration().getY().getReal(), 1.0e-10);
+        Assert.assertEquals(-100.0, fv.getAcceleration().getZ().getReal(), 1.0e-10);
+
+        Assert.assertEquals(fv.getVelocity().getX().getReal(),                      fv.getPosition().getX().getDerivative(1).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getVelocity().getY().getReal(),                      fv.getPosition().getY().getDerivative(1).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getVelocity().getZ().getReal(),                      fv.getPosition().getZ().getDerivative(1).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getAcceleration().getX().getReal(),                  fv.getPosition().getX().getDerivative(2).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getAcceleration().getY().getReal(),                  fv.getPosition().getY().getDerivative(2).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getAcceleration().getZ().getReal(),                  fv.getPosition().getZ().getDerivative(2).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getAcceleration().getX().getReal(),                  fv.getVelocity().getX().getDerivative(1).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getAcceleration().getY().getReal(),                  fv.getVelocity().getY().getDerivative(1).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getAcceleration().getZ().getReal(),                  fv.getVelocity().getZ().getDerivative(1).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getAcceleration().getX().getDerivative(1).getReal(), fv.getVelocity().getX().getDerivative(2).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getAcceleration().getY().getDerivative(1).getReal(), fv.getVelocity().getY().getDerivative(2).getReal(), 1.0e-10);
+        Assert.assertEquals(fv.getAcceleration().getZ().getDerivative(1).getReal(), fv.getVelocity().getZ().getDerivative(2).getReal(), 1.0e-10);
+
+        for (double dt = 0; dt < 10; dt += 0.125) {
+            Vector3D p = new PVCoordinates(new Vector3D( 1,  0.1,  10),
+                                           new Vector3D(-1, -0.1, -10),
+                                           new Vector3D(10, -1.0, -100)).shiftedBy(dt).getPosition();
+            Assert.assertEquals(p.getX(), fv.getPosition().getX().taylor(dt).getReal(), 1.0e-14);
+            Assert.assertEquals(p.getY(), fv.getPosition().getY().taylor(dt).getReal(), 1.0e-14);
+            Assert.assertEquals(p.getZ(), fv.getPosition().getZ().taylor(dt).getReal(), 1.0e-14);
+        }
     }
 
     @Test

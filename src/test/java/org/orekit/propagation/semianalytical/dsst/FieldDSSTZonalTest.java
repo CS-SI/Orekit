@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -24,7 +24,7 @@ import java.util.List;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
@@ -258,25 +258,25 @@ public class FieldDSSTZonalTest {
         final DSSTForceModel zonal   = new DSSTZonal(provider, 2, 1, 5);
                         
         // Converter for derivatives
-        final DSSTDSConverter converter = new DSSTDSConverter(meanState, InertialProvider.EME2000_ALIGNED);
+        final DSSTGradientConverter converter = new DSSTGradientConverter(meanState, InertialProvider.EME2000_ALIGNED);
         
         // Field parameters
-        final FieldSpacecraftState<DerivativeStructure> dsState = converter.getState(zonal);
-        final DerivativeStructure[] dsParameters                = converter.getParameters(dsState, zonal);
+        final FieldSpacecraftState<Gradient> dsState = converter.getState(zonal);
+        final Gradient[] dsParameters                = converter.getParameters(dsState, zonal);
         
-        final FieldAuxiliaryElements<DerivativeStructure> fieldAuxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), 1);
+        final FieldAuxiliaryElements<Gradient> fieldAuxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), 1);
         
         // Zero
-        final DerivativeStructure zero = dsState.getDate().getField().getZero();
+        final Gradient zero = dsState.getDate().getField().getZero();
         
         // Compute state Jacobian using directly the method
-        final List<FieldShortPeriodTerms<DerivativeStructure>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<DerivativeStructure>>();
+        final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<Gradient>>();
         shortPeriodTerms.addAll(zonal.initialize(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
         zonal.updateShortPeriodTerms(dsParameters, dsState);
-        final DerivativeStructure[] shortPeriod = new DerivativeStructure[6];
+        final Gradient[] shortPeriod = new Gradient[6];
         Arrays.fill(shortPeriod, zero);
-        for (final FieldShortPeriodTerms<DerivativeStructure> spt : shortPeriodTerms) {
-            final DerivativeStructure[] spVariation = spt.value(dsState.getOrbit());
+        for (final FieldShortPeriodTerms<Gradient> spt : shortPeriodTerms) {
+            final Gradient[] spVariation = spt.value(dsState.getOrbit());
             for (int i = 0; i < spVariation .length; i++) {
                 shortPeriod[i] = shortPeriod[i].add(spVariation[i]);
             }
@@ -284,12 +284,12 @@ public class FieldDSSTZonalTest {
         
         final double[][] shortPeriodJacobian = new double[6][6];
       
-        final double[] derivativesASP  = shortPeriod[0].getAllDerivatives();
-        final double[] derivativesExSP = shortPeriod[1].getAllDerivatives();
-        final double[] derivativesEySP = shortPeriod[2].getAllDerivatives();
-        final double[] derivativesHxSP = shortPeriod[3].getAllDerivatives();
-        final double[] derivativesHySP = shortPeriod[4].getAllDerivatives();
-        final double[] derivativesLSP  = shortPeriod[5].getAllDerivatives();
+        final double[] derivativesASP  = shortPeriod[0].getGradient();
+        final double[] derivativesExSP = shortPeriod[1].getGradient();
+        final double[] derivativesEySP = shortPeriod[2].getGradient();
+        final double[] derivativesHxSP = shortPeriod[3].getGradient();
+        final double[] derivativesHySP = shortPeriod[4].getGradient();
+        final double[] derivativesLSP  = shortPeriod[5].getGradient();
 
         // Update Jacobian with respect to state
         addToRow(derivativesASP,  0, shortPeriodJacobian);
@@ -379,25 +379,25 @@ public class FieldDSSTZonalTest {
         }
       
         // Converter for derivatives
-        final DSSTDSConverter converter = new DSSTDSConverter(meanState, InertialProvider.EME2000_ALIGNED);
+        final DSSTGradientConverter converter = new DSSTGradientConverter(meanState, InertialProvider.EME2000_ALIGNED);
       
         // Field parameters
-        final FieldSpacecraftState<DerivativeStructure> dsState = converter.getState(zonal);
-        final DerivativeStructure[] dsParameters                = converter.getParameters(dsState, zonal);
+        final FieldSpacecraftState<Gradient> dsState = converter.getState(zonal);
+        final Gradient[] dsParameters                = converter.getParameters(dsState, zonal);
       
-        final FieldAuxiliaryElements<DerivativeStructure> fieldAuxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), 1);
+        final FieldAuxiliaryElements<Gradient> fieldAuxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), 1);
       
         // Zero
-        final DerivativeStructure zero = dsState.getDate().getField().getZero();
+        final Gradient zero = dsState.getDate().getField().getZero();
       
         // Compute Jacobian using directly the method
-        final List<FieldShortPeriodTerms<DerivativeStructure>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<DerivativeStructure>>();
+        final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<Gradient>>();
         shortPeriodTerms.addAll(zonal.initialize(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
         zonal.updateShortPeriodTerms(dsParameters, dsState);
-        final DerivativeStructure[] shortPeriod = new DerivativeStructure[6];
+        final Gradient[] shortPeriod = new Gradient[6];
         Arrays.fill(shortPeriod, zero);
-        for (final FieldShortPeriodTerms<DerivativeStructure> spt : shortPeriodTerms) {
-            final DerivativeStructure[] spVariation = spt.value(dsState.getOrbit());
+        for (final FieldShortPeriodTerms<Gradient> spt : shortPeriodTerms) {
+            final Gradient[] spVariation = spt.value(dsState.getOrbit());
             for (int i = 0; i < spVariation .length; i++) {
                 shortPeriod[i] = shortPeriod[i].add(spVariation[i]);
             }
@@ -405,23 +405,23 @@ public class FieldDSSTZonalTest {
 
         final double[][] shortPeriodJacobian = new double[6][1];
     
-        final double[] derivativesASP  = shortPeriod[0].getAllDerivatives();
-        final double[] derivativesExSP = shortPeriod[1].getAllDerivatives();
-        final double[] derivativesEySP = shortPeriod[2].getAllDerivatives();
-        final double[] derivativesHxSP = shortPeriod[3].getAllDerivatives();
-        final double[] derivativesHySP = shortPeriod[4].getAllDerivatives();
-        final double[] derivativesLSP  = shortPeriod[5].getAllDerivatives();
+        final double[] derivativesASP  = shortPeriod[0].getGradient();
+        final double[] derivativesExSP = shortPeriod[1].getGradient();
+        final double[] derivativesEySP = shortPeriod[2].getGradient();
+        final double[] derivativesHxSP = shortPeriod[3].getGradient();
+        final double[] derivativesHySP = shortPeriod[4].getGradient();
+        final double[] derivativesLSP  = shortPeriod[5].getGradient();
       
         int index = converter.getFreeStateParameters();
         for (ParameterDriver driver : zonal.getParametersDrivers()) {
             if (driver.isSelected()) {
-                ++index;
                 shortPeriodJacobian[0][0] += derivativesASP[index];
                 shortPeriodJacobian[1][0] += derivativesExSP[index];
                 shortPeriodJacobian[2][0] += derivativesEySP[index];
                 shortPeriodJacobian[3][0] += derivativesHxSP[index];
                 shortPeriodJacobian[4][0] += derivativesHySP[index];
                 shortPeriodJacobian[5][0] += derivativesLSP[index];
+                ++index;
             }
         }
       
@@ -565,7 +565,7 @@ public class FieldDSSTZonalTest {
                           final double[][] jacobian) {
 
         for (int i = 0; i < 6; i++) {
-            jacobian[index][i] += derivatives[i + 1];
+            jacobian[index][i] += derivatives[i];
         }
 
     }

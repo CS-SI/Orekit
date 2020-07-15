@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -1746,9 +1746,9 @@ public class FieldNumericalPropagatorTest {
         final FieldVector3D<T>     position     = new FieldVector3D<>(zero.add(6896874.444705),
                                                                       zero.add(1956581.072644),
                                                                       zero.add(-147476.245054));
-        final FieldVector3D<T>     velocity     = new FieldVector3D<>(zero.add(166.816407662),
-                                                                      zero.add(-1106.783301861),
-                                                                      zero.add(-7372.745712770));
+        final FieldVector3D<T>     velocity     = new FieldVector3D<>(zero.add(169.816407662),
+                                                                      zero.add(-1126.783301861),
+                                                                      zero.add(-7332.745712770));
         final TimeStampedFieldPVCoordinates<T> pv = new TimeStampedFieldPVCoordinates<>(date, position, velocity, FieldVector3D.getZero(field));
         final Frame frame = FramesFactory.getEME2000();
         final double mu   = Constants.EIGEN5C_EARTH_MU;

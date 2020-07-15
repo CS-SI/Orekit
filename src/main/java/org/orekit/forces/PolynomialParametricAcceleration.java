@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,8 +20,6 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -131,14 +129,9 @@ public class PolynomialParametricAcceleration extends AbstractParametricAccelera
         super(direction, isInertial, attitudeOverride);
         this.referenceDate = referenceDate;
         this.drivers       = new ParameterDriver[degree + 1];
-        try {
-            for (int i = 0; i < drivers.length; ++i) {
-                drivers[i] = new ParameterDriver(prefix + "[" + i + "]", 0.0, ACCELERATION_SCALE,
-                                                 Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-            }
-        } catch (OrekitException oe) {
-            // this should never happen as scale is hard-coded
-            throw new OrekitInternalError(oe);
+        for (int i = 0; i < drivers.length; ++i) {
+            drivers[i] = new ParameterDriver(prefix + "[" + i + "]", 0.0, ACCELERATION_SCALE,
+                                             Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
         }
     }
 

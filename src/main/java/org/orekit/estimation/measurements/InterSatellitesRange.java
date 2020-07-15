@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,8 +20,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -121,43 +120,42 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
                 indices.put(driver.getName(), nbParams++);
             }
         }
-        final DSFactory factory = new DSFactory(nbParams, 1);
 
         // coordinates of both satellites
         final SpacecraftState local = states[0];
-        final TimeStampedFieldPVCoordinates<DerivativeStructure> pvaL = getCoordinates(local, 0, factory);
+        final TimeStampedFieldPVCoordinates<Gradient> pvaL = getCoordinates(local, 0, nbParams);
         final SpacecraftState remote = states[1];
-        final TimeStampedFieldPVCoordinates<DerivativeStructure> pvaR = getCoordinates(remote, 6, factory);
+        final TimeStampedFieldPVCoordinates<Gradient> pvaR = getCoordinates(remote, 6, nbParams);
 
         // compute propagation times
         // (if state has already been set up to pre-compensate propagation delay,
         //  we will have delta == tauD and transitState will be the same as state)
 
         // downlink delay
-        final DerivativeStructure dtl = getSatellites().get(0).getClockOffsetDriver().getValue(factory, indices);
-        final FieldAbsoluteDate<DerivativeStructure> arrivalDate =
-                        new FieldAbsoluteDate<DerivativeStructure>(getDate(), dtl.negate());
+        final Gradient dtl = getSatellites().get(0).getClockOffsetDriver().getValue(nbParams, indices);
+        final FieldAbsoluteDate<Gradient> arrivalDate =
+                        new FieldAbsoluteDate<>(getDate(), dtl.negate());
 
-        final TimeStampedFieldPVCoordinates<DerivativeStructure> s1Downlink =
+        final TimeStampedFieldPVCoordinates<Gradient> s1Downlink =
                         pvaL.shiftedBy(arrivalDate.durationFrom(pvaL.getDate()));
-        final DerivativeStructure tauD = signalTimeOfFlight(pvaR, s1Downlink.getPosition(), arrivalDate);
+        final Gradient tauD = signalTimeOfFlight(pvaR, s1Downlink.getPosition(), arrivalDate);
 
         // Transit state
         final double              delta      = getDate().durationFrom(remote.getDate());
-        final DerivativeStructure deltaMTauD = tauD.negate().add(delta);
+        final Gradient deltaMTauD = tauD.negate().add(delta);
 
         // prepare the evaluation
         final EstimatedMeasurement<InterSatellitesRange> estimated;
 
-        final DerivativeStructure range;
+        final Gradient range;
         if (twoway) {
             // Transit state (re)computed with derivative structures
-            final TimeStampedFieldPVCoordinates<DerivativeStructure> transitStateDS = pvaR.shiftedBy(deltaMTauD);
+            final TimeStampedFieldPVCoordinates<Gradient> transitStateDS = pvaR.shiftedBy(deltaMTauD);
 
             // uplink delay
-            final DerivativeStructure tauU = signalTimeOfFlight(pvaL,
-                                                                transitStateDS.getPosition(),
-                                                                transitStateDS.getDate());
+            final Gradient tauU = signalTimeOfFlight(pvaL,
+                                                     transitStateDS.getPosition(),
+                                                     transitStateDS.getDate());
             estimated = new EstimatedMeasurement<>(this, iteration, evaluation,
                                                    new SpacecraftState[] {
                                                        local.shiftedBy(deltaMTauD.getValue()),
@@ -183,7 +181,7 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
                                                    });
 
             // Clock offsets
-            final DerivativeStructure dtr = getSatellites().get(1).getClockOffsetDriver().getValue(factory, indices);
+            final Gradient dtr = getSatellites().get(1).getClockOffsetDriver().getValue(nbParams, indices);
 
             // Range value
             range  = tauD.add(dtl).subtract(dtr).multiply(Constants.SPEED_OF_LIGHT);
@@ -192,9 +190,9 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
         estimated.setEstimatedValue(range.getValue());
 
         // Range partial derivatives with respect to states
-        final double[] derivatives = range.getAllDerivatives();
-        estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 1,  7));
-        estimated.setStateDerivatives(1, Arrays.copyOfRange(derivatives, 7, 13));
+        final double[] derivatives = range.getGradient();
+        estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 0,  6));
+        estimated.setStateDerivatives(1, Arrays.copyOfRange(derivatives, 6, 12));
 
         return estimated;
 

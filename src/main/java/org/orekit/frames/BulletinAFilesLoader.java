@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -429,50 +429,51 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
             this.fileName      = name;
 
             // set up a reader for line-oriented bulletin A files
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
-            lineNumber =  0;
-            firstMJD   = -1;
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
+                lineNumber =  0;
+                firstMJD   = -1;
 
-            // loop over sections
-            final List<Section> remaining = new ArrayList<>(Arrays.asList(Section.values()));
-            for (Section section = nextSection(remaining, reader);
-                 section != null;
-                 section = nextSection(remaining, reader)) {
+                // loop over sections
+                final List<Section> remaining = new ArrayList<>(Arrays.asList(Section.values()));
+                for (Section section = nextSection(remaining, reader);
+                     section != null;
+                     section = nextSection(remaining, reader)) {
 
-                switch (section) {
-                    case EOP_RAPID_SERVICE :
-                    case EOP_FINAL_VALUES  :
-                    case EOP_PREDICTION    :
-                        loadXYDT(section, reader, name);
-                        break;
-                    case POLE_OFFSETS_IAU_1980_RAPID_SERVICE :
-                    case POLE_OFFSETS_IAU_1980_FINAL_VALUES  :
-                        loadPoleOffsets(section, false, reader, name);
-                        break;
-                    case POLE_OFFSETS_IAU_2000_RAPID_SERVICE :
-                    case POLE_OFFSETS_IAU_2000_FINAL_VALUES  :
-                        loadPoleOffsets(section, true, reader, name);
-                        break;
-                    default :
-                        // this should never happen
-                        throw new OrekitInternalError(null);
+                    switch (section) {
+                        case EOP_RAPID_SERVICE :
+                        case EOP_FINAL_VALUES  :
+                        case EOP_PREDICTION    :
+                            loadXYDT(section, reader, name);
+                            break;
+                        case POLE_OFFSETS_IAU_1980_RAPID_SERVICE :
+                        case POLE_OFFSETS_IAU_1980_FINAL_VALUES  :
+                            loadPoleOffsets(section, false, reader, name);
+                            break;
+                        case POLE_OFFSETS_IAU_2000_RAPID_SERVICE :
+                        case POLE_OFFSETS_IAU_2000_FINAL_VALUES  :
+                            loadPoleOffsets(section, true, reader, name);
+                            break;
+                        default :
+                            // this should never happen
+                            throw new OrekitInternalError(null);
+                    }
+
+                    // remove the already parsed section from the list
+                    remaining.remove(section);
+
                 }
 
-                // remove the already parsed section from the list
-                remaining.remove(section);
+                // check that the mandatory sections have been parsed
+                if (remaining.contains(Section.EOP_RAPID_SERVICE) ||
+                    remaining.contains(Section.EOP_PREDICTION) ||
+                    (remaining.contains(Section.POLE_OFFSETS_IAU_1980_RAPID_SERVICE) ^
+                     remaining.contains(Section.POLE_OFFSETS_IAU_2000_RAPID_SERVICE)) ||
+                    (remaining.contains(Section.POLE_OFFSETS_IAU_1980_FINAL_VALUES) ^
+                     remaining.contains(Section.POLE_OFFSETS_IAU_2000_FINAL_VALUES))) {
+                    throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, name);
+                }
 
             }
-
-            // check that the mandatory sections have been parsed
-            if (remaining.contains(Section.EOP_RAPID_SERVICE) ||
-                remaining.contains(Section.EOP_PREDICTION) ||
-                (remaining.contains(Section.POLE_OFFSETS_IAU_1980_RAPID_SERVICE) ^
-                 remaining.contains(Section.POLE_OFFSETS_IAU_2000_RAPID_SERVICE)) ||
-                (remaining.contains(Section.POLE_OFFSETS_IAU_1980_FINAL_VALUES) ^
-                 remaining.contains(Section.POLE_OFFSETS_IAU_2000_FINAL_VALUES))) {
-                throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, name);
-            }
-
         }
 
         /** Fill EOP history obtained after reading several files.

@@ -160,6 +160,9 @@ TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = les lignes de TLE ne font pas référenc
 # invalid TLE parameter for object {0}: {1} = {2}
 TLE_INVALID_PARAMETER = paramètre TLE invalide pour l''objet {0} : {1} = {2}
 
+# invalid TLE parameter {0}: {1} not in range [{2}, {3}]
+TLE_INVALID_PARAMETER_RANGE = paramètre TLE invalide {0}: {1} n'' est pas dans l''intervalle [{2}, {3}]
+
 # wrong checksum of TLE line {0}, expected {1} but got {2} ({3})
 TLE_CHECKSUM_ERROR = somme de contrôle incorrecte pour la ligne TLE {0}, {2} au lieu de la valeur {1} attendue ({3})
 
@@ -198,6 +201,9 @@ NON_EXISTENT_TIME = heure inexistante {0}
 
 # out of range seconds number: {0}
 OUT_OF_RANGE_SECONDS_NUMBER = numéro de seconde hors domaine : {0}
+
+# out of range seconds number: {0} is not in [{1}, {2})
+OUT_OF_RANGE_SECONDS_NUMBER_DETAIL = <MISSING TRANSLATION>
 
 # angle type not supported, supported angles: {0}, {1} and {2}
 ANGLE_TYPE_NOT_SUPPORTED = type d''angle non supporté, angles supportés : {0}, {1} et {2}
@@ -388,11 +394,11 @@ NON_CHRONOLOGICALLY_SORTED_ENTRIES = les entrées générées ne sont pas dans l
 # no data generated around date: {0}
 NO_DATA_GENERATED = aucune donnée générée aux alentours de la date : {0}
 
-# unable to generate new data before {0}
-UNABLE_TO_GENERATE_NEW_DATA_BEFORE = impossible de générer des données avant le {0}
+# unable to generate new data before {0}, data requested for {1}
+UNABLE_TO_GENERATE_NEW_DATA_BEFORE = impossible de générer des données avant le {0}, données requises pour {1}
 
-# unable to generate new data after {0}
-UNABLE_TO_GENERATE_NEW_DATA_AFTER = impossible de générer des données après le {0}
+# unable to generate new data after {0}, data requested for {1}
+UNABLE_TO_GENERATE_NEW_DATA_AFTER = impossible de générer des données après le {0}, données requises pour {1}
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = impossible de calculer l''anomalie excentrique hyperbolique à partir de l''anomalie moyenne après {0} itérations
@@ -567,6 +573,15 @@ NEQUICK_F2_FM3_NOT_LOADED = impossible de charger les coefficients NeQuick f2 et
 # file {0} is not a supported Hatanaka-compressed file
 NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE = le fichier {0} n''est pas reconnu en tant que fichier compressé par la méthode d''Hatakana
 
+# Cannot compute around {0}
+CANNOT_COMPUTE_LAGRANGIAN = Calcul impossible autour de {0}
+
+# The trajectory does not cross XZ Plane, it will not result in a Halo Orbit
+TRAJECTORY_NOT_CROSSING_XZPLANE = La trajectoire ne coupe pas le plan XZ, elle ne mènera pas à une orbite de Halo
+
+# The multiple shooting problem is underconstrained : {0} free variables, {1} constraints
+MULTIPLE_SHOOTING_UNDERCONSTRAINED = Le multiple shooting est sous-contraint : {0} variables libres, {1} contraintes
+
 # invalid measurement types {0} and {1} for the combination of measurements {2}
 INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS = les types de mesure {0} et {1} sont incompatibles pour la combinaison de mesures {2}
 
@@ -578,3 +593,36 @@ NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = les observations aux dates {0} et {1}
 
 # Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.
 EXCEPTIONAL_DATA_CONTEXT = une utilisation de ExceptionalDataContext a été détectée. Ce mécanisme est généralement activé explicitement pour détecter des erreur de développement
+
+# inconsistent time systems in the attitude blocks: {0} ≠ {1}
+CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = systèmes temporels incohérents dans des blocs d''attitude : {0} ≠ {1}
+
+# invalid attitude type {0}
+CCSDS_AEM_NULL_ATTITUDE_TYPE = le mode d''attitude {0} n''est pas valide
+
+# attitude type {0} in CCSDS AEM files is not implemented in Orekit
+CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED = le mode d''attitude {0} des fichiers CCSDS AEM n''est pas encore implémenté dans Orekit
+
+# the rotation sequence of the Euler angles {0} is invalid
+CCSDS_AEM_INVALID_ROTATION_SEQUENCE = la séquence de rotation {0} est invalide pour les angles d''Euler
+
+# observations {0}, {1} and {2} must have different dates
+NON_DIFFERENT_DATES_FOR_OBSERVATIONS = les observations {0}, {1} et {2} doivent avoir des dates différentes
+
+# observations are not in the same plane
+NON_COPLANAR_POINTS = les observations ne sont pas dans le même plan
+
+# invalid parameter {0}: {1} not in range [{2}, {3}]
+INVALID_PARAMETER_RANGE = paramètre invalide {0}: {1} n''est pas dans l''intervalle [{2}, {3}]
+
+# The parameter {0} should not be null in {1}
+PARAMETER_NOT_SET = Le paramètre {0} de {1} est null
+
+# {0} is not implemented
+FUNCTION_NOT_IMPLEMENTED = {0} n''est pas implémenté
+
+# Impossible to execute {0} with {1} set to {2}
+INVALID_TYPE_FOR_FUNCTION = Impossible d''appeler {0} avec {1} = {2}
+
+# No data could be parsed from file {0}
+NO_DATA_IN_FILE = Aucune donnée n''a pu être lue dans le fichier {0}

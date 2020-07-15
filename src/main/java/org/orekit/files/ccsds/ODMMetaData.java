@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -89,7 +89,7 @@ public class ODMMetaData {
     /** Create a new meta-data.
      * @param odmFile ODM file to which these meta-data belong
      */
-    ODMMetaData(final ODMFile odmFile) {
+    public ODMMetaData(final ODMFile odmFile) {
         this.odmFile = odmFile;
         comment = new ArrayList<String>();
     }
@@ -117,7 +117,7 @@ public class ODMMetaData {
      * covariance data.
      * @param timeSystem the time system to be set
      */
-    void setTimeSystem(final CcsdsTimeScale timeSystem) {
+    public void setTimeSystem(final CcsdsTimeScale timeSystem) {
         this.timeSystem = timeSystem;
     }
 
@@ -129,7 +129,7 @@ public class ODMMetaData {
      * @throws OrekitException if there is not corresponding time scale.
      * @since 10.1
      */
-    TimeScale getTimeScale() {
+    public TimeScale getTimeScale() {
         return getTimeSystem().getTimeScale(
                 odmFile.getConventions(),
                 odmFile.getDataContext().getTimeScales());
@@ -145,7 +145,7 @@ public class ODMMetaData {
     /** Set the spacecraft name for which the orbit state is provided.
      * @param objectName the spacecraft name to be set
      */
-    void setObjectName(final String objectName) {
+    public void setObjectName(final String objectName) {
         this.objectName = objectName;
     }
 
@@ -159,14 +159,14 @@ public class ODMMetaData {
     /** Set the spacecraft ID for which the orbit state is provided.
      * @param objectID the spacecraft ID to be set
      */
-    void setObjectID(final String objectID) {
+    public void setObjectID(final String objectID) {
         this.objectID = objectID;
     }
 
     /** Set the launch year.
      * @param launchYear launch year
      */
-    void setLaunchYear(final int launchYear) {
+    public void setLaunchYear(final int launchYear) {
         this.launchYear = launchYear;
     }
 
@@ -180,7 +180,7 @@ public class ODMMetaData {
     /** Set the launch number.
      * @param launchNumber launch number
      */
-    void setLaunchNumber(final int launchNumber) {
+    public void setLaunchNumber(final int launchNumber) {
         this.launchNumber = launchNumber;
     }
 
@@ -194,7 +194,7 @@ public class ODMMetaData {
     /** Set the piece of launch.
      * @param launchPiece piece of launch
      */
-    void setLaunchPiece(final String launchPiece) {
+    public void setLaunchPiece(final String launchPiece) {
         this.launchPiece = launchPiece;
     }
 
@@ -215,7 +215,7 @@ public class ODMMetaData {
     /** Set the origin of reference frame.
      * @param centerName the origin of reference frame to be set
      */
-    void setCenterName(final String centerName) {
+    public void setCenterName(final String centerName) {
         this.centerName = centerName;
     }
 
@@ -229,7 +229,7 @@ public class ODMMetaData {
     /** Set the {@link CelestialBody} corresponding to the center name.
      * @param centerBody the {@link CelestialBody} to be set
      */
-    void setCenterBody(final CelestialBody centerBody) {
+    public void setCenterBody(final CelestialBody centerBody) {
         this.centerBody = centerBody;
     }
 
@@ -246,7 +246,7 @@ public class ODMMetaData {
      * attribute can be created through the {@link CelestialBodies}.
      * @param hasCreatableBody the boolean to be set.
      */
-    void setHasCreatableBody(final boolean hasCreatableBody) {
+    public void setHasCreatableBody(final boolean hasCreatableBody) {
         this.hasCreatableBody = hasCreatableBody;
     }
 
@@ -295,7 +295,7 @@ public class ODMMetaData {
      * and Keplerian elements data (and for the covariance reference frame if none is given).
      * @param refFrame the reference frame to be set
      */
-    void setRefFrame(final Frame refFrame) {
+    public void setRefFrame(final Frame refFrame) {
         this.refFrame = refFrame;
     }
 
@@ -314,7 +314,7 @@ public class ODMMetaData {
      *
      * @param frame specifier as it appeared in the file.
      */
-    void setFrameString(final String frame) {
+    public void setFrameString(final String frame) {
         this.refFrameString = frame;
     }
 
@@ -330,7 +330,7 @@ public class ODMMetaData {
      * reference frame.
      * @param frameEpochString the epoch of reference frame to be set
      */
-    void setFrameEpochString(final String frameEpochString) {
+    public void setFrameEpochString(final String frameEpochString) {
         this.frameEpochString = frameEpochString;
     }
 
@@ -346,7 +346,7 @@ public class ODMMetaData {
      * reference frame.
      * @param frameEpoch the epoch of reference frame to be set
      */
-    void setFrameEpoch(final AbsoluteDate frameEpoch) {
+    public void setFrameEpoch(final AbsoluteDate frameEpoch) {
         this.frameEpoch = frameEpoch;
     }
 
@@ -360,7 +360,7 @@ public class ODMMetaData {
     /** Set the meta-data comment.
      * @param comment comment to set
      */
-    void setComment(final List<String> comment) {
+    public void setComment(final List<String> comment) {
         this.comment = new ArrayList<String>(comment);
     }
 

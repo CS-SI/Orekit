@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,6 +16,7 @@
  */
 package org.orekit.forces.gravity.potential;
 
+import java.io.IOException;
 import java.util.Map;
 
 import org.junit.Assert;
@@ -23,6 +24,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 
 public class AstronomicalAmplitudeReaderTest {
 
@@ -64,6 +67,17 @@ public class AstronomicalAmplitudeReaderTest {
         Assert.assertEquals( 0.00197, astronomicalAmplitudesMap.get(265665), 1.0e-10);
         Assert.assertEquals( 0.00195, astronomicalAmplitudesMap.get(285465), 1.0e-10);
 
+    }
+
+    @Test
+    public void testEmptyFile() throws IOException {
+        try {
+            AstronomicalAmplitudeReader reader =
+                            new AstronomicalAmplitudeReader("empty-hf-fes2005.dat", 5, 2, 3, 1.0);
+            DataContext.getDefault().getDataProvidersManager().feed(reader.getSupportedNames(), reader);
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, oe.getSpecifier());
+        }
     }
 
     @Before

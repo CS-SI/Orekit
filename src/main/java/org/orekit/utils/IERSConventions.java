@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
@@ -2360,6 +2361,9 @@ public enum IERSConventions {
 
     };
 
+    /** Pattern for delimiting regular expressions. */
+    private static final Pattern SEPARATOR = Pattern.compile("\\p{Space}+");
+
     /** IERS conventions resources base directory. */
     private static final String IERS_BASE = "/assets/org/orekit/IERS-conventions/";
 
@@ -3115,18 +3119,19 @@ public enum IERSConventions {
                     throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, nameLove);
                 }
 
+                int lineNumber = 1;
+                String line = null;
                 // setup the reader
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
 
-                    String line = reader.readLine();
-                    int lineNumber = 1;
+                    line = reader.readLine();
 
                     // look for the Love numbers
                     while (line != null) {
 
                         line = line.trim();
                         if (!(line.isEmpty() || line.startsWith("#"))) {
-                            final String[] fields = line.split("\\p{Space}+");
+                            final String[] fields = SEPARATOR.split(line);
                             if (fields.length != 5) {
                                 // this should never happen with files embedded within Orekit
                                 throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
@@ -3150,6 +3155,10 @@ public enum IERSConventions {
                         line = reader.readLine();
 
                     }
+                } catch (NumberFormatException nfe) {
+                    // this should never happen with files embedded within Orekit
+                    throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                              lineNumber, nameLove, line);
                 }
             }
 

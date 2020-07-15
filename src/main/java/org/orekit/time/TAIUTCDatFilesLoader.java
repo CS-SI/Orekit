@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -162,20 +162,20 @@ public class TAIUTCDatFilesLoader extends AbstractSelfFeedingLoader
 
             final List<OffsetModel> offsets = new ArrayList<>();
 
-            // set up a reader for line-oriented file
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
-
-            // read all file, ignoring not recognized lines
             int lineNumber = 0;
             DateComponents lastDate = null;
-            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-                ++lineNumber;
+            String line = null;
+            // set up a reader for line-oriented file
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
 
-                // check matching for data lines
-                final Matcher matcher = dataPattern.matcher(line);
-                if (matcher.matches()) {
+                // read all file, ignoring not recognized lines
+                for (line = reader.readLine(); line != null; line = reader.readLine()) {
+                    ++lineNumber;
 
-                    try {
+                    // check matching for data lines
+                    final Matcher matcher = dataPattern.matcher(line);
+                    if (matcher.matches()) {
+
                         // build an entry from the extracted fields
                         final DateComponents dc1 = new DateComponents(Integer.parseInt(matcher.group(1)),
                                                                       Month.parseMonth(matcher.group(2)),
@@ -198,11 +198,12 @@ public class TAIUTCDatFilesLoader extends AbstractSelfFeedingLoader
                         final double slope  = Double.parseDouble(matcher.group(7));
                         offsets.add(new OffsetModel(dc1, (int) FastMath.rint(mjdRef), offset, slope));
 
-                    } catch (NumberFormatException nfe) {
-                        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                  lineNumber, name, line);
                     }
                 }
+
+            } catch (NumberFormatException nfe) {
+                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                          lineNumber, name, line);
             }
 
             if (offsets.isEmpty()) {

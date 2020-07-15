@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -54,7 +54,7 @@ public class OEMFile extends ODMFile implements EphemerisFile {
     }
 
     /** Add a block to the list of ephemeris blocks. */
-    void addEphemeridesBlock() {
+    public void addEphemeridesBlock() {
         ephemeridesBlocks.add(new EphemeridesBlock());
     }
 
@@ -67,7 +67,7 @@ public class OEMFile extends ODMFile implements EphemerisFile {
 
     /** Check that, according to the CCSDS standard, every OEMBlock has the same time system.
      */
-    void checkTimeSystems() {
+    public void checkTimeSystems() {
         final CcsdsTimeScale timeSystem = getEphemeridesBlocks().get(0).getMetaData().getTimeSystem();
         for (final EphemeridesBlock block : ephemeridesBlocks) {
             if (!timeSystem.equals(block.getMetaData().getTimeSystem())) {
@@ -153,7 +153,7 @@ public class OEMFile extends ODMFile implements EphemerisFile {
         /** Get the list of Ephemerides data lines.
          * @return a reference to the internal list of Ephemerides data lines
          */
-        List<TimeStampedPVCoordinates> getEphemeridesDataLines() {
+        public List<TimeStampedPVCoordinates> getEphemeridesDataLines() {
             return this.ephemeridesDataLines;
         }
 
@@ -166,7 +166,7 @@ public class OEMFile extends ODMFile implements EphemerisFile {
         /**
          * Update the value of {@link #hasAcceleration}.
          *
-         * @param pointHasAcceleration true iff the current data point has acceleration
+         * @param pointHasAcceleration true if the current data point has acceleration
          *                             data.
          */
         void updateHasAcceleration(final boolean pointHasAcceleration) {
@@ -243,7 +243,7 @@ public class OEMFile extends ODMFile implements EphemerisFile {
          * covariance data.
          * @param startTime the time to be set
          */
-        void setStartTime(final AbsoluteDate startTime) {
+        public void setStartTime(final AbsoluteDate startTime) {
             this.startTime = startTime;
         }
 
@@ -259,7 +259,7 @@ public class OEMFile extends ODMFile implements EphemerisFile {
          * data.
          * @param stopTime the time to be set
          */
-        void setStopTime(final AbsoluteDate stopTime) {
+        public void setStopTime(final AbsoluteDate stopTime) {
             this.stopTime = stopTime;
         }
 
@@ -275,7 +275,7 @@ public class OEMFile extends ODMFile implements EphemerisFile {
          * necessary to allow for proper interpolation.
          * @param useableStartTime the time to be set
          */
-        void setUseableStartTime(final AbsoluteDate useableStartTime) {
+        public void setUseableStartTime(final AbsoluteDate useableStartTime) {
             this.useableStartTime = useableStartTime;
         }
 
@@ -291,7 +291,7 @@ public class OEMFile extends ODMFile implements EphemerisFile {
          * necessary to allow for proper interpolation.
          * @param useableStopTime the time to be set
          */
-        void setUseableStopTime(final AbsoluteDate useableStopTime) {
+        public void setUseableStopTime(final AbsoluteDate useableStopTime) {
             this.useableStopTime = useableStopTime;
         }
 
@@ -327,7 +327,7 @@ public class OEMFile extends ODMFile implements EphemerisFile {
         /** Set the interpolation method to be used.
          * @param interpolationMethod the interpolation method to be set
          */
-        void setInterpolationMethod(final String interpolationMethod) {
+        public void setInterpolationMethod(final String interpolationMethod) {
             this.interpolationMethod = interpolationMethod;
         }
 
@@ -341,7 +341,7 @@ public class OEMFile extends ODMFile implements EphemerisFile {
         /** Set the interpolation degree.
          * @param interpolationDegree the interpolation degree to be set
          */
-        void setInterpolationDegree(final int interpolationDegree) {
+        public void setInterpolationDegree(final int interpolationDegree) {
             this.interpolationDegree = interpolationDegree;
         }
 
@@ -362,7 +362,7 @@ public class OEMFile extends ODMFile implements EphemerisFile {
         /** Set boolean testing whether the reference frame has an epoch associated to it.
          * @param hasRefFrameEpoch the boolean to be set.
          */
-        void setHasRefFrameEpoch(final boolean hasRefFrameEpoch) {
+        public void setHasRefFrameEpoch(final boolean hasRefFrameEpoch) {
             this.hasRefFrameEpoch = hasRefFrameEpoch;
         }
 
@@ -376,7 +376,7 @@ public class OEMFile extends ODMFile implements EphemerisFile {
         /** Set the ephemerides data lines comment.
          * @param ephemeridesDataLinesComment the comment to be set
          */
-        void setEphemeridesDataLinesComment(final List<String> ephemeridesDataLinesComment) {
+        public void setEphemeridesDataLinesComment(final List<String> ephemeridesDataLinesComment) {
             this.ephemeridesDataLinesComment = new ArrayList<String>(ephemeridesDataLinesComment);
         }
 
@@ -407,9 +407,9 @@ public class OEMFile extends ODMFile implements EphemerisFile {
          * @param frame coordinate system for covariance matrix, for absolute frames
          * @param lastMatrix the covariance matrix
          */
-        CovarianceMatrix(final AbsoluteDate epoch,
-                         final LOFType lofType, final Frame frame,
-                         final RealMatrix lastMatrix) {
+        public CovarianceMatrix(final AbsoluteDate epoch,
+                                final LOFType lofType, final Frame frame,
+                                final RealMatrix lastMatrix) {
             this.matrix  = lastMatrix;
             this.epoch   = epoch;
             this.lofType = lofType;
@@ -477,9 +477,9 @@ public class OEMFile extends ODMFile implements EphemerisFile {
          *               satellite, in m^3 / s^2.
          * @param blocks containing ephemeris data for the satellite.
          */
-        OemSatelliteEphemeris(final String id,
-                              final double mu,
-                              final List<EphemeridesBlock> blocks) {
+        public OemSatelliteEphemeris(final String id,
+                                     final double mu,
+                                     final List<EphemeridesBlock> blocks) {
             this.id = id;
             this.mu = mu;
             this.blocks = blocks;

@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -319,9 +319,7 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
             if (line.trim().length() > 0) {
                 pi.keyValue = new KeyValue(line, pi.lineNumber, pi.fileName);
                 if (pi.keyValue.getKeyword() == null) {
-                    Scanner sc = null;
-                    try {
-                        sc = new Scanner(line);
+                    try (Scanner sc = new Scanner(line)) {
                         final AbsoluteDate date = parseDate(sc.next(), pi.lastEphemeridesBlock.getMetaData().getTimeSystem());
                         final Vector3D position = new Vector3D(Double.parseDouble(sc.next()) * 1000,
                                                                Double.parseDouble(sc.next()) * 1000,
@@ -348,10 +346,6 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
                     } catch (NumberFormatException nfe) {
                         throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                   pi.lineNumber, pi.fileName, line);
-                    } finally {
-                        if (sc != null) {
-                            sc.close();
-                        }
                     }
                 } else {
                     switch (pi.keyValue.getKeyword()) {
@@ -399,27 +393,22 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
             }
             pi.keyValue = new KeyValue(line, pi.lineNumber, pi.fileName);
             if (pi.keyValue.getKeyword() == null) {
-                final Scanner sc = new Scanner(line);
-                for (int j = 0; j < i + 1; j++) {
-                    try {
+                try (Scanner sc = new Scanner(line)) {
+                    for (int j = 0; j < i + 1; j++) {
                         pi.lastMatrix.addToEntry(i, j, Double.parseDouble(sc.next()));
-                    } catch (NumberFormatException nfe) {
-                        sc.close();
-                        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                  pi.lineNumber, pi.fileName, line);
+                        if (j != i) {
+                            pi.lastMatrix.addToEntry(j, i, pi.lastMatrix.getEntry(i, j));
+                        }
                     }
-                    if (j != i) {
-                        pi.lastMatrix.addToEntry(j, i, pi.lastMatrix.getEntry(i, j));
+                    if (i == 5) {
+                        final OEMFile.CovarianceMatrix cm =
+                                new OEMFile.CovarianceMatrix(pi.epoch, pi.covRefLofType, pi.covRefFrame, pi.lastMatrix);
+                        pi.lastEphemeridesBlock.getCovarianceMatrices().add(cm);
                     }
-                }
-                if (i == 5) {
-                    final OEMFile.CovarianceMatrix cm =
-                            new OEMFile.CovarianceMatrix(pi.epoch, pi.covRefLofType, pi.covRefFrame, pi.lastMatrix);
-                    pi.lastEphemeridesBlock.getCovarianceMatrices().add(cm);
-                }
-                i++;
-                if (sc != null) {
-                    sc.close();
+                    i++;
+                } catch (NumberFormatException nfe) {
+                    throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                              pi.lineNumber, pi.fileName, line);
                 }
             } else {
                 switch (pi.keyValue.getKeyword()) {

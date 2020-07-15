@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -406,27 +406,29 @@ public class UTCTAIBulletinAFilesLoader extends AbstractSelfFeedingLoader
         public void loadData(final InputStream input, final String name)
             throws IOException {
 
-            // set up a reader for line-oriented bulletin A files
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
-            lineNumber =  0;
-
-            // loop over sections
             final List<Section> remaining = new ArrayList<>(Arrays.asList(Section.values()));
-            for (Section section = nextSection(remaining, reader);
-                 section != null;
-                 section = nextSection(remaining, reader)) {
+            // set up a reader for line-oriented bulletin A files
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
 
-                if (section == Section.TAI_UTC) {
-                    loadTaiUtc(section, reader, name);
-                } else {
-                    // load the values
-                    loadTimeSteps(section, reader, name);
+                // loop over sections
+                for (Section section = nextSection(remaining, reader);
+                     section != null;
+                     section = nextSection(remaining, reader)) {
+
+                    if (section == Section.TAI_UTC) {
+                        loadTaiUtc(section, reader, name);
+                    } else {
+                        // load the values
+                        loadTimeSteps(section, reader, name);
+                    }
+
+                    // remove the already parsed section from the list
+                    remaining.remove(section);
+
                 }
 
-                // remove the already parsed section from the list
-                remaining.remove(section);
-
             }
+            lineNumber =  0;
 
             // check that the mandatory sections have been parsed
             if (remaining.contains(Section.EOP_RAPID_SERVICE) || remaining.contains(Section.EOP_PREDICTION)) {

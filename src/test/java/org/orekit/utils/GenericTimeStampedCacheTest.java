@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import org.hamcrest.CoreMatchers;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well1024a;
 import org.junit.Assert;
@@ -251,20 +252,28 @@ public class GenericTimeStampedCacheTest {
                                            nullGenerator).getNeighbors(AbsoluteDate.J2000_EPOCH);
     }
 
-    @Test(expected=TimeStampedCacheException.class)
+    @Test
     public void testNoDataBefore() throws TimeStampedCacheException {
         TimeStampedGenerator<AbsoluteDate> nullGenerator =
                 new TimeStampedGenerator<AbsoluteDate>() {
-            public List<AbsoluteDate> generate(AbsoluteDate existingDate,
-                                               AbsoluteDate date) {
-                return Arrays.asList(AbsoluteDate.J2000_EPOCH);
-            }
-        };
-        new GenericTimeStampedCache<AbsoluteDate>(2, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY,
-                                           nullGenerator).getNeighbors(AbsoluteDate.J2000_EPOCH.shiftedBy(-10));
+                    public List<AbsoluteDate> generate(AbsoluteDate existingDate,
+                                                       AbsoluteDate date) {
+                        return Arrays.asList(AbsoluteDate.J2000_EPOCH);
+                    }
+                };
+        AbsoluteDate central = AbsoluteDate.J2000_EPOCH.shiftedBy(-10);
+        GenericTimeStampedCache<AbsoluteDate> cache = new GenericTimeStampedCache<>(
+                2, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY, nullGenerator);
+        try {
+            cache.getNeighbors(central);
+            Assert.fail("Expected Exception");
+        } catch (TimeStampedCacheException e) {
+            Assert.assertThat(e.getMessage(),
+                    CoreMatchers.containsString(central.toString()));
+        }
     }
 
-    @Test(expected=TimeStampedCacheException.class)
+    @Test
     public void testNoDataAfter() throws TimeStampedCacheException {
         TimeStampedGenerator<AbsoluteDate> nullGenerator =
                 new TimeStampedGenerator<AbsoluteDate>() {
@@ -273,8 +282,16 @@ public class GenericTimeStampedCacheTest {
                 return Arrays.asList(AbsoluteDate.J2000_EPOCH);
             }
         };
-        new GenericTimeStampedCache<AbsoluteDate>(2, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY,
-                                           nullGenerator).getNeighbors(AbsoluteDate.J2000_EPOCH.shiftedBy(+10));
+        AbsoluteDate central = AbsoluteDate.J2000_EPOCH.shiftedBy(+10);
+        GenericTimeStampedCache<AbsoluteDate> cache = new GenericTimeStampedCache<>(
+                2, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY, nullGenerator);
+        try {
+            cache.getNeighbors(central);
+            Assert.fail("Expected Exception");
+        } catch (TimeStampedCacheException e) {
+            Assert.assertThat(e.getMessage(),
+                    CoreMatchers.containsString(central.toString()));
+        }
     }
 
     @Test(expected=TimeStampedCacheException.class)

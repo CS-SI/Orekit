@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -1481,7 +1481,7 @@ public class NumericalPropagatorTest {
     private CartesianOrbit createEllipticOrbit() {
         final AbsoluteDate date         = new AbsoluteDate("2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
         final Vector3D     position     = new Vector3D(6896874.444705,  1956581.072644,  -147476.245054);
-        final Vector3D     velocity     = new Vector3D(166.816407662, -1106.783301861, -7372.745712770);
+        final Vector3D     velocity     = new Vector3D(169.816407662, -1126.783301861, -7332.745712770);
         final TimeStampedPVCoordinates pv = new TimeStampedPVCoordinates(date, position, velocity);
         final Frame frame = FramesFactory.getEME2000();
         final double mu   = Constants.EIGEN5C_EARTH_MU;

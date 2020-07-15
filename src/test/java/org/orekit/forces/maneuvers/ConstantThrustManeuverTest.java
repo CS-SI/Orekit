@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,6 +20,7 @@ package org.orekit.forces.maneuvers;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -28,10 +29,6 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.hipparchus.random.GaussianRandomGenerator;
-import org.hipparchus.random.RandomGenerator;
-import org.hipparchus.random.UncorrelatedRandomVectorGenerator;
-import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.Assert;
@@ -82,18 +79,45 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                                                                          final FieldRotation<DerivativeStructure> rotation,
                                                                          final DerivativeStructure mass) {
         try {
-            double thrust = forceModel.getParameterDriver(ConstantThrustManeuver.THRUST).getValue();
-            java.lang.reflect.Field directionField = ConstantThrustManeuver.class.getDeclaredField("direction");
-            directionField.setAccessible(true);
-            Vector3D direction;
-            direction = (Vector3D) directionField.get(forceModel);
-            if (((ConstantThrustManeuver) forceModel).isFiring(date)) {
+            final boolean firing = ((ConstantThrustManeuver) forceModel).isFiring(date);
+            
+            final Vector3D thrustVector = ((ConstantThrustManeuver) forceModel).getThrustVector();
+            final double thrust = thrustVector.getNorm();
+            final Vector3D direction = thrustVector.normalize();
+            
+            if (firing) {
                 return new FieldVector3D<>(mass.reciprocal().multiply(thrust), rotation.applyInverseTo(direction));
             } else {
                 // constant (and null) acceleration when not firing
                 return FieldVector3D.getZero(mass.getField());
             }
-        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+        } catch (IllegalArgumentException | SecurityException e) {
+            Assert.fail(e.getLocalizedMessage());
+            return null;
+        }
+    }
+
+    @Override
+    protected FieldVector3D<Gradient> accelerationDerivativesGradient(final ForceModel forceModel,
+                                                                      final AbsoluteDate date, final  Frame frame,
+                                                                      final FieldVector3D<Gradient> position,
+                                                                      final FieldVector3D<Gradient> velocity,
+                                                                      final FieldRotation<Gradient> rotation,
+                                                                      final Gradient mass) {
+        try {
+            final boolean firing = ((ConstantThrustManeuver) forceModel).isFiring(date);
+            
+            final Vector3D thrustVector = ((ConstantThrustManeuver) forceModel).getThrustVector();
+            final double thrust = thrustVector.getNorm();
+            final Vector3D direction = thrustVector.normalize();
+            
+            if (firing) {
+                return new FieldVector3D<>(mass.reciprocal().multiply(thrust), rotation.applyInverseTo(direction));
+            } else {
+                // constant (and null) acceleration when not firing
+                return FieldVector3D.getZero(mass.getField());
+            }
+        } catch (IllegalArgumentException | SecurityException e) {
             Assert.fail(e.getLocalizedMessage());
             return null;
         }
@@ -142,6 +166,47 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         maneuver.getEventsDetectors().findFirst().get().eventOccurred(startState, true);
         SpacecraftState midState = startState.shiftedBy(duration / 2.0);
         checkStateJacobianVs80Implementation(midState, maneuver, law, 1.0e-20, false);
+
+    }
+
+    @Test
+    public void testJacobianVs80ImplementationGradient() {
+        final double isp = 318;
+        final double mass = 2500;
+        final double a = 24396159;
+        final double e = 0.72831215;
+        final double i = FastMath.toRadians(7);
+        final double omega = FastMath.toRadians(180);
+        final double OMEGA = FastMath.toRadians(261);
+        final double lv = 0;
+
+        final double duration = 3653.99;
+        final double f = 420;
+ 
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
+                                                       new TimeComponents(23, 30, 00.000),
+                                                       TimeScalesFactory.getUTC());
+        final Orbit orbit =
+            new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
+                               FramesFactory.getEME2000(), initDate, mu);
+        final AttitudeProvider law = new LofOffset(orbit.getFrame(), LOFType.VVLH);
+       final SpacecraftState initialState =
+            new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
+
+        final AbsoluteDate fireDate = new AbsoluteDate(new DateComponents(2004, 01, 02),
+                                                       new TimeComponents(04, 15, 34.080),
+                                                       TimeScalesFactory.getUTC());
+        final ConstantThrustManeuver maneuver =
+            new ConstantThrustManeuver(fireDate, duration, f, isp, Vector3D.PLUS_I);
+
+        // before maneuver (Jacobian wrt. state is zero)
+        checkStateJacobianVs80ImplementationGradient(initialState, maneuver, law, 1.0e-50, false);
+
+        // in maneuver
+        SpacecraftState startState = initialState.shiftedBy(fireDate.durationFrom(initDate));
+        maneuver.getEventsDetectors().findFirst().get().eventOccurred(startState, true);
+        SpacecraftState midState = startState.shiftedBy(duration / 2.0);
+        checkStateJacobianVs80ImplementationGradient(midState, maneuver, law, 1.0e-20, false);
 
     }
 
@@ -311,99 +376,73 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
 
         FNP.addForceModel(forceModel);
         NP.addForceModel(forceModel);
+        
+        // Do the test
+        checkRealFieldPropagation(FKO, PositionAngle.MEAN, 1005., NP, FNP,
+                                  1.0e-15, 5.0e-10, 3.0e-11, 3.0e-10,
+                                  1, false);
+    }
 
-        FieldAbsoluteDate<DerivativeStructure> target = J2000.shiftedBy(1000.);
-        FieldSpacecraftState<DerivativeStructure> finalState_DS = FNP.propagate(target);
-        SpacecraftState finalState_R = NP.propagate(target.toAbsoluteDate());
-        FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getPVCoordinates();
-        PVCoordinates finPVC_R = finalState_R.getPVCoordinates();
+    /**Testing if the propagation between the FieldPropagation and the propagation
+     * is equivalent.
+     * Also testing if propagating X+dX with the propagation is equivalent to
+     * propagation X with the FieldPropagation and then applying the taylor
+     * expansion of dX to the result.*/
+    @Test
+    public void testRealFieldGradient() {
+        int freeParameters = 6;
+        Gradient a_0 = Gradient.variable(freeParameters, 0, 7e7);
+        Gradient e_0 = Gradient.variable(freeParameters, 1, 0.4);
+        Gradient i_0 = Gradient.variable(freeParameters, 2, 85 * FastMath.PI / 180);
+        Gradient R_0 = Gradient.variable(freeParameters, 3, 0.7);
+        Gradient O_0 = Gradient.variable(freeParameters, 4, 0.5);
+        Gradient n_0 = Gradient.variable(freeParameters, 5, 0.1);
 
-        Assert.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getX(), finPVC_R.getPosition().getX(), FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
-        Assert.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getY(), finPVC_R.getPosition().getY(), FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
-        Assert.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getZ(), finPVC_R.getPosition().getZ(), FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
+        Field<Gradient> field = a_0.getField();
+        Gradient zero = field.getZero();
 
-        long number = 23091991;
-        RandomGenerator RG = new Well19937a(number);
-        GaussianRandomGenerator NGG = new GaussianRandomGenerator(RG);
-        UncorrelatedRandomVectorGenerator URVG = new UncorrelatedRandomVectorGenerator(new double[] {0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 },
-                                                                                       new double[] {1e3, 0.01, 0.01, 0.01, 0.01, 0.01},
-                                                                                       NGG);
-        double a_R = a_0.getReal();
-        double e_R = e_0.getReal();
-        double i_R = i_0.getReal();
-        double R_R = R_0.getReal();
-        double O_R = O_0.getReal();
-        double n_R = n_0.getReal();
-        for (int ii = 0; ii < 1; ii++){
-            double[] rand_next = URVG.nextVector();
-            double a_shift = a_R + rand_next[0];
-            double e_shift = e_R + rand_next[1];
-            double i_shift = i_R + rand_next[2];
-            double R_shift = R_R + rand_next[3];
-            double O_shift = O_R + rand_next[4];
-            double n_shift = n_R + rand_next[5];
+        FieldAbsoluteDate<Gradient> J2000 = new FieldAbsoluteDate<>(field);
 
-            KeplerianOrbit shiftedOrb = new KeplerianOrbit(a_shift, e_shift, i_shift, R_shift, O_shift, n_shift,
-                                                           PositionAngle.MEAN,
-                                                           EME,
-                                                           J2000.toAbsoluteDate(),
-                                                           Constants.EIGEN5C_EARTH_MU
-                                                           );
+        Frame EME = FramesFactory.getEME2000();
 
-            SpacecraftState shift_iSR = new SpacecraftState(shiftedOrb);
+        FieldKeplerianOrbit<Gradient> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
+                                                                      PositionAngle.MEAN,
+                                                                      EME,
+                                                                      J2000,
+                                                                      zero.add(Constants.EIGEN5C_EARTH_MU));
 
-            NumericalPropagator shift_NP = new NumericalPropagator(RIntegrator);
+        FieldSpacecraftState<Gradient> initialState = new FieldSpacecraftState<>(FKO);
 
-            shift_NP.setInitialState(shift_iSR);
+        SpacecraftState iSR = initialState.toSpacecraftState();
 
-            shift_NP.addForceModel(forceModel);
-
-            SpacecraftState finalState_shift = shift_NP.propagate(target.toAbsoluteDate());
+        final OrbitType type = OrbitType.KEPLERIAN;
+        double[][] tolerance = NumericalPropagator.tolerances(10.0, FKO.toOrbit(), type);
 
 
-            PVCoordinates finPVC_shift = finalState_shift.getPVCoordinates();
+        AdaptiveStepsizeFieldIntegrator<Gradient> integrator =
+                        new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
+        integrator.setInitialStepSize(zero.add(60));
+        AdaptiveStepsizeIntegrator RIntegrator =
+                        new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
+        RIntegrator.setInitialStepSize(60);
 
-            //position check
+        FieldNumericalPropagator<Gradient> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FNP.setOrbitType(type);
+        FNP.setInitialState(initialState);
 
-            FieldVector3D<DerivativeStructure> pos_DS = finPVC_DS.getPosition();
-            double x_DS = pos_DS.getX().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double y_DS = pos_DS.getY().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double z_DS = pos_DS.getZ().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
+        NumericalPropagator NP = new NumericalPropagator(RIntegrator);
+        NP.setOrbitType(type);
+        NP.setInitialState(iSR);
 
-            //System.out.println(pos_DS.getX().getPartialDerivative(1));
+        final ConstantThrustManeuver forceModel =  new ConstantThrustManeuver(J2000.toAbsoluteDate().shiftedBy(100), 100.0, 400.0, 300.0, Vector3D.PLUS_K);
 
-            double x = finPVC_shift.getPosition().getX();
-            double y = finPVC_shift.getPosition().getY();
-            double z = finPVC_shift.getPosition().getZ();
-            Assert.assertEquals(x_DS, x, FastMath.abs(x - pos_DS.getX().getReal()) * 1e-8);
-            Assert.assertEquals(y_DS, y, FastMath.abs(y - pos_DS.getY().getReal()) * 1e-8);
-            Assert.assertEquals(z_DS, z, FastMath.abs(z - pos_DS.getZ().getReal()) * 1e-8);
-
-            //velocity check
-
-            FieldVector3D<DerivativeStructure> vel_DS = finPVC_DS.getVelocity();
-            double vx_DS = vel_DS.getX().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double vy_DS = vel_DS.getY().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double vz_DS = vel_DS.getZ().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double vx = finPVC_shift.getVelocity().getX();
-            double vy = finPVC_shift.getVelocity().getY();
-            double vz = finPVC_shift.getVelocity().getZ();
-            Assert.assertEquals(vx_DS, vx, FastMath.abs(vx) * 1e-9);
-            Assert.assertEquals(vy_DS, vy, FastMath.abs(vy) * 1e-9);
-            Assert.assertEquals(vz_DS, vz, FastMath.abs(vz) * 1e-9);
-            //acceleration check
-
-            FieldVector3D<DerivativeStructure> acc_DS = finPVC_DS.getAcceleration();
-            double ax_DS = acc_DS.getX().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double ay_DS = acc_DS.getY().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double az_DS = acc_DS.getZ().taylor(rand_next[0], rand_next[1], rand_next[2], rand_next[3], rand_next[4], rand_next[5]);
-            double ax = finPVC_shift.getAcceleration().getX();
-            double ay = finPVC_shift.getAcceleration().getY();
-            double az = finPVC_shift.getAcceleration().getZ();
-            Assert.assertEquals(ax_DS, ax, FastMath.abs(ax) * 1e-8);
-            Assert.assertEquals(ay_DS, ay, FastMath.abs(ay) * 1e-8);
-            Assert.assertEquals(az_DS, az, FastMath.abs(az) * 1e-8);
-        }
+        FNP.addForceModel(forceModel);
+        NP.addForceModel(forceModel);
+        
+        // Do the test
+        checkRealFieldPropagationGradient(FKO, PositionAngle.MEAN, 1005., NP, FNP,
+                                  1.0e-15, 1.3e-02, 2.9e-04, 2.4e-3,
+                                  1, false);
     }
 
     /**Same test as the previous one but not adding the ForceModel to the NumericalPropagator
@@ -557,8 +596,30 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
                                            Vector3D.PLUS_I, "along-X-");
         maneuver.init(state, state.getDate().shiftedBy(3600.0));
 
-        checkParameterDerivative(state, maneuver, "along-X-thrust",    1.0e-3, 3.0e-14);
+        checkParameterDerivative(state, maneuver, "along-X-thrust",    1.0e-3, 7.1e-14);
         checkParameterDerivative(state, maneuver, "along-X-flow rate", 1.0e-3, 1.0e-15);
+
+    }
+
+    @Test
+    public void testParameterDerivativeGradient() {
+
+        // pos-vel (from a ZOOM ephemeris reference)
+        final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
+        final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
+        final SpacecraftState state =
+                new SpacecraftState(new CartesianOrbit(new PVCoordinates(pos, vel),
+                                                       FramesFactory.getGCRF(),
+                                                       new AbsoluteDate(2005, 3, 5, 0, 24, 0.0, TimeScalesFactory.getTAI()),
+                                                       Constants.EIGEN5C_EARTH_MU));
+
+        final ConstantThrustManeuver maneuver =
+                new ConstantThrustManeuver(state.getDate().shiftedBy(-10), 100.0, 20.0, 350.0,
+                                           Vector3D.PLUS_I, "along-X-");
+        maneuver.init(state, state.getDate().shiftedBy(3600.0));
+
+        checkParameterDerivativeGradient(state, maneuver, "along-X-thrust",    1.0e-3, 3.0e-13);
+        checkParameterDerivativeGradient(state, maneuver, "along-X-flow rate", 1.0e-3, 1.0e-15);
 
     }
 

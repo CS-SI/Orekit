@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -148,36 +148,36 @@ public class UTCTAIHistoryFilesLoader extends AbstractSelfFeedingLoader
             throws IOException {
 
             final List<OffsetModel> offsets = new ArrayList<>();
-
-            // set up a reader for line-oriented file
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
-
-            // read all file, ignoring not recognized lines
             final String emptyYear = "    ";
             int lineNumber = 0;
             DateComponents lastDate = null;
+            String line = null;
             int lastLine = 0;
             String previousYear = emptyYear;
-            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-                ++lineNumber;
+            // set up a reader for line-oriented file
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
 
-                // check matching for regular lines and last line
-                Matcher matcher = regularPattern.matcher(line);
-                if (matcher.matches()) {
-                    if (lastLine > 0) {
-                        throw new OrekitException(OrekitMessages.UNEXPECTED_DATA_AFTER_LINE_IN_FILE,
-                                                  lastLine, name, line);
-                    }
-                } else {
-                    matcher = lastPattern.matcher(line);
+                // read all file, ignoring not recognized lines
+                for (line = reader.readLine(); line != null; line = reader.readLine()) {
+                    ++lineNumber;
+
+                    // check matching for regular lines and last line
+                    Matcher matcher = regularPattern.matcher(line);
                     if (matcher.matches()) {
-                        // this is the last line (there is a start date but no end date)
-                        lastLine = lineNumber;
+                        if (lastLine > 0) {
+                            throw new OrekitException(OrekitMessages.UNEXPECTED_DATA_AFTER_LINE_IN_FILE,
+                                                      lastLine, name, line);
+                        }
+                    } else {
+                        matcher = lastPattern.matcher(line);
+                        if (matcher.matches()) {
+                            // this is the last line (there is a start date but no end date)
+                            lastLine = lineNumber;
+                        }
                     }
-                }
 
-                if (matcher.matches()) {
-                    try {
+                    if (matcher.matches()) {
+
                         // build an entry from the extracted fields
 
                         String year = matcher.group(1);
@@ -203,11 +203,12 @@ public class UTCTAIHistoryFilesLoader extends AbstractSelfFeedingLoader
                         lastDate = leapDay;
                         offsets.add(new OffsetModel(leapDay, offset));
 
-                    } catch (NumberFormatException nfe) {
-                        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                  lineNumber, name, line);
                     }
                 }
+
+            }  catch (NumberFormatException nfe) {
+                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                          lineNumber, name, line);
             }
 
             if (offsets.isEmpty()) {

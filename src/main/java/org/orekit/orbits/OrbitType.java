@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -583,76 +583,76 @@ public enum OrbitType {
     };
 
     /** Name for position along X. */
-    private static final String POS_X = "Px";
+    public static final String POS_X = "Px";
 
     /** Name for position along Y. */
-    private static final String POS_Y = "Py";
+    public static final String POS_Y = "Py";
 
     /** Name for position along Z. */
-    private static final String POS_Z = "Pz";
+    public static final String POS_Z = "Pz";
 
     /** Name for velocity along X. */
-    private static final String VEL_X = "Vx";
+    public static final String VEL_X = "Vx";
 
     /** Name for velocity along Y. */
-    private static final String VEL_Y = "Vy";
+    public static final String VEL_Y = "Vy";
 
     /** Name for velocity along Z. */
-    private static final String VEL_Z = "Vz";
+    public static final String VEL_Z = "Vz";
 
     /** Name for semi major axis. */
-    private static final String A     = "a";
+    public static final String A     = "a";
 
     /** Name for eccentricity. */
-    private static final String ECC   = "e";
+    public static final String ECC   = "e";
 
     /** Name for eccentricity vector first component. */
-    private static final String E_X   = "ex";
+    public static final String E_X   = "ex";
 
     /** Name for eccentricity vector second component. */
-    private static final String E_Y   = "ey";
+    public static final String E_Y   = "ey";
 
     /** Name for inclination. */
-    private static final String INC   = "i";
+    public static final String INC   = "i";
 
     /** Name for inclination vector first component. */
-    private static final String H_X   = "hx";
+    public static final String H_X   = "hx";
 
     /** Name for inclination vector second component . */
-    private static final String H_Y   = "hy";
+    public static final String H_Y   = "hy";
 
     /** Name for perigee argument. */
-    private static final String PA    = "ω";
+    public static final String PA    = "ω";
 
     /** Name for right ascension of ascending node. */
-    private static final String RAAN    = "Ω";
+    public static final String RAAN    = "Ω";
 
     /** Name for mean anomaly. */
-    private static final String MEAN_ANOM = "M";
+    public static final String MEAN_ANOM = "M";
 
     /** Name for eccentric anomaly. */
-    private static final String ECC_ANOM  = "E";
+    public static final String ECC_ANOM  = "E";
 
     /** Name for mean anomaly. */
-    private static final String TRUE_ANOM = "v";
+    public static final String TRUE_ANOM = "v";
 
     /** Name for mean argument of latitude. */
-    private static final String MEAN_LAT_ARG = "αM";
+    public static final String MEAN_LAT_ARG = "αM";
 
     /** Name for eccentric argument of latitude. */
-    private static final String ECC_LAT_ARG  = "αE";
+    public static final String ECC_LAT_ARG  = "αE";
 
     /** Name for mean argument of latitude. */
-    private static final String TRUE_LAT_ARG = "αv";
+    public static final String TRUE_LAT_ARG = "αv";
 
     /** Name for mean argument of longitude. */
-    private static final String MEAN_LON_ARG = "λM";
+    public static final String MEAN_LON_ARG = "λM";
 
     /** Name for eccentric argument of longitude. */
-    private static final String ECC_LON_ARG  = "λE";
+    public static final String ECC_LON_ARG  = "λE";
 
     /** Name for mean argument of longitude. */
-    private static final String TRUE_LON_ARG = "λv";
+    public static final String TRUE_LON_ARG = "λv";
 
     /** Convert an orbit to the instance type.
      * <p>

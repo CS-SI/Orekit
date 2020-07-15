@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,32 +16,15 @@
  */
 package org.orekit.forces.maneuvers;
 
-import java.util.stream.Stream;
-
-import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.events.Action;
-import org.hipparchus.util.FastMath;
-import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.FieldAttitude;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
-import org.orekit.forces.AbstractForceModel;
+import org.orekit.forces.maneuvers.propulsion.AbstractConstantThrustPropulsionModel;
+import org.orekit.forces.maneuvers.propulsion.BasicConstantThrustPropulsionModel;
+import org.orekit.forces.maneuvers.trigger.DateBasedManeuverTriggers;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.DateDetector;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldDateDetector;
-import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
-import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.Constants;
-import org.orekit.utils.ParameterDriver;
 
 /** This class implements a simple maneuver with constant thrust.
  * <p>The maneuver is defined by a direction in satellite frame.
@@ -53,71 +36,27 @@ import org.orekit.utils.ParameterDriver;
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Luc Maisonobe
+ * @author Maxime Journot
  */
-public class ConstantThrustManeuver extends AbstractForceModel {
+public class ConstantThrustManeuver extends Maneuver {
 
-    /** Parameter name for thrust. */
+    /** Parameter name for thrust.
+     * @deprecated as of 10.2,
+     *             replace by {@link BasicConstantThrustPropulsionModel#THRUST}*/
+    @Deprecated
     public static final String THRUST = "thrust";
 
-    /** Parameter name for flow rate. */
+    /** Parameter name for flow rate.
+     * @deprecated as of 10.2,
+     *             replace by {@link BasicConstantThrustPropulsionModel#FLOW_RATE}*/
+    @Deprecated
     public static final String FLOW_RATE = "flow rate";
-
-    /** Thrust scaling factor.
-     * <p>
-     * We use a power of 2 to avoid numeric noise introduction
-     * in the multiplications/divisions sequences.
-     * </p>
-     */
-    private static final double THRUST_SCALE = FastMath.scalb(1.0, -5);
-
-    /** Flow rate scaling factor.
-     * <p>
-     * We use a power of 2 to avoid numeric noise introduction
-     * in the multiplications/divisions sequences.
-     * </p>
-     */
-    private static final double FLOW_RATE_SCALE = FastMath.scalb(1.0, -12);
-
-    /** Driver for thrust parameter. */
-    private final ParameterDriver thrustDriver;
-
-    /** Driver for flow rate parameter. */
-    private final ParameterDriver flowRateDriver;
-
-    /** Nominal start of the maneuver. */
-    private final AbsoluteDate startDate;
-
-    /** Nominal end of the maneuver. */
-    private final AbsoluteDate endDate;
-
-    /** The attitude to override during the maneuver, if set. */
-    private final AttitudeProvider attitudeOverride;
-
-    /** Direction of the acceleration in satellite frame. */
-    private final Vector3D direction;
-
-    /** User-defined name of the maneuver.
-     * This String attribute is empty by default.
-     * It is added as a prefix to the parameter drivers of the maneuver.
-     * The purpose is to differentiate between drivers in the case where several maneuvers
-     * were added to a propagator force model.
-     * Additionally, the user can retrieve the whole maneuver by looping on the force models of a propagator,
-     * scanning for its name.
-     * @since 9.2
-     */
-    private final String name;
-
-    /** Triggered date of engine start. */
-    private AbsoluteDate triggeredStart;
-
-    /** Triggered date of engine stop. */
-    private AbsoluteDate triggeredEnd;
-
-    /** Propagation direction. */
-    private boolean forward;
 
     /** Simple constructor for a constant direction and constant thrust.
      * <p>
+     * It uses the propulsion model {@link BasicConstantThrustPropulsionModel} and
+     * the maneuver triggers {@link DateBasedManeuverTriggers}
+     * </p><p>
      * Calling this constructor is equivalent to call {@link
      * #ConstantThrustManeuver(AbsoluteDate, double, double, double, Vector3D, String)
      * ConstantThrustManeuver(date, duration, thrust, isp, direction, "")},
@@ -138,6 +77,9 @@ public class ConstantThrustManeuver extends AbstractForceModel {
 
     /** Simple constructor for a constant direction and constant thrust.
      * <p>
+     * It uses the propulsion model {@link BasicConstantThrustPropulsionModel} and
+     * the maneuver triggers {@link DateBasedManeuverTriggers}
+     * </p><p>
      * Calling this constructor is equivalent to call {@link
      * #ConstantThrustManeuver(AbsoluteDate, double, double, double, Vector3D, String)
      * ConstantThrustManeuver(date, duration, thrust, isp, direction, "")},
@@ -161,10 +103,11 @@ public class ConstantThrustManeuver extends AbstractForceModel {
 
     /** Simple constructor for a constant direction and constant thrust.
      * <p>
-     * If the {@code driversNamePrefix} is empty, the names will
-     * be {@link #THRUST "thrust"} and {@link #FLOW_RATE "flow rate"}, otherwise
-     * the prefix is prepended to these fixed strings. A typical use case is to
-     * use something like "1A-" or "2B-" as a prefix corresponding to the
+     * It uses the propulsion model {@link BasicConstantThrustPropulsionModel} and
+     * the maneuver triggers {@link DateBasedManeuverTriggers}
+     * </p><p>
+     * The name of the maneuver is used to distinguish the parameter drivers.
+     * A typical use case is to use something like "1A-" or "2B-" as a prefix corresponding to the
      * name of the thruster to use, so separate parameters can be adjusted
      * for the different thrusters involved during an orbit determination
      * where maneuvers parameters are estimated.
@@ -187,10 +130,11 @@ public class ConstantThrustManeuver extends AbstractForceModel {
 
     /** Simple constructor for a constant direction and constant thrust.
      * <p>
-     * If the {@code driversNamePrefix} is empty, the names will
-     * be {@link #THRUST "thrust"} and {@link #FLOW_RATE "flow rate"}, otherwise
-     * the prefix is prepended to these fixed strings. A typical use case is to
-     * use something like "1A-" or "2B-" as a prefix corresponding to the
+     * It uses the propulsion model {@link BasicConstantThrustPropulsionModel} and
+     * the maneuver triggers {@link DateBasedManeuverTriggers}
+     * </p><p>
+     * The name of the maneuver is used to distinguish the parameter drivers.
+     * A typical use case is to use something like "1A-" or "2B-" as a prefix corresponding to the
      * name of the thruster to use, so separate parameters can be adjusted
      * for the different thrusters involved during an orbit determination
      * where maneuvers parameters are estimated.
@@ -210,91 +154,78 @@ public class ConstantThrustManeuver extends AbstractForceModel {
                                   final double thrust, final double isp,
                                   final AttitudeProvider attitudeOverride, final Vector3D direction,
                                   final String name) {
-
-        if (duration >= 0) {
-            this.startDate = date;
-            this.endDate   = date.shiftedBy(duration);
-        } else {
-            this.endDate   = date;
-            this.startDate = endDate.shiftedBy(duration);
-        }
-
-        final double flowRate  = -thrust / (Constants.G0_STANDARD_GRAVITY * isp);
-        this.attitudeOverride  = attitudeOverride;
-        this.direction         = direction.normalize();
-        this.name              = name;
-        this.triggeredStart    = null;
-        this.triggeredEnd      = null;
-
-        // Build the parameter drivers, using maneuver name as prefix
-        ParameterDriver tpd = null;
-        ParameterDriver fpd = null;
-        try {
-            tpd = new ParameterDriver(name + THRUST, thrust, THRUST_SCALE,
-                                      0.0, Double.POSITIVE_INFINITY);
-            fpd = new ParameterDriver(name + FLOW_RATE, flowRate, FLOW_RATE_SCALE,
-                                      Double.NEGATIVE_INFINITY, 0.0 );
-        } catch (OrekitException oe) {
-            // this should never occur as valueChanged above never throws an exception
-            throw new OrekitInternalError(oe);
-        }
-
-        this.thrustDriver   = tpd;
-        this.flowRateDriver = fpd;
-
+        this(date, duration, attitudeOverride, new BasicConstantThrustPropulsionModel(thrust, isp, direction, name));
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public boolean dependsOnPositionOnly() {
-        return false;
+    /** Simple constructor for a constant direction and constant thrust.
+     * <p>
+     * It uses an {@link AbstractConstantThrustPropulsionModel} and
+     * the maneuver triggers {@link DateBasedManeuverTriggers}
+     * </p><p>
+     * The names of the maneuver (and thus its parameter drivers) are extracted
+     * from the propulsion model.
+     * </p>
+     * @param date maneuver date
+     * @param duration the duration of the thrust (s) (if negative,
+     * the date is considered to be the stop date)
+     * @param attitudeOverride the attitude provider to use for the maneuver, or
+     * null if the attitude from the propagator should be used
+     * @param constantThrustPropulsionModel user-defined constant thrust propulsion model
+     */
+    public ConstantThrustManeuver(final AbsoluteDate date, final double duration,
+                                  final AttitudeProvider attitudeOverride,
+                                  final AbstractConstantThrustPropulsionModel constantThrustPropulsionModel) {
+        this(attitudeOverride, new DateBasedManeuverTriggers(date, duration), constantThrustPropulsionModel);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public void init(final SpacecraftState s0, final AbsoluteDate t) {
-        // set the initial value of firing
-        final AbsoluteDate sDate = s0.getDate();
-        forward                 = sDate.compareTo(t) < 0;
-        final boolean isBetween = sDate.isBetween(startDate, endDate);
-        final boolean isOnStart = startDate.compareTo(sDate) == 0;
-        final boolean isOnEnd = endDate.compareTo(sDate) == 0;
+    /** Simple constructor for a constant direction and constant thrust.
+     * <p>
+     * It uses an {@link AbstractConstantThrustPropulsionModel} and
+     * the maneuver triggers {@link DateBasedManeuverTriggers}
+     * </p><p>
+     * The names of the maneuver (and thus its parameter drivers) are extracted
+     * from the propulsion model or the maneuver triggers.
+     * Propulsion model name is evaluated first, if it isn't empty, it becomes the name of the maneuver.
+     * In that case the name in the maneuver triggers should be the same or empty, otherwise this could be
+     * misleading when retrieving estimated parameters by their names.
+     * </p>
+     * @param attitudeOverride the attitude provider to use for the maneuver, or
+     * null if the attitude from the propagator should be used
+     * @param dateBasedManeuverTriggers user-defined maneuver triggers object based on a start and end date
+     * @param constantThrustPropulsionModel user-defined constant thrust propulsion model
+     */
+    public ConstantThrustManeuver(final AttitudeProvider attitudeOverride,
+                                  final DateBasedManeuverTriggers dateBasedManeuverTriggers,
+                                  final AbstractConstantThrustPropulsionModel constantThrustPropulsionModel) {
+        super(attitudeOverride, dateBasedManeuverTriggers, constantThrustPropulsionModel);
+    }
 
-        triggeredStart = null;
-        triggeredEnd   = null;
-        if (forward) {
-            if (isBetween || isOnStart) {
-                triggeredStart = startDate;
-            }
-        } else {
-            if (isBetween || isOnEnd) {
-                triggeredEnd = endDate;
-            }
-        }
-
+    /** Get the thrust vector (N) in S/C frame.
+     * @return thrust vector (N) in S/C frame.
+     */
+    public Vector3D getThrustVector() {
+        return ((AbstractConstantThrustPropulsionModel) (getPropulsionModel())).getThrustVector();
     }
 
     /** Get the thrust.
      * @return thrust force (N).
      */
     public double getThrust() {
-        return thrustDriver.getValue();
+        return getThrustVector().getNorm();
     }
 
     /** Get the specific impulse.
      * @return specific impulse (s).
      */
     public double getISP() {
-        final double thrust   = getThrust();
-        final double flowRate = getFlowRate();
-        return -thrust / (Constants.G0_STANDARD_GRAVITY * flowRate);
+        return ((AbstractConstantThrustPropulsionModel) (getPropulsionModel())).getIsp();
     }
 
     /** Get the flow rate.
      * @return flow rate (negative, kg/s).
      */
     public double getFlowRate() {
-        return flowRateDriver.getValue();
+        return ((AbstractConstantThrustPropulsionModel) (getPropulsionModel())).getFlowRate();
     }
 
     /** Get the direction.
@@ -302,15 +233,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
      * @since 9.2
      */
     public Vector3D getDirection() {
-        return direction;
-    }
-
-    /** Get the name.
-     * @return the name
-     * @since 9.2
-     */
-    public String getName() {
-        return name;
+        return getThrustVector().normalize();
     }
 
     /** Get the start date.
@@ -318,7 +241,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
      * @since 9.2
      */
     public AbsoluteDate getStartDate() {
-        return startDate;
+        return ((DateBasedManeuverTriggers) (getManeuverTriggers())).getStartDate();
     }
 
     /** Get the end date.
@@ -326,7 +249,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
      * @since 9.2
      */
     public AbsoluteDate getEndDate() {
-        return endDate;
+        return ((DateBasedManeuverTriggers) (getManeuverTriggers())).getEndDate();
     }
 
     /** Get the duration of the maneuver (s).
@@ -335,134 +258,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
      * @since 9.2
      */
     public double getDuration() {
-        return endDate.durationFrom(startDate);
-    }
-
-    /** Get the attitude override used for the maneuver.
-     * @return the attitude override
-     * @since 9.2
-     */
-    public AttitudeProvider getAttitudeOverride() {
-        return attitudeOverride;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder) {
-        if (isFiring(s)) {
-
-            // compute thrust acceleration in inertial frame
-            final double[] parameters = getParameters();
-            adder.addNonKeplerianAcceleration(acceleration(s, parameters));
-
-            // compute flow rate
-            adder.addMassDerivative(parameters[1]);
-
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends RealFieldElement<T>> void
-        addContribution(final FieldSpacecraftState<T> s,
-                        final FieldTimeDerivativesEquations<T> adder) {
-        if (isFiring(s)) {
-
-            final T[] parameters = getParameters(s.getDate().getField());
-
-            // compute thrust acceleration in inertial frame
-            adder.addNonKeplerianAcceleration(acceleration(s, parameters));
-
-            // compute flow rate
-            adder.addMassDerivative(parameters[1]);
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Vector3D acceleration(final SpacecraftState state, final double[] parameters) {
-        if (isFiring(state)) {
-            final double thrust = parameters[0];
-            final Attitude attitude =
-                            attitudeOverride == null ?
-                            state.getAttitude() :
-                            attitudeOverride.getAttitude(state.getOrbit(),
-                                                         state.getDate(),
-                                                         state.getFrame());
-            return new Vector3D(thrust / state.getMass(),
-                                attitude.getRotation().applyInverseTo(direction));
-        } else {
-            return Vector3D.ZERO;
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
-                                                                         final T[] parameters) {
-        if (isFiring(s)) {
-            // compute thrust acceleration in inertial frame
-            final T thrust = parameters[0];
-            final FieldAttitude<T> attitude =
-                            attitudeOverride == null ?
-                            s.getAttitude() :
-                            attitudeOverride.getAttitude(s.getOrbit(),
-                                                         s.getDate(),
-                                                         s.getFrame());
-            return new FieldVector3D<>(s.getMass().reciprocal().multiply(thrust),
-                                       attitude.getRotation().applyInverseTo(direction));
-        } else {
-            // constant (and null) acceleration when not firing
-            return FieldVector3D.getZero(s.getMass().getField());
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Stream<EventDetector> getEventsDetectors() {
-        // in forward propagation direction, firing must be enabled
-        // at start time and disabled at end time; in backward
-        // propagation direction, firing must be enabled
-        // at end time and disabled at start time
-        final DateDetector startDetector = new DateDetector(startDate).
-            withHandler((SpacecraftState state, DateDetector d, boolean increasing) -> {
-                triggeredStart = state.getDate();
-                return Action.RESET_DERIVATIVES;
-            });
-        final DateDetector endDetector = new DateDetector(endDate).
-            withHandler((SpacecraftState state, DateDetector d, boolean increasing) -> {
-                triggeredEnd = state.getDate();
-                return Action.RESET_DERIVATIVES;
-            });
-        return Stream.of(startDetector, endDetector);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public ParameterDriver[] getParametersDrivers() {
-        return new ParameterDriver[] {
-            thrustDriver, flowRateDriver
-        };
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
-        // in forward propagation direction, firing must be enabled
-        // at start time and disabled at end time; in backward
-        // propagation direction, firing must be enabled
-        // at end time and disabled at start time
-        final FieldDateDetector<T> startDetector = new FieldDateDetector<>(new FieldAbsoluteDate<>(field, startDate)).
-            withHandler((FieldSpacecraftState<T> state, FieldDateDetector<T> d, boolean increasing) -> {
-                triggeredStart = state.getDate().toAbsoluteDate();
-                return Action.RESET_DERIVATIVES;
-            });
-        final FieldDateDetector<T> endDetector = new FieldDateDetector<>(new FieldAbsoluteDate<>(field, endDate)).
-            withHandler((FieldSpacecraftState<T> state, FieldDateDetector<T> d, boolean increasing) -> {
-                triggeredEnd = state.getDate().toAbsoluteDate();
-                return Action.RESET_DERIVATIVES;
-            });
-        return Stream.of(startDetector, endDetector);
+        return ((DateBasedManeuverTriggers) (getManeuverTriggers())).getDuration();
     }
 
     /** Check if maneuvering is on.
@@ -490,46 +286,6 @@ public class ConstantThrustManeuver extends AbstractForceModel {
      * @since 10.1
      */
     public boolean isFiring(final AbsoluteDate date) {
-        if (forward) {
-            if (triggeredStart == null) {
-                // explicitly ignores state date, as propagator did not allow us to introduce discontinuity
-                return false;
-            } else if (date.durationFrom(triggeredStart) < 0.0) {
-                // we are unambiguously before maneuver start
-                return false;
-            } else {
-                if (triggeredEnd == null) {
-                    // explicitly ignores state date, as propagator did not allow us to introduce discontinuity
-                    return true;
-                } else if (date.durationFrom(triggeredEnd) < 0.0) {
-                    // we are unambiguously before maneuver end
-                    return true;
-                } else {
-                    // we are at or after maneuver end
-                    return false;
-                }
-            }
-        } else {
-            if (triggeredEnd == null) {
-                // explicitly ignores state date, as propagator did not allow us to introduce discontinuity
-                return false;
-            } else if (date.durationFrom(triggeredEnd) > 0.0) {
-                // we are unambiguously after maneuver end
-                return false;
-            } else {
-                if (triggeredStart == null) {
-                    // explicitly ignores state date, as propagator did not allow us to introduce discontinuity
-                    return true;
-                } else if (date.durationFrom(triggeredStart) > 0.0) {
-                    // we are unambiguously after maneuver start
-                    return true;
-                } else {
-                    // we are at or before maneuver start
-                    return false;
-                }
-            }
-        }
-
+        return getManeuverTriggers().isFiring(date, new double[] {});
     }
-
 }

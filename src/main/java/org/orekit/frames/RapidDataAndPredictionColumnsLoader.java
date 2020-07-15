@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -193,129 +193,131 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
             final List<EOPEntry> history = new ArrayList<>();
             ITRFVersionLoader.ITRFVersionConfiguration configuration = null;
 
-            // set up a reader for line-oriented bulletin B files
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
-
             // reset parse info to start new file (do not clear history!)
             int lineNumber = 0;
 
-            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+            // set up a reader for line-oriented bulletin B files
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
 
-                lineNumber++;
+                for (String line = reader.readLine(); line != null; line = reader.readLine()) {
 
-                // split the lines in its various columns (some of them can be blank)
-                final String datePart      = (line.length() >= DATE_END)     ? line.substring(DATE_START,       DATE_END)     : "";
-                final String polePart      = (line.length() >= POLE_END)     ? line.substring(POLE_START,       POLE_END)     : "";
-                final String ut1utcPart    = (line.length() >= UT1_UTC_END ) ? line.substring(UT1_UTC_START,    UT1_UTC_END)  : "";
-                final String lodPart       = (line.length() >= LOD_END)      ? line.substring(LOD_START,        LOD_END)      : "";
-                final String nutationPart  = (line.length() >= NUTATION_END) ? line.substring(NUTATION_START,   NUTATION_END) : "";
+                    lineNumber++;
 
-                // parse the date part
-                final Matcher dateMatcher = DATE_PATTERN.matcher(datePart);
-                final int mjd;
-                if (dateMatcher.matches()) {
-                    final int yy = Integer.parseInt(dateMatcher.group(1).trim());
-                    final int mm = Integer.parseInt(dateMatcher.group(2).trim());
-                    final int dd = Integer.parseInt(dateMatcher.group(3).trim());
-                    mjd = Integer.parseInt(dateMatcher.group(4).trim());
-                    final DateComponents reconstructedDate = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd);
-                    if ((reconstructedDate.getYear() % 100) != yy ||
-                         reconstructedDate.getMonth()       != mm ||
-                         reconstructedDate.getDay()         != dd) {
-                        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                  lineNumber, name, line);
-                    }
-                } else {
-                    throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                              lineNumber, name, line);
-                }
+                    // split the lines in its various columns (some of them can be blank)
+                    final String datePart      = (line.length() >= DATE_END)     ? line.substring(DATE_START,       DATE_END)     : "";
+                    final String polePart      = (line.length() >= POLE_END)     ? line.substring(POLE_START,       POLE_END)     : "";
+                    final String ut1utcPart    = (line.length() >= UT1_UTC_END ) ? line.substring(UT1_UTC_START,    UT1_UTC_END)  : "";
+                    final String lodPart       = (line.length() >= LOD_END)      ? line.substring(LOD_START,        LOD_END)      : "";
+                    final String nutationPart  = (line.length() >= NUTATION_END) ? line.substring(NUTATION_START,   NUTATION_END) : "";
 
-                // parse the pole part
-                final double x;
-                final double y;
-                if (polePart.trim().length() == 0) {
-                    // pole part is blank
-                    x = 0;
-                    y = 0;
-                } else {
-                    final Matcher poleMatcher = POLE_PATTERN.matcher(polePart);
-                    if (poleMatcher.matches()) {
-                        x = ARC_SECONDS_TO_RADIANS * Double.parseDouble(poleMatcher.group(1));
-                        y = ARC_SECONDS_TO_RADIANS * Double.parseDouble(poleMatcher.group(3));
-                    } else {
-                        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                  lineNumber, name, line);
-                    }
-                }
-
-                // parse the UT1-UTC part
-                final double dtu1;
-                if (ut1utcPart.trim().length() == 0) {
-                    // UT1-UTC part is blank
-                    dtu1 = 0;
-                } else {
-                    final Matcher ut1utcMatcher = UT1_UTC_PATTERN.matcher(ut1utcPart);
-                    if (ut1utcMatcher.matches()) {
-                        dtu1 = Double.parseDouble(ut1utcMatcher.group(1));
-                    } else {
-                        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                  lineNumber, name, line);
-                    }
-                }
-
-                // parse the lod part
-                final double lod;
-                if (lodPart.trim().length() == 0) {
-                    // lod part is blank
-                    lod = 0;
-                } else {
-                    final Matcher lodMatcher = LOD_PATTERN.matcher(lodPart);
-                    if (lodMatcher.matches()) {
-                        lod = MILLI_SECONDS_TO_SECONDS * Double.parseDouble(lodMatcher.group(1));
-                    } else {
-                        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                  lineNumber, name, line);
-                    }
-                }
-
-                // parse the nutation part
-                final double[] nro;
-                final double[] equinox;
-                final AbsoluteDate mjdDate =
-                        new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
-                                getUtc());
-                if (nutationPart.trim().length() == 0) {
-                    // nutation part is blank
-                    nro     = new double[2];
-                    equinox = new double[2];
-                } else {
-                    final Matcher nutationMatcher = NUTATION_PATTERN.matcher(nutationPart);
-                    if (nutationMatcher.matches()) {
-                        if (isNonRotatingOrigin) {
-                            nro = new double[] {
-                                MILLI_ARC_SECONDS_TO_RADIANS * Double.parseDouble(nutationMatcher.group(1)),
-                                MILLI_ARC_SECONDS_TO_RADIANS * Double.parseDouble(nutationMatcher.group(3))
-                            };
-                            equinox = getConverter().toEquinox(mjdDate, nro[0], nro[1]);
-                        } else {
-                            equinox = new double[] {
-                                MILLI_ARC_SECONDS_TO_RADIANS * Double.parseDouble(nutationMatcher.group(1)),
-                                MILLI_ARC_SECONDS_TO_RADIANS * Double.parseDouble(nutationMatcher.group(3))
-                            };
-                            nro = getConverter().toNonRotating(mjdDate, equinox[0], equinox[1]);
+                    // parse the date part
+                    final Matcher dateMatcher = DATE_PATTERN.matcher(datePart);
+                    final int mjd;
+                    if (dateMatcher.matches()) {
+                        final int yy = Integer.parseInt(dateMatcher.group(1).trim());
+                        final int mm = Integer.parseInt(dateMatcher.group(2).trim());
+                        final int dd = Integer.parseInt(dateMatcher.group(3).trim());
+                        mjd = Integer.parseInt(dateMatcher.group(4).trim());
+                        final DateComponents reconstructedDate = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd);
+                        if ((reconstructedDate.getYear() % 100) != yy ||
+                             reconstructedDate.getMonth()       != mm ||
+                             reconstructedDate.getDay()         != dd) {
+                            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                      lineNumber, name, line);
                         }
                     } else {
                         throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                   lineNumber, name, line);
                     }
-                }
 
-                if (configuration == null || !configuration.isValid(mjd)) {
-                    // get a configuration for current name and date range
-                    configuration = getItrfVersionProvider().getConfiguration(name, mjd);
+                    // parse the pole part
+                    final double x;
+                    final double y;
+                    if (polePart.trim().length() == 0) {
+                        // pole part is blank
+                        x = 0;
+                        y = 0;
+                    } else {
+                        final Matcher poleMatcher = POLE_PATTERN.matcher(polePart);
+                        if (poleMatcher.matches()) {
+                            x = ARC_SECONDS_TO_RADIANS * Double.parseDouble(poleMatcher.group(1));
+                            y = ARC_SECONDS_TO_RADIANS * Double.parseDouble(poleMatcher.group(3));
+                        } else {
+                            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                      lineNumber, name, line);
+                        }
+                    }
+
+                    // parse the UT1-UTC part
+                    final double dtu1;
+                    if (ut1utcPart.trim().length() == 0) {
+                        // UT1-UTC part is blank
+                        dtu1 = 0;
+                    } else {
+                        final Matcher ut1utcMatcher = UT1_UTC_PATTERN.matcher(ut1utcPart);
+                        if (ut1utcMatcher.matches()) {
+                            dtu1 = Double.parseDouble(ut1utcMatcher.group(1));
+                        } else {
+                            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                      lineNumber, name, line);
+                        }
+                    }
+
+                    // parse the lod part
+                    final double lod;
+                    if (lodPart.trim().length() == 0) {
+                        // lod part is blank
+                        lod = 0;
+                    } else {
+                        final Matcher lodMatcher = LOD_PATTERN.matcher(lodPart);
+                        if (lodMatcher.matches()) {
+                            lod = MILLI_SECONDS_TO_SECONDS * Double.parseDouble(lodMatcher.group(1));
+                        } else {
+                            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                      lineNumber, name, line);
+                        }
+                    }
+
+                    // parse the nutation part
+                    final double[] nro;
+                    final double[] equinox;
+                    final AbsoluteDate mjdDate =
+                            new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
+                                    getUtc());
+                    if (nutationPart.trim().length() == 0) {
+                        // nutation part is blank
+                        nro     = new double[2];
+                        equinox = new double[2];
+                    } else {
+                        final Matcher nutationMatcher = NUTATION_PATTERN.matcher(nutationPart);
+                        if (nutationMatcher.matches()) {
+                            if (isNonRotatingOrigin) {
+                                nro = new double[] {
+                                    MILLI_ARC_SECONDS_TO_RADIANS * Double.parseDouble(nutationMatcher.group(1)),
+                                    MILLI_ARC_SECONDS_TO_RADIANS * Double.parseDouble(nutationMatcher.group(3))
+                                };
+                                equinox = getConverter().toEquinox(mjdDate, nro[0], nro[1]);
+                            } else {
+                                equinox = new double[] {
+                                    MILLI_ARC_SECONDS_TO_RADIANS * Double.parseDouble(nutationMatcher.group(1)),
+                                    MILLI_ARC_SECONDS_TO_RADIANS * Double.parseDouble(nutationMatcher.group(3))
+                                };
+                                nro = getConverter().toNonRotating(mjdDate, equinox[0], equinox[1]);
+                            }
+                        } else {
+                            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                      lineNumber, name, line);
+                        }
+                    }
+
+                    if (configuration == null || !configuration.isValid(mjd)) {
+                        // get a configuration for current name and date range
+                        configuration = getItrfVersionProvider().getConfiguration(name, mjd);
+                    }
+                    history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
+                                             configuration.getVersion(), mjdDate));
+
                 }
-                history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
-                                         configuration.getVersion(), mjdDate));
 
             }
 

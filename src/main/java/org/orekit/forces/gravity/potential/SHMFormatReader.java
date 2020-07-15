@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -25,6 +25,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
@@ -52,6 +53,9 @@ import org.orekit.utils.Constants;
  * @author Fabien Maussion
  */
 public class SHMFormatReader extends PotentialCoefficientsReader {
+
+    /** Pattern for delimiting regular expressions. */
+    private static final Pattern SEPARATOR = Pattern.compile("\\s+");
 
     /** First field labels. */
     private static final String GRCOEF = "GRCOEF";
@@ -113,82 +117,89 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
         boolean    normalized = false;
         TideSystem tideSystem = TideSystem.UNKNOWN;
 
-        final BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
-        boolean okEarth            = false;
-        boolean okSHM              = false;
-        boolean okCoeffs           = false;
-        double[][] c               = null;
-        double[][] s               = null;
-        String line = r.readLine();
-        if ((line != null) &&
-            "FIRST ".equals(line.substring(0, 6)) &&
-            "SHM    ".equals(line.substring(49, 56))) {
-            for (line = r.readLine(); line != null; line = r.readLine()) {
-                if (line.length() >= 6) {
-                    final String[] tab = line.split("\\s+");
+        boolean okEarth  = false;
+        boolean okSHM    = false;
+        boolean okCoeffs = false;
+        double[][] c     = null;
+        double[][] s     = null;
+        String line      = null;
+        int lineNumber   = 1;
+        try (BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
+            line = r.readLine();
+            if ((line != null) &&
+                "FIRST ".equals(line.substring(0, 6)) &&
+                "SHM    ".equals(line.substring(49, 56))) {
+                for (line = r.readLine(); line != null; line = r.readLine()) {
+                    lineNumber++;
+                    if (line.length() >= 6) {
+                        final String[] tab = SEPARATOR.split(line);
 
-                    // read the earth values
-                    if ("EARTH".equals(tab[0])) {
-                        setMu(parseDouble(tab[1]));
-                        setAe(parseDouble(tab[2]));
-                        okEarth = true;
-                    }
-
-                    // initialize the arrays
-                    if ("SHM".equals(tab[0])) {
-
-                        final int degree = FastMath.min(getMaxParseDegree(), Integer.parseInt(tab[1]));
-                        final int order  = FastMath.min(getMaxParseOrder(), degree);
-                        c = buildTriangularArray(degree, order, missingCoefficientsAllowed() ? 0.0 : Double.NaN);
-                        s = buildTriangularArray(degree, order, missingCoefficientsAllowed() ? 0.0 : Double.NaN);
-                        final String lowerCaseLine = line.toLowerCase(Locale.US);
-                        normalized = lowerCaseLine.contains("fully normalized");
-                        if (lowerCaseLine.contains("exclusive permanent tide")) {
-                            tideSystem = TideSystem.TIDE_FREE;
-                        } else {
-                            tideSystem = TideSystem.UNKNOWN;
+                        // read the earth values
+                        if ("EARTH".equals(tab[0])) {
+                            setMu(parseDouble(tab[1]));
+                            setAe(parseDouble(tab[2]));
+                            okEarth = true;
                         }
-                        okSHM = true;
-                    }
 
-                    // fill the arrays
-                    if (GRCOEF.equals(line.substring(0, 6)) || GRCOF2.equals(tab[0]) || GRDOTA.equals(tab[0])) {
-                        final int i = Integer.parseInt(tab[1]);
-                        final int j = Integer.parseInt(tab[2]);
-                        if (i < c.length && j < c[i].length) {
-                            if (GRDOTA.equals(tab[0])) {
+                        // initialize the arrays
+                        if ("SHM".equals(tab[0])) {
 
-                                // store the secular drift coefficients
-                                extendListOfLists(cDot, i, j, 0.0);
-                                extendListOfLists(sDot, i, j, 0.0);
-                                parseCoefficient(tab[3], cDot, i, j, "Cdot", name);
-                                parseCoefficient(tab[4], sDot, i, j, "Sdot", name);
-
-                                // check the reference date (format yyyymmdd)
-                                final DateComponents localRef = new DateComponents(Integer.parseInt(tab[7].substring(0, 4)),
-                                                                                   Integer.parseInt(tab[7].substring(4, 6)),
-                                                                                   Integer.parseInt(tab[7].substring(6, 8)));
-                                if (referenceDate == null) {
-                                    // first reference found, store it
-                                    referenceDate = toDate(localRef);
-                                } else if (!referenceDate.equals(toDate(localRef))) {
-                                    throw new OrekitException(OrekitMessages.SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD,
-                                                              referenceDate, toDate(localRef), name);
-                                }
-
+                            final int degree = FastMath.min(getMaxParseDegree(), Integer.parseInt(tab[1]));
+                            final int order  = FastMath.min(getMaxParseOrder(), degree);
+                            c = buildTriangularArray(degree, order, missingCoefficientsAllowed() ? 0.0 : Double.NaN);
+                            s = buildTriangularArray(degree, order, missingCoefficientsAllowed() ? 0.0 : Double.NaN);
+                            final String lowerCaseLine = line.toLowerCase(Locale.US);
+                            normalized = lowerCaseLine.contains("fully normalized");
+                            if (lowerCaseLine.contains("exclusive permanent tide")) {
+                                tideSystem = TideSystem.TIDE_FREE;
                             } else {
+                                tideSystem = TideSystem.UNKNOWN;
+                            }
+                            okSHM = true;
+                        }
 
-                                // store the constant coefficients
-                                parseCoefficient(tab[3], c, i, j, "C", name);
-                                parseCoefficient(tab[4], s, i, j, "S", name);
-                                okCoeffs = true;
+                        // fill the arrays
+                        if (GRCOEF.equals(line.substring(0, 6)) || GRCOF2.equals(tab[0]) || GRDOTA.equals(tab[0])) {
+                            final int i = Integer.parseInt(tab[1]);
+                            final int j = Integer.parseInt(tab[2]);
+                            if (i < c.length && j < c[i].length) {
+                                if (GRDOTA.equals(tab[0])) {
 
+                                    // store the secular drift coefficients
+                                    extendListOfLists(cDot, i, j, 0.0);
+                                    extendListOfLists(sDot, i, j, 0.0);
+                                    parseCoefficient(tab[3], cDot, i, j, "Cdot", name);
+                                    parseCoefficient(tab[4], sDot, i, j, "Sdot", name);
+
+                                    // check the reference date (format yyyymmdd)
+                                    final DateComponents localRef = new DateComponents(Integer.parseInt(tab[7].substring(0, 4)),
+                                                                                       Integer.parseInt(tab[7].substring(4, 6)),
+                                                                                       Integer.parseInt(tab[7].substring(6, 8)));
+                                    if (referenceDate == null) {
+                                        // first reference found, store it
+                                        referenceDate = toDate(localRef);
+                                    } else if (!referenceDate.equals(toDate(localRef))) {
+                                        throw new OrekitException(OrekitMessages.SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD,
+                                                                  referenceDate, toDate(localRef), name);
+                                    }
+
+                                } else {
+
+                                    // store the constant coefficients
+                                    parseCoefficient(tab[3], c, i, j, "C", name);
+                                    parseCoefficient(tab[4], s, i, j, "S", name);
+                                    okCoeffs = true;
+
+                                }
                             }
                         }
-                    }
 
+                    }
                 }
             }
+        } catch (NumberFormatException nfe) {
+            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                      lineNumber, name, line);
         }
 
         if (missingCoefficientsAllowed() && c.length > 0 && c[0].length > 0) {

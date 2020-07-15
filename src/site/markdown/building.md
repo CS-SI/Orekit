@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2020 CS Group
+<!--- Copyright 2002-2020 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -37,7 +37,7 @@ As with all maven enabled projects, building official released versions of
 Orekit is straightforward (see below for the special case of development versions),
 simply run:
 
-    mvn package assembly:single
+    mvn package
 
 The preceding command will perform all dependencies retrieval, compilation,
 tests and packaging for you. At the end, it will create several files named
@@ -119,3 +119,28 @@ You can also check everything works correctly by running the junit tests.
 
 If you want to go further and run the tutorials, you need to check the
 sister project [Orekit tutorials](https://gitlab.orekit.org/orekit/orekit-tutorials).
+
+## Building with Ant
+
+[Ant](http://ant.apache.org/) is a build tool for Java applications.
+
+For systems not providing ant as a package, ant can be
+[downloaded](http://ant.apache.org/bindownload.cgi) from its site at the
+Apache Software Foundation. This site also explains the
+installation procedure.
+
+if you are behind a proxy (which is a traditional setting in a corporate
+environment), then you need to configure ant to use it. This is explained
+in the ant [documentation](http://ant.apache.org/manual/proxy.html).
+
+Either download the Hipparchus jars from the Hipparchus project and
+put it in a lib directory just below the top-level orekit
+directory or edit the ant build.xml file to edit the get-hipparchus
+target that can automatically download Hipparchus.
+
+To create a file named build/orekit-x.y.jar where x.y is the version number,
+use the following command:
+
+    ant jar
+
+For other commands, see the ant command line [documentation](https://ant.apache.org/manual/running.html)

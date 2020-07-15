@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -1088,13 +1088,12 @@ public class AbsoluteDate
 
         // extract calendar elements
         final DateComponents dateComponents = new DateComponents(DateComponents.J2000_EPOCH, date);
-        TimeComponents timeComponents = new TimeComponents((int) time, offset2000B);
 
-        if (timeScale.insideLeap(this)) {
-            // fix the seconds number to take the leap into account
-            timeComponents = new TimeComponents(timeComponents.getHour(), timeComponents.getMinute(),
-                                                timeComponents.getSecond() + timeScale.getLeap(this));
-        }
+        // extract time element, accounting for leap seconds
+        final double leap = timeScale.insideLeap(this) ? timeScale.getLeap(this) : 0;
+        final int minuteDuration = timeScale.minuteDuration(this);
+        final TimeComponents timeComponents =
+                TimeComponents.fromSeconds((int) time, offset2000B, leap, minuteDuration);
 
         // build the components
         return new DateTimeComponents(dateComponents, timeComponents);
@@ -1418,6 +1417,29 @@ public class AbsoluteDate
     public String toString(final TimeZone timeZone, final TimeScale utc) {
         final int minuteDuration = utc.minuteDuration(this);
         return getComponents(timeZone, utc).toString(minuteDuration);
+    }
+
+    /**
+     * Represent the given date as a string according to the format in RFC 3339. RFC3339
+     * is a restricted subset of ISO 8601 with a well defined grammar.
+     *
+     * <p>This method is different than {@link AbsoluteDate#toString(TimeScale)} in that
+     * it includes a {@code "Z"} at the end to indicate the time zone and enough precision
+     * to represent the point in time without rounding up to the next minute.
+     *
+     * <p>RFC3339 is unable to represent BC years, years of 10000 or more, time zone
+     * offsets of 100 hours or more, or NaN. In these cases the value returned from this
+     * method will not be valid RFC3339 format.
+     *
+     * @param utc time scale.
+     * @return RFC 3339 format string.
+     * @see <a href="https://tools.ietf.org/html/rfc3339#page-8">RFC 3339</a>
+     * @see DateTimeComponents#toStringRfc3339()
+     * @see #toString(TimeScale)
+     * @see #getComponents(TimeScale)
+     */
+    public String toStringRfc3339(final TimeScale utc) {
+        return this.getComponents(utc).toStringRfc3339();
     }
 
 }

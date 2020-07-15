@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2020 CS Group
+<!--- Copyright 2002-2020 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -18,8 +18,8 @@ As explained on the [filtering](./filtering.html) page, the `DataProvidersManage
 method works by looping over all registered `DataFilter` instances and calling their `filter` method
 with the current `NamedData`. If the `filter` method returns the _exact same instance_ that was passed
 to it, it means the filter does not do anything. In this case, the `DataProvidersManager.applyAllFilters`
-method just continues its loop and check the next filter.cIf the `filter` method returns a different
-`NamedData` instance that was passed to it, it meanscthe filter does indeed act on the bytes stream.
+method just continues its loop and check the next filter. If the `filter` method returns a different
+`NamedData` instance that was passed to it, it means the filter does indeed act on the bytes stream.
 In this case, the `DataProvidersManager.applyAllFilters` method sets the current `NamedData` to the
 returned value and restart its loop from the beginning.
 

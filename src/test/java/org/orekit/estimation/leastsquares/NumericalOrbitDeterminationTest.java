@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -274,8 +274,8 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         //test
         //definition of the accuracy for the test
 
-        final double distanceAccuracy = 2.86;
-        final double velocityAccuracy = 2.57e-3;
+        final double distanceAccuracy = 1.06;
+        final double velocityAccuracy = 2.26e-3;
 
         //test on the convergence
         final int numberOfIte  = 2;
@@ -293,13 +293,14 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
 
         //test on statistic for the range residuals
-        final long nbRange = 8981;
-        final double[] RefStatRange = { -3.92, 8.46, 0.0, 0.888 };
-        Assert.assertEquals(nbRange, odGNSS.getRangeStat().getN());
-        Assert.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               0.3);
-        Assert.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               0.3);
+        final long nbRangeInit     = 8981;
+        final long nbRangeExcluded = 305;
+        final double[] RefStatRange = { -3.847, 8.307, 0.0, 0.873 };
+        Assert.assertEquals(nbRangeInit - nbRangeExcluded, odGNSS.getRangeStat().getN());
+        Assert.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               1.0e-3);
+        Assert.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               1.0e-3);
         Assert.assertEquals(RefStatRange[2], odGNSS.getRangeStat().getMean(),              1.0e-3);
-        Assert.assertEquals(RefStatRange[3], odGNSS.getRangeStat().getStandardDeviation(), 0.3);
+        Assert.assertEquals(RefStatRange[3], odGNSS.getRangeStat().getStandardDeviation(), 1.0e-3);
 
     }
 

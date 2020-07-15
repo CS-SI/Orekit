@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -55,9 +55,11 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class EphemerisTest {
 
@@ -325,6 +327,75 @@ public class EphemerisTest {
         } catch (TimeStampedCacheException e) {
             //supposed to fail since out of bounds
         }
+    }
+
+    @Test
+    public void testIssue662() {
+
+        // Input parameters
+        int numberOfInterals = 1440;
+        double deltaT = finalDate.durationFrom(initDate)/((double)numberOfInterals);
+
+        // Build the list of spacecraft states
+        String additionalName  = "testValue";
+        double additionalValue = 1.0;
+        List<SpacecraftState> states = new ArrayList<SpacecraftState>(numberOfInterals + 1);
+        for (int j = 0; j<= numberOfInterals; j++) {
+            states.add(propagator.propagate(initDate.shiftedBy((j * deltaT))).addAdditionalState(additionalName, additionalValue));
+        }
+
+        // Build the epemeris propagator
+        Ephemeris ephemPropagator = new Ephemeris(states, 2);
+
+        // State before adding an attitude provider
+        SpacecraftState stateBefore = ephemPropagator.propagate(ephemPropagator.getMaxDate().shiftedBy(-60.0));
+        Assert.assertEquals(1,               stateBefore.getAdditionalState(additionalName).length);
+        Assert.assertEquals(additionalValue, stateBefore.getAdditionalState(additionalName)[0], Double.MIN_VALUE);
+
+        // Set an attitude provider
+        ephemPropagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.VVLH));
+
+        // State after adding an attitude provider
+        SpacecraftState stateAfter = ephemPropagator.propagate(ephemPropagator.getMaxDate().shiftedBy(-60.0));
+        Assert.assertEquals(1,               stateAfter.getAdditionalState(additionalName).length);
+        Assert.assertEquals(additionalValue, stateAfter.getAdditionalState(additionalName)[0], Double.MIN_VALUE);
+
+    }
+
+    @Test
+    public void testIssue680() {
+
+        // Initial PV coordinates
+        AbsolutePVCoordinates initPV = new AbsolutePVCoordinates(inertialFrame,
+                                                                 new TimeStampedPVCoordinates(initDate,
+                                                                                              new PVCoordinates(new Vector3D(-29536113.0, 30329259.0, -100125.0),
+                                                                                                                new Vector3D(-2194.0, -2141.0, -8.0))));
+        // Input parameters
+        int numberOfInterals = 1440;
+        double deltaT = finalDate.durationFrom(initDate)/((double)numberOfInterals);
+
+        // Build the list of spacecraft states
+        List<SpacecraftState> states = new ArrayList<SpacecraftState>(numberOfInterals + 1);
+        for (int j = 0; j<= numberOfInterals; j++) {
+            states.add(new SpacecraftState(initPV).shiftedBy(j * deltaT));
+        }
+
+        // Build the epemeris propagator
+        Ephemeris ephemPropagator = new Ephemeris(states, 2);
+
+        // Get initial state without attitude provider
+        SpacecraftState withoutAttitudeProvider = ephemPropagator.getInitialState();
+        Assert.assertEquals(0.0, Vector3D.distance(withoutAttitudeProvider.getAbsPVA().getPosition(), initPV.getPosition()), 1.0e-10);
+        Assert.assertEquals(0.0, Vector3D.distance(withoutAttitudeProvider.getAbsPVA().getVelocity(), initPV.getVelocity()), 1.0e-10);
+
+        // Set an attitude provider
+        ephemPropagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.VVLH));
+
+        // Get initial state with attitude provider
+        SpacecraftState withAttitudeProvider = ephemPropagator.getInitialState();
+        Assert.assertEquals(0.0, Vector3D.distance(withAttitudeProvider.getAbsPVA().getPosition(), initPV.getPosition()), 1.0e-10);
+        Assert.assertEquals(0.0, Vector3D.distance(withAttitudeProvider.getAbsPVA().getVelocity(), initPV.getVelocity()), 1.0e-10);
+
     }
 
     @Before

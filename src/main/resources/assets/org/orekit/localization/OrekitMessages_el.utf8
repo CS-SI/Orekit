@@ -160,6 +160,9 @@ TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = οι γραμμές TLE δεν αναφ�
 # invalid TLE parameter for object {0}: {1} = {2}
 TLE_INVALID_PARAMETER = <MISSING TRANSLATION>
 
+# invalid TLE parameter {0}: {1} not in range [{2}, {3}]
+TLE_INVALID_PARAMETER_RANGE = <MISSING TRANSLATION>
+
 # wrong checksum of TLE line {0}, expected {1} but got {2} ({3})
 TLE_CHECKSUM_ERROR = λάθος άθροισμα ελέγχου για τη γραμμή TLE {0}, αναμενόμενο {1} αλλά πήρε {2} ({3})
 
@@ -198,6 +201,9 @@ NON_EXISTENT_TIME = μη έγκυρη ώρα {0}
 
 # out of range seconds number: {0}
 OUT_OF_RANGE_SECONDS_NUMBER = αριθμός δευτερολέπτων εκτός εύρους: {0}
+
+# out of range seconds number: {0} is not in [{1}, {2})
+OUT_OF_RANGE_SECONDS_NUMBER_DETAIL = <MISSING TRANSLATION>
 
 # angle type not supported, supported angles: {0}, {1} and {2}
 ANGLE_TYPE_NOT_SUPPORTED = μη έγκυρος τύπος γωνίας, γωνίες που υποστηρίζονται {0}, {1} και {2}
@@ -388,11 +394,11 @@ NON_CHRONOLOGICALLY_SORTED_ENTRIES = οι παράγωγες είσοδοι δε
 # no data generated around date: {0}
 NO_DATA_GENERATED = κανένα δεδομένο δεν έχει παραχθεί γύρω από την ημερομηνία: {0}
 
-# unable to generate new data before {0}
-UNABLE_TO_GENERATE_NEW_DATA_BEFORE = αδύνατο να δημιουργήσει νέα δεδομένα πριν από {0}
+# unable to generate new data before {0}, data requested for {1}
+UNABLE_TO_GENERATE_NEW_DATA_BEFORE = <MISSING TRANSLATION>
 
-# unable to generate new data after {0}
-UNABLE_TO_GENERATE_NEW_DATA_AFTER = αδύνατο να δημιουργήσει νέα δεδομένα μετά από {0}
+# unable to generate new data after {0}, data requested for {1}
+UNABLE_TO_GENERATE_NEW_DATA_AFTER = <MISSING TRANSLATION>
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = αδύνατο να υπολογίστει υπερβολική εκκεντρική ανωμαλία από τη μέση ανωμαλία μετά από {0} επαναλήψεις
@@ -567,6 +573,15 @@ NEQUICK_F2_FM3_NOT_LOADED = <MISSING TRANSLATION>
 # file {0} is not a supported Hatanaka-compressed file
 NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE = <MISSING TRANSLATION>
 
+# Cannot compute around {0}
+CANNOT_COMPUTE_LAGRANGIAN = <MISSING TRANSLATION>
+
+# The trajectory does not cross XZ Plane, it will not result in a Halo Orbit
+TRAJECTORY_NOT_CROSSING_XZPLANE = <MISSING TRANSLATION>
+
+# The multiple shooting problem is underconstrained : {0} free variables, {1} constraints
+MULTIPLE_SHOOTING_UNDERCONSTRAINED = <MISSING TRANSLATION>
+
 # invalid measurement types {0} and {1} for the combination of measurements {2}
 INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS = <MISSING TRANSLATION>
 
@@ -578,3 +593,36 @@ NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = <MISSING TRANSLATION>
 
 # Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.
 EXCEPTIONAL_DATA_CONTEXT = <MISSING TRANSLATION>
+
+# inconsistent time systems in the attitude blocks: {0} ≠ {1}
+CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = <MISSING TRANSLATION>
+
+# invalid attitude type {0}
+CCSDS_AEM_NULL_ATTITUDE_TYPE = <MISSING TRANSLATION>
+
+# attitude type {0} in CCSDS AEM files is not implemented in Orekit
+CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED = <MISSING TRANSLATION>
+
+# the rotation sequence of the Euler angles {0} is invalid
+CCSDS_AEM_INVALID_ROTATION_SEQUENCE = <MISSING TRANSLATION>
+
+# observations {0}, {1} and {2} must have different dates
+NON_DIFFERENT_DATES_FOR_OBSERVATIONS = <MISSING TRANSLATION>
+
+# observations are not in the same plane
+NON_COPLANAR_POINTS = <MISSING TRANSLATION>
+
+# invalid parameter {0}: {1} not in range [{2}, {3}]
+INVALID_PARAMETER_RANGE = <MISSING TRANSLATION>
+
+# The parameter {0} should not be null in {1}
+PARAMETER_NOT_SET = <MISSING TRANSLATION>
+
+# {0} is not implemented
+FUNCTION_NOT_IMPLEMENTED = <MISSING TRANSLATION>
+
+# Impossible to execute {0} with {1} set to {2}
+INVALID_TYPE_FOR_FUNCTION = <MISSING TRANSLATION>
+
+# No data could be parsed from file {0}
+NO_DATA_IN_FILE = <MISSING TRANSLATION>

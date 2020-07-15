@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -147,58 +147,59 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
         // 0  0     .99999999988600E+00  .00000000000000E+00  .153900E-09  .000000E+00
         // 2  0   -0.48416511550920E-03 0.00000000000000E+00  .204904E-10  .000000E+00
 
-        final BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
         int lineNumber = 0;
         double[][] c   = null;
         double[][] s   = null;
-        for (String line = r.readLine(); line != null; line = r.readLine()) {
+        try (BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
+            for (String line = r.readLine(); line != null; line = r.readLine()) {
 
-            ++lineNumber;
+                ++lineNumber;
 
-            // match current header or data line
-            final Matcher matcher = LINES[FastMath.min(LINES.length, lineNumber) - 1].matcher(line);
-            if (!matcher.matches()) {
-                throw new OrekitParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                               lineNumber, name, line);
-            }
+                // match current header or data line
+                final Matcher matcher = LINES[FastMath.min(LINES.length, lineNumber) - 1].matcher(line);
+                if (!matcher.matches()) {
+                    throw new OrekitParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                   lineNumber, name, line);
+                }
 
-            if (lineNumber == 3) {
-                // header line defining ae, 1/f, GM and Omega
-                setAe(parseDouble(matcher.group(1)));
-                setMu(parseDouble(matcher.group(3)));
-            } else if (lineNumber == 4) {
-                // header line containing the reference date
-                referenceDate  = toDate(
-                        new DateComponents(Integer.parseInt(matcher.group(1)), 1, 1));
-            } else if (lineNumber == 5) {
-                // header line defining max degree
-                final int degree = FastMath.min(getMaxParseDegree(), Integer.parseInt(matcher.group(1)));
-                final int order  = FastMath.min(getMaxParseOrder(), degree);
-                c = buildTriangularArray(degree, order, missingCoefficientsAllowed() ? 0.0 : Double.NaN);
-                s = buildTriangularArray(degree, order, missingCoefficientsAllowed() ? 0.0 : Double.NaN);
-            } else if (lineNumber > 6) {
-                // data line
-                final int i = Integer.parseInt(matcher.group(1).trim());
-                final int j = Integer.parseInt(matcher.group(2).trim());
-                if (i < c.length && j < c[i].length) {
-                    if ("DOT".equals(matcher.group(3).trim())) {
+                if (lineNumber == 3) {
+                    // header line defining ae, 1/f, GM and Omega
+                    setAe(parseDouble(matcher.group(1)));
+                    setMu(parseDouble(matcher.group(3)));
+                } else if (lineNumber == 4) {
+                    // header line containing the reference date
+                    referenceDate  = toDate(
+                            new DateComponents(Integer.parseInt(matcher.group(1)), 1, 1));
+                } else if (lineNumber == 5) {
+                    // header line defining max degree
+                    final int degree = FastMath.min(getMaxParseDegree(), Integer.parseInt(matcher.group(1)));
+                    final int order  = FastMath.min(getMaxParseOrder(), degree);
+                    c = buildTriangularArray(degree, order, missingCoefficientsAllowed() ? 0.0 : Double.NaN);
+                    s = buildTriangularArray(degree, order, missingCoefficientsAllowed() ? 0.0 : Double.NaN);
+                } else if (lineNumber > 6) {
+                    // data line
+                    final int i = Integer.parseInt(matcher.group(1).trim());
+                    final int j = Integer.parseInt(matcher.group(2).trim());
+                    if (i < c.length && j < c[i].length) {
+                        if ("DOT".equals(matcher.group(3).trim())) {
 
-                        // store the secular drift coefficients
-                        extendListOfLists(cDot, i, j, 0.0);
-                        extendListOfLists(sDot, i, j, 0.0);
-                        parseCoefficient(matcher.group(4), cDot, i, j, "Cdot", name);
-                        parseCoefficient(matcher.group(5), sDot, i, j, "Sdot", name);
+                            // store the secular drift coefficients
+                            extendListOfLists(cDot, i, j, 0.0);
+                            extendListOfLists(sDot, i, j, 0.0);
+                            parseCoefficient(matcher.group(4), cDot, i, j, "Cdot", name);
+                            parseCoefficient(matcher.group(5), sDot, i, j, "Sdot", name);
 
-                    } else {
+                        } else {
 
-                        // store the constant coefficients
-                        parseCoefficient(matcher.group(4), c, i, j, "C", name);
-                        parseCoefficient(matcher.group(5), s, i, j, "S", name);
+                            // store the constant coefficients
+                            parseCoefficient(matcher.group(4), c, i, j, "C", name);
+                            parseCoefficient(matcher.group(5), s, i, j, "S", name);
 
+                        }
                     }
                 }
-            }
 
+            }
         }
 
         if (missingCoefficientsAllowed() && c.length > 0 && c[0].length > 0) {

@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -25,6 +25,7 @@ import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 
 /** Converter for states and parameters arrays
  *  for both {@link NumericalPropagator numerical} and {@link DSSTPropagator semi-analytical} propagators.
+ *  @since 10.2 this class is replaced by {@link AbstractGradientConverter}
  *  @author Luc Maisonobe
  */
 public abstract class AbstractDSConverter {

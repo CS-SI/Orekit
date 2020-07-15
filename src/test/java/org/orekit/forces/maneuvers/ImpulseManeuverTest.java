@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -40,8 +40,11 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.NodeDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.StopOnIncreasing;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.PartialDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
@@ -305,9 +308,81 @@ public class ImpulseManeuverTest {
 
     }
 
+    /**
+     * The test is inspired by the example given by melvina user in the Orekit forum.
+     * https://forum.orekit.org/t/python-error-using-impulsemaneuver-with-positionangledetector/771
+     */
+    @Test
+    public void testIssue663() {
+
+        // Initial orbit
+        final Orbit initialOrbit =
+                        new KeplerianOrbit(24532000.0, 0.72, 0.3, FastMath.PI, 0.4, 2.0,
+                                           PositionAngle.MEAN, FramesFactory.getEME2000(),
+                                           new AbsoluteDate(new DateComponents(2008, 06, 23),
+                                                            new TimeComponents(14, 18, 37),
+                                                            TimeScalesFactory.getUTC()),
+                                           3.986004415e14);
+        // create maneuver's trigger
+        final InitializationDetector trigger = new InitializationDetector();
+
+        // create maneuver
+        final AttitudeProvider attitudeOverride = new LofOffset(FramesFactory.getEME2000(), LOFType.TNW);
+        final Vector3D         deltaVSat        = Vector3D.PLUS_I;
+        final double           isp              = 1500.0;
+        final ImpulseManeuver<InitializationDetector> maneuver = new ImpulseManeuver<>(trigger, attitudeOverride, deltaVSat, isp);
+
+        // add maneuver to propagator
+        KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit, attitudeOverride);
+        propagator.addEventDetector(maneuver);
+
+        // propagation
+        Assert.assertFalse(trigger.initialized);
+        propagator.propagate(initialOrbit.getDate().shiftedBy(3600.0));
+        Assert.assertTrue(trigger.initialized);
+
+    }
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");
+    }
+
+    /** Private detector used for testing issue #663. */
+    private class InitializationDetector extends AbstractDetector<InitializationDetector> {
+
+        /** Flag for detector initialization. */
+        private boolean initialized;
+
+        /**
+         * Constructor.
+         */
+        InitializationDetector() {
+            super(AbstractDetector.DEFAULT_MAXCHECK, AbstractDetector.DEFAULT_THRESHOLD,
+                  AbstractDetector.DEFAULT_MAX_ITER, new StopOnIncreasing<InitializationDetector>());
+            this.initialized = false;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void init(final SpacecraftState s0, final AbsoluteDate t) {
+            super.init(s0, t);
+            this.initialized = true;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double g(SpacecraftState s) {
+            return 1;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        protected InitializationDetector create(double newMaxCheck, double newThreshold, int newMaxIter,
+                                                EventHandler<? super InitializationDetector> newHandler) {
+            return new InitializationDetector();
+        }
+        
     }
 
 }

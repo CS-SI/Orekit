@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.InertialProvider;
@@ -149,16 +149,12 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
     * automatic differentiation.
     *
     * @param derivatives tropospheric delay derivatives
-    * @param freeStateParameters dimension of the state.
     *
     * @return Jacobian of the delay wrt state
     */
-    private double[][] rangeErrorJacobianState(final double[] derivatives, final int freeStateParameters) {
+    private double[][] rangeErrorJacobianState(final double[] derivatives) {
         final double[][] finiteDifferencesJacobian = new double[1][6];
-        for (int i = 0; i < freeStateParameters; i++) {
-            // First element is the value of the delay
-            finiteDifferencesJacobian[0][i] = derivatives[i + 1];
-        }
+        System.arraycopy(derivatives, 0, finiteDifferencesJacobian[0], 0, 6);
         return finiteDifferencesJacobian;
     }
 
@@ -196,14 +192,13 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
     * @return derivative of the delay wrt tropospheric model parameters
     */
     private double[] rangeErrorParameterDerivative(final double[] derivatives, final int freeStateParameters) {
-        // 0                               -> value of the delay
-        // 1 ... freeStateParameters       -> derivatives of the delay wrt state
-        // freeStateParameters + 1 ... n   -> derivatives of the delay wrt tropospheric parameters
-        final int dim = derivatives.length - 1 - freeStateParameters;
+        // 0 ... freeStateParameters - 1 -> derivatives of the delay wrt state
+        // freeStateParameters ... n     -> derivatives of the delay wrt tropospheric parameters
+        final int dim = derivatives.length - freeStateParameters;
         final double[] rangeError = new double[dim];
 
         for (int i = 0; i < dim; i++) {
-            rangeError[i] = derivatives[1 + freeStateParameters + i];
+            rangeError[i] = derivatives[freeStateParameters + i];
         }
 
         return rangeError;
@@ -226,17 +221,17 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
         final double[] oldValue = estimated.getEstimatedValue();
 
         // Update estimated derivatives with Jacobian of the measure wrt state
-        final TroposphericDSConverter converter =
-                new TroposphericDSConverter(state, 6, new InertialProvider(state.getFrame()));
-        final FieldSpacecraftState<DerivativeStructure> dsState = converter.getState(tropoModel);
-        final DerivativeStructure[] dsParameters = converter.getParameters(dsState, tropoModel);
-        final DerivativeStructure masterDSDelay = rangeErrorTroposphericModel(masterStation, dsState, dsParameters);
-        final DerivativeStructure slaveDSDelay = rangeErrorTroposphericModel(slaveStation, dsState, dsParameters);
-        final double[] masterDerivatives = masterDSDelay.getAllDerivatives();
-        final double[] slaveDerivatives  = masterDSDelay.getAllDerivatives();
+        final TroposphericGradientConverter converter =
+                new TroposphericGradientConverter(state, 6, new InertialProvider(state.getFrame()));
+        final FieldSpacecraftState<Gradient> gState = converter.getState(tropoModel);
+        final Gradient[] gParameters = converter.getParameters(gState, tropoModel);
+        final Gradient masterGDelay = rangeErrorTroposphericModel(masterStation, gState, gParameters);
+        final Gradient slaveGDelay = rangeErrorTroposphericModel(slaveStation, gState, gParameters);
+        final double[] masterDerivatives = masterGDelay.getGradient();
+        final double[] slaveDerivatives  = masterGDelay.getGradient();
 
-        final double[][] masterDjac = rangeErrorJacobianState(masterDerivatives, converter.getFreeStateParameters());
-        final double[][] slaveDjac  = rangeErrorJacobianState(slaveDerivatives, converter.getFreeStateParameters());
+        final double[][] masterDjac = rangeErrorJacobianState(masterDerivatives);
+        final double[][] slaveDjac  = rangeErrorJacobianState(slaveDerivatives);
         final double[][] stateDerivatives = estimated.getStateDerivatives(0);
         for (int irow = 0; irow < stateDerivatives.length; ++irow) {
             for (int jcol = 0; jcol < stateDerivatives[0].length; ++jcol) {
@@ -297,7 +292,7 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
         // Update estimated value taking into account the tropospheric delay.
         // The tropospheric delay is directly added to the TurnAroundRange.
         final double[] newValue = oldValue.clone();
-        newValue[0] = newValue[0] + masterDSDelay.getReal() + slaveDSDelay.getReal();
+        newValue[0] = newValue[0] + masterGDelay.getReal() + slaveGDelay.getReal();
         estimated.setEstimatedValue(newValue);
 
     }

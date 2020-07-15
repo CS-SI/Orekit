@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,6 +20,8 @@ import java.io.Serializable;
 
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -237,6 +239,42 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
 
     }
 
+    /** Transform the instance to a {@link FieldVector3D}&lt;{@link UnivariateDerivative1}&gt;.
+     * <p>
+     * The {@link UnivariateDerivative1} coordinates correspond to time-derivatives up
+     * to the order 1.
+     * </p>
+     * @return vector with time-derivatives embedded within the coordinates
+     * @see #toUnivariateDerivative2Vector()
+     * @since 10.2
+     */
+    public FieldVector3D<UnivariateDerivative1> toUnivariateDerivative1Vector() {
+
+        final UnivariateDerivative1 x = new UnivariateDerivative1(position.getX(), velocity.getX());
+        final UnivariateDerivative1 y = new UnivariateDerivative1(position.getY(), velocity.getY());
+        final UnivariateDerivative1 z = new UnivariateDerivative1(position.getZ(), velocity.getZ());
+
+        return new FieldVector3D<>(x, y, z);
+    }
+
+    /** Transform the instance to a {@link FieldVector3D}&lt;{@link UnivariateDerivative2}&gt;.
+     * <p>
+     * The {@link UnivariateDerivative2} coordinates correspond to time-derivatives up
+     * to the order 2.
+     * </p>
+     * @return vector with time-derivatives embedded within the coordinates
+     * @see #toUnivariateDerivative1Vector()
+     * @since 10.2
+     */
+    public FieldVector3D<UnivariateDerivative2> toUnivariateDerivative2Vector() {
+
+        final UnivariateDerivative2 x = new UnivariateDerivative2(position.getX(), velocity.getX(), acceleration.getX());
+        final UnivariateDerivative2 y = new UnivariateDerivative2(position.getY(), velocity.getY(), acceleration.getY());
+        final UnivariateDerivative2 z = new UnivariateDerivative2(position.getZ(), velocity.getZ(), acceleration.getZ());
+
+        return new FieldVector3D<>(x, y, z);
+    }
+
     /** Transform the instance to a {@link FieldPVCoordinates}&lt;{@link DerivativeStructure}&gt;.
      * <p>
      * The {@link DerivativeStructure} coordinates correspond to time-derivatives up
@@ -256,7 +294,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      * </p>
      * @param order derivation order for the vector components (must be either 0, 1 or 2)
      * @return pv coordinates with time-derivatives embedded within the coordinates
-          * @since 9.2
+     * @since 9.2
      */
     public FieldPVCoordinates<DerivativeStructure> toDerivativeStructurePV(final int order) {
 
@@ -329,6 +367,81 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
             default :
                 throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, order);
         }
+
+        return new FieldPVCoordinates<>(new FieldVector3D<>(x0, y0, z0),
+                                        new FieldVector3D<>(x1, y1, z1),
+                                        new FieldVector3D<>(x2, y2, z2));
+
+    }
+
+    /** Transform the instance to a {@link FieldPVCoordinates}&lt;{@link UnivariateDerivative1}&gt;.
+     * <p>
+     * The {@link UnivariateDerivative1} coordinates correspond to time-derivatives up
+     * to the order 1.
+     * The first derivative of acceleration will be computed as a Keplerian-only jerk.
+     * </p>
+     * @return pv coordinates with time-derivatives embedded within the coordinates
+     * @since 10.2
+     */
+    public FieldPVCoordinates<UnivariateDerivative1> toUnivariateDerivative1PV() {
+
+        final double   r2            = position.getNormSq();
+        final double   r             = FastMath.sqrt(r2);
+        final double   pvOr2         = Vector3D.dotProduct(position, velocity) / r2;
+        final double   a             = acceleration.getNorm();
+        final double   aOr           = a / r;
+        final Vector3D keplerianJerk = new Vector3D(-3 * pvOr2, acceleration, -aOr, velocity);
+
+        final UnivariateDerivative1 x0 = new UnivariateDerivative1(position.getX(),     velocity.getX());
+        final UnivariateDerivative1 y0 = new UnivariateDerivative1(position.getY(),     velocity.getY());
+        final UnivariateDerivative1 z0 = new UnivariateDerivative1(position.getZ(),     velocity.getZ());
+        final UnivariateDerivative1 x1 = new UnivariateDerivative1(velocity.getX(),     acceleration.getX());
+        final UnivariateDerivative1 y1 = new UnivariateDerivative1(velocity.getY(),     acceleration.getY());
+        final UnivariateDerivative1 z1 = new UnivariateDerivative1(velocity.getZ(),     acceleration.getZ());
+        final UnivariateDerivative1 x2 = new UnivariateDerivative1(acceleration.getX(), keplerianJerk.getX());
+        final UnivariateDerivative1 y2 = new UnivariateDerivative1(acceleration.getY(), keplerianJerk.getY());
+        final UnivariateDerivative1 z2 = new UnivariateDerivative1(acceleration.getZ(), keplerianJerk.getZ());
+
+        return new FieldPVCoordinates<>(new FieldVector3D<>(x0, y0, z0),
+                                        new FieldVector3D<>(x1, y1, z1),
+                                        new FieldVector3D<>(x2, y2, z2));
+
+    }
+
+    /** Transform the instance to a {@link FieldPVCoordinates}&lt;{@link UnivariateDerivative2}&gt;.
+     * <p>
+     * The {@link UnivariateDerivative2} coordinates correspond to time-derivatives up
+     * to the order 2.
+     * As derivation order is 2, the second derivative of velocity (which
+     * is also the first derivative of acceleration) will be computed as a Keplerian-only jerk,
+     * and the second derivative of acceleration will be computed as a Keplerian-only jounce.
+     * </p>
+     * @return pv coordinates with time-derivatives embedded within the coordinates
+     * @since 10.2
+     */
+    public FieldPVCoordinates<UnivariateDerivative2> toUnivariateDerivative2PV() {
+
+        final double   r2              = position.getNormSq();
+        final double   r               = FastMath.sqrt(r2);
+        final double   pvOr2           = Vector3D.dotProduct(position, velocity) / r2;
+        final double   a               = acceleration.getNorm();
+        final double   aOr             = a / r;
+        final Vector3D keplerianJerk   = new Vector3D(-3 * pvOr2, acceleration, -aOr, velocity);
+        final double   v2              = velocity.getNormSq();
+        final double   pa              = Vector3D.dotProduct(position, acceleration);
+        final double   aj              = Vector3D.dotProduct(acceleration, keplerianJerk);
+        final Vector3D keplerianJounce = new Vector3D(-3 * (v2 + pa) / r2 + 15 * pvOr2 * pvOr2 - aOr, acceleration,
+                                                      4 * aOr * pvOr2 - aj / (a * r), velocity);
+
+        final UnivariateDerivative2 x0 = new UnivariateDerivative2(position.getX(),     velocity.getX(),      acceleration.getX());
+        final UnivariateDerivative2 y0 = new UnivariateDerivative2(position.getY(),     velocity.getY(),      acceleration.getY());
+        final UnivariateDerivative2 z0 = new UnivariateDerivative2(position.getZ(),     velocity.getZ(),      acceleration.getZ());
+        final UnivariateDerivative2 x1 = new UnivariateDerivative2(velocity.getX(),     acceleration.getX(),  keplerianJerk.getX());
+        final UnivariateDerivative2 y1 = new UnivariateDerivative2(velocity.getY(),     acceleration.getY(),  keplerianJerk.getY());
+        final UnivariateDerivative2 z1 = new UnivariateDerivative2(velocity.getZ(),     acceleration.getZ(),  keplerianJerk.getZ());
+        final UnivariateDerivative2 x2 = new UnivariateDerivative2(acceleration.getX(), keplerianJerk.getX(), keplerianJounce.getX());
+        final UnivariateDerivative2 y2 = new UnivariateDerivative2(acceleration.getY(), keplerianJerk.getY(), keplerianJounce.getY());
+        final UnivariateDerivative2 z2 = new UnivariateDerivative2(acceleration.getZ(), keplerianJerk.getZ(), keplerianJounce.getZ());
 
         return new FieldPVCoordinates<>(new FieldVector3D<>(x0, y0, z0),
                                         new FieldVector3D<>(x1, y1, z1),

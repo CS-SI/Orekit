@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Group (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -245,6 +245,15 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
         for (final EventDetector detector : detectors) {
             detector.init(s0, t);
         }
+    }
+
+    /**
+     * Get the list of original detectors.
+     * @return the list of original detectors
+     * @since 10.2
+     */
+    public List<EventDetector> getDetectors() {
+        return new ArrayList<EventDetector>(detectors);
     }
 
     /** Local class for operator. */

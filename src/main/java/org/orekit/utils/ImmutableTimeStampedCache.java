@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Group (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -117,10 +117,10 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
         // check index in in the range of the data
         if (i < 0) {
             throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
-                                                this.getEarliest().getDate());
+                                                this.getEarliest().getDate(), central);
         } else if (i >= this.data.size()) {
             throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER,
-                                                this.getLatest().getDate());
+                                                this.getLatest().getDate(), central);
         }
 
         // force unbalanced range if necessary

@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -30,15 +30,15 @@ import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathArrays.Position;
-import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.Test;
 
 public abstract class AbstractLambdaMethodTest {
 
     protected abstract AbstractLambdaMethod buildReducer();
-
-    @Test
+    protected abstract RealMatrix buildCovariance(AbstractLambdaMethod reducer);
+    
+   @Test
     public void testSimpleFullDecomposition() {
         final RealMatrix refLow = MatrixUtils.createRealMatrix(new double[][] {
             { 1.0, 0.0, 0.0, 0.0 },
@@ -54,30 +54,25 @@ public abstract class AbstractLambdaMethodTest {
         AbstractLambdaMethod reducer = buildReducer();
         initializeProblem(reducer, new double[indirection.length], indirection, covariance, 2);
         reducer.ltdlDecomposition();
-        Assert.assertEquals(0.0, refLow.subtract(getLow(reducer)).getNorm(), 9.9e-13 * refLow.getNorm());
-        Assert.assertEquals(0.0, refDiag.subtract(getDiag(reducer)).getNorm(), 6.7e-13 * refDiag.getNorm());
+        Assert.assertEquals(0.0, refLow.subtract(getLow(reducer)).getNorm1(), 9.9e-13 * refLow.getNorm1());
+        Assert.assertEquals(0.0, refDiag.subtract(getDiag(reducer)).getNorm1(), 6.7e-13 * refDiag.getNorm1());
     }
 
     @Test
     public void testRandomDecomposition() {
-
         RandomGenerator random = new Well19937a(0x7aa94f3683fd08c1l);
         for (int k = 0; k < 1000; ++k) {
             // generate random test data
             final int        n           = FastMath.max(2, 1 + random.nextInt(20));
             final RealMatrix covariance  = createRandomSymmetricPositiveDefiniteMatrix(n, random);
             final int[]      indirection = createRandomIndirectionArray(n, random);
-
             // perform decomposition test
             doTestDecomposition(indirection, covariance);
-
         }
-
     }
 
     @Test
     public void testRandomProblems() {
-        
         RandomGenerator random = new Well19937a(0x1c68f36088a9133al);
         for (int k = 0; k < 1000; ++k) {
             // generate random test data
@@ -87,42 +82,6 @@ public abstract class AbstractLambdaMethodTest {
 
             // perform decomposition test
             doTestILS(random, indirection, covariance);
-
-        }
-
-    }
-
-    @Test
-    public void testIntegerGaussTransformation() {
-
-        RandomGenerator random = new Well19937a(0x08e9e32dcd0f9dbdl);
-        for (int k = 0; k < 1000; ++k) {
-            // generate random test data
-            final int        n           = FastMath.max(2, 1 + random.nextInt(20));
-   
-            final RealMatrix covariance  = createRandomSymmetricPositiveDefiniteMatrix(n, random);
-            final int[]      indirection = createRandomIndirectionArray(n, random);
-
-            // perform integer Gauss transformation test
-            doTestIntegerGaussTransformation(random, indirection, covariance);
-
-        }
-    }
-
-    @Test
-    public void testPermutation() {
-
-        RandomGenerator random = new Well19937a(0xf824c33093974ee5l);
-        for (int k = 0; k < 1000; ++k) {
-            // generate random test data
-            final int        n           = FastMath.max(2, 1 + random.nextInt(20));
-   
-            final RealMatrix covariance  = createRandomSymmetricPositiveDefiniteMatrix(n, random);
-            final int[]      indirection = createRandomIndirectionArray(n, random);
-
-            // perform ILS resolution test
-            doTestPermutation(random, indirection, covariance);
-
         }
     }
 
@@ -134,7 +93,6 @@ public abstract class AbstractLambdaMethodTest {
             5.450, 3.100, 2.970
         };
         final int[] indirection = new int[] { 0, 1, 2 };
-        final RealMatrix id = MatrixUtils.createRealIdentityMatrix(3);
         final RealMatrix covariance = MatrixUtils.createRealMatrix(new double[][] {
             { 6.290, 5.978, 0.544 },
             { 5.978, 6.292, 2.340 },
@@ -144,39 +102,16 @@ public abstract class AbstractLambdaMethodTest {
         final AbstractLambdaMethod reducer = buildReducer();
         IntegerLeastSquareSolution[] solutions = reducer.solveILS(2, floatAmbiguities, indirection, covariance);
 
-        final RealMatrix rebuiltInverseCovariance = getZTransformation(reducer).
-                                                    multiply(getLow(reducer).
-                                                             multiply(getDiag(reducer)).
-                                                             multiplyTransposed(getLow(reducer))).
-                                                    multiplyTransposed(getZTransformation(reducer));
-        Assert.assertEquals(0.0,
-                            id.subtract(rebuiltInverseCovariance.multiply(covariance)).getNorm(),
-                            2.7e-14);
-
-        final RealMatrix zRef = MatrixUtils.createRealMatrix(new double[][] {
-            { -2,  3,  1 },
-            {  3, -3, -1 },
-            { -1,  1,  0 }
-        });
-
-        Assert.assertEquals(0.0,
-                            id.subtract(zRef.transposeMultiply(getZInverseTransformation(reducer).transpose())).getNorm(),
-                            1.0e-15);
 
         Assert.assertEquals(2, solutions.length);
         Assert.assertEquals(0.2183310953369383, solutions[0].getSquaredDistance(), 1.0e-15);
         Assert.assertEquals(5l, solutions[0].getSolution()[0]);
         Assert.assertEquals(3l, solutions[0].getSolution()[1]);
         Assert.assertEquals(4l, solutions[0].getSolution()[2]);
-        Assert.assertEquals(0.3072725757902666, solutions[1].getSquaredDistance(), 1.0e-15);
+        Assert.assertEquals(0.3072725757902666, solutions[1].getSquaredDistance(), 1.0e-12);
         Assert.assertEquals(6l, solutions[1].getSolution()[0]);
         Assert.assertEquals(4l, solutions[1].getSolution()[1]);
         Assert.assertEquals(4l, solutions[1].getSolution()[2]);
-        Assert.assertEquals(solutions[0], solutions[0]);
-        Assert.assertNotEquals(solutions[0], solutions[1]);
-        Assert.assertNotEquals(solutions[0], "");
-        Assert.assertNotEquals(solutions[0], null);
-        Assert.assertEquals(-958532080, solutions[0].hashCode());
 
     }
 
@@ -190,122 +125,13 @@ public abstract class AbstractLambdaMethodTest {
                 extracted.setEntry(i, j, covariance.getEntry(indirection[i], indirection[j]));
             }
         }
-        final RealMatrix rebuilt = getLow(reducer).
-                                   transposeMultiply(getDiag(reducer)).
-                                   multiply(getLow(reducer));
+        final RealMatrix rebuilt = buildCovariance(reducer);
         Assert.assertEquals(0.0,
-                            rebuilt.subtract(extracted).getNorm(),
-                            2.5e-13 * extracted.getNorm());
+                            rebuilt.subtract(extracted).getNorm1(),
+                            2.5e-13 * extracted.getNorm1());
 
     }
-
-    private void doTestIntegerGaussTransformation(final RandomGenerator random,
-                                                  final int[] indirection, final RealMatrix covariance) {
-        final int n = indirection.length;
-        final double[] floatAmbiguities = new double[n];
-        for (int i = 0; i < n; ++i) {
-            floatAmbiguities[i] = 2 * random.nextDouble() - 1.0;
-        }
-        final AbstractLambdaMethod reducer = buildReducer();
-        initializeProblem(reducer, floatAmbiguities, indirection, covariance, 2);
-        reducer.ltdlDecomposition();
-        RealMatrix identity = MatrixUtils.createRealIdentityMatrix(n);
-        RealMatrix zRef     = identity;
-        RealMatrix lowRef   = getLow(reducer);
-        RealMatrix diagRef  = getDiag(reducer);
-        double[]   aBase    = getDecorrelated(reducer).clone();
-        double[]   aRef     = aBase;
-        Assert.assertEquals(0.0,
-                            zRef.subtract(getZTransformation(reducer)).getNorm(),
-                            1.0e-15);
-        for (int k = 0; k < 10; ++k) {
-            final IntegerGaussTransformation gauss = createRandomIntegerGaussTransformation(getLow(reducer), random);
-            reducer.integerGaussTransformation(gauss.i, gauss.j);
-
-            // check accumulated Z transform, with reference based on naive matrix multiplication
-            zRef = zRef.multiply(gauss.z);
-            Assert.assertEquals(0.0,
-                                zRef.subtract(getZTransformation(reducer)).getNorm(),
-                                1.5e-15 * zRef.getNorm());
-
-            // check diagonal part, which should not change
-            Assert.assertEquals(0.0,
-                                diagRef.subtract(getDiag(reducer)).getNorm(),
-                                Precision.SAFE_MIN);
-
-            // check accumulated low triangular part, with reference based on naive matrix multiplication
-            lowRef = lowRef.multiply(gauss.z);
-            Assert.assertEquals(0.0,
-                                lowRef.subtract(getLow(reducer)).getNorm(),
-                                Precision.SAFE_MIN);
-            Assert.assertTrue(getLow(reducer).getEntry(gauss.i, gauss.j) <= 0.5);
-
-            // check ambiguities, with reference based on single step naive matrix multiplication
-            aRef = gauss.z.transpose().operate(aRef);
-            for (int i = 0; i < aRef.length; ++i) {
-                Assert.assertEquals(aRef[i], getDecorrelated(reducer)[i], 4.0e-14);
-            }
-
-            // check ambiguities, with reference based on accumulated naive matrix multiplication
-            final double[] aRef2 = zRef.transpose().operate(aBase);
-            for (int i = 0; i < aRef2.length; ++i) {
-                Assert.assertEquals(aRef2[i], getDecorrelated(reducer)[i], 2.3e-13);
-            }
-
-        }
-    }
-
-    private void doTestPermutation(final RandomGenerator random,
-                                   final int[] indirection, final RealMatrix covariance) {
-        final double[] floatAmbiguities = new double[indirection.length];
-        for (int i = 0; i < floatAmbiguities.length; ++i) {
-            floatAmbiguities[i] = 2 * random.nextDouble() - 1.0;
-        }
-        final AbstractLambdaMethod reducer = buildReducer();
-        initializeProblem(reducer, floatAmbiguities, indirection, covariance, 2);
-        reducer.ltdlDecomposition();
-        RealMatrix filteredCovariance = filterCovariance(covariance, indirection);
-        RealMatrix zRef               = MatrixUtils.createRealIdentityMatrix(indirection.length);
-        double[]   aBase              = getDecorrelated(reducer).clone();
-        double[]   aRef               = aBase.clone();
-        Assert.assertEquals(0.0,
-                            zRef.subtract(getZTransformation(reducer)).getNorm(),
-                            1.0e-15);
-        for (int k = 0; k < 10; ++k) {
-            final Permutation permutation = createRandomPermutation(getLow(reducer),
-                                                                    getDiag(reducer),
-                                                                    random);
-            reducer.permutation(permutation.i, permutation.delta);
-
-            // check accumulated Z transform, with reference based on naive matrix multiplication
-            zRef = zRef.multiply(permutation.z);
-            Assert.assertEquals(0.0,
-                                zRef.subtract(getZTransformation(reducer)).getNorm(),
-                                Precision.SAFE_MIN);
-
-            // check rebuilt permuted covariance
-            RealMatrix rebuilt  = getLow(reducer).transposeMultiply(getDiag(reducer)).multiply(getLow(reducer));
-            RealMatrix permuted = zRef.transposeMultiply(filteredCovariance).multiply(zRef);
-            Assert.assertEquals(0.0,
-                                permuted.subtract(rebuilt).getNorm(),
-                                2.7e-12 * filteredCovariance.getNorm());
-
-            // check ambiguities, with reference based on direct permutation
-            final double tmp = aRef[permutation.i];
-            aRef[permutation.i]     = aRef[permutation.i + 1];
-            aRef[permutation.i + 1] = tmp;
-            for (int i = 0; i < aRef.length; ++i) {
-                Assert.assertEquals(aRef[i], getDecorrelated(reducer)[i], 4.0e-14);
-            }
-
-            // check ambiguities, with reference based on accumulated naive matrix multiplication
-            final double[] aRef2 = zRef.transpose().operate(aBase);
-            for (int i = 0; i < aRef2.length; ++i) {
-                Assert.assertEquals(aRef2[i], getDecorrelated(reducer)[i], 4.0e-14);
-            }
-
-        }
-    }
+    
 
     private void doTestILS(final RandomGenerator random,
                            final int[] indirection, final RealMatrix covariance) {
@@ -347,11 +173,11 @@ public abstract class AbstractLambdaMethodTest {
             final double squaredNorm = a.subtract(aHat).transposeMultiply(invCov).multiply(a.subtract(aHat)).getEntry(0, 0);
             min = FastMath.min(min, (squaredNorm - solutions[0].getSquaredDistance()) / solutions[0].getSquaredDistance());
         }
-        Assert.assertTrue(min > -1.0e-10);
+        Assert.assertTrue(min > -1.6e-10);
 
     }
 
-    private int getN(final AbstractLambdaMethod reducer) {
+    protected int getN(final AbstractLambdaMethod reducer) {
         try {
             final Field nField = AbstractLambdaMethod.class.getDeclaredField("n");
             nField.setAccessible(true);
@@ -362,7 +188,7 @@ public abstract class AbstractLambdaMethodTest {
         }
     }
 
-    private RealMatrix getLow(final AbstractLambdaMethod reducer) {
+    protected RealMatrix getLow(final AbstractLambdaMethod reducer) {
         try {
             final int n = getN(reducer);
             final Field lowField = AbstractLambdaMethod.class.getDeclaredField("low");
@@ -383,7 +209,7 @@ public abstract class AbstractLambdaMethodTest {
         }
     }
 
-    private DiagonalMatrix getDiag(final AbstractLambdaMethod reducer) {
+    protected DiagonalMatrix getDiag(final AbstractLambdaMethod reducer) {
         try {
             final Field diagField = AbstractLambdaMethod.class.getDeclaredField("diag");
             diagField.setAccessible(true);
@@ -394,15 +220,15 @@ public abstract class AbstractLambdaMethodTest {
         }
     }
 
-    private RealMatrix getZTransformation(final AbstractLambdaMethod reducer) {
+    protected RealMatrix getZTransformation(final AbstractLambdaMethod reducer) {
         return new QRDecomposer(1.0e-10).decompose(dogetZInverse(reducer)).getInverse();
     }
 
-    private RealMatrix getZInverseTransformation(final AbstractLambdaMethod reducer) {
+    protected RealMatrix getZInverseTransformation(final AbstractLambdaMethod reducer) {
         return dogetZInverse(reducer);
     }
 
-    private RealMatrix dogetZInverse(final AbstractLambdaMethod reducer) {
+    protected RealMatrix dogetZInverse(final AbstractLambdaMethod reducer) {
         try {
             final int n = getN(reducer);
             final Field zField = AbstractLambdaMethod.class.getDeclaredField("zInverseTransformation");
@@ -421,8 +247,8 @@ public abstract class AbstractLambdaMethodTest {
             return null;
         }
     }
-
-    private double[] getDecorrelated(final AbstractLambdaMethod reducer) {
+  
+    protected double[] getDecorrelated(final AbstractLambdaMethod reducer) {
         try {
             final Field decorrelatedField = AbstractLambdaMethod.class.getDeclaredField("decorrelated");
             decorrelatedField.setAccessible(true);
@@ -433,7 +259,7 @@ public abstract class AbstractLambdaMethodTest {
         }
     }
 
-    private RealMatrix createRandomSymmetricPositiveDefiniteMatrix(final int n, final RandomGenerator random) {
+    protected RealMatrix createRandomSymmetricPositiveDefiniteMatrix(final int n, final RandomGenerator random) {
         final RealMatrix matrix = MatrixUtils.createRealMatrix(n, n);
         for (int i = 0; i < n; ++i) {                
             for (int j = 0; j < n; ++j) {
@@ -443,7 +269,7 @@ public abstract class AbstractLambdaMethodTest {
         return matrix.transposeMultiply(matrix);
     }
 
-    private int[] createRandomIndirectionArray(final int n, final RandomGenerator random) {
+    protected int[] createRandomIndirectionArray(final int n, final RandomGenerator random) {
         final int[] all = new int[n];
         for (int i = 0; i < all.length; ++i) {
             all[i] = i;
@@ -452,7 +278,7 @@ public abstract class AbstractLambdaMethodTest {
         return Arrays.copyOf(all, FastMath.max(2, 1 + random.nextInt(n)));
     }
 
-    private IntegerGaussTransformation createRandomIntegerGaussTransformation(final RealMatrix low,
+    protected IntegerGaussTransformation createRandomIntegerGaussTransformation(final RealMatrix low,
                                                                               final RandomGenerator random) {
         final int n = low.getRowDimension();
         int i = random.nextInt(n);
@@ -468,10 +294,10 @@ public abstract class AbstractLambdaMethodTest {
         return new IntegerGaussTransformation(n, i, j, (int) FastMath.rint(low.getEntry(i, j))); 
     }
 
-    private static class IntegerGaussTransformation {
-        private final int i;
-        private final int j;
-        private final RealMatrix z;
+    protected static class IntegerGaussTransformation {
+        protected final int i;
+        protected final int j;
+        protected final RealMatrix z;
         IntegerGaussTransformation(int n, int i, int j, int mu) {
             this.i = i;
             this.j = j;
@@ -480,7 +306,7 @@ public abstract class AbstractLambdaMethodTest {
         }
     }
 
-    private Permutation createRandomPermutation(final RealMatrix low,
+    protected Permutation createRandomPermutation(final RealMatrix low,
                                                 final RealMatrix diag,
                                                 final RandomGenerator random) {
         final int    n     = low.getRowDimension();
@@ -491,7 +317,7 @@ public abstract class AbstractLambdaMethodTest {
         return new Permutation(n, i, dk0 + lk1k0 * lk1k0 * dk1); 
     }
 
-    private void initializeProblem(final AbstractLambdaMethod method,
+    protected void initializeProblem(final AbstractLambdaMethod method,
                                    final double[] floatAmbiguities, final int[] indirection,
                                    final RealMatrix globalCovariance, final int nbSol) {
         try {
@@ -508,10 +334,10 @@ public abstract class AbstractLambdaMethodTest {
         }
     }
 
-    private static class Permutation {
-        private final int i;
-        private double delta;
-        private final RealMatrix z;
+    protected static class Permutation {
+        protected final int i;
+        protected double delta;
+        protected final RealMatrix z;
         Permutation(int n, int i, double delta) {
             this.i     = i;
             this.delta = delta;
@@ -532,10 +358,6 @@ public abstract class AbstractLambdaMethodTest {
             }
         }
         return filtered;
-    }
-
-    RealMatrix inverse(final RealMatrix m) {
-        return new QRDecomposer(1.0e-10).decompose(m).getInverse();
     }
 
 }

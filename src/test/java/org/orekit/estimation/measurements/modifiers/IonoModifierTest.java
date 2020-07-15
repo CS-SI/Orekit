@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,12 +16,14 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,10 +43,15 @@ import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
 import org.orekit.estimation.measurements.TurnAroundRange;
 import org.orekit.estimation.measurements.TurnAroundRangeMeasurementCreator;
+import org.orekit.estimation.measurements.gnss.Phase;
+import org.orekit.estimation.measurements.gnss.PhaseMeasurementCreator;
+import org.orekit.frames.TopocentricFrame;
 import org.orekit.gnss.Frequency;
+import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
@@ -68,11 +75,6 @@ public class IonoModifierTest {
                                        new double[]{.1430e+06, 0, -.3280e+06, .1130e+06});
         // GPS L1 in HZ
         frequency = Frequency.G01.getMHzFrequency() * 1.0e6;
-    }
-
-    @After
-    public void tearDown() {
-
     }
 
     @Test
@@ -136,6 +138,137 @@ public class IonoModifierTest {
             final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
             // TODO: check threshold
             Assert.assertEquals(0.0, diffMeters, 30.0);
+
+        }
+    }
+
+    @Test
+    public void testPhaseIonoModifier() {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                              1.0e-6, 60.0, 0.001);
+
+        // create perfect range measurements
+        for (final GroundStation station : context.stations) {
+            station.getClockOffsetDriver().setSelected(true);
+            station.getEastOffsetDriver().setSelected(true);
+            station.getNorthOffsetDriver().setSelected(true);
+            station.getZenithOffsetDriver().setSelected(true);
+        }
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new PhaseMeasurementCreator(context, Frequency.G01, 0),
+                                                               1.0, 3.0, 300.0);
+        propagator.setSlaveMode();
+
+
+        final PhaseIonosphericDelayModifier modifier = new PhaseIonosphericDelayModifier(model, frequency);
+
+        for (final ObservedMeasurement<?> measurement : measurements) {
+            final AbsoluteDate date = measurement.getDate();
+
+            final SpacecraftState refstate = propagator.propagate(date);
+
+            Phase phase = (Phase) measurement;
+            EstimatedMeasurement<Phase> evalNoMod = phase.estimate(12, 17, new SpacecraftState[] { refstate });
+            Assert.assertEquals(12, evalNoMod.getIteration());
+            Assert.assertEquals(17, evalNoMod.getCount());
+
+            // add modifier
+            phase.addModifier(modifier);
+            boolean found = false;
+            for (final EstimationModifier<Phase> existing : phase.getModifiers()) {
+                found = found || existing == modifier;
+            }
+            Assert.assertTrue(found);
+            //
+            EstimatedMeasurement<Phase> eval = phase.estimate(0, 0,  new SpacecraftState[] { refstate });
+            Assert.assertEquals(evalNoMod.getStatus(), eval.getStatus());
+            eval.setStatus(EstimatedMeasurement.Status.REJECTED);
+            Assert.assertEquals(EstimatedMeasurement.Status.REJECTED, eval.getStatus());
+            eval.setStatus(evalNoMod.getStatus());
+
+            try {
+                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1));
+                Assert.fail("an exception should have been thrown");
+            } catch (OrekitIllegalArgumentException oiae) {
+                Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
+            }
+
+            final double diffMeters = (eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]) * phase.getWavelength();
+            Assert.assertTrue(diffMeters < 0);
+            Assert.assertEquals(0.0, diffMeters, 30.0);
+
+        }
+    }
+
+    @Test
+    public void testPhaseEstimatedIonoModifier() {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                              1.0e-6, 60.0, 0.001);
+
+        // create perfect range measurements
+        for (final GroundStation station : context.stations) {
+            station.getClockOffsetDriver().setSelected(true);
+            station.getEastOffsetDriver().setSelected(true);
+            station.getNorthOffsetDriver().setSelected(true);
+            station.getZenithOffsetDriver().setSelected(true);
+        }
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new PhaseMeasurementCreator(context, Frequency.G01, 0),
+                                                               1.0, 3.0, 300.0);
+        propagator.setSlaveMode();
+
+
+        final IonosphericModel mockModel = new MockIonosphericModel(12.0);
+        mockModel.getParametersDrivers().get(0).setSelected(true);
+        final PhaseIonosphericDelayModifier modifier = new PhaseIonosphericDelayModifier(mockModel, frequency);
+
+        for (final ObservedMeasurement<?> measurement : measurements) {
+            final AbsoluteDate date = measurement.getDate();
+
+            final SpacecraftState refstate = propagator.propagate(date);
+
+            Phase phase = (Phase) measurement;
+            EstimatedMeasurement<Phase> evalNoMod = phase.estimate(12, 17, new SpacecraftState[] { refstate });
+            Assert.assertEquals(12, evalNoMod.getIteration());
+            Assert.assertEquals(17, evalNoMod.getCount());
+
+            // add modifier
+            phase.addModifier(modifier);
+            boolean found = false;
+            for (final EstimationModifier<Phase> existing : phase.getModifiers()) {
+                found = found || existing == modifier;
+            }
+            Assert.assertTrue(found);
+            //
+            EstimatedMeasurement<Phase> eval = phase.estimate(0, 0,  new SpacecraftState[] { refstate });
+            Assert.assertEquals(evalNoMod.getStatus(), eval.getStatus());
+            eval.setStatus(EstimatedMeasurement.Status.REJECTED);
+            Assert.assertEquals(EstimatedMeasurement.Status.REJECTED, eval.getStatus());
+            eval.setStatus(evalNoMod.getStatus());
+
+            try {
+                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1));
+                Assert.fail("an exception should have been thrown");
+            } catch (OrekitIllegalArgumentException oiae) {
+                Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
+            }
+
+            final double diffMeters = (eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]) * phase.getWavelength();
+            Assert.assertEquals(-12.0, diffMeters, 0.1);
 
         }
     }
@@ -340,6 +473,41 @@ public class IonoModifierTest {
             final double epsilon = 1e-6;
             Assert.assertTrue(Precision.compareTo(delayMeters, 15., epsilon) < 0);
             Assert.assertTrue(Precision.compareTo(delayMeters, 0., epsilon) > 0);
+        }
+
+    }
+
+    private class MockIonosphericModel implements IonosphericModel {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 5944637011744634693L;
+
+        /** Driver for the ionospheric delay.*/
+        private final ParameterDriver ionoDelay;
+
+        /** Constructor.
+         * @param delay initial ionospheric delay
+         */
+        public MockIonosphericModel(final double delay) {
+            ionoDelay = new ParameterDriver("ionospheric delay",
+                                            delay, FastMath.scalb(1.0, 0), 0.0, Double.POSITIVE_INFINITY);
+        }
+
+        @Override
+        public double pathDelay(final SpacecraftState state, final TopocentricFrame baseFrame,
+                                final double frequency, double[] parameters) {
+            return parameters[0];
+        }
+
+        @Override
+        public <T extends RealFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
+                                                           final double frequency, final  T[] parameters) {
+            return parameters[0];
+        }
+
+        @Override
+        public List<ParameterDriver> getParametersDrivers() {
+            return Collections.singletonList(ionoDelay);
         }
 
     }

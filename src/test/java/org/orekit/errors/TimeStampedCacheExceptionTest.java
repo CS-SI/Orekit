@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -37,7 +37,7 @@ public class TimeStampedCacheExceptionTest {
         Assert.assertEquals(1, e.getParts().length);
         Assert.assertEquals(0, ((AbsoluteDate) e.getParts()[0]).durationFrom(AbsoluteDate.MODIFIED_JULIAN_EPOCH), 1.0e-10);
         Assert.assertEquals(e.getMessage(Locale.getDefault()), e.getLocalizedMessage());
-        Assert.assertEquals("impossible de générer des données avant le 1858-11-16T23:59:27.816",
+        Assert.assertEquals("impossible de générer des données avant le 1858-11-16T23:59:27.816, données requises pour {1}",
                             e.getMessage(Locale.FRENCH));
     }
 
@@ -52,7 +52,7 @@ public class TimeStampedCacheExceptionTest {
         Assert.assertEquals(1, e.getParts().length);
         Assert.assertEquals(0, ((AbsoluteDate) e.getParts()[0]).durationFrom(AbsoluteDate.MODIFIED_JULIAN_EPOCH), 1.0e-10);
         Assert.assertEquals(e.getMessage(Locale.getDefault()), e.getLocalizedMessage());
-        Assert.assertEquals("impossible de générer des données avant le 1858-11-16T23:59:27.816",
+        Assert.assertEquals("impossible de générer des données avant le 1858-11-16T23:59:27.816, données requises pour {1}",
                             e.getMessage(Locale.FRENCH));
     }
 

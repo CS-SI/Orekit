@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -39,6 +39,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -253,6 +254,11 @@ public class FieldKeplerianOrbitTest {
     @Test
     public void testIssue544() {
         doTestIssue544(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testIssue674() {
+        doTestIssue674(Decimal64Field.getInstance());
     }
 
     private <T extends RealFieldElement<T>> void doTestKeplerianToKeplerian(final Field<T> field) {
@@ -1737,7 +1743,7 @@ public class FieldKeplerianOrbitTest {
 
     private <T extends RealFieldElement<T>> void doTestEquatorialRetrograde(final Field<T> field) {
         FieldVector3D<T> position = new FieldVector3D<>(field.getZero().add(10000000.0), field.getZero(), field.getZero());
-        FieldVector3D<T> velocity = new FieldVector3D<>(field.getZero(), field.getZero().add(-6500.0), field.getZero());
+        FieldVector3D<T> velocity = new FieldVector3D<>(field.getZero(), field.getZero().add(-6500.0), field.getZero().add(1.0e-10));
         T r2 = position.getNormSq();
         T r  = r2.sqrt();
         FieldVector3D<T> acceleration = new FieldVector3D<>(r.multiply(r2.reciprocal().multiply(-mu)), position,
@@ -1751,7 +1757,7 @@ public class FieldKeplerianOrbitTest {
         Assert.assertEquals(-738.145, orbit.getADot().getReal(), 1.0e-3);
         Assert.assertEquals(0.05995861, orbit.getE().getReal(), 1.0e-8);
         Assert.assertEquals(-6.523e-5, orbit.getEDot().getReal(), 1.0e-8);
-        Assert.assertEquals(FastMath.PI, orbit.getI().getReal(), 1.0e-15);
+        Assert.assertEquals(FastMath.PI, orbit.getI().getReal(), 2.0e-14);
         Assert.assertEquals(-4.615e-5, orbit.getIDot().getReal(), 1.0e-8);
         Assert.assertTrue(Double.isNaN(orbit.getHx().getReal()));
         Assert.assertTrue(Double.isNaN(orbit.getHxDot().getReal()));
@@ -1891,6 +1897,24 @@ public class FieldKeplerianOrbitTest {
         T E = FieldKeplerianOrbit.meanToEllipticEccentric(anomaly, e);
         // Verify that an infinite loop did not occur
         Assert.assertTrue(Double.isNaN(E.getReal()));  
+    }
+
+    private <T extends RealFieldElement<T>> void doTestIssue674(Field<T> field) {
+        try {
+            final T zero = field.getZero();
+            final FieldAbsoluteDate<T> date = FieldAbsoluteDate.getJ2000Epoch(field);
+            new FieldKeplerianOrbit<>(zero.add(24464560.0), zero.add(-0.7311), zero.add(0.122138),
+                                      zero.add(3.10686), zero.add(1.00681),
+                                      zero.add(0.048363), PositionAngle.MEAN,
+                                      FramesFactory.getEME2000(), date, zero.add(mu));
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.INVALID_PARAMETER_RANGE, oe.getSpecifier());
+            Assert.assertEquals("eccentricity", oe.getParts()[0]);
+            Assert.assertEquals(-0.7311, ((Double) oe.getParts()[1]).doubleValue(), Double.MIN_VALUE);
+            Assert.assertEquals(0.0, ((Double) oe.getParts()[2]).doubleValue(), Double.MIN_VALUE);
+            Assert.assertEquals(Double.POSITIVE_INFINITY, ((Double) oe.getParts()[3]).doubleValue(), Double.MIN_VALUE);
+        }
     }
 
 }

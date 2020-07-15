@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -293,60 +293,60 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
             throws IOException {
 
             // set up a reader for line-oriented bulletin B files
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
+                // reset parse info to start new file
+                fieldsMap.clear();
+                lineNumber = 0;
+                mjdMin     = Integer.MAX_VALUE;
+                mjdMax     = Integer.MIN_VALUE;
+                history = new ArrayList<>();
+                configuration = null;
 
-            // reset parse info to start new file
-            fieldsMap.clear();
-            lineNumber = 0;
-            mjdMin     = Integer.MAX_VALUE;
-            mjdMax     = Integer.MIN_VALUE;
-            history = new ArrayList<>();
-            configuration = null;
+                // skip header up to section 1 and check if we are parsing an old or new format file
+                final Matcher section1Matcher = seekToLine(SECTION_1_HEADER, reader, name);
+                final boolean isOldFormat = "EARTH".equals(section1Matcher.group(1));
 
-            // skip header up to section 1 and check if we are parsing an old or new format file
-            final Matcher section1Matcher = seekToLine(SECTION_1_HEADER, reader, name);
-            final boolean isOldFormat = "EARTH".equals(section1Matcher.group(1));
+                if (isOldFormat) {
 
-            if (isOldFormat) {
+                    // extract MJD bounds for final data from section 1
+                    loadMJDBoundsOldFormat(reader, name);
 
-                // extract MJD bounds for final data from section 1
-                loadMJDBoundsOldFormat(reader, name);
+                    final Matcher section2Matcher = seekToLine(SECTION_2_HEADER_OLD, reader, name);
+                    final boolean isNonRotatingOrigin = section2Matcher.group(1).startsWith("dX");
+                    loadEOPOldFormat(isNonRotatingOrigin, reader, name);
 
-                final Matcher section2Matcher = seekToLine(SECTION_2_HEADER_OLD, reader, name);
-                final boolean isNonRotatingOrigin = section2Matcher.group(1).startsWith("dX");
-                loadEOPOldFormat(isNonRotatingOrigin, reader, name);
+                } else {
 
-            } else {
+                    // extract x, y, UT1-UTC, dx, dy from section 1
+                    loadXYDTDxDyNewFormat(reader, name);
 
-                // extract x, y, UT1-UTC, dx, dy from section 1
-                loadXYDTDxDyNewFormat(reader, name);
+                    // skip to section 3
+                    seekToLine(SECTION_3_HEADER, reader, name);
 
-                // skip to section 3
-                seekToLine(SECTION_3_HEADER, reader, name);
+                    // extract LOD data from section 3
+                    loadLODNewFormat(reader, name);
 
-                // extract LOD data from section 3
-                loadLODNewFormat(reader, name);
-
-                // set up the EOP entries
-                for (Map.Entry<Integer, double[]> entry : fieldsMap.entrySet()) {
-                    final int mjd = entry.getKey();
-                    final double[] array = entry.getValue();
-                    if (Double.isNaN(array[0] + array[1] + array[2] + array[3] + array[4] + array[5])) {
-                        throw notifyUnexpectedErrorEncountered(name);
+                    // set up the EOP entries
+                    for (Map.Entry<Integer, double[]> entry : fieldsMap.entrySet()) {
+                        final int mjd = entry.getKey();
+                        final double[] array = entry.getValue();
+                        if (Double.isNaN(array[0] + array[1] + array[2] + array[3] + array[4] + array[5])) {
+                            throw notifyUnexpectedErrorEncountered(name);
+                        }
+                        final AbsoluteDate mjdDate =
+                                new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
+                                                 getUtc());
+                        final double[] equinox = getConverter().toEquinox(mjdDate, array[4], array[5]);
+                        if (configuration == null || !configuration.isValid(mjd)) {
+                            // get a configuration for current name and date range
+                            configuration = getItrfVersionProvider().getConfiguration(name, mjd);
+                        }
+                        history.add(new EOPEntry(mjd, array[0], array[1], array[2], array[3],
+                                                 equinox[0], equinox[1], array[4], array[5],
+                                                 configuration.getVersion(), mjdDate));
                     }
-                    final AbsoluteDate mjdDate =
-                            new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
-                                             getUtc());
-                    final double[] equinox = getConverter().toEquinox(mjdDate, array[4], array[5]);
-                    if (configuration == null || !configuration.isValid(mjd)) {
-                        // get a configuration for current name and date range
-                        configuration = getItrfVersionProvider().getConfiguration(name, mjd);
-                    }
-                    history.add(new EOPEntry(mjd, array[0], array[1], array[2], array[3],
-                                             equinox[0], equinox[1], array[4], array[5],
-                                             configuration.getVersion(), mjdDate));
+
                 }
-
             }
 
             return history;

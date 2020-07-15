@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -22,6 +22,9 @@ import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.ObservableSatellite;
@@ -37,6 +40,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 
 /**
  *
@@ -158,6 +162,52 @@ public class IodGibbsTest {
         //test for the norm of the velocity
         Assert.assertEquals(0.0, orbit.getPVCoordinates().getVelocity().getNorm() - velR2.getNorm(),  1e-3);
 
+    }
+
+    @Test
+    public void testNonDifferentDatesForObservations() {
+        Utils.setDataRoot("regular-data:potential:tides");
+
+        // Initialization
+        final double mu = Constants.WGS84_EARTH_MU;
+        final Frame frame = FramesFactory.getEME2000();
+        final AbsoluteDate date = new AbsoluteDate(2000, 2, 24, 11, 35, 47.0, TimeScalesFactory.getUTC());
+        final ObservableSatellite satellite = new ObservableSatellite(0);
+        final PV pv1 = new PV(date, Vector3D.PLUS_I, Vector3D.ZERO, 1.0, 1.0, 1.0, satellite);
+        final PV pv2 = new PV(date, Vector3D.PLUS_J, Vector3D.ZERO, 1.0, 1.0, 1.0, satellite);
+        final PV pv3 = new PV(date, Vector3D.PLUS_K, Vector3D.ZERO, 1.0, 1.0, 1.0, satellite);
+
+        // Create the IOD method
+        final IodGibbs gibbs = new IodGibbs(mu);
+
+        try {
+            gibbs.estimate(frame, pv1, pv2, pv3);
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NON_DIFFERENT_DATES_FOR_OBSERVATIONS, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testNonCoplanarPoints() {
+        Utils.setDataRoot("regular-data:potential:tides");
+
+        // Initialization
+        final double mu = Constants.WGS84_EARTH_MU;
+        final Frame frame = FramesFactory.getEME2000();
+        final AbsoluteDate date = new AbsoluteDate(2000, 2, 24, 11, 35, 47.0, TimeScalesFactory.getUTC());
+        final ObservableSatellite satellite = new ObservableSatellite(0);
+        final PV pv1 = new PV(date, Vector3D.PLUS_I, Vector3D.ZERO, 1.0, 1.0, 1.0, satellite);
+        final PV pv2 = new PV(date.shiftedBy(1.0), Vector3D.PLUS_J, Vector3D.ZERO, 1.0, 1.0, 1.0, satellite);
+        final PV pv3 = new PV(date.shiftedBy(2.0), Vector3D.PLUS_K, Vector3D.ZERO, 1.0, 1.0, 1.0, satellite);
+
+        // Create the IOD method
+        final IodGibbs gibbs = new IodGibbs(mu);
+
+        try {
+            gibbs.estimate(frame, pv1, pv2, pv3);
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NON_COPLANAR_POINTS, oe.getSpecifier());
+        }
     }
 
 }

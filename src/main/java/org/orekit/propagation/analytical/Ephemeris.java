@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -219,7 +219,16 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
             pvProvider.setCurrentState(evaluatedState);
             final Attitude calculatedAttitude = attitudeProvider.getAttitude(pvProvider, date,
                                                                              evaluatedState.getFrame());
-            return new SpacecraftState(evaluatedState.getOrbit(), calculatedAttitude, evaluatedState.getMass());
+
+            // Verify if orbit is defined
+            if (evaluatedState.isOrbitDefined()) {
+                return new SpacecraftState(evaluatedState.getOrbit(), calculatedAttitude,
+                                           evaluatedState.getMass(), evaluatedState.getAdditionalStates());
+            } else {
+                return new SpacecraftState(evaluatedState.getAbsPVA(), calculatedAttitude,
+                                           evaluatedState.getMass(),  evaluatedState.getAdditionalStates());
+            }
+
         }
     }
 

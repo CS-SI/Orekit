@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -73,6 +73,9 @@ import org.orekit.utils.IERSConventions.NutationCorrectionConverter;
  */
 class EOPC04FilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
 
+    /** Pattern for delimiting regular expressions. */
+    private static final Pattern SEPARATOR;
+
     /** Pattern to match the columns header. */
     private static final Pattern COLUMNS_HEADER_PATTERN;
 
@@ -110,6 +113,9 @@ class EOPC04FilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
     private static final int NUT_1_FIELD;
 
     static {
+
+        SEPARATOR = Pattern.compile(" +");
+
         // Header have either the following form:
         //       Date      MJD      x          y        UT1-UTC       LOD         dPsi      dEps       x Err     y Err   UT1-UTC Err  LOD Err    dPsi Err   dEpsilon Err
         //                          "          "           s           s            "         "        "          "          s           s            "         "
@@ -190,79 +196,79 @@ class EOPC04FilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
             ITRFVersionLoader.ITRFVersionConfiguration configuration = null;
 
             // set up a reader for line-oriented bulletin B files
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
+                // reset parse info to start new file (do not clear history!)
+                int lineNumber              = 0;
+                boolean inHeader            = true;
+                boolean isNonRotatingOrigin = false;
 
-            // reset parse info to start new file (do not clear history!)
-            int lineNumber              = 0;
-            boolean inHeader            = true;
-            boolean isNonRotatingOrigin = false;
+                // read all file
+                for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                    ++lineNumber;
+                    boolean parsed = false;
 
-            // read all file
-            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-                ++lineNumber;
-                boolean parsed = false;
-
-                if (inHeader) {
-                    final Matcher matcher = COLUMNS_HEADER_PATTERN.matcher(line);
-                    if (matcher.matches()) {
-                        if (matcher.group(1).startsWith("dX")) {
-                            isNonRotatingOrigin = true;
+                    if (inHeader) {
+                        final Matcher matcher = COLUMNS_HEADER_PATTERN.matcher(line);
+                        if (matcher.matches()) {
+                            if (matcher.group(1).startsWith("dX")) {
+                                isNonRotatingOrigin = true;
+                            }
                         }
                     }
+
+                    if (DATA_LINE_PATTERN.matcher(line).matches()) {
+                        inHeader = false;
+                        // this is a data line, build an entry from the extracted fields
+                        final String[] fields = SEPARATOR.split(line);
+                        final DateComponents dc = new DateComponents(Integer.parseInt(fields[YEAR_FIELD]),
+                                                                     Integer.parseInt(fields[MONTH_FIELD]),
+                                                                     Integer.parseInt(fields[DAY_FIELD]));
+                        final int    mjd   = Integer.parseInt(fields[MJD_FIELD]);
+                        if (dc.getMJD() != mjd) {
+                            throw new OrekitException(OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE,
+                                                      name, dc.getYear(), dc.getMonth(), dc.getDay(), mjd);
+                        }
+                        final AbsoluteDate date = new AbsoluteDate(dc, getUtc());
+
+                        // the first six fields are consistent with the expected format
+                        final double x     = Double.parseDouble(fields[POLE_X_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS;
+                        final double y     = Double.parseDouble(fields[POLE_Y_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS;
+                        final double dtu1  = Double.parseDouble(fields[UT1_UTC_FIELD]);
+                        final double lod   = Double.parseDouble(fields[LOD_FIELD]);
+                        final double[] equinox;
+                        final double[] nro;
+                        if (isNonRotatingOrigin) {
+                            nro = new double[] {
+                                Double.parseDouble(fields[NUT_0_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS,
+                                Double.parseDouble(fields[NUT_1_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS
+                            };
+                            equinox = getConverter().toEquinox(date, nro[0], nro[1]);
+                        } else {
+                            equinox = new double[] {
+                                Double.parseDouble(fields[NUT_0_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS,
+                                Double.parseDouble(fields[NUT_1_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS
+                            };
+                            nro = getConverter().toNonRotating(date, equinox[0], equinox[1]);
+                        }
+                        if (configuration == null || !configuration.isValid(mjd)) {
+                            // get a configuration for current name and date range
+                            configuration = getItrfVersionProvider().getConfiguration(name, mjd);
+                        }
+                        history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
+                                                 configuration.getVersion(), date));
+                        parsed = true;
+
+                    }
+                    if (!(inHeader || parsed)) {
+                        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                lineNumber, name, line);
+                    }
                 }
 
-                if (DATA_LINE_PATTERN.matcher(line).matches()) {
-                    inHeader = false;
-                    // this is a data line, build an entry from the extracted fields
-                    final String[] fields = line.split(" +");
-                    final DateComponents dc = new DateComponents(Integer.parseInt(fields[YEAR_FIELD]),
-                                                                 Integer.parseInt(fields[MONTH_FIELD]),
-                                                                 Integer.parseInt(fields[DAY_FIELD]));
-                    final int    mjd   = Integer.parseInt(fields[MJD_FIELD]);
-                    if (dc.getMJD() != mjd) {
-                        throw new OrekitException(OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE,
-                                                  name, dc.getYear(), dc.getMonth(), dc.getDay(), mjd);
-                    }
-                    final AbsoluteDate date = new AbsoluteDate(dc, getUtc());
-
-                    // the first six fields are consistent with the expected format
-                    final double x     = Double.parseDouble(fields[POLE_X_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS;
-                    final double y     = Double.parseDouble(fields[POLE_Y_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS;
-                    final double dtu1  = Double.parseDouble(fields[UT1_UTC_FIELD]);
-                    final double lod   = Double.parseDouble(fields[LOD_FIELD]);
-                    final double[] equinox;
-                    final double[] nro;
-                    if (isNonRotatingOrigin) {
-                        nro = new double[] {
-                            Double.parseDouble(fields[NUT_0_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS,
-                            Double.parseDouble(fields[NUT_1_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS
-                        };
-                        equinox = getConverter().toEquinox(date, nro[0], nro[1]);
-                    } else {
-                        equinox = new double[] {
-                            Double.parseDouble(fields[NUT_0_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS,
-                            Double.parseDouble(fields[NUT_1_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS
-                        };
-                        nro = getConverter().toNonRotating(date, equinox[0], equinox[1]);
-                    }
-                    if (configuration == null || !configuration.isValid(mjd)) {
-                        // get a configuration for current name and date range
-                        configuration = getItrfVersionProvider().getConfiguration(name, mjd);
-                    }
-                    history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
-                                             configuration.getVersion(), date));
-                    parsed = true;
-
+                // check if we have read something
+                if (inHeader) {
+                    throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, name);
                 }
-                if (!(inHeader || parsed)) {
-                    throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                            lineNumber, name, line);
-                }
-            }
-
-            // check if we have read something
-            if (inHeader) {
-                throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, name);
             }
 
             return history;

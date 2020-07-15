@@ -1,5 +1,5 @@
-/* Copyright 2002-2020 CS Group
- * Licensed to CS Group (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -51,6 +51,9 @@ public abstract class ODMParser {
 
     /** Pattern for international designator. */
     private static final Pattern INTERNATIONAL_DESIGNATOR = Pattern.compile("(\\p{Digit}{4})-(\\p{Digit}{3})(\\p{Upper}{1,3})");
+
+    /** Pattern for dash. */
+    private static final Pattern DASH = Pattern.compile("-");
 
     /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
     private final AbsoluteDate missionReferenceDate;
@@ -592,7 +595,7 @@ public abstract class ODMParser {
      * @return CCSDS frame corresponding to the name
      */
     protected CCSDSFrame parseCCSDSFrame(final String frameName) {
-        return CCSDSFrame.valueOf(frameName.replaceAll("-", ""));
+        return CCSDSFrame.valueOf(DASH.matcher(frameName).replaceAll(""));
     }
 
     /** Parse a date.
