@@ -242,7 +242,7 @@ public class TLEEstimationTestUtils {
                                 final double expectedDeltaPos, final double posEps,
                                 final double expectedDeltaVel, final double velEps) {
 
-        final Orbit estimatedOrbit = estimator.estimate()[0].getInitialState().getOrbit();
+        final Orbit estimatedOrbit = estimator.estimate(true)[0].getInitialState().getOrbit();
         final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
         final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
 

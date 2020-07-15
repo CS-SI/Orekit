@@ -357,7 +357,7 @@ public class GroundStationTest {
             driver.setSelected(false);
         }
 
-        estimator.estimate();
+        estimator.estimate(true);
 
         final double computedDut1  = station.getPrimeMeridianOffsetDriver().getValue() / EstimatedEarthFrameProvider.EARTH_ANGULAR_VELOCITY;
         final double computedLOD   = station.getPrimeMeridianDriftDriver().getValue() * (-Constants.JULIAN_DAY / EstimatedEarthFrameProvider.EARTH_ANGULAR_VELOCITY);

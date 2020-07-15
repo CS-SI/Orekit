@@ -38,7 +38,7 @@ public class AbstractPropagatorBuilderTest {
         // Use a Cartesian orbit so the parameters are changed sufficiently when shifting the orbit of a minute
         final Orbit initialOrbit = new CartesianOrbit(context.initialOrbit);
         
-        final AbstractPropagatorBuilder propagatorBuilder = new AbstractPropagatorBuilder(initialOrbit, PositionAngle.TRUE, 10., true) {
+        final AbstractPropagatorBuilder propagatorBuilder = new AbstractPropagatorBuilder(initialOrbit, PositionAngle.TRUE, 10., true, true) {
             
             @Override
             public Propagator buildPropagator(double[] normalizedParameters) {

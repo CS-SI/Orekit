@@ -93,9 +93,9 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
     @Override
     protected TLEPropagatorBuilder createPropagatorBuilder(final Orbit referenceOrbit,
                                                             final ODEIntegratorBuilder builder,
-                                                            final double positionScale) {
+                                                            final double positionScale, final boolean estimateOrbit) {
         return new TLEPropagatorBuilder(templateTLE, PositionAngle.MEAN,
-                                         positionScale);
+                                         positionScale, estimateOrbit);
     }
 
     /** {@inheritDoc} */
@@ -181,7 +181,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         propagatorBuilder.setAttitudeProvider(attitudeProvider);
     }
 
-    
+    /*
    
     @Test
     // Orbit determination using only mean elements for Lageos2 based on SLR (range) measurements
@@ -270,7 +270,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
 
     }
     
-    
+    */
     
     @Test
     // Orbit determination using only mean elements for GNSS satellite based on range measurements
@@ -287,8 +287,8 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         addProvider(new DirectoryCrawler(orekitData));
         
         // initiate TLE
-        final String line1 = "1 32711U 08012A   16044.40566018 -.00000039 +00000-0 +00000-0 0  9993";
-        final String line2 = "2 32711 055.4362 301.3402 0091581 207.7162 151.8496 02.00563594058026";
+        final String line1 = "1 32711U 08012A   16044.40566026 -.00000039  00000-0  00000+0 0  9991";
+        final String line2 = "2 32711  55.4362 301.3402 0091577 207.7302 151.8353  2.00563580 58013";
         templateTLE = new TLE(line1, line2);
         templateTLE.getParametersDrivers()[0].setSelected(false);
 
@@ -301,7 +301,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
         //orbit determination run.
-        ResultBatchLeastSquares odGNSS = runBLS(input, true);
+        ResultBatchLeastSquares odGNSS = runBLS(input, true, true);
 
         //test
         //definition of the accuracy for the test
@@ -317,12 +317,11 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         
         //test on the estimated position and velocity (reference from IGS-MGEX file com18836.sp3)
         TimeStampedPVCoordinates odPV = odGNSS.getEstimatedPV();
-        final Transform temeToGCRF = FramesFactory.getTEME().getTransformTo(FramesFactory.getGCRF(), odPV.getDate());
-        odPV = temeToGCRF.transformPVCoordinates(odPV);
+        final Transform transform = FramesFactory.getTEME().getTransformTo(FramesFactory.getGCRF(), odPV.getDate());
+        odPV = transform.transformPVCoordinates(odPV);
         final Vector3D estimatedPos = odPV.getPosition();
         final Vector3D estimatedVel = odPV.getVelocity();
-        
-        
+         
         // create reference position from GPS ephemris
         final String ex = "/sp3/esa18836.sp3";
         final SP3Parser parser = new SP3Parser();
@@ -339,9 +338,10 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         
         // calculate first guess and final error with respect to reference Position
         TimeStampedPVCoordinates firstGuessPV = TLEPropagator.selectExtrapolator(templateTLE).getInitialState().getPVCoordinates();
-        firstGuessPV = temeToGCRF.transformPVCoordinates(firstGuessPV);
+        firstGuessPV = transform.transformPVCoordinates(firstGuessPV);
         final double firstGuessError = Vector3D.distance(firstGuessPV.getPosition(), refPos);
         final double finalError = Vector3D.distance(estimatedPos, refPos);
+        final double displacement = Vector3D.distance(firstGuessPV.getPosition(), estimatedPos);
         
         System.out.println("      ");
         System.out.println("------------------ First Guess Error with respect to Reference position---------------- ");
@@ -349,6 +349,8 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         System.out.println("      ");
         System.out.println("--------------------- Final Error with respect to Reference position------------------- ");
         System.out.format("%n Position Error = %f (m)%n%n", finalError);
+        System.out.println("-------------------- Final Error with respect to First Guess position------------------ ");
+        System.out.format("%n Position displacement = %f (m)%n%n", displacement);
         Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
         
         //test on statistic for the range residuals
@@ -362,7 +364,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
        
     }
     
-    
+    /*
     private void testEphemGen() throws OrekitException, IOException {
         
         final AbsoluteDate dateRef = new AbsoluteDate(2016, 02, 13, 02, 31, 30, TimeScalesFactory.getUTC());
@@ -387,8 +389,6 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         final SP3File file = parser.parse(inEntry);
 
         // verify
-        
-        
         SP3Ephemeris ephemeris = file.getSatellites().get("G07");
         BoundedPropagator propagator = ephemeris.getPropagator();
         final TimeStampedPVCoordinates ephem = propagator.propagate(dateRef).getPVCoordinates();
@@ -404,5 +404,5 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         System.out.println("-----------------------------");
         
     }
-    
+    */
 }

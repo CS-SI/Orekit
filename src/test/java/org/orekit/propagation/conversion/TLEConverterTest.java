@@ -49,12 +49,12 @@ public class TLEConverterTest {
 
     @Test
     public void testConversionLeoPositionVelocityWithoutBStar() {
-        checkFit(leoTLE, 86400, 300, 1.0e-3, false, false, 10.77);
+        checkFit(leoTLE, 86400, 300, 1.0e-3, false, false, 0.0);
     }
 
     @Test
     public void testConversionLeoPositionOnlyWithoutBStar() {
-        checkFit(leoTLE, 86400, 300, 1.0e-3, true, false, 15.23);
+        checkFit(leoTLE, 86400, 300, 1.0e-3, true, false, 0.0);
     }
 
     @Test
@@ -83,7 +83,7 @@ public class TLEConverterTest {
             sample.add(p.propagate(tle.getDate().shiftedBy(dt)));
         }
 
-        TLEPropagatorBuilder builder = new TLEPropagatorBuilder(tle, PositionAngle.TRUE, 1.0);
+        TLEPropagatorBuilder builder = new TLEPropagatorBuilder(tle, PositionAngle.TRUE, 1.0, true);
 
         List<DelegatingDriver> drivers = builder.getPropagationParametersDrivers().getDrivers();
 

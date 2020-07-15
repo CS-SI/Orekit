@@ -348,10 +348,11 @@ public class BatchLSEstimator {
      * elements (covariance matrix, estimated parameters standard deviation, weighted Jacobian, RMS,
      * χ², residuals and more).
      * </p>
+     * @param estimateOrbit true if orbital elements are to be estimated, false otherwise. Only effective on TLE PropagatorBuilder.
      * @return propagators configured with estimated orbits as initial states, and all
      * propagators estimated parameters also set
      */
-    public AbstractPropagator[] estimate() {
+    public AbstractPropagator[] estimate(final boolean estimateOrbit) {
 
         // set reference date for all parameters that lack one (including the not estimated parameters)
         for (final ParameterDriver driver : getOrbitalParametersDrivers(false).getDrivers()) {
@@ -411,7 +412,7 @@ public class BatchLSEstimator {
                 BatchLSEstimator.this.estimations = newEstimations;
             }
         };
-        final BatchLSODModel model = builders[0].buildLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver);
+        final BatchLSODModel model = builders[0].buildLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver, estimateOrbit);
         //final Model model = new Model(builders, measurements, estimatedMeasurementsParameters,
                                       //modelObserver);
         lsBuilder.model(model);

@@ -90,7 +90,8 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
     @Override
     protected NumericalPropagatorBuilder createPropagatorBuilder(final Orbit referenceOrbit,
                                                                  final ODEIntegratorBuilder builder,
-                                                                 final double positionScale) {
+                                                                 final double positionScale,
+                                                                 final boolean estimateOrbit) {
         return new NumericalPropagatorBuilder(referenceOrbit, builder, PositionAngle.MEAN,
                                               positionScale);
     }

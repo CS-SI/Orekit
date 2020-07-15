@@ -673,7 +673,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         FieldVector3D<T> referenceV    = interpolated.getVelocity();
         FieldVector3D<T> computedA     = sample.get(1).getAcceleration();
         FieldVector3D<T> referenceA    = interpolated.getAcceleration();
-        final FieldCircularOrbit<T> propagated = (FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(propagator.propagateOrbit(target));
+        final FieldCircularOrbit<T> propagated = (FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(propagator.propagateOrbit(target, null));
         final FieldCircularOrbit<T> keplerian =
                 new FieldCircularOrbit<>(propagated.getA(),
                                          propagated.getCircularEx(),
@@ -826,6 +826,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         final T step = zero.add(100.0);
         propagator.setMasterMode(step, new FieldOrekitFixedStepHandler<T>() {
             private FieldAbsoluteDate<T> previous;
+            @Override
             public void handleStep(FieldSpacecraftState<T> currentState, boolean isLast)
             {
                 if (previous != null) {

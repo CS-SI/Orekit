@@ -63,7 +63,8 @@ public class BatchLSModel extends AbstractBatchLSModel {
 
         super(propagatorBuilders, measurements,
                                   estimatedMeasurementsParameters,
-                                  observer);
+                                  observer,
+                                  true);
         this.mappers = new JacobiansMapper[getBuilders().length];
 
     }

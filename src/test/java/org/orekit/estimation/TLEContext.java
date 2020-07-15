@@ -53,7 +53,7 @@ public class TLEContext {
     public TLEPropagatorBuilder createBuilder(final double minStep, final double maxStep, final double dP) {
 
         final TLEPropagatorBuilder propagatorBuilder =
-                        new TLEPropagatorBuilder(initialTLE, PositionAngle.MEAN, dP);
+                        new TLEPropagatorBuilder(initialTLE, PositionAngle.MEAN, dP, true);
 
         return propagatorBuilder;
 

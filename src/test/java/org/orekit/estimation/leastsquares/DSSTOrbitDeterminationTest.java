@@ -86,7 +86,8 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
     @Override
     protected DSSTPropagatorBuilder createPropagatorBuilder(final Orbit referenceOrbit,
                                                             final ODEIntegratorBuilder builder,
-                                                            final double positionScale) {
+                                                            final double positionScale,
+                                                            final boolean estimateOrbit) {
         final EquinoctialOrbit equiOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(referenceOrbit);
         return new DSSTPropagatorBuilder(equiOrbit, builder, positionScale,
                                          PropagationType.MEAN, PropagationType.MEAN);
@@ -210,7 +211,7 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
         //orbit determination run.
-        ResultBatchLeastSquares odLageos2 = runBLS(input, false);
+        ResultBatchLeastSquares odLageos2 = runBLS(input, false, true);
 
         //test
         //definition of the accuracy for the test
@@ -263,7 +264,7 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
         //orbit determination run.
-        ResultBatchLeastSquares odGNSS = runBLS(input, false);
+        ResultBatchLeastSquares odGNSS = runBLS(input, false, true);
 
         //test
         //definition of the accuracy for the test

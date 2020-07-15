@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.regex.Pattern;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -101,6 +102,8 @@ import org.orekit.gnss.ObservationData;
 import org.orekit.gnss.ObservationDataSet;
 import org.orekit.gnss.RinexLoader;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.gnss.station.SINEXLoader;
+import org.orekit.gnss.station.Station;
 import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
 import org.orekit.models.earth.atmosphere.Atmosphere;
@@ -190,11 +193,13 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
      * @param builder first order integrator builder
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
+     * @param estimateOrbit true if orbital parameters are to be estimated, false otherwise. Only effetive with TLE Propagator Builder
      * @return propagator builder
      */
     protected abstract T createPropagatorBuilder(Orbit referenceOrbit,
                                                  ODEIntegratorBuilder builder,
-                                                 double positionScale);
+                                                 double positionScale,
+                                                 boolean estimateOrbit);
 
     /** Set satellite mass.
      * @param propagatorBuilder propagator builder
@@ -282,7 +287,7 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
      * @param print if true, print logs
      * @throws IOException if input files cannot be read
      */
-    protected ResultBatchLeastSquares runBLS(final File input, final boolean print) throws IOException {
+    protected ResultBatchLeastSquares runBLS(final File input, final boolean print, final boolean estimateOrbit) throws IOException {
 
         // read input parameters
         final KeyValueFileParser<ParameterKey> parser = new KeyValueFileParser<ParameterKey>(ParameterKey.class);
@@ -315,7 +320,7 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
         final OneAxisEllipsoid body = createBody(parser);
 
         // propagator builder
-        final T propagatorBuilder = configurePropagatorBuilder(parser, conventions, body, initialGuess);
+        final T propagatorBuilder = configurePropagatorBuilder(parser, conventions, body, initialGuess, estimateOrbit);
 
         // estimator
         final BatchLSEstimator estimator = createEstimator(parser, propagatorBuilder);
@@ -324,7 +329,20 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
         final EvaluationRmsChecker rmsChecker = new EvaluationRmsChecker(relTol, absTol);
         estimator.setConvergenceChecker(rmsChecker);
 
-        final Map<String, StationData>    stations                 = createStationsData(parser, conventions, body);
+        // sinex
+        SINEXLoader loader = null;
+        for (final String fileName : parser.getStringsList(ParameterKey.SINEX_FILES, ',')) {
+            // set up filtering for measurements files
+            NamedData nd = new NamedData(fileName, () -> new FileInputStream(new File(input.getParentFile(), fileName)));
+            for (final DataFilter filter : Arrays.asList(new GzipFilter(),
+                                                         new UnixCompressFilter(),
+                                                         new HatanakaCompressFilter())) {
+                nd = filter.filter(nd);
+            }
+            loader = new SINEXLoader(nd.getStreamOpener().openStream(), nd.getName());
+        }
+
+        final Map<String, StationData>    stations                 = createStationsData(parser, conventions, body, loader);
         final PVData                      pvData                   = createPVData(parser);
         final ObservableSatellite         satellite                = createObservableSatellite(parser);
         final Bias<Range>                 satRangeBias             = createSatRangeBias(parser);
@@ -422,7 +440,7 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
                 }
             });
         }
-        final Orbit estimated = estimator.estimate()[0].getInitialState().getOrbit();
+        final Orbit estimated = estimator.estimate(estimateOrbit)[0].getInitialState().getOrbit();
 
         // compute some statistics
         for (final Map.Entry<ObservedMeasurement<?>, EstimatedMeasurement<?>> entry : estimator.getLastEstimations().entrySet()) {
@@ -493,9 +511,22 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
 
         // Propagator builder
         final T propagatorBuilder =
-                        configurePropagatorBuilder(parser, conventions, body, initialGuess);
+                        configurePropagatorBuilder(parser, conventions, body, initialGuess, true);
 
-        final Map<String, StationData>    stations                 = createStationsData(parser, conventions, body);
+        // sinex
+        SINEXLoader loader = null;
+        for (final String fileName : parser.getStringsList(ParameterKey.SINEX_FILES, ',')) {
+            // set up filtering for measurements files
+            NamedData nd = new NamedData(fileName, () -> new FileInputStream(new File(input.getParentFile(), fileName)));
+            for (final DataFilter filter : Arrays.asList(new GzipFilter(),
+                                                         new UnixCompressFilter(),
+                                                         new HatanakaCompressFilter())) {
+                nd = filter.filter(nd);
+            }
+            loader = new SINEXLoader(nd.getStreamOpener().openStream(), nd.getName());
+        }
+
+        final Map<String, StationData>    stations                 = createStationsData(parser, conventions, body, loader);
         final PVData                      pvData                   = createPVData(parser);
         final ObservableSatellite         satellite                = createObservableSatellite(parser);
         final Bias<Range>                 satRangeBias             = createSatRangeBias(parser);
@@ -828,7 +859,7 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
 
          // Propagator builder
          final T propagatorBuilder =
-                         configurePropagatorBuilder(parser, conventions, body, initialRefOrbit);
+                         configurePropagatorBuilder(parser, conventions, body, initialRefOrbit, true);
 
          // Force the selected propagation parameters to their reference values
          if (refPropagationParameters != null) {
@@ -861,13 +892,15 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
      * @param conventions IERS conventions to use
      * @param body central body
      * @param orbit first orbit estimate
+     * @param estimateOrbit true if orbital parameters are to be estimated, false otherwise. Only effetive with TLE Propagator Builder
      * @return propagator builder
      * @throws NoSuchElementException if input parameters are missing
      */
     private T configurePropagatorBuilder(final KeyValueFileParser<ParameterKey> parser,
                                          final IERSConventions conventions,
                                          final OneAxisEllipsoid body,
-                                         final Orbit orbit)
+                                         final Orbit orbit,
+                                         final boolean estimateOrbit)
         throws NoSuchElementException {
 
         final double minStep;
@@ -900,7 +933,8 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
 
         final T propagatorBuilder = createPropagatorBuilder(orbit,
                                                             new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
-                                                            positionScale);
+                                                            positionScale,
+                                                            estimateOrbit);
 
         // initial mass
         final double mass;
@@ -1242,7 +1276,8 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
      */
     private Map<String, StationData> createStationsData(final KeyValueFileParser<ParameterKey> parser,
                                                         final IERSConventions conventions,
-                                                        final OneAxisEllipsoid body)
+                                                        final OneAxisEllipsoid body,
+                                                        final SINEXLoader sinex)
         throws NoSuchElementException {
 
         final Map<String, StationData> stations       = new HashMap<String, StationData>();
@@ -1344,11 +1379,27 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
             }
 
             // the station itself
-            final GeodeticPoint position = new GeodeticPoint(stationLatitudes[i],
-                                                             stationLongitudes[i],
-                                                             stationAltitudes[i]);
-            final TopocentricFrame topo = new TopocentricFrame(body, position, stationNames[i]);
-            final GroundStation station = new GroundStation(topo, eopHistory, displacements);
+            final GroundStation station;
+            if (sinex != null && sinex.getStation(stationNames[i].substring(0, 4)) != null) {
+                final Station sinexStation = sinex.getStation(stationNames[i].substring(0, 4));
+                final GeodeticPoint position = body.transform(sinexStation.getPosition(),
+                                                              body.getBodyFrame(),
+                                                              sinexStation.getEpoch());
+                final TopocentricFrame topo = new TopocentricFrame(body, position, stationNames[i]);
+                station = new GroundStation(topo, eopHistory, displacements);
+                station.getZenithOffsetDriver().setValue(sinexStation.getEccentricities().getX());
+                station.getZenithOffsetDriver().setReferenceValue(sinexStation.getEccentricities().getX());
+                station.getNorthOffsetDriver().setValue(sinexStation.getEccentricities().getY());
+                station.getNorthOffsetDriver().setReferenceValue(sinexStation.getEccentricities().getY());
+                station.getEastOffsetDriver().setValue(sinexStation.getEccentricities().getZ());
+                station.getEastOffsetDriver().setReferenceValue(sinexStation.getEccentricities().getZ());
+            } else {
+                final GeodeticPoint position = new GeodeticPoint(stationLatitudes[i],
+                                                                 stationLongitudes[i],
+                                                                 stationAltitudes[i]);
+                final TopocentricFrame topo = new TopocentricFrame(body, position, stationNames[i]);
+                station = new GroundStation(topo, eopHistory, displacements);
+            }
             station.getClockOffsetDriver().setReferenceValue(stationClockOffsets[i]);
             station.getClockOffsetDriver().setValue(stationClockOffsets[i]);
             station.getClockOffsetDriver().setMinValue(stationClockOffsetsMin[i]);
@@ -1428,10 +1479,10 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
 
                 MappingFunction mappingModel = null;
                 if (stationGlobalMappingFunction[i]) {
-                    mappingModel = new GlobalMappingFunctionModel(stationLatitudes[i],
-                                                                  stationLongitudes[i]);
+                    mappingModel = new GlobalMappingFunctionModel(station.getBaseFrame().getPoint().getLatitude(),
+                                                                  station.getBaseFrame().getPoint().getLongitude());
                 } else if (stationNiellMappingFunction[i]) {
-                    mappingModel = new NiellMappingFunctionModel(stationLatitudes[i]);
+                    mappingModel = new NiellMappingFunctionModel(station.getBaseFrame().getPoint().getLatitude());
                 }
 
                 final DiscreteTroposphericModel troposphericModel;
@@ -1443,8 +1494,8 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
                     final double temperature;
                     if (stationWeatherEstimated[i]) {
                         // Empirical models to compute the pressure and the temperature
-                        final GlobalPressureTemperatureModel weather = new GlobalPressureTemperatureModel(stationLatitudes[i],
-                                                                                                          stationLongitudes[i],
+                        final GlobalPressureTemperatureModel weather = new GlobalPressureTemperatureModel(station.getBaseFrame().getPoint().getLatitude(),
+                                                                                                          station.getBaseFrame().getPoint().getLongitude(),
                                                                                                           body.getBodyFrame());
                         weather.weatherParameters(stationAltitudes[i], parser.getDate(ParameterKey.ORBIT_DATE,
                                                                                       TimeScalesFactory.getUTC()));
@@ -1457,52 +1508,12 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
                         pressure    = 1013.25;
                     }
 
-                    // Initial model used to initialize the time span tropospheric model
-                    final EstimatedTroposphericModel initialModel = new EstimatedTroposphericModel(temperature, pressure, mappingModel,
-                                                                                                   stationTroposphericZenithDelay[i]);
+                    troposphericModel = new EstimatedTroposphericModel(temperature, pressure,
+                                                                       mappingModel, stationTroposphericZenithDelay[i]);
+                    final ParameterDriver driver = troposphericModel.getParametersDrivers().get(0);
+                    driver.setName(stationNames[i].substring(0, 4) + "/ " + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
+                    driver.setSelected(stationZenithDelayEstimated[i]);
 
-                    // Initialize the time span tropospheric model
-                    final TimeSpanEstimatedTroposphericModel timeSpanModel = new TimeSpanEstimatedTroposphericModel(initialModel);
-
-                    // Median date
-                    final AbsoluteDate epoch = parser.getDate(ParameterKey.TROPOSPHERIC_CORRECTION_DATE, TimeScalesFactory.getUTC());
-
-                    // Station name
-                    final String subName = stationNames[i].substring(0, 5);
-
-                    // Estimated tropospheric model BEFORE the median date
-                    final EstimatedTroposphericModel modelBefore = new EstimatedTroposphericModel(temperature, pressure, mappingModel,
-                                                                                                  stationTroposphericZenithDelay[i]);
-                    final ParameterDriver totalDelayBefore = modelBefore.getParametersDrivers().get(0);
-                    totalDelayBefore.setSelected(stationZenithDelayEstimated[i]);
-                    totalDelayBefore.setName(subName + TimeSpanEstimatedTroposphericModel.DATE_BEFORE + epoch.toString(TimeScalesFactory.getUTC()) + " " + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
-
-                    // Estimated tropospheric model AFTER the median date
-                    final EstimatedTroposphericModel modelAfter = new EstimatedTroposphericModel(temperature, pressure, mappingModel,
-                                                                                                 stationTroposphericZenithDelay[i]);
-                    final ParameterDriver totalDelayAfter = modelAfter.getParametersDrivers().get(0);
-                    totalDelayAfter.setSelected(stationZenithDelayEstimated[i]);
-                    totalDelayAfter.setName(subName + TimeSpanEstimatedTroposphericModel.DATE_AFTER + epoch.toString(TimeScalesFactory.getUTC()) + " " + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
-
-                    // Add models to the time span tropospheric model
-                    // A very ugly trick is used when no measurements are available for a specific time span.
-                    // Indeed, the tropospheric parameter will not be estimated for the time span with no measurements.
-                    // Therefore, the diagonal elements of the covariance matrix will be equal to zero.
-                    // At the end, an exception is thrown when accessing the physical covariance matrix because of singularities issues.
-                    if (subName.equals("SEAT/")) {
-                        // Do not add the model because no measurements are available
-                        // for the time span before the median date for this station.
-                    } else {
-                        timeSpanModel.addTroposphericModelValidBefore(modelBefore, epoch);
-                    }
-                    if (subName.equals("BADG/") || subName.equals("IRKM/")) {
-                        // Do not add the model because no measurements are available
-                        // for the time span after the median date for this station.
-                    } else {
-                        timeSpanModel.addTroposphericModelValidAfter(modelAfter, epoch);
-                    }
-
-                    troposphericModel = timeSpanModel;
                 } else {
                     // Empirical tropospheric model
                     troposphericModel = SaastamoinenModel.getStandardModel();
@@ -1906,7 +1917,9 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
                             }
                             addIfNonZeroWeight(range, measurements);
 
-                        } else if (od.getObservationType().getMeasurementType() == MeasurementType.DOPPLER) {
+                        } 
+                        /*
+                        else if (od.getObservationType().getMeasurementType() == MeasurementType.DOPPLER) {
                             // this is a measurement we want
                             final String stationName = observationDataSet.getHeader().getMarkerName() + "/" + od.getObservationType();
                             final StationData stationData = stations.get(stationName);
@@ -1928,6 +1941,7 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
                             }
                             addIfNonZeroWeight(rangeRate, measurements);
                         }
+                        */
                     }
                 }
             }

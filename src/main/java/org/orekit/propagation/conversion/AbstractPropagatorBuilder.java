@@ -104,14 +104,15 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
      * (typically set to the expected standard deviation of the position)
      * @param addDriverForCentralAttraction if true, a {@link ParameterDriver} should
      * be set up for central attraction coefficient
+     * @param estimateOrbit true if orbital parameters are to be estimated, false otherwise. Only effetive with TLE Propagator Builder
      * @since 8.0
      * @see #AbstractPropagatorBuilder(Orbit, PositionAngle, double, boolean,
      * AttitudeProvider)
      */
     protected AbstractPropagatorBuilder(final Orbit templateOrbit, final PositionAngle positionAngle,
-                                        final double positionScale, final boolean addDriverForCentralAttraction) {
+                                        final double positionScale, final boolean addDriverForCentralAttraction, final boolean estimateOrbit) {
         this(templateOrbit, positionAngle, positionScale, addDriverForCentralAttraction,
-                new InertialProvider(templateOrbit.getFrame()));
+                new InertialProvider(templateOrbit.getFrame()), estimateOrbit);
     }
 
     /** Build a new instance.
@@ -138,6 +139,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
      * @param addDriverForCentralAttraction if true, a {@link ParameterDriver} should
      * be set up for central attraction coefficient
      * @param attitudeProvider for the propagator.
+     * @param estimateOrbit true if orbital parameters are to be estimated, false otherwise. Only effetive with TLE Propagator Builder
      * @since 10.1
      * @see #AbstractPropagatorBuilder(Orbit, PositionAngle, double, boolean)
      */
@@ -145,7 +147,8 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
                                         final PositionAngle positionAngle,
                                         final double positionScale,
                                         final boolean addDriverForCentralAttraction,
-                                        final AttitudeProvider attitudeProvider) {
+                                        final AttitudeProvider attitudeProvider,
+                                        final boolean estimateOrbit) {
 
         this.initialOrbitDate    = templateOrbit.getDate();
         this.frame               = templateOrbit.getFrame();
@@ -157,7 +160,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         this.orbitalDrivers      = orbitType.getDrivers(positionScale, templateOrbit, positionAngle);
         this.attitudeProvider = attitudeProvider;
         for (final DelegatingDriver driver : orbitalDrivers.getDrivers()) {
-            driver.setSelected(true);
+            driver.setSelected(estimateOrbit);
         }
 
         this.additionalEquations  = new ArrayList<AdditionalEquations>();

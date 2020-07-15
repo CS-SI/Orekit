@@ -76,7 +76,7 @@ public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder {
                                       final PositionAngle positionAngle,
                                       final double positionScale,
                                       final AttitudeProvider attitudeProvider) {
-        super(templateOrbit, positionAngle, positionScale, true, attitudeProvider);
+        super(templateOrbit, positionAngle, positionScale, true, attitudeProvider, true);
     }
 
     /** {@inheritDoc} */

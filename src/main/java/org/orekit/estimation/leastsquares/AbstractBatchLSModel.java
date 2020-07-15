@@ -107,7 +107,8 @@ public abstract class AbstractBatchLSModel implements BatchLSODModel {
     public AbstractBatchLSModel(final PropagatorBuilder[] propagatorBuilders,
                         final List<ObservedMeasurement<?>> measurements,
                         final ParameterDriversList estimatedMeasurementsParameters,
-                        final ModelObserver observer) {
+                        final ModelObserver observer,
+                        final boolean estimateOrbit) {
 
         this.builders                        = propagatorBuilders.clone();
         this.measurements                    = measurements;
@@ -129,6 +130,7 @@ public abstract class AbstractBatchLSModel implements BatchLSODModel {
         for (int i = 0; i < builders.length; ++i) {
             this.orbitsStartColumns[i] = columns;
             for (final ParameterDriver driver : builders[i].getOrbitalParametersDrivers().getDrivers()) {
+                driver.setSelected(estimateOrbit);
                 if (driver.isSelected()) {
                     ++columns;
                 }
@@ -144,7 +146,7 @@ public abstract class AbstractBatchLSModel implements BatchLSODModel {
             for (final DelegatingDriver delegating : getSelectedPropagationDriversForBuilder(i).getDrivers()) {
                 final String driverName = delegating.getName();
                 // Add the driver name if it has not been added yet
-                if (!estimatedPropagationParametersNames.contains(driverName)) {
+                if (!estimatedPropagationParametersNames.contains(driverName) && estimateOrbit) {
                     estimatedPropagationParametersNames.add(driverName);
                 }
             }
