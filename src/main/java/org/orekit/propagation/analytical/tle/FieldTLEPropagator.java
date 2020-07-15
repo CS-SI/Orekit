@@ -333,7 +333,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
     }
 
     /** Computation of the first commons parameters.
-     * @param parameters model parameters
+     * @param parameters SGP4 and SDP4 model parameters
      */
     private void initializeCommons(final T[] parameters) {
 
