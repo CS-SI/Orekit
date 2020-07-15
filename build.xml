@@ -2,7 +2,7 @@
 
 <project name="orekit" default="jar" basedir=".">
 
-  <property name="project.version"         value="10.1" />
+  <property name="project.version"         value="10.2" />
 
   <property name="src.dir"                 location="src"                    />
   <property name="main.src.dir"            value="${src.dir}/main/java"      />
@@ -30,7 +30,7 @@
   <property name="junit.version"            value="4.12"                                           />
   <property name="junit.jar"                value="junit-${junit.version}.jar"                     />
   <property name="junit.maven.path"         value="junit/junit"                                    />
-  <property name="mockito.version"          value="3.2.4"                                          />
+  <property name="mockito.version"          value="3.3.3"                                          />
   <property name="mockito.jar"              value="mockito-core-${mockito.version}.jar"            />
   <property name="mockito.maven.path"       value="org/mockito/mockito-core"                       />
   <property name="bytebuddy.version"        value="1.9.10"                                         />

@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -225,25 +226,26 @@ public class UTCScale implements TimeScale {
     @Override
     public int minuteDuration(final AbsoluteDate date) {
         final int offsetIndex = findOffsetIndex(date);
-        if (offsetIndex < 0) {
-            // the date is before the first known leap
-            return 60;
+        final UTCTAIOffset offset;
+        if (offsetIndex >= 0 &&
+                date.compareTo(offsets[offsetIndex].getValidityStart()) < 0) {
+            // the date is during the leap itself
+            offset = offsets[offsetIndex];
+        } else if (offsetIndex + 1 < offsets.length &&
+            offsets[offsetIndex + 1].getDate().durationFrom(date) <= 60.0) {
+            // the date is after a leap, but it may be just before the next one
+            // the next leap will start in one minute, it will extend the current minute
+            offset = offsets[offsetIndex + 1];
         } else {
-            if (date.compareTo(offsets[offsetIndex].getValidityStart()) < 0) {
-                // the date is during the leap itself
-                return 61;
-            } else {
-                // the date is after a leap, but it may be just before the next one
-                if (offsetIndex + 1 < offsets.length &&
-                    offsets[offsetIndex + 1].getDate().durationFrom(date) <= 60.0) {
-                    // the next leap will start in one minute, it will extend the current minute
-                    return 61;
-                } else {
-                    // no leap is expected within the next minute
-                    return 60;
-                }
-            }
+            offset = null;
         }
+        if (offset != null) {
+            // since this method returns an int we can't return the precise duration in
+            // all cases, but we can bound it. Some leaps are more than 1s. See #694
+            return 60 + (int) FastMath.ceil(offset.getLeap());
+        }
+        // no leap is expected within the next minute
+        return 60;
     }
 
     /** {@inheritDoc} */
