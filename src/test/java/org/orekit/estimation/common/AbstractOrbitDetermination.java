@@ -331,15 +331,17 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
 
         // sinex
         SINEXLoader loader = null;
-        for (final String fileName : parser.getStringsList(ParameterKey.SINEX_FILES, ',')) {
-            // set up filtering for measurements files
-            NamedData nd = new NamedData(fileName, () -> new FileInputStream(new File(input.getParentFile(), fileName)));
-            for (final DataFilter filter : Arrays.asList(new GzipFilter(),
-                                                         new UnixCompressFilter(),
-                                                         new HatanakaCompressFilter())) {
-                nd = filter.filter(nd);
+        if (parser.containsKey(ParameterKey.SINEX_FILES)) {
+            for (final String fileName : parser.getStringsList(ParameterKey.SINEX_FILES, ',')) {
+                // set up filtering for measurements files
+                NamedData nd = new NamedData(fileName, () -> new FileInputStream(new File(input.getParentFile(), fileName)));
+                for (final DataFilter filter : Arrays.asList(new GzipFilter(),
+                                                             new UnixCompressFilter(),
+                                                             new HatanakaCompressFilter())) {
+                    nd = filter.filter(nd);
+                }
+                loader = new SINEXLoader(nd.getStreamOpener().openStream(), nd.getName());
             }
-            loader = new SINEXLoader(nd.getStreamOpener().openStream(), nd.getName());
         }
 
         final Map<String, StationData>    stations                 = createStationsData(parser, conventions, body, loader);

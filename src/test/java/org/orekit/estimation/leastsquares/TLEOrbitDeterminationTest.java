@@ -180,12 +180,9 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
                                        final AttitudeProvider attitudeProvider) {
         propagatorBuilder.setAttitudeProvider(attitudeProvider);
     }
-
-    /*
    
     @Test
     // Orbit determination using only mean elements for Lageos2 based on SLR (range) measurements
-    // For better accuracy, adding short period terms is necessary
     public void testLageos2()
         throws URISyntaxException, IllegalArgumentException, IOException,
                OrekitException, ParseException {
@@ -210,11 +207,9 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         // configure Orekit data access
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
-        
-        testEphemGen();
 
         //orbit determination run.
-        ResultBatchLeastSquares odLageos2 = runBLS(input, false);
+        ResultBatchLeastSquares odLageos2 = runBLS(input, false, true);
 
         //test
         //definition of the accuracy for the test
@@ -222,8 +217,8 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         final double velocityAccuracy = 1.4;
 
         //test on the convergence
-        final int numberOfIte  = 5;
-        final int numberOfEval = 5;
+        final int numberOfIte  = 6;
+        final int numberOfEval = 6;
 
         Assert.assertEquals(numberOfIte, odLageos2.getNumberOfIteration());
         Assert.assertEquals(numberOfEval, odLageos2.getNumberOfEvaluation());
@@ -269,140 +264,5 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         Assert.assertEquals(RefStatRange[3], odLageos2.getRangeStat().getStandardDeviation(), distanceAccuracy);
 
     }
-    
-    */
-    
-    @Test
-    // Orbit determination using only mean elements for GNSS satellite based on range measurements
-    // For better accuracy, adding short period terms is necessary
-    public void testGNSS()
-        throws URISyntaxException, IllegalArgumentException, IOException,
-               OrekitException, ParseException {
-        
-        final File home       = new File(System.getProperty("user.home"));
-        final File orekitData = new File(home, "../home/thomas/orekit-data");
-        DataContext.
-        getDefault().
-        getDataProvidersManager().
-        addProvider(new DirectoryCrawler(orekitData));
-        
-        // initiate TLE
-        final String line1 = "1 32711U 08012A   16044.40566026 -.00000039  00000-0  00000+0 0  9991";
-        final String line2 = "2 32711  55.4362 301.3402 0091577 207.7302 151.8353  2.00563580 58013";
-        templateTLE = new TLE(line1, line2);
-        templateTLE.getParametersDrivers()[0].setSelected(false);
 
-        // input in resources directory
-        final String inputPath = TLEOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/analytical/tle_od_test_GPS.in").toURI().getPath();
-        final File input  = new File(inputPath);
-
-        // configure Orekit data access
-        Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
-        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
-
-        //orbit determination run.
-        ResultBatchLeastSquares odGNSS = runBLS(input, true, true);
-
-        //test
-        //definition of the accuracy for the test
-        final double distanceAccuracy = 59;
-        final double velocityAccuracy = 0.23;
-
-        //test on the convergence
-        final int numberOfIte  = 1;
-        final int numberOfEval = 14;
-
-        //Assert.assertEquals(numberOfIte, odGNSS.getNumberOfIteration());
-        //Assert.assertEquals(numberOfEval, odGNSS.getNumberOfEvaluation());
-        
-        //test on the estimated position and velocity (reference from IGS-MGEX file com18836.sp3)
-        TimeStampedPVCoordinates odPV = odGNSS.getEstimatedPV();
-        final Transform transform = FramesFactory.getTEME().getTransformTo(FramesFactory.getGCRF(), odPV.getDate());
-        odPV = transform.transformPVCoordinates(odPV);
-        final Vector3D estimatedPos = odPV.getPosition();
-        final Vector3D estimatedVel = odPV.getVelocity();
-         
-        // create reference position from GPS ephemris
-        final String ex = "/sp3/esa18836.sp3";
-        final SP3Parser parser = new SP3Parser();
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final SP3File file = parser.parse(inEntry);
-        SP3Ephemeris ephemeris = file.getSatellites().get("G07");
-        BoundedPropagator propagator = ephemeris.getPropagator();
-        final TimeStampedPVCoordinates ephem = propagator.propagate(odPV.getDate()).getPVCoordinates();
-        final Vector3D refPos = ephem.getPosition();
-        final Vector3D refVel = ephem.getVelocity();
-        
-        //Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
-        //Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
-        
-        // calculate first guess and final error with respect to reference Position
-        TimeStampedPVCoordinates firstGuessPV = TLEPropagator.selectExtrapolator(templateTLE).getInitialState().getPVCoordinates();
-        firstGuessPV = transform.transformPVCoordinates(firstGuessPV);
-        final double firstGuessError = Vector3D.distance(firstGuessPV.getPosition(), refPos);
-        final double finalError = Vector3D.distance(estimatedPos, refPos);
-        final double displacement = Vector3D.distance(firstGuessPV.getPosition(), estimatedPos);
-        
-        System.out.println("      ");
-        System.out.println("------------------ First Guess Error with respect to Reference position---------------- ");
-        System.out.format("%n Position Error = %f (m)%n   ", firstGuessError);
-        System.out.println("      ");
-        System.out.println("--------------------- Final Error with respect to Reference position------------------- ");
-        System.out.format("%n Position Error = %f (m)%n%n", finalError);
-        System.out.println("-------------------- Final Error with respect to First Guess position------------------ ");
-        System.out.format("%n Position displacement = %f (m)%n%n", displacement);
-        Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
-        
-        //test on statistic for the range residuals
-        final long nbRange = 4009;
-        final double[] RefStatRange = { -83.945, 59.365, 0.0, 20.857 };
-        Assert.assertEquals(nbRange, odGNSS.getRangeStat().getN());
-        Assert.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               1.0e-3);
-        Assert.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               1.0e-3);
-        Assert.assertEquals(RefStatRange[2], odGNSS.getRangeStat().getMean(),              0.23);
-        Assert.assertEquals(RefStatRange[3], odGNSS.getRangeStat().getStandardDeviation(), 1.0e-3);
-       
-    }
-    
-    /*
-    private void testEphemGen() throws OrekitException, IOException {
-        
-        final AbsoluteDate dateRef = new AbsoluteDate(2016, 02, 13, 02, 31, 30, TimeScalesFactory.getUTC());
-        
-        final String ex = "/sp3/esa18836.sp3";
-        final SP3Parser parser = new SP3Parser();
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-
-        final Transform eme2000toGCRF = FramesFactory.getEME2000().getTransformTo(FramesFactory.getGCRF(), dateRef);
-        Vector3D refPos = new Vector3D(-2747606.680868164, 22572091.30648564, 13522761.402325712);
-        Vector3D refVel = new Vector3D(-2729.5151218788005, 1142.6629459030657, -2523.9055974487947);
-        
-        refPos = eme2000toGCRF.transformPosition(refPos);
-
-        TimeScale gps = TimeScalesFactory.getGPS();
-        TimeScale utc = TimeScalesFactory.getUTC();
-        final double dtgps = gps.offsetFromTAI(dateRef);
-        final double dtutc = utc.offsetFromTAI(dateRef);
-        final double dt = dtutc - dtgps;
-
-        // action
-        final SP3File file = parser.parse(inEntry);
-
-        // verify
-        SP3Ephemeris ephemeris = file.getSatellites().get("G07");
-        BoundedPropagator propagator = ephemeris.getPropagator();
-        final TimeStampedPVCoordinates ephem = propagator.propagate(dateRef).getPVCoordinates();
-        final Vector3D ephemPos = ephem.getPosition();
-        final double dist = Vector3D.distance(ephemPos, refPos);
-
-        System.out.println("-----------------------------");
-        System.out.println(dateRef);
-        System.out.println(propagator.getFrame());
-        System.out.println(ephem.getDate());
-        System.out.println("-----------------------------");
-        System.out.println(dist);
-        System.out.println("-----------------------------");
-        
-    }
-    */
 }
