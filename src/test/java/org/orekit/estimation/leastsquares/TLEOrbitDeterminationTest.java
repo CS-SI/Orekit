@@ -194,7 +194,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
         //orbit determination run.
-        ResultBatchLeastSquares odLageos2 = runBLS(input, true, true);
+        ResultBatchLeastSquares odLageos2 = runBLS(input, false, true);
 
         //test
         //definition of the accuracy for the test
