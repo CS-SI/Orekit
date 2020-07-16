@@ -57,9 +57,14 @@ public class ShapiroPhaseModifierTest {
         // create perfect range measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final int    ambiguity         = 1234;
+        final double groundClockOffset =  12.0e-6;
+        final double satClockOffset    = 345.0e-6;
         List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new PhaseMeasurementCreator(context, FREQUENCY, 0),
+                                                               new PhaseMeasurementCreator(context, FREQUENCY,
+                                                                                           ambiguity,
+                                                                                           satClockOffset),
                                                                1.0, 3.0, 300.0);
 
         propagator.setSlaveMode();

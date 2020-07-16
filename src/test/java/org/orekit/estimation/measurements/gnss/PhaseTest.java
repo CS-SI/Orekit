@@ -83,12 +83,12 @@ public class PhaseTest {
             System.out.println("\nTest Range Phase Derivatives - Finite Differences Comparison\n");
         }
         // Run test
-        double refErrorsPMedian = 1.2e-09;
-        double refErrorsPMean   = 6.3e-09;
-        double refErrorsPMax    = 4.3e-07;
-        double refErrorsVMedian = 1.7e-05;
-        double refErrorsVMean   = 6.2e-05;
-        double refErrorsVMax    = 2.2e-03;
+        double refErrorsPMedian = 5.2e-10;
+        double refErrorsPMean   = 3.5e-09;
+        double refErrorsPMax    = 1.5e-07;
+        double refErrorsVMedian = 2.0e-05;
+        double refErrorsVMean   = 5.8e-05;
+        double refErrorsVMax    = 2.1e-03;
         this.genericTestStateDerivatives(printResults,
                                          refErrorsPMedian, refErrorsPMean, refErrorsPMax,
                                          refErrorsVMedian, refErrorsVMean, refErrorsVMax);
@@ -106,12 +106,12 @@ public class PhaseTest {
             System.out.println("\nTest Phase State Derivatives with Modifier - Finite Differences Comparison\n");
         }
         // Run test
-        double refErrorsPMedian = 1.2e-09;
-        double refErrorsPMean   = 6.3e-09;
-        double refErrorsPMax    = 4.3e-07;
-        double refErrorsVMedian = 1.7e-05;
-        double refErrorsVMean   = 6.2e-05;
-        double refErrorsVMax    = 2.2e-03;
+        double refErrorsPMedian = 5.2e-10;
+        double refErrorsPMean   = 3.5e-09;
+        double refErrorsPMax    = 1.5e-07;
+        double refErrorsVMedian = 2.0e-05;
+        double refErrorsVMean   = 5.8e-05;
+        double refErrorsVMax    = 2.1e-03;
         this.genericTestStateDerivatives(printResults,
                                          refErrorsPMedian, refErrorsPMean, refErrorsPMax,
                                          refErrorsVMedian, refErrorsVMean, refErrorsVMax);
@@ -131,8 +131,8 @@ public class PhaseTest {
             System.out.println("\nTest Phase Parameter Derivatives - Finite Differences Comparison\n");
         }
         // Run test
-        double refErrorsMedian = 5.9e-9;
-        double refErrorsMean   = 6.4e-8;
+        double refErrorsMedian = 1.4e-10;
+        double refErrorsMean   = 5.0e-8;
         double refErrorsMax    = 5.1e-6;
         this.genericTestParameterDerivatives(printResults,
                                              refErrorsMedian, refErrorsMean, refErrorsMax);
@@ -154,18 +154,24 @@ public class PhaseTest {
         // Create perfect phase measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final int ambiguity = 0;
+        final double groundClockOffset =  12.0e-6;
+        for (final GroundStation station : context.stations) {
+            station.getClockOffsetDriver().setValue(groundClockOffset);
+        }
+        final int    ambiguity         = 1234;
+        final double satClockOffset    = 345.0e-6;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new PhaseMeasurementCreator(context,
                                                                                            Frequency.E01,
-                                                                                           ambiguity),
+                                                                                           ambiguity,
+                                                                                           satClockOffset),
                                                                1.0, 3.0, 300.0);
 
         // Lists for results' storage - Used only for derivatives with respect to state
         // "final" value to be seen by "handleStep" function of the propagator
-        final List<Double> absoluteErrors = new ArrayList<Double>();
-        final List<Double> relativeErrors = new ArrayList<Double>();
+        final List<Double> absoluteErrors = new ArrayList<>();
+        final List<Double> relativeErrors = new ArrayList<>();
 
         // Set master mode
         // Use a lambda function to implement "handleStep" function
@@ -193,11 +199,12 @@ public class PhaseTest {
 
                     final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
                     Assert.assertEquals(2, participants.length);
-                    Assert.assertEquals(1.0e6 * Frequency.E01.getMHzFrequency() * participants[1].getDate().durationFrom(participants[0].getDate()),
-                                        estimated.getEstimatedValue()[0] - ambiguity,
+                    final double dt = participants[1].getDate().durationFrom(participants[0].getDate());
+                    Assert.assertEquals(1.0e6 * Frequency.E01.getMHzFrequency() * (dt + groundClockOffset - satClockOffset) + ambiguity,
+                                        estimated.getEstimatedValue()[0],
                                         1.0e-7);
 
-                    final double phaseEstimated = estimated.getEstimatedValue()[0] - ambiguity;
+                    final double phaseEstimated = estimated.getEstimatedValue()[0];
                     final double absoluteError = phaseEstimated - phaseObserved;
                     absoluteErrors.add(absoluteError);
                     relativeErrors.add(FastMath.abs(absoluteError) / FastMath.abs(phaseObserved));
@@ -207,7 +214,7 @@ public class PhaseTest {
                         final AbsoluteDate measurementDate = measurement.getDate();
                         String stationName = ((Phase) measurement).getStation().getBaseFrame().getName();
 
-                        System.out.format(Locale.US, "%-15s  %-23s  %-23s  %19.6f  %19.6f  %13.6e  %13.6e%n",
+                        System.out.format(Locale.US, "%-15s  %-23s  %-23s     %19.6f      %19.6f    %13.6e   %13.6e%n",
                                          stationName, measurementDate, date,
                                          phaseObserved, phaseEstimated,
                                          FastMath.abs(phaseEstimated - phaseObserved),
@@ -220,10 +227,10 @@ public class PhaseTest {
 
         // Print results on console ? Header
         if (printResults) {
-            System.out.format(Locale.US, "%-15s  %-23s  %-23s  %19s  %19s  %13s  %13s%n",
+            System.out.format(Locale.US, "%-15s  %-23s  %-23s  %19s  %19s   %13s   %13s%n",
                               "Station", "Measurement Date", "State Date",
-                              "Range observed [m]", "Phase estimated [m]",
-                              "ΔPhase [m]", "rel ΔPhase");
+                              "Phase observed [cycle]", "Phase estimated [cycle]",
+                              "ΔPhase [cycle]", "rel ΔPhase");
         }
 
         // Rewind the propagator to initial date
@@ -256,11 +263,11 @@ public class PhaseTest {
             System.out.println("Relative errors max   : " +  relErrorsMax);
         }
 
-        Assert.assertEquals(0.0, absErrorsMedian, 1.6e-7);
-        Assert.assertEquals(0.0, absErrorsMin,    1.2e-6);
+        Assert.assertEquals(0.0, absErrorsMedian, 1.4e-7);
+        Assert.assertEquals(0.0, absErrorsMin,    1.3e-6);
         Assert.assertEquals(0.0, absErrorsMax,    1.5e-6);
-        Assert.assertEquals(0.0, relErrorsMedian, 9.3e-15);
-        Assert.assertEquals(0.0, relErrorsMax,    2.6e-14);
+        Assert.assertEquals(0.0, relErrorsMedian, 9.1e-15);
+        Assert.assertEquals(0.0, relErrorsMax,    2.8e-14);
 
 
     }
@@ -278,12 +285,18 @@ public class PhaseTest {
         // Create perfect range measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final int ambiguity = 123456789;
+        final double groundClockOffset =  12.0e-6;
+        for (final GroundStation station : context.stations) {
+            station.getClockOffsetDriver().setValue(groundClockOffset);
+        }
+        final int    ambiguity         = 1234;
+        final double satClockOffset    = 345.0e-6;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new PhaseMeasurementCreator(context,
                                                                                            Frequency.E01,
-                                                                                           ambiguity),
+                                                                                           ambiguity,
+                                                                                           satClockOffset),
                                                                1.0, 3.0, 300.0);
 
         // Lists for results' storage - Used only for derivatives with respect to state
@@ -417,6 +430,16 @@ public class PhaseTest {
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
+        final double groundClockOffset =  12.0e-6;
+        for (final GroundStation station : context.stations) {
+            station.getClockOffsetDriver().setValue(groundClockOffset);
+        }
+        final int    ambiguity         = 1234;
+        final double satClockOffset    = 345.0e-6;
+        final PhaseMeasurementCreator creator = new PhaseMeasurementCreator(context, Frequency.E01,
+                                                                            ambiguity,
+                                                                            satClockOffset);
+        creator.getSatellite().getClockOffsetDriver().setSelected(true);
         for (final GroundStation station : context.stations) {
             station.getClockOffsetDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
@@ -425,13 +448,8 @@ public class PhaseTest {
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final int ambiguity = 123456789;
         final List<ObservedMeasurement<?>> measurements =
-                        EstimationTestUtils.createMeasurements(propagator,
-                                                               new PhaseMeasurementCreator(context,
-                                                                                           Frequency.E01,
-                                                                                           ambiguity),
-                                                               1.0, 3.0, 300.0);
+                        EstimationTestUtils.createMeasurements(propagator, creator, 1.0, 3.0, 300.0);
 
         // List to store the results
         final List<Double> relErrorList = new ArrayList<Double>();
@@ -463,7 +481,8 @@ public class PhaseTest {
                         stationParameter.getClockOffsetDriver(),
                         stationParameter.getEastOffsetDriver(),
                         stationParameter.getNorthOffsetDriver(),
-                        stationParameter.getZenithOffsetDriver()
+                        stationParameter.getZenithOffsetDriver(),
+                        measurement.getSatellites().get(0).getClockOffsetDriver()
                     };
 
                     if (printResults) {
@@ -513,12 +532,13 @@ public class PhaseTest {
         // Print results ? Header
         if (printResults) {
             System.out.format(Locale.US, "%-15s  %-23s  %-23s  " +
-                              "%10s  %10s  %10s  %10s  %10s  %10s  %10s  %10s%n",
+                              "%10s  %10s  %10s  %10s  %10s  %10s  %10s  %10s  %10s  %10s%n",
                               "Station", "Measurement Date", "State Date",
-                              "Δt",   "rel Δt",
-                              "ΔdQx", "rel ΔdQx",
-                              "ΔdQy", "rel ΔdQy",
-                              "ΔdQz", "rel ΔdQz");
+                              "Δt",    "rel Δt",
+                              "ΔdQx",  "rel ΔdQx",
+                              "ΔdQy",  "rel ΔdQy",
+                              "ΔdQz",  "rel ΔdQz",
+                              "Δtsat", "rel Δtsat");
          }
 
         // Propagate to final measurement's date
@@ -548,13 +568,13 @@ public class PhaseTest {
     @Test
     public void testStateDerivativesWithTroposphericModifier() {
 
-        final boolean printResults = false;
-        final double refErrorsPMedian = 5.9e-10;
-        final double refErrorsPMean = 2.6e-9;
-        final double refErrorsPMax = 8.4e-8;
-        final double refErrorsVMedian = 1.8e-5;
-        final double refErrorsVMean = 6.5e-5;
-        final double refErrorsVMax = 2.2e-3;
+        final boolean printResults     = false;
+        final double  refErrorsPMedian = 5.9e-10;
+        final double  refErrorsPMean   = 3.5e-9;
+        final double  refErrorsPMax    = 1.1e-7;
+        final double  refErrorsVMedian = 2.0e-5;
+        final double  refErrorsVMean   = 5.8e-5;
+        final double  refErrorsVMax    = 2.1e-3;
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -565,11 +585,18 @@ public class PhaseTest {
         // Create perfect range measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final double groundClockOffset =  12.0e-6;
+        for (final GroundStation station : context.stations) {
+            station.getClockOffsetDriver().setValue(groundClockOffset);
+        }
+        final int    ambiguity         = 1234;
+        final double satClockOffset    = 345.0e-6;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new PhaseMeasurementCreator(context,
                                                                                            Frequency.E01,
-                                                                                           0),
+                                                                                           ambiguity,
+                                                                                           satClockOffset),
                                                                1.0, 3.0, 300.0);
 
         // Lists for results' storage - Used only for derivatives with respect to state
@@ -711,12 +738,12 @@ public class PhaseTest {
     public void testStateDerivativesWithIonosphericModifier() {
 
         final boolean printResults = false;
-        final double refErrorsPMedian = 5.7e-10;
-        final double refErrorsPMean = 3.3e-9;
-        final double refErrorsPMax = 1.9e-7;
-        final double refErrorsVMedian = 1.8e-5;
-        final double refErrorsVMean = 6.6e-5;
-        final double refErrorsVMax = 2.2e-3;
+        final double refErrorsPMedian = 5.1e-10;
+        final double refErrorsPMean = 2.6e-9;
+        final double refErrorsPMax = 7.8e-8;
+        final double refErrorsVMedian = 2.0e-5;
+        final double refErrorsVMean = 6.0e-5;
+        final double refErrorsVMax = 2.1e-3;
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -727,11 +754,18 @@ public class PhaseTest {
         // Create perfect range measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final double groundClockOffset =  12.0e-6;
+        for (final GroundStation station : context.stations) {
+            station.getClockOffsetDriver().setValue(groundClockOffset);
+        }
+        final int    ambiguity         = 1234;
+        final double satClockOffset    = 345.0e-6;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new PhaseMeasurementCreator(context,
                                                                                            Frequency.E01,
-                                                                                           0),
+                                                                                           ambiguity,
+                                                                                           satClockOffset),
                                                                1.0, 3.0, 300.0);
 
         // Lists for results' storage - Used only for derivatives with respect to state

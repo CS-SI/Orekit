@@ -26,6 +26,7 @@ import org.orekit.attitudes.LofOffset;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeMeasurementCreator;
@@ -57,7 +58,7 @@ public class OnBoardAntennaRangeModifierTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> spacecraftCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p1,
-                                                               new RangeMeasurementCreator(context, Vector3D.ZERO, 0.0),
+                                                               new RangeMeasurementCreator(context, Vector3D.ZERO),
                                                                1.0, 3.0, 300.0);
 
         // create perfect range measurements with antenna offset
@@ -66,7 +67,7 @@ public class OnBoardAntennaRangeModifierTest {
                                                                    propagatorBuilder);
         final List<ObservedMeasurement<?>> antennaCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p2,
-                                                               new RangeMeasurementCreator(context, new Vector3D(xOffset, 0, 0), 0.0),
+                                                               new RangeMeasurementCreator(context, new Vector3D(xOffset, 0, 0)),
                                                                1.0, 3.0, 300.0);
 
         for (int i = 0; i < spacecraftCenteredMeasurements.size(); ++i) {
@@ -88,13 +89,17 @@ public class OnBoardAntennaRangeModifierTest {
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
         propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
+        final double groundClockOffset = 1.234e-3;
+        for (final GroundStation station : context.stations) {
+            station.getClockOffsetDriver().setValue(groundClockOffset);
+        }
 
         // create perfect range measurements without antenna offset
         final Propagator p1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> spacecraftCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p1,
-                                                               new RangeMeasurementCreator(context, Vector3D.ZERO, 0.0),
+                                                               new RangeMeasurementCreator(context, Vector3D.ZERO),
                                                                1.0, 3.0, 300.0);
 
         // create perfect range measurements with antenna offset
@@ -103,7 +108,7 @@ public class OnBoardAntennaRangeModifierTest {
                                                                    propagatorBuilder);
         final List<ObservedMeasurement<?>> antennaCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p2,
-                                                               new RangeMeasurementCreator(context, apc, 0.0),
+                                                               new RangeMeasurementCreator(context, apc),
                                                                1.0, 3.0, 300.0);
 
         final Propagator p3 = EstimationTestUtils.createPropagator(context.initialOrbit,

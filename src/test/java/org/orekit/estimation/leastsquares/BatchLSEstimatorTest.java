@@ -265,7 +265,7 @@ public class BatchLSEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context, antennaPhaseCenter, 0.0),
+                                                               new RangeMeasurementCreator(context, antennaPhaseCenter),
                                                                1.0, 3.0, 300.0);
 
         // create orbit estimator
