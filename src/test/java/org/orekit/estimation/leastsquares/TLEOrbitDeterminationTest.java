@@ -48,7 +48,6 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEConstants;
-import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 import org.orekit.propagation.conversion.TLEPropagatorBuilder;
 import org.orekit.utils.IERSConventions;
@@ -220,19 +219,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         odPV = temeToEme2000.transformPVCoordinates(odPV);
         final Vector3D estimatedPos = odPV.getPosition();
         final Vector3D estimatedVel = odPV.getVelocity();
-        TimeStampedPVCoordinates firstGuessPV = TLEPropagator.selectExtrapolator(templateTLE).getInitialState().getPVCoordinates();
-        firstGuessPV = temeToEme2000.transformPVCoordinates(firstGuessPV);
-        final double firstGuessError = Vector3D.distance(firstGuessPV.getPosition(), refPos);
-        final double finalError = Vector3D.distance(estimatedPos, refPos);
-        
-        //display final results
-        System.out.println("      ");
-        System.out.println("------------------ First Guess Error with respect to Reference position---------------- ");
-        System.out.format("%n Initial Position Error = %f (m)%n   ", firstGuessError);
-        System.out.println("      ");
-        System.out.println("--------------------- Final Error with respect to Reference position------------------- ");
-        System.out.format("%n Final Position Error = %f (m)%n%n", finalError);
-        
+
         //test on position and velocity errors with respect to reference PV
         Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
         Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
@@ -246,7 +233,5 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         Assert.assertEquals(RefStatRange[1], odLageos2.getRangeStat().getMax(),               distanceAccuracy);
         Assert.assertEquals(RefStatRange[2], odLageos2.getRangeStat().getMean(),              distanceAccuracy);
         Assert.assertEquals(RefStatRange[3], odLageos2.getRangeStat().getStandardDeviation(), distanceAccuracy);
-
     }
-
 }

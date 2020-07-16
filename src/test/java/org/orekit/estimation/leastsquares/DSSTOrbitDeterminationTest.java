@@ -245,7 +245,6 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
         Assert.assertEquals(RefStatRange[1], odLageos2.getRangeStat().getMax(),               distanceAccuracy);
         Assert.assertEquals(RefStatRange[2], odLageos2.getRangeStat().getMean(),              distanceAccuracy);
         Assert.assertEquals(RefStatRange[3], odLageos2.getRangeStat().getStandardDeviation(), distanceAccuracy);
-
     }
 
     @Test

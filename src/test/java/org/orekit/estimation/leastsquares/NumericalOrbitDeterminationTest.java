@@ -18,7 +18,6 @@ package org.orekit.estimation.leastsquares;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -39,9 +38,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.estimation.common.AbstractOrbitDetermination;
 import org.orekit.estimation.common.ParameterKey;
 import org.orekit.estimation.common.ResultBatchLeastSquares;
-import org.orekit.files.sp3.SP3File;
-import org.orekit.files.sp3.SP3File.SP3Ephemeris;
-import org.orekit.files.sp3.SP3Parser;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.PolynomialParametricAcceleration;
 import org.orekit.forces.drag.DragForce;
@@ -56,12 +52,9 @@ import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
-import org.orekit.frames.FramesFactory;
-import org.orekit.frames.Transform;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 import org.orekit.time.TimeScalesFactory;
@@ -69,7 +62,6 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<NumericalPropagatorBuilder> {
 
@@ -260,7 +252,6 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         Assert.assertEquals(RefStatRange[1], odLageos2.getRangeStat().getMax(),               distanceAccuracy);
         Assert.assertEquals(RefStatRange[2], odLageos2.getRangeStat().getMean(),              distanceAccuracy);
         Assert.assertEquals(RefStatRange[3], odLageos2.getRangeStat().getStandardDeviation(), distanceAccuracy);
-
     }
 
     @Test
@@ -313,81 +304,6 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
 
     }
 
-    @Test
-    // Orbit determination for GNSS satellite based on range measurements
-    public void testGNSS2()
-        throws URISyntaxException, IllegalArgumentException, IOException,
-               OrekitException, ParseException {
-
-        // input in resources directory
-        final String inputPath = NumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/analytical/tle_od_test_GPS.in").toURI().getPath();
-        final File input  = new File(inputPath);
-
-        // configure Orekit data access
-        Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
-        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
-
-        //orbit determination run.
-        ResultBatchLeastSquares odGNSS = runBLS(input, true, true);
-
-        //test
-        //definition of the accuracy for the test
-
-        final double distanceAccuracy = 1.06;
-        final double velocityAccuracy = 2.26e-3;
-
-        //test on the convergence
-        final int numberOfIte  = 2;
-        final int numberOfEval = 3;
-
-        Assert.assertEquals(numberOfIte, odGNSS.getNumberOfIteration());
-        Assert.assertEquals(numberOfEval, odGNSS.getNumberOfEvaluation());
-
-        //test on the estimated position and velocity (reference from IGS-MGEX file com18836.sp3)
-        TimeStampedPVCoordinates pvODGNSS = odGNSS.getEstimatedPV();
-        final Transform eme2000ToGCRF = FramesFactory.getEME2000().getTransformTo(FramesFactory.getGCRF(), pvODGNSS.getDate());
-        pvODGNSS = eme2000ToGCRF.transformPVCoordinates(pvODGNSS);
-        final Vector3D estimatedPos = pvODGNSS.getPosition();
-        final Vector3D estimatedVel = pvODGNSS.getVelocity();
-        
-        // create reference position from GPS ephemris
-        final String ex = "/sp3/esa18836.sp3";
-        final SP3Parser parser = new SP3Parser();
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final SP3File file = parser.parse(inEntry);
-        SP3Ephemeris ephemeris = file.getSatellites().get("G07");
-        BoundedPropagator propagator = ephemeris.getPropagator();
-        final TimeStampedPVCoordinates ephem = propagator.propagate(pvODGNSS.getDate()).getPVCoordinates();
-        final Vector3D refPos = ephem.getPosition();
-        final Vector3D refVel = ephem.getVelocity();
-        
-        // calculate first guess and final error with respect to reference Position
-
-
-        final double finalError = Vector3D.distance(estimatedPos, refPos);
-
-
-        System.out.println("--------------------- Final Error with respect to Reference position------------------- ");
-        System.out.format("%n Position Error = %f (m)%n%n", finalError);
-
-        
-        Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
-        
-        Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
-        Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
-
-        //test on statistic for the range residuals
-        final long nbRangeInit     = 8981;
-        final long nbRangeExcluded = 305;
-        final double[] RefStatRange = { -3.847, 8.307, 0.0, 0.873 };
-        Assert.assertEquals(nbRangeInit - nbRangeExcluded, odGNSS.getRangeStat().getN());
-        Assert.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               1.0e-3);
-        Assert.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               1.0e-3);
-        Assert.assertEquals(RefStatRange[2], odGNSS.getRangeStat().getMean(),              1.0e-3);
-        Assert.assertEquals(RefStatRange[3], odGNSS.getRangeStat().getStandardDeviation(), 1.0e-3);
-
-    }
-    
     @Test
     // Orbit determination for range, azimuth elevation measurements
     public void testW3B()
