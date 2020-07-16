@@ -65,7 +65,7 @@ public class AbstractShapiroBaseModifier {
      * @param pvReceiver coordinates of receiver in body-centered frame
      * @return path dilation to add to raw measurement
      */
-    private double shapiroCorrection(final TimeStampedPVCoordinates pvEmitter, final TimeStampedPVCoordinates pvReceiver) {
+    protected double shapiroCorrection(final TimeStampedPVCoordinates pvEmitter, final TimeStampedPVCoordinates pvReceiver) {
         final Vector3D pEmitter  = pvEmitter.getPosition();
         final Vector3D pReceiver = pvReceiver.getPosition();
         final double   rEpR      = pEmitter.getNorm() + pReceiver.getNorm();

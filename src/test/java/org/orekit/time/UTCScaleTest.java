@@ -17,12 +17,12 @@
 package org.orekit.time;
 
 
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,6 +37,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -145,6 +146,49 @@ public class UTCScaleTest {
                 // after the minute of the leap
                 Assert.assertEquals(60, utc.minuteDuration(t0.shiftedBy(dt)));
             }
+        }
+    }
+
+    /**
+     * Check the consistency of minute duration with the other data in each offset. Checks
+     * table hard coded in UTCScale.
+     *
+     * @throws ReflectiveOperationException on error.
+     */
+    @Test
+    public void testMinuteDurationConsistentWithLeap() throws ReflectiveOperationException {
+        // setup
+        // get the offsets array, makes this test easier to write
+        Field field = UTCScale.class.getDeclaredField("offsets");
+        field.setAccessible(true);
+        UTCTAIOffset[] offsets = (UTCTAIOffset[]) field.get(utc);
+
+        // action
+        for (UTCTAIOffset offset : offsets) {
+            // average of start and end of leap second, definitely inside
+            final AbsoluteDate start = offset.getDate();
+            final AbsoluteDate end = offset.getValidityStart();
+            AbsoluteDate d = start.shiftedBy(end.durationFrom(start) / 2.0);
+            int excess = utc.minuteDuration(d) - 60;
+            double leap = offset.getLeap();
+            // verify
+            Assert.assertTrue(
+                    "at MJD" + offset.getMJD() + ": " + leap + " <= " + excess,
+                    leap <= excess);
+            Assert.assertTrue(leap > (excess - 1));
+            // before the leap starts but still in the same minute
+            d = start.shiftedBy(-30);
+            int newExcess = utc.minuteDuration(d) - 60;
+            double newLeap = offset.getLeap();
+            // verify
+            Assert.assertTrue(
+                    "at MJD" + offset.getMJD() + ": " + newLeap + " <= " + newExcess,
+                    newLeap <= newExcess);
+            Assert.assertTrue(leap > (excess - 1));
+            Assert.assertEquals(excess, newExcess);
+            Assert.assertEquals(leap, newLeap, 0.0);
+            Assert.assertThat("" + offset.getValidityStart(), leap,
+                    OrekitMatchers.numberCloseTo(end.durationFrom(start), 1e-16, 1));
         }
     }
 
@@ -395,6 +439,18 @@ public class UTCScaleTest {
         UTCScale deserialized  = (UTCScale) ois.readObject();
         Assert.assertTrue(utc == deserialized);
 
+    }
+
+    @Test
+    public void testFirstAndLast() {
+        // action
+        AbsoluteDate first = utc.getFirstKnownLeapSecond();
+        AbsoluteDate last = utc.getLastKnownLeapSecond();
+
+        // verify
+        //AbsoluteDate d = new AbsoluteDate(1961, 1, 1, utc);
+        Assert.assertEquals(new AbsoluteDate(2015, 6, 30, 23, 59, 60, utc), last);
+        Assert.assertEquals(new AbsoluteDate(1960, 12, 31, 23, 59, 60, utc), first);
     }
 
     @Before

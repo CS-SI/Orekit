@@ -52,7 +52,7 @@ public class AEMFile extends ADMFile {
     /**
      * Add a block to the list of ephemeris blocks.
      */
-    void addAttitudeBlock() {
+    public void addAttitudeBlock() {
         attitudeBlocks.add(new AttitudeEphemeridesBlock());
     }
 
@@ -67,7 +67,7 @@ public class AEMFile extends ADMFile {
     /**
      * Check that, according to the CCSDS standard, every AEMBlock has the same time system.
      */
-    void checkTimeSystems() {
+    public void checkTimeSystems() {
         final CcsdsTimeScale timeSystem = getAttitudeBlocks().get(0).getMetaData().getTimeSystem();
         for (final AttitudeEphemeridesBlock block : attitudeBlocks) {
             if (!timeSystem.equals(block.getMetaData().getTimeSystem())) {
@@ -212,7 +212,7 @@ public class AEMFile extends ADMFile {
          * Set the reference frame A name.
          * @param frame specifier as it appeared in the file.
          */
-        void setRefFrameAString(final String frame) {
+        public void setRefFrameAString(final String frame) {
             this.refFrameAString = frame;
         }
 
@@ -228,7 +228,7 @@ public class AEMFile extends ADMFile {
          * Set the reference frame B name.
          * @param frame specifier as it appeared in the file.
          */
-        void setRefFrameBString(final String frame) {
+        public void setRefFrameBString(final String frame) {
             this.refFrameBString = frame;
         }
 
@@ -244,7 +244,7 @@ public class AEMFile extends ADMFile {
          * Set the rate frame name.
          * @param frame specifier as it appeared in the file.
          */
-        void setRateFrameString(final String frame) {
+        public void setRateFrameString(final String frame) {
             this.rateFrameString = frame;
         }
 
@@ -260,7 +260,7 @@ public class AEMFile extends ADMFile {
          * Set the rotation direction of the attitude.
          * @param direction rotation direction to be set
          */
-        void setAttitudeDirection(final String direction) {
+        public void setAttitudeDirection(final String direction) {
             this.attitudeDir = direction;
         }
 
@@ -276,7 +276,7 @@ public class AEMFile extends ADMFile {
          * Set the format of the data lines in the message.
          * @param type format to be set
          */
-        void setAttitudeType(final String type) {
+        public void setAttitudeType(final String type) {
             this.attitudeType = type;
         }
 
@@ -292,7 +292,7 @@ public class AEMFile extends ADMFile {
          * Set the flag for the placement of the quaternion QC in the attitude data.
          * @param isFirst true if QC is the first element in the attitude data
          */
-        void setIsFirst(final boolean isFirst) {
+        public void setIsFirst(final boolean isFirst) {
             this.isFirst = isFirst;
         }
 
@@ -308,7 +308,7 @@ public class AEMFile extends ADMFile {
          * Set the rotation sequence of the Euler angles (e.g., 312, where X=1, Y=2, Z=3).
          * @param eulerRotSeq rotation sequence to be set
          */
-        void setEulerRotSeq(final String eulerRotSeq) {
+        public void setEulerRotSeq(final String eulerRotSeq) {
             this.eulerRotSeq = eulerRotSeq;
         }
 
@@ -341,7 +341,7 @@ public class AEMFile extends ADMFile {
          * Set start of total time span covered by attitude data.
          * @param startTime the time to be set
          */
-        void setStartTime(final AbsoluteDate startTime) {
+        public void setStartTime(final AbsoluteDate startTime) {
             this.startTime = startTime;
         }
 
@@ -357,7 +357,7 @@ public class AEMFile extends ADMFile {
          * Set end of total time span covered by attitude data.
          * @param stopTime the time to be set
          */
-        void setStopTime(final AbsoluteDate stopTime) {
+        public void setStopTime(final AbsoluteDate stopTime) {
             this.stopTime = stopTime;
         }
 
@@ -373,7 +373,7 @@ public class AEMFile extends ADMFile {
          * Set start of useable time span covered by attitude data.
          * @param useableStartTime the time to be set
          */
-        void setUseableStartTime(final AbsoluteDate useableStartTime) {
+        public void setUseableStartTime(final AbsoluteDate useableStartTime) {
             this.useableStartTime = useableStartTime;
         }
 
@@ -389,7 +389,7 @@ public class AEMFile extends ADMFile {
          * Set end of useable time span covered by ephemerides data.
          * @param useableStopTime the time to be set
          */
-        void setUseableStopTime(final AbsoluteDate useableStopTime) {
+        public void setUseableStopTime(final AbsoluteDate useableStopTime) {
             this.useableStopTime = useableStopTime;
         }
 
@@ -433,7 +433,7 @@ public class AEMFile extends ADMFile {
          * Set the interpolation method to be used.
          * @param interpolationMethod the interpolation method to be set
          */
-        void setInterpolationMethod(final String interpolationMethod) {
+        public void setInterpolationMethod(final String interpolationMethod) {
             this.interpolationMethod = interpolationMethod;
         }
 
@@ -449,7 +449,7 @@ public class AEMFile extends ADMFile {
          * Set the interpolation degree.
          * @param interpolationDegree the interpolation degree to be set
          */
-        void setInterpolationDegree(final int interpolationDegree) {
+        public void setInterpolationDegree(final int interpolationDegree) {
             this.interpolationDegree = interpolationDegree;
         }
 
@@ -463,7 +463,7 @@ public class AEMFile extends ADMFile {
         /** Set the attitude data lines comment.
          * @param ephemeridesDataLinesComment the comment to be set
          */
-        void setAttitudeDataLinesComment(final List<String> ephemeridesDataLinesComment) {
+        public void setAttitudeDataLinesComment(final List<String> ephemeridesDataLinesComment) {
             this.attitudeDataLinesComment = new ArrayList<String>(ephemeridesDataLinesComment);
         }
 
@@ -479,7 +479,7 @@ public class AEMFile extends ADMFile {
          * Set the rotation order for Euler angles.
          * @param order the rotation order to be set
          */
-        void setRotationOrder(final RotationOrder order) {
+        public void setRotationOrder(final RotationOrder order) {
             this.rotationOrder = order;
         }
 
@@ -496,7 +496,7 @@ public class AEMFile extends ADMFile {
          * a single satellite.
          * @param blocks containing ephemeris data for the satellite.
          */
-        AemSatelliteEphemeris(final List<AttitudeEphemeridesBlock> blocks) {
+        public AemSatelliteEphemeris(final List<AttitudeEphemeridesBlock> blocks) {
             this.blocks = blocks;
         }
 

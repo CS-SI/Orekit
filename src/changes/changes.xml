@@ -20,7 +20,37 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="10.2" date="TBD" description="TBD">
+    <release version="10.3" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="701">
+        Fixed wrong handling of propagation parameters by Kalman filter in multi-satellite
+        context
+      </action>
+    </release>
+    <release version="10.2" date="2020-07-14"
+             description="Version 10.2 is a minor release of Orekit.
+             It includes both new features and bug fixes. New features introduced
+             in 10.2 are: support for CCSDS ADM files, modelling of trajectories
+             around Lagrangian points using CR3BP model, a piece wise drag force model,
+             a time span tropospheric estimated model, an estimated ionospheric model,
+             an improved modelling of the GNSS phase measurement, several bug fixes
+             for date functionnalities, a new organization of the maneuvers package,
+             a configurable low thrust maneuver model based on detectors,
+             support for CSSI space weather data, , as well as several other minor
+             features and bug fixes. See the list below for a full description
+             of the changes.">
+      <action dev="bryan" type="fix" issue="661">
+        Fixed visibility of WindUpFactory.
+      </action>
+      <action dev="bryan" type="update" >
+        Increased visibility of setters in CCSDS ADM related classes.
+      </action>
+      <action dev="clement" type="add" issue="656">
+        Added CssiSpaceWeatherLoader which provides three-hourly space weather
+        data and implements DTM2000InputParameters and NRLMSISE00InputParameters
+      </action>
+      <action dev="maxime" type="update" issue="690">
+        Increased visibility of setters in CCSDS OEM related classes.
+      </action>
       <action dev="bryan" type="update" >
         Improved Orekit performance by using new Hipparchus' differentiation classes.
       </action>
@@ -33,6 +63,9 @@
       </action>
       <action dev="evan" type="add" issue="684">
         Add FieldFunctionalDetector.
+      </action>
+      <action dev="mikael" type="add">
+        Added a configurable low thrust maneuver based on detectors.
       </action>
       <action dev="bryan" type="fix" issue="605">
         Added support for Rinex C0, L0, S0 and D0 observation types.

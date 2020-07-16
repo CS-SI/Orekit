@@ -23,7 +23,7 @@ specifies the version. If this is the first time you download the library and
 you have not yet set up your own data set with UTC-TAI history, JPL ephemerides,
 IERS Earth Orientation Parameters ... you may want to also download the
 orekit-data.zip file which is an example file suitable for a quick start (see
-[configuration](./configuration.html) for further reading about data configuration).
+[configuration](./data/default-configuration.html) for further reading about data configuration).
 
 It is also possible to retrieve published versions from the Git repository
 (see next section below), if retrieving either release-x.y branches or the
