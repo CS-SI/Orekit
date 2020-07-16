@@ -206,8 +206,8 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         final int numberOfIte  = 10;
         final int numberOfEval = 10;
 
-        //Assert.assertEquals(numberOfIte, odLageos2.getNumberOfIteration());
-        //Assert.assertEquals(numberOfEval, odLageos2.getNumberOfEvaluation());
+        Assert.assertEquals(numberOfIte, odLageos2.getNumberOfIteration());
+        Assert.assertEquals(numberOfEval, odLageos2.getNumberOfEvaluation());
 
         //test on the estimated position and velocity
         TimeStampedPVCoordinates odPV = odLageos2.getEstimatedPV();

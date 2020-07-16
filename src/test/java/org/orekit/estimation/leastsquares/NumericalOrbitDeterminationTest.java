@@ -40,8 +40,8 @@ import org.orekit.estimation.common.AbstractOrbitDetermination;
 import org.orekit.estimation.common.ParameterKey;
 import org.orekit.estimation.common.ResultBatchLeastSquares;
 import org.orekit.files.sp3.SP3File;
-import org.orekit.files.sp3.SP3Parser;
 import org.orekit.files.sp3.SP3File.SP3Ephemeris;
+import org.orekit.files.sp3.SP3Parser;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.PolynomialParametricAcceleration;
 import org.orekit.forces.drag.DragForce;
@@ -62,15 +62,14 @@ import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
-import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<NumericalPropagatorBuilder> {
 
@@ -341,8 +340,8 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         final int numberOfIte  = 2;
         final int numberOfEval = 3;
 
-        //Assert.assertEquals(numberOfIte, odGNSS.getNumberOfIteration());
-        //Assert.assertEquals(numberOfEval, odGNSS.getNumberOfEvaluation());
+        Assert.assertEquals(numberOfIte, odGNSS.getNumberOfIteration());
+        Assert.assertEquals(numberOfEval, odGNSS.getNumberOfEvaluation());
 
         //test on the estimated position and velocity (reference from IGS-MGEX file com18836.sp3)
         TimeStampedPVCoordinates pvODGNSS = odGNSS.getEstimatedPV();
