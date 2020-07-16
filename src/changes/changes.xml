@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.3" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="699">
+        Fixed missing measurement parameter in Phase measurement
+      </action>
       <action dev="luc" type="fix" issue="701">
         Fixed wrong handling of propagation parameters by Kalman filter in multi-satellite
         context
