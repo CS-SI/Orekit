@@ -161,6 +161,9 @@ public class IonoModifierTest {
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         final double groundClockOffset =  12.0e-6;
+        for (final GroundStation station : context.stations) {
+            station.getClockOffsetDriver().setValue(groundClockOffset);
+        }
         final double satClockOffset    = 345.0e-6;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
@@ -229,6 +232,9 @@ public class IonoModifierTest {
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         final double groundClockOffset =  12.0e-6;
+        for (final GroundStation station : context.stations) {
+            station.getClockOffsetDriver().setValue(groundClockOffset);
+        }
         final double satClockOffset    = 345.0e-6;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,

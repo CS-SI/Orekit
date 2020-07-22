@@ -25,6 +25,7 @@ import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
+import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.estimation.measurements.gnss.PhaseMeasurementCreator;
@@ -59,6 +60,9 @@ public class ShapiroPhaseModifierTest {
                                                                            propagatorBuilder);
         final int    ambiguity         = 1234;
         final double groundClockOffset =  12.0e-6;
+        for (final GroundStation station : context.stations) {
+            station.getClockOffsetDriver().setValue(groundClockOffset);
+        }
         final double satClockOffset    = 345.0e-6;
         List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
