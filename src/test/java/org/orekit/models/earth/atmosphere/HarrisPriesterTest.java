@@ -33,7 +33,6 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.models.earth.atmosphere.HarrisPriester;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;

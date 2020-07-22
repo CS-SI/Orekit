@@ -31,7 +31,6 @@ import org.orekit.data.BodiesElements;
 import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.models.earth.displacement.TidalDisplacement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
