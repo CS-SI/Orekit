@@ -69,7 +69,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     // CHECKSTYLE: stop VisibilityModifier check
 
     /** Initial state. */
-    protected final TLE tle;
+    protected TLE tle;
 
     /** UTC time scale. */
     protected final TimeScale utc;
@@ -535,6 +535,10 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     /** {@inheritDoc} */
     public void resetInitialState(final SpacecraftState state) {
         super.resetInitialState(state);
+        final TLE newTLE = TLEGradientConverter.stateToTLE(state, tle);
+        this.tle = newTLE;
+        initializeCommons();
+        sxpInitialize();
     }
 
     /** {@inheritDoc} */

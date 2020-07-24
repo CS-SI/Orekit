@@ -835,6 +835,15 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
                     lowerBound, upperBound);
         }
     }
+    /*
+     * Convert FieldTLE into TLE.
+     * @return TLE
+     */
+    public TLE toTLE() {
+        return new TLE(getSatelliteNumber(), getClassification(), getLaunchYear(), getLaunchNumber(), getLaunchPiece(), getEphemerisType(),
+                       getElementNumber(), getDate().toAbsoluteDate(), getMeanMotion().getReal(), getMeanMotionFirstDerivative().getReal(), getMeanMotionSecondDerivative().getReal(),
+                       getE().getReal(), getI().getReal(), getPerigeeArgument().getReal(), getRaan().getReal(), getMeanAnomaly().getReal(), getRevolutionNumberAtEpoch(), getBStar(), getUtc());
+    }
 
     /** Check if this tle equals the provided tle.
      * <p>Due to the difference in precision between object and string
