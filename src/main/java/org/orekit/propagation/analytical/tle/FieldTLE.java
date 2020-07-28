@@ -840,9 +840,17 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
      * @return TLE
      */
     public TLE toTLE() {
-        return new TLE(getSatelliteNumber(), getClassification(), getLaunchYear(), getLaunchNumber(), getLaunchPiece(), getEphemerisType(),
-                       getElementNumber(), getDate().toAbsoluteDate(), getMeanMotion().getReal(), getMeanMotionFirstDerivative().getReal(), getMeanMotionSecondDerivative().getReal(),
-                       getE().getReal(), getI().getReal(), getPerigeeArgument().getReal(), getRaan().getReal(), getMeanAnomaly().getReal(), getRevolutionNumberAtEpoch(), getBStar(), getUtc());
+        final TLE regularTLE = new TLE(getSatelliteNumber(), getClassification(), getLaunchYear(), getLaunchNumber(), getLaunchPiece(), getEphemerisType(),
+                                       getElementNumber(), getDate().toAbsoluteDate(), getMeanMotion().getReal(), getMeanMotionFirstDerivative().getReal(),
+                                       getMeanMotionSecondDerivative().getReal(), getE().getReal(), getI().getReal(), getPerigeeArgument().getReal(),
+                                       getRaan().getReal(), getMeanAnomaly().getReal(), getRevolutionNumberAtEpoch(), getBStar(), getUtc());
+
+        for (int k = 0; k < regularTLE.getParametersDrivers().length; ++k) {
+            regularTLE.getParametersDrivers()[k].setSelected(getParametersDrivers()[k].isSelected());
+        }
+
+        return regularTLE;
+
     }
 
     /** Check if this tle equals the provided tle.

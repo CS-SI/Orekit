@@ -435,6 +435,7 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
                                           rangeCounter.format(8), rangeRateCounter.format(8),
                                           angularCounter.format(8), pvCounter.format(8));
                     }
+                    
                     previousPV = currentPV;
                 }
             });
@@ -446,7 +447,7 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
             logEvaluation(entry.getValue(),
                           rangeLog, rangeRateLog, azimuthLog, elevationLog, positionLog, velocityLog);
         }
-
+        
         final ParameterDriversList propagatorParameters   = estimator.getPropagatorParametersDrivers(true);
         final ParameterDriversList measurementsParameters = estimator.getMeasurementsParametersDrivers(true);
         return new ResultBatchLeastSquares(propagatorParameters, measurementsParameters,
@@ -454,7 +455,7 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
                                            rangeLog.createStatisticsSummary(),  rangeRateLog.createStatisticsSummary(),
                                            azimuthLog.createStatisticsSummary(),  elevationLog.createStatisticsSummary(),
                                            positionLog.createStatisticsSummary(),  velocityLog.createStatisticsSummary(),
-                                           estimator.getPhysicalCovariances(1.0e-10));
+                                           estimator.getPhysicalCovariances(1.0e-15));
 
     }
 
@@ -1914,7 +1915,14 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
                             if (stationData.getRangeTroposphericCorrection() != null) {
                                 range.addModifier(stationData.getRangeTroposphericCorrection());
                             }
-                            addIfNonZeroWeight(range, measurements);
+                            //TODO  TLE OD modification
+                            final AbsoluteDate date0 = new AbsoluteDate(2016, 2, 13, 0, 0, 0., TimeScalesFactory.getUTC());
+                            final double dt = range.getDate().durationFrom(date0);
+                            final double tmin = 30600;
+                            final double tmax = 50400;
+                            if (dt > tmin && dt < tmax) {
+                                addIfNonZeroWeight(range, measurements);
+                            }
 
                         } 
                         /*
@@ -2218,5 +2226,4 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
             }
         }
     }
-
 }

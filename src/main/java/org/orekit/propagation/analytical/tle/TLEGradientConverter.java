@@ -134,7 +134,7 @@ public class TLEGradientConverter extends AbstractGradientConverter {
 
             // TLE
             final FieldTLE<Gradient> tle0 = p0.getTLE();
-            final Gradient gMeanMotion   = extend(tle0.getMeanMotion(), freeParameters);
+            final Gradient gMeanMotion  = extend(tle0.getMeanMotion(), freeParameters);
             final Gradient ge           = extend(tle0.getE(), freeParameters);
             final Gradient gi           = extend(tle0.getI(), freeParameters);
             final Gradient graan        = extend(tle0.getRaan(), freeParameters);
@@ -242,7 +242,8 @@ public class TLEGradientConverter extends AbstractGradientConverter {
 
             // recompute the state from the current TLE
             final Gradient[] parameters = new Gradient[1];
-            parameters[0] = Gradient.constant(FREE_STATE_PARAMETERS, current.getBStar());
+            //parameters[0] = Gradient.constant(FREE_STATE_PARAMETERS, current.getBStar());
+            parameters[0] = zero.add(current.getBStar());
             final FieldTLEPropagator<Gradient> propagator = FieldTLEPropagator.selectExtrapolator(current, parameters);
             final FieldSpacecraftState<Gradient> recoveredState = propagator.getInitialState();
             final FieldOrbit<Gradient> recoveredOrbit = recoveredState.getOrbit();
@@ -350,8 +351,14 @@ public class TLEGradientConverter extends AbstractGradientConverter {
         final Gradient gMeanMotionFirstDerivative = Gradient.constant(FREE_STATE_PARAMETERS, templateTLE.getMeanMotionFirstDerivative());
         final Gradient gMeanMotionSecondDerivative = Gradient.constant(FREE_STATE_PARAMETERS, templateTLE.getMeanMotionSecondDerivative());
 
-        return new FieldTLE<Gradient>(satelliteNumber, classification, launchYear, launchNumber, launchPiece, ephemerisType,
+        final FieldTLE<Gradient> newTLE = new FieldTLE<Gradient>(satelliteNumber, classification, launchYear, launchNumber, launchPiece, ephemerisType,
                        elementNumber, epoch, gMeanMotion, gMeanMotionFirstDerivative, gMeanMotionSecondDerivative,
                        ge, gi, gpa, graan, gMeanAnomaly, revolutionNumberAtEpoch, bStar, templateTLE.getUtc());
+
+        for (int k = 0; k < newTLE.getParametersDrivers().length; ++k) {
+            newTLE.getParametersDrivers()[k].setSelected(templateTLE.getParametersDrivers()[k].isSelected());
+        }
+
+        return newTLE;
     }
 }

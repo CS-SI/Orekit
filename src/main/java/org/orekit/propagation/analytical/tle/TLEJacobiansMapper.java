@@ -214,7 +214,7 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
         // the previous derivatives correspond to state transition matrix with mean motion as 1rst element instead of semi major axis
         for (int i = 0; i < dim; i++) {
             for (int j = 0; j < dim; j++) {
-                stateTransition[j + dim * i] += stateGrad[i][j];
+                stateTransition[j + dim * i] = stateGrad[i][j];
 
                 // retrieving dElement/dA from dElement/dMeanMotion
                 if (j == 0) {
@@ -225,7 +225,7 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
         final int columnTop = dim * dim;
         for (int k = 0; k < paramDim; k++) {
             for (int i = 0; i < dim; ++i) {
-                stateTransition[columnTop + (i + dim * k)] += paramGrad[i][k];
+                stateTransition[columnTop + (i + dim * k)] = paramGrad[i][k];
             }
         }
     }
