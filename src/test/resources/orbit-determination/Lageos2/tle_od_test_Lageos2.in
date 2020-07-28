@@ -309,7 +309,7 @@ ground.station.ionospheric.hion.value          [3] = 350e3
 
 ### Measurements parameters
 range.outlier.rejection.multiplier              = 6
-range.outlier.rejection.starting.iteration      = 2
+range.outlier.rejection.starting.iteration      = 1
 range.rate.outlier.rejection.multiplier         = 6
 range.rate.outlier.rejection.starting.iteration = 2
 az.el.outlier.rejection.multiplier              = 6
