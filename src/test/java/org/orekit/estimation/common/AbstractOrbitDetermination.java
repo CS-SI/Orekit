@@ -1919,30 +1919,6 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
                             addIfNonZeroWeight(range, measurements);
 
                         } 
-                        /*
-                        else if (od.getObservationType().getMeasurementType() == MeasurementType.DOPPLER) {
-                            // this is a measurement we want
-                            final String stationName = observationDataSet.getHeader().getMarkerName() + "/" + od.getObservationType();
-                            final StationData stationData = stations.get(stationName);
-                            if (stationData == null) {
-                                throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
-                                                          stationName + notConfigured);
-                            }
-                            final RangeRate rangeRate = new RangeRate(stationData.getStation(), observationDataSet.getDate(),
-                                                                      od.getValue(), stationData.getRangeRateSigma(),
-                                                                      weights.getRangeRateBaseWeight(), false, satellite);
-                            if (stationData.getIonosphericModel() != null) {
-                                final RangeRateIonosphericDelayModifier ionoModifier = new RangeRateIonosphericDelayModifier(stationData.getIonosphericModel(),
-                                                                                                                             od.getObservationType().getFrequency(system).getMHzFrequency() * 1.0e6,
-                                                                                                                             false);
-                                rangeRate.addModifier(ionoModifier);
-                            }
-                            if (stationData.getRangeRateBias() != null) {
-                                rangeRate.addModifier(stationData.getRangeRateBias());
-                            }
-                            addIfNonZeroWeight(rangeRate, measurements);
-                        }
-                        */
                     }
                 }
             }
