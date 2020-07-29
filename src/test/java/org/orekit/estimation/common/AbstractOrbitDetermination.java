@@ -1915,14 +1915,8 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
                             if (stationData.getRangeTroposphericCorrection() != null) {
                                 range.addModifier(stationData.getRangeTroposphericCorrection());
                             }
-                            //TODO  TLE OD modification
-                            final AbsoluteDate date0 = new AbsoluteDate(2016, 2, 13, 0, 0, 0., TimeScalesFactory.getUTC());
-                            final double dt = range.getDate().durationFrom(date0);
-                            final double tmin = 30600;
-                            final double tmax = 50400;
-                            if (dt > tmin && dt < tmax) {
-                                addIfNonZeroWeight(range, measurements);
-                            }
+                            
+                            addIfNonZeroWeight(range, measurements);
 
                         } 
                         /*

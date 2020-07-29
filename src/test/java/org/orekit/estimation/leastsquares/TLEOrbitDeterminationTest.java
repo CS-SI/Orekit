@@ -167,88 +167,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
                                        final AttitudeProvider attitudeProvider) {
         propagatorBuilder.setAttitudeProvider(attitudeProvider);
     }
-/*
-    @Test
-    // Orbit determination using only mean elements for Lageos2 based on SLR (range) measurements
-    public void testLageos2()
-        throws URISyntaxException, IllegalArgumentException, IOException,
-               OrekitException, ParseException {
-        
-        // input in resources directory
-        final String inputPath = TLEOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/tle_od_test_Lageos2.in").toURI().getPath();
-        final File input  = new File(inputPath);
 
-        // configure Orekit data access
-        Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
-        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
-
-        // initiate TLE
-        final String line1 = "1 22195U 92070B   16045.51027931 -.00000009  00000-0  00000+0 0  9990";
-        final String line2 = "2 22195  52.6508 132.9147 0137738 336.2706   1.6348  6.47294052551192";
-        templateTLE = new TLE(line1, line2);
-        templateTLE.getParametersDrivers()[0].setSelected(false);
-
-        //orbit determination run.
-        ResultBatchLeastSquares odLageos2 = runBLS(input, true, true);
-
-        //test
-        //definition of the accuracy for the test
-        final double distanceAccuracy = 102.24;
-        final double velocityAccuracy = 8.22e-2;
-
-        //test on the convergence
-        final int numberOfIte  = 10;
-        final int numberOfEval = 10;
-
-        //Assert.assertEquals(numberOfIte, odLageos2.getNumberOfIteration());
-        //Assert.assertEquals(numberOfEval, odLageos2.getNumberOfEvaluation());
-
-        //test on the estimated position and velocity
-        TimeStampedPVCoordinates odPV = odLageos2.getEstimatedPV();
-
-        final Vector3D refPos = new Vector3D(-5532131.956902, 10025696.592156, -3578940.040009);
-        final Vector3D refVel = new Vector3D(-3871.275109, -607.880985, 4280.972530);
-
-        // calculate first guess and final error with respect to reference Position
-        final Transform temeToEme2000 = FramesFactory.getTEME().getTransformTo(FramesFactory.getEME2000(), odPV.getDate());
-        odPV = temeToEme2000.transformPVCoordinates(odPV);
-        final Vector3D estimatedPos = odPV.getPosition();
-        final Vector3D estimatedVel = odPV.getVelocity();
-
-        // calculate first guess and final error with respect to reference Position
-        TimeStampedPVCoordinates firstGuessPV = TLEPropagator.selectExtrapolator(templateTLE).getInitialState().getPVCoordinates();
-        firstGuessPV = temeToEme2000.transformPVCoordinates(firstGuessPV);
-        final double firstGuessError = Vector3D.distance(firstGuessPV.getPosition(), refPos);
-        final double finalError = Vector3D.distance(estimatedPos, refPos);
-        final double displacement = Vector3D.distance(firstGuessPV.getPosition(), estimatedPos);
-        System.out.println("      ");
-        System.out.println("------------------ First Guess Error with respect to Reference position---------------- ");
-        System.out.format("%n Position Error = %f (m)%n   ", firstGuessError);
-        System.out.println("      ");
-        System.out.println("--------------------- Final Error with respect to Reference position------------------- ");
-        System.out.format("%n Position Error = %f (m)%n%n", finalError);
-        System.out.println("-------------------- Final Error with respect to First Guess position------------------ ");
-        System.out.format("%n Position displacement = %f (m)%n%n", displacement);
-        System.out.println("-----------------------------------Residus----------------------------------------------");
-        System.out.println(odLageos2.getRangeStat().getMean());
-        System.out.println(odLageos2.getRangeStat().getStandardDeviation());
-
-        //test on position and velocity errors with respect to reference PV
-        Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
-        Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
-
-        //test on statistic for the range residuals
-        final long nbRange = 258;
-        //final double[] RefStatRange = { -2.795816, 6.171529, 0.310848, 1.657809 };
-        final double[] RefStatRange = { -295.1214, 307.5015, 0.038483, 117.8985 };
-        Assert.assertEquals(nbRange, odLageos2.getRangeStat().getN());
-        Assert.assertEquals(RefStatRange[0], odLageos2.getRangeStat().getMin(),               distanceAccuracy);
-        Assert.assertEquals(RefStatRange[1], odLageos2.getRangeStat().getMax(),               distanceAccuracy);
-        Assert.assertEquals(RefStatRange[2], odLageos2.getRangeStat().getMean(),              distanceAccuracy);
-        Assert.assertEquals(RefStatRange[3], odLageos2.getRangeStat().getStandardDeviation(), distanceAccuracy);
-    }
-
-*/  
     @Test
     // Orbit determination using only mean elements for GNSS satellite based on range measurements
     public void testGNSS()
@@ -302,8 +221,8 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
         
         //test on statistic for the range residuals
-        final long nbRange = 8206;
-        final double[] RefStatRange = { -14.564, 36.821, 3.209, 7.068 };
+        final long nbRange = 8211;
+        final double[] RefStatRange = { -14.653, 36.635, 3.207, 7.055 };
         
         Assert.assertEquals(nbRange, odGNSS.getRangeStat().getN());
         Assert.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               1.0e-3);
