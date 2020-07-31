@@ -280,7 +280,7 @@ public class TLERangeTest {
         }
 
         Assert.assertEquals(0.0, absErrorsMedian, 5.3e-04);
-        Assert.assertEquals(0.0, absErrorsMin,    5.0e-05);
+        Assert.assertEquals(0.0, absErrorsMin,    5.2e-05);
         Assert.assertEquals(0.0, absErrorsMax,    1.1e-03);
         Assert.assertEquals(0.0, relErrorsMedian, 5.3e-11);
         Assert.assertEquals(0.0, relErrorsMax,    8.9e-11);

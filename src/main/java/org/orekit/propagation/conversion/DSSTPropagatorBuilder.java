@@ -119,7 +119,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
                                  final PropagationType propagationType,
                                  final PropagationType stateType,
                                  final AttitudeProvider attitudeProvider) {
-        super(referenceOrbit, PositionAngle.MEAN, positionScale, true, attitudeProvider, true);
+        super(referenceOrbit, PositionAngle.MEAN, positionScale, true, attitudeProvider);
         this.builder           = builder;
         this.forceModels       = new ArrayList<DSSTForceModel>();
         this.mass              = Propagator.DEFAULT_MASS;
@@ -244,8 +244,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
     public DSSTBatchLSModel buildLSModel(final ODPropagatorBuilder[] builders,
                                 final List<ObservedMeasurement<?>> measurements,
                                 final ParameterDriversList estimatedMeasurementsParameters,
-                                final ModelObserver observer,
-                                final boolean estimateOrbit) {
+                                final ModelObserver observer) {
         return new DSSTBatchLSModel(builders,
                                     measurements,
                                     estimatedMeasurementsParameters,

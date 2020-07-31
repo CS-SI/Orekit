@@ -123,6 +123,7 @@ import org.orekit.models.earth.troposphere.GlobalMappingFunctionModel;
 import org.orekit.models.earth.troposphere.MappingFunction;
 import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
 import org.orekit.models.earth.troposphere.SaastamoinenModel;
+import org.orekit.models.earth.troposphere.TimeSpanEstimatedTroposphericModel;
 import org.orekit.models.earth.weather.GlobalPressureTemperatureModel;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CircularOrbit;
@@ -190,13 +191,11 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
      * @param builder first order integrator builder
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
-     * @param estimateOrbit true if orbital parameters are to be estimated, false otherwise. Only effetive with TLE Propagator Builder
      * @return propagator builder
      */
     protected abstract T createPropagatorBuilder(Orbit referenceOrbit,
                                                  ODEIntegratorBuilder builder,
-                                                 double positionScale,
-                                                 boolean estimateOrbit);
+                                                 double positionScale);
 
     /** Set satellite mass.
      * @param propagatorBuilder propagator builder
@@ -297,7 +296,7 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
         final AzimuthLog   azimuthLog   = new AzimuthLog();
         final ElevationLog elevationLog = new ElevationLog();
         final PositionLog  positionLog  = new PositionLog();
-        final VelocityLog  velocityLog  = new VelocityLog();
+        final VelocityLog  velocityLog  = new VelocityLog();  
 
         // gravity field
         createGravityField(parser);
@@ -326,32 +325,40 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
         final EvaluationRmsChecker rmsChecker = new EvaluationRmsChecker(relTol, absTol);
         estimator.setConvergenceChecker(rmsChecker);
 
+        // station data
+        Map<String, StationData>    stations;
         // sinex
-        SINEXLoader loader = null;
         if (parser.containsKey(ParameterKey.SINEX_FILES)) {
-            for (final String fileName : parser.getStringsList(ParameterKey.SINEX_FILES, ',')) {
-                // set up filtering for measurements files
-                NamedData nd = new NamedData(fileName, () -> new FileInputStream(new File(input.getParentFile(), fileName)));
-                for (final DataFilter filter : Arrays.asList(new GzipFilter(),
-                                                             new UnixCompressFilter(),
-                                                             new HatanakaCompressFilter())) {
-                    nd = filter.filter(nd);
+            SINEXLoader loader = null;
+            if (parser.containsKey(ParameterKey.SINEX_FILES)) {
+                for (final String fileName : parser.getStringsList(ParameterKey.SINEX_FILES, ',')) {
+                    // set up filtering for measurements files
+                    NamedData nd = new NamedData(fileName, () -> new FileInputStream(new File(input.getParentFile(), fileName)));
+                    for (final DataFilter filter : Arrays.asList(new GzipFilter(),
+                                                                 new UnixCompressFilter(),
+                                                                 new HatanakaCompressFilter())) {
+                        nd = filter.filter(nd);
+                    }
+                    loader = new SINEXLoader(nd.getStreamOpener().openStream(), nd.getName());
                 }
-                loader = new SINEXLoader(nd.getStreamOpener().openStream(), nd.getName());
             }
+            stations                 = createSinexStationsData(parser, conventions, body, loader);
+        }
+        
+        else {
+            stations                 = createStationsData(parser, conventions, body);
         }
 
-        final Map<String, StationData>    stations                 = createStationsData(parser, conventions, body, loader);
-        final PVData                      pvData                   = createPVData(parser);
-        final ObservableSatellite         satellite                = createObservableSatellite(parser);
-        final Bias<Range>                 satRangeBias             = createSatRangeBias(parser);
+        final PVData pvData                   = createPVData(parser);
+        final ObservableSatellite satellite                = createObservableSatellite(parser);
+        final Bias<Range> satRangeBias             = createSatRangeBias(parser);
         final OnBoardAntennaRangeModifier satAntennaRangeModifier  = createSatAntennaRangeModifier(parser);
-        final ShapiroRangeModifier        shapiroRangeModifier     = createShapiroRangeModifier(parser);
-        final Weights                     weights                  = createWeights(parser);
-        final OutlierFilter<Range>        rangeOutliersManager     = createRangeOutliersManager(parser, false);
-        final OutlierFilter<RangeRate>    rangeRateOutliersManager = createRangeRateOutliersManager(parser, false);
-        final OutlierFilter<AngularAzEl>  azElOutliersManager      = createAzElOutliersManager(parser, false);
-        final OutlierFilter<PV>           pvOutliersManager        = createPVOutliersManager(parser, false);
+        final ShapiroRangeModifier shapiroRangeModifier     = createShapiroRangeModifier(parser);
+        final Weights weights                  = createWeights(parser);
+        final OutlierFilter<Range> rangeOutliersManager     = createRangeOutliersManager(parser, false);
+        final OutlierFilter<RangeRate> rangeRateOutliersManager = createRangeRateOutliersManager(parser, false);
+        final OutlierFilter<AngularAzEl> azElOutliersManager      = createAzElOutliersManager(parser, false);
+        final OutlierFilter<PV> pvOutliersManager        = createPVOutliersManager(parser, false);
 
         // measurements
         final List<ObservedMeasurement<?>> independentMeasurements = new ArrayList<ObservedMeasurement<?>>();
@@ -440,7 +447,7 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
                 }
             });
         }
-        final Orbit estimated = estimator.estimate(estimateOrbit)[0].getInitialState().getOrbit();
+        final Orbit estimated = estimator.estimate()[0].getInitialState().getOrbit();
 
         // compute some statistics
         for (final Map.Entry<ObservedMeasurement<?>, EstimatedMeasurement<?>> entry : estimator.getLastEstimations().entrySet()) {
@@ -513,30 +520,40 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
         final T propagatorBuilder =
                         configurePropagatorBuilder(parser, conventions, body, initialGuess, true);
 
+        // station data
+        Map<String, StationData>    stations;
         // sinex
-        SINEXLoader loader = null;
-        for (final String fileName : parser.getStringsList(ParameterKey.SINEX_FILES, ',')) {
-            // set up filtering for measurements files
-            NamedData nd = new NamedData(fileName, () -> new FileInputStream(new File(input.getParentFile(), fileName)));
-            for (final DataFilter filter : Arrays.asList(new GzipFilter(),
-                                                         new UnixCompressFilter(),
-                                                         new HatanakaCompressFilter())) {
-                nd = filter.filter(nd);
+        if (parser.containsKey(ParameterKey.SINEX_FILES)) {
+            SINEXLoader loader = null;
+            if (parser.containsKey(ParameterKey.SINEX_FILES)) {
+                for (final String fileName : parser.getStringsList(ParameterKey.SINEX_FILES, ',')) {
+                    // set up filtering for measurements files
+                    NamedData nd = new NamedData(fileName, () -> new FileInputStream(new File(input.getParentFile(), fileName)));
+                    for (final DataFilter filter : Arrays.asList(new GzipFilter(),
+                                                                 new UnixCompressFilter(),
+                                                                 new HatanakaCompressFilter())) {
+                        nd = filter.filter(nd);
+                    }
+                    loader = new SINEXLoader(nd.getStreamOpener().openStream(), nd.getName());
+                }
             }
-            loader = new SINEXLoader(nd.getStreamOpener().openStream(), nd.getName());
+            stations                 = createSinexStationsData(parser, conventions, body, loader);
+        }
+        
+        else {
+            stations                 = createStationsData(parser, conventions, body);
         }
 
-        final Map<String, StationData>    stations                 = createStationsData(parser, conventions, body, loader);
-        final PVData                      pvData                   = createPVData(parser);
-        final ObservableSatellite         satellite                = createObservableSatellite(parser);
-        final Bias<Range>                 satRangeBias             = createSatRangeBias(parser);
+        final PVData pvData                   = createPVData(parser);
+        final ObservableSatellite satellite                = createObservableSatellite(parser);
+        final Bias<Range> satRangeBias             = createSatRangeBias(parser);
         final OnBoardAntennaRangeModifier satAntennaRangeModifier  = createSatAntennaRangeModifier(parser);
-        final ShapiroRangeModifier        shapiroRangeModifier     = createShapiroRangeModifier(parser);
-        final Weights                     weights                  = createWeights(parser);
-        final OutlierFilter<Range>        rangeOutliersManager     = createRangeOutliersManager(parser, true);
-        final OutlierFilter<RangeRate>    rangeRateOutliersManager = createRangeRateOutliersManager(parser, true);
-        final OutlierFilter<AngularAzEl>  azElOutliersManager      = createAzElOutliersManager(parser, true);
-        final OutlierFilter<PV>           pvOutliersManager        = createPVOutliersManager(parser, true);
+        final ShapiroRangeModifier shapiroRangeModifier     = createShapiroRangeModifier(parser);
+        final Weights weights                  = createWeights(parser);
+        final OutlierFilter<Range> rangeOutliersManager     = createRangeOutliersManager(parser, false);
+        final OutlierFilter<RangeRate> rangeRateOutliersManager = createRangeRateOutliersManager(parser, false);
+        final OutlierFilter<AngularAzEl> azElOutliersManager      = createAzElOutliersManager(parser, false);
+        final OutlierFilter<PV> pvOutliersManager        = createPVOutliersManager(parser, false);
 
         // measurements
         final List<ObservedMeasurement<?>> independentMeasurements = new ArrayList<ObservedMeasurement<?>>();
@@ -933,8 +950,7 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
 
         final T propagatorBuilder = createPropagatorBuilder(orbit,
                                                             new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
-                                                            positionScale,
-                                                            estimateOrbit);
+                                                            positionScale);
 
         // initial mass
         final double mass;
@@ -1267,14 +1283,14 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
         return shapiro;
     }
 
-    /** Set up stations.
+    /** Set up stations from Sinex data.
      * @param parser input file parser
      * @param conventions IERS conventions to use
      * @param body central body
      * @return name to station data map
           * @throws NoSuchElementException if input parameters are missing
      */
-    private Map<String, StationData> createStationsData(final KeyValueFileParser<ParameterKey> parser,
+    private Map<String, StationData> createSinexStationsData(final KeyValueFileParser<ParameterKey> parser,
                                                         final IERSConventions conventions,
                                                         final OneAxisEllipsoid body,
                                                         final SINEXLoader sinex)
@@ -1556,6 +1572,320 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
         return stations;
 
     }
+    
+    /** Set up stations.
+     * @param parser input file parser
+     * @param conventions IERS conventions to use
+     * @param body central body
+     * @return name to station data map
+          * @throws NoSuchElementException if input parameters are missing
+     */
+    private Map<String, StationData> createStationsData(final KeyValueFileParser<ParameterKey> parser,
+                                                        final IERSConventions conventions,
+                                                        final OneAxisEllipsoid body)
+        throws NoSuchElementException {
+
+        final Map<String, StationData> stations       = new HashMap<String, StationData>();
+
+        final String[]  stationNames                      = parser.getStringArray(ParameterKey.GROUND_STATION_NAME);
+        final double[]  stationLatitudes                  = parser.getAngleArray(ParameterKey.GROUND_STATION_LATITUDE);
+        final double[]  stationLongitudes                 = parser.getAngleArray(ParameterKey.GROUND_STATION_LONGITUDE);
+        final double[]  stationAltitudes                  = parser.getDoubleArray(ParameterKey.GROUND_STATION_ALTITUDE);
+        final boolean[] stationPositionEstimated          = parser.getBooleanArray(ParameterKey.GROUND_STATION_POSITION_ESTIMATED);
+        final double[]  stationClockOffsets               = parser.getDoubleArray(ParameterKey.GROUND_STATION_CLOCK_OFFSET);
+        final double[]  stationClockOffsetsMin            = parser.getDoubleArray(ParameterKey.GROUND_STATION_CLOCK_OFFSET_MIN);
+        final double[]  stationClockOffsetsMax            = parser.getDoubleArray(ParameterKey.GROUND_STATION_CLOCK_OFFSET_MAX);
+        final boolean[] stationClockOffsetEstimated       = parser.getBooleanArray(ParameterKey.GROUND_STATION_CLOCK_OFFSET_ESTIMATED);
+        final double[]  stationRangeSigma                 = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_SIGMA);
+        final double[]  stationRangeBias                  = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_BIAS);
+        final double[]  stationRangeBiasMin               = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_BIAS_MIN);
+        final double[]  stationRangeBiasMax               = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_BIAS_MAX);
+        final boolean[] stationRangeBiasEstimated         = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_BIAS_ESTIMATED);
+        final double[]  stationRangeRateSigma             = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_SIGMA);
+        final double[]  stationRangeRateBias              = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS);
+        final double[]  stationRangeRateBiasMin           = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS_MIN);
+        final double[]  stationRangeRateBiasMax           = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS_MAX);
+        final boolean[] stationRangeRateBiasEstimated     = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS_ESTIMATED);
+        final double[]  stationAzimuthSigma               = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_SIGMA);
+        final double[]  stationAzimuthBias                = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_BIAS);
+        final double[]  stationAzimuthBiasMin             = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_BIAS_MIN);
+        final double[]  stationAzimuthBiasMax             = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_BIAS_MAX);
+        final double[]  stationElevationSigma             = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_SIGMA);
+        final double[]  stationElevationBias              = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_BIAS);
+        final double[]  stationElevationBiasMin           = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_BIAS_MIN);
+        final double[]  stationElevationBiasMax           = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_BIAS_MAX);
+        final boolean[] stationAzElBiasesEstimated        = parser.getBooleanArray(ParameterKey.GROUND_STATION_AZ_EL_BIASES_ESTIMATED);
+        final boolean[] stationElevationRefraction        = parser.getBooleanArray(ParameterKey.GROUND_STATION_ELEVATION_REFRACTION_CORRECTION);
+        final boolean[] stationTroposphericModelEstimated = parser.getBooleanArray(ParameterKey.GROUND_STATION_TROPOSPHERIC_MODEL_ESTIMATED);
+        final double[]  stationTroposphericZenithDelay    = parser.getDoubleArray(ParameterKey.GROUND_STATION_TROPOSPHERIC_ZENITH_DELAY);
+        final boolean[] stationZenithDelayEstimated       = parser.getBooleanArray(ParameterKey.GROUND_STATION_TROPOSPHERIC_DELAY_ESTIMATED);
+        final boolean[] stationGlobalMappingFunction      = parser.getBooleanArray(ParameterKey.GROUND_STATION_GLOBAL_MAPPING_FUNCTION);
+        final boolean[] stationNiellMappingFunction       = parser.getBooleanArray(ParameterKey.GROUND_STATION_NIELL_MAPPING_FUNCTION);
+        final boolean[] stationWeatherEstimated           = parser.getBooleanArray(ParameterKey.GROUND_STATION_WEATHER_ESTIMATED);
+        final boolean[] stationRangeTropospheric          = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_TROPOSPHERIC_CORRECTION);
+        final boolean[] stationIonosphericCorrection      = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_IONOSPHERIC_CORRECTION);
+        final boolean[] stationIonosphericModelEstimated  = parser.getBooleanArray(ParameterKey.GROUND_STATION_IONOSPHERIC_MODEL_ESTIMATED);
+        final boolean[] stationVTECEstimated              = parser.getBooleanArray(ParameterKey.GROUND_STATION_IONOSPHERIC_VTEC_ESTIMATED);
+        final double[]  stationIonosphericVTEC            = parser.getDoubleArray(ParameterKey.GROUND_STATION_IONOSPHERIC_VTEC_VALUE);
+        final double[]  stationIonosphericHIon            = parser.getDoubleArray(ParameterKey.GROUND_STATION_IONOSPHERIC_HION_VALUE);
+
+        final TidalDisplacement tidalDisplacement;
+        if (parser.containsKey(ParameterKey.SOLID_TIDES_DISPLACEMENT_CORRECTION) &&
+            parser.getBoolean(ParameterKey.SOLID_TIDES_DISPLACEMENT_CORRECTION)) {
+            final boolean removePermanentDeformation =
+                            parser.containsKey(ParameterKey.SOLID_TIDES_DISPLACEMENT_REMOVE_PERMANENT_DEFORMATION) &&
+                            parser.getBoolean(ParameterKey.SOLID_TIDES_DISPLACEMENT_REMOVE_PERMANENT_DEFORMATION);
+            tidalDisplacement = new TidalDisplacement(Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
+                                                      Constants.JPL_SSD_SUN_EARTH_PLUS_MOON_MASS_RATIO,
+                                                      Constants.JPL_SSD_EARTH_MOON_MASS_RATIO,
+                                                      CelestialBodyFactory.getSun(),
+                                                      CelestialBodyFactory.getMoon(),
+                                                      conventions,
+                                                      removePermanentDeformation);
+        } else {
+            tidalDisplacement = null;
+        }
+
+        final OceanLoadingCoefficientsBLQFactory blqFactory;
+        if (parser.containsKey(ParameterKey.OCEAN_LOADING_CORRECTION) &&
+            parser.getBoolean(ParameterKey.OCEAN_LOADING_CORRECTION)) {
+            blqFactory = new OceanLoadingCoefficientsBLQFactory("^.*\\.blq$");
+        } else {
+            blqFactory = null;
+        }
+
+        final EOPHistory eopHistory = FramesFactory.findEOP(body.getBodyFrame());
+
+        for (int i = 0; i < stationNames.length; ++i) {
+
+            // displacements
+            final StationDisplacement[] displacements;
+            final OceanLoading oceanLoading = (blqFactory == null) ?
+                                              null :
+                                              new OceanLoading(body, blqFactory.getCoefficients(stationNames[i]));
+            if (tidalDisplacement == null) {
+                if (oceanLoading == null) {
+                    displacements = new StationDisplacement[0];
+                } else {
+                    displacements = new StationDisplacement[] {
+                        oceanLoading
+                    };
+                }
+            } else {
+                if (oceanLoading == null) {
+                    displacements = new StationDisplacement[] {
+                        tidalDisplacement
+                    };
+                } else {
+                    displacements = new StationDisplacement[] {
+                        tidalDisplacement, oceanLoading
+                    };
+                }
+            }
+
+            // the station itself
+            final GeodeticPoint position = new GeodeticPoint(stationLatitudes[i],
+                                                             stationLongitudes[i],
+                                                             stationAltitudes[i]);
+            final TopocentricFrame topo = new TopocentricFrame(body, position, stationNames[i]);
+            final GroundStation station = new GroundStation(topo, eopHistory, displacements);
+            station.getClockOffsetDriver().setReferenceValue(stationClockOffsets[i]);
+            station.getClockOffsetDriver().setValue(stationClockOffsets[i]);
+            station.getClockOffsetDriver().setMinValue(stationClockOffsetsMin[i]);
+            station.getClockOffsetDriver().setMaxValue(stationClockOffsetsMax[i]);
+            station.getClockOffsetDriver().setSelected(stationClockOffsetEstimated[i]);
+            station.getEastOffsetDriver().setSelected(stationPositionEstimated[i]);
+            station.getNorthOffsetDriver().setSelected(stationPositionEstimated[i]);
+            station.getZenithOffsetDriver().setSelected(stationPositionEstimated[i]);
+
+            // range
+            final double rangeSigma = stationRangeSigma[i];
+            final Bias<Range> rangeBias;
+            if (FastMath.abs(stationRangeBias[i])   >= Precision.SAFE_MIN || stationRangeBiasEstimated[i]) {
+                rangeBias = new Bias<Range>(new String[] { stationNames[i] + RANGE_BIAS_SUFFIX, },
+                                            new double[] { stationRangeBias[i] },
+                                            new double[] { rangeSigma },
+                                            new double[] { stationRangeBiasMin[i] },
+                                            new double[] { stationRangeBiasMax[i] });
+                rangeBias.getParametersDrivers().get(0).setSelected(stationRangeBiasEstimated[i]);
+            } else {
+                // bias fixed to zero, we don't need to create a modifier for this
+                rangeBias = null;
+            }
+
+            // range rate
+            final double rangeRateSigma = stationRangeRateSigma[i];
+            final Bias<RangeRate> rangeRateBias;
+            if (FastMath.abs(stationRangeRateBias[i])   >= Precision.SAFE_MIN || stationRangeRateBiasEstimated[i]) {
+                rangeRateBias = new Bias<RangeRate>(new String[] { stationNames[i] + RANGE_RATE_BIAS_SUFFIX },
+                                                    new double[] { stationRangeRateBias[i] },
+                                                    new double[] { rangeRateSigma },
+                                                    new double[] { stationRangeRateBiasMin[i] },
+                                                    new double[] {
+                                                        stationRangeRateBiasMax[i]
+                                                    });
+                rangeRateBias.getParametersDrivers().get(0).setSelected(stationRangeRateBiasEstimated[i]);
+            } else {
+                // bias fixed to zero, we don't need to create a modifier for this
+                rangeRateBias = null;
+            }
+
+            // angular biases
+            final double[] azELSigma = new double[] {
+                stationAzimuthSigma[i], stationElevationSigma[i]
+            };
+            final Bias<AngularAzEl> azELBias;
+            if (FastMath.abs(stationAzimuthBias[i])   >= Precision.SAFE_MIN ||
+                FastMath.abs(stationElevationBias[i]) >= Precision.SAFE_MIN ||
+                stationAzElBiasesEstimated[i]) {
+                azELBias = new Bias<AngularAzEl>(new String[] { stationNames[i] + AZIMUTH_BIAS_SUFFIX,
+                                                                stationNames[i] + ELEVATION_BIAS_SUFFIX },
+                                                 new double[] { stationAzimuthBias[i], stationElevationBias[i] },
+                                                 azELSigma,
+                                                 new double[] { stationAzimuthBiasMin[i], stationElevationBiasMin[i] },
+                                                 new double[] { stationAzimuthBiasMax[i], stationElevationBiasMax[i] });
+                azELBias.getParametersDrivers().get(0).setSelected(stationAzElBiasesEstimated[i]);
+                azELBias.getParametersDrivers().get(1).setSelected(stationAzElBiasesEstimated[i]);
+            } else {
+                // bias fixed to zero, we don't need to create a modifier for this
+                azELBias = null;
+            }
+
+            //Refraction correction
+            final AngularRadioRefractionModifier refractionCorrection;
+            if (stationElevationRefraction[i]) {
+                final double                     altitude        = station.getBaseFrame().getPoint().getAltitude();
+                final AtmosphericRefractionModel refractionModel = new EarthITU453AtmosphereRefraction(altitude);
+                refractionCorrection = new AngularRadioRefractionModifier(refractionModel);
+            } else {
+                refractionCorrection = null;
+            }
+
+
+            //Tropospheric correction
+            final RangeTroposphericDelayModifier rangeTroposphericCorrection;
+            if (stationRangeTropospheric[i]) {
+
+                MappingFunction mappingModel = null;
+                if (stationGlobalMappingFunction[i]) {
+                    mappingModel = new GlobalMappingFunctionModel(stationLatitudes[i],
+                                                                  stationLongitudes[i]);
+                } else if (stationNiellMappingFunction[i]) {
+                    mappingModel = new NiellMappingFunctionModel(stationLatitudes[i]);
+                }
+
+                final DiscreteTroposphericModel troposphericModel;
+                if (stationTroposphericModelEstimated[i] && mappingModel != null) {
+                    // Estimated tropospheric model
+
+                    // Compute pressure and temperature for estimated tropospheric model
+                    final double pressure;
+                    final double temperature;
+                    if (stationWeatherEstimated[i]) {
+                        // Empirical models to compute the pressure and the temperature
+                        final GlobalPressureTemperatureModel weather = new GlobalPressureTemperatureModel(stationLatitudes[i],
+                                                                                                          stationLongitudes[i],
+                                                                                                          body.getBodyFrame());
+                        weather.weatherParameters(stationAltitudes[i], parser.getDate(ParameterKey.ORBIT_DATE,
+                                                                                      TimeScalesFactory.getUTC()));
+                        temperature = weather.getTemperature();
+                        pressure    = weather.getPressure();
+
+                    } else {
+                        // Standard atmosphere model : temperature: 18 degree Celsius and pressure: 1013.25 mbar
+                        temperature = 273.15 + 18.0;
+                        pressure    = 1013.25;
+                    }
+
+                    // Initial model used to initialize the time span tropospheric model
+                    final EstimatedTroposphericModel initialModel = new EstimatedTroposphericModel(temperature, pressure, mappingModel,
+                                                                                                   stationTroposphericZenithDelay[i]);
+
+                    // Initialize the time span tropospheric model
+                    final TimeSpanEstimatedTroposphericModel timeSpanModel = new TimeSpanEstimatedTroposphericModel(initialModel);
+
+                    // Median date
+                    final AbsoluteDate epoch = parser.getDate(ParameterKey.TROPOSPHERIC_CORRECTION_DATE, TimeScalesFactory.getUTC());
+
+                    // Station name
+                    final String subName = stationNames[i].substring(0, 5);
+
+                    // Estimated tropospheric model BEFORE the median date
+                    final EstimatedTroposphericModel modelBefore = new EstimatedTroposphericModel(temperature, pressure, mappingModel,
+                                                                                                  stationTroposphericZenithDelay[i]);
+                    final ParameterDriver totalDelayBefore = modelBefore.getParametersDrivers().get(0);
+                    totalDelayBefore.setSelected(stationZenithDelayEstimated[i]);
+                    totalDelayBefore.setName(subName + TimeSpanEstimatedTroposphericModel.DATE_BEFORE + epoch.toString(TimeScalesFactory.getUTC()) + " " + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
+
+                    // Estimated tropospheric model AFTER the median date
+                    final EstimatedTroposphericModel modelAfter = new EstimatedTroposphericModel(temperature, pressure, mappingModel,
+                                                                                                 stationTroposphericZenithDelay[i]);
+                    final ParameterDriver totalDelayAfter = modelAfter.getParametersDrivers().get(0);
+                    totalDelayAfter.setSelected(stationZenithDelayEstimated[i]);
+                    totalDelayAfter.setName(subName + TimeSpanEstimatedTroposphericModel.DATE_AFTER + epoch.toString(TimeScalesFactory.getUTC()) + " " + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
+
+                    // Add models to the time span tropospheric model
+                    // A very ugly trick is used when no measurements are available for a specific time span.
+                    // Indeed, the tropospheric parameter will not be estimated for the time span with no measurements.
+                    // Therefore, the diagonal elements of the covariance matrix will be equal to zero.
+                    // At the end, an exception is thrown when accessing the physical covariance matrix because of singularities issues.
+                    if (subName.equals("SEAT/")) {
+                        // Do not add the model because no measurements are available
+                        // for the time span before the median date for this station.
+                    } else {
+                        timeSpanModel.addTroposphericModelValidBefore(modelBefore, epoch);
+                    }
+                    if (subName.equals("BADG/") || subName.equals("IRKM/")) {
+                        // Do not add the model because no measurements are available
+                        // for the time span after the median date for this station.
+                    } else {
+                        timeSpanModel.addTroposphericModelValidAfter(modelAfter, epoch);
+                    }
+
+                    troposphericModel = timeSpanModel;
+                } else {
+                    // Empirical tropospheric model
+                    troposphericModel = SaastamoinenModel.getStandardModel();
+                }
+
+                rangeTroposphericCorrection = new  RangeTroposphericDelayModifier(troposphericModel);
+            } else {
+                rangeTroposphericCorrection = null;
+            }
+
+            // Ionospheric correction
+            final IonosphericModel ionosphericModel;
+            if (stationIonosphericCorrection[i]) {
+                if (stationIonosphericModelEstimated[i]) {
+                    // Estimated ionospheric model
+                    final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction(stationIonosphericHIon[i]);
+                    ionosphericModel  = new EstimatedIonosphericModel(mapping, stationIonosphericVTEC[i]);
+                    final ParameterDriver  ionosphericDriver = ionosphericModel.getParametersDrivers().get(0);
+                    ionosphericDriver.setSelected(stationVTECEstimated[i]);
+                    ionosphericDriver.setName(stationNames[i].substring(0, 5) + EstimatedIonosphericModel.VERTICAL_TOTAL_ELECTRON_CONTENT);
+                } else {
+                    final TimeScale utc = TimeScalesFactory.getUTC();
+                    // Klobuchar model
+                    final KlobucharIonoCoefficientsLoader loader = new KlobucharIonoCoefficientsLoader();
+                    loader.loadKlobucharIonosphericCoefficients(parser.getDate(ParameterKey.ORBIT_DATE, utc).getComponents(utc).getDate());
+                    ionosphericModel = new KlobucharIonoModel(loader.getAlpha(), loader.getBeta());
+                }
+            } else {
+                ionosphericModel = null;
+            }
+
+            stations.put(stationNames[i],
+                         new StationData(station,
+                                         rangeSigma,     rangeBias,
+                                         rangeRateSigma, rangeRateBias,
+                                         azELSigma,      azELBias,
+                                         refractionCorrection, rangeTroposphericCorrection,
+                                         ionosphericModel));
+        }
+        return stations;
+
+    }
+
 
     /** Set up weights.
      * @param parser input file parser

@@ -65,17 +65,14 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
      * @param measurements measurements
      * @param estimatedMeasurementsParameters estimated measurements parameters
      * @param observer observer to be notified at model calls
-     * @param estimateOrbit true if orbital elements are to be estimated, false otherwise
      */
     public TLEBatchLSModel(final PropagatorBuilder[] propagatorBuilders,
                      final List<ObservedMeasurement<?>> measurements,
                      final ParameterDriversList estimatedMeasurementsParameters,
-                     final ModelObserver observer,
-                     final boolean estimateOrbit) {
+                     final ModelObserver observer) {
         super(propagatorBuilders, measurements,
               estimatedMeasurementsParameters,
-              observer,
-              estimateOrbit);
+              observer);
         this.mappers                         = new TLEJacobiansMapper[getBuilders().length];
     }
 

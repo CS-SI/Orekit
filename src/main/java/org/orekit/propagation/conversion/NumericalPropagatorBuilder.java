@@ -107,7 +107,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
                                       final PositionAngle positionAngle,
                                       final double positionScale,
                                       final AttitudeProvider attitudeProvider) {
-        super(referenceOrbit, positionAngle, positionScale, true, attitudeProvider, true);
+        super(referenceOrbit, positionAngle, positionScale, true, attitudeProvider);
         this.builder     = builder;
         this.forceModels = new ArrayList<ForceModel>();
         this.mass        = Propagator.DEFAULT_MASS;
@@ -234,8 +234,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
     public BatchLSModel buildLSModel(final ODPropagatorBuilder[] builders,
                             final List<ObservedMeasurement<?>> measurements,
                             final ParameterDriversList estimatedMeasurementsParameters,
-                            final ModelObserver observer,
-                            final boolean estimateOrbit) {
+                            final ModelObserver observer) {
         return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
     }
 

@@ -86,7 +86,7 @@ public class TLEBatchLSEstimatorTest {
         Assert.assertEquals(6,       normalizedCovariances.getColumnDimension());
         Assert.assertEquals(6,       physicalCovariances.getRowDimension());
         Assert.assertEquals(6,       physicalCovariances.getColumnDimension());
-        Assert.assertEquals(0.01594, physicalCovariances.getEntry(0, 0), 1.0e-5);
+        Assert.assertEquals(0.00249, physicalCovariances.getEntry(0, 0), 1.0e-5);
 
     }
     
@@ -130,7 +130,7 @@ public class TLEBatchLSEstimatorTest {
         Assert.assertEquals(6,       normalizedCovariances.getColumnDimension());
         Assert.assertEquals(6,       physicalCovariances.getRowDimension());
         Assert.assertEquals(6,       physicalCovariances.getColumnDimension());
-        Assert.assertEquals(0.01603, physicalCovariances.getEntry(0, 0), 1.0e-5);
+        Assert.assertEquals(0.00251, physicalCovariances.getEntry(0, 0), 1.0e-5);
 
     }
 
@@ -161,8 +161,8 @@ public class TLEBatchLSEstimatorTest {
             estimator.addMeasurement(range);
         }
         estimator.setParametersConvergenceThreshold(1.0e-2);
-        estimator.setMaxIterations(10);
-        estimator.setMaxEvaluations(36);
+        estimator.setMaxIterations(30);
+        estimator.setMaxEvaluations(30);
         estimator.setObserver(new BatchLSObserver() {
             int lastIter = 0;
             int lastEval = 0;
@@ -208,11 +208,11 @@ public class TLEBatchLSEstimatorTest {
         aDriver.setValue(aDriver.getValue() + 1.2);
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
-        TLEEstimationTestUtils.checkFit(context, estimator, 1, 2,
-                                     0.0, 2.3e-05,
-                                     0.0, 8.1e-05,
-                                     0.0, 1.06,
-                                     0.0, 2.4e-04);
+        TLEEstimationTestUtils.checkFit(context, estimator, 15, 16,
+                                     0.0, 0.18,
+                                     0.0, 0.32,
+                                     0.0, 0.15,
+                                     0.0, 5.8e-05);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one
@@ -365,7 +365,7 @@ public class TLEBatchLSEstimatorTest {
         estimator.setMaxEvaluations(20);
 
         // we have low correlation between the two types of measurement. We can expect a good estimate.
-        TLEEstimationTestUtils.checkFit(context, estimator, 1, 2,
+        TLEEstimationTestUtils.checkFit(context, estimator, 1, 4,
                                      0.0, 0.26,
                                      0.0, 0.52,
                                      0.0, 6.28e-3,

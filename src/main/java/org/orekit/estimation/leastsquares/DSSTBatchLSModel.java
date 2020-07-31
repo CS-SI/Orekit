@@ -80,8 +80,7 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
 
         super(propagatorBuilders, measurements,
                                   estimatedMeasurementsParameters,
-                                  observer,
-                                  true);
+                                  observer);
         this.mappers         = new DSSTJacobiansMapper[getBuilders().length];
         this.propagationType = propagationType;
         this.stateType       = stateType;

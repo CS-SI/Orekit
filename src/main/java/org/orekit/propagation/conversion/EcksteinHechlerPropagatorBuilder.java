@@ -94,7 +94,7 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
                                             final double positionScale,
                                             final AttitudeProvider attitudeProvider) {
         super(overrideMu(templateOrbit, provider, positionAngle), positionAngle,
-                positionScale, true, attitudeProvider, true);
+                positionScale, true, attitudeProvider);
         this.provider = provider;
     }
 

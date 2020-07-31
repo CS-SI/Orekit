@@ -37,14 +37,12 @@ public interface ODPropagatorBuilder extends PropagatorBuilder {
      * @param measurements measurements
      * @param estimatedMeasurementsParameters estimated measurements parameters
      * @param observer observer to be notified at model calls
-     * @param estimateOrbit true if orbital elements are to be estimated, false otherwise. Only effective on TLE PropagatorBuilder.
      * @return a new model for the Batch Least Squares orbit determination
      */
     BatchLSODModel buildLSModel(ODPropagatorBuilder[] builders,
                        List<ObservedMeasurement<?>> measurements,
                        ParameterDriversList estimatedMeasurementsParameters,
-                       ModelObserver observer,
-                       boolean estimateOrbit);
+                       ModelObserver observer);
 
     /** Build a new {@link KalmanODModel}.
      * @param propagatorBuilders propagators builders used to evaluate the orbits.

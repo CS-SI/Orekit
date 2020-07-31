@@ -65,15 +65,13 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
      * @param positionAngle position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
-     * @param estimateOrbit true if orbital parameters are to be estimated, false otherwise.
      * @since 7.1
      * @see #TLEPropagatorBuilder(TLE, PositionAngle, double, DataContext)
      */
     @DefaultDataContext
     public TLEPropagatorBuilder(final TLE templateTLE, final PositionAngle positionAngle,
-                                final double positionScale,
-                                final boolean estimateOrbit) {
-        this(templateTLE, positionAngle, positionScale, DataContext.getDefault(), estimateOrbit);
+                                final double positionScale) {
+        this(templateTLE, positionAngle, positionScale, DataContext.getDefault());
     }
 
     /** Build a new instance.
@@ -90,19 +88,16 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
      * @param dataContext used to access frames and time scales.
-     * @param estimateOrbit true if orbital parameters are to be estimated, false otherwise.
      * @since 10.1
      */
     public TLEPropagatorBuilder(final TLE templateTLE,
                                 final PositionAngle positionAngle,
                                 final double positionScale,
-                                final DataContext dataContext,
-                                final boolean estimateOrbit) {
+                                final DataContext dataContext) {
         super(OrbitType.KEPLERIAN.convertType(TLEPropagator.selectExtrapolator(templateTLE, dataContext.getFrames())
                         .getInitialState().getOrbit()),
               positionAngle, positionScale, false,
-              Propagator.getDefaultLaw(dataContext.getFrames()),
-              estimateOrbit);
+              Propagator.getDefaultLaw(dataContext.getFrames()));
         for (final ParameterDriver driver : templateTLE.getParametersDrivers()) {
             addSupportedParameter(driver);
         }
@@ -140,10 +135,9 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
     public BatchLSODModel buildLSModel(final ODPropagatorBuilder[] builders,
                                 final List<ObservedMeasurement<?>> measurements,
                                 final ParameterDriversList estimatedMeasurementsParameters,
-                                final ModelObserver observer,
-                                final boolean estimateOrbit) {
+                                final ModelObserver observer) {
 
-        return new TLEBatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer, estimateOrbit);
+        return new TLEBatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
     }
 
     /** {@inheritDoc} */

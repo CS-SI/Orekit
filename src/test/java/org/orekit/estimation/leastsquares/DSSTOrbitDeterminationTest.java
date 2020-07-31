@@ -86,8 +86,7 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
     @Override
     protected DSSTPropagatorBuilder createPropagatorBuilder(final Orbit referenceOrbit,
                                                             final ODEIntegratorBuilder builder,
-                                                            final double positionScale,
-                                                            final boolean estimateOrbit) {
+                                                            final double positionScale) {
         final EquinoctialOrbit equiOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(referenceOrbit);
         return new DSSTPropagatorBuilder(equiOrbit, builder, positionScale,
                                          PropagationType.MEAN, PropagationType.MEAN);

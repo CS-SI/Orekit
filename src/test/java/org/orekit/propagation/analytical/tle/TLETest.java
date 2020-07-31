@@ -32,6 +32,7 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.propagation.Propagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -41,6 +42,10 @@ import org.orekit.utils.PVCoordinates;
 
 
 public class TLETest {
+    
+    private TLE geoTLE;
+
+    private TLE leoTLE;
 
     @Test
     public void testTLEFormat() {
@@ -545,10 +550,50 @@ public class TLETest {
             }
         }
     }
+    
+    @Test
+    public void testConversionLeo() {
+        checkFit(leoTLE);
+    }
+
+    @Test
+    public void testConversionGeo() {
+        checkFit(geoTLE);
+    }
+
+    protected void checkFit(final TLE tle)
+        {
+
+        Propagator p = TLEPropagator.selectExtrapolator(tle);
+        final TLE fitted = TLE.stateToTLE(p.getInitialState(), tle);
+
+        Assert.assertEquals(tle.getSatelliteNumber(),         fitted.getSatelliteNumber());
+        Assert.assertEquals(tle.getClassification(),          fitted.getClassification());
+        Assert.assertEquals(tle.getLaunchYear(),              fitted.getLaunchYear());
+        Assert.assertEquals(tle.getLaunchNumber(),            fitted.getLaunchNumber());
+        Assert.assertEquals(tle.getLaunchPiece(),             fitted.getLaunchPiece());
+        Assert.assertEquals(tle.getElementNumber(),           fitted.getElementNumber());
+        Assert.assertEquals(tle.getRevolutionNumberAtEpoch(), fitted.getRevolutionNumberAtEpoch());
+
+        final double eps = 1.0e-9;
+        Assert.assertEquals(tle.getMeanMotion(), fitted.getMeanMotion(), eps * tle.getMeanMotion());
+        Assert.assertEquals(tle.getE(), fitted.getE(), eps * tle.getE());
+        Assert.assertEquals(tle.getI(), fitted.getI(), eps * tle.getI());
+        Assert.assertEquals(tle.getPerigeeArgument(), fitted.getPerigeeArgument(), eps * tle.getPerigeeArgument());
+        Assert.assertEquals(tle.getRaan(), fitted.getRaan(), eps * tle.getRaan());
+        Assert.assertEquals(tle.getMeanAnomaly(), fitted.getMeanAnomaly(), eps * tle.getMeanAnomaly());
+        Assert.assertEquals(tle.getMeanAnomaly(), fitted.getMeanAnomaly(), eps * tle.getMeanAnomaly());
+        Assert.assertEquals(tle.getBStar(), fitted.getBStar(), eps * tle.getBStar());
+
+
+    }
 
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");
+        geoTLE = new TLE("1 27508U 02040A   12021.25695307 -.00000113  00000-0  10000-3 0  7326",
+                         "2 27508   0.0571 356.7800 0005033 344.4621 218.7816  1.00271798 34501");
+        leoTLE = new TLE("1 31135U 07013A   11003.00000000  .00000816  00000+0  47577-4 0    11",
+                         "2 31135   2.4656 183.9084 0021119 236.4164  60.4567 15.10546832    15");
     }
-
 }

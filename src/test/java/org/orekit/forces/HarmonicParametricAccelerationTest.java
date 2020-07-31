@@ -423,7 +423,7 @@ public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
         setParameter(estimator, "Z2 γ", 1.0e-2);
         setParameter(estimator, "Z2 φ", 1.0);
 
-        estimator.estimate(true);
+        estimator.estimate();
         Assert.assertTrue(estimator.getIterationsCount()  < 15);
         Assert.assertTrue(estimator.getEvaluationsCount() < 15);
         Assert.assertEquals(0.0, estimator.getOptimum().getRMS(), 1.0e-5);

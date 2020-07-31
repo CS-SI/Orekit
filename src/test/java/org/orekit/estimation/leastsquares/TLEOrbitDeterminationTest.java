@@ -80,9 +80,9 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
     @Override
     protected TLEPropagatorBuilder createPropagatorBuilder(final Orbit referenceOrbit,
                                                             final ODEIntegratorBuilder builder,
-                                                            final double positionScale, final boolean estimateOrbit) {
+                                                            final double positionScale) {
         return new TLEPropagatorBuilder(templateTLE, PositionAngle.MEAN,
-                                         positionScale, estimateOrbit);
+                                         positionScale);
     }
 
     /** {@inheritDoc} */
@@ -168,8 +168,8 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         propagatorBuilder.setAttitudeProvider(attitudeProvider);
     }
 
+    /** Orbit determination for GNSS satellite based on range measurements */
     @Test
-    // Orbit determination using only mean elements for GNSS satellite based on range measurements
     public void testGNSS()
         throws URISyntaxException, IllegalArgumentException, IOException,
                OrekitException, ParseException {
@@ -192,17 +192,17 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         ResultBatchLeastSquares odGNSS = runBLS(input, false, true);
         
         //test
+
         //definition of the accuracy for the test
         final double distanceAccuracy = 107.18;
 
         //test on the convergence
         final int numberOfIte  = 5;
         final int numberOfEval = 6;
-
         Assert.assertEquals(numberOfIte, odGNSS.getNumberOfIteration());
         Assert.assertEquals(numberOfEval, odGNSS.getNumberOfEvaluation());
         
-        //test on the estimated position and velocity (reference from IGS-MGEX file com18836.sp3)
+        //test on the estimated position (reference from file esa18836.sp3)
         TimeStampedPVCoordinates odPV = odGNSS.getEstimatedPV();
         final Transform transform = FramesFactory.getTEME().getTransformTo(FramesFactory.getGCRF(), odPV.getDate());
         odPV = transform.transformPVCoordinates(odPV);

@@ -88,7 +88,7 @@ public class TLEBatchLSModelTest {
             }
         };
         final TLEBatchLSModel model = new TLEBatchLSModel(builders, measurements, estimatedMeasurementsParameters,
-                                                          modelObserver, true);
+                                                          modelObserver);
         model.setIterationsCounter(new Incrementor(100));
         model.setEvaluationsCounter(new Incrementor(100));
         
@@ -150,7 +150,7 @@ public class TLEBatchLSModelTest {
             }
         };
         final TLEBatchLSModel model = new TLEBatchLSModel(builders, measurements, estimatedMeasurementsParameters,
-                                                          modelObserver, true);
+                                                          modelObserver);
         // Test forward propagation flag to false
         assertEquals(false, model.isForwardPropagation());
     }
