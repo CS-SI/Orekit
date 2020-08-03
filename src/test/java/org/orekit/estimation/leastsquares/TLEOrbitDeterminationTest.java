@@ -189,7 +189,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         templateTLE.getParametersDrivers()[0].setSelected(false);
 
         //orbit determination run.
-        ResultBatchLeastSquares odGNSS = runBLS(input, false, true);
+        ResultBatchLeastSquares odGNSS = runBLS(input, false);
         
         //test
 

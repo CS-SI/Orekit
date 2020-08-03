@@ -283,7 +283,7 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
      * @param print if true, print logs
      * @throws IOException if input files cannot be read
      */
-    protected ResultBatchLeastSquares runBLS(final File input, final boolean print, final boolean estimateOrbit) throws IOException {
+    protected ResultBatchLeastSquares runBLS(final File input, final boolean print) throws IOException {
 
         // read input parameters
         final KeyValueFileParser<ParameterKey> parser = new KeyValueFileParser<ParameterKey>(ParameterKey.class);
@@ -296,7 +296,7 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
         final AzimuthLog   azimuthLog   = new AzimuthLog();
         final ElevationLog elevationLog = new ElevationLog();
         final PositionLog  positionLog  = new PositionLog();
-        final VelocityLog  velocityLog  = new VelocityLog();  
+        final VelocityLog  velocityLog  = new VelocityLog();
 
         // gravity field
         createGravityField(parser);
@@ -316,7 +316,7 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
         final OneAxisEllipsoid body = createBody(parser);
 
         // propagator builder
-        final T propagatorBuilder = configurePropagatorBuilder(parser, conventions, body, initialGuess, estimateOrbit);
+        final T propagatorBuilder = configurePropagatorBuilder(parser, conventions, body, initialGuess);
 
         // estimator
         final BatchLSEstimator estimator = createEstimator(parser, propagatorBuilder);
@@ -348,17 +348,16 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
         else {
             stations                 = createStationsData(parser, conventions, body);
         }
-
-        final PVData pvData                   = createPVData(parser);
-        final ObservableSatellite satellite                = createObservableSatellite(parser);
-        final Bias<Range> satRangeBias             = createSatRangeBias(parser);
+        final PVData                      pvData                   = createPVData(parser);
+        final ObservableSatellite         satellite                = createObservableSatellite(parser);
+        final Bias<Range>                 satRangeBias             = createSatRangeBias(parser);
         final OnBoardAntennaRangeModifier satAntennaRangeModifier  = createSatAntennaRangeModifier(parser);
-        final ShapiroRangeModifier shapiroRangeModifier     = createShapiroRangeModifier(parser);
-        final Weights weights                  = createWeights(parser);
-        final OutlierFilter<Range> rangeOutliersManager     = createRangeOutliersManager(parser, false);
-        final OutlierFilter<RangeRate> rangeRateOutliersManager = createRangeRateOutliersManager(parser, false);
-        final OutlierFilter<AngularAzEl> azElOutliersManager      = createAzElOutliersManager(parser, false);
-        final OutlierFilter<PV> pvOutliersManager        = createPVOutliersManager(parser, false);
+        final ShapiroRangeModifier        shapiroRangeModifier     = createShapiroRangeModifier(parser);
+        final Weights                     weights                  = createWeights(parser);
+        final OutlierFilter<Range>        rangeOutliersManager     = createRangeOutliersManager(parser, false);
+        final OutlierFilter<RangeRate>    rangeRateOutliersManager = createRangeRateOutliersManager(parser, false);
+        final OutlierFilter<AngularAzEl>  azElOutliersManager      = createAzElOutliersManager(parser, false);
+        final OutlierFilter<PV>           pvOutliersManager        = createPVOutliersManager(parser, false);
 
         // measurements
         final List<ObservedMeasurement<?>> independentMeasurements = new ArrayList<ObservedMeasurement<?>>();
@@ -442,7 +441,6 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
                                           rangeCounter.format(8), rangeRateCounter.format(8),
                                           angularCounter.format(8), pvCounter.format(8));
                     }
-                    
                     previousPV = currentPV;
                 }
             });
@@ -454,7 +452,7 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
             logEvaluation(entry.getValue(),
                           rangeLog, rangeRateLog, azimuthLog, elevationLog, positionLog, velocityLog);
         }
-        
+
         final ParameterDriversList propagatorParameters   = estimator.getPropagatorParametersDrivers(true);
         final ParameterDriversList measurementsParameters = estimator.getMeasurementsParametersDrivers(true);
         return new ResultBatchLeastSquares(propagatorParameters, measurementsParameters,
@@ -462,7 +460,7 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
                                            rangeLog.createStatisticsSummary(),  rangeRateLog.createStatisticsSummary(),
                                            azimuthLog.createStatisticsSummary(),  elevationLog.createStatisticsSummary(),
                                            positionLog.createStatisticsSummary(),  velocityLog.createStatisticsSummary(),
-                                           estimator.getPhysicalCovariances(1.0e-15));
+                                           estimator.getPhysicalCovariances(1.0e-10));
 
     }
 
@@ -518,7 +516,7 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
 
         // Propagator builder
         final T propagatorBuilder =
-                        configurePropagatorBuilder(parser, conventions, body, initialGuess, true);
+                        configurePropagatorBuilder(parser, conventions, body, initialGuess);
 
         // station data
         Map<String, StationData>    stations;
@@ -543,17 +541,16 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
         else {
             stations                 = createStationsData(parser, conventions, body);
         }
-
-        final PVData pvData                   = createPVData(parser);
-        final ObservableSatellite satellite                = createObservableSatellite(parser);
-        final Bias<Range> satRangeBias             = createSatRangeBias(parser);
+        final PVData                      pvData                   = createPVData(parser);
+        final ObservableSatellite         satellite                = createObservableSatellite(parser);
+        final Bias<Range>                 satRangeBias             = createSatRangeBias(parser);
         final OnBoardAntennaRangeModifier satAntennaRangeModifier  = createSatAntennaRangeModifier(parser);
-        final ShapiroRangeModifier shapiroRangeModifier     = createShapiroRangeModifier(parser);
-        final Weights weights                  = createWeights(parser);
-        final OutlierFilter<Range> rangeOutliersManager     = createRangeOutliersManager(parser, false);
-        final OutlierFilter<RangeRate> rangeRateOutliersManager = createRangeRateOutliersManager(parser, false);
-        final OutlierFilter<AngularAzEl> azElOutliersManager      = createAzElOutliersManager(parser, false);
-        final OutlierFilter<PV> pvOutliersManager        = createPVOutliersManager(parser, false);
+        final ShapiroRangeModifier        shapiroRangeModifier     = createShapiroRangeModifier(parser);
+        final Weights                     weights                  = createWeights(parser);
+        final OutlierFilter<Range>        rangeOutliersManager     = createRangeOutliersManager(parser, true);
+        final OutlierFilter<RangeRate>    rangeRateOutliersManager = createRangeRateOutliersManager(parser, true);
+        final OutlierFilter<AngularAzEl>  azElOutliersManager      = createAzElOutliersManager(parser, true);
+        final OutlierFilter<PV>           pvOutliersManager        = createPVOutliersManager(parser, true);
 
         // measurements
         final List<ObservedMeasurement<?>> independentMeasurements = new ArrayList<ObservedMeasurement<?>>();
@@ -876,7 +873,7 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
 
          // Propagator builder
          final T propagatorBuilder =
-                         configurePropagatorBuilder(parser, conventions, body, initialRefOrbit, true);
+                         configurePropagatorBuilder(parser, conventions, body, initialRefOrbit);
 
          // Force the selected propagation parameters to their reference values
          if (refPropagationParameters != null) {
@@ -909,15 +906,13 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
      * @param conventions IERS conventions to use
      * @param body central body
      * @param orbit first orbit estimate
-     * @param estimateOrbit true if orbital parameters are to be estimated, false otherwise. Only effetive with TLE Propagator Builder
      * @return propagator builder
      * @throws NoSuchElementException if input parameters are missing
      */
     private T configurePropagatorBuilder(final KeyValueFileParser<ParameterKey> parser,
                                          final IERSConventions conventions,
                                          final OneAxisEllipsoid body,
-                                         final Orbit orbit,
-                                         final boolean estimateOrbit)
+                                         final Orbit orbit)
         throws NoSuchElementException {
 
         final double minStep;
@@ -1282,7 +1277,7 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
         }
         return shapiro;
     }
-
+    
     /** Set up stations from Sinex data.
      * @param parser input file parser
      * @param conventions IERS conventions to use
@@ -1572,7 +1567,7 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
         return stations;
 
     }
-    
+
     /** Set up stations.
      * @param parser input file parser
      * @param conventions IERS conventions to use
@@ -1885,7 +1880,6 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
         return stations;
 
     }
-
 
     /** Set up weights.
      * @param parser input file parser
@@ -2245,10 +2239,9 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
                             if (stationData.getRangeTroposphericCorrection() != null) {
                                 range.addModifier(stationData.getRangeTroposphericCorrection());
                             }
-                            
                             addIfNonZeroWeight(range, measurements);
 
-                        } 
+                        }                    
                     }
                 }
             }
@@ -2526,4 +2519,5 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
             }
         }
     }
+
 }
