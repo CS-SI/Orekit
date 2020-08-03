@@ -790,7 +790,8 @@ public class TLE implements TimeStamped, Serializable {
     /**
      * Convert Spacecraft State into TLE.
      * This converter uses Newton method to reverse SGP4 and SDP4 propagation algorithm
-     * and generates a usable TLE estimation of a state.
+     * and generates a usable TLE version of a state.
+     * New TLE epoch is state epoch.
      * @param state Spacecraft State to convert into TLE
      * @param templateTLE first guess used to get identification and estimate new TLE
      * @return TLE matching with Spacecraft State and template identification
@@ -809,7 +810,7 @@ public class TLE implements TimeStamped, Serializable {
         double meanAnomaly = keplerianOrbit.getMeanAnomaly();
 
         // rough initialization of the TLE
-        FieldTLE<Gradient> current = invTLE(meanMotion, e, i, raan, pa, meanAnomaly, templateTLE);
+        FieldTLE<Gradient> current = gradTLE(meanMotion, e, i, raan, pa, meanAnomaly, state.getDate(), templateTLE);
 
         final Gradient zero = current.getE().getField().getZero();
 
@@ -881,7 +882,7 @@ public class TLE implements TimeStamped, Serializable {
             pa          += deltaTLE.getEntry(4);
             meanAnomaly += deltaTLE.getEntry(5);
 
-            current = invTLE(meanMotion, e, i, raan, pa, meanAnomaly, templateTLE);
+            current = gradTLE(meanMotion, e, i, raan, pa, meanAnomaly, state.getDate(), templateTLE);
 
         }
 
@@ -889,7 +890,8 @@ public class TLE implements TimeStamped, Serializable {
     }
 
     /**
-     * Modifies TLE orbital parameters.
+     * Builds a Gradient TLE from a TLE and specified parameters.
+     * Warning! This Gradient TLE should not be used for any propagation!
      * @param meanMotion Mean Motion (rad/s)
      * @param e excentricity
      * @param i inclination (rad)
@@ -897,14 +899,16 @@ public class TLE implements TimeStamped, Serializable {
      * @param pa perigee argument (rad)
      * @param meanAnomaly mean anomaly (rad)
      * @param templateTLE TLE used to get object identification
+     * @param epoch epoch of the new TLE
      * @return TLE with template identification and new orbital parameters
      */
-    private static FieldTLE<Gradient> invTLE(final double meanMotion,
+    private static FieldTLE<Gradient> gradTLE(final double meanMotion,
                                              final double e,
                                              final double i,
                                              final double raan,
                                              final double pa,
                                              final double meanAnomaly,
+                                             final AbsoluteDate epoch,
                                              final TLE templateTLE) {
 
         // Identification
@@ -924,7 +928,7 @@ public class TLE implements TimeStamped, Serializable {
         final Gradient gpa          = Gradient.variable(6, 4, pa);
         final Gradient gMeanAnomaly = Gradient.variable(6, 5, meanAnomaly);
         // Epoch
-        final FieldAbsoluteDate<Gradient> epoch = new FieldAbsoluteDate<>(gMeanMotion.getField(), templateTLE.getDate());
+        final FieldAbsoluteDate<Gradient> gEpoch = new FieldAbsoluteDate<>(gMeanMotion.getField(), epoch);
 
         //B*
         final double bStar = templateTLE.getBStar();
@@ -934,7 +938,7 @@ public class TLE implements TimeStamped, Serializable {
         final Gradient gMeanMotionSecondDerivative = Gradient.constant(6, templateTLE.getMeanMotionSecondDerivative());
 
         final FieldTLE<Gradient> newTLE = new FieldTLE<Gradient>(satelliteNumber, classification, launchYear, launchNumber, launchPiece, ephemerisType,
-                       elementNumber, epoch, gMeanMotion, gMeanMotionFirstDerivative, gMeanMotionSecondDerivative,
+                       elementNumber, gEpoch, gMeanMotion, gMeanMotionFirstDerivative, gMeanMotionSecondDerivative,
                        ge, gi, gpa, graan, gMeanAnomaly, revolutionNumberAtEpoch, bStar, templateTLE.getUtc());
 
         for (int k = 0; k < newTLE.getParametersDrivers().length; ++k) {
