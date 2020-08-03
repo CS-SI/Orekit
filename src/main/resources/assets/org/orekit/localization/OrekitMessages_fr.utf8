@@ -19,6 +19,9 @@ ALMOST_CRITICALLY_INCLINED_ORBIT = orbite quasiment à inclinaison critique (i =
 # unable to compute Eckstein-Hechler mean parameters after {0} iterations
 UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = impossible de calculer les paramètres moyens au sens de Eckstein-Hechler après {0} itérations
 
+# unable to compute TLE after {0} iterations
+UNABLE_TO_COMPUTE_TLE = impossible de calculer le TLE après {0} itérations
+
 # null parent for frame {0}
 NULL_PARENT_FOR_FRAME = parent du repère {0} nul
 
