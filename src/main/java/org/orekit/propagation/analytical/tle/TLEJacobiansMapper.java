@@ -17,6 +17,8 @@
 package org.orekit.propagation.analytical.tle;
 
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
@@ -154,9 +156,13 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
     }
 
     /** Compute the derivatives of the orbital parameters with respect to orbital parameters.
+     *
+     *<p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param s initial spacecraft state with respect to which calculate derivatives
      * @param dt propagation time to propagate initial state
      */
+    @DefaultDataContext
     public void computeDerivatives(final SpacecraftState s, final double dt) {
 
         final double[] p = s.getAdditionalState(name);

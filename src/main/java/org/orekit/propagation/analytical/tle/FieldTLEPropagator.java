@@ -50,7 +50,7 @@ import org.orekit.utils.PVCoordinates;
  * <p>
  * Deep- or near- space propagator is selected internally according to NORAD recommendations
  * so that the user has not to worry about the used computation methods. One instance is created
- * for each TLE (this instance can only be get using {@link #selectExtrapolator(TLE)} method,
+ * for each TLE (this instance can only be get using {@link #selectExtrapolator(FieldTLE, RealFieldElement[])} method,
  * and can compute {@link PVCoordinates position and velocity coordinates} at any
  * time. Maximum accuracy is guaranteed in a 24h range period before and after the provided
  * TLE epoch (of course this accuracy is not really measurable nor predictable: according to
@@ -182,7 +182,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
      * @param parameters SGP4 and SDP4 model parameters
-     * @see #TLEPropagator(TLE, AttitudeProvider, double, Frame)
+     * @see #FieldTLEPropagator(FieldTLE, AttitudeProvider, RealFieldElement, Frame, RealFieldElement[])
      */
     @DefaultDataContext
     protected FieldTLEPropagator(final FieldTLE<T> initialTLE,
@@ -230,7 +230,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
      * @param parameters SGP4 and SDP4 model parameters
      * @return the correct propagator.
          * @param <T> elements type
-     * @see #selectExtrapolator(TLE, Frames)
+     * @see #selectExtrapolator(FieldTLE, Frames, RealFieldElement[])
      */
     @DefaultDataContext
     public static <T extends RealFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle, final T[] parameters) {
@@ -238,6 +238,9 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
     }
 
     /** Selects the extrapolator to use with the selected TLE.
+     *
+     *<p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param tle the TLE to propagate.
      * @param frames set of Frames to use in the propagator.
      * @param parameters SGP4 and SDP4 model parameters
@@ -264,7 +267,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
      * @param parameters SGP4 and SDP4 model parameters
      * @return the correct propagator.
          * @param <T> elements type
-     * @see #selectExtrapolator(TLE, AttitudeProvider, double, Frame)
+     * @see #selectExtrapolator(FieldTLE, AttitudeProvider, RealFieldElement, Frame, RealFieldElement[])
      */
     @DefaultDataContext
     public static <T extends RealFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle,
@@ -276,6 +279,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
     }
 
     /** Selects the extrapolator to use with the selected TLE.
+     *
      * @param tle the TLE to propagate.
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)

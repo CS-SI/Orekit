@@ -792,10 +792,14 @@ public class TLE implements TimeStamped, Serializable {
      * This converter uses Newton method to reverse SGP4 and SDP4 propagation algorithm
      * and generates a usable TLE version of a state.
      * New TLE epoch is state epoch.
+     *
+     *<p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param state Spacecraft State to convert into TLE
      * @param templateTLE first guess used to get identification and estimate new TLE
      * @return TLE matching with Spacecraft State and template identification
      */
+    @DefaultDataContext
     public static TLE stateToTLE(final SpacecraftState state, final TLE templateTLE) {
 
         // get keplerian parameters from state

@@ -178,7 +178,7 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
      * @param parameters SGP4 and SDP4 model parameters
-     * @see #DeepSDP4(TLE, AttitudeProvider, double, Frame)
+     * @see #FieldDeepSDP4(FieldTLE, AttitudeProvider, RealFieldElement, Frame, RealFieldElement[])
      */
     @DefaultDataContext
     public FieldDeepSDP4(final FieldTLE<T> initialTLE, final AttitudeProvider attitudeProvider,

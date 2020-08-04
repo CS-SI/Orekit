@@ -32,7 +32,6 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
@@ -177,7 +176,7 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
      * @param field field utilized by default
      * @param line1 the first element (69 char String)
      * @param line2 the second element (69 char String)
-     * @see #TLE(String, String, TimeScale)
+     * @see #FieldTLE(Field, String, String, TimeScale)
      */
     @DefaultDataContext
     public FieldTLE(final Field<T> field, final String line1, final String line2) {
@@ -185,6 +184,8 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
     }
 
     /** Simple constructor from unparsed two lines using the given time scale as UTC.
+     *
+     *<p>This method uses the {@link DataContext#getDefault() default data context}.
      *
      * <p>The static method {@link #isFormatOK(String, String)} should be called
      * before trying to build this object.<p>
@@ -270,7 +271,7 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
      *     0 &lt;= ω &lt;= 2π
      *     0 &lt;= meanAnomaly &lt;= 2π
      * </pre>
-     * </p>
+     *
      *
      * @param satelliteNumber satellite number
      * @param classification classification (U for unclassified)
@@ -290,8 +291,8 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
      * @param meanAnomaly mean anomaly (rad)
      * @param revolutionNumberAtEpoch revolution number at epoch
      * @param bStar ballistic coefficient
-     * @see #TLE(int, char, int, int, String, int, int, AbsoluteDate, double, double,
-     * double, double, double, double, double, double, int, double, TimeScale)
+     * @see #FieldTLE(int, char, int, int, String, int, int, FieldAbsoluteDate, RealFieldElement, RealFieldElement,
+     * RealFieldElement, RealFieldElement, RealFieldElement, RealFieldElement, RealFieldElement, RealFieldElement, int, double, TimeScale)
      */
     @DefaultDataContext
     public FieldTLE(final int satelliteNumber, final char classification,
@@ -313,7 +314,6 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
      * Simple constructor from already parsed elements using the given time scale as
      * UTC.
      * </p>
-     *
      * <p>
      * The mean anomaly, the right ascension of ascending node Ω and the argument of
      * perigee ω are normalized into the [0, 2π] interval as they can be negative.
@@ -327,7 +327,7 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
      *     0 &lt;= ω &lt;= 2π
      *     0 &lt;= meanAnomaly &lt;= 2π
      * </pre>
-     * </p>
+     *
      *
      * @param satelliteNumber satellite number
      * @param classification classification (U for unclassified)

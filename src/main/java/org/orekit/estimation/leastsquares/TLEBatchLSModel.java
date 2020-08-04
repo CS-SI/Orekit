@@ -24,6 +24,8 @@ import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.Pair;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.KeplerianOrbit;
@@ -78,6 +80,7 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
 
     /** {@inheritDoc} */
     @Override
+    @DefaultDataContext
     public Pair<RealVector, RealMatrix> value(final RealVector point) {
 
         // Set up the propagators parallelizer
@@ -162,9 +165,13 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
     }
 
     /** Configure the propagator to compute derivatives.
+     *
+     *<p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param propagators {@link Propagator} to configure
      * @return mapper for this propagator
      */
+    @DefaultDataContext
     protected TLEJacobiansMapper configureDerivatives(final AbstractPropagator propagators) {
 
         final String equationName = TLEBatchLSModel.class.getName() + "-derivatives";
@@ -182,6 +189,7 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
 
     /** {@inheritDoc} */
     @Override
+    @DefaultDataContext
     public void fetchEvaluatedMeasurement(final int index, final EstimatedMeasurement<?> evaluation) {
 
         // States and observed measurement

@@ -57,10 +57,7 @@ public class TLEPartialDerivativesEquations implements AdditionalEquations {
 
     /** Simple constructor.
      * <p>
-     * Upon construction, this set of equations is <em>automatically</em> added to
-     * the propagator by calling its {@link
-     * AbstractAnalyticalPropagator#addAdditionalEquations(AdditionalEquations)} method. So
-     * there is no need to call this method explicitly for these equations.
+     * Instance that regroups equations to compute derivatives.
      * </p>
      * @param name name of the partial derivatives equations
      * @param propagator the propagator that will handle the orbit propagation

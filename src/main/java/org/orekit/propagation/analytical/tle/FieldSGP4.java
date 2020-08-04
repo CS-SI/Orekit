@@ -66,7 +66,7 @@ public class FieldSGP4<T extends RealFieldElement<T>> extends FieldTLEPropagator
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
      * @param parameters SGP4 and SDP4 model parameters
-     * @see #SGP4(TLE, AttitudeProvider, double, Frame)
+     * @see #FieldSGP4(FieldTLE, AttitudeProvider, RealFieldElement, Frame, RealFieldElement[])
      */
     @DefaultDataContext
     public FieldSGP4(final FieldTLE<T> initialTLE, final AttitudeProvider attitudeProvider,

@@ -107,6 +107,7 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
     }
 
     /** {@inheritDoc} */
+    @DefaultDataContext
     public Propagator buildPropagator(final double[] normalizedParameters) {
 
         // create the orbit

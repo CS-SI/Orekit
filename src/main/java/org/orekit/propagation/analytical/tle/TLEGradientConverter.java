@@ -22,7 +22,9 @@ import java.util.List;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.FieldAttitude;
+import org.orekit.data.DataContext;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.integration.AbstractGradientConverter;
 import org.orekit.time.FieldAbsoluteDate;
@@ -48,8 +50,12 @@ class TLEGradientConverter extends AbstractGradientConverter {
     private final List<FieldTLEPropagator<Gradient>> gPropagators;
 
     /** Simple constructor.
+     *
+     *<p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param tle initial TLE
      */
+    @DefaultDataContext
     TLEGradientConverter(final TLE tle) {
 
         super(FREE_STATE_PARAMETERS);
@@ -63,8 +69,12 @@ class TLEGradientConverter extends AbstractGradientConverter {
     }
 
     /** Convert the initial TLE into a Gradient TLE.
+     *
+     *<p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @return the gradient version of the initial TLE
      */
+    @DefaultDataContext
     public FieldTLE<Gradient> getGradientTLE() {
 
         final Gradient meanMotion   = Gradient.variable(FREE_STATE_PARAMETERS, 0, tle.getMeanMotion());
@@ -96,8 +106,12 @@ class TLEGradientConverter extends AbstractGradientConverter {
     }
 
     /** Get the state with the number of parameters consistent with model.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @return state with the number of parameters consistent with force model
      */
+    @DefaultDataContext
     public FieldTLEPropagator<Gradient> getPropagator() {
 
         // count the required number of parameters
@@ -170,6 +184,9 @@ class TLEGradientConverter extends AbstractGradientConverter {
     }
 
     /** Get the model parameters.
+     *
+     *<p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param gTLE gradient TLE compliant with parameter drivers
      * @return force model parameters
      */

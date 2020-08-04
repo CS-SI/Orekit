@@ -39,7 +39,6 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScales;
 import org.orekit.utils.Constants;
 
 /**
@@ -63,7 +62,7 @@ public class SINEXLoader {
     /** Simple constructor. This constructor uses the {@link DataContext#getDefault()
      * default data context}.
      * @param supportedNames regular expression for supported files names
-     * @see #SINEXLoader(String, DataProvidersManager)
+     * @see #SINEXLoader(String, DataProvidersManager, TimeScale)
      */
     public SINEXLoader(final String supportedNames) {
         this(supportedNames,
@@ -90,7 +89,7 @@ public class SINEXLoader {
      *
      * @param input data input stream
      * @param name name of the file (or zip entry)
-     * @see #SINEXLoader(InputStream, String, TimeScales)
+     * @see #SINEXLoader(InputStream, String, TimeScale)
      */
     @DefaultDataContext
     public SINEXLoader(final InputStream input, final String name) {
