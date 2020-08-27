@@ -28,9 +28,9 @@ import org.hipparchus.linear.RealVector;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
+import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.conversion.ODPropagatorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
-import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -213,7 +213,7 @@ public class KalmanEstimator {
      * @param observedMeasurement the measurement to process
      * @return estimated propagators
      */
-    public AbstractIntegratedPropagator[] estimationStep(final ObservedMeasurement<?> observedMeasurement) {
+    public AbstractPropagator[] estimationStep(final ObservedMeasurement<?> observedMeasurement) {
         try {
             final ProcessEstimate estimate = filter.estimationStep(decorate(observedMeasurement));
             processModel.finalizeEstimation(observedMeasurement, estimate);
@@ -230,8 +230,8 @@ public class KalmanEstimator {
      * @param observedMeasurements the measurements to process in <em>chronologically sorted</em> order
      * @return estimated propagators
      */
-    public AbstractIntegratedPropagator[] processMeasurements(final Iterable<ObservedMeasurement<?>> observedMeasurements) {
-        AbstractIntegratedPropagator[] propagators = null;
+    public AbstractPropagator[] processMeasurements(final Iterable<ObservedMeasurement<?>> observedMeasurements) {
+        AbstractPropagator[] propagators = null;
         for (ObservedMeasurement<?> observedMeasurement : observedMeasurements) {
             propagators = estimationStep(observedMeasurement);
         }

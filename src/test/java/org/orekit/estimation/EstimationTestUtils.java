@@ -60,9 +60,9 @@ import org.orekit.models.earth.displacement.TidalDisplacement;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.PropagatorBuilder;
-import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -399,7 +399,7 @@ public class EstimationTestUtils {
                                                       {
 
         // Add the measurements to the Kalman filter
-        AbstractIntegratedPropagator[] estimated = kalman.processMeasurements(measurements);
+        AbstractPropagator[] estimated = kalman.processMeasurements(measurements);
         
         // Check the number of measurements processed by the filter
         Assert.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());

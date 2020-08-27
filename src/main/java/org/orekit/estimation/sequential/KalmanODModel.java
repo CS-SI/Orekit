@@ -19,7 +19,7 @@ package org.orekit.estimation.sequential;
 import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.filtering.kalman.extended.NonLinearProcess;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.propagation.integration.AbstractIntegratedPropagator;
+import org.orekit.propagation.AbstractPropagator;
 
 /** Interface for models used in the Kalman orbit determination process.
  * @author Luc Maisonobe
@@ -36,7 +36,7 @@ public interface KalmanODModel extends KalmanEstimation, NonLinearProcess<Measur
     /** Get the propagators estimated with the values set in the propagators builders.
      * @return propagators based on the current values in the builder
      */
-    AbstractIntegratedPropagator[] getEstimatedPropagators();
+    AbstractPropagator[] getEstimatedPropagators();
 
     /** Finalize estimation.
      * @param observedMeasurement measurement that has just been processed
