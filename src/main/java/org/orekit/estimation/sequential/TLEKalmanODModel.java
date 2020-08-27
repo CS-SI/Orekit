@@ -18,17 +18,14 @@ package org.orekit.estimation.sequential;
 
 import java.util.List;
 
-import org.hipparchus.filtering.kalman.ProcessEstimate;
-import org.hipparchus.filtering.kalman.extended.NonLinearEvolution;
-import org.hipparchus.linear.RealMatrix;
-import org.hipparchus.linear.RealVector;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
-import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.propagation.AbstractPropagator;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.tle.TLEJacobiansMapper;
+import org.orekit.propagation.analytical.tle.TLEPartialDerivativesEquations;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.ODPropagatorBuilder;
-import org.orekit.propagation.integration.AbstractIntegratedPropagator;
-import org.orekit.time.AbsoluteDate;
+import org.orekit.propagation.integration.AbstractJacobiansMapper;
 import org.orekit.utils.ParameterDriversList;
 
 /** Class defining the process model dynamics to use with a {@link KalmanEstimator}.
@@ -36,141 +33,61 @@ import org.orekit.utils.ParameterDriversList;
  * This class is an adaption of the {@link KalmanModel} class
  * but for the {@link TLEPropagator TLE propagator}.
  * </p>
- * <p>
- * This class is to write, dummy methods have been set up
- * in order to compile TLE OD.
  */
 
-public class TLEKalmanODModel implements KalmanODModel {
+public class TLEKalmanODModel extends AbstractKalmanModel {
 
     public TLEKalmanODModel (final List<ODPropagatorBuilder> propagatorBuilders,
                              final List<CovarianceMatrixProvider> covarianceMatricesProviders,
                              final ParameterDriversList estimatedMeasurementsParameters) {
 
+        super(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters);
     }
 
-    /** {@inheritDoc} */
-    public ProcessEstimate getEstimate() {
-        // TODO Auto-generated method stub
-        return null;
+    @Override
+    public AbstractPropagator[] getEstimatedPropagators() {
+
+        // Return propagators built with current instantiation of the propagator builders
+        final TLEPropagator[] propagators = new TLEPropagator[getBuilders().size()];
+        for (int k = 0; k < getBuilders().size(); ++k) {
+            propagators[k] = (TLEPropagator) getBuilders().get(k).buildPropagator(getBuilders().get(k).getSelectedNormalizedParameters());
+        }
+        return propagators;
     }
 
-    /** {@inheritDoc} */
-    public AbstractIntegratedPropagator[] getEstimatedPropagators() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+    @Override
+    protected void updateReferenceTrajectories(final AbstractPropagator[] propagators,
+                                               final PropagationType pType,
+                                               final PropagationType sType) {
 
-    /** {@inheritDoc} */
-    public void finalizeEstimation(final ObservedMeasurement<?> observedMeasurement,
-                            final ProcessEstimate estimate) {
-        // TODO Auto-generated method stub
+        // Update the reference trajectory propagator
+        setReferenceTrajectories(propagators);
+
+        for (int k = 0; k < propagators.length; ++k) {
+            // Link the partial derivatives to this new propagator
+            final String equationName = KalmanEstimator.class.getName() + "-derivatives-" + k;
+            final TLEPartialDerivativesEquations pde = new TLEPartialDerivativesEquations(equationName, (TLEPropagator) getReferenceTrajectories()[k]);
+
+            // Reset the Jacobians
+            final SpacecraftState rawState = getReferenceTrajectories()[k].getInitialState();
+            final SpacecraftState stateWithDerivatives = pde.setInitialJacobians(rawState);
+            getReferenceTrajectories()[k].resetInitialState(stateWithDerivatives);
+            getMappers()[k] = pde.getMapper();
+        }
 
     }
 
     @Override
-    public ParameterDriversList getEstimatedOrbitalParameters() {
-        // TODO Auto-generated method stub
-        return null;
+    protected AbstractJacobiansMapper[] buildMappers() {
+        return new TLEJacobiansMapper[getBuilders().size()];
     }
 
     @Override
-    public ParameterDriversList getEstimatedPropagationParameters() {
-        // TODO Auto-generated method stub
-        return null;
+    protected void setShortPeriodJacobians(final AbstractJacobiansMapper mapper,
+                                           final SpacecraftState state) {
+        // do nothing
+        // TLE propagation method does not require specific short period term calculations
+
     }
 
-    @Override
-    public ParameterDriversList getEstimatedMeasurementsParameters() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public SpacecraftState[] getPredictedSpacecraftStates() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public SpacecraftState[] getCorrectedSpacecraftStates() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public RealVector getPhysicalEstimatedState() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public RealMatrix getPhysicalEstimatedCovarianceMatrix() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public RealMatrix getPhysicalStateTransitionMatrix() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public RealMatrix getPhysicalMeasurementJacobian() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public RealMatrix getPhysicalInnovationCovarianceMatrix() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public RealMatrix getPhysicalKalmanGain() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public int getCurrentMeasurementNumber() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-    @Override
-    public AbsoluteDate getCurrentDate() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public EstimatedMeasurement<?> getPredictedMeasurement() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public EstimatedMeasurement<?> getCorrectedMeasurement() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public NonLinearEvolution getEvolution(final double previousTime,
-                                           final RealVector previousState,
-                                           final MeasurementDecorator measurement) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public RealVector getInnovation(final MeasurementDecorator measurement,
-                                    final NonLinearEvolution evolution,
-                                    final RealMatrix innovationCovarianceMatrix) {
-        // TODO Auto-generated method stub
-        return null;
-    }
 }
