@@ -924,6 +924,8 @@ public class TLE implements TimeStamped, Serializable {
         final int ephemerisType = templateTLE.getEphemerisType();
         final int elementNumber = templateTLE.getElementNumber();
         final int revolutionNumberAtEpoch = templateTLE.getRevolutionNumberAtEpoch();
+        final double dt = epoch.durationFrom(templateTLE.getDate());
+        final int newRevolutionNumberAtEpoch = (int) ((int) revolutionNumberAtEpoch + FastMath.floor(dt * meanMotion / (2 * FastMath.PI)));
 
         final Gradient gMeanMotion  = Gradient.variable(6, 0, meanMotion);
         final Gradient ge           = Gradient.variable(6, 1, e);
@@ -943,7 +945,7 @@ public class TLE implements TimeStamped, Serializable {
 
         final FieldTLE<Gradient> newTLE = new FieldTLE<Gradient>(satelliteNumber, classification, launchYear, launchNumber, launchPiece, ephemerisType,
                        elementNumber, gEpoch, gMeanMotion, gMeanMotionFirstDerivative, gMeanMotionSecondDerivative,
-                       ge, gi, gpa, graan, gMeanAnomaly, revolutionNumberAtEpoch, bStar, templateTLE.getUtc());
+                       ge, gi, gpa, graan, gMeanAnomaly, newRevolutionNumberAtEpoch, bStar, templateTLE.getUtc());
 
         for (int k = 0; k < newTLE.getParametersDrivers().length; ++k) {
             newTLE.getParametersDrivers()[k].setSelected(templateTLE.getParametersDrivers()[k].isSelected());

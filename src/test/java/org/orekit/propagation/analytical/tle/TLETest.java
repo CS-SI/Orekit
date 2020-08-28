@@ -33,6 +33,7 @@ import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -549,6 +550,30 @@ public class TLETest {
                 Assert.assertEquals(1.0, oe.getParts()[3]);
             }
         }
+    }
+    
+    @Test
+    public void testOneMoreRevolution() {
+        final TLEPropagator propagator = TLEPropagator.selectExtrapolator(leoTLE);
+        final int initRevolutionNumber = leoTLE.getRevolutionNumberAtEpoch();
+        final double dt =  1.1 * 2 * FastMath.PI / leoTLE.getMeanMotion();
+        final AbsoluteDate target = leoTLE.getDate().shiftedBy(dt);
+        final SpacecraftState endState = propagator.propagate(target);
+        final TLE endLEOTLE = TLE.stateToTLE(endState, leoTLE);
+        final int endRevolutionNumber = endLEOTLE.getRevolutionNumberAtEpoch();
+        Assert.assertEquals(initRevolutionNumber + 1 , endRevolutionNumber);
+    }
+    
+    @Test
+    public void testOneLessRevolution() {
+        final TLEPropagator propagator = TLEPropagator.selectExtrapolator(leoTLE);
+        final int initRevolutionNumber = leoTLE.getRevolutionNumberAtEpoch();
+        final double dt =  - 0.5 * 2 * FastMath.PI / leoTLE.getMeanMotion();
+        final AbsoluteDate target = leoTLE.getDate().shiftedBy(dt);
+        final SpacecraftState endState = propagator.propagate(target);
+        final TLE endLEOTLE = TLE.stateToTLE(endState, leoTLE);
+        final int endRevolutionNumber = endLEOTLE.getRevolutionNumberAtEpoch();
+        Assert.assertEquals(initRevolutionNumber - 1 , endRevolutionNumber);
     }
     
     @Test
