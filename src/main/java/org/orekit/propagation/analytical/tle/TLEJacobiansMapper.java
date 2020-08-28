@@ -182,7 +182,7 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
         // Compute Jacobian
         final AbsoluteDate init = getInitialState().getDate();
         final AbsoluteDate end = s.getDate();
-        final double dt = init.durationFrom(end);
+        final double dt = end.durationFrom(init);
         final FieldOrbit<Gradient> orbit = gPropagator.propagateOrbit(gPropagator.getTLE().getDate().shiftedBy(dt), dSParameters);
         final FieldKeplerianOrbit<Gradient> gOrbit = (FieldKeplerianOrbit<Gradient>) OrbitType.KEPLERIAN.convertType(orbit);
 

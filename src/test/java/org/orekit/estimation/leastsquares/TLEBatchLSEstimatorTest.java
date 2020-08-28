@@ -86,7 +86,7 @@ public class TLEBatchLSEstimatorTest {
         Assert.assertEquals(6,       normalizedCovariances.getColumnDimension());
         Assert.assertEquals(6,       physicalCovariances.getRowDimension());
         Assert.assertEquals(6,       physicalCovariances.getColumnDimension());
-        Assert.assertEquals(0.00249, physicalCovariances.getEntry(0, 0), 1.0e-5);
+        Assert.assertEquals(0.00255, physicalCovariances.getEntry(0, 0), 1.0e-5);
 
     }
     
@@ -130,7 +130,7 @@ public class TLEBatchLSEstimatorTest {
         Assert.assertEquals(6,       normalizedCovariances.getColumnDimension());
         Assert.assertEquals(6,       physicalCovariances.getRowDimension());
         Assert.assertEquals(6,       physicalCovariances.getColumnDimension());
-        Assert.assertEquals(0.00251, physicalCovariances.getEntry(0, 0), 1.0e-5);
+        Assert.assertEquals(0.00255, physicalCovariances.getEntry(0, 0), 1.0e-5);
 
     }
 
@@ -208,7 +208,7 @@ public class TLEBatchLSEstimatorTest {
         aDriver.setValue(aDriver.getValue() + 1.2);
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
-        TLEEstimationTestUtils.checkFit(context, estimator, 15, 16,
+        TLEEstimationTestUtils.checkFit(context, estimator, 3, 4,
                                      0.0, 0.18,
                                      0.0, 0.32,
                                      0.0, 0.15,
@@ -365,7 +365,7 @@ public class TLEBatchLSEstimatorTest {
         estimator.setMaxEvaluations(20);
 
         // we have low correlation between the two types of measurement. We can expect a good estimate.
-        TLEEstimationTestUtils.checkFit(context, estimator, 1, 4,
+        TLEEstimationTestUtils.checkFit(context, estimator, 1, 3,
                                      0.0, 0.26,
                                      0.0, 0.52,
                                      0.0, 6.28e-3,

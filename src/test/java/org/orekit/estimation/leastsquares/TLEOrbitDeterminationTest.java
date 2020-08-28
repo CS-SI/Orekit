@@ -194,11 +194,11 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         //test
 
         //definition of the accuracy for the test
-        final double distanceAccuracy = 107.18;
+        final double distanceAccuracy = 111.19;
 
         //test on the convergence
-        final int numberOfIte  = 5;
-        final int numberOfEval = 6;
+        final int numberOfIte  = 4;
+        final int numberOfEval = 5;
         Assert.assertEquals(numberOfIte, odGNSS.getNumberOfIteration());
         Assert.assertEquals(numberOfEval, odGNSS.getNumberOfEvaluation());
         
@@ -222,7 +222,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         
         //test on statistic for the range residuals
         final long nbRange = 8211;
-        final double[] RefStatRange = { -14.653, 36.635, 3.207, 7.055 };
+        final double[] RefStatRange = { -13.781, 37.590, 3.525, 7.233 };
         
         Assert.assertEquals(nbRange, odGNSS.getRangeStat().getN());
         Assert.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               1.0e-3);
