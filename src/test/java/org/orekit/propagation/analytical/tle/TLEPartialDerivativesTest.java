@@ -198,7 +198,7 @@ public class TLEPartialDerivativesTest {
         final AbsoluteDate target = initialState.getDate().shiftedBy(dt);
         final TLEJacobiansMapper mapper = partials.getMapper();
         double[][] dYdY0 =  new double[TLEJacobiansMapper.STATE_DIMENSION][TLEJacobiansMapper.STATE_DIMENSION];
-        mapper.computeDerivatives(initialState, dt);
+        mapper.computeDerivatives(initialState);
         mapper.getStateJacobian(initialState, dYdY0);
 
         // compute reference state Jacobian using finite differences
@@ -252,7 +252,7 @@ public class TLEPartialDerivativesTest {
         final AbsoluteDate target = initialState.getDate().shiftedBy(dt);
         final TLEJacobiansMapper mapper = partials.getMapper();
         double[][] dYdY0 =  new double[TLEJacobiansMapper.STATE_DIMENSION][TLEJacobiansMapper.STATE_DIMENSION];
-        mapper.computeDerivatives(initialState, dt);
+        mapper.computeDerivatives(initialState);
         mapper.getStateJacobian(initialState, dYdY0);
 
         // compute reference state Jacobian using finite differences
@@ -348,7 +348,7 @@ public class TLEPartialDerivativesTest {
         final AbsoluteDate target = initialState.getDate().shiftedBy(dt);
         final TLEJacobiansMapper mapper = partials.getMapper();
         double[][] dYdY0 =  new double[TLEJacobiansMapper.STATE_DIMENSION][TLEJacobiansMapper.STATE_DIMENSION];
-        mapper.computeDerivatives(initialState, dt);
+        mapper.computeDerivatives(initialState);
         mapper.getStateJacobian(initialState, dYdY0);
 
         // compute reference state Jacobian using finite differences
@@ -442,7 +442,7 @@ public class TLEPartialDerivativesTest {
         OrbitType.KEPLERIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngle.MEAN, stateVector, null);
         final TLEJacobiansMapper mapper = partials.getMapper();
         double[][] dYdP =  new double[TLEJacobiansMapper.STATE_DIMENSION][mapper.getParameters()];
-        mapper.computeDerivatives(initialState, dt);
+        mapper.computeDerivatives(initialState);
         mapper.getParametersJacobian(initialState, dYdP);
 
         // compute reference Jacobian using finite differences

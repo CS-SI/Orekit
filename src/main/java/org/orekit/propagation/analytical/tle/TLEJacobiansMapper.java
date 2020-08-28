@@ -24,6 +24,7 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AbstractJacobiansMapper;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
@@ -160,10 +161,9 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
      *<p>This constructor uses the {@link DataContext#getDefault() default data context}.
      *
      * @param s initial spacecraft state with respect to which calculate derivatives
-     * @param dt propagation time to propagate initial state
      */
     @DefaultDataContext
-    public void computeDerivatives(final SpacecraftState s, final double dt) {
+    public void computeDerivatives(final SpacecraftState s) {
 
         final double[] p = s.getAdditionalState(name);
         if (stateTransition == null) {
@@ -180,6 +180,9 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
         final Gradient[] dSParameters = converter.getParameters(gPropagator.getTLE());
 
         // Compute Jacobian
+        final AbsoluteDate init = getInitialState().getDate();
+        final AbsoluteDate end = s.getDate();
+        final double dt = init.durationFrom(end);
         final FieldOrbit<Gradient> orbit = gPropagator.propagateOrbit(gPropagator.getTLE().getDate().shiftedBy(dt), dSParameters);
         final FieldKeplerianOrbit<Gradient> gOrbit = (FieldKeplerianOrbit<Gradient>) OrbitType.KEPLERIAN.convertType(orbit);
 

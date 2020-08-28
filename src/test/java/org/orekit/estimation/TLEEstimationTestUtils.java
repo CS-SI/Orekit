@@ -223,10 +223,10 @@ public class TLEEstimationTestUtils {
         return measurements;
 
     }
-
+    
     /**
      * Checker for batch LS estimator validation
-     * @param context TLEContext used for the test
+     * @param context DSSTContext used for the test
      * @param estimator Batch LS estimator
      * @param iterations Number of iterations expected
      * @param evaluations Number of evaluations expected
@@ -246,6 +246,7 @@ public class TLEEstimationTestUtils {
                                 final double expectedDeltaPos, final double posEps,
                                 final double expectedDeltaVel, final double velEps) {
 
+        final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
         final Orbit estimatedOrbit = estimator.estimate()[0].getInitialState().getOrbit();
         final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
         final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
@@ -274,7 +275,6 @@ public class TLEEstimationTestUtils {
                 max = FastMath.max(max, FastMath.abs(weightedResidual));
             }
         }
-        TLEPropagator propagator = TLEPropagator.selectExtrapolator(context.initialTLE);
 
         Assert.assertEquals(expectedRMS,
                             FastMath.sqrt(sum / k),
@@ -283,10 +283,10 @@ public class TLEEstimationTestUtils {
                             max,
                             maxEps);
         Assert.assertEquals(expectedDeltaPos,
-                            Vector3D.distance(propagator.getInitialState().getPVCoordinates().getPosition(), estimatedPosition),
+                            Vector3D.distance(initialOrbit.getPVCoordinates().getPosition(), estimatedPosition),
                             posEps);
         Assert.assertEquals(expectedDeltaVel,
-                            Vector3D.distance(propagator.getInitialState().getPVCoordinates().getVelocity(), estimatedVelocity),
+                            Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(), estimatedVelocity),
                             velEps);
 
     }
@@ -301,26 +301,17 @@ public class TLEEstimationTestUtils {
      * @param posEps Tolerance on expected position difference
      * @param expectedDeltaVel Expected velocity difference between estimated orbit and reference orbit
      * @param velEps Tolerance on expected velocity difference
-     * @param expectedSigmasPos Expected values for covariance matrix on position
-     * @param sigmaPosEps Tolerance on expected covariance matrix on position
-     * @param expectedSigmasVel Expected values for covariance matrix on velocity
-     * @param sigmaVelEps Tolerance on expected covariance matrix on velocity
      */
-    public static void checkKalmanFit(final Context context, final KalmanEstimator kalman,
+    public static void checkKalmanFit(final TLEContext context, final KalmanEstimator kalman,
                                       final List<ObservedMeasurement<?>> measurements,
                                       final Orbit refOrbit, final PositionAngle positionAngle,
                                       final double expectedDeltaPos, final double posEps,
-                                      final double expectedDeltaVel, final double velEps,
-                                      final double[] expectedSigmasPos,final double sigmaPosEps,
-                                      final double[] expectedSigmasVel,final double sigmaVelEps)
-        {
+                                      final double expectedDeltaVel, final double velEps) {
         checkKalmanFit(context, kalman, measurements,
                        new Orbit[] { refOrbit },
                        new PositionAngle[] { positionAngle },
                        new double[] { expectedDeltaPos }, new double[] { posEps },
-                       new double[] { expectedDeltaVel }, new double[] { velEps },
-                       new double[][] { expectedSigmasPos }, new double[] { sigmaPosEps },
-                       new double[][] { expectedSigmasVel }, new double[] { sigmaVelEps });
+                       new double[] { expectedDeltaVel }, new double[] { velEps });
     }
 
     /**
@@ -333,19 +324,12 @@ public class TLEEstimationTestUtils {
      * @param posEps Tolerance on expected position difference
      * @param expectedDeltaVel Expected velocity difference between estimated orbit and reference orbits
      * @param velEps Tolerance on expected velocity difference
-     * @param expectedSigmasPos Expected values for covariance matrix on position
-     * @param sigmaPosEps Tolerance on expected covariance matrix on position
-     * @param expectedSigmasVel Expected values for covariance matrix on velocity
-     * @param sigmaVelEps Tolerance on expected covariance matrix on velocity
      */
-    public static void checkKalmanFit(final Context context, final KalmanEstimator kalman,
+    public static void checkKalmanFit(final TLEContext context, final KalmanEstimator kalman,
                                       final List<ObservedMeasurement<?>> measurements,
                                       final Orbit[] refOrbit, final PositionAngle[] positionAngle,
                                       final double[] expectedDeltaPos, final double[] posEps,
-                                      final double[] expectedDeltaVel, final double []velEps,
-                                      final double[][] expectedSigmasPos,final double[] sigmaPosEps,
-                                      final double[][] expectedSigmasVel,final double[] sigmaVelEps)
-                                                      {
+                                      final double[] expectedDeltaVel, final double []velEps) {
 
         // Add the measurements to the Kalman filter
         AbstractPropagator[] estimated = kalman.processMeasurements(measurements);
@@ -397,10 +381,6 @@ public class TLEEstimationTestUtils {
             Assert.assertEquals(expectedDeltaPos[k], deltaPosK, posEps[k]);
             Assert.assertEquals(expectedDeltaVel[k], deltaVelK, velEps[k]);
 
-            for (int i = 0; i < 3; i++) {
-                Assert.assertEquals(expectedSigmasPos[k][i], sigmas[i],   sigmaPosEps[k]);
-                Assert.assertEquals(expectedSigmasVel[k][i], sigmas[i+3], sigmaVelEps[k]);
-            }
         }
     }
 }
