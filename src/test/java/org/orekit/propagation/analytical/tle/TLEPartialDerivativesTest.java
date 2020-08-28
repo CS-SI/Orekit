@@ -190,15 +190,16 @@ public class TLEPartialDerivativesTest {
         
         // compute state Jacobian using PartialDerivatives
         TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
+        final SpacecraftState initialState = propagator.getInitialState();
+        final AbsoluteDate target = initialState.getDate().shiftedBy(dt);
         KeplerianOrbit orbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(propagator.getInitialState().getOrbit());
         TLEPartialDerivativesEquations partials = new TLEPartialDerivativesEquations("partials", propagator);
-        SpacecraftState initialState = partials.setInitialJacobians(propagator.getInitialState());
+        final SpacecraftState endState = partials.setInitialJacobians(propagator.propagate(target));
         final double[] stateVector = new double[6];
         OrbitType.KEPLERIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngle.MEAN, stateVector, null);
-        final AbsoluteDate target = initialState.getDate().shiftedBy(dt);
         final TLEJacobiansMapper mapper = partials.getMapper();
         double[][] dYdY0 =  new double[TLEJacobiansMapper.STATE_DIMENSION][TLEJacobiansMapper.STATE_DIMENSION];
-        mapper.computeDerivatives(initialState);
+        mapper.computeDerivatives(endState);
         mapper.getStateJacobian(initialState, dYdY0);
 
         // compute reference state Jacobian using finite differences
@@ -244,15 +245,16 @@ public class TLEPartialDerivativesTest {
         
         // compute state Jacobian using PartialDerivatives
         TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
+        final SpacecraftState initialState = propagator.getInitialState();
+        final AbsoluteDate target = initialState.getDate().shiftedBy(dt);
         KeplerianOrbit orbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(propagator.getInitialState().getOrbit());
         TLEPartialDerivativesEquations partials = new TLEPartialDerivativesEquations("partials", propagator);
-        SpacecraftState initialState = partials.setInitialJacobians(propagator.getInitialState());
+        final SpacecraftState endState = partials.setInitialJacobians(propagator.propagate(target));
         final double[] stateVector = new double[6];
         OrbitType.KEPLERIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngle.MEAN, stateVector, null);
-        final AbsoluteDate target = initialState.getDate().shiftedBy(dt);
         final TLEJacobiansMapper mapper = partials.getMapper();
         double[][] dYdY0 =  new double[TLEJacobiansMapper.STATE_DIMENSION][TLEJacobiansMapper.STATE_DIMENSION];
-        mapper.computeDerivatives(initialState);
+        mapper.computeDerivatives(endState);
         mapper.getStateJacobian(initialState, dYdY0);
 
         // compute reference state Jacobian using finite differences
@@ -340,15 +342,16 @@ public class TLEPartialDerivativesTest {
         
         // compute state Jacobian using PartialDerivatives
         TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
-        Orbit orbit = OrbitType.KEPLERIAN.convertType(propagator.getInitialState().getOrbit());
+        final SpacecraftState initialState = propagator.getInitialState();
+        final AbsoluteDate target = initialState.getDate().shiftedBy(dt);
+        KeplerianOrbit orbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(propagator.getInitialState().getOrbit());
         TLEPartialDerivativesEquations partials = new TLEPartialDerivativesEquations("partials", propagator);
-        SpacecraftState initialState = partials.setInitialJacobians(propagator.getInitialState());
+        final SpacecraftState endState = partials.setInitialJacobians(propagator.propagate(target));
         final double[] stateVector = new double[6];
         OrbitType.KEPLERIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngle.MEAN, stateVector, null);
-        final AbsoluteDate target = initialState.getDate().shiftedBy(dt);
         final TLEJacobiansMapper mapper = partials.getMapper();
         double[][] dYdY0 =  new double[TLEJacobiansMapper.STATE_DIMENSION][TLEJacobiansMapper.STATE_DIMENSION];
-        mapper.computeDerivatives(initialState);
+        mapper.computeDerivatives(endState);
         mapper.getStateJacobian(initialState, dYdY0);
 
         // compute reference state Jacobian using finite differences
