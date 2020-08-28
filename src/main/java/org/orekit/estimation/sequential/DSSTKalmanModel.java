@@ -100,7 +100,7 @@ public class DSSTKalmanModel extends AbstractKalmanModel {
 
     /** {@inheritDoc} */
     @Override
-    protected void setShortPeriodJacobians(final AbstractJacobiansMapper mapper, final SpacecraftState state) {
+    protected void analyticalDerivativeComputations(final AbstractJacobiansMapper mapper, final SpacecraftState state) {
         ((DSSTJacobiansMapper) mapper).setShortPeriodJacobians(state);
     }
 

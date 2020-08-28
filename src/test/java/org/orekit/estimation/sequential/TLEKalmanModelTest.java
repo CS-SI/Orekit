@@ -80,8 +80,6 @@ public class TLEKalmanModelTest {
     /** Range after t0. */
     private Range range;
     
-    /** Driver for SRP coefficient. */
-    private ParameterDriver srpCoefDriver;
     
     /** Tolerance for the test. */
     private final double tol = 1e-16;
@@ -119,13 +117,6 @@ public class TLEKalmanModelTest {
                 estimatedMeasurementsParameters.add(driver);
             }
         }
-        // Select SRP coefficient
-        /*
-        this.srpCoefDriver = propagatorBuilder.getPropagationParametersDrivers().
-                        findByName(RadiationSensitive.REFLECTION_COEFFICIENT);
-        srpCoefDriver.setReferenceDate(date);
-        srpCoefDriver.setSelected(true);
-        */
         // Create a covariance matrix using the scales of the estimated parameters
         final double[] scales = getParametersScale(propagatorBuilder, estimatedMeasurementsParameters);
         this.M = scales.length;

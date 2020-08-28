@@ -641,7 +641,7 @@ public abstract class AbstractKalmanModel implements KalmanODModel {
         for (int k = 0; k < predictedSpacecraftStates.length; ++k) {
 
             // Short period derivatives
-            setShortPeriodJacobians(mappers[k], predictedSpacecraftStates[k]);
+            analyticalDerivativeComputations(mappers[k], predictedSpacecraftStates[k]);
 
             // Derivatives of the state vector with respect to initial state vector
             final double[][] dYdY0 = new double[6][6];
@@ -750,7 +750,7 @@ public abstract class AbstractKalmanModel implements KalmanODModel {
             final int nbParams = estimatedPropagationParameters[p].getNbParams();
             if (nbParams > 0) {
                 // Short period derivatives
-                setShortPeriodJacobians(mappers[p], evaluationStates[k]);
+                analyticalDerivativeComputations(mappers[p], evaluationStates[k]);
                 final double[][] aYPp  = new double[6][nbParams];
                 mappers[p].getParametersJacobian(evaluationStates[k], aYPp);
                 final RealMatrix dYdPp = new Array2DRowRealMatrix(aYPp, false);
@@ -1203,10 +1203,10 @@ public abstract class AbstractKalmanModel implements KalmanODModel {
      */
     protected abstract AbstractJacobiansMapper[] buildMappers();
 
-    /** Short period calculations.
-     * Only effective for DSST.
+    /** Analytical computation of derivatives.
+     * This method allow to compute analytical derivatives.
      * @param mapper Jacobian mapper to calculate short period perturbations
      * @param state state used to calculate short period perturbations
      */
-    protected abstract void setShortPeriodJacobians(AbstractJacobiansMapper mapper, SpacecraftState state);
+    protected abstract void analyticalDerivativeComputations(AbstractJacobiansMapper mapper, SpacecraftState state);
 }

@@ -91,8 +91,8 @@ public class KalmanModel extends AbstractKalmanModel {
 
     /** {@inheritDoc} */
     @Override
-    protected void setShortPeriodJacobians(final AbstractJacobiansMapper mapper, final SpacecraftState state) {
+    protected void analyticalDerivativeComputations(final AbstractJacobiansMapper mapper, final SpacecraftState state) {
         // does nothing
-        // numerical method does not require specific short period term calculations
+        // numerical method does not require analytical terms calculations
     }
 }
