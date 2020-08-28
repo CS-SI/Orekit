@@ -83,11 +83,9 @@ public class TLEKalmanODModel extends AbstractKalmanModel {
     }
 
     @Override
-    protected void setShortPeriodJacobians(final AbstractJacobiansMapper mapper,
+    protected void analyticalDerivativeComputations(final AbstractJacobiansMapper mapper,
                                            final SpacecraftState state) {
-        // do nothing
-        // TLE propagation method does not require specific short period term calculations
-
+        ((TLEJacobiansMapper) mapper).computeDerivatives(state);
     }
 
 }
