@@ -556,7 +556,7 @@ public class TLETest {
     public void testOneMoreRevolution() {
         final TLEPropagator propagator = TLEPropagator.selectExtrapolator(leoTLE);
         final int initRevolutionNumber = leoTLE.getRevolutionNumberAtEpoch();
-        final double dt =  1.1 * 2 * FastMath.PI / leoTLE.getMeanMotion();
+        final double dt =  2 * FastMath.PI / leoTLE.getMeanMotion();
         final AbsoluteDate target = leoTLE.getDate().shiftedBy(dt);
         final SpacecraftState endState = propagator.propagate(target);
         final TLE endLEOTLE = TLE.stateToTLE(endState, leoTLE);
@@ -568,7 +568,7 @@ public class TLETest {
     public void testOneLessRevolution() {
         final TLEPropagator propagator = TLEPropagator.selectExtrapolator(leoTLE);
         final int initRevolutionNumber = leoTLE.getRevolutionNumberAtEpoch();
-        final double dt =  - 0.5 * 2 * FastMath.PI / leoTLE.getMeanMotion();
+        final double dt =  - 2 * FastMath.PI / leoTLE.getMeanMotion();
         final AbsoluteDate target = leoTLE.getDate().shiftedBy(dt);
         final SpacecraftState endState = propagator.propagate(target);
         final TLE endLEOTLE = TLE.stateToTLE(endState, leoTLE);
@@ -578,37 +578,37 @@ public class TLETest {
     
     @Test
     public void testConversionLeo() {
-        checkFit(leoTLE);
+        checkConversion(leoTLE);
     }
 
     @Test
     public void testConversionGeo() {
-        checkFit(geoTLE);
+        checkConversion(geoTLE);
     }
 
-    protected void checkFit(final TLE tle)
+    protected void checkConversion(final TLE tle)
         {
 
         Propagator p = TLEPropagator.selectExtrapolator(tle);
-        final TLE fitted = TLE.stateToTLE(p.getInitialState(), tle);
+        final TLE converted = TLE.stateToTLE(p.getInitialState(), tle);
 
-        Assert.assertEquals(tle.getSatelliteNumber(),         fitted.getSatelliteNumber());
-        Assert.assertEquals(tle.getClassification(),          fitted.getClassification());
-        Assert.assertEquals(tle.getLaunchYear(),              fitted.getLaunchYear());
-        Assert.assertEquals(tle.getLaunchNumber(),            fitted.getLaunchNumber());
-        Assert.assertEquals(tle.getLaunchPiece(),             fitted.getLaunchPiece());
-        Assert.assertEquals(tle.getElementNumber(),           fitted.getElementNumber());
-        Assert.assertEquals(tle.getRevolutionNumberAtEpoch(), fitted.getRevolutionNumberAtEpoch());
+        Assert.assertEquals(tle.getSatelliteNumber(),         converted.getSatelliteNumber());
+        Assert.assertEquals(tle.getClassification(),          converted.getClassification());
+        Assert.assertEquals(tle.getLaunchYear(),              converted.getLaunchYear());
+        Assert.assertEquals(tle.getLaunchNumber(),            converted.getLaunchNumber());
+        Assert.assertEquals(tle.getLaunchPiece(),             converted.getLaunchPiece());
+        Assert.assertEquals(tle.getElementNumber(),           converted.getElementNumber());
+        Assert.assertEquals(tle.getRevolutionNumberAtEpoch(), converted.getRevolutionNumberAtEpoch());
 
         final double eps = 1.0e-9;
-        Assert.assertEquals(tle.getMeanMotion(), fitted.getMeanMotion(), eps * tle.getMeanMotion());
-        Assert.assertEquals(tle.getE(), fitted.getE(), eps * tle.getE());
-        Assert.assertEquals(tle.getI(), fitted.getI(), eps * tle.getI());
-        Assert.assertEquals(tle.getPerigeeArgument(), fitted.getPerigeeArgument(), eps * tle.getPerigeeArgument());
-        Assert.assertEquals(tle.getRaan(), fitted.getRaan(), eps * tle.getRaan());
-        Assert.assertEquals(tle.getMeanAnomaly(), fitted.getMeanAnomaly(), eps * tle.getMeanAnomaly());
-        Assert.assertEquals(tle.getMeanAnomaly(), fitted.getMeanAnomaly(), eps * tle.getMeanAnomaly());
-        Assert.assertEquals(tle.getBStar(), fitted.getBStar(), eps * tle.getBStar());
+        Assert.assertEquals(tle.getMeanMotion(), converted.getMeanMotion(), eps * tle.getMeanMotion());
+        Assert.assertEquals(tle.getE(), converted.getE(), eps * tle.getE());
+        Assert.assertEquals(tle.getI(), converted.getI(), eps * tle.getI());
+        Assert.assertEquals(tle.getPerigeeArgument(), converted.getPerigeeArgument(), eps * tle.getPerigeeArgument());
+        Assert.assertEquals(tle.getRaan(), converted.getRaan(), eps * tle.getRaan());
+        Assert.assertEquals(tle.getMeanAnomaly(), converted.getMeanAnomaly(), eps * tle.getMeanAnomaly());
+        Assert.assertEquals(tle.getMeanAnomaly(), converted.getMeanAnomaly(), eps * tle.getMeanAnomaly());
+        Assert.assertEquals(tle.getBStar(), converted.getBStar(), eps * tle.getBStar());
 
 
     }
