@@ -33,17 +33,28 @@ import org.orekit.utils.ParameterDriversList;
  * This class is an adaption of the {@link KalmanModel} class
  * but for the {@link TLEPropagator TLE propagator}.
  * </p>
+ * @author Romain Gerbaud
+ * @author Maxime Journot
+ * @author Bryan Cazabonne
+ * @author Thomas Paulet
+ * @since 11.0
  */
 
 public class TLEKalmanODModel extends AbstractKalmanModel {
 
+    /** Kalman process model constructor (package private).
+     * @param propagatorBuilders propagators builders used to evaluate the orbits.
+     * @param covarianceMatricesProviders providers for covariance matrices
+     * @param estimatedMeasurementParameters measurement parameters to estimate
+     */
     public TLEKalmanODModel (final List<ODPropagatorBuilder> propagatorBuilders,
                              final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                             final ParameterDriversList estimatedMeasurementsParameters) {
+                             final ParameterDriversList estimatedMeasurementParameters) {
 
-        super(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters);
+        super(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementParameters);
     }
 
+    /** {@inheritDoc} */
     @Override
     public AbstractPropagator[] getEstimatedPropagators() {
 
@@ -55,6 +66,7 @@ public class TLEKalmanODModel extends AbstractKalmanModel {
         return propagators;
     }
 
+    /** {@inheritDoc} */
     @Override
     protected void updateReferenceTrajectories(final AbstractPropagator[] propagators,
                                                final PropagationType pType,
@@ -71,20 +83,21 @@ public class TLEKalmanODModel extends AbstractKalmanModel {
             // Reset the Jacobians
             final SpacecraftState rawState = getReferenceTrajectories()[k].getInitialState();
             final SpacecraftState stateWithDerivatives = pde.setInitialJacobians(rawState);
-            getReferenceTrajectories()[k].resetInitialState(stateWithDerivatives);
+            ((TLEPropagator) getReferenceTrajectories()[k]).resetInitialState(stateWithDerivatives);
             getMappers()[k] = pde.getMapper();
         }
 
     }
 
+    /** {@inheritDoc} */
     @Override
     protected AbstractJacobiansMapper[] buildMappers() {
         return new TLEJacobiansMapper[getBuilders().size()];
     }
 
+    /** {@inheritDoc} */
     @Override
-    protected void analyticalDerivativeComputations(final AbstractJacobiansMapper mapper,
-                                           final SpacecraftState state) {
+    protected void analyticalDerivativeComputations(final AbstractJacobiansMapper mapper, final SpacecraftState state) {
         ((TLEJacobiansMapper) mapper).computeDerivatives(state);
     }
 

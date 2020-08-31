@@ -148,8 +148,4 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
         return new TLEKalmanODModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters);
     }
 
-    /** {@inheritDoc} */
-    public void resetOrbit(final Orbit newOrbit) {
-        // TODO nothing yet, to be updated when implementng TLE Kalman Model
-    }
 }
