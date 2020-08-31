@@ -63,8 +63,8 @@ public class KalmanModel extends AbstractKalmanModel {
     /** {@inheritDoc} */
     @Override
     protected void updateReferenceTrajectories(final AbstractPropagator[] propagators,
-                                               final PropagationType propagationType,
-                                               final PropagationType stateType) {
+                                               final PropagationType pType,
+                                               final PropagationType sType) {
 
         // Update the reference trajectory propagator
         setReferenceTrajectories(propagators);
