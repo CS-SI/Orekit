@@ -925,7 +925,7 @@ public class TLE implements TimeStamped, Serializable {
         final int elementNumber = templateTLE.getElementNumber();
         final int revolutionNumberAtEpoch = templateTLE.getRevolutionNumberAtEpoch();
         final double dt = epoch.durationFrom(templateTLE.getDate());
-        final int newRevolutionNumberAtEpoch = (int) ((int) revolutionNumberAtEpoch + FastMath.floor(dt * meanMotion / (2 * FastMath.PI)));
+        final int newRevolutionNumberAtEpoch = (int) ((int) revolutionNumberAtEpoch + FastMath.floor((MathUtils.normalizeAngle(meanAnomaly, FastMath.PI) + dt * meanMotion) / (2 * FastMath.PI)));
 
         final Gradient gMeanMotion  = Gradient.variable(6, 0, meanMotion);
         final Gradient ge           = Gradient.variable(6, 1, e);
