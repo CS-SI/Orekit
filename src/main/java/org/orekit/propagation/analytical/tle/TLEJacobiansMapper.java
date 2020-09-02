@@ -194,7 +194,7 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
         final double[] derivativesPA          = gOrbit.getPerigeeArgument().getGradient();
         final double[] derivativesMeanAnomaly = gOrbit.getMeanAnomaly().getGradient();
 
-        // as mean motion was used to build the gradient, chain derivative rule is applied to retrieve derivatives with respect to semi major axis
+        // as mean motion was used to build the gradient, chain rule is applied to retrieve derivatives with respect to semi major axis
         final double dAdMeanMotion = derivativesA[0];
 
         // update Jacobian with respect to state
