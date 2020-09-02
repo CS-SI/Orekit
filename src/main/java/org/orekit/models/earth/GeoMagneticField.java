@@ -603,7 +603,7 @@ public class GeoMagneticField {
                         index1 = (n - 1) * n / 2 + m;
                         mP[index] = x * mP[index1];
                         mPDeriv[index] = x * mPDeriv[index1] - z * mP[index1];
-                    } else if (n > 1 && n != m) {
+                    } else if (n > 1) {
                         index1 = (n - 2) * (n - 1) / 2 + m;
                         index2 = (n - 1) * n / 2 + m;
                         if (m > n - 2) {
