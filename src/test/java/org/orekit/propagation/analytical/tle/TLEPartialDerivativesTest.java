@@ -79,42 +79,42 @@ public class TLEPartialDerivativesTest {
 
     @Test
     public void testSDP4PropagationwrtKeplerian() throws FileNotFoundException, UnsupportedEncodingException {
-        doTestPropagationwrtKeplerian(1.0e-4, tleGPS);
+        doTestPropagationwrtKeplerian(4.63e-7, tleGPS);
     }
     
     @Test
     public void testSDP4ProgationwrtDSST() throws FileNotFoundException, UnsupportedEncodingException {
-        doTestPropagationwrtDSST(1.0e-5, tleGPS, true);
+        doTestPropagationwrtDSST(4.63e-7, tleGPS, true);
     }
     
     @Test
     public void testSDP4PropagationwrtNumerical() throws FileNotFoundException, UnsupportedEncodingException {
-        doTestPropagationwrtNumerical(1.0e-3, tleGPS, true);
+        doTestPropagationwrtNumerical(4.29e-6, tleGPS, true);
     }
     
     @Test
     public void testSDP4BStarDerivatives() throws ParseException, IOException {
         doTestParametersDerivatives(TLE.B_STAR,
-                                    5.9e-4,
+                                    5.88e-4,
                                     tleGPS,
                                     PropagationType.MEAN);
     }
     
     @Test
     public void testSGP4PropagationwrtKeplerian() throws FileNotFoundException, UnsupportedEncodingException {
-        doTestPropagationwrtKeplerian(8.8e-2, tleSPOT);
+        doTestPropagationwrtKeplerian(8.71e-2, tleSPOT);
     }
     
     
     @Test
     public void testSGP4ProgationwrtDSST() throws FileNotFoundException, UnsupportedEncodingException {
-        doTestPropagationwrtDSST(8.8e-2, tleSPOT, false);
+        doTestPropagationwrtDSST(8.71e-2, tleSPOT, false);
     }
     
     
     @Test
     public void testSGP4PropagationwrtNumerical() throws FileNotFoundException, UnsupportedEncodingException {
-        doTestPropagationwrtNumerical(8.8e-1, tleSPOT, false);
+        doTestPropagationwrtNumerical(8.71e-1, tleSPOT, false);
     }
    
     @Test(expected=OrekitException.class)
@@ -439,13 +439,16 @@ public class TLEPartialDerivativesTest {
             }
         }
         TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
+        final SpacecraftState initialState = propagator.getInitialState();
+        final AbsoluteDate target = initialState.getDate().shiftedBy(dt);
+        KeplerianOrbit orbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(propagator.getInitialState().getOrbit());
         TLEPartialDerivativesEquations partials = new TLEPartialDerivativesEquations("partials", propagator);
-        SpacecraftState initialState = partials.setInitialJacobians(propagator.getInitialState());
+        final SpacecraftState endState = partials.setInitialJacobians(propagator.propagate(target));
         final double[] stateVector = new double[6];
         OrbitType.KEPLERIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngle.MEAN, stateVector, null);
         final TLEJacobiansMapper mapper = partials.getMapper();
         double[][] dYdP =  new double[TLEJacobiansMapper.STATE_DIMENSION][mapper.getParameters()];
-        mapper.computeDerivatives(initialState);
+        mapper.computeDerivatives(endState);
         mapper.getParametersJacobian(initialState, dYdP);
 
         // compute reference Jacobian using finite differences
