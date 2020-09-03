@@ -441,7 +441,6 @@ public class TLEPartialDerivativesTest {
         TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
         final SpacecraftState initialState = propagator.getInitialState();
         final AbsoluteDate target = initialState.getDate().shiftedBy(dt);
-        KeplerianOrbit orbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(propagator.getInitialState().getOrbit());
         TLEPartialDerivativesEquations partials = new TLEPartialDerivativesEquations("partials", propagator);
         final SpacecraftState endState = partials.setInitialJacobians(propagator.propagate(target));
         final double[] stateVector = new double[6];
