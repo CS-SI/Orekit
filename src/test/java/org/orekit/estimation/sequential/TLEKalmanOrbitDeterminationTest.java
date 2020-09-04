@@ -207,8 +207,6 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         // configure Orekit data acces
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
-
-        // Choice of an orbit type to use
         
         // initiate TLE
         final String line1 = "1 22195U 92070B   16045.51027931 -.00000009  00000-0  00000+0 0  9990";
@@ -219,16 +217,13 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         // Default for test is Cartesian
         final OrbitType orbitType = OrbitType.KEPLERIAN;
         
-        // Initial orbital Cartesian covariance matrix
-        // These covariances are derived from the deltas between initial and reference orbits
-        // So in a way they are "perfect"...
-        // Cartesian covariance matrix initialization
-        final RealMatrix cartesianOrbitalP = MatrixUtils.createRealDiagonalMatrix(new double [] {
+        // Initial orbital Keplerian covariance matrix
+        final RealMatrix keplerianOrbitalP = MatrixUtils.createRealDiagonalMatrix(new double [] {
             1e2, 1e-1, 1e-0, 1e-0, 1e-0, 1e1
         });
         
         // Orbital Cartesian process noise matrix (Q)
-        final RealMatrix cartesianOrbitalQ = MatrixUtils.createRealDiagonalMatrix(new double [] {
+        final RealMatrix keplerianOrbitalQ = MatrixUtils.createRealDiagonalMatrix(new double [] {
             1.e-4, 1.e-4, 1.e-4, 1.e-10, 1.e-10, 1.e-10
         });
         
@@ -242,7 +237,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
 
         // Kalman orbit determination run.
         ResultKalman kalmanLageos2 = runKalman(input, orbitType, print,
-                                               cartesianOrbitalP, cartesianOrbitalQ,
+                                               keplerianOrbitalP, keplerianOrbitalQ,
                                                null, null,
                                                measurementP, measurementQ);
 
@@ -316,7 +311,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
     }
     
     @Test
-    // Orbit determination for Lageos2 based on SLR (range) measurements
+    // Orbit determination for GNSS satellite G07 based on SLR (range) measurements
     public void testGNSS() throws URISyntaxException, IOException {
 
         // Print results on console
@@ -329,8 +324,6 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         // configure Orekit data acces
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
-
-        // Choice of an orbit type to use
         
         // initiate TLE
         final String line1 = "1 32711U 08012A   16044.40566018 -.00000039 +00000-0 +00000-0 0  9993";
@@ -341,16 +334,13 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         // Default for test is Cartesian
         final OrbitType orbitType = OrbitType.KEPLERIAN;
         
-        // Initial orbital Cartesian covariance matrix
-        // These covariances are derived from the deltas between initial and reference orbits
-        // So in a way they are "perfect"...
-        // Cartesian covariance matrix initialization
-        final RealMatrix cartesianOrbitalP = MatrixUtils.createRealDiagonalMatrix(new double [] {
+        // Initial orbital Keplerian covariance matrix
+        final RealMatrix keplerianOrbitalP = MatrixUtils.createRealDiagonalMatrix(new double [] {
             1e2, 1e-1, 1e-0, 1e-0, 1e-0, 1e1
         });
         
         // Orbital Cartesian process noise matrix (Q)
-        final RealMatrix cartesianOrbitalQ = MatrixUtils.createRealDiagonalMatrix(new double [] {
+        final RealMatrix keplerianOrbitalQ = MatrixUtils.createRealDiagonalMatrix(new double [] {
             1.e-4, 1.e-4, 1.e-4, 1.e-10, 1.e-10, 1.e-10
         });
         
@@ -364,7 +354,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
 
         // Kalman orbit determination run.
         ResultKalman kalmanGNSS = runKalman(input, orbitType, print,
-                                               cartesianOrbitalP, cartesianOrbitalQ,
+                                            keplerianOrbitalP, keplerianOrbitalQ,
                                                null, null,
                                                measurementP, measurementQ);
 
@@ -374,7 +364,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
 
         // Tests
         
-        // Number of measurements processed
+        // Number of multiplexed measurements processed
         final int numberOfMeas  = 661;
         Assert.assertEquals(numberOfMeas, kalmanGNSS.getNumberOfMeasurements());
 
@@ -394,7 +384,6 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final TimeStampedPVCoordinates ephem = propagator.propagate(odPV.getDate()).getPVCoordinates();
         final Vector3D refPos = ephem.getPosition();  
 
-        
         // Check distances
         final double dP = Vector3D.distance(refPos, estimatedPos);
         Assert.assertEquals(0.0, dP, distanceAccuracy);
@@ -441,7 +430,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
 
     }
     
-    // Creates reference orbit with numerical propagator in TEME
+    // Creates reference PV from reference PV with numerical propagation in TEME
     public TimeStampedPVCoordinates createRef(final AbsoluteDate date, final Vector3D refPos0, final Vector3D refVel0) {
         
         // Initial orbit
@@ -449,7 +438,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final CartesianOrbit initOrbit= new CartesianOrbit(new PVCoordinates(refPos0, refVel0), FramesFactory.getEME2000(), initDate, TLEConstants.MU);
         final SpacecraftState initState = new SpacecraftState(initOrbit);
         
-        // Numerical propagator
+        // Numerical propagator initialization  
         double[][] tolerance = NumericalPropagator.tolerances(0.001, initOrbit, OrbitType.CARTESIAN);
         AdaptiveStepsizeIntegrator integrator =
                 new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
@@ -480,7 +469,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
                                         new IsotropicDrag(spacecraftArea, spacecraftDragCoefficient));
         propagator.addForceModel(drag);
 
-        // solar radiation pressure
+        // Solar radiation pressure
         propagator.addForceModel(new SolarRadiationPressure(CelestialBodyFactory.getSun(),
                                                     earth.getEquatorialRadius(),
                                                     new IsotropicRadiationSingleCoefficient(spacecraftArea, spacecraftReflectionCoefficient)));
