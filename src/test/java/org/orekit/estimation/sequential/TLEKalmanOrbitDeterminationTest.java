@@ -18,6 +18,7 @@ package org.orekit.estimation.sequential;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +43,9 @@ import org.orekit.errors.OrekitException;
 import org.orekit.estimation.common.AbstractOrbitDetermination;
 import org.orekit.estimation.common.ParameterKey;
 import org.orekit.estimation.common.ResultKalman;
+import org.orekit.files.sp3.SP3File;
+import org.orekit.files.sp3.SP3File.SP3Ephemeris;
+import org.orekit.files.sp3.SP3Parser;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
@@ -62,6 +66,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEConstants;
@@ -242,13 +247,11 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
                                                measurementP, measurementQ);
 
         // Definition of the accuracy for the test
-        // Initial TLE error at estimation date is 3997m
+        // Initial TLE error at last measurement date is 3997m
         final double distanceAccuracy = 3507.1;
         final double velocityAccuracy = 1.641;
 
         // Tests
-        // Note: The reference initial orbit is the same as in the batch LS tests
-        // -----
         
         // Number of measurements processed
         final int numberOfMeas  = 258;
@@ -260,8 +263,11 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final Vector3D estimatedVel = odPV.getVelocity();
 
         // Reference position and velocity at estimation date 
-        final TimeStampedPVCoordinates refPV = createRef(odPV.getDate());
+        final Vector3D refPos0 = new Vector3D(-5532131.956902, 10025696.592156, -3578940.040009);
+        final Vector3D refVel0 = new Vector3D(-3871.275109, -607.880985, 4280.972530);
+        final TimeStampedPVCoordinates refPV = createRef(odPV.getDate(), refPos0, refVel0);
 
+        
         final Vector3D refPos = refPV.getPosition();
         final Vector3D refVel = refPV.getVelocity();
         
@@ -309,13 +315,137 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
 
     }
     
+    @Test
+    // Orbit determination for Lageos2 based on SLR (range) measurements
+    public void testGNSS() throws URISyntaxException, IOException {
+
+        // Print results on console
+        final boolean print = false;
+        
+        // input in resources directory
+        final String inputPath = KalmanNumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/analytical/tle_od_test_GPS07.in").toURI().getPath();
+        final File input  = new File(inputPath);
+
+        // configure Orekit data acces
+        Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
+
+        // Choice of an orbit type to use
+        
+        // initiate TLE
+        final String line1 = "1 32711U 08012A   16044.40566018 -.00000039 +00000-0 +00000-0 0  9993";
+        final String line2 = "2 32711 055.4362 301.3402 0091581 207.7162 151.8496 02.00563594058026";
+        templateTLE = new TLE(line1, line2);
+        templateTLE.getParametersDrivers()[0].setSelected(false);
+        
+        // Default for test is Cartesian
+        final OrbitType orbitType = OrbitType.KEPLERIAN;
+        
+        // Initial orbital Cartesian covariance matrix
+        // These covariances are derived from the deltas between initial and reference orbits
+        // So in a way they are "perfect"...
+        // Cartesian covariance matrix initialization
+        final RealMatrix cartesianOrbitalP = MatrixUtils.createRealDiagonalMatrix(new double [] {
+            1e2, 1e-1, 1e-0, 1e-0, 1e-0, 1e1
+        });
+        
+        // Orbital Cartesian process noise matrix (Q)
+        final RealMatrix cartesianOrbitalQ = MatrixUtils.createRealDiagonalMatrix(new double [] {
+            1.e-4, 1.e-4, 1.e-4, 1.e-10, 1.e-10, 1.e-10
+        });
+        
+        // Initial measurement covariance matrix and process noise matrix
+        final RealMatrix measurementP = MatrixUtils.createRealDiagonalMatrix(new double [] {
+           1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.  
+        });
+        final RealMatrix measurementQ = MatrixUtils.createRealDiagonalMatrix(new double [] {
+            1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6
+         });
+
+        // Kalman orbit determination run.
+        ResultKalman kalmanGNSS = runKalman(input, orbitType, print,
+                                               cartesianOrbitalP, cartesianOrbitalQ,
+                                               null, null,
+                                               measurementP, measurementQ);
+
+        // Definition of the accuracy for the test
+        // Initial TLE error at last measurement date is 1053.6m
+        final double distanceAccuracy = 75.5;
+
+        // Tests
+        
+        // Number of measurements processed
+        final int numberOfMeas  = 661;
+        Assert.assertEquals(numberOfMeas, kalmanGNSS.getNumberOfMeasurements());
+
+        //test on the estimated position
+        TimeStampedPVCoordinates odPV = kalmanGNSS.getEstimatedPV();
+        final Transform transform = FramesFactory.getTEME().getTransformTo(FramesFactory.getGCRF(), odPV.getDate());
+        odPV = transform.transformPVCoordinates(odPV);
+        final Vector3D estimatedPos = odPV.getPosition();
+
+        // create reference position from GPS ephemris
+        final String ex = "/sp3/esa18836.sp3";
+        final SP3Parser parser = new SP3Parser();
+        final InputStream inEntry = getClass().getResourceAsStream(ex);
+        final SP3File file = parser.parse(inEntry);
+        SP3Ephemeris ephemeris = file.getSatellites().get("G07");
+        BoundedPropagator propagator = ephemeris.getPropagator();
+        final TimeStampedPVCoordinates ephem = propagator.propagate(odPV.getDate()).getPVCoordinates();
+        final Vector3D refPos = ephem.getPosition();  
+
+        
+        // Check distances
+        final double dP = Vector3D.distance(refPos, estimatedPos);
+        Assert.assertEquals(0.0, dP, distanceAccuracy);
+        
+        // Print orbit deltas
+        if (print) {
+            System.out.println("Test performances:");
+            System.out.format("\t%-30s\n",
+                            "ΔEstimated / Reference");
+            System.out.format(Locale.US, "\t%-10s %20.6f\n",
+                              "ΔP [m]", dP);
+        }
+
+        // Test on measurements parameters
+        final List<DelegatingDriver> list = new ArrayList<DelegatingDriver>();
+        list.addAll(kalmanGNSS.getMeasurementsParameters().getDrivers());
+        sortParametersChanges(list);
+
+        final double[] measurementParameters = { 2.3540, 55.4291, 4.9712, 35.4758,
+                                                 0.7182, 28.2173, 0.2795, 11.8881,
+                                                 0.0000, 12.0015, 2.5834, 38.8237};
+        Assert.assertEquals(measurementParameters[0], list.get(0).getValue(), distanceAccuracy);
+        Assert.assertEquals(measurementParameters[1], list.get(1).getValue(), distanceAccuracy);
+        Assert.assertEquals(measurementParameters[2], list.get(2).getValue(), distanceAccuracy);
+        Assert.assertEquals(measurementParameters[3], list.get(3).getValue(), distanceAccuracy);
+        Assert.assertEquals(measurementParameters[4], list.get(4).getValue(), distanceAccuracy);
+        Assert.assertEquals(measurementParameters[5], list.get(5).getValue(), distanceAccuracy);
+        Assert.assertEquals(measurementParameters[6], list.get(6).getValue(), distanceAccuracy);
+        Assert.assertEquals(measurementParameters[7], list.get(7).getValue(), distanceAccuracy);
+        Assert.assertEquals(measurementParameters[8], list.get(8).getValue(), distanceAccuracy);
+        Assert.assertEquals(measurementParameters[9], list.get(9).getValue(), distanceAccuracy);
+        Assert.assertEquals(measurementParameters[10], list.get(10).getValue(), distanceAccuracy);
+        Assert.assertEquals(measurementParameters[11], list.get(11).getValue(), distanceAccuracy);
+
+        //test on statistic for the range residuals
+        final long nbRange = 8211;
+        
+        final double[] RefStatRange = { -24.3338, 77.9223, -2.1498, 7.0392 };
+        Assert.assertEquals(nbRange, kalmanGNSS.getRangeStat().getN());
+        Assert.assertEquals(RefStatRange[0], kalmanGNSS.getRangeStat().getMin(),               distanceAccuracy);
+        Assert.assertEquals(RefStatRange[1], kalmanGNSS.getRangeStat().getMax(),               distanceAccuracy);
+        Assert.assertEquals(RefStatRange[2], kalmanGNSS.getRangeStat().getMean(),              distanceAccuracy);
+        Assert.assertEquals(RefStatRange[3], kalmanGNSS.getRangeStat().getStandardDeviation(), distanceAccuracy);
+
+    }
+    
     // Creates reference orbit with numerical propagator in TEME
-    public TimeStampedPVCoordinates createRef(final AbsoluteDate date) {
+    public TimeStampedPVCoordinates createRef(final AbsoluteDate date, final Vector3D refPos0, final Vector3D refVel0) {
         
         // Initial orbit
         final AbsoluteDate initDate = new AbsoluteDate(2016, 02, 14, 12, 14, 48.132, TimeScalesFactory.getUTC());
-        final Vector3D refPos0 = new Vector3D(-5532131.956902, 10025696.592156, -3578940.040009);
-        final Vector3D refVel0 = new Vector3D(-3871.275109, -607.880985, 4280.972530);
         final CartesianOrbit initOrbit= new CartesianOrbit(new PVCoordinates(refPos0, refVel0), FramesFactory.getEME2000(), initDate, TLEConstants.MU);
         final SpacecraftState initState = new SpacecraftState(initOrbit);
         
