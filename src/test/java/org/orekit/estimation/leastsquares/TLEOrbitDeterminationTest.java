@@ -54,6 +54,7 @@ import org.orekit.propagation.analytical.tle.TLEConstants;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 import org.orekit.propagation.conversion.TLEPropagatorBuilder;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -230,6 +231,67 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         Assert.assertEquals(RefStatRange[2], odGNSS.getRangeStat().getMean(),              1.0e-3);
         Assert.assertEquals(RefStatRange[3], odGNSS.getRangeStat().getStandardDeviation(), 1.0e-3);
         
-    }         
+    }
+    
+    @Test
+    // Orbit determination using only mean elements for Lageos2 based on SLR (range) measurements
+    // For better accuracy, adding short period terms is necessary
+    public void testLageos2()
+        throws URISyntaxException, IllegalArgumentException, IOException,
+               OrekitException, ParseException {
+
+        // input in resources directory
+        final String inputPath = TLEOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/tle_od_test_Lageos2.in").toURI().getPath();
+        final File input  = new File(inputPath);
+
+        // configure Orekit data access
+        Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
+        
+        // initiate TLE
+        final String line1 = "1 22195U 92070B   16045.51027931 -.00000009  00000-0  00000+0 0  9990";
+        final String line2 = "2 22195  52.6508 132.9147 0137738 336.2706   1.6348  6.47294052551192";
+        templateTLE = new TLE(line1, line2);
+        templateTLE.getParametersDrivers()[0].setSelected(false);
+        
+        //orbit determination run.
+        ResultBatchLeastSquares odLageos2 = runBLS(input, false);
+
+        //test
+        //definition of the accuracy for the test
+        final double distanceAccuracy = 249.7;
+        final double velocityAccuracy = 6.94e-2;
+
+        //test on the convergence
+        final int numberOfIte  = 5;
+        final int numberOfEval = 5;
+
+        Assert.assertEquals(numberOfIte, odLageos2.getNumberOfIteration());
+        Assert.assertEquals(numberOfEval, odLageos2.getNumberOfEvaluation());
+
+        //test on the estimated position and velocity
+        PVCoordinates odPV = odLageos2.getEstimatedPV();
+        final Transform transform = FramesFactory.getTEME().getTransformTo(FramesFactory.getEME2000(), templateTLE.getDate());
+        odPV = transform.transformPVCoordinates(odPV);
+        final Vector3D estimatedPos = odPV.getPosition();
+        final Vector3D estimatedVel = odPV.getVelocity();
+
+        //final Vector3D refPos = new Vector3D(-5532124.989973327, 10025700.01763335, -3578940.840115321);
+        //final Vector3D refVel = new Vector3D(-3871.2736402553, -607.8775965705, 4280.9744110925);
+        final Vector3D refPos = new Vector3D(-5532131.956902, 10025696.592156, -3578940.040009);
+        final Vector3D refVel = new Vector3D(-3871.275109, -607.880985, 4280.972530);
+        Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
+        Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
+
+        //test on statistic for the range residuals
+        final long nbRange = 258;
+        //final double[] RefStatRange = { -2.795816, 6.171529, 0.310848, 1.657809 };
+        final double[] RefStatRange = { -71.8561, 94.7573, -0.3342, 32.02447 };
+        Assert.assertEquals(nbRange, odLageos2.getRangeStat().getN());
+        Assert.assertEquals(RefStatRange[0], odLageos2.getRangeStat().getMin(),               distanceAccuracy);
+        Assert.assertEquals(RefStatRange[1], odLageos2.getRangeStat().getMax(),               distanceAccuracy);
+        Assert.assertEquals(RefStatRange[2], odLageos2.getRangeStat().getMean(),              distanceAccuracy);
+        Assert.assertEquals(RefStatRange[3], odLageos2.getRangeStat().getStandardDeviation(), distanceAccuracy);
+    }
 }
 
