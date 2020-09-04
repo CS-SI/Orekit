@@ -40,14 +40,14 @@ import org.orekit.utils.ParameterDriversList;
  * @since 11.0
  */
 
-public class TLEKalmanODModel extends AbstractKalmanModel {
+public class TLEKalmanModel extends AbstractKalmanModel {
 
     /** Kalman process model constructor (package private).
      * @param propagatorBuilders propagators builders used to evaluate the orbits.
      * @param covarianceMatricesProviders providers for covariance matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
      */
-    public TLEKalmanODModel (final List<ODPropagatorBuilder> propagatorBuilders,
+    public TLEKalmanModel (final List<ODPropagatorBuilder> propagatorBuilders,
                              final List<CovarianceMatrixProvider> covarianceMatricesProviders,
                              final ParameterDriversList estimatedMeasurementParameters) {
 

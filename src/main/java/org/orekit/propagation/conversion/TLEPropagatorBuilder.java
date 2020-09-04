@@ -26,7 +26,7 @@ import org.orekit.estimation.leastsquares.TLEBatchLSModel;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.sequential.CovarianceMatrixProvider;
 import org.orekit.estimation.sequential.KalmanODModel;
-import org.orekit.estimation.sequential.TLEKalmanODModel;
+import org.orekit.estimation.sequential.TLEKalmanModel;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -145,7 +145,7 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
     public KalmanODModel buildKalmanModel(final List<ODPropagatorBuilder> propagatorBuilders,
                                    final List<CovarianceMatrixProvider> covarianceMatricesProviders,
                                    final ParameterDriversList estimatedMeasurementsParameters) {
-        return new TLEKalmanODModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters);
+        return new TLEKalmanModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters);
     }
 
 }
