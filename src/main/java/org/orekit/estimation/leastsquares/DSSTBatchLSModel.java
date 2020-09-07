@@ -44,7 +44,6 @@ import org.orekit.utils.ParameterDriversList;
  */
 public class DSSTBatchLSModel extends AbstractBatchLSModel {
 
-
     /** Type of the orbit used for the propagation.*/
     private PropagationType propagationType;
 
@@ -65,10 +64,8 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
                      final ModelObserver observer,
                      final PropagationType propagationType,
                      final PropagationType stateType) {
-
-        super(propagatorBuilders, measurements,
-                                  estimatedMeasurementsParameters,
-                                  observer);
+        // call super constructor
+        super(propagatorBuilders, measurements, estimatedMeasurementsParameters, observer);
         this.propagationType = propagationType;
         this.stateType       = stateType;
     }
@@ -93,17 +90,19 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
 
     }
 
-
+    /** {@inheritDoc} */
     @Override
     protected AbstractJacobiansMapper[] buildMappers() {
         return new DSSTJacobiansMapper[getBuilders().length];
     }
 
+    /** {@inheritDoc} */
     @Override
     protected AbstractPropagator[] buildPropagators() {
         return new DSSTPropagator[getBuilders().length];
     }
 
+    /** {@inheritDoc} */
     @Override
     protected void computeDerivatives(final AbstractJacobiansMapper mapper,
                                       final SpacecraftState state) {

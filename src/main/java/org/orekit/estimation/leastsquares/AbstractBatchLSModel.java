@@ -29,6 +29,7 @@ import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.MultivariateJacobianFunction;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Incrementor;
 import org.hipparchus.util.Pair;
@@ -58,7 +59,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * @author Thomas Paulet
  * @since 11.0
  */
-public abstract class AbstractBatchLSModel implements BatchLSODModel {
+public abstract class AbstractBatchLSModel implements MultivariateJacobianFunction {
 
     /** Builders for propagators. */
     private final ODPropagatorBuilder[] builders;
@@ -114,6 +115,13 @@ public abstract class AbstractBatchLSModel implements BatchLSODModel {
     /** Model function Jacobian. */
     private RealMatrix jacobian;
 
+    /**
+     * Constructor.
+     * @param propagatorBuilders builders to use for propagation
+     * @param measurements measurements
+     * @param estimatedMeasurementsParameters estimated measurements parameters
+     * @param observer observer to be notified at model calls
+     */
     public AbstractBatchLSModel(final ODPropagatorBuilder[] propagatorBuilders,
                         final List<ObservedMeasurement<?>> measurements,
                         final ParameterDriversList estimatedMeasurementsParameters,
@@ -197,24 +205,29 @@ public abstract class AbstractBatchLSModel implements BatchLSODModel {
         }
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /** Set the counter for evaluations.
+     * @param evaluationsCounter counter for evaluations
+     */
     public void setEvaluationsCounter(final Incrementor evaluationsCounter) {
         this.evaluationsCounter = evaluationsCounter;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /** Set the counter for iterations.
+     * @param iterationsCounter counter for iterations
+     */
     public void setIterationsCounter(final Incrementor iterationsCounter) {
         this.iterationsCounter = iterationsCounter;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /** Return the forward propagation flag.
+     * @return the forward propagation flag
+     */
     public boolean isForwardPropagation() {
         return forwardPropagation;
     }
 
+    /** {@inheritDoc} */
+    @Override
     public Pair<RealVector, RealMatrix> value(final RealVector point) {
 
         // Set up the propagators parallelizer
@@ -251,20 +264,24 @@ public abstract class AbstractBatchLSModel implements BatchLSODModel {
 
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /** Get the iterations count.
+     * @return iterations count
+     */
     public int getIterationsCount() {
         return iterationsCounter.getCount();
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /** Get the evaluations count.
+     * @return evaluations count
+     */
     public int getEvaluationsCount() {
         return evaluationsCounter.getCount();
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /** Get the selected propagation drivers for a propagatorBuilder.
+     * @param iBuilder index of the builder in the builders' array
+     * @return the list of selected propagation drivers for propagatorBuilder of index iBuilder
+     */
     public ParameterDriversList getSelectedPropagationDriversForBuilder(final int iBuilder) {
 
         // Lazy evaluation, create the list only if it hasn't been created yet
@@ -290,8 +307,10 @@ public abstract class AbstractBatchLSModel implements BatchLSODModel {
         return estimatedPropagationParameters[iBuilder];
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /** Create the propagators and parameters corresponding to an evaluation point.
+     * @param point evaluation point
+     * @return an array of new propagators
+     */
     public AbstractPropagator[] createPropagators(final RealVector point) {
 
         final AbstractPropagator[] propagators = buildPropagators();
@@ -368,8 +387,10 @@ public abstract class AbstractBatchLSModel implements BatchLSODModel {
      */
     protected abstract AbstractJacobiansMapper configureDerivatives(AbstractPropagator propagators);
 
-    /** {@inheritDoc} */
-    @Override
+    /** Fetch a measurement that was evaluated during propagation.
+     * @param index index of the measurement first component
+     * @param evaluation measurement evaluation
+     */
     public void fetchEvaluatedMeasurement(final int index, final EstimatedMeasurement<?> evaluation) {
 
         // States and observed measurement

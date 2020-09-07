@@ -39,7 +39,6 @@ import org.orekit.utils.ParameterDriversList;
  * @author Thomas Paulet
  * @since 11.0
  */
-
 public class TLEKalmanModel extends AbstractKalmanModel {
 
     /** Kalman process model constructor (package private).
@@ -47,17 +46,16 @@ public class TLEKalmanModel extends AbstractKalmanModel {
      * @param covarianceMatricesProviders providers for covariance matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
      */
-    public TLEKalmanModel (final List<ODPropagatorBuilder> propagatorBuilders,
-                             final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                             final ParameterDriversList estimatedMeasurementParameters) {
-
+    public TLEKalmanModel(final List<ODPropagatorBuilder> propagatorBuilders,
+                          final List<CovarianceMatrixProvider> covarianceMatricesProviders,
+                          final ParameterDriversList estimatedMeasurementParameters) {
+        // call super constructor
         super(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementParameters);
     }
 
     /** {@inheritDoc} */
     @Override
     public AbstractPropagator[] getEstimatedPropagators() {
-
         // Return propagators built with current instantiation of the propagator builders
         final TLEPropagator[] propagators = new TLEPropagator[getBuilders().size()];
         for (int k = 0; k < getBuilders().size(); ++k) {

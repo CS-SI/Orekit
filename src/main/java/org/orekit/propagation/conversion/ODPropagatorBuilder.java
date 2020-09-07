@@ -18,11 +18,11 @@ package org.orekit.propagation.conversion;
 
 import java.util.List;
 
-import org.orekit.estimation.leastsquares.BatchLSODModel;
+import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.sequential.AbstractKalmanModel;
 import org.orekit.estimation.sequential.CovarianceMatrixProvider;
-import org.orekit.estimation.sequential.KalmanODModel;
 import org.orekit.orbits.Orbit;
 import org.orekit.utils.ParameterDriversList;
 
@@ -32,27 +32,27 @@ import org.orekit.utils.ParameterDriversList;
  */
 public interface ODPropagatorBuilder extends PropagatorBuilder {
 
-    /** Build a new {@link BatchLSODModel}.
+    /** Build a new batch least squares model.
      * @param builders builders to use for propagation
      * @param measurements measurements
      * @param estimatedMeasurementsParameters estimated measurements parameters
      * @param observer observer to be notified at model calls
      * @return a new model for the Batch Least Squares orbit determination
      */
-    BatchLSODModel buildLSModel(ODPropagatorBuilder[] builders,
-                       List<ObservedMeasurement<?>> measurements,
-                       ParameterDriversList estimatedMeasurementsParameters,
-                       ModelObserver observer);
+    AbstractBatchLSModel buildLSModel(ODPropagatorBuilder[] builders,
+                                      List<ObservedMeasurement<?>> measurements,
+                                      ParameterDriversList estimatedMeasurementsParameters,
+                                      ModelObserver observer);
 
-    /** Build a new {@link KalmanODModel}.
+    /** Build a new Kalman model.
      * @param propagatorBuilders propagators builders used to evaluate the orbits.
      * @param covarianceMatricesProviders providers for covariance matrices
      * @param estimatedMeasurementsParameters measurement parameters to estimate
      * @return a new model for Kalman Filter orbit determination
      */
-    KalmanODModel buildKalmanModel(List<ODPropagatorBuilder> propagatorBuilders,
-                                   List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                                   ParameterDriversList estimatedMeasurementsParameters);
+    AbstractKalmanModel buildKalmanModel(List<ODPropagatorBuilder> propagatorBuilders,
+                                         List<CovarianceMatrixProvider> covarianceMatricesProviders,
+                                         ParameterDriversList estimatedMeasurementsParameters);
 
     /** Reset the orbit in the propagator builder.
      * @param newOrbit New orbit to set in the propagator builder
