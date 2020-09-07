@@ -28,7 +28,6 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.PartialDerivativesEquations;
 import org.orekit.utils.ParameterDriversList;
 
-
 /** Class defining the process model dynamics to use with a {@link KalmanEstimator}.
  * @author Romain Gerbaud
  * @author Maxime Journot
@@ -44,14 +43,13 @@ public class KalmanModel extends AbstractKalmanModel {
     public KalmanModel(final List<ODPropagatorBuilder> propagatorBuilders,
           final List<CovarianceMatrixProvider> covarianceMatricesProviders,
           final ParameterDriversList estimatedMeasurementParameters) {
-
+        // call super constructor
         super(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementParameters);
     }
 
     /** {@inheritDoc} */
     @Override
     public AbstractPropagator[] getEstimatedPropagators() {
-
         // Return propagators built with current instantiation of the propagator builders
         final NumericalPropagator[] propagators = new NumericalPropagator[getBuilders().size()];
         for (int k = 0; k < getBuilders().size(); ++k) {
@@ -95,4 +93,5 @@ public class KalmanModel extends AbstractKalmanModel {
         // does nothing
         // numerical method does not require analytical terms calculations
     }
+
 }

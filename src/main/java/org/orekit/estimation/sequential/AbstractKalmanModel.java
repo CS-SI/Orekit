@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.filtering.kalman.extended.NonLinearEvolution;
+import org.hipparchus.filtering.kalman.extended.NonLinearProcess;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.MatrixUtils;
@@ -56,7 +57,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * @author Thomas Paulet
  * @since 11.0
  */
-public abstract class AbstractKalmanModel implements KalmanODModel {
+public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> {
 
     /** Builders for propagators. */
     private final List<ODPropagatorBuilder> builders;
@@ -140,7 +141,6 @@ public abstract class AbstractKalmanModel implements KalmanODModel {
     protected AbstractKalmanModel(final List<ODPropagatorBuilder> propagatorBuilders,
           final List<CovarianceMatrixProvider> covarianceMatricesProviders,
           final ParameterDriversList estimatedMeasurementParameters) {
-
         this(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementParameters, PropagationType.MEAN, PropagationType.MEAN);
     }
 
@@ -158,7 +158,6 @@ public abstract class AbstractKalmanModel implements KalmanODModel {
           final ParameterDriversList estimatedMeasurementParameters,
           final PropagationType propagationType,
           final PropagationType stateType) {
-
 
         this.builders                        = propagatorBuilders;
         this.estimatedMeasurementsParameters = estimatedMeasurementParameters;
@@ -600,7 +599,9 @@ public abstract class AbstractKalmanModel implements KalmanODModel {
         return estimatedMeasurementsParameters;
     }
 
-    /** {@inheritDoc} */
+    /** Get the current corrected estimate.
+     * @return current corrected estimate
+     */
     public ProcessEstimate getEstimate() {
         return correctedEstimate;
     }
@@ -973,7 +974,10 @@ public abstract class AbstractKalmanModel implements KalmanODModel {
         }
     }
 
-    /** {@inheritDoc} */
+    /** Finalize estimation.
+     * @param observedMeasurement measurement that has just been processed
+     * @param estimate corrected estimate
+     */
     public void finalizeEstimation(final ObservedMeasurement<?> observedMeasurement,
                                    final ProcessEstimate estimate) {
         // Update the parameters with the estimated state
@@ -1186,7 +1190,9 @@ public abstract class AbstractKalmanModel implements KalmanODModel {
         return mappers;
     }
 
-    /** {@inheritDoc} */
+    /** Get the propagators estimated with the values set in the propagators builders.
+     * @return propagators based on the current values in the builder
+     */
     public abstract AbstractPropagator[] getEstimatedPropagators();
 
     /** Update the reference trajectories using the propagators as input.

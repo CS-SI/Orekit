@@ -56,9 +56,8 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
                      final List<ObservedMeasurement<?>> measurements,
                      final ParameterDriversList estimatedMeasurementsParameters,
                      final ModelObserver observer) {
-        super(propagatorBuilders, measurements,
-              estimatedMeasurementsParameters,
-              observer);
+        // call super constructor
+        super(propagatorBuilders, measurements, estimatedMeasurementsParameters, observer);
     }
 
     /** Configure the propagator to compute derivatives.
@@ -84,16 +83,19 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
 
     }
 
+    /** {@inheritDoc} */
     @Override
     protected AbstractJacobiansMapper[] buildMappers() {
         return new TLEJacobiansMapper[getBuilders().length];
     }
 
+    /** {@inheritDoc} */
     @Override
     protected AbstractPropagator[] buildPropagators() {
         return new TLEPropagator[getBuilders().length];
     }
 
+    /** {@inheritDoc} */
     @Override
     protected void computeDerivatives(final AbstractJacobiansMapper mapper,
                                       final SpacecraftState state) {
