@@ -528,14 +528,18 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      */
     protected abstract void sxpPropagate(double t);
 
+    /** {@inheritDoc} */
+    @DefaultDataContext
     public void setInitialState(final SpacecraftState initialState) {
         resetInitialState(initialState);
     }
 
     /** {@inheritDoc} */
+    @DefaultDataContext
     public void resetInitialState(final SpacecraftState state) {
         super.resetInitialState(state);
-        final TLE newTLE = TLEGradientConverter.stateToTLE(state, tle);
+        super.setStartDate(state.getDate());
+        final TLE newTLE = TLE.stateToTLE(state, tle);
         this.tle = newTLE;
         initializeCommons();
         sxpInitialize();
