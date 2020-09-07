@@ -339,7 +339,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
      */
     private void initializeCommons(final T[] parameters) {
 
-    	final T zero = mass.getField().getZero();
+        final T zero = mass.getField().getZero();
         final T bStar = parameters[0];
         final T a1 = tle.getMeanMotion().multiply(60.0).reciprocal().multiply(TLEConstants.XKE).pow(TLEConstants.TWO_THIRD);
         cosi0 = FastMath.cos(tle.getI());
@@ -439,7 +439,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
      */
     private FieldPVCoordinates<T> computePVCoordinates() {
 
-    	final T zero = mass.getField().getZero();
+        final T zero = mass.getField().getZero();
         // Long period periodics
         final T axn = e.multiply(FastMath.cos(omega));
         T temp = a.multiply(e.multiply(e).negate().add(1.0)).reciprocal();

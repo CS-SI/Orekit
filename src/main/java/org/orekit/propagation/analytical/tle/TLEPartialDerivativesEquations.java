@@ -186,7 +186,7 @@ public class TLEPartialDerivativesEquations implements AdditionalEquations {
     /** {@inheritDoc} */
     @Override
     public double[] computeDerivatives(final SpacecraftState s, final double[] pDot) {
-    	// Nothing is done since it is an analytical propagation
+        // Nothing is done since it is an analytical propagation
         return null;
     }
 

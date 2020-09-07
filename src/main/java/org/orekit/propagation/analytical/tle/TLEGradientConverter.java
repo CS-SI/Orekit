@@ -86,7 +86,7 @@ class TLEGradientConverter extends AbstractGradientConverter {
         // derivative field
         final Field<Gradient> field =  GradientField.getField(FREE_STATE_PARAMETERS);
 
-    	// keplerian elements always has derivatives
+        // keplerian elements always has derivatives
         final Gradient meanMotion   = Gradient.variable(FREE_STATE_PARAMETERS, 0, tle.getMeanMotion());
         final Gradient ge           = Gradient.variable(FREE_STATE_PARAMETERS, 1, tle.getE());
         final Gradient gi           = Gradient.variable(FREE_STATE_PARAMETERS, 2, tle.getI());
@@ -227,7 +227,7 @@ class TLEGradientConverter extends AbstractGradientConverter {
     }
 
     /**
-     * Compute the gradient of the semi-major axis given the satellite mean motion
+     * Compute the gradient of the semi-major axis given the satellite mean motion.
      * @param meanMotion satellite mean motion
      * @return the semi-major axis
      */

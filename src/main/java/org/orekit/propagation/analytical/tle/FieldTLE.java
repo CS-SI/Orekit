@@ -206,8 +206,8 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
      */
     public FieldTLE(final Field<T> field, final String line1, final String line2, final TimeScale utc) {
 
-    	// zero for fields
-    	final T zero = field.getZero();
+        // zero for fields
+        final T zero = field.getZero();
 
         // identification
         satelliteNumber = parseInteger(line1, 2, 5);
@@ -651,7 +651,6 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
 
     /** Get model parameters.
      * @param field field to which the elements belong
-     * @param <T> type of the elements
      * @return model parameters
      */
     public T[] getParameters(final Field<T> field) {
@@ -813,6 +812,7 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
      *
      * @param state Spacecraft State to convert into TLE
      * @param templateTLE first guess used to get identification and estimate new TLE
+     * @param <T> type of the element
      * @return TLE matching with Spacecraft State and template identification
      */
     @DefaultDataContext
@@ -872,11 +872,11 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
                 (FastMath.abs(deltaMeanMotion.getValue()).getReal() < thresholdAngles.getReal())) {
 
                 return new FieldTLE<T>(current.getSatelliteNumber(), current.getClassification(), current.getLaunchYear(),
-                		current.getLaunchNumber(), current.getLaunchPiece(), current.getEphemerisType(), current.getElementNumber(),
-                		state.getDate(), current.getMeanMotion().getValue(), current.getMeanMotionFirstDerivative().getValue(),
-                		current.getMeanMotionSecondDerivative().getValue(), current.getE().getValue(), current.getI().getValue(),
-                		current.getPerigeeArgument().getValue(), current.getRaan().getValue(), current.getMeanAnomaly().getValue(),
-                		current.getRevolutionNumberAtEpoch(), current.getBStar());
+                                current.getLaunchNumber(), current.getLaunchPiece(), current.getEphemerisType(), current.getElementNumber(),
+                                state.getDate(), current.getMeanMotion().getValue(), current.getMeanMotionFirstDerivative().getValue(),
+                                current.getMeanMotionSecondDerivative().getValue(), current.getE().getValue(), current.getI().getValue(),
+                                current.getPerigeeArgument().getValue(), current.getRaan().getValue(), current.getMeanAnomaly().getValue(),
+                                current.getRevolutionNumberAtEpoch(), current.getBStar());
 
             }
 
@@ -926,6 +926,7 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
      * @param meanAnomaly mean anomaly (rad)
      * @param templateTLE TLE used to get object identification
      * @param epoch epoch of the new TLE
+     * @param <T> type of the element
      * @return TLE with template identification and new orbital parameters
      */
     private static <T extends RealFieldElement<T>> FieldTLE<FieldGradient<T>> gradTLE(final T meanMotion,
@@ -948,7 +949,7 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
         final int revolutionNumberAtEpoch = templateTLE.getRevolutionNumberAtEpoch();
         final T dt = epoch.durationFrom(templateTLE.getDate());
         final int newRevolutionNumberAtEpoch = (int) ((int) revolutionNumberAtEpoch +
-        		FastMath.floor((MathUtils.normalizeAngle(meanAnomaly.getReal(), FastMath.PI) + dt.getReal() * meanMotion.getReal()) / (2 * FastMath.PI)));
+                  FastMath.floor((MathUtils.normalizeAngle(meanAnomaly.getReal(), FastMath.PI) + dt.getReal() * meanMotion.getReal()) / (2 * FastMath.PI)));
 
         final FieldGradient<T> gMeanMotion  = FieldGradient.variable(6, 0, meanMotion);
         final FieldGradient<T> ge           = FieldGradient.variable(6, 1, e);
