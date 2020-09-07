@@ -89,8 +89,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
     @Override
     protected NumericalPropagatorBuilder createPropagatorBuilder(final Orbit referenceOrbit,
                                                                  final ODEIntegratorBuilder builder,
-                                                                 final double positionScale,
-                                                                 final boolean estimateOrbit) {
+                                                                 final double positionScale) {
         return new NumericalPropagatorBuilder(referenceOrbit, builder, PositionAngle.MEAN,
                                               positionScale);
     }
@@ -206,7 +205,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
         //orbit determination run.
-        ResultBatchLeastSquares odLageos2 = runBLS(input, false, true);
+        ResultBatchLeastSquares odLageos2 = runBLS(input, false);
 
         //test
         //definition of the accuracy for the test
@@ -269,7 +268,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
         //orbit determination run.
-        ResultBatchLeastSquares odGNSS = runBLS(input, false, true);
+        ResultBatchLeastSquares odGNSS = runBLS(input, false);
 
         //test
         //definition of the accuracy for the test
@@ -291,7 +290,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         final Vector3D refVel = new Vector3D(-2729.5151218788005, 1142.6629459030657, -2523.9055974487947);
         Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
         Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
-
+        
         //test on statistic for the range residuals
         final long nbRangeInit     = 8981;
         final long nbRangeExcluded = 305;
@@ -319,7 +318,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
         //orbit determination run.
-        ResultBatchLeastSquares odsatW3 = runBLS(input, false, true);
+        ResultBatchLeastSquares odsatW3 = runBLS(input, false);
 
         //test
         //definition of the accuracy for the test
