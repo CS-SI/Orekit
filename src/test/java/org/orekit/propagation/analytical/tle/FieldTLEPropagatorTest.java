@@ -37,6 +37,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.FieldOrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -271,21 +272,21 @@ public class FieldTLEPropagatorTest {
         fieldpropagator = FieldTLEPropagator.selectExtrapolator(fieldtleISS, parametersISS);
         fieldinitDate = fieldtleISS.getDate();
         fieldendDate = fieldinitDate.shiftedBy(propagtime);        
-        FieldPVCoordinates<T> fieldfinalISS = fieldpropagator.getPVCoordinates(fieldendDate, parametersISS);
+        FieldSpacecraftState<T> fieldfinalISS = fieldpropagator.propagate(fieldendDate);
         
         // propagate ISS orbit
         propagator = TLEPropagator.selectExtrapolator(tleISS);
         initDate = tleISS.getDate();
         endDate = initDate.shiftedBy(propagtime);        
-        PVCoordinates finalISS = propagator.getPVCoordinates(endDate);
+        SpacecraftState finalISS = propagator.propagate(endDate);
         
         // calculate GPS position and velocity differences between Field and Double
         double normDifPosGPS = fieldfinalGPS.getPosition().subtract(finalGPS.getPosition()).getNorm().getReal();
         double normDifVelGPS = fieldfinalGPS.getVelocity().subtract(finalGPS.getVelocity()).getNorm().getReal();
         
         // calculate ISS position and velocity differences between Field and Double
-        double normDifPosISS = fieldfinalISS.getPosition().subtract(finalISS.getPosition()).getNorm().getReal();
-        double normDifVelISS = fieldfinalISS.getVelocity().subtract(finalISS.getVelocity()).getNorm().getReal();
+        double normDifPosISS = fieldfinalISS.getPVCoordinates().getPosition().subtract(finalISS.getPVCoordinates().getPosition()).getNorm().getReal();
+        double normDifVelISS = fieldfinalISS.getPVCoordinates().getVelocity().subtract(finalISS.getPVCoordinates().getVelocity()).getNorm().getReal();
         
         // check
         Assert.assertEquals(0, normDifPosGPS, 2e-3);

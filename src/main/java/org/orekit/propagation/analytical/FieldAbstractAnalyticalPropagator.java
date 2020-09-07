@@ -47,6 +47,7 @@ import org.orekit.propagation.events.FieldEventState.EventOccurrence;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Common handling of {@link org.orekit.propagation.FieldPropagator} methods for analytical propagators.
@@ -367,6 +368,24 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
      */
     protected abstract FieldOrbit<T> propagateOrbit(FieldAbsoluteDate<T> date, T[] parameters);
 
+    /** Get the parameters driver for propagation model.
+     * @return drivers for propagation model
+     */
+    protected abstract ParameterDriver[] getParametersDrivers();
+
+    /** Get model parameters.
+     * @param field field to which the elements belong
+     * @return model parameters
+     */
+    public T[] getParameters(final Field<T> field) {
+        final ParameterDriver[] drivers = getParametersDrivers();
+        final T[] parameters = MathArrays.buildArray(field, drivers.length);
+        for (int i = 0; i < drivers.length; ++i) {
+            parameters[i] = field.getZero().add(drivers[i].getValue());
+        }
+        return parameters;
+    }
+
     /** Propagate an orbit without any fancy features.
      * <p>This method is similar in spirit to the {@link #propagate} method,
      * except that it does <strong>not</strong> call any handler during
@@ -379,8 +398,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
         try {
 
             // evaluate orbit
-            final T[] parameters;
-            parameters = MathArrays.buildArray(date.getField(), 1);
+            final T[] parameters = getParameters(date.getField());
             final FieldOrbit<T> orbit = propagateOrbit(date, parameters);
 
             // evaluate attitude
@@ -402,8 +420,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
         @Override
         public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
 
-            final T[] parameters;
-            parameters = MathArrays.buildArray(date.getField(), 1);
+            final T[] parameters = getParameters(date.getField());
             return propagateOrbit(date, parameters).getPVCoordinates(frame);
         }
 
@@ -498,6 +515,11 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
         @Override
         public Frame getFrame() {
             return FieldAbstractAnalyticalPropagator.this.getFrame();
+        }
+
+        @Override
+        protected ParameterDriver[] getParametersDrivers() {
+            return FieldAbstractAnalyticalPropagator.this.getParametersDrivers();
         }
     }
 

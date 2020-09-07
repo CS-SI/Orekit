@@ -40,6 +40,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
 
 
 /** This class provides elements to propagate TLE's.
@@ -555,6 +556,12 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
                                                           rdotk.multiply(uz).add(rfdotk.multiply(vz)).multiply(cv));
         return new FieldPVCoordinates<T>(pos, vel);
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ParameterDriver[] getParametersDrivers() {
+        return tle.getParametersDrivers();
     }
 
     /** Initialization proper to each propagator (SGP or SDP).

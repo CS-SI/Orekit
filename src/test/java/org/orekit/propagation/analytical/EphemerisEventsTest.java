@@ -36,8 +36,6 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
-import org.orekit.propagation.analytical.Ephemeris;
 import org.orekit.propagation.events.EclipseDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;

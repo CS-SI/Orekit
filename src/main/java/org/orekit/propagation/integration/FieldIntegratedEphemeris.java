@@ -32,6 +32,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.analytical.FieldAbstractAnalyticalPropagator;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** This class stores sequentially generated orbital parameters for
@@ -259,6 +260,13 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
 
         }
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected ParameterDriver[] getParametersDrivers() {
+        // Integrated Ephemeris propagation model does not have parameter drivers.
+        return new ParameterDriver[0];
     }
 
 }

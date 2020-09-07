@@ -34,6 +34,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTimeSpanMap;
+import org.orekit.utils.ParameterDriver;
 
 /** Simple Keplerian orbit propagator.
  * @see FieldOrbit
@@ -194,6 +195,13 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
     /** {@inheritDoc}*/
     protected T getMass(final FieldAbsoluteDate<T> date) {
         return states.get(date).getMass();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected ParameterDriver[] getParametersDrivers() {
+        // Keplerian propagation model does not have parameter drivers.
+        return new ParameterDriver[0];
     }
 
 }

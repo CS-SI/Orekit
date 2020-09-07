@@ -40,6 +40,7 @@ import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTimeSpanMap;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** This class propagates a {@link org.orekit.propagation.FieldSpacecraftState}
@@ -990,6 +991,13 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
     @Deprecated
     public static <T extends RealFieldElement<T>> T normalizeAngle(final T a, final T center) {
         return a.subtract(2 * FastMath.PI * FastMath.floor((a.getReal() + FastMath.PI - center.getReal()) / (2 * FastMath.PI)));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected ParameterDriver[] getParametersDrivers() {
+        // Eckstein Hechler propagation model does not have parameter drivers.
+        return new ParameterDriver[0];
     }
 
 }
