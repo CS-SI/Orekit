@@ -40,20 +40,17 @@ import org.orekit.utils.ParameterDriversList;
  */
 public class TLEPartialDerivativesEquations implements AdditionalEquations {
 
-
     /** Propagator computing state evolution. */
     private final TLEPropagator propagator;
 
     /** Selected parameters for Jacobian computation. */
     private ParameterDriversList selected;
 
-
     /** Name. */
     private final String name;
 
     /** Flag for Jacobian matrices initialization. */
     private boolean initialized;
-
 
     /** Simple constructor.
      * <p>
@@ -63,7 +60,7 @@ public class TLEPartialDerivativesEquations implements AdditionalEquations {
      * @param propagator the propagator that will handle the orbit propagation
      */
     public TLEPartialDerivativesEquations(final String name,
-                                           final TLEPropagator propagator) {
+                                          final TLEPropagator propagator) {
         this.name                   = name;
         this.selected               = null;
         this.propagator             = propagator;
@@ -80,7 +77,6 @@ public class TLEPartialDerivativesEquations implements AdditionalEquations {
      */
     private void freezeParametersSelection() {
         if (selected == null) {
-
             // create new selected parameter driver list
             selected = new ParameterDriversList();
             for (final ParameterDriver driver : propagator.getTLE().getParametersDrivers()) {
@@ -88,7 +84,6 @@ public class TLEPartialDerivativesEquations implements AdditionalEquations {
             }
         }
     }
-
 
     /** Set the initial value of the Jacobian with respect to state and parameter.
      * <p>
@@ -191,9 +186,8 @@ public class TLEPartialDerivativesEquations implements AdditionalEquations {
     /** {@inheritDoc} */
     @Override
     public double[] computeDerivatives(final SpacecraftState s, final double[] pDot) {
-
+    	// Nothing is done since it is an analytical propagation
         return null;
-
     }
 
 }

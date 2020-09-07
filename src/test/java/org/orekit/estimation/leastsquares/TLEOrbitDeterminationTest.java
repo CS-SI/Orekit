@@ -234,8 +234,6 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
     }
     
     @Test
-    // Orbit determination using only mean elements for Lageos2 based on SLR (range) measurements
-    // For better accuracy, adding short period terms is necessary
     public void testLageos2()
         throws URISyntaxException, IllegalArgumentException, IOException,
                OrekitException, ParseException {

@@ -101,7 +101,7 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
         for (final ParameterDriver driver : templateTLE.getParametersDrivers()) {
             addSupportedParameter(driver);
         }
-        this.templateTLE             = templateTLE;
+        this.templateTLE = templateTLE;
         this.dataContext = dataContext;
 
     }
@@ -137,7 +137,6 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
                                 final List<ObservedMeasurement<?>> measurements,
                                 final ParameterDriversList estimatedMeasurementsParameters,
                                 final ModelObserver observer) {
-
         return new TLEBatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
     }
 

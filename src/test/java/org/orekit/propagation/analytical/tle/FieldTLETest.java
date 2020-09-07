@@ -41,6 +41,7 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.propagation.FieldPropagator;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
@@ -696,7 +697,56 @@ public class FieldTLETest {
             }
         }
     }
-    
+
+    @Test
+    public void testStateToTLELeo() {
+    	doTestStateToTLELeo(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestStateToTLELeo(final Field<T> field) {
+    	final FieldTLE<T> leoTLE = new FieldTLE<>(field, "1 31135U 07013A   11003.00000000  .00000816  00000+0  47577-4 0    11",
+                                                  "2 31135   2.4656 183.9084 0021119 236.4164  60.4567 15.10546832    15");
+        checkConversion(leoTLE, field);
+    }
+
+    @Test
+    public void testStateToTLEGeo() {
+    	doTestStateToTLEGeo(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestStateToTLEGeo(final Field<T> field) {
+    	final FieldTLE<T> geoTLE = new FieldTLE<>(field, "1 27508U 02040A   12021.25695307 -.00000113  00000-0  10000-3 0  7326",
+                                                  "2 27508   0.0571 356.7800 0005033 344.4621 218.7816  1.00271798 34501");
+        checkConversion(geoTLE, field);
+    }
+
+    private <T extends RealFieldElement<T>> void checkConversion(final FieldTLE<T> tle, final Field<T> field)
+        {
+
+        FieldPropagator<T> p = FieldTLEPropagator.selectExtrapolator(tle, tle.getParameters(field));
+        final FieldTLE<T> converted = FieldTLE.stateToTLE(p.getInitialState(), tle);
+
+        Assert.assertEquals(tle.getSatelliteNumber(),         converted.getSatelliteNumber());
+        Assert.assertEquals(tle.getClassification(),          converted.getClassification());
+        Assert.assertEquals(tle.getLaunchYear(),              converted.getLaunchYear());
+        Assert.assertEquals(tle.getLaunchNumber(),            converted.getLaunchNumber());
+        Assert.assertEquals(tle.getLaunchPiece(),             converted.getLaunchPiece());
+        Assert.assertEquals(tle.getElementNumber(),           converted.getElementNumber());
+        Assert.assertEquals(tle.getRevolutionNumberAtEpoch(), converted.getRevolutionNumberAtEpoch());
+
+        final double eps = 1.0e-9;
+        Assert.assertEquals(tle.getMeanMotion().getReal(), converted.getMeanMotion().getReal(), eps * tle.getMeanMotion().getReal());
+        Assert.assertEquals(tle.getE().getReal(), converted.getE().getReal(), eps * tle.getE().getReal());
+        Assert.assertEquals(tle.getI().getReal(), converted.getI().getReal(), eps * tle.getI().getReal());
+        Assert.assertEquals(tle.getPerigeeArgument().getReal(), converted.getPerigeeArgument().getReal(), eps * tle.getPerigeeArgument().getReal());
+        Assert.assertEquals(tle.getRaan().getReal(), converted.getRaan().getReal(), eps * tle.getRaan().getReal());
+        Assert.assertEquals(tle.getMeanAnomaly().getReal(), converted.getMeanAnomaly().getReal(), eps * tle.getMeanAnomaly().getReal());
+        Assert.assertEquals(tle.getMeanAnomaly().getReal(), converted.getMeanAnomaly().getReal(), eps * tle.getMeanAnomaly().getReal());
+        Assert.assertEquals(tle.getBStar(), converted.getBStar(), eps * tle.getBStar());
+
+
+    }
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");

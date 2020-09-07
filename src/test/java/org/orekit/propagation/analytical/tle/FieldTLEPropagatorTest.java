@@ -25,7 +25,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathArrays;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -67,8 +66,8 @@ public class FieldTLEPropagatorTest {
     }
     
     @Test
-    public void testNonRegression() {
-        doTestNonRegression(Decimal64Field.getInstance());
+    public void testComparisonWithNonField() {
+        doTestComparisonWithNonField(Decimal64Field.getInstance());
     }
 
     public <T extends RealFieldElement<T>> void doTestSlaveMode(Field<T> field) {
@@ -78,9 +77,7 @@ public class FieldTLEPropagatorTest {
         String line2 = "2 37753  55.0032 176.5796 0004733  13.2285 346.8266  2.00565440  5153";
         FieldTLE<T> tle = new FieldTLE<>(field, line1, line2);
         
-        final T[] parameters;
-        parameters = MathArrays.buildArray(field, 1);
-        parameters[0].add(tle.getBStar());
+        final T[] parameters = tle.getParameters(field);
         FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tle, parameters);
         FieldAbsoluteDate<T> initDate = tle.getDate();
         FieldSpacecraftState<T> initialState = propagator.getInitialState();
@@ -106,9 +103,7 @@ public class FieldTLEPropagatorTest {
         String line2 = "2 37753  55.0032 176.5796 0004733  13.2285 346.8266  2.00565440  5153";
         FieldTLE<T> tle = new FieldTLE<>(field, line1, line2);
         
-        final T[] parameters;
-        parameters = MathArrays.buildArray(field, 1);
-        parameters[0].add(tle.getBStar());
+        final T[] parameters = tle.getParameters(field);
         FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tle, parameters);
         propagator.setEphemerisMode();
 
@@ -166,9 +161,7 @@ public class FieldTLEPropagatorTest {
         FieldDistanceChecker<T> checker = new FieldDistanceChecker<T>(itrf);
 
         // with Earth pointing attitude, distance should be small
-        final T[] parameters;
-        parameters = MathArrays.buildArray(field, 1);
-        parameters[0].add(tle.getBStar());
+        final T[] parameters = tle.getParameters(field);
         FieldTLEPropagator<T> propagator =
                 FieldTLEPropagator.selectExtrapolator(tle,
                                                  new BodyCenterPointing(FramesFactory.getTEME(), earth),
@@ -239,7 +232,7 @@ public class FieldTLEPropagatorTest {
 
     }
 
-    public <T extends RealFieldElement<T>> void doTestNonRegression(Field<T> field) {
+    public <T extends RealFieldElement<T>> void doTestComparisonWithNonField(Field<T> field) {
         
         // propagation time.
         final double propagtime = 10 * 60;
@@ -261,9 +254,7 @@ public class FieldTLEPropagatorTest {
         TLE tleISS = new TLE(line3, line4);
         
         // propagate Field GPS orbit
-        final T[] parametersGPS;
-        parametersGPS = MathArrays.buildArray(field, 1);
-        parametersGPS[0] = field.getZero().add(fieldtleGPS.getBStar());
+        final T[] parametersGPS = fieldtleGPS.getParameters(field);
         FieldTLEPropagator<T> fieldpropagator = FieldTLEPropagator.selectExtrapolator(fieldtleGPS, parametersGPS);
         FieldAbsoluteDate<T> fieldinitDate = fieldtleGPS.getDate();
         FieldAbsoluteDate<T> fieldendDate = fieldinitDate.shiftedBy(propagtime);        
@@ -276,9 +267,7 @@ public class FieldTLEPropagatorTest {
         PVCoordinates finalGPS = propagator.getPVCoordinates(endDate);
         
         // propagate Field ISS orbit
-        final T[] parametersISS;
-        parametersISS = MathArrays.buildArray(field, 1);
-        parametersISS[0] = field.getZero().add(fieldtleISS.getBStar());
+        final T[] parametersISS = fieldtleISS.getParameters(field);
         fieldpropagator = FieldTLEPropagator.selectExtrapolator(fieldtleISS, parametersISS);
         fieldinitDate = fieldtleISS.getDate();
         fieldendDate = fieldinitDate.shiftedBy(propagtime);        

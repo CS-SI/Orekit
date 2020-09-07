@@ -81,7 +81,6 @@ public class FieldSGP4<T extends RealFieldElement<T>> extends FieldTLEPropagator
      * @param mass spacecraft mass (kg)
      * @param teme the TEME frame to use for propagation.
      * @param parameters SGP4 and SDP4 model parameters
-     * @since 10.1
      */
     public FieldSGP4(final FieldTLE<T> initialTLE,
                 final AttitudeProvider attitudeProvider,

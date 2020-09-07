@@ -38,8 +38,8 @@ import org.orekit.utils.ParameterDriversList;
  * @author Bryan Cazabonne
  * @author Thomas Paulet
  * @since 11.0
- * @see org.orekit.propagation.semianalytical.dsst.DSSTPartialDerivativesEquations
- * @see org.orekit.propagation.semianalytical.dsst.DSSTPropagator
+ * @see org.orekit.propagation.analytical.tle.TLEPartialDerivativesEquations
+ * @see org.orekit.propagation.analytical.tle.TLEPropagator
  * @see SpacecraftState#getAdditionalState(String)
  * @see org.orekit.propagation.AbstractPropagator
  */
@@ -60,7 +60,6 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
 
     /** Placeholder for the derivatives of state. */
     private double[] stateTransition;
-
 
     /** Simple constructor.
      * @param name name of the Jacobians
@@ -177,13 +176,13 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
         final double[][] paramGrad = new double[dim][paramDim];
         final TLEGradientConverter converter = new TLEGradientConverter(propagator.getTLE());
         final FieldTLEPropagator<Gradient> gPropagator = converter.getPropagator();
-        final Gradient[] dSParameters = converter.getParameters(gPropagator.getTLE());
+        final Gradient[] gParameters = converter.getParameters(gPropagator.getTLE());
 
         // Compute Jacobian
         final AbsoluteDate init = getInitialState().getDate();
         final AbsoluteDate end = s.getDate();
         final double dt = end.durationFrom(init);
-        final FieldOrbit<Gradient> orbit = gPropagator.propagateOrbit(gPropagator.getTLE().getDate().shiftedBy(dt), dSParameters);
+        final FieldOrbit<Gradient> orbit = gPropagator.propagateOrbit(gPropagator.getTLE().getDate().shiftedBy(dt), gParameters);
         final FieldKeplerianOrbit<Gradient> gOrbit = (FieldKeplerianOrbit<Gradient>) OrbitType.KEPLERIAN.convertType(orbit);
 
         final Gradient a = TLEGradientConverter.computeA(gOrbit.getKeplerianMeanMotion());
@@ -244,7 +243,6 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
      * @param index component index (0 for a, 1 for e, 2 for i, 3 for RAAN, 4 for PA, 5 for M)
      * @param grad Jacobian of mean elements rate with respect to mean elements
      */
-
     private void addToRow(final double[] derivatives, final int index,
                           final double[][] grad) {
 
@@ -256,7 +254,6 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
    /** Getter for initial propagator state.
     * @return the propagator initial state
     */
-
     public SpacecraftState getInitialState() {
         return propagator.getInitialState();
     }

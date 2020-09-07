@@ -19,9 +19,10 @@ package org.orekit.propagation.analytical.tle;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathArrays;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.data.DataContext;
@@ -57,13 +58,18 @@ class TLEGradientConverter extends AbstractGradientConverter {
      */
     @DefaultDataContext
     TLEGradientConverter(final TLE tle) {
-
         super(FREE_STATE_PARAMETERS);
+
+        // Initial TLE
         this.tle = tle;
+
+        // Convert the initial TLE to a Gradient TLE
         final FieldTLE<Gradient> gTLE = getGradientTLE();
-        final Gradient[] parameters;
-        parameters = MathArrays.buildArray(gTLE.getE().getField(), 1);
-        parameters[0].add(gTLE.getBStar());
+
+        // TLE model parameters (can be estimated or not)
+        final Gradient[] parameters = gTLE.getParameters(gTLE.getE().getField());
+
+        // Initialize list of TLE propagators
         gPropagators = new ArrayList<>();
         gPropagators.add(FieldTLEPropagator.selectExtrapolator(gTLE, parameters));
     }
@@ -77,6 +83,10 @@ class TLEGradientConverter extends AbstractGradientConverter {
     @DefaultDataContext
     public FieldTLE<Gradient> getGradientTLE() {
 
+        // derivative field
+        final Field<Gradient> field =  GradientField.getField(FREE_STATE_PARAMETERS);
+
+    	// keplerian elements always has derivatives
         final Gradient meanMotion   = Gradient.variable(FREE_STATE_PARAMETERS, 0, tle.getMeanMotion());
         final Gradient ge           = Gradient.variable(FREE_STATE_PARAMETERS, 1, tle.getE());
         final Gradient gi           = Gradient.variable(FREE_STATE_PARAMETERS, 2, tle.getI());
@@ -84,19 +94,26 @@ class TLEGradientConverter extends AbstractGradientConverter {
         final Gradient gpa          = Gradient.variable(FREE_STATE_PARAMETERS, 4, tle.getPerigeeArgument());
         final Gradient gMeanAnomaly = Gradient.variable(FREE_STATE_PARAMETERS, 5, tle.getMeanAnomaly());
 
-        final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(ge.getField(), tle.getDate());
-        final int satelliteNumber = tle.getSatelliteNumber();
-        final char classification = tle.getClassification();
-        final int launchYear = tle.getLaunchYear();
-        final int launchNumber = tle.getLaunchNumber();
-        final String launchPiece = tle.getLaunchPiece();
-        final int ephemerisType = tle.getEphemerisType();
-        final int elementNumber = tle.getElementNumber();
+        // date
+        final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(field, tle.getDate());
+
+        // TLE parameters
+        final int satelliteNumber         = tle.getSatelliteNumber();
+        final char classification         = tle.getClassification();
+        final int launchYear              = tle.getLaunchYear();
+        final int launchNumber            = tle.getLaunchNumber();
+        final String launchPiece          = tle.getLaunchPiece();
+        final int ephemerisType           = tle.getEphemerisType();
+        final int elementNumber           = tle.getElementNumber();
+        final int revolutionNumberAtEpoch = tle.getRevolutionNumberAtEpoch();
+        final double bStar                = tle.getBStar();
+
+        // mean motion derivatives are not computed
         final Gradient meanMotionFirstDerivative = Gradient.constant(FREE_STATE_PARAMETERS, tle.getMeanMotionFirstDerivative());
         final Gradient meanMotionSecondDerivative = Gradient.constant(FREE_STATE_PARAMETERS, tle.getMeanMotionSecondDerivative());
-        final int revolutionNumberAtEpoch = tle.getRevolutionNumberAtEpoch();
-        final double bStar = tle.getBStar();
 
+
+        // gradient TLE
         final FieldTLE<Gradient> gtle = new FieldTLE<>(satelliteNumber, classification,
                         launchYear, launchNumber, launchPiece, ephemerisType, elementNumber, fieldDate,
                         meanMotion, meanMotionFirstDerivative, meanMotionSecondDerivative, ge, gi, gpa, graan, gMeanAnomaly,
@@ -133,7 +150,7 @@ class TLEGradientConverter extends AbstractGradientConverter {
             final int freeParameters = FREE_STATE_PARAMETERS + nbParams;
             final FieldTLEPropagator<Gradient> p0 = gPropagators.get(0);
 
-            // TLE
+            // TLE with derivative parameters
             final FieldTLE<Gradient> tle0 = p0.getTLE();
             final Gradient gMeanMotion  = extend(tle0.getMeanMotion(), freeParameters);
             final Gradient ge           = extend(tle0.getE(), freeParameters);
@@ -142,25 +159,31 @@ class TLEGradientConverter extends AbstractGradientConverter {
             final Gradient gpa          = extend(tle0.getPerigeeArgument(), freeParameters);
             final Gradient gMeanAnomaly = extend(tle0.getMeanAnomaly(), freeParameters);
 
+            // date
             final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(gMeanMotion.getField(), tle.getDate());
-            final int satelliteNumber = tle.getSatelliteNumber();
-            final char classification = tle.getClassification();
-            final int launchYear = tle.getLaunchYear();
-            final int launchNumber = tle.getLaunchNumber();
-            final String launchPiece = tle.getLaunchPiece();
-            final int ephemerisType = tle.getEphemerisType();
-            final int elementNumber = tle.getElementNumber();
-            final Gradient meanMotionFirstDerivative = extend(tle0.getMeanMotionFirstDerivative(), freeParameters);
-            final Gradient meanMotionSecondDerivative = extend(tle0.getMeanMotionSecondDerivative(), freeParameters);
-            final int revolutionNumberAtEpoch = tle.getRevolutionNumberAtEpoch();
-            final double bStar = tle.getBStar();
 
+            // TLE parameters
+            final int satelliteNumber         = tle.getSatelliteNumber();
+            final char classification         = tle.getClassification();
+            final int launchYear              = tle.getLaunchYear();
+            final int launchNumber            = tle.getLaunchNumber();
+            final String launchPiece          = tle.getLaunchPiece();
+            final int ephemerisType           = tle.getEphemerisType();
+            final int elementNumber           = tle.getElementNumber();
+            final int revolutionNumberAtEpoch = tle.getRevolutionNumberAtEpoch();
+            final double bStar                = tle.getBStar();
+
+            final Gradient meanMotionFirstDerivative  = extend(tle0.getMeanMotionFirstDerivative(), freeParameters);
+            final Gradient meanMotionSecondDerivative = extend(tle0.getMeanMotionSecondDerivative(), freeParameters);
+
+            // initialize the new TLE
             final FieldTLE<Gradient> gTLE = new FieldTLE<>(satelliteNumber, classification,
                             launchYear, launchNumber, launchPiece, ephemerisType, elementNumber, fieldDate,
                             gMeanMotion, meanMotionFirstDerivative, meanMotionSecondDerivative, ge, gi, gpa, graan, gMeanAnomaly,
                             revolutionNumberAtEpoch, bStar);
 
-            final FieldTLEPropagator<Gradient> p1 = FieldTLEPropagator.selectExtrapolator(gTLE, getParameters(gTLE));
+            // orbit propagator
+            final FieldTLEPropagator<Gradient> p1 = FieldTLEPropagator.selectExtrapolator(gTLE, gTLE.getParameters(gMeanMotion.getField()));
 
             // attitude
             final FieldAngularCoordinates<Gradient> ac1 = p1.getInitialState().getAttitude().getOrientation();
@@ -203,9 +226,14 @@ class TLEGradientConverter extends AbstractGradientConverter {
         return parameters;
     }
 
+    /**
+     * Compute the gradient of the semi-major axis given the satellite mean motion
+     * @param meanMotion satellite mean motion
+     * @return the semi-major axis
+     */
     public static Gradient computeA(final Gradient meanMotion) {
-     // Compute semi-major axis from TLE with the 3rd Kepler's law.;
-        final Gradient a = FastMath.pow(meanMotion.multiply(meanMotion).reciprocal().multiply(TLEPropagator.getMU()), 1. / 3);
-        return a;
+        // Compute semi-major axis from TLE with the 3rd Kepler's law.
+        return FastMath.pow(meanMotion.multiply(meanMotion).reciprocal().multiply(TLEPropagator.getMU()), 1. / 3);
     }
+
 }

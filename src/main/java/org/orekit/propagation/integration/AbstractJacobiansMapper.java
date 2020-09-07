@@ -17,8 +17,6 @@
 package org.orekit.propagation.integration;
 
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.utils.ParameterDriversList;
 
 /** Base class for jacobian mapper.
@@ -68,11 +66,11 @@ public abstract class AbstractJacobiansMapper {
 
     /** Get the conversion Jacobian between state parameters and parameters used for derivatives.
      * <p>
-     * For a {@link DSSTPropagator DSST propagator}, state parameters and parameters used for derivatives are the same,
+     * For DSST and TLE propagators, state parameters and parameters used for derivatives are the same,
      * so the Jocabian is simply the identity.
      * </p>
      * <p>
-     * For {@link NumericalPropagator Numerical propagator}, parameters used for derivatives are cartesian
+     * For Numerical propagator, parameters used for derivatives are cartesian
      * and they can be different from state parameters because the numerical propagator can accept different type
      * of orbits.
      * </p>

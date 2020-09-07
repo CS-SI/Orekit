@@ -193,7 +193,6 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
      * @param mass spacecraft mass (kg)
      * @param teme the TEME frame to use for propagation.
      * @param parameters SGP4 and SDP4 model parameters
-     * @since 10.1
      */
     public FieldDeepSDP4(final FieldTLE<T> initialTLE,
                     final AttitudeProvider attitudeProvider,
@@ -206,6 +205,8 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
     /** Computes luni - solar terms from initial coordinates and epoch.
      */
     protected void luniSolarTermsComputation() {
+
+    	final T zero = tle.getPerigeeArgument().getField().getZero();
 
         final T sing = FastMath.sin(tle.getPerigeeArgument());
         final T cosg = FastMath.cos(tle.getPerigeeArgument());
@@ -250,18 +251,18 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
         zmos = MathUtils.normalizeAngle(6.2565837 + 0.017201977 * daysSince1900, FastMath.PI);
 
         // Do solar terms
-        savtsn = xnq.getField().getZero().add(1e20);
+        savtsn = zero.add(1e20);
 
-        T zcosi =  xnq.getField().getZero().add(0.91744867);
-        T zsini =  xnq.getField().getZero().add(0.39785416);
-        T zsing = xnq.getField().getZero().add(-0.98088458);
-        T zcosg =  xnq.getField().getZero().add(0.1945905);
+        T zcosi = zero.add(0.91744867);
+        T zsini = zero.add(0.39785416);
+        T zsing = zero.add(-0.98088458);
+        T zcosg = zero.add(0.1945905);
 
-        T se = xnq.getField().getZero();
-        T sgh = xnq.getField().getZero();
-        T sh = xnq.getField().getZero();
-        T si = xnq.getField().getZero();
-        T sl = xnq.getField().getZero();
+        T se =  zero;
+        T sgh = zero;
+        T sh =  zero;
+        T si =  zero;
+        T sl =  zero;
 
         // There was previously some convoluted logic here, but it boils
         // down to this:  we compute the solar terms,  then the lunar terms.
@@ -321,7 +322,7 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
             sgh = s4.multiply(zn).multiply(z31.add(z33).subtract(6));
             if (tle.getI().getReal() < (FastMath.PI / 60.0)) {
                 // inclination smaller than 3 degrees
-                sh = xnq.getField().getZero();
+                sh = zero;
             } else {
                 sh = s2.multiply(-zn).multiply(z21.add(z23));
             }
@@ -342,7 +343,7 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
                 sse = se;
                 ssi = si;
                 ssl = sl;
-                ssh = (tle.getI().getReal() < (FastMath.PI / 60.0)) ? xnq.getField().getZero() : sh.divide(sini0);
+                ssh = (tle.getI().getReal() < (FastMath.PI / 60.0)) ? zero : sh.divide(sini0);
                 ssg = sgh.subtract(cosi0.multiply(ssh));
                 se2 = ee2;
                 si2 = xi2;
@@ -356,10 +357,10 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
                 sh3 = xh3;
                 sl4 = xl4;
                 sgh4 = xgh4;
-                zcosg = xnq.getField().getZero().add(zcosgl);
-                zsing = xnq.getField().getZero().add(zsingl);
-                zcosi = xnq.getField().getZero().add(zcosil);
-                zsini = xnq.getField().getZero().add(zsinil);
+                zcosg = zero.add(zcosgl);
+                zsing = zero.add(zsingl);
+                zcosi = zero.add(zcosil);
+                zsini = zero.add(zsinil);
                 zcosh = cosq.multiply(zcoshl).add(sinq.multiply(zsinhl));
                 zsinh = sinq.multiply(zcoshl).subtract(cosq.multiply(zsinhl));
                 zn = ZNL;
@@ -371,14 +372,14 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
         sse = sse.add(se);
         ssi = ssi.add(si);
         ssl = ssl.add(sl);
-        ssg = ssg.add(sgh).subtract((tle.getI().getReal() < (FastMath.PI / 60.0)) ? xnq.getField().getZero() : (cosi0.divide(sini0).multiply(sh)));
-        ssh = ssh.add((tle.getI().getReal() < (FastMath.PI / 60.0)) ? xnq.getField().getZero() : sh.divide(sini0));
+        ssg = ssg.add(sgh).subtract((tle.getI().getReal() < (FastMath.PI / 60.0)) ? zero : (cosi0.divide(sini0).multiply(sh)));
+        ssh = ssh.add((tle.getI().getReal() < (FastMath.PI / 60.0)) ? zero : sh.divide(sini0));
 
 
 
         //        Start the resonant-synchronous tests and initialization
 
-        T bfact = xnq.getField().getZero();
+        T bfact = zero;
 
         // if mean motion is 1.893053 to 2.117652 revs/day, and eccentricity >= 0.5,
         // start of the 12-hour orbit, e > 0.5 section
@@ -501,7 +502,7 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
             // Initialize integrator
             xli   = xlamo;
             xni   = xnq;
-            atime = xnq.getField().getZero();
+            atime = zero;
         }
         derivs = MathArrays.buildArray(xnq.getField(), 2);
     }

@@ -30,7 +30,9 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
 import org.orekit.orbits.FieldCartesianOrbit;
+import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.FieldAbstractAnalyticalPropagator;
@@ -199,8 +201,6 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
      * @param mass spacecraft mass (kg)
      * @param teme the TEME frame to use for propagation.
      * @param parameters SGP4 and SDP4 model parameters
-
-     * @since 10.1
      */
     protected FieldTLEPropagator(final FieldTLE<T> initialTLE,
                             final AttitudeProvider attitudeProvider,
@@ -217,9 +217,9 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
         initializeCommons(parameters);
         sxpInitialize(parameters);
         // set the initial state
-        final FieldOrbit<T> orbit = propagateOrbit(initialTLE.getDate(), parameters);
+        final FieldKeplerianOrbit<T> orbit = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(propagateOrbit(initialTLE.getDate(), parameters));
         final FieldAttitude<T> attitude = attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
-        super.resetInitialState(new FieldSpacecraftState<T>(orbit, attitude, mass));
+        super.resetInitialState(new FieldSpacecraftState<>(orbit, attitude, mass));
     }
 
     /** Selects the extrapolator to use with the selected TLE.
@@ -229,7 +229,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
      * @param tle the TLE to propagate.
      * @param parameters SGP4 and SDP4 model parameters
      * @return the correct propagator.
-         * @param <T> elements type
+     * @param <T> elements type
      * @see #selectExtrapolator(FieldTLE, Frames, RealFieldElement[])
      */
     @DefaultDataContext
@@ -245,8 +245,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
      * @param frames set of Frames to use in the propagator.
      * @param parameters SGP4 and SDP4 model parameters
      * @return the correct propagator.
-         * @param <T> elements type
-     * @since 10.1
+     * @param <T> elements type
      */
     public static <T extends RealFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle, final Frames frames, final T[] parameters) {
         return selectExtrapolator(
@@ -266,7 +265,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
      * @param mass spacecraft mass (kg)
      * @param parameters SGP4 and SDP4 model parameters
      * @return the correct propagator.
-         * @param <T> elements type
+     * @param <T> elements type
      * @see #selectExtrapolator(FieldTLE, AttitudeProvider, RealFieldElement, Frame, RealFieldElement[])
      */
     @DefaultDataContext
@@ -286,8 +285,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
      * @param teme the TEME frame to use for propagation.
      * @param parameters SGP4 and SDP4 model parameters
      * @return the correct propagator.
-         * @param <T> elements type
-     * @since 10.1
+     * @param <T> elements type
      */
     public static <T extends RealFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle,
                                                    final AttitudeProvider attitudeProvider,
@@ -310,9 +308,9 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
 
         // Period >= 225 minutes is deep space
         if (MathUtils.TWO_PI / (xn0dp.multiply(TLEConstants.MINUTES_PER_DAY).getReal()) >= (1.0 / 6.4)) {
-            return new FieldDeepSDP4<T>(tle, attitudeProvider, mass, teme, parameters);
+            return new FieldDeepSDP4<>(tle, attitudeProvider, mass, teme, parameters);
         } else {
-            return new FieldSGP4<T>(tle, attitudeProvider, mass, teme, parameters);
+            return new FieldSGP4<>(tle, attitudeProvider, mass, teme, parameters);
         }
     }
 
@@ -341,6 +339,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
      */
     private void initializeCommons(final T[] parameters) {
 
+    	final T zero = mass.getField().getZero();
         final T bStar = parameters[0];
         final T a1 = tle.getMeanMotion().multiply(60.0).reciprocal().multiply(TLEConstants.XKE).pow(TLEConstants.TWO_THIRD);
         cosi0 = FastMath.cos(tle.getI());
@@ -360,8 +359,8 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
         a0dp = a0.divide(delta0.negate().add(1.0));
 
         // Values of s and qms2t :
-        s4 = a1.getField().getZero().add(TLEConstants.S);  // unmodified value for s
-        T q0ms24 = s4.getField().getZero().add(TLEConstants.QOMS2T); // unmodified value for q0ms2T
+        s4 = zero.add(TLEConstants.S);  // unmodified value for s
+        T q0ms24 = zero.add(TLEConstants.QOMS2T); // unmodified value for q0ms2T
 
         perige = a0dp.multiply(tle.getE().negate().add(1.0)).subtract(TLEConstants.NORMALIZED_EQUATORIAL_RADIUS).multiply(
                                                                                                 TLEConstants.EARTH_RADIUS); // perige
@@ -369,7 +368,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
         //  For perigee below 156 km, the values of s and qoms2t are changed :
         if (perige.getReal() < 156.0) {
             if (perige.getReal() <= 98.0) {
-                s4 = s4.getField().getZero().add(20.0);
+                s4 = zero.add(20.0);
             } else {
                 s4 = perige.subtract(78.0);
             }
@@ -440,6 +439,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
      */
     private FieldPVCoordinates<T> computePVCoordinates() {
 
+    	final T zero = mass.getField().getZero();
         // Long period periodics
         final T axn = e.multiply(FastMath.cos(omega));
         T temp = a.multiply(e.multiply(e).negate().add(1.0)).reciprocal();
@@ -451,12 +451,12 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
         final T xlt   = xl.add(xll);
         final T ayn   = e.multiply(FastMath.sin(omega)).add(aynl);
         final T elsq  = axn.multiply(axn).add(ayn.multiply(ayn));
-        final T capu  = MathUtils.normalizeAngle(xlt.subtract(xnode), xlt.getField().getZero().add(FastMath.PI));
+        final T capu  = MathUtils.normalizeAngle(xlt.subtract(xnode), zero.add(FastMath.PI));
         T epw    = capu;
-        T ecosE  = epw.getField().getZero();
-        T esinE  = epw.getField().getZero();
-        T sinEPW = epw.getField().getZero();
-        T cosEPW = epw.getField().getZero();
+        T ecosE  = zero;
+        T esinE  = zero;
+        T sinEPW = zero;
+        T cosEPW = zero;
 
         // Dundee changes:  items dependent on cosio get recomputed:
         final T cosi0Sq = cosi0.multiply(cosi0);
@@ -538,7 +538,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
 
         // Position and velocity
         final T cr = rk.multiply(1000 * TLEConstants.EARTH_RADIUS);
-        final FieldVector3D<T> pos = new FieldVector3D<T>(cr.multiply(ux), cr.multiply(uy), cr.multiply(uz));
+        final FieldVector3D<T> pos = new FieldVector3D<>(cr.multiply(ux), cr.multiply(uy), cr.multiply(uz));
 
         final T rdot   = FastMath.sqrt(a).multiply(esinE.divide(r)).multiply(TLEConstants.XKE);
         final T rfdot  = FastMath.sqrt(pl).divide(r).multiply(TLEConstants.XKE);
@@ -550,7 +550,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
         final T vz     = sinik.multiply(cosuk);
 
         final double cv = 1000.0 * TLEConstants.EARTH_RADIUS / 60.0;
-        final FieldVector3D<T> vel = new FieldVector3D<T>(rdotk.multiply(ux).add(rfdotk.multiply(vx)).multiply(cv),
+        final FieldVector3D<T> vel = new FieldVector3D<>(rdotk.multiply(ux).add(rfdotk.multiply(vx)).multiply(cv),
                                                           rdotk.multiply(uy).add(rfdotk.multiply(vy)).multiply(cv),
                                                           rdotk.multiply(uz).add(rfdotk.multiply(vz)).multiply(cv));
         return new FieldPVCoordinates<T>(pos, vel);
@@ -585,7 +585,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
 
     /** {@inheritDoc} */
     public FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
-        return new FieldCartesianOrbit<T>(getPVCoordinates(date, parameters), teme, date, date.getField().getZero().add(TLEConstants.MU));
+        return OrbitType.KEPLERIAN.convertType(new FieldCartesianOrbit<>(getPVCoordinates(date, parameters), teme, date, date.getField().getZero().add(TLEConstants.MU)));
     }
 
     /** Get the underlying TLE.

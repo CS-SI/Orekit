@@ -353,10 +353,6 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         return pvProvider;
     }
 
-    public void resetInitialState(final SpacecraftState state) {
-        super.resetInitialState(state);
-    }
-
     /** Reset an intermediate state.
      * @param state new intermediate state to consider
      * @param forward if true, the intermediate state is valid for
@@ -488,7 +484,6 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         }
 
     }
-
 
     /** Internal class for local propagation. */
     private class BasicStepInterpolator implements OrekitStepInterpolator {
