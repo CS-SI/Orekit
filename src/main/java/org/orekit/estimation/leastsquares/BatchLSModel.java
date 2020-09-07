@@ -37,7 +37,6 @@ import org.orekit.utils.ParameterDriversList;
  */
 public class BatchLSModel extends AbstractBatchLSModel {
 
-
     /** Simple constructor.
      * @param propagatorBuilders builders to use for propagation
      * @param measurements measurements
@@ -48,13 +47,9 @@ public class BatchLSModel extends AbstractBatchLSModel {
                  final List<ObservedMeasurement<?>> measurements,
                  final ParameterDriversList estimatedMeasurementsParameters,
                  final ModelObserver observer) {
-
-        super(propagatorBuilders, measurements,
-                                  estimatedMeasurementsParameters,
-                                  observer);
-
+        // call super constructor
+        super(propagatorBuilders, measurements, estimatedMeasurementsParameters, observer);
     }
-
 
     /** Configure the propagator to compute derivatives.
      * @param propagators {@link Propagator} to configure
@@ -75,22 +70,24 @@ public class BatchLSModel extends AbstractBatchLSModel {
 
     }
 
+    /** {@inheritDoc} */
     @Override
     protected AbstractJacobiansMapper[] buildMappers() {
         return new JacobiansMapper[getBuilders().length];
     }
 
+    /** {@inheritDoc} */
     @Override
     protected AbstractPropagator[] buildPropagators() {
         return new NumericalPropagator[getBuilders().length];
     }
 
+    /** {@inheritDoc} */
     @Override
     protected void computeDerivatives(final AbstractJacobiansMapper mapper,
                                       final SpacecraftState state) {
         // does nothing
         // numerical method does not require analytical terms calculations
-
     }
 
 }

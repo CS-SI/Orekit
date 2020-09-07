@@ -20,12 +20,12 @@ import java.util.List;
 
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
-import org.orekit.estimation.leastsquares.BatchLSODModel;
+import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.leastsquares.TLEBatchLSModel;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.sequential.AbstractKalmanModel;
 import org.orekit.estimation.sequential.CovarianceMatrixProvider;
-import org.orekit.estimation.sequential.KalmanODModel;
 import org.orekit.estimation.sequential.TLEKalmanModel;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -133,7 +133,7 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
     }
 
     /** {@inheritDoc} */
-    public BatchLSODModel buildLSModel(final ODPropagatorBuilder[] builders,
+    public AbstractBatchLSModel buildLSModel(final ODPropagatorBuilder[] builders,
                                 final List<ObservedMeasurement<?>> measurements,
                                 final ParameterDriversList estimatedMeasurementsParameters,
                                 final ModelObserver observer) {
@@ -141,7 +141,7 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
     }
 
     /** {@inheritDoc} */
-    public KalmanODModel buildKalmanModel(final List<ODPropagatorBuilder> propagatorBuilders,
+    public AbstractKalmanModel buildKalmanModel(final List<ODPropagatorBuilder> propagatorBuilders,
                                    final List<CovarianceMatrixProvider> covarianceMatricesProviders,
                                    final ParameterDriversList estimatedMeasurementsParameters) {
         return new TLEKalmanModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters);

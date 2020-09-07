@@ -40,7 +40,7 @@ import org.orekit.utils.ParameterDriversList;
  */
 public class DSSTKalmanModel extends AbstractKalmanModel {
 
-    /** Kalman process model constructor (package private).
+    /** Kalman process model constructor.
      * @param propagatorBuilders propagators builders used to evaluate the orbits.
      * @param covarianceMatricesProviders providers for covariance matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
@@ -52,9 +52,8 @@ public class DSSTKalmanModel extends AbstractKalmanModel {
           final ParameterDriversList estimatedMeasurementParameters,
           final PropagationType propagationType,
           final PropagationType stateType) {
-
+        // call super constructor
         super(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementParameters, propagationType, stateType);
-
     }
 
     /** {@inheritDoc} */
