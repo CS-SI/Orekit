@@ -245,6 +245,8 @@ public class DSSTBatchLSModel implements BatchLSODModel {
         for (int i = 0; i < propagators.length; ++i) {
             mappers[i] = configureDerivatives(propagators[i]);
             orbits[i]  = propagators[i].getInitialState().getOrbit();
+            // compute short period derivatives at the beginning of the iteration
+            mappers[i].setShortPeriodJacobians(propagators[i].getInitialState());
         }
         final PropagatorsParallelizer parallelizer =
                         new PropagatorsParallelizer(Arrays.asList(propagators), configureMeasurements(point));
@@ -433,9 +435,6 @@ public class DSSTBatchLSModel implements BatchLSODModel {
             // Jacobian of the measurement with respect to current orbital state
             final RealMatrix dMdC = new Array2DRowRealMatrix(evaluation.getStateDerivatives(k), false);
             final RealMatrix dMdY = dMdC.multiply(dCdY);
-
-            // short period derivatives
-            mappers[p].setShortPeriodJacobians(evaluationStates[k]);
 
             // Jacobian of the measurement with respect to initial orbital state
             final double[][] aYY0 = new double[6][6];
