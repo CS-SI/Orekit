@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.3" date="TBD" description="TBD">
+   	  <action dev="thomas" type="fix" issue="713">
+        Fixed computation of DSST short period Jacobian.
+      </action>
       <action dev="luc" type="fix" issue="699">
         Fixed missing measurement parameter in Phase measurement
       </action>
