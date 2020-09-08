@@ -88,6 +88,12 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
                                 final AbsoluteDate date, final double range,
                                 final double sigma, final double baseWeight) {
         super(date, range, sigma, baseWeight, Arrays.asList(local, remote));
+        // for one way and two ways measurements, the local satellite clock offsets affects the measurement
+        addParameterDriver(local.getClockOffsetDriver());
+        if (!twoWay) {
+            // for one way measurements, the remote satellite clock offsets also affects the measurement
+            addParameterDriver(remote.getClockOffsetDriver());
+        }
         this.twoway = twoWay;
     }
 

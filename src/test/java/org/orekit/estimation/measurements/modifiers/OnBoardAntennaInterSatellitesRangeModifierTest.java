@@ -25,9 +25,9 @@ import org.orekit.attitudes.LofOffset;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
-import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.InterSatellitesRange;
 import org.orekit.estimation.measurements.InterSatellitesRangeMeasurementCreator;
+import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
@@ -68,9 +68,13 @@ public class OnBoardAntennaInterSatellitesRangeModifierTest {
         final BoundedPropagator ephemeris = closePropagator.getGeneratedEphemeris();
         final Propagator p1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final double localClockOffset  = 0.137e-6;
+        final double remoteClockOffset = 469.0e-6;
         final List<ObservedMeasurement<?>> spacecraftCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p1,
                                                                new InterSatellitesRangeMeasurementCreator(ephemeris,
+                                                                                                          localClockOffset,
+                                                                                                          remoteClockOffset,
                                                                                                           Vector3D.ZERO,
                                                                                                           Vector3D.ZERO),
                                                                1.0, 3.0, 300.0);
@@ -83,6 +87,8 @@ public class OnBoardAntennaInterSatellitesRangeModifierTest {
         final List<ObservedMeasurement<?>> antennaCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p2,
                                                                new InterSatellitesRangeMeasurementCreator(ephemeris,
+                                                                                                          localClockOffset,
+                                                                                                          remoteClockOffset,
                                                                                                           new Vector3D(xOffset1, 0, 0),
                                                                                                           new Vector3D(0, yOffset2, 0)),
                                                                1.0, 3.0, 300.0);
@@ -120,9 +126,13 @@ public class OnBoardAntennaInterSatellitesRangeModifierTest {
         final BoundedPropagator ephemeris = closePropagator.getGeneratedEphemeris();
         final Propagator p1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final double localClockOffset  = 0.137e-6;
+        final double remoteClockOffset = 469.0e-6;
         final List<ObservedMeasurement<?>> spacecraftCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p1,
                                                                new InterSatellitesRangeMeasurementCreator(ephemeris,
+                                                                                                          localClockOffset,
+                                                                                                          remoteClockOffset,
                                                                                                           Vector3D.ZERO,
                                                                                                           Vector3D.ZERO),
                                                                1.0, 3.0, 300.0);
@@ -135,6 +145,8 @@ public class OnBoardAntennaInterSatellitesRangeModifierTest {
         final List<ObservedMeasurement<?>> antennaCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p2,
                                                                new InterSatellitesRangeMeasurementCreator(ephemeris,
+                                                                                                          localClockOffset,
+                                                                                                          remoteClockOffset,
                                                                                                           apc1, apc2),
                                                                1.0, 3.0, 300.0);
 
