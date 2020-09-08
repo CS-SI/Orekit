@@ -776,9 +776,13 @@ public class KalmanEstimatorTest {
         final BoundedPropagator ephemeris = closePropagator.getGeneratedEphemeris();
         Propagator propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                      propagatorBuilder1);
+        final double localClockOffset  = 0.137e-6;
+        final double remoteClockOffset = 469.0e-6;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator1,
-                                                               new InterSatellitesRangeMeasurementCreator(ephemeris),
+                                                               new InterSatellitesRangeMeasurementCreator(ephemeris,
+                                                                                                          localClockOffset,
+                                                                                                          remoteClockOffset),
                                                                1.0, 3.0, 300.0);
 
         // create perfect range measurements for first satellite
