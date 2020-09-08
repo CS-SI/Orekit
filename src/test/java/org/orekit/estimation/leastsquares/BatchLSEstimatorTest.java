@@ -370,9 +370,14 @@ public class BatchLSEstimatorTest {
         final BoundedPropagator ephemeris = closePropagator.getGeneratedEphemeris();
         Propagator propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                      propagatorBuilder1);
+        
+        final double localClockOffset  = 0.137e-6;
+        final double remoteClockOffset = 469.0e-6;
         final List<ObservedMeasurement<?>> r12 =
                         EstimationTestUtils.createMeasurements(propagator1,
-                                                               new InterSatellitesRangeMeasurementCreator(ephemeris),
+                                                               new InterSatellitesRangeMeasurementCreator(ephemeris,
+                                                                                                          localClockOffset,
+                                                                                                          remoteClockOffset),
                                                                1.0, 3.0, 300.0);
 
         // create perfect range measurements for first satellite
@@ -466,10 +471,10 @@ public class BatchLSEstimatorTest {
                                               before.getPVCoordinates().getVelocity()),
                             1.0e-6);
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
-                                     0.0, 2.3e-06,
-                                     0.0, 6.6e-06,
-                                     0.0, 6.4e-07,
-                                     0.0, 2.9e-10);
+                                     0.0, 2.6e-06,
+                                     0.0, 1.1e-05,
+                                     0.0, 8.3e-07,
+                                     0.0, 3.7e-10);
 
         final Orbit determined = new KeplerianOrbit(parameters.get( 6).getValue(),
                                                     parameters.get( 7).getValue(),
@@ -484,7 +489,7 @@ public class BatchLSEstimatorTest {
         Assert.assertEquals(0.0,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
                                               determined.getPVCoordinates().getPosition()),
-                            1.6e-6);
+                            2.8e-6);
         Assert.assertEquals(0.0,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                                               determined.getPVCoordinates().getVelocity()),
@@ -580,7 +585,7 @@ public class BatchLSEstimatorTest {
                                                                      propagatorBuilder1);
         final List<ObservedMeasurement<?>> r12 =
                         EstimationTestUtils.createMeasurements(propagator1,
-                                                               new InterSatellitesRangeMeasurementCreator(ephemeris),
+                                                               new InterSatellitesRangeMeasurementCreator(ephemeris, 0., 0.),
                                                                1.0, 3.0, 300.0);
 
         // create perfect range measurements for first satellite
@@ -730,9 +735,10 @@ public class BatchLSEstimatorTest {
         final BoundedPropagator ephemeris = closePropagator.getGeneratedEphemeris();
         Propagator propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                      propagatorBuilder1);
+        
         final List<ObservedMeasurement<?>> r12 =
                         EstimationTestUtils.createMeasurements(propagator1,
-                                                               new InterSatellitesRangeMeasurementCreator(ephemeris),
+                                                               new InterSatellitesRangeMeasurementCreator(ephemeris, 0., 0.),
                                                                1.0, 3.0, 300.0);
 
         // create perfect range measurements for first satellite
