@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.3" date="TBD" description="TBD">
+      <action dev="bryan" type="add" issue="714">
+        Added frequency deviation for range-rate measurements.
+      </action>
       <action dev="bryan" type="add" issue="715">
         Added relativistic clock correction for range, phase and
         inter-satellite range measurements.
