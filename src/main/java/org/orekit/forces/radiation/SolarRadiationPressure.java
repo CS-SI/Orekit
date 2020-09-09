@@ -16,6 +16,7 @@
  */
 package org.orekit.forces.radiation;
 
+import java.lang.reflect.Array;
 import java.util.Map;
 
 import org.hipparchus.RealFieldElement;
@@ -471,7 +472,7 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
         if (n > 1) {
 
             @SuppressWarnings("unchecked")
-            final FieldVector3D<T>[] occultingBodyPositions = (FieldVector3D<T>[]) MathArrays.buildArray(position.getX().getField(), n);;
+            final FieldVector3D<T>[] occultingBodyPositions = (FieldVector3D<T>[]) Array.newInstance(FieldVector3D.class, n);;
             final T[] occultingBodyRadiuses =  MathArrays.buildArray(position.getX().getField(), n);
 
             // Central body

@@ -16,6 +16,7 @@
  */
 package org.orekit.forces.radiation;
 
+import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -113,7 +114,7 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
     public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
         final T zero = field.getZero();
         @SuppressWarnings("unchecked")
-        final FieldEventDetector<T>[] detectors = (FieldEventDetector<T>[]) MathArrays.buildArray(field, 2 + 2 * otherOccultingBodies.size());
+        final FieldEventDetector<T>[] detectors = (FieldEventDetector<T>[]) Array.newInstance(FieldEventDetector.class, 2 + 2 * otherOccultingBodies.size());
         detectors[0] = new FieldUmbraDetector<>(field);
         detectors[1] = new FieldPenumbraDetector<>(field);
         int i = 2;
