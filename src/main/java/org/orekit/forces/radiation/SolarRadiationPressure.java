@@ -16,10 +16,13 @@
  */
 package org.orekit.forces.radiation;
 
+import java.util.Map;
+
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.Precision;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -107,7 +110,7 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
         final double       r2           = sunSatVector.getNormSq();
 
         // compute flux
-        final double   ratio = getLightingRatio(position, frame, date);
+        final double   ratio = getTotalLightingRatio(position, frame, date);
         final double   rawP  = ratio  * kRef / r2;
         final Vector3D flux  = new Vector3D(rawP / FastMath.sqrt(r2), sunSatVector);
 
@@ -128,7 +131,7 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
         final T                    r2           = sunSatVector.getNormSq();
 
         // compute flux
-        final T                ratio = getLightingRatio(position, frame, date);
+        final T                ratio = getTotalLightingRatio(position, frame, date);
         final T                rawP  = ratio.divide(r2).multiply(kRef);
         final FieldVector3D<T> flux  = new FieldVector3D<>(rawP.divide(r2.sqrt()), sunSatVector);
 
@@ -138,6 +141,7 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
     }
 
     /** Get the lighting ratio ([0-1]).
+     * Considers only central body as occulting body.
      * @param position the satellite's position in the selected frame.
      * @param frame in which is defined the position
      * @param date the date
@@ -199,7 +203,127 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
 
     }
 
+    /** Get eclipse ratio between to bodies seen from a specific object.
+     * Ratio is in [0-1].
+     * @param position the satellite's position in the selected frame
+     * @param occultingPosition the position of the occulting object
+     * @param occultingRadius the mean radius of the occulting object
+     * @param occultedPosition the position of the occulted object
+     * @param occultedRadius the mean radius of the occulted object
+     * @return eclipse ratio
+     */
+    public double getGeneralEclipseRatio(final Vector3D position,
+                                  final Vector3D occultingPosition,
+                                  final double occultingRadius,
+                                  final Vector3D occultedPosition,
+                                  final double occultedRadius) {
+
+
+        // Compute useful angles
+        final double[] angle = getGeneralEclipseAngles(position, occultingPosition, occultingRadius, occultedPosition, occultedRadius);
+
+        // Sat-Occulted/ Sat-Occulting angle
+        final double occultedSatOcculting = angle[0];
+
+        // Occulting apparent radius
+        final double alphaOcculting = angle[1];
+
+        // Occulted apparent radius
+        final double alphaOcculted = angle[2];
+
+        double result = 1.0;
+
+        // Is the satellite in complete umbra ?
+        if (occultedSatOcculting - alphaOcculting + alphaOcculted <= ANGULAR_MARGIN) {
+            result = 0.0;
+        } else if (occultedSatOcculting - alphaOcculting - alphaOcculted < -ANGULAR_MARGIN) {
+            // Compute a lighting ratio in penumbra
+            final double sEA2    = occultedSatOcculting * occultedSatOcculting;
+            final double oo2sEA  = 1.0 / (2. * occultedSatOcculting);
+            final double aS2     = alphaOcculted * alphaOcculted;
+            final double aE2     = alphaOcculting * alphaOcculting;
+            final double aE2maS2 = aE2 - aS2;
+
+            final double alpha1  = (sEA2 - aE2maS2) * oo2sEA;
+            final double alpha2  = (sEA2 + aE2maS2) * oo2sEA;
+
+            // Protection against numerical inaccuracy at boundaries
+            final double almost0 = Precision.SAFE_MIN;
+            final double almost1 = FastMath.nextDown(1.0);
+            final double a1oaS   = FastMath.min(almost1, FastMath.max(-almost1, alpha1 / alphaOcculted));
+            final double aS2ma12 = FastMath.max(almost0, aS2 - alpha1 * alpha1);
+            final double a2oaE   = FastMath.min(almost1, FastMath.max(-almost1, alpha2 / alphaOcculting));
+            final double aE2ma22 = FastMath.max(almost0, aE2 - alpha2 * alpha2);
+
+            final double P1 = aS2 * FastMath.acos(a1oaS) - alpha1 * FastMath.sqrt(aS2ma12);
+            final double P2 = aE2 * FastMath.acos(a2oaE) - alpha2 * FastMath.sqrt(aE2ma22);
+
+            result = 1. - (P1 + P2) / (FastMath.PI * aS2);
+        }
+
+        return result;
+    }
+
+    /** Get the total lighting ratio ([0-1]).
+     * This method considers every occulting bodies.
+     * @param position the satellite's position in the selected frame.
+     * @param frame in which is defined the position
+     * @param date the date
+     * @return lighting ratio
+     */
+    public double getTotalLightingRatio(final Vector3D position, final Frame frame, final AbsoluteDate date) {
+
+        double result = 0.0;
+        final Map<ExtendedPVCoordinatesProvider, Double> otherOccultingBodies = getOtherOccultingBodies();
+        final Vector3D sunPosition = sun.getPVCoordinates(date, frame).getPosition();
+        final int n = otherOccultingBodies.size() + 1;
+
+        if (n > 1) {
+
+            final Vector3D[] occultingBodyPositions = new Vector3D[n];
+            final double[] occultingBodyRadiuses = new double[n];
+
+            // Central body
+            occultingBodyPositions[0] = position.negate();
+            occultingBodyRadiuses[0] = getEquatorialRadius();
+
+            // Other occulting bodies
+            int k = 1;
+            for (ExtendedPVCoordinatesProvider provider: otherOccultingBodies.keySet()) {
+                occultingBodyPositions[k] = provider.getPVCoordinates(date, frame).getPosition();
+                occultingBodyRadiuses[k] = otherOccultingBodies.get(provider);
+                ++k;
+            }
+            for (int i = 0; i < n + 1; ++i) {
+
+                // Lighting ratio computations
+                result += getGeneralEclipseRatio(position, sunPosition, Constants.SUN_RADIUS, occultingBodyPositions[i], occultingBodyRadiuses[i]);
+
+                // Mutual occulting body eclipse ratio computations
+                for (int j = i + 1; j < n + 1; ++j) {
+                    final double alphaJ = getGeneralEclipseAngles(position, occultingBodyPositions[i], occultingBodyRadiuses[i],
+                                                                  occultingBodyPositions[j], occultingBodyRadiuses[j])[2];
+                    final double alphaSun = getEclipseAngles(sunPosition, position)[2];
+                    final double eclipseRatioIJ = getGeneralEclipseRatio(position, occultingBodyPositions[i], occultingBodyRadiuses[i],
+                                                            occultingBodyPositions[j], occultingBodyRadiuses[j]);
+                    final double alphaJSq = alphaJ * alphaJ;
+                    final double alphaSunSq = alphaSun * alphaSun;
+                    final double mutualEclipseCorrection = (1 - eclipseRatioIJ) * alphaJSq / alphaSunSq;
+                    result -= mutualEclipseCorrection;
+                }
+            }
+            // Final term
+            result -= n - 1;
+        } else {
+            // only central body is considered
+            result = getLightingRatio(position, frame, date);
+        }
+        return result;
+    }
+
+
     /** Get the lighting ratio ([0-1]).
+     * Considers only central body as occulting body.
      * @param position the satellite's position in the selected frame.
      * @param frame in which is defined the position
      * @param date the date
@@ -263,6 +387,134 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
 
         return result;
     }
+
+    /** Get eclipse ratio between to bodies seen from a specific object.
+     * Ratio is in [0-1].
+     * @param position the satellite's position in the selected frame
+     * @param occultingPosition the position of the occulting object
+     * @param occultingRadius the mean radius of the occulting object
+     * @param occultedPosition the position of the occulted object
+     * @param occultedRadius the mean radius of the occulted object
+     * @param <T> extends RealFieldElement
+     * @return eclipse ratio
+     */
+    public <T extends RealFieldElement<T>> T getGeneralEclipseRatio(final FieldVector3D<T> position,
+                                  final FieldVector3D<T> occultingPosition,
+                                  final T occultingRadius,
+                                  final FieldVector3D<T> occultedPosition,
+                                  final T occultedRadius) {
+
+
+        final T one = occultingRadius.getField().getOne();
+
+        // Compute useful angles
+        final T[] angle = getGeneralEclipseAngles(position, occultingPosition, occultingRadius, occultedPosition, occultedRadius);
+
+        // Sat-Occulted/ Sat-Occulting angle
+        final T occultedSatOcculting = angle[0];
+
+        // Occulting apparent radius
+        final T alphaOcculting = angle[1];
+
+        // Occulted apparent radius
+        final T alphaOcculted = angle[2];
+
+        T result = one;
+
+        // Is the satellite in complete umbra ?
+        if (occultedSatOcculting.getReal() - alphaOcculting.getReal() + alphaOcculted.getReal() <= ANGULAR_MARGIN) {
+            result = occultingRadius.getField().getZero();
+        } else if (occultedSatOcculting.getReal() - alphaOcculting.getReal() - alphaOcculted.getReal() < -ANGULAR_MARGIN) {
+            // Compute a lighting ratio in penumbra
+            final T sEA2    = occultedSatOcculting.multiply(occultedSatOcculting);
+            final T oo2sEA  = occultedSatOcculting.multiply(2).reciprocal();
+            final T aS2     = alphaOcculted.multiply(alphaOcculted);
+            final T aE2     = alphaOcculting.multiply(alphaOcculting);
+            final T aE2maS2 = aE2.subtract(aS2);
+
+            final T alpha1  = sEA2.subtract(aE2maS2).multiply(oo2sEA);
+            final T alpha2  = sEA2.add(aE2maS2).multiply(oo2sEA);
+
+            // Protection against numerical inaccuracy at boundaries
+            final double almost0 = Precision.SAFE_MIN;
+            final double almost1 = FastMath.nextDown(1.0);
+            final T a1oaS   = min(almost1, max(-almost1, alpha1.divide(alphaOcculted)));
+            final T aS2ma12 = max(almost0, aS2.subtract(alpha1.multiply(alpha1)));
+            final T a2oaE   = min(almost1, max(-almost1, alpha2.divide(alphaOcculting)));
+            final T aE2ma22 = max(almost0, aE2.subtract(alpha2.multiply(alpha2)));
+
+            final T P1 = aS2.multiply(a1oaS.acos()).subtract(alpha1.multiply(aS2ma12.sqrt()));
+            final T P2 = aE2.multiply(a2oaE.acos()).subtract(alpha2.multiply(aE2ma22.sqrt()));
+
+            result = one.subtract(P1.add(P2).divide(aS2.multiply(FastMath.PI)));
+        }
+
+        return result;
+    }
+
+    /** Get the total lighting ratio ([0-1]).
+     * This method considers every occulting bodies.
+     * @param position the satellite's position in the selected frame.
+     * @param frame in which is defined the position
+     * @param date the date
+     * @param <T> extends RealFieldElement
+     * @return lighting rati
+     */
+    public  <T extends RealFieldElement<T>> T getTotalLightingRatio(final FieldVector3D<T> position, final Frame frame, final FieldAbsoluteDate<T> date) {
+
+        final T zero = date.getField().getZero();
+        T result = zero;
+        final Map<ExtendedPVCoordinatesProvider, Double> otherOccultingBodies = getOtherOccultingBodies();
+        final FieldVector3D<T> sunPosition = sun.getPVCoordinates(date, frame).getPosition();
+        final int n = otherOccultingBodies.size() + 1;
+
+        if (n > 1) {
+
+            @SuppressWarnings("unchecked")
+            final FieldVector3D<T>[] occultingBodyPositions = (FieldVector3D<T>[]) MathArrays.buildArray(position.getX().getField(), n);;
+            final T[] occultingBodyRadiuses =  MathArrays.buildArray(position.getX().getField(), n);
+
+            // Central body
+            occultingBodyPositions[0] = position.negate();
+            occultingBodyRadiuses[0] = zero.add(getEquatorialRadius());
+
+            // Other occulting bodies
+            int k = 1;
+            for (ExtendedPVCoordinatesProvider provider: otherOccultingBodies.keySet()) {
+                occultingBodyPositions[k] = provider.getPVCoordinates(date, frame).getPosition();
+                occultingBodyRadiuses[k] = zero.add(otherOccultingBodies.get(provider));
+                ++k;
+            }
+
+            // Computing total lighting ratio
+            for (int i = 0; i < n + 1; ++i) {
+
+                // Individual lighting ratio computations
+                result = result.add(getGeneralEclipseRatio(position, sunPosition, zero.add(Constants.SUN_RADIUS),
+                                                           occultingBodyPositions[i], occultingBodyRadiuses[i]));
+
+                // Correction due to mutual occulting body eclipse ratio computations
+                for (int j = i + 1; j < n + 1; ++j) {
+                    final T alphaJ = getGeneralEclipseAngles(position, occultingBodyPositions[i], occultingBodyRadiuses[i],
+                                                                  occultingBodyPositions[j], occultingBodyRadiuses[j])[2];
+                    final T alphaSun = getEclipseAngles(sunPosition, position)[2];
+                    final T eclipseRatioIJ = getGeneralEclipseRatio(position, occultingBodyPositions[i], occultingBodyRadiuses[i],
+                                                            occultingBodyPositions[j], occultingBodyRadiuses[j]);
+                    final T alphaJSq = alphaJ.multiply(alphaJ);
+                    final T alphaSunSq = alphaSun.multiply(alphaSun);
+                    final T mutualEclipseCorrection = eclipseRatioIJ.negate().add(1).multiply(alphaJSq).divide(alphaSunSq);
+                    result = result.subtract(mutualEclipseCorrection);
+                }
+            }
+            // Final term
+            result = result.subtract(n - 1);
+        } else {
+            // only central body is considered
+            result = getLightingRatio(position, frame, date);
+        }
+        return result;
+    }
+
 
     /** {@inheritDoc} */
     @Override
