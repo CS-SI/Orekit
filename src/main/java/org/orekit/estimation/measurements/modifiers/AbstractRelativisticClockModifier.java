@@ -58,6 +58,13 @@ public class AbstractRelativisticClockModifier {
         return dtRel;
     }
 
+    /** Get the scale factor used to compute relativistic effect.
+     * @return the scale factor
+     */
+    protected double getScaleFactor() {
+        return s;
+    }
+
     /** Compute the dot-product of position and velocity vectors.
      * @param pv satellite coordinates
      * @return the dot-product of position and velocity vectors
