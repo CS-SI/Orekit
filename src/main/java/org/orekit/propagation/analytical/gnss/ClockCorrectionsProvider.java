@@ -17,6 +17,7 @@
 package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -36,6 +37,12 @@ import org.orekit.utils.PVCoordinates;
  *   <li>at index 1 the relativistic clock correction due to eccentricity</li>
  *   <li>at index 2 the estimated group delay differential {@link GPSOrbitalElements#getTGD() TGD} for L1-L2 correction</li>
  * </ul>
+ * <p>
+ * Since Orekit 10.3 the relativistic clock correction can be used as an {@link EstimationModifier}
+ * in orbit determination applications to take into consideration this effect
+ * in measurement modeling.
+ * <p>
+ *
  * @author Luc Maisonobe
  * @since 9.3
  */
