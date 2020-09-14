@@ -17,9 +17,14 @@
 package org.orekit.forces.radiation;
 
 
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
+import java.util.List;
 
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -41,13 +46,20 @@ import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataContext;
+import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
+import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.MultiplexedMeasurement;
+import org.orekit.estimation.measurements.Range;
 import org.orekit.forces.AbstractLegacyForceModelTest;
 import org.orekit.forces.BoxAndSolarArraySpacecraft;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
+import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
@@ -175,7 +187,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         SolarRadiationPressure srp =
             new SolarRadiationPressure(sun, Constants.SUN_RADIUS,
-                                       (RadiationSensitive) new IsotropicRadiationClassicalConvention(50.0, 0.5, 0.5));
+                                       new IsotropicRadiationClassicalConvention(50.0, 0.5, 0.5));
         Assert.assertFalse(srp.dependsOnPositionOnly());
 
         Vector3D position = orbit.getPVCoordinates().getPosition();
@@ -206,7 +218,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true));
             SolarRadiationPressure SRP =
                 new SolarRadiationPressure(sun, earth.getEquatorialRadius(),
-                                           (RadiationSensitive) new IsotropicRadiationCNES95Convention(50.0, 0.5, 0.5));
+                                           new IsotropicRadiationCNES95Convention(50.0, 0.5, 0.5));
 
             double period = 2*FastMath.PI*FastMath.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/orbit.getMu());
             Assert.assertEquals(86164, period, 1);
@@ -603,6 +615,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
     private static class SolarStepHandler implements OrekitFixedStepHandler {
 
+        @Override
         public void handleStep(SpacecraftState currentState, boolean isLast) {
             final double dex = currentState.getEquinoctialEx() - 0.01071166;
             final double dey = currentState.getEquinoctialEy() - 0.00654848;
@@ -760,6 +773,142 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getY() - finPVC_R.getPosition().getY()) < FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
         Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
     }
+    
+    /** Testing if eclipses due to Moon are considered.
+     * Earth is artificially reduced to a single point to only consider Moon effect.
+     * Reference values are presented in "A Study of Solar Radiation Pressure acting on GPS Stellites"
+     * written by Laurent Olivier Froideval in 2009.
+     */
+    @Test
+    public void testMoonEclipse() {
+        
+        // Configure Orekit
+        final File home       = new File(System.getProperty("user.home"));
+        final File orekitData = new File(home, "orekit-data");
+        final DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
+        manager.addProvider(new DirectoryCrawler(orekitData));
+        
+        final ExtendedPVCoordinatesProvider sun  = CelestialBodyFactory.getSun();
+        final ExtendedPVCoordinatesProvider moon = CelestialBodyFactory.getMoon();
+        final Frame GCRF = FramesFactory.getGCRF();
+        final AbsoluteDate date = new AbsoluteDate(2007, 01, 01, 6, 0, 0, TimeScalesFactory.getGPS());
+        final double dt = 3600 * 24 * 360;
+        final AbsoluteDate target = date.shiftedBy(dt);
+        
+        //PV coordinates from sp3 file esa14081.sp3 PRN 03
+        final PVCoordinates refPV = new PVCoordinates(new Vector3D(14986728.76145754, 14849687.258579938, -16523319.786690142),
+                                                      new Vector3D(-3152.6722260146, 1005.6757515113, -1946.9273038773));
+        final Orbit orbit = new CartesianOrbit(refPV, GCRF, date, Constants.EIGEN5C_EARTH_MU);
+        final SpacecraftState initialState = new SpacecraftState(orbit);
+        SolarRadiationPressure srp =
+            new SolarRadiationPressure(sun, Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
+                                       new IsotropicRadiationClassicalConvention(50.0, 0.5, 0.5));
+        srp.addOccultingBody(moon, Constants.MOON_EQUATORIAL_RADIUS);
+
+        // creation of the propagator
+        double[] absTolerance = {
+            0.1, 1.0e-9, 1.0e-9, 1.0e-5, 1.0e-5, 1.0e-5, 0.001
+        };
+        double[] relTolerance = {
+            1.0e-4, 1.0e-4, 1.0e-4, 1.0e-6, 1.0e-6, 1.0e-6, 1.0e-7
+        };
+        AdaptiveStepsizeIntegrator integrator =
+                        new DormandPrince853Integrator(600.0, 60000, absTolerance, relTolerance);
+        final NumericalPropagator propagator = new NumericalPropagator(integrator);
+        propagator.setInitialState(initialState);
+        propagator.addForceModel(srp);
+        propagator.setMasterMode(600.0, new MoonEclipseStepHandler(moon, sun, srp, date));
+        propagator.propagate(target);
+    }
+    
+    /** Specialized step handler.
+     * <p>This class extends the step handler in order to print on the output stream at the given step.<p>
+     * @author Pascal Parraud
+     */
+    private static class MoonEclipseStepHandler implements OrekitFixedStepHandler {
+
+        final ExtendedPVCoordinatesProvider moon;
+        final ExtendedPVCoordinatesProvider sun;
+        final SolarRadiationPressure srp;
+        final AbsoluteDate startDate;
+        /** Simple constructor.
+         */
+        MoonEclipseStepHandler(final ExtendedPVCoordinatesProvider moon, final ExtendedPVCoordinatesProvider sun,
+                               final SolarRadiationPressure srp, final AbsoluteDate startDate) {
+            this.moon = moon;
+            this.sun  = sun;
+            this.srp  = srp;
+            this.startDate = startDate;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void handleStep(final SpacecraftState currentState, final boolean isLast) {
+            final AbsoluteDate date = currentState.getDate();
+            final Frame frame = currentState.getFrame();
+            final double timeFrom = date.durationFrom(startDate) / 3600 / 24;
+            if (timeFrom > 73.458) {
+                System.out.println((""));
+            }
+            final Vector3D moonPos = moon.getPVCoordinates(date, frame).getPosition();
+            final Vector3D sunPos = sun.getPVCoordinates(date, frame).getPosition();
+            final Vector3D statePos = currentState.getPVCoordinates().getPosition();
+            
+            final double[] angles = srp.getGeneralEclipseAngles(statePos, moonPos, Constants.MOON_EQUATORIAL_RADIUS, 
+                                                                sunPos, Constants.SUN_RADIUS);
+            final double umbra = angles[0] - angles[1] + angles[2];
+            final boolean isInUmbra = (umbra < 1.0e-10);
+            
+            final double penumbra = angles[0] - angles[1] - angles[2];
+            final boolean isInPenumbra = (penumbra < -1.0e-10);
+            
+            final double lightingRatio = srp.getTotalLightingRatio(statePos, frame, date);
+            final double lightingRatio2 = srp.getLightingRatio(statePos, frame, date);
+            //System.out.println(angles[0]);
+            /*
+            if (isInUmbra) {
+                System.out.println(currentState.getDate() + "   Moon Umbra");
+                System.out.println("");
+                Assert.assertEquals(0.0, lightingRatio, 1e-8);
+            }
+            else if (isInPenumbra) {
+                System.out.println(currentState.getDate() + "   Moon Prenumbra");
+                System.out.println("Lighting Ratio: " + lightingRatio);
+                System.out.println("");
+                Assert.assertEquals(true, (lightingRatio < 1.0));
+                Assert.assertEquals(true, (lightingRatio > 0.0));
+            }
+            else {
+                Assert.assertEquals(1.0, lightingRatio, 1e-8);
+            }
+            */
+            final String name = "LightingRatio";
+            final String filename = name + ".txt";
+            File file = new File(filename);
+            try {
+                if (!file.exists()) {
+                    file.createNewFile();
+                }
+                FileWriter fw = new FileWriter(file.getAbsoluteFile(), true);
+                BufferedWriter bw = new BufferedWriter(fw);
+                final String line = timeFrom + ", " + lightingRatio;
+                bw.write(line);
+                bw.write("\n");
+                bw.close();    
+            }
+            catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+    }
+
+
 
     @Before
     public void setUp() {

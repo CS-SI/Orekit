@@ -238,7 +238,7 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
         if (occultedSatOcculting - alphaOcculting + alphaOcculted <= ANGULAR_MARGIN) {
             result = 0.0;
         } else if (occultedSatOcculting - alphaOcculting - alphaOcculted < -ANGULAR_MARGIN) {
-            // Compute a lighting ratio in penumbra
+            // Compute an eclipse ratio in penumbra
             final double sEA2    = occultedSatOcculting * occultedSatOcculting;
             final double oo2sEA  = 1.0 / (2. * occultedSatOcculting);
             final double aS2     = alphaOcculted * alphaOcculted;
@@ -285,7 +285,7 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
             final double[] occultingBodyRadiuses = new double[n];
 
             // Central body
-            occultingBodyPositions[0] = position.negate();
+            occultingBodyPositions[0] = new Vector3D(0.0, 0.0, 0.0);
             occultingBodyRadiuses[0] = getEquatorialRadius();
 
             // Other occulting bodies
@@ -295,22 +295,25 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
                 occultingBodyRadiuses[k] = otherOccultingBodies.get(provider);
                 ++k;
             }
-            for (int i = 0; i < n + 1; ++i) {
+            for (int i = 0; i < n; ++i) {
 
                 // Lighting ratio computations
-                result += getGeneralEclipseRatio(position, sunPosition, Constants.SUN_RADIUS, occultingBodyPositions[i], occultingBodyRadiuses[i]);
+                result += getGeneralEclipseRatio(position, occultingBodyPositions[i], occultingBodyRadiuses[i], sunPosition, Constants.SUN_RADIUS);
+
 
                 // Mutual occulting body eclipse ratio computations
-                for (int j = i + 1; j < n + 1; ++j) {
-                    final double alphaJ = getGeneralEclipseAngles(position, occultingBodyPositions[i], occultingBodyRadiuses[i],
-                                                                  occultingBodyPositions[j], occultingBodyRadiuses[j])[2];
-                    final double alphaSun = getEclipseAngles(sunPosition, position)[2];
-                    final double eclipseRatioIJ = getGeneralEclipseRatio(position, occultingBodyPositions[i], occultingBodyRadiuses[i],
-                                                            occultingBodyPositions[j], occultingBodyRadiuses[j]);
-                    final double alphaJSq = alphaJ * alphaJ;
-                    final double alphaSunSq = alphaSun * alphaSun;
-                    final double mutualEclipseCorrection = (1 - eclipseRatioIJ) * alphaJSq / alphaSunSq;
-                    result -= mutualEclipseCorrection;
+                for (int j = i + 1; j < n; ++j) {
+                    if (getGeneralEclipseRatio(position, occultingBodyPositions[j], occultingBodyRadiuses[j], sunPosition, Constants.SUN_RADIUS) ==  0.0 ) {
+                        final double alphaJ = getGeneralEclipseAngles(position, occultingBodyPositions[i], occultingBodyRadiuses[i],
+                                                                      occultingBodyPositions[j], occultingBodyRadiuses[j])[2];
+                        final double alphaSun = getEclipseAngles(sunPosition, position)[2];
+                        final double eclipseRatioIJ = getGeneralEclipseRatio(position, occultingBodyPositions[i], occultingBodyRadiuses[i],
+                                                                occultingBodyPositions[j], occultingBodyRadiuses[j]);
+                        final double alphaJSq = alphaJ * alphaJ;
+                        final double alphaSunSq = alphaSun * alphaSun;
+                        final double mutualEclipseCorrection = (1 - eclipseRatioIJ) * alphaJSq / alphaSunSq;
+                        result -= mutualEclipseCorrection;
+                    }
                 }
             }
             // Final term
@@ -488,14 +491,15 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
             }
 
             // Computing total lighting ratio
-            for (int i = 0; i < n + 1; ++i) {
+            for (int i = 0; i < n; ++i) {
 
                 // Individual lighting ratio computations
-                result = result.add(getGeneralEclipseRatio(position, sunPosition, zero.add(Constants.SUN_RADIUS),
-                                                           occultingBodyPositions[i], occultingBodyRadiuses[i]));
+                result = result.add(getGeneralEclipseRatio(position,
+                                                           occultingBodyPositions[i], occultingBodyRadiuses[i],
+                                                           sunPosition, zero.add(Constants.SUN_RADIUS)));
 
                 // Correction due to mutual occulting body eclipse ratio computations
-                for (int j = i + 1; j < n + 1; ++j) {
+                for (int j = i + 1; j < n; ++j) {
                     final T alphaJ = getGeneralEclipseAngles(position, occultingBodyPositions[i], occultingBodyRadiuses[i],
                                                                   occultingBodyPositions[j], occultingBodyRadiuses[j])[2];
                     final T alphaSun = getEclipseAngles(sunPosition, position)[2];

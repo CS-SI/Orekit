@@ -74,20 +74,6 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
         this.otherOccultingBodies = new HashMap<ExtendedPVCoordinatesProvider, Double>();
     }
 
-    /**
-     * Simple Constructor.
-     * Only central body is considered.
-     * @param sun Sun model
-     * @param equatorialRadius central body spherical shape model (for umbra/penumbra computation)
-     * @param otherOccultingBodies occulting bodies, which are not central body, to consider
-     */
-    protected AbstractRadiationForceModel(final ExtendedPVCoordinatesProvider sun, final double equatorialRadius,
-                                          final Map<ExtendedPVCoordinatesProvider, Double> otherOccultingBodies) {
-        this.sun                  = sun;
-        this.equatorialRadius     = equatorialRadius;
-        this.otherOccultingBodies = otherOccultingBodies;
-    }
-
     /** {@inheritDoc} */
     @Override
     public boolean dependsOnPositionOnly() {
