@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="10.3" date="TBD" description="TBD">
+      <action dev="bryan" type="add" issue="704">
+        Allow using user specified velocity error for computing
+        tolerance vectors for integrators.
+      </action>
       <action dev="bryan" type="add" issue="714">
         Added frequency deviation for range-rate measurements.
       </action>
