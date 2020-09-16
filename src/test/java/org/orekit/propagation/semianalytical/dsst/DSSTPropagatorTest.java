@@ -993,6 +993,30 @@ public class DSSTPropagatorTest {
                             5.0e-6);
     }
 
+    @Test
+    public void testIssue704() {
+
+        // Coordinates
+        final Orbit         orbit = getLEOState().getOrbit();
+        final PVCoordinates pv    = orbit.getPVCoordinates();
+
+        // dP
+        final double dP = 10.0;
+
+        // Computes dV
+        final double r2 = pv.getPosition().getNormSq();
+        final double v  = pv.getVelocity().getNorm();
+        final double dV = orbit.getMu() * dP / (v * r2);
+
+        // Verify
+        final double[][] tol1 = DSSTPropagator.tolerances(dP, orbit);
+        final double[][] tol2 = DSSTPropagator.tolerances(dP, dV, orbit);
+        for (int i = 0; i < tol1.length; i++) {
+            Assert.assertArrayEquals(tol1[i], tol2[i], Double.MIN_VALUE);
+        }
+
+    }
+
     private SpacecraftState getGEOState() throws IllegalArgumentException, OrekitException {
         // No shadow at this date
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
