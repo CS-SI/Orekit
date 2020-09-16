@@ -945,6 +945,37 @@ public class NumericalPropagatorTest {
         }
     }
 
+    @Test
+    public void testIssue704() {
+
+        // Coordinates
+        final Orbit         orbit = initialState.getOrbit();
+        final PVCoordinates pv    = orbit.getPVCoordinates();
+
+        // dP
+        final double dP = 10.0;
+
+        // Computes dV
+        final double r2 = pv.getPosition().getNormSq();
+        final double v  = pv.getVelocity().getNorm();
+        final double dV = orbit.getMu() * dP / (v * r2);
+
+        // Verify: Cartesian case
+        final double[][] tolCart1 = NumericalPropagator.tolerances(dP, orbit, OrbitType.CARTESIAN);
+        final double[][] tolCart2 = NumericalPropagator.tolerances(dP, dV, orbit, OrbitType.CARTESIAN);
+        for (int i = 0; i < tolCart1.length; i++) {
+            Assert.assertArrayEquals(tolCart1[i], tolCart2[i], Double.MIN_VALUE);
+        }
+
+        // Verify: Non cartesian case
+        final double[][] tolKep1 = NumericalPropagator.tolerances(dP, orbit, OrbitType.KEPLERIAN);
+        final double[][] tolKep2 = NumericalPropagator.tolerances(dP, dV, orbit, OrbitType.KEPLERIAN);
+        for (int i = 0; i < tolCart1.length; i++) {
+            Assert.assertArrayEquals(tolKep1[i], tolKep2[i], Double.MIN_VALUE);
+        }
+
+    }
+
     private static class CheckingHandler<T extends EventDetector> implements EventHandler<T> {
 
         private final Action actionOnEvent;
