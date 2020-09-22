@@ -58,7 +58,18 @@ public class DSSTContext {
     // Map value = slave station associated
     public Map<GroundStation, GroundStation>      TARstations;
 
+    /**
+     * By default propagation type and initial state type are set to {@link PropagationType.MEAN}
+     * @see #createBuilder(PropagationType, PropagationType, boolean, double, double, double, DSSTForce...)
+     */
     public DSSTPropagatorBuilder createBuilder(final boolean perfectStart,
+                                               final double minStep, final double maxStep, final double dP,
+                                               final DSSTForce... forces) {
+        return createBuilder(PropagationType.MEAN, PropagationType.MEAN, perfectStart, minStep, maxStep, dP, forces);
+    }
+
+    public DSSTPropagatorBuilder createBuilder(final PropagationType propagationType,
+                                               final PropagationType stateType, final boolean perfectStart,
                                                final double minStep, final double maxStep, final double dP,
                                                final DSSTForce... forces) {
 
@@ -81,8 +92,7 @@ public class DSSTContext {
                         new DSSTPropagatorBuilder(startOrbit,
                                                   new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
                                                   dP,
-                                                  PropagationType.MEAN,
-                                                  PropagationType.MEAN);
+                                                  propagationType, stateType);
         for (DSSTForce force : forces) {
             propagatorBuilder.addForceModel(force.getForceModel(this));
         }
