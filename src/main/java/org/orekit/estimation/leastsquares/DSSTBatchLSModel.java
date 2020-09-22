@@ -244,9 +244,12 @@ public class DSSTBatchLSModel implements BatchLSODModel {
         final Orbit[] orbits = new Orbit[propagators.length];
         for (int i = 0; i < propagators.length; ++i) {
             mappers[i] = configureDerivatives(propagators[i]);
-            orbits[i]  = propagators[i].getInitialState().getOrbit();
+            final SpacecraftState initial = propagators[i].initialIsOsculating() ?
+                        DSSTPropagator.computeMeanState(propagators[i].getInitialState(), propagators[i].getAttitudeProvider(), propagators[i].getAllForceModels()) :
+                        propagators[i].getInitialState();
+            orbits[i]  = initial.getOrbit();
             // compute short period derivatives at the beginning of the iteration
-            mappers[i].setShortPeriodJacobians(propagators[i].getInitialState());
+            mappers[i].setShortPeriodJacobians(initial);
         }
         final PropagatorsParallelizer parallelizer =
                         new PropagatorsParallelizer(Arrays.asList(propagators), configureMeasurements(point));
