@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.3" date="TBD" description="TBD">
+      <action dev="bryan" type="add" issue="703">
+        Added inter-satellites phase measurement.
+      </action>
       <action dev="bryan" type="fix" issue="695">
         Considered covariance matrix from Position measurement in Kalman estimator.
       </action>
