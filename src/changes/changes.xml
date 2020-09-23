@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.3" date="TBD" description="TBD">
+      <action dev="bryan" type="fix" issue="695">
+        Considered covariance matrix from Position measurement in Kalman estimator.
+      </action>
       <action dev="bryan" type="fix" issue="718">
         Fixed orbital state used for short periodic Jacobian computation.
       </action>
