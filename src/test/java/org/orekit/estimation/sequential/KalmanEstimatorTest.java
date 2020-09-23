@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.sequential;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -33,8 +35,10 @@ import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.AngularAzElMeasurementCreator;
 import org.orekit.estimation.measurements.AngularRaDecMeasurementCreator;
 import org.orekit.estimation.measurements.InterSatellitesRangeMeasurementCreator;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
+import org.orekit.estimation.measurements.Position;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
@@ -915,6 +919,68 @@ public class KalmanEstimatorTest {
                                                new double[3], 0.);
         } catch (DummyException de) {
             // expected
+        }
+
+    }
+
+    @Test
+    public void testIssue695() {
+
+        // Create context
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        // Create a position measurement
+        final Position position = new Position(context.initialOrbit.getDate(),
+                                               new Vector3D(1.0, -1.0, 0.0),
+                                               0.5, 1.0, new ObservableSatellite(0));
+
+        // Create propagator builder
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true, 1.e-6, 60., 1.);
+        
+        // Covariance matrix initialization
+        final RealMatrix initialP = MatrixUtils.createRealDiagonalMatrix(new double [] {
+            1e-2, 1e-2, 1e-2, 1e-5, 1e-5, 1e-5
+        });        
+
+        // Process noise matrix
+        RealMatrix Q = MatrixUtils.createRealDiagonalMatrix(new double [] {
+            1.e-8, 1.e-8, 1.e-8, 1.e-8, 1.e-8, 1.e-8
+        });
+  
+
+        // Build the Kalman filter
+        final KalmanEstimator kalman = new KalmanEstimatorBuilder().
+                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
+                        estimatedMeasurementsParameters(new ParameterDriversList()).
+                        build();
+
+        // Decorated measurement
+        MeasurementDecorator decorated = null;
+
+        // Call the private method "decorate" in KalmanEstimator class
+        try {
+            Method decorate = KalmanEstimator.class.getDeclaredMethod("decorate",
+                                                                      ObservedMeasurement.class);
+            decorate.setAccessible(true);
+            decorated = (MeasurementDecorator) decorate.invoke(kalman, position);
+        } catch (NoSuchMethodException | IllegalAccessException |
+                        IllegalArgumentException | InvocationTargetException e) {
+          
+        }
+
+        // Verify time
+        Assert.assertEquals(0.0, decorated.getTime(), 1.0e-15);
+        // Verify covariance matrix
+        final RealMatrix covariance = decorated.getCovariance();
+        for (int i = 0; i < covariance.getRowDimension(); i++) {
+            for (int j = 0; j < covariance.getColumnDimension(); j++) {
+                if (i == j) {
+                    Assert.assertEquals(1.0, covariance.getEntry(i, j), 1.0e-15);
+                } else {
+                    Assert.assertEquals(0.0, covariance.getEntry(i, j), 1.0e-15);
+                }
+            }
         }
 
     }
