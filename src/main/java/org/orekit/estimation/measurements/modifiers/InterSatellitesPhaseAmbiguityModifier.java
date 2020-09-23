@@ -20,15 +20,14 @@ import java.util.List;
 
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
-import org.orekit.estimation.measurements.gnss.Phase;
+import org.orekit.estimation.measurements.gnss.InterSatellitesPhase;
 import org.orekit.utils.ParameterDriver;
 
-/** Class modifying theoretical phase measurement with ambiguity.
- *
- * @author Luc Maisonobe
- * @since 9.2
+/** Class modifying theoretical inter-satellites phase measurement with ambiguity.
+ * @author Bryan Cazabonne
+ * @since 10.3
  */
-public class PhaseAmbiguityModifier extends AbstractAmbiguityModifier implements EstimationModifier<Phase> {
+public class InterSatellitesPhaseAmbiguityModifier extends AbstractAmbiguityModifier implements EstimationModifier<InterSatellitesPhase> {
 
     /** Constructor.
      * <p>
@@ -41,7 +40,7 @@ public class PhaseAmbiguityModifier extends AbstractAmbiguityModifier implements
      * @param key key to identify the ambiguity
      * @param ambiguity initial value of ambiguity
      */
-    public PhaseAmbiguityModifier(final int key, final double ambiguity) {
+    public InterSatellitesPhaseAmbiguityModifier(final int key, final double ambiguity) {
         super(key, ambiguity);
     }
 
@@ -51,8 +50,9 @@ public class PhaseAmbiguityModifier extends AbstractAmbiguityModifier implements
         return getDrivers();
     }
 
+    /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<Phase> estimated) {
+    public void modify(final EstimatedMeasurement<InterSatellitesPhase> estimated) {
         doModify(estimated);
     }
 
