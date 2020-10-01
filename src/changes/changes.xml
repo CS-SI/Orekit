@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.3" date="TBD" description="TBD">
+      <action dev="bryan" type="add" >
+        Considered a new implementation for empirical forces, to allow piecewise model.
+      </action>
       <action dev="bryan" type="add" issue="703">
         Added inter-satellites phase measurement.
       </action>

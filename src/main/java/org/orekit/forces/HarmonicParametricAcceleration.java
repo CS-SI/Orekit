@@ -23,6 +23,7 @@ import org.hipparchus.util.MathUtils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
+import org.orekit.forces.empirical.HarmonicAccelerationModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -32,7 +33,9 @@ import org.orekit.utils.ParameterDriver;
  * with harmonic signed amplitude.
  * @since 9.0
  * @author Luc Maisonobe
+ * @deprecated as of 10.3, replaced by {@link HarmonicAccelerationModel}
  */
+@Deprecated
 public class HarmonicParametricAcceleration extends AbstractParametricAcceleration {
 
     /** Amplitude scaling factor.

@@ -62,6 +62,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
+@Deprecated
 public class PolynomialParametricAccelerationTest extends AbstractForceModelTest {
 
     private Orbit initialOrbit;

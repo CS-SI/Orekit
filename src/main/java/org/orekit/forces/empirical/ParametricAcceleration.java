@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.forces;
+package org.orekit.forces.empirical;
 
 import java.util.stream.Stream;
 
@@ -25,11 +25,13 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
-import org.orekit.forces.empirical.ParametricAcceleration;
+import org.orekit.forces.AbstractForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 /** This class implements a parametric acceleration.
  * <p>Parametric accelerations are intended to model lesser-known
@@ -55,12 +57,11 @@ import org.orekit.propagation.events.FieldEventDetector;
  * of this class should be used, one along the X axis, one along the Y
  * axis and one along the Z axis and their parameters estimated as usual.
  * </p>
- * @since 9.0
+ * @since 10.3
  * @author Luc Maisonobe
- * @deprecated as of 10.3, replaced by {@link ParametricAcceleration}
+ * @author Bryan Cazabonne
  */
-@Deprecated
-public abstract class AbstractParametricAcceleration extends AbstractForceModel {
+public class ParametricAcceleration extends AbstractForceModel {
 
     /** Direction of the acceleration in defining frame. */
     private final Vector3D direction;
@@ -71,6 +72,43 @@ public abstract class AbstractParametricAcceleration extends AbstractForceModel 
     /** The attitude to override, if set. */
     private final AttitudeProvider attitudeOverride;
 
+    /** Acceleration model. */
+    private final AccelerationModel accelerationModel;
+
+    /** Simple constructor.
+     * @param direction acceleration direction in overridden spacecraft frame
+     * @param isInertial if true, direction is defined in the same inertial
+     * frame used for propagation (i.e. {@link SpacecraftState#getFrame()}),
+     * otherwise direction is defined in spacecraft frame (i.e. using the
+     * propagation {@link
+     * org.orekit.propagation.Propagator#setAttitudeProvider(AttitudeProvider)
+     * attitude law})
+     * @param accelerationModel acceleration model used to compute the contribution of the empirical acceleration
+     * direction
+     */
+    public ParametricAcceleration(final Vector3D direction,
+                                  final boolean isInertial,
+                                  final AccelerationModel accelerationModel) {
+        this(direction, isInertial, null, accelerationModel);
+    }
+
+    /** Simple constructor.
+     * @param direction acceleration direction in overridden spacecraft frame
+     * frame used for propagation (i.e. {@link SpacecraftState#getFrame()}),
+     * otherwise direction is defined in spacecraft frame (i.e. using the
+     * propagation {@link
+     * org.orekit.propagation.Propagator#setAttitudeProvider(AttitudeProvider)
+     * attitude law})
+     * @param attitudeOverride provider for attitude used to compute acceleration
+     * @param accelerationModel acceleration model used to compute the contribution of the empirical acceleration
+     * direction
+     */
+    public ParametricAcceleration(final Vector3D direction,
+                                  final AttitudeProvider attitudeOverride,
+                                  final AccelerationModel accelerationModel) {
+        this(direction, false, attitudeOverride, accelerationModel);
+    }
+
     /** Simple constructor.
      * @param direction acceleration direction in overridden spacecraft frame
      * @param isInertial if true, direction is defined in the same inertial
@@ -80,50 +118,41 @@ public abstract class AbstractParametricAcceleration extends AbstractForceModel 
      * org.orekit.propagation.Propagator#setAttitudeProvider(AttitudeProvider)
      * attitude law})
      * @param attitudeOverride provider for attitude used to compute acceleration
+     * @param accelerationModel acceleration model used to compute the contribution of the empirical acceleration
      * direction
      */
-    protected AbstractParametricAcceleration(final Vector3D direction,  final boolean isInertial,
-                                             final AttitudeProvider attitudeOverride) {
-        this.direction        = direction;
-        this.isInertial       = isInertial;
-        this.attitudeOverride = attitudeOverride;
+    private ParametricAcceleration(final Vector3D direction,
+                                   final boolean isInertial,
+                                   final AttitudeProvider attitudeOverride,
+                                   final AccelerationModel accelerationModel) {
+        this.direction         = direction;
+        this.isInertial        = isInertial;
+        this.attitudeOverride  = attitudeOverride;
+        this.accelerationModel = accelerationModel;
     }
-
-    /** Check if direction is inertial.
-     * @return true if direction is inertial
-     */
-    protected boolean isInertial() {
-        return isInertial;
-    }
-
-    /** Compute the signed amplitude of the acceleration.
-     * <p>
-     * The acceleration is the direction multiplied by the signed amplitude. So if
-     * signed amplitude is negative, the acceleratin is towards the opposite of the
-     * direction specified at construction.
-     * </p>
-     * @param state current state information: date, kinematics, attitude
-     * @param parameters values of the force model parameters
-     * @return norm of the acceleration
-     */
-    protected abstract double signedAmplitude(SpacecraftState state, double[] parameters);
-
-    /** Compute the signed amplitude of the acceleration.
-     * <p>
-     * The acceleration is the direction multiplied by the signed amplitude. So if
-     * signed amplitude is negative, the acceleratin is towards the opposite of the
-     * direction specified at construction.
-     * </p>
-     * @param state current state information: date, kinematics, attitude
-     * @param parameters values of the force model parameters
-     * @param <T> type of the elements
-     * @return norm of the acceleration
-     */
-    protected abstract <T extends RealFieldElement<T>> T signedAmplitude(FieldSpacecraftState<T> state, T[] parameters);
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D acceleration(final SpacecraftState state, final double[] parameters) {
+    public boolean dependsOnPositionOnly() {
+        return isInertial;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ParameterDriver[] getParametersDrivers() {
+        return accelerationModel.getParametersDrivers();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void init(final SpacecraftState initialState, final AbsoluteDate target) {
+        accelerationModel.init(initialState, target);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Vector3D acceleration(final SpacecraftState state,
+                                 final double[] parameters) {
 
         final Vector3D inertialDirection;
         if (isInertial) {
@@ -141,7 +170,8 @@ public abstract class AbstractParametricAcceleration extends AbstractForceModel 
             inertialDirection = attitude.getRotation().applyInverseTo(direction);
         }
 
-        return new Vector3D(signedAmplitude(state, parameters), inertialDirection);
+        // Call the acceleration model to compute the acceleration
+        return new Vector3D(accelerationModel.signedAmplitude(state, parameters), inertialDirection);
 
     }
 
@@ -166,7 +196,8 @@ public abstract class AbstractParametricAcceleration extends AbstractForceModel 
             inertialDirection = attitude.getRotation().applyInverseTo(direction);
         }
 
-        return new FieldVector3D<>(signedAmplitude(state, parameters), inertialDirection);
+        // Call the acceleration model to compute the acceleration
+        return new FieldVector3D<>(accelerationModel.signedAmplitude(state, parameters), inertialDirection);
 
     }
 
