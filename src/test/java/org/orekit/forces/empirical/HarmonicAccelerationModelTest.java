@@ -14,8 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.forces;
-
+package org.orekit.forces.empirical;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,6 +46,7 @@ import org.orekit.estimation.leastsquares.BatchLSEstimator;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
+import org.orekit.forces.AbstractForceModelTest;
 import org.orekit.forces.maneuvers.ConstantThrustManeuver;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
@@ -73,8 +73,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
-@Deprecated
-public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
+public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
 
     private Orbit initialOrbit;
 
@@ -92,9 +91,9 @@ public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
         ConstantThrustManeuver maneuver = new ConstantThrustManeuver(initialOrbit.getDate().shiftedBy(-10.0),
                                                                      duration, f, isp, Vector3D.PLUS_I);
         final AttitudeProvider accelerationLaw = new InertialProvider(new Rotation(direction, Vector3D.PLUS_K));
-        final HarmonicParametricAcceleration inertialAcceleration =
-                        new HarmonicParametricAcceleration(direction, true, "", AbsoluteDate.J2000_EPOCH,
-                                                           Double.POSITIVE_INFINITY, 1);
+        final AccelerationModel accelerationModel = new HarmonicAccelerationModel("", AbsoluteDate.J2000_EPOCH,
+                                                                                          Double.POSITIVE_INFINITY, 1);
+        final ParametricAcceleration inertialAcceleration = new ParametricAcceleration(direction, true, accelerationModel);
         Assert.assertTrue(inertialAcceleration.dependsOnPositionOnly());
         inertialAcceleration.getParametersDrivers()[0].setValue(f / mass);
         inertialAcceleration.getParametersDrivers()[1].setValue(0.5 * FastMath.PI);
@@ -111,9 +110,9 @@ public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
         final AttitudeProvider commonLaw = new LofOffset(initialOrbit.getFrame(), LOFType.VNC);
         ConstantThrustManeuver maneuver = new ConstantThrustManeuver(initialOrbit.getDate().shiftedBy(-10.0),
                                                                      duration, f, isp, Vector3D.PLUS_I);
-        final HarmonicParametricAcceleration lofAcceleration =
-                        new HarmonicParametricAcceleration(Vector3D.PLUS_I, false, "", null,
-                                                           Double.POSITIVE_INFINITY, 1);
+        final AccelerationModel accelerationModel = new HarmonicAccelerationModel("", null,
+                                                                                          Double.POSITIVE_INFINITY, 1);
+        final ParametricAcceleration lofAcceleration = new ParametricAcceleration(Vector3D.PLUS_I, false, accelerationModel);
         Assert.assertFalse(lofAcceleration.dependsOnPositionOnly());
         lofAcceleration.getParametersDrivers()[0].setValue(f / mass);
         lofAcceleration.getParametersDrivers()[1].setValue(0.5 * FastMath.PI);
@@ -133,9 +132,9 @@ public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
         final AttitudeProvider accelerationLaw = new CelestialBodyPointed(initialOrbit.getFrame(),
                                                                           CelestialBodyFactory.getSun(), Vector3D.PLUS_K,
                                                                           Vector3D.PLUS_I, Vector3D.PLUS_K);
-        final HarmonicParametricAcceleration lofAcceleration =
-                        new HarmonicParametricAcceleration(Vector3D.PLUS_I, maneuverLaw, "prefix", null,
-                                                           Double.POSITIVE_INFINITY, 1);
+        final AccelerationModel accelerationModel = new HarmonicAccelerationModel("prefix", null,
+                                                                                          Double.POSITIVE_INFINITY, 1);
+        final ParametricAcceleration lofAcceleration = new ParametricAcceleration(Vector3D.PLUS_I, maneuverLaw, accelerationModel);
         lofAcceleration.getParametersDrivers()[0].setValue(f / mass);
         lofAcceleration.getParametersDrivers()[1].setValue(0.5 * FastMath.PI);
         doTestEquivalentManeuver(mass, maneuverLaw, maneuver, accelerationLaw, lofAcceleration, 1.0e-15);
@@ -145,7 +144,7 @@ public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
                                           final AttitudeProvider maneuverLaw,
                                           final ConstantThrustManeuver maneuver,
                                           final AttitudeProvider accelerationLaw,
-                                          final HarmonicParametricAcceleration parametricAcceleration,
+                                          final ParametricAcceleration parametricAcceleration,
                                           final double positionTolerance)
         {
 
@@ -202,9 +201,9 @@ public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
         ConstantThrustManeuver maneuver = new ConstantThrustManeuver(initialOrbit.getDate().shiftedBy(-10.0),
                                                                      duration, f, isp, Vector3D.PLUS_I);
         final AttitudeProvider accelerationLaw = new InertialProvider(new Rotation(direction, Vector3D.PLUS_K));
-        final HarmonicParametricAcceleration inertialAcceleration =
-                        new HarmonicParametricAcceleration(direction, true, "", AbsoluteDate.J2000_EPOCH,
-                                                           Double.POSITIVE_INFINITY, 1);
+        final AccelerationModel accelerationModel = new HarmonicAccelerationModel("", AbsoluteDate.J2000_EPOCH,
+                                                                                          Double.POSITIVE_INFINITY, 1);
+        final ParametricAcceleration inertialAcceleration = new ParametricAcceleration(direction, true, accelerationModel);
         inertialAcceleration.getParametersDrivers()[0].setValue(f / mass);
         inertialAcceleration.getParametersDrivers()[1].setValue(0.5 * FastMath.PI);
         doTestEquivalentManeuver(Decimal64Field.getInstance(),
@@ -221,9 +220,9 @@ public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
         final AttitudeProvider commonLaw = new LofOffset(initialOrbit.getFrame(), LOFType.VNC);
         ConstantThrustManeuver maneuver = new ConstantThrustManeuver(initialOrbit.getDate().shiftedBy(-10.0),
                                                                      duration, f, isp, Vector3D.PLUS_I);
-        final HarmonicParametricAcceleration lofAcceleration =
-                        new HarmonicParametricAcceleration(Vector3D.PLUS_I, false, "", null,
-                                                           Double.POSITIVE_INFINITY, 1);
+        final HarmonicAccelerationModel accelerationModel = new HarmonicAccelerationModel("", null,
+                                                                                          Double.POSITIVE_INFINITY, 1);
+        final ParametricAcceleration lofAcceleration = new ParametricAcceleration(Vector3D.PLUS_I, false, accelerationModel);
         lofAcceleration.getParametersDrivers()[0].setValue(f / mass);
         lofAcceleration.getParametersDrivers()[1].setValue(0.5 * FastMath.PI);
         doTestEquivalentManeuver(Decimal64Field.getInstance(),
@@ -243,9 +242,9 @@ public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
         final AttitudeProvider accelerationLaw = new CelestialBodyPointed(initialOrbit.getFrame(),
                                                                           CelestialBodyFactory.getSun(), Vector3D.PLUS_K,
                                                                           Vector3D.PLUS_I, Vector3D.PLUS_K);
-        final HarmonicParametricAcceleration lofAcceleration =
-                        new HarmonicParametricAcceleration(Vector3D.PLUS_I, maneuverLaw, "prefix", null,
-                                                           Double.POSITIVE_INFINITY, 1);
+        final HarmonicAccelerationModel accelerationModel = new HarmonicAccelerationModel( "prefix", null,
+                                                                                           Double.POSITIVE_INFINITY, 1);
+        final ParametricAcceleration lofAcceleration = new ParametricAcceleration(Vector3D.PLUS_I, maneuverLaw, accelerationModel);
         lofAcceleration.getParametersDrivers()[0].setValue(f / mass);
         lofAcceleration.getParametersDrivers()[1].setValue(0.5 * FastMath.PI);
         doTestEquivalentManeuver(Decimal64Field.getInstance(),
@@ -257,7 +256,7 @@ public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
                                                                           final AttitudeProvider maneuverLaw,
                                                                           final ConstantThrustManeuver maneuver,
                                                                           final AttitudeProvider accelerationLaw,
-                                                                          final HarmonicParametricAcceleration parametricAcceleration,
+                                                                          final ParametricAcceleration parametricAcceleration,
                                                                           final double positionTolerance)
                                                                                           {
 
@@ -335,10 +334,10 @@ public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
                                                        new AbsoluteDate(2005, 3, 5, 0, 24, 0.0, TimeScalesFactory.getTAI()),
                                                        Constants.EIGEN5C_EARTH_MU));
 
-        final HarmonicParametricAcceleration hpa =
-                        new HarmonicParametricAcceleration(Vector3D.PLUS_K, false, "kT",
-                                                             state.getDate().shiftedBy(-2.0),
-                                                             state.getKeplerianPeriod(), harmonicMultiplier);
+        final HarmonicAccelerationModel accelerationModel = new HarmonicAccelerationModel("kT",
+                                                                                          state.getDate().shiftedBy(-2.0),
+                                                                                          state.getKeplerianPeriod(), harmonicMultiplier);
+        final ParametricAcceleration hpa = new ParametricAcceleration(Vector3D.PLUS_K, false, accelerationModel);
         hpa.init(state, state.getDate().shiftedBy(3600.0));
         hpa.getParametersDrivers()[0].setValue(0.00001);
         hpa.getParametersDrivers()[1].setValue(0.00002);
@@ -376,9 +375,12 @@ public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
         final NumericalPropagator propagator0 = new NumericalPropagator(integrator0);
         propagator0.setInitialState(initialState);
         propagator0.setAttitudeProvider(maneuverLaw);
-        ForceModel hpaRefX1 = new HarmonicParametricAcceleration(Vector3D.PLUS_I, true, "refX1", null, period, 1);
-        ForceModel hpaRefY1 = new HarmonicParametricAcceleration(Vector3D.PLUS_J, true, "refY1", null, period, 1);
-        ForceModel hpaRefZ2 = new HarmonicParametricAcceleration(Vector3D.PLUS_K, true, "refZ2", null, period, 2);
+        final ParametricAcceleration hpaRefX1 = new ParametricAcceleration(Vector3D.PLUS_I, true,
+                                                                           new HarmonicAccelerationModel("refX1", null, period, 1));
+        final ParametricAcceleration hpaRefY1 = new ParametricAcceleration(Vector3D.PLUS_J, true,
+                                                                           new HarmonicAccelerationModel("refY1", null, period, 1));
+        final ParametricAcceleration hpaRefZ2 = new ParametricAcceleration(Vector3D.PLUS_K, true,
+                                                                           new HarmonicAccelerationModel("refZ2", null, period, 2));
         hpaRefX1.getParametersDrivers()[0].setValue(2.4e-2);
         hpaRefX1.getParametersDrivers()[1].setValue(3.1);
         hpaRefY1.getParametersDrivers()[0].setValue(4.0e-2);
@@ -402,9 +404,12 @@ public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
                         new NumericalPropagatorBuilder(orbit,
                                                        new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
                                                        PositionAngle.TRUE, dP);
-        propagatorBuilder.addForceModel(new HarmonicParametricAcceleration(Vector3D.PLUS_I, true, "X1", null, period, 1));
-        propagatorBuilder.addForceModel(new HarmonicParametricAcceleration(Vector3D.PLUS_J, true, "Y1", null, period, 1));
-        propagatorBuilder.addForceModel(new HarmonicParametricAcceleration(Vector3D.PLUS_K, true, "Z2", null, period, 2));
+        propagatorBuilder.addForceModel(new ParametricAcceleration(Vector3D.PLUS_I, true,
+                                                                   new HarmonicAccelerationModel("X1", null, period, 1)));
+        propagatorBuilder.addForceModel(new ParametricAcceleration(Vector3D.PLUS_J, true,
+                                                                   new HarmonicAccelerationModel("Y1", null, period, 1)));
+        propagatorBuilder.addForceModel(new ParametricAcceleration(Vector3D.PLUS_K, true,
+                                                                   new HarmonicAccelerationModel("Z2", null, period, 2)));
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(), propagatorBuilder);
         estimator.setParametersConvergenceThreshold(1.0e-2);
         estimator.setMaxIterations(20);

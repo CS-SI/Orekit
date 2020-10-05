@@ -39,9 +39,11 @@ import org.orekit.estimation.common.AbstractOrbitDetermination;
 import org.orekit.estimation.common.ParameterKey;
 import org.orekit.estimation.common.ResultKalman;
 import org.orekit.forces.ForceModel;
-import org.orekit.forces.PolynomialParametricAcceleration;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
+import org.orekit.forces.empirical.AccelerationModel;
+import org.orekit.forces.empirical.ParametricAcceleration;
+import org.orekit.forces.empirical.PolynomialAccelerationModel;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.OceanTides;
 import org.orekit.forces.gravity.Relativity;
@@ -179,7 +181,8 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
     @Override
     protected ParameterDriver[] setPolynomialAcceleration(final NumericalPropagatorBuilder propagatorBuilder,
                                                           final String name, final Vector3D direction, final int degree) {
-        final ForceModel polynomialModel = new PolynomialParametricAcceleration(direction, true, name, null, degree);
+        final AccelerationModel accModel = new PolynomialAccelerationModel(name, null, degree);
+        final ForceModel polynomialModel = new ParametricAcceleration(direction, true, accModel);
         propagatorBuilder.addForceModel(polynomialModel);
         return polynomialModel.getParametersDrivers();
     }
