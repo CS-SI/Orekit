@@ -30,7 +30,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * Shapiro time delay is a relativistic effect due to gravity.
  * </p>
  * @author Bryan Cazabonne
- * @since 10.2
+ * @since 10.3
  */
 public class ShapiroInterSatellitePhaseModifier extends AbstractShapiroBaseModifier implements EstimationModifier<InterSatellitesPhase> {
 
