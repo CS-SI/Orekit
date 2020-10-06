@@ -19,7 +19,10 @@ package org.orekit.propagation.events;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
@@ -61,6 +64,9 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
 
     /** Umbra, if true, or penumbra, if false, detection flag. */
     private final boolean totalEclipse;
+    
+    /** Sub-satellite point, if true, or Spacecraft, if false, detection flag. */
+    private final boolean subSatellitePoint;
 
     /** Build a new eclipse detector.
      * <p>The new instance is a total eclipse (umbra) detector with default
@@ -75,7 +81,7 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
                            final OneAxisEllipsoid occulting) {
         this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
              new StopOnIncreasing<EclipseDetector>(),
-             occulted, occultedRadius, occulting, true);
+             occulted, occultedRadius, occulting, true, false);
     }
 
     /** Private constructor with full parameters.
@@ -92,17 +98,20 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      * @param occultedRadius the radius of the body to be occulted in meters
      * @param occulting the occulting body
      * @param totalEclipse umbra (true) or penumbra (false) detection flag
+     * @param subSatellitePoint Sub-satellite point (true) or Spacecraft (false) flag
      * @since 10.0
      */
     private EclipseDetector(final double maxCheck, final double threshold,
                             final int maxIter, final EventHandler<? super EclipseDetector> handler,
                             final PVCoordinatesProvider occulted,  final double occultedRadius,
-                            final OneAxisEllipsoid occulting, final boolean totalEclipse) {
+                            final OneAxisEllipsoid occulting, final boolean totalEclipse, final boolean subSatellitePoint) {
         super(maxCheck, threshold, maxIter, handler);
         this.occulted       = occulted;
         this.occultedRadius = FastMath.abs(occultedRadius);
         this.occulting      = occulting;
         this.totalEclipse   = totalEclipse;
+        this.subSatellitePoint = subSatellitePoint;
+
     }
 
     /** {@inheritDoc} */
@@ -110,11 +119,11 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
     protected EclipseDetector create(final double newMaxCheck, final double newThreshold,
                                      final int nawMaxIter, final EventHandler<? super EclipseDetector> newHandler) {
         return new EclipseDetector(newMaxCheck, newThreshold, nawMaxIter, newHandler,
-                                   occulted, occultedRadius, occulting, totalEclipse);
+                                   occulted, occultedRadius, occulting, totalEclipse, subSatellitePoint);
     }
 
     /**
-     * Setup the detector to full umbra detection.
+     * Setup the detector to full umbra detection for the satellite.
      * <p>
      * This will override a penumbra/umbra flag if it has been configured previously.
      * </p>
@@ -124,21 +133,47 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      */
     public EclipseDetector withUmbra() {
         return new EclipseDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
-                                   occulted, occultedRadius, occulting, true);
+                                   occulted, occultedRadius, occulting, true, false);
     }
-
+    
     /**
-     * Setup the detector to penumbra detection.
+     * Setup the detector to full umbra detection for the sub-satellite point.
      * <p>
      * This will override a penumbra/umbra flag if it has been configured previously.
      * </p>
      * @return a new detector with updated configuration (the instance is not changed)
-     * @see #withUmbra()
+     * @see #withPenumbra()
      * @since 6.1
+     */
+    public EclipseDetector UmbraWithSSP() {
+        return new EclipseDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
+                                   occulted, occultedRadius, occulting, true, true);
+    }
+
+    /**
+     * Setup the detector to penumbra detection for the satellite.
+     * <p>
+     * This will override a penumbra/umbra flag if it has been configured previously.
+     * </p>
+     * @return a new detector with updated configuration (the instance is not changed)
+     * @see #penumbraWithSSP()
      */
     public EclipseDetector withPenumbra() {
         return new EclipseDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
-                                   occulted, occultedRadius, occulting, false);
+                                   occulted, occultedRadius, occulting, false, false);
+    }
+    
+    /**
+     * Setup the detector to penumbra detection for the sub-satellite point.
+     * <p>
+     * This will override a penumbra/umbra flag if it has been configured previously.
+     * </p>
+     * @return a new detector with updated configuration (the instance is not changed)
+     * @see #UmbraWithSSP()
+     */
+    public EclipseDetector penumbraWithSSP() {
+        return new EclipseDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
+                                   occulted, occultedRadius, occulting, false, true);
     }
 
     /** Getter for the occulting body.
@@ -169,6 +204,14 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
     public boolean getTotalEclipse() {
         return totalEclipse;
     }
+    
+    /** Get the sub-satellite point flag.
+     * @return the sub-satellite point flag (true for sub-satellite point,
+     * false for satellite)
+     */
+    public boolean getSubSatellitePoint() {
+    	return subSatellitePoint;
+    }
 
     /** Compute the value of the switching function.
      * This function becomes negative when entering the region of shadow
@@ -178,7 +221,15 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      */
     public double g(final SpacecraftState s) {
         final Vector3D pted  = occulted.getPVCoordinates(s.getDate(), occulting.getBodyFrame()).getPosition();
-        final Vector3D psat  = s.getPVCoordinates(occulting.getBodyFrame()).getPosition();
+        Vector3D psat = null;
+        if (subSatellitePoint) {
+    		Frame inertialFrame = FramesFactory.getEME2000();
+			GeodeticPoint gp = getOcculting().transform(s.getPVCoordinates().getPosition(), inertialFrame, s.getDate());
+			GeodeticPoint gpSSP = new GeodeticPoint(gp.getLatitude(), gp.getLongitude(), 1);
+			psat = getOcculting().transform(gpSSP);
+        } else {
+            psat  = s.getPVCoordinates(occulting.getBodyFrame()).getPosition();
+        }
         final Vector3D plimb = occulting.pointOnLimb(psat, pted);
         final Vector3D ps    = psat.subtract(pted);
         final Vector3D pi    = psat.subtract(plimb);
