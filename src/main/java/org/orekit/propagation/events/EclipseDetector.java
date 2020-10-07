@@ -65,8 +65,8 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
     /** Umbra, if true, or penumbra, if false, detection flag. */
     private final boolean totalEclipse;
     
-    /** Sub-satellite point, if true, or Spacecraft, if false, detection flag. */
-    private final boolean subSatellitePoint;
+    /** Sub-satellite point, if true, or Spacecraft, if false (default), flag. */
+    private boolean subSatellitePoint = false;
 
     /** Build a new eclipse detector.
      * <p>The new instance is a total eclipse (umbra) detector with default
@@ -133,23 +133,9 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      */
     public EclipseDetector withUmbra() {
         return new EclipseDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
-                                   occulted, occultedRadius, occulting, true, false);
+                                   occulted, occultedRadius, occulting, true, subSatellitePoint);
     }
     
-    /**
-     * Setup the detector to full umbra detection for the sub-satellite point.
-     * <p>
-     * This will override a penumbra/umbra flag if it has been configured previously.
-     * </p>
-     * @return a new detector with updated configuration (the instance is not changed)
-     * @see #withPenumbra()
-     * @since 6.1
-     */
-    public EclipseDetector UmbraWithSSP() {
-        return new EclipseDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
-                                   occulted, occultedRadius, occulting, true, true);
-    }
-
     /**
      * Setup the detector to penumbra detection for the satellite.
      * <p>
@@ -160,20 +146,17 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      */
     public EclipseDetector withPenumbra() {
         return new EclipseDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
-                                   occulted, occultedRadius, occulting, false, false);
+                                   occulted, occultedRadius, occulting, false, subSatellitePoint);
     }
     
     /**
-     * Setup the detector to penumbra detection for the sub-satellite point.
+     * Setup the detector for the sub-satellite point.
      * <p>
-     * This will override a penumbra/umbra flag if it has been configured previously.
-     * </p>
      * @return a new detector with updated configuration (the instance is not changed)
-     * @see #UmbraWithSSP()
      */
-    public EclipseDetector penumbraWithSSP() {
+    public EclipseDetector withSubSatellitePoint() {
         return new EclipseDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
-                                   occulted, occultedRadius, occulting, false, true);
+                occulted, occultedRadius, occulting, totalEclipse, true);
     }
 
     /** Getter for the occulting body.
@@ -223,7 +206,7 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
         final Vector3D pted  = occulted.getPVCoordinates(s.getDate(), occulting.getBodyFrame()).getPosition();
         Vector3D psat = null;
         if (subSatellitePoint) {
-    		Frame inertialFrame = FramesFactory.getEME2000();
+    		Frame inertialFrame = s.getFrame();
 			GeodeticPoint gp = getOcculting().transform(s.getPVCoordinates().getPosition(), inertialFrame, s.getDate());
 			GeodeticPoint gpSSP = new GeodeticPoint(gp.getLatitude(), gp.getLongitude(), 1);
 			psat = getOcculting().transform(gpSSP);

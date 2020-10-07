@@ -159,6 +159,18 @@ public class EclipseDetectorTest {
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(6000));
         Assert.assertEquals(4388.155852, finalState.getDate().durationFrom(iniDate), 2.0e-6);
     }
+    
+    @Test
+    public void testSubSatellitePoint() {
+        EclipseDetector e = new EclipseDetector(sun, sunRadius, earth).
+                withMaxCheck(60.0).
+                withThreshold(1.0e-3).
+                withUmbra().withSubSatellitePoint();
+        Assert.assertTrue(e.getTotalEclipse());
+        propagator.addEventDetector(e);
+        final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(6000));
+        Assert.assertEquals(4815.310605, finalState.getDate().durationFrom(iniDate), 2.0e-6);
+    }
 
     @Test
     public void testWithMethods() {
