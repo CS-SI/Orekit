@@ -135,7 +135,7 @@ public class OnBoardAntennaOneWayGNSSRangeModifierTest {
 
         // create perfect one-way GNSS range measurements with antenna offset
         final Vector3D apc1 = new Vector3D(-2.5, 0.0, 0);
-        final Vector3D apc2 = Vector3D.ZERO;
+        final Vector3D apc2 = new Vector3D( 0.0, 0.8, 0);
         final Propagator p2 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                    propagatorBuilder);
         final List<ObservedMeasurement<?>> antennaCenteredMeasurements =
@@ -149,15 +149,14 @@ public class OnBoardAntennaOneWayGNSSRangeModifierTest {
         final Propagator p3 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                    propagatorBuilder);
 
-        OnBoardAntennaOneWayGNSSRangeModifier modifier = new OnBoardAntennaOneWayGNSSRangeModifier(apc1, apc2);
+        OnBoardAntennaOneWayGNSSRangeModifier modifier = new OnBoardAntennaOneWayGNSSRangeModifier(apc1, apc2, p2.getAttitudeProvider());
         for (int i = 0; i < spacecraftCenteredMeasurements.size(); ++i) {
             OneWayGNSSRange sr = (OneWayGNSSRange) spacecraftCenteredMeasurements.get(i);
             sr.addModifier(modifier);
             EstimatedMeasurement<OneWayGNSSRange> estimated = sr.estimate(0, 0, new SpacecraftState[] { p3.propagate(sr.getDate()) });
             OneWayGNSSRange ar = (OneWayGNSSRange) antennaCenteredMeasurements.get(i);
             Assert.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
-            System.out.println(ar.getObservedValue()[0] - estimated.getEstimatedValue()[0]);
-            //Assert.assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 2.0e-5);
+            Assert.assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 2.0e-5);
         }
 
     }

@@ -20,10 +20,13 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSRange;
 import org.orekit.frames.Transform;
+import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -41,16 +44,22 @@ public class OnBoardAntennaOneWayGNSSRangeModifier implements EstimationModifier
     /** Position of the Antenna Phase Center in satellite 2 frame. */
     private final Vector3D antennaPhaseCenter2;
 
+    /** Attitude provider of the emitting satellite. */
+    private final AttitudeProvider attitude;
+
     /** Simple constructor.
      * @param antennaPhaseCenter1 position of the Antenna Phase Center in satellite 1 frame
      * (i.e. the satellite which receives the signal and performs the measurement)
      * @param antennaPhaseCenter2 position of the Antenna Phase Center in satellite 2 frame
      * (i.e. the satellite which simply emits the signal)
+     * @param attitude attitude provider of the emitting satellite
      */
     public OnBoardAntennaOneWayGNSSRangeModifier(final Vector3D antennaPhaseCenter1,
-                                                 final Vector3D antennaPhaseCenter2) {
+                                                 final Vector3D antennaPhaseCenter2,
+                                                 final AttitudeProvider attitude) {
         this.antennaPhaseCenter1 = antennaPhaseCenter1;
         this.antennaPhaseCenter2 = antennaPhaseCenter2;
+        this.attitude            = attitude;
     }
 
     /** {@inheritDoc} */
@@ -68,11 +77,19 @@ public class OnBoardAntennaOneWayGNSSRangeModifier implements EstimationModifier
         final AbsoluteDate               emissionDate  = participants[0].getDate();
         final AbsoluteDate               receptionDate = participants[1].getDate();
 
-        // Transforms from spacecraft to inertial frame at emission/reception dates
+        // Transforms from spacecraft to inertial frame at reception date
         final SpacecraftState refStateLocal              = estimated.getStates()[0];
         final SpacecraftState receptionState             = refStateLocal.shiftedBy(receptionDate.durationFrom(refStateLocal.getDate()));
         final Transform       receptionSpacecraftToInert = receptionState.toTransform().getInverse();
-        final SpacecraftState refStateRemote             = estimated.getStates()[1];
+
+        // Orbit of the remote satellite
+        final Orbit orbitRemote = new CartesianOrbit(participants[0], refStateLocal.getFrame(), receptionState.getMu());
+
+        // Transforms from spacecraft to inertial frame at emission date
+        final SpacecraftState refStateRemote             = new SpacecraftState(orbitRemote,
+                                                                               attitude.getAttitude(orbitRemote,
+                                                                                                    orbitRemote.getDate(),
+                                                                                                    orbitRemote.getFrame()));
         final SpacecraftState emissionState              = refStateRemote.shiftedBy(emissionDate.durationFrom(refStateRemote.getDate()));
         final Transform       emissionSpacecraftToInert  = emissionState.toTransform().getInverse();
 
