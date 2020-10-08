@@ -126,8 +126,7 @@ public class OneWayGNSSRange extends AbstractMeasurement<OneWayGNSSRange> {
         final EstimatedMeasurement<OneWayGNSSRange> estimatedRange =
                         new EstimatedMeasurement<>(this, iteration, evaluation,
                                                    new SpacecraftState[] {
-                                                       localState.shiftedBy(deltaMTauD.getValue()),
-                                                       remoteState.shiftedBy(deltaMTauD.getValue())
+                                                       localState.shiftedBy(deltaMTauD.getValue())
                                                    }, new TimeStampedPVCoordinates[] {
                                                        remoteState.shiftedBy(delta - tauD.getValue()).getPVCoordinates(),
                                                        localState.shiftedBy(delta).getPVCoordinates()
