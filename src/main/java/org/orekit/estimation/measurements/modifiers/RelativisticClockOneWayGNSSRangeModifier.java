@@ -21,24 +21,26 @@ import java.util.List;
 
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
-import org.orekit.estimation.measurements.gnss.InterSatellitesPhase;
+import org.orekit.estimation.measurements.gnss.OneWayGNSSRange;
+import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
-/** Class modifying theoretical inter-satellites phase measurement with Shapiro time delay.
+/** Class modifying theoretical one-way GNSS range measurement with relativistic clock correction.
  * <p>
- * Shapiro time delay is a relativistic effect due to gravity.
+ * Relativistic clock correction is caused by the motion of the satellite as well as
+ * the change in the gravitational potential
  * </p>
  * @author Bryan Cazabonne
  * @since 10.3
+ *
+ * @see "Teunissen, Peter, and Oliver Montenbruck, eds. Springer handbook of global navigation
+ * satellite systems. Chapter 19.2. Springer, 2017."
  */
-public class ShapiroInterSatellitePhaseModifier extends AbstractShapiroBaseModifier implements EstimationModifier<InterSatellitesPhase> {
+public class RelativisticClockOneWayGNSSRangeModifier extends AbstractRelativisticClockModifier implements EstimationModifier<OneWayGNSSRange> {
 
-    /** Simple constructor.
-     * @param gm gravitational constant for main body in signal path vicinity.
-     */
-    public ShapiroInterSatellitePhaseModifier(final double gm) {
-        super(gm);
+    /** Simple constructor. */
+    public RelativisticClockOneWayGNSSRangeModifier() {
+        super();
     }
 
     /** {@inheritDoc} */
@@ -49,14 +51,13 @@ public class ShapiroInterSatellitePhaseModifier extends AbstractShapiroBaseModif
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<InterSatellitesPhase> estimated) {
-        // Compute correction
-        final TimeStampedPVCoordinates[] pv = estimated.getParticipants();
-        final double correction = shapiroCorrection(pv[0], pv[1]);
-        // Update estimated value taking into account the Shapiro time delay.
-        final double wavelength = estimated.getObservedMeasurement().getWavelength();
+    public void modify(final EstimatedMeasurement<OneWayGNSSRange> estimated) {
+        // Relativistic clock correction
+        final double dtRel = relativisticCorrection(estimated);
+
+        // Update estimated value taking into account the relativistic effect.
         final double[] newValue = estimated.getEstimatedValue().clone();
-        newValue[0] = newValue[0] + (correction / wavelength);
+        newValue[0] = newValue[0] - dtRel * Constants.SPEED_OF_LIGHT;
         estimated.setEstimatedValue(newValue);
     }
 

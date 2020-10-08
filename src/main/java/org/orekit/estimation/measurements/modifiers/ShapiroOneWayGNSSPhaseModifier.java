@@ -21,23 +21,23 @@ import java.util.List;
 
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
-import org.orekit.estimation.measurements.gnss.InterSatellitesPhase;
+import org.orekit.estimation.measurements.gnss.OneWayGNSSPhase;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-/** Class modifying theoretical inter-satellites phase measurement with Shapiro time delay.
+/** Class modifying theoretical one-way GNSS phase measurement with Shapiro time delay.
  * <p>
  * Shapiro time delay is a relativistic effect due to gravity.
  * </p>
  * @author Bryan Cazabonne
  * @since 10.3
  */
-public class ShapiroInterSatellitePhaseModifier extends AbstractShapiroBaseModifier implements EstimationModifier<InterSatellitesPhase> {
+public class ShapiroOneWayGNSSPhaseModifier extends AbstractShapiroBaseModifier implements EstimationModifier<OneWayGNSSPhase> {
 
     /** Simple constructor.
      * @param gm gravitational constant for main body in signal path vicinity.
      */
-    public ShapiroInterSatellitePhaseModifier(final double gm) {
+    public ShapiroOneWayGNSSPhaseModifier(final double gm) {
         super(gm);
     }
 
@@ -49,14 +49,14 @@ public class ShapiroInterSatellitePhaseModifier extends AbstractShapiroBaseModif
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<InterSatellitesPhase> estimated) {
+    public void modify(final EstimatedMeasurement<OneWayGNSSPhase> estimated) {
         // Compute correction
-        final TimeStampedPVCoordinates[] pv = estimated.getParticipants();
-        final double correction = shapiroCorrection(pv[0], pv[1]);
+        final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
+        final double phaseCorrection = shapiroCorrection(participants[0], participants[1]);
         // Update estimated value taking into account the Shapiro time delay.
         final double wavelength = estimated.getObservedMeasurement().getWavelength();
         final double[] newValue = estimated.getEstimatedValue().clone();
-        newValue[0] = newValue[0] + (correction / wavelength);
+        newValue[0] = newValue[0] + (phaseCorrection / wavelength);
         estimated.setEstimatedValue(newValue);
     }
 
