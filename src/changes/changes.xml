@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="10.3" date="TBD" description="TBD">
+      <action dev="bryan" type="add" issue="719">
+        Added one-way GNSS range and phase measurements for LEO satellite
+        orbit determination applications.
+      </action>
       <action dev="bryan" type="add" issue="716">
         Added piecewise empirical force model.
       </action>

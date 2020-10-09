@@ -18,7 +18,6 @@ package org.orekit.estimation.measurements.modifiers;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.Constants;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -48,14 +47,12 @@ public class AbstractRelativisticClockModifier {
      * @return the relativistic clock correction in seconds
      */
     protected double relativisticCorrection(final EstimatedMeasurement<?> estimated) {
-        // Spacecraft states
-        final SpacecraftState[] states = estimated.getStates();
-
-        // Relativistic clock correction taking into account inter-satellites measurements
-        final double dtRel = states.length < 2 ?
-                             s * dotProduct(states[0].getPVCoordinates()) :
-                             s * (dotProduct(states[0].getPVCoordinates()) - dotProduct(states[1].getPVCoordinates()));
-        return dtRel;
+        // Participants
+        final TimeStampedPVCoordinates[] pv = estimated.getParticipants();
+        // Relativistic clock correction taking into account two-ways measurements
+        return pv.length < 3 ?
+               s * (dotProduct(pv[1]) - dotProduct(pv[0])) :
+               s * (dotProduct(pv[2]) - dotProduct(pv[1]));
     }
 
     /** Get the scale factor used to compute relativistic effect.
