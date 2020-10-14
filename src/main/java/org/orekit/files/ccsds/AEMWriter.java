@@ -129,14 +129,13 @@ public class AEMWriter {
 
         // Header comments. If header comments are presents, they are assembled together in a single line
         if (!aemFile.getHeaderComment().isEmpty()) {
-            // Initialise an empty comment
-            String headerComments = "";
             // Loop on comments
+            final StringBuffer buffer = new StringBuffer();
             for (String comment : aemFile.getHeaderComment()) {
-                headerComments = headerComments + comment;
+                buffer.append(comment);
             }
             // Update metadata
-            metadata.put(Keyword.COMMENT, headerComments);
+            metadata.put(Keyword.COMMENT, buffer.toString());
         }
 
         // Writer for AEM files

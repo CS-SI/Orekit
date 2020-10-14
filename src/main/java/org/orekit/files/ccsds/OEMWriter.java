@@ -154,14 +154,13 @@ public class OEMWriter implements EphemerisFileWriter {
             // Cast to OEMFile
             final OEMFile oemFile = (OEMFile) ephemerisFile;
             if (!oemFile.getHeaderComment().isEmpty()) {
-                // Initialise an empty comment
-                String headerComments = "";
                 // Loop on comments
+                final StringBuffer buffer = new StringBuffer();
                 for (String comment : oemFile.getHeaderComment()) {
-                    headerComments = headerComments + comment;
+                    buffer.append(comment);
                 }
                 // Update metadata
-                metadata.put(Keyword.COMMENT, headerComments);
+                metadata.put(Keyword.COMMENT, buffer.toString());
             }
         }
 
