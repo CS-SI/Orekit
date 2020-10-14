@@ -148,6 +148,23 @@ public class OEMWriter implements EphemerisFileWriter {
         metadata.put(Keyword.OBJECT_ID, idToProcess);
         metadata.put(Keyword.OBJECT_NAME, objectName);
         metadata.put(Keyword.INTERPOLATION, this.interpolationMethod.toString());
+
+        // Header comments. If header comments are presents, they are assembled together in a single line
+        if (ephemerisFile instanceof OEMFile) {
+            // Cast to OEMFile
+            final OEMFile oemFile = (OEMFile) ephemerisFile;
+            if (!oemFile.getHeaderComment().isEmpty()) {
+                // Initialise an empty comment
+                String headerComments = "";
+                // Loop on comments
+                for (String comment : oemFile.getHeaderComment()) {
+                    headerComments = headerComments + comment;
+                }
+                // Update metadata
+                metadata.put(Keyword.COMMENT, headerComments);
+            }
+        }
+
         final StreamingOemWriter oemWriter =
                 new StreamingOemWriter(writer, timeScale, metadata);
         oemWriter.writeHeader();

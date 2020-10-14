@@ -196,6 +196,22 @@ public class AEMWriterTest {
         writer2.write(tempAEMFilePath, file);
     }
 
+    @Test
+    public void testIssue723() throws IOException {
+        final String ex = "/ccsds/AEMExample2.txt";
+        final InputStream inEntry = getClass().getResourceAsStream(ex);
+        final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM())
+                .withConventions(IERSConventions.IERS_2010);
+        final AEMFile aemFile = parser.parse(inEntry, "AEMExample2.txt");
+
+        String tempAEMFilePath = tempFolder.newFile("TestAEMIssue723.aem").toString();
+        AEMWriter writer = new AEMWriter();
+        writer.write(tempAEMFilePath, aemFile);
+
+        final AEMFile generatedAemFile = parser.parse(tempAEMFilePath);
+        assertEquals(aemFile.getHeaderComment().get(0), generatedAemFile.getHeaderComment().get(0));
+    }
+
     private static void compareAemAttitudeBlocks(AttitudeEphemeridesBlock block1, AttitudeEphemeridesBlock block2) {
         compareAemAttitudeBlocksMetadata(block1.getMetaData(), block2.getMetaData());
         assertEquals(0.0, block1.getStart().durationFrom(block2.getStart()), DATE_PRECISION);
