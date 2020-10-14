@@ -68,6 +68,8 @@ public abstract class NDMFile {
      */
     public NDMFile() {
         mu = Double.NaN;
+        // Initialise an empty comments list
+        headerComment = new ArrayList<>();
     }
 
     /**
