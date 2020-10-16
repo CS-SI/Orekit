@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.sinex.Station.ReferenceSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -95,6 +96,50 @@ public class SINEXLoaderTest {
                      new Vector3D(-.142509359401051e-01 / Constants.JULIAN_YEAR,
                                   -.975043019205914e-02 / Constants.JULIAN_YEAR,
                                   -.506419781207987e-03 / Constants.JULIAN_YEAR));
+    }
+
+    @Test
+    public void testStationEccentricityXYZFile() {
+
+        // Load file (it corresponds to a small version of the real entier file)
+        SINEXLoader loader = new SINEXLoader("ecc_xyz-small.snx");
+        Assert.assertEquals(3, loader.getStations().size());
+
+        // Reference values
+        final Vector3D ecc1148 = Vector3D.ZERO;
+        final Vector3D ecc7035 = new Vector3D(-0.9670, -1.9490, 1.3990);
+        final Vector3D ecc7120 = new Vector3D(-3.0850, -1.3670, 1.2620);
+
+        // Verify
+        Assert.assertEquals(ReferenceSystem.XYZ, loader.getStation("1148").getEccRefSystem());
+        Assert.assertEquals(0., ecc1148.distance(loader.getStation("1148").getEccentricities()), 1.0e-15);
+        Assert.assertEquals(ReferenceSystem.XYZ, loader.getStation("7035").getEccRefSystem());
+        Assert.assertEquals(0., ecc7035.distance(loader.getStation("7035").getEccentricities()), 1.0e-15);
+        Assert.assertEquals(ReferenceSystem.XYZ, loader.getStation("7120").getEccRefSystem());
+        Assert.assertEquals(0., ecc7120.distance(loader.getStation("7120").getEccentricities()), 1.0e-15);
+
+    }
+
+    @Test
+    public void testStationEccentricityUNEFile() {
+
+        // Load file (it corresponds to a small version of the real entier file)
+        SINEXLoader loader = new SINEXLoader("ecc_une-small.snx");
+        Assert.assertEquals(3, loader.getStations().size());
+
+        // Reference values
+        final Vector3D ecc1148 = Vector3D.ZERO;
+        final Vector3D ecc7035 = new Vector3D(2.5870, 0.0060, 0.0170);
+        final Vector3D ecc7120 = new Vector3D(3.6020, -0.0130, 0.0090);
+
+        // Verify
+        Assert.assertEquals(ReferenceSystem.UNE, loader.getStation("1148").getEccRefSystem());
+        Assert.assertEquals(0., ecc1148.distance(loader.getStation("1148").getEccentricities()), 1.0e-15);
+        Assert.assertEquals(ReferenceSystem.UNE, loader.getStation("7035").getEccRefSystem());
+        Assert.assertEquals(0., ecc7035.distance(loader.getStation("7035").getEccentricities()), 1.0e-15);
+        Assert.assertEquals(ReferenceSystem.UNE, loader.getStation("7120").getEccRefSystem());
+        Assert.assertEquals(0., ecc7120.distance(loader.getStation("7120").getEccentricities()), 1.0e-15);
+
     }
 
     @Test

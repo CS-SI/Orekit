@@ -16,6 +16,9 @@
  */
 package org.orekit.files.sinex;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
 
@@ -37,6 +40,9 @@ public class Station {
 
     /** End of validity. */
     private AbsoluteDate validUntil;
+
+    /** Eccentricity reference system. */
+    private ReferenceSystem eccRefSystem;
 
     /** Site antenna eccentricity (m). */
     private Vector3D eccentricities;
@@ -124,6 +130,22 @@ public class Station {
     }
 
     /**
+     * Get the reference system used to define the eccentricity vector (local or cartesian).
+     * @return the reference system used to define the eccentricity vector
+     */
+    public ReferenceSystem getEccRefSystem() {
+        return eccRefSystem;
+    }
+
+    /**
+     * Set the reference system used to define the eccentricity vector (local or cartesian).
+     * @param eccRefSystem the reference system used to define the eccentricity vector
+     */
+    public void setEccRefSystem(final ReferenceSystem eccRefSystem) {
+        this.eccRefSystem = eccRefSystem;
+    }
+
+    /**
      * Get the station antenna eccentricities.
      * @return station antenna eccentricities (m)
      */
@@ -185,6 +207,53 @@ public class Station {
      */
     public void setEpoch(final AbsoluteDate epoch) {
         this.epoch = epoch;
+    }
+
+    /** Eccentricity reference system. */
+    public enum ReferenceSystem {
+
+        /** Local reference system Up, North, East. */
+        UNE("UNE"),
+
+        /** Cartesian reference system X, Y, Z. */
+        XYZ("XYZ");
+
+        /** Codes map. */
+        private static final Map<String, ReferenceSystem> CODES_MAP = new HashMap<>();
+        static {
+            for (final ReferenceSystem type : values()) {
+                CODES_MAP.put(type.getName(), type);
+            }
+        }
+
+        /** Name used to define the reference system in SINEX file. */
+        private final String name;
+
+        /**
+         * Constructor.
+         * @param name name used to define the reference system in SINEX file
+         */
+        ReferenceSystem(final String name) {
+            this.name = name;
+        }
+
+        /**
+         * Get the name used to define the reference system in SINEX file.
+         * @return the name
+         */
+        public String getName() {
+            return name;
+        }
+
+        /**
+         * Get the eccentricity reference system corresponding to the given value.
+         * @param value given value
+         * @return the corresponding eccentricity reference system
+         */
+        public static ReferenceSystem getEccRefSystem(final String value) {
+            return CODES_MAP.get(value);
+        }
+
     }
 
 }

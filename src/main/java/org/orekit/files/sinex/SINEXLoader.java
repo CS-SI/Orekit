@@ -34,6 +34,7 @@ import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.sinex.Station.ReferenceSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScale;
@@ -203,6 +204,7 @@ public class SINEXLoader {
                                         station.setValidFrom(stringEpochToAbosluteDate(parseString(line, 16, 12)));
                                         station.setValidUntil(stringEpochToAbosluteDate(parseString(line, 29, 12)));
                                     }
+                                    station.setEccRefSystem(ReferenceSystem.getEccRefSystem(parseString(line, 42, 3)));
                                     station.setEccentricities(new Vector3D(parseDouble(line, 46, 8),
                                                                            parseDouble(line, 55, 8),
                                                                            parseDouble(line, 64, 8)));
