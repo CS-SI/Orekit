@@ -1,0 +1,55 @@
+%=SNX 2.01 COD 19:356:05790 IGS 19:350:00000 19:353:00000 P 00815 1 S E A      
+*-------------------------------------------------------------------------------
+*CODE'S FINAL 3-DAY SOLUTION FOR (MIDDLE) DAY 351, 2019          22-DEC-19 01:36
+*-------------------------------------------------------------------------------
++FILE/REFERENCE                                                                 
+*INFO_TYPE_________ INFO________________________________________________________
+ DESCRIPTION        CODE, Astronomical Institute, University of Bern            
+ OUTPUT             CODE IGS 3-day solution                                     
+ CONTACT            code@aiub.unibe.ch                                          
+ SOFTWARE           Bernese GNSS Software Version 5.3                           
+ HARDWARE           UBELIX: Linux, x86_64                                       
+ INPUT              CODE IGS 1-day solutions                                    
+-FILE/REFERENCE                                                                 
+*-------------------------------------------------------------------------------
++INPUT/ACKNOWLEDGMENTS                                                          
+*AGY DESCRIPTION________________________________________________________________
+ COD Center for Orbit Determination in Europe, AIUB, Switzerland                
+ IGS International GNSS Service                                                 
+-INPUT/ACKNOWLEDGMENTS                                                          
+*-------------------------------------------------------------------------------
++SOLUTION/STATISTICS
+*_STATISTICAL PARAMETER________ __VALUE(S)____________
+ NUMBER OF OBSERVATIONS                        5029555
+ NUMBER OF UNKNOWNS                              49843
+ NUMBER OF DEGREES OF FREEDOM                  4979712
+ PHASE MEASUREMENTS SIGMA                      0.00100
+ SAMPLING INTERVAL (SECONDS)                       180
+ WEIGHTED SQUARE SUM OF O-C         11.270804735010838
+-SOLUTION/STATISTICS
+*-------------------------------------------------------------------------------
++SITE/ID
+*CODE PT __DOMES__ T _STATION DESCRIPTION__ APPROX_LON_ APPROX_LAT_ _APP_H_
+ ABMF  A 97103M001 P Les Abymes, FR         298 28 20.9  16 15 44.3   -25.6
+ ABPO  A 33302M001 P Antananarivo, MG        47 13 45.2 -19  1  5.9  1553.0
+-SITE/ID
+*-------------------------------------------------------------------------------
++SITE/RECEIVER
+*SITE PT SOLN T DATA_START__ DATA_END____ DESCRIPTION_________ S/N__ FIRMWARE___
+ ABMF  A    1 P 19:350:00000 19:352:86370 SEPT POLARX5         ----- -----------
+ ABPO  A    1 P 19:350:00000 19:352:86370 SEPT POLARX5         ----- -----------
+-SITE/RECEIVER
+*-------------------------------------------------------------------------------
++SITE/ANTENNA
+*SITE PT SOLN T DATA_START__ DATA_END____ DESCRIPTION_________ S/N__
+ ABMF  A    1 P 19:350:00000 19:352:86370 TRM57971.00     NONE -----
+ ABPO  A    1 P 19:350:00000 19:352:86370 ASH701945G_M    SCIT -----
+-SITE/ANTENNA
+*-------------------------------------------------------------------------------
++SITE/ECCENTRICITY
+*                                             UP______ NORTH___ EAST____
+*SITE PT SOLN T DATA_START__ DATA_END____ AXE ARP->BENCHMARK(M)_________
+ ABMF  A    1 P 19:350:00000 19:352:86370 UNE   corrupted   0.0000   0.0000
+ ABPO  A    1 P 19:350:00000 19:352:86370 UNE    0.0083     0.0000   0.0000
+-SITE/ECCENTRICITY  
+%ENDSNX
