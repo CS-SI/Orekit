@@ -280,7 +280,7 @@ public class CPFParser implements EphemerisFileParser {
                 pi.file.getHeader().setProductionEpoch(new DateComponents(year, month, day));
 
                 // Hour of ephemeris production
-                pi.file.getHeader().setProductionHour(Integer.valueOf(values[index++]));
+                pi.file.getHeader().setProductionHour(Integer.parseInt(values[index++]));
 
                 // Ephemeris sequence number
                 pi.file.getHeader().setSequenceNumber(Integer.parseInt(values[index++]));
