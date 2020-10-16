@@ -281,7 +281,9 @@ public enum OrekitMessages implements Localizable {
     PARAMETER_NOT_SET("The parameter {0} should not be null in {1}"),
     FUNCTION_NOT_IMPLEMENTED("{0} is not implemented"),
     INVALID_TYPE_FOR_FUNCTION("Impossible to execute {0} with {1} set to {2}"),
-    NO_DATA_IN_FILE("No data could be parsed from file {0}");
+    NO_DATA_IN_FILE("No data could be parsed from file {0}"),
+    CPF_UNEXPECTED_END_OF_FILE("Unexpected end of CPF file (after line {0})"),
+    UNEXPECTED_FORMAT_FOR_ILRS_FILE("Unexpected file format. Must be {0} but is {1}");
 
     // CHECKSTYLE: resume JavadocVariable check
 
