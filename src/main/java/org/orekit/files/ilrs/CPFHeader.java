@@ -17,8 +17,6 @@
 package org.orekit.files.ilrs;
 
 import org.orekit.frames.Frame;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateComponents;
 
 /**
  * Container for Consolidated laser ranging Prediction File (CPF) header.
@@ -28,55 +26,19 @@ import org.orekit.time.DateComponents;
  * @author Bryan Cazabonne
  * @since 10.3
  */
-public class CPFHeader {
-
-    /** File format. */
-    private String format;
-
-    /** File version. */
-    private int version;
+public class CPFHeader extends ILRSHeader {
 
     /** Ephemeris source. */
     private String source;
 
-    /** Date component of the ephemeris production. */
-    private DateComponents productionEpoch;
-
-    /** Hour of ephemeris production. */
-    private int productionHour;
-
-    /** Ephemeris Sequence number. */
-    private int sequenceNumber;
-
     /** Sub-daily Ephemeris Sequence number. */
     private int subDailySequenceNumber;
-
-    /** Target name from official ILRS list (e.g. lageos1). */
-    private String name;
-
-    /** ILRS Satellite ID. */
-    private int ilrsSatelliteId;
-
-    /** SIC (Provided by ILRS; set to “-1” for targets without SIC). */
-    private int sic;
-
-    /** NORAD ID. */
-    private int noradId;
-
-    /** Starting epoch (UTC). */
-    private AbsoluteDate startEpoch;
-
-    /** Ending epoch (UTC). */
-    private AbsoluteDate endEpoch;
 
     /** Time between table entries (UTC). */
     private int step;
 
     /** Compatibility with TIVs. */
     private boolean isCompatibleWithTIVs;
-
-    /** Target class. */
-    private int targetClass;
 
     /** Reference frame. */
     private Frame refFrame;
@@ -86,9 +48,6 @@ public class CPFHeader {
 
     /** Center of mass correction. */
     private boolean isCenterOfMassCorrectionApplied;
-
-    /** Target location (Earth orbit, Lunar orbit, Mars orbit, ...) .*/
-    private int targetLocation;
 
     /** Pulse Repetition Frequency (PRF) [Hz]. */
     private double prf;
@@ -109,38 +68,6 @@ public class CPFHeader {
     private double centerOfMassOffset;
 
     /**
-     * Get the file format.
-     * @return the file format
-     */
-    public String getFormat() {
-        return format;
-    }
-
-    /**
-     * Set the file format.
-     * @param format the format to set
-     */
-    public void setFormat(final String format) {
-        this.format = format;
-    }
-
-    /**
-     * Get the format version.
-     * @return the format version
-     */
-    public int getVersion() {
-        return version;
-    }
-
-    /**
-     * Set the format version.
-     * @param version the version to set
-     */
-    public void setVersion(final int version) {
-        this.version = version;
-    }
-
-    /**
      * Get the ephemeris source.
      * @return the ephemeris source
      */
@@ -157,54 +84,6 @@ public class CPFHeader {
     }
 
     /**
-     * Get the date component of the ephemeris production.
-     * @return the date component of the ephemeris production
-     */
-    public DateComponents getProductionEpoch() {
-        return productionEpoch;
-    }
-
-    /**
-     * Set the date component of the ephemeris production.
-     * @param productionEpoch the date component to set
-     */
-    public void setProductionEpoch(final DateComponents productionEpoch) {
-        this.productionEpoch = productionEpoch;
-    }
-
-    /**
-     * Get the hour of ephemeris production (UTC).
-     * @return the hour of ephemeris production
-     */
-    public int getProductionHour() {
-        return productionHour;
-    }
-
-    /**
-     * Set the hour of ephemeris production.
-     * @param productionHour the hour of ephemeris production to set
-     */
-    public void setProductionHour(final int productionHour) {
-        this.productionHour = productionHour;
-    }
-
-    /**
-     * Get the ephemeris sequence number.
-     * @return the ephemeris sequence number
-     */
-    public int getSequenceNumber() {
-        return sequenceNumber;
-    }
-
-    /**
-     * Set the ephemeris sequence number.
-     * @param sequenceNumber the ephemeris sequence number to set
-     */
-    public void setSequenceNumber(final int sequenceNumber) {
-        this.sequenceNumber = sequenceNumber;
-    }
-
-    /**
      * Get the sub-daily ephemeris sequence number.
      * @return the sub-daily ephemeris sequence number
      */
@@ -218,102 +97,6 @@ public class CPFHeader {
      */
     public void setSubDailySequenceNumber(final int subDailySequenceNumber) {
         this.subDailySequenceNumber = subDailySequenceNumber;
-    }
-
-    /**
-     * Get the satellite target name.
-     * @return the satellite target name
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Set the satellite target name.
-     * @param name the satellite target name to set
-     */
-    public void setName(final String name) {
-        this.name = name;
-    }
-
-    /**
-     * Get the IRLS satellite ID (based on COSPAR ID).
-     * @return the IRLS satellite ID
-     */
-    public int getIlrsSatelliteId() {
-        return ilrsSatelliteId;
-    }
-
-    /**
-     * Set the IRLS satellite ID (based on COSPAR ID).
-     * @param ilrsSatelliteId the IRLS satellite ID to set
-     */
-    public void setIlrsSatelliteId(final int ilrsSatelliteId) {
-        this.ilrsSatelliteId = ilrsSatelliteId;
-    }
-
-    /**
-     * Get the SIC ID.
-     * @return the SIC ID
-     */
-    public int getSic() {
-        return sic;
-    }
-
-    /**
-     * Set the SIC ID.
-     * @param sic the SIC ID to set
-     */
-    public void setSic(final int sic) {
-        this.sic = sic;
-    }
-
-    /**
-     * Get the satellite NORAD ID (i.e. Satellite Catalog Number).
-     * @return the satellite NORAD ID
-     */
-    public int getNoradId() {
-        return noradId;
-    }
-
-    /**
-     * Set the satellite NORAD ID.
-     * @param noradId the NORAD ID to set
-     */
-    public void setNoradId(final int noradId) {
-        this.noradId = noradId;
-    }
-
-    /**
-     * Get the starting epoch (UTC).
-     * @return the starting epoch
-     */
-    public AbsoluteDate getStartEpoch() {
-        return startEpoch;
-    }
-
-    /**
-     * Set the staring epoch (UTC).
-     * @param startEpoch the starting epoch to set
-     */
-    public void setStartEpoch(final AbsoluteDate startEpoch) {
-        this.startEpoch = startEpoch;
-    }
-
-    /**
-     * Get the ending epoch (UTC).
-     * @return the ending epoch
-     */
-    public AbsoluteDate getEndEpoch() {
-        return endEpoch;
-    }
-
-    /**
-     * Set the ending epoch (UTC).
-     * @param endEpoch the ending epoch to set
-     */
-    public void setEndEpoch(final AbsoluteDate endEpoch) {
-        this.endEpoch = endEpoch;
     }
 
     /**
@@ -346,28 +129,6 @@ public class CPFHeader {
      */
     public void setIsCompatibleWithTIVs(final boolean isCompatibleWithTIVs) {
         this.isCompatibleWithTIVs = isCompatibleWithTIVs;
-    }
-
-    /**
-     * Get the target class.
-     * <p>
-     * 0 = no retroreflector; 1 = passive retroreflector; ...
-     * </p>
-     * @return the target class
-     */
-    public int getTargetClass() {
-        return targetClass;
-    }
-
-    /**
-     * Set the target class.
-     * <p>
-     * 0 = no retroreflector; 1 = passive retroreflector; ...
-     * </p>
-     * @param targetClass the target class to set
-     */
-    public void setTargetClass(final int targetClass) {
-        this.targetClass = targetClass;
     }
 
     /**
@@ -416,28 +177,6 @@ public class CPFHeader {
      */
     public void setIsCenterOfMassCorrectionApplied(final boolean isCenterOfMassCorrectionApplied) {
         this.isCenterOfMassCorrectionApplied = isCenterOfMassCorrectionApplied;
-    }
-
-    /**
-     * Get the target location.
-     * <p>
-     * 1 = Earth orbit; 2 = Lunar orbit; ...
-     * </p>
-     * @return the target location
-     */
-    public int getTargetLocation() {
-        return targetLocation;
-    }
-
-    /**
-     * Set the target location.
-     * <p>
-     * 1 = Earth orbit; 2 = Lunar orbit; ...
-     * </p>
-     * @param targetLocation the target location to set
-     */
-    public void setTargetLocation(final int targetLocation) {
-        this.targetLocation = targetLocation;
     }
 
     /**

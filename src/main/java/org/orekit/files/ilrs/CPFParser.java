@@ -314,9 +314,9 @@ public class CPFParser implements EphemerisFileParser {
                 final String[] values = SEPARATOR.split(line);
 
                 // Identifiers
-                pi.file.getHeader().setIlrsSatelliteId(Integer.parseInt(values[1]));
-                pi.file.getHeader().setSic(Integer.parseInt(values[2]));
-                pi.file.getHeader().setNoradId(Integer.parseInt(values[3]));
+                pi.file.getHeader().setIlrsSatelliteId(values[1]);
+                pi.file.getHeader().setSic(values[2]);
+                pi.file.getHeader().setNoradId(values[3]);
 
                 // Start epoch
                 final int    yearS   = Integer.parseInt(values[4]);

@@ -283,7 +283,9 @@ public enum OrekitMessages implements Localizable {
     INVALID_TYPE_FOR_FUNCTION("Impossible to execute {0} with {1} set to {2}"),
     NO_DATA_IN_FILE("No data could be parsed from file {0}"),
     CPF_UNEXPECTED_END_OF_FILE("Unexpected end of CPF file (after line {0})"),
-    UNEXPECTED_FORMAT_FOR_ILRS_FILE("Unexpected file format. Must be {0} but is {1}");
+    UNEXPECTED_FORMAT_FOR_ILRS_FILE("Unexpected file format. Must be {0} but is {1}"),
+    CRD_UNEXPECTED_END_OF_FILE("Unexpected end of CRD file (after line {0})"),
+    INVALID_RANGE_INDICATOR_IN_CRD_FILE("Invalid range indicator {0} in CRD file header");
 
     // CHECKSTYLE: resume JavadocVariable check
 
