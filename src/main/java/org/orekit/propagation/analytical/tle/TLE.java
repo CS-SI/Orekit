@@ -357,20 +357,17 @@ public class TLE implements TimeStamped, Serializable {
         // orbital parameters
         this.epoch = epoch;
         // Checking mean motion range
-        checkParameterRangeInclusive(MEAN_MOTION, meanMotion, 0.0, Double.POSITIVE_INFINITY);
         this.meanMotion = meanMotion;
         this.meanMotionFirstDerivative = meanMotionFirstDerivative;
         this.meanMotionSecondDerivative = meanMotionSecondDerivative;
 
         // Checking inclination range
-        checkParameterRangeInclusive(INCLINATION, i, 0, FastMath.PI);
         this.inclination = i;
 
         // Normalizing RAAN in [0,2pi] interval
         this.raan = MathUtils.normalizeAngle(raan, FastMath.PI);
 
         // Checking eccentricity range
-        checkParameterRangeInclusive(ECCENTRICITY, e, 0.0, 1.0);
         this.eccentricity = e;
 
         // Normalizing PA in [0,2pi] interval

@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.3" date="TBD" description="TBD">
+      <action dev="clement" type="fix" issue="724">
+        Remove range checks in TLE constructor.
+      </action>
       <action dev="bryan" type="fix" issue="723">
         Allowed AEM and OEM writers to write header comments.
       </action>
