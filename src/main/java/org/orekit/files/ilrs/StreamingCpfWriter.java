@@ -386,6 +386,9 @@ public class StreamingCpfWriter {
          * @param cpfHeader container for header data
          * @param cpfWriter writer
          * @param utc utc time scale for dates
+         * @throws IOException
+         *             if any buffer writing operations fail or if the underlying
+         *             format doesn't support a configuration in the file
          */
         public abstract void write(CPFHeader cpfHeader, Appendable cpfWriter, TimeScale utc)  throws IOException;
 

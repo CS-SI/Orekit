@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
@@ -65,8 +66,9 @@ public class SINEXLoader {
     /** Simple constructor. This constructor uses the {@link DataContext#getDefault()
      * default data context}.
      * @param supportedNames regular expression for supported files names
-     * @see #SINEXLoader(String, DataProvidersManager)
+     * @see #SINEXLoader(String, DataProvidersManager, TimeScale)
      */
+    @DefaultDataContext
     public SINEXLoader(final String supportedNames) {
         this(supportedNames,
              DataContext.getDefault().getDataProvidersManager(),
