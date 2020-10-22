@@ -74,7 +74,7 @@ public class CRDFile {
      * recorded data (range, angles, meteorological, etc.).
      * </p>
      */
-    public class CRDDataBlock {
+    public static class CRDDataBlock {
 
         /** Data block header. */
         private CRDHeader header;
@@ -184,7 +184,7 @@ public class CRDFile {
     }
 
     /** Range record. */
-    public class RangeMeasurement {
+    public static class RangeMeasurement {
 
         /** Seconds of day. */
         private final double secOfDay;
@@ -259,7 +259,7 @@ public class CRDFile {
     }
 
     /** This data record contains a minimal set of meteorological data. */
-    public class MeteorologicalMeasurement {
+    public static class MeteorologicalMeasurement {
 
         /** Seconds of day. */
         private final double secOfDay;
@@ -323,7 +323,7 @@ public class CRDFile {
     }
 
     /** Pointing angles record. */
-    public class AnglesMeasurement {
+    public static class AnglesMeasurement {
 
         /** Seconds of day. */
         private final double secOfDay;

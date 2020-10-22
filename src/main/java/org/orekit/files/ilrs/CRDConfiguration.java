@@ -157,7 +157,7 @@ public class CRDConfiguration {
     }
 
     /** Container for system configuration record. */
-    public class SystemConfiguration {
+    public static class SystemConfiguration {
 
         /** Transmit Wavelength [m]. */
         private double wavelength;
@@ -200,7 +200,7 @@ public class CRDConfiguration {
     }
 
     /** Container for laser configuration record. */
-    public class LaserConfiguration {
+    public static class LaserConfiguration {
 
         /** Laser configuration ID. */
         private String laserId;
@@ -358,7 +358,7 @@ public class CRDConfiguration {
     }
 
     /** Container for detector configuration record. */
-    public class DetectorConfiguration {
+    public static class DetectorConfiguration {
 
         /** Detector configuration ID. */
         private String detectorId;
@@ -648,7 +648,7 @@ public class CRDConfiguration {
     }
 
     /** Container for timing system configuration record. */
-    public class TimingSystemConfiguration {
+    public static class TimingSystemConfiguration {
 
         /** Local timing system configuration ID. */
         private String localTimingId;
@@ -767,7 +767,7 @@ public class CRDConfiguration {
     }
 
     /** Container for transponder configuration record. */
-    public class TransponderConfiguration {
+    public static class TransponderConfiguration {
 
         /** Transponder configuration ID. */
         private String transponderId;
@@ -943,7 +943,7 @@ public class CRDConfiguration {
     }
 
     /** Container for software configuration record. */
-    public class SoftwareConfiguration {
+    public static class SoftwareConfiguration {
 
         /** Software configuration ID. */
         private String softwareId;
@@ -981,7 +981,7 @@ public class CRDConfiguration {
          * @return the tracking softwares
          */
         public String[] getTrackingSoftwares() {
-            return trackingSoftwares;
+            return trackingSoftwares.clone();
         }
 
         /**
@@ -989,7 +989,7 @@ public class CRDConfiguration {
          * @param trackingSoftwares the tracking softwares to set
          */
         public void setTrackingSoftwares(final String[] trackingSoftwares) {
-            this.trackingSoftwares = trackingSoftwares;
+            this.trackingSoftwares = trackingSoftwares.clone();
         }
 
         /**
@@ -997,7 +997,7 @@ public class CRDConfiguration {
          * @return the tracking software versions
          */
         public String[] getTrackingSoftwareVersions() {
-            return trackingSoftwareVersions;
+            return trackingSoftwareVersions.clone();
         }
 
         /**
@@ -1005,7 +1005,7 @@ public class CRDConfiguration {
          * @param trackingSoftwareVersions the tracking software versions to set
          */
         public void setTrackingSoftwareVersions(final String[] trackingSoftwareVersions) {
-            this.trackingSoftwareVersions = trackingSoftwareVersions;
+            this.trackingSoftwareVersions = trackingSoftwareVersions.clone();
         }
 
         /**
@@ -1013,7 +1013,7 @@ public class CRDConfiguration {
          * @return the processing softwares
          */
         public String[] getProcessingSoftwares() {
-            return processingSoftwares;
+            return processingSoftwares.clone();
         }
 
         /**
@@ -1021,7 +1021,7 @@ public class CRDConfiguration {
          * @param processingSoftwares the processing softwares to set
          */
         public void setProcessingSoftwares(final String[] processingSoftwares) {
-            this.processingSoftwares = processingSoftwares;
+            this.processingSoftwares = processingSoftwares.clone();
         }
 
         /**
@@ -1029,7 +1029,7 @@ public class CRDConfiguration {
          * @return the processing software versions
          */
         public String[] getProcessingSoftwareVersions() {
-            return processingSoftwareVersions;
+            return processingSoftwareVersions.clone();
         }
 
         /**
@@ -1037,13 +1037,13 @@ public class CRDConfiguration {
          * @param processingSoftwareVersions the processing software versions to set
          */
         public void setProcessingSoftwareVersions(final String[] processingSoftwareVersions) {
-            this.processingSoftwareVersions = processingSoftwareVersions;
+            this.processingSoftwareVersions = processingSoftwareVersions.clone();
         }
 
     }
 
     /** Container for meteorological configuration record. */
-    public class MeteorologicalConfiguration {
+    public static class MeteorologicalConfiguration {
 
         /** Meteorological configuration ID. */
         private String meteorologicalId;

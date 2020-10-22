@@ -216,7 +216,7 @@ public class CRDParser {
             this.file                 = new CRDFile();
             this.header               = new CRDHeader();
             this.configurationRecords = new CRDConfiguration();
-            this.dataBlock            = this.file.new CRDDataBlock();
+            this.dataBlock            = new CRDDataBlock();
 
             // Time scale
             this.timeScale = CRDParser.this.timeScale;
@@ -441,7 +441,7 @@ public class CRDParser {
             public void parse(final String line, final ParseInfo pi) {
 
                 // Initialise an empty system configuration record
-                final SystemConfiguration systemRecord = pi.configurationRecords.new SystemConfiguration();
+                final SystemConfiguration systemRecord = new SystemConfiguration();
 
                 // Data contained in the line
                 final String[] values = SEPARATOR.split(line);
@@ -474,7 +474,7 @@ public class CRDParser {
             public void parse(final String line, final ParseInfo pi) {
 
                 // Initialise an empty laser configuration record
-                final LaserConfiguration laserRecord = pi.configurationRecords.new LaserConfiguration();
+                final LaserConfiguration laserRecord = new LaserConfiguration();
 
                 // Data contained in the line
                 final String[] values = SEPARATOR.split(line);
@@ -510,7 +510,7 @@ public class CRDParser {
             public void parse(final String line, final ParseInfo pi) {
 
                 // Initialise an empty detector configuration record
-                final DetectorConfiguration detectorRecord = pi.configurationRecords.new DetectorConfiguration();
+                final DetectorConfiguration detectorRecord = new DetectorConfiguration();
 
                 // Data contained in the line
                 final String[] values = SEPARATOR.split(line);
@@ -557,7 +557,7 @@ public class CRDParser {
             public void parse(final String line, final ParseInfo pi) {
 
                 // Initialise an empty timing system configuration record
-                final TimingSystemConfiguration timingRecord = pi.configurationRecords.new TimingSystemConfiguration();
+                final TimingSystemConfiguration timingRecord = new TimingSystemConfiguration();
 
                 // Data contained in the line
                 final String[] values = SEPARATOR.split(line);
@@ -591,7 +591,7 @@ public class CRDParser {
             public void parse(final String line, final ParseInfo pi) {
 
                 // Initialise an empty transponder configuration record
-                final TransponderConfiguration transponderRecord = pi.configurationRecords.new TransponderConfiguration();
+                final TransponderConfiguration transponderRecord = new TransponderConfiguration();
 
                 // Data contained in the line
                 final String[] values = SEPARATOR.split(line);
@@ -634,7 +634,7 @@ public class CRDParser {
             public void parse(final String line, final ParseInfo pi) {
 
                 // Initialise an empty software configuration record
-                final SoftwareConfiguration softwareRecord = pi.configurationRecords.new SoftwareConfiguration();
+                final SoftwareConfiguration softwareRecord = new SoftwareConfiguration();
 
                 // Data contained in the line
                 final String[] values = SEPARATOR.split(line);
@@ -667,7 +667,7 @@ public class CRDParser {
             public void parse(final String line, final ParseInfo pi) {
 
                 // Initialise an empty meteorological configuration record
-                final MeteorologicalConfiguration meteoRecord = pi.configurationRecords.new MeteorologicalConfiguration();
+                final MeteorologicalConfiguration meteoRecord = new MeteorologicalConfiguration();
 
                 // Data contained in the line
                 final String[] values = SEPARATOR.split(line);
@@ -730,7 +730,7 @@ public class CRDParser {
                 final int    epochEvent   = Integer.parseInt(values[4]);
 
                 // Initialise a new Range measurement
-                final RangeMeasurement range = pi.file.new RangeMeasurement(secOfDay, timeOfFlight, epochEvent);
+                final RangeMeasurement range = new RangeMeasurement(secOfDay, timeOfFlight, epochEvent);
                 pi.dataBlock.addRangeData(range);
 
             }
@@ -760,7 +760,7 @@ public class CRDParser {
                 final double snr          = (pi.version == 2) ? Double.parseDouble(values[13]) : Double.NaN;
 
                 // Initialise a new Range measurement
-                final RangeMeasurement range = pi.file.new RangeMeasurement(secOfDay, timeOfFlight, epochEvent, snr);
+                final RangeMeasurement range = new RangeMeasurement(secOfDay, timeOfFlight, epochEvent, snr);
                 pi.dataBlock.addRangeData(range);
 
             }
@@ -807,8 +807,8 @@ public class CRDParser {
                 final double humidity    = Double.parseDouble(values[4]);
 
                 // Initialise a new meteorological measurement
-                final MeteorologicalMeasurement meteo = pi.file.new MeteorologicalMeasurement(secOfDay, pressure,
-                                                                                              temperature, humidity);
+                final MeteorologicalMeasurement meteo = new MeteorologicalMeasurement(secOfDay, pressure,
+                                                                                      temperature, humidity);
                 pi.dataBlock.addMeteoData(meteo);
 
             }
@@ -866,10 +866,10 @@ public class CRDParser {
                 }
 
                 // Initialise a new angles measurement
-                final AnglesMeasurement angles = pi.file.new AnglesMeasurement(secOfDay, azmiuth, elevation,
-                                                                               directionFlag, orginFlag,
-                                                                               isRefractionCorrected,
-                                                                               azimuthRate, elevationRate);
+                final AnglesMeasurement angles = new AnglesMeasurement(secOfDay, azmiuth, elevation,
+                                                                       directionFlag, orginFlag,
+                                                                       isRefractionCorrected,
+                                                                       azimuthRate, elevationRate);
                 pi.dataBlock.addAnglesData(angles);
 
             }
@@ -1005,7 +1005,7 @@ public class CRDParser {
                 // Initialize a new empty containers
                 pi.header               = new CRDHeader();
                 pi.configurationRecords = new CRDConfiguration();
-                pi.dataBlock            = pi.file.new CRDDataBlock();
+                pi.dataBlock            = new CRDDataBlock();
 
             }
 
