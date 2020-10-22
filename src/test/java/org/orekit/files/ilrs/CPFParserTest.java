@@ -87,6 +87,7 @@ public class CPFParserTest {
         Assert.assertEquals(0.0, start.durationFrom(header.getStartEpoch()), 1.0e-15);
         Assert.assertEquals(0.0, end.durationFrom(header.getEndEpoch()),     1.0e-15);
         Assert.assertEquals(FramesFactory.getITRF(IERSConventions.IERS_2010, false), header.getRefFrame());
+        Assert.assertEquals(0,        header.getRefFrameId());
 
         // Coordinates
         final CPFEphemeris ephemeris    = file.getSatellites().get("1600201");
@@ -175,6 +176,7 @@ public class CPFParserTest {
         Assert.assertEquals(0.0,    end.durationFrom(header.getEndEpoch()),     1.0e-15);
         Assert.assertEquals(0.2510, header.getCenterOfMassOffset(),             1.0e-15);
         Assert.assertEquals(FramesFactory.getITRF(IERSConventions.IERS_2010, false), header.getRefFrame());
+        Assert.assertEquals(0,        header.getRefFrameId());
 
         // Coordinates
         final CPFEphemeris ephemeris    = file.getSatellites().get("7603901");
@@ -258,6 +260,7 @@ public class CPFParserTest {
         Assert.assertEquals(0.0,    start.durationFrom(header.getStartEpoch()), 1.0e-15);
         Assert.assertEquals(0.0,    end.durationFrom(header.getEndEpoch()),     1.0e-15);
         Assert.assertEquals(FramesFactory.getITRF(IERSConventions.IERS_2010, false), header.getRefFrame());
+        Assert.assertEquals(0,        header.getRefFrameId());
 
         // Coordinates
         final CPFEphemeris ephemeris    = file.getSatellites().get("1606902");

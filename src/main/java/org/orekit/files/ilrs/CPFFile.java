@@ -212,7 +212,7 @@ public class CPFFile implements EphemerisFile {
         /** {@inheritDoc} */
         @Override
         public String getId() {
-            return String.valueOf(header.getIlrsSatelliteId());
+            return header.getIlrsSatelliteId();
         }
 
         /** {@inheritDoc} */

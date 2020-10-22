@@ -368,6 +368,7 @@ public class CPFParser implements EphemerisFileParser {
                         break;
                 }
                 pi.file.getHeader().setRefFrame(pi.frame);
+                pi.file.getHeader().setRefFrameId(frameId);
 
                 // Last fields
                 pi.file.getHeader().setRotationalAngleType(Integer.parseInt(values[20]));

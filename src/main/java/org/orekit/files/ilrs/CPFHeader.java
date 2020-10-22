@@ -43,6 +43,9 @@ public class CPFHeader extends ILRSHeader {
     /** Reference frame. */
     private Frame refFrame;
 
+    /** Reference frame identifier. */
+    private int refFrameId;
+
     /** Rotational angle type. */
     private int rotationalAngleType;
 
@@ -145,6 +148,22 @@ public class CPFHeader extends ILRSHeader {
      */
     public void setRefFrame(final Frame refFrame) {
         this.refFrame = refFrame;
+    }
+
+    /**
+     * Get the reference frame identifier.
+     * @return the reference frame
+     */
+    public int getRefFrameId() {
+        return refFrameId;
+    }
+
+    /**
+     * Set the reference frame identifier.
+     * @param refFrameId the reference frame identifier to set
+     */
+    public void setRefFrameId(final int refFrameId) {
+        this.refFrameId = refFrameId;
     }
 
     /**
