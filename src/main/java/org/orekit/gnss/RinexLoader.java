@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -30,18 +30,20 @@ import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScales;
 
 /** Loader for Rinex measurements files.
  * <p>
  * Supported versions are: 2.00, 2.10, 2.11, 2.12 (unofficial), 2.20 (unofficial),
- * 3.00, 3.01, 3.02, and 3.03.
+ * 3.00, 3.01, 3.02, 3.03, and 3.04.
  * </p>
  * @see <a href="ftp://igs.org/pub/data/format/rinex2.txt">rinex 2.0</a>
  * @see <a href="ftp://igs.org/pub/data/format/rinex210.txt">rinex 2.10</a>
@@ -52,6 +54,7 @@ import org.orekit.time.TimeScalesFactory;
  * @see <a href="ftp://igs.org/pub/data/format/rinex301.pdf">rinex 3.01</a>
  * @see <a href="ftp://igs.org/pub/data/format/rinex302.pdf">rinex 3.02</a>
  * @see <a href="ftp://igs.org/pub/data/format/rinex303.pdf">rinex 3.03</a>
+ * @see <a href="ftp://igs.org/pub/data/format/rinex304.pdf">rinex 3.04</a>
  * @since 9.2
  */
 public class RinexLoader {
@@ -96,6 +99,7 @@ public class RinexLoader {
     private static final String SYS_PCVS_APPLIED     = "SYS / PCVS APPLIED";
     private static final String SYS_SCALE_FACTOR     = "SYS / SCALE FACTOR";
     private static final String SYS_PHASE_SHIFT      = "SYS / PHASE SHIFT";
+    private static final String SYS_PHASE_SHIFTS     = "SYS / PHASE SHIFTS";
     private static final String GLONASS_SLOT_FRQ_NB  = "GLONASS SLOT / FRQ #";
     private static final String GLONASS_COD_PHS_BIS  = "GLONASS COD/PHS/BIS";
     private static final String OBS_SCALE_FACTOR     = "OBS SCALE FACTOR";
@@ -111,24 +115,68 @@ public class RinexLoader {
     /** Rinex Observations. */
     private final List<ObservationDataSet> observationDataSets;
 
+    /** Set of time scales. */
+    private final TimeScales timeScales;
+
     /** Simple constructor.
      * <p>
      * This constructor is used when the rinex files are managed by the
-     * global {@link DataProvidersManager DataProvidersManager}.
+     * global {@link DataContext#getDefault() default data context}.
      * </p>
      * @param supportedNames regular expression for supported files names
+     * @see #RinexLoader(String, DataProvidersManager, TimeScales)
      */
+    @DefaultDataContext
     public RinexLoader(final String supportedNames) {
-        observationDataSets = new ArrayList<>();
-        DataProvidersManager.getInstance().feed(supportedNames, new Parser());
+        this(supportedNames, DataContext.getDefault().getDataProvidersManager(),
+                DataContext.getDefault().getTimeScales());
     }
 
-    /** Simple constructor.
+    /**
+     * Create a RINEX loader/parser with the given source of RINEX auxiliary data files.
+     *
+     * <p>
+     * This constructor is used when the rinex files are managed by the given
+     * {@code dataProvidersManager}.
+     * </p>
+     * @param supportedNames regular expression for supported files names
+     * @param dataProvidersManager provides access to auxiliary data.
+     * @param timeScales the set of time scales to use when parsing dates.
+     * @since 10.1
+     */
+    public RinexLoader(final String supportedNames,
+                       final DataProvidersManager dataProvidersManager,
+                       final TimeScales timeScales) {
+        observationDataSets = new ArrayList<>();
+        this.timeScales = timeScales;
+        dataProvidersManager.feed(supportedNames, new Parser());
+    }
+
+    /** Simple constructor. This constructor uses the {@link DataContext#getDefault()
+     * default data context}.
+     *
      * @param input data input stream
      * @param name name of the file (or zip entry)
+     * @see #RinexLoader(InputStream, String, TimeScales)
      */
+    @DefaultDataContext
     public RinexLoader(final InputStream input, final String name) {
+        this(input, name, DataContext.getDefault().getTimeScales());
+    }
+
+    /**
+     * Loads RINEX from the given input stream using the specified auxiliary data.
+     *
+     * @param input data input stream
+     * @param name name of the file (or zip entry)
+     * @param timeScales the set of time scales to use when parsing dates.
+     * @since 10.1
+     */
+    public RinexLoader(final InputStream input,
+                       final String name,
+                       final TimeScales timeScales) {
         try {
+            this.timeScales = timeScales;
             observationDataSets = new ArrayList<>();
             new Parser().loadData(input, name);
         } catch (IOException ioe) {
@@ -223,7 +271,6 @@ public class RinexLoader {
                 double                           rcvrClkOffset          = 0;
                 boolean                          inRunBy                = false;
                 boolean                          inMarkerName           = false;
-                boolean                          inMarkerType           = false;
                 boolean                          inObserver             = false;
                 boolean                          inRecType              = false;
                 boolean                          inAntType              = false;
@@ -242,12 +289,16 @@ public class RinexLoader {
 
                 //First line must  always contain Rinex Version, File Type and Satellite Systems Observed
                 readLine(reader, true);
+                if (line.length() < LABEL_START || !RINEX_VERSION_TYPE.equals(line.substring(LABEL_START).trim())) {
+                    throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
+                }
                 formatVersion = parseDouble(0, 9);
-                int format100 = (int) FastMath.rint(100 * formatVersion);
+                final int format100 = (int) FastMath.rint(100 * formatVersion);
 
                 if ((format100 != 200) && (format100 != 210) && (format100 != 211) &&
                     (format100 != 212) && (format100 != 220) && (format100 != 300) &&
-                    (format100 != 301) && (format100 != 302) && (format100 != 303)) {
+                    (format100 != 301) && (format100 != 302) && (format100 != 303) &&
+                    (format100 != 304)) {
                     throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
                 }
 
@@ -271,16 +322,6 @@ public class RinexLoader {
 
                             if (rinexHeader == null) {
                                 switch(line.substring(LABEL_START).trim()) {
-                                    case RINEX_VERSION_TYPE :
-
-                                        formatVersion = parseDouble(0, 9);
-                                        //File Type must be Observation_Data
-                                        if (!(parseString(20, 1)).equals(FILE_TYPE)) {
-                                            throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
-                                        }
-                                        satelliteSystem = SatelliteSystem.parseSatelliteSystem(parseString(40, 1));
-                                        inRinexVersion = true;
-                                        break;
                                     case COMMENT :
                                         // nothing to do
                                         break;
@@ -354,24 +395,24 @@ public class RinexLoader {
                                     case TIME_OF_FIRST_OBS :
                                         switch (satelliteSystem) {
                                             case GPS:
-                                                timeScale = TimeScalesFactory.getGPS();
+                                                timeScale = timeScales.getGPS();
                                                 break;
                                             case GALILEO:
-                                                timeScale = TimeScalesFactory.getGST();
+                                                timeScale = timeScales.getGST();
                                                 break;
                                             case GLONASS:
-                                                timeScale = TimeScalesFactory.getGLONASS();
+                                                timeScale = timeScales.getGLONASS();
                                                 break;
                                             case MIXED:
                                                 //in Case of Mixed data, Timescale must be specified in the Time of First line
                                                 timeScaleStr = parseString(48, 3);
 
                                                 if (timeScaleStr.equals(GPS)) {
-                                                    timeScale = TimeScalesFactory.getGPS();
+                                                    timeScale = timeScales.getGPS();
                                                 } else if (timeScaleStr.equals(GAL)) {
-                                                    timeScale = TimeScalesFactory.getGST();
+                                                    timeScale = timeScales.getGST();
                                                 } else if (timeScaleStr.equals(GLO)) {
-                                                    timeScale = TimeScalesFactory.getGLONASS();
+                                                    timeScale = timeScales.getGLONASS();
                                                 } else {
                                                     throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
                                                 }
@@ -417,7 +458,7 @@ public class RinexLoader {
                                                 try {
                                                     typesObs.add(ObservationType.valueOf(parseString(10 + (6 * i), 2)));
                                                 } catch (IllegalArgumentException iae) {
-                                                    throw new OrekitException(OrekitMessages.UNKNOWN_RINEX_FREQUENCY,
+                                                    throw new OrekitException(iae, OrekitMessages.UNKNOWN_RINEX_FREQUENCY,
                                                                               parseString(10 + (6 * i), 2), name, lineNumber);
                                                 }
                                             }
@@ -632,20 +673,6 @@ public class RinexLoader {
                         while (readLine(reader, false)) {
                             if (rinexHeader == null) {
                                 switch(line.substring(LABEL_START).trim()) {
-                                    case RINEX_VERSION_TYPE : {
-                                        formatVersion = parseDouble(0, 9);
-                                        format100     = (int) FastMath.rint(100 * formatVersion);
-                                        if ((format100 != 300) && (format100 != 301) && (format100 != 302) && (format100 != 303)) {
-                                            throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
-                                        }
-                                        //File Type must be Observation_Data
-                                        if (!(parseString(20, 1)).equals(FILE_TYPE)) {
-                                            throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
-                                        }
-                                        satelliteSystem = SatelliteSystem.parseSatelliteSystem(parseString(40, 1));
-                                        inRinexVersion = true;
-                                    }
-                                        break;
                                     case COMMENT :
                                         // nothing to do
                                         break;
@@ -661,7 +688,6 @@ public class RinexLoader {
                                         break;
                                     case MARKER_TYPE :
                                         markerType = parseString(0, 20);
-                                        inMarkerType = true;
                                         //Could be done with an Enumeration
                                         break;
                                     case OBSERVER_AGENCY :
@@ -733,39 +759,39 @@ public class RinexLoader {
                                     case TIME_OF_FIRST_OBS :
                                         switch(satelliteSystem) {
                                             case GPS:
-                                                timeScale = TimeScalesFactory.getGPS();
+                                                timeScale = timeScales.getGPS();
                                                 break;
                                             case GALILEO:
-                                                timeScale = TimeScalesFactory.getGST();
+                                                timeScale = timeScales.getGST();
                                                 break;
                                             case GLONASS:
-                                                timeScale = TimeScalesFactory.getGLONASS();
+                                                timeScale = timeScales.getGLONASS();
                                                 break;
                                             case QZSS:
-                                                timeScale = TimeScalesFactory.getQZSS();
+                                                timeScale = timeScales.getQZSS();
                                                 break;
                                             case BEIDOU:
-                                                timeScale = TimeScalesFactory.getBDT();
+                                                timeScale = timeScales.getBDT();
                                                 break;
                                             case IRNSS:
-                                                timeScale = TimeScalesFactory.getIRNSS();
+                                                timeScale = timeScales.getIRNSS();
                                                 break;
                                             case MIXED:
                                                 //in Case of Mixed data, Timescale must be specified in the Time of First line
                                                 timeScaleStr = parseString(48, 3);
 
                                                 if (timeScaleStr.equals(GPS)) {
-                                                    timeScale = TimeScalesFactory.getGPS();
+                                                    timeScale = timeScales.getGPS();
                                                 } else if (timeScaleStr.equals(GAL)) {
-                                                    timeScale = TimeScalesFactory.getGST();
+                                                    timeScale = timeScales.getGST();
                                                 } else if (timeScaleStr.equals(GLO)) {
-                                                    timeScale = TimeScalesFactory.getGLONASS();
+                                                    timeScale = timeScales.getGLONASS();
                                                 } else if (timeScaleStr.equals(QZS)) {
-                                                    timeScale = TimeScalesFactory.getQZSS();
+                                                    timeScale = timeScales.getQZSS();
                                                 } else if (timeScaleStr.equals(BDT)) {
-                                                    timeScale = TimeScalesFactory.getBDT();
+                                                    timeScale = timeScales.getBDT();
                                                 } else if (timeScaleStr.equals(IRN)) {
-                                                    timeScale = TimeScalesFactory.getIRNSS();
+                                                    timeScale = timeScales.getIRNSS();
                                                 } else {
                                                     throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
                                                 }
@@ -819,7 +845,7 @@ public class RinexLoader {
                                                 try {
                                                     typeObs.add(ObservationType.valueOf(parseString(7 + (4 * i), 3)));
                                                 } catch (IllegalArgumentException iae) {
-                                                    throw new OrekitException(OrekitMessages.UNKNOWN_RINEX_FREQUENCY,
+                                                    throw new OrekitException(iae, OrekitMessages.UNKNOWN_RINEX_FREQUENCY,
                                                                               parseString(7 + (4 * i), 3), name, lineNumber);
                                                 }
                                             }
@@ -869,7 +895,8 @@ public class RinexLoader {
                                         scaleFactorCorrections.add(new ScaleFactorCorrection(satSystemScaleFactor,
                                                                                              scaleFactor, typesObsScaleFactor));
                                         break;
-                                    case SYS_PHASE_SHIFT : {
+                                    case SYS_PHASE_SHIFT  :
+                                    case SYS_PHASE_SHIFTS : {
 
                                         nbSatPhaseShift     = 0;
                                         satsPhaseShift      = null;
@@ -879,7 +906,9 @@ public class RinexLoader {
 
                                         satSystemPhaseShift = SatelliteSystem.parseSatelliteSystem(parseString(0, 1));
                                         final String to = parseString(2, 3);
-                                        phaseShiftTypeObs = to.isEmpty() ? null : ObservationType.valueOf(to);
+                                        phaseShiftTypeObs = to.isEmpty() ?
+                                                            null :
+                                                            ObservationType.valueOf(to.length() < 3 ? "L" + to : to);
                                         nbSatPhaseShift = parseInt(16, 2);
                                         corrPhaseShift = parseDouble(6, 8);
 
@@ -916,8 +945,8 @@ public class RinexLoader {
                                     case END_OF_HEADER :
                                         //We make sure that we have read all the mandatory fields inside the header of the Rinex
                                         if (!inRinexVersion || !inRunBy || !inMarkerName ||
-                                            !inMarkerType || !inObserver || !inRecType || !inAntType ||
-                                            !inAproxPos || !inAntDelta || !inTypesObs || !inFirstObs ||
+                                            !inObserver || !inRecType || !inAntType ||
+                                            !inAntDelta || !inTypesObs || !inFirstObs ||
                                             (formatVersion >= 3.01 && !inPhaseShift) ||
                                             (formatVersion >= 3.03 && (!inGlonassSlot || !inGlonassCOD))) {
                                             throw new OrekitException(OrekitMessages.INCOMPLETE_HEADER, name);

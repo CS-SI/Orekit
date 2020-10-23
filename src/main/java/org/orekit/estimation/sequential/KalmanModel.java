@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -35,6 +35,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
 import org.orekit.orbits.Orbit;
@@ -76,6 +77,9 @@ public class KalmanModel implements KalmanODModel {
 
     /** End columns for each estimated orbit. */
     private final int[] orbitsEndColumns;
+
+    /** Map for propagation parameters columns. */
+    private final Map<String, Integer> propagationParameterColumns;
 
     /** Map for measurements parameters columns. */
     private final Map<String, Integer> measurementParameterColumns;
@@ -184,7 +188,7 @@ public class KalmanModel implements KalmanODModel {
         estimatedPropagationParametersNames.sort(Comparator.naturalOrder());
 
         // Populate the map of propagation drivers' columns and update the total number of columns
-        final Map<String, Integer> propagationParameterColumns = new HashMap<>(estimatedPropagationParametersNames.size());
+        propagationParameterColumns = new HashMap<>(estimatedPropagationParametersNames.size());
         for (final String driverName : estimatedPropagationParametersNames) {
             propagationParameterColumns.put(driverName, columns);
             ++columns;
@@ -729,8 +733,8 @@ public class KalmanModel implements KalmanODModel {
                 final RealMatrix dMdPp = dMdY.multiply(dYdPp);
                 for (int i = 0; i < dMdPp.getRowDimension(); ++i) {
                     for (int j = 0; j < nbParams; ++j) {
-                        final ParameterDriver delegating = allEstimatedPropagationParameters.getDrivers().get(j);
-                        measurementMatrix.setEntry(i, orbitsEndColumns[p] + j,
+                        final ParameterDriver delegating = estimatedPropagationParameters[p].getDrivers().get(j);
+                        measurementMatrix.setEntry(i, propagationParameterColumns.get(delegating.getName()),
                                                    dMdPp.getEntry(i, j) / sigma[i] * delegating.getScale());
                     }
                 }
@@ -909,7 +913,7 @@ public class KalmanModel implements KalmanODModel {
         // so far. We use this to be able to apply the OutlierFilter modifiers on the predicted measurement.
         predictedMeasurement = observedMeasurement.estimate(currentMeasurementNumber,
                                                             currentMeasurementNumber,
-                                                            predictedSpacecraftStates);
+                                                            filterRelevant(observedMeasurement, predictedSpacecraftStates));
 
         // Normalized measurement matrix (nxm)
         final RealMatrix measurementMatrix = getMeasurementMatrix();
@@ -986,11 +990,26 @@ public class KalmanModel implements KalmanODModel {
         // Compute the estimated measurement using estimated spacecraft state
         correctedMeasurement = observedMeasurement.estimate(currentMeasurementNumber,
                                                             currentMeasurementNumber,
-                                                            correctedSpacecraftStates);
+                                                            filterRelevant(observedMeasurement, correctedSpacecraftStates));
         // Update the trajectory
         // ---------------------
         updateReferenceTrajectories(estimatedPropagators);
 
+    }
+
+    /** Filter relevant states for a measurement.
+     * @param observedMeasurement measurement to consider
+     * @param allStates all states
+     * @return array containing only the states relevant to the measurement
+     * @since 10.1
+     */
+    private SpacecraftState[] filterRelevant(final ObservedMeasurement<?> observedMeasurement, final SpacecraftState[] allStates) {
+        final List<ObservableSatellite> satellites = observedMeasurement.getSatellites();
+        final SpacecraftState[] relevantStates = new SpacecraftState[satellites.size()];
+        for (int i = 0; i < relevantStates.length; ++i) {
+            relevantStates[i] = allStates[satellites.get(i).getPropagatorIndex()];
+        }
+        return relevantStates;
     }
 
     /** Set the predicted normalized state vector.

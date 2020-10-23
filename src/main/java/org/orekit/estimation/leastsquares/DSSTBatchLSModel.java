@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -244,7 +244,12 @@ public class DSSTBatchLSModel implements BatchLSODModel {
         final Orbit[] orbits = new Orbit[propagators.length];
         for (int i = 0; i < propagators.length; ++i) {
             mappers[i] = configureDerivatives(propagators[i]);
-            orbits[i]  = propagators[i].getInitialState().getOrbit();
+            final SpacecraftState initial = propagators[i].initialIsOsculating() ?
+                        DSSTPropagator.computeMeanState(propagators[i].getInitialState(), propagators[i].getAttitudeProvider(), propagators[i].getAllForceModels()) :
+                        propagators[i].getInitialState();
+            orbits[i]  = initial.getOrbit();
+            // compute short period derivatives at the beginning of the iteration
+            mappers[i].setShortPeriodJacobians(initial);
         }
         final PropagatorsParallelizer parallelizer =
                         new PropagatorsParallelizer(Arrays.asList(propagators), configureMeasurements(point));
@@ -433,9 +438,6 @@ public class DSSTBatchLSModel implements BatchLSODModel {
             // Jacobian of the measurement with respect to current orbital state
             final RealMatrix dMdC = new Array2DRowRealMatrix(evaluation.getStateDerivatives(k), false);
             final RealMatrix dMdY = dMdC.multiply(dCdY);
-
-            // short period derivatives
-            mappers[p].setShortPeriodJacobians(evaluationStates[k]);
 
             // Jacobian of the measurement with respect to initial orbital state
             final double[][] aYY0 = new double[6][6];

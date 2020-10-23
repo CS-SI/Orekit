@@ -1,3 +1,19 @@
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.files.ccsds;
 
 import static org.junit.Assert.assertEquals;
@@ -27,6 +43,7 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.OEMFile.CovarianceMatrix;
 import org.orekit.files.ccsds.OEMFile.EphemeridesBlock;
 import org.orekit.files.ccsds.OEMWriter.InterpolationMethod;
 import org.orekit.files.general.EphemerisFile;
@@ -193,6 +210,22 @@ public class OEMWriterTest {
         writer2.write(tempOEMFilePath, ephemerisFile);
     }
 
+    @Test
+    public void testIssue723() throws IOException {
+        final String ex = "/ccsds/OEMExampleWithHeaderComment.txt";
+        final InputStream inEntry = getClass().getResourceAsStream(ex);
+        final OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM())
+                .withConventions(IERSConventions.IERS_2010);
+        final OEMFile oemFile = parser.parse(inEntry, "OEMExampleWithHeaderComment.txt");
+
+        String tempOEMFilePath = tempFolder.newFile("TestOEMIssue723.aem").toString();
+        OEMWriter writer = new OEMWriter();
+        writer.write(tempOEMFilePath, oemFile);
+
+        final OEMFile generatedOemFile = parser.parse(tempOEMFilePath);
+        assertEquals(oemFile.getHeaderComment().get(0), generatedOemFile.getHeaderComment().get(0));
+    }
+
     private static void compareOemEphemerisBlocks(EphemeridesBlock block1, EphemeridesBlock block2) {
         compareOemEphemerisBlocksMetadata(block1.getMetaData(), block2.getMetaData());
         assertEquals(block1.getStart(), block2.getStart());
@@ -209,7 +242,15 @@ public class OEMWriterTest {
             assertEquals(c1.getVelocity() + " -> " + c2.getVelocity(), 0.0,
                     Vector3D.distance(c1.getVelocity(), c2.getVelocity()), VELOCITY_PRECISION);
         }
-
+        assertEquals(block1.getCovarianceMatrices().size(), block2.getCovarianceMatrices().size());
+        for (int j = 0; j < block1.getCovarianceMatrices().size(); j++) {
+        	CovarianceMatrix covMat1 = block1.getCovarianceMatrices().get(j);
+        	CovarianceMatrix covMat2 = block2.getCovarianceMatrices().get(j);
+        	assertEquals(covMat1.getEpoch(), covMat2.getEpoch());
+        	assertEquals(covMat1.getFrame(), covMat2.getFrame());
+        	assertEquals(covMat1.getLofType(), covMat2.getLofType());
+        	assertEquals(covMat1.getMatrix(),covMat2.getMatrix());       	
+        }
     }
 
     private static void compareOemEphemerisBlocksMetadata(ODMMetaData meta1, ODMMetaData meta2) {

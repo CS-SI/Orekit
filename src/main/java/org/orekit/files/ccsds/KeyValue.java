@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -44,12 +44,15 @@ import org.orekit.errors.OrekitMessages;
  */
 class KeyValue {
 
+    /** Regular expression for spaces. */
+    private static final Pattern SPACE = Pattern.compile("\\p{Space}+");
+
     /** Regular expression for splitting lines. */
-    private final Pattern PATTERN =
+    private static final Pattern PATTERN =
             Pattern.compile("\\p{Space}*([A-Z][A-Z_0-9]*)\\p{Space}*=?\\p{Space}*(.*?)\\p{Space}*(?:\\[.*\\])?\\p{Space}*");
 
     /** Regular expression for user defined keywords. */
-    private final Pattern USER_DEFINED_KEYWORDS =
+    private static final Pattern USER_DEFINED_KEYWORDS =
             Pattern.compile("USER_DEFINED_[A-Z][A-Z_]*");
 
     /** Regular expression for splitting comma-separated lists. */
@@ -110,10 +113,8 @@ class KeyValue {
             if (recognized == Keyword.COMMENT) {
                 value = rawValue;
             } else {
-                value = rawValue.
-                        toUpperCase(Locale.US).
-                        replace('_', ' ').
-                        replaceAll("\\p{Space}+", " ");
+                value = SPACE.matcher(rawValue.toUpperCase(Locale.US).replace('_', ' '))
+                        .replaceAll(" ");
             }
         } else {
             key     = "";

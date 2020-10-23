@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,9 +19,13 @@ package org.orekit.propagation;
 import java.util.Collection;
 import java.util.List;
 
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
+import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
+import org.orekit.frames.Frames;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
@@ -58,7 +62,14 @@ public interface Propagator extends PVCoordinatesProvider {
     /** Default mass. */
     double DEFAULT_MASS = 1000.0;
 
-    /** Default attitude provider. */
+    /** Default attitude provider.
+     *
+     * <p>This field uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @see InertialProvider#InertialProvider(Rotation, Frame)
+     * @see #getDefaultLaw(Frames)
+     */
+    @DefaultDataContext
     AttitudeProvider DEFAULT_LAW = InertialProvider.EME2000_ALIGNED;
 
     /** Indicator for slave mode. */
@@ -69,6 +80,17 @@ public interface Propagator extends PVCoordinatesProvider {
 
     /** Indicator for ephemeris generation mode. */
     int EPHEMERIS_GENERATION_MODE = 2;
+
+    /**
+     * Get a default law using the given frames. A data context aware replacement for
+     * {@link #DEFAULT_LAW}.
+     *
+     * @param frames the set of frames to use.
+     * @return attitude law.
+     */
+    static AttitudeProvider getDefaultLaw(final Frames frames) {
+        return new InertialProvider(Rotation.IDENTITY, frames.getEME2000());
+    }
 
     /** Get the current operating mode of the propagator.
      * @return one of {@link #SLAVE_MODE}, {@link #MASTER_MODE},

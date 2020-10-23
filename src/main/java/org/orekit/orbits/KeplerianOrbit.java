@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,13 +21,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -81,8 +83,8 @@ public class KeplerianOrbit extends Orbit {
     /** Serializable UID. */
     private static final long serialVersionUID = 20170414L;
 
-    /** Factory for first time derivatives. */
-    private static final DSFactory FACTORY = new DSFactory(1, 1);
+    /** Name of the eccentricity parameter. */
+    private static final String ECCENTRICITY = "eccentricity";
 
     /** First coefficient to compute Kepler equation solver starter. */
     private static final double A;
@@ -139,7 +141,7 @@ public class KeplerianOrbit extends Orbit {
 
     /** Creates a new instance.
      * @param a  semi-major axis (m), negative for hyperbolic orbits
-     * @param e eccentricity
+     * @param e eccentricity (positive or equal to 0)
      * @param i inclination (rad)
      * @param pa perigee argument (ω, rad)
      * @param raan right ascension of ascending node (Ω, rad)
@@ -165,7 +167,7 @@ public class KeplerianOrbit extends Orbit {
 
     /** Creates a new instance.
      * @param a  semi-major axis (m), negative for hyperbolic orbits
-     * @param e eccentricity
+     * @param e eccentricity (positive or equal to 0)
      * @param i inclination (rad)
      * @param pa perigee argument (ω, rad)
      * @param raan right ascension of ascending node (Ω, rad)
@@ -199,6 +201,9 @@ public class KeplerianOrbit extends Orbit {
             throw new OrekitIllegalArgumentException(OrekitMessages.ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE, a, e);
         }
 
+        // Checking eccentricity range
+        checkParameterRangeInclusive(ECCENTRICITY, e, 0.0, Double.POSITIVE_INFINITY);
+
         this.a       = a;
         this.aDot    = aDot;
         this.e       = e;
@@ -211,28 +216,28 @@ public class KeplerianOrbit extends Orbit {
         this.raanDot = raanDot;
 
         if (hasDerivatives()) {
-            final DerivativeStructure eDS        = FACTORY.build(e, eDot);
-            final DerivativeStructure anomalyDS  = FACTORY.build(anomaly,  anomalyDot);
-            final DerivativeStructure vDS;
+            final UnivariateDerivative1 eUD        = new UnivariateDerivative1(e, eDot);
+            final UnivariateDerivative1 anomalyUD  = new UnivariateDerivative1(anomaly,  anomalyDot);
+            final UnivariateDerivative1 vUD;
             switch (type) {
                 case MEAN :
-                    vDS = (a < 0) ?
-                          FieldKeplerianOrbit.hyperbolicEccentricToTrue(FieldKeplerianOrbit.meanToHyperbolicEccentric(anomalyDS, eDS), eDS) :
-                          FieldKeplerianOrbit.ellipticEccentricToTrue(FieldKeplerianOrbit.meanToEllipticEccentric(anomalyDS, eDS), eDS);
+                    vUD = (a < 0) ?
+                          FieldKeplerianOrbit.hyperbolicEccentricToTrue(FieldKeplerianOrbit.meanToHyperbolicEccentric(anomalyUD, eUD), eUD) :
+                          FieldKeplerianOrbit.ellipticEccentricToTrue(FieldKeplerianOrbit.meanToEllipticEccentric(anomalyUD, eUD), eUD);
                     break;
                 case ECCENTRIC :
-                    vDS = (a < 0) ?
-                          FieldKeplerianOrbit.hyperbolicEccentricToTrue(anomalyDS, eDS) :
-                          FieldKeplerianOrbit.ellipticEccentricToTrue(anomalyDS, eDS);
+                    vUD = (a < 0) ?
+                          FieldKeplerianOrbit.hyperbolicEccentricToTrue(anomalyUD, eUD) :
+                          FieldKeplerianOrbit.ellipticEccentricToTrue(anomalyUD, eUD);
                     break;
                 case TRUE :
-                    vDS = anomalyDS;
+                    vUD = anomalyUD;
                     break;
                 default : // this should never happen
                     throw new OrekitInternalError(null);
             }
-            this.v    = vDS.getValue();
-            this.vDot = vDS.getPartialDerivative(1);
+            this.v    = vUD.getValue();
+            this.vDot = vUD.getDerivative(1);
         } else {
             switch (type) {
                 case MEAN :
@@ -342,6 +347,9 @@ public class KeplerianOrbit extends Orbit {
             v = hyperbolicEccentricToTrue(FastMath.log((eCH + eSH) / (eCH - eSH)) / 2, e);
         }
 
+        // Checking eccentricity range
+        checkParameterRangeInclusive(ECCENTRICITY, e, 0.0, Double.POSITIVE_INFINITY);
+
         // compute perigee argument
         final Vector3D node = new Vector3D(raan, 0.0);
         final double px = Vector3D.dotProduct(pvP, node);
@@ -371,12 +379,12 @@ public class KeplerianOrbit extends Orbit {
             // mean anomaly derivative including Keplerian motion and convert to true anomaly
             final double MDot = getKeplerianMeanMotion() +
                                 jacobian[5][3] * aX + jacobian[5][4] * aY + jacobian[5][5] * aZ;
-            final DerivativeStructure eDS = FACTORY.build(e, eDot);
-            final DerivativeStructure MDS = FACTORY.build(getMeanAnomaly(), MDot);
-            final DerivativeStructure vDS = (a < 0) ?
-                                            FieldKeplerianOrbit.hyperbolicEccentricToTrue(FieldKeplerianOrbit.meanToHyperbolicEccentric(MDS, eDS), eDS) :
-                                            FieldKeplerianOrbit.ellipticEccentricToTrue(FieldKeplerianOrbit.meanToEllipticEccentric(MDS, eDS), eDS);
-            vDot = vDS.getPartialDerivative(1);
+            final UnivariateDerivative1 eUD = new UnivariateDerivative1(e, eDot);
+            final UnivariateDerivative1 MUD = new UnivariateDerivative1(getMeanAnomaly(), MDot);
+            final UnivariateDerivative1 vUD = (a < 0) ?
+                                            FieldKeplerianOrbit.hyperbolicEccentricToTrue(FieldKeplerianOrbit.meanToHyperbolicEccentric(MUD, eUD), eUD) :
+                                            FieldKeplerianOrbit.ellipticEccentricToTrue(FieldKeplerianOrbit.meanToEllipticEccentric(MUD, eUD), eUD);
+            vDot = vUD.getDerivative(1);
 
         } else {
             // acceleration is either almost zero or NaN,
@@ -517,12 +525,12 @@ public class KeplerianOrbit extends Orbit {
      * @since 9.0
      */
     public double getEccentricAnomalyDot() {
-        final DerivativeStructure eDS = FACTORY.build(e, eDot);
-        final DerivativeStructure vDS = FACTORY.build(v, vDot);
-        final DerivativeStructure EDS = (a < 0) ?
-                                        FieldKeplerianOrbit.trueToHyperbolicEccentric(vDS, eDS) :
-                                        FieldKeplerianOrbit.trueToEllipticEccentric(vDS, eDS);
-        return EDS.getPartialDerivative(1);
+        final UnivariateDerivative1 eUD = new UnivariateDerivative1(e, eDot);
+        final UnivariateDerivative1 vUD = new UnivariateDerivative1(v, vDot);
+        final UnivariateDerivative1 EUD = (a < 0) ?
+                                        FieldKeplerianOrbit.trueToHyperbolicEccentric(vUD, eUD) :
+                                        FieldKeplerianOrbit.trueToEllipticEccentric(vUD, eUD);
+        return EUD.getDerivative(1);
     }
 
     /** Get the mean anomaly.
@@ -539,12 +547,12 @@ public class KeplerianOrbit extends Orbit {
      * @since 9.0
      */
     public double getMeanAnomalyDot() {
-        final DerivativeStructure eDS = FACTORY.build(e, eDot);
-        final DerivativeStructure vDS = FACTORY.build(v, vDot);
-        final DerivativeStructure MDS = (a < 0) ?
-                                        FieldKeplerianOrbit.hyperbolicEccentricToMean(FieldKeplerianOrbit.trueToHyperbolicEccentric(vDS, eDS), eDS) :
-                                        FieldKeplerianOrbit.ellipticEccentricToMean(FieldKeplerianOrbit.trueToEllipticEccentric(vDS, eDS), eDS);
-        return MDS.getPartialDerivative(1);
+        final UnivariateDerivative1 eUD = new UnivariateDerivative1(e, eDot);
+        final UnivariateDerivative1 vUD = new UnivariateDerivative1(v, vDot);
+        final UnivariateDerivative1 MUD = (a < 0) ?
+                                        FieldKeplerianOrbit.hyperbolicEccentricToMean(FieldKeplerianOrbit.trueToHyperbolicEccentric(vUD, eUD), eUD) :
+                                        FieldKeplerianOrbit.ellipticEccentricToMean(FieldKeplerianOrbit.trueToEllipticEccentric(vUD, eUD), eUD);
+        return MUD.getDerivative(1);
     }
 
     /** Get the anomaly.
@@ -1591,14 +1599,38 @@ public class KeplerianOrbit extends Orbit {
                                   append(";}").toString();
     }
 
+    /** Check if the given parameter is within an acceptable range.
+     * The bounds are inclusive: an exception is raised when either of those conditions are met:
+     * <ul>
+     *     <li>The parameter is strictly greater than upperBound</li>
+     *     <li>The parameter is strictly lower than lowerBound</li>
+     * </ul>
+     * <p>
+     * In either of these cases, an OrekitException is raised.
+     * </p>
+     * @param parameterName name of the parameter
+     * @param parameter value of the parameter
+     * @param lowerBound lower bound of the acceptable range (inclusive)
+     * @param upperBound upper bound of the acceptable range (inclusive)
+     */
+    private void checkParameterRangeInclusive(final String parameterName, final double parameter,
+                                              final double lowerBound, final double upperBound) {
+        if ((parameter < lowerBound) || (parameter > upperBound)) {
+            throw new OrekitException(OrekitMessages.INVALID_PARAMETER_RANGE, parameterName,
+                                      parameter, lowerBound, upperBound);
+        }
+    }
+
     /** Replace the instance with a data transfer object for serialization.
      * @return data transfer object that will be serialized
      */
+    @DefaultDataContext
     private Object writeReplace() {
         return new DTO(this);
     }
 
     /** Internal class used only for serialization. */
+    @DefaultDataContext
     private static class DTO implements Serializable {
 
         /** Serializable UID. */
@@ -1618,8 +1650,10 @@ public class KeplerianOrbit extends Orbit {
             final TimeStampedPVCoordinates pv = orbit.getPVCoordinates();
 
             // decompose date
-            final double epoch  = FastMath.floor(pv.getDate().durationFrom(AbsoluteDate.J2000_EPOCH));
-            final double offset = pv.getDate().durationFrom(AbsoluteDate.J2000_EPOCH.shiftedBy(epoch));
+            final AbsoluteDate j2000Epoch =
+                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
+            final double epoch  = FastMath.floor(pv.getDate().durationFrom(j2000Epoch));
+            final double offset = pv.getDate().durationFrom(j2000Epoch.shiftedBy(epoch));
 
             if (orbit.hasDerivatives()) {
                 // we have derivatives
@@ -1647,17 +1681,19 @@ public class KeplerianOrbit extends Orbit {
          * @return replacement {@link KeplerianOrbit}
          */
         private Object readResolve() {
+            final AbsoluteDate j2000Epoch =
+                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
             if (d.length >= 15) {
                 // we have derivatives
                 return new KeplerianOrbit(d[ 3], d[ 4], d[ 5], d[ 6], d[ 7], d[ 8],
                                           d[ 9], d[10], d[11], d[12], d[13], d[14],
                                           PositionAngle.TRUE,
-                                          frame, AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                                          frame, j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                           d[2]);
             } else {
                 // we don't have derivatives
                 return new KeplerianOrbit(d[3], d[4], d[5], d[6], d[7], d[8], PositionAngle.TRUE,
-                                          frame, AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                                          frame, j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                           d[2]);
             }
         }

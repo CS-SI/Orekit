@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -58,7 +58,18 @@ public class DSSTContext {
     // Map value = slave station associated
     public Map<GroundStation, GroundStation>      TARstations;
 
+    /**
+     * By default propagation type and initial state type are set to {@link PropagationType.MEAN}
+     * @see #createBuilder(PropagationType, PropagationType, boolean, double, double, double, DSSTForce...)
+     */
     public DSSTPropagatorBuilder createBuilder(final boolean perfectStart,
+                                               final double minStep, final double maxStep, final double dP,
+                                               final DSSTForce... forces) {
+        return createBuilder(PropagationType.MEAN, PropagationType.MEAN, perfectStart, minStep, maxStep, dP, forces);
+    }
+
+    public DSSTPropagatorBuilder createBuilder(final PropagationType propagationType,
+                                               final PropagationType stateType, final boolean perfectStart,
                                                final double minStep, final double maxStep, final double dP,
                                                final DSSTForce... forces) {
 
@@ -81,8 +92,7 @@ public class DSSTContext {
                         new DSSTPropagatorBuilder(startOrbit,
                                                   new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
                                                   dP,
-                                                  PropagationType.MEAN,
-                                                  PropagationType.MEAN);
+                                                  propagationType, stateType);
         for (DSSTForce force : forces) {
             propagatorBuilder.addForceModel(force.getForceModel(this));
         }

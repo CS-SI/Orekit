@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -32,6 +32,7 @@ import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Transform;
+import org.orekit.geometry.fov.FieldOfView;
 import org.orekit.models.earth.tessellation.DivertedSingularityAiming;
 import org.orekit.models.earth.tessellation.EllipsoidTessellator;
 import org.orekit.propagation.SpacecraftState;
@@ -95,6 +96,27 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
      * @param body body on which the geographic zone is defined
      * @param zone geographic zone to consider
      * @param samplingStep linear step used for sampling the geographic zone (in meters)
+     * @deprecated as of 10.1, replaced by {@link #FootprintOverlapDetector(FieldOfView, OneAxisEllipsoid, SphericalPolygonsSet, double)}
+     */
+    @Deprecated
+    public FootprintOverlapDetector(final org.orekit.propagation.events.FieldOfView fov,
+                                    final OneAxisEllipsoid body,
+                                    final SphericalPolygonsSet zone,
+                                    final double samplingStep) {
+        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+             new StopOnIncreasing<FootprintOverlapDetector>(),
+             fov, body, zone, samplingStep, sample(body, zone, samplingStep));
+    }
+
+    /** Build a new instance.
+     * <p>The maximal interval between distance to FOV boundary checks should
+     * be smaller than the half duration of the minimal pass to handle,
+     * otherwise some short passes could be missed.</p>
+     * @param fov sensor field of view
+     * @param body body on which the geographic zone is defined
+     * @param zone geographic zone to consider
+     * @param samplingStep linear step used for sampling the geographic zone (in meters)
+     * @since 10.1
      */
     public FootprintOverlapDetector(final FieldOfView fov,
                                     final OneAxisEllipsoid body,
@@ -207,9 +229,23 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
 
     /** Get the Field Of View.
      * @return Field Of View
+     * @since 10.1
      */
-    public FieldOfView getFieldOfView() {
+    public FieldOfView getFOV() {
         return fov;
+    }
+
+    /** Get the Field Of View.
+     * @return Field Of View, if detector has been built from a
+     * {@link org.orekit.propagation.events.FieldOfView}, or null of the
+     * detector was built from another implementation of {@link FieldOfView}
+     * @deprecated as of 10.1, replaced by {@link #getFOV()}
+     */
+    @Deprecated
+    public org.orekit.propagation.events.FieldOfView getFieldOfView() {
+        return fov instanceof org.orekit.propagation.events.FieldOfView ?
+               (org.orekit.propagation.events.FieldOfView) fov :
+               null;
     }
 
     /** Get the body on which the geographic zone is defined.
@@ -275,7 +311,8 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
             if (Vector3D.dotProduct(lineOfSightBody, point.getZenith()) <= 0) {
                 // spacecraft is above this sample point local horizon
                 // get line of sight in spacecraft frame
-                final double offset = fov.offsetFromBoundary(bodyToSc.transformVector(lineOfSightBody));
+                final double offset = fov.offsetFromBoundary(bodyToSc.transformVector(lineOfSightBody),
+                                                             0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV);
                 value = FastMath.min(value, offset);
             }
         }

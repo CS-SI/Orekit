@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,9 +20,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.estimation.measurements.AbstractMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
@@ -84,6 +83,7 @@ public class Phase extends AbstractMeasurement<Phase> {
                                                0.0, 1.0,
                                                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
         addParameterDriver(ambiguityDriver);
+        addParameterDriver(satellite.getClockOffsetDriver());
         addParameterDriver(station.getClockOffsetDriver());
         addParameterDriver(station.getEastOffsetDriver());
         addParameterDriver(station.getNorthOffsetDriver());
@@ -118,8 +118,7 @@ public class Phase extends AbstractMeasurement<Phase> {
                                                                 final int evaluation,
                                                                 final SpacecraftState[] states) {
 
-        final ObservableSatellite satellite = getSatellites().get(0);
-        final SpacecraftState state = states[satellite.getPropagatorIndex()];
+        final SpacecraftState state = states[0];
 
         // Phase derivatives are computed with respect to spacecraft state in inertial frame
         // and station parameters
@@ -136,22 +135,20 @@ public class Phase extends AbstractMeasurement<Phase> {
                 indices.put(driver.getName(), nbParams++);
             }
         }
-        final DSFactory                          factory = new DSFactory(nbParams, 1);
-        final Field<DerivativeStructure>         field   = factory.getDerivativeField();
-        final FieldVector3D<DerivativeStructure> zero    = FieldVector3D.getZero(field);
+        final FieldVector3D<Gradient> zero = FieldVector3D.getZero(GradientField.getField(nbParams));
 
-        // Coordinates of the spacecraft expressed as a derivative structure
-        final TimeStampedFieldPVCoordinates<DerivativeStructure> pvaDS = getCoordinates(state, 0, factory);
+        // Coordinates of the spacecraft expressed as a gradient
+        final TimeStampedFieldPVCoordinates<Gradient> pvaDS = getCoordinates(state, 0, nbParams);
 
-        // transform between station and inertial frame, expressed as a derivative structure
+        // transform between station and inertial frame, expressed as a gradient
         // The components of station's position in offset frame are the 3 last derivative parameters
-        final FieldTransform<DerivativeStructure> offsetToInertialDownlink =
-                        station.getOffsetToInertial(state.getFrame(), getDate(), factory, indices);
-        final FieldAbsoluteDate<DerivativeStructure> downlinkDateDS =
+        final FieldTransform<Gradient> offsetToInertialDownlink =
+                        station.getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
+        final FieldAbsoluteDate<Gradient> downlinkDateDS =
                         offsetToInertialDownlink.getFieldDate();
 
         // Station position in inertial frame at end of the downlink leg
-        final TimeStampedFieldPVCoordinates<DerivativeStructure> stationDownlink =
+        final TimeStampedFieldPVCoordinates<Gradient> stationDownlink =
                         offsetToInertialDownlink.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(downlinkDateDS,
                                                                                                             zero, zero, zero));
 
@@ -160,13 +157,13 @@ public class Phase extends AbstractMeasurement<Phase> {
         //  we will have delta == tauD and transitState will be the same as state)
 
         // Downlink delay
-        final DerivativeStructure tauD = signalTimeOfFlight(pvaDS, stationDownlink.getPosition(), downlinkDateDS);
+        final Gradient tauD = signalTimeOfFlight(pvaDS, stationDownlink.getPosition(), downlinkDateDS);
 
-        // Transit state & Transit state (re)computed with derivative structures
-        final DerivativeStructure   delta        = downlinkDateDS.durationFrom(state.getDate());
-        final DerivativeStructure   deltaMTauD   = tauD.negate().add(delta);
-        final SpacecraftState       transitState = state.shiftedBy(deltaMTauD.getValue());
-        final TimeStampedFieldPVCoordinates<DerivativeStructure> transitStateDS = pvaDS.shiftedBy(deltaMTauD);
+        // Transit state & Transit state (re)computed with gradients
+        final Gradient        delta        = downlinkDateDS.durationFrom(state.getDate());
+        final Gradient        deltaMTauD   = tauD.negate().add(delta);
+        final SpacecraftState transitState = state.shiftedBy(deltaMTauD.getValue());
+        final TimeStampedFieldPVCoordinates<Gradient> transitStateDS = pvaDS.shiftedBy(deltaMTauD);
 
         // prepare the evaluation
         final EstimatedMeasurement<Phase> estimated =
@@ -178,23 +175,28 @@ public class Phase extends AbstractMeasurement<Phase> {
                                                             stationDownlink.toTimeStampedPVCoordinates()
                                                         });
 
+        // Clock offsets
+        final ObservableSatellite satellite = getSatellites().get(0);
+        final Gradient            dts       = satellite.getClockOffsetDriver().getValue(nbParams, indices);
+        final Gradient            dtg       = station.getClockOffsetDriver().getValue(nbParams, indices);
+
         // Phase value
-        final double              cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
-        final DerivativeStructure ambiguity   = ambiguityDriver.getValue(factory, indices);
-        final DerivativeStructure phase       = tauD.multiply(cOverLambda).add(ambiguity);
+        final double   cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
+        final Gradient ambiguity   = ambiguityDriver.getValue(nbParams, indices);
+        final Gradient phase       = tauD.add(dtg).subtract(dts).multiply(cOverLambda).add(ambiguity);
 
         estimated.setEstimatedValue(phase.getValue());
 
         // Phase partial derivatives with respect to state
-        final double[] derivatives = phase.getAllDerivatives();
-        estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 1, 7));
+        final double[] derivatives = phase.getGradient();
+        estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 0, 6));
 
         // set partial derivatives with respect to parameters
         // (beware element at index 0 is the value, not a derivative)
         for (final ParameterDriver driver : getParametersDrivers()) {
             final Integer index = indices.get(driver.getName());
             if (index != null) {
-                estimated.setParameterDerivatives(driver, derivatives[index + 1]);
+                estimated.setParameterDerivatives(driver, derivatives[index]);
             }
         }
 

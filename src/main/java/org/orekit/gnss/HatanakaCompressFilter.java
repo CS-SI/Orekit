@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -85,7 +85,7 @@ public class HatanakaCompressFilter implements DataFilter {
         private final BufferedReader reader;
 
         /** Pending uncompressed output lines. */
-        private String pending;
+        private byte[] pending;
 
         /** Number of characters already output in pending lines. */
         private int countOut;
@@ -110,6 +110,13 @@ public class HatanakaCompressFilter implements DataFilter {
         /** {@inheritDoc} */
         @Override
         public int read() throws IOException {
+            final byte[] b = new byte[1];
+            return read(b, 0, 1) < 0 ? -1 : b[0];
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public int read(final byte[] b, final int offset, final int len) throws IOException {
 
             if (pending == null) {
                 // we need to read another section from the underlying stream and uncompress it
@@ -119,18 +126,25 @@ public class HatanakaCompressFilter implements DataFilter {
                     // there are no lines left
                     return -1;
                 } else {
-                    pending = format.uncompressSection(firstLine);
+                    pending = format.uncompressSection(firstLine).getBytes(StandardCharsets.UTF_8);
                 }
             }
 
-            if (countOut == pending.length()) {
-                // output an end of line
-                pending = null;
-                return '\n';
+            // copy as many characters as possible from current line
+            int n = FastMath.min(len, pending.length - countOut);
+            System.arraycopy(pending, countOut, b, offset, n);
+
+            if (n < len) {
+                // line has been completed and we can still output end of line
+                b[offset + n] = '\n';
+                pending       = null;
+                ++n;
             } else {
-                // output a character from the uncompressed line
-                return pending.charAt(countOut++);
+                // there are still some pending characters
+                countOut += n;
             }
+
+            return n;
 
         }
 
@@ -191,14 +205,24 @@ public class HatanakaCompressFilter implements DataFilter {
             }
 
             // output uncompressed value
-            final String unscaled = Long.toString(state[0]);
+            final String unscaled = Long.toString(FastMath.abs(state[0]));
+            final int    length   = unscaled.length();
+            final int    digits   = FastMath.max(length, decimalPlaces);
+            final int    padding  = fieldLength - (digits + (state[0] < 0 ? 2 : 1));
             final StringBuilder builder = new StringBuilder();
-            for (int padding = fieldLength - (unscaled.length() + 1); padding > 0; --padding) {
+            for (int i = 0; i < padding; ++i) {
                 builder.append(' ');
             }
-            builder.append(unscaled, 0, unscaled.length() - decimalPlaces);
+            if (state[0] < 0) {
+                builder.append('-');
+            }
+            if (length > decimalPlaces) {
+                builder.append(unscaled, 0, length - decimalPlaces);
+            }
             builder.append('.');
-            builder.append(unscaled, unscaled.length() - decimalPlaces, unscaled.length());
+            for (int i = decimalPlaces; i > 0; --i) {
+                builder.append(i > length ? '0' : unscaled.charAt(length - i));
+            }
 
             uncompressed = builder.toString();
 
@@ -424,12 +448,16 @@ public class HatanakaCompressFilter implements DataFilter {
          * @param epochLine epoch line
          * @param clockLine receiver clock offset line
          * @return uncompressed line
+         * @exception IOException if we cannot read additional special events lines
          */
-        public abstract String parseEpochAndClockLines(String epochLine, String clockLine);
+        public abstract String parseEpochAndClockLines(String epochLine, String clockLine)
+            throws IOException;
 
         /** Parse epoch and receiver clock offset lines.
+         * @param builder builder that may used to copy special event lines
          * @param epochStart start of the epoch field
          * @param epochLength length of epoch field
+         * @param eventStart start of the special events field
          * @param nbSatStart start of the number of satellites field
          * @param satListStart start of the satellites list
          * @param clockLength length of receiver clock field
@@ -437,43 +465,74 @@ public class HatanakaCompressFilter implements DataFilter {
          * @param epochLine epoch line
          * @param clockLine receiver clock offset line
          * @param resetChar character indicating differentials reset
+         * @exception IOException if we cannot read additional special events lines
          */
-        protected void doParseEpochAndClockLines(final int epochStart, final int epochLength,
-                                                 final int nbSatStart, final int satListStart,
+        protected void doParseEpochAndClockLines(final StringBuilder builder,
+                                                 final int epochStart, final int epochLength,
+                                                 final int eventStart, final int nbSatStart, final int satListStart,
                                                  final int clockLength, final int clockDecimalPlaces,
                                                  final String epochLine,
-                                                 final String clockLine, final char resetChar) {
+                                                 final String clockLine, final char resetChar)
+            throws IOException {
 
-            // check if differentials should be reset
-            if (epochDifferential == null || epochLine.charAt(0) == resetChar) {
-                epochDifferential   = new TextDifferential(epochLength);
-                satListDifferential = new TextDifferential(nbSat * 3);
-                differentials       = new HashMap<>();
-            }
+            boolean loop = true;
+            String loopEpochLine = epochLine;
+            String loopClockLine = clockLine;
+            while (loop) {
 
-            // parse epoch
-            epochDifferential.accept(epochLine.subSequence(epochStart,
-                                                           FastMath.min(epochLine.length(), epochStart + epochLength)));
-            final int n = parseInt(epochDifferential.getUncompressed(), nbSatStart, 3);
-            satellites = new ArrayList<>(n);
-            if (satListStart < epochLine.length()) {
-                satListDifferential.accept(epochLine.subSequence(satListStart, epochLine.length()));
-            }
-            final String satListPart = satListDifferential.getUncompressed();
-            for (int i = 0; i < n; ++i) {
-                satellites.add(satListPart.subSequence(i * 3, (i + 1) * 3));
-            }
+                // check if differentials should be reset
+                if (epochDifferential == null || loopEpochLine.charAt(0) == resetChar) {
+                    epochDifferential   = new TextDifferential(epochLength);
+                    satListDifferential = new TextDifferential(nbSat * 3);
+                    differentials       = new HashMap<>();
+                }
 
-            // parse clock offset
-            if (!clockLine.isEmpty()) {
-                if (clockLine.length() > 2 && clockLine.charAt(1) == '&') {
-                    clockDifferential = new NumericDifferential(clockLength, clockDecimalPlaces, parseInt(clockLine, 0, 1));
-                    clockDifferential.accept(clockLine.subSequence(2, clockLine.length()));
-                } else if (clockDifferential == null) {
-                    throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                              lineNumber, name, clockLine);
+                // check for special events
+                epochDifferential.accept(loopEpochLine.subSequence(epochStart,
+                                                                   FastMath.min(loopEpochLine.length(), epochStart + epochLength)));
+                if (parseInt(epochDifferential.getUncompressed(), eventStart, 1) > 1) {
+                    // this was not really the epoch, but rather a special event
+                    // we just copy the lines and skip to real epoch and clock lines
+                    builder.append(epochDifferential.getUncompressed());
+                    trimTrailingSpaces(builder);
+                    builder.append('\n');
+                    final int skippedLines = parseInt(epochDifferential.getUncompressed(), nbSatStart, 3);
+                    for (int i = 0; i < skippedLines; ++i) {
+                        builder.append(loopClockLine);
+                        trimTrailingSpaces(builder);
+                        builder.append('\n');
+                        loopClockLine = readLine();
+                    }
+
+                    // the epoch and clock are in the next lines
+                    loopEpochLine = loopClockLine;
+                    loopClockLine = readLine();
+                    loop = true;
+
                 } else {
-                    clockDifferential.accept(clockLine);
+                    loop = false;
+                    final int n = parseInt(epochDifferential.getUncompressed(), nbSatStart, 3);
+                    satellites = new ArrayList<>(n);
+                    if (satListStart < loopEpochLine.length()) {
+                        satListDifferential.accept(loopEpochLine.subSequence(satListStart, loopEpochLine.length()));
+                    }
+                    final String satListPart = satListDifferential.getUncompressed();
+                    for (int i = 0; i < n; ++i) {
+                        satellites.add(satListPart.subSequence(i * 3, (i + 1) * 3));
+                    }
+
+                    // parse clock offset
+                    if (!loopClockLine.isEmpty()) {
+                        if (loopClockLine.length() > 2 && loopClockLine.charAt(1) == '&') {
+                            clockDifferential = new NumericDifferential(clockLength, clockDecimalPlaces, parseInt(loopClockLine, 0, 1));
+                            clockDifferential.accept(loopClockLine.subSequence(2, loopClockLine.length()));
+                        } else if (clockDifferential == null) {
+                            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                      lineNumber, name, loopClockLine);
+                        } else {
+                            clockDifferential.accept(loopClockLine);
+                        }
+                    }
                 }
             }
 
@@ -626,6 +685,9 @@ public class HatanakaCompressFilter implements DataFilter {
             // read the first two lines of the file
             final String line1 = reader.readLine();
             final String line2 = reader.readLine();
+            if (line1 == null || line2 == null) {
+                throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE, name);
+            }
 
             // extract format version
             final int cVersion100 = (int) FastMath.rint(100 * parseDouble(line1, 0, 9));
@@ -723,6 +785,9 @@ public class HatanakaCompressFilter implements DataFilter {
         /** Length of epoch field. */
         private static final int    EPOCH_LENGTH         = 32;
 
+        /** Start of events flag. */
+        private static final int    EVENT_START          = EPOCH_START + EPOCH_LENGTH - 4;
+
         /** Start of number of satellites field. */
         private static final int    NB_SAT_START         = EPOCH_START + EPOCH_LENGTH - 3;
 
@@ -773,16 +838,18 @@ public class HatanakaCompressFilter implements DataFilter {
 
         @Override
         /** {@inheritDoc} */
-        public String parseEpochAndClockLines(final String epochLine, final String clockLine) {
+        public String parseEpochAndClockLines(final String epochLine, final String clockLine)
+            throws IOException {
 
-            doParseEpochAndClockLines(EPOCH_START, EPOCH_LENGTH, NB_SAT_START, SAT_LIST_START,
+            final StringBuilder builder = new StringBuilder();
+            doParseEpochAndClockLines(builder,
+                                      EPOCH_START, EPOCH_LENGTH, EVENT_START, NB_SAT_START, SAT_LIST_START,
                                       CLOCK_LENGTH, CLOCK_DECIMAL_PLACES, epochLine,
                                       clockLine, '&');
 
             // build uncompressed lines, taking care of clock being put
             // back in line 1 and satellites after 12th put in continuation lines
             final List<CharSequence> satellites = getSatellites();
-            final StringBuilder builder = new StringBuilder();
             builder.append(getEpochPart());
             int iSat = 0;
             while (iSat < FastMath.min(satellites.size(), MAX_SAT_EPOCH_LINE)) {
@@ -829,6 +896,10 @@ public class HatanakaCompressFilter implements DataFilter {
                 final CombinedDifferentials cd    = getCombinedDifferentials(sat);
                 final String                flags = cd.flags.getUncompressed();
                 for (int i = 0; i < cd.observations.length; ++i) {
+                    if (i > 0 && i % 5 == 0) {
+                        trimTrailingSpaces(builder);
+                        builder.append('\n');
+                    }
                     if (cd.observations[i] == null) {
                         // missing observation
                         for (int j = 0; j < DATA_LENGTH + 2; ++j) {
@@ -842,10 +913,6 @@ public class HatanakaCompressFilter implements DataFilter {
                         if (2 * i + 1 < flags.length()) {
                             builder.append(flags.charAt(2 * i + 1));
                         }
-                    }
-                    if (i % 5 == 4) {
-                        trimTrailingSpaces(builder);
-                        builder.append('\n');
                     }
                 }
             }
@@ -877,6 +944,9 @@ public class HatanakaCompressFilter implements DataFilter {
         /** Number of decimal places for receiver clock offset. */
         private static final int    CLOCK_DECIMAL_PLACES = 12;
 
+        /** Start of events flag. */
+        private static final int    EVENT_START          = EPOCH_START + EPOCH_LENGTH - 10;
+
         /** Start of number of satellites field. */
         private static final int    NB_SAT_START         = EPOCH_START + EPOCH_LENGTH - 9;
 
@@ -901,8 +971,12 @@ public class HatanakaCompressFilter implements DataFilter {
         /** {@inheritDoc} */
         public String parseHeaderLine(final String line) {
             if (isHeaderLine(SYS_NB_OBS_TYPES, line)) {
-                updateMaxObs(SatelliteSystem.parseSatelliteSystem(parseString(line, 0, 1)),
-                             parseInt(line, 1, 5));
+                if (line.charAt(0) != ' ') {
+                    // it is the first line of an observation types description
+                    // (continuation lines are ignored here)
+                    updateMaxObs(SatelliteSystem.parseSatelliteSystem(parseString(line, 0, 1)),
+                                 parseInt(line, 1, 5));
+                }
                 return line;
             } else {
                 return super.parseHeaderLine(line);
@@ -911,14 +985,16 @@ public class HatanakaCompressFilter implements DataFilter {
 
         @Override
         /** {@inheritDoc} */
-        public String parseEpochAndClockLines(final String epochLine, final String clockLine) {
+        public String parseEpochAndClockLines(final String epochLine, final String clockLine)
+            throws IOException {
 
-            doParseEpochAndClockLines(EPOCH_START, EPOCH_LENGTH, NB_SAT_START, SAT_LIST_START,
+            final StringBuilder builder = new StringBuilder();
+            doParseEpochAndClockLines(builder,
+                                      EPOCH_START, EPOCH_LENGTH, EVENT_START, NB_SAT_START, SAT_LIST_START,
                                       CLOCK_LENGTH, CLOCK_DECIMAL_PLACES, epochLine,
                                       clockLine, '>');
 
             // build uncompressed line
-            final StringBuilder builder = new StringBuilder();
             builder.append(getEpochPart());
             if (!getClockPart().isEmpty()) {
                 while (builder.length() < CLOCK_START) {

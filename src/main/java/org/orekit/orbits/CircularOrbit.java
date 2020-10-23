@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,12 +21,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -80,9 +81,6 @@ public class CircularOrbit
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20170414L;
-
-    /** Factory for first time derivatives. */
-    private static final DSFactory FACTORY = new DSFactory(1, 1);
 
     /** Semi-major axis (m). */
     private final double a;
@@ -196,25 +194,25 @@ public class CircularOrbit
         this.raanDot = raanDot;
 
         if (hasDerivatives()) {
-            final DerivativeStructure exDS    = FACTORY.build(ex,    exDot);
-            final DerivativeStructure eyDS    = FACTORY.build(ey,    eyDot);
-            final DerivativeStructure alphaDS = FACTORY.build(alpha, alphaDot);
-            final DerivativeStructure alphavDS;
+            final UnivariateDerivative1 exUD    = new UnivariateDerivative1(ex,    exDot);
+            final UnivariateDerivative1 eyUD    = new UnivariateDerivative1(ey,    eyDot);
+            final UnivariateDerivative1 alphaUD = new UnivariateDerivative1(alpha, alphaDot);
+            final UnivariateDerivative1 alphavUD;
             switch (type) {
                 case MEAN :
-                    alphavDS = FieldCircularOrbit.eccentricToTrue(FieldCircularOrbit.meanToEccentric(alphaDS, exDS, eyDS), exDS, eyDS);
+                    alphavUD = FieldCircularOrbit.eccentricToTrue(FieldCircularOrbit.meanToEccentric(alphaUD, exUD, eyUD), exUD, eyUD);
                     break;
                 case ECCENTRIC :
-                    alphavDS = FieldCircularOrbit.eccentricToTrue(alphaDS, exDS, eyDS);
+                    alphavUD = FieldCircularOrbit.eccentricToTrue(alphaUD, exUD, eyUD);
                     break;
                 case TRUE :
-                    alphavDS = alphaDS;
+                    alphavUD = alphaUD;
                     break;
                 default :
                     throw new OrekitInternalError(null);
             }
-            this.alphaV    = alphavDS.getValue();
-            this.alphaVDot = alphavDS.getPartialDerivative(1);
+            this.alphaV    = alphavUD.getValue();
+            this.alphaVDot = alphavUD.getDerivative(1);
         } else {
             switch (type) {
                 case MEAN :
@@ -372,11 +370,11 @@ public class CircularOrbit
             // mean anomaly derivative including Keplerian motion and convert to true anomaly
             final double alphaMDot = getKeplerianMeanMotion() +
                                      jacobian[5][3] * aX + jacobian[5][4] * aY + jacobian[5][5] * aZ;
-            final DerivativeStructure exDS     = FACTORY.build(ex, exDot);
-            final DerivativeStructure eyDS     = FACTORY.build(ey, eyDot);
-            final DerivativeStructure alphaMDS = FACTORY.build(getAlphaM(), alphaMDot);
-            final DerivativeStructure alphavDS = FieldCircularOrbit.eccentricToTrue(FieldCircularOrbit.meanToEccentric(alphaMDS, exDS, eyDS), exDS, eyDS);
-            alphaVDot = alphavDS.getPartialDerivative(1);
+            final UnivariateDerivative1 exUD     = new UnivariateDerivative1(ex, exDot);
+            final UnivariateDerivative1 eyUD     = new UnivariateDerivative1(ey, eyDot);
+            final UnivariateDerivative1 alphaMUD = new UnivariateDerivative1(getAlphaM(), alphaMDot);
+            final UnivariateDerivative1 alphavUD = FieldCircularOrbit.eccentricToTrue(FieldCircularOrbit.meanToEccentric(alphaMUD, exUD, eyUD), exUD, eyUD);
+            alphaVDot = alphavUD.getDerivative(1);
 
         } else {
             // acceleration is either almost zero or NaN,
@@ -611,11 +609,11 @@ public class CircularOrbit
      * @since 9.0
      */
     public double getAlphaEDot() {
-        final DerivativeStructure alphaVDS = FACTORY.build(alphaV, alphaVDot);
-        final DerivativeStructure exDS     = FACTORY.build(ex,     exDot);
-        final DerivativeStructure eyDS     = FACTORY.build(ey,     eyDot);
-        final DerivativeStructure alphaEDS = FieldCircularOrbit.trueToEccentric(alphaVDS, exDS, eyDS);
-        return alphaEDS.getPartialDerivative(1);
+        final UnivariateDerivative1 alphaVUD = new UnivariateDerivative1(alphaV, alphaVDot);
+        final UnivariateDerivative1 exUD     = new UnivariateDerivative1(ex,     exDot);
+        final UnivariateDerivative1 eyUD     = new UnivariateDerivative1(ey,     eyDot);
+        final UnivariateDerivative1 alphaEUD = FieldCircularOrbit.trueToEccentric(alphaVUD, exUD, eyUD);
+        return alphaEUD.getDerivative(1);
     }
 
     /** Get the mean latitude argument.
@@ -633,11 +631,11 @@ public class CircularOrbit
      * @since 9.0
      */
     public double getAlphaMDot() {
-        final DerivativeStructure alphaVDS = FACTORY.build(alphaV, alphaVDot);
-        final DerivativeStructure exDS     = FACTORY.build(ex,     exDot);
-        final DerivativeStructure eyDS     = FACTORY.build(ey,     eyDot);
-        final DerivativeStructure alphaMDS = FieldCircularOrbit.eccentricToMean(FieldCircularOrbit.trueToEccentric(alphaVDS, exDS, eyDS), exDS, eyDS);
-        return alphaMDS.getPartialDerivative(1);
+        final UnivariateDerivative1 alphaVUD = new UnivariateDerivative1(alphaV, alphaVDot);
+        final UnivariateDerivative1 exUD     = new UnivariateDerivative1(ex,     exDot);
+        final UnivariateDerivative1 eyUD     = new UnivariateDerivative1(ey,     eyDot);
+        final UnivariateDerivative1 alphaMUD = FieldCircularOrbit.eccentricToMean(FieldCircularOrbit.trueToEccentric(alphaVUD, exUD, eyUD), exUD, eyUD);
+        return alphaMUD.getDerivative(1);
     }
 
     /** Get the latitude argument.
@@ -1278,11 +1276,13 @@ public class CircularOrbit
     /** Replace the instance with a data transfer object for serialization.
      * @return data transfer object that will be serialized
      */
+    @DefaultDataContext
     private Object writeReplace() {
         return new DTO(this);
     }
 
     /** Internal class used only for serialization. */
+    @DefaultDataContext
     private static class DTO implements Serializable {
 
         /** Serializable UID. */
@@ -1302,8 +1302,10 @@ public class CircularOrbit
             final AbsoluteDate date = orbit.getDate();
 
             // decompose date
-            final double epoch  = FastMath.floor(date.durationFrom(AbsoluteDate.J2000_EPOCH));
-            final double offset = date.durationFrom(AbsoluteDate.J2000_EPOCH.shiftedBy(epoch));
+            final AbsoluteDate j2000Epoch =
+                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
+            final double epoch  = FastMath.floor(date.durationFrom(j2000Epoch));
+            final double offset = date.durationFrom(j2000Epoch.shiftedBy(epoch));
 
             if (orbit.serializePV) {
                 final TimeStampedPVCoordinates pv = orbit.getPVCoordinates();
@@ -1358,11 +1360,13 @@ public class CircularOrbit
          * @return replacement {@link CircularOrbit}
          */
         private Object readResolve() {
+            final AbsoluteDate j2000Epoch =
+                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
             switch (d.length) {
                 case 24 : // date + mu + orbit + derivatives + Cartesian
                     return new CircularOrbit(d[ 3], d[ 4], d[ 5], d[ 6], d[ 7], d[ 8],
                                              d[ 9], d[10], d[11], d[12], d[13], d[14],
-                                             new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                                             new TimeStampedPVCoordinates(j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                                                           new Vector3D(d[15], d[16], d[17]),
                                                                           new Vector3D(d[18], d[19], d[20]),
                                                                           new Vector3D(d[21], d[22], d[23])),
@@ -1371,7 +1375,7 @@ public class CircularOrbit
                 case 18 : // date + mu + orbit + Cartesian
                     return new CircularOrbit(d[3], d[4], d[5], d[6], d[7], d[8],
                                              Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN,
-                                             new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                                             new TimeStampedPVCoordinates(j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                                                           new Vector3D(d[ 9], d[10], d[11]),
                                                                           new Vector3D(d[12], d[13], d[14]),
                                                                           new Vector3D(d[15], d[16], d[17])),
@@ -1381,11 +1385,11 @@ public class CircularOrbit
                     return new CircularOrbit(d[ 3], d[ 4], d[ 5], d[ 6], d[ 7], d[ 8],
                                              d[ 9], d[10], d[11], d[12], d[13], d[14],
                                              PositionAngle.TRUE,
-                                             frame, AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                                             frame, j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                              d[2]);
                 default : // date + mu + orbit
                     return new CircularOrbit(d[3], d[4], d[5], d[6], d[7], d[8], PositionAngle.TRUE,
-                                             frame, AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                                             frame, j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                              d[2]);
 
             }

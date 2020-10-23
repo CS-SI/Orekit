@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -158,8 +158,10 @@ public class UnixCompressFilterTest {
         InputStream is = filtered.getStreamOpener().openStream();
         List<Integer> output = new ArrayList<>();
         while (true) {
+            boolean shouldWork = is.available() > 0;
             final int r = is.read();
             if (r < 0) {
+                Assert.assertFalse(shouldWork);
                 int[] result = new int[output.size()];
                 for (int i = 0; i < result.length; ++i) {
                     result[i] = output.get(i);

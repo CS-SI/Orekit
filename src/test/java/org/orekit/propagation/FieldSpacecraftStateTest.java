@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -30,6 +30,7 @@ import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.FieldODEIntegrator;
 import org.hipparchus.ode.events.Action;
@@ -388,9 +389,10 @@ public class FieldSpacecraftStateTest {
         new FieldSpacecraftState<>(orbit,
                             new FieldAttitude<>(orbit.getDate(),
                                                 FramesFactory.getGCRF(),
-                                                FieldRotation.getIdentity(field),
-                                                FieldVector3D.getZero(field),
-                                                FieldVector3D.getZero(field)));
+                                                Rotation.IDENTITY,
+                                                Vector3D.ZERO,
+                                                Vector3D.ZERO,
+                                                field));
     }
 
     private <T extends RealFieldElement<T>> void doTestTransform(final Field<T> field)

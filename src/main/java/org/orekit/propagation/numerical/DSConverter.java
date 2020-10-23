@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -40,7 +40,9 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 /** Converter for states and parameters arrays.
  * @author Luc Maisonobe
  * @since 9.0
+ * @deprecated as of 10.2, replace by {@link NumericalGradientConverter}
  */
+@Deprecated
 class DSConverter extends AbstractDSConverter {
 
     /** Dimension of the state. */
@@ -50,7 +52,6 @@ class DSConverter extends AbstractDSConverter {
     private final List<FieldSpacecraftState<DerivativeStructure>> dsStates;
 
     /** Simple constructor.
-     * @param state
      * @param state regular state
      * @param freeStateParameters number of free parameters, either 3 (position) or 6 (position-velocity)
      * @param provider provider to use if attitude needs to be recomputed

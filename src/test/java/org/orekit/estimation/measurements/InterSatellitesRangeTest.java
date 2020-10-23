@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -75,12 +75,12 @@ public class InterSatellitesRangeTest {
             System.out.println("\nTest inter-satellites Range State Derivatives - Finite Differences Comparison\n");
         }
         // Run test
-        double refErrorsPMedian = 8.5e-06;
-        double refErrorsPMean   = 8.6e-06;
-        double refErrorsPMax    = 9.8e-06;
-        double refErrorsVMedian = 1.3e-03;
-        double refErrorsVMean   = 2.0e-03;
-        double refErrorsVMax    = 1.8e-02;
+        double refErrorsPMedian = 1.6e-10;
+        double refErrorsPMean   = 4.2e-10;
+        double refErrorsPMax    = 1.6e-08;
+        double refErrorsVMedian = 1.7e-03;
+        double refErrorsVMean   = 3.6e-03;
+        double refErrorsVMax    = 7.9e-02;
         this.genericTestStateDerivatives(printResults, 0,
                                          refErrorsPMedian, refErrorsPMean, refErrorsPMax,
                                          refErrorsVMedian, refErrorsVMean, refErrorsVMax);
@@ -98,12 +98,12 @@ public class InterSatellitesRangeTest {
             System.out.println("\nTest inter-satellites Range State Derivatives - Finite Differences Comparison\n");
         }
         // Run test
-        double refErrorsPMedian = 8.5e-06;
-        double refErrorsPMean   = 8.6e-06;
-        double refErrorsPMax    = 9.8e-06;
-        double refErrorsVMedian = 1.7e-03;
-        double refErrorsVMean   = 2.7e-03;
-        double refErrorsVMax    = 2.1e-02;
+        double refErrorsPMedian = 1.6e-10;
+        double refErrorsPMean   = 4.2e-10;
+        double refErrorsPMax    = 1.6e-08;
+        double refErrorsVMedian = 7.2e-04;
+        double refErrorsVMean   = 1.3e-03;
+        double refErrorsVMax    = 2.0e-02;
         this.genericTestStateDerivatives(printResults, 1,
                                          refErrorsPMedian, refErrorsPMean, refErrorsPMax,
                                          refErrorsVMedian, refErrorsVMean, refErrorsVMax);
@@ -135,9 +135,12 @@ public class InterSatellitesRangeTest {
         final BoundedPropagator ephemeris = closePropagator.getGeneratedEphemeris();
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+
+        final double localClockOffset  = 0.137e-6;
+        final double remoteClockOffset = 469.0e-6;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new InterSatellitesRangeMeasurementCreator(ephemeris),
+                                                               new InterSatellitesRangeMeasurementCreator(ephemeris, localClockOffset, remoteClockOffset),
                                                                1.0, 3.0, 300.0);
 
         // Lists for results' storage - Used only for derivatives with respect to state
@@ -172,10 +175,20 @@ public class InterSatellitesRangeTest {
                                                                                        ephemeris.propagate(state.getDate())
                                                                                    });
 
-                    // the real state used for estimation is adjusted according to downlink delay
-                    double adjustment = state.getDate().durationFrom(estimated.getStates()[0].getDate());
-                    Assert.assertTrue(adjustment > 0.000006);
-                    Assert.assertTrue(adjustment < 0.0003);
+                    final InterSatellitesRange isr = (InterSatellitesRange) estimated.getObservedMeasurement();
+                    final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
+                    if (!isr.isTwoWay()) {
+                        final double dt = participants[1].getDate().durationFrom(participants[0].getDate());
+                        Assert.assertEquals((dt + localClockOffset - remoteClockOffset) * Constants.SPEED_OF_LIGHT,
+                                        estimated.getEstimatedValue()[0],
+                                        1.0e-7);
+                    } else {
+                        final double dt = participants[2].getDate().durationFrom(participants[0].getDate());
+                        Assert.assertEquals(3, participants.length);
+                        Assert.assertEquals(0.5 * dt * Constants.SPEED_OF_LIGHT,
+                                            estimated.getEstimatedValue()[0],
+                                            1.0e-7);
+                    }
 
                     final double RangeEstimated = estimated.getEstimatedValue()[0];
                     final double absoluteError = RangeEstimated-RangeObserved;
@@ -235,19 +248,17 @@ public class InterSatellitesRangeTest {
             System.out.println("Relative errors max   : " +  relErrorsMax);
         }
 
-        Assert.assertEquals(0.0, absErrorsMedian, 1.3e-7);
-        Assert.assertEquals(0.0, absErrorsMin,    7.3e-7);
-        Assert.assertEquals(0.0, absErrorsMax,    1.8e-7);
-        Assert.assertEquals(0.0, relErrorsMedian, 1.0e-12);
-        Assert.assertEquals(0.0, relErrorsMax,    3.2e-12);
-
+        Assert.assertEquals(0.0, absErrorsMedian, 2.2e-7);
+        Assert.assertEquals(0.0, absErrorsMin,    1.4e-6);
+        Assert.assertEquals(0.0, absErrorsMax,    2.0e-7);
+        Assert.assertEquals(0.0, relErrorsMedian, 4.1e-12);
+        Assert.assertEquals(0.0, relErrorsMax,    5.0e-11);
 
     }
 
     void genericTestStateDerivatives(final boolean printResults, final int index,
                                      final double refErrorsPMedian, final double refErrorsPMean, final double refErrorsPMax,
-                                     final double refErrorsVMedian, final double refErrorsVMean, final double refErrorsVMax)
-                    {
+                                     final double refErrorsVMedian, final double refErrorsVMean, final double refErrorsVMax) {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -269,9 +280,12 @@ public class InterSatellitesRangeTest {
         final BoundedPropagator ephemeris = closePropagator.getGeneratedEphemeris();
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+
+        final double localClockOffset  = 0.137e-6;
+        final double remoteClockOffset = 469.0e-6;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new InterSatellitesRangeMeasurementCreator(ephemeris),
+                                                               new InterSatellitesRangeMeasurementCreator(ephemeris, localClockOffset, remoteClockOffset),
                                                                1.0, 3.0, 300.0);
 
         // Lists for results' storage - Used only for derivatives with respect to state

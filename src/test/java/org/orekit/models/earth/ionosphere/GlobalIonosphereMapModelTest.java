@@ -1,8 +1,26 @@
-/*
- * Copyright 2018-2019 CS Systèmes d'Information.
- * All rights reserved.
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.orekit.models.earth.ionosphere;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
@@ -219,6 +237,65 @@ public class GlobalIonosphereMapModelTest {
             Assert.assertEquals(OrekitMessages.NO_TEC_DATA_IN_FILE_FOR_DATE, oe.getSpecifier());
         }
 
+    }
+
+    @Test
+    /**
+     * The goal of this test is to verify if an OrekitException is thrown when latitude or longitude
+     * bondaries are not present in the header section of the Global Ionosphere Map.
+     */
+    public void testIssue621() {
+        final String fileName  = "missing-lat-lon-header-gpsg0150.19i";
+        final double latitude  = FastMath.toRadians(30.0);
+        final double longitude = FastMath.toRadians(-130.0);
+
+        try {
+            GlobalIonosphereMapModel corruptedModel = new GlobalIonosphereMapModel(fileName);
+            corruptedModel.getTEC(new AbsoluteDate(2019, 1, 15, 0, 0, 0.0, TimeScalesFactory.getUTC()),
+                         new GeodeticPoint(latitude, longitude, 0.0));
+            Assert.fail("An exception should have been thrown");
+            
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testMissingEpochInHeader() {
+        final String fileName  = "missing-epoch-header-gpsg0150.19i";
+        final double latitude  = FastMath.toRadians(30.0);
+        final double longitude = FastMath.toRadians(-130.0);
+
+        try {
+            GlobalIonosphereMapModel corruptedModel = new GlobalIonosphereMapModel(fileName);
+            corruptedModel.getTEC(new AbsoluteDate(2019, 1, 15, 0, 0, 0.0, TimeScalesFactory.getUTC()),
+                         new GeodeticPoint(latitude, longitude, 0.0));
+            Assert.fail("An exception should have been thrown");
+            
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NO_EPOCH_IN_IONEX_HEADER, oe.getSpecifier());
+        }
+
+    }
+
+    @Test
+    public void testSerialization() throws IOException, ClassNotFoundException {
+        GlobalIonosphereMapModel original = new GlobalIonosphereMapModel("gpsg0150.19i");
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream    oos = new ObjectOutputStream(bos);
+        oos.writeObject(original);
+
+        Assert.assertTrue(bos.size() > 150);
+        Assert.assertTrue(bos.size() < 200);
+
+        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInputStream     ois = new ObjectInputStream(bis);
+        GlobalIonosphereMapModel deserialized = (GlobalIonosphereMapModel) ois.readObject();
+
+        AbsoluteDate date = new AbsoluteDate(2019, 1, 15, 3, 43, 12.0, TimeScalesFactory.getUTC());
+        GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(30.0), FastMath.toRadians(-130.0), 0.0);
+        Assert.assertEquals(original.getTEC(date, point), deserialized.getTEC(date, point), 1.0e-12);
     }
 
 }

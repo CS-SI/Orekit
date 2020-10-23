@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -35,20 +35,26 @@ public enum Keyword {
     // Common NDM (Navigation Data Message) CCSDS keywords
     // ---------------------------------------------------
 
-    /** Comments specific to a ODM file. */
+    /** Comments specific to ODM and ADM file. */
     COMMENT,
     /** File creation date in UTC. */
     CREATION_DATE,
     /** Creating agency or operator. */
     ORIGINATOR,
     /** Unique ID identifying a message from a given originator.
-     * @since 10.0
+     * @since 11.0
      */
     MESSAGE_ID,
     /** Classification of this message.
-     * @since 10.0
+     * @since 11.0
      */
     MESSAGE_CLASSIF,
+    /** Spacecraft name for which the orbit state is provided. */
+    OBJECT_NAME,
+    /** Object identifier of the object for which the orbit state is provided. */
+    OBJECT_ID,
+    /** Origin of reference frame. */
+    CENTER_NAME,
     /** Time system used for state vector, maneuver, and covariance data. */
     TIME_SYSTEM,
     /** Epoch of state vector and optional Keplerian elements.
@@ -73,6 +79,19 @@ public enum Keyword {
     META_START,
     /** Keyword used to delineate the end of a Meta-data block. */
     META_STOP,
+    /** Maneuver duration (If = 0, impulsive maneuver). */
+    MAN_DURATION,
+    /** Coordinate system for velocity increment vector. Its value can either be RSW, RTN (both
+     * indicating "Radial, Transverse, Normal") or TNW. */
+    MAN_REF_FRAME,
+    /** Start of useable time span covered by ephemerides data, it may be
+     * necessary to allow for proper interpolation. */
+    USEABLE_START_TIME,
+    /** End of useable time span covered by ephemerides data, it may be
+     * necessary to allow for proper interpolation. */
+    USEABLE_STOP_TIME,
+    /** The interpolation degree. */
+    INTERPOLATION_DEGREE,
 
     // -------------------------------------------
     // Orbit Data Messages (ODM) specific keywords
@@ -85,342 +104,336 @@ public enum Keyword {
     /** CCSDS OEM format version. */
     CCSDS_OEM_VERS,
     /** CCSDS OCM format version.
-     * @since 10.0
+     * @since 11.0
      */
     CCSDS_OCM_VERS,
     /** Programmatic Point Of Contact at originator.
-     * @since 10.0
+     * @since 11.0
      */
     ORIGINATOR_POC,
     /** Position of Programmatic Point Of Contact at originator.
-     * @since 10.0
+     * @since 11.0
      */
     ORIGINATOR_POSITION,
     /** Phone number of Programmatic Point Of Contact at originator.
-     * @since 10.0
+     * @since 11.0
      */
     ORIGINATOR_PHONE,
     /** Address of Programmatic Point Of Contact at originator.
-     * @since 10.0
+     * @since 11.0
      */
     ORIGINATOR_ADDRESS,
     /** Creating agency or operator.
-     * @since 10.0
+     * @since 11.0
      */
     TECH_ORG,
     /** Technical Point Of Contact at originator.
-     * @since 10.0
+     * @since 11.0
      */
     TECH_POC,
     /** Position of Technical Point Of Contact at originator.
-     * @since 10.0
+     * @since 11.0
      */
     TECH_POSITION,
     /** Phone number of Technical Point Of Contact at originator.
-     * @since 10.0
+     * @since 11.0
      */
     TECH_PHONE,
     /** Address of Technical Point Of Contact at originator.
-     * @since 10.0
+     * @since 11.0
      */
     TECH_ADDRESS,
     /** Unique ID identifying previous message from a given originator.
-     * @since 10.0
+     * @since 11.0
      */
     PREV_MESSAGE_ID,
     /** Creation date of previous message from a given originator.
-     * @since 10.0
+     * @since 11.0
      */
     PREV_MESSAGE_EPOCH,
     /** Unique ID identifying next message from a given originator.
-     * @since 10.0
+     * @since 11.0
      */
     NEXT_MESSAGE_ID,
     /** Creation date of next message from a given originator.
-     * @since 10.0
+     * @since 11.0
      */
     NEXT_MESSAGE_EPOCH,
     /** Names of Attitude Data Messages link to this Orbit Data Message.
-     * @since 10.0
+     * @since 11.0
      */
     ATT_MESSAGE_LINK,
     /** Names of Conjunction Data Messages link to this Orbit Data Message.
-     * @since 10.0
+     * @since 11.0
      */
     CDM_MESSAGE_LINK,
     /** Names of Pointing Request Messages link to this Orbit Data Message.
-     * @since 10.0
+     * @since 11.0
      */
     PRM_MESSAGE_LINK,
     /** Names of Reentry Data Messages link to this Orbit Data Message.
-     * @since 10.0
+     * @since 11.0
      */
     RDM_MESSAGE_LINK,
     /** Names of Tracking Data Messages link to this Orbit Data Message.
-     * @since 10.0
+     * @since 11.0
      */
     TDM_MESSAGE_LINK,
-    /** Spacecraft name for which the orbit state is provided. */
-    OBJECT_NAME,
     /** International designator for the object as assigned by the UN Committee
      * on Space Research (COSPAR) and the US National Space Science Data Center (NSSDC).
-     * @since 10.0
+     * @since 11.0
      */
     INTERNATIONAL_DESIGNATOR,
     /** Operator of the space object.
-     * @since 10.0
+     * @since 11.0
      */
     OPERATOR,
     /** Owner of the space object.
-     * @since 10.0
+     * @since 11.0
      */
     OWNER,
     /** Name of the space object mission.
-     * @since 10.0
+     * @since 11.0
      */
     MISSION,
     /** Name of the constellation this space object belongs to.
-     * @since 10.0
+     * @since 11.0
      */
     CONSTELLATION,
     /** Epoch of initial launch.
-     * @since 10.0
+     * @since 11.0
      */
     LAUNCH_EPOCH,
     /** Country of launch.
-     * @since 10.0
+     * @since 11.0
      */
     LAUNCH_COUNTRY,
     /** Site of launch.
-     * @since 10.0
+     * @since 11.0
      */
     LAUNCH_SITE,
     /** Provider of launch.
-     * @since 10.0
+     * @since 11.0
      */
     LAUNCH_PROVIDER,
     /** Integrator of launch.
-     * @since 10.0
+     * @since 11.0
      */
     LAUNCH_INTEGRATOR,
     /** Pad of launch.
-     * @since 10.0
+     * @since 11.0
      */
     LAUNCH_PAD,
     /** Launch platform.
-     * @since 10.0
+     * @since 11.0
      */
     LAUNCH_PLATFORM,
     /** Epoch of the <em>most recent</em> deployement of this space object in the parent/child deployement sequence.
-     * @since 10.0
+     * @since 11.0
      */
     RELEASE_EPOCH,
     /** Epoch of the beginning of mission operations.
-     * @since 10.0
+     * @since 11.0
      */
     MISSION_START_EPOCH,
     /** Epoch of the cessation of mission operations.
-     * @since 10.0
+     * @since 11.0
      */
     MISSION_END_EPOCH,
     /** Epoch (actual or estimated) of the space object reentry.
-     * @since 10.0
+     * @since 11.0
      */
     REENTRY_EPOCH,
     /** Estimated remaining lifetime in days.
-     * @since 10.0
+     * @since 11.0
      */
     LIFETIME,
     /** Specification of satellite catalog source.
-     * @since 10.0
+     * @since 11.0
      */
     CATALOG_NAME,
     /** Type of object.
      * @see CCSDSObjectType
-     * @since 10.0
+     * @since 11.0
      */
     OBJECT_TYPE,
     /** Operational status.
      * @see CCSDSOpsStatus
-     * @since 10.0
+     * @since 11.0
      */
     OPS_STATUS,
     /** Orbit type.
      * @see CCSDSOrbitType
-     * @since 10.0
+     * @since 11.0
      */
     ORBIT_TYPE,
     /** List of elements of information data blocks included in this message.
-     * @since 10.0
+     * @since 11.0
      */
     OCM_DATA_ELEMENTS,
     /** Default epoch to which <em>all</em> relative times are referenced in data blocks,
      * unless overridden by block-specific {@link #EPOCH_TZERO} values.
-     * @since 10.0
+     * @since 11.0
      */
     DEF_EPOCH_TZERO,
     /** Time system in which {@link #DEF_EPOCH_TZERO} is defined.
-     * @since 10.0
+     * @since 11.0
      */
     DEF_TIME_SYSTEM,
     /** Number of clock seconds occurring during one SI second.
-     * @since 10.0
+     * @since 11.0
      */
     SEC_CLK_PER_SI_SEC,
     /** Number of SI seconds in the chosen central body’s “day”.
-     * @since 10.0
+     * @since 11.0
      */
     SEC_PER_DAY,
     /** Time of the earliest data contained in the OCM.
-     * @since 10.0
+     * @since 11.0
      */
     EARLIEST_TIME,
     /** Time of the latest data contained in the OCM.
-     * @since 10.0
+     * @since 11.0
      */
     LATEST_TIME,
     /** Span of time that the OCM covers.
-     * @since 10.0
+     * @since 11.0
      */
     TIME_SPAN,
     /** Difference (TAI – UTC) in seconds at epoch {@link #DEF_EPOCH_TZERO}.
-     * @since 10.0
+     * @since 11.0
      */
     TAIMUTC_AT_TZERO,
     /** Difference (UT1 – UTC) in seconds at epoch {@link #DEF_EPOCH_TZERO}.
-     * @since 10.0
+     * @since 11.0
      */
     UT1MUTC_AT_TZERO,
     /** Source and version of Earth Orientation Parameters.
-     * @since 10.0
+     * @since 11.0
      */
     EOP_SOURCE,
     /** Interpolation method for Earth Orientation Parameters.
-     * @since 10.0
+     * @since 11.0
      */
     INTERP_METHOD_EOP,
     /** Start of orbit data section.
-     * @since 10.0
+     * @since 11.0
      */
     ORB_START,
     /** Stop of orbit data section.
-     * @since 10.0
+     * @since 11.0
      */
     ORB_STOP,
     /** Orbit identification number.
-     * @since 10.0
+     * @since 11.0
      */
     ORB_ID,
     /** Identification number of previous orbit.
-     * @since 10.0
+     * @since 11.0
      */
     ORB_PREV_ID,
     /** Identification number of next orbit.
-     * @since 10.0
+     * @since 11.0
      */
     ORB_NEXT_ID,
     /** Basis of this orbit state time history data.
      * @see CCSDSOrbitBasis
-     * @since 10.0
+     * @since 11.0
      */
     ORB_BASIS,
     /** Identification number of the orbit determination or simulation upon which this orbit is based.
-     * @since 10.0
+     * @since 11.0
      */
     ORB_BASIS_ID,
     /** Type of averaging (Osculating, mean Brouwer, other...).
-     * @since 10.0
+     * @since 11.0
      */
     ORB_AVERAGING,
     /** Reference epoch for all relative times in the orbit state block.
-     * @since 10.0
+     * @since 11.0
      */
     ORB_EPOCH_TZERO,
     /** Time system for {@link #ORB_EPOCH_TZERO}.
-     * @since 10.0
+     * @since 11.0
      */
     ORB_TIME_SYSTEM,
     /** Reference frame of the orbit.
-     * @since 10.0
+     * @since 11.0
      */
     ORB_REF_FRAME,
     /** Epoch of the {@link #ORB_REF_FRAME orbit reference frame}.
-     * @since 10.0
+     * @since 11.0
      */
     ORB_FRAME_EPOCH,
     /** Orbit element set type.
      * @see CCSDSElementsType
-     * @since 10.0
+     * @since 11.0
      */
     ORB_TYPE,
     /** Number of elements (excluding time) contain in the element set.
-     * @since 10.0
+     * @since 11.0
      */
     ORB_N,
     /** Definition of orbit elements.
-     * @since 10.0
+     * @since 11.0
      */
     ORB_ELEMENTS,
     /** Start of object physical characteristics data section.
-     * @since 10.0
+     * @since 11.0
      */
     PHYS_START,
     /** Stop of object physical characteristics data section.
-     * @since 10.0
+     * @since 11.0
      */
     PHYS_STOP,
     /** Start of covariance data section.
-     * @since 10.0
+     * @since 11.0
      */
     COV_START,
     /** Stop of covariance data section.
-     * @since 10.0
+     * @since 11.0
      */
     COV_STOP,
     /** Start of state transition matrix data section.
-     * @since 10.0
+     * @since 11.0
      */
     STM_START,
     /** Stop of state transition matrix data section.
-     * @since 10.0
+     * @since 11.0
      */
     STM_STOP,
     /** Start of maneuver data section.
-     * @since 10.0
+     * @since 11.0
      */
     MAN_START,
     /** Stop of maneuver data section.
-     * @since 10.0
+     * @since 11.0
      */
     MAN_STOP,
     /** Start of perturbations data section.
-     * @since 10.0
+     * @since 11.0
      */
     PERT_START,
     /** Stop of perturbations data section.
-     * @since 10.0
+     * @since 11.0
      */
     PERT_STOP,
     /** Start of orbit determination data section.
-     * @since 10.0
+     * @since 11.0
      */
     OD_START,
     /** Stop of orbit determination data section.
-     * @since 10.0
+     * @since 11.0
      */
     OD_STOP,
     /** Start of user-defined parameters data section.
-     * @since 10.0
+     * @since 11.0
      */
     USER_START,
     /** Stop of user-defined parameters data section.
-     * @since 10.0
+     * @since 11.0
      */
     USER_STOP,
-    /** Object identifier of the object for which the orbit state is provided. */
-    OBJECT_ID,
-    /** Origin of reference frame. */
-    CENTER_NAME,
     /** Name of the reference frame in which the state vector and optional Keplerian element data are given. */
     REF_FRAME,
     /** Epoch of reference frame, if not intrinsic to the definition of the reference frame. */
@@ -530,13 +543,8 @@ public enum Keyword {
     CZ_DOT_Z_DOT,
     /** Epoch of ignition. */
     MAN_EPOCH_IGNITION,
-    /** Maneuver duration (If = 0, impulsive maneuver). */
-    MAN_DURATION,
     /** Mass change during maneuver (value is &lt; 0). */
     MAN_DELTA_MASS,
-    /** Coordinate system for velocity increment vector. Its value can either be RSW, RTN (both
-     * indicating "Radial, Transverse, Normal") or TNW. */
-    MAN_REF_FRAME,
     /** First component of the velocity increment. */
     MAN_DV_1,
     /** Second component of the velocity increment. */
@@ -545,19 +553,118 @@ public enum Keyword {
     MAN_DV_3,
     /** This keyword must appear before the first line of the covariance matrix data. */
     COVARIANCE_START,
-    /** Start of useable time span covered by ephemerides data, it may be
-     * necessary to allow for proper interpolation. */
-    USEABLE_START_TIME,
-    /** End of useable time span covered by ephemerides data, it may be
-     * necessary to allow for proper interpolation. */
-    USEABLE_STOP_TIME,
     /** The interpolation method to be used. */
     INTERPOLATION,
-    /** The interpolation degree. */
-    INTERPOLATION_DEGREE,
     /** This keyword must appear after the last line of the covariance matrix data. */
     COVARIANCE_STOP,
 
+    // -------------------------------------------
+    // Attitude Data Messages (ADM) specific keywords
+    // -------------------------------------------
+
+    /** CCSDS APM format version. */
+    CCSDS_APM_VERS,
+    /** CCSDS AEM format version. */
+    CCSDS_AEM_VERS,
+    /** Name of the reference frame specifying one frame of the transformation. */
+    Q_FRAME_A,
+    /** Name of the reference frame specifying the second portion of the transformation. */
+    Q_FRAME_B,
+    /** Rotation direction of the attitude quaternion. */
+    Q_DIR,
+    /** e1 * sin(φ/2)   φ = rotation angle. */
+    Q1,
+    /** e2 * sin(φ/2)   φ = rotation angle. */
+    Q2,
+    /** e3 * sin(φ/2)   φ = rotation angle. */
+    Q3,
+    /** cos(φ/2)   φ = rotation angle. */
+    QC,
+    /** Derivative of Q1. */
+    Q1_DOT,
+    /** Derivative of Q2. */
+    Q2_DOT,
+    /** Derivative of Q3. */
+    Q3_DOT,
+    /** Derivative of QC. */
+    QC_DOT,
+    /**  Name of the reference frame specifying one frame of the transformation. */
+    EULER_FRAME_A,
+    /** Name of the reference frame specifying the second portion of the transformation. */
+    EULER_FRAME_B,
+    /** Rotation direction of the attitude Euler angle. */
+    EULER_DIR,
+    /** Rotation order of the EULER_FRAME_A to EULER_FRAME_B or vice versa. */
+    EULER_ROT_SEQ,
+    /** The value of this keyword expresses the relevant keyword to use that denotes the
+     *  frame of reference in which the X_RATE, Y_RATE and Z_RATE are expressed. */
+    RATE_FRAME,
+    /** X body rotation angle. */
+    X_ANGLE,
+    /** Y body rotation angle. */
+    Y_ANGLE,
+    /** Z body rotation angle. */
+    Z_ANGLE,
+    /** X body rotation rate. */
+    X_RATE,
+    /** Y body rotation rate. */
+    Y_RATE,
+    /** Z body rotation rate. */
+    Z_RATE,
+    /**  Name of the reference frame specifying one frame of the transformation. */
+    SPIN_FRAME_A,
+    /** Name of the reference frame specifying the second portion of the transformation. */
+    SPIN_FRAME_B,
+    /** Rotation direction of the Spin angles .*/
+    SPIN_DIR,
+    /** Right ascension of spin axis vector. */
+    SPIN_ALPHA,
+    /** Declination of the spin axis vector.*/
+    SPIN_DELTA,
+    /** Phase of the satellite about the spin axis. */
+    SPIN_ANGLE,
+    /** Angular velocity of satellite around spin axis. */
+    SPIN_ANGLE_VEL,
+    /** Nutation angle of spin axis. */
+    NUTATION,
+    /** Body nutation period of the spin axis. */
+    NUTATION_PER,
+    /** Inertial nutation phase. */
+    NUTATION_PHASE,
+    /** Coordinate system for the inertia tensor. */
+    INERTIA_REF_FRAME,
+    /** Moment of Inertia about the 1-axis. */
+    I11,
+    /** Moment of Inertia about the 2-axis. */
+    I22,
+    /** Moment of Inertia about the 3-axis. */
+    I33,
+    /** Inertia Cross Product of the 1 and 2 axes. */
+    I12,
+    /** Inertia Cross Product of the 1 and 3 axes. */
+    I13,
+    /** Inertia Cross Product of the 2 and 3 axes. */
+    I23,
+    /** Epoch of start of maneuver. */
+    MAN_EPOCH_START,
+    /** First component of the torque vector. */
+    MAN_TOR_1,
+    /** Second component of the torque vector. */
+    MAN_TOR_2,
+    /** Third component of the torque vector. */
+    MAN_TOR_3,
+    /** Name of the reference frame specifying one frame of the transformation. */
+    REF_FRAME_A,
+    /** Name of the reference frame specifying the second portion of the transformation. */
+    REF_FRAME_B,
+    /** Rotation direction of the attitude. */
+    ATTITUDE_DIR,
+    /** The format of the data lines in the message. */
+    ATTITUDE_TYPE,
+    /** The placement of the scalar portion of the quaternion (QC) in the attitude data. */
+    QUATERNION_TYPE,
+    /** Recommended interpolation method for attitude ephemeris data. */
+    INTERPOLATION_METHOD,
 
     // ----------------------------------------------
     // Tracking Data Messages (TDM) specific keywords

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -28,6 +28,7 @@ import org.hipparchus.linear.RealVector;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
+import org.orekit.estimation.measurements.Position;
 import org.orekit.propagation.conversion.IntegratedPropagatorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
@@ -259,6 +260,10 @@ public class KalmanEstimator {
             // For PV measurements we do have a covariance matrix and thus a correlation coefficients matrix
             final PV pv = (PV) observedMeasurement;
             covariance = MatrixUtils.createRealMatrix(pv.getCorrelationCoefficientsMatrix());
+        } else if (observedMeasurement instanceof Position) {
+            // For Position measurements we do have a covariance matrix and thus a correlation coefficients matrix
+            final Position position = (Position) observedMeasurement;
+            covariance = MatrixUtils.createRealMatrix(position.getCorrelationCoefficientsMatrix());
         } else {
             // For other measurements we do not have a covariance matrix.
             // Thus the correlation coefficients matrix is an identity matrix.

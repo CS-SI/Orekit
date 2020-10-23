@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -28,14 +28,13 @@ import java.util.TreeMap;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.analysis.differentiation.FDSFactory;
-import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
+import org.hipparchus.analysis.differentiation.FieldGradient;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
@@ -138,19 +137,13 @@ public class DSSTThirdBody implements DSSTForceModel {
     /** Hansen objects for field elements. */
     private Map<Field<?>, FieldHansenObjects<?>> fieldHansen;
 
-    /** Factory for the DerivativeStructure instances. */
-    private DSFactory factory;
-
-    /** Factory for the DerivativeStructure instances. */
-    private Map<Field<?>, FDSFactory<?>> fieldFactory;
-
     /** Flag for force model initialization with field elements. */
     private boolean pendingInitialization;
 
     /** Complete constructor.
      *  @param body the 3rd body to consider
      *  @param mu central attraction coefficient
-     *  @see org.orekit.bodies.CelestialBodyFactory
+     *  @see CelestialBodies
      */
     public DSSTThirdBody(final CelestialBody body, final double mu) {
         bodyParameterDriver = new ParameterDriver(body.getName() + DSSTThirdBody.ATTRACTION_COEFFICIENT,
@@ -167,7 +160,6 @@ public class DSSTThirdBody implements DSSTForceModel {
 
         fieldShortPeriods = new HashMap<>();
         fieldHansen       = new HashMap<>();
-        fieldFactory      = new HashMap<>();
     }
 
     /** Get third body.
@@ -200,8 +192,6 @@ public class DSSTThirdBody implements DSSTForceModel {
 
         hansen = new HansenObjects();
 
-        factory = new DSFactory(1, 1);
-
         final int jMax = maxFreqF;
         shortPeriods = new ThirdBodyShortPeriodicCoefficients(jMax, INTERPOLATION_POINTS,
                                                               maxFreqF, body.getName(),
@@ -228,7 +218,6 @@ public class DSSTThirdBody implements DSSTForceModel {
 
             maxFieldFreqF = context.getMaxFreqF();
 
-            fieldFactory.put(field, new FDSFactory<>(field, 1, 1));
             fieldHansen.put(field, new FieldHansenObjects<>(field));
 
             pendingInitialization = false;
@@ -1344,7 +1333,7 @@ public class DSSTThirdBody implements DSSTForceModel {
      *
      * @author Lucian Barbulescu
      */
-    private class WnsjEtomjmsCoefficient {
+    private static class WnsjEtomjmsCoefficient {
 
         /** The value c.
          * <p>
@@ -1466,8 +1455,8 @@ public class DSSTThirdBody implements DSSTForceModel {
             //-b<sup>|j-s|</sup>
             final double coef2 = sign * btjms[absJmS];
             // P<sub>l</sub><sup>|j-s|, |j+s|</sup>(χ)
-            final DerivativeStructure jac =
-                    JacobiPolynomials.getValue(l, absJmS, absJpS, factory.variable(0, context.getX()));
+            final Gradient jac =
+                    JacobiPolynomials.getValue(l, absJmS, absJpS, Gradient.variable(1, 0, context.getX()));
 
             // the derivative of coef1 by c
             final double dcoef1dc = -coef1 * 2. * c * (((double) n) / opc2tn[1] + ((double) l) / omc2tn[1]);
@@ -1486,9 +1475,9 @@ public class DSSTThirdBody implements DSSTForceModel {
             // the jacobi polynomial value
             final double jacobi = jac.getValue();
             // the derivative of the Jacobi polynomial by h
-            final double djacobidh = jac.getPartialDerivative(1) * context.getHXXX();
+            final double djacobidh = jac.getGradient()[0] * context.getHXXX();
             // the derivative of the Jacobi polynomial by k
-            final double djacobidk = jac.getPartialDerivative(1) * context.getKXXX();
+            final double djacobidk = jac.getGradient()[0] * context.getKXXX();
 
             //group the above coefficients to limit the mathematical operations
             final double term1 = factCoef * coef1 * coef2;
@@ -1527,7 +1516,7 @@ public class DSSTThirdBody implements DSSTForceModel {
     *
     * @author Lucian Barbulescu
     */
-    private class FieldWnsjEtomjmsCoefficient <T extends RealFieldElement<T>> {
+    private static class FieldWnsjEtomjmsCoefficient <T extends RealFieldElement<T>> {
 
         /** The value c.
          * <p>
@@ -1660,10 +1649,8 @@ public class DSSTThirdBody implements DSSTForceModel {
             //-b<sup>|j-s|</sup>
             final T coef2 = btjms[absJmS].multiply(sign);
             // P<sub>l</sub><sup>|j-s|, |j+s|</sup>(χ)
-            @SuppressWarnings("unchecked")
-            final FDSFactory<T> fdsf = (FDSFactory<T>) fieldFactory.get(field);
-            final FieldDerivativeStructure<T> jac =
-                    JacobiPolynomials.getValue(l, absJmS, absJpS, fdsf.variable(0, context.getX()));
+            final FieldGradient<T> jac =
+                    JacobiPolynomials.getValue(l, absJmS, absJpS, FieldGradient.variable(1, 0, context.getX()));
 
             // the derivative of coef1 by c
             final T dcoef1dc = coef1.negate().multiply(2.).multiply(c).multiply(opc2tn[1].reciprocal().multiply(n).add(omc2tn[1].reciprocal().multiply(l)));
@@ -1682,9 +1669,9 @@ public class DSSTThirdBody implements DSSTForceModel {
             // the jacobi polynomial value
             final T jacobi = jac.getValue();
             // the derivative of the Jacobi polynomial by h
-            final T djacobidh = jac.getPartialDerivative(1).multiply(context.getHXXX());
+            final T djacobidh = jac.getGradient()[0].multiply(context.getHXXX());
             // the derivative of the Jacobi polynomial by k
-            final T djacobidk = jac.getPartialDerivative(1).multiply(context.getKXXX());
+            final T djacobidk = jac.getGradient()[0].multiply(context.getKXXX());
 
             //group the above coefficients to limit the mathematical operations
             final T term1 = factCoef.multiply(coef1).multiply(coef2);

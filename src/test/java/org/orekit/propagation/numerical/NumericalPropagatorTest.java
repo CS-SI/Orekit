@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -46,7 +46,7 @@ import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
@@ -945,6 +945,37 @@ public class NumericalPropagatorTest {
         }
     }
 
+    @Test
+    public void testIssue704() {
+
+        // Coordinates
+        final Orbit         orbit = initialState.getOrbit();
+        final PVCoordinates pv    = orbit.getPVCoordinates();
+
+        // dP
+        final double dP = 10.0;
+
+        // Computes dV
+        final double r2 = pv.getPosition().getNormSq();
+        final double v  = pv.getVelocity().getNorm();
+        final double dV = orbit.getMu() * dP / (v * r2);
+
+        // Verify: Cartesian case
+        final double[][] tolCart1 = NumericalPropagator.tolerances(dP, orbit, OrbitType.CARTESIAN);
+        final double[][] tolCart2 = NumericalPropagator.tolerances(dP, dV, orbit, OrbitType.CARTESIAN);
+        for (int i = 0; i < tolCart1.length; i++) {
+            Assert.assertArrayEquals(tolCart1[i], tolCart2[i], Double.MIN_VALUE);
+        }
+
+        // Verify: Non cartesian case
+        final double[][] tolKep1 = NumericalPropagator.tolerances(dP, orbit, OrbitType.KEPLERIAN);
+        final double[][] tolKep2 = NumericalPropagator.tolerances(dP, dV, orbit, OrbitType.KEPLERIAN);
+        for (int i = 0; i < tolCart1.length; i++) {
+            Assert.assertArrayEquals(tolKep1[i], tolKep2[i], Double.MIN_VALUE);
+        }
+
+    }
+
     private static class CheckingHandler<T extends EventDetector> implements EventHandler<T> {
 
         private final Action actionOnEvent;
@@ -1465,7 +1496,7 @@ public class NumericalPropagatorTest {
         MarshallSolarActivityFutureEstimation msafe =
                         new MarshallSolarActivityFutureEstimation("Jan2000F10-edited-data\\.txt",
                                                                   MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
-        DataProvidersManager.getInstance().feed(msafe.getSupportedNames(), msafe);
+        DataContext.getDefault().getDataProvidersManager().feed(msafe.getSupportedNames(), msafe);
         DTM2000 atmosphere = new DTM2000(msafe, CelestialBodyFactory.getSun(), earth);
         np.addForceModel(new DragForce(atmosphere, new IsotropicDrag(spacecraftArea, spacecraftDragCoefficient)));
 
@@ -1481,7 +1512,7 @@ public class NumericalPropagatorTest {
     private CartesianOrbit createEllipticOrbit() {
         final AbsoluteDate date         = new AbsoluteDate("2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
         final Vector3D     position     = new Vector3D(6896874.444705,  1956581.072644,  -147476.245054);
-        final Vector3D     velocity     = new Vector3D(166.816407662, -1106.783301861, -7372.745712770);
+        final Vector3D     velocity     = new Vector3D(169.816407662, -1126.783301861, -7332.745712770);
         final TimeStampedPVCoordinates pv = new TimeStampedPVCoordinates(date, position, velocity);
         final Frame frame = FramesFactory.getEME2000();
         final double mu   = Constants.EIGEN5C_EARTH_MU;

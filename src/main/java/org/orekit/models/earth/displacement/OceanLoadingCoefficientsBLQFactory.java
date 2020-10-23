@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -29,7 +29,10 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.data.AbstractSelfFeedingLoader;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -56,10 +59,47 @@ import org.orekit.errors.OrekitMessages;
  * @since 9.1
  * @author Luc Maisonobe
  */
-public class OceanLoadingCoefficientsBLQFactory {
+public class OceanLoadingCoefficientsBLQFactory extends AbstractSelfFeedingLoader {
 
     /** Default supported files name pattern for Onsala Space Observatory files in BLQ format. */
     public static final String DEFAULT_BLQ_SUPPORTED_NAMES = "^.+\\.blq$";
+
+    /** Pattern for fields with real type. */
+    private static final String  REAL_TYPE_PATTERN = "[-+]?(?:(?:\\p{Digit}+(?:\\.\\p{Digit}*)?)|(?:\\.\\p{Digit}+))(?:[eE][-+]?\\p{Digit}+)?";
+
+    /** Pattern for extracted real fields. */
+    private static final String  REAL_FIELD_PATTERN = "\\p{Space}*(" + REAL_TYPE_PATTERN + ")";
+
+    /** Pattern for end of line. */
+    private static final String  END_OF_LINE_PATTERN = "\\p{Space}*$";
+
+    /** Pattern for site name and coordinates lines. */
+    private static final String  SITE_LINE_PATTERN = "^\\$\\$ *([^,]*),\\p{Space}*(?:RADI TANG)?\\p{Space}*lon/lat:" +
+                                                     REAL_FIELD_PATTERN +
+                                                     REAL_FIELD_PATTERN +
+                                                     REAL_FIELD_PATTERN +
+                                                     END_OF_LINE_PATTERN;
+
+    /** Pattern for coefficients lines. */
+    private static final String  DATA_LINE_PATTERN = "^" +
+                                                     REAL_FIELD_PATTERN + // M₂ tide
+                                                     REAL_FIELD_PATTERN + // S₂ tide
+                                                     REAL_FIELD_PATTERN + // N₂ tide
+                                                     REAL_FIELD_PATTERN + // K₂ tide
+                                                     REAL_FIELD_PATTERN + // K₁ tide
+                                                     REAL_FIELD_PATTERN + // O₁ tide
+                                                     REAL_FIELD_PATTERN + // P₁ tide
+                                                     REAL_FIELD_PATTERN + // Q₁ tide
+                                                     REAL_FIELD_PATTERN + // Mf tide
+                                                     REAL_FIELD_PATTERN + // Mm tide
+                                                     REAL_FIELD_PATTERN + // Ssa tide
+                                                     END_OF_LINE_PATTERN;
+
+    /** Pattern for site name and coordinates lines. */
+    private static final Pattern SITE_PATTERN = Pattern.compile(SITE_LINE_PATTERN);
+
+    /** Pattern for coefficients lines. */
+    private static final Pattern DATA_PATTERN = Pattern.compile(DATA_LINE_PATTERN);
 
     /** Main tides. */
     private static final Tide[][] TIDES = {
@@ -82,13 +122,11 @@ public class OceanLoadingCoefficientsBLQFactory {
         1, 2, 0, 3, 3, 1, 2, 0, 2, 1, 0
     };
 
-    /** Regular expression for supported files names. */
-    private final String supportedNames;
-
     /** Parsed coefficients. */
     private final List<OceanLoadingCoefficients> coefficients;
 
-    /** Simple constructor.
+    /** Simple constructor. This constructor uses the {@link DataContext#getDefault()
+     * default data context}.
      * <p>
      * Files in BLQ format can be generated using the form at the
      * <a href="http://holt.oso.chalmers.se/loading/">Bos-Scherneck web site</a>,
@@ -96,10 +134,32 @@ public class OceanLoadingCoefficientsBLQFactory {
      * </p>
      * @param supportedNames regular expression for supported files names
      * @see #DEFAULT_BLQ_SUPPORTED_NAMES
+     * @see #OceanLoadingCoefficientsBLQFactory(String, DataProvidersManager)
      */
+    @DefaultDataContext
     public OceanLoadingCoefficientsBLQFactory(final String supportedNames) {
+        this(supportedNames, DataContext.getDefault().getDataProvidersManager());
+    }
 
-        this.supportedNames = supportedNames;
+    /**
+     * This constructor allows specification of the source of the BLQ auxiliary data
+     * files.
+     *
+     * <p>
+     * Files in BLQ format can be generated using the form at the
+     * <a href="http://holt.oso.chalmers.se/loading/">Bos-Scherneck web site</a>,
+     * selecting BLQ as the output format.
+     * </p>
+     * @param supportedNames regular expression for supported files names
+     * @param dataProvidersManager provides access to auxiliary data files.
+     * @see #DEFAULT_BLQ_SUPPORTED_NAMES
+     * @since 10.1
+     */
+    public OceanLoadingCoefficientsBLQFactory(
+            final String supportedNames,
+            final DataProvidersManager dataProvidersManager) {
+        super(supportedNames, dataProvidersManager);
+
         this.coefficients   = new ArrayList<>();
 
     }
@@ -108,7 +168,7 @@ public class OceanLoadingCoefficientsBLQFactory {
      */
     private void loadsIfNeeded() {
         if (coefficients.isEmpty()) {
-            DataProvidersManager.getInstance().feed(supportedNames, new BLQParser());
+            feed(new BLQParser());
         }
     }
 
@@ -120,10 +180,11 @@ public class OceanLoadingCoefficientsBLQFactory {
         loadsIfNeeded();
 
         // extract sites names from the map
-        final List<String> sites = coefficients.stream().map(c -> c.getSiteName()).collect(Collectors.toList());
-
-        // sort to ensure we have a reproducible order
-        sites.sort((s1, s2) -> s1.compareToIgnoreCase(s2));
+        final List<String> sites = coefficients.stream()
+                .map(OceanLoadingCoefficients::getSiteName)
+                // sort to ensure we have a reproducible order
+                .sorted(String::compareToIgnoreCase)
+                .collect(Collectors.toList());
 
         return sites;
 
@@ -143,7 +204,7 @@ public class OceanLoadingCoefficientsBLQFactory {
         if (!optional.isPresent()) {
             throw new OrekitException(OrekitMessages.STATION_NOT_FOUND,
                                       site,
-                                      getSites().stream().collect(Collectors.joining(", ")));
+                                      String.join(", ", getSites()));
         }
 
         return optional.get();
@@ -154,7 +215,7 @@ public class OceanLoadingCoefficientsBLQFactory {
      * <p>
      * when completing the web site form, the email received as the following form:
      * </p>
-     * <pre>
+     * <pre>{@literal
      * $$ Ocean loading displacement
      * $$
      * $$ Calculated on holt using olfg/olmpp of H.-G. Scherneck
@@ -209,7 +270,7 @@ public class OceanLoadingCoefficientsBLQFactory {
      * $$ END TABLE
      * Errors:
      * Warnings:
-     * </pre>
+     * }</pre>
      * <p>
      * We only parse blocks 7 lines blocks starting with the lines with the station names
      * and their coordinates and the 6 data lines that follows. Several such blocks may
@@ -218,48 +279,10 @@ public class OceanLoadingCoefficientsBLQFactory {
      */
     private class BLQParser implements DataLoader {
 
-        /** Pattern for fields with real type. */
-        private static final String  REAL_TYPE_PATTERN = "[-+]?(?:(?:\\p{Digit}+(?:\\.\\p{Digit}*)?)|(?:\\.\\p{Digit}+))(?:[eE][-+]?\\p{Digit}+)?";
-
-        /** Pattern for extracted real fields. */
-        private static final String  REAL_FIELD_PATTERN = "\\p{Space}*(" + REAL_TYPE_PATTERN + ")";
-
-        /** Pattern for end of line. */
-        private static final String  END_OF_LINE_PATTERN = "\\p{Space}*$";
-
-        /** Pattern for site name and coordinates lines. */
-        private static final String  SITE_LINE_PATTERN = "^\\$\\$ *([^,]*),\\p{Space}*(?:RADI TANG)?\\p{Space}*lon/lat:" +
-                                                         REAL_FIELD_PATTERN +
-                                                         REAL_FIELD_PATTERN +
-                                                         REAL_FIELD_PATTERN +
-                                                         END_OF_LINE_PATTERN;
-
-        /** Pattern for coefficients lines. */
-        private static final String  DATA_LINE_PATTERN = "^" +
-                                                         REAL_FIELD_PATTERN + // M₂ tide
-                                                         REAL_FIELD_PATTERN + // S₂ tide
-                                                         REAL_FIELD_PATTERN + // N₂ tide
-                                                         REAL_FIELD_PATTERN + // K₂ tide
-                                                         REAL_FIELD_PATTERN + // K₁ tide
-                                                         REAL_FIELD_PATTERN + // O₁ tide
-                                                         REAL_FIELD_PATTERN + // P₁ tide
-                                                         REAL_FIELD_PATTERN + // Q₁ tide
-                                                         REAL_FIELD_PATTERN + // Mf tide
-                                                         REAL_FIELD_PATTERN + // Mm tide
-                                                         REAL_FIELD_PATTERN + // Ssa tide
-                                                         END_OF_LINE_PATTERN;
-
-        /** Pattern for site name and coordinates lines. */
-        private final Pattern sitePattern;
-
-        /** Pattern for coefficients lines. */
-        private final Pattern dataPattern;
-
         /** Simple constructor.
          */
         BLQParser() {
-            sitePattern = Pattern.compile(SITE_LINE_PATTERN);
-            dataPattern = Pattern.compile(DATA_LINE_PATTERN);
+            // empty constructor
         }
 
         /** {@inheritDoc} */
@@ -295,7 +318,7 @@ public class OceanLoadingCoefficientsBLQFactory {
 
                     if (dataLine < 0) {
                         // we are looking for a site line
-                        final Matcher matcher = sitePattern.matcher(line);
+                        final Matcher matcher = SITE_PATTERN.matcher(line);
                         if (matcher.matches()) {
                             // the current line is a site description line
                             siteName = matcher.group(1);
@@ -307,7 +330,7 @@ public class OceanLoadingCoefficientsBLQFactory {
                         }
                     } else {
                         // we are looking for a data line
-                        final Matcher matcher = dataPattern.matcher(line);
+                        final Matcher matcher = DATA_PATTERN.matcher(line);
                         if (!matcher.matches()) {
                             throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                       lineNumber, name, line);

@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.exception.DummyLocalizable;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -33,12 +35,12 @@ import org.orekit.utils.IERSConventions;
 
 /** A parser for the CCSDS OCM (Orbit Comprehensive Message).
  * @author Luc Maisonobe
- * @since 10.1
+ * @since 11.0
  */
 public class OCMParser extends ODMParser {
 
     /** Mandatory keywords.
-     * @since 10.1
+     * @since 11.0
      */
     private static final Keyword[] MANDATORY_KEYWORDS = {
         Keyword.CCSDS_OCM_VERS, Keyword.CREATION_DATE, Keyword.ORIGINATOR,
@@ -80,9 +82,47 @@ public class OCMParser extends ODMParser {
      * parse some reference frames or UT1 time scale, it must be initialized before
      * parsing by calling {@link #withConventions(IERSConventions)}.
      * </p>
+     * <p>This method uses the {@link DataContext#getDefault() default data context}. See
+     * {@link #withDataContext(DataContext)}.
      */
+    @DefaultDataContext
     public OCMParser() {
-        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, 0, 0, "");
+        this(DataContext.getDefault());
+    }
+
+    /** Simple constructor.
+     * <p>
+     * This class is immutable, and hence thread safe. When parts
+     * must be changed, such as reference date for Mission Elapsed Time or
+     * Mission Relative Time time systems, or the gravitational coefficient or
+     * the IERS conventions, the various {@code withXxx} methods must be called,
+     * which create a new immutable instance with the new parameters. This
+     * is a combination of the
+     * <a href="https://en.wikipedia.org/wiki/Builder_pattern">builder design
+     * pattern</a> and a
+     * <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
+     * interface</a>.
+     * </p>
+     * <p>
+     * The initial date for Mission Elapsed Time and Mission Relative Time time systems is not set here.
+     * If such time systems are used, it must be initialized before parsing by calling {@link
+     * #withMissionReferenceDate(AbsoluteDate)}.
+     * </p>
+     * <p>
+     * The gravitational coefficient is not set here. If it is needed in order
+     * to parse Cartesian orbits where the value is not set in the CCSDS file, it must
+     * be initialized before parsing by calling {@link #withMu(double)}.
+     * </p>
+     * <p>
+     * The IERS conventions to use is not set here. If it is needed in order to
+     * parse some reference frames or UT1 time scale, it must be initialized before
+     * parsing by calling {@link #withConventions(IERSConventions)}.
+     * </p>
+     * @param dataContext used by the parser.
+     * @see #withDataContext(DataContext)
+     */
+    public OCMParser(final DataContext dataContext) {
+        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, 0, 0, "", dataContext);
     }
 
     /** Complete constructor.
@@ -93,35 +133,41 @@ public class OCMParser extends ODMParser {
      * @param launchYear launch year for TLEs
      * @param launchNumber launch number for TLEs
      * @param launchPiece piece of launch (from "A" to "ZZZ") for TLEs
+     * @param dataContext used to retrieve frames and time scales.
      */
     private OCMParser(final AbsoluteDate missionReferenceDate, final double mu,
                       final IERSConventions conventions, final boolean simpleEOP,
-                      final int launchYear, final int launchNumber, final String launchPiece) {
-        super(missionReferenceDate, mu, conventions, simpleEOP, launchYear, launchNumber, launchPiece);
+                      final int launchYear, final int launchNumber, final String launchPiece,
+                      final DataContext dataContext) {
+        super(missionReferenceDate, mu, conventions, simpleEOP, launchYear, launchNumber, launchPiece, dataContext);
     }
 
     /** {@inheritDoc} */
     public OCMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
         return new OCMParser(newMissionReferenceDate, getMu(), getConventions(), isSimpleEOP(),
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece());
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
+                             getDataContext());
     }
 
     /** {@inheritDoc} */
     public OCMParser withMu(final double newMu) {
         return new OCMParser(getMissionReferenceDate(), newMu, getConventions(), isSimpleEOP(),
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece());
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
+                             getDataContext());
     }
 
     /** {@inheritDoc} */
     public OCMParser withConventions(final IERSConventions newConventions) {
         return new OCMParser(getMissionReferenceDate(), getMu(), newConventions, isSimpleEOP(),
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece());
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
+                             getDataContext());
     }
 
     /** {@inheritDoc} */
     public OCMParser withSimpleEOP(final boolean newSimpleEOP) {
         return new OCMParser(getMissionReferenceDate(), getMu(), getConventions(), newSimpleEOP,
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece());
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
+                             getDataContext());
     }
 
     /** {@inheritDoc} */
@@ -129,7 +175,15 @@ public class OCMParser extends ODMParser {
                                                  final int newLaunchNumber,
                                                  final String newLaunchPiece) {
         return new OCMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
-                             newLaunchYear, newLaunchNumber, newLaunchPiece);
+                             newLaunchYear, newLaunchNumber, newLaunchPiece,
+                             getDataContext());
+    }
+
+    @Override
+    public OCMParser withDataContext(final DataContext newDataContext) {
+        return new OCMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
+                             newDataContext);
     }
 
     /** {@inheritDoc} */

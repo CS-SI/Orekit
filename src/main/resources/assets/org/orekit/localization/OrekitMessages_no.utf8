@@ -160,6 +160,9 @@ TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = TLE linjene refererer ikke til det samme
 # invalid TLE parameter for object {0}: {1} = {2}
 TLE_INVALID_PARAMETER = ugyldig TLE parameter for objekt {0}: {1} = {2}
 
+# invalid TLE parameter {0}: {1} not in range [{2}, {3}]
+TLE_INVALID_PARAMETER_RANGE = <MISSING TRANSLATION>
+
 # wrong checksum of TLE line {0}, expected {1} but got {2} ({3})
 TLE_CHECKSUM_ERROR = gal sjekksum for TLE linje {0}, verdien {1} var ventet men fant {2} ({3})
 
@@ -198,6 +201,9 @@ NON_EXISTENT_TIME = klokkeslettet {0} eksisterer ikke
 
 # out of range seconds number: {0}
 OUT_OF_RANGE_SECONDS_NUMBER = sekundnummer {0} overskrider området
+
+# out of range seconds number: {0} is not in [{1}, {2})
+OUT_OF_RANGE_SECONDS_NUMBER_DETAIL = <MISSING TRANSLATION>
 
 # angle type not supported, supported angles: {0}, {1} and {2}
 ANGLE_TYPE_NOT_SUPPORTED = vinkeltypen er ikke støttet, støttede vinkler: {0}, {1} og {2}
@@ -391,11 +397,11 @@ NON_CHRONOLOGICALLY_SORTED_ENTRIES = generte oppføringer er ikke sorterte: {0} 
 # no data generated around date: {0}
 NO_DATA_GENERATED = ingen data generert rundt dato: {0}
 
-# unable to generate new data before {0}
-UNABLE_TO_GENERATE_NEW_DATA_BEFORE = kan ikke generere ny data før {0}
+# unable to generate new data before {0}, data requested for {1}
+UNABLE_TO_GENERATE_NEW_DATA_BEFORE = <MISSING TRANSLATION>
 
-# unable to generate new data after {0}
-UNABLE_TO_GENERATE_NEW_DATA_AFTER = kan ikke generere ny data etter {0}
+# unable to generate new data after {0}, data requested for {1}
+UNABLE_TO_GENERATE_NEW_DATA_AFTER = <MISSING TRANSLATION>
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = kan ikke beregne hyperbolsk eksentrisk anomali fra hovedanomalien etter {0} iterasjoner
@@ -410,25 +416,25 @@ OUT_OF_RANGE_DERIVATION_ORDER = derivert rekkefølgen {0} er utenfor gyldig inte
 ORBIT_TYPE_NOT_ALLOWED = banetype {0} er ikke tillatt her, gyldige typer: {1}
 
 # non pseudo-inertial frame {0} is not suitable as reference for inertial forces
-NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_AS_REFERENCE_FOR_INERTIAL_FORCES = <MISSING TRANSLATION>
+NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_AS_REFERENCE_FOR_INERTIAL_FORCES = ikke pseudo-inertiramme {0} er ikke passende som referanse for inertikrefter
 
 # method not available in the absence of a central body
-METHOD_NOT_AVAILABLE_WITHOUT_CENTRAL_BODY = <MISSING TRANSLATION>
+METHOD_NOT_AVAILABLE_WITHOUT_CENTRAL_BODY = metode ikke tilgjengelig uten et sentrallegeme
 
 # operation not available between frames {0} and {1}
-INCOMPATIBLE_FRAMES = <MISSING TRANSLATION>
+INCOMPATIBLE_FRAMES = operasjon ikke tilgjengelig mellom rammene {0} og {1}
 
 # orbit not defined, state rather contains an absolute position-velocity-acceleration
-UNDEFINED_ORBIT = <MISSING TRANSLATION>
+UNDEFINED_ORBIT = bane ikke definert, tilstanden inneholder heller en absolutt posisjon-fart-akselerasjon
 
 # absolute position-velocity-acceleration not defined, state rather contains an orbit
-UNDEFINED_ABSOLUTE_PVCOORDINATES = <MISSING TRANSLATION>
+UNDEFINED_ABSOLUTE_PVCOORDINATES = absolutt posisjon-fart-akselerasjon ikke definert, tilstanden inneholder heller en bane
 
 # an inertial force model has to be used when propagating in non-inertial frame {0}
-INERTIAL_FORCE_MODEL_MISSING = <MISSING TRANSLATION>
+INERTIAL_FORCE_MODEL_MISSING = en inertikraftmodell må brukes til å propagere i ikke-inertiramme {0}
 
 # no SEM almanac file found
-NO_SEM_ALMANAC_AVAILABLE = Ingen SEM almanakk tilgjengelig
+NO_SEM_ALMANAC_AVAILABLE = ingen SEM almanakk tilgjengelig
 
 # file {0} is not a supported SEM almanac file
 NOT_A_SUPPORTED_SEM_ALMANAC_FILE = filen {0} er ikke en støttet SEM almanakkfil
@@ -482,7 +488,7 @@ UNKNOWN_SATELLITE_SYSTEM = ukjent satellittsystem {0}
 UNKNOWN_SATELLITE_ANTENNA_CODE = ukjent satellittantennekode {0}
 
 # frequency {0} is not supported by antenna {1}
-UNSUPPORTED_FREQUENCY_FOR_ANTENNA = <MISSING TRANSLATION>
+UNSUPPORTED_FREQUENCY_FOR_ANTENNA = frekvens {0} er ikke støttet av antenne {1}
 
 # cannot find satellite {0} in satellite system {1}
 CANNOT_FIND_SATELLITE_IN_SYSTEM = kan ikke finne satellitten {0} i satellittsystemet {1}
@@ -503,16 +509,16 @@ UNSUPPORTED_FILE_FORMAT = ikke understøttet format for filen {0}
 INCOMPLETE_HEADER = ufullstendig topptekst i filen {0}
 
 # inconsistent number of satellites in line {0}, file {1}: observation with {2} satellites and number of max satellites is {3}
-INCONSISTENT_NUMBER_OF_SATS = inkonsekvent satellittnummere på linje {0}, fil {1}: observasjon med {2} satellitter og maksimum satellittnummer er {3}
+INCONSISTENT_NUMBER_OF_SATS = inkonsistent satellittnummere på linje {0}, fil {1}: observasjon med {2} satellitter og maksimum satellittnummer er {3}
 
 # the satellite system {3} from line {0}, file {1} is not consistent with the Rinex Satellite System {2} in header
-INCONSISTENT_SATELLITE_SYSTEM = satellittsystemet {3} fra linje {0}, fil {1} er inkonsekvent i forhold til Rinex Satellite Systemet {2} i toppteksten
+INCONSISTENT_SATELLITE_SYSTEM = satellittsystemet {3} fra linje {0}, fil {1} er inkonsistent i forhold til Rinex Satellite Systemet {2} i toppteksten
 
 # no propagator configured
 NO_PROPAGATOR_CONFIGURED = ingen propagtør er konfigurert
 
 # dimension {0} is inconsistent with parameters list: {1}
-DIMENSION_INCONSISTENT_WITH_PARAMETERS = dimensjonen {0} er inkonsekvent i forhold til parameterlisten: {1}
+DIMENSION_INCONSISTENT_WITH_PARAMETERS = dimensjonen {0} er inkonsistent i forhold til parameterlisten: {1}
 
 # file {0} is not a supported Unix-compressed file
 NOT_A_SUPPORTED_UNIX_COMPRESSED_FILE = filen {0} er ikke en støttet Unix-komprimert fil
@@ -524,33 +530,102 @@ UNEXPECTED_END_OF_FILE = uventet slutt på filen {0}
 CORRUPTED_FILE = filen {0} er ødelagt
 
 # Vienna coefficients ah or aw or zh or zw could not be loaded from {0}
-VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_LOADED = <MISSING TRANSLATION>
+VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_LOADED = Wien-koeffisientene ah, aw, zh eller zw kunne ikke bli lastet fra {0}
 
 # Vienna coefficients ah or aw or zh or zw not available for date {0}
-VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_AVAILABLE_FOR_DATE = <MISSING TRANSLATION>
+VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_AVAILABLE_FOR_DATE = Wien-koeffisientene ah, aw, zh eller zw er ikke tilgjengelige for datoen {0}
 
 # file {0} does not contain Vienna coefficients ah, aw, zh or zw
-NO_VIENNA_ACOEF_OR_ZENITH_DELAY_IN_FILE = <MISSING TRANSLATION>
+NO_VIENNA_ACOEF_OR_ZENITH_DELAY_IN_FILE = filen {0} inneholder ikke Wien-koeffisientene ah, aw, zh eller zw
 
 # irregular or incomplete grid in file {0}
-IRREGULAR_OR_INCOMPLETE_GRID = <MISSING TRANSLATION>
+IRREGULAR_OR_INCOMPLETE_GRID = irregulært eller ufullstendig nett i filen {0}
 
 # invalid satellite system {0}
-INVALID_SATELLITE_SYSTEM = <MISSING TRANSLATION>
+INVALID_SATELLITE_SYSTEM = ugyldig satellittsystem {0}
 
 # IONEX file {0} does not contain TEC data for date {1}
-NO_TEC_DATA_IN_FILE_FOR_DATE = <MISSING TRANSLATION>
+NO_TEC_DATA_IN_FILE_FOR_DATE = IONEX-filen {0} inneholder ikke TEC-data for datoen {1}
 
 # number of maps {0} is inconsistent with header specification: {1}
-INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE = <MISSING TRANSLATION>
+INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE = antall kart {0} er inkonsistent i forhold til startspesifiseringen: {1}
+
+# file {0} does not contain latitude and longitude bondaries in its header section
+NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER = filen {0} inneholder ikke breddegrad og lengdegrad grenser i startblokken sin
+
+# file {0} does not contain epoch of first or last map in its header section
+NO_EPOCH_IN_IONEX_HEADER = filen {0} inneholder ikke epoke for først eller siste kart i startblokken sin
 
 # The first column of itrf-versions.conf is a plain prefix that is matched against the
 # name of each loaded file. It should not contain any regular expression syntax or
 # directory components, i.e. \"/\" or \"\\\". Actual value: \"{0}\".
-ITRF_VERSIONS_PREFIX_ONLY = <MISSING TRANSLATION>
+ITRF_VERSIONS_PREFIX_ONLY = Den først kolonnen av itrf-versions.conf er et enkelt prefiks som blir matchet mot navnet til hver lastet fil. Det kan ikke inneholde noen regulær uttrykkssyntaks eller mappekomponenter, for eksempel \"/\" or \"\\\". Aktuell verdi: \"{0}\".
 
 # cannot compute aiming direction at singular point: latitude = {0}, longitude = {1}
-CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT = <MISSING TRANSLATION>
+CANNOT_COMPUTE_AIMING_AT_SINGULAR_POINT = kan ikke kalkulere sikterettning for singularpunktet: breddegrad = {0}, lengdegrad = {1}
+
+# STEC integration did not converge
+STEC_INTEGRATION_DID_NOT_CONVERGE = STEC-integreringen konvergerte ikke
+
+# MODIP grid not be loaded from {0}
+MODIP_GRID_NOT_LOADED = MODIP-nett kan ikke bli lastet fra {0}
+
+# NeQuick coefficient f2 or fm3 not be loaded from {0}
+NEQUICK_F2_FM3_NOT_LOADED = NeQuick-koeffisienten f2 eller fm3 kan ikke bli lastet fra {0}
 
 # file {0} is not a supported Hatanaka-compressed file
-NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE = <MISSING TRANSLATION>
+NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE = filen {0} er ikke en støttet Hatanaka-komprimert fil
+
+# Cannot compute around {0}
+CANNOT_COMPUTE_LAGRANGIAN = <MISSING TRANSLATION>
+
+# The trajectory does not cross XZ Plane, it will not result in a Halo Orbit
+TRAJECTORY_NOT_CROSSING_XZPLANE = <MISSING TRANSLATION>
+
+# The multiple shooting problem is underconstrained : {0} free variables, {1} constraints
+MULTIPLE_SHOOTING_UNDERCONSTRAINED = <MISSING TRANSLATION>
+
+# invalid measurement types {0} and {1} for the combination of measurements {2}
+INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS = ugyldige målingstyper {0} og {1} for målingskombinasjonen {2}
+
+# frequencies {0} and {1} are incompatibles for the {2} combination
+INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS = frekvensene {0} og {1} er uforenlige for {2} kombinasjonen
+
+# observations {0} and {1} are not in chronological dates
+NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = observasjonene {0} og {1} er ikke kronologiske datoer
+
+# Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.
+EXCEPTIONAL_DATA_CONTEXT = Bruk av ExceptionalDataContext funnet. Denne brukes typisk til å oppdage utviklingsproblemer.
+
+# inconsistent time systems in the attitude blocks: {0} ≠ {1}
+CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = <MISSING TRANSLATION>
+
+# invalid attitude type {0}
+CCSDS_AEM_NULL_ATTITUDE_TYPE = <MISSING TRANSLATION>
+
+# attitude type {0} in CCSDS AEM files is not implemented in Orekit
+CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED = <MISSING TRANSLATION>
+
+# the rotation sequence of the Euler angles {0} is invalid
+CCSDS_AEM_INVALID_ROTATION_SEQUENCE = <MISSING TRANSLATION>
+
+# observations {0}, {1} and {2} must have different dates
+NON_DIFFERENT_DATES_FOR_OBSERVATIONS = <MISSING TRANSLATION>
+
+# observations are not in the same plane
+NON_COPLANAR_POINTS = <MISSING TRANSLATION>
+
+# invalid parameter {0}: {1} not in range [{2}, {3}]
+INVALID_PARAMETER_RANGE = <MISSING TRANSLATION>
+
+# The parameter {0} should not be null in {1}
+PARAMETER_NOT_SET = <MISSING TRANSLATION>
+
+# {0} is not implemented
+FUNCTION_NOT_IMPLEMENTED = <MISSING TRANSLATION>
+
+# Impossible to execute {0} with {1} set to {2}
+INVALID_TYPE_FOR_FUNCTION = <MISSING TRANSLATION>
+
+# No data could be parsed from file {0}
+NO_DATA_IN_FILE = <MISSING TRANSLATION>

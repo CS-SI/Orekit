@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,12 +21,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -78,9 +79,6 @@ public class EquinoctialOrbit extends Orbit {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20170414L;
-
-    /** Factory for first time derivatives. */
-    private static final DSFactory FACTORY = new DSFactory(1, 1);
 
     /** Semi-major axis (m). */
     private final double a;
@@ -191,25 +189,25 @@ public class EquinoctialOrbit extends Orbit {
         this.hyDot = hyDot;
 
         if (hasDerivatives()) {
-            final DerivativeStructure exDS = FACTORY.build(ex, exDot);
-            final DerivativeStructure eyDS = FACTORY.build(ey, eyDot);
-            final DerivativeStructure lDS  = FACTORY.build(l,  lDot);
-            final DerivativeStructure lvDS;
+            final UnivariateDerivative1 exUD = new UnivariateDerivative1(ex, exDot);
+            final UnivariateDerivative1 eyUD = new UnivariateDerivative1(ey, eyDot);
+            final UnivariateDerivative1 lUD  = new UnivariateDerivative1(l,  lDot);
+            final UnivariateDerivative1 lvUD;
             switch (type) {
                 case MEAN :
-                    lvDS = FieldEquinoctialOrbit.eccentricToTrue(FieldEquinoctialOrbit.meanToEccentric(lDS, exDS, eyDS), exDS, eyDS);
+                    lvUD = FieldEquinoctialOrbit.eccentricToTrue(FieldEquinoctialOrbit.meanToEccentric(lUD, exUD, eyUD), exUD, eyUD);
                     break;
                 case ECCENTRIC :
-                    lvDS = FieldEquinoctialOrbit.eccentricToTrue(lDS, exDS, eyDS);
+                    lvUD = FieldEquinoctialOrbit.eccentricToTrue(lUD, exUD, eyUD);
                     break;
                 case TRUE :
-                    lvDS = lDS;
+                    lvUD = lUD;
                     break;
                 default : // this should never happen
                     throw new OrekitInternalError(null);
             }
-            this.lv    = lvDS.getValue();
-            this.lvDot = lvDS.getPartialDerivative(1);
+            this.lv    = lvUD.getValue();
+            this.lvDot = lvUD.getDerivative(1);
         } else {
             switch (type) {
                 case MEAN :
@@ -311,11 +309,11 @@ public class EquinoctialOrbit extends Orbit {
             // mean anomaly derivative including Keplerian motion and convert to true anomaly
             final double lMDot = getKeplerianMeanMotion() +
                                  jacobian[5][3] * aX + jacobian[5][4] * aY + jacobian[5][5] * aZ;
-            final DerivativeStructure exDS = FACTORY.build(ex, exDot);
-            final DerivativeStructure eyDS = FACTORY.build(ey, eyDot);
-            final DerivativeStructure lMDS = FACTORY.build(getLM(), lMDot);
-            final DerivativeStructure lvDS = FieldEquinoctialOrbit.eccentricToTrue(FieldEquinoctialOrbit.meanToEccentric(lMDS, exDS, eyDS), exDS, eyDS);
-            lvDot = lvDS.getPartialDerivative(1);
+            final UnivariateDerivative1 exUD = new UnivariateDerivative1(ex, exDot);
+            final UnivariateDerivative1 eyUD = new UnivariateDerivative1(ey, eyDot);
+            final UnivariateDerivative1 lMUD = new UnivariateDerivative1(getLM(), lMDot);
+            final UnivariateDerivative1 lvUD = FieldEquinoctialOrbit.eccentricToTrue(FieldEquinoctialOrbit.meanToEccentric(lMUD, exUD, eyUD), exUD, eyUD);
+            lvDot = lvUD.getDerivative(1);
 
         } else {
             // acceleration is either almost zero or NaN,
@@ -444,11 +442,11 @@ public class EquinoctialOrbit extends Orbit {
 
     /** {@inheritDoc} */
     public double getLEDot() {
-        final DerivativeStructure lVDS = FACTORY.build(lv, lvDot);
-        final DerivativeStructure exDS = FACTORY.build(ex, exDot);
-        final DerivativeStructure eyDS = FACTORY.build(ey, eyDot);
-        final DerivativeStructure lEDS = FieldEquinoctialOrbit.trueToEccentric(lVDS, exDS, eyDS);
-        return lEDS.getPartialDerivative(1);
+        final UnivariateDerivative1 lVUD = new UnivariateDerivative1(lv, lvDot);
+        final UnivariateDerivative1 exUD = new UnivariateDerivative1(ex, exDot);
+        final UnivariateDerivative1 eyUD = new UnivariateDerivative1(ey, eyDot);
+        final UnivariateDerivative1 lEUD = FieldEquinoctialOrbit.trueToEccentric(lVUD, exUD, eyUD);
+        return lEUD.getDerivative(1);
     }
 
     /** {@inheritDoc} */
@@ -458,11 +456,11 @@ public class EquinoctialOrbit extends Orbit {
 
     /** {@inheritDoc} */
     public double getLMDot() {
-        final DerivativeStructure lVDS = FACTORY.build(lv, lvDot);
-        final DerivativeStructure exDS = FACTORY.build(ex, exDot);
-        final DerivativeStructure eyDS = FACTORY.build(ey, eyDot);
-        final DerivativeStructure lMDS = FieldEquinoctialOrbit.eccentricToMean(FieldEquinoctialOrbit.trueToEccentric(lVDS, exDS, eyDS), exDS, eyDS);
-        return lMDS.getPartialDerivative(1);
+        final UnivariateDerivative1 lVUD = new UnivariateDerivative1(lv, lvDot);
+        final UnivariateDerivative1 exUD = new UnivariateDerivative1(ex, exDot);
+        final UnivariateDerivative1 eyUD = new UnivariateDerivative1(ey, eyDot);
+        final UnivariateDerivative1 lMUD = FieldEquinoctialOrbit.eccentricToMean(FieldEquinoctialOrbit.trueToEccentric(lVUD, exUD, eyUD), exUD, eyUD);
+        return lMUD.getDerivative(1);
     }
 
     /** Get the longitude argument.
@@ -1006,11 +1004,13 @@ public class EquinoctialOrbit extends Orbit {
     /** Replace the instance with a data transfer object for serialization.
      * @return data transfer object that will be serialized
      */
+    @DefaultDataContext
     private Object writeReplace() {
         return new DTO(this);
     }
 
     /** Internal class used only for serialization. */
+    @DefaultDataContext
     private static class DTO implements Serializable {
 
         /** Serializable UID. */
@@ -1030,8 +1030,10 @@ public class EquinoctialOrbit extends Orbit {
             final TimeStampedPVCoordinates pv = orbit.getPVCoordinates();
 
             // decompose date
-            final double epoch  = FastMath.floor(pv.getDate().durationFrom(AbsoluteDate.J2000_EPOCH));
-            final double offset = pv.getDate().durationFrom(AbsoluteDate.J2000_EPOCH.shiftedBy(epoch));
+            final AbsoluteDate j2000Epoch =
+                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
+            final double epoch  = FastMath.floor(pv.getDate().durationFrom(j2000Epoch));
+            final double offset = pv.getDate().durationFrom(j2000Epoch.shiftedBy(epoch));
 
             if (orbit.hasDerivatives()) {
                 // we have derivatives
@@ -1059,17 +1061,19 @@ public class EquinoctialOrbit extends Orbit {
          * @return replacement {@link EquinoctialOrbit}
          */
         private Object readResolve() {
+            final AbsoluteDate j2000Epoch =
+                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
             if (d.length >= 15) {
                 // we have derivatives
                 return new EquinoctialOrbit(d[ 3], d[ 4], d[ 5], d[ 6], d[ 7], d[ 8],
                                             d[ 9], d[10], d[11], d[12], d[13], d[14],
                                             PositionAngle.TRUE,
-                                            frame, AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                                            frame, j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                             d[2]);
             } else {
                 // we don't have derivatives
                 return new EquinoctialOrbit(d[ 3], d[ 4], d[ 5], d[ 6], d[ 7], d[ 8], PositionAngle.TRUE,
-                                            frame, AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                                            frame, j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                             d[2]);
             }
         }
