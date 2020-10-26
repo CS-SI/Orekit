@@ -203,8 +203,8 @@ public class SINEXLoader {
                                     final Station station = getStation(parseString(line, 1, 4));
                                     // check if start and end dates have been set
                                     if (station.getValidFrom() == null) {
-                                        station.setValidFrom(stringEpochToAbosluteDate(parseString(line, 16, 12)));
-                                        station.setValidUntil(stringEpochToAbosluteDate(parseString(line, 29, 12)));
+                                        station.setValidFrom(stringEpochToAbsoluteDate(parseString(line, 16, 12)));
+                                        station.setValidUntil(stringEpochToAbsoluteDate(parseString(line, 29, 12)));
                                     }
                                     station.setEccRefSystem(ReferenceSystem.getEccRefSystem(parseString(line, 42, 3)));
                                     station.setEccentricities(new Vector3D(parseDouble(line, 46, 8),
@@ -213,8 +213,8 @@ public class SINEXLoader {
                                 } else if (inEpoch) {
                                     // read epoch data
                                     final Station station = getStation(parseString(line, 1, 4));
-                                    station.setValidFrom(stringEpochToAbosluteDate(parseString(line, 16, 12)));
-                                    station.setValidUntil(stringEpochToAbosluteDate(parseString(line, 29, 12)));
+                                    station.setValidFrom(stringEpochToAbsoluteDate(parseString(line, 16, 12)));
+                                    station.setValidUntil(stringEpochToAbsoluteDate(parseString(line, 29, 12)));
                                 } else if (inEstimate) {
                                     final Station station = getStation(parseString(line, 14, 4));
                                     // check if this station exists
@@ -239,7 +239,7 @@ public class SINEXLoader {
                                                 position = new Vector3D(position.getX(), position.getY(), z);
                                                 station.setPosition(position);
                                                 // set the reference epoch (identical for all coordinates)
-                                                station.setEpoch(stringEpochToAbosluteDate(parseString(line, 27, 12)));
+                                                station.setEpoch(stringEpochToAbsoluteDate(parseString(line, 27, 12)));
                                                 // reset position vector
                                                 position = Vector3D.ZERO;
                                                 break;
@@ -311,7 +311,7 @@ public class SINEXLoader {
      * @param stringDate string epoch
      * @return the corresponding AbsoluteDate
      */
-    private AbsoluteDate stringEpochToAbosluteDate(final String stringDate) {
+    private AbsoluteDate stringEpochToAbsoluteDate(final String stringDate) {
         // Date components
         final String[] fields = SEPARATOR.split(stringDate);
 

@@ -192,7 +192,16 @@ public class CRDFile {
         /** Time of flight [s]. */
         private final double timeOfFlight;
 
-        /** Time event reference indicator. */
+        /** Time event reference indicator.
+         * 0 = ground receive time (at SRP) (two-way)
+         * 1 = spacecraft bounce time (two-way)
+         * 2 = ground transmit time (at SRP) (two-way)
+         * 3 = spacecraft receive time (one-way)
+         * 4 = spacecraft transmit time (one-way)
+         * 5 = ground transmit time (at SRP) and spacecraft receive time (one-way)
+         * 6 = spacecraft transmit time and ground receive time (at SRP) (one-way)
+         * Currently, only 1 and 2 are used for laser ranging data.
+         */
         private final int epochEvent;
 
         /** Signal to noise ration. */
@@ -242,6 +251,15 @@ public class CRDFile {
 
         /**
          * Get the indicator for the time event reference.
+         * <ul>
+         * <li>0 = ground receive time (at SRP) (two-way)</li>
+         * <li>1 = spacecraft bounce time (two-way)</li>
+         * <li>2 = ground transmit time (at SRP) (two-way)</li>
+         * <li>3 = spacecraft receive time (one-way)</li>
+         * <li>4 = spacecraft transmit time (one-way)</li>
+         * <li>5 = ground transmit time (at SRP) and spacecraft receive time (one-way)</li>
+         * <li>6 = spacecraft transmit time and ground receive time (at SRP) (one-way)</li>
+         * </ul>
          * @return the indicator for the time event reference
          */
         public int getEpochEvent() {
@@ -334,10 +352,15 @@ public class CRDFile {
         /** Elevation [rad]. */
         private final double elevation;
 
-        /** Direction flag (1 = transmit ; 2 = receive). */
+        /** Direction flag (0 = transmit & receive ; 1 = transmit ; 2 = receive). */
         private final int directionFlag;
 
-        /** Angle origin indicator. */
+        /** Angle origin indicator.
+         * 0 = unknown
+         * 1 = computed
+         * 2 = commanded (from predictions)
+         * 3 = measured (from encoders)
+         */
         private final int originIndicator;
 
         /** Refraction corrected. */
@@ -400,7 +423,7 @@ public class CRDFile {
         }
 
         /**
-         * Get the direction flag (1 = transmit ; 2 = receive).
+         * Get the direction flag (0 = transmit & receive ; 1 = transmit ; 2 = receive).
          * @return the direction flag
          */
         public int getDirectionFlag() {
@@ -409,6 +432,12 @@ public class CRDFile {
 
         /**
          * Get the angle origin indicator.
+         * <p>
+         * 0 = unknown;
+         * 1 = computed;
+         * 2 = commanded (from predictions);
+         * 3 = measured (from encoders)
+         * </p>
          * @return the angle origin indicator
          */
         public int getOriginIndicator() {

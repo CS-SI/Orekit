@@ -67,7 +67,7 @@ public class SINEXLoaderTest {
 
         // Test date computation using format description
         try {
-            Method method = SINEXLoader.class.getDeclaredMethod("stringEpochToAbosluteDate", String.class);
+            Method method = SINEXLoader.class.getDeclaredMethod("stringEpochToAbsoluteDate", String.class);
             method.setAccessible(true);
             final AbsoluteDate date = (AbsoluteDate) method.invoke(loader, "95:120:86399");
             final AbsoluteDate refDate = new AbsoluteDate("1995-04-30T23:59:59.000", TimeScalesFactory.getUTC());
