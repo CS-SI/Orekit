@@ -61,6 +61,9 @@ import org.orekit.time.TimeScale;
  */
 public class CRDParser {
 
+    /** Default supported files name pattern for CRD files. */
+    public static final String DEFAULT_CRD_SUPPORTED_NAMES = "^(?!0+$)\\w{1,12}\\_\\d{6,8}.\\w{3}$";
+
     /** Nanometers to meters converter. */
     private static final double NM_TO_M = 1.0e-9;
 
@@ -101,6 +104,14 @@ public class CRDParser {
      */
     public CRDParser(final TimeScale utc) {
         this.timeScale = utc;
+    }
+
+    /**
+     * Get the time scale used to read the file.
+     * @return the time scale used to read the file
+     */
+    public TimeScale getTimeScale() {
+        return timeScale;
     }
 
     /**
@@ -243,7 +254,7 @@ public class CRDParser {
                 pi.version = Integer.parseInt(values[2]);
 
                 // Throw an exception if format is not equal to "CRD"
-                if (!FILE_FORMAT.equals(format)) {
+                if (!format.equalsIgnoreCase(FILE_FORMAT)) {
                     throw new OrekitException(OrekitMessages.UNEXPECTED_FORMAT_FOR_ILRS_FILE, FILE_FORMAT, format);
                 }
 
@@ -460,7 +471,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(C1);
+                return Stream.of(C1, C2, C3, C4, C5, C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY);
             }
 
         },
@@ -497,7 +508,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(C2);
+                return Stream.of(C2, C3, C4, C5, C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY);
             }
 
         },
@@ -544,7 +555,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(C3);
+                return Stream.of(C3, C4, C5, C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY);
             }
 
         },
@@ -578,7 +589,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(C4, C5, C6, C7, METEO, TEN, ELEVEN, CALIB, STAT, COMPATIBILITY);
+                return Stream.of(C4, C5, C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY);
             }
 
         },
@@ -621,7 +632,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(C5, C6, C7, METEO, TEN, ELEVEN, CALIB, STAT, COMPATIBILITY);
+                return Stream.of(C5, C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY);
             }
 
         },
@@ -654,7 +665,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(C6, C7, METEO, TEN, ELEVEN, CALIB, STAT, COMPATIBILITY);
+                return Stream.of(C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY);
             }
 
         },
@@ -692,7 +703,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(C7, METEO, TEN, ELEVEN, CALIB, STAT, COMPATIBILITY);
+                return Stream.of(C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY);
             }
 
         },
@@ -709,7 +720,7 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(METEO, TEN, ELEVEN, CALIB, STAT, COMPATIBILITY);
+                return Stream.of(TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY);
             }
 
         },

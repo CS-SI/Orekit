@@ -260,6 +260,7 @@ public class CRDFile {
          * <li>5 = ground transmit time (at SRP) and spacecraft receive time (one-way)</li>
          * <li>6 = spacecraft transmit time and ground receive time (at SRP) (one-way)</li>
          * </ul>
+         * Currently, only 1 and 2 are used for laser ranging data
          * @return the indicator for the time event reference
          */
         public int getEpochEvent() {

@@ -147,6 +147,9 @@ public class Station {
 
     /**
      * Get the station antenna eccentricities.
+     * <p>
+     * Vector convention: X-Y-Z or UP-NORTH-EAST
+     * </p>
      * @return station antenna eccentricities (m)
      */
     public Vector3D getEccentricities() {

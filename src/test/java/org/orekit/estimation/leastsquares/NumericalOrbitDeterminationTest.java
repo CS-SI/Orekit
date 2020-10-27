@@ -212,12 +212,12 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
 
         //test
         //definition of the accuracy for the test
-        final double distanceAccuracy = 0.1;
-        final double velocityAccuracy = 1e-4;
+        final double distanceAccuracy = 0.62;
+        final double velocityAccuracy = 1.4e-4;
 
         //test on the convergence
-        final int numberOfIte  = 4;
-        final int numberOfEval = 4;
+        final int numberOfIte  = 5;
+        final int numberOfEval = 5;
 
         Assert.assertEquals(numberOfIte, odLageos2.getNumberOfIteration());
         Assert.assertEquals(numberOfEval, odLageos2.getNumberOfEvaluation());
@@ -225,30 +225,15 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         //test on the estimated position and velocity
         final Vector3D estimatedPos = odLageos2.getEstimatedPV().getPosition();
         final Vector3D estimatedVel = odLageos2.getEstimatedPV().getVelocity();
-        //final Vector3D refPos = new Vector3D(-5532124.989973327, 10025700.01763335, -3578940.840115321);
-        //final Vector3D refVel = new Vector3D(-3871.2736402553, -607.8775965705, 4280.9744110925);
-        final Vector3D refPos = new Vector3D(-5532131.956902, 10025696.592156, -3578940.040009);
-        final Vector3D refVel = new Vector3D(-3871.275109, -607.880985, 4280.972530);
+        // Ref position from "lageos2_cpf_160213_5451.jax"
+        final Vector3D refPos = new Vector3D(7526994.072, -9646309.832, 1464110.239);
+        final Vector3D refVel = new Vector3D(3033.794, 1715.265, -4447.659);
         Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
         Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
 
-        //test on measurements parameters
-        final List<DelegatingDriver> list = new ArrayList<DelegatingDriver>();
-        list.addAll(odLageos2.getMeasurementsParameters().getDrivers());
-        sortParametersChanges(list);
-        //final double[] stationOffSet = { -1.351682,  -2.180542,  -5.278784 };
-        //final double rangeBias = -7.923393;
-        final double[] stationOffSet = { 1.659203,  0.861250,  -0.885352 };
-        final double rangeBias = -0.286275;
-        Assert.assertEquals(stationOffSet[0], list.get(0).getValue(), distanceAccuracy);
-        Assert.assertEquals(stationOffSet[1], list.get(1).getValue(), distanceAccuracy);
-        Assert.assertEquals(stationOffSet[2], list.get(2).getValue(), distanceAccuracy);
-        Assert.assertEquals(rangeBias,        list.get(3).getValue(), distanceAccuracy);
-
         //test on statistic for the range residuals
-        final long nbRange = 258;
-        //final double[] RefStatRange = { -2.795816, 6.171529, 0.310848, 1.657809 };
-        final double[] RefStatRange = { -2.431135, 2.218644, 0.038483, 0.982017 };
+        final long nbRange = 95;
+        final double[] RefStatRange = { -0.756, 0.845, 0.0, 0.261 };
         Assert.assertEquals(nbRange, odLageos2.getRangeStat().getN());
         Assert.assertEquals(RefStatRange[0], odLageos2.getRangeStat().getMin(),               distanceAccuracy);
         Assert.assertEquals(RefStatRange[1], odLageos2.getRangeStat().getMax(),               distanceAccuracy);

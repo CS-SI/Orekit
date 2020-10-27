@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
@@ -87,6 +88,35 @@ public class SINEXLoader {
         this.utc = utc;
         stations = new HashMap<>();
         dataProvidersManager.feed(supportedNames, new Parser());
+    }
+
+    /** Simple constructor. This constructor uses the {@link DataContext#getDefault()
+     * default data context}.
+     * @param input data input stream
+     * @param name name of the file (or zip entry)
+     * @see #SINEXLoader(InputStream, String, TimeScale)
+     */
+    @DefaultDataContext
+    public SINEXLoader(final InputStream input, final String name) {
+        this(input, name, DataContext.getDefault().getTimeScales().getUTC());
+    }
+
+    /**
+     * Loads SINEX from the given input stream using the specified auxiliary data.
+     * @param input data input stream
+     * @param name name of the file (or zip entry)
+     * @param utc UTC time scale
+     */
+    public SINEXLoader(final InputStream input,
+                       final String name,
+                       final TimeScale utc) {
+        try {
+            this.utc = utc;
+            stations = new HashMap<>();
+            new Parser().loadData(input, name);
+        } catch (IOException | ParseException ioe) {
+            throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
+        }
     }
 
     /**
