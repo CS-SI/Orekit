@@ -88,6 +88,7 @@ import org.orekit.estimation.sequential.KalmanEstimatorBuilder;
 import org.orekit.estimation.sequential.KalmanObserver;
 import org.orekit.files.ilrs.CRDFile;
 import org.orekit.files.ilrs.CRDFile.CRDDataBlock;
+import org.orekit.files.ilrs.CRDFile.Meteo;
 import org.orekit.files.ilrs.CRDFile.MeteorologicalMeasurement;
 import org.orekit.files.ilrs.CRDFile.RangeMeasurement;
 import org.orekit.files.ilrs.CRDHeader;
@@ -149,8 +150,6 @@ import org.orekit.propagation.conversion.IntegratedPropagatorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
-import org.orekit.time.DateComponents;
-import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -2054,18 +2053,11 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
             // Header
             final CRDHeader header = block.getHeader();
 
-            // Measurement year ; month and day component
-            final DateComponents rangeDateC = header.getStartEpoch().getComponents(parser.getTimeScale()).getDate();
-
             // Wavelength (meters)
             final double wavelength = block.getConfigurationRecords().getSystemRecord().getWavelength();
 
             // Meteo data
-            final List<MeteorologicalMeasurement> meteoData = block.getMeteoData();
-            MeteorologicalMeasurement meteo = null;
-            if (meteoData.size() > 0) {
-                meteo = meteoData.get(0);
-            }
+            final Meteo meteo = block.getMeteoData();
 
             // Station data
             final StationData stationData = stations.get(String.valueOf(header.getSystemIdentifier()));
@@ -2077,8 +2069,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
                 final double timeOfFlight = range.getTimeOfFlight();
 
                 // Transmit time
-                final AbsoluteDate transmitTime = new AbsoluteDate(rangeDateC, new TimeComponents(range.getSecOfDay()),
-                                                                   parser.getTimeScale());
+                final AbsoluteDate transmitTime = range.getDate();
                 // If epoch corresponds to bounce time, take into consideration the time of flight to compute the transmit time
                 if (range.getEpochEvent() == 1) {
                     transmitTime.shiftedBy(-0.5 * timeOfFlight);
@@ -2096,6 +2087,9 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
                     rangeValue = 0.5 * rangeValue;
                 }
 
+                // Meteorological record for the current epoch
+                final MeteorologicalMeasurement meteoData = meteo.getMeteo(receivedTime);
+
                 // Initialize range
                 final Range measurement = new Range(stationData.getStation(), twoWays, receivedTime, rangeValue,
                                                     stationData.getRangeSigma(), weights.getRangeBaseWeight(), satellite);
@@ -2111,8 +2105,8 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
 
                 // Tropospheric model
                 final DiscreteTroposphericModel model;
-                if (meteo != null) {
-                    model = new MendesPavlisModel(meteo.getTemperature(), meteo.getPressure() * 1000.0, 0.01 * meteo.getHumidity(),
+                if (meteoData != null) {
+                    model = new MendesPavlisModel(meteoData.getTemperature(), meteoData.getPressure() * 1000.0, 0.01 * meteoData.getHumidity(),
                                                   stationData.getStation().getBaseFrame().getPoint().getLatitude(), wavelength * 1.0e6);
                 } else {
                     model = MendesPavlisModel.getStandardModel(stationData.getStation().getBaseFrame().getPoint().getLatitude(), wavelength * 1.0e6);

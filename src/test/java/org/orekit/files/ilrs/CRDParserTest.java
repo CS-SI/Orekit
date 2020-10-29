@@ -204,21 +204,21 @@ public class CRDParserTest {
         Assert.assertEquals("123456", firstConf.getMeteorologicalRecord().getHumiSensorSerialNumber());
         Assert.assertNull(firstConf.getTransponderRecord());
 
-        // Meteorological data
-        final MeteorologicalMeasurement meteoFirst = first.getMeteoData().get(0);
-        Assert.assertEquals(56940.0, meteoFirst.getSecOfDay(), 1.0e-15);
+        // Meteorological data (only one data)
+        final MeteorologicalMeasurement meteoFirst = first.getMeteoData().getMeteo(AbsoluteDate.J2000_EPOCH);
+        Assert.assertEquals(56940.0, meteoFirst.getDate().getComponents(parser.getTimeScale()).getTime().getSecondsInLocalDay(), 1.0e-15);
         Assert.assertEquals(0.9989, meteoFirst.getPressure(), 1.0e-15);
         Assert.assertEquals(259.10, meteoFirst.getTemperature(), 1.0e-15);
         Assert.assertEquals(80.0, meteoFirst.getHumidity(), 1.0e-15);
 
         // Range data
         final RangeMeasurement rangeFirst1 = first.getRangeData().get(0);
-        Assert.assertEquals(54927.620161400002, rangeFirst1.getSecOfDay(), 1.0e-15);
+        Assert.assertEquals(54927.620161400002, rangeFirst1.getDate().getComponents(parser.getTimeScale()).getTime().getSecondsInLocalDay(), 1.0e-15);
         Assert.assertEquals(0.044106029140, rangeFirst1.getTimeOfFlight(), 1.0e-15);
         Assert.assertEquals(2, rangeFirst1.getEpochEvent());
         Assert.assertEquals(5.7, rangeFirst1.getSnr(), 1.0e-15);
         final RangeMeasurement rangeFirst2 = first.getRangeData().get(5);
-        Assert.assertEquals(56899.718161400000, rangeFirst2.getSecOfDay(), 1.0e-15);
+        Assert.assertEquals(56899.718161400000, rangeFirst2.getDate().getComponents(parser.getTimeScale()).getTime().getSecondsInLocalDay(), 1.0e-15);
         Assert.assertEquals(0.050148193335, rangeFirst2.getTimeOfFlight(), 1.0e-15);
         Assert.assertEquals(2, rangeFirst2.getEpochEvent());
         Assert.assertEquals(5.7, rangeFirst2.getSnr(), 1.0e-15);
@@ -318,21 +318,21 @@ public class CRDParserTest {
         Assert.assertEquals("123456", lastConf.getMeteorologicalRecord().getHumiSensorSerialNumber());
         Assert.assertNull(lastConf.getTransponderRecord());
 
-        // Meteorological data
-        final MeteorologicalMeasurement meteoLast = last.getMeteoData().get(0);
-        Assert.assertEquals(52749.0, meteoLast.getSecOfDay(), 1.0e-15);
+        // Meteorological data (only one data)
+        final MeteorologicalMeasurement meteoLast = last.getMeteoData().getMeteo(AbsoluteDate.J2000_EPOCH);
+        Assert.assertEquals(52749.0, meteoLast.getDate().getComponents(parser.getTimeScale()).getTime().getSecondsInLocalDay(), 1.0e-15);
         Assert.assertEquals(0.9921, meteoLast.getPressure(), 1.0e-15);
         Assert.assertEquals(260.80, meteoLast.getTemperature(), 1.0e-15);
         Assert.assertEquals(67.0, meteoLast.getHumidity(), 1.0e-15);
 
         // Range data
         final RangeMeasurement rangeLast1 = last.getRangeData().get(0);
-        Assert.assertEquals(51080.935001603524, rangeLast1.getSecOfDay(), 1.0e-15);
+        Assert.assertEquals(51080.935001603524, rangeLast1.getDate().getComponents(parser.getTimeScale()).getTime().getSecondsInLocalDay(), 1.0e-15);
         Assert.assertEquals(0.045673108965, rangeLast1.getTimeOfFlight(), 1.0e-15);
         Assert.assertEquals(2, rangeLast1.getEpochEvent());
         Assert.assertEquals(5.7, rangeLast1.getSnr(), 1.0e-15);
         final RangeMeasurement rangeLast2 = last.getRangeData().get(13);
-        Assert.assertEquals(52618.095001597932, rangeLast2.getSecOfDay(), 1.0e-15);
+        Assert.assertEquals(52618.095001597932, rangeLast2.getDate().getComponents(parser.getTimeScale()).getTime().getSecondsInLocalDay(), 1.0e-15);
         Assert.assertEquals(0.042733272755, rangeLast2.getTimeOfFlight(), 1.0e-15);
         Assert.assertEquals(2, rangeLast2.getEpochEvent());
         Assert.assertEquals(5.7, rangeLast2.getSnr(), 1.0e-15);
@@ -419,9 +419,8 @@ public class CRDParserTest {
         Assert.assertEquals(0.2322 * 1.0e-6, conf.getTimingRecord().getEpochDelayCorrection(), 1.0e-15);
 
         // Meteorological data
-        Assert.assertEquals(1, block.getMeteoData().size());
-        final MeteorologicalMeasurement meteoFirst = block.getMeteoData().get(0);
-        Assert.assertEquals(14353.388283000000, meteoFirst.getSecOfDay(), 1.0e-15);
+        final MeteorologicalMeasurement meteoFirst = block.getMeteoData().getMeteo(AbsoluteDate.J2000_EPOCH);
+        Assert.assertEquals(14353.388283000000, meteoFirst.getDate().getComponents(parser.getTimeScale()).getTime().getSecondsInLocalDay(), 1.0e-15);
         Assert.assertEquals(0.92374, meteoFirst.getPressure(), 1.0e-15);
         Assert.assertEquals(289.42, meteoFirst.getTemperature(), 1.0e-15);
         Assert.assertEquals(28.1, meteoFirst.getHumidity(), 1.0e-15);
@@ -429,14 +428,14 @@ public class CRDParserTest {
         // Range data
         Assert.assertEquals(4, block.getRangeData().size());
         final RangeMeasurement range = block.getRangeData().get(0);
-        Assert.assertEquals(14487.343206247217, range.getSecOfDay(), 1.0e-15);
+        Assert.assertEquals(14487.343206247217, range.getDate().getComponents(parser.getTimeScale()).getTime().getSecondsInLocalDay(), 1.0e-15);
         Assert.assertEquals(0.003603959600, range.getTimeOfFlight(), 1.0e-15);
         Assert.assertEquals(2, range.getEpochEvent());
 
         // Angles data
         Assert.assertEquals(4, block.getAnglesData().size());
         final AnglesMeasurement angles = block.getAnglesData().get(0);
-        Assert.assertEquals(14343.574333000000, angles.getSecOfDay(), 1.0e-15);
+        Assert.assertEquals(14343.574333000000, angles.getDate().getComponents(parser.getTimeScale()).getTime().getSecondsInLocalDay(), 1.0e-15);
         Assert.assertEquals(FastMath.toRadians(215.000000), angles.getAzimuth(), 1.0e-15);
         Assert.assertEquals(FastMath.toRadians(15.000010), angles.getElevation(), 1.0e-15);
         Assert.assertEquals(0, angles.getDirectionFlag());
@@ -472,6 +471,54 @@ public class CRDParserTest {
         Assert.assertEquals(0, transponder.getSpacecraftClockAndDriftApplied());
         Assert.assertEquals(0, transponder.getStationClockAndDriftApplied());
         Assert.assertFalse(transponder.isSpacecraftTimeSimplified());
+    }
+
+    @Test
+    public void testMeteorologicalData() {
+
+        // Initialise an empty data block
+        final CRDDataBlock block = new CRDDataBlock();
+
+        // Verify null object
+        Assert.assertNull(block.getMeteoData().getMeteo(AbsoluteDate.J2000_EPOCH));
+
+        // Add a meteorological data entry
+        final AbsoluteDate date = new AbsoluteDate("2020-10-29T11:40:00.000", TimeScalesFactory.getUTC());
+        final MeteorologicalMeasurement meteoData1 = new MeteorologicalMeasurement(date, 1013.0, 273.0, 50.0);
+        block.addMeteoData(meteoData1);
+
+        // Verify values
+        MeteorologicalMeasurement data1 = block.getMeteoData().getMeteo(AbsoluteDate.J2000_EPOCH);
+        Assert.assertEquals(meteoData1.getPressure(),    data1.getPressure(),    1.0e-15);
+        Assert.assertEquals(meteoData1.getTemperature(), data1.getTemperature(), 1.0e-15);
+        Assert.assertEquals(meteoData1.getHumidity(),    data1.getHumidity(),    1.0e-15);
+        data1 = block.getMeteoData().getMeteo(date);
+        Assert.assertEquals(meteoData1.getPressure(),    data1.getPressure(),    1.0e-15);
+        Assert.assertEquals(meteoData1.getTemperature(), data1.getTemperature(), 1.0e-15);
+        Assert.assertEquals(meteoData1.getHumidity(),    data1.getHumidity(),    1.0e-15);
+        data1 = block.getMeteoData().getMeteo(date.shiftedBy(60.0));
+        Assert.assertEquals(meteoData1.getPressure(),    data1.getPressure(),    1.0e-15);
+        Assert.assertEquals(meteoData1.getTemperature(), data1.getTemperature(), 1.0e-15);
+        Assert.assertEquals(meteoData1.getHumidity(),    data1.getHumidity(),    1.0e-15);
+
+        // Add another meteorological data entry
+        final MeteorologicalMeasurement meteoData2 = new MeteorologicalMeasurement(date.shiftedBy(60.0), 1015.0, 275.0, 70.0);
+        block.addMeteoData(meteoData2);
+
+        // Verify values
+        MeteorologicalMeasurement data2 = block.getMeteoData().getMeteo(AbsoluteDate.J2000_EPOCH); // before first data
+        Assert.assertEquals(meteoData1.getPressure(),    data2.getPressure(),    1.0e-15);
+        Assert.assertEquals(meteoData1.getTemperature(), data2.getTemperature(), 1.0e-15);
+        Assert.assertEquals(meteoData1.getHumidity(),    data2.getHumidity(),    1.0e-15);
+        data2 = block.getMeteoData().getMeteo(date.shiftedBy(180.0)); // After second data
+        Assert.assertEquals(meteoData2.getPressure(),    data2.getPressure(),    1.0e-15);
+        Assert.assertEquals(meteoData2.getTemperature(), data2.getTemperature(), 1.0e-15);
+        Assert.assertEquals(meteoData2.getHumidity(),    data2.getHumidity(),    1.0e-15);
+        data2 = block.getMeteoData().getMeteo(date.shiftedBy(30.0)); // between first and second datta
+        Assert.assertEquals(1014.0,                      data2.getPressure(),    1.0e-15);
+        Assert.assertEquals(274.0,                       data2.getTemperature(), 1.0e-15);
+        Assert.assertEquals(60.0,                        data2.getHumidity(),    1.0e-15);
+
     }
 
     @Before

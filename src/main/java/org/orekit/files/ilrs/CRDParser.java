@@ -45,6 +45,7 @@ import org.orekit.files.ilrs.CRDFile.MeteorologicalMeasurement;
 import org.orekit.files.ilrs.CRDFile.RangeMeasurement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 
 /**
@@ -211,6 +212,9 @@ public class CRDParser {
         /** Time scale. */
         private TimeScale timeScale;
 
+        /** Current data block start epoch. */
+        private DateComponents startEpoch;
+
         /** End Of File reached indicator. */
         private boolean done;
 
@@ -220,8 +224,9 @@ public class CRDParser {
         protected ParseInfo() {
 
             // Initialise default values
-            this.done    = false;
-            this.version = 1;
+            this.done       = false;
+            this.version    = 1;
+            this.startEpoch = DateComponents.J2000_EPOCH;
 
             // Initialise empty object
             this.file                 = new CRDFile();
@@ -374,6 +379,8 @@ public class CRDParser {
                 final int    hourS   = Integer.parseInt(values[5]);
                 final int    minuteS = Integer.parseInt(values[6]);
                 final double secondS = Integer.parseInt(values[7]);
+
+                pi.startEpoch = new DateComponents(yearS, monthS, dayS);
 
                 pi.header.setStartEpoch(new AbsoluteDate(yearS, monthS, dayS,
                                                          hourS, minuteS, secondS,
@@ -741,7 +748,8 @@ public class CRDParser {
                 final int    epochEvent   = Integer.parseInt(values[4]);
 
                 // Initialise a new Range measurement
-                final RangeMeasurement range = new RangeMeasurement(secOfDay, timeOfFlight, epochEvent);
+                final AbsoluteDate epoch = new AbsoluteDate(pi.startEpoch, new TimeComponents(secOfDay), pi.timeScale);
+                final RangeMeasurement range = new RangeMeasurement(epoch, timeOfFlight, epochEvent);
                 pi.dataBlock.addRangeData(range);
 
             }
@@ -771,7 +779,8 @@ public class CRDParser {
                 final double snr          = (pi.version == 2) ? Double.parseDouble(values[13]) : Double.NaN;
 
                 // Initialise a new Range measurement
-                final RangeMeasurement range = new RangeMeasurement(secOfDay, timeOfFlight, epochEvent, snr);
+                final AbsoluteDate epoch = new AbsoluteDate(pi.startEpoch, new TimeComponents(secOfDay), pi.timeScale);
+                final RangeMeasurement range = new RangeMeasurement(epoch, timeOfFlight, epochEvent, snr);
                 pi.dataBlock.addRangeData(range);
 
             }
@@ -818,7 +827,8 @@ public class CRDParser {
                 final double humidity    = Double.parseDouble(values[4]);
 
                 // Initialise a new meteorological measurement
-                final MeteorologicalMeasurement meteo = new MeteorologicalMeasurement(secOfDay, pressure,
+                final AbsoluteDate epoch = new AbsoluteDate(pi.startEpoch, new TimeComponents(secOfDay), pi.timeScale);
+                final MeteorologicalMeasurement meteo = new MeteorologicalMeasurement(epoch, pressure,
                                                                                       temperature, humidity);
                 pi.dataBlock.addMeteoData(meteo);
 
@@ -877,7 +887,8 @@ public class CRDParser {
                 }
 
                 // Initialise a new angles measurement
-                final AnglesMeasurement angles = new AnglesMeasurement(secOfDay, azmiuth, elevation,
+                final AbsoluteDate epoch = new AbsoluteDate(pi.startEpoch, new TimeComponents(secOfDay), pi.timeScale);
+                final AnglesMeasurement angles = new AnglesMeasurement(epoch, azmiuth, elevation,
                                                                        directionFlag, orginFlag,
                                                                        isRefractionCorrected,
                                                                        azimuthRate, elevationRate);
@@ -1014,6 +1025,7 @@ public class CRDParser {
                 pi.file.addDataBlock(pi.dataBlock);
 
                 // Initialize a new empty containers
+                pi.startEpoch           = DateComponents.J2000_EPOCH;
                 pi.header               = new CRDHeader();
                 pi.configurationRecords = new CRDConfiguration();
                 pi.dataBlock            = new CRDDataBlock();

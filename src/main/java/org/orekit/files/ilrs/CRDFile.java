@@ -19,6 +19,14 @@ package org.orekit.files.ilrs;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
+
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ChronologicalComparator;
+import org.orekit.time.TimeStamped;
+import org.orekit.utils.ImmutableTimeStampedCache;
 
 /**
  * This class stocks all the information of the Consolidated laser ranging Data Format (CRD) parsed
@@ -86,7 +94,7 @@ public class CRDFile {
         private List<RangeMeasurement> rangeData;
 
         /** Meteorological records. */
-        private List<MeteorologicalMeasurement> meteoData;
+        private final SortedSet<TimeStamped> meteoData;
 
         /** Pointing angles records. */
         private List<AnglesMeasurement> anglesData;
@@ -97,7 +105,7 @@ public class CRDFile {
         public CRDDataBlock() {
             // Initialise empty lists
             this.rangeData  = new ArrayList<>();
-            this.meteoData  = new ArrayList<>();
+            this.meteoData  = new TreeSet<>(new ChronologicalComparator());
             this.anglesData = new ArrayList<>();
         }
 
@@ -143,10 +151,10 @@ public class CRDFile {
 
         /**
          * Add an entry to the list of meteorological data.
-         * @param meteo entry to add
+         * @param meteorologicalMeasurement entry to add
          */
-        public void addMeteoData(final MeteorologicalMeasurement meteo) {
-            meteoData.add(meteo);
+        public void addMeteoData(final MeteorologicalMeasurement meteorologicalMeasurement) {
+            meteoData.add(meteorologicalMeasurement);
         }
 
         /**
@@ -166,14 +174,6 @@ public class CRDFile {
         }
 
         /**
-         * Get the meteorological data for the data block.
-         * @return an unmodifiable list of meteorological data
-         */
-        public List<MeteorologicalMeasurement> getMeteoData() {
-            return Collections.unmodifiableList(meteoData);
-        }
-
-        /**
          * Get the angles data for the data block.
          * @return an unmodifiable list of angles data
          */
@@ -181,13 +181,21 @@ public class CRDFile {
             return Collections.unmodifiableList(anglesData);
         }
 
+        /**
+         * Get the meteorological data for the data block.
+         * @return an unmodifiable list of meteorological data
+         */
+        public Meteo getMeteoData() {
+            return new Meteo(meteoData);
+        }
+
     }
 
     /** Range record. */
-    public static class RangeMeasurement {
+    public static class RangeMeasurement implements TimeStamped {
 
-        /** Seconds of day. */
-        private final double secOfDay;
+        /** Data epoch. */
+        private AbsoluteDate date;
 
         /** Time of flight [s]. */
         private final double timeOfFlight;
@@ -209,36 +217,30 @@ public class CRDFile {
 
         /**
          * Constructor.
-         * @param secOfDay seconds of day
+         * @param date data epoch
          * @param timeOfFlight time of flight in seconds
          * @param epochEvent indicates the time event reference
          */
-        public RangeMeasurement(final double secOfDay, final double timeOfFlight,
+        public RangeMeasurement(final AbsoluteDate date,
+                                final double timeOfFlight,
                                 final int epochEvent) {
-            this(secOfDay, timeOfFlight, epochEvent, Double.NaN);
+            this(date, timeOfFlight, epochEvent, Double.NaN);
         }
 
         /**
          * Constructor.
-         * @param secOfDay seconds of day
+         * @param date data epoch
          * @param timeOfFlight time of flight in seconds
          * @param epochEvent indicates the time event reference
          * @param snr signal to noise ratio (can be Double.NaN if unkonwn)
          */
-        public RangeMeasurement(final double secOfDay, final double timeOfFlight,
+        public RangeMeasurement(final AbsoluteDate date,
+                                final double timeOfFlight,
                                 final int epochEvent, final double snr) {
-            this.secOfDay     = secOfDay;
+            this.date         = date;
             this.timeOfFlight = timeOfFlight;
             this.epochEvent   = epochEvent;
             this.snr          = snr;
-        }
-
-        /**
-         * Get the seconds of day.
-         * @return the seconds of day
-         */
-        public double getSecOfDay() {
-            return secOfDay;
         }
 
         /**
@@ -275,13 +277,19 @@ public class CRDFile {
             return snr;
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public AbsoluteDate getDate() {
+            return date;
+        }
+
     }
 
     /** This data record contains a minimal set of meteorological data. */
-    public static class MeteorologicalMeasurement {
+    public static class MeteorologicalMeasurement implements TimeStamped {
 
-        /** Seconds of day. */
-        private final double secOfDay;
+        /** Data epoch. */
+        private AbsoluteDate date;
 
         /** Surface pressure [bar]. */
         private final double pressure;
@@ -294,25 +302,18 @@ public class CRDFile {
 
         /**
          * Constructor.
-         * @param secOfDay seconds of day
+         * @param date data epoch
          * @param pressure the surface pressure in bars
          * @param temperature the surface temperature in degrees Kelvin
          * @param humidity the relative humidity at the surface in percents
          */
-        public MeteorologicalMeasurement(final double secOfDay, final double pressure,
-                                         final double temperature, final double humidity) {
-            this.secOfDay    = secOfDay;
+        public MeteorologicalMeasurement(final AbsoluteDate date,
+                                         final double pressure, final double temperature,
+                                         final double humidity) {
+            this.date        = date;
             this.pressure    = pressure;
             this.temperature = temperature;
             this.humidity    = humidity;
-        }
-
-        /**
-         * Get the seconds of day for the meteorological data.
-         * @return the seconds of day for the meteorological data
-         */
-        public double getSecOfDay() {
-            return secOfDay;
         }
 
         /**
@@ -339,13 +340,19 @@ public class CRDFile {
             return humidity;
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public AbsoluteDate getDate() {
+            return date;
+        }
+
     }
 
     /** Pointing angles record. */
-    public static class AnglesMeasurement {
+    public static class AnglesMeasurement implements TimeStamped {
 
-        /** Seconds of day. */
-        private final double secOfDay;
+        /** Data epoch. */
+        private AbsoluteDate date;
 
         /** Azimuth [rad]. */
         private final double azimuth;
@@ -375,7 +382,7 @@ public class CRDFile {
 
         /**
          * Constructor.
-         * @param secOfDay seconds of day
+         * @param date data epoch
          * @param azimuth azimuth angle in radians
          * @param elevation elevation angle in radians
          * @param directionFlag direction flag
@@ -384,12 +391,12 @@ public class CRDFile {
          * @param azimuthRate azimuth rate in radians per second (equal to Double.NaN if unknown)
          * @param elevationRate elevation rate in radians per second (equal to Double.NaN if unknown)
          */
-        public AnglesMeasurement(final double secOfDay, final double azimuth,
+        public AnglesMeasurement(final AbsoluteDate date, final double azimuth,
                                  final double elevation, final int directionFlag,
                                  final int originIndicator,
                                  final boolean refractionCorrected,
                                  final double azimuthRate, final double elevationRate) {
-            this.secOfDay            = secOfDay;
+            this.date                = date;
             this.azimuth             = azimuth;
             this.elevation           = elevation;
             this.directionFlag       = directionFlag;
@@ -397,14 +404,6 @@ public class CRDFile {
             this.refractionCorrected = refractionCorrected;
             this.azimuthRate         = azimuthRate;
             this.elevationRate       = elevationRate;
-        }
-
-        /**
-         * Get the seconds of day.
-         * @return the seconds of day
-         */
-        public double getSecOfDay() {
-            return secOfDay;
         }
 
         /**
@@ -473,6 +472,148 @@ public class CRDFile {
          */
         public double getElevationRate() {
             return elevationRate;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public AbsoluteDate getDate() {
+            return date;
+        }
+
+    }
+
+    /** Meteorological data. */
+    public static class Meteo {
+
+        /** Number of neighbors for meteo data interpolation. */
+        private static final int N_NEIGHBORS = 2;
+
+        /** First available date. */
+        private final AbsoluteDate firstDate;
+
+        /** Last available date. */
+        private final AbsoluteDate lastDate;
+
+        /** Previous set of meteorological parameters. */
+        private transient MeteorologicalMeasurement previousParam;
+
+        /** Next set of solar meteorological parameters. */
+        private transient MeteorologicalMeasurement nextParam;
+
+        /** List of meteo data. */
+        private final transient ImmutableTimeStampedCache<TimeStamped> meteo;
+
+        /**
+         * Constructor.
+         * @param meteoData list of meteo data
+         */
+        public Meteo(final SortedSet<TimeStamped> meteoData) {
+
+            // Size
+            final int neighborsSize = (meteoData.size() < 2) ? meteoData.size() : N_NEIGHBORS;
+
+            // Check neighbors size
+            if (neighborsSize == 0) {
+
+                // Meteo data -> empty cache
+                this.meteo = ImmutableTimeStampedCache.emptyCache();
+
+                // Null epochs (will ne be used)
+                this.firstDate = null;
+                this.lastDate  = null;
+
+            } else {
+
+                // Meteo data
+                this.meteo = new ImmutableTimeStampedCache<TimeStamped>(neighborsSize, meteoData);
+
+                // Initialize first and last available dates
+                this.firstDate = meteoData.first().getDate();
+                this.lastDate  = meteoData.last().getDate();
+
+            }
+
+        }
+
+        /**
+         * Get the meteorological parameters at a given date.
+         * @param date date when user wants the meteorological parameters
+         * @return the meteorological parameters at date (can be null if
+         *         meteorological data are empty).
+         */
+        public MeteorologicalMeasurement getMeteo(final AbsoluteDate date) {
+
+            // Check if meteorological data are available
+            if (meteo.getNeighborsSize() == 0) {
+                return null;
+            }
+
+            // Interpolating two neighboring meteorological parameters
+            bracketDate(date);
+            if (date.durationFrom(firstDate) <= 0 || date.durationFrom(lastDate) > 0) {
+                // Date is outside file range
+                return previousParam;
+            } else {
+                // Perform interpolations
+                final double pressure    = getLinearInterpolation(date, previousParam.getPressure(), nextParam.getPressure());
+                final double temperature = getLinearInterpolation(date, previousParam.getTemperature(), nextParam.getTemperature());
+                final double humidity    = getLinearInterpolation(date, previousParam.getHumidity(), nextParam.getHumidity());
+                return new MeteorologicalMeasurement(date, pressure, temperature, humidity);
+            }
+
+        }
+
+        /**
+         * Find the data bracketing a specified date.
+         * @param date date to bracket
+         */
+        private void bracketDate(final AbsoluteDate date) {
+
+            // don't search if the cached selection is fine
+            if ((previousParam != null) &&
+                (date.durationFrom(previousParam.getDate()) > 0) &&
+                (date.durationFrom(nextParam.getDate()) <= 0 )) {
+                return;
+            }
+
+            // Initialize previous and next parameters
+            if (date.durationFrom(firstDate) <= 0) {
+                // Current date is before the first date
+                previousParam = (MeteorologicalMeasurement) meteo.getEarliest();
+                nextParam     = previousParam;
+            } else if (date.durationFrom(lastDate) > 0) {
+                // Current date is after the last date
+                previousParam = (MeteorologicalMeasurement) meteo.getLatest();
+                nextParam     = previousParam;
+            } else {
+                // Current date is between first and last date
+                final List<TimeStamped> neighbors = meteo.getNeighbors(date).collect(Collectors.toList());
+                previousParam = (MeteorologicalMeasurement) neighbors.get(0);
+                nextParam     = (MeteorologicalMeasurement) neighbors.get(1);
+            }
+
+        }
+
+        /**
+         * Performs a linear interpolation between two values The weights are computed
+         * from the time delta between previous date, current date, next date.
+         * @param date the current date
+         * @param previousValue the value at previous date
+         * @param nextValue the value at next date
+         * @return the value interpolated for the current date
+         */
+        private double getLinearInterpolation(final AbsoluteDate date,
+                                              final double previousValue,
+                                              final double nextValue) {
+            // Perform a linear interpolation
+            final AbsoluteDate previousDate = previousParam.getDate();
+            final AbsoluteDate currentDate = nextParam.getDate();
+            final double dt = currentDate.durationFrom(previousDate);
+            final double previousWeight = currentDate.durationFrom(date) / dt;
+            final double nextWeight = date.durationFrom(previousDate) / dt;
+
+            // Returns the data interpolated at the date
+            return previousValue * previousWeight + nextValue * nextWeight;
         }
 
     }
