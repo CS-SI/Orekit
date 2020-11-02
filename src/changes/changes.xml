@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.3" date="TBD" description="TBD">
+      <action dev="thomas" type="fix" issue="702">
+        Added possibility to take in account several bodies while computing SRP perturbation.
+      </action>
    	  <action dev="thomas" type="fix" issue="713">
         Fixed computation of DSST short period Jacobian.
       </action>

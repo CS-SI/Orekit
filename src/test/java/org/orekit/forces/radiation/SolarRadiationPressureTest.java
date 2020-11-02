@@ -17,14 +17,10 @@
 package org.orekit.forces.radiation;
 
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
-import java.util.List;
 
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -50,16 +46,12 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
-import org.orekit.estimation.measurements.MultiplexedMeasurement;
-import org.orekit.estimation.measurements.Range;
 import org.orekit.forces.AbstractLegacyForceModelTest;
 import org.orekit.forces.BoxAndSolarArraySpacecraft;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
-import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
@@ -778,6 +770,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
      * Earth is artificially reduced to a single point to only consider Moon effect.
      * Reference values are presented in "A Study of Solar Radiation Pressure acting on GPS Stellites"
      * written by Laurent Olivier Froideval in 2009.
+     * Modifications of the step handler and time span able to print lighting ratios other a year and get a reference like graph. 
      */
     @Test
     public void testMoonEclipse() {
@@ -792,7 +785,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final ExtendedPVCoordinatesProvider moon = CelestialBodyFactory.getMoon();
         final Frame GCRF = FramesFactory.getGCRF();
         final AbsoluteDate date = new AbsoluteDate(2007, 01, 01, 6, 0, 0, TimeScalesFactory.getGPS());
-        final double dt = 3600 * 24 * 360;
+        final double dt = 3600 * 24 * 180;
         final AbsoluteDate target = date.shiftedBy(dt);
         
         //PV coordinates from sp3 file esa14081.sp3 PRN 03
@@ -800,6 +793,8 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                                       new Vector3D(-3152.6722260146, 1005.6757515113, -1946.9273038773));
         final Orbit orbit = new CartesianOrbit(refPV, GCRF, date, Constants.EIGEN5C_EARTH_MU);
         final SpacecraftState initialState = new SpacecraftState(orbit);
+        
+        // Create SRP perturbation with Moon and Earth
         SolarRadiationPressure srp =
             new SolarRadiationPressure(sun, Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
                                        new IsotropicRadiationClassicalConvention(50.0, 0.5, 0.5));
@@ -813,32 +808,32 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
             1.0e-4, 1.0e-4, 1.0e-4, 1.0e-6, 1.0e-6, 1.0e-6, 1.0e-7
         };
         AdaptiveStepsizeIntegrator integrator =
-                        new DormandPrince853Integrator(600.0, 60000, absTolerance, relTolerance);
+                        new DormandPrince853Integrator(600, 1000000, absTolerance, relTolerance);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setInitialState(initialState);
         propagator.addForceModel(srp);
-        propagator.setMasterMode(600.0, new MoonEclipseStepHandler(moon, sun, srp, date));
+        propagator.setMasterMode(600, new MoonEclipseStepHandler(moon, sun, srp));
         propagator.propagate(target);
     }
     
     /** Specialized step handler.
      * <p>This class extends the step handler in order to print on the output stream at the given step.<p>
-     * @author Pascal Parraud
+     * @author Thomas Paulet
      */
     private static class MoonEclipseStepHandler implements OrekitFixedStepHandler {
 
         final ExtendedPVCoordinatesProvider moon;
         final ExtendedPVCoordinatesProvider sun;
         final SolarRadiationPressure srp;
-        final AbsoluteDate startDate;
+
         /** Simple constructor.
          */
         MoonEclipseStepHandler(final ExtendedPVCoordinatesProvider moon, final ExtendedPVCoordinatesProvider sun,
-                               final SolarRadiationPressure srp, final AbsoluteDate startDate) {
+                               final SolarRadiationPressure srp) {
             this.moon = moon;
             this.sun  = sun;
             this.srp  = srp;
-            this.startDate = startDate;
+
         }
 
         /** {@inheritDoc} */
@@ -851,59 +846,43 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         public void handleStep(final SpacecraftState currentState, final boolean isLast) {
             final AbsoluteDate date = currentState.getDate();
             final Frame frame = currentState.getFrame();
-            final double timeFrom = date.durationFrom(startDate) / 3600 / 24;
-            if (timeFrom > 73.458) {
-                System.out.println((""));
-            }
+
             final Vector3D moonPos = moon.getPVCoordinates(date, frame).getPosition();
             final Vector3D sunPos = sun.getPVCoordinates(date, frame).getPosition();
             final Vector3D statePos = currentState.getPVCoordinates().getPosition();
             
-            final double[] angles = srp.getGeneralEclipseAngles(statePos, moonPos, Constants.MOON_EQUATORIAL_RADIUS, 
-                                                                sunPos, Constants.SUN_RADIUS);
-            final double umbra = angles[0] - angles[1] + angles[2];
-            final boolean isInUmbra = (umbra < 1.0e-10);
+            // Moon umbra and penumbra conditions 
+            final double[] moonAngles = srp.getGeneralEclipseAngles(statePos, moonPos, Constants.MOON_EQUATORIAL_RADIUS, 
+                                                                    sunPos, Constants.SUN_RADIUS);
+            final double moonUmbra = moonAngles[0] - moonAngles[1] + moonAngles[2];
+            final boolean isInMoonUmbra = (moonUmbra < 1.0e-10);
             
-            final double penumbra = angles[0] - angles[1] - angles[2];
-            final boolean isInPenumbra = (penumbra < -1.0e-10);
+            final double moonPenumbra = moonAngles[0] - moonAngles[1] - moonAngles[2];
+            final boolean isInMoonPenumbra = (moonPenumbra < -1.0e-10);
             
+            // Earth umbra and penumbra conditions
+            final double[] earthAngles = srp.getEclipseAngles(sunPos, statePos);
+            
+            final double earthUmbra = earthAngles[0] - earthAngles[1] + earthAngles[2];
+            final boolean isInEarthUmbra = (earthUmbra < 1.0e-10);
+            
+            final double earthPenumbra = earthAngles[0] - earthAngles[1] - earthAngles[2];
+            final boolean isInEarthPenumbra = (earthPenumbra < -1.0e-10);
+            
+            
+            // Compute lighting ration
             final double lightingRatio = srp.getTotalLightingRatio(statePos, frame, date);
-            final double lightingRatio2 = srp.getLightingRatio(statePos, frame, date);
-            //System.out.println(angles[0]);
-            /*
-            if (isInUmbra) {
-                System.out.println(currentState.getDate() + "   Moon Umbra");
-                System.out.println("");
+            
+            // Check behaviour
+            if (isInMoonUmbra || isInEarthUmbra) {
                 Assert.assertEquals(0.0, lightingRatio, 1e-8);
             }
-            else if (isInPenumbra) {
-                System.out.println(currentState.getDate() + "   Moon Prenumbra");
-                System.out.println("Lighting Ratio: " + lightingRatio);
-                System.out.println("");
+            else if (isInMoonPenumbra || isInEarthPenumbra) {
                 Assert.assertEquals(true, (lightingRatio < 1.0));
                 Assert.assertEquals(true, (lightingRatio > 0.0));
             }
             else {
                 Assert.assertEquals(1.0, lightingRatio, 1e-8);
-            }
-            */
-            final String name = "LightingRatio";
-            final String filename = name + ".txt";
-            File file = new File(filename);
-            try {
-                if (!file.exists()) {
-                    file.createNewFile();
-                }
-                FileWriter fw = new FileWriter(file.getAbsoluteFile(), true);
-                BufferedWriter bw = new BufferedWriter(fw);
-                final String line = timeFrom + ", " + lightingRatio;
-                bw.write(line);
-                bw.write("\n");
-                bw.close();    
-            }
-            catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
             }
         }
     }
