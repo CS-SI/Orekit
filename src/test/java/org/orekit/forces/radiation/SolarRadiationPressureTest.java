@@ -768,7 +768,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     
     /** Testing if eclipses due to Moon are considered.
      * Earth is artificially reduced to a single point to only consider Moon effect.
-     * Reference values are presented in "A Study of Solar Radiation Pressure acting on GPS Stellites"
+     * Reference values are presented in "A Study of Solar Radiation Pressure acting on GPS Satellites"
      * written by Laurent Olivier Froideval in 2009.
      * Modifications of the step handler and time span able to print lighting ratios other a year and get a reference like graph. 
      */
