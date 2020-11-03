@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="10.3" date="TBD" description="TBD">
+      <action dev="thomas" type="fix" issue="601">
+        Modify getPVInPZ90 method (propagation.numerical.GLONASSNumericalPropagator)
+        visibility from public to private.
+      </action>
       <action dev="bryan" type="add" issue="671">
         Added support for laser ranging file formats.
       </action>
