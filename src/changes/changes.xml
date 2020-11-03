@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.3" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="729">
+        Fixed wrong handling of RESET-STATE in analytical propagators.
+      </action>
       <action dev="luc" type="add" issue="728">
         Allow creating a node detector without an orbit.
       </action>
