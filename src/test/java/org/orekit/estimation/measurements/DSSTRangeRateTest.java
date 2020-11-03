@@ -164,6 +164,7 @@ public class DSSTRangeRateTest {
 
         // create perfect range rate measurements
         for (final GroundStation station : context.stations) {
+            station.getClockDriftDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -193,11 +194,12 @@ public class DSSTRangeRateTest {
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);
             final ParameterDriver[] drivers = new ParameterDriver[] {
+                stationParameter.getClockDriftDriver(),
                 stationParameter.getEastOffsetDriver(),
                 stationParameter.getNorthOffsetDriver(),
                 stationParameter.getZenithOffsetDriver()
             };
-            for (int i = 0; i < 3; ++i) {
+            for (int i = 0; i < 4; ++i) {
                 final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
                 Assert.assertEquals(1, measurement.getDimension());
                 Assert.assertEquals(1, gradient.length);
@@ -229,6 +231,7 @@ public class DSSTRangeRateTest {
 
         // create perfect range rate measurements
         for (final GroundStation station : context.stations) {
+            station.getClockDriftDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -258,11 +261,12 @@ public class DSSTRangeRateTest {
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);
             final ParameterDriver[] drivers = new ParameterDriver[] {
+                stationParameter.getClockDriftDriver(),
                 stationParameter.getEastOffsetDriver(),
                 stationParameter.getNorthOffsetDriver(),
                 stationParameter.getZenithOffsetDriver()
             };
-            for (int i = 0; i < 3; ++i) {
+            for (int i = 0; i < 4; ++i) {
                 final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
                 Assert.assertEquals(1, measurement.getDimension());
                 Assert.assertEquals(1, gradient.length);
