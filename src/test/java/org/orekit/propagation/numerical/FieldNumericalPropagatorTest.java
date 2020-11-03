@@ -1219,6 +1219,47 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
+    public void testIssue704() {
+        doTestIssue704(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestIssue704(final Field<T> field) {
+
+        T zero = field.getZero();
+
+        // Coordinates
+        final FieldAbsoluteDate<T> initDate = FieldAbsoluteDate.getJ2000Epoch(field);
+        final FieldVector3D<T>     position = new FieldVector3D<>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
+        final FieldVector3D<T>     velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
+        final FieldOrbit<T>        orbit    = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
+                                                                          FramesFactory.getEME2000(), initDate, zero.add(mu));
+        final FieldPVCoordinates<T> pv = orbit.getPVCoordinates();
+
+        // dP
+        final T dP = zero.add(10.0);
+
+        // Computes dV
+        final T r2 = pv.getPosition().getNormSq();
+        final T v  = pv.getVelocity().getNorm();
+        final T dV = dP.multiply(orbit.getMu()).divide(v.multiply(r2));
+
+        // Verify: Cartesian case
+        final double[][] tolCart1 = FieldNumericalPropagator.tolerances(dP, orbit, OrbitType.CARTESIAN);
+        final double[][] tolCart2 = FieldNumericalPropagator.tolerances(dP, dV, orbit, OrbitType.CARTESIAN);
+        for (int i = 0; i < tolCart1.length; i++) {
+            Assert.assertArrayEquals(tolCart1[i], tolCart2[i], Double.MIN_VALUE);
+        }
+
+        // Verify: Non cartesian case
+        final double[][] tolKep1 = FieldNumericalPropagator.tolerances(dP, orbit, OrbitType.KEPLERIAN);
+        final double[][] tolKep2 = FieldNumericalPropagator.tolerances(dP, dV, orbit, OrbitType.KEPLERIAN);
+        for (int i = 0; i < tolCart1.length; i++) {
+            Assert.assertArrayEquals(tolKep1[i], tolKep2[i], Double.MIN_VALUE);
+        }
+
+    }
+
+    @Test
     public void testShiftKeplerianEllipticTrueWithoutDerivatives() {
         doTestShiftKeplerianEllipticTrueWithoutDerivatives(Decimal64Field.getInstance());
     }

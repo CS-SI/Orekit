@@ -25,6 +25,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
+import org.orekit.forces.empirical.ParametricAcceleration;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -56,7 +57,9 @@ import org.orekit.propagation.events.FieldEventDetector;
  * </p>
  * @since 9.0
  * @author Luc Maisonobe
+ * @deprecated as of 10.3, replaced by {@link ParametricAcceleration}
  */
+@Deprecated
 public abstract class AbstractParametricAcceleration extends AbstractForceModel {
 
     /** Direction of the acceleration in defining frame. */

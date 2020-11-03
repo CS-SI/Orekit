@@ -19,6 +19,7 @@ package org.orekit.utils;
 import java.util.Collections;
 import java.util.NavigableSet;
 import java.util.TreeSet;
+import java.util.function.Consumer;
 
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
@@ -222,6 +223,29 @@ public class TimeSpanMap<T> {
      */
     public NavigableSet<Transition<T>> getTransitions() {
         return Collections.unmodifiableNavigableSet(data);
+    }
+
+    /**
+     * Performs an action for each element of map.
+     * <p>
+     * The action is performed chronologically.
+     * </p>
+     * @param action action to perform on the elements
+     * @since 10.3
+     */
+    public void forEach(final Consumer<T> action) {
+        boolean first = true;
+        for (Transition<T> transition : data) {
+            if (first) {
+                if (transition.getBefore() != null) {
+                    action.accept(transition.getBefore());
+                }
+                first = false;
+            }
+            if (transition.getAfter() != null) {
+                action.accept(transition.getAfter());
+            }
+        }
     }
 
     /** Class holding transition times.

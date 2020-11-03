@@ -126,6 +126,18 @@ public class AEMWriter {
         // Only one object in an AEM file, see Section 2.3.1
         metadata.put(Keyword.OBJECT_NAME,   objectName);
         metadata.put(Keyword.OBJECT_ID,     idToProcess);
+
+        // Header comments. If header comments are presents, they are assembled together in a single line
+        if (!aemFile.getHeaderComment().isEmpty()) {
+            // Loop on comments
+            final StringBuffer buffer = new StringBuffer();
+            for (String comment : aemFile.getHeaderComment()) {
+                buffer.append(comment);
+            }
+            // Update metadata
+            metadata.put(Keyword.COMMENT, buffer.toString());
+        }
+
         // Writer for AEM files
         final StreamingAemWriter aemWriter =
                         new StreamingAemWriter(writer, timeScale, metadata);

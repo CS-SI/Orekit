@@ -210,6 +210,22 @@ public class OEMWriterTest {
         writer2.write(tempOEMFilePath, ephemerisFile);
     }
 
+    @Test
+    public void testIssue723() throws IOException {
+        final String ex = "/ccsds/OEMExampleWithHeaderComment.txt";
+        final InputStream inEntry = getClass().getResourceAsStream(ex);
+        final OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM())
+                .withConventions(IERSConventions.IERS_2010);
+        final OEMFile oemFile = parser.parse(inEntry, "OEMExampleWithHeaderComment.txt");
+
+        String tempOEMFilePath = tempFolder.newFile("TestOEMIssue723.aem").toString();
+        OEMWriter writer = new OEMWriter();
+        writer.write(tempOEMFilePath, oemFile);
+
+        final OEMFile generatedOemFile = parser.parse(tempOEMFilePath);
+        assertEquals(oemFile.getHeaderComment().get(0), generatedOemFile.getHeaderComment().get(0));
+    }
+
     private static void compareOemEphemerisBlocks(EphemeridesBlock block1, EphemeridesBlock block2) {
         compareOemEphemerisBlocksMetadata(block1.getMetaData(), block2.getMetaData());
         assertEquals(block1.getStart(), block2.getStart());

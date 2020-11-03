@@ -78,9 +78,13 @@ public class ShapiroInterSatelliteRangeModifierTest {
         final BoundedPropagator ephemeris = closePropagator.getGeneratedEphemeris();
         final Propagator p1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final double localClockOffset  = 0.137e-6;
+        final double remoteClockOffset = 469.0e-6;
         List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(p1,
                                                                new InterSatellitesRangeMeasurementCreator(ephemeris,
+                                                                                                          localClockOffset,
+                                                                                                          remoteClockOffset,
                                                                                                           Vector3D.ZERO,
                                                                                                           Vector3D.ZERO),
                                                                1.0, 3.0, 300.0);
