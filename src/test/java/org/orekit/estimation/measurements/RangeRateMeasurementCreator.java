@@ -43,10 +43,15 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
         this.twoWay    = twoWay;
         this.satellite = new ObservableSatellite(0);
     }
+    
+    public ObservableSatellite getSatellite() {
+        return satellite;
+    }
 
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
         for (final GroundStation station : context.stations) {
             for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
+                                                        station.getClockDriftDriver(),
                                                         station.getEastOffsetDriver(),
                                                         station.getNorthOffsetDriver(),
                                                         station.getZenithOffsetDriver(),
@@ -60,7 +65,9 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
                     driver.setReferenceDate(s0.getDate());
                 }
             }
-
+        }
+        if (satellite.getClockDriftDriver().getReferenceDate() == null) {
+            satellite.getClockDriftDriver().setReferenceDate(s0.getDate());
         }
     }
 

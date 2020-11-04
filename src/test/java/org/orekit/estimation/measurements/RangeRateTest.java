@@ -278,9 +278,13 @@ public class RangeRateTest {
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        
+        final RangeRateMeasurementCreator creator = new RangeRateMeasurementCreator(context, false);
+        creator.getSatellite().getClockDriftDriver().setSelected(true);
+        
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context, false),
+                                                               creator,
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
@@ -304,9 +308,10 @@ public class RangeRateTest {
                 stationParameter.getClockDriftDriver(),
                 stationParameter.getEastOffsetDriver(),
                 stationParameter.getNorthOffsetDriver(),
-                stationParameter.getZenithOffsetDriver()
+                stationParameter.getZenithOffsetDriver(),
+                measurement.getSatellites().get(0).getClockDriftDriver()
             };
-            for (int i = 0; i < 4; ++i) {
+            for (int i = 0; i < drivers.length; ++i) {
                 final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
                 Assert.assertEquals(1, measurement.getDimension());
                 Assert.assertEquals(1, gradient.length);
@@ -352,9 +357,12 @@ public class RangeRateTest {
 
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        
+        final RangeRateMeasurementCreator creator = new RangeRateMeasurementCreator(context, false);
+        creator.getSatellite().getClockDriftDriver().setSelected(true);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context, true),
+                                                               creator,
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
@@ -378,9 +386,10 @@ public class RangeRateTest {
                 stationParameter.getClockDriftDriver(),
                 stationParameter.getEastOffsetDriver(),
                 stationParameter.getNorthOffsetDriver(),
-                stationParameter.getZenithOffsetDriver()
+                stationParameter.getZenithOffsetDriver(),
+                measurement.getSatellites().get(0).getClockDriftDriver()
             };
-            for (int i = 0; i < 4; ++i) {
+            for (int i = 0; i < drivers.length; ++i) {
                 final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
                 Assert.assertEquals(1, measurement.getDimension());
                 Assert.assertEquals(1, gradient.length);
@@ -556,9 +565,12 @@ public class RangeRateTest {
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        
+        final RangeRateMeasurementCreator creator = new RangeRateMeasurementCreator(context, false);
+        creator.getSatellite().getClockDriftDriver().setSelected(true);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context, false),
+                                                               creator,
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
@@ -585,9 +597,10 @@ public class RangeRateTest {
                 stationParameter.getClockDriftDriver(),
                 stationParameter.getEastOffsetDriver(),
                 stationParameter.getNorthOffsetDriver(),
-                stationParameter.getZenithOffsetDriver()
+                stationParameter.getZenithOffsetDriver(),
+                measurement.getSatellites().get(0).getClockDriftDriver()
             };
-            for (int i = 0; i < 4; ++i) {
+            for (int i = 0; i < drivers.length; ++i) {
                 final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
                 Assert.assertEquals(1, measurement.getDimension());
                 Assert.assertEquals(1, gradient.length);
