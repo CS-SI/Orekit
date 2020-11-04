@@ -167,55 +167,30 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
     public RealMatrix getProcessNoiseMatrix(final SpacecraftState previous,
                                             final SpacecraftState current) {
 
+        // Number of estimated parameters
+        final int nbPropag = propagationParametersEvolution.length;
+        final int nbMeas   = measurementsParametersEvolution.length;
+
+        // Initialize process noise matrix
+        final RealMatrix processNoiseMatrix = MatrixUtils.createRealMatrix(6 + nbPropag + nbMeas,
+                                                                           6 + nbPropag + nbMeas);
+
         // Orbital parameters process noise matrix in inertial frame and current orbit type
         final RealMatrix inertialOrbitalProcessNoiseMatrix = getInertialOrbitalProcessNoiseMatrix(previous, current);
-        final RealMatrix processNoiseMatrix;
+        processNoiseMatrix.setSubMatrix(inertialOrbitalProcessNoiseMatrix.getData(), 0, 0);
 
-        if (measurementsParametersEvolution.length == 0) {
+        // Propagation parameters
+        if (nbPropag != 0) {
+            // Propagation parameters process noise matrix
+            final RealMatrix propagationProcessNoiseMatrix = getPropagationProcessNoiseMatrix(previous, current);
+            processNoiseMatrix.setSubMatrix(propagationProcessNoiseMatrix.getData(), 6, 6);
+        }
 
-            if (propagationParametersEvolution.length == 0) {
-                // No propagation nor measurements parameters contribution, just return the orbital part
-                processNoiseMatrix = inertialOrbitalProcessNoiseMatrix;
-            } else {
-                // Propagation parameters process noise matrix
-                final RealMatrix propagationProcessNoiseMatrix = getPropagationProcessNoiseMatrix(previous, current);
-
-                // Concatenate the matrices
-                final int orbitalMatrixSize     = lofCartesianOrbitalParametersEvolution.length;
-                final int propagationMatrixSize = propagationParametersEvolution.length;
-                processNoiseMatrix = MatrixUtils.createRealMatrix(orbitalMatrixSize + propagationMatrixSize,
-                                                                  orbitalMatrixSize + propagationMatrixSize);
-                processNoiseMatrix.setSubMatrix(inertialOrbitalProcessNoiseMatrix.getData(), 0, 0);
-                processNoiseMatrix.setSubMatrix(propagationProcessNoiseMatrix.getData(), orbitalMatrixSize, orbitalMatrixSize);
-            }
-        } else {
-            if (propagationParametersEvolution.length == 0) {
-                // Measurements parameters process noise matrix
-                final RealMatrix measurementsProcessNoiseMatrix = getMeasurementsProcessNoiseMatrix(previous, current);
-
-                // Concatenate the matrices
-                final int orbitalMatrixSize      = lofCartesianOrbitalParametersEvolution.length;
-                final int measurementsMatrixSize = measurementsParametersEvolution.length;
-                processNoiseMatrix = MatrixUtils.createRealMatrix(orbitalMatrixSize + measurementsMatrixSize,
-                                                                  orbitalMatrixSize + measurementsMatrixSize);
-                processNoiseMatrix.setSubMatrix(inertialOrbitalProcessNoiseMatrix.getData(), 0, 0);
-                processNoiseMatrix.setSubMatrix(measurementsProcessNoiseMatrix.getData(), orbitalMatrixSize, orbitalMatrixSize);
-            } else {
-                // Both measurements and propagation parameters process noise matrix are present
-                final RealMatrix propagationProcessNoiseMatrix  = getPropagationProcessNoiseMatrix(previous, current);
-                final RealMatrix measurementsProcessNoiseMatrix = getMeasurementsProcessNoiseMatrix(previous, current);
-
-                // Concatenate the matrices
-                final int orbitalMatrixSize      = lofCartesianOrbitalParametersEvolution.length;
-                final int propagationMatrixSize  = propagationParametersEvolution.length;
-                final int measurementsMatrixSize = measurementsParametersEvolution.length;
-                processNoiseMatrix = MatrixUtils.createRealMatrix(orbitalMatrixSize + propagationMatrixSize + measurementsMatrixSize,
-                                                                  orbitalMatrixSize + propagationMatrixSize + measurementsMatrixSize);
-                processNoiseMatrix.setSubMatrix(inertialOrbitalProcessNoiseMatrix.getData(), 0, 0);
-                processNoiseMatrix.setSubMatrix(propagationProcessNoiseMatrix.getData(), orbitalMatrixSize, orbitalMatrixSize);
-                processNoiseMatrix.setSubMatrix(measurementsProcessNoiseMatrix.getData(), orbitalMatrixSize + propagationMatrixSize,
-                                                                                          orbitalMatrixSize + propagationMatrixSize);
-            }
+        // Measurement parameters
+        if (nbMeas != 0) {
+            // Measurement parameters process noise matrix
+            final RealMatrix measurementsProcessNoiseMatrix = getMeasurementsProcessNoiseMatrix(previous, current);
+            processNoiseMatrix.setSubMatrix(measurementsProcessNoiseMatrix.getData(), 6 + nbPropag, 6 + nbPropag);
         }
 
         return processNoiseMatrix;
