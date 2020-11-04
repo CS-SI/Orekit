@@ -48,11 +48,11 @@ import org.orekit.utils.CartesianDerivativesFilter;
  * {@link SpacecraftState state} used by the {@link KalmanEstimator Kalman estimator}.
  * </p>
  * <p>
- * The propagation parameters are not associated to a specific frame and are appended as
- * is in the lower right part diagonal of the output matrix. This implies this simplified
- * model does not include correlation between the parameters and the orbit, but only
- * evolution of the parameters themselves. If such correlations are needed, users must
- * set up a custom {@link CovarianceMatrixProvider covariance matrix provider}. In most
+ * The propagation and measurements parameters are not associated to a specific frame and
+ * are appended as is in the lower right part diagonal of the output matrix. This implies
+ * this simplified model does not include correlation between the parameters and the orbit,
+ * but only evolution of the parameters themselves. If such correlations are needed, users
+ * must set up a custom {@link CovarianceMatrixProvider covariance matrix provider}. In most
  * cases, the parameters are constant and their evolution noise is always 0, so the
  * functions can be set to {@code x -> 0}.
  * </p>
@@ -77,6 +77,9 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
     /** Array of univariate functions for the propagation parameters process noise evolution. */
     private final UnivariateFunction[] propagationParametersEvolution;
 
+    /** Array of univariate functions for the measurements parameters process noise evolution. */
+    private final UnivariateFunction[] measurementsParametersEvolution;
+
     /** Simple constructor.
      * @param initialCovarianceMatrix initial covariance matrix
      * @param lofType the LOF type used
@@ -89,11 +92,32 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
                                   final PositionAngle positionAngle,
                                   final UnivariateFunction[] lofCartesianOrbitalParametersEvolution,
                                   final UnivariateFunction[] propagationParametersEvolution) {
+
+        // Call the new constructor with an empty array for measurements parameters
+        this(initialCovarianceMatrix, lofType, positionAngle, lofCartesianOrbitalParametersEvolution, propagationParametersEvolution, new UnivariateFunction[0]);
+    }
+
+    /** Simple constructor.
+     * @param initialCovarianceMatrix initial covariance matrix
+     * @param lofType the LOF type used
+     * @param positionAngle the position angle used for the computation of the process noise
+     * @param lofCartesianOrbitalParametersEvolution Array of univariate functions for the six orbital parameters process noise evolution in LOF frame and Cartesian orbit type
+     * @param propagationParametersEvolution Array of univariate functions for the propagation parameters process noise evolution
+     * @param measurementsParametersEvolution Array of univariate functions for the measurements parameters process noise evolution
+     */
+    public UnivariateProcessNoise(final RealMatrix initialCovarianceMatrix,
+                                  final LOFType lofType,
+                                  final PositionAngle positionAngle,
+                                  final UnivariateFunction[] lofCartesianOrbitalParametersEvolution,
+                                  final UnivariateFunction[] propagationParametersEvolution,
+                                  final UnivariateFunction[] measurementsParametersEvolution) {
+
         super(initialCovarianceMatrix);
         this.lofType = lofType;
         this.positionAngle = positionAngle;
         this.lofCartesianOrbitalParametersEvolution  = lofCartesianOrbitalParametersEvolution.clone();
         this.propagationParametersEvolution = propagationParametersEvolution.clone();
+        this.measurementsParametersEvolution = measurementsParametersEvolution.clone();
 
         // Ensure that the orbital evolution array size is 6
         if (lofCartesianOrbitalParametersEvolution.length != 6) {
@@ -130,6 +154,13 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
         return propagationParametersEvolution.clone();
     }
 
+    /** Getter for the measurementsParametersEvolution.
+     * @return the measurementsParametersEvolution
+     */
+    public UnivariateFunction[] getMeasurementsParametersEvolution() {
+        return measurementsParametersEvolution.clone();
+    }
+
     /** {@inheritDoc} */
     @Override
     public RealMatrix getProcessNoiseMatrix(final SpacecraftState previous,
@@ -137,27 +168,56 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
 
         // Orbital parameters process noise matrix in inertial frame and current orbit type
         final RealMatrix inertialOrbitalProcessNoiseMatrix = getInertialOrbitalProcessNoiseMatrix(previous, current);
+        final RealMatrix processNoiseMatrix;
 
-        if (propagationParametersEvolution.length == 0) {
+        if (measurementsParametersEvolution.length == 0) {
 
-            // no propagation parameters contribution, just return the orbital part
-            return inertialOrbitalProcessNoiseMatrix;
+            if (propagationParametersEvolution.length == 0) {
+                // No propagation nor measurements parameters contribution, just return the orbital part
+                processNoiseMatrix = inertialOrbitalProcessNoiseMatrix;
+            } else {
+                // Propagation parameters process noise matrix
+                final RealMatrix propagationProcessNoiseMatrix = getPropagationProcessNoiseMatrix(previous, current);
 
+                // Concatenate the matrices
+                final int orbitalMatrixSize     = lofCartesianOrbitalParametersEvolution.length;
+                final int propagationMatrixSize = propagationParametersEvolution.length;
+                processNoiseMatrix = MatrixUtils.createRealMatrix(orbitalMatrixSize + propagationMatrixSize,
+                                                                  orbitalMatrixSize + propagationMatrixSize);
+                processNoiseMatrix.setSubMatrix(inertialOrbitalProcessNoiseMatrix.getData(), 0, 0);
+                processNoiseMatrix.setSubMatrix(propagationProcessNoiseMatrix.getData(), orbitalMatrixSize, orbitalMatrixSize);
+            }
         } else {
+            if (propagationParametersEvolution.length == 0) {
+                // Measurements parameters process noise matrix
+                final RealMatrix measurementsProcessNoiseMatrix = getMeasurementsProcessNoiseMatrix(previous, current);
 
-            // Propagation parameters process noise matrix
-            final RealMatrix propagationProcessNoiseMatrix = getPropagationProcessNoiseMatrix(previous, current);
+                // Concatenate the matrices
+                final int orbitalMatrixSize      = lofCartesianOrbitalParametersEvolution.length;
+                final int measurementsMatrixSize = measurementsParametersEvolution.length;
+                processNoiseMatrix = MatrixUtils.createRealMatrix(orbitalMatrixSize + measurementsMatrixSize,
+                                                                  orbitalMatrixSize + measurementsMatrixSize);
+                processNoiseMatrix.setSubMatrix(inertialOrbitalProcessNoiseMatrix.getData(), 0, 0);
+                processNoiseMatrix.setSubMatrix(measurementsProcessNoiseMatrix.getData(), orbitalMatrixSize, orbitalMatrixSize);
+            } else {
+                // Both measurements and propagation parameters process noise matrix are present
+                final RealMatrix propagationProcessNoiseMatrix  = getPropagationProcessNoiseMatrix(previous, current);
+                final RealMatrix measurementsProcessNoiseMatrix = getMeasurementsProcessNoiseMatrix(previous, current);
 
-            // Concatenate the matrices
-            final int        orbitalMatrixSize     = lofCartesianOrbitalParametersEvolution.length;
-            final int        propagationMatrixSize = propagationParametersEvolution.length;
-            final RealMatrix processNoiseMatrix    = MatrixUtils.createRealMatrix(orbitalMatrixSize + propagationMatrixSize,
-                                                                                  orbitalMatrixSize + propagationMatrixSize);
-            processNoiseMatrix.setSubMatrix(inertialOrbitalProcessNoiseMatrix.getData(), 0, 0);
-            processNoiseMatrix.setSubMatrix(propagationProcessNoiseMatrix.getData(), orbitalMatrixSize, orbitalMatrixSize);
-            return processNoiseMatrix;
-
+                // Concatenate the matrices
+                final int orbitalMatrixSize      = lofCartesianOrbitalParametersEvolution.length;
+                final int propagationMatrixSize  = propagationParametersEvolution.length;
+                final int measurementsMatrixSize = measurementsParametersEvolution.length;
+                processNoiseMatrix = MatrixUtils.createRealMatrix(orbitalMatrixSize + propagationMatrixSize + measurementsMatrixSize,
+                                                                  orbitalMatrixSize + propagationMatrixSize + measurementsMatrixSize);
+                processNoiseMatrix.setSubMatrix(inertialOrbitalProcessNoiseMatrix.getData(), 0, 0);
+                processNoiseMatrix.setSubMatrix(propagationProcessNoiseMatrix.getData(), orbitalMatrixSize, orbitalMatrixSize);
+                processNoiseMatrix.setSubMatrix(measurementsProcessNoiseMatrix.getData(), orbitalMatrixSize + propagationMatrixSize,
+                                                                                          orbitalMatrixSize + propagationMatrixSize);
+            }
         }
+
+        return processNoiseMatrix;
     }
 
     /** Get the process noise for the six orbital parameters in current spacecraft inertial frame and current orbit type.
@@ -231,6 +291,32 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
 
         // Form the diagonal matrix corresponding to propagation parameters process noise
         return MatrixUtils.createRealDiagonalMatrix(propagationProcessNoiseValues);
+    }
+
+    /** Get the process noise for the measurements parameters.
+     * @param previous previous state
+     * @param current current state
+     * @return physical (i.e. non normalized) measurements process noise matrix
+     */
+    private RealMatrix getMeasurementsProcessNoiseMatrix(final SpacecraftState previous,
+                                                         final SpacecraftState current) {
+
+        // ΔT = duration from previous to current spacecraft state (in seconds)
+        final double deltaT = current.getDate().durationFrom(previous.getDate());
+
+        // Evaluate the functions, using ΔT as argument
+        final int      measurementsProcessNoiseLength = measurementsParametersEvolution.length;
+        final double[] measurementsProcessNoiseValues = new double[measurementsProcessNoiseLength];
+
+        // The function return a value which dimension is that of a standard deviation
+        // It needs to be squared before being put in the process noise covariance matrix
+        for (int i = 0; i < measurementsProcessNoiseLength; i++) {
+            final double functionValue =  measurementsParametersEvolution[i].value(deltaT);
+            measurementsProcessNoiseValues[i] = functionValue * functionValue;
+        }
+
+        // Form the diagonal matrix corresponding to propagation parameters process noise
+        return MatrixUtils.createRealDiagonalMatrix(measurementsProcessNoiseValues);
     }
 
 }
