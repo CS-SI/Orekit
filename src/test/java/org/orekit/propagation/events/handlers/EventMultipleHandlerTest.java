@@ -1,4 +1,4 @@
-/* Contributed in the public domain.
+/* Copyright 2020 Airbus Defence and Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,11 +32,11 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
 /**
- * Unit tests for {@link MultipleEventHandler}.
+ * Unit tests for {@link EventMultipleHandler}.
  *
  * @author Lara Hué
  */
-public class MultipleEventHandlerTest {
+public class EventMultipleHandlerTest {
 
     @Before
     public void setUp() {
@@ -60,10 +60,10 @@ public class MultipleEventHandlerTest {
         SpacecraftState s = new SpacecraftState(orbit);
 
         // actions
-        MultipleEventHandler<DateDetector> facade1 = new MultipleEventHandler<DateDetector>().addHandler(handler1).addHandler(handler2);
+        EventMultipleHandler<DateDetector> facade1 = new EventMultipleHandler<DateDetector>().addHandler(handler1).addHandler(handler2);
         Assert.assertEquals(Action.STOP, facade1.eventOccurred(s, detector, true));
 
-        MultipleEventHandler<DateDetector> facade2 = new MultipleEventHandler<DateDetector>().addHandler(handler1).addHandler(handler3);
+        EventMultipleHandler<DateDetector> facade2 = new EventMultipleHandler<DateDetector>().addHandler(handler1).addHandler(handler3);
         Assert.assertEquals(Action.CONTINUE, facade2.eventOccurred(s, detector, true));
     }
     
@@ -84,7 +84,7 @@ public class MultipleEventHandlerTest {
         // actions
         EventHandler<DateDetector> handler2 = getHandler(10);
         EventHandler<DateDetector> handler3 = getHandler(20);
-        MultipleEventHandler<DateDetector> facade = new MultipleEventHandler<DateDetector>().addHandlers(handler1, handler2, handler3);
+        EventMultipleHandler<DateDetector> facade = new EventMultipleHandler<DateDetector>().addHandlers(handler1, handler2, handler3);
 
         // verify
         Assert.assertEquals(Action.RESET_STATE, facade.eventOccurred(s, detector, true));
