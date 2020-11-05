@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.3" date="TBD" description="TBD">
+      <action dev="raphael" type="fix" issue="720">
+      	Added support for measurements parameters in UnivariateProcessNoise
+      </action>
       <action dev="luc" type="fix" issue="729">
         Fixed wrong handling of RESET-STATE in analytical propagators.
       </action>
