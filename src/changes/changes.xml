@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.3" date="TBD" description="TBD">
+   	 <action dev="thomas" type="fix" issue="730">
+      	Removed useless loop over an empty list
+      </action>
       <action dev="raphael" type="fix" issue="720">
       	Added support for measurements parameters in UnivariateProcessNoise
       </action>
