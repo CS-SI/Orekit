@@ -55,8 +55,8 @@ public class AngularSeparationFromSatelliteDetector extends AbstractDetector<Ang
      * @param proximityAngle proximity angle as seen from spacecraft, at which events are triggered (rad)
      */
     public AngularSeparationFromSatelliteDetector(final PVCoordinatesProvider primaryObject,
-                                     final PVCoordinatesProvider secondaryObject,
-                                     final double proximityAngle) {
+                                                  final PVCoordinatesProvider secondaryObject,
+                                                  final double proximityAngle) {
         this(60.0, 1.0e-3, 100, new StopOnDecreasing<AngularSeparationFromSatelliteDetector>(),
              primaryObject, secondaryObject, proximityAngle);
     }
@@ -77,11 +77,11 @@ public class AngularSeparationFromSatelliteDetector extends AbstractDetector<Ang
      * @param proximityAngle proximity angle as seen from secondaryObject, at which events are triggered (rad)
      */
     private AngularSeparationFromSatelliteDetector(final double maxCheck, final double threshold,
-                                      final int maxIter,
-                                      final EventHandler<? super AngularSeparationFromSatelliteDetector> handler,
-                                      final PVCoordinatesProvider primaryObject,
-                                      final PVCoordinatesProvider secondaryObject,
-                                      final double proximityAngle) {
+                                                   final int maxIter,
+                                                   final EventHandler<? super AngularSeparationFromSatelliteDetector> handler,
+                                                   final PVCoordinatesProvider primaryObject,
+                                                   final PVCoordinatesProvider secondaryObject,
+                                                   final double proximityAngle) {
         super(maxCheck, threshold, maxIter, handler);
         this.primaryObject         = primaryObject;
         this.secondaryObject       = secondaryObject;
