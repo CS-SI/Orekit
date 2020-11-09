@@ -268,7 +268,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         final Gradient clockDriftBiais = dtgDot.subtract(dtsDot).multiply(Constants.SPEED_OF_LIGHT);
 
         // range rate
-        final Gradient rangeRate = lineOfSightVelocity.subtract(clockDriftBiais);
+        final Gradient rangeRate = lineOfSightVelocity.add(clockDriftBiais);
         estimated.setEstimatedValue(rangeRate.getValue());
 
         // compute partial derivatives of (rr) with respect to spacecraft state Cartesian coordinates
