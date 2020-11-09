@@ -89,6 +89,9 @@ public class GroundStation {
     /** Suffix for ground station position and clock offset parameters names. */
     public static final String OFFSET_SUFFIX = "-offset";
 
+    /** Suffix for ground clock drift parameters name. */
+    public static final String DRIFT_SUFFIX = "-drift-clock";
+
     /** Suffix for ground station intermediate frame name. */
     public static final String INTERMEDIATE_SUFFIX = "-intermediate";
 
@@ -208,7 +211,7 @@ public class GroundStation {
                                                      0.0, CLOCK_OFFSET_SCALE,
                                                      Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 
-        this.clockDriftDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX + "-drift",
+        this.clockDriftDriver = new ParameterDriver(baseFrame.getName() + DRIFT_SUFFIX,
                                                     0.0, CLOCK_OFFSET_SCALE,
                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 
