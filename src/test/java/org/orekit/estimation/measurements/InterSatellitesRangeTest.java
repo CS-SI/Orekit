@@ -43,6 +43,8 @@ import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.StateFunction;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -410,6 +412,140 @@ public class InterSatellitesRangeTest {
         Assert.assertEquals(0.0, errorsVMedian, refErrorsVMedian);
         Assert.assertEquals(0.0, errorsVMean, refErrorsVMean);
         Assert.assertEquals(0.0, errorsVMax, refErrorsVMax);
+    }
+
+    /**
+     * Test the values of the parameters' derivatives using a numerical
+     * finite differences calculation as a reference
+     */
+    @Test
+    public void testParameterDerivatives() {
+
+        // Run test
+        double refErrorsMedian = 1.0e-12;
+        double refErrorsMean   = 4.0e-9;
+        double refErrorsMax    = 2.0e-7;
+        this.genericTestParameterDerivatives(refErrorsMedian, refErrorsMean, refErrorsMax);
+
+    }
+
+    void genericTestParameterDerivatives(final double refErrorsMedian, final double refErrorsMean, final double refErrorsMax) {
+
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                              1.0e-6, 60.0, 0.001);
+
+        // Create perfect inter-satellites phase measurements
+        final TimeStampedPVCoordinates original = context.initialOrbit.getPVCoordinates();
+        final Orbit closeOrbit = new CartesianOrbit(new TimeStampedPVCoordinates(context.initialOrbit.getDate(),
+                                                                                 original.getPosition().add(new Vector3D(1000, 2000, 3000)),
+                                                                                 original.getVelocity().add(new Vector3D(-0.03, 0.01, 0.02))),
+                                                    context.initialOrbit.getFrame(),
+                                                    context.initialOrbit.getMu());
+        final Propagator closePropagator = EstimationTestUtils.createPropagator(closeOrbit, propagatorBuilder);
+        closePropagator.setEphemerisMode();
+        closePropagator.propagate(context.initialOrbit.getDate().shiftedBy(3.5 * closeOrbit.getKeplerianPeriod()));
+        final BoundedPropagator ephemeris = closePropagator.getGeneratedEphemeris();
+
+        // Create perfect range measurements
+        final double localClockOffset  = 0.137e-6;
+        final double remoteClockOffset = 469.0e-6;
+        final InterSatellitesRangeMeasurementCreator creator = new InterSatellitesRangeMeasurementCreator(ephemeris,
+                                                                                                          localClockOffset,
+                                                                                                          remoteClockOffset);
+        creator.getLocalSatellite().getClockOffsetDriver().setSelected(true);
+        creator.getRemoteSatellite().getClockOffsetDriver().setSelected(true);
+
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator, creator, 1.0, 3.0, 300.0);
+
+        // List to store the results
+        final List<Double> relErrorList = new ArrayList<Double>();
+
+        // Set master mode
+        // Use a lambda function to implement "handleStep" function
+        propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
+
+            for (final ObservedMeasurement<?> measurement : measurements) {
+
+                //  Play test if the measurement date is between interpolator previous and current date
+                if ((measurement.getDate().durationFrom(interpolator.getPreviousState().getDate()) > 0.) &&
+                    (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate())  <=  0.)) {
+
+                    // We intentionally propagate to a date which is close to the
+                    // real spacecraft state but is *not* the accurate date, by
+                    // compensating only part of the downlink delay. This is done
+                    // in order to validate the partial derivatives with respect
+                    // to velocity. If we had chosen the proper state date, the
+                    // range would have depended only on the current position but
+                    // not on the current velocity.
+                    final double          meanDelay = measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
+                    final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
+                    final SpacecraftState[] states    = {
+                        interpolator.getInterpolatedState(date),
+                        ephemeris.propagate(date)
+                    };
+                    ParameterDriver[] drivers = new ParameterDriver[] {
+                        measurement.getSatellites().get(0).getClockOffsetDriver(),
+                        measurement.getSatellites().get(1).getClockOffsetDriver()
+                    };
+
+                    // Only local satellite clock offset is considered for two ways measurements
+                    if (((InterSatellitesRange) measurement).isTwoWay()) {
+                        drivers = new ParameterDriver[] {
+                            measurement.getSatellites().get(0).getClockOffsetDriver()
+                        };
+                    }
+
+                    for (int i = 0; i < drivers.length; ++i) {
+                        final double[] gradient  = measurement.estimate(0, 0, states).getParameterDerivatives(drivers[i]);
+                        Assert.assertEquals(1, measurement.getDimension());
+                        Assert.assertEquals(1, gradient.length);
+
+                        // Compute a reference value using finite differences
+                        final ParameterFunction dMkdP =
+                                        Differentiation.differentiate(new ParameterFunction() {
+                                            /** {@inheritDoc} */
+                                            @Override
+                                            public double value(final ParameterDriver parameterDriver) {
+                                                return measurement.estimate(0, 0, states).getEstimatedValue()[0];
+                                            }
+                                        }, 3, 20.0 * drivers[i].getScale());
+                        final double ref = dMkdP.value(drivers[i]);
+
+                        final double relError = FastMath.abs((ref-gradient[0])/ref);
+                        relErrorList.add(relError);
+                    }
+
+                } // End if measurement date between previous and current interpolator step
+            } // End for loop on the measurements
+        });
+
+        // Rewind the propagator to initial date
+        propagator.propagate(context.initialOrbit.getDate());
+
+        // Sort measurements chronologically
+        measurements.sort(Comparator.naturalOrder());
+
+        // Propagate to final measurement's date
+        propagator.propagate(measurements.get(measurements.size()-1).getDate());
+
+        // Convert error list to double[]
+        final double relErrors[] = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();
+
+        // Compute statistics
+        final double relErrorsMedian = new Median().evaluate(relErrors);
+        final double relErrorsMean   = new Mean().evaluate(relErrors);
+        final double relErrorsMax    = new Max().evaluate(relErrors);
+
+        Assert.assertEquals(0.0, relErrorsMedian, refErrorsMedian);
+        Assert.assertEquals(0.0, relErrorsMean, refErrorsMean);
+        Assert.assertEquals(0.0, relErrorsMax, refErrorsMax);
+
     }
 
 }

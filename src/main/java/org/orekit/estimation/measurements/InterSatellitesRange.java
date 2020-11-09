@@ -200,6 +200,14 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
         estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 0,  6));
         estimated.setStateDerivatives(1, Arrays.copyOfRange(derivatives, 6, 12));
 
+        // Set partial derivatives with respect to parameters
+        for (final ParameterDriver driver : getParametersDrivers()) {
+            final Integer index = indices.get(driver.getName());
+            if (index != null) {
+                estimated.setParameterDerivatives(driver, derivatives[index]);
+            }
+        }
+
         return estimated;
 
     }
