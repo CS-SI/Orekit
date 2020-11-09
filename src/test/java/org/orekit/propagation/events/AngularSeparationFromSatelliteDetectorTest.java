@@ -66,7 +66,7 @@ public class AngularSeparationFromSatelliteDetectorTest {
     @Test
     public void testRegularProximity() {
 
-        double proximityAngle = FastMath.toRadians(10.0);
+        double proximityAngle = FastMath.toRadians(15.0);
         double maxCheck = 0.1 * proximityAngle / initialOrbit.getKeplerianMeanMotion();
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         AngularSeparationFromSatelliteDetector detector =
@@ -76,9 +76,9 @@ public class AngularSeparationFromSatelliteDetectorTest {
                         withHandler(new EventHandler<AngularSeparationFromSatelliteDetector>() {
                 public Action eventOccurred(SpacecraftState s, AngularSeparationFromSatelliteDetector detector, boolean increasing) {
                     if (increasing) {
-                        Assert.assertEquals(5084.4147, s.getDate().durationFrom(iniDate), 1.0e-3);
+                        Assert.assertEquals(5259.6649, s.getDate().durationFrom(iniDate), 1.0e-3);
                     } else {
-                        Assert.assertEquals(4587.6472, s.getDate().durationFrom(iniDate), 1.0e-3);
+                        Assert.assertEquals(4410.2581, s.getDate().durationFrom(iniDate), 1.0e-3);
                     }
                     return Action.CONTINUE;
                 }
