@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.3" date="TBD" description="TBD">
+      <action dev="bryan" type="add" issue="732">
+        Added documentation for checkstyle configuration.
+      </action>
    	  <action dev="thomas" type="fix" issue="730">
       	Removed useless loop over an empty list
       </action>
