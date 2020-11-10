@@ -84,8 +84,8 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
      * parsing by calling {@link #withInternationalDesignator(int, int, String)}
      * </p>
      * <p>
-     * The default interpolation degree not set here. If it is needed, it must be initialized before
-     * parsing by calling {@link #withInterpolationDegree(int)}
+     * The default interpolation degree is not set here. It is set to zero by default. If another value
+     * is needed it must be initialized before parsing by calling {@link #withInterpolationDegree(int)}
      * </p>
      *
      * <p>This method uses the {@link DataContext#getDefault() default data context}. See
@@ -130,8 +130,8 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
      * parsing by calling {@link #withInternationalDesignator(int, int, String)}
      * </p>
      * <p>
-     * The default interpolation degree not set here. If it is needed, it must be initialized before
-     * parsing by calling {@link #withInterpolationDegree(int)}
+     * The default interpolation degree is not set here. It is set to zero by default. If another value
+     * is needed it must be initialized before parsing by calling {@link #withInterpolationDegree(int)}
      * </p>
      *
      * @param dataContext used by the parser.
@@ -212,9 +212,9 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
 
     /** Set default interpolation degree.
      * <p>
-     * This method may be used to set a default interpolation degree which will
-     * be used when no interpolation degree is parsed in the meta-data of the file.
-     * By default the
+     * This method may be used to set a default interpolation degree which will be used
+     * when no interpolation degree is parsed in the meta-data of the file. Upon instantiation
+     * with {@link #OEMParser(DataContext)} the default interpolation degree is zero.
      * </p>
      * @param newInterpolationDegree default interpolation degree to use while parsing
      * @return a new instance, with interpolation degree data replaced
