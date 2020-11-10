@@ -47,6 +47,9 @@ public class AEMParser extends ADMParser {
     /** Maximum number of elements in an attitude data line. */
     private static final int MAX_SIZE = 8;
 
+    /** Default interpolation degree. */
+    private int interpolationDegree;
+
     /**
      * Simple constructor.
      * <p>
@@ -65,10 +68,20 @@ public class AEMParser extends ADMParser {
      * The initial date for Mission Elapsed Time and Mission Relative Time time systems is not set here.
      * If such time systems are used, it must be initialized before parsing by calling {@link
      * #withMissionReferenceDate(AbsoluteDate)}.
-     * </p> <p>
+     * </p>
+     * <p>
      * The IERS conventions to use is not set here. If it is needed in order to
      * parse some reference frames or UT1 time scale, it must be initialized before
      * parsing by calling {@link #withConventions(IERSConventions)}.
+     * </p>
+     * <p>
+     * The international designator parameters (launch year, launch number and
+     * launch piece) are not set here. If they are needed, they must be initialized before
+     * parsing by calling {@link #withInternationalDesignator(int, int, String)}
+     * </p>
+     * <p>
+     * The default interpolation degree is not set here. It is set to zero by default. If another value
+     * is needed it must be initialized before parsing by calling {@link #withInterpolationDegree(int)}
      * </p>
      *
      * <p>This method uses the {@link DataContext#getDefault() default data context}. See
@@ -97,10 +110,20 @@ public class AEMParser extends ADMParser {
      * The initial date for Mission Elapsed Time and Mission Relative Time time systems is not set here.
      * If such time systems are used, it must be initialized before parsing by calling {@link
      * #withMissionReferenceDate(AbsoluteDate)}.
-     * </p> <p>
+     * </p>
+     * <p>
      * The IERS conventions to use is not set here. If it is needed in order to
      * parse some reference frames or UT1 time scale, it must be initialized before
      * parsing by calling {@link #withConventions(IERSConventions)}.
+     * </p>
+     * <p>
+     * The international designator parameters (launch year, launch number and
+     * launch piece) are not set here. If they are needed, they must be initialized before
+     * parsing by calling {@link #withInternationalDesignator(int, int, String)}
+     * </p>
+     * <p>
+     * The default interpolation degree is not set here. It is set to zero by default. If another value
+     * is needed it must be initialized before parsing by calling {@link #withInterpolationDegree(int)}
      * </p>
      *
      * @param dataContext used by the parser.
@@ -108,7 +131,7 @@ public class AEMParser extends ADMParser {
      * @see #withDataContext(DataContext)
      */
     public AEMParser(final DataContext dataContext) {
-        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, 0, 0, "", dataContext);
+        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, 0, 0, "", 0, dataContext);
     }
 
     /**
@@ -120,42 +143,45 @@ public class AEMParser extends ADMParser {
      * @param launchYear launch year for TLEs
      * @param launchNumber launch number for TLEs
      * @param launchPiece piece of launch (from "A" to "ZZZ") for TLEs
+     * @param interpolationDegree default interpolation degree
      * @param dataContext used to retrieve frames, time scales, etc.
      */
     private AEMParser(final AbsoluteDate missionReferenceDate, final double mu,
                       final IERSConventions conventions, final boolean simpleEOP,
                       final int launchYear, final int launchNumber,
-                      final String launchPiece, final DataContext dataContext) {
+                      final String launchPiece, final int interpolationDegree,
+                      final DataContext dataContext) {
         super(missionReferenceDate, mu, conventions, simpleEOP, launchYear, launchNumber,
                 launchPiece, dataContext);
+        this.interpolationDegree = interpolationDegree;
     }
 
     /** {@inheritDoc} */
     public AEMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
         return new AEMParser(newMissionReferenceDate, getMu(), getConventions(), isSimpleEOP(),
                              getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
-                             getDataContext());
+                             getInterpolationDegree(), getDataContext());
     }
 
     /** {@inheritDoc} */
     public AEMParser withMu(final double newMu) {
         return new AEMParser(getMissionReferenceDate(), newMu, getConventions(), isSimpleEOP(),
                              getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
-                             getDataContext());
+                             getInterpolationDegree(), getDataContext());
     }
 
     /** {@inheritDoc} */
     public AEMParser withConventions(final IERSConventions newConventions) {
         return new AEMParser(getMissionReferenceDate(), getMu(), newConventions, isSimpleEOP(),
                              getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
-                             getDataContext());
+                             getInterpolationDegree(), getDataContext());
     }
 
     /** {@inheritDoc} */
     public AEMParser withSimpleEOP(final boolean newSimpleEOP) {
         return new AEMParser(getMissionReferenceDate(), getMu(), getConventions(), newSimpleEOP,
                              getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
-                             getDataContext());
+                             getInterpolationDegree(), getDataContext());
     }
 
     /** {@inheritDoc} */
@@ -164,15 +190,41 @@ public class AEMParser extends ADMParser {
                                                  final String newLaunchPiece) {
         return new AEMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
                              newLaunchYear, newLaunchNumber, newLaunchPiece,
-                             getDataContext());
+                             getInterpolationDegree(), getDataContext());
     }
 
     /** {@inheritDoc} */
     @Override
     public AEMParser withDataContext(final DataContext dataContext) {
         return new AEMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
-                getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
-                dataContext);
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
+                             getInterpolationDegree(), dataContext);
+    }
+
+    /** Set default interpolation degree.
+     * <p>
+     * This method may be used to set a default interpolation degree which will be used
+     * when no interpolation degree is parsed in the meta-data of the file. Upon instantiation
+     * with {@link #AEMParser(DataContext)} the default interpolation degree is zero.
+     * </p>
+     * @param newInterpolationDegree default interpolation degree to use while parsing
+     * @return a new instance, with interpolation degree data replaced
+     * @see #getInterpolationDegree()
+     * @since 10.3
+     */
+    public AEMParser withInterpolationDegree(final int newInterpolationDegree) {
+        return new AEMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
+                             newInterpolationDegree, getDataContext());
+    }
+
+    /** Get default interpolation degree.
+     * @return interpolationDegree default interpolation degree to use while parsing
+     * @see #withInterpolationDegree(int)
+     * @since 10.3
+     */
+    public int getInterpolationDegree() {
+        return interpolationDegree;
     }
 
     /** {@inheritDoc} */
@@ -237,6 +289,7 @@ public class AEMParser extends ADMParser {
                         pi.lastEphemeridesBlock.getMetaData().setLaunchYear(getLaunchYear());
                         pi.lastEphemeridesBlock.getMetaData().setLaunchNumber(getLaunchNumber());
                         pi.lastEphemeridesBlock.getMetaData().setLaunchPiece(getLaunchPiece());
+                        pi.lastEphemeridesBlock.setInterpolationDegree(getInterpolationDegree());
                         break;
 
                     case REF_FRAME_A:

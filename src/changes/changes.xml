@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.3" date="TBD" description="TBD">
+      <action dev="raphael" type="fix" issue="711">
+        Allowed definition of a default interpolation degree in both AEMParser and OEMParser.
+      </action>
       <action dev="bryan" type="add" issue="733">
         Added Lense-Thirring and De Sitter relativistic effects.
       </action>
