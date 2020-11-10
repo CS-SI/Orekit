@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.3" date="TBD" description="TBD">
+      <action dev="bryan" type="add" issue="733">
+        Added Lense-Thirring and De Sitter relativistic effects.
+      </action>
       <action dev="melanisti" type="fix" issue="725">
         Fixed missing measurement parameter in InterSatellitesRange measurement.
       </action>
