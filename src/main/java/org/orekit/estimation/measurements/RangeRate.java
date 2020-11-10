@@ -260,15 +260,20 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         // line of sight velocity
         final Gradient lineOfSightVelocity = FieldVector3D.dotProduct(relativeVelocity, lineOfSight);
 
-        // clock drifts
-        final ObservableSatellite satellite    = getSatellites().get(0);
-        final Gradient            dtsDot       = satellite.getClockDriftDriver().getValue(nbParams, indices);
-        final Gradient            dtgDot       = station.getClockDriftDriver().getValue(nbParams, indices);
-
-        final Gradient clockDriftBiais = dtgDot.subtract(dtsDot).multiply(Constants.SPEED_OF_LIGHT);
-
         // range rate
-        final Gradient rangeRate = lineOfSightVelocity.add(clockDriftBiais);
+        Gradient rangeRate = lineOfSightVelocity;
+
+        if (!twoway) {
+            // clock drifts, taken in account only in case of one way
+            final ObservableSatellite satellite    = getSatellites().get(0);
+            final Gradient            dtsDot       = satellite.getClockDriftDriver().getValue(nbParams, indices);
+            final Gradient            dtgDot       = station.getClockDriftDriver().getValue(nbParams, indices);
+
+            final Gradient clockDriftBiais = dtgDot.subtract(dtsDot).multiply(Constants.SPEED_OF_LIGHT);
+
+            rangeRate = rangeRate.add(clockDriftBiais);
+        }
+
         estimated.setEstimatedValue(rangeRate.getValue());
 
         // compute partial derivatives of (rr) with respect to spacecraft state Cartesian coordinates
