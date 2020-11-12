@@ -86,9 +86,6 @@ public class KnockeRediffusedForceModel extends AbstractRediffusedForceModel {
     /** Reference date for periodic terms: December 22nd 1981. */
     private static final AbsoluteDate T0 = new AbsoluteDate(1981, 12, 22, 0, 0, 0., TimeScalesFactory.getUTC());
 
-    /** Margin to prevent Albedo computation while satellite is in umbra. */
-    private static final double ANGULAR_MARGIN = 1.0e-10;
-
     /** Sun model. */
     private final ExtendedPVCoordinatesProvider sun;
 
@@ -98,27 +95,101 @@ public class KnockeRediffusedForceModel extends AbstractRediffusedForceModel {
     /** Spacecraft. */
     private final RadiationSensitive spacecraft;
 
+    /** Angular equatorial latitude separation for surface element computation in rad. */
+    private final double dLatitude;
+
+    /** Angular longitude separation for surface element computation in rad. */
+    private final double dLongitude;
 
     /** Constructor.
      * @param sun Sun model
      * @param equatorialRadius Central Body model
      * @param spacecraft Spacecraft
+     * @param numberOfLatitudeSlices number of latitude slices for elementary area cut
+     * @param numberOfLongitudeSlices number of latitude slices for elementary area cut
      */
     public KnockeRediffusedForceModel (final ExtendedPVCoordinatesProvider sun,
                                        final double equatorialRadius,
-                                       final RadiationSensitive spacecraft) {
-        super();
+                                       final RadiationSensitive spacecraft,
+                                       final int numberOfLatitudeSlices,
+                                       final int numberOfLongitudeSlices) {
         this.sun              = sun;
         this.equatorialRadius = equatorialRadius;
         this.spacecraft       = spacecraft;
+        this.dLatitude        = FastMath.PI / numberOfLatitudeSlices;
+        this.dLongitude       = 2 * FastMath.PI / numberOfLongitudeSlices;
     }
 
     /** {@inheritDoc} */
     @Override
     public Vector3D acceleration(final SpacecraftState s,
                                  final double[] parameters) {
-        // TODO Auto-generated method stub
-        return null;
+
+        // Initialize latitude and longitude
+        double currentLatitude  = FastMath.PI - dLatitude / 2;
+        double currentLongitude = -dLongitude / 2;
+
+        // Get date
+        final AbsoluteDate date = s.getDate();
+
+        // Get frame
+        final Frame frame = s.getFrame();
+
+        // Get satellite position
+        final Vector3D satellitePosition = s.getPVCoordinates().getPosition();
+        // Initialize rediffused flux
+        Vector3D rediffusedFlux = new Vector3D(0.0, 0.0, 0.0);
+
+        // Slice spherical Earth into elementary areas
+        while (currentLatitude + dLatitude <= FastMath.PI) {
+
+            // Next latitude portion
+            currentLatitude += dLatitude;
+
+            while (currentLongitude + dLongitude <= 2 * FastMath.PI) {
+
+                // Next longitude portion
+                currentLongitude += dLongitude;
+
+                // Compute Earth element projected area vector
+                final Vector3D projectedAreaVector = computeProjectedAreaVector(satellitePosition,
+                                                                                currentLatitude, currentLongitude,
+                                                                                dLatitude, dLongitude);
+
+                // Check if satellite sees the elementary area
+                if (projectedAreaVector.getNorm() > 0.0) {
+
+                    // Compute Earth emissivity and albedo
+                    final double e = computeEmissivity(date, currentLatitude);
+
+                    double a = 0.0;
+
+                    // Check if elementary area is in day light
+                    final double sunElevation = Vector3D.angle(computeSphericalElementaryVector(currentLatitude, currentLongitude),
+                                                               sun.getPVCoordinates(date, frame).getPosition());
+
+                    if (sunElevation < FastMath.PI / 2 ) {
+
+                        // Elementary area is in day light
+                        a = computeAlbedo(date, currentLatitude);
+                    }
+
+                    // Compute solar flux
+                    final double solarFlux = computeSolarFlux(date, frame);
+
+                    // Compute elementary area contribution to rediffused flux
+                    final double albedoAndIR = a * solarFlux * FastMath.cos(sunElevation) +
+                                               e * solarFlux / 4;
+                    final Vector3D elementaryFlux = projectedAreaVector.scalarMultiply(albedoAndIR);
+
+                    // Add elementary contribution to total rediffused flux
+                    rediffusedFlux = rediffusedFlux.add(elementaryFlux);
+                }
+            }
+        }
+
+        return spacecraft.radiationPressureAcceleration(date, frame, satellitePosition, s.getAttitude().getRotation(),
+                                                        s.getMass(), rediffusedFlux, parameters);
     }
 
     /** {@inheritDoc} */
@@ -204,10 +275,74 @@ public class KnockeRediffusedForceModel extends AbstractRediffusedForceModel {
      */
     private double computeSolarFlux(final AbsoluteDate date, final Frame frame) {
 
-        // Get Earth - Sun distance in UA
+        // Compute Earth - Sun distance in UA
         final double earthSunDistance = sun.getPVCoordinates(date, frame).getPosition().getNorm() / Constants.JPL_SSD_ASTRONOMICAL_UNIT;
 
         // Compute Solar flux
         return ES_COEFF * Constants.SPEED_OF_LIGHT / (earthSunDistance * earthSunDistance);
+    }
+
+    /** Compute Earth element projected area vector.
+     * @param satellitePosition satellite position with respect to Earth center
+     * @param phi the surface element center equatorial latitude in rad
+     * @param psi the surface element center longitude in rad
+     * @param dPhi the equatorial latitude angular separation in rad
+     * @param dPsi the longitude angular separation in rad
+     * @return the Earth element projected area vector
+     */
+    private Vector3D computeProjectedAreaVector(final Vector3D satellitePosition,
+                                       final double phi,
+                                       final double psi,
+                                       final double dPhi,
+                                       final double dPsi) {
+
+        // Get Earth suface element center
+        final Vector3D elementaryAreaCenterPosition = computeSphericalElementaryVector(phi, psi).
+                                                      scalarMultiply(equatorialRadius);
+
+        // Compute Earth surface element center - satellite vector
+        final Vector3D r = satellitePosition.subtract(elementaryAreaCenterPosition);
+
+        // Get satellite elevation angle
+        final double alpha = Vector3D.angle(elementaryAreaCenterPosition, r);
+
+        // Check if satellite sees the surface element
+        if (alpha < FastMath.PI / 2) {
+
+            // Compute surface element area
+            final double dA = equatorialRadius * equatorialRadius *
+                                FastMath.cos(phi) * dPhi * dPsi;
+
+            // Get Earth surface element center - satellite distance
+            final double rNorm = r.getNorm();
+
+            // Compute Earth element projected area vector
+            return r.scalarMultiply(dA * FastMath.cos(alpha) / (FastMath.PI * rNorm * rNorm * rNorm));
+
+        } else {
+            return new Vector3D(0.0, 0.0, 0.0);
+        }
+
+    }
+
+    /** Compute spherical elementary area vector.
+     * @param phi the surface element center equatorial latitude in rad
+     * @param psi the surface element center longitude in rad
+     * @return the spherical elementary area vector
+     */
+    private Vector3D computeSphericalElementaryVector(final double phi,
+                                                      final double psi) {
+
+        // Get angle sinuses and cosinuses
+        final double sinPhi = FastMath.sin(phi);
+        final double cosPhi = FastMath.cos(phi);
+        final double sinPsi = FastMath.sin(psi);
+        final double cosPsi = FastMath.cos(psi);
+
+        // Get Earth suface element center
+        final double x = cosPhi * cosPsi;
+        final double y = cosPhi * sinPsi;
+        final double z = sinPhi;
+        return new Vector3D(x, y, z);
     }
 }
