@@ -86,6 +86,7 @@ public class ObservableSatellite {
      * The drift is negative if the satellite clock is slowing down and positive if it is speeding up.
      * </p>
      * @return clock offset parameter driver
+     * @since 10.3
      */
     public ParameterDriver getClockDriftDriver() {
         return clockDriftDriver;

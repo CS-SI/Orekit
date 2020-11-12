@@ -247,6 +247,7 @@ public class GroundStation {
 
     /** Get a driver allowing to change station clock drift (which is related to measurement date).
      * @return driver for station clock drift
+     * @since 10.3
      */
     public ParameterDriver getClockDriftDriver() {
         return clockDriftDriver;
