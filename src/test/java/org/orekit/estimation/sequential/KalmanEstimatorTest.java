@@ -342,9 +342,11 @@ public class KalmanEstimatorTest {
         // Create perfect range measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final double satClkDrift = 3.2e-10;
+        final RangeRateMeasurementCreator creator = new RangeRateMeasurementCreator(context, false, satClkDrift);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context, false),
+                                                               creator,
                                                                1.0, 3.0, 300.0);
 
         // Reference propagator for estimation performances
@@ -598,7 +600,7 @@ public class KalmanEstimatorTest {
                                                                                     measPropagatorBuilder);
         final List<ObservedMeasurement<?>> rangeRateMeasurements =
                         EstimationTestUtils.createMeasurements(rangeRatePropagator,
-                                                               new RangeRateMeasurementCreator(context, false),
+                                                               new RangeRateMeasurementCreator(context, false, 3.2e-10),
                                                                0.0, 4.0, 700.0);
 
         // Concatenate measurements
@@ -694,7 +696,7 @@ public class KalmanEstimatorTest {
 
         final List<ObservedMeasurement<?>> measurementsRangeRate =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context, false),
+                                                               new RangeRateMeasurementCreator(context, false, 3.2e-10),
                                                                1.0, 3.0, 300.0);
 
         // Concatenate measurements

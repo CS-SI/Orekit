@@ -38,15 +38,23 @@ public class DSSTRangeRateMeasurementCreator extends MeasurementCreator {
     private final boolean twoWay;
     private final ObservableSatellite satellite;
 
-    public DSSTRangeRateMeasurementCreator(final DSSTContext context, boolean twoWay) {
+    public DSSTRangeRateMeasurementCreator(final DSSTContext context, boolean twoWay,
+                                           final double satClockDrift) {
         this.context   = context;
         this.twoWay    = twoWay;
         this.satellite = new ObservableSatellite(0);
+        this.satellite.getClockDriftDriver().setValue(satClockDrift);
+    }
+
+    public ObservableSatellite getSatellite() {
+        return satellite;
     }
 
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
         for (final GroundStation station : context.stations) {
             for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
+                                                        station.getClockDriftDriver(),
+                                                        station.getEastOffsetDriver(),
                                                         station.getNorthOffsetDriver(),
                                                         station.getZenithOffsetDriver(),
                                                         station.getPrimeMeridianOffsetDriver(),
@@ -59,13 +67,17 @@ public class DSSTRangeRateMeasurementCreator extends MeasurementCreator {
                     driver.setReferenceDate(s0.getDate());
                 }
             }
-
+        }
+        if (satellite.getClockDriftDriver().getReferenceDate() == null) {
+            satellite.getClockDriftDriver().setReferenceDate(s0.getDate());
         }
     }
 
     public void handleStep(final SpacecraftState currentState, final boolean isLast) {
         for (final GroundStation station : context.stations) {
-
+            final double           groundDft = station.getClockDriftDriver().getValue();
+            final double           satDft    = satellite.getClockDriftDriver().getValue();
+            final double           deltaD    = Constants.SPEED_OF_LIGHT * (groundDft - satDft);
             final AbsoluteDate     date      = currentState.getDate();
             final Frame            inertial  = currentState.getFrame();
             final Vector3D         position  = currentState.getPVCoordinates().getPosition();
@@ -111,7 +123,7 @@ public class DSSTRangeRateMeasurementCreator extends MeasurementCreator {
                 // range rate at the date of reception
                 final double rr = twoWay ?
                                           0.5 * (deltaVr.dotProduct(receptionLOS) + deltaVe.dotProduct(emissionLOS)) :
-                                              deltaVr.dotProduct(receptionLOS);
+                                              deltaVr.dotProduct(receptionLOS) + deltaD;
 
                                           addMeasurement(new RangeRate(station, date,
                                                                        rr,
