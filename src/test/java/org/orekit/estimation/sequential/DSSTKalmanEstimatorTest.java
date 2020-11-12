@@ -315,7 +315,7 @@ public class DSSTKalmanEstimatorTest {
 
         final List<ObservedMeasurement<?>> measurementsRangeRate =
                         DSSTEstimationTestUtils.createMeasurements(propagator,
-                                                               new DSSTRangeRateMeasurementCreator(context, false),
+                                                               new DSSTRangeRateMeasurementCreator(context, false, 3.2e-10),
                                                                1.0, 3.0, 300.0);
 
         // Concatenate measurements

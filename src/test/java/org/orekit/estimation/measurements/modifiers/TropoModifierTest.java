@@ -344,9 +344,10 @@ public class TropoModifierTest {
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context, false),
+                                                               new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
@@ -385,9 +386,10 @@ public class TropoModifierTest {
 
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context, false),
+                                                               new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 

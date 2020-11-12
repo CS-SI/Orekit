@@ -21,7 +21,7 @@
   </properties>
   <body>
     <release version="10.3" date="TBD" description="TBD">
-      <action dev="thomas" type="add" issue="709">
+      <action dev="thomas, bryan" type="add" issue="709">
         Added clock drift contribution to range rate measurements.
       </action>
       <action dev="bryan" type="add" issue="671">
