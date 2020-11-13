@@ -253,12 +253,24 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
     }
 
     /** {@inheritDoc} */
+    @Deprecated
     public DSSTKalmanModel buildKalmanModel(final List<IntegratedPropagatorBuilder> propagatorBuilders,
                                   final List<CovarianceMatrixProvider> covarianceMatricesProviders,
                                   final ParameterDriversList estimatedMeasurementsParameters) {
         return new DSSTKalmanModel(propagatorBuilders,
                                    covarianceMatricesProviders,
                                    estimatedMeasurementsParameters,
+                                   propagationType, stateType);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DSSTKalmanModel buildKalmanModel(final List<IntegratedPropagatorBuilder> propagatorBuilders,
+                                  final List<CovarianceMatrixProvider> covarianceMatricesProviders,
+                                  final ParameterDriversList estimatedMeasurementsParameters,
+                                  final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
+        return new DSSTKalmanModel(propagatorBuilders, covarianceMatricesProviders,
+                                   estimatedMeasurementsParameters, measurementProcessNoiseMatrix,
                                    propagationType, stateType);
     }
 
