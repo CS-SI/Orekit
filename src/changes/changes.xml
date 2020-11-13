@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.3" date="TBD" description="TBD">
+   	  <action dev="bryan" type="fix" issue="696">
+      	Allowed to configure initial covariance for measurements in Kalman Filter.
+      </action>
       <action dev="thomas, bryan" type="add" issue="709">
         Added clock drift contribution to range rate measurements.
       </action>
