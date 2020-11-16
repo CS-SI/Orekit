@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.3" date="TBD" description="TBD">
+   	  <action dev="bryan" type="add" issue="734">
+      	Added getters for phase measurement ambiguity driver.
+      </action>
    	  <action dev="bryan" type="fix" issue="696">
       	Allowed to configure initial covariance for measurements in Kalman Filter.
       </action>
