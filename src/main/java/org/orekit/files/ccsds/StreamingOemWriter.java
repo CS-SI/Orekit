@@ -238,7 +238,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Evan Ward
  * @see <a href="https://public.ccsds.org/Pubs/502x0b2c1.pdf">CCSDS 502.0-B-2 Orbit Data
  *      Messages</a>
- * @see <a href="https://public.ccsds.org/Pubs/500x0g3.pdf">CCSDS 500.0-G-3 Navigation
+ * @see <a href="https://public.ccsds.org/Pubs/500x0g4.pdf">CCSDS 500.0-G-4 Navigation
  *      Data Definitions and Conventions</a>
  * @see OEMWriter
  */
@@ -269,9 +269,14 @@ public class StreamingOemWriter {
     private final Map<Keyword, String> metadata;
     /** Time scale for all dates except {@link Keyword#CREATION_DATE}. */
     private final TimeScale timeScale;
+    /** Format for position ephemeris data output. */
+    private final String positionFormat;
+    /** Format for velocity ephemeris data output. */
+    private final String velocityFormat;
 
     /**
-     * Create an OEM writer than streams data to the given output stream.
+     * Create an OEM writer than streams data to the given output stream. Default
+     * {@code double} formatting will be used for position and velocity ephemeris data.
      *
      * @param writer    The output stream for the OEM file. Most methods will append data
      *                  to this {@code writer}.
@@ -283,7 +288,29 @@ public class StreamingOemWriter {
     public StreamingOemWriter(final Appendable writer,
                               final TimeScale timeScale,
                               final Map<Keyword, String> metadata) {
+        this(writer, timeScale, metadata, null, null);
+    }
 
+    /**
+     * Create an OEM writer than streams data to the given output stream as
+     * {@link #StreamingOemWriter(Appendable, TimeScale, Map)} with
+     * {@link java.util.Formatter format parameters} for position and velocity ephemeris data.
+     *
+     * @param writer    The output stream for the OEM file. Most methods will append data
+     *                  to this {@code writer}.
+     * @param timeScale for all times in the OEM except {@link Keyword#CREATION_DATE}. See
+     *                  Section 5.2.4.5 and Annex A.
+     * @param metadata  for the satellite. Can be overridden in {@link #newSegment(Frame,
+     *                  Map)} for a specific segment. See {@link StreamingOemWriter}.
+     * @param positionFormat format parameters for position ephemeris data output.
+     * @param velocityFormat format parameters for velocity ephemeris data output.
+     * @since 10.3
+     */
+    public StreamingOemWriter(final Appendable writer,
+                              final TimeScale timeScale,
+                              final Map<Keyword, String> metadata,
+                              final String positionFormat,
+                              final String velocityFormat) {
         this.writer = writer;
         this.timeScale = timeScale;
         this.metadata = new LinkedHashMap<>(metadata);
@@ -294,6 +321,8 @@ public class StreamingOemWriter {
                 ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT));
         this.metadata.putIfAbsent(Keyword.ORIGINATOR, DEFAULT_ORIGINATOR);
         this.metadata.putIfAbsent(Keyword.TIME_SYSTEM, timeScale.getName());
+        this.positionFormat = positionFormat;
+        this.velocityFormat = velocityFormat;
     }
 
     /**
@@ -495,12 +524,31 @@ public class StreamingOemWriter {
             final String epoch = dateToString(pv.getDate().getComponents(timeScale));
             writer.append(epoch).append(" ");
             // output in km, see Section 6.6.2.1
-            writer.append(Double.toString(pv.getPosition().getX() * M_TO_KM)).append(" ");
-            writer.append(Double.toString(pv.getPosition().getY() * M_TO_KM)).append(" ");
-            writer.append(Double.toString(pv.getPosition().getZ() * M_TO_KM)).append(" ");
-            writer.append(Double.toString(pv.getVelocity().getX() * M_TO_KM)).append(" ");
-            writer.append(Double.toString(pv.getVelocity().getY() * M_TO_KM)).append(" ");
-            writer.append(Double.toString(pv.getVelocity().getZ() * M_TO_KM));
+            if (positionFormat != null) {
+                writer.append(String.format(STANDARDIZED_LOCALE, positionFormat,
+                                            pv.getPosition().getX() * M_TO_KM)).append(" ");
+                writer.append(String.format(STANDARDIZED_LOCALE, positionFormat,
+                                            pv.getPosition().getY() * M_TO_KM)).append(" ");
+                writer.append(String.format(STANDARDIZED_LOCALE, positionFormat,
+                                            pv.getPosition().getZ() * M_TO_KM)).append(" ");
+            } else {
+                writer.append(Double.toString(pv.getPosition().getX() * M_TO_KM)).append(" ");
+                writer.append(Double.toString(pv.getPosition().getY() * M_TO_KM)).append(" ");
+                writer.append(Double.toString(pv.getPosition().getZ() * M_TO_KM)).append(" ");
+            }
+
+            if (positionFormat != null) {
+                writer.append(String.format(STANDARDIZED_LOCALE, velocityFormat,
+                              pv.getVelocity().getX() * M_TO_KM)).append(" ");
+                writer.append(String.format(STANDARDIZED_LOCALE, velocityFormat,
+                              pv.getVelocity().getY() * M_TO_KM)).append(" ");
+                writer.append(String.format(STANDARDIZED_LOCALE, velocityFormat,
+                              pv.getVelocity().getZ() * M_TO_KM));
+            } else {
+                writer.append(Double.toString(pv.getVelocity().getX() * M_TO_KM)).append(" ");
+                writer.append(Double.toString(pv.getVelocity().getY() * M_TO_KM)).append(" ");
+                writer.append(Double.toString(pv.getVelocity().getZ() * M_TO_KM));
+            }
             writer.append(NEW_LINE);
         }
 

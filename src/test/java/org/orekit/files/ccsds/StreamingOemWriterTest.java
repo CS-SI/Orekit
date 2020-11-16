@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -310,6 +311,56 @@ public class StreamingOemWriterTest {
                     p_tol,
                     v_tol);
         }
+    }
+
+    /**
+     * Check writing an OEM with format parameters for position and velocity.
+     *
+     * @throws IOException on error
+     */
+    @Test
+    public void testWriteOemFormat() throws IOException {
+        // setup
+        String exampleFile = "/ccsds/OEMExample4.txt";
+        InputStream inEntry = getClass().getResourceAsStream(exampleFile);
+        OEMParser parser = new OEMParser();
+        OEMFile oemFile = parser.parse(inEntry, "OEMExample4.txt");
+
+        EphemeridesBlock block = oemFile.getEphemeridesBlocks().get(0);
+        Frame frame = block.getFrame();
+
+        TimeScale utc = TimeScalesFactory.getUTC();
+        Map<Keyword, String> metadata = new LinkedHashMap<>();
+        Map<Keyword, String> segmentData = new LinkedHashMap<>();
+
+        StringBuilder buffer = new StringBuilder();
+        StreamingOemWriter writer = new StreamingOemWriter(buffer, utc, metadata, "%.2f", "%.3f");
+        Segment segment = writer.newSegment(frame, segmentData);
+
+        for (TimeStampedPVCoordinates coordinate : block.getCoordinates()) {
+            segment.writeEphemerisLine(coordinate);
+        }
+
+        String expected = "2002-12-18T12:00:00.331 2789.62 -280.05 -1746.76 4.734 -2.496 -1.042\n" +
+                          "2002-12-18T12:01:00.331 2783.42 -308.14 -1877.07 5.186 -2.421 -1.996\n" +
+                          "2002-12-18T12:02:00.331 2776.03 -336.86 -2008.68 5.637 -2.340 -1.947\n";
+
+        assertEquals(buffer.toString(), expected);
+
+        buffer = new StringBuilder();
+        writer = new StreamingOemWriter(buffer, utc, metadata, "%.4f", "%.1f");
+        segment = writer.newSegment(frame, segmentData);
+
+        for (TimeStampedPVCoordinates coordinate : block.getCoordinates()) {
+            segment.writeEphemerisLine(coordinate);
+        }
+
+        expected = "2002-12-18T12:00:00.331 2789.6190 -280.0450 -1746.7550 4.7 -2.5 -1.0\n" +
+                   "2002-12-18T12:01:00.331 2783.4190 -308.1430 -1877.0710 5.2 -2.4 -2.0\n" +
+                   "2002-12-18T12:02:00.331 2776.0330 -336.8590 -2008.6820 5.6 -2.3 -1.9\n";
+
+        assertEquals(buffer.toString(), expected);
+
     }
 
 }

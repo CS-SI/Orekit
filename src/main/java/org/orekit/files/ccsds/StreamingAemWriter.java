@@ -237,8 +237,12 @@ public class StreamingAemWriter {
     /** Time scale for all dates except {@link Keyword#CREATION_DATE}. */
     private final TimeScale timeScale;
 
+    /** Format for position ephemeris data output. */
+    private final String attitudeFormat;
+
     /**
-     * Create an AEM writer that streams data to the given output stream.
+     * Create an AEM writer that streams data to the given output stream. Default
+     * {@code double} formatting will be used for attitude ephemeris ephemeris data.
      *
      * @param writer    The output stream for the AEM file. Most methods will append data
      *                  to this {@code writer}.
@@ -249,6 +253,26 @@ public class StreamingAemWriter {
     public StreamingAemWriter(final Appendable writer,
                               final TimeScale timeScale,
                               final Map<Keyword, String> metadata) {
+        this(writer, timeScale, metadata, null);
+    }
+
+    /**
+     * Create an AEM writer than streams data to the given output stream as
+     * {@link #StreamingAemWriter(Appendable, TimeScale, Map)} with
+     * {@link java.util.Formatter format parameters} for attitude ephemeris data.
+     *
+     * @param writer    The output stream for the AEM file. Most methods will append data
+     *                  to this {@code writer}.
+     * @param timeScale for all times in the AEM except {@link Keyword#CREATION_DATE}. See
+     *                  Section 4.2.5.4.2 and Annex A.
+     * @param metadata  for the satellite.
+     * @param attitudeFormat format parameters for attitude ephemeris data output.
+     * @since 10.3
+     */
+    public StreamingAemWriter(final Appendable writer,
+                              final TimeScale timeScale,
+                              final Map<Keyword, String> metadata,
+                              final String attitudeFormat) {
         this.writer    = writer;
         this.timeScale = timeScale;
         this.metadata  = new LinkedHashMap<>(metadata);
@@ -261,6 +285,7 @@ public class StreamingAemWriter {
                 ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT));
         this.metadata.putIfAbsent(Keyword.ORIGINATOR, DEFAULT_ORIGINATOR);
         this.metadata.putIfAbsent(Keyword.TIME_SYSTEM, timeScale.getName());
+        this.attitudeFormat = attitudeFormat;
     }
 
     /**
@@ -419,11 +444,20 @@ public class StreamingAemWriter {
             final AEMAttitudeType type = AEMAttitudeType.getAttitudeType(attitudeName);
             final double[]        data = type.getAttitudeData(attitude, isFirst, rotationOrder);
             final int             size = data.length;
-            for (int index = 0; index < size; index++) {
-                writer.append(Double.toString(data[index]));
-                final String space = (index == size - 1) ? "" : " ";
-                writer.append(space);
+            if (attitudeFormat != null) {
+                for (int index = 0; index < size; index++) {
+                    writer.append(String.format(STANDARDIZED_LOCALE, attitudeFormat, data[index]));
+                    final String space = (index == size - 1) ? "" : " ";
+                    writer.append(space);
+                }
+            } else {
+                for (int index = 0; index < size; index++) {
+                    writer.append(Double.toString(data[index]));
+                    final String space = (index == size - 1) ? "" : " ";
+                    writer.append(space);
+                }
             }
+
             // end the line
             writer.append(NEW_LINE);
         }
