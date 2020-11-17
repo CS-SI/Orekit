@@ -219,10 +219,19 @@ public class StreamingAemWriter {
     /** Default value for {@link Keyword#ORIGINATOR}. */
     public static final String DEFAULT_ORIGINATOR = "OREKIT";
 
+    /**
+     * Default format used for velocity ephemeris data output: 5 digits
+     * after the decimal point and leading space for positive values.
+     */
+    public static final String DEFAULT_ATTITUDE_FORMAT = "% .5f";
+
     /** New line separator for output file. See 5.4.5. */
     private static final String NEW_LINE = "\n";
 
-    /** Standardized locale to use, to ensure files can be exchanged without internationalization issues. */
+    /**
+     * Standardized locale to use, to ensure files can be exchanged without
+     * internationalization issues.
+     */
     private static final Locale STANDARDIZED_LOCALE = Locale.US;
 
     /** String format used for all key/value pair lines. **/
@@ -237,12 +246,12 @@ public class StreamingAemWriter {
     /** Time scale for all dates except {@link Keyword#CREATION_DATE}. */
     private final TimeScale timeScale;
 
-    /** Format for position ephemeris data output. */
+    /** Format for attitude ephemeris data output. */
     private final String attitudeFormat;
 
     /**
-     * Create an AEM writer that streams data to the given output stream. Default
-     * {@code double} formatting will be used for attitude ephemeris ephemeris data.
+     * Create an AEM writer that streams data to the given output stream.
+     * {@link #DEFAULT_ATTITUDE_FORMAT Default formatting} will be used for attitude ephemeris data.
      *
      * @param writer    The output stream for the AEM file. Most methods will append data
      *                  to this {@code writer}.
@@ -253,7 +262,7 @@ public class StreamingAemWriter {
     public StreamingAemWriter(final Appendable writer,
                               final TimeScale timeScale,
                               final Map<Keyword, String> metadata) {
-        this(writer, timeScale, metadata, null);
+        this(writer, timeScale, metadata, DEFAULT_ATTITUDE_FORMAT);
     }
 
     /**
@@ -444,20 +453,11 @@ public class StreamingAemWriter {
             final AEMAttitudeType type = AEMAttitudeType.getAttitudeType(attitudeName);
             final double[]        data = type.getAttitudeData(attitude, isFirst, rotationOrder);
             final int             size = data.length;
-            if (attitudeFormat != null) {
-                for (int index = 0; index < size; index++) {
-                    writer.append(String.format(STANDARDIZED_LOCALE, attitudeFormat, data[index]));
-                    final String space = (index == size - 1) ? "" : " ";
-                    writer.append(space);
-                }
-            } else {
-                for (int index = 0; index < size; index++) {
-                    writer.append(Double.toString(data[index]));
-                    final String space = (index == size - 1) ? "" : " ";
-                    writer.append(space);
-                }
+            for (int index = 0; index < size; index++) {
+                writer.append(String.format(STANDARDIZED_LOCALE, attitudeFormat, data[index]));
+                final String space = (index == size - 1) ? "" : " ";
+                writer.append(space);
             }
-
             // end the line
             writer.append(NEW_LINE);
         }

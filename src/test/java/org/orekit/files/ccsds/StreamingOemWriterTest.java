@@ -65,6 +65,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Evan Ward
  */
 public class StreamingOemWriterTest {
+    // As the default format for position is 3 digits after decimal point in km the max precision in m is 1
+    private static final double POSITION_PRECISION = 1; // in m
+    // As the default format for velocity is 5 digits after decimal point in km/s the max precision in m/s is 1e-2
+    private static final double VELOCITY_PRECISION = 1e-2; //in m/s
 
     /** Set Orekit data. */
     @Before
@@ -244,7 +248,7 @@ public class StreamingOemWriterTest {
             BufferedReader reader =
                     new BufferedReader(new StringReader(buffer.toString()));
             OEMFile generatedOemFile = parser.parse(reader, "buffer");
-            compareOemFiles(oemFile, generatedOemFile, 1e-7, 1e-7);
+            compareOemFiles(oemFile, generatedOemFile, POSITION_PRECISION, VELOCITY_PRECISION);
 
             // check calling the methods directly
             buffer = new StringBuilder();
@@ -264,7 +268,7 @@ public class StreamingOemWriterTest {
             // verify
             reader = new BufferedReader(new StringReader(buffer.toString()));
             generatedOemFile = parser.parse(reader, "buffer");
-            compareOemFiles(oemFile, generatedOemFile, 1e-7, 1e-7);
+            compareOemFiles(oemFile, generatedOemFile, POSITION_PRECISION, VELOCITY_PRECISION);
 
         }
 
@@ -341,23 +345,24 @@ public class StreamingOemWriterTest {
             segment.writeEphemerisLine(coordinate);
         }
 
-        String expected = "2002-12-18T12:00:00.331 2789.62 -280.05 -1746.76 4.734 -2.496 -1.042\n" +
-                          "2002-12-18T12:01:00.331 2783.42 -308.14 -1877.07 5.186 -2.421 -1.996\n" +
-                          "2002-12-18T12:02:00.331 2776.03 -336.86 -2008.68 5.637 -2.340 -1.947\n";
+        String expected = "2002-12-18T12:00:00.331 2789.62 -280.05 -1746.76 4.734 -2.496 -1.042\n"
+                        + "2002-12-18T12:01:00.331 2783.42 -308.14 -1877.07 5.186 -2.421 -1.996\n"
+                        + "2002-12-18T12:02:00.331 2776.03 -336.86 -2008.68 5.637 -2.340 -1.947\n";
 
         assertEquals(buffer.toString(), expected);
 
         buffer = new StringBuilder();
-        writer = new StreamingOemWriter(buffer, utc, metadata, "%.4f", "%.1f");
+        writer = new StreamingOemWriter(buffer, utc, metadata);
         segment = writer.newSegment(frame, segmentData);
 
         for (TimeStampedPVCoordinates coordinate : block.getCoordinates()) {
             segment.writeEphemerisLine(coordinate);
         }
 
-        expected = "2002-12-18T12:00:00.331 2789.6190 -280.0450 -1746.7550 4.7 -2.5 -1.0\n" +
-                   "2002-12-18T12:01:00.331 2783.4190 -308.1430 -1877.0710 5.2 -2.4 -2.0\n" +
-                   "2002-12-18T12:02:00.331 2776.0330 -336.8590 -2008.6820 5.6 -2.3 -1.9\n";
+        expected = "2002-12-18T12:00:00.331  2789.619 -280.045 -1746.755  4.73372 -2.49586 -1.04195\n"
+                 + "2002-12-18T12:01:00.331  2783.419 -308.143 -1877.071  5.18604 -2.42124 -1.99608\n"
+                 + "2002-12-18T12:02:00.331  2776.033 -336.859 -2008.682  5.63678 -2.33951 -1.94687\n";
+;
 
         assertEquals(buffer.toString(), expected);
 

@@ -246,37 +246,59 @@ public class StreamingOemWriter {
 
     /** Version number implemented. **/
     public static final String CCSDS_OEM_VERS = "2.0";
+
     /** Default value for {@link Keyword#ORIGINATOR}. */
     public static final String DEFAULT_ORIGINATOR = "OREKIT";
 
+    /**
+     * Default format used for position ephemeris data output: 3 digits
+     * after the decimal point and leading space for positive values.
+     */
+    public static final String DEFAULT_POSITION_FORMAT = "% .3f";
+
+    /**
+     * Default format used for velocity ephemeris data output: 5 digits
+     * after the decimal point and leading space for positive values.
+     */
+    public static final String DEFAULT_VELOCITY_FORMAT = "% .5f";
+
     /** New line separator for output file. See 6.3.6. */
     private static final String NEW_LINE = "\n";
+
     /**
      * Standardized locale to use, to ensure files can be exchanged without
      * internationalization issues.
      */
     private static final Locale STANDARDIZED_LOCALE = Locale.US;
+
     /** String format used for all key/value pair lines. **/
     private static final String KV_FORMAT = "%s = %s%n";
+
     /** Factor for converting meters to km. */
     private static final double M_TO_KM = 1e-3;
+
     /** Suffix of the name of the inertial frame attached to a planet. */
     private static final String INERTIAL_FRAME_SUFFIX = "/inertial";
 
     /** Output stream. */
     private final Appendable writer;
+
     /** Metadata for this OEM file. */
     private final Map<Keyword, String> metadata;
+
     /** Time scale for all dates except {@link Keyword#CREATION_DATE}. */
     private final TimeScale timeScale;
+
     /** Format for position ephemeris data output. */
     private final String positionFormat;
+
     /** Format for velocity ephemeris data output. */
     private final String velocityFormat;
 
     /**
-     * Create an OEM writer than streams data to the given output stream. Default
-     * {@code double} formatting will be used for position and velocity ephemeris data.
+     * Create an OEM writer than streams data to the given output stream. Default formatting for
+     * {@link #DEFAULT_POSITION_FORMAT position} and {@link #DEFAULT_VELOCITY_FORMAT velocity}
+     * will be used for position and velocity ephemeris data.
      *
      * @param writer    The output stream for the OEM file. Most methods will append data
      *                  to this {@code writer}.
@@ -288,7 +310,7 @@ public class StreamingOemWriter {
     public StreamingOemWriter(final Appendable writer,
                               final TimeScale timeScale,
                               final Map<Keyword, String> metadata) {
-        this(writer, timeScale, metadata, null, null);
+        this(writer, timeScale, metadata, DEFAULT_POSITION_FORMAT, DEFAULT_VELOCITY_FORMAT);
     }
 
     /**
@@ -524,31 +546,18 @@ public class StreamingOemWriter {
             final String epoch = dateToString(pv.getDate().getComponents(timeScale));
             writer.append(epoch).append(" ");
             // output in km, see Section 6.6.2.1
-            if (positionFormat != null) {
-                writer.append(String.format(STANDARDIZED_LOCALE, positionFormat,
-                                            pv.getPosition().getX() * M_TO_KM)).append(" ");
-                writer.append(String.format(STANDARDIZED_LOCALE, positionFormat,
-                                            pv.getPosition().getY() * M_TO_KM)).append(" ");
-                writer.append(String.format(STANDARDIZED_LOCALE, positionFormat,
-                                            pv.getPosition().getZ() * M_TO_KM)).append(" ");
-            } else {
-                writer.append(Double.toString(pv.getPosition().getX() * M_TO_KM)).append(" ");
-                writer.append(Double.toString(pv.getPosition().getY() * M_TO_KM)).append(" ");
-                writer.append(Double.toString(pv.getPosition().getZ() * M_TO_KM)).append(" ");
-            }
-
-            if (positionFormat != null) {
-                writer.append(String.format(STANDARDIZED_LOCALE, velocityFormat,
-                              pv.getVelocity().getX() * M_TO_KM)).append(" ");
-                writer.append(String.format(STANDARDIZED_LOCALE, velocityFormat,
-                              pv.getVelocity().getY() * M_TO_KM)).append(" ");
-                writer.append(String.format(STANDARDIZED_LOCALE, velocityFormat,
-                              pv.getVelocity().getZ() * M_TO_KM));
-            } else {
-                writer.append(Double.toString(pv.getVelocity().getX() * M_TO_KM)).append(" ");
-                writer.append(Double.toString(pv.getVelocity().getY() * M_TO_KM)).append(" ");
-                writer.append(Double.toString(pv.getVelocity().getZ() * M_TO_KM));
-            }
+            writer.append(String.format(STANDARDIZED_LOCALE, positionFormat,
+                                        pv.getPosition().getX() * M_TO_KM)).append(" ");
+            writer.append(String.format(STANDARDIZED_LOCALE, positionFormat,
+                                        pv.getPosition().getY() * M_TO_KM)).append(" ");
+            writer.append(String.format(STANDARDIZED_LOCALE, positionFormat,
+                                        pv.getPosition().getZ() * M_TO_KM)).append(" ");
+            writer.append(String.format(STANDARDIZED_LOCALE, velocityFormat,
+                                        pv.getVelocity().getX() * M_TO_KM)).append(" ");
+            writer.append(String.format(STANDARDIZED_LOCALE, velocityFormat,
+                                        pv.getVelocity().getY() * M_TO_KM)).append(" ");
+            writer.append(String.format(STANDARDIZED_LOCALE, velocityFormat,
+                                        pv.getVelocity().getZ() * M_TO_KM));
             writer.append(NEW_LINE);
         }
 

@@ -38,10 +38,7 @@ import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.files.ccsds.AEMFile.AemSatelliteEphemeris;
 import org.orekit.files.ccsds.AEMFile.AttitudeEphemeridesBlock;
-import org.orekit.files.ccsds.OEMFile.EphemeridesBlock;
 import org.orekit.files.ccsds.StreamingAemWriter.AEMSegment;
-import org.orekit.files.ccsds.StreamingOemWriter.Segment;
-import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -51,7 +48,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedAngularCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 public class StreamingAemWriterTest {
@@ -210,16 +206,17 @@ public class StreamingAemWriterTest {
         assertEquals(buffer.toString(), expected);
 
         buffer = new StringBuilder();
-        writer = new StreamingAemWriter(buffer, utc, metadata, "% .4f");
+        // Default format
+        writer = new StreamingAemWriter(buffer, utc, metadata);
         segment = writer.newSegment(segmentData);
 
         for (TimeStampedAngularCoordinates coordinate : block.getAngularCoordinates()) {
             segment.writeAttitudeEphemerisLine(coordinate, block.isFirst(), block.getAttitudeType(), block.getRotationOrder());
         }
 
-        expected = "2002-12-18T12:00:00.331  0.5675  0.0315  0.4569  0.6843\n" +
-                   "2002-12-18T12:01:00.331  0.4232 -0.4570  0.2378  0.7453\n" +
-                   "2002-12-18T12:02:00.331 -0.8453  0.2697 -0.0653  0.4565\n";
+        expected = "2002-12-18T12:00:00.331  0.56748  0.03146  0.45689  0.68427\n" +
+                   "2002-12-18T12:01:00.331  0.42319 -0.45697  0.23784  0.74533\n" +
+                   "2002-12-18T12:02:00.331 -0.84532  0.26974 -0.06532  0.45652\n";
 
         assertEquals(buffer.toString(), expected);
 

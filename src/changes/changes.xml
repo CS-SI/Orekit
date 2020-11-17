@@ -23,7 +23,7 @@
     <release version="10.3" date="TBD" description="TBD">
       <action dev="raphael" type="add" issue="686">
         Allowed user-defined format for ephemeris data lines in
-        both StreamingAemWriter and StreamingOemWriter.
+        StreamingAemWriter, AEMWriter, StreamingOemWriter and OEMWriter.
       </action>
       <action dev="bryan" type="add" issue="671">
         Added support for laser ranging file formats.
