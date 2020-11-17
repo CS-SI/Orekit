@@ -220,7 +220,7 @@ public class StreamingAemWriter {
     public static final String DEFAULT_ORIGINATOR = "OREKIT";
 
     /**
-     * Default format used for velocity ephemeris data output: 5 digits
+     * Default format used for attitude ephemeris data output: 5 digits
      * after the decimal point and leading space for positive values.
      */
     public static final String DEFAULT_ATTITUDE_FORMAT = "% .5f";
