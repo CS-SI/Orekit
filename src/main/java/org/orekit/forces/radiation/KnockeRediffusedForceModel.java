@@ -101,6 +101,10 @@ public class KnockeRediffusedForceModel extends AbstractRediffusedForceModel {
     /** Angular longitude separation for surface element computation in rad. */
     private final double dLongitude;
 
+    /** Counter for debug. */
+    // TODO
+    private int nb_visibility;
+
     /** Constructor.
      * @param sun Sun model
      * @param equatorialRadius Central Body model
@@ -118,6 +122,7 @@ public class KnockeRediffusedForceModel extends AbstractRediffusedForceModel {
         this.spacecraft       = spacecraft;
         this.dLatitude        = FastMath.PI / numberOfLatitudeSlices;
         this.dLongitude       = 2 * FastMath.PI / numberOfLongitudeSlices;
+        this.nb_visibility = 0;
     }
 
     /** {@inheritDoc} */
@@ -125,9 +130,10 @@ public class KnockeRediffusedForceModel extends AbstractRediffusedForceModel {
     public Vector3D acceleration(final SpacecraftState s,
                                  final double[] parameters) {
 
-        // Initialize latitude and longitude
-        double currentLatitude  = FastMath.PI - dLatitude / 2;
-        double currentLongitude = -dLongitude / 2;
+        this.nb_visibility = 0;
+
+        // Initialize equatorial latitude it goes within [-PI / 2; PI / 2]
+        double currentLatitude  = -FastMath.PI / 2 - dLatitude / 2;
 
         // Get date
         final AbsoluteDate date = s.getDate();
@@ -137,14 +143,18 @@ public class KnockeRediffusedForceModel extends AbstractRediffusedForceModel {
 
         // Get satellite position
         final Vector3D satellitePosition = s.getPVCoordinates().getPosition();
+
         // Initialize rediffused flux
         Vector3D rediffusedFlux = new Vector3D(0.0, 0.0, 0.0);
 
         // Slice spherical Earth into elementary areas
-        while (currentLatitude + dLatitude <= FastMath.PI) {
+        while (currentLatitude + dLatitude <= FastMath.PI / 2) {
 
             // Next latitude portion
             currentLatitude += dLatitude;
+
+            // Initialize longitude, it goes within [0; 2 * PI]
+            double currentLongitude = -dLongitude / 2;
 
             while (currentLongitude + dLongitude <= 2 * FastMath.PI) {
 
@@ -165,21 +175,24 @@ public class KnockeRediffusedForceModel extends AbstractRediffusedForceModel {
                     double a = 0.0;
 
                     // Check if elementary area is in day light
-                    final double sunElevation = Vector3D.angle(computeSphericalElementaryVector(currentLatitude, currentLongitude),
-                                                               sun.getPVCoordinates(date, frame).getPosition());
+                    final double sunElevation = FastMath.abs(Vector3D.angle(
+                                                             computeSphericalElementaryVector(currentLatitude, currentLongitude),
+                                                             sun.getPVCoordinates(date, frame).getPosition()));
 
                     if (sunElevation < FastMath.PI / 2 ) {
 
                         // Elementary area is in day light
-                        a = computeAlbedo(date, currentLatitude);
+                        //a = computeAlbedo(date, currentLatitude);
+                        a = 0.3;
                     }
 
                     // Compute solar flux
                     final double solarFlux = computeSolarFlux(date, frame);
 
                     // Compute elementary area contribution to rediffused flux
-                    final double albedoAndIR = a * solarFlux * FastMath.cos(sunElevation) +
-                                               e * solarFlux / 4;
+                    final double albedoAndIR = (a * solarFlux * FastMath.cos(sunElevation) +
+                                                e * solarFlux / 4) / Constants.SPEED_OF_LIGHT;
+
                     final Vector3D elementaryFlux = projectedAreaVector.scalarMultiply(albedoAndIR);
 
                     // Add elementary contribution to total rediffused flux
@@ -187,11 +200,9 @@ public class KnockeRediffusedForceModel extends AbstractRediffusedForceModel {
                 }
             }
         }
-
         return spacecraft.radiationPressureAcceleration(date, frame, satellitePosition, s.getAttitude().getRotation(),
                                                         s.getMass(), rediffusedFlux, parameters);
     }
-
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
@@ -213,7 +224,7 @@ public class KnockeRediffusedForceModel extends AbstractRediffusedForceModel {
      * @param phi the equatorial latitude in rad
      * @return the albedo in [0;1]
      */
-    private static double computeAlbedo(final AbsoluteDate date, final double phi) {
+    public static double computeAlbedo(final AbsoluteDate date, final double phi) {
 
         // Get duration since coefficient reference epoch
         final double deltaT = date.durationFrom(T0);
@@ -244,7 +255,7 @@ public class KnockeRediffusedForceModel extends AbstractRediffusedForceModel {
      * @param phi the equatorial latitude in rad
      * @return the emissivity in [0;1]
      */
-    private static double computeEmissivity(final AbsoluteDate date, final double phi) {
+    public static double computeEmissivity(final AbsoluteDate date, final double phi) {
 
         // Get duration since coefficient reference epoch
         final double deltaT = date.durationFrom(T0);
@@ -304,14 +315,16 @@ public class KnockeRediffusedForceModel extends AbstractRediffusedForceModel {
         final Vector3D r = satellitePosition.subtract(elementaryAreaCenterPosition);
 
         // Get satellite elevation angle
-        final double alpha = Vector3D.angle(elementaryAreaCenterPosition, r);
+        final double alpha = FastMath.abs(Vector3D.angle(elementaryAreaCenterPosition, r));
 
         // Check if satellite sees the surface element
         if (alpha < FastMath.PI / 2) {
 
+            addVisibility();
+
             // Compute surface element area
             final double dA = equatorialRadius * equatorialRadius *
-                                FastMath.cos(phi) * dPhi * dPsi;
+                              FastMath.cos(phi) * dPhi * dPsi;
 
             // Get Earth surface element center - satellite distance
             final double rNorm = r.getNorm();
@@ -344,5 +357,11 @@ public class KnockeRediffusedForceModel extends AbstractRediffusedForceModel {
         final double y = cosPhi * sinPsi;
         final double z = sinPhi;
         return new Vector3D(x, y, z);
+    }
+
+    //TODO
+    public void addVisibility() {
+        final int current = this.nb_visibility;
+        this.nb_visibility = current + 1;
     }
 }
