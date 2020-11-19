@@ -34,6 +34,7 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.AEMFile.AemSatelliteEphemeris;
 import org.orekit.files.ccsds.AEMFile.AttitudeEphemeridesBlock;
 import org.orekit.files.ccsds.AEMParser.AEMRotationOrder;
 import org.orekit.time.AbsoluteDate;
@@ -414,6 +415,71 @@ public class AEMParserTest {
             file.getConventions();
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS, oe.getSpecifier());
+        }
+    }
+
+    /**
+     * Checks implementation of interfaces and that new methods not applicable to
+     * AEM files throw an exception
+     */
+    @Test
+    public void testIssue705() {
+        final String ex = "/ccsds/AEMExample.txt";
+        final InputStream inEntry = getClass().getResourceAsStream(ex);
+        final AEMParser parser = new AEMParser();
+        final AEMFile file = parser.parse(inEntry, "AEMExample.txt");
+        AemSatelliteEphemeris aemEph = file.getSatellites().get("1996-062A");
+        Assert.assertEquals("1996-062A", aemEph.getId());
+        try {
+            aemEph.getPropagator();
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_AEM_INAPPLICABLE_METHOD, oe.getSpecifier());
+        }
+        try {
+            aemEph.getMu();
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_AEM_INAPPLICABLE_METHOD, oe.getSpecifier());
+        }
+        AttitudeEphemeridesBlock aemBlock = aemEph.getSegments().get(0);
+        try {
+            aemBlock.getCoordinates();
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_AEM_INAPPLICABLE_METHOD, oe.getSpecifier());
+        }
+        try {
+            aemBlock.getAvailableDerivatives();
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_AEM_INAPPLICABLE_METHOD, oe.getSpecifier());
+        }
+        try {
+            aemBlock.getFrame();
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_AEM_INAPPLICABLE_METHOD, oe.getSpecifier());
+        }
+        try {
+            aemBlock.getFrameString();
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_AEM_INAPPLICABLE_METHOD, oe.getSpecifier());
+        }
+        try {
+            aemBlock.getMu();
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_AEM_INAPPLICABLE_METHOD, oe.getSpecifier());
+        }
+        try {
+            aemBlock.getInterpolationSamples();
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_AEM_INAPPLICABLE_METHOD, oe.getSpecifier());
+        }
+        try {
+            aemBlock.getPropagator();
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_AEM_INAPPLICABLE_METHOD, oe.getSpecifier());
+        }
+        try {
+            aemBlock.getInertialFrame();
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_AEM_INAPPLICABLE_METHOD, oe.getSpecifier());
         }
     }
 
