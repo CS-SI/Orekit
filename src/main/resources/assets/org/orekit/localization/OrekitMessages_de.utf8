@@ -594,6 +594,9 @@ NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = Die Beobachtungen {0} und {1} besitze
 # Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.
 EXCEPTIONAL_DATA_CONTEXT = Momentan wird noch die ExceptionalDataContext Klasse benutzt. Diese wird typischerweise ausschließlich für das Erkennen von Entwicklerfehler benutzt.
 
+# this method is not applicable to AEM files
+CCSDS_AEM_INAPPLICABLE_METHOD = diese Methode ist nicht auf AEM-Dateien anwendbar
+
 # inconsistent time systems in the attitude blocks: {0} ≠ {1}
 CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = <MISSING TRANSLATION>
 

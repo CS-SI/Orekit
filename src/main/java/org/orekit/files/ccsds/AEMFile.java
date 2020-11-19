@@ -26,9 +26,14 @@ import java.util.Map.Entry;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.general.EphemerisFile;
+import org.orekit.frames.Frame;
+import org.orekit.propagation.BoundedPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
+import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * This class stocks all the information of the Attitude Ephemeris Message (AEM) File parsed
@@ -37,7 +42,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class AEMFile extends ADMFile {
+public class AEMFile extends ADMFile implements EphemerisFile {
 
     /** List of ephemeris blocks. */
     private List<AttitudeEphemeridesBlock> attitudeBlocks;
@@ -77,12 +82,12 @@ public class AEMFile extends ADMFile {
         }
     }
 
-
     /**
      * Get the attitude loaded ephemeris for each satellite in the file.
      * @return a map from the satellite's ID to the information about that satellite
      * contained in the file.
      */
+    @Override
     public Map<String, AemSatelliteEphemeris> getSatellites() {
         final Map<String, List<AttitudeEphemeridesBlock>> satellites = new HashMap<>();
         for (final AttitudeEphemeridesBlock ephemeridesBlock : attitudeBlocks) {
@@ -93,7 +98,7 @@ public class AEMFile extends ADMFile {
         final Map<String, AemSatelliteEphemeris> ret = new HashMap<>();
         for (final Entry<String, List<AttitudeEphemeridesBlock>> entry : satellites.entrySet()) {
             final String id = entry.getKey();
-            ret.put(id, new AemSatelliteEphemeris(entry.getValue()));
+            ret.put(id, new AemSatelliteEphemeris(id, entry.getValue()));
         }
         return ret;
     }
@@ -102,7 +107,7 @@ public class AEMFile extends ADMFile {
      * The Attitude Ephemerides Blocks class contain metadata
      * and the list of attitude data lines.
      */
-    public class AttitudeEphemeridesBlock {
+    public class AttitudeEphemeridesBlock implements EphemerisSegment {
 
         /** Meta-data for the block. */
         private ADMMetaData metaData;
@@ -189,6 +194,72 @@ public class AEMFile extends ADMFile {
         public ADMMetaData getMetaData() {
             return metaData;
         }
+
+
+        /**
+         * This method is not applicable to AEM files and will throw an exception.
+         */
+        @Override
+        public double getMu() {
+            throw new OrekitException(OrekitMessages.CCSDS_AEM_INAPPLICABLE_METHOD);
+        }
+
+        /**
+         * This method is not applicable to AEM files and will throw an exception.
+         */
+        @Override
+        public String getFrameString() {
+            throw new OrekitException(OrekitMessages.CCSDS_AEM_INAPPLICABLE_METHOD);
+        }
+
+        /**
+         * This method is not applicable to AEM files and will throw an exception.
+         */
+        @Override
+        public Frame getFrame() {
+            throw new OrekitException(OrekitMessages.CCSDS_AEM_INAPPLICABLE_METHOD);
+        }
+
+        /**
+         * This method is not applicable to AEM files and will throw an exception.
+         */
+        @Override
+        public int getInterpolationSamples() {
+            throw new OrekitException(OrekitMessages.CCSDS_AEM_INAPPLICABLE_METHOD);
+        }
+
+        /**
+         * This method is not applicable to AEM files and will throw an exception.
+         */
+        @Override
+        public CartesianDerivativesFilter getAvailableDerivatives() {
+            throw new OrekitException(OrekitMessages.CCSDS_AEM_INAPPLICABLE_METHOD);
+        }
+
+        /**
+         * This method is not applicable to AEM files and will throw an exception.
+         */
+        @Override
+        public List<? extends TimeStampedPVCoordinates> getCoordinates() {
+            throw new OrekitException(OrekitMessages.CCSDS_AEM_INAPPLICABLE_METHOD);
+        }
+
+        /**
+         * This method is not applicable to AEM files and will throw an exception.
+         */
+        @Override
+        public Frame getInertialFrame() {
+            throw new OrekitException(OrekitMessages.CCSDS_AEM_INAPPLICABLE_METHOD);
+        }
+
+        /**
+         * This method is not applicable to AEM files and will throw an exception.
+         */
+        @Override
+        public BoundedPropagator getPropagator() {
+            throw new OrekitException(OrekitMessages.CCSDS_AEM_INAPPLICABLE_METHOD);
+        }
+
 
         /**
          * Get the name of the center of the coordinate system the ephemeris is provided in.
@@ -483,21 +554,60 @@ public class AEMFile extends ADMFile {
             this.rotationOrder = order;
         }
 
+
     }
 
     /** AEM ephemeris blocks for a single satellite. */
-    public static class AemSatelliteEphemeris {
+    public static class AemSatelliteEphemeris implements SatelliteEphemeris {
 
+        /** ID of the satellite. */
+        private final String id;
         /** The attitude ephemeris data for the satellite. */
         private final List<AttitudeEphemeridesBlock> blocks;
 
         /**
+         * @deprecated Use {@link #AemSatelliteEphemeris(String, List)} instead.
+         *
          * Create a container for the set of ephemeris blocks in the file that pertain to
-         * a single satellite.
+         * a single satellite. The ID of the satellite is set to ""
          * @param blocks containing ephemeris data for the satellite.
          */
         public AemSatelliteEphemeris(final List<AttitudeEphemeridesBlock> blocks) {
+            this("", blocks);
+        }
+
+        /**
+         * Create a container for the set of ephemeris blocks in the file that pertain to
+         * a single satellite.
+         * @param id     of the satellite.
+         * @param blocks containing ephemeris data for the satellite.
+         * @since 10.3
+         */
+        public AemSatelliteEphemeris(final String id, final List<AttitudeEphemeridesBlock> blocks) {
+            this.id = id;
             this.blocks = blocks;
+
+        }
+
+        @Override
+        public String getId() {
+            return this.id;
+        }
+
+        /**
+         * This method is not applicable to AEM files and will throw an exception.
+         */
+        @Override
+        public BoundedPropagator getPropagator() {
+            throw new OrekitException(OrekitMessages.CCSDS_AEM_INAPPLICABLE_METHOD);
+        }
+
+        /**
+         * This method is not applicable to AEM files and will throw an exception.
+         */
+        @Override
+        public double getMu() {
+            throw new OrekitException(OrekitMessages.CCSDS_AEM_INAPPLICABLE_METHOD);
         }
 
         /**
@@ -506,6 +616,7 @@ public class AEMFile extends ADMFile {
          * discontinuous events, such as maneuvers.
          * @return the segments contained in the attitude ephemeris file for this satellite.
          */
+        @Override
         public List<AttitudeEphemeridesBlock> getSegments() {
             return Collections.unmodifiableList(blocks);
         }
@@ -514,6 +625,7 @@ public class AEMFile extends ADMFile {
          * Get the start date of the attitude ephemeris.
          * @return attitude ephemeris start date.
          */
+        @Override
         public AbsoluteDate getStart() {
             return blocks.get(0).getStart();
         }
@@ -522,6 +634,7 @@ public class AEMFile extends ADMFile {
          * Get the end date of the attitude ephemeris.
          * @return attitude ephemeris end date.
          */
+        @Override
         public AbsoluteDate getStop() {
             return blocks.get(blocks.size() - 1).getStop();
         }
