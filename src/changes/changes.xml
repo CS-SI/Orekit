@@ -21,10 +21,6 @@
   </properties>
   <body>
     <release version="10.3" date="TBD" description="TBD">
-      <action dev="raphael" type="add" issue="705">
-        Added AEMFile implementation of EphemerisFile, EphemerisSegment and
-        SatelliteEphemeris with exceptions for irrelevant methods for AEMFile.
-      </action>
       <action dev="raphael" type="add" issue="686">
         Allowed user-defined format for ephemeris data lines in
         StreamingAemWriter, AEMWriter, StreamingOemWriter and OEMWriter.
