@@ -597,10 +597,11 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
         
         // Build the full covariance matrix and process noise matrix
         final int nbPropag = (propagationP != null)?propagationP.getRowDimension():0;
-        final RealMatrix initialP = MatrixUtils.createRealMatrix(6 + nbPropag,
-                                                                 6 + nbPropag);
-        final RealMatrix Q = MatrixUtils.createRealMatrix(6 + nbPropag,
-                                                          6 + nbPropag);
+        final int nbMeas   = (measurementP != null)?measurementP.getRowDimension():0;
+        final RealMatrix initialP = MatrixUtils.createRealMatrix(6 + nbPropag + nbMeas,
+                                                                 6 + nbPropag + nbMeas);
+        final RealMatrix Q = MatrixUtils.createRealMatrix(6 + nbPropag + nbMeas,
+                                                          6 + nbPropag + nbMeas);
         // Orbital part
         initialP.setSubMatrix(orbitalP.getData(), 0, 0);
         Q.setSubMatrix(orbitalQ.getData(), 0, 0);
@@ -610,15 +611,18 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
             initialP.setSubMatrix(propagationP.getData(), 6, 6);
             Q.setSubMatrix(propagationQ.getData(), 6, 6);
         }
+        
+        // Measurement part
+        if (measurementP != null) {
+            initialP.setSubMatrix(measurementP.getData(), 6 + nbPropag, 6 + nbPropag);
+            Q.setSubMatrix(measurementQ.getData(), 6 + nbPropag, 6 + nbPropag);
+        }
 
         // Build the Kalman
-        final KalmanEstimatorBuilder kalmanBuilder = new KalmanEstimatorBuilder().
-                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q));
-        if (measurementP != null) {
-            // Measurement part
-            kalmanBuilder.estimatedMeasurementsParameters(estimatedMeasurementsParameters, new ConstantProcessNoise(measurementP, measurementQ));
-        }
-        final KalmanEstimator kalman = kalmanBuilder.build();
+        final KalmanEstimator kalman = new KalmanEstimatorBuilder().
+                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
+                        estimatedMeasurementsParameters(estimatedMeasurementsParameters).
+                        build();
 
         // Add an observer
         kalman.setObserver(new KalmanObserver() {

@@ -33,7 +33,6 @@ import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
 import org.orekit.estimation.measurements.EstimationsProvider;
-import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.InterSatellitesRangeMeasurementCreator;
 import org.orekit.estimation.measurements.MultiplexedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -954,14 +953,9 @@ public class BatchLSEstimatorTest {
         // create perfect range rate measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final double groundClockDrift =  4.8e-9;
-        for (final GroundStation station : context.stations) {
-            station.getClockDriftDriver().setValue(groundClockDrift);
-        }
-        final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements1 =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context, false, satClkDrift),
+                                                               new RangeRateMeasurementCreator(context, false),
                                                                1.0, 3.0, 300.0);
 
         final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
@@ -1004,14 +998,9 @@ public class BatchLSEstimatorTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
-        final double groundClockDrift =  4.8e-9;
-        for (final GroundStation station : context.stations) {
-            station.getClockDriftDriver().setValue(groundClockDrift);
-        }
-        final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurementsRangeRate =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context, false, satClkDrift),
+                                                               new RangeRateMeasurementCreator(context, false),
                                                                1.0, 3.0, 300.0);
 
         // concat measurements

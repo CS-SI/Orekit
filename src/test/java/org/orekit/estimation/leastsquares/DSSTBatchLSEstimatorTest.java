@@ -34,7 +34,6 @@ import org.orekit.estimation.DSSTEstimationTestUtils;
 import org.orekit.estimation.measurements.DSSTRangeMeasurementCreator;
 import org.orekit.estimation.measurements.DSSTRangeRateMeasurementCreator;
 import org.orekit.estimation.measurements.EstimationsProvider;
-import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.Range;
@@ -401,14 +400,9 @@ public class DSSTBatchLSEstimatorTest {
         // create perfect range rate measurements
         final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final double groundClockDrift =  4.8e-9;
-        for (final GroundStation station : context.stations) {
-            station.getClockDriftDriver().setValue(groundClockDrift);
-        }
-        final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements1 =
                         DSSTEstimationTestUtils.createMeasurements(propagator,
-                                                               new DSSTRangeRateMeasurementCreator(context, false, satClkDrift),
+                                                               new DSSTRangeRateMeasurementCreator(context, false),
                                                                1.0, 3.0, 300.0);
 
         final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
@@ -450,14 +444,9 @@ public class DSSTBatchLSEstimatorTest {
                         DSSTEstimationTestUtils.createMeasurements(propagator,
                                                                new DSSTRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
-        final double groundClockDrift =  4.8e-9;
-        for (final GroundStation station : context.stations) {
-            station.getClockDriftDriver().setValue(groundClockDrift);
-        }
-        final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurementsRangeRate =
                         DSSTEstimationTestUtils.createMeasurements(propagator,
-                                                               new DSSTRangeRateMeasurementCreator(context, false, satClkDrift),
+                                                               new DSSTRangeRateMeasurementCreator(context, false),
                                                                1.0, 3.0, 300.0);
 
         // concat measurements

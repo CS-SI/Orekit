@@ -45,9 +45,6 @@ public class KalmanEstimatorBuilder {
     /** Process noise matrices providers. */
     private List<CovarianceMatrixProvider> processNoiseMatricesProviders;
 
-    /** Process noise matrix provider for measurement parameters. */
-    private CovarianceMatrixProvider measurementProcessNoiseMatrix;
-
     /** Default constructor.
      *  Set an extended Kalman filter, with linearized covariance prediction.
      */
@@ -56,7 +53,6 @@ public class KalmanEstimatorBuilder {
         this.propagatorBuilders              = new ArrayList<>();
         this.estimatedMeasurementsParameters = new ParameterDriversList();
         this.processNoiseMatricesProviders   = new ArrayList<>();
-        this.measurementProcessNoiseMatrix   = null;
     }
 
     /** Construct a {@link KalmanEstimator} from the data in this builder.
@@ -73,7 +69,7 @@ public class KalmanEstimatorBuilder {
             throw new OrekitException(OrekitMessages.NO_PROPAGATOR_CONFIGURED);
         }
         return new KalmanEstimator(decomposer, propagatorBuilders, processNoiseMatricesProviders,
-                                   estimatedMeasurementsParameters, measurementProcessNoiseMatrix);
+                                   estimatedMeasurementsParameters);
     }
 
     /** Configure the matrix decomposer.
@@ -121,27 +117,10 @@ public class KalmanEstimatorBuilder {
      * </p>
      * @param estimatedMeasurementsParams The estimated measurements' parameters list.
      * @return this object.
-     * @deprecated since 10.3 replaced by {@link #estimatedMeasurementsParameters(ParameterDriversList, CovarianceMatrixProvider)}
+     *
      */
-    @Deprecated
     public KalmanEstimatorBuilder estimatedMeasurementsParameters(final ParameterDriversList estimatedMeasurementsParams) {
         estimatedMeasurementsParameters = estimatedMeasurementsParams;
-        return this;
-    }
-
-    /** Configure the estimated measurement parameters.
-     * <p>
-     * If this method is not called, no measurement parameters will be estimated.
-     * </p>
-     * @param estimatedMeasurementsParams The estimated measurements' parameters list.
-     * @param provider covariance matrix provider for the estimated measurement parameters
-     * @return this object.
-     * @since 10.3
-     */
-    public KalmanEstimatorBuilder estimatedMeasurementsParameters(final ParameterDriversList estimatedMeasurementsParams,
-                                                                  final CovarianceMatrixProvider provider) {
-        estimatedMeasurementsParameters = estimatedMeasurementsParams;
-        measurementProcessNoiseMatrix   = provider;
         return this;
     }
 

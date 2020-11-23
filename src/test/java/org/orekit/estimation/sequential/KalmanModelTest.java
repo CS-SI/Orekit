@@ -173,7 +173,7 @@ public class KalmanModelTest {
         // Initialize Kalman
         final KalmanEstimatorBuilder kalmanBuilder = new KalmanEstimatorBuilder();
         kalmanBuilder.addPropagationConfiguration(propagatorBuilder, covMatrixProvider);
-        kalmanBuilder.estimatedMeasurementsParameters(estimatedMeasurementsParameters, null);
+        kalmanBuilder.estimatedMeasurementsParameters(estimatedMeasurementsParameters);
         this.kalman = kalmanBuilder.build();
         this.modelLogger = new ModelLogger();
         kalman.setObserver(modelLogger);
@@ -283,8 +283,7 @@ public class KalmanModelTest {
         // Instantiate a Model from attributes
         final KalmanModel model = new KalmanModel(Arrays.asList(propagatorBuilder),
                                                   Arrays.asList(covMatrixProvider),
-                                                  estimatedMeasurementsParameters,
-                                                  null);
+                                                  estimatedMeasurementsParameters);
 
         // Evaluate at t0
         // --------------

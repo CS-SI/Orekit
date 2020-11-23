@@ -136,7 +136,7 @@ public class DSSTKalmanModelTest {
         // Initialize Kalman
         final KalmanEstimatorBuilder kalmanBuilder = new KalmanEstimatorBuilder();
         kalmanBuilder.addPropagationConfiguration(propagatorBuilder, covMatrixProvider);
-        kalmanBuilder.estimatedMeasurementsParameters(estimatedMeasurementsParameters, null);
+        kalmanBuilder.estimatedMeasurementsParameters(estimatedMeasurementsParameters);
         this.kalman = kalmanBuilder.build();
         this.modelLogger = new ModelLogger();
         kalman.setObserver(modelLogger);
@@ -219,7 +219,6 @@ public class DSSTKalmanModelTest {
         final DSSTKalmanModel model = new DSSTKalmanModel(Arrays.asList(propagatorBuilder),
                                                   Arrays.asList(covMatrixProvider),
                                                   estimatedMeasurementsParameters,
-                                                  null,
                                                   PropagationType.MEAN,
                                                   PropagationType.MEAN);
 

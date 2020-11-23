@@ -42,9 +42,7 @@ public class ElevationMask implements Serializable {
 
     /**
      * Creates an instance of an Elevation mask based on the passed in parameter.
-     * @param mask azimuth-elevation mask (rad). First column (i.e. mask[i][0])
-     *             should contain azimuth values and the second column (i.e. mask[i][1])
-     *             should contain corresponding elevations
+     * @param mask azimuth-elevation mask (rad)
      */
     public ElevationMask(final double[][] mask) {
         this.azelmask = checkMask(mask);
