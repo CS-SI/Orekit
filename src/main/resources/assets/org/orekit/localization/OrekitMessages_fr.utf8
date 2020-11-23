@@ -595,7 +595,7 @@ NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = les observations aux dates {0} et {1}
 EXCEPTIONAL_DATA_CONTEXT = une utilisation de ExceptionalDataContext a été détectée. Ce mécanisme est généralement activé explicitement pour détecter des erreur de développement
 
 # this method is not applicable to AEM files
-CCSDS_AEM_INAPPLICABLE_METHOD = cette méthode n''est pas applicable aux fichiers AEM
+CCSDS_AEM_INAPPLICABLE_METHOD = cette méthode n'est pas applicable aux fichiers AEM
 
 # inconsistent time systems in the attitude blocks: {0} ≠ {1}
 CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = systèmes temporels incohérents dans des blocs d''attitude : {0} ≠ {1}
