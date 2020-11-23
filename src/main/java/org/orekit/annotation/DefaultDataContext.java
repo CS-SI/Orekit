@@ -31,7 +31,7 @@ import java.lang.annotation.Target;
  */
 @Documented
 @Target({ElementType.CONSTRUCTOR, ElementType.FIELD, ElementType.METHOD,
-        ElementType.TYPE})
+         ElementType.TYPE})
 @Retention(RetentionPolicy.CLASS)
 public @interface DefaultDataContext {
 }
