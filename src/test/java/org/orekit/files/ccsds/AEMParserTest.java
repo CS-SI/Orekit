@@ -430,6 +430,7 @@ public class AEMParserTest {
         final AEMFile file = parser.parse(inEntry, "AEMExample.txt");
         AemSatelliteEphemeris aemEph = file.getSatellites().get("1996-062A");
         Assert.assertEquals("1996-062A", aemEph.getId());
+        Assert.assertEquals(8, aemEph.getSegments().get(0).getInterpolationSamples());
         try {
             aemEph.getPropagator();
         } catch (OrekitException oe) {
@@ -463,11 +464,6 @@ public class AEMParserTest {
         }
         try {
             aemBlock.getMu();
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_AEM_INAPPLICABLE_METHOD, oe.getSpecifier());
-        }
-        try {
-            aemBlock.getInterpolationSamples();
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_AEM_INAPPLICABLE_METHOD, oe.getSpecifier());
         }

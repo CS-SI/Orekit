@@ -175,7 +175,7 @@ public class AEMWriterTest {
 
     @Deprecated
     @Test
-    public void testMultisatelliteFile() throws IOException {
+    public void testMultisatelliteFileDeprecated() throws IOException {
         final String id1 = "ID1";
         final String id2 = "ID2";
         AEMFile file = new StandInEphemerisFile();
@@ -199,7 +199,7 @@ public class AEMWriterTest {
     }
 
     @Test
-    public void testMultisatelliteFileNew() throws IOException {
+    public void testMultisatelliteFile() throws IOException {
         final String id1 = "ID1";
         final String id2 = "ID2";
         AEMFile file = new StandInEphemerisFile();

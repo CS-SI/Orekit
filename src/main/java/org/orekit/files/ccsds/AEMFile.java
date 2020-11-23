@@ -195,7 +195,6 @@ public class AEMFile extends ADMFile implements EphemerisFile {
             return metaData;
         }
 
-
         /**
          * This method is not applicable to AEM files and will throw an exception.
          */
@@ -217,14 +216,6 @@ public class AEMFile extends ADMFile implements EphemerisFile {
          */
         @Override
         public Frame getFrame() {
-            throw new OrekitException(OrekitMessages.CCSDS_AEM_INAPPLICABLE_METHOD);
-        }
-
-        /**
-         * This method is not applicable to AEM files and will throw an exception.
-         */
-        @Override
-        public int getInterpolationSamples() {
             throw new OrekitException(OrekitMessages.CCSDS_AEM_INAPPLICABLE_METHOD);
         }
 
@@ -260,16 +251,24 @@ public class AEMFile extends ADMFile implements EphemerisFile {
             throw new OrekitException(OrekitMessages.CCSDS_AEM_INAPPLICABLE_METHOD);
         }
 
+        /**
+         * Get the number of samples to use in interpolation.
+         * @return the number of points to use for interpolation.
+         */
+        @Override
+        public int getInterpolationSamples() {
+            return getInterpolationDegree() + 1;
+        }
 
         /**
          * Get the name of the center of the coordinate system the ephemeris is provided in.
          * This may be a natural origin, such as the center of the Earth, another satellite, etc.
          * @return the name of the frame center
          */
+        @Override
         public String getFrameCenterString() {
             return this.getMetaData().getCenterName();
         }
-
 
         /**
          * Get the reference frame A specifier as it appeared in the file.
@@ -566,12 +565,12 @@ public class AEMFile extends ADMFile implements EphemerisFile {
         private final List<AttitudeEphemeridesBlock> blocks;
 
         /**
-         * @deprecated Use {@link #AemSatelliteEphemeris(String, List)} instead.
-         *
          * Create a container for the set of ephemeris blocks in the file that pertain to
          * a single satellite. The ID of the satellite is set to ""
          * @param blocks containing ephemeris data for the satellite.
+         * @deprecated in 10.3, replaced by {@link #AemSatelliteEphemeris(String, List)}
          */
+        @Deprecated
         public AemSatelliteEphemeris(final List<AttitudeEphemeridesBlock> blocks) {
             this("", blocks);
         }
@@ -589,6 +588,10 @@ public class AEMFile extends ADMFile implements EphemerisFile {
 
         }
 
+        /**
+         * Get the satellite ID. The satellite ID is unique only within the same ephemeris file.
+         * @return the satellite's ID, never {@code null}.
+         */
         @Override
         public String getId() {
             return this.id;
