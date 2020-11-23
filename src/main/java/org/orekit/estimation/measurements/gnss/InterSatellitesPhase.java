@@ -92,6 +92,13 @@ public class InterSatellitesPhase extends AbstractMeasurement<InterSatellitesPha
         return wavelength;
     }
 
+    /** Get the driver for phase ambiguity.
+     * @return the driver for phase ambiguity
+     */
+    public ParameterDriver getAmbiguityDriver() {
+        return ambiguityDriver;
+    }
+
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurement<InterSatellitesPhase> theoreticalEvaluation(final int iteration,

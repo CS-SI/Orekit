@@ -374,9 +374,10 @@ public class IonoModifierTest {
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context, false),
+                                                               new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
@@ -398,7 +399,7 @@ public class IonoModifierTest {
 
             final double diffMetersSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
             // TODO: check threshold
-            Assert.assertEquals(0.0, diffMetersSec, 0.016);
+            Assert.assertEquals(0.0, diffMetersSec, 0.015);
 
         }
     }

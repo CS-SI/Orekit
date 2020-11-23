@@ -497,4 +497,26 @@ public class AEMParserTest {
 
         Assert.assertEquals(0.0, expected.getRotationRate().distance(actual.getRotationRate()), threshold);
     }
+
+    /**
+     * Check if the parser enters the correct interpolation degree
+     * (the parsed one or the default if there is none)
+     */
+    @Test
+    public void testDefaultInterpolationDegree()
+        throws URISyntaxException {
+
+        final String name = getClass().getResource("/ccsds/AEMExample.txt").toURI().getPath();
+        AEMParser parser = new AEMParser();
+
+        final AEMFile file = parser.parse(name);
+        Assert.assertEquals(7, file.getAttitudeBlocks().get(0).getInterpolationDegree());
+        Assert.assertEquals(0, file.getAttitudeBlocks().get(1).getInterpolationDegree());
+
+        parser = parser.withInterpolationDegree(5);
+
+        final AEMFile file2 = parser.parse(name);
+        Assert.assertEquals(7, file2.getAttitudeBlocks().get(0).getInterpolationDegree());
+        Assert.assertEquals(5, file2.getAttitudeBlocks().get(1).getInterpolationDegree());
+    }
 }
