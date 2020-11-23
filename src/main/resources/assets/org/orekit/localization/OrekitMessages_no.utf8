@@ -594,9 +594,6 @@ NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = observasjonene {0} og {1} er ikke kro
 # Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.
 EXCEPTIONAL_DATA_CONTEXT = Bruk av ExceptionalDataContext funnet. Denne brukes typisk til å oppdage utviklingsproblemer.
 
-# this method is not applicable to AEM files
-CCSDS_AEM_INAPPLICABLE_METHOD = <MISSING TRANSLATION>
-
 # inconsistent time systems in the attitude blocks: {0} ≠ {1}
 CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = <MISSING TRANSLATION>
 
