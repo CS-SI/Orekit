@@ -86,10 +86,8 @@ public class OrekitEphemerisFileTest {
     @Test
     public void testWritingToOEM() throws IOException {
         final double muTolerance = 1e-12;
-        // As the default format for position is 3 digits after decimal point in km the max precision in m is 1
-        final double positionTolerance = 1.;
-        // As the default format for velocity is 5 digits after decimal point in km/s the max precision in m/s is 1e-2
-        final double velocityTolerance = 1e-2;
+        final double positionTolerance = 1e-8;
+        final double velocityTolerance = 1e-8;
         final String satId = "SATELLITE1";
         final double sma = 10000000;
         final double inc = Math.toRadians(45.0);
@@ -170,7 +168,7 @@ public class OrekitEphemerisFileTest {
         propagator.propagate(segment.getStart(), segment.getStop());
         ephemerisSegmentPropagator.propagate(segment.getStart(), segment.getStop());
 
-        final double dateEpsilon = 4.2e-5;
+        final double dateEpsilon = 1.0e-9;
         assertTrue(referenceLogger.getLoggedEvents().size() > 0);
         assertEquals(referenceLogger.getLoggedEvents().size(), lookupLogger.getLoggedEvents().size());
         for (int i = 0; i < referenceLogger.getLoggedEvents().size(); i++) {
