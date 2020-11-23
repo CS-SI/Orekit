@@ -238,8 +238,7 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
         try (BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
             for (line = r.readLine(); line != null; line = r.readLine()) {
                 ++lineNumber;
-                line = line.trim();
-                if (line.length() == 0) {
+                if (line.trim().length() == 0) {
                     continue;
                 }
                 final String[] tab = SEPARATOR.split(line);

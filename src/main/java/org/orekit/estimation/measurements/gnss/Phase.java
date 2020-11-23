@@ -112,14 +112,6 @@ public class Phase extends AbstractMeasurement<Phase> {
         return wavelength;
     }
 
-    /** Get the driver for phase ambiguity.
-     * @return the driver for phase ambiguity
-     * @since 10.3
-     */
-    public ParameterDriver getAmbiguityDriver() {
-        return ambiguityDriver;
-    }
-
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurement<Phase> theoreticalEvaluation(final int iteration,

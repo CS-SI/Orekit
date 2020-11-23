@@ -21,52 +21,6 @@
   </properties>
   <body>
     <release version="10.3" date="TBD" description="TBD">
-      <action dev="raphael" type="add" issue="686">
-        Allowed user-defined format for ephemeris data lines in
-        StreamingAemWriter, AEMWriter, StreamingOemWriter and OEMWriter.
-      </action>
-   	  <action dev="bryan" type="fix" issue="683">
-      	Updated building instructions.
-      </action>
-   	  <action dev="bryan" type="add" issue="734">
-      	Added getters for phase measurement ambiguity driver.
-      </action>
-   	  <action dev="bryan" type="fix" issue="696">
-      	Allowed to configure initial covariance for measurements in Kalman Filter.
-      </action>
-      <action dev="thomas, bryan" type="add" issue="709">
-        Added clock drift contribution to range rate measurements.
-      </action>
-   	  <action dev="bryan" type="fix" issue="687">
-      	Fixed Javadoc of ElevationMask.
-      </action>
-      <action dev="raphael" type="fix" issue="711">
-        Allowed definition of a default interpolation degree in both AEMParser and OEMParser.
-      </action>
-      <action dev="bryan" type="add" issue="733">
-        Added Lense-Thirring and De Sitter relativistic effects.
-      </action>
-      <action dev="melanisti" type="fix" issue="725">
-        Fixed missing measurement parameter in InterSatellitesRange measurement.
-      </action>
-      <action dev="bryan" type="add" issue="732">
-        Added documentation for checkstyle configuration.
-      </action>
-   	  <action dev="thomas" type="fix" issue="730">
-      	Removed useless loop over an empty list
-      </action>
-      <action dev="luc" type="fix" issue="731">
-        Fixed parsing of some ICGEM gravity fields files.
-      </action>
-      <action dev="raphael" type="fix" issue="720">
-      	Added support for measurements parameters in UnivariateProcessNoise
-      </action>
-      <action dev="luc" type="fix" issue="729">
-        Fixed wrong handling of RESET-STATE in analytical propagators.
-      </action>
-      <action dev="luc" type="add" issue="728">
-        Allow creating a node detector without an orbit.
-      </action>
       <action dev="bryan" type="add" issue="671">
         Added support for laser ranging file formats.
       </action>

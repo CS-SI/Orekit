@@ -49,23 +49,18 @@ public class AEMWriter {
     /** Space object name, usually a common name for an object like "ISS". **/
     private final String spaceObjectName;
 
-    /** Format for attitude ephemeris data output. */
-    private final String attitudeFormat;
-
     /**
-     * Standard default constructor that creates a writer with default configurations
-     * including {@link StreamingAemWriter#DEFAULT_ATTITUDE_FORMAT Default formatting}.
+     * Standard default constructor that creates a writer with default
+     * configurations.
      */
     public AEMWriter() {
-        this(StreamingAemWriter.DEFAULT_ORIGINATOR, null, null,
-             StreamingAemWriter.DEFAULT_ATTITUDE_FORMAT);
+        this(StreamingAemWriter.DEFAULT_ORIGINATOR, null, null);
     }
 
     /**
-     * Constructor used to create a new AEM writer configured with the necessary parameters
-     * to successfully fill in all required fields that aren't part of a standard object
-     * and using {@link StreamingAemWriter#DEFAULT_ATTITUDE_FORMAT default formatting}
-     * for attitude ephemeris data output.
+     * Constructor used to create a new AEM writer configured with the necessary
+     * parameters to successfully fill in all required fields that aren't part
+     * of a standard object.
      *
      * @param originator the originator field string
      * @param spaceObjectId the spacecraft ID
@@ -73,34 +68,15 @@ public class AEMWriter {
      */
     public AEMWriter(final String originator, final String spaceObjectId,
                      final String spaceObjectName) {
-        this(originator, spaceObjectId, spaceObjectName,
-             StreamingAemWriter.DEFAULT_ATTITUDE_FORMAT);
-    }
-
-    /**
-     * Constructor used to create a new AEM writer configured with the necessary
-     * parameters to successfully fill in all required fields that aren't part
-     * of a standard object and user-defined attitude ephemeris data output format.
-     *
-     * @param originator the originator field string
-     * @param spaceObjectId the spacecraft ID
-     * @param spaceObjectName the space object common name
-     * @param attitudeFormat {@link java.util.Formatter format parameters} for
-     *                       attitude ephemeris data output
-     * @since 10.3
-     */
-    public AEMWriter(final String originator, final String spaceObjectId,
-                     final String spaceObjectName, final String attitudeFormat) {
         this.originator          = originator;
         this.spaceObjectId       = spaceObjectId;
         this.spaceObjectName     = spaceObjectName;
-        this.attitudeFormat      = attitudeFormat;
     }
 
     /**
      * Write the passed in {@link AEMFile} using the passed in {@link Appendable}.
      * @param writer a configured Appendable to feed with text
-     * @param aemFile a populated AEM file to serialize into the buffer
+     * @param aemFile  a populated aem file to serialize into the buffer
      * @throws IOException if any buffer writing operations fail or if the underlying
      *         format doesn't support a configuration in the EphemerisFile
      *         for example having multiple satellites in one file, having
@@ -164,7 +140,7 @@ public class AEMWriter {
 
         // Writer for AEM files
         final StreamingAemWriter aemWriter =
-                        new StreamingAemWriter(writer, timeScale, metadata, attitudeFormat);
+                        new StreamingAemWriter(writer, timeScale, metadata);
         aemWriter.writeHeader();
 
         // Loop on segments

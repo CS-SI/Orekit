@@ -51,7 +51,6 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
 
 public class AEMWriterTest {
 
-    // The default format writes 5 digits after the decimal point hence the quaternion precision
     private static final double QUATERNION_PRECISION = 1e-5;
     private static final double DATE_PRECISION = 1e-3;
 
@@ -236,47 +235,6 @@ public class AEMWriterTest {
 
         final AEMFile generatedAemFile = parser.parse(tempAEMFilePath);
         assertEquals(aemFile.getHeaderComment().get(0), generatedAemFile.getHeaderComment().get(0));
-    }
-
-    /**
-     * Check writing an AEM with format parameters for attitude.
-     *
-     * @throws IOException on error
-     */
-    @Test
-    public void testWriteAemFormat() throws IOException {
-        // setup
-        String exampleFile = "/ccsds/AEMExample7.txt";
-        InputStream inEntry = getClass().getResourceAsStream(exampleFile);
-        AEMParser parser = new AEMParser().withConventions(IERSConventions.IERS_2010);
-        AEMFile aemFile = parser.parse(inEntry, "AEMExample7.txt");
-        StringBuilder buffer = new StringBuilder();
-
-        AEMWriter writer = new AEMWriter(aemFile.getOriginator(),
-                                         aemFile.getAttitudeBlocks().get(0).getMetaData().getObjectID(),
-                                         aemFile.getAttitudeBlocks().get(0).getMetaData().getObjectName(),
-                                         "%.2f");
-
-        writer.write(buffer, aemFile);
-
-        String[] lines = buffer.toString().split("\n");
-
-        assertEquals(lines[21], "2002-12-18T12:00:00.331 0.57 0.03 0.46 0.68");
-        assertEquals(lines[22], "2002-12-18T12:01:00.331 0.42 -0.46 0.24 0.75");
-        assertEquals(lines[23], "2002-12-18T12:02:00.331 -0.85 0.27 -0.07 0.46");
-
-        // Default format
-        writer = new AEMWriter(aemFile.getOriginator(),
-                               aemFile.getAttitudeBlocks().get(0).getMetaData().getObjectID(),
-                               aemFile.getAttitudeBlocks().get(0).getMetaData().getObjectName());
-        buffer = new StringBuilder();
-        writer.write(buffer, aemFile);
-
-        String[] lines2 = buffer.toString().split("\n");
-
-        assertEquals(lines2[21], "2002-12-18T12:00:00.331  0.56748  0.03146  0.45689  0.68427");
-        assertEquals(lines2[22], "2002-12-18T12:01:00.331  0.42319 -0.45697  0.23784  0.74533");
-        assertEquals(lines2[23], "2002-12-18T12:02:00.331 -0.84532  0.26974 -0.06532  0.45652");
     }
 
     private static void compareAemAttitudeBlocks(AttitudeEphemeridesBlock block1, AttitudeEphemeridesBlock block2) {

@@ -239,22 +239,10 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
     }
 
     /** {@inheritDoc} */
-    @Deprecated
     public KalmanModel buildKalmanModel(final List<IntegratedPropagatorBuilder> propagatorBuilders,
                                   final List<CovarianceMatrixProvider> covarianceMatricesProviders,
                                   final ParameterDriversList estimatedMeasurementsParameters) {
-        return new KalmanModel(propagatorBuilders, covarianceMatricesProviders,
-                               estimatedMeasurementsParameters);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public KalmanModel buildKalmanModel(final List<IntegratedPropagatorBuilder> propagatorBuilders,
-                                  final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                                  final ParameterDriversList estimatedMeasurementsParameters,
-                                  final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
-        return new KalmanModel(propagatorBuilders, covarianceMatricesProviders,
-                               estimatedMeasurementsParameters, measurementProcessNoiseMatrix);
+        return new KalmanModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters);
     }
 
     /** Check if Newtonian attraction force model is available.

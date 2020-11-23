@@ -92,9 +92,6 @@ public class DSSTKalmanModel implements KalmanODModel {
     /** Providers for covariance matrices. */
     private final List<CovarianceMatrixProvider> covarianceMatricesProviders;
 
-    /** Process noise matrix provider for measurement parameters. */
-    private final CovarianceMatrixProvider measurementProcessNoiseMatrix;
-
     /** Indirection arrays to extract the noise components for estimated parameters. */
     private final int[][] covarianceIndirection;
 
@@ -137,39 +134,18 @@ public class DSSTKalmanModel implements KalmanODModel {
     /** Type of the elements used to define the orbital state.*/
     private PropagationType stateType;
 
-    /** Kalman process model constructor.
+    /** Kalman process model constructor (package private).
      * @param propagatorBuilders propagators builders used to evaluate the orbits.
      * @param covarianceMatricesProviders providers for covariance matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
      * @param propagationType type of the orbit used for the propagation (mean or osculating)
      * @param stateType type of the elements used to define the orbital state (mean or osculating)
-     * @deprecated since 10.3, replaced by {@link
-     * #DSSTKalmanModel(List, List, ParameterDriversList, CovarianceMatrixProvider, PropagationType, PropagationType)}
-     */
-    @Deprecated
-    public DSSTKalmanModel(final List<IntegratedPropagatorBuilder> propagatorBuilders,
-                           final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                           final ParameterDriversList estimatedMeasurementParameters,
-                           final PropagationType propagationType,
-                           final PropagationType stateType) {
-        this(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementParameters,
-             null, propagationType, stateType);
-    }
-
-    /** Kalman process model constructor.
-     * @param propagatorBuilders propagators builders used to evaluate the orbits.
-     * @param covarianceMatricesProviders providers for covariance matrices
-     * @param estimatedMeasurementParameters measurement parameters to estimate
-     * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
-     * @param propagationType type of the orbit used for the propagation (mean or osculating)
-     * @param stateType type of the elements used to define the orbital state (mean or osculating)
      */
     public DSSTKalmanModel(final List<IntegratedPropagatorBuilder> propagatorBuilders,
-                           final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                           final ParameterDriversList estimatedMeasurementParameters,
-                           final CovarianceMatrixProvider measurementProcessNoiseMatrix,
-                           final PropagationType propagationType,
-                           final PropagationType stateType) {
+          final List<CovarianceMatrixProvider> covarianceMatricesProviders,
+          final ParameterDriversList estimatedMeasurementParameters,
+          final PropagationType propagationType,
+          final PropagationType stateType) {
 
         this.builders                        = propagatorBuilders;
         this.estimatedMeasurementsParameters = estimatedMeasurementParameters;
@@ -245,9 +221,8 @@ public class DSSTKalmanModel implements KalmanODModel {
         }
 
         // Store providers for process noise matrices
-        this.covarianceMatricesProviders   = covarianceMatricesProviders;
-        this.measurementProcessNoiseMatrix = measurementProcessNoiseMatrix;
-        this.covarianceIndirection         = new int[covarianceMatricesProviders.size()][columns];
+        this.covarianceMatricesProviders = covarianceMatricesProviders;
+        this.covarianceIndirection       = new int[covarianceMatricesProviders.size()][columns];
         for (int k = 0; k < covarianceIndirection.length; ++k) {
             final ParameterDriversList orbitDrivers      = builders.get(k).getOrbitalParametersDrivers();
             final ParameterDriversList parametersDrivers = builders.get(k).getPropagationParametersDrivers();
@@ -310,30 +285,12 @@ public class DSSTKalmanModel implements KalmanODModel {
         // Set up initial covariance
         final RealMatrix physicalProcessNoise = MatrixUtils.createRealMatrix(columns, columns);
         for (int k = 0; k < covarianceMatricesProviders.size(); ++k) {
-
-            // Number of estimated measurement parameters
-            final int nbMeas = estimatedMeasurementParameters.getNbParams();
-
-            // Number of estimated dynamic parameters (orbital + propagation)
-            final int nbDyn  = orbitsEndColumns[k] - orbitsStartColumns[k] +
-                               estimatedPropagationParameters[k].getNbParams();
-
-            // Covariance matrix
-            final RealMatrix noiseK = MatrixUtils.createRealMatrix(nbDyn + nbMeas, nbDyn + nbMeas);
-            final RealMatrix noiseP = covarianceMatricesProviders.get(k).
+            final RealMatrix noiseK = covarianceMatricesProviders.get(k).
                                       getInitialCovarianceMatrix(correctedSpacecraftStates[k]);
-            noiseK.setSubMatrix(noiseP.getData(), 0, 0);
-            if (measurementProcessNoiseMatrix != null) {
-                final RealMatrix noiseM = measurementProcessNoiseMatrix.
-                                          getInitialCovarianceMatrix(correctedSpacecraftStates[k]);
-                noiseK.setSubMatrix(noiseM.getData(), nbDyn, nbDyn);
-            }
-
             checkDimension(noiseK.getRowDimension(),
                            builders.get(k).getOrbitalParametersDrivers(),
                            builders.get(k).getPropagationParametersDrivers(),
                            estimatedMeasurementsParameters);
-
             final int[] indK = covarianceIndirection[k];
             for (int i = 0; i < indK.length; ++i) {
                 if (indK[i] >= 0) {
@@ -987,27 +944,9 @@ public class DSSTKalmanModel implements KalmanODModel {
         final RealMatrix physicalProcessNoise = MatrixUtils.createRealMatrix(previousState.getDimension(),
                                                                              previousState.getDimension());
         for (int k = 0; k < covarianceMatricesProviders.size(); ++k) {
-
-            // Number of estimated measurement parameters
-            final int nbMeas = estimatedMeasurementsParameters.getNbParams();
-
-            // Number of estimated dynamic parameters (orbital + propagation)
-            final int nbDyn  = orbitsEndColumns[k] - orbitsStartColumns[k] +
-                               estimatedPropagationParameters[k].getNbParams();
-
-            // Covariance matrix
-            final RealMatrix noiseK = MatrixUtils.createRealMatrix(nbDyn + nbMeas, nbDyn + nbMeas);
-            final RealMatrix noiseP = covarianceMatricesProviders.get(k).
+            final RealMatrix noiseK = covarianceMatricesProviders.get(k).
                                       getProcessNoiseMatrix(correctedSpacecraftStates[k],
                                                             predictedSpacecraftStates[k]);
-            noiseK.setSubMatrix(noiseP.getData(), 0, 0);
-            if (measurementProcessNoiseMatrix != null) {
-                final RealMatrix noiseM = measurementProcessNoiseMatrix.
-                                          getProcessNoiseMatrix(correctedSpacecraftStates[k],
-                                                                predictedSpacecraftStates[k]);
-                noiseK.setSubMatrix(noiseM.getData(), nbDyn, nbDyn);
-            }
-
             checkDimension(noiseK.getRowDimension(),
                            builders.get(k).getOrbitalParametersDrivers(),
                            builders.get(k).getPropagationParametersDrivers(),

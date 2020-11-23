@@ -38,22 +38,15 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
     private final boolean twoWay;
     private final ObservableSatellite satellite;
 
-    public RangeRateMeasurementCreator(final Context context, boolean twoWay,
-                                       final double satClockDrift) {
+    public RangeRateMeasurementCreator(final Context context, boolean twoWay) {
         this.context   = context;
         this.twoWay    = twoWay;
         this.satellite = new ObservableSatellite(0);
-        this.satellite.getClockDriftDriver().setValue(satClockDrift);
-    }
-    
-    public ObservableSatellite getSatellite() {
-        return satellite;
     }
 
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
         for (final GroundStation station : context.stations) {
             for (ParameterDriver driver : Arrays.asList(station.getClockOffsetDriver(),
-                                                        station.getClockDriftDriver(),
                                                         station.getEastOffsetDriver(),
                                                         station.getNorthOffsetDriver(),
                                                         station.getZenithOffsetDriver(),
@@ -67,17 +60,13 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
                     driver.setReferenceDate(s0.getDate());
                 }
             }
-        }
-        if (satellite.getClockDriftDriver().getReferenceDate() == null) {
-            satellite.getClockDriftDriver().setReferenceDate(s0.getDate());
+
         }
     }
 
     public void handleStep(final SpacecraftState currentState, final boolean isLast) {
         for (final GroundStation station : context.stations) {
-            final double           groundDft = station.getClockDriftDriver().getValue();
-            final double           satDft    = satellite.getClockDriftDriver().getValue();
-            final double           deltaD    = Constants.SPEED_OF_LIGHT * (groundDft - satDft);
+
             final AbsoluteDate     date      = currentState.getDate();
             final Frame            inertial  = currentState.getFrame();
             final Vector3D         position  = currentState.getPVCoordinates().getPosition();
@@ -123,7 +112,7 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
                 // range rate at the date of reception
                 final double rr = twoWay ?
                                           0.5 * (deltaVr.dotProduct(receptionLOS) + deltaVe.dotProduct(emissionLOS)) :
-                                              deltaVr.dotProduct(receptionLOS) + deltaD;
+                                              deltaVr.dotProduct(receptionLOS);
 
                                           addMeasurement(new RangeRate(station, receptionDate,
                                                                        rr,
