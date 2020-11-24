@@ -175,7 +175,7 @@ public abstract class ADMParser {
      * <p>
      * This method may be used to ensure the launch year number and pieces are
      * correctly set if they are not present in the CCSDS file header in the
-     * OBJECT_ID in the form YYYY-NNN-P{PP}. If they are already in the header,
+     * OBJECT_ID in the form YYYY-NNNP{PP}. If they are already in the header,
      * they will be parsed automatically regardless of this method being called
      * or not (i.e. header information override information set here).
      * </p>

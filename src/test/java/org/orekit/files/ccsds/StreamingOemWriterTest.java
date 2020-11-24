@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -64,6 +65,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Evan Ward
  */
 public class StreamingOemWriterTest {
+    // As the default format for position is 3 digits after decimal point in km the max precision in m is 1
+    private static final double POSITION_PRECISION = 1; // in m
+    // As the default format for velocity is 5 digits after decimal point in km/s the max precision in m/s is 1e-2
+    private static final double VELOCITY_PRECISION = 1e-2; //in m/s
 
     /** Set Orekit data. */
     @Before
@@ -243,7 +248,7 @@ public class StreamingOemWriterTest {
             BufferedReader reader =
                     new BufferedReader(new StringReader(buffer.toString()));
             OEMFile generatedOemFile = parser.parse(reader, "buffer");
-            compareOemFiles(oemFile, generatedOemFile, 1e-7, 1e-7);
+            compareOemFiles(oemFile, generatedOemFile, POSITION_PRECISION, VELOCITY_PRECISION);
 
             // check calling the methods directly
             buffer = new StringBuilder();
@@ -263,7 +268,7 @@ public class StreamingOemWriterTest {
             // verify
             reader = new BufferedReader(new StringReader(buffer.toString()));
             generatedOemFile = parser.parse(reader, "buffer");
-            compareOemFiles(oemFile, generatedOemFile, 1e-7, 1e-7);
+            compareOemFiles(oemFile, generatedOemFile, POSITION_PRECISION, VELOCITY_PRECISION);
 
         }
 
@@ -310,6 +315,57 @@ public class StreamingOemWriterTest {
                     p_tol,
                     v_tol);
         }
+    }
+
+    /**
+     * Check writing an OEM with format parameters for position and velocity.
+     *
+     * @throws IOException on error
+     */
+    @Test
+    public void testWriteOemFormat() throws IOException {
+        // setup
+        String exampleFile = "/ccsds/OEMExample4.txt";
+        InputStream inEntry = getClass().getResourceAsStream(exampleFile);
+        OEMParser parser = new OEMParser();
+        OEMFile oemFile = parser.parse(inEntry, "OEMExample4.txt");
+
+        EphemeridesBlock block = oemFile.getEphemeridesBlocks().get(0);
+        Frame frame = block.getFrame();
+
+        TimeScale utc = TimeScalesFactory.getUTC();
+        Map<Keyword, String> metadata = new LinkedHashMap<>();
+        Map<Keyword, String> segmentData = new LinkedHashMap<>();
+
+        StringBuilder buffer = new StringBuilder();
+        StreamingOemWriter writer = new StreamingOemWriter(buffer, utc, metadata, "%.2f", "%.3f");
+        Segment segment = writer.newSegment(frame, segmentData);
+
+        for (TimeStampedPVCoordinates coordinate : block.getCoordinates()) {
+            segment.writeEphemerisLine(coordinate);
+        }
+
+        String expected = "2002-12-18T12:00:00.331 2789.62 -280.05 -1746.76 4.734 -2.496 -1.042\n"
+                        + "2002-12-18T12:01:00.331 2783.42 -308.14 -1877.07 5.186 -2.421 -1.996\n"
+                        + "2002-12-18T12:02:00.331 2776.03 -336.86 -2008.68 5.637 -2.340 -1.947\n";
+
+        assertEquals(buffer.toString(), expected);
+
+        buffer = new StringBuilder();
+        writer = new StreamingOemWriter(buffer, utc, metadata);
+        segment = writer.newSegment(frame, segmentData);
+
+        for (TimeStampedPVCoordinates coordinate : block.getCoordinates()) {
+            segment.writeEphemerisLine(coordinate);
+        }
+
+        expected = "2002-12-18T12:00:00.331  2789.619 -280.045 -1746.755  4.73372 -2.49586 -1.04195\n"
+                 + "2002-12-18T12:01:00.331  2783.419 -308.143 -1877.071  5.18604 -2.42124 -1.99608\n"
+                 + "2002-12-18T12:02:00.331  2776.033 -336.859 -2008.682  5.63678 -2.33951 -1.94687\n";
+;
+
+        assertEquals(buffer.toString(), expected);
+
     }
 
 }
