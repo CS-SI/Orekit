@@ -78,7 +78,7 @@ public class AEMFile extends ADMFile implements AttitudeEphemerisFile {
         }
     }
 
-
+    /** {@inheritDoc} */
     @Override
     public Map<String, AemSatelliteEphemeris> getSatellites() {
         final Map<String, List<AttitudeEphemeridesBlock>> satellites = new HashMap<>();
@@ -128,21 +128,25 @@ public class AEMFile extends ADMFile implements AttitudeEphemerisFile {
             this.blocks = blocks;
         }
 
+        /** {@inheritDoc} */
         @Override
         public String getId() {
             return this.id;
         }
 
+        /** {@inheritDoc} */
         @Override
         public List<AttitudeEphemeridesBlock> getSegments() {
             return Collections.unmodifiableList(blocks);
         }
 
+        /** {@inheritDoc} */
         @Override
         public AbsoluteDate getStart() {
             return blocks.get(0).getStart();
         }
 
+        /** {@inheritDoc} */
         @Override
         public AbsoluteDate getStop() {
             return blocks.get(blocks.size() - 1).getStop();
@@ -226,6 +230,7 @@ public class AEMFile extends ADMFile implements AttitudeEphemerisFile {
             return attitudeDataLines;
         }
 
+        /** {@inheritDoc} */
         @Override
         public List<TimeStampedAngularCoordinates> getAngularCoordinates() {
             return Collections.unmodifiableList(this.attitudeDataLines);
@@ -239,12 +244,13 @@ public class AEMFile extends ADMFile implements AttitudeEphemerisFile {
             return metaData;
         }
 
+        /** {@inheritDoc} */
         @Override
         public String getFrameCenterString() {
             return this.getMetaData().getCenterName();
         }
 
-
+        /** {@inheritDoc} */
         @Override
         public String getRefFrameAString() {
             return refFrameAString;
@@ -258,6 +264,7 @@ public class AEMFile extends ADMFile implements AttitudeEphemerisFile {
             this.refFrameAString = frame;
         }
 
+        /** {@inheritDoc} */
         @Override
         public String getRefFrameBString() {
             return this.refFrameBString;
@@ -287,6 +294,7 @@ public class AEMFile extends ADMFile implements AttitudeEphemerisFile {
             this.rateFrameString = frame;
         }
 
+        /** {@inheritDoc} */
         @Override
         public String getAttitudeDirection() {
             return attitudeDir;
@@ -300,6 +308,7 @@ public class AEMFile extends ADMFile implements AttitudeEphemerisFile {
             this.attitudeDir = direction;
         }
 
+        /** {@inheritDoc} */
         @Override
         public String getAttitudeType() {
             return attitudeType;
@@ -313,6 +322,7 @@ public class AEMFile extends ADMFile implements AttitudeEphemerisFile {
             this.attitudeType = type;
         }
 
+        /** {@inheritDoc} */
         @Override
         public boolean isFirst() {
             return isFirst;
@@ -342,11 +352,13 @@ public class AEMFile extends ADMFile implements AttitudeEphemerisFile {
             this.eulerRotSeq = eulerRotSeq;
         }
 
+        /** {@inheritDoc} */
         @Override
         public String getTimeScaleString() {
             return metaData.getTimeSystem().toString();
         }
 
+        /** {@inheritDoc} */
         @Override
         public TimeScale getTimeScale() {
             return metaData.getTimeScale();
@@ -416,6 +428,7 @@ public class AEMFile extends ADMFile implements AttitudeEphemerisFile {
             this.useableStopTime = useableStopTime;
         }
 
+        /** {@inheritDoc} */
         @Override
         public AbsoluteDate getStart() {
             // usable start time overrides start time if it is set
@@ -427,6 +440,7 @@ public class AEMFile extends ADMFile implements AttitudeEphemerisFile {
             }
         }
 
+        /** {@inheritDoc} */
         @Override
         public AbsoluteDate getStop() {
             // useable stop time overrides stop time if it is set
@@ -438,6 +452,7 @@ public class AEMFile extends ADMFile implements AttitudeEphemerisFile {
             }
         }
 
+        /** {@inheritDoc} */
         @Override
         public String getInterpolationMethod() {
             return interpolationMethod;
@@ -467,6 +482,7 @@ public class AEMFile extends ADMFile implements AttitudeEphemerisFile {
             this.interpolationDegree = interpolationDegree;
         }
 
+        /** {@inheritDoc} */
         @Override
         public int getInterpolationSamples() {
             // From the standard it is not entirely clear how to interpret the degree.
@@ -487,6 +503,7 @@ public class AEMFile extends ADMFile implements AttitudeEphemerisFile {
             this.attitudeDataLinesComment = new ArrayList<String>(ephemeridesDataLinesComment);
         }
 
+        /** {@inheritDoc} */
         @Override
         public RotationOrder getRotationOrder() {
             return rotationOrder;

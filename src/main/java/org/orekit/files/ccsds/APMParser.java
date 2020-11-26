@@ -115,6 +115,7 @@ public class APMParser extends ADMParser {
     }
 
     /** {@inheritDoc} */
+    @Override
     public APMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
         return new APMParser(newMissionReferenceDate, getMu(), getConventions(), isSimpleEOP(),
                              getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
@@ -122,6 +123,7 @@ public class APMParser extends ADMParser {
     }
 
     /** {@inheritDoc} */
+    @Override
     public APMParser withMu(final double newMu) {
         return new APMParser(getMissionReferenceDate(), newMu, getConventions(), isSimpleEOP(),
                              getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
@@ -129,6 +131,7 @@ public class APMParser extends ADMParser {
     }
 
     /** {@inheritDoc} */
+    @Override
     public APMParser withConventions(final IERSConventions newConventions) {
         return new APMParser(getMissionReferenceDate(), getMu(), newConventions, isSimpleEOP(),
                              getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
@@ -136,6 +139,7 @@ public class APMParser extends ADMParser {
     }
 
     /** {@inheritDoc} */
+    @Override
     public APMParser withSimpleEOP(final boolean newSimpleEOP) {
         return new APMParser(getMissionReferenceDate(), getMu(), getConventions(), newSimpleEOP,
                              getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
@@ -143,6 +147,7 @@ public class APMParser extends ADMParser {
     }
 
     /** {@inheritDoc} */
+    @Override
     public APMParser withInternationalDesignator(final int newLaunchYear,
                                                  final int newLaunchNumber,
                                                  final String newLaunchPiece) {
@@ -172,6 +177,7 @@ public class APMParser extends ADMParser {
     }
 
     /** {@inheritDoc} */
+    @Override
     public APMFile parse(final InputStream stream, final String fileName) {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
 
