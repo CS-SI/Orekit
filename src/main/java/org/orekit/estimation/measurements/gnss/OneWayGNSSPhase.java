@@ -108,6 +108,13 @@ public class OneWayGNSSPhase extends AbstractMeasurement<OneWayGNSSPhase> {
         return wavelength;
     }
 
+    /** Get the driver for phase ambiguity.
+     * @return the driver for phase ambiguity
+     */
+    public ParameterDriver getAmbiguityDriver() {
+        return ambiguityDriver;
+    }
+
     /** {@inheritDoc} */
     @Override
     protected EstimatedMeasurement<OneWayGNSSPhase> theoreticalEvaluation(final int iteration,

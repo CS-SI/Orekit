@@ -192,7 +192,7 @@ public class OEMFile extends ODMFile implements EphemerisFile {
         /** List of ephemerides data lines. */
         private List<TimeStampedPVCoordinates> ephemeridesDataLines;
 
-        /** True iff all data points in this block have accelleration data. */
+        /** True iff all data points in this block have acceleration data. */
         private boolean hasAcceleration;
 
         /** List of covariance matrices. */
@@ -370,7 +370,7 @@ public class OEMFile extends ODMFile implements EphemerisFile {
         /** {@inheritDoc} */
         @Override
         public AbsoluteDate getStart() {
-            // usable start time overrides start time if it is set
+            // useable start time overrides start time if it is set
             final AbsoluteDate start = this.getUseableStartTime();
             if (start != null) {
                 return start;
@@ -532,6 +532,5 @@ public class OEMFile extends ODMFile implements EphemerisFile {
         }
 
     }
-
 
 }

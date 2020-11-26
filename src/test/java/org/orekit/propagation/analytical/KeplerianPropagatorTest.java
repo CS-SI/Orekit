@@ -35,12 +35,15 @@ import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
+import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.maneuvers.ImpulseManeuver;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CircularOrbit;
@@ -64,7 +67,9 @@ import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandlerMultiplexer;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -673,6 +678,68 @@ public class KeplerianPropagatorTest {
         PVCoordinates pvWithMu1 = new KeplerianPropagator(orbit2, orbit1.getMu()).propagate(target).getPVCoordinates();
         Assert.assertEquals(0.026054, Vector3D.distance(pv1.getPosition(), pv2.getPosition()),       1.0e-6);
         Assert.assertEquals(0.0,      Vector3D.distance(pv1.getPosition(), pvWithMu1.getPosition()), 1.0e-15);
+    }
+
+    @Test
+    public void testResetStateForward() {
+        final Frame eme2000 = FramesFactory.getEME2000();
+        final AbsoluteDate date = new AbsoluteDate(new DateComponents(2008, 6, 23),
+                                                   new TimeComponents(14, 0, 0),
+                                                   TimeScalesFactory.getUTC());
+        final Orbit orbit = new KeplerianOrbit(8000000.0, 0.01, 0.87, 2.44, 0.21, -1.05, PositionAngle.MEAN,
+                                           eme2000,
+                                           date, Constants.EIGEN5C_EARTH_MU);
+        final KeplerianPropagator propagator = new KeplerianPropagator(orbit, new LofOffset(eme2000, LOFType.LVLH));
+
+        // maneuver along Z in attitude aligned with LVLH will change orbital plane
+        final AbsoluteDate maneuverDate = date.shiftedBy(1000.0);
+        propagator.addEventDetector(new ImpulseManeuver<>(new DateDetector(maneuverDate),
+                                                          new Vector3D(0.0, 0.0, -100.0),
+                                                          350.0));
+
+        final Vector3D initialNormal = orbit.getPVCoordinates().getMomentum();
+        propagator.setMasterMode(60.0, (state, isLast) -> {
+            final Vector3D currentNormal = state.getPVCoordinates().getMomentum();
+            if (state.getDate().isBefore(maneuverDate)) {
+                Assert.assertEquals(0.000, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
+            } else {
+                Assert.assertEquals(0.014, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
+            }
+        });
+
+        propagator.propagate(orbit.getDate().shiftedBy(1500.0));
+
+    }
+
+    @Test
+    public void testResetStateBackward() {
+        final Frame eme2000 = FramesFactory.getEME2000();
+        final AbsoluteDate date = new AbsoluteDate(new DateComponents(2008, 6, 23),
+                                                   new TimeComponents(14, 0, 0),
+                                                   TimeScalesFactory.getUTC());
+        final Orbit orbit = new KeplerianOrbit(8000000.0, 0.01, 0.87, 2.44, 0.21, -1.05, PositionAngle.MEAN,
+                                           eme2000,
+                                           date, Constants.EIGEN5C_EARTH_MU);
+        final KeplerianPropagator propagator = new KeplerianPropagator(orbit, new LofOffset(eme2000, LOFType.LVLH));
+
+        // maneuver along Z in attitude aligned with LVLH will change orbital plane
+        final AbsoluteDate maneuverDate = date.shiftedBy(-1000.0);
+        propagator.addEventDetector(new ImpulseManeuver<>(new DateDetector(maneuverDate),
+                                                          new Vector3D(0.0, 0.0, -100.0),
+                                                          350.0));
+
+        final Vector3D initialNormal = orbit.getPVCoordinates().getMomentum();
+        propagator.setMasterMode(60.0, (state, isLast) -> {
+            final Vector3D currentNormal = state.getPVCoordinates().getMomentum();
+            if (state.getDate().isAfter(maneuverDate)) {
+                Assert.assertEquals(0.000, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
+            } else {
+                Assert.assertEquals(0.014, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
+            }
+        });
+
+        propagator.propagate(orbit.getDate().shiftedBy(-1500.0));
+
     }
 
     @Test

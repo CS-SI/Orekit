@@ -51,18 +51,23 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
     /** Space object name, usually a common name for an object like "ISS". **/
     private final String spaceObjectName;
 
+    /** Format for attitude ephemeris data output. */
+    private final String attitudeFormat;
+
     /**
-     * Standard default constructor that creates a writer with default
-     * configurations.
+     * Standard default constructor that creates a writer with default configurations
+     * including {@link StreamingAemWriter#DEFAULT_ATTITUDE_FORMAT Default formatting}.
      */
     public AEMWriter() {
-        this(StreamingAemWriter.DEFAULT_ORIGINATOR, null, null);
+        this(StreamingAemWriter.DEFAULT_ORIGINATOR, null, null,
+             StreamingAemWriter.DEFAULT_ATTITUDE_FORMAT);
     }
 
     /**
-     * Constructor used to create a new AEM writer configured with the necessary
-     * parameters to successfully fill in all required fields that aren't part
-     * of a standard object.
+     * Constructor used to create a new AEM writer configured with the necessary parameters
+     * to successfully fill in all required fields that aren't part of a standard object
+     * and using {@link StreamingAemWriter#DEFAULT_ATTITUDE_FORMAT default formatting}
+     * for attitude ephemeris data output.
      *
      * @param originator the originator field string
      * @param spaceObjectId the spacecraft ID
@@ -70,9 +75,28 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
      */
     public AEMWriter(final String originator, final String spaceObjectId,
                      final String spaceObjectName) {
+        this(originator, spaceObjectId, spaceObjectName,
+             StreamingAemWriter.DEFAULT_ATTITUDE_FORMAT);
+    }
+
+    /**
+     * Constructor used to create a new AEM writer configured with the necessary
+     * parameters to successfully fill in all required fields that aren't part
+     * of a standard object and user-defined attitude ephemeris data output format.
+     *
+     * @param originator the originator field string
+     * @param spaceObjectId the spacecraft ID
+     * @param spaceObjectName the space object common name
+     * @param attitudeFormat {@link java.util.Formatter format parameters} for
+     *                       attitude ephemeris data output
+     * @since 10.3
+     */
+    public AEMWriter(final String originator, final String spaceObjectId,
+                     final String spaceObjectName, final String attitudeFormat) {
         this.originator          = originator;
         this.spaceObjectId       = spaceObjectId;
         this.spaceObjectName     = spaceObjectName;
+        this.attitudeFormat      = attitudeFormat;
     }
 
     /** {@inheritDoc} */
@@ -122,7 +146,7 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
         metadata.put(Keyword.OBJECT_NAME,   objectName);
         metadata.put(Keyword.OBJECT_ID,     idToProcess);
 
-     // Header comments. If header comments are presents, they are assembled together in a single line
+        // Header comments. If header comments are presents, they are assembled together in a single line
         if (ephemerisFile instanceof AEMFile) {
             // Cast to OEMFile
             final AEMFile aemFile = (AEMFile) ephemerisFile;
@@ -139,7 +163,7 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
 
         // Writer for AEM files
         final StreamingAemWriter aemWriter =
-                        new StreamingAemWriter(writer, timeScale, metadata);
+                        new StreamingAemWriter(writer, timeScale, metadata, attitudeFormat);
         aemWriter.writeHeader();
 
         // Loop on segments
@@ -192,10 +216,10 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
      *         (for example having multiple satellites in one file, having
      *         the origin at an unspecified celestial body, etc.)
      */
-    public void write(final String outputFilePath, final AttitudeEphemerisFile ephemerisFile)
+    public void write(final String outputFilePath, final AEMFile aemFile)
         throws IOException {
         try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(outputFilePath), StandardCharsets.UTF_8)) {
-            write(writer, ephemerisFile);
+            write(writer, aemFile);
         }
     }
 

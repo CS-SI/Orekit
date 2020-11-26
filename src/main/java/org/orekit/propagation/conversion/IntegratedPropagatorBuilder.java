@@ -49,10 +49,30 @@ public interface IntegratedPropagatorBuilder extends PropagatorBuilder {
      * @param covarianceMatricesProviders providers for covariance matrices
      * @param estimatedMeasurementsParameters measurement parameters to estimate
      * @return a new model for Kalman Filter orbit determination
+     * @deprecated since 10.3, replaced by {@link #buildKalmanModel(List, List, ParameterDriversList, CovarianceMatrixProvider)}
      */
+    @Deprecated
     KalmanODModel buildKalmanModel(List<IntegratedPropagatorBuilder> propagatorBuilders,
                                    List<CovarianceMatrixProvider> covarianceMatricesProviders,
                                    ParameterDriversList estimatedMeasurementsParameters);
+
+    /** Build a new {@link KalmanODModel}.
+     * <p>
+     * The default implementation will be removed in 11.0. It calls {@link
+     * #buildKalmanModel(List, List, ParameterDriversList)}.
+     * </p>
+     * @param propagatorBuilders propagators builders used to evaluate the orbits.
+     * @param covarianceMatricesProviders providers for covariance matrices
+     * @param estimatedMeasurementsParameters measurement parameters to estimate
+     * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
+     * @return a new model for Kalman Filter orbit determination
+     */
+    default KalmanODModel buildKalmanModel(final List<IntegratedPropagatorBuilder> propagatorBuilders,
+                                           final List<CovarianceMatrixProvider> covarianceMatricesProviders,
+                                           final ParameterDriversList estimatedMeasurementsParameters,
+                                           final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
+        return buildKalmanModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters);
+    }
 
     /** Reset the orbit in the propagator builder.
      * @param newOrbit New orbit to set in the propagator builder
