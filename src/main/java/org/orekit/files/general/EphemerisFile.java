@@ -34,7 +34,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * An interface for accessing the data stored in an ephemeris file and using the data to
  * create a working {@link org.orekit.propagation.Propagator Propagator}.
  *
- * <p> An {@link EphemerisFile} consists of one or more satellites each an ID unique
+ * <p> An {@link EphemerisFile} consists of one or more satellites each with a unique ID
  * within the file. The ephemeris for each satellite consists of one or more segments.
  *
  * <p> Some ephemeris file formats may supply additional information that is not available
@@ -166,7 +166,7 @@ public interface EphemerisFile {
 
         /**
          * Get the name of the center of the coordinate system the ephemeris is provided
-         * in.  This may be a natural origin, such as the center of the Earth, another
+         * in. This may be a natural origin, such as the center of the Earth, another
          * satellite, etc.
          *
          * @return the name of the frame center

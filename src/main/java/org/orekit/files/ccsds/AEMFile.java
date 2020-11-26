@@ -26,6 +26,7 @@ import java.util.Map.Entry;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.TimeStampedAngularCoordinates;
@@ -37,7 +38,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class AEMFile extends ADMFile {
+public class AEMFile extends ADMFile implements AttitudeEphemerisFile {
 
     /** List of ephemeris blocks. */
     private List<AttitudeEphemeridesBlock> attitudeBlocks;
@@ -78,11 +79,7 @@ public class AEMFile extends ADMFile {
     }
 
 
-    /**
-     * Get the attitude loaded ephemeris for each satellite in the file.
-     * @return a map from the satellite's ID to the information about that satellite
-     * contained in the file.
-     */
+    @Override
     public Map<String, AemSatelliteEphemeris> getSatellites() {
         final Map<String, List<AttitudeEphemeridesBlock>> satellites = new HashMap<>();
         for (final AttitudeEphemeridesBlock ephemeridesBlock : attitudeBlocks) {
@@ -93,16 +90,71 @@ public class AEMFile extends ADMFile {
         final Map<String, AemSatelliteEphemeris> ret = new HashMap<>();
         for (final Entry<String, List<AttitudeEphemeridesBlock>> entry : satellites.entrySet()) {
             final String id = entry.getKey();
-            ret.put(id, new AemSatelliteEphemeris(entry.getValue()));
+            ret.put(id, new AemSatelliteEphemeris(id, entry.getValue()));
         }
         return ret;
+    }
+
+
+    /** AEM ephemeris blocks for a single satellite. */
+    public static class AemSatelliteEphemeris implements SatelliteAttitudeEphemeris {
+
+        /** ID of the satellite. */
+        private final String id;
+
+        /** The attitude ephemeris data for the satellite. */
+        private final List<AttitudeEphemeridesBlock> blocks;
+
+        /**
+         * Create a container for the set of ephemeris blocks in the file that pertain to
+         * a single satellite. The satellite's ID is set to ""
+         * @param blocks containing ephemeris data for the satellite.
+         * @deprecated in 10.3, replaced by {@link #AemSatelliteEphemeris(String, List)}
+         */
+        @Deprecated
+        public AemSatelliteEphemeris(final List<AttitudeEphemeridesBlock> blocks) {
+            this("", blocks);
+        }
+
+        /**
+         * Create a container for the set of ephemeris blocks in the file that pertain to
+         * a single satellite.
+         * @param id     of the satellite.
+         * @param blocks containing ephemeris data for the satellite.
+         * @since 10.3
+         */
+        public AemSatelliteEphemeris(final String id, final List<AttitudeEphemeridesBlock> blocks) {
+            this.id = id;
+            this.blocks = blocks;
+        }
+
+        @Override
+        public String getId() {
+            return this.id;
+        }
+
+        @Override
+        public List<AttitudeEphemeridesBlock> getSegments() {
+            return Collections.unmodifiableList(blocks);
+        }
+
+        @Override
+        public AbsoluteDate getStart() {
+            return blocks.get(0).getStart();
+        }
+
+        @Override
+        public AbsoluteDate getStop() {
+            return blocks.get(blocks.size() - 1).getStop();
+        }
+
     }
 
     /**
      * The Attitude Ephemerides Blocks class contain metadata
      * and the list of attitude data lines.
      */
-    public class AttitudeEphemeridesBlock {
+    public class AttitudeEphemeridesBlock implements AttitudeEphemerisSegment {
 
         /** Meta-data for the block. */
         private ADMMetaData metaData;
@@ -174,10 +226,7 @@ public class AEMFile extends ADMFile {
             return attitudeDataLines;
         }
 
-        /**
-         * Get an unmodifiable list of attitude data lines.
-         * @return a list of attitude data
-         */
+        @Override
         public List<TimeStampedAngularCoordinates> getAngularCoordinates() {
             return Collections.unmodifiableList(this.attitudeDataLines);
         }
@@ -190,20 +239,13 @@ public class AEMFile extends ADMFile {
             return metaData;
         }
 
-        /**
-         * Get the name of the center of the coordinate system the ephemeris is provided in.
-         * This may be a natural origin, such as the center of the Earth, another satellite, etc.
-         * @return the name of the frame center
-         */
+        @Override
         public String getFrameCenterString() {
             return this.getMetaData().getCenterName();
         }
 
 
-        /**
-         * Get the reference frame A specifier as it appeared in the file.
-         * @return the frame name as it appeared in the file (A).
-         */
+        @Override
         public String getRefFrameAString() {
             return refFrameAString;
         }
@@ -216,10 +258,7 @@ public class AEMFile extends ADMFile {
             this.refFrameAString = frame;
         }
 
-        /**
-         * Get the reference frame B specifier as it appeared in the file.
-         * @return the frame name as it appeared in the file (B).
-         */
+        @Override
         public String getRefFrameBString() {
             return this.refFrameBString;
         }
@@ -248,10 +287,7 @@ public class AEMFile extends ADMFile {
             this.rateFrameString = frame;
         }
 
-        /**
-         * Get the rotation direction of the attitude.
-         * @return the rotation direction of the attitude
-         */
+        @Override
         public String getAttitudeDirection() {
             return attitudeDir;
         }
@@ -264,10 +300,7 @@ public class AEMFile extends ADMFile {
             this.attitudeDir = direction;
         }
 
-        /**
-         * Get the format of the data lines in the message.
-         * @return the format of the data lines in the message
-         */
+        @Override
         public String getAttitudeType() {
             return attitudeType;
         }
@@ -280,10 +313,7 @@ public class AEMFile extends ADMFile {
             this.attitudeType = type;
         }
 
-        /**
-         * Get the flag for the placement of the quaternion QC in the attitude data.
-         * @return true if QC is the first element in the attitude data
-         */
+        @Override
         public boolean isFirst() {
             return isFirst;
         }
@@ -312,19 +342,12 @@ public class AEMFile extends ADMFile {
             this.eulerRotSeq = eulerRotSeq;
         }
 
-        /**
-         * Get the time scale for this data segment.
-         * @return the time scale identifier, as specified in the file, or
-         * {@code null} if the data file does not specify a time scale.
-         */
+        @Override
         public String getTimeScaleString() {
             return metaData.getTimeSystem().toString();
         }
 
-        /**
-         * Get the time scale for this data segment.
-         * @return the time scale for this data. Never {@code null}.
-         */
+        @Override
         public TimeScale getTimeScale() {
             return metaData.getTimeScale();
         }
@@ -393,10 +416,7 @@ public class AEMFile extends ADMFile {
             this.useableStopTime = useableStopTime;
         }
 
-        /**
-         * Get the start date of this attitude data segment.
-         * @return attitude data segment start date.
-         */
+        @Override
         public AbsoluteDate getStart() {
             // usable start time overrides start time if it is set
             final AbsoluteDate start = this.getUseableStartTime();
@@ -407,10 +427,7 @@ public class AEMFile extends ADMFile {
             }
         }
 
-        /**
-         * Get the end date of this attitude data segment.
-         * @return attitude data segment end date.
-         */
+        @Override
         public AbsoluteDate getStop() {
             // useable stop time overrides stop time if it is set
             final AbsoluteDate stop = this.getUseableStopTime();
@@ -421,10 +438,7 @@ public class AEMFile extends ADMFile {
             }
         }
 
-        /**
-         * Get the interpolation method to be used.
-         * @return the interpolation method
-         */
+        @Override
         public String getInterpolationMethod() {
             return interpolationMethod;
         }
@@ -453,6 +467,12 @@ public class AEMFile extends ADMFile {
             this.interpolationDegree = interpolationDegree;
         }
 
+        @Override
+        public int getInterpolationSamples() {
+            // From the standard it is not entirely clear how to interpret the degree.
+            return getInterpolationDegree() + 1;
+        }
+
         /** Get the attitude data lines comment.
          * @return the comment
          */
@@ -467,10 +487,7 @@ public class AEMFile extends ADMFile {
             this.attitudeDataLinesComment = new ArrayList<String>(ephemeridesDataLinesComment);
         }
 
-        /**
-         * Get the rotation order for Euler angles.
-         * @return rotation order
-         */
+        @Override
         public RotationOrder getRotationOrder() {
             return rotationOrder;
         }
@@ -485,47 +502,5 @@ public class AEMFile extends ADMFile {
 
     }
 
-    /** AEM ephemeris blocks for a single satellite. */
-    public static class AemSatelliteEphemeris {
-
-        /** The attitude ephemeris data for the satellite. */
-        private final List<AttitudeEphemeridesBlock> blocks;
-
-        /**
-         * Create a container for the set of ephemeris blocks in the file that pertain to
-         * a single satellite.
-         * @param blocks containing ephemeris data for the satellite.
-         */
-        public AemSatelliteEphemeris(final List<AttitudeEphemeridesBlock> blocks) {
-            this.blocks = blocks;
-        }
-
-        /**
-         * Get the segments of the attitude ephemeris.
-         * <p> Ephemeris segments are typically used to split an attitude ephemeris around
-         * discontinuous events, such as maneuvers.
-         * @return the segments contained in the attitude ephemeris file for this satellite.
-         */
-        public List<AttitudeEphemeridesBlock> getSegments() {
-            return Collections.unmodifiableList(blocks);
-        }
-
-        /**
-         * Get the start date of the attitude ephemeris.
-         * @return attitude ephemeris start date.
-         */
-        public AbsoluteDate getStart() {
-            return blocks.get(0).getStart();
-        }
-
-        /**
-         * Get the end date of the attitude ephemeris.
-         * @return attitude ephemeris end date.
-         */
-        public AbsoluteDate getStop() {
-            return blocks.get(blocks.size() - 1).getStop();
-        }
-
-    }
 
 }
