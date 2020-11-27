@@ -61,6 +61,7 @@ import org.orekit.utils.ParameterDriver;
  * </p> <p>
  * Caution! The spacecraft state must be defined in an Earth centered frame.
  * </p>
+ *
  * @author Thomas Paulet
  */
 
