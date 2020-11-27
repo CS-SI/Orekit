@@ -22,14 +22,17 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.analysis.polynomials.PolynomialsUtils;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.forces.AbstractForceModel;
+import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -37,6 +40,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
@@ -54,6 +58,8 @@ import org.orekit.utils.ParameterDriver;
  * </p> <p>
  * The radiative model of the satellite, and its ability to diffuse, reflect  or absorb radiation is handled
  * by a {@link RadiationSensitive radiation sensitive model}.
+ * </p> <p>
+ * Caution! The spacecraft state must be defined in an Earth centered frame.
  * </p>
  * @author Thomas Paulet
  */
@@ -218,8 +224,72 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
     @Override
     public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                          final T[] parameters) {
-        // TODO Auto-generated method stub
-        return null;
+        // Get date
+        final FieldAbsoluteDate<T> date = s.getDate();
+
+        // Get frame
+        final Frame frame = s.getFrame();
+
+        // Get zero
+        final T zero = date.getField().getZero();
+
+        // Get satellite position
+        final FieldVector3D<T> satellitePosition = s.getPVCoordinates().getPosition();
+
+        // Get spherical Earth model
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(equatorialRadius, 0.0, frame);
+
+        // Project satellite on Earth as geodetic point and vector
+        final FieldGeodeticPoint<T> satelliteAsGeodeticPoint = earth.transform(satellitePosition, frame, date);
+        final FieldVector3D<T> projectedToGround = satellitePosition.normalize().scalarMultiply(equatorialRadius);
+
+        // Get elementary vector east for Earth browsing using rotations
+        final FieldVector3D<T> east = satelliteAsGeodeticPoint.getEast();
+
+        // Initialize rediffused flux with elementary flux coming from the circular area around the projected satellite
+        final T centerArea = zero.add(2 * FastMath.PI * equatorialRadius * equatorialRadius *
+                                      (1 - FastMath.cos(angularResolution)));
+        FieldVector3D<T> rediffusedFlux = computeElementaryFlux(s, projectedToGround, earth, centerArea);
+
+        // Sectorize the part of Earth which is seen by the satellite into crown sectors with constant angular resolution
+        for (double eastAxisOffset = angularResolution * 3 / 2;
+             eastAxisOffset < FastMath.asin(equatorialRadius / satellitePosition.getNorm().getReal());
+             eastAxisOffset = eastAxisOffset + angularResolution) {
+
+            // Build rotation transformations to get first crown elementary sector center
+            final FieldTransform<T> eastRotation = new FieldTransform<>(date,
+                                                                        new FieldRotation<>(east,
+                                                                                            zero.add(eastAxisOffset),
+                                                                                            RotationConvention.VECTOR_OPERATOR));
+
+            // Get first elementary crown sector center
+            final FieldVector3D<T> firstCrownSectorCenter = eastRotation.transformPosition(projectedToGround);
+
+            // Browse the entire crown
+            for (double radialAxisOffset =  angularResolution / 2;
+                 radialAxisOffset < FastMath.PI * 2;
+                 radialAxisOffset = radialAxisOffset + angularResolution) {
+
+                // Build rotation transformations to get elementary area center
+                final FieldTransform<T> radialRotation  = new FieldTransform<>(date,
+                                                                               new FieldRotation<>(projectedToGround,
+                                                                                                   zero.add(radialAxisOffset),
+                                                                                                   RotationConvention.VECTOR_OPERATOR));
+
+                // Get current elementary crown sector center
+                final FieldVector3D<T> currentCenter = radialRotation.transformPosition(firstCrownSectorCenter);
+
+                // Compute current elementary crown sector area, it results of the integration of an elementary crown sector
+                // over the angular resolution
+                final T sectorArea = zero.add(equatorialRadius * equatorialRadius *
+                                              2 * angularResolution * FastMath.sin(0.5 * angularResolution) * FastMath.sin(eastAxisOffset));
+
+                // Add current sector contribution to total rediffused flux
+                rediffusedFlux = rediffusedFlux.add(computeElementaryFlux(s, currentCenter, earth, sectorArea));
+            }
+        }
+        return spacecraft.radiationPressureAcceleration(date, frame, satellitePosition, s.getAttitude().getRotation(),
+                                                        s.getMass(), rediffusedFlux, parameters);
     }
 
 
@@ -260,6 +330,37 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
 
     }
 
+
+    /** Compute Earth albedo.
+     * Albedo value represents the fraction of solar radiative flux that is reflected by Earth.
+     * Its value is in [0;1].
+     * @param date the date
+     * @param phi the equatorial latitude in rad
+     * @param <T> extends RealFieldElement
+     * @return the albedo in [0;1]
+     */
+    public static <T extends RealFieldElement<T>> T computeAlbedo(final FieldAbsoluteDate<T> date, final T phi) {
+
+        // Get duration since coefficient reference epoch
+        final T deltaT = date.durationFrom(T0);
+
+        // Compute 1rst Legendre polynomial coeficient
+        final T A1 = FastMath.cos(deltaT.multiply(EARTH_AROUND_SUN_PULSATION)).multiply(C1).add(
+                     FastMath.sin(deltaT.multiply(EARTH_AROUND_SUN_PULSATION)).multiply(C2)).add(C0);
+
+        // Get 1rst and 2nd order Legendre polynomials
+        final PolynomialFunction firstLegendrePolynomial  = PolynomialsUtils.createLegendrePolynomial(1);
+        final PolynomialFunction secondLegendrePolynomial = PolynomialsUtils.createLegendrePolynomial(2);
+
+        // Get latitude sinus
+        final T sinPhi = FastMath.sin(phi);
+
+        // Compute albedo
+        return firstLegendrePolynomial.value(sinPhi).multiply(A1).add(
+               secondLegendrePolynomial.value(sinPhi).multiply(A2)).add(A0);
+
+    }
+
     /** Compute Earth emisivity.
      * Emissivity is used to compute the infrared flux that is emited by Earth.
      * Its value is in [0;1].
@@ -291,6 +392,37 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
 
     }
 
+
+    /** Compute Earth emisivity.
+     * Emissivity is used to compute the infrared flux that is emited by Earth.
+     * Its value is in [0;1].
+     * @param date the date
+     * @param phi the equatorial latitude in rad
+     * @param <T> extends RealFieldElement
+     * @return the emissivity in [0;1]
+     */
+    public static <T extends RealFieldElement<T>> T computeEmissivity(final FieldAbsoluteDate<T> date, final T phi) {
+
+        // Get duration since coefficient reference epoch
+        final T deltaT = date.durationFrom(T0);
+
+        // Compute 1rst Legendre polynomial coeficient
+        final T E1 = FastMath.cos(deltaT.multiply(EARTH_AROUND_SUN_PULSATION)).multiply(K1).add(
+                     FastMath.sin(deltaT.multiply(EARTH_AROUND_SUN_PULSATION)).multiply(K2)).add(K0);
+
+        // Get 1rst and 2nd order Legendre polynomials
+        final PolynomialFunction firstLegendrePolynomial  = PolynomialsUtils.createLegendrePolynomial(1);
+        final PolynomialFunction secondLegendrePolynomial = PolynomialsUtils.createLegendrePolynomial(2);
+
+        // Get latitude sinus
+        final T sinPhi = FastMath.sin(phi);
+
+        // Compute albedo
+        return firstLegendrePolynomial.value(sinPhi).multiply(E1).add(
+               secondLegendrePolynomial.value(sinPhi).multiply(E2)).add(E0);
+
+    }
+
     /** Compute total solar flux impacting Earth.
      * @param date the date
      * @param frame the Earth centered frame
@@ -303,6 +435,22 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
 
         // Compute Solar flux
         return ES_COEFF * Constants.SPEED_OF_LIGHT / (earthSunDistance * earthSunDistance);
+    }
+
+
+    /** Compute total solar flux impacting Earth.
+     * @param date the date
+     * @param frame the Earth centered frame
+     * @param <T> extends RealFieldElement
+     * @return the total solar flux impacting Earth in J/m^3
+     */
+    private <T extends RealFieldElement<T>> T computeSolarFlux(final FieldAbsoluteDate<T> date, final Frame frame) {
+
+        // Compute Earth - Sun distance in UA
+        final T earthSunDistance = sun.getPVCoordinates(date, frame).getPosition().getNorm().divide(Constants.JPL_SSD_ASTRONOMICAL_UNIT);
+
+        // Compute Solar flux
+        return earthSunDistance.multiply(earthSunDistance).reciprocal().multiply(ES_COEFF * Constants.SPEED_OF_LIGHT);
     }
 
 
@@ -372,6 +520,81 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
 
             // Spacecraft does not see the elementary area
             return new Vector3D(0.0, 0.0, 0.0);
+        }
+
+    }
+
+
+    /** Compute elementary rediffused flux on satellite.
+     * @param state the current spacecraft state
+     * @param elementCenter the position of the considered area center
+     * @param earth the Earth model
+     * @param elementArea the area of the current element
+     * @param <T> extends RealFieldElement
+     * @return the rediffused flux from considered element on the spacecraft
+     */
+    private <T extends RealFieldElement<T>> FieldVector3D<T> computeElementaryFlux(final FieldSpacecraftState<T> state,
+                                                                                   final FieldVector3D<T> elementCenter,
+                                                                                   final OneAxisEllipsoid earth,
+                                                                                   final T elementArea) {
+
+        // Get satellite position
+        final FieldVector3D<T> satellitePosition = state.getPVCoordinates().getPosition();
+
+        // Get current date
+        final FieldAbsoluteDate<T> date = state.getDate();
+
+        // Get frame
+        final Frame frame = state.getFrame();
+
+        // Get zero
+        final T zero = date.getField().getZero();
+
+        // Get satellite viewing angle as seen from current elementary area
+        final T alpha = FieldVector3D.angle(elementCenter, satellitePosition);
+
+        // Check that satellite sees the current area
+        if (FastMath.abs(alpha).getReal() < FastMath.PI / 2) {
+
+            // Get current elementary area center latitude
+            final T currentLatitude = earth.transform(elementCenter, frame, date).getLatitude();
+
+            // Compute Earth emissivity value
+            final T e = computeEmissivity(date, currentLatitude);
+
+            // Initialize albedo
+            T a = zero;
+
+            // Check if elementary area is in day light
+            final T sunAngle = FieldVector3D.angle(elementCenter, sun.getPVCoordinates(date, frame).getPosition());
+
+            if (FastMath.abs(sunAngle).getReal() < FastMath.PI / 2 ) {
+                // Elementary area is in day light, compute albedo value
+                a = computeAlbedo(date, currentLatitude);
+            }
+
+            // Compute solar flux
+            final T solarFlux = computeSolarFlux(date, frame);
+
+            // Compute elementary area contribution to rediffused flux
+            final T albedoAndIR = a.multiply(solarFlux).multiply(FastMath.cos(sunAngle)).add(
+                                  e.multiply(solarFlux).multiply(0.25));
+
+            // Compute elementary area - satellite vector and distance
+            final FieldVector3D<T> r = satellitePosition.subtract(elementCenter);
+            final T rNorm = r.getNorm();
+
+            // Compute attenuated projected elemetary area vector
+            final FieldVector3D<T> projectedAreaVector = r.scalarMultiply(elementArea.multiply(FastMath.cos(alpha)).divide(
+                                                                          rNorm.multiply(rNorm).multiply(rNorm).multiply(FastMath.PI)));
+
+            // Compute elementary radiation flux from current elementary area
+            return projectedAreaVector.scalarMultiply(albedoAndIR.divide(Constants.SPEED_OF_LIGHT));
+
+        } else {
+
+            // Spacecraft does not see the elementary area
+            return new FieldVector3D<T>(zero, zero, zero);
         }
 
     }
