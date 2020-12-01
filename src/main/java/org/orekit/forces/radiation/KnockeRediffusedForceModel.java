@@ -28,6 +28,7 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.frames.FieldTransform;
@@ -39,6 +40,7 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
@@ -102,9 +104,6 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
     /** Fifth coefficient for Earth emissivity computation. */
     private static final double E2 = -0.18;
 
-    /** Reference date for periodic terms: December 22nd 1981. */
-    private static final AbsoluteDate T0 = new AbsoluteDate(1981, 12, 22, 0, 0, 0., TimeScalesFactory.getUTC());
-
     /** Sun model. */
     private final ExtendedPVCoordinatesProvider sun;
 
@@ -117,20 +116,42 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
     /** Earth equatorial radius in m. */
     private double equatorialRadius;
 
-    /** Constructor.
+    /** Reference date for periodic terms: December 22nd 1981.
+     * Without more precision, the choice is to set it at midnight, UTC. */
+    private final AbsoluteDate referenceEpoch;
+
+    /** Default Constructor.
      * @param sun Sun model
      * @param spacecraft Spacecraft
      * @param equatorialRadius the Earth equatorial radius in m
      * @param angularResolution angular resolution in rad
      */
+    @DefaultDataContext
     public KnockeRediffusedForceModel (final ExtendedPVCoordinatesProvider sun,
                                        final RadiationSensitive spacecraft,
                                        final double equatorialRadius,
                                        final double angularResolution) {
+
+        this(sun, spacecraft, equatorialRadius, angularResolution, TimeScalesFactory.getUTC());
+    }
+
+    /** General constructor.
+     * @param sun Sun model
+     * @param spacecraft Spacecraft
+     * @param equatorialRadius the Earth equatorial radius in m
+     * @param angularResolution angular resolution in rad
+     * @param utc the UTC time scale to define reference epoch
+     */
+    public KnockeRediffusedForceModel (final ExtendedPVCoordinatesProvider sun,
+                                       final RadiationSensitive spacecraft,
+                                       final double equatorialRadius,
+                                       final double angularResolution,
+                                       final TimeScale utc) {
         this.sun               = sun;
         this.spacecraft        = spacecraft;
         this.equatorialRadius  = equatorialRadius;
         this.angularResolution = angularResolution;
+        this.referenceEpoch    = new AbsoluteDate(1981, 12, 22, 0, 0, 0.0, utc);
     }
 
 
@@ -309,10 +330,10 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
      * @param phi the equatorial latitude in rad
      * @return the albedo in [0;1]
      */
-    public static double computeAlbedo(final AbsoluteDate date, final double phi) {
+    private double computeAlbedo(final AbsoluteDate date, final double phi) {
 
         // Get duration since coefficient reference epoch
-        final double deltaT = date.durationFrom(T0);
+        final double deltaT = date.durationFrom(referenceEpoch);
 
         // Compute 1rst Legendre polynomial coeficient
         final double A1 = C0 +
@@ -342,10 +363,10 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
      * @param <T> extends RealFieldElement
      * @return the albedo in [0;1]
      */
-    public static <T extends RealFieldElement<T>> T computeAlbedo(final FieldAbsoluteDate<T> date, final T phi) {
+    private <T extends RealFieldElement<T>> T computeAlbedo(final FieldAbsoluteDate<T> date, final T phi) {
 
         // Get duration since coefficient reference epoch
-        final T deltaT = date.durationFrom(T0);
+        final T deltaT = date.durationFrom(referenceEpoch);
 
         // Compute 1rst Legendre polynomial coeficient
         final T A1 = FastMath.cos(deltaT.multiply(EARTH_AROUND_SUN_PULSATION)).multiply(C1).add(
@@ -371,10 +392,10 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
      * @param phi the equatorial latitude in rad
      * @return the emissivity in [0;1]
      */
-    public static double computeEmissivity(final AbsoluteDate date, final double phi) {
+    private double computeEmissivity(final AbsoluteDate date, final double phi) {
 
         // Get duration since coefficient reference epoch
-        final double deltaT = date.durationFrom(T0);
+        final double deltaT = date.durationFrom(referenceEpoch);
 
         // Compute 1rst Legendre polynomial coeficient
         final double E1 = K0 +
@@ -404,10 +425,10 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
      * @param <T> extends RealFieldElement
      * @return the emissivity in [0;1]
      */
-    public static <T extends RealFieldElement<T>> T computeEmissivity(final FieldAbsoluteDate<T> date, final T phi) {
+    private <T extends RealFieldElement<T>> T computeEmissivity(final FieldAbsoluteDate<T> date, final T phi) {
 
         // Get duration since coefficient reference epoch
-        final T deltaT = date.durationFrom(T0);
+        final T deltaT = date.durationFrom(referenceEpoch);
 
         // Compute 1rst Legendre polynomial coeficient
         final T E1 = FastMath.cos(deltaT.multiply(EARTH_AROUND_SUN_PULSATION)).multiply(K1).add(
