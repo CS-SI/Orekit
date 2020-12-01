@@ -28,8 +28,6 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.bodies.FieldGeodeticPoint;
-import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.frames.FieldTransform;
@@ -174,12 +172,11 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
         // Get spherical Earth model
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(equatorialRadius, 0.0, frame);
 
-        // Project satellite on Earth as geodetic point and vector
-        final GeodeticPoint satelliteAsGeodeticPoint = earth.transform(satellitePosition, frame, date);
+        // Project satellite on Earth as vector
         final Vector3D projectedToGround = satellitePosition.normalize().scalarMultiply(equatorialRadius);
 
         // Get elementary vector east for Earth browsing using rotations
-        final Vector3D east = satelliteAsGeodeticPoint.getEast();
+        final Vector3D east = earth.transform(satellitePosition, frame, date).getEast();
 
         // Initialize rediffused flux with elementary flux coming from the circular area around the projected satellite
         final double centerArea = 2 * FastMath.PI * equatorialRadius * equatorialRadius *
@@ -246,12 +243,11 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
         // Get spherical Earth model
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(equatorialRadius, 0.0, frame);
 
-        // Project satellite on Earth as geodetic point and vector
-        final FieldGeodeticPoint<T> satelliteAsGeodeticPoint = earth.transform(satellitePosition, frame, date);
+        // Project satellite on Earth as vector
         final FieldVector3D<T> projectedToGround = satellitePosition.normalize().scalarMultiply(equatorialRadius);
 
         // Get elementary vector east for Earth browsing using rotations
-        final FieldVector3D<T> east = satelliteAsGeodeticPoint.getEast();
+        final FieldVector3D<T> east = earth.transform(satellitePosition, frame, date).getEast();
 
         // Initialize rediffused flux with elementary flux coming from the circular area around the projected satellite
         final T centerArea = zero.add(2 * FastMath.PI * equatorialRadius * equatorialRadius *
