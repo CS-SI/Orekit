@@ -168,12 +168,15 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
         // Get satellite position
         final Vector3D satellitePosition = s.getPVCoordinates().getPosition();
 
+        // Get Sun position
+        final Vector3D sunPosition = sun.getPVCoordinates(date, frame).getPosition();
+
         // Get spherical Earth model
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(equatorialRadius, 0.0, frame);
 
         // Project satellite on Earth as geodetic point and vector
         final GeodeticPoint satelliteAsGeodeticPoint = earth.transform(satellitePosition, frame, date);
-        final Vector3D projectedToGround = earth.projectToGround(satellitePosition, date, frame);
+        final Vector3D projectedToGround = satellitePosition.normalize().scalarMultiply(equatorialRadius);
 
         // Get elementary vector east for Earth browsing using rotations
         final Vector3D east = satelliteAsGeodeticPoint.getEast();
@@ -181,7 +184,7 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
         // Initialize rediffused flux with elementary flux coming from the circular area around the projected satellite
         final double centerArea = 2 * FastMath.PI * equatorialRadius * equatorialRadius *
                                  (1 - FastMath.cos(angularResolution));
-        Vector3D rediffusedFlux = computeElementaryFlux(s, projectedToGround, earth, centerArea);
+        Vector3D rediffusedFlux = computeElementaryFlux(s, projectedToGround, sunPosition, earth, centerArea);
 
         // Sectorize the part of Earth which is seen by the satellite into crown sectors with constant angular resolution
         for (double eastAxisOffset = angularResolution * 3 / 2;
@@ -213,7 +216,7 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
                                           2 * angularResolution * FastMath.sin(0.5 * angularResolution) * FastMath.sin(eastAxisOffset);
 
                 // Add current sector contribution to total rediffused flux
-                rediffusedFlux = rediffusedFlux.add(computeElementaryFlux(s, currentCenter, earth, sectorArea));
+                rediffusedFlux = rediffusedFlux.add(computeElementaryFlux(s, currentCenter, sunPosition, earth, sectorArea));
             }
         }
         return spacecraft.radiationPressureAcceleration(date, frame, satellitePosition, s.getAttitude().getRotation(),
@@ -237,6 +240,9 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
         // Get satellite position
         final FieldVector3D<T> satellitePosition = s.getPVCoordinates().getPosition();
 
+        // Get Sun position
+        final FieldVector3D<T> sunPosition = sun.getPVCoordinates(date, frame).getPosition();
+
         // Get spherical Earth model
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(equatorialRadius, 0.0, frame);
 
@@ -250,7 +256,7 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
         // Initialize rediffused flux with elementary flux coming from the circular area around the projected satellite
         final T centerArea = zero.add(2 * FastMath.PI * equatorialRadius * equatorialRadius *
                                       (1 - FastMath.cos(angularResolution)));
-        FieldVector3D<T> rediffusedFlux = computeElementaryFlux(s, projectedToGround, earth, centerArea);
+        FieldVector3D<T> rediffusedFlux = computeElementaryFlux(s, projectedToGround, sunPosition, earth, centerArea);
 
         // Sectorize the part of Earth which is seen by the satellite into crown sectors with constant angular resolution
         for (double eastAxisOffset = angularResolution * 3 / 2;
@@ -286,7 +292,7 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
                                               2 * angularResolution * FastMath.sin(0.5 * angularResolution) * FastMath.sin(eastAxisOffset));
 
                 // Add current sector contribution to total rediffused flux
-                rediffusedFlux = rediffusedFlux.add(computeElementaryFlux(s, currentCenter, earth, sectorArea));
+                rediffusedFlux = rediffusedFlux.add(computeElementaryFlux(s, currentCenter, sunPosition, earth, sectorArea));
             }
         }
         return spacecraft.radiationPressureAcceleration(date, frame, satellitePosition, s.getAttitude().getRotation(),
@@ -425,14 +431,13 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
     }
 
     /** Compute total solar flux impacting Earth.
-     * @param date the date
-     * @param frame the Earth centered frame
+     * @param sunPosition the Sun position in an Earth centered frame
      * @return the total solar flux impacting Earth in J/m^3
      */
-    private double computeSolarFlux(final AbsoluteDate date, final Frame frame) {
+    private double computeSolarFlux(final Vector3D sunPosition) {
 
         // Compute Earth - Sun distance in UA
-        final double earthSunDistance = sun.getPVCoordinates(date, frame).getPosition().getNorm() / Constants.JPL_SSD_ASTRONOMICAL_UNIT;
+        final double earthSunDistance = sunPosition.getNorm() / Constants.JPL_SSD_ASTRONOMICAL_UNIT;
 
         // Compute Solar flux
         return ES_COEFF * Constants.SPEED_OF_LIGHT / (earthSunDistance * earthSunDistance);
@@ -440,15 +445,14 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
 
 
     /** Compute total solar flux impacting Earth.
-     * @param date the date
-     * @param frame the Earth centered frame
+     * @param sunPosition the Sun position in an Earth centered frame
      * @param <T> extends RealFieldElement
      * @return the total solar flux impacting Earth in J/m^3
      */
-    private <T extends RealFieldElement<T>> T computeSolarFlux(final FieldAbsoluteDate<T> date, final Frame frame) {
+    private <T extends RealFieldElement<T>> T computeSolarFlux(final FieldVector3D<T> sunPosition) {
 
         // Compute Earth - Sun distance in UA
-        final T earthSunDistance = sun.getPVCoordinates(date, frame).getPosition().getNorm().divide(Constants.JPL_SSD_ASTRONOMICAL_UNIT);
+        final T earthSunDistance = sunPosition.getNorm().divide(Constants.JPL_SSD_ASTRONOMICAL_UNIT);
 
         // Compute Solar flux
         return earthSunDistance.multiply(earthSunDistance).reciprocal().multiply(ES_COEFF * Constants.SPEED_OF_LIGHT);
@@ -458,12 +462,14 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
     /** Compute elementary rediffused flux on satellite.
      * @param state the current spacecraft state
      * @param elementCenter the position of the considered area center
+     * @param sunPosition the position of the Sun in the spacecraft frame
      * @param earth the Earth model
      * @param elementArea the area of the current element
      * @return the rediffused flux from considered element on the spacecraft
      */
     private Vector3D computeElementaryFlux(final SpacecraftState state,
                                            final Vector3D elementCenter,
+                                           final Vector3D sunPosition,
                                            final OneAxisEllipsoid earth,
                                            final double elementArea) {
 
@@ -475,6 +481,9 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
 
         // Get frame
         final Frame frame = state.getFrame();
+
+        // Get solar flux impacting Earth
+        final double solarFlux = computeSolarFlux(sunPosition);
 
         // Get satellite viewing angle as seen from current elementary area
         final double alpha = Vector3D.angle(elementCenter, satellitePosition);
@@ -492,15 +501,12 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
             double a = 0.0;
 
             // Check if elementary area is in day light
-            final double sunAngle = Vector3D.angle(elementCenter, sun.getPVCoordinates(date, frame).getPosition());
+            final double sunAngle = Vector3D.angle(elementCenter, sunPosition);
 
             if (FastMath.abs(sunAngle) < FastMath.PI / 2 ) {
                 // Elementary area is in day light, compute albedo value
                 a = computeAlbedo(date, currentLatitude);
             }
-
-            // Compute solar flux
-            final double solarFlux = computeSolarFlux(date, frame);
 
             // Compute elementary area contribution to rediffused flux
             final double albedoAndIR = a * solarFlux * FastMath.cos(sunAngle) +
@@ -529,6 +535,7 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
     /** Compute elementary rediffused flux on satellite.
      * @param state the current spacecraft state
      * @param elementCenter the position of the considered area center
+     * @param sunPosition the position of the Sun in the spacecraft frame
      * @param earth the Earth model
      * @param elementArea the area of the current element
      * @param <T> extends RealFieldElement
@@ -536,6 +543,7 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
      */
     private <T extends RealFieldElement<T>> FieldVector3D<T> computeElementaryFlux(final FieldSpacecraftState<T> state,
                                                                                    final FieldVector3D<T> elementCenter,
+                                                                                   final FieldVector3D<T> sunPosition,
                                                                                    final OneAxisEllipsoid earth,
                                                                                    final T elementArea) {
 
@@ -550,6 +558,9 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
 
         // Get zero
         final T zero = date.getField().getZero();
+
+        // Get solar flux impacting Earth
+        final T solarFlux = computeSolarFlux(sunPosition);
 
         // Get satellite viewing angle as seen from current elementary area
         final T alpha = FieldVector3D.angle(elementCenter, satellitePosition);
@@ -567,15 +578,12 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
             T a = zero;
 
             // Check if elementary area is in day light
-            final T sunAngle = FieldVector3D.angle(elementCenter, sun.getPVCoordinates(date, frame).getPosition());
+            final T sunAngle = FieldVector3D.angle(elementCenter, sunPosition);
 
             if (FastMath.abs(sunAngle).getReal() < FastMath.PI / 2 ) {
                 // Elementary area is in day light, compute albedo value
                 a = computeAlbedo(date, currentLatitude);
             }
-
-            // Compute solar flux
-            final T solarFlux = computeSolarFlux(date, frame);
 
             // Compute elementary area contribution to rediffused flux
             final T albedoAndIR = a.multiply(solarFlux).multiply(FastMath.cos(sunAngle)).add(
