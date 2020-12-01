@@ -41,6 +41,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
@@ -67,6 +68,39 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");
+    }
+    
+    
+    @Test
+    public void testJacobianVsFiniteDifferences() {
+
+        // initialization
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
+                                             new TimeComponents(13, 59, 27.816),
+                                             TimeScalesFactory.getUTC());
+        double i     = FastMath.toRadians(98.7);
+        double omega = FastMath.toRadians(93.0);
+        double OMEGA = FastMath.toRadians(15.0 * 22.5);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
+                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         Constants.EIGEN5C_EARTH_MU);
+
+        // Sun
+        final ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        
+        // Radiation sensitive model
+        final RadiationSensitive radiationSensitive = new IsotropicRadiationSingleCoefficient(1, 1.5);
+
+        // Set up the force model to test
+        final KnockeRediffusedForceModel forceModel = new KnockeRediffusedForceModel(sun, 
+                                                                                     radiationSensitive, 
+                                                                                     Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS, 
+                                                                                     FastMath.toRadians(30));
+
+        SpacecraftState state = new SpacecraftState(orbit,
+                                                    Propagator.DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
+        checkStateJacobianVsFiniteDifferences(state, forceModel, Propagator.DEFAULT_LAW, 1.0, 5.5e-9, false);
+
     }
     
     @Test
