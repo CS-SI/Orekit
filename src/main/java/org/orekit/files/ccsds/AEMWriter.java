@@ -210,7 +210,7 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
     /**
      * Write the passed in {@link ephemerisFile} to a file at the output path specified.
      * @param outputFilePath a file path that the corresponding file will be written to
-     * @param ephemerisFile a populated aem file to serialize into the buffer
+     * @param aemFile a populated aem file to serialize into the buffer
      * @throws IOException if any file writing operations fail or if the underlying
      *         format doesn't support a configuration in the EphemerisFile
      *         (for example having multiple satellites in one file, having
@@ -219,7 +219,7 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
     public void write(final String outputFilePath, final AEMFile aemFile)
         throws IOException {
         try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(outputFilePath), StandardCharsets.UTF_8)) {
-            write(writer, aemFile);
+            write(writer, (AttitudeEphemerisFile) aemFile);
         }
     }
 

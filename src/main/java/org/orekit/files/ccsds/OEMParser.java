@@ -84,7 +84,7 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
      * parsing by calling {@link #withInternationalDesignator(int, int, String)}
      * </p>
      * <p>
-     * The default interpolation degree is not set here. It is set to zero by default. If another value
+     * The default interpolation degree is not set here. It is set to one by default. If another value
      * is needed it must be initialized before parsing by calling {@link #withInterpolationDegree(int)}
      * </p>
      *
@@ -141,7 +141,7 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
      * @since 10.1
      */
     public OEMParser(final DataContext dataContext) {
-        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, 0, 0, "", 0, dataContext);
+        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, 0, 0, "", 1, dataContext);
     }
 
     /** Complete constructor.
@@ -219,7 +219,7 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
      * <p>
      * This method may be used to set a default interpolation degree which will be used
      * when no interpolation degree is parsed in the meta-data of the file. Upon instantiation
-     * with {@link #OEMParser(DataContext)} the default interpolation degree is zero.
+     * with {@link #OEMParser(DataContext)} the default interpolation degree is one.
      * </p>
      * @param newInterpolationDegree default interpolation degree to use while parsing
      * @return a new instance, with interpolation degree data replaced
