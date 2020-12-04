@@ -113,12 +113,13 @@ public class LazyLoadedTimeScales extends AbstractTimeScales {
      * Add the default loaders for UTC-TAI offsets history files (both IERS and USNO).
      * <p>
      * The default loaders are {@link TAIUTCDatFilesLoader} that looks for a file named
-     * {@code tai-utc.dat} that must be in USNO format and {@link
-     * UTCTAIHistoryFilesLoader} that looks fir a file named {@code UTC-TAI.history} that
-     * must be in the IERS format. The {@link UTCTAIBulletinAFilesLoader} is
-     * <em>not</em> added by default as it is not recommended. USNO warned us that
-     * the TAI-UTC data present in bulletin A was for convenience only and was not
-     * reliable, there have been errors in several bulletins regarding these data.
+     * {@code tai-utc.dat} that must be in USNO format, {@link
+     * UTCTAIHistoryFilesLoader} that looks for a file named {@code UTC-TAI.history} that
+     * must be in the IERS format and {@link AGILeapSecondFilesLoader} that looks for a
+     * files named {@code LeapSecond.dat} that must be in AGI format. The {@link
+     * UTCTAIBulletinAFilesLoader} is<em>not</em> added by default as it is not recommended.
+     * USNO warned us that the TAI-UTC data present in bulletin A was for convenience only
+     * and was not reliable, there have been errors in several bulletins regarding these data.
      * </p>
      *
      * @see <a href="http://maia.usno.navy.mil/ser7/tai-utc.dat">USNO tai-utc.dat
@@ -127,6 +128,7 @@ public class LazyLoadedTimeScales extends AbstractTimeScales {
      * UTC-TAI.history file</a>
      * @see TAIUTCDatFilesLoader
      * @see UTCTAIHistoryFilesLoader
+     * @see AGILeapSecondFilesLoader
      * @see #getUTC()
      * @see #clearUTCTAIOffsetsLoaders()
      * @since 7.1
@@ -137,6 +139,7 @@ public class LazyLoadedTimeScales extends AbstractTimeScales {
                     lazyLoadedEop.getDataProvidersManager();
             addUTCTAIOffsetsLoader(new TAIUTCDatFilesLoader(TAIUTCDatFilesLoader.DEFAULT_SUPPORTED_NAMES, dataProvidersManager));
             addUTCTAIOffsetsLoader(new UTCTAIHistoryFilesLoader(dataProvidersManager));
+            addUTCTAIOffsetsLoader(new AGILeapSecondFilesLoader(AGILeapSecondFilesLoader.DEFAULT_SUPPORTED_NAMES, dataProvidersManager));
         }
     }
 

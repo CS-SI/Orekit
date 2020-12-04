@@ -30,7 +30,6 @@ public class AGILeapSecondFilesLoaderTest {
     public void testRegularFile() {
 
         Utils.setDataRoot("AGI");
-        TimeScalesFactory.addUTCTAIOffsetsLoader(new AGILeapSecondFilesLoader(AGILeapSecondFilesLoader.DEFAULT_SUPPORTED_NAMES));
 
         // we arbitrary put UTC == TAI before 1961-01-01
         checkOffset(1950,  1,  1,   0);
