@@ -33,6 +33,7 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.general.AttitudeEphemerisFileParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
@@ -42,7 +43,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class AEMParser extends ADMParser {
+public class AEMParser extends ADMParser implements AttitudeEphemerisFileParser {
 
     /** Maximum number of elements in an attitude data line. */
     private static final int MAX_SIZE = 8;
@@ -80,7 +81,7 @@ public class AEMParser extends ADMParser {
      * parsing by calling {@link #withInternationalDesignator(int, int, String)}
      * </p>
      * <p>
-     * The default interpolation degree is not set here. It is set to zero by default. If another value
+     * The default interpolation degree is not set here. It is set to one by default. If another value
      * is needed it must be initialized before parsing by calling {@link #withInterpolationDegree(int)}
      * </p>
      *
@@ -131,7 +132,7 @@ public class AEMParser extends ADMParser {
      * @see #withDataContext(DataContext)
      */
     public AEMParser(final DataContext dataContext) {
-        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, 0, 0, "", 0, dataContext);
+        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, 0, 0, "", 1, dataContext);
     }
 
     /**
@@ -205,7 +206,7 @@ public class AEMParser extends ADMParser {
      * <p>
      * This method may be used to set a default interpolation degree which will be used
      * when no interpolation degree is parsed in the meta-data of the file. Upon instantiation
-     * with {@link #AEMParser(DataContext)} the default interpolation degree is zero.
+     * with {@link #AEMParser(DataContext)} the default interpolation degree is one.
      * </p>
      * @param newInterpolationDegree default interpolation degree to use while parsing
      * @return a new instance, with interpolation degree data replaced
@@ -240,6 +241,7 @@ public class AEMParser extends ADMParser {
     }
 
     /** {@inheritDoc} */
+    @Override
     public AEMFile parse(final InputStream stream, final String fileName) {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
             return parse(reader, fileName);
@@ -248,12 +250,8 @@ public class AEMParser extends ADMParser {
         }
     }
 
-    /**
-     * Parse an attitude ephemeris file from a stream.
-     * @param reader   containing the ephemeris file.
-     * @param fileName to use in error messages.
-     * @return a parsed attitude ephemeris file.
-     */
+    /** {@inheritDoc} */
+    @Override
     public AEMFile parse(final BufferedReader reader, final String fileName) {
 
         try {

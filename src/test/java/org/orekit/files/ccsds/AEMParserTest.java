@@ -445,7 +445,7 @@ public class AEMParserTest {
 
         final AEMFile file = parser.parse(name);
         Assert.assertEquals(7, file.getAttitudeBlocks().get(0).getInterpolationDegree());
-        Assert.assertEquals(0, file.getAttitudeBlocks().get(1).getInterpolationDegree());
+        Assert.assertEquals(1, file.getAttitudeBlocks().get(1).getInterpolationDegree());
 
         parser = parser.withInterpolationDegree(5);
 
