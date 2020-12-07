@@ -469,7 +469,7 @@ public class OEMParserTest {
         OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM());
 
         final OEMFile file = parser.parse(name);
-        Assert.assertEquals(0, file.getEphemeridesBlocks().get(0).getInterpolationDegree());
+        Assert.assertEquals(1, file.getEphemeridesBlocks().get(0).getInterpolationDegree());
         Assert.assertEquals(7, file.getEphemeridesBlocks().get(1).getInterpolationDegree());
 
         parser = parser.withInterpolationDegree(5);

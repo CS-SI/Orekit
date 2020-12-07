@@ -144,30 +144,35 @@ public class OMMParser extends ODMParser {
     }
 
     /** {@inheritDoc} */
+    @Override
     public OMMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
         return new OMMParser(newMissionReferenceDate, getMu(), getConventions(), isSimpleEOP(),
                              getLaunchYear(), getLaunchNumber(), getLaunchPiece(), getDataContext());
     }
 
     /** {@inheritDoc} */
+    @Override
     public OMMParser withMu(final double newMu) {
         return new OMMParser(getMissionReferenceDate(), newMu, getConventions(), isSimpleEOP(),
                              getLaunchYear(), getLaunchNumber(), getLaunchPiece(), getDataContext());
     }
 
     /** {@inheritDoc} */
+    @Override
     public OMMParser withConventions(final IERSConventions newConventions) {
         return new OMMParser(getMissionReferenceDate(), getMu(), newConventions, isSimpleEOP(),
                              getLaunchYear(), getLaunchNumber(), getLaunchPiece(), getDataContext());
     }
 
     /** {@inheritDoc} */
+    @Override
     public OMMParser withSimpleEOP(final boolean newSimpleEOP) {
         return new OMMParser(getMissionReferenceDate(), getMu(), getConventions(), newSimpleEOP,
                              getLaunchYear(), getLaunchNumber(), getLaunchPiece(), getDataContext());
     }
 
     /** {@inheritDoc} */
+    @Override
     public OMMParser withInternationalDesignator(final int newLaunchYear,
                                                  final int newLaunchNumber,
                                                  final String newLaunchPiece) {
@@ -175,6 +180,7 @@ public class OMMParser extends ODMParser {
                              newLaunchYear, newLaunchNumber, newLaunchPiece, getDataContext());
     }
 
+    /** {@inheritDoc} */
     @Override
     public OMMParser withDataContext(final DataContext newDataContext) {
         return new OMMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
@@ -194,6 +200,7 @@ public class OMMParser extends ODMParser {
     }
 
     /** {@inheritDoc} */
+    @Override
     public OMMFile parse(final InputStream stream, final String fileName) {
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
