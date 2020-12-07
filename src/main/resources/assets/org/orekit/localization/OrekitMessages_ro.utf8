@@ -370,6 +370,9 @@ SP3_NUMBER_OF_EPOCH_MISMATCH = găsite {0} date de referință în fișierul {1}
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = sfârșit neașteptat al fișierului sp3 (după linia {0})
 
+# unexpected end of file in clock file (after line {0})
+CLOCK_UNEXPECTED_END_OF_FILE = sfârșit neașteptat al fișierului ceas (după linia {0})
+
 # non-existent geomagnetic model {0} for year {1}
 NON_EXISTENT_GEOMAGNETIC_MODEL = fișierul de model geomagnetic {0} inexistent pentru anul {1}
 
@@ -480,6 +483,12 @@ STATION_NOT_FOUND = stația {0} nu a fost găsită, stații cunoscute: {1}
 
 # unknown satellite system {0}
 UNKNOWN_SATELLITE_SYSTEM = sistemul de sateliți {0} este necunoscut
+
+# unknown time system {0}
+UNKNOWN_TIME_SYSTEM = sistem de timp necunoscut {0}
+
+# unknown clock data type {0}
+UNKNOWN_CLOCK_DATA_TYPE = tip de date de ceas necunoscut {0}
 
 # unknown satellite antenna code {0}
 UNKNOWN_SATELLITE_ANTENNA_CODE = codul {0} de antenă satelit este necunoscut

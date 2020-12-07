@@ -370,6 +370,9 @@ SP3_NUMBER_OF_EPOCH_MISMATCH = Es wurden {0} von {2} erwarteten Epochen in der D
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = unerwartetes Ende in der SP3 Datei (nach Zeile {0})
 
+# unexpected end of file in clock file (after line {0})
+CLOCK_UNEXPECTED_END_OF_FILE = unerwartetes Ende in der uhr Datei (nach Zeile {0})
+
 # non-existent geomagnetic model {0} for year {1}
 NON_EXISTENT_GEOMAGNETIC_MODEL = nicht existierendes geo-magnetisches Modell {0} für das Jahr {1}
 
@@ -483,6 +486,12 @@ UNKNOWN_SATELLITE_SYSTEM = Unbekanntes Satellitensystem {0}
 
 # unknown satellite antenna code {0}
 UNKNOWN_SATELLITE_ANTENNA_CODE = Unbekannter Satellitenantennencode {0}
+
+# unknown time system {0}
+UNKNOWN_TIME_SYSTEM = Unbekannter Zeitsystem {0}
+
+# unknown clock data type {0}
+UNKNOWN_CLOCK_DATA_TYPE = Unbekannter Uhrendatentyp {0}
 
 # frequency {0} is not supported by antenna {1}
 UNSUPPORTED_FREQUENCY_FOR_ANTENNA = Die Frequenz {0} ist von der Antenne {1} nicht unterstützt
