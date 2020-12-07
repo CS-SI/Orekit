@@ -53,8 +53,7 @@ public interface AttitudeEphemerisFile {
      * Contains the information about a single satellite from an {@link AttitudeEphemerisFile}.
      *
      * <p> A satellite ephemeris consists of one or more {@link AttitudeEphemerisSegment}.
-     * Segments are typically used to split up an ephemeris at discontinuous events, such
-     * as a maneuver.
+     * Segments are typically used to split up an ephemeris at discontinuous events.
      *
      * @author Raphaël Fermé
      * @see AttitudeEphemerisFile
@@ -75,7 +74,7 @@ public interface AttitudeEphemerisFile {
          * Get the segments of the attitude ephemeris.
          *
          * <p> Attitude ephemeris segments are typically used to split an ephemeris around
-         * discontinuous events, such as maneuvers.
+         * discontinuous events.
          *
          * @return the segments contained in the attitude ephemeris file for this satellite.
          */

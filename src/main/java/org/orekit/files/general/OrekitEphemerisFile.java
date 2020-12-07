@@ -79,11 +79,12 @@ public class OrekitEphemerisFile implements EphemerisFile {
      * {@link OrekitSatelliteEphemeris} corresponding object for this ephemeris type.
      */
     public static class OrekitSatelliteEphemeris implements SatelliteEphemeris {
+
         /**
          * Defines the default interpolation sample size if it is not specified
          * on a segment.
          **/
-        public static final int DEFAULT_INTERPOLATION_SIZE = 7; // TODO change default interpolation size to 2 in 11.0
+        public static final int DEFAULT_INTERPOLATION_SIZE = 7; // TODO change default interpolation size to 2 in 11.0 to be consistent with default interpolation degree in OEMParser
 
         /** ID of the space object encapsulated here. **/
         private final String id;
@@ -270,16 +271,17 @@ public class OrekitEphemerisFile implements EphemerisFile {
     }
 
     public static class OrekitEphemerisSegment implements EphemerisSegment {
-        /** coordinates for this ephemeris segment. **/
+
+        /** Coordinates for this ephemeris segment. **/
         private final List<TimeStampedPVCoordinates> coordinates;
 
-        /** the reference frame for this ephemeris segment. **/
+        /** The reference frame for this ephemeris segment. **/
         private final Frame frame;
 
         /** The name of the frame center. **/
         private final String frameCenterString;
 
-        /** standard gravitational parameter for the satellite. **/
+        /** Standard gravitational parameter for the satellite. **/
         private final double mu;
 
         /** The time scale identifier, as specified in the ephemeris file. **/

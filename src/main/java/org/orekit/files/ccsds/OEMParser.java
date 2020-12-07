@@ -130,7 +130,7 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
      * parsing by calling {@link #withInternationalDesignator(int, int, String)}
      * </p>
      * <p>
-     * The default interpolation degree is not set here. It is set to zero by default. If another value
+     * The default interpolation degree is not set here. It is set to one by default. If another value
      * is needed it must be initialized before parsing by calling {@link #withInterpolationDegree(int)}
      * </p>
      *

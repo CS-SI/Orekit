@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -36,6 +37,8 @@ import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
+import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.AEMParser;
 import org.orekit.files.ccsds.AEMWriter;
 import org.orekit.files.general.AttitudeEphemerisFile.AttitudeEphemerisSegment;
@@ -143,6 +146,64 @@ public class OrekitAttitudeEphemerisFileTest {
             assertEquals(0.0, Rotation.distance(refRot, actual.getRotation()), quaternionTolerance);
         }
 
+    }
+
+    @Test
+    public void testNoStates() {
+
+        // Satellite ID
+        final String satId = "SATELLITE1";
+
+        // Create an empty list of states
+        List<SpacecraftState> states = new ArrayList<SpacecraftState>();
+
+        // Create a new satellite attitude ephemeris
+        OrekitAttitudeEphemerisFile ephemerisFile = new OrekitAttitudeEphemerisFile();
+        OrekitSatelliteAttitudeEphemeris satellite = ephemerisFile.addSatellite(satId);
+
+        // Try to add a new segment
+        try {
+            satellite.addNewSegment(states);
+        } catch (OrekitIllegalArgumentException oiae) {
+            Assert.assertEquals(OrekitMessages.NULL_ARGUMENT, oiae.getSpecifier());
+        }
+
+
+    }
+
+    @Test
+    public void testNoEnoughDataForInterpolation() {
+
+        // Create a spacecraft state
+        final String satId = "SATELLITE1";
+        final double sma = 10000000;
+        final double inc = Math.toRadians(45.0);
+        final double ecc = 0.1;
+        final double raan = 0.0;
+        final double pa = 0.0;
+        final double ta = 0.0;
+        final AbsoluteDate date = new AbsoluteDate();
+        final Frame frame = FramesFactory.getEME2000();
+        final CelestialBody body = CelestialBodyFactory.getEarth();
+        final double mu = body.getGM();
+        KeplerianOrbit initialOrbit = new KeplerianOrbit(sma, ecc, inc, pa, raan, ta, PositionAngle.TRUE,
+                                                         frame, date, mu);
+        SpacecraftState state = new SpacecraftState(initialOrbit);
+
+        // Add the state to the list of spacecraft states
+        List<SpacecraftState> states = new ArrayList<SpacecraftState>();
+        states.add(state);
+
+        // Create a new satellite attitude ephemeris
+        OrekitAttitudeEphemerisFile ephemerisFile = new OrekitAttitudeEphemerisFile();
+        OrekitSatelliteAttitudeEphemeris satellite = ephemerisFile.addSatellite(satId);
+
+        // Try to add a new segment
+        try {
+            satellite.addNewSegment(states, "LINEAR", 1);
+        } catch (OrekitIllegalArgumentException oiae) {
+            Assert.assertEquals(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION, oiae.getSpecifier());
+        }
     }
 
 }
