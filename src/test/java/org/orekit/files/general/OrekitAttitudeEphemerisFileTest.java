@@ -32,6 +32,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.CelestialBody;
@@ -50,6 +51,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
 public class OrekitAttitudeEphemerisFileTest {
@@ -125,7 +127,16 @@ public class OrekitAttitudeEphemerisFileTest {
         assertEquals(DataContext.getDefault().getTimeScales().getUTC(), segment.getTimeScale());
         assertEquals(0.0, states.get(0).getDate().durationFrom(segment.getStart()), 1.0e-15);
         assertEquals(0.0, states.get(states.size() - 1).getDate().durationFrom(segment.getStop()), 1.0e-15);
-        
+        Assert.assertEquals(AngularDerivativesFilter.USE_R, segment.getAvailableDerivatives());
+
+        // Verify attitude
+        final Attitude attitude = segment.getAttitudeProvider().getAttitude(initialOrbit, date, frame);
+        Assert.assertEquals(frame, attitude.getReferenceFrame());
+        Assert.assertEquals(refRot.getQ0(), attitude.getRotation().getQ0(), quaternionTolerance);
+        Assert.assertEquals(refRot.getQ1(), attitude.getRotation().getQ1(), quaternionTolerance);
+        Assert.assertEquals(refRot.getQ2(), attitude.getRotation().getQ2(), quaternionTolerance);
+        Assert.assertEquals(refRot.getQ3(), attitude.getRotation().getQ3(), quaternionTolerance);
+
         String tempAemFile = Files.createTempFile("OrekitAttitudeEphemerisFileTest", ".aem").toString();
         try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(tempAemFile), StandardCharsets.UTF_8)) {
             new AEMWriter().write(writer, ephemerisFile);

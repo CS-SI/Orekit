@@ -208,7 +208,7 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
     }
 
     /**
-     * Write the passed in {@link ephemerisFile} to a file at the output path specified.
+     * Write the passed in {@link AEMFile} to a file at the output path specified.
      * @param outputFilePath a file path that the corresponding file will be written to
      * @param aemFile a populated aem file to serialize into the buffer
      * @throws IOException if any file writing operations fail or if the underlying

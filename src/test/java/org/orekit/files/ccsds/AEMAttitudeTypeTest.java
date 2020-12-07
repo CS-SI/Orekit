@@ -26,6 +26,7 @@ import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
 public class AEMAttitudeTypeTest {
@@ -61,6 +62,13 @@ public class AEMAttitudeTypeTest {
             Assert.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
             Assert.assertEquals(AEMAttitudeType.SPIN.getName(), oe.getParts()[0]);
         }
+        // Test exception on the third method
+        try {
+            spin.getAngularDerivativesFilter();
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
+            Assert.assertEquals(AEMAttitudeType.SPIN.getName(), oe.getParts()[0]);
+        }
     }
 
     /**
@@ -81,6 +89,13 @@ public class AEMAttitudeTypeTest {
         // Test exception on the second method
         try {
             spinNutation.getAttitudeData(null,false, null);
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
+            Assert.assertEquals(AEMAttitudeType.SPIN_NUTATION.getName(), oe.getParts()[0]);
+        }
+        // Test exception on the third method
+        try {
+            spinNutation.getAngularDerivativesFilter();
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
             Assert.assertEquals(AEMAttitudeType.SPIN_NUTATION.getName(), oe.getParts()[0]);
@@ -108,6 +123,9 @@ public class AEMAttitudeTypeTest {
         for (int i = 0; i < attitudeData.length; i++) {
             Assert.assertEquals(attitudeData[i], attitudeDataBis[i], QUATERNION_PRECISION);
         }
+
+        // Verify angular derivative filter
+        Assert.assertEquals(AngularDerivativesFilter.USE_R, quaternion.getAngularDerivativesFilter());
     }
 
     @Test
@@ -131,6 +149,9 @@ public class AEMAttitudeTypeTest {
         for (int i = 0; i < attitudeData.length; i++) {
             Assert.assertEquals(attitudeData[i], attitudeDataBis[i], QUATERNION_PRECISION);
         }
+
+        // Verify angular derivative filter
+        Assert.assertEquals(AngularDerivativesFilter.USE_RR, quaternion.getAngularDerivativesFilter());
     }
 
     @Test
@@ -157,6 +178,9 @@ public class AEMAttitudeTypeTest {
         for (int i = 0; i < attitudeData.length; i++) {
             Assert.assertEquals(attitudeData[i], attitudeDataBis[i], QUATERNION_PRECISION);
         }
+
+        // Verify angular derivative filter
+        Assert.assertEquals(AngularDerivativesFilter.USE_RR, quaternionRate.getAngularDerivativesFilter());
     }
 
     @Test
@@ -181,6 +205,9 @@ public class AEMAttitudeTypeTest {
         for (int i = 0; i < attitudeData.length; i++) {
             Assert.assertEquals(attitudeData[i], attitudeDataBis[i], ANGLE_PRECISION);
         }
+
+        // Verify angular derivative filter
+        Assert.assertEquals(AngularDerivativesFilter.USE_R, eulerAngle.getAngularDerivativesFilter());
     }
 
     @Test
@@ -208,6 +235,9 @@ public class AEMAttitudeTypeTest {
         for (int i = 0; i < attitudeData.length; i++) {
             Assert.assertEquals(attitudeData[i], attitudeDataBis[i], ANGLE_PRECISION);
         }
+
+        // Verify angular derivative filter
+        Assert.assertEquals(AngularDerivativesFilter.USE_RR, eulerAngleRate.getAngularDerivativesFilter());
     }
 
     @Test

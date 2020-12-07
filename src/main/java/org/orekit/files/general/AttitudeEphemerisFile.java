@@ -20,8 +20,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
+import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
 /**
@@ -57,7 +59,7 @@ public interface AttitudeEphemerisFile {
      *
      * @author Raphaël Fermé
      * @see AttitudeEphemerisFile
-     * @see AttitudephemerisSegment
+     * @see AttitudeEphemerisSegment
      * @since 10.3
      */
     interface SatelliteAttitudeEphemeris {
@@ -209,6 +211,21 @@ public interface AttitudeEphemerisFile {
          * @return the number of points to use for interpolation.
          */
         int getInterpolationSamples();
+
+        /**
+         * Get which derivatives of angular data are available in this attitude ephemeris segment.
+         *
+         * @return a value indicating if the file contains rotation and/or rotation rate
+         *         and/or acceleration data.
+         */
+        AngularDerivativesFilter getAvailableDerivatives();
+
+        /**
+         * Get the attitude provider for this attitude ephemeris segment.
+         *
+         * @return the attitude provider for this attitude ephemeris segment.
+         */
+        AttitudeProvider getAttitudeProvider();
 
     }
 

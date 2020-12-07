@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
@@ -34,6 +35,7 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.AttitudeEphemerisFileParser;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
@@ -45,11 +47,20 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  */
 public class AEMParser extends ADMParser implements AttitudeEphemerisFileParser {
 
+    /** Pattern for dash. */
+    private static final Pattern DASH = Pattern.compile("-");
+
     /** Maximum number of elements in an attitude data line. */
     private static final int MAX_SIZE = 8;
 
     /** Default interpolation degree. */
     private int interpolationDegree;
+
+    /** Local Spacecraft Body Reference Frame A. */
+    private Frame localScBodyReferenceFrameA;
+
+    /** Local Spacecraft Body Reference Frame B. */
+    private Frame localScBodyReferenceFrameB;
 
     /**
      * Simple constructor.
@@ -219,6 +230,38 @@ public class AEMParser extends ADMParser implements AttitudeEphemerisFileParser 
                              newInterpolationDegree, getDataContext());
     }
 
+    /**
+     * Set the local spacecraft body reference frame A.
+     * <p>
+     * This frame corresponds to {@link Keyword#REF_FRAME_A} key in AEM file.
+     * This method may be used to set a reference frame "A" which will be used
+     * if the frame parsed in the file does not correspond to a default frame available
+     * in {@link CCSDSFrame} (e.g. SC_BODY_1, ACTUATOR_1, etc.).
+     * According to CCSDS ADM documentation, it is the responsibility of the end user
+     * to have an understanding of the location of these frames for their particular object.
+     * </p>
+     * @param frame the frame to set
+     */
+    public void setLocalScBodyReferenceFrameA(final Frame frame) {
+        this.localScBodyReferenceFrameA = frame;
+    }
+
+    /**
+     * Set the local spacecraft body reference frame B.
+     * <p>
+     * This frame corresponds to {@link Keyword#REF_FRAME_B} key in AEM file.
+     * This method may be used to set a reference frame "B" which will be used
+     * if the frame parsed in the file does not correspond to a default frame available
+     * in {@link CCSDSFrame} (e.g. SC_BODY_1, ACTUATOR_1, etc.).
+     * According to CCSDS ADM documentation, it is the responsibility of the end user
+     * to have an understanding of the location of these frames for their particular object.
+     * </p>
+     * @param frame the frame to set
+     */
+    public void setLocalScBodyReferenceFrameB(final Frame frame) {
+        this.localScBodyReferenceFrameB = frame;
+    }
+
     /** Get default interpolation degree.
      * @return interpolationDegree default interpolation degree to use while parsing
      * @see #withInterpolationDegree(int)
@@ -347,6 +390,9 @@ public class AEMParser extends ADMParser implements AttitudeEphemerisFileParser 
                         break;
 
                     case META_STOP:
+                        // Set attitude reference frame
+                        parseReferenceFrame(pi);
+                        // Read attitude ephemeris data lines
                         parseEphemeridesDataLines(reader, pi);
                         break;
 
@@ -405,6 +451,7 @@ public class AEMParser extends ADMParser implements AttitudeEphemerisFileParser 
                                                                                                        pi.lastEphemeridesBlock.isFirst(),
                                                                                                        rotationOrder);
                         pi.lastEphemeridesBlock.getAttitudeDataLines().add(epDataLine);
+                        pi.lastEphemeridesBlock.updateAngularDerivativesFilter(attType.getAngularDerivativesFilter());
                     } catch (NumberFormatException nfe) {
                         throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                   pi.lineNumber, pi.fileName, line);
@@ -436,6 +483,60 @@ public class AEMParser extends ADMParser implements AttitudeEphemerisFileParser 
             reader.mark(300);
 
         }
+    }
+
+    /**
+     * Parse the reference attitude frame.
+     * @param pi the parser info
+     */
+    private void parseReferenceFrame(final ParseInfo pi) {
+
+        // Reference frame A
+        final String frameAString = DASH.matcher(j2000Check(pi.lastEphemeridesBlock.getRefFrameAString())).replaceAll("");
+        final Frame frameA = isDefinedFrame(frameAString) ?
+                                    CCSDSFrame.valueOf(frameAString).getFrame(getConventions(), isSimpleEOP(), getDataContext()) :
+                                        localScBodyReferenceFrameA;
+
+        // Reference frame B
+        final String frameBString = DASH.matcher(j2000Check(pi.lastEphemeridesBlock.getRefFrameBString())).replaceAll("");
+        final Frame frameB = isDefinedFrame(frameBString) ?
+                                    CCSDSFrame.valueOf(frameBString).getFrame(getConventions(), isSimpleEOP(), getDataContext()) :
+                                        localScBodyReferenceFrameB;
+
+        // Set the attitude reference frame
+        final String direction = pi.lastEphemeridesBlock.getAttitudeDirection();
+        pi.lastEphemeridesBlock.setReferenceFrame("A2B".equals(direction) ? frameA : frameB);
+
+    }
+
+    /**
+     * Check if frame name is "J2000".
+     * <p>
+     * If yes, the name is changed to "EME2000" in order to match
+     * predefined CCSDS frame names.
+     * </p>
+     * @param frameName frame name
+     * @return the nex name
+     */
+    private static String j2000Check(final String frameName) {
+        return "J2000".equals(frameName) ? "EME2000" : frameName;
+    }
+
+    /**
+     * Verify if the given frame is defined in predefined CCSDS frames.
+     * @param frameName frame name
+     * @return true is the frame is known
+     */
+    private static boolean isDefinedFrame(final String frameName) {
+        // Loop on CCSDS frames
+        for (CCSDSFrame ccsdsFrame : CCSDSFrame.values()) {
+            // CCSDS frame name is defined in enumerate
+            if (ccsdsFrame.name().equals(frameName)) {
+                return true;
+            }
+        }
+        // No match found
+        return false;
     }
 
     /** Private class used to stock AEM parsing info. */
