@@ -24,11 +24,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.TabulatedProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.AttitudeEphemerisFile;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
+import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
 /**
@@ -109,7 +113,7 @@ public class AEMFile extends ADMFile implements AttitudeEphemerisFile {
          * Create a container for the set of ephemeris blocks in the file that pertain to
          * a single satellite. The satellite's ID is set to ""
          * @param blocks containing ephemeris data for the satellite.
-         * @deprecated in 10.3, replaced by {@link #AemSatelliteEphemeris(String, List)}
+         * @deprecated in 10.3, replaced by AemSatelliteEphemeris(String, List)
          */
         @Deprecated
         public AemSatelliteEphemeris(final List<AttitudeEphemeridesBlock> blocks) {
@@ -169,6 +173,9 @@ public class AEMFile extends ADMFile implements AttitudeEphemerisFile {
         /** The reference frame B specifier, as it appeared in the file. */
         private String refFrameBString;
 
+        /** The reference frame from which attitude is defined. */
+        private Frame refFrame;
+
         /** Rotation direction of the attitude. */
         private String attitudeDir;
 
@@ -214,6 +221,9 @@ public class AEMFile extends ADMFile implements AttitudeEphemerisFile {
         /** Data Lines comments. The list contains a string for each line of comment. */
         private List<String> attitudeDataLinesComment;
 
+        /** Enumerate for selecting which derivatives to use in {@link #attitudeDataLines}. */
+        private AngularDerivativesFilter angularDerivativesFilter;
+
         /**
          * Constructor.
          */
@@ -234,6 +244,22 @@ public class AEMFile extends ADMFile implements AttitudeEphemerisFile {
         @Override
         public List<TimeStampedAngularCoordinates> getAngularCoordinates() {
             return Collections.unmodifiableList(this.attitudeDataLines);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public AngularDerivativesFilter getAvailableDerivatives() {
+            return angularDerivativesFilter;
+        }
+
+        /**
+         * Update the value of {@link #angularDerivativesFilter}.
+         *
+         * @param pointAngularDerivativesFilter enumerate for selecting which derivatives to use in
+         *                                      attitude data.
+         */
+        void updateAngularDerivativesFilter(final AngularDerivativesFilter pointAngularDerivativesFilter) {
+            this.angularDerivativesFilter = pointAngularDerivativesFilter;
         }
 
         /**
@@ -276,6 +302,23 @@ public class AEMFile extends ADMFile implements AttitudeEphemerisFile {
          */
         public void setRefFrameBString(final String frame) {
             this.refFrameBString = frame;
+        }
+
+        /**
+         * Get the reference frame from which attitude is defined.
+         * @param frame reference frame
+         */
+        public void setReferenceFrame(final Frame frame) {
+            this.refFrame = frame;
+
+        }
+
+        /**
+         * Get the reference frame from which attitude is defined.
+         * @return the reference frame from which attitude is defined
+         */
+        public Frame getReferenceFrame() {
+            return refFrame;
         }
 
         /**
@@ -515,6 +558,13 @@ public class AEMFile extends ADMFile implements AttitudeEphemerisFile {
          */
         public void setRotationOrder(final RotationOrder order) {
             this.rotationOrder = order;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public AttitudeProvider getAttitudeProvider() {
+            return new TabulatedProvider(getReferenceFrame(), getAngularCoordinates(),
+                                         getInterpolationSamples(), getAvailableDerivatives());
         }
 
     }
