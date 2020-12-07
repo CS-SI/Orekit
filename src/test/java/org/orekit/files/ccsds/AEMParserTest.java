@@ -30,14 +30,19 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.AEMFile.AttitudeEphemeridesBlock;
 import org.orekit.files.ccsds.AEMParser.AEMRotationOrder;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.ITRFVersion;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
@@ -91,6 +96,7 @@ public class AEMParserTest {
         Assert.assertEquals("SC BODY 1",  file.getAttitudeBlocks().get(0).getRefFrameBString());
         Assert.assertEquals("A2B",        file.getAttitudeBlocks().get(0).getAttitudeDirection());
         Assert.assertEquals("QUATERNION", file.getAttitudeBlocks().get(0).getAttitudeType());
+        Assert.assertEquals(AngularDerivativesFilter.USE_R, file.getAttitudeBlocks().get(0).getAvailableDerivatives());
         verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 11, 28, 21, 29, 7.2555, TimeScalesFactory.getUTC()),
                                                                    new Rotation(0.68427, 0.56748, 0.03146, 0.45689, false),
                                                                    Vector3D.ZERO,
@@ -135,6 +141,7 @@ public class AEMParserTest {
         Assert.assertEquals("SC BODY 1",  file.getAttitudeBlocks().get(1).getRefFrameBString());
         Assert.assertEquals("A2B",        file.getAttitudeBlocks().get(1).getAttitudeDirection());
         Assert.assertEquals("QUATERNION", file.getAttitudeBlocks().get(1).getAttitudeType());
+        Assert.assertEquals(AngularDerivativesFilter.USE_R, file.getAttitudeBlocks().get(1).getAvailableDerivatives());
         verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 12, 18, 12, 5, 0.5555, TimeScalesFactory.getUTC()),
                                                                    new Rotation(0.72501, -0.64585, 0.018542, -0.23854, false),
                                                                    Vector3D.ZERO,
@@ -454,4 +461,46 @@ public class AEMParserTest {
         Assert.assertEquals(7, file2.getAttitudeBlocks().get(0).getInterpolationDegree());
         Assert.assertEquals(5, file2.getAttitudeBlocks().get(1).getInterpolationDegree());
     }
+
+    @Test
+    public void testIssue739() {
+        final String ex = "/ccsds/AEMExample8.txt";
+        final InputStream inEntry = getClass().getResourceAsStream(ex);
+        final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM()).
+                        withConventions(IERSConventions.IERS_2010).
+                        withSimpleEOP(true);
+        parser.setLocalScBodyReferenceFrameA(FramesFactory.getEME2000());
+        parser.setLocalScBodyReferenceFrameB(FramesFactory.getGCRF());
+        final AEMFile file = parser.parse(inEntry, "AEMExample8.txt");
+        Assert.assertEquals(FramesFactory.getEME2000(), file.getAttitudeBlocks().get(0).getReferenceFrame());
+
+        final AttitudeProvider provider = file.getAttitudeBlocks().get(0).getAttitudeProvider();
+        Attitude attitude = provider.getAttitude(null, new AbsoluteDate("1996-11-28T22:08:03.555", TimeScalesFactory.getUTC()), null);
+        Rotation rotation = attitude.getRotation();
+        Assert.assertEquals(0.42319,  rotation.getQ1(), 0.0001);
+        Assert.assertEquals(-0.45697, rotation.getQ2(), 0.0001);
+        Assert.assertEquals(0.23784,  rotation.getQ3(), 0.0001);
+        Assert.assertEquals(0.74533,  rotation.getQ0(), 0.0001);
+    }
+
+    @Test
+    public void testIssue739_2() {
+        final String ex = "/ccsds/AEMExample9.txt";
+        final InputStream inEntry = getClass().getResourceAsStream(ex);
+        final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM()).
+                        withConventions(IERSConventions.IERS_2010).
+                        withSimpleEOP(true);
+        parser.setLocalScBodyReferenceFrameB(FramesFactory.getGCRF());
+        final AEMFile file = parser.parse(inEntry, "AEMExample9.txt");
+        Assert.assertEquals(FramesFactory.getITRF(ITRFVersion.ITRF_93, IERSConventions.IERS_2010, true), file.getAttitudeBlocks().get(0).getReferenceFrame());
+
+        final AttitudeProvider provider = file.getAttitudeBlocks().get(0).getAttitudeProvider();
+        Attitude attitude = provider.getAttitude(null, new AbsoluteDate("1996-11-28T22:08:03.555", TimeScalesFactory.getUTC()), null);
+        Rotation rotation = attitude.getRotation();
+        Assert.assertEquals(0.42319,  rotation.getQ1(), 0.0001);
+        Assert.assertEquals(-0.45697, rotation.getQ2(), 0.0001);
+        Assert.assertEquals(0.23784,  rotation.getQ3(), 0.0001);
+        Assert.assertEquals(0.74533,  rotation.getQ0(), 0.0001);
+    }
+
 }

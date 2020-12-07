@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.3" date="TBD" description="TBD">
+   	  <action dev="bryan" type="add" issue="739">
+      	Allowed initialization of attitude provider from attitude segment.
+      </action>
       <action dev="raphael" type="add" issue="705">
         Allowed writing an AEM file from a list of SpacecraftStates.
       </action>

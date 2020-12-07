@@ -24,13 +24,18 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.annotation.DefaultDataContext;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.TabulatedProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.AEMAttitudeType;
+import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
+import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
 /**
@@ -214,7 +219,8 @@ public class OrekitAttitudeEphemerisFile implements AttitudeEphemerisFile {
          *          the number of interpolation samples that should be used
          *          when processed by another system
          * @param attitudeType
-         *          type of attitude for the attitude ephemeris segment.
+         *          type of attitude for the attitude ephemeris segment. Must correspond
+         *          to the names in {@link AEMAttitudeType} enumerate.
          * @param isFirst
          *          flag for placement of the scalar part of the quaternion
          *          (used if quaternions are chosen in the attitude type)
@@ -249,7 +255,8 @@ public class OrekitAttitudeEphemerisFile implements AttitudeEphemerisFile {
          *          the number of interpolation samples that should be used
          *          when processed by another system
          * @param attitudeType
-         *          type of attitude for the attitude ephemeris segment.
+         *          type of attitude for the attitude ephemeris segment. Must correspond
+         *          to the names in {@link AEMAttitudeType} enumerate.
          * @param isFirst
          *          flag for placement of the scalar part of the quaternion
          *          (used if quaternions are chosen in the attitude type)
@@ -292,7 +299,8 @@ public class OrekitAttitudeEphemerisFile implements AttitudeEphemerisFile {
          *          the number of interpolation samples that should be used
          *          when processed by another system
          * @param attitudeType
-         *          type of attitude for the attitude ephemeris segment.
+         *          type of attitude for the attitude ephemeris segment. Must correspond
+         *          to the names in {@link AEMAttitudeType} enumerate.
          * @param isFirst
          *          flag for placement of the scalar part of the quaternion
          *          (used if quaternions are chosen in the attitude type)
@@ -388,7 +396,7 @@ public class OrekitAttitudeEphemerisFile implements AttitudeEphemerisFile {
 
             final OrekitAttitudeEphemerisSegment newSeg = new OrekitAttitudeEphemerisSegment(attitudeDataLines, body.getName(), refFrameA,
                                                                         refFrameB, attitudeDir, attitudeType, isFirst, rotationOrder,
-                                                                        timeScale, interpolationMethod, interpolationSamples);
+                                                                        timeScale, interpolationMethod, interpolationSamples, states.get(0).getFrame());
             this.segments.add(newSeg);
             return newSeg;
         }
@@ -432,6 +440,12 @@ public class OrekitAttitudeEphemerisFile implements AttitudeEphemerisFile {
         /** The number of interpolation samples. */
         private int interpolationSamples;
 
+        /** Enumerate for selecting which derivatives to use in {@link #attitudeDataLines} interpolation. */
+        private AngularDerivativesFilter angularDerivativesFilter;
+
+        /** Reference frame from which attitude is defined. */
+        private Frame referenceFrame;
+
         /**
          * Constructor for OrekitAttitudeEphemerisSegment.
          *
@@ -457,23 +471,28 @@ public class OrekitAttitudeEphemerisFile implements AttitudeEphemerisFile {
          *          the interpolation method to use.
          * @param interpolationSamples
          *          the number of samples to use during interpolation.
+         * @param referenceFrame
+         *          reference frame from which the attitude is defined
          */
         public OrekitAttitudeEphemerisSegment(final List<TimeStampedAngularCoordinates> attitudeDataLines, final String frameCenterString,
                 final String refFrameAString, final String refFrameBString, final String attitudeDir, final String attitudeType,
                 final boolean isFirst, final RotationOrder rotationOrder, final TimeScale timeScale,
-                final String interpolationMethod, final int interpolationSamples) {
-            this.attitudeDataLines = attitudeDataLines;
-            this.frameCenterString = frameCenterString;
-            this.refFrameAString = refFrameAString;
-            this.refFrameBString = refFrameBString;
-            this.attitudeDir = attitudeDir;
-            this.attitudeType = attitudeType;
-            this.isFirst = isFirst;
-            this.rotationOrder = rotationOrder;
-            this.timeScaleString = timeScale.getName();
-            this.timeScale = timeScale;
-            this.interpolationMethod = interpolationMethod;
-            this.interpolationSamples = interpolationSamples;
+                final String interpolationMethod, final int interpolationSamples,
+                final Frame referenceFrame) {
+            this.attitudeDataLines        = attitudeDataLines;
+            this.frameCenterString        = frameCenterString;
+            this.refFrameAString          = refFrameAString;
+            this.refFrameBString          = refFrameBString;
+            this.attitudeDir              = attitudeDir;
+            this.attitudeType             = attitudeType;
+            this.isFirst                  = isFirst;
+            this.rotationOrder            = rotationOrder;
+            this.timeScaleString          = timeScale.getName();
+            this.timeScale                = timeScale;
+            this.interpolationMethod      = interpolationMethod;
+            this.interpolationSamples     = interpolationSamples;
+            this.referenceFrame           = referenceFrame;
+            this.angularDerivativesFilter = AEMAttitudeType.getAttitudeType(attitudeType).getAngularDerivativesFilter();
         }
 
         /** {@inheritDoc} */
@@ -558,6 +577,19 @@ public class OrekitAttitudeEphemerisFile implements AttitudeEphemerisFile {
         @Override
         public int getInterpolationSamples() {
             return interpolationSamples;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public AngularDerivativesFilter getAvailableDerivatives() {
+            return angularDerivativesFilter;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public AttitudeProvider getAttitudeProvider() {
+            return new TabulatedProvider(referenceFrame, getAngularCoordinates(),
+                                         getInterpolationSamples(), getAvailableDerivatives());
         }
 
     }
