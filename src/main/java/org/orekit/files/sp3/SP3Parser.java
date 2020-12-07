@@ -38,8 +38,8 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFileParser;
 import org.orekit.files.sp3.SP3File.SP3Coordinate;
 import org.orekit.files.sp3.SP3File.SP3FileType;
-import org.orekit.files.sp3.SP3File.TimeSystem;
 import org.orekit.frames.Frame;
+import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
@@ -475,36 +475,8 @@ public class SP3Parser implements EphemerisFileParser {
                     }
                     pi.file.setTimeSystem(ts);
 
-                    switch (ts) {
-                        case GPS:
-                            pi.timeScale = pi.timeScales.getGPS();
-                            break;
-
-                        case GAL:
-                            pi.timeScale = pi.timeScales.getGST();
-                            break;
-
-                        case GLO:
-                            pi.timeScale = pi.timeScales.getGLONASS();
-                            break;
-
-                        case QZS:
-                            pi.timeScale = pi.timeScales.getQZSS();
-                            break;
-
-                        case TAI:
-                            pi.timeScale = pi.timeScales.getTAI();
-                            break;
-
-                        case UTC:
-                            pi.timeScale = pi.timeScales.getUTC();
-                            break;
-
-                        default:
-                            pi.timeScale = pi.timeScales.getGPS();
-                            break;
-                    }
-                    pi.file.setTimeScale(pi.timeScale);
+                    final TimeScale timeScale = ts.getTimeScale(pi.timeScales);
+                    pi.file.setTimeScale(timeScale);
                 }
 
             }
