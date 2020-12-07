@@ -113,7 +113,7 @@ public class AEMFile extends ADMFile implements AttitudeEphemerisFile {
          * Create a container for the set of ephemeris blocks in the file that pertain to
          * a single satellite. The satellite's ID is set to ""
          * @param blocks containing ephemeris data for the satellite.
-         * @deprecated in 10.3, replaced by {@link #AemSatelliteEphemeris(String, List)}
+         * @deprecated in 10.3, replaced by AemSatelliteEphemeris(String, List)
          */
         @Deprecated
         public AemSatelliteEphemeris(final List<AttitudeEphemeridesBlock> blocks) {

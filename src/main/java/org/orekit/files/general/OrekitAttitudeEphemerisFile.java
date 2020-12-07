@@ -168,7 +168,6 @@ public class OrekitAttitudeEphemerisFile implements AttitudeEphemerisFile {
          *            a list of {@link SpacecraftState} that will comprise this
          *            new unit.
          * @return the generated {@link OrekitAttitudeEphemerisSegment}
-         * @see #addNewSegment(List, CelestialBody, int, TimeScale)
          */
         @DefaultDataContext
         public OrekitAttitudeEphemerisSegment addNewSegment(final List<SpacecraftState> states) {

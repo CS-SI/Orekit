@@ -59,7 +59,7 @@ public interface AttitudeEphemerisFile {
      *
      * @author Raphaël Fermé
      * @see AttitudeEphemerisFile
-     * @see AttitudephemerisSegment
+     * @see AttitudeEphemerisSegment
      * @since 10.3
      */
     interface SatelliteAttitudeEphemeris {

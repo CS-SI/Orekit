@@ -494,13 +494,13 @@ public class AEMParser extends ADMParser implements AttitudeEphemerisFileParser 
         // Reference frame A
         final String frameAString = DASH.matcher(j2000Check(pi.lastEphemeridesBlock.getRefFrameAString())).replaceAll("");
         final Frame frameA = isDefinedFrame(frameAString) ?
-                                    CCSDSFrame.valueOf(frameAString).getFrame(getConventions(), isSimpleEOP()) :
+                                    CCSDSFrame.valueOf(frameAString).getFrame(getConventions(), isSimpleEOP(), getDataContext()) :
                                         localScBodyReferenceFrameA;
 
         // Reference frame B
         final String frameBString = DASH.matcher(j2000Check(pi.lastEphemeridesBlock.getRefFrameBString())).replaceAll("");
         final Frame frameB = isDefinedFrame(frameBString) ?
-                                    CCSDSFrame.valueOf(frameBString).getFrame(getConventions(), isSimpleEOP()) :
+                                    CCSDSFrame.valueOf(frameBString).getFrame(getConventions(), isSimpleEOP(), getDataContext()) :
                                         localScBodyReferenceFrameB;
 
         // Set the attitude reference frame
