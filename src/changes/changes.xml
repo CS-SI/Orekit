@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.3" date="TBD" description="TBD">
+      <action dev="raphael" type="add" issue="705">
+        Allowed writing an AEM file from a list of SpacecraftStates.
+      </action>
       <action dev="luc" type="add" issue="738">
         Added user-defined max iteration and convergence criterion in SecularAndHarmonic.
       </action>
