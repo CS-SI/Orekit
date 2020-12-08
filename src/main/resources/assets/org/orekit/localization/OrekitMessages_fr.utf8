@@ -487,6 +487,9 @@ UNKNOWN_SATELLITE_SYSTEM = système satellitaire {0} inconnu
 # unknown time system {0}
 UNKNOWN_TIME_SYSTEM = système de temps {0} inconnu
 
+# no time system line in clock file, time system specification is required
+NO_TIME_SYSTEM_LINE_IN_CLOCK_FILE = aucune ligne correspondant au système de temps dans le fichier d''horloges, échelle de temps à spécifier
+
 # unknown clock data type {0}
 UNKNOWN_CLOCK_DATA_TYPE = type de donnée d''horloge {0} inconnu
 

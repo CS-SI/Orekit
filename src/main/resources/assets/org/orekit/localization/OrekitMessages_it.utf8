@@ -488,6 +488,9 @@ UNKNOWN_SATELLITE_SYSTEM = sistema satellitare {0} sconosciuto
 # unknown time system {0}
 UNKNOWN_TIME_SYSTEM = sistema orario sconosciuto {0}
 
+# no time system line in clock file, time system specification is required
+NO_TIME_SYSTEM_LINE_IN_CLOCK_FILE = nessuna riga del sistema dell''ora nel file dell''orologio, è richiesta la specifica del sistema dell''ora
+
 # unknown clock data type {0}
 UNKNOWN_CLOCK_DATA_TYPE = tipo di dati dell''orologio sconosciuto {0}
 

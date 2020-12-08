@@ -487,6 +487,9 @@ UNKNOWN_SATELLITE_SYSTEM = <MISSING TRANSLATION>
 # unknown time system {0}
 UNKNOWN_TIME_SYSTEM = sistema de tiempo desconocido {0}
 
+# no time system line in clock file, time system specification is required
+NO_TIME_SYSTEM_LINE_IN_CLOCK_FILE = no hay línea de sistema de tiempo en el archivo de reloj, se requiere la especificación del sistema de tiempo
+
 # unknown clock data type {0}
 UNKNOWN_CLOCK_DATA_TYPE = tipo de datos de reloj desconocido {0}
 

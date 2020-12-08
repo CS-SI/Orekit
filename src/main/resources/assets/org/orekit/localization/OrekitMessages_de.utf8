@@ -490,6 +490,9 @@ UNKNOWN_SATELLITE_ANTENNA_CODE = Unbekannter Satellitenantennencode {0}
 # unknown time system {0}
 UNKNOWN_TIME_SYSTEM = Unbekannter Zeitsystem {0}
 
+# no time system line in clock file, time system specification is required
+NO_TIME_SYSTEM_LINE_IN_CLOCK_FILE = Keine Zeitsystemzeile in der Uhrendatei, Zeitsystemspezifikation erforderlich
+
 # unknown clock data type {0}
 UNKNOWN_CLOCK_DATA_TYPE = Unbekannter Uhrendatentyp {0}
 
