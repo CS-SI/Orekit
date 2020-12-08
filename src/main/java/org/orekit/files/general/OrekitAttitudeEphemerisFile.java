@@ -24,8 +24,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.annotation.DefaultDataContext;
-import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.TabulatedProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -520,6 +518,12 @@ public class OrekitAttitudeEphemerisFile implements AttitudeEphemerisFile {
 
         /** {@inheritDoc} */
         @Override
+        public Frame getReferenceFrame() {
+            return referenceFrame;
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public String getAttitudeDirection() {
             return attitudeDir;
         }
@@ -582,13 +586,6 @@ public class OrekitAttitudeEphemerisFile implements AttitudeEphemerisFile {
         @Override
         public AngularDerivativesFilter getAvailableDerivatives() {
             return angularDerivativesFilter;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public AttitudeProvider getAttitudeProvider() {
-            return new TabulatedProvider(referenceFrame, getAngularCoordinates(),
-                                         getInterpolationSamples(), getAvailableDerivatives());
         }
 
     }

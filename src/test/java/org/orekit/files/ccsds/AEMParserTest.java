@@ -31,7 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
-import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.BoundedAttitudeProvider;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -474,13 +474,16 @@ public class AEMParserTest {
         final AEMFile file = parser.parse(inEntry, "AEMExample8.txt");
         Assert.assertEquals(FramesFactory.getEME2000(), file.getAttitudeBlocks().get(0).getReferenceFrame());
 
-        final AttitudeProvider provider = file.getAttitudeBlocks().get(0).getAttitudeProvider();
+        final BoundedAttitudeProvider provider = file.getAttitudeBlocks().get(0).getAttitudeProvider();
         Attitude attitude = provider.getAttitude(null, new AbsoluteDate("1996-11-28T22:08:03.555", TimeScalesFactory.getUTC()), null);
         Rotation rotation = attitude.getRotation();
         Assert.assertEquals(0.42319,  rotation.getQ1(), 0.0001);
         Assert.assertEquals(-0.45697, rotation.getQ2(), 0.0001);
         Assert.assertEquals(0.23784,  rotation.getQ3(), 0.0001);
         Assert.assertEquals(0.74533,  rotation.getQ0(), 0.0001);
+        Assert.assertEquals(0.0, provider.getMinDate().durationFrom(file.getAttitudeBlocks().get(0).getStart()), 0.0001);
+        Assert.assertEquals(0.0, provider.getMaxDate().durationFrom(file.getAttitudeBlocks().get(0).getStop()), 0.0001);
+
     }
 
     @Test
@@ -494,13 +497,16 @@ public class AEMParserTest {
         final AEMFile file = parser.parse(inEntry, "AEMExample9.txt");
         Assert.assertEquals(FramesFactory.getITRF(ITRFVersion.ITRF_93, IERSConventions.IERS_2010, true), file.getAttitudeBlocks().get(0).getReferenceFrame());
 
-        final AttitudeProvider provider = file.getAttitudeBlocks().get(0).getAttitudeProvider();
+        final BoundedAttitudeProvider provider = file.getAttitudeBlocks().get(0).getAttitudeProvider();
         Attitude attitude = provider.getAttitude(null, new AbsoluteDate("1996-11-28T22:08:03.555", TimeScalesFactory.getUTC()), null);
         Rotation rotation = attitude.getRotation();
         Assert.assertEquals(0.42319,  rotation.getQ1(), 0.0001);
         Assert.assertEquals(-0.45697, rotation.getQ2(), 0.0001);
         Assert.assertEquals(0.23784,  rotation.getQ3(), 0.0001);
         Assert.assertEquals(0.74533,  rotation.getQ0(), 0.0001);
+        Assert.assertEquals(0.0, provider.getMinDate().durationFrom(file.getAttitudeBlocks().get(0).getStart()), 0.0001);
+        Assert.assertEquals(0.0, provider.getMaxDate().durationFrom(file.getAttitudeBlocks().get(0).getStop()), 0.0001);
+
     }
 
 }
