@@ -265,6 +265,18 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
     protected abstract ParameterDriver[] setSolarRadiationPressure(T propagatorBuilder, CelestialBody sun,
                                                                    double equatorialRadius, RadiationSensitive spacecraft);
 
+    /** Set Earth's albedo and infrared force model.
+     * @param propagatorBuilder propagator builder
+     * @param sun Sun model
+     * @param equatorialRadius central body equatorial radius (for shadow computation)
+     * @param angularResolution angular resolution in radians
+     * @param spacecraft spacecraft model
+     * @return drivers for the force model
+     */
+    protected abstract ParameterDriver[] setAlbedoInfrared(T propagatorBuilder, CelestialBody sun,
+                                                           double equatorialRadius, double angularResolution,
+                                                           RadiationSensitive spacecraft);
+
     /** Set relativity force model.
      * @param propagatorBuilder propagator builder
      * @return drivers for the force model
@@ -996,6 +1008,24 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
             final ParameterDriver[] drivers = setSolarRadiationPressure(propagatorBuilder, CelestialBodyFactory.getSun(),
                                                                         body.getEquatorialRadius(),
                                                                         new IsotropicRadiationSingleCoefficient(area, cr));
+            if (cREstimated) {
+                for (final ParameterDriver driver : drivers) {
+                    if (driver.getName().equals(RadiationSensitive.REFLECTION_COEFFICIENT)) {
+                        driver.setSelected(true);
+                    }
+                }
+            }
+        }
+
+        // Earth's albedo and infrared
+        if (parser.containsKey(ParameterKey.EARTH_ALBEDO_INFRARED) && parser.getBoolean(ParameterKey.EARTH_ALBEDO_INFRARED)) {
+            final double  cr               = parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_CR);
+            final double  area             = parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_AREA);
+            final boolean cREstimated      = parser.getBoolean(ParameterKey.SOLAR_RADIATION_PRESSURE_CR_ESTIMATED);
+            final double angularResolution = parser.getAngle(ParameterKey.ALBEDO_INFRARED_ANGULAR_RESOLUTION);
+            final ParameterDriver[] drivers = setAlbedoInfrared(propagatorBuilder, CelestialBodyFactory.getSun(),
+                                                                body.getEquatorialRadius(), angularResolution,
+                                                                new IsotropicRadiationSingleCoefficient(area, cr));
             if (cREstimated) {
                 for (final ParameterDriver driver : drivers) {
                     if (driver.getName().equals(RadiationSensitive.REFLECTION_COEFFICIENT)) {

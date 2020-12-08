@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.3" date="TBD" description="TBD">
+   	  <action dev="thomas" type="add" issue="8">
+        Added Knocke's Earth rediffused radiation pressure force model.
+      </action>
    	  <action dev="bryan" type="add" issue="739">
       	Allowed initialization of attitude provider from attitude segment.
       </action>

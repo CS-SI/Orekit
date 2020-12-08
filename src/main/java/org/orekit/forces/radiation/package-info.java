@@ -21,9 +21,10 @@
  * <p>
  * This includes the {@link org.orekit.forces.radiation.RadiationSensitive
  * RadiationSensitive} interface that represents each specific spacecraft
- * sensitivity to radiation and the {@link
+ * sensitivity to radiation, as well as the {@link
  * org.orekit.forces.radiation.SolarRadiationPressure SolarRadiationPressure}
- * force model that uses the interface to compute the resulting acceleration.
+ * and the {@link org.orekit.forces.radiation.KnockeRediffusedForceModel Albedo/IR}
+ * force models that use the interface to compute the resulting accelerations.
  * </p>
  */
 package org.orekit.forces.radiation;
