@@ -454,6 +454,9 @@ CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = utilizarea sistemului de timp {0} în fișie
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 NOT_ENOUGH_PROPAGATORS = Crearea unui propagator combinator necesită cel puțin un propagator, dar nici unul nu a fost definit.
 
+# Creating an aggregate attitude provider requires at least one constituent attitude provider, but none were provided.
+NOT_ENOUGH_ATTITUDE_PROVIDERS = <MISSING TRANSLATION>
+
 # argument {0} cannot be null
 NULL_ARGUMENT = argumentul {0} nu poate fi nul
 

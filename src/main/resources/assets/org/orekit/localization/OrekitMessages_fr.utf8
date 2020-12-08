@@ -454,6 +454,9 @@ CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = l''utilisation du système temporel {0} néc
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 NOT_ENOUGH_PROPAGATORS = la création d''un propagateur combiné nécessite au moins un propagateur, mais aucun n''a été fourni
 
+# Creating an aggregate attitude provider requires at least one constituent attitude provider, but none were provided.
+NOT_ENOUGH_ATTITUDE_PROVIDERS = la création d''un fournisseur d''attitude combiné nécessite au moins un fournisseur d''attitude, mais aucun n''a été fourni.
+
 # argument {0} cannot be null
 NULL_ARGUMENT = l''argument {0} ne devrait pas être nul
 

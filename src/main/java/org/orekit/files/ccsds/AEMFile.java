@@ -24,8 +24,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
-import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.TabulatedProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.AttitudeEphemerisFile;
@@ -313,10 +311,8 @@ public class AEMFile extends ADMFile implements AttitudeEphemerisFile {
 
         }
 
-        /**
-         * Get the reference frame from which attitude is defined.
-         * @return the reference frame from which attitude is defined
-         */
+        /** {@inheritDoc} */
+        @Override
         public Frame getReferenceFrame() {
             return refFrame;
         }
@@ -558,13 +554,6 @@ public class AEMFile extends ADMFile implements AttitudeEphemerisFile {
          */
         public void setRotationOrder(final RotationOrder order) {
             this.rotationOrder = order;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public AttitudeProvider getAttitudeProvider() {
-            return new TabulatedProvider(getReferenceFrame(), getAngularCoordinates(),
-                                         getInterpolationSamples(), getAvailableDerivatives());
         }
 
     }
