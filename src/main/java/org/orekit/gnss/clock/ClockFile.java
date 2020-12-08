@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -34,8 +35,9 @@ import org.orekit.gnss.TimeSystem;
 import org.orekit.gnss.corrections.AppliedDCBS;
 import org.orekit.gnss.corrections.AppliedPCVS;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
-import org.orekit.time.TimeStamped;
 import org.orekit.utils.TimeSpanMap;
 
 /** Represents a parsed clock file from the IGS.
@@ -153,7 +155,6 @@ public class ClockFile {
      */
     public void addSatellite(final String satId) {
         // only add satellites which have not been added before
-        clockData.putIfAbsent(satId, new ArrayList<ClockDataLine>());
         satellites.add(satId);
     }
 
@@ -164,7 +165,6 @@ public class ClockFile {
      */
     public void addReceiver(final String receiverId, final Receiver receiver) {
         // only add satellites which have not been added before
-        clockData.putIfAbsent(receiverId, new ArrayList<ClockDataLine>());
         receivers.add(receiver);
     }
 
@@ -173,6 +173,18 @@ public class ClockFile {
      */
     public int numberOfClockDataTypes() {
         return clockDataTypes.size();
+    }
+
+    /** Get the total number of complete data lines in the file.
+     * @return the total number of complete data lines in the file
+     */
+    public int getTotalNumberOfDataLines() {
+        int result = 0;
+        final Map<String, List<ClockDataLine>> data = getClockData();
+        for (String id : data.keySet()) {
+            result += data.get(id).size();
+        }
+        return result;
     }
 
     /** Get the number of observation types for a given system.
@@ -573,10 +585,8 @@ public class ClockFile {
                                       final AbsoluteDate startDate) {
         if (referenceClocks == null) {
             referenceClocks = new TimeSpanMap<List<ReferenceClock>>(referenceClockList);
-            referenceClocks.addValidAfter(referenceClockList, startDate);
-        } else {
-            referenceClocks.addValidAfter(referenceClockList, startDate);
         }
+        referenceClocks.addValidAfter(referenceClockList, startDate);
     }
 
     /** Getter for the frame name.
@@ -638,7 +648,7 @@ public class ClockFile {
     }
 
     /** Clock data for a single station. */
-    public class ClockDataLine implements TimeStamped {
+    public class ClockDataLine {
 
         /** Clock data type. */
         private ClockDataType dataType;
@@ -646,8 +656,11 @@ public class ClockFile {
         /** Receiver/Satellite name. */
         private String name;
 
-        /** Epoch. */
-        private AbsoluteDate date;
+        /** Epoch date components. */
+        private DateComponents dateComponents;
+
+        /** Epoch time components. */
+        private TimeComponents timeComponents;
 
         /** Number of data values to follow. */
         private int numberOfValues;
@@ -673,7 +686,8 @@ public class ClockFile {
         /** Constructor.
          * @param type the clock data type
          * @param name the receiver/satellite name
-         * @param date the epoch
+         * @param dateComponents the epoch date components
+         * @param timeComponents the epoch time components
          * @param numberOfValues the number of values to follow
          * @param clockBias the clock bias in seconds
          * @param clockBiasSigma the clock bias sigma in seconds
@@ -683,14 +697,17 @@ public class ClockFile {
          * @param clockAccelerationSigma the clock acceleration in seconds^-1
          */
         public ClockDataLine (final ClockDataType type, final String name,
-                              final AbsoluteDate date, final int numberOfValues,
+                              final DateComponents dateComponents,
+                              final TimeComponents timeComponents,
+                              final int numberOfValues,
                               final double clockBias, final double clockBiasSigma,
                               final double clockRate, final double clockRateSigma,
                               final double clockAcceleration, final double clockAccelerationSigma) {
 
             this.dataType                = type;
             this.name                    = name;
-            this.date                    = date;
+            this.dateComponents          = dateComponents;
+            this.timeComponents          = timeComponents;
             this.numberOfValues          = numberOfValues;
             this.clockBias               = clockBias;
             this.clockBiasSigma          = clockBiasSigma;
@@ -719,6 +736,28 @@ public class ClockFile {
          */
         public int getNumberOfValues() {
             return numberOfValues;
+        }
+
+        /** Get data line epoch.
+         * This method should be used if Time System ID line is present in the clock file.
+         * @return the data line epoch
+         * @throws OrekitException if Time System ID line was not parsed and/or is missing in clock file
+         */
+        public AbsoluteDate getEpoch() {
+            if (null == timeScale) {
+                throw new OrekitException(OrekitMessages.NO_TIME_SYSTEM_LINE_IN_CLOCK_FILE);
+            } else {
+                return new AbsoluteDate(dateComponents, timeComponents, timeScale);
+            }
+        }
+
+        /** Get data line epoch.
+         * This method should be used in case Time System ID line is missing.
+         * @param epochTimeScale the time scale in which the epoch is defined
+         * @return the data line epoch set in the specified time scale
+         */
+        public AbsoluteDate getEpoch(final TimeScale epochTimeScale) {
+            return new AbsoluteDate(dateComponents, timeComponents, epochTimeScale);
         }
 
         /** Getter for the clock bias.
@@ -761,12 +800,6 @@ public class ClockFile {
          */
         public double getClockAccelerationSigma() {
             return clockAccelrerationSigma;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public AbsoluteDate getDate() {
-            return date;
         }
 
     }

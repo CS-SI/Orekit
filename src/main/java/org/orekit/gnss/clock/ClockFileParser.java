@@ -53,7 +53,7 @@ import org.orekit.time.TimeScales;
 import org.orekit.utils.IERSConventions;
 
 /** A parser for the clock file from the IGS.
- *
+ * This parser can handle version 3.04 of the clock files.
  * @see <a href="ftp://igs.org/pub/data/format/rinex_clock304.txt">Clock file format</a>
  *
  * @author Thomas Paulet
@@ -191,13 +191,10 @@ public class ClockFileParser {
                 throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                           lineNumber, fileName, line);
             }
-            if (pi.done) {
-                return pi.file;
-            }
         }
 
         // we never reached the EOF marker
-        throw new OrekitException(OrekitMessages.CLOCK_UNEXPECTED_END_OF_FILE, lineNumber);
+        return pi.file;
 
     }
 
@@ -230,8 +227,11 @@ public class ClockFileParser {
         /** Current receiver/satellite name. */
         private String currentName;
 
-        /** Current data Epoch. */
-        private AbsoluteDate currentDate;
+        /** Current data date components. */
+        private DateComponents currentDateComponents;
+
+        /** Current data time components. */
+        private TimeComponents currentTimeComponents;
 
         /** Current data number of data values to follow. */
         private int currentNumberOfValues;
@@ -239,15 +239,11 @@ public class ClockFileParser {
         /**Current data values. */
         private double[] currentDataValues;
 
-        /** End Of File reached indicator. */
-        private boolean done;
-
         /** Constructor, build the ParseInfo object. */
         protected ParseInfo () {
 
             this.timeScales = ClockFileParser.this.timeScales;
             this.file = new ClockFile(frameBuilder);
-            this.done = false;
         }
     }
 
@@ -256,7 +252,7 @@ public class ClockFileParser {
     private enum LineParser {
 
         /** Parser for version, file type and satellite system. */
-        HEADER_VERSION("RINEX VERSION / TYPE$") {
+        HEADER_VERSION("^.+RINEX VERSION / TYPE( )*$") {
 
             /** {@inheritDoc} */
             @Override
@@ -273,8 +269,9 @@ public class ClockFileParser {
                     scanner.next();
 
                     // Last element represents the satellite system
-                    final String satelliteSystemString = scanner.next();
-                    pi.file.setSatelliteSystem(SatelliteSystem.valueOf(satelliteSystemString));
+                    final SatelliteSystem satelliteSystem = SatelliteSystem.parseSatelliteSystem(scanner.next());
+                    pi.file.setSatelliteSystem(satelliteSystem);
+                    pi.file.setTimeScale(satelliteSystem.getDefaultTimeSystem(pi.timeScales));
                 }
             }
 
@@ -286,7 +283,7 @@ public class ClockFileParser {
         },
 
         /** Parser for generating program and emiting agency. */
-        HEADER_PROGRAM("PGM / RUN BY / DATE$") {
+        HEADER_PROGRAM("^.+PGM / RUN BY / DATE( )*$") {
 
             /** {@inheritDoc} */
             @Override
@@ -329,12 +326,12 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_COMMENT, HEADER_SYSTEM_OBS, HEADER_TIME_SYSTEM);
+                return Stream.of(HEADER_COMMENT, HEADER_SYSTEM_OBS, HEADER_TIME_SYSTEM, HEADER_LEAP_SECONDS, HEADER_LEAP_SECONDS_GNSS);
             }
         },
 
         /** Parser for comments. */
-        HEADER_COMMENT("COMMENT$") {
+        HEADER_COMMENT("^.+COMMENT( )*$") {
 
             /** {@inheritDoc} */
             @Override
@@ -345,12 +342,12 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_COMMENT, HEADER_SYSTEM_OBS, HEADER_TIME_SYSTEM);
+                return Stream.of(HEADER_COMMENT, HEADER_SYSTEM_OBS, HEADER_TIME_SYSTEM, HEADER_LEAP_SECONDS, HEADER_LEAP_SECONDS_GNSS);
             }
         },
 
         /** Parser for satellite system and related observation types. */
-        HEADER_SYSTEM_OBS("^[A-Z] .* SYS / # / OBS TYPES$") {
+        HEADER_SYSTEM_OBS("^[A-Z] .*SYS / # / OBS TYPES( )*$") {
 
             /** {@inheritDoc} */
             @Override
@@ -360,27 +357,17 @@ public class ClockFileParser {
                      Scanner scanner = s2.useLocale(Locale.US)) {
 
                     // First element of the line is satellite system code
-                    final SatelliteSystem satelliteSystem = SatelliteSystem.valueOf(scanner.next());
-                    pi.file.getSystemObservationTypes().put(satelliteSystem, new ArrayList<ObservationType>());
+                    final SatelliteSystem satelliteSystem = SatelliteSystem.parseSatelliteSystem(scanner.next());
                     pi.currentSatelliteSystem = satelliteSystem;
 
                     // Second element is the number of different observation types
                     final int numberOfObsTypes = scanner.nextInt();
                     pi.currentNumberOfObsTypes = numberOfObsTypes;
 
-                    // Check if continuation line is required
-                    if (numberOfObsTypes <= 13) {
-                        // No need for continuation line
-                        for (int i = 0; i < numberOfObsTypes; i++) {
-                            final ObservationType obsType = ObservationType.valueOf(scanner.next());
-                            pi.file.getSystemObservationTypes().get(satelliteSystem).add(obsType);
-                        }
-                    } else {
-                        // A continuation line is required
-                        for (int i = 0; i < 13; i++) {
-                            final ObservationType obsType = ObservationType.valueOf(scanner.next());
-                            pi.file.getSystemObservationTypes().get(satelliteSystem).add(obsType);
-                        }
+                    // There are at most 13 observation data types in a line
+                    for (int i = 0; i < FastMath.min(numberOfObsTypes, 13); i++) {
+                        final ObservationType obsType = ObservationType.valueOf(scanner.next());
+                        pi.file.AddSystemObservationType(satelliteSystem, obsType);
                     }
                 }
             }
@@ -388,12 +375,12 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_SYSTEM_OBS, HEADER_SYSTEM_OBS_CONTINUATION, HEADER_TIME_SYSTEM);
+                return Stream.of(HEADER_SYSTEM_OBS, HEADER_SYSTEM_OBS_CONTINUATION, HEADER_TIME_SYSTEM, HEADER_LEAP_SECONDS, HEADER_LEAP_SECONDS_GNSS);
             }
         },
 
         /** Parser for continuation of satellite system and related observation types. */
-        HEADER_SYSTEM_OBS_CONTINUATION("^ .* SYS / # / OBS TYPES$") {
+        HEADER_SYSTEM_OBS_CONTINUATION("^ .*SYS / # / OBS TYPES( )*$") {
 
             /** {@inheritDoc} */
             @Override
@@ -405,7 +392,7 @@ public class ClockFileParser {
                     // This is a continuation line, there are only observation types
                     for (int i = 13; i < pi.currentNumberOfObsTypes; i++) {
                         final ObservationType obsType = ObservationType.valueOf(scanner.next());
-                        pi.file.getSystemObservationTypes().get(pi.currentSatelliteSystem).add(obsType);
+                        pi.file.AddSystemObservationType(pi.currentSatelliteSystem, obsType);
                     }
                 }
             }
@@ -413,12 +400,12 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_SYSTEM_OBS, HEADER_TIME_SYSTEM);
+                return Stream.of(HEADER_SYSTEM_OBS, HEADER_TIME_SYSTEM, HEADER_LEAP_SECONDS, HEADER_LEAP_SECONDS_GNSS);
             }
         },
 
         /** Parser for data time system. */
-        HEADER_TIME_SYSTEM("TIME SYSTEM ID$") {
+        HEADER_TIME_SYSTEM("^.+TIME SYSTEM ID( )*$") {
 
             /** {@inheritDoc} */
             @Override
@@ -443,7 +430,7 @@ public class ClockFileParser {
         },
 
         /** Parser for leap seconds. */
-        HEADER_LEAP_SECONDS("LEAP SECONDS$") {
+        HEADER_LEAP_SECONDS("^.+LEAP SECONDS( )*$") {
 
             /** {@inheritDoc} */
             @Override
@@ -466,7 +453,7 @@ public class ClockFileParser {
         },
 
         /** Parser for leap seconds GNSS. */
-        HEADER_LEAP_SECONDS_GNSS("LEAP SECONDS GNSS$") {
+        HEADER_LEAP_SECONDS_GNSS("^.+LEAP SECONDS GNSS( )*$") {
 
             /** {@inheritDoc} */
             @Override
@@ -489,7 +476,7 @@ public class ClockFileParser {
         },
 
         /** Parser for applied differencial code bias corrections. */
-        HEADER_DBCS("SYS / DCBS APPLIED$") {
+        HEADER_DBCS("^.+SYS / DCBS APPLIED( )*$") {
 
             /** {@inheritDoc} */
             @Override
@@ -513,12 +500,12 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_DBCS, HEADER_PCVS, HEADER_TYPES_OF_DATA);
+                return Stream.of(HEADER_DBCS, HEADER_PCVS, HEADER_TYPES_OF_DATA, HEADER_END);
             }
         },
 
         /** Parser for applied phase center variation corrections. */
-        HEADER_PCVS("SYS / PCVS APPLIED$") {
+        HEADER_PCVS("^.+SYS / PCVS APPLIED( )*$") {
 
             /** {@inheritDoc} */
             @Override
@@ -542,12 +529,12 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_PCVS, HEADER_TYPES_OF_DATA);
+                return Stream.of(HEADER_PCVS, HEADER_TYPES_OF_DATA, HEADER_END);
             }
         },
 
         /** Parser for the different clock data types that are stored in the file. */
-        HEADER_TYPES_OF_DATA("# / TYPES OF DATA$") {
+        HEADER_TYPES_OF_DATA("^.+# / TYPES OF DATA( )*$") {
 
             /** {@inheritDoc} */
             @Override
@@ -575,7 +562,7 @@ public class ClockFileParser {
         },
 
         /** Parser for the station with reference clock. */
-        HEADER_STATIONS_NAME("STATION NAME / NUM$") {
+        HEADER_STATIONS_NAME("^.+STATION NAME / NUM( )*$") {
 
             /** {@inheritDoc} */
             @Override
@@ -602,7 +589,7 @@ public class ClockFileParser {
         },
 
         /** Parser for the reference clock in case of calibration data. */
-        HEADER_STATION_CLOCK_REF("STATION CLK REF$") {
+        HEADER_STATION_CLOCK_REF("^.+STATION CLK REF( )*$") {
 
             /** {@inheritDoc} */
             @Override
@@ -618,7 +605,7 @@ public class ClockFileParser {
         },
 
         /** Parser for the analysis center. */
-        HEADER_ANALYSIS_CENTER("ANALYSIS CENTER$") {
+        HEADER_ANALYSIS_CENTER("^.+ANALYSIS CENTER( )*$") {
 
             /** {@inheritDoc} */
             @Override
@@ -636,12 +623,12 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_NUMBER_OF_CLOCK_REF, HEADER_END);
+                return Stream.of(HEADER_NUMBER_OF_CLOCK_REF, HEADER_NUMBER_OF_SOLN_STATIONS, HEADER_END);
             }
         },
 
         /** Parser for the number of reference clocks over a period. */
-        HEADER_NUMBER_OF_CLOCK_REF("# OF CLK REF$") {
+        HEADER_NUMBER_OF_CLOCK_REF("^.+# OF CLK REF( )*$") {
 
             /** {@inheritDoc} */
             @Override
@@ -690,7 +677,7 @@ public class ClockFileParser {
         },
 
         /** Parser for the reference clock over a period. */
-        HEADER_ANALYSIS_CLOCK_REF("ANALYSIS CLK REF$") {
+        HEADER_ANALYSIS_CLOCK_REF("^.+ANALYSIS CLK REF( )*$") {
 
             /** {@inheritDoc} */
             @Override
@@ -715,7 +702,7 @@ public class ClockFileParser {
                     pi.currentReferenceClocks.add(pi.file.new ReferenceClock(referenceName, clockID, clockConstraint,
                                                                              pi.referenceClockStartDate, pi.referenceClockEndDate));
 
-                    // Modify time span map of the reference clocks to accept new reference clock
+                    // Modify time span map of the reference clocks to accept the new reference clock
                     pi.file.addReferenceClockList(pi.currentReferenceClocks, pi.referenceClockStartDate);
                 }
             }
@@ -729,7 +716,7 @@ public class ClockFileParser {
         },
 
         /** Parser for the number of stations embedded in the file and the related frame. */
-        HEADER_NUMBER_OF_SOLN_STATIONS("SOLN STA$") {
+        HEADER_NUMBER_OF_SOLN_STATIONS("^.+SOLN STA / TRF( )*$") {
 
             /** {@inheritDoc} */
             @Override
@@ -755,32 +742,29 @@ public class ClockFileParser {
         },
 
         /** Parser for the stations embedded in the file and the related positions. */
-        HEADER_SOLN_STATIONS("SOLN STA NAME / NUM$") {
+        HEADER_SOLN_STATIONS("^.+SOLN STA NAME / NUM( )*$") {
 
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi) {
-                try (Scanner s1      = new Scanner(line);
-                     Scanner s2      = s1.useDelimiter(SPACES);
-                     Scanner scanner = s2.useLocale(Locale.US)) {
 
-                    // First element is the receiver designator
-                    final String designator = scanner.next();
+                // First element is the receiver designator
+                final String designator = line.substring(0, 10).trim();
 
-                    // Second element is the receiver identifier
-                    final String receiverIdentifier = scanner.next();
+                // Second element is the receiver identifier
+                final String receiverIdentifier = line.substring(10, 30).trim();
 
-                    // Third element if X coordinates, in millimeters in the file frame.
-                    final double x = MILLIMETER * scanner.nextInt();
+                // Third element if X coordinates, in millimeters in the file frame.
+                final double x = MILLIMETER * Double.parseDouble(line.substring(30, 41).trim());
 
-                    // Fourth element if Y coordinates, in millimeters in the file frame.
-                    final double y = MILLIMETER * scanner.nextInt();
+                // Fourth element if Y coordinates, in millimeters in the file frame.
+                final double y = MILLIMETER * Double.parseDouble(line.substring(42, 53).trim());
 
-                    // Fifth element if Z coordinates, in millimeters in the file frame.
-                    final double z = MILLIMETER * scanner.nextInt();
+                // Fifth element if Z coordinates, in millimeters in the file frame.
+                final double z = MILLIMETER * Double.parseDouble(line.substring(54, 65).trim());
 
-                    pi.file.addReceiver(designator, pi.file.new Receiver(designator, receiverIdentifier, x, y, z));
-                }
+                pi.file.addReceiver(designator, pi.file.new Receiver(designator, receiverIdentifier, x, y, z));
+
             }
 
             /** {@inheritDoc} */
@@ -791,18 +775,15 @@ public class ClockFileParser {
         },
 
         /** Parser for the number of satellites embedded in the file. */
-        HEADER_NUMBER_OF_SOLN_SATS("# OF SOLN SATS$") {
+        HEADER_NUMBER_OF_SOLN_SATS("^.+# OF SOLN SATS( )*$") {
 
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi) {
-                try (Scanner s1      = new Scanner(line);
-                     Scanner s2      = s1.useDelimiter(SPACES);
-                     Scanner scanner = s2.useLocale(Locale.US)) {
 
-                    // Only element is the number of satellites embedded in the file
-                    scanner.nextInt();
-                }
+                    // Only element in the line is number of satellites, not used here.
+                    // do nothing...
+
             }
 
             /** {@inheritDoc} */
@@ -813,7 +794,7 @@ public class ClockFileParser {
         },
 
         /** Parser for the satellites embedded in the file. */
-        HEADER_PRN_LIST("PRN LIST$") {
+        HEADER_PRN_LIST("^.+PRN LIST( )*$") {
 
             /** {@inheritDoc} */
             @Override
@@ -837,12 +818,12 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_PRN_LIST, HEADER_END);
+                return Stream.of(HEADER_PRN_LIST, HEADER_DBCS, HEADER_PCVS, HEADER_END);
             }
         },
 
         /** Parser for the end of header. */
-        HEADER_END("END_OF_HEADER$") {
+        HEADER_END("^.+END OF HEADER( )*$") {
 
             /** {@inheritDoc} */
             @Override
@@ -853,12 +834,12 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(CLOCK_DATA, EOF);
+                return Stream.of(CLOCK_DATA);
             }
         },
 
         /** Parser for a clock data line. */
-        CLOCK_DATA("^AR |^AS |^CR |^DR |^MS ") {
+        CLOCK_DATA("(^AR |^AS |^CR |^DR |^MS ).+$") {
 
             /** {@inheritDoc} */
             @Override
@@ -883,7 +864,8 @@ public class ClockFileParser {
                     final int hour   = scanner.nextInt();
                     final int min    = scanner.nextInt();
                     final double sec = scanner.nextDouble();
-                    pi.currentDate = new AbsoluteDate(year, month, day, hour, min, sec, pi.file.getTimeScale());
+                    pi.currentDateComponents = new DateComponents(year, month, day);
+                    pi.currentTimeComponents = new TimeComponents(hour, min, sec);
 
                     // Fourth element is number of data values
                     pi.currentNumberOfValues = scanner.nextInt();
@@ -898,7 +880,8 @@ public class ClockFileParser {
                         // No continuation line is required
                         pi.file.AddClockData(pi.currentName, pi.file.new ClockDataLine(pi.currentDataType,
                                                                                        pi.currentName,
-                                                                                       pi.currentDate,
+                                                                                       pi.currentDateComponents,
+                                                                                       pi.currentTimeComponents,
                                                                                        pi.currentNumberOfValues,
                                                                                        pi.currentDataValues[0],
                                                                                        pi.currentDataValues[1],
@@ -910,12 +893,12 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(CLOCK_DATA, CLOCK_DATA_CONTINUATION, EOF);
+                return Stream.of(CLOCK_DATA, CLOCK_DATA_CONTINUATION);
             }
         },
 
         /** Parser for a continuation clock data line. */
-        CLOCK_DATA_CONTINUATION("^   ") {
+        CLOCK_DATA_CONTINUATION("^   .+") {
 
             /** {@inheritDoc} */
             @Override
@@ -932,7 +915,8 @@ public class ClockFileParser {
                     // Add clock data line
                     pi.file.AddClockData(pi.currentName, pi.file.new ClockDataLine(pi.currentDataType,
                                                                                    pi.currentName,
-                                                                                   pi.currentDate,
+                                                                                   pi.currentDateComponents,
+                                                                                   pi.currentTimeComponents,
                                                                                    pi.currentNumberOfValues,
                                                                                    pi.currentDataValues[0],
                                                                                    pi.currentDataValues[1],
@@ -947,27 +931,9 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(CLOCK_DATA, EOF);
+                return Stream.of(CLOCK_DATA);
             }
-        },
-
-        /** Parser for End Of File marker. */
-        EOF("^[eE][oO][fF]\\s*$") {
-
-            /** {@inheritDoc} */
-            @Override
-            public void parse(final String line, final ParseInfo pi) {
-                pi.done = true;
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(EOF);
-            }
-
         };
-
 
         /** Pattern for identifying line. */
         private final Pattern pattern;
