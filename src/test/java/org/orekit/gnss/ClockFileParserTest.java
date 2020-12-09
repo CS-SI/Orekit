@@ -35,12 +35,12 @@ public class ClockFileParserTest {
         Utils.setDataRoot("regular-data");
     }
 
-   
+    /** First example given in the 3.04 RINEX clock file format. */
     @Test
-    public void testDefaultLoadExple1V304() throws URISyntaxException, IOException {
+    public void testParseExple1V304() throws URISyntaxException, IOException {
         
         // Parse file
-        final String ex = "/gnss/clock/Exple_analysis_1.clk";
+        final String ex = "/gnss/clock/Exple_analysis_1_304.clk";
     
         final ClockFileParser parser = new ClockFileParser();
         final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
@@ -50,12 +50,12 @@ public class ClockFileParserTest {
         Assert.assertEquals(5, file.getTotalNumberOfDataLines());
     }
     
-    
+    /** Second example given in the 3.04 RINEX clock file format. */
     @Test
-    public void testDefaultLoadExple2V304() throws URISyntaxException, IOException {
+    public void testParseExple2V304() throws URISyntaxException, IOException {
         
         // Parse file
-        final String ex = "/gnss/clock/Exple_analysis_2.clk";
+        final String ex = "/gnss/clock/Exple_analysis_2_304.clk";
     
         final ClockFileParser parser = new ClockFileParser();
         final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
@@ -65,11 +65,12 @@ public class ClockFileParserTest {
         Assert.assertEquals(6, file.getTotalNumberOfDataLines());
     }
     
+    /** Third example given in the 3.04 RINEX clock file format. */
     @Test
-    public void testDefaultLoadExpleCalibrationV304() throws URISyntaxException, IOException {
+    public void testParseExpleCalibrationV304() throws URISyntaxException, IOException {
         
         // Parse file
-        final String ex = "/gnss/clock/Exple_calibration.clk";
+        final String ex = "/gnss/clock/Exple_calibration_304.clk";
     
         final ClockFileParser parser = new ClockFileParser();
         final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
@@ -77,5 +78,50 @@ public class ClockFileParserTest {
         
         // Check number of data lines
         Assert.assertEquals(4, file.getTotalNumberOfDataLines());
+    }
+
+    /** An example of the 3.00 RINEX clock file format with format mistakes and missing fields. */
+    @Test
+    public void testParseExple1V300() throws URISyntaxException, IOException {
+        
+        // Parse file
+        final String ex = "/gnss/clock/mit19044_truncated_300.clk";
+    
+        final ClockFileParser parser = new ClockFileParser();
+        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
+        final ClockFile file = (ClockFile) parser.parse(fileName);
+        
+        // Check number of data lines
+        Assert.assertEquals(197, file.getTotalNumberOfDataLines());
+    }
+
+    /** Another example of the 3.00 RINEX clock file format with format mistakes and missing fields. */
+    @Test
+    public void testParseExple2V300() throws URISyntaxException, IOException {
+        
+        // Parse file
+        final String ex = "/gnss/clock/igr21101_truncated_300.clk";
+    
+        final ClockFileParser parser = new ClockFileParser();
+        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
+        final ClockFile file = (ClockFile) parser.parse(fileName);
+        
+        // Check number of data lines
+        Assert.assertEquals(94, file.getTotalNumberOfDataLines());
+    }
+  
+    /** An example of the 2.00 RINEX clock file format. */
+    @Test
+    public void testParseExpleV200() throws URISyntaxException, IOException {
+        
+        // Parse file
+        final String ex = "/gnss/clock/emr10491_truncated_200.clk";
+    
+        final ClockFileParser parser = new ClockFileParser();
+        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
+        final ClockFile file = (ClockFile) parser.parse(fileName);
+        
+        // Check number of data lines
+        Assert.assertEquals(110, file.getTotalNumberOfDataLines());
     }
 }

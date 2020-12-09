@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -53,13 +54,24 @@ import org.orekit.time.TimeScales;
 import org.orekit.utils.IERSConventions;
 
 /** A parser for the clock file from the IGS.
- * This parser can handle version 3.04 of the clock files.
- * @see <a href="ftp://igs.org/pub/data/format/rinex_clock304.txt">Clock file format</a>
+ * This parser handles versions 2.0 to 3.04 of the RINEX clock files.
+ * <p> It is able to manage some mistakes in file writing and format compliance such as wrong date format,
+ * misplaced header blocks or missing information. </p>
+ * <p> A time system should be specified in the file. However, if it is not, default time system will be chosen
+ * regarding the satellite system. If it is mixed or not specified, default time system will be UTC. </p>
+ * <p> Caution, files with missing information in header can lead to wrong data dates and station positions.
+ * It is adviced to check the correctness and format compliance of the clock file to be parsed. </p>
+ * @see <a href="ftp://igs.org/pub/data/format/rinex_clock300.txt"> 3.00 clock file format</a>
+ * @see <a href="ftp://igs.org/pub/data/format/rinex_clock302.txt"> 3.02 clock file format</a>
+ * @see <a href="ftp://igs.org/pub/data/format/rinex_clock304.txt"> 3.04 clock file format</a>
  *
  * @author Thomas Paulet
  */
 
 public class ClockFileParser {
+
+    /** Handled clock file format versions. */
+    private static final List<Double> HANDLED_VERSIONS = Arrays.asList(2.00, 3.00, 3.01, 3.02, 3.04);
 
     /** Spaces delimiters. */
     private static final String SPACES = "\\s+";
@@ -193,7 +205,6 @@ public class ClockFileParser {
             }
         }
 
-        // we never reached the EOF marker
         return pi.file;
 
     }
@@ -236,7 +247,7 @@ public class ClockFileParser {
         /** Current data number of data values to follow. */
         private int currentNumberOfValues;
 
-        /**Current data values. */
+        /** Current data values. */
         private double[] currentDataValues;
 
         /** Constructor, build the ParseInfo object. */
@@ -263,15 +274,30 @@ public class ClockFileParser {
 
                     // First element of the line is format version
                     final double version = scanner.nextDouble();
+
+                    // Throw exception if format version is not handled
+                    if (!HANDLED_VERSIONS.contains(version)) {
+                        throw new OrekitException(OrekitMessages.CLOCK_FILE_UNSUPPORTED_VERSION, version);
+                    }
+
                     pi.file.setFormatVersion(version);
 
-                    // Second element is clock file indicator
-                    scanner.next();
+                    // Second element is clock file indicator, not used here
 
-                    // Last element represents the satellite system
-                    final SatelliteSystem satelliteSystem = SatelliteSystem.parseSatelliteSystem(scanner.next());
-                    pi.file.setSatelliteSystem(satelliteSystem);
-                    pi.file.setTimeScale(satelliteSystem.getDefaultTimeSystem(pi.timeScales));
+                    // Last element is the satellite system, might be missing
+                    final String satelliteSystemString = line.substring(40, 45).trim();
+
+                    // Check satellite if system is recorded
+                    if (!satelliteSystemString.equals("")) {
+                        // Record satellite system and default time system in clock file object
+                        final SatelliteSystem satelliteSystem = SatelliteSystem.parseSatelliteSystem(satelliteSystemString);
+                        pi.file.setSatelliteSystem(satelliteSystem);
+                        pi.file.setTimeScale(satelliteSystem.getDefaultTimeSystem(pi.timeScales));
+                    }
+                    // Set time scale to UTC by default
+                    if (pi.file.getTimeScale() == null) {
+                        pi.file.setTimeScale(pi.timeScales.getUTC());
+                    }
                 }
             }
 
@@ -290,43 +316,78 @@ public class ClockFileParser {
             public void parse(final String line, final ParseInfo pi) {
 
                 // First element of the name of the generating program
-                final String programName = line.substring(0, 19).trim();
+                final String programName = line.substring(0, 20).trim();
                 pi.file.setProgramName(programName);
 
                 // Second element is the name of the emiting agency
-                final String agencyName = line.substring(21, 40).trim();
+                final String agencyName = line.substring(20, 40).trim();
                 pi.file.setAgencyName(agencyName);
 
-                // Third element represents the creation date
-                final String creationDateString = line.substring(42, 50);
-                pi.file.setCreationDateString(creationDateString);
+                // Third element is date
+                String dateString = "";
 
-                // Fourth elment represents the creation time
-                final String creationTimeString = line.substring(52, 58);
-                pi.file.setCreationTimeString(creationTimeString);
+                if (pi.file.getFormatVersion() < 3.04) {
 
-                // Fifth element is the creation time zone
-                final String creationTimeZoneString = line.substring(59, 63).trim();
-                pi.file.setCreationTimeZoneString(creationTimeZoneString);
+                    // Date string location before 3.04 format version
+                    dateString = line.substring(40, 60).trim();
 
-                // Get creation date in Orekit format
-                final DateComponents dateComponents = new DateComponents(Integer.parseInt(creationDateString.substring(0, 4)),
-                                                                         Integer.parseInt(creationDateString.substring(4, 6)),
-                                                                         Integer.parseInt(creationDateString.substring(6, 8)));
-                final TimeComponents timeComponents = new TimeComponents(Integer.parseInt(creationTimeString.substring(0, 2)),
-                                                                         Integer.parseInt(creationTimeString.substring(2, 4)),
-                                                                         Integer.parseInt(creationTimeString.substring(4, 6)));
-                final AbsoluteDate creationDate = new AbsoluteDate(dateComponents,
-                                                                   timeComponents,
-                                                                   TimeSystem.parseTimeSystem(creationTimeZoneString).getTimeScale(pi.timeScales));
-                pi.file.setCreationDate(creationDate);
+                } else {
+
+                    // Date string location after 3.04 format version
+                    dateString = line.substring(42, 65).trim();
+                }
+
+                // Pattern for date format yyyy-mm-dd hh:dd
+                final Pattern pattern1 = Pattern.compile("^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}$");
+
+                // Pattern for date format yyyymmdd hhmmss zone or YYYYMMDD  HHMMSS zone
+                final Pattern pattern2 = Pattern.compile("^[0-9]{8} *[0-9]{6}.*$");
+
+                // Pattern for date format dd-MONTH-yyyy hh:mm
+                final Pattern pattern3 = Pattern.compile("^[0-9]*-...-[0-9]{4} [0-9]{2}:[0-9]{2}$");
+
+                if (pattern1.matcher(dateString).matches()) {
+
+                    pi.file.setCreationDateString(dateString.substring(0, 10).trim());
+                    pi.file.setCreationTimeString(dateString.substring(11, 16).trim());
+
+                } else if (pattern2.matcher(dateString).matches()) {
+
+                    final String creationDateString = dateString.substring(0, 8).trim();
+                    pi.file.setCreationDateString(creationDateString);
+
+                    final String creationTimeString = dateString.substring(9, 16).trim();
+                    pi.file.setCreationTimeString(creationTimeString);
+
+                    final String creationTimeZoneString = dateString.substring(16).trim();
+                    pi.file.setCreationTimeZoneString(creationTimeZoneString);
+
+                    // Get creation date in Orekit format
+                    final DateComponents dateComponents = new DateComponents(Integer.parseInt(creationDateString.substring(0, 4)),
+                                                                             Integer.parseInt(creationDateString.substring(4, 6)),
+                                                                             Integer.parseInt(creationDateString.substring(6, 8)));
+                    final TimeComponents timeComponents = new TimeComponents(Integer.parseInt(creationTimeString.substring(0, 2)),
+                                                                             Integer.parseInt(creationTimeString.substring(2, 4)),
+                                                                             Integer.parseInt(creationTimeString.substring(4, 6)));
+                    final AbsoluteDate creationDate = new AbsoluteDate(dateComponents,
+                                                                       timeComponents,
+                                                                       TimeSystem.parseTimeSystem(creationTimeZoneString).getTimeScale(pi.timeScales));
+                    pi.file.setCreationDate(creationDate);
+
+                } else if (pattern3.matcher(dateString).matches()) {
+                    pi.file.setCreationDateString(dateString.substring(0, 11).trim());
+                    pi.file.setCreationTimeString(dateString.substring(11, 16).trim());
+                } else {
+                    // Format is not handled or date is missing. Do nothing...
+                }
 
             }
 
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_COMMENT, HEADER_SYSTEM_OBS, HEADER_TIME_SYSTEM, HEADER_LEAP_SECONDS, HEADER_LEAP_SECONDS_GNSS);
+                return Stream.of(HEADER_COMMENT, HEADER_SYSTEM_OBS, HEADER_DCBS, HEADER_PCVS,
+                                 HEADER_TIME_SYSTEM, HEADER_LEAP_SECONDS, HEADER_LEAP_SECONDS_GNSS);
             }
         },
 
@@ -336,7 +397,12 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi) {
-                pi.file.addComment(line.substring(0, 65).trim());
+
+                if (pi.file.getFormatVersion() < 3.04) {
+                    pi.file.addComment(line.substring(0, 60).trim());
+                } else {
+                    pi.file.addComment(line.substring(0, 65).trim());
+                }
             }
 
             /** {@inheritDoc} */
@@ -425,7 +491,7 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_LEAP_SECONDS, HEADER_LEAP_SECONDS_GNSS, HEADER_DBCS, HEADER_PCVS, HEADER_TYPES_OF_DATA);
+                return Stream.of(HEADER_LEAP_SECONDS, HEADER_LEAP_SECONDS_GNSS, HEADER_DCBS, HEADER_PCVS, HEADER_TYPES_OF_DATA);
             }
         },
 
@@ -448,7 +514,7 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_LEAP_SECONDS_GNSS, HEADER_DBCS, HEADER_PCVS, HEADER_TYPES_OF_DATA);
+                return Stream.of(HEADER_LEAP_SECONDS_GNSS, HEADER_DCBS, HEADER_PCVS, HEADER_TYPES_OF_DATA, HEADER_NUMBER_OF_CLOCK_REF);
             }
         },
 
@@ -471,12 +537,12 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_DBCS, HEADER_PCVS, HEADER_TYPES_OF_DATA);
+                return Stream.of(HEADER_DCBS, HEADER_PCVS, HEADER_TYPES_OF_DATA, HEADER_NUMBER_OF_CLOCK_REF);
             }
         },
 
         /** Parser for applied differencial code bias corrections. */
-        HEADER_DBCS("^.+SYS / DCBS APPLIED( )*$") {
+        HEADER_DCBS("^.+SYS / DCBS APPLIED( )*$") {
 
             /** {@inheritDoc} */
             @Override
@@ -486,10 +552,15 @@ public class ClockFileParser {
                 final SatelliteSystem satelliteSystem = SatelliteSystem.parseSatelliteSystem(line.substring(0, 1));
 
                 // Second element is the program name
-                final String progDCBS = line.substring(3, 20).trim();
+                final String progDCBS = line.substring(2, 20).trim();
 
                 // Thrid element is the source of the corrections
-                final String sourceDCBS = line.substring(22, 65).trim();
+                String sourceDCBS = "";
+                if (pi.file.getFormatVersion() < 3.04) {
+                    sourceDCBS = line.substring(19, 60).trim();
+                } else {
+                    sourceDCBS = line.substring(22, 65).trim();
+                }
 
                 // Check if sought fields were not actually blanks
                 if (!progDCBS.equals("")) {
@@ -500,7 +571,7 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_DBCS, HEADER_PCVS, HEADER_TYPES_OF_DATA, HEADER_END);
+                return Stream.of(HEADER_DCBS, HEADER_PCVS, HEADER_TYPES_OF_DATA, HEADER_END);
             }
         },
 
@@ -515,10 +586,15 @@ public class ClockFileParser {
                 final SatelliteSystem satelliteSystem = SatelliteSystem.parseSatelliteSystem(line.substring(0, 1));
 
                 // Second element is the program name
-                final String progPCVS = line.substring(3, 20).trim();
+                final String progPCVS = line.substring(2, 20).trim();
 
                 // Thrid element is the source of the corrections
-                final String sourcePCVS = line.substring(22, 65).trim();
+                String sourcePCVS = "";
+                if (pi.file.getFormatVersion() < 3.04) {
+                    sourcePCVS = line.substring(19, 60).trim();
+                } else {
+                    sourcePCVS = line.substring(22, 65).trim();
+                }
 
                 // Check if sought fields were not actually blanks
                 if (!progPCVS.equals("")) {
@@ -594,7 +670,11 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi) {
-                pi.file.setExternalClockReference(line.substring(0, 65).trim());
+                if (pi.file.getFormatVersion() < 3.04) {
+                    pi.file.setExternalClockReference(line.substring(0, 60).trim());
+                } else {
+                    pi.file.setExternalClockReference(line.substring(0, 65).trim());
+                }
             }
 
             /** {@inheritDoc} */
@@ -616,14 +696,20 @@ public class ClockFileParser {
                 pi.file.setAnalysisCenterID(analysisCenterID);
 
                 // Then, the full name of the analysis center
-                final String analysisCenterName = line.substring(5, 65).trim();
+                String analysisCenterName = "";
+                if (pi.file.getFormatVersion() < 3.04) {
+                    analysisCenterName = line.substring(5, 60).trim();
+                } else {
+                    analysisCenterName = line.substring(5, 65).trim();
+                }
                 pi.file.setAnalysisCenterName(analysisCenterName);
             }
 
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_NUMBER_OF_CLOCK_REF, HEADER_NUMBER_OF_SOLN_STATIONS, HEADER_END);
+                return Stream.of(HEADER_NUMBER_OF_CLOCK_REF, HEADER_NUMBER_OF_SOLN_STATIONS,
+                                 HEADER_LEAP_SECONDS, HEADER_LEAP_SECONDS_GNSS, HEADER_END);
             }
         },
 
@@ -643,29 +729,39 @@ public class ClockFileParser {
                     // First element is the number of reference clocks corresponding to the period
                     scanner.nextInt();
 
-                    // Second element is the start epoch of the period
-                    final int startYear   = scanner.nextInt();
-                    final int startMonth  = scanner.nextInt();
-                    final int startDay    = scanner.nextInt();
-                    final int startHour   = scanner.nextInt();
-                    final int startMin    = scanner.nextInt();
-                    final double startSec = scanner.nextDouble();
-                    final AbsoluteDate startEpoch = new AbsoluteDate(startYear, startMonth, startDay,
-                                                                     startHour, startMin, startSec,
-                                                                     pi.file.getTimeScale());
-                    pi.referenceClockStartDate = startEpoch;
+                    if (scanner.hasNextInt()) {
+                        // Second element is the start epoch of the period
+                        final int startYear   = scanner.nextInt();
+                        final int startMonth  = scanner.nextInt();
+                        final int startDay    = scanner.nextInt();
+                        final int startHour   = scanner.nextInt();
+                        final int startMin    = scanner.nextInt();
+                        final double startSec = scanner.nextDouble();
+                        final AbsoluteDate startEpoch = new AbsoluteDate(startYear, startMonth, startDay,
+                                                                         startHour, startMin, startSec,
+                                                                         pi.file.getTimeScale());
+                        pi.referenceClockStartDate = startEpoch;
 
-                    // Thrid element is the end epoch of the period
-                    final int endYear   = scanner.nextInt();
-                    final int endMonth  = scanner.nextInt();
-                    final int endDay    = scanner.nextInt();
-                    final int endHour   = scanner.nextInt();
-                    final int endMin    = scanner.nextInt();
-                    final double endSec = scanner.nextDouble();
-                    final AbsoluteDate endEpoch = new AbsoluteDate(endYear, endMonth, endDay,
-                                                                   endHour, endMin, endSec,
-                                                                   pi.file.getTimeScale());
-                    pi.referenceClockEndDate = endEpoch;
+                        // Thrid element is the end epoch of the period
+                        final int endYear   = scanner.nextInt();
+                        final int endMonth  = scanner.nextInt();
+                        final int endDay    = scanner.nextInt();
+                        final int endHour   = scanner.nextInt();
+                        final int endMin    = scanner.nextInt();
+                        double endSec       = 0.0;
+                        if (pi.file.getFormatVersion() < 3.04) {
+                            endSec = Double.parseDouble(line.substring(51, 60));
+                        } else {
+                            endSec = scanner.nextDouble();
+                        }
+                        final AbsoluteDate endEpoch = new AbsoluteDate(endYear, endMonth, endDay,
+                                                                       endHour, endMin, endSec,
+                                                                       pi.file.getTimeScale());
+                        pi.referenceClockEndDate = endEpoch;
+                    } else {
+                        pi.referenceClockStartDate = AbsoluteDate.PAST_INFINITY;
+                        pi.referenceClockEndDate = AbsoluteDate.FUTURE_INFINITY;
+                    }
                 }
             }
 
@@ -749,19 +845,37 @@ public class ClockFileParser {
             public void parse(final String line, final ParseInfo pi) {
 
                 // First element is the receiver designator
-                final String designator = line.substring(0, 10).trim();
+                String designator = line.substring(0, 10).trim();
 
                 // Second element is the receiver identifier
-                final String receiverIdentifier = line.substring(10, 30).trim();
+                String receiverIdentifier = line.substring(10, 30).trim();
 
                 // Third element if X coordinates, in millimeters in the file frame.
-                final double x = MILLIMETER * Double.parseDouble(line.substring(30, 41).trim());
+                String xString = "";
 
                 // Fourth element if Y coordinates, in millimeters in the file frame.
-                final double y = MILLIMETER * Double.parseDouble(line.substring(42, 53).trim());
+                String yString = "";
 
                 // Fifth element if Z coordinates, in millimeters in the file frame.
-                final double z = MILLIMETER * Double.parseDouble(line.substring(54, 65).trim());
+                String zString = "";
+
+                if (pi.file.getFormatVersion() < 3.04) {
+                    designator = line.substring(0, 4).trim();
+                    receiverIdentifier = line.substring(5, 25).trim();
+                    xString = line.substring(25, 36).trim();
+                    yString = line.substring(37, 48).trim();
+                    zString = line.substring(49, 60).trim();
+                } else {
+                    designator = line.substring(0, 10).trim();
+                    receiverIdentifier = line.substring(10, 30).trim();
+                    xString = line.substring(30, 41).trim();
+                    yString = line.substring(42, 53).trim();
+                    zString = line.substring(54, 65).trim();
+                }
+
+                final double x = MILLIMETER * Double.parseDouble(xString);
+                final double y = MILLIMETER * Double.parseDouble(yString);
+                final double z = MILLIMETER * Double.parseDouble(zString);
 
                 pi.file.addReceiver(designator, pi.file.new Receiver(designator, receiverIdentifier, x, y, z));
 
@@ -782,8 +896,7 @@ public class ClockFileParser {
             public void parse(final String line, final ParseInfo pi) {
 
                     // Only element in the line is number of satellites, not used here.
-                    // do nothing...
-
+                    // Do nothing...
             }
 
             /** {@inheritDoc} */
@@ -818,7 +931,7 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_PRN_LIST, HEADER_DBCS, HEADER_PCVS, HEADER_END);
+                return Stream.of(HEADER_PRN_LIST, HEADER_DCBS, HEADER_PCVS, HEADER_END);
             }
         },
 

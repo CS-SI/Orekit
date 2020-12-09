@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -41,8 +40,15 @@ import org.orekit.time.TimeScale;
 import org.orekit.utils.TimeSpanMap;
 
 /** Represents a parsed clock file from the IGS.
- *
- * @see <a href="ftp://igs.org/pub/data/format/rinex_clock304.txt">Clock file format</a>
+ * <p> A time system should be specified in the file. However, if it is not, default time system will be chosen
+ * regarding the satellite system. If it is mixed or not specified, default time system will be UTC. </p>
+ * <p> Some fields might be null after parsing. It is expected because of the numerous kind of data that can be stored in clock data file. </p>
+ * <p> Caution, files with missing information in header can lead to wrong data dates and station positions.
+ * It is adviced to check the correctness and format compliance of the clock file to be parsed.
+ * Some values such as file time scale still can be set by user. </p>
+ * @see <a href="ftp://igs.org/pub/data/format/rinex_clock300.txt"> 3.00 clock file format</a>
+ * @see <a href="ftp://igs.org/pub/data/format/rinex_clock302.txt"> 3.02 clock file format</a>
+ * @see <a href="ftp://igs.org/pub/data/format/rinex_clock304.txt"> 3.04 clock file format</a>
  *
  * @author Thomas Paulet
  */
@@ -647,7 +653,11 @@ public class ClockFile {
         clockData.get(id).add(clockDataLine);
     }
 
-    /** Clock data for a single station. */
+    /** Clock data for a single station.
+     * <p> Data epoch is not linked to any time system in order to pars files with missing lines.
+     * Though, the default version of the getEpoch() method links the data time components with the clock file object time scale.
+     * The latter can be set with a default value (UTC). Caution is recommanded.
+     */
     public class ClockDataLine {
 
         /** Clock data type. */
@@ -740,15 +750,11 @@ public class ClockFile {
 
         /** Get data line epoch.
          * This method should be used if Time System ID line is present in the clock file.
+         * If it is not, UTC time scale will be applied.
          * @return the data line epoch
-         * @throws OrekitException if Time System ID line was not parsed and/or is missing in clock file
          */
         public AbsoluteDate getEpoch() {
-            if (null == timeScale) {
-                throw new OrekitException(OrekitMessages.NO_TIME_SYSTEM_LINE_IN_CLOCK_FILE);
-            } else {
-                return new AbsoluteDate(dateComponents, timeComponents, timeScale);
-            }
+            return new AbsoluteDate(dateComponents, timeComponents, timeScale);
         }
 
         /** Get data line epoch.
