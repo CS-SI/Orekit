@@ -370,8 +370,8 @@ SP3_NUMBER_OF_EPOCH_MISMATCH = <MISSING TRANSLATION>
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = final inesperado dun ficheiro sp3 (despois da liña {0})
 
-# unexpected end of file in clock file (after line {0})
-CLOCK_UNEXPECTED_END_OF_FILE = final inesperado dun ficheiro reloxo (despois da liña {0})
+# unsupported clock file version {0}
+CLOCK_FILE_UNSUPPORTED_VERSION = versión de ficheiro de reloxo {0} non incluída
 
 # non-existent geomagnetic model {0} for year {1}
 NON_EXISTENT_GEOMAGNETIC_MODEL = ficheiro de modelo xeomagnético {0} ausente do ano {1}
@@ -486,9 +486,6 @@ UNKNOWN_SATELLITE_SYSTEM = <MISSING TRANSLATION>
 
 # unknown time system {0}
 UNKNOWN_TIME_SYSTEM = sistema de tempo descoñecido {0}
-
-# no time system line in clock file, time system specification is required
-NO_TIME_SYSTEM_LINE_IN_CLOCK_FILE = sen liña de sistema de tempo no ficheiro de reloxo, é necesaria unha especificación do sistema de hora
 
 # unknown clock data type {0}
 UNKNOWN_CLOCK_DATA_TYPE = tipo de datos de reloxo descoñecido {0}

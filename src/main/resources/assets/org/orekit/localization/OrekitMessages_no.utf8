@@ -370,8 +370,8 @@ SP3_NUMBER_OF_EPOCH_MISMATCH = fant {0} epoker i filen {1}, ventet {2}
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = uventet slutt på fil for sp3 fil (etter linje {0})
 
-# unexpected end of file in clock file (after line {0})
-CLOCK_UNEXPECTED_END_OF_FILE = uventet slutt på fil for klokke fil (etter linje {0})
+# unsupported clock file version {0}
+CLOCK_FILE_UNSUPPORTED_VERSION = ikke-støttet klokkefilversjon {0}
 
 # non-existent geomagnetic model {0} for year {1}
 NON_EXISTENT_GEOMAGNETIC_MODEL = ikke-eksisterende geomagnetisk model {0} for år {1}
@@ -486,9 +486,6 @@ UNKNOWN_SATELLITE_SYSTEM = ukjent satellittsystem {0}
 
 # unknown time system {0}
 UNKNOWN_TIME_SYSTEM = ukjent tidssystem {0}
-
-# no time system line in clock file, time system specification is required
-NO_TIME_SYSTEM_LINE_IN_CLOCK_FILE = ingen tidssystemlinje i klokkefil, tidssystemspesifikasjon er nødvendig
 
 # unknown clock data type {0}
 UNKNOWN_CLOCK_DATA_TYPE = ukjent datatype for klokke {0}
