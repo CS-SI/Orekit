@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -33,7 +34,6 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -75,6 +75,9 @@ public class ClockFileParser {
 
     /** Spaces delimiters. */
     private static final String SPACES = "\\s+";
+
+    /** SYS string for line browsing stop. */
+    private static final String SYS = "SYS";
 
     /** One millimeter, in meters. */
     private static final double MILLIMETER = 1.0e-3;
@@ -193,7 +196,7 @@ public class ClockFileParser {
             if (selected.isPresent()) {
                 try {
                     selected.get().parse(line, pi);
-                } catch (StringIndexOutOfBoundsException | NumberFormatException e) {
+                } catch (StringIndexOutOfBoundsException | NumberFormatException | InputMismatchException e) {
                     throw new OrekitException(e,
                                               OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                               lineNumber, fileName, line);
@@ -219,9 +222,6 @@ public class ClockFileParser {
 
         /** Current satellite system for observation type parsing. */
         private SatelliteSystem currentSatelliteSystem;
-
-        /** Current number of observation types for observation type parsing. */
-        private int currentNumberOfObsTypes;
 
         /** Current start date for reference clocks. */
         private AbsoluteDate referenceClockStartDate;
@@ -427,13 +427,14 @@ public class ClockFileParser {
                     pi.currentSatelliteSystem = satelliteSystem;
 
                     // Second element is the number of different observation types
-                    final int numberOfObsTypes = scanner.nextInt();
-                    pi.currentNumberOfObsTypes = numberOfObsTypes;
+                    scanner.nextInt();
 
-                    // There are at most 13 observation data types in a line
-                    for (int i = 0; i < FastMath.min(numberOfObsTypes, 13); i++) {
-                        final ObservationType obsType = ObservationType.valueOf(scanner.next());
+                    // Parse all observation types
+                    String currentObsType = scanner.next();
+                    while (!currentObsType.equals(SYS)) {
+                        final ObservationType obsType = ObservationType.valueOf(currentObsType);
                         pi.file.AddSystemObservationType(satelliteSystem, obsType);
+                        currentObsType = scanner.next();
                     }
                 }
             }
@@ -456,9 +457,12 @@ public class ClockFileParser {
                      Scanner scanner = s2.useLocale(Locale.US)) {
 
                     // This is a continuation line, there are only observation types
-                    for (int i = 13; i < pi.currentNumberOfObsTypes; i++) {
-                        final ObservationType obsType = ObservationType.valueOf(scanner.next());
+                    // Parse all observation types
+                    String currentObsType = scanner.next();
+                    while (!currentObsType.equals(SYS)) {
+                        final ObservationType obsType = ObservationType.valueOf(currentObsType);
                         pi.file.AddSystemObservationType(pi.currentSatelliteSystem, obsType);
+                        currentObsType = scanner.next();
                     }
                 }
             }
@@ -877,7 +881,7 @@ public class ClockFileParser {
                 final double y = MILLIMETER * Double.parseDouble(yString);
                 final double z = MILLIMETER * Double.parseDouble(zString);
 
-                pi.file.addReceiver(designator, pi.file.new Receiver(designator, receiverIdentifier, x, y, z));
+                pi.file.addReceiver(pi.file.new Receiver(designator, receiverIdentifier, x, y, z));
 
             }
 

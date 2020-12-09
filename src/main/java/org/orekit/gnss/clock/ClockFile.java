@@ -19,7 +19,6 @@ package org.orekit.gnss.clock;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -130,10 +129,10 @@ public class ClockFile {
     private final Function<? super String, ? extends Frame> frameBuilder;
 
     /** List of the receivers in the file. */
-    private Set<Receiver> receivers;
+    private List<Receiver> receivers;
 
     /** List of the satellites in the file. */
-    private Set<String> satellites;
+    private List<String> satellites;
 
     /** A map containing receiver/satellite information. */
     private Map<String, List<ClockDataLine>> clockData;
@@ -147,8 +146,8 @@ public class ClockFile {
         this.listAppliedDCBS         = new ArrayList<AppliedDCBS>();
         this.listAppliedPCVS         = new ArrayList<AppliedPCVS>();
         this.clockDataTypes          = new ArrayList<ClockDataType>();
-        this.receivers               = new HashSet<Receiver>();
-        this.satellites              = new HashSet<String>();
+        this.receivers               = new ArrayList<Receiver>();
+        this.satellites              = new ArrayList<String>();
         this.clockData               = new HashMap<String, List<ClockDataLine>>();
         this.agencyName              = "";
         this.analysisCenterID        = "";
@@ -179,23 +178,26 @@ public class ClockFile {
      */
     public void addSatellite(final String satId) {
         // only add satellites which have not been added before
-        satellites.add(satId);
+        if (!satellites.contains(satId)) {
+            satellites.add(satId);
+        }
     }
 
-    /** Add a new receiver with a given identifier to the list of
+    /** Add a new receiver to the list of
      * stored receivers.
-     * @param receiverId the receiver identifier
-     * @param receiver the receiver informations
+     * @param receiver the receiver
      */
-    public void addReceiver(final String receiverId, final Receiver receiver) {
+    public void addReceiver(final Receiver receiver) {
         // only add satellites which have not been added before
-        receivers.add(receiver);
+        if (!receivers.contains(receiver)) {
+            receivers.add(receiver);
+        }
     }
 
     /** Get the number of different clock data types in the file.
      * @return the number of different clock data types
      */
-    public int numberOfClockDataTypes() {
+    public int getNumberOfClockDataTypes() {
         return clockDataTypes.size();
     }
 
@@ -632,8 +634,8 @@ public class ClockFile {
     /** Getter for the receivers.
      * @return the list of the receivers
      */
-    public Set<Receiver> getReceivers() {
-        return Collections.unmodifiableSet(receivers);
+    public List<Receiver> getReceivers() {
+        return Collections.unmodifiableList(receivers);
     }
 
 
@@ -641,8 +643,8 @@ public class ClockFile {
     /** Getter for the satellites.
      * @return the list of the satellites
      */
-    public Set<String> getSatellites() {
-        return Collections.unmodifiableSet(satellites);
+    public List<String> getSatellites() {
+        return Collections.unmodifiableList(satellites);
     }
 
     /** Get the reference frame for the station positions.
@@ -691,7 +693,7 @@ public class ClockFile {
         private TimeComponents timeComponents;
 
         /** Number of data values to follow.
-         * This number might not represent the non null values in the line.
+         * This number might not represent the non zero values in the line.
          */
         private int numberOfValues;
 
@@ -770,7 +772,8 @@ public class ClockFile {
 
         /** Get data line epoch.
          * This method should be used if Time System ID line is present in the clock file.
-         * If it is not, UTC time scale will be applied.
+         * If it is missing, UTC time scale will be applied.
+         * To specify tim scale, use {@link #getEpoch(TimeScale) getEpoch(TimeScale)} method.
          * @return the data line epoch
          */
         public AbsoluteDate getEpoch() {
@@ -779,6 +782,7 @@ public class ClockFile {
 
         /** Get data line epoch.
          * This method should be used in case Time System ID line is missing.
+         * Otherwise, it is adviced to rather use {@link #getEpoch() getEpoch()} method.
          * @param epochTimeScale the time scale in which the epoch is defined
          * @return the data line epoch set in the specified time scale
          */
