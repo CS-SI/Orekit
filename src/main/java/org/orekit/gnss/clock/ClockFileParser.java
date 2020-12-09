@@ -597,7 +597,7 @@ public class ClockFileParser {
                 }
 
                 // Check if sought fields were not actually blanks
-                if (!progPCVS.equals("")) {
+                if (!progPCVS.equals("") || !sourcePCVS.equals("")) {
                     pi.file.addAppliedPCVS(new AppliedPCVS(satelliteSystem, progPCVS, sourcePCVS));
                 }
             }

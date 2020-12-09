@@ -143,16 +143,33 @@ public class ClockFile {
      */
     public ClockFile(final Function<? super String, ? extends Frame> frameBuilder) {
 
-        this.systemObservationTypes = new HashMap<SatelliteSystem, List<ObservationType>>();
-        this.listAppliedDCBS        = new ArrayList<AppliedDCBS>();
-        this.listAppliedPCVS        = new ArrayList<AppliedPCVS>();
-        this.clockDataTypes         = new ArrayList<ClockDataType>();
-        this.referenceClocks        = null;
-        this.receivers              = new HashSet<Receiver>();
-        this.satellites             = new HashSet<String>();
-        this.clockData              = new HashMap<String, List<ClockDataLine>>();
-        this.comments               = "";
-        this.frameBuilder           = frameBuilder;
+        this.systemObservationTypes  = new HashMap<SatelliteSystem, List<ObservationType>>();
+        this.listAppliedDCBS         = new ArrayList<AppliedDCBS>();
+        this.listAppliedPCVS         = new ArrayList<AppliedPCVS>();
+        this.clockDataTypes          = new ArrayList<ClockDataType>();
+        this.receivers               = new HashSet<Receiver>();
+        this.satellites              = new HashSet<String>();
+        this.clockData               = new HashMap<String, List<ClockDataLine>>();
+        this.agencyName              = "";
+        this.analysisCenterID        = "";
+        this.comments                = "";
+        this.creationDate            = null;
+        this.creationDateString      = "";
+        this.creationTimeString      = "";
+        this.creationTimeZoneString  = "";
+        this.externalClockReference  = "";
+        this.formatVersion           = 0.0;
+        this.frameBuilder            = frameBuilder;
+        this.frameName               = "";
+        this.numberOfLeapSeconds     = 0;
+        this.numberOfLeapSecondsGNSS = 0;
+        this.programName             = "";
+        this.referenceClocks         = null;
+        this.satelliteSystem         = null;
+        this.stationIdentifier       = "";
+        this.stationName             = "";
+        this.timeScale               = null;
+        this.timeSystem              = null;
     }
 
     /** Add a new satellite with a given identifier to the list of
@@ -215,7 +232,7 @@ public class ClockFile {
     /** Get the number of satellites that are considered in the file.
      * @return the number of satellites that are considered in the file
      */
-    public int getNumberOfSatellite() {
+    public int getNumberOfSatellites() {
         return satellites.size();
     }
 
@@ -1009,7 +1026,7 @@ public class ClockFile {
             throws OrekitIllegalArgumentException {
             final ClockDataType clockDataType = KEYS_MAP.get(s);
             if (clockDataType == null) {
-                throw new OrekitIllegalArgumentException(OrekitMessages.UNKNOWN_CLOCK_DATA_TYPE, s.charAt(0));
+                throw new OrekitIllegalArgumentException(OrekitMessages.UNKNOWN_CLOCK_DATA_TYPE, s);
             }
             return clockDataType;
         }
