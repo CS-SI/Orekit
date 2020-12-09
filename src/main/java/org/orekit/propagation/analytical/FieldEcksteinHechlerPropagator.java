@@ -21,6 +21,7 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.orekit.annotation.DefaultDataContext;
@@ -634,8 +635,9 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
             ql = ql.multiply(q);
             final T g6 = ql.multiply(ck0[6]);
 
-            final T cosI1 = mean.getI().cos();
-            final T sinI1 = mean.getI().sin();
+            final FieldSinCos<T> sc = FastMath.sinCos(mean.getI());
+            final T cosI1 = sc.cos();
+            final T sinI1 = sc.sin();
             final T sinI2 = sinI1.multiply(sinI1);
             final T sinI4 = sinI2.multiply(sinI2);
             final T sinI6 = sinI2.multiply(sinI4);

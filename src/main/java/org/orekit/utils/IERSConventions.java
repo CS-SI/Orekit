@@ -29,8 +29,10 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.BodiesElements;
 import org.orekit.data.DataContext;
@@ -235,11 +237,14 @@ public enum IERSConventions {
                     final double d         = elements.getD();
                     final double t         = elements.getTC();
 
-                    final double cosOmega  = FastMath.cos(omega);
-                    final double sinOmega  = FastMath.sin(omega);
-                    final double sin2Omega = FastMath.sin(2 * omega);
-                    final double cos2FDOm  = FastMath.cos(2 * (f - d + omega));
-                    final double sin2FDOm  = FastMath.sin(2 * (f - d + omega));
+                    final SinCos scOmega   = FastMath.sinCos(omega);
+                    final SinCos sc2omega  = SinCos.sum(scOmega, scOmega);
+                    final SinCos sc2FD0m   = FastMath.sinCos(2 * (f - d + omega));
+                    final double cosOmega  = scOmega.cos();
+                    final double sinOmega  = scOmega.sin();
+                    final double sin2Omega = sc2omega.sin();
+                    final double cos2FDOm  = sc2FD0m.cos();
+                    final double sin2FDOm  = sc2FD0m.sin();
 
                     final double x = xPolynomial.value(t) + sinEps0 * xy[0] +
                             t * t * (fXCosOm * cosOmega + fXSinOm * sinOmega + fXSin2FDOm * cos2FDOm);
@@ -267,12 +272,14 @@ public enum IERSConventions {
                     final T t         = elements.getTC();
                     final T t2        = t.multiply(t);
 
-                    final T cosOmega  = omega.cos();
-                    final T sinOmega  = omega.sin();
-                    final T sin2Omega = omega.multiply(2).sin();
-                    final T fMDPO2 = f.subtract(d).add(omega).multiply(2);
-                    final T cos2FDOm  = fMDPO2.cos();
-                    final T sin2FDOm  = fMDPO2.sin();
+                    final FieldSinCos<T> scOmega  = FastMath.sinCos(omega);
+                    final FieldSinCos<T> sc2omega = FieldSinCos.sum(scOmega, scOmega);
+                    final FieldSinCos<T> sc2FD0m  = FastMath.sinCos(f.subtract(d).add(omega).multiply(2));
+                    final T cosOmega  = scOmega.cos();
+                    final T sinOmega  = scOmega.sin();
+                    final T sin2Omega = sc2omega.sin();
+                    final T cos2FDOm  = sc2FD0m.cos();
+                    final T sin2FDOm  = sc2FD0m.sin();
 
                     final T x = xPolynomial.value(t).
                                 add(xy[0].multiply(sinEps0)).

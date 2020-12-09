@@ -32,7 +32,9 @@ import org.hipparchus.analysis.differentiation.FieldGradient;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.SinCos;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
@@ -3114,13 +3116,12 @@ public class DSSTThirdBody implements DSSTForceModel {
             // Add the cos and sin dependent terms
             for (int j = 1; j <= maxFreqF; j++) {
                 //compute cos and sin
-                final double cosjF = FastMath.cos(j * F);
-                final double sinjF = FastMath.sin(j * F);
+                final SinCos scjF  = FastMath.sinCos(j * F);
 
                 final double[] c = slot.cij[j].value(meanOrbit.getDate());
                 final double[] s = slot.sij[j].value(meanOrbit.getDate());
                 for (int i = 0; i < 6; i++) {
-                    shortPeriodic[i] += c[i] * cosjF + s[i] * sinjF;
+                    shortPeriodic[i] += c[i] * scjF.cos() + s[i] * scjF.sin();
                 }
             }
 
@@ -3258,13 +3259,12 @@ public class DSSTThirdBody implements DSSTForceModel {
             // Add the cos and sin dependent terms
             for (int j = 1; j <= maxFreqF; j++) {
                 //compute cos and sin
-                final T cosjF = FastMath.cos(F.multiply(j));
-                final T sinjF = FastMath.sin(F.multiply(j));
+                final FieldSinCos<T> scjF = FastMath.sinCos(F.multiply(j));
 
                 final T[] c = (T[]) slot.cij[j].value(meanOrbit.getDate());
                 final T[] s = (T[]) slot.sij[j].value(meanOrbit.getDate());
                 for (int i = 0; i < 6; i++) {
-                    shortPeriodic[i] = shortPeriodic[i].add(c[i].multiply(cosjF).add(s[i].multiply(sinjF)));
+                    shortPeriodic[i] = shortPeriodic[i].add(c[i].multiply(scjF.cos()).add(s[i].multiply(scjF.sin())));
                 }
             }
 

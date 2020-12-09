@@ -244,8 +244,9 @@ public class PolygonalFieldOfView extends AbstractFieldOfView {
                 final double   delta    = MathUtils.TWO_PI / n;
                 final List<GeodeticPoint> loop = new ArrayList<>(n);
                 for (int i = 0; i < n; ++i) {
-                    final Vector3D outside = new Vector3D(r * FastMath.cos(i * delta), x,
-                                                          r * FastMath.sin(i * delta), y);
+                    final SinCos sc = FastMath.sinCos(i * delta);
+                    final Vector3D outside = new Vector3D(r * sc.cos(), x,
+                                                          r * sc.sin(), y);
                     loop.add(body.transform(body.pointOnLimb(position, outside), bodyFrame, null));
                 }
                 footprint.add(loop);

@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="10.3" date="TBD" description="TBD">
+   	  <action dev="bryan" type="update" issue="741">
+      	Updated Hipparchus version to 1.8 and updated code with new functionalities.
+      </action>
    	  <action dev="thomas" type="add" issue="8">
         Added Knocke's Earth rediffused radiation pressure force model.
       </action>

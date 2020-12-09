@@ -445,7 +445,8 @@ class NeQuickParameters {
         for (int i = 0; i < cf2.length; i++) {
             double sum = 0.0;
             for (int k = 0; k < 6; k++) {
-                sum += af2[i][2 * k + 1] * FastMath.sin((k + 1) * t) + af2[i][2 * (k + 1)] * FastMath.cos((k + 1) * t);
+                final SinCos sc = FastMath.sinCos((k + 1) * t);
+                sum += af2[i][2 * k + 1] * sc.sin() + af2[i][2 * (k + 1)] * sc.cos();
             }
             cf2[i] = af2[i][0] + sum;
         }
@@ -464,7 +465,8 @@ class NeQuickParameters {
         for (int i = 0; i < cm3.length; i++) {
             double sum = 0.0;
             for (int k = 0; k < 4; k++) {
-                sum += am3[i][2 * k + 1] * FastMath.sin((k + 1) * t) + am3[i][2 * (k + 1)] * FastMath.cos((k + 1) * t);
+                final SinCos sc = FastMath.sinCos((k + 1) * t);
+                sum += am3[i][2 * k + 1] * sc.sin() + am3[i][2 * (k + 1)] * sc.cos();
             }
             cm3[i] = am3[i][0] + sum;
         }
@@ -511,9 +513,10 @@ class NeQuickParameters {
         // latitude and longitude terms
         int index = 12;
         for (int i = 1; i < q.length; i++) {
+            final SinCos sc = FastMath.sinCos(i * longitude);
             for (int j = 0; j < q[i]; j++) {
-                g[index++] = m[j] * p[i - 1] * FastMath.cos(i * longitude);
-                g[index++] = m[j] * p[i - 1] * FastMath.sin(i * longitude);
+                g[index++] = m[j] * p[i - 1] * sc.cos();
+                g[index++] = m[j] * p[i - 1] * sc.sin();
             }
         }
 
@@ -564,9 +567,10 @@ class NeQuickParameters {
         // latitude and longitude terms
         int index = 7;
         for (int i = 1; i < r.length; i++) {
+            final SinCos sc = FastMath.sinCos(i * longitude);
             for (int j = 0; j < r[i]; j++) {
-                g[index++] = m[j] * p[i - 1] * FastMath.cos(i * longitude);
-                g[index++] = m[j] * p[i - 1] * FastMath.sin(i * longitude);
+                g[index++] = m[j] * p[i - 1] * sc.cos();
+                g[index++] = m[j] * p[i - 1] * sc.sin();
             }
         }
 

@@ -20,7 +20,9 @@ import java.util.Arrays;
 
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.SinCos;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.utils.Constants;
 
@@ -113,8 +115,7 @@ abstract class SeriesTerm {
         // preliminary computation
         final double tc  = elements.getTC();
         final double a   = argument(elements);
-        final double sin = FastMath.sin(a);
-        final double cos = FastMath.cos(a);
+        final SinCos sc  = FastMath.sinCos(a);
 
         // compute each function
         final double[] values = new double[sinCoeff.length];
@@ -125,7 +126,7 @@ abstract class SeriesTerm {
                 s = s * tc + sinCoeff[i][j];
                 c = c * tc + cosCoeff[i][j];
             }
-            values[i] = s * sin + c * cos;
+            values[i] = s * sc.sin() + c * sc.cos();
         }
 
         return values;
@@ -142,8 +143,7 @@ abstract class SeriesTerm {
         final double tc   = elements.getTC();
         final double a    = argument(elements);
         final double aDot = argumentDerivative(elements);
-        final double sin  = FastMath.sin(a);
-        final double cos  = FastMath.cos(a);
+        final SinCos sc   = FastMath.sinCos(a);
 
         // compute each function
         final double[] derivatives = new double[sinCoeff.length];
@@ -164,7 +164,7 @@ abstract class SeriesTerm {
                 sDot /= Constants.JULIAN_CENTURY;
                 cDot /= Constants.JULIAN_CENTURY;
             }
-            derivatives[i] = (sDot - c * aDot) * sin + (cDot + s * aDot) * cos;
+            derivatives[i] = (sDot - c * aDot) * sc.sin() + (cDot + s * aDot) * sc.cos();
         }
 
         return derivatives;
@@ -193,8 +193,7 @@ abstract class SeriesTerm {
         // preliminary computation
         final T tc  = elements.getTC();
         final T a   = argument(elements);
-        final T sin = a.sin();
-        final T cos = a.cos();
+        final FieldSinCos<T> sc = FastMath.sinCos(a);
 
         // compute each function
         final T[] values = MathArrays.buildArray(tc.getField(), sinCoeff.length);
@@ -205,7 +204,7 @@ abstract class SeriesTerm {
                 s = s.multiply(tc).add(sinCoeff[i][j]);
                 c = c.multiply(tc).add(cosCoeff[i][j]);
             }
-            values[i] = s.multiply(sin).add(c.multiply(cos));
+            values[i] = s.multiply(sc.sin()).add(c.multiply(sc.cos()));
         }
 
         return values;
@@ -223,8 +222,7 @@ abstract class SeriesTerm {
         final T tc   = elements.getTC();
         final T a    = argument(elements);
         final T aDot = argumentDerivative(elements);
-        final T sin  = a.sin();
-        final T cos  = a.cos();
+        final FieldSinCos<T> sc = FastMath.sinCos(a);
 
         // compute each function
         final T[] derivatives = MathArrays.buildArray(tc.getField(), sinCoeff.length);
@@ -245,8 +243,8 @@ abstract class SeriesTerm {
                 sDot = sDot.divide(Constants.JULIAN_CENTURY);
                 cDot = cDot.divide(Constants.JULIAN_CENTURY);
             }
-            derivatives[i] = sDot.subtract(c.multiply(aDot)).multiply(sin).
-                             add(cDot.add(s.multiply(aDot)).multiply(cos));
+            derivatives[i] = sDot.subtract(c.multiply(aDot)).multiply(sc.sin()).
+                             add(cDot.add(s.multiply(aDot)).multiply(sc.cos()));
         }
 
         return derivatives;

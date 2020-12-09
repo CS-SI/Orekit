@@ -24,6 +24,8 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
+import org.hipparchus.util.SinCos;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
@@ -98,13 +100,12 @@ class CIRFProvider implements EOPBasedTransformProvider {
         final double zP1    = 1 + FastMath.sqrt(1 - x2Py2);
         final double r      = FastMath.sqrt(x2Py2);
         final double sPe2   = 0.5 * (sCurrent + FastMath.atan2(yCurrent, xCurrent));
-        final double cos    = FastMath.cos(sPe2);
-        final double sin    = FastMath.sin(sPe2);
+        final SinCos sc     = FastMath.sinCos(sPe2);
         final double xPr    = xCurrent + r;
-        final double xPrCos = xPr * cos;
-        final double xPrSin = xPr * sin;
-        final double yCos   = yCurrent * cos;
-        final double ySin   = yCurrent * sin;
+        final double xPrCos = xPr * sc.cos();
+        final double xPrSin = xPr * sc.sin();
+        final double yCos   = yCurrent * sc.cos();
+        final double ySin   = yCurrent * sc.sin();
         final Rotation bpn  = new Rotation(zP1 * (xPrCos + ySin), -r * (yCos + xPrSin),
                                            r * (xPrCos - ySin), zP1 * (yCos - xPrSin),
                                            true);
@@ -128,17 +129,16 @@ class CIRFProvider implements EOPBasedTransformProvider {
         final T sCurrent = xys[2].subtract(xCurrent.multiply(yCurrent).multiply(0.5));
 
         // set up the bias, precession and nutation rotation
-        final T x2Py2  = xCurrent.multiply(xCurrent).add(yCurrent.multiply(yCurrent));
-        final T zP1    = x2Py2.subtract(1).negate().sqrt().add(1);
-        final T r      = x2Py2.sqrt();
-        final T sPe2   = sCurrent.add(yCurrent.atan2(xCurrent)).multiply(0.5);
-        final T cos    = sPe2.cos();
-        final T sin    = sPe2.sin();
-        final T xPr    = xCurrent.add(r);
-        final T xPrCos = xPr.multiply(cos);
-        final T xPrSin = xPr.multiply(sin);
-        final T yCos   = yCurrent.multiply(cos);
-        final T ySin   = yCurrent.multiply(sin);
+        final T x2Py2           = xCurrent.multiply(xCurrent).add(yCurrent.multiply(yCurrent));
+        final T zP1             = x2Py2.subtract(1).negate().sqrt().add(1);
+        final T r               = x2Py2.sqrt();
+        final T sPe2            = sCurrent.add(yCurrent.atan2(xCurrent)).multiply(0.5);
+        final FieldSinCos<T> sc = FastMath.sinCos(sPe2);
+        final T xPr             = xCurrent.add(r);
+        final T xPrCos          = xPr.multiply(sc.cos());
+        final T xPrSin          = xPr.multiply(sc.sin());
+        final T yCos            = yCurrent.multiply(sc.cos());
+        final T ySin            = yCurrent.multiply(sc.sin());
         final FieldRotation<T> bpn  = new FieldRotation<>(zP1.multiply(xPrCos.add(ySin)),
                                                           r.multiply(yCos.add(xPrSin)).negate(),
                                                           r.multiply(xPrCos.subtract(ySin)),

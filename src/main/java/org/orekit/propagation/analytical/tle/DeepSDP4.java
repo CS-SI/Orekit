@@ -18,6 +18,7 @@ package org.orekit.propagation.analytical.tle;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
@@ -200,11 +201,13 @@ public class DeepSDP4 extends SDP4 {
      */
     protected void luniSolarTermsComputation() {
 
-        final double sing = FastMath.sin(tle.getPerigeeArgument());
-        final double cosg = FastMath.cos(tle.getPerigeeArgument());
+        final SinCos scg  = FastMath.sinCos(tle.getPerigeeArgument());
+        final double sing = scg.sin();
+        final double cosg = scg.cos();
 
-        final double sinq = FastMath.sin(tle.getRaan());
-        final double cosq = FastMath.cos(tle.getRaan());
+        final SinCos scq  = FastMath.sinCos(tle.getRaan());
+        final double sinq = scq.sin();
+        final double cosq = scq.cos();
         final double aqnv = 1.0 / a0dp;
 
         // Compute julian days since 1900
@@ -224,8 +227,9 @@ public class DeepSDP4 extends SDP4 {
         omegaq = tle.getPerigeeArgument();
 
         final double xnodce = 4.5236020 - 9.2422029e-4 * daysSince1900;
-        final double stem = FastMath.sin(xnodce);
-        final double ctem = FastMath.cos(xnodce);
+        final SinCos scTem  = FastMath.sinCos(xnodce);
+        final double stem   = scTem.sin();
+        final double ctem   = scTem.cos();
         final double c_minus_gam = 0.228027132 * daysSince1900 - 1.1151842;
         final double gam = 5.8351514 + 0.0019443680 * daysSince1900;
 
@@ -238,8 +242,9 @@ public class DeepSDP4 extends SDP4 {
         double zx = 0.39785416 * stem / zsinil;
         final double zy = zcoshl * ctem + 0.91744867 * zsinhl * stem;
         zx = FastMath.atan2( zx, zy) + gam - xnodce;
-        zcosgl = FastMath.cos( zx);
-        zsingl = FastMath.sin( zx);
+        final SinCos scZx = FastMath.sinCos(zx);
+        zcosgl = scZx.cos();
+        zsingl = scZx.sin();
         zmos = MathUtils.normalizeAngle(6.2565837 + 0.017201977 * daysSince1900, FastMath.PI);
 
         // Do solar terms
@@ -570,9 +575,10 @@ public class DeepSDP4 extends SDP4 {
             // Update solar perturbations for time T
             double zm = zmos + ZNS * t;
             double zf = zm + 2 * ZES * FastMath.sin(zm);
-            double sinzf = FastMath.sin(zf);
+            SinCos sczf = FastMath.sinCos(zf);
+            double sinzf = sczf.sin();
             double f2 = 0.5 * sinzf * sinzf - 0.25;
-            double f3 = -0.5 * sinzf * FastMath.cos(zf);
+            double f3 = -0.5 * sinzf * sczf.cos();
             final double ses = se2 * f2 + se3 * f3;
             final double sis = si2 * f2 + si3 * f3;
             final double sls = sl2 * f2 + sl3 * f3 + sl4 * sinzf;
@@ -582,9 +588,10 @@ public class DeepSDP4 extends SDP4 {
             // Update lunar perturbations for time T
             zm = zmol + ZNL * t;
             zf = zm + 2 * ZEL * FastMath.sin(zm);
-            sinzf = FastMath.sin(zf);
+            sczf = FastMath.sinCos(zf);
+            sinzf = sczf.sin();
             f2 =  0.5 * sinzf * sinzf - 0.25;
-            f3 = -0.5 * sinzf * FastMath.cos(zf);
+            f3 = -0.5 * sinzf * sczf.cos();
             final double sel = ee2 * f2 + e3 * f3;
             final double sil = xi2 * f2 + xi3 * f3;
             final double sll = xl2 * f2 + xl3 * f3 + xl4 * sinzf;
@@ -601,8 +608,9 @@ public class DeepSDP4 extends SDP4 {
 
         xinc += pinc;
 
-        final double sinis = FastMath.sin( xinc);
-        final double cosis = FastMath.cos( xinc);
+        final SinCos scis = FastMath.sinCos(xinc);
+        final double sinis = scis.sin();
+        final double cosis = scis.cos();
 
         /* Add solar/lunar perturbation correction to eccentricity: */
         em     += pe;
@@ -617,8 +625,9 @@ public class DeepSDP4 extends SDP4 {
             xnode += temp_val;
         } else {
             // Apply periodics with Lyddane modification
-            final double sinok = FastMath.sin(xnode);
-            final double cosok = FastMath.cos(xnode);
+            final SinCos scok  = FastMath.sinCos(xnode);
+            final double sinok = scok.sin();
+            final double cosok = scok.cos();
             final double alfdp =  ph * cosok + (pinc * cosis + sinis) * sinok;
             final double betdp = -ph * sinok + (pinc * cosis + sinis) * cosok;
             final double delta_xnode = MathUtils.normalizeAngle(FastMath.atan2(alfdp, betdp) - xnode, 0);
@@ -631,8 +640,9 @@ public class DeepSDP4 extends SDP4 {
     /** Computes internal secular derivs. */
     private void computeSecularDerivs() {
 
-        final double sin_li = FastMath.sin(xli);
-        final double cos_li = FastMath.cos(xli);
+        final SinCos sc_li  = FastMath.sinCos(xli);
+        final double sin_li = sc_li.sin();
+        final double cos_li = sc_li.cos();
         final double sin_2li = 2. * sin_li * cos_li;
         final double cos_2li = 2. * cos_li * cos_li - 1.;
 
@@ -651,8 +661,9 @@ public class DeepSDP4 extends SDP4 {
         } else {
             // orbit is a 12-hour resonant one
             final double xomi = omegaq + omgdot * atime;
-            final double sin_omi = FastMath.sin(xomi);
-            final double cos_omi = FastMath.cos(xomi);
+            final SinCos sc_omi  = FastMath.sinCos(xomi);
+            final double sin_omi = sc_omi.sin();
+            final double cos_omi = sc_omi.cos();
             final double sin_li_m_omi = sin_li * cos_omi - sin_omi * cos_li;
             final double sin_li_p_omi = sin_li * cos_omi + sin_omi * cos_li;
             final double cos_li_m_omi = cos_li * cos_omi + sin_omi * sin_li;

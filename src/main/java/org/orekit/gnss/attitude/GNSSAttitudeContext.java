@@ -24,6 +24,7 @@ import org.hipparchus.analysis.solvers.UnivariateSolverUtils;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.SinCos;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
@@ -462,8 +463,9 @@ class GNSSAttitudeContext implements TimeStamped {
         final PVCoordinates velocity      = new PVCoordinates(v, a, keplerianJerk);
         final PVCoordinates momentum      = PVCoordinates.crossProduct(svPV, velocity);
 
-        final DerivativeStructure c = FastMath.cos(yaw).negate();
-        final DerivativeStructure s = FastMath.sin(yaw).negate();
+        final FieldSinCos<DerivativeStructure> sc = FastMath.sinCos(yaw);
+        final DerivativeStructure c = sc.cos().negate();
+        final DerivativeStructure s = sc.sin().negate();
         final Vector3D m0 = new Vector3D(s.getValue(),              c.getValue(),              0.0);
         final Vector3D m1 = new Vector3D(s.getPartialDerivative(1), c.getPartialDerivative(1), 0.0);
         final Vector3D m2 = new Vector3D(s.getPartialDerivative(2), c.getPartialDerivative(2), 0.0);

@@ -28,6 +28,7 @@ import org.hipparchus.linear.DiagonalMatrix;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresBuilder;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.SinCos;
 import org.orekit.time.AbsoluteDate;
 
 /** Class for fitting evolution of osculating orbital parameters.
@@ -198,8 +199,9 @@ public class SecularAndHarmonic {
 
             // harmonic part
             for (int i = 0; i < pulsations.length; ++i) {
-                gradient[secularDegree + 2 * i + 1] = FastMath.cos(pulsations[i] * x);
-                gradient[secularDegree + 2 * i + 2] = FastMath.sin(pulsations[i] * x);
+                final SinCos sc = FastMath.sinCos(pulsations[i] * x);
+                gradient[secularDegree + 2 * i + 1] = sc.cos();
+                gradient[secularDegree + 2 * i + 2] = sc.sin();
             }
 
             return gradient;
@@ -327,8 +329,9 @@ public class SecularAndHarmonic {
 
         // harmonic part
         for (int i = 0; i < harmonics; ++i) {
-            value += parameters[secularDegree + 2 * i + 1] * FastMath.cos(pulsations[i] * time) +
-                     parameters[secularDegree + 2 * i + 2] * FastMath.sin(pulsations[i] * time);
+            final SinCos sc = FastMath.sinCos(pulsations[i] * time);
+            value += parameters[secularDegree + 2 * i + 1] * sc.cos() +
+                     parameters[secularDegree + 2 * i + 2] * sc.sin();
         }
 
         return value;
@@ -357,8 +360,9 @@ public class SecularAndHarmonic {
 
         // harmonic part
         for (int i = 0; i < harmonics; ++i) {
-            derivative += pulsations[i] * (-parameters[secularDegree + 2 * i + 1] * FastMath.sin(pulsations[i] * time) +
-                                            parameters[secularDegree + 2 * i + 2] * FastMath.cos(pulsations[i] * time));
+            final SinCos sc = FastMath.sinCos(pulsations[i] * time);
+            derivative += pulsations[i] * (-parameters[secularDegree + 2 * i + 1] * sc.sin() +
+                                            parameters[secularDegree + 2 * i + 2] * sc.cos());
         }
 
         return derivative;
@@ -387,9 +391,10 @@ public class SecularAndHarmonic {
 
         // harmonic part
         for (int i = 0; i < harmonics; ++i) {
+            final SinCos sc = FastMath.sinCos(pulsations[i] * time);
             d2 += -pulsations[i] * pulsations[i] *
-                  (parameters[secularDegree + 2 * i + 1] * FastMath.cos(pulsations[i] * time) +
-                   parameters[secularDegree + 2 * i + 2] * FastMath.sin(pulsations[i] * time));
+                  (parameters[secularDegree + 2 * i + 1] * sc.cos() +
+                   parameters[secularDegree + 2 * i + 2] * sc.sin());
         }
 
         return d2;

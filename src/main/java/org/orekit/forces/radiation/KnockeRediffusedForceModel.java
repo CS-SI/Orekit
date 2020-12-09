@@ -28,6 +28,8 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
+import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
@@ -342,9 +344,10 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
         final double deltaT = date.durationFrom(referenceEpoch);
 
         // Compute 1rst Legendre polynomial coeficient
+        final SinCos sc = FastMath.sinCos(EARTH_AROUND_SUN_PULSATION * deltaT);
         final double A1 = C0 +
-                          C1 * FastMath.cos(EARTH_AROUND_SUN_PULSATION * deltaT) +
-                          C2 * FastMath.sin(EARTH_AROUND_SUN_PULSATION * deltaT);
+                          C1 * sc.cos() +
+                          C2 * sc.sin();
 
         // Get 1rst and 2nd order Legendre polynomials
         final PolynomialFunction firstLegendrePolynomial  = PolynomialsUtils.createLegendrePolynomial(1);
@@ -375,8 +378,9 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
         final T deltaT = date.durationFrom(referenceEpoch);
 
         // Compute 1rst Legendre polynomial coeficient
-        final T A1 = FastMath.cos(deltaT.multiply(EARTH_AROUND_SUN_PULSATION)).multiply(C1).add(
-                     FastMath.sin(deltaT.multiply(EARTH_AROUND_SUN_PULSATION)).multiply(C2)).add(C0);
+        final FieldSinCos<T> sc = FastMath.sinCos(deltaT.multiply(EARTH_AROUND_SUN_PULSATION));
+        final T A1 = sc.cos().multiply(C1).add(
+                     sc.sin().multiply(C2)).add(C0);
 
         // Get 1rst and 2nd order Legendre polynomials
         final PolynomialFunction firstLegendrePolynomial  = PolynomialsUtils.createLegendrePolynomial(1);
@@ -403,10 +407,11 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
         // Get duration since coefficient reference epoch
         final double deltaT = date.durationFrom(referenceEpoch);
 
-        // Compute 1rst Legendre polynomial coeficient
+        // Compute 1rst Legendre polynomial coefficient
+        final SinCos sc = FastMath.sinCos(EARTH_AROUND_SUN_PULSATION * deltaT);
         final double E1 = K0 +
-                          K1 * FastMath.cos(EARTH_AROUND_SUN_PULSATION * deltaT) +
-                          K2 * FastMath.sin(EARTH_AROUND_SUN_PULSATION * deltaT);
+                          K1 * sc.cos() +
+                          K2 * sc.sin();
 
         // Get 1rst and 2nd order Legendre polynomials
         final PolynomialFunction firstLegendrePolynomial  = PolynomialsUtils.createLegendrePolynomial(1);
@@ -437,8 +442,9 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
         final T deltaT = date.durationFrom(referenceEpoch);
 
         // Compute 1rst Legendre polynomial coeficient
-        final T E1 = FastMath.cos(deltaT.multiply(EARTH_AROUND_SUN_PULSATION)).multiply(K1).add(
-                     FastMath.sin(deltaT.multiply(EARTH_AROUND_SUN_PULSATION)).multiply(K2)).add(K0);
+        final FieldSinCos<T> sc = FastMath.sinCos(deltaT.multiply(EARTH_AROUND_SUN_PULSATION));
+        final T E1 = sc.cos().multiply(K1).add(
+                     sc.sin().multiply(K2)).add(K0);
 
         // Get 1rst and 2nd order Legendre polynomials
         final PolynomialFunction firstLegendrePolynomial  = PolynomialsUtils.createLegendrePolynomial(1);

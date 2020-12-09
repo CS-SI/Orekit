@@ -26,6 +26,7 @@ import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -322,15 +323,13 @@ public class CircularOrbit
         raan = FastMath.atan2(node.getY(), node.getX());
 
         // 2D-coordinates in the canonical frame
-        final double cosRaan = FastMath.cos(raan);
-        final double sinRaan = FastMath.sin(raan);
-        final double cosI    = FastMath.cos(i);
-        final double sinI    = FastMath.sin(i);
-        final double xP      = pvP.getX();
-        final double yP      = pvP.getY();
-        final double zP      = pvP.getZ();
-        final double x2      = (xP * cosRaan + yP * sinRaan) / a;
-        final double y2      = ((yP * cosRaan - xP * sinRaan) * cosI + zP * sinI) / a;
+        final SinCos scRaan = FastMath.sinCos(raan);
+        final SinCos scI    = FastMath.sinCos(i);
+        final double xP     = pvP.getX();
+        final double yP     = pvP.getY();
+        final double zP     = pvP.getZ();
+        final double x2     = (xP * scRaan.cos() + yP * scRaan.sin()) / a;
+        final double y2     = ((yP * scRaan.cos() - xP * scRaan.sin()) * scI.cos() + zP * scI.sin()) / a;
 
         // compute eccentricity vector
         final double eSE    = Vector3D.dotProduct(pvP, pvV) / FastMath.sqrt(mu * a);
@@ -427,8 +426,9 @@ public class CircularOrbit
         final double h2 = hx * hx + hy * hy;
         final double h  = FastMath.sqrt(h2);
         raan = FastMath.atan2(hy, hx);
-        final double cosRaan = h == 0 ? FastMath.cos(raan) : hx / h;
-        final double sinRaan = h == 0 ? FastMath.sin(raan) : hy / h;
+        final SinCos scRaan  = FastMath.sinCos(raan);
+        final double cosRaan = h == 0 ? scRaan.cos() : hx / h;
+        final double sinRaan = h == 0 ? scRaan.sin() : hy / h;
         final double equiEx = op.getEquinoctialEx();
         final double equiEy = op.getEquinoctialEy();
         ex     = equiEx * cosRaan + equiEy * sinRaan;
@@ -479,30 +479,26 @@ public class CircularOrbit
 
     /** {@inheritDoc} */
     public double getEquinoctialEx() {
-        final double cosRaan = FastMath.cos(raan);
-        final double sinRaan = FastMath.sin(raan);
-        return ex * cosRaan - ey * sinRaan;
+        final SinCos sc = FastMath.sinCos(raan);
+        return ex * sc.cos() - ey * sc.sin();
     }
 
     /** {@inheritDoc} */
     public double getEquinoctialExDot() {
-        final double cosRaan = FastMath.cos(raan);
-        final double sinRaan = FastMath.sin(raan);
-        return (exDot - ey * raanDot) * cosRaan - (eyDot + ex * raanDot) * sinRaan;
+        final SinCos sc = FastMath.sinCos(raan);
+        return (exDot - ey * raanDot) * sc.cos() - (eyDot + ex * raanDot) * sc.sin();
     }
 
     /** {@inheritDoc} */
     public double getEquinoctialEy() {
-        final double cosRaan = FastMath.cos(raan);
-        final double sinRaan = FastMath.sin(raan);
-        return ey * cosRaan + ex * sinRaan;
+        final SinCos sc = FastMath.sinCos(raan);
+        return ey * sc.cos() + ex * sc.sin();
     }
 
     /** {@inheritDoc} */
     public double getEquinoctialEyDot() {
-        final double cosRaan = FastMath.cos(raan);
-        final double sinRaan = FastMath.sin(raan);
-        return (eyDot + ex * raanDot) * cosRaan + (exDot - ey * raanDot) * sinRaan;
+        final SinCos sc = FastMath.sinCos(raan);
+        return (eyDot + ex * raanDot) * sc.cos() + (exDot - ey * raanDot) * sc.sin();
     }
 
     /** Get the first component of the circular eccentricity vector.
@@ -549,10 +545,9 @@ public class CircularOrbit
         if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
             return Double.NaN;
         }
-        final double cosRaan = FastMath.cos(raan);
-        final double sinRaan = FastMath.sin(raan);
-        final double tan     = FastMath.tan(0.5 * i);
-        return 0.5 * cosRaan * (1 + tan * tan) * iDot - sinRaan * tan * raanDot;
+        final SinCos sc  = FastMath.sinCos(raan);
+        final double tan = FastMath.tan(0.5 * i);
+        return 0.5 * sc.cos() * (1 + tan * tan) * iDot - sc.sin() * tan * raanDot;
     }
 
     /** {@inheritDoc} */
@@ -570,10 +565,9 @@ public class CircularOrbit
         if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
             return Double.NaN;
         }
-        final double cosRaan = FastMath.cos(raan);
-        final double sinRaan = FastMath.sin(raan);
-        final double tan     = FastMath.tan(0.5 * i);
-        return 0.5 * sinRaan * (1 + tan * tan) * iDot + cosRaan * tan * raanDot;
+        final SinCos sc  = FastMath.sinCos(raan);
+        final double tan = FastMath.tan(0.5 * i);
+        return 0.5 * sc.sin() * (1 + tan * tan) * iDot + sc.cos() * tan * raanDot;
     }
 
     /** Get the true latitude argument.
@@ -670,10 +664,9 @@ public class CircularOrbit
      */
     public static double eccentricToTrue(final double alphaE, final double ex, final double ey) {
         final double epsilon   = FastMath.sqrt(1 - ex * ex - ey * ey);
-        final double cosAlphaE = FastMath.cos(alphaE);
-        final double sinAlphaE = FastMath.sin(alphaE);
-        return alphaE + 2 * FastMath.atan((ex * sinAlphaE - ey * cosAlphaE) /
-                                      (epsilon + 1 - ex * cosAlphaE - ey * sinAlphaE));
+        final SinCos scAlphaE  = FastMath.sinCos(alphaE);
+        return alphaE + 2 * FastMath.atan((ex * scAlphaE.sin() - ey * scAlphaE.cos()) /
+                                      (epsilon + 1 - ex * scAlphaE.cos() - ey * scAlphaE.sin()));
     }
 
     /** Computes the eccentric latitude argument from the true latitude argument.
@@ -684,10 +677,9 @@ public class CircularOrbit
      */
     public static double trueToEccentric(final double alphaV, final double ex, final double ey) {
         final double epsilon   = FastMath.sqrt(1 - ex * ex - ey * ey);
-        final double cosAlphaV = FastMath.cos(alphaV);
-        final double sinAlphaV = FastMath.sin(alphaV);
-        return alphaV + 2 * FastMath.atan((ey * cosAlphaV - ex * sinAlphaV) /
-                                      (epsilon + 1 + ex * cosAlphaV + ey * sinAlphaV));
+        final SinCos scAlphaV  = FastMath.sinCos(alphaV);
+        return alphaV + 2 * FastMath.atan((ey * scAlphaV.cos() - ex * scAlphaV.sin()) /
+                                      (epsilon + 1 + ex * scAlphaV.cos() + ey * scAlphaV.sin()));
     }
 
     /** Computes the eccentric latitude argument from the mean latitude argument.
@@ -700,15 +692,14 @@ public class CircularOrbit
         // Generalization of Kepler equation to circular parameters
         // with alphaE = PA + E and
         //      alphaM = PA + M = alphaE - ex.sin(alphaE) + ey.cos(alphaE)
-        double alphaE        = alphaM;
-        double shift         = 0.0;
-        double alphaEMalphaM = 0.0;
-        double cosAlphaE     = FastMath.cos(alphaE);
-        double sinAlphaE     = FastMath.sin(alphaE);
-        int    iter          = 0;
+        double alphaE         = alphaM;
+        double shift          = 0.0;
+        double alphaEMalphaM  = 0.0;
+        SinCos scAlphaE       = FastMath.sinCos(alphaE);
+        int    iter           = 0;
         do {
-            final double f2 = ex * sinAlphaE - ey * cosAlphaE;
-            final double f1 = 1.0 - ex * cosAlphaE - ey * sinAlphaE;
+            final double f2 = ex * scAlphaE.sin() - ey * scAlphaE.cos();
+            final double f1 = 1.0 - ex * scAlphaE.cos() - ey * scAlphaE.sin();
             final double f0 = alphaEMalphaM - f2;
 
             final double f12 = 2.0 * f1;
@@ -716,8 +707,7 @@ public class CircularOrbit
 
             alphaEMalphaM -= shift;
             alphaE         = alphaM + alphaEMalphaM;
-            cosAlphaE      = FastMath.cos(alphaE);
-            sinAlphaE      = FastMath.sin(alphaE);
+            scAlphaE       = FastMath.sinCos(alphaE);
 
         } while ((++iter < 50) && (FastMath.abs(shift) > 1.0e-12));
 
@@ -732,7 +722,8 @@ public class CircularOrbit
      * @return the mean latitude argument.
      */
     public static double eccentricToMean(final double alphaE, final double ex, final double ey) {
-        return alphaE + (ey * FastMath.cos(alphaE) - ex * FastMath.sin(alphaE));
+        final SinCos scAlphaE = FastMath.sinCos(alphaE);
+        return alphaE + (ey * scAlphaE.cos() - ex * scAlphaE.sin());
     }
 
     /** {@inheritDoc} */
@@ -842,8 +833,9 @@ public class CircularOrbit
         final double beta = 1. / eta;
 
         // eccentric latitude argument
-        final double cLe    = FastMath.cos(lE);
-        final double sLe    = FastMath.sin(lE);
+        final SinCos scLe   = FastMath.sinCos(lE);
+        final double cLe    = scLe.cos();
+        final double sLe    = scLe.sin();
         final double exCeyS = equEx * cLe + equEy * sLe;
 
         // coordinates of position and velocity in the orbital plane
@@ -1070,10 +1062,12 @@ public class CircularOrbit
         final double eCosE      = 1 - rOa;
         final double eSinE      = pv * oOsqrtMuA;
 
-        final double cosI       = FastMath.cos(i);
-        final double sinI       = FastMath.sin(i);
-        final double cosRaan    = FastMath.cos(raan);
-        final double sinRaan    = FastMath.sin(raan);
+        final SinCos scI    = FastMath.sinCos(i);
+        final SinCos scRaan = FastMath.sinCos(raan);
+        final double cosI       = scI.cos();
+        final double sinI       = scI.sin();
+        final double cosRaan    = scRaan.cos();
+        final double sinRaan    = scRaan.sin();
 
         // da
         fillHalfRow(2 * aOr * aOr2, position, jacobian[0], 0);
@@ -1172,8 +1166,9 @@ public class CircularOrbit
         // which is inverted and rewritten as:
         // daE = a/r daM + sin aE a/r dex - cos aE a/r dey
         final double alphaE = getAlphaE();
-        final double cosAe  = FastMath.cos(alphaE);
-        final double sinAe  = FastMath.sin(alphaE);
+        final SinCos scAe   = FastMath.sinCos(alphaE);
+        final double cosAe  = scAe.cos();
+        final double sinAe  = scAe.sin();
         final double aOr    = 1 / (1 - ex * cosAe - ey * sinAe);
 
         // update longitude row
@@ -1207,8 +1202,9 @@ public class CircularOrbit
         // which can be solved to find the differential of the true latitude
         // daV = (cT + cE) / cT daE + cX / cT deX + cY / cT deX
         final double alphaE    = getAlphaE();
-        final double cosAe     = FastMath.cos(alphaE);
-        final double sinAe     = FastMath.sin(alphaE);
+        final SinCos scAe      = FastMath.sinCos(alphaE);
+        final double cosAe     = scAe.cos();
+        final double sinAe     = scAe.sin();
         final double eSinE     = ex * sinAe - ey * cosAe;
         final double ecosE     = ex * cosAe + ey * sinAe;
         final double e2        = ex * ex + ey * ey;
@@ -1240,19 +1236,20 @@ public class CircularOrbit
                                       final double[] pDot) {
         final double oMe2;
         final double ksi;
-        final double n = FastMath.sqrt(gm / a) / a;
+        final double n  = FastMath.sqrt(gm / a) / a;
+        final SinCos sc = FastMath.sinCos(alphaV);
         switch (type) {
             case MEAN :
                 pDot[5] += n;
                 break;
             case ECCENTRIC :
                 oMe2  = 1 - ex * ex - ey * ey;
-                ksi   = 1 + ex * FastMath.cos(alphaV) + ey * FastMath.sin(alphaV);
+                ksi   = 1 + ex * sc.cos() + ey * sc.sin();
                 pDot[5] += n * ksi / oMe2;
                 break;
             case TRUE :
                 oMe2  = 1 - ex * ex - ey * ey;
-                ksi   = 1 + ex * FastMath.cos(alphaV) + ey * FastMath.sin(alphaV);
+                ksi   = 1 + ex * sc.cos() + ey * sc.sin();
                 pDot[5] += n * ksi * ksi / (oMe2 * FastMath.sqrt(oMe2));
                 break;
             default :

@@ -20,6 +20,8 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
+import org.hipparchus.util.SinCos;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
@@ -162,12 +164,14 @@ public class ECOM2 extends AbstractRadiationForceModel {
         // Compute B(u)
         double b_u = parameters[0];
         for (int i = 1; i < nB + 1; i++) {
-            b_u += parameters[i] * FastMath.cos(2 * i * delta_u) + parameters[i + nB] * FastMath.sin(2 * i * delta_u);
+            final SinCos sc = FastMath.sinCos(2 * i * delta_u);
+            b_u += parameters[i] * sc.cos() + parameters[i + nB] * sc.sin();
         }
         // Compute D(u)
         double d_u = parameters[2 * nB + 1];
         for (int i = 1; i < nD + 1; i++) {
-            d_u += parameters[2 * nB + 1 + i] * FastMath.cos((2 * i - 1) * delta_u) + parameters[2 * nB + 1 + i + nD] * FastMath.sin((2 * i - 1) * delta_u);
+            final SinCos sc = FastMath.sinCos((2 * i - 1) * delta_u);
+            d_u += parameters[2 * nB + 1 + i] * sc.cos() + parameters[2 * nB + 1 + i + nD] * sc.sin();
         }
         // Return acceleration
         return new Vector3D(d_u, eD, parameters[2 * (nD + nB) + 2], eY, b_u, eB);
@@ -194,13 +198,15 @@ public class ECOM2 extends AbstractRadiationForceModel {
         // Compute B(u)
         T b_u =  parameters[0];
         for (int i = 1; i < nB + 1; i++) {
-            b_u = b_u.add(FastMath.cos(delta_u.multiply(2 * i)).multiply(parameters[i])).add(FastMath.sin(delta_u.multiply(2 * i)).multiply(parameters[i + nB]));
+            final FieldSinCos<T> sc = FastMath.sinCos(delta_u.multiply(2 * i));
+            b_u = b_u.add(sc.cos().multiply(parameters[i])).add(sc.sin().multiply(parameters[i + nB]));
         }
         // Compute D(u)
         T d_u = parameters[2 * nB + 1];
 
         for (int i = 1; i < nD + 1; i++) {
-            d_u =  d_u.add(FastMath.cos(delta_u.multiply(2 * i - 1)).multiply(parameters[2 * nB + 1 + i])).add(FastMath.sin(delta_u.multiply(2 * i - 1)).multiply(parameters[2 * nB + 1 + i + nD]));
+            final FieldSinCos<T> sc = FastMath.sinCos(delta_u.multiply(2 * i - 1));
+            d_u =  d_u.add(sc.cos().multiply(parameters[2 * nB + 1 + i])).add(sc.sin().multiply(parameters[2 * nB + 1 + i + nD]));
         }
         // Return the acceleration
         return new FieldVector3D<>(d_u, eD, parameters[2 * (nD + nB) + 2], eY, b_u, eB);
