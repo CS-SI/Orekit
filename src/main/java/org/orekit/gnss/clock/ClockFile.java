@@ -152,6 +152,7 @@ public class ClockFile {
         this.clockData               = new HashMap<String, List<ClockDataLine>>();
         this.agencyName              = "";
         this.analysisCenterID        = "";
+        this.analysisCenterName      = "";
         this.comments                = "";
         this.creationDate            = null;
         this.creationDateString      = "";
@@ -689,7 +690,9 @@ public class ClockFile {
         /** Epoch time components. */
         private TimeComponents timeComponents;
 
-        /** Number of data values to follow. */
+        /** Number of data values to follow.
+         * This number might not represent the non null values in the line.
+         */
         private int numberOfValues;
 
         /** Clock bias (seconds). */

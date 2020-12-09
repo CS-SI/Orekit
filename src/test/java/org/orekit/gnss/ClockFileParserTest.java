@@ -54,13 +54,16 @@ public class ClockFileParserTest {
     
         final ClockFileParser parser = new ClockFileParser();
         final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final ClockFile file = (ClockFile) parser.parse(fileName);
+        final ClockFile file = parser.parse(fileName);
         
         // Check content of the file
         final double version = 3.04;
         final SatelliteSystem satelliteSystem = SatelliteSystem.GPS;
         final String programName = "TORINEXC V9.9";
         final String agencyName = "USNO";
+        final String analysisCenterID = "USN";
+        final String analysisCenterName = "USNO USING GIPSY/OASIS-II";
+        final String externalClockReference = "";
         final String creationDateString = "19960403";
         final String creationTimeString = "001000";
         final String creationZoneString = "UTC";
@@ -88,7 +91,8 @@ public class ClockFileParserTest {
         final double clockAcceleration = 0.0;
         final double clockAccelerationSigma = 0.0;
         checkClockFileContent(file, version, satelliteSystem, 
-                              programName, agencyName, creationDateString, creationTimeString, creationZoneString, creationDate, 
+                              programName, agencyName, analysisCenterID, analysisCenterName, externalClockReference,
+                              creationDateString, creationTimeString, creationZoneString, creationDate, 
                               numberOfLeapSeconds, numberOfLeapSecondsGPS, numberOfDBCS, numberOfPCVS,
                               numberOfDataTypes, numberOfObservationTypes, frameString,
                               numberOfReceivers, numberOfReferenceClocksTransitions, numberOfSatellites, numberOfDataLines, 
@@ -107,13 +111,16 @@ public class ClockFileParserTest {
     
         final ClockFileParser parser = new ClockFileParser();
         final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final ClockFile file = (ClockFile) parser.parse(fileName);
+        final ClockFile file = parser.parse(fileName);
         
         // Check content of the file
         final double version = 3.04;
         final SatelliteSystem satelliteSystem = SatelliteSystem.GPS;
         final String programName = "CCLOCK";
         final String agencyName = "IGSACC @ GA & MIT";
+        final String analysisCenterID = "IGS";
+        final String analysisCenterName = "IGSACC @ GA and MIT";
+        final String externalClockReference = "";
         final String creationDateString = "20170312";
         final String creationTimeString = "052227";
         final String creationZoneString = "UTC";
@@ -141,7 +148,8 @@ public class ClockFileParserTest {
         final double clockAcceleration = 0.0;
         final double clockAccelerationSigma = 0.0;
         checkClockFileContent(file, version, satelliteSystem, 
-                              programName, agencyName, creationDateString, creationTimeString, creationZoneString, creationDate, 
+                              programName, agencyName, analysisCenterID, analysisCenterName, externalClockReference,
+                              creationDateString, creationTimeString, creationZoneString, creationDate, 
                               numberOfLeapSeconds, numberOfLeapSecondsGPS, numberOfDBCS, numberOfPCVS,
                               numberOfDataTypes, numberOfObservationTypes, frameString,
                               numberOfReceivers, numberOfReferenceClocksTransitions, numberOfSatellites, numberOfDataLines, 
@@ -160,13 +168,16 @@ public class ClockFileParserTest {
     
         final ClockFileParser parser = new ClockFileParser();
         final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final ClockFile file = (ClockFile) parser.parse(fileName);
+        final ClockFile file = parser.parse(fileName);
         
         // Check content of the file
         final double version = 3.04;
         final SatelliteSystem satelliteSystem = null;
         final String programName = "TORINEXC V9.9";
         final String agencyName = "USNO";
+        final String analysisCenterID = "";
+        final String analysisCenterName = "";
+        final String externalClockReference = "UTC(USNO) MASTER CLOCK VIA CONTINUOUS CABLE MONITOR";
         final String creationDateString = "19960403";
         final String creationTimeString = "001000";
         final String creationZoneString = "UTC";
@@ -194,7 +205,8 @@ public class ClockFileParserTest {
         final double clockAcceleration = 0.0;
         final double clockAccelerationSigma = 0.0;
         checkClockFileContent(file, version, satelliteSystem, 
-                              programName, agencyName, creationDateString, creationTimeString, creationZoneString, creationDate, 
+                              programName, agencyName, analysisCenterID, analysisCenterName, externalClockReference,
+                              creationDateString, creationTimeString, creationZoneString, creationDate, 
                               numberOfLeapSeconds, numberOfLeapSecondsGPS, numberOfDBCS, numberOfPCVS,
                               numberOfDataTypes, numberOfObservationTypes, frameString,
                               numberOfReceivers, numberOfReferenceClocksTransitions, numberOfSatellites, numberOfDataLines, 
@@ -214,10 +226,50 @@ public class ClockFileParserTest {
     
         final ClockFileParser parser = new ClockFileParser();
         final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final ClockFile file = (ClockFile) parser.parse(fileName);
+        final ClockFile file = parser.parse(fileName);
         
-        // Check number of data lines
-        Assert.assertEquals(10, file.getTotalNumberOfDataLines());
+        // Check content of the file
+        final double version = 3.00;
+        final SatelliteSystem satelliteSystem = null;
+        final String programName = "autcln 3.33+MIG";
+        final String agencyName = "MIT";
+        final String analysisCenterID = "MIT";
+        final String analysisCenterName = "";
+        final String externalClockReference = "";
+        final String creationDateString = "2016-07-14";
+        final String creationTimeString = "16:28";
+        final String creationZoneString = "";
+        final AbsoluteDate creationDate = null; 
+        final int numberOfLeapSeconds = 17;
+        final int numberOfLeapSecondsGPS = 0;
+        final int numberOfDBCS = 0;
+        final int numberOfPCVS = 1;
+        final int numberOfDataTypes = 2; 
+        final int numberOfObservationTypes = 0;
+        final String frameString = "IGS08";
+        final int numberOfReceivers = 12;
+        final int numberOfReferenceClocksTransitions = 0; 
+        final int numberOfSatellites = 31;
+        final int numberOfDataLines = 10;
+        final String id = "G19"; 
+        final ClockDataType type = ClockDataType.AS; 
+        final TimeScale timeScale = TimeScalesFactory.getUTC();
+        final AbsoluteDate dataEpoch = new AbsoluteDate(2016, 7, 7, 0, 0, 30.0, timeScale);
+        final int numberOfValues = 1;
+        final double clockBias = -0.525123304077E-03; 
+        final double clockBiasSigma = 0.200000000000E-09;
+        final double clockRate = 0.0;
+        final double clockRateSigma = 0.0;
+        final double clockAcceleration = 0.0;
+        final double clockAccelerationSigma = 0.0;
+        checkClockFileContent(file, version, satelliteSystem, 
+                              programName, agencyName, analysisCenterID, analysisCenterName, externalClockReference,
+                              creationDateString, creationTimeString, creationZoneString, creationDate, 
+                              numberOfLeapSeconds, numberOfLeapSecondsGPS, numberOfDBCS, numberOfPCVS,
+                              numberOfDataTypes, numberOfObservationTypes, frameString,
+                              numberOfReceivers, numberOfReferenceClocksTransitions, numberOfSatellites, numberOfDataLines, 
+                              id, type, timeScale, dataEpoch, numberOfValues, 
+                              clockBias, clockBiasSigma, clockRate, clockRateSigma, clockAcceleration, clockAccelerationSigma);
     }
 
     /** Another example of the 3.00 RINEX clock file format. 
@@ -232,10 +284,50 @@ public class ClockFileParserTest {
     
         final ClockFileParser parser = new ClockFileParser();
         final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final ClockFile file = (ClockFile) parser.parse(fileName);
+        final ClockFile file = parser.parse(fileName);
         
-        // Check number of data lines
-        Assert.assertEquals(7, file.getTotalNumberOfDataLines());
+        // Check content of the file
+        final double version = 3.00;
+        final SatelliteSystem satelliteSystem = null;
+        final String programName = "CCLOCK";
+        final String agencyName = "IGSACC @ GA MIT";
+        final String analysisCenterID = "IGS";
+        final String analysisCenterName = "IGSACC @ GA MIT";
+        final String externalClockReference = "";
+        final String creationDateString = "";
+        final String creationTimeString = "";
+        final String creationZoneString = "";
+        final AbsoluteDate creationDate = null; 
+        final int numberOfLeapSeconds = 18;
+        final int numberOfLeapSecondsGPS = 0;
+        final int numberOfDBCS = 0;
+        final int numberOfPCVS = 1;
+        final int numberOfDataTypes = 2; 
+        final int numberOfObservationTypes = 0;
+        final String frameString = "IGb14";
+        final int numberOfReceivers = 18;
+        final int numberOfReferenceClocksTransitions = 0; 
+        final int numberOfSatellites = 31;
+        final int numberOfDataLines = 7;
+        final String id = "GPST"; 
+        final ClockDataType type = ClockDataType.AR; 
+        final TimeScale timeScale = TimeScalesFactory.getUTC();
+        final AbsoluteDate dataEpoch = new AbsoluteDate(2020, 6, 15, 0, 0, 0.0, timeScale);
+        final int numberOfValues = 2;
+        final double clockBias = -5.447980630520e-09; 
+        final double clockBiasSigma = 0.0;
+        final double clockRate = 0.0;
+        final double clockRateSigma = 0.0;
+        final double clockAcceleration = 0.0;
+        final double clockAccelerationSigma = 0.0;
+        checkClockFileContent(file, version, satelliteSystem, 
+                              programName, agencyName, analysisCenterID, analysisCenterName,  externalClockReference,
+                              creationDateString, creationTimeString, creationZoneString, creationDate, 
+                              numberOfLeapSeconds, numberOfLeapSecondsGPS, numberOfDBCS, numberOfPCVS,
+                              numberOfDataTypes, numberOfObservationTypes, frameString,
+                              numberOfReceivers, numberOfReferenceClocksTransitions, numberOfSatellites, numberOfDataLines, 
+                              id, type, timeScale, dataEpoch, numberOfValues, 
+                              clockBias, clockBiasSigma, clockRate, clockRateSigma, clockAcceleration, clockAccelerationSigma);
     }
   
     /** An example of the 2.00 RINEX clock file format. */
@@ -247,10 +339,50 @@ public class ClockFileParserTest {
     
         final ClockFileParser parser = new ClockFileParser();
         final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final ClockFile file = (ClockFile) parser.parse(fileName);
+        final ClockFile file = parser.parse(fileName);
         
-        // Check number of data lines
-        Assert.assertEquals(7, file.getTotalNumberOfDataLines());
+        // Check content of the file
+        final double version = 2.00;
+        final SatelliteSystem satelliteSystem = null;
+        final String programName = "CLKRINEX V1.0";
+        final String agencyName = "NRCan";
+        final String analysisCenterID = "EMR";
+        final String analysisCenterName = "NATURAL RESOURCES CANADA";
+        final String externalClockReference = "";
+        final String creationDateString = "1-Mar-2000";
+        final String creationTimeString = "20:36";
+        final String creationZoneString = "";
+        final AbsoluteDate creationDate = null; 
+        final int numberOfLeapSeconds = -13;
+        final int numberOfLeapSecondsGPS = 0;
+        final int numberOfDBCS = 0;
+        final int numberOfPCVS = 0;
+        final int numberOfDataTypes = 2; 
+        final int numberOfObservationTypes = 0;
+        final String frameString = "ITRF97";
+        final int numberOfReceivers = 13;
+        final int numberOfReferenceClocksTransitions = 0; 
+        final int numberOfSatellites = 28;
+        final int numberOfDataLines = 7;
+        final String id = "CHUR"; 
+        final ClockDataType type = ClockDataType.AR; 
+        final TimeScale timeScale = TimeScalesFactory.getUTC();
+        final AbsoluteDate dataEpoch = new AbsoluteDate(2000, 2, 14, 0, 0, 0.0, timeScale);
+        final int numberOfValues = 2;
+        final double clockBias = 2.301824851111E-05; 
+        final double clockBiasSigma = 2.795267117761E-10;
+        final double clockRate = 0.0;
+        final double clockRateSigma = 0.0;
+        final double clockAcceleration = 0.0;
+        final double clockAccelerationSigma = 0.0;
+        checkClockFileContent(file, version, satelliteSystem, 
+                              programName, agencyName, analysisCenterID, analysisCenterName, externalClockReference,
+                              creationDateString, creationTimeString, creationZoneString, creationDate, 
+                              numberOfLeapSeconds, numberOfLeapSecondsGPS, numberOfDBCS, numberOfPCVS,
+                              numberOfDataTypes, numberOfObservationTypes, frameString,
+                              numberOfReceivers, numberOfReferenceClocksTransitions, numberOfSatellites, numberOfDataLines, 
+                              id, type, timeScale, dataEpoch, numberOfValues, 
+                              clockBias, clockBiasSigma, clockRate, clockRateSigma, clockAcceleration, clockAccelerationSigma);
     }
 
     /** Unsupported clock file version exception throwing test. */
@@ -289,6 +421,7 @@ public class ClockFileParserTest {
     private void checkClockFileContent(final ClockFile file,
                                        final double version, final SatelliteSystem satelliteSystem, 
                                        final String programName, final String agencyName,
+                                       final String analysisCenterID, final String analysisCenterName, final String externalClockReference,
                                        final String creationDateString, final String creationTimeString, final String creationZoneString,
                                        final AbsoluteDate creationDate, final int numberOfLeapSeconds, final int numberOfLeapSecondsGPS,
                                        final int numberOfDBCS, final int numberOfPCVS,
@@ -305,6 +438,9 @@ public class ClockFileParserTest {
         Assert.assertTrue(file.getSatelliteSystem() == satelliteSystem);
         Assert.assertEquals(programName, file.getProgramName());
         Assert.assertEquals(agencyName, file.getAgencyName());
+        Assert.assertEquals(analysisCenterID, file.getAnalysisCenterID());
+        Assert.assertEquals(analysisCenterName, file.getAnalysisCenterName());
+        Assert.assertEquals(externalClockReference, file.getExternalClockReference());
         Assert.assertEquals(creationDateString, file.getCreationDateString());
         Assert.assertEquals(creationTimeString, file.getCreationTimeString());
         Assert.assertEquals(creationZoneString, file.getCreationTimeZoneString());

@@ -983,9 +983,12 @@ public class ClockFileParser {
                     // Fourth element is number of data values
                     pi.currentNumberOfValues = scanner.nextInt();
 
-                    // Get the values in this line, they are at most 2
-                    for (int i = 0; i < FastMath.min(2, pi.currentNumberOfValues); i++) {
-                        pi.currentDataValues[i] = scanner.nextDouble();
+                    // Get the values in this line, there are at most 2.
+                    // Some entries claim less values than there actually are.
+                    // All values are added to the set, regardless of their claimed number.
+                    int i = 0;
+                    while (scanner.hasNextDouble()) {
+                        pi.currentDataValues[i++] = scanner.nextDouble();
                     }
 
                     // Check if continuation line is required
@@ -1020,9 +1023,12 @@ public class ClockFileParser {
                      Scanner s2      = s1.useDelimiter(SPACES);
                      Scanner scanner = s2.useLocale(Locale.US)) {
 
-                    // Get the values in this continuation line
-                    for (int i = 2; i < pi.currentNumberOfValues; i++) {
-                        pi.currentDataValues[i] = scanner.nextDouble();
+                    // Get the values in this continuation line.
+                    // Some entries claim less values than there actually are.
+                    // All values are added to the set, regardless of their claimed number.
+                    int i = 2;
+                    while (scanner.hasNextDouble()) {
+                        pi.currentDataValues[i++] = scanner.nextDouble();
                     }
 
                     // Add clock data line
