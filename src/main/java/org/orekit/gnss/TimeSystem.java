@@ -97,7 +97,7 @@ public enum TimeSystem {
         throws OrekitIllegalArgumentException {
         final TimeSystem timeSystem = KEYS_MAP.get(s);
         if (timeSystem == null) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.UNKNOWN_TIME_SYSTEM, s.charAt(0));
+            throw new OrekitIllegalArgumentException(OrekitMessages.UNKNOWN_TIME_SYSTEM, s);
         }
         return timeSystem;
     }

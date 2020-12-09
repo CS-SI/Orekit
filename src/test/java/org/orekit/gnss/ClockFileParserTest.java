@@ -416,6 +416,22 @@ public class ClockFileParserTest {
             Assert.assertEquals("XX",  oe.getParts()[0]);
         }
     }
+
+    /** Unknown time system exception throwing test. */
+    @Test
+    public void testUnknownTimeSystem() throws IOException {
+        try {
+            final String ex = "/gnss/clock/unknown_time_system.clk";
+            final ClockFileParser parser = new ClockFileParser();
+            final InputStream inEntry = getClass().getResourceAsStream(ex);
+            parser.parse(inEntry);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitIllegalArgumentException oe) {
+            Assert.assertEquals(OrekitMessages.UNKNOWN_TIME_SYSTEM,
+                                oe.getSpecifier());
+            Assert.assertEquals("WWW",  oe.getParts()[0]);
+        }
+    }
     
     /** Check the content of a clock file. */
     private void checkClockFileContent(final ClockFile file,
