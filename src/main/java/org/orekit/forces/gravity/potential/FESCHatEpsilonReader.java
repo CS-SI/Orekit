@@ -26,6 +26,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.SinCos;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -181,10 +182,12 @@ public class FESCHatEpsilonReader extends OceanTidesReader {
                         //      applying Equation (6.15), the ΔCn0 have the expected value but the
                         //      ΔSn0 must be set to zero.
                         // (see ftp://tai.bipm.org/iers/convupdt/chapter6/icc6.pdf)
-                        final double cPlus  =                  commonFactor * termFactor * cHatPlus  * FastMath.sin(ePlus  + chiF);
-                        final double sPlus  =                  commonFactor * termFactor * cHatPlus  * FastMath.cos(ePlus  + chiF);
-                        final double cMinus = (m == 0) ? 0.0 : commonFactor * termFactor * cHatMinus * FastMath.sin(eMinus + chiF);
-                        final double sMinus = (m == 0) ? 0.0 : commonFactor * termFactor * cHatMinus * FastMath.cos(eMinus + chiF);
+                        final SinCos scP    = FastMath.sinCos(ePlus  + chiF);
+                        final SinCos scM    = FastMath.sinCos(eMinus + chiF);
+                        final double cPlus  =                  commonFactor * termFactor * cHatPlus  * scP.sin();
+                        final double sPlus  =                  commonFactor * termFactor * cHatPlus  * scP.cos();
+                        final double cMinus = (m == 0) ? 0.0 : commonFactor * termFactor * cHatMinus * scM.sin();
+                        final double sMinus = (m == 0) ? 0.0 : commonFactor * termFactor * cHatMinus * scM.cos();
 
                         // store parsed fields
                         addWaveCoefficients(doodson, n, m, cPlus,  sPlus, cMinus, sMinus, lineNumber, line);

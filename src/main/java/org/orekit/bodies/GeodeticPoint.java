@@ -23,6 +23,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.CompositeFormat;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
 
 /** Point location relative to a 2D body surface.
  * <p>Instance of this class are guaranteed to be immutable.</p>
@@ -122,11 +123,9 @@ public class GeodeticPoint implements Serializable {
      */
     public Vector3D getZenith() {
         if (zenith == null) {
-            final double cosLat = FastMath.cos(latitude);
-            final double sinLat = FastMath.sin(latitude);
-            final double cosLon = FastMath.cos(longitude);
-            final double sinLon = FastMath.sin(longitude);
-            zenith = new Vector3D(cosLon * cosLat, sinLon * cosLat, sinLat);
+            final SinCos scLat = FastMath.sinCos(latitude);
+            final SinCos scLon = FastMath.sinCos(longitude);
+            zenith = new Vector3D(scLon.cos() * scLat.cos(), scLon.sin() * scLat.cos(), scLat.sin());
         }
         return zenith;
     }
@@ -151,11 +150,9 @@ public class GeodeticPoint implements Serializable {
      */
     public Vector3D getNorth() {
         if (north == null) {
-            final double cosLat = FastMath.cos(latitude);
-            final double sinLat = FastMath.sin(latitude);
-            final double cosLon = FastMath.cos(longitude);
-            final double sinLon = FastMath.sin(longitude);
-            north = new Vector3D(-cosLon * sinLat, -sinLon * sinLat, cosLat);
+            final SinCos scLat = FastMath.sinCos(latitude);
+            final SinCos scLon = FastMath.sinCos(longitude);
+            north = new Vector3D(-scLon.cos() * scLat.sin(), -scLon.sin() * scLat.sin(), scLat.cos());
         }
         return north;
     }
@@ -180,7 +177,8 @@ public class GeodeticPoint implements Serializable {
      */
     public Vector3D getEast() {
         if (east == null) {
-            east = new Vector3D(-FastMath.sin(longitude), FastMath.cos(longitude), 0);
+            final SinCos scLon = FastMath.sinCos(longitude);
+            east = new Vector3D(-scLon.sin(), scLon.cos(), 0);
         }
         return east;
     }

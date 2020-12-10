@@ -20,6 +20,7 @@ import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
@@ -340,8 +341,9 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
         final UnivariateDerivative2 m = m1.add(n.multiply(correction));
 
         // Take into consideration the periodic perturbations
-        final UnivariateDerivative2 h = e.multiply(FastMath.sin(pa));
-        final UnivariateDerivative2 l = e.multiply(FastMath.cos(pa));
+        final FieldSinCos<UnivariateDerivative2> scPa = FastMath.sinCos(pa);
+        final UnivariateDerivative2 h = e.multiply(scPa.sin());
+        final UnivariateDerivative2 l = e.multiply(scPa.cos());
         // δa1
         final UnivariateDerivative2[] d1 = getParameterDifferentials(sma, i, h, l, m1);
         // δa2
@@ -382,18 +384,17 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
         final UnivariateDerivative2 rk    = pCorr.divide(eCorr.multiply(FastMath.cos(vk)).add(1.0));
 
         // Positions in orbital plane
-        final UnivariateDerivative2 xk = FastMath.cos(phik).multiply(rk);
-        final UnivariateDerivative2 yk = FastMath.sin(phik).multiply(rk);
+        final FieldSinCos<UnivariateDerivative2> scPhik = FastMath.sinCos(phik);
+        final UnivariateDerivative2 xk = scPhik.cos().multiply(rk);
+        final UnivariateDerivative2 yk = scPhik.sin().multiply(rk);
 
         // Coordinates of position
-        final UnivariateDerivative2 cosL = FastMath.cos(lambdaCorr);
-        final UnivariateDerivative2 sinL = FastMath.sin(lambdaCorr);
-        final UnivariateDerivative2 cosI = FastMath.cos(iCorr);
-        final UnivariateDerivative2 sinI = FastMath.sin(iCorr);
+        final FieldSinCos<UnivariateDerivative2> scL = FastMath.sinCos(lambdaCorr);
+        final FieldSinCos<UnivariateDerivative2> scI = FastMath.sinCos(iCorr);
         final FieldVector3D<UnivariateDerivative2> positionwithDerivatives =
-                        new FieldVector3D<>(xk.multiply(cosL).subtract(yk.multiply(sinL).multiply(cosI)),
-                                            xk.multiply(sinL).add(yk.multiply(cosL).multiply(cosI)),
-                                            yk.multiply(sinI));
+                        new FieldVector3D<>(xk.multiply(scL.cos()).subtract(yk.multiply(scL.sin()).multiply(scI.cos())),
+                                            xk.multiply(scL.sin()).add(yk.multiply(scL.cos()).multiply(scI.cos())),
+                                            yk.multiply(scI.sin()));
 
         return new PVCoordinates(new Vector3D(positionwithDerivatives.getX().getValue(),
                                               positionwithDerivatives.getY().getValue(),
@@ -664,18 +665,23 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
         final UnivariateDerivative2 b     = aeoa2.multiply(1.5 * GLONASS_J20);
 
         // Commons Parameters
-        final UnivariateDerivative2 cosI   = FastMath.cos(i);
-        final UnivariateDerivative2 sinI   = FastMath.sin(i);
+        final FieldSinCos<UnivariateDerivative2> scI   = FastMath.sinCos(i);
+        final FieldSinCos<UnivariateDerivative2> scLk  = FastMath.sinCos(m);
+        final FieldSinCos<UnivariateDerivative2> sc2Lk = FieldSinCos.sum(scLk, scLk);
+        final FieldSinCos<UnivariateDerivative2> sc3Lk = FieldSinCos.sum(scLk, sc2Lk);
+        final FieldSinCos<UnivariateDerivative2> sc4Lk = FieldSinCos.sum(sc2Lk, sc2Lk);
+        final UnivariateDerivative2 cosI   = scI.cos();
+        final UnivariateDerivative2 sinI   = scI.sin();
         final UnivariateDerivative2 cosI2  = cosI.multiply(cosI);
         final UnivariateDerivative2 sinI2  = sinI.multiply(sinI);
-        final UnivariateDerivative2 cosLk  = FastMath.cos(m);
-        final UnivariateDerivative2 sinLk  = FastMath.sin(m);
-        final UnivariateDerivative2 cos2Lk = FastMath.cos(m.multiply(2.0));
-        final UnivariateDerivative2 sin2Lk = FastMath.sin(m.multiply(2.0));
-        final UnivariateDerivative2 cos3Lk = FastMath.cos(m.multiply(3.0));
-        final UnivariateDerivative2 sin3Lk = FastMath.sin(m.multiply(3.0));
-        final UnivariateDerivative2 cos4Lk = FastMath.cos(m.multiply(4.0));
-        final UnivariateDerivative2 sin4Lk = FastMath.sin(m.multiply(4.0));
+        final UnivariateDerivative2 cosLk  = scLk.cos();
+        final UnivariateDerivative2 sinLk  = scLk.sin();
+        final UnivariateDerivative2 cos2Lk = sc2Lk.cos();
+        final UnivariateDerivative2 sin2Lk = sc2Lk.sin();
+        final UnivariateDerivative2 cos3Lk = sc3Lk.cos();
+        final UnivariateDerivative2 sin3Lk = sc3Lk.sin();
+        final UnivariateDerivative2 cos4Lk = sc4Lk.cos();
+        final UnivariateDerivative2 sin4Lk = sc4Lk.sin();
 
         // h*cos(nLk), l*cos(nLk), h*sin(nLk) and l*sin(nLk)
         // n = 1

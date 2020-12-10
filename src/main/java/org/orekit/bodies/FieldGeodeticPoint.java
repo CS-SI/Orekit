@@ -22,6 +22,7 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.CompositeFormat;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathUtils;
 
 /** Point location relative to a 2D body surface, using {@link RealFieldElement}.
@@ -112,13 +113,11 @@ public class FieldGeodeticPoint<T extends RealFieldElement<T>> {
      */
     public FieldVector3D<T> getZenith() {
         if (zenith == null) {
-            final T cosLat = latitude.cos();
-            final T sinLat = latitude.sin();
-            final T cosLon = longitude.cos();
-            final T sinLon = longitude.sin();
-            zenith = new FieldVector3D<>(cosLon.multiply(cosLat),
-                                         sinLon.multiply(cosLat),
-                                         sinLat);
+            final FieldSinCos<T> scLat = FastMath.sinCos(latitude);
+            final FieldSinCos<T> scLon = FastMath.sinCos(longitude);
+            zenith = new FieldVector3D<>(scLon.cos().multiply(scLat.cos()),
+                                         scLon.sin().multiply(scLat.cos()),
+                                         scLat.sin());
         }
         return zenith;
     }
@@ -143,13 +142,11 @@ public class FieldGeodeticPoint<T extends RealFieldElement<T>> {
      */
     public FieldVector3D<T> getNorth() {
         if (north == null) {
-            final T cosLat = latitude.cos();
-            final T sinLat = latitude.sin();
-            final T cosLon = longitude.cos();
-            final T sinLon = longitude.sin();
-            north = new FieldVector3D<>(cosLon.multiply(sinLat).negate(),
-                                        sinLon.multiply(sinLat).negate(),
-                                        cosLat);
+            final FieldSinCos<T> scLat = FastMath.sinCos(latitude);
+            final FieldSinCos<T> scLon = FastMath.sinCos(longitude);
+            north = new FieldVector3D<>(scLon.cos().multiply(scLat.sin()).negate(),
+                                        scLon.sin().multiply(scLat.sin()).negate(),
+                                        scLat.cos());
         }
         return north;
     }
@@ -174,8 +171,9 @@ public class FieldGeodeticPoint<T extends RealFieldElement<T>> {
      */
     public FieldVector3D<T> getEast() {
         if (east == null) {
-            east = new FieldVector3D<>(longitude.sin().negate(),
-                                       longitude.cos(),
+            final FieldSinCos<T> scLon = FastMath.sinCos(longitude);
+            east = new FieldVector3D<>(scLon.sin().negate(),
+                                       scLon.cos(),
                                        longitude.getField().getZero());
         }
         return east;

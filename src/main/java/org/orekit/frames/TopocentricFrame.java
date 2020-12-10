@@ -27,6 +27,7 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
@@ -387,13 +388,11 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      */
     public GeodeticPoint pointAtDistance(final double azimuth, final double elevation,
                                          final double distance) {
-        final double cosAz = FastMath.cos(azimuth);
-        final double sinAz = FastMath.sin(azimuth);
-        final double cosEl = FastMath.cos(elevation);
-        final double sinEl = FastMath.sin(elevation);
-        final Vector3D  observed = new Vector3D(distance * cosEl * sinAz,
-                                                distance * cosEl * cosAz,
-                                                distance * sinEl);
+        final SinCos scAz  = FastMath.sinCos(azimuth);
+        final SinCos scEl  = FastMath.sinCos(elevation);
+        final Vector3D  observed = new Vector3D(distance * scEl.cos() * scAz.sin(),
+                                                distance * scEl.cos() * scAz.cos(),
+                                                distance * scEl.sin());
         return parentShape.transform(observed, this, AbsoluteDate.ARBITRARY_EPOCH);
     }
 

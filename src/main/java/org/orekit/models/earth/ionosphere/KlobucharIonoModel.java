@@ -24,7 +24,9 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
@@ -128,6 +130,10 @@ public class KlobucharIonoModel implements IonosphericModel {
     public double pathDelay(final AbsoluteDate date, final GeodeticPoint geo,
                             final double elevation, final double azimuth, final double frequency,
                             final double[] parameters) {
+
+        // Sine and cosine of the azimuth
+        final SinCos sc = FastMath.sinCos(azimuth);
+
         // degees to semisircles
         final double rad2semi = 1. / FastMath.PI;
         final double semi2rad = FastMath.PI;
@@ -138,12 +144,12 @@ public class KlobucharIonoModel implements IonosphericModel {
         // Subionospheric latitude: the latitude of the IPP (Ionospheric Pierce Point)
         // in [-0.416, 0.416], semicircle
         final double latIono = FastMath.min(
-                                      FastMath.max(geo.getLatitude() * rad2semi + psi * FastMath.cos(azimuth), -0.416),
+                                      FastMath.max(geo.getLatitude() * rad2semi + psi * sc.cos(), -0.416),
                                       0.416);
 
         // Subionospheric longitude: the longitude of the IPP
         // in semicircle
-        final double lonIono = geo.getLongitude() * rad2semi + (psi * FastMath.sin(azimuth) / FastMath.cos(latIono * semi2rad));
+        final double lonIono = geo.getLongitude() * rad2semi + (psi * sc.sin() / FastMath.cos(latIono * semi2rad));
 
         // Geomagnetic latitude, semicircle
         final double latGeom = latIono + 0.064 * FastMath.cos((lonIono - 1.617) * semi2rad);
@@ -227,6 +233,10 @@ public class KlobucharIonoModel implements IonosphericModel {
     public <T extends RealFieldElement<T>> T pathDelay(final FieldAbsoluteDate<T> date, final FieldGeodeticPoint<T> geo,
                                                        final T elevation, final T azimuth, final double frequency,
                                                        final T[] parameters) {
+
+        // Sine and cosine of the azimuth
+        final FieldSinCos<T> sc = FastMath.sinCos(azimuth);
+
         // Field
         final Field<T> field = date.getField();
         final T zero = field.getZero();
@@ -242,12 +252,12 @@ public class KlobucharIonoModel implements IonosphericModel {
         // Subionospheric latitude: the latitude of the IPP (Ionospheric Pierce Point)
         // in [-0.416, 0.416], semicircle
         final T latIono = FastMath.min(
-                                      FastMath.max(geo.getLatitude().multiply(rad2semi).add(psi.multiply(FastMath.cos(azimuth))), zero.subtract(0.416)),
+                                      FastMath.max(geo.getLatitude().multiply(rad2semi).add(psi.multiply(sc.cos())), zero.subtract(0.416)),
                                       zero.add(0.416));
 
         // Subionospheric longitude: the longitude of the IPP
         // in semicircle
-        final T lonIono = geo.getLongitude().multiply(rad2semi).add(psi.multiply(FastMath.sin(azimuth)).divide(FastMath.cos(latIono.multiply(semi2rad))));
+        final T lonIono = geo.getLongitude().multiply(rad2semi).add(psi.multiply(sc.sin()).divide(FastMath.cos(latIono.multiply(semi2rad))));
 
         // Geomagnetic latitude, semicircle
         final T latGeom = latIono.add(FastMath.cos(lonIono.subtract(1.617).multiply(semi2rad)).multiply(0.064));

@@ -35,8 +35,10 @@ import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
@@ -1759,8 +1761,9 @@ public class DSSTTesseral implements DSSTForceModel {
                 for (int m = 1; m <= maxOrderMdailyTesseralSP; m++) {
                     // Phase angle
                     final double jlMmt  = -m * currentTheta;
-                    final double sinPhi = FastMath.sin(jlMmt);
-                    final double cosPhi = FastMath.cos(jlMmt);
+                    final SinCos scPhi  = FastMath.sinCos(jlMmt);
+                    final double sinPhi = scPhi.sin();
+                    final double cosPhi = scPhi.cos();
 
                     // compute contribution for each element
                     final double[] c = slot.getCijm(0, m, meanOrbit.getDate());
@@ -1778,8 +1781,9 @@ public class DSSTTesseral implements DSSTForceModel {
                     for (int j : listJ) {
                         // Phase angle
                         final double jlMmt  = j * meanOrbit.getLM() - m * currentTheta;
-                        final double sinPhi = FastMath.sin(jlMmt);
-                        final double cosPhi = FastMath.cos(jlMmt);
+                        final SinCos scPhi  = FastMath.sinCos(jlMmt);
+                        final double sinPhi = scPhi.sin();
+                        final double cosPhi = scPhi.cos();
 
                         // compute contribution for each element
                         final double[] c = slot.getCijm(j, m, meanOrbit.getDate());
@@ -1991,9 +1995,10 @@ public class DSSTTesseral implements DSSTForceModel {
                 //Add the m-daily contribution
                 for (int m = 1; m <= maxOrderMdailyTesseralSP; m++) {
                     // Phase angle
-                    final T jlMmt  = currentTheta.multiply(-m);
-                    final T sinPhi = FastMath.sin(jlMmt);
-                    final T cosPhi = FastMath.cos(jlMmt);
+                    final T jlMmt              = currentTheta.multiply(-m);
+                    final FieldSinCos<T> scPhi = FastMath.sinCos(jlMmt);
+                    final T sinPhi             = scPhi.sin();
+                    final T cosPhi             = scPhi.cos();
 
                     // compute contribution for each element
                     final T[] c = slot.getCijm(0, m, meanOrbit.getDate());
@@ -2010,9 +2015,10 @@ public class DSSTTesseral implements DSSTForceModel {
 
                     for (int j : listJ) {
                         // Phase angle
-                        final T jlMmt  = meanOrbit.getLM().multiply(j).subtract(currentTheta.multiply(m));
-                        final T sinPhi = FastMath.sin(jlMmt);
-                        final T cosPhi = FastMath.cos(jlMmt);
+                        final T jlMmt              = meanOrbit.getLM().multiply(j).subtract(currentTheta.multiply(m));
+                        final FieldSinCos<T> scPhi = FastMath.sinCos(jlMmt);
+                        final T sinPhi             = scPhi.sin();
+                        final T cosPhi             = scPhi.cos();
 
                         // compute contribution for each element
                         final T[] c = slot.getCijm(j, m, meanOrbit.getDate());
@@ -2336,8 +2342,9 @@ public class DSSTTesseral implements DSSTForceModel {
 
                     // Phase angle
                     final double jlMmt  = j * auxiliaryElements.getLM() - m * context.getTheta();
-                    final double sinPhi = FastMath.sin(jlMmt);
-                    final double cosPhi = FastMath.cos(jlMmt);
+                    final SinCos scPhi  = FastMath.sinCos(jlMmt);
+                    final double sinPhi = scPhi.sin();
+                    final double cosPhi = scPhi.cos();
 
                     // Potential derivatives components for a given resonant pair {j,m}
                     double dUdaCos  = 0.;
@@ -2559,9 +2566,10 @@ public class DSSTTesseral implements DSSTForceModel {
                     final int j = FastMath.max(1, (int) FastMath.round(context.getRatio().multiply(m)));
 
                     // Phase angle
-                    final T jlMmt  = auxiliaryElements.getLM().multiply(j).subtract(context.getTheta().multiply(m));
-                    final T sinPhi = FastMath.sin(jlMmt);
-                    final T cosPhi = FastMath.cos(jlMmt);
+                    final T jlMmt              = auxiliaryElements.getLM().multiply(j).subtract(context.getTheta().multiply(m));
+                    final FieldSinCos<T> scPhi = FastMath.sinCos(jlMmt);
+                    final T sinPhi             = scPhi.sin();
+                    final T cosPhi             = scPhi.cos();
 
                     // Potential derivatives components for a given resonant pair {j,m}
                     T dUdaCos  = zero;

@@ -26,6 +26,7 @@ import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -528,11 +529,12 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
      * @return the true longitude argument
      */
     public static <T extends RealFieldElement<T>> T eccentricToTrue(final T lE, final T ex, final T ey) {
-        final T epsilon = ex.multiply(ex).add(ey.multiply(ey)).negate().add(1).sqrt();
-        final T cosLE   = lE.cos();
-        final T sinLE   = lE.sin();
-        final T num     = ex.multiply(sinLE).subtract(ey.multiply(cosLE));
-        final T den     = epsilon.add(1).subtract(ex.multiply(cosLE)).subtract(ey.multiply(sinLE));
+        final T epsilon           = ex.multiply(ex).add(ey.multiply(ey)).negate().add(1).sqrt();
+        final FieldSinCos<T> scLE = FastMath.sinCos(lE);
+        final T cosLE             = scLE.cos();
+        final T sinLE             = scLE.sin();
+        final T num               = ex.multiply(sinLE).subtract(ey.multiply(cosLE));
+        final T den               = epsilon.add(1).subtract(ex.multiply(cosLE)).subtract(ey.multiply(sinLE));
         return lE.add(num.divide(den).atan().multiply(2));
     }
 
@@ -544,11 +546,12 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
      * @return the eccentric longitude argument
      */
     public static <T extends RealFieldElement<T>> T trueToEccentric(final T lv, final T ex, final T ey) {
-        final T epsilon = ex.multiply(ex).add(ey.multiply(ey)).negate().add(1).sqrt();
-        final T cosLv   = lv.cos();
-        final T sinLv   = lv.sin();
-        final T num     = ey.multiply(cosLv).subtract(ex.multiply(sinLv));
-        final T den     = epsilon.add(1).add(ex.multiply(cosLv)).add(ey.multiply(sinLv));
+        final T epsilon           = ex.multiply(ex).add(ey.multiply(ey)).negate().add(1).sqrt();
+        final FieldSinCos<T> scLv = FastMath.sinCos(lv);
+        final T cosLv             = scLv.cos();
+        final T sinLv             = scLv.sin();
+        final T num               = ey.multiply(cosLv).subtract(ex.multiply(sinLv));
+        final T den               = epsilon.add(1).add(ex.multiply(cosLv)).add(ey.multiply(sinLv));
         return lv.add(num.divide(den).atan().multiply(2));
     }
 
@@ -566,12 +569,11 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
         T lE = lM;
         T shift = lM.getField().getZero();
         T lEmlM = lM.getField().getZero();
-        T cosLE = lE.cos();
-        T sinLE = lE.sin();
+        FieldSinCos<T> scLE = FastMath.sinCos(lE);
         int iter = 0;
         do {
-            final T f2 = ex.multiply(sinLE).subtract(ey.multiply(cosLE));
-            final T f1 = ex.multiply(cosLE).add(ey.multiply(sinLE)).negate().add(1);
+            final T f2 = ex.multiply(scLE.sin()).subtract(ey.multiply(scLE.cos()));
+            final T f1 = ex.multiply(scLE.cos()).add(ey.multiply(scLE.sin())).negate().add(1);
             final T f0 = lEmlM.subtract(f2);
 
             final T f12 = f1.multiply(2.0);
@@ -579,8 +581,7 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
 
             lEmlM = lEmlM.subtract(shift);
             lE     = lM.add(lEmlM);
-            cosLE  = lE.cos();
-            sinLE  = lE.sin();
+            scLE = FastMath.sinCos(lE);
 
         } while ((++iter < 50) && (FastMath.abs(shift.getReal()) > 1.0e-12));
 
@@ -596,7 +597,8 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
      * @return the mean longitude argument
      */
     public static <T extends RealFieldElement<T>> T eccentricToMean(final T lE, final T ex, final T ey) {
-        return lE.subtract(ex.multiply(lE.sin())).add(ey.multiply(lE.cos()));
+        final FieldSinCos<T> scLE = FastMath.sinCos(lE);
+        return lE.subtract(ex.multiply(scLE.sin())).add(ey.multiply(scLE.cos()));
     }
 
     /** {@inheritDoc} */
@@ -668,8 +670,9 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
         final T beta = one.divide(eta);
 
         // eccentric longitude argument
-        final T cLe    = lE.cos();
-        final T sLe    = lE.sin();
+        final FieldSinCos<T> scLe = FastMath.sinCos(lE);
+        final T cLe    = scLe.cos();
+        final T sLe    = scLe.sin();
         final T exCeyS = ex.multiply(cLe).add(ey.multiply(sLe));
 
         // coordinates of position and velocity in the orbital plane
@@ -968,9 +971,9 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
         // dlM = (1 - ex cos lE - ey sin lE) dE - sin lE dex + cos lE dey
         // which is inverted and rewritten as:
         // dlE = a/r dlM + sin lE a/r dex - cos lE a/r dey
-        final T le    = getLE();
-        final T cosLe = le.cos();
-        final T sinLe = le.sin();
+        final FieldSinCos<T> scLe = FastMath.sinCos(getLE());
+        final T cosLe = scLe.cos();
+        final T sinLe = scLe.sin();
         final T aOr   = one.divide(one.subtract(ex.multiply(cosLe)).subtract(ey.multiply(sinLe)));
 
         // update longitude row
@@ -1003,9 +1006,9 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
         // cY = -cos lE (sqrt(1-ex^2-ey^2) + 1) + ex + ey (ex sin lE - ey cos lE) / sqrt(1-ex^2-ey^2)
         // which can be solved to find the differential of the true longitude
         // dlV = (cT + cE) / cT dlE + cX / cT deX + cY / cT deX
-        final T le        = getLE();
-        final T cosLe     = le.cos();
-        final T sinLe     = le.sin();
+        final FieldSinCos<T> scLe = FastMath.sinCos(getLE());
+        final T cosLe     = scLe.cos();
+        final T sinLe     = scLe.sin();
         final T eSinE     = ex.multiply(sinLe).subtract(ey.multiply(cosLe));
         final T ecosE     = ex.multiply(cosLe).add(ey.multiply(sinLe));
         final T e2        = ex.multiply(ex).add(ey.multiply(ey));
@@ -1037,19 +1040,20 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
                                       final T[] pDot) {
         final T oMe2;
         final T ksi;
-        final T n = gm.divide(a).sqrt().divide(a);
+        final T n               = gm.divide(a).sqrt().divide(a);
+        final FieldSinCos<T> sc = FastMath.sinCos(lv);
         switch (type) {
             case MEAN :
                 pDot[5] = pDot[5].add(n);
                 break;
             case ECCENTRIC :
                 oMe2 = one.subtract(ex.multiply(ex)).subtract(ey.multiply(ey));
-                ksi  = ex.multiply(lv.cos()).add(1).add(ey.multiply(lv.sin()));
+                ksi  = ex.multiply(sc.cos()).add(1).add(ey.multiply(sc.sin()));
                 pDot[5] = pDot[5].add(n.multiply(ksi).divide(oMe2));
                 break;
             case TRUE :
                 oMe2 = one.subtract(ex.multiply(ex)).subtract(ey.multiply(ey));
-                ksi  =  ex.multiply(lv.cos()).add(1).add(ey.multiply(lv.sin()));
+                ksi  =  ex.multiply(sc.cos()).add(1).add(ey.multiply(sc.sin()));
                 pDot[5] = pDot[5].add(n.multiply(ksi).multiply(ksi).divide(oMe2.multiply(oMe2.sqrt())));
                 break;
             default :

@@ -69,12 +69,17 @@ public class UnivariateprocessNoiseTest {
         lofCartesianOrbitalParametersEvolution[4] = new PolynomialFunction(new double[] {1., 1e-3, 0.});
         lofCartesianOrbitalParametersEvolution[5] = new PolynomialFunction(new double[] {1., 0., 0.});
 
+        // Evolution for propagation parameters error
         final UnivariateFunction[] propagationParametersEvolution =
-                        new UnivariateFunction[] {new PolynomialFunction(new double[] {10, 1., 1e-4}),
+                        new UnivariateFunction[] {new PolynomialFunction(new double[] {10., 1., 1e-4}),
                                                   new PolynomialFunction(new double[] {1000., 0., 0.})};
         
+        // Evolution for measurements parameters error
+        final UnivariateFunction[] measurementsParametersEvolution =
+                        new UnivariateFunction[] {new PolynomialFunction(new double[] {100., 1., 1e-3})};
+        
         // Create a dummy initial covariance matrix
-        final RealMatrix initialCovarianceMatrix = MatrixUtils.createRealIdentityMatrix(7);
+        final RealMatrix initialCovarianceMatrix = MatrixUtils.createRealIdentityMatrix(9);
         
         // Set the process noise object
         // Define input LOF and output position angle
@@ -83,7 +88,8 @@ public class UnivariateprocessNoiseTest {
                                                                                lofType,
                                                                                PositionAngle.TRUE,
                                                                                lofCartesianOrbitalParametersEvolution,
-                                                                               propagationParametersEvolution);
+                                                                               propagationParametersEvolution,
+                                                                               measurementsParametersEvolution);
         
         Assert.assertEquals(LOFType.TNW, processNoise.getLofType());
         Assert.assertEquals(PositionAngle.TRUE, processNoise.getPositionAngle());
@@ -91,6 +97,20 @@ public class UnivariateprocessNoiseTest {
                             processNoise.getInitialCovarianceMatrix(new SpacecraftState(context.initialOrbit)));
         Assert.assertArrayEquals(lofCartesianOrbitalParametersEvolution, processNoise.getLofCartesianOrbitalParametersEvolution());
         Assert.assertArrayEquals(propagationParametersEvolution, processNoise.getPropagationParametersEvolution());
+        Assert.assertArrayEquals(measurementsParametersEvolution, processNoise.getMeasurementsParametersEvolution());
+        
+        final UnivariateProcessNoise processNoiseOld = new UnivariateProcessNoise(initialCovarianceMatrix,
+                                                                                  lofType,
+                                                                                  PositionAngle.TRUE,
+                                                                                  lofCartesianOrbitalParametersEvolution,
+                                                                                  propagationParametersEvolution);
+        
+        Assert.assertEquals(LOFType.TNW, processNoiseOld.getLofType());
+        Assert.assertEquals(PositionAngle.TRUE, processNoiseOld.getPositionAngle());
+        Assert.assertEquals(initialCovarianceMatrix,
+                            processNoiseOld.getInitialCovarianceMatrix(new SpacecraftState(context.initialOrbit)));
+        Assert.assertArrayEquals(lofCartesianOrbitalParametersEvolution, processNoiseOld.getLofCartesianOrbitalParametersEvolution());
+        Assert.assertArrayEquals(propagationParametersEvolution, processNoiseOld.getPropagationParametersEvolution());
     }
     
     /** Test UnivariateProcessNoise class.
@@ -134,13 +154,14 @@ public class UnivariateprocessNoiseTest {
         lofCartesianOrbitalParametersEvolution[4] = new PolynomialFunction(new double[] {1., 1e-3, 0.});
         lofCartesianOrbitalParametersEvolution[5] = new PolynomialFunction(new double[] {1., 0., 0.});
         
-        // Propagation parameters' evolution
+        // Evolution for propagation parameters error
         final UnivariateFunction[] propagationParametersEvolution =
-                        new UnivariateFunction[] {new PolynomialFunction(new double[] {10, 1., 1e-4}),
+                        new UnivariateFunction[] {new PolynomialFunction(new double[] {10., 1., 1e-4}),
                                                   new PolynomialFunction(new double[] {1000., 0., 0.})};
         
+        
         // Create a dummy initial covariance matrix
-        final RealMatrix initialCovarianceMatrix = MatrixUtils.createRealIdentityMatrix(7);
+        final RealMatrix initialCovarianceMatrix = MatrixUtils.createRealIdentityMatrix(8);
         
         // Set the process noise object
         // Define input LOF and output position angle
@@ -166,9 +187,92 @@ public class UnivariateprocessNoiseTest {
             System.out.println("Orbit Type    : " + orbitType);
             System.out.println("Position Angle: " + positionAngle + "\n");
         }
-        checkCovarianceValue(print, state0, state0, processNoise, sampleNumber, relativeTolerance);
-        checkCovarianceValue(print, state0, state1, processNoise, sampleNumber, relativeTolerance);
-        checkCovarianceValue(print, state0, state2, processNoise, sampleNumber, relativeTolerance);
+        checkCovarianceValue(print, state0, state0, processNoise, 2, sampleNumber, relativeTolerance);
+        checkCovarianceValue(print, state0, state1, processNoise, 2, sampleNumber, relativeTolerance);
+        checkCovarianceValue(print, state0, state2, processNoise, 2, sampleNumber, relativeTolerance);
+    }
+    
+    /** Test UnivariateProcessNoise class with its new constructor.
+     * - Initialize with different univariate functions for orbital/propagation parameters variation
+     * - Check that the inertial process noise covariance matrix is consistent with the inputs
+     * - Propagation in Cartesian formalism
+     */
+    @Test
+    public void testProcessNoiseMatrixCartesianNew() {
+        
+        // Create context
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        
+        // Print result on console ?
+        final boolean print = false;
+
+        // Create initial orbit and propagator builder
+        final OrbitType     orbitType     = OrbitType.CARTESIAN;
+        final PositionAngle positionAngle = PositionAngle.TRUE; // Not used here
+        final boolean       perfectStart  = true;
+        final double        minStep       = 1.e-6;
+        final double        maxStep       = 60.;
+        final double        dP            = 1.;
+        final NumericalPropagatorBuilder propagatorBuilder = context.createBuilder(orbitType, positionAngle, perfectStart,
+                                                                                   minStep, maxStep, dP,
+                                                                                   Force.POTENTIAL, Force.THIRD_BODY_MOON,
+                                                                                   Force.THIRD_BODY_SUN,
+                                                                                   Force.SOLAR_RADIATION_PRESSURE);
+        // Create a propagator
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        
+        // Define the univariate functions for the standard deviations      
+        final UnivariateFunction[] lofCartesianOrbitalParametersEvolution = new UnivariateFunction[6];
+        // Evolution for position error
+        lofCartesianOrbitalParametersEvolution[0] = new PolynomialFunction(new double[] {500., 0., 1e-4});
+        lofCartesianOrbitalParametersEvolution[1] = new PolynomialFunction(new double[] {400., 1e-1, 0.});
+        lofCartesianOrbitalParametersEvolution[2] = new PolynomialFunction(new double[] {200., 2e-1, 0.});
+        // Evolution for velocity error
+        lofCartesianOrbitalParametersEvolution[3] = new PolynomialFunction(new double[] {1., 0., 1e-6});
+        lofCartesianOrbitalParametersEvolution[4] = new PolynomialFunction(new double[] {1., 1e-3, 0.});
+        lofCartesianOrbitalParametersEvolution[5] = new PolynomialFunction(new double[] {1., 0., 1e-5});
+        
+        // Evolution for propagation parameters error
+        final UnivariateFunction[] propagationParametersEvolution =
+                        new UnivariateFunction[] {new PolynomialFunction(new double[] {100., 1., 1e-4}),
+                                                  new PolynomialFunction(new double[] {2000., 3., 0.})};
+        
+        // Evolution for measurements parameters error
+        final UnivariateFunction[] measurementsParametersEvolution =
+                        new UnivariateFunction[] {new PolynomialFunction(new double[] {100., 1., 1e-3})};
+        
+        // Create a dummy initial covariance matrix
+        final RealMatrix initialCovarianceMatrix = MatrixUtils.createRealIdentityMatrix(9);
+        
+        // Set the process noise object
+        // Define input LOF and output position angle
+        final LOFType lofType = LOFType.TNW;
+        final UnivariateProcessNoise processNoise = new UnivariateProcessNoise(initialCovarianceMatrix,
+                                                                               lofType,
+                                                                               positionAngle,
+                                                                               lofCartesianOrbitalParametersEvolution,
+                                                                               propagationParametersEvolution,
+                                                                               measurementsParametersEvolution);
+        // Test on initial value, after 1 hour and after one orbit
+        final SpacecraftState state0 = propagator.getInitialState();
+        final SpacecraftState state1 = propagator.propagate(context.initialOrbit.getDate().shiftedBy(3600.));
+        final SpacecraftState state2 = propagator.propagate(context.initialOrbit.getDate()
+                                                            .shiftedBy(2*context.initialOrbit.getKeplerianPeriod()));
+        
+        // Number of samples for the statistics
+        final int sampleNumber = 10000;
+        
+        // Relative tolerance on final standard deviations observed (< 1.5% for 10000 samples)
+        final double relativeTolerance = 1.5e-2;
+        
+        if (print) {
+            System.out.println("Orbit Type    : " + orbitType);
+            System.out.println("Position Angle: " + positionAngle + "\n");
+        }
+        checkCovarianceValue(print, state0, state0, processNoise, 2, sampleNumber, relativeTolerance);
+        checkCovarianceValue(print, state0, state1, processNoise, 2, sampleNumber, relativeTolerance);
+        checkCovarianceValue(print, state0, state2, processNoise, 2, sampleNumber, relativeTolerance);
     }
     
       // Note: This test does not work, probably due to the high values of the univariate functions when time increases.
@@ -269,6 +373,7 @@ public class UnivariateprocessNoiseTest {
      * @param previous previous state
      * @param current current state
      * @param univariateProcessNoise UnivariateProcessNoise object to test
+     * @param propagationParametersSize size of propagation parameters submatrix in UnivariateProcessNoise
      * @param sampleNumber number of sample vectors for the statistics
      * @param relativeTolerance relative tolerance on the standard deviations for the tests
      */
@@ -276,6 +381,7 @@ public class UnivariateprocessNoiseTest {
                                       final SpacecraftState previous,
                                       final SpacecraftState current,
                                       final UnivariateProcessNoise univariateProcessNoise,
+                                      final int propagationParametersSize,
                                       final int sampleNumber,
                                       final double relativeTolerance) {
         
@@ -286,9 +392,9 @@ public class UnivariateprocessNoiseTest {
         final CorrelatedRandomVectorGenerator randomVectorGenerator = createSampler(processNoiseMatrix);
         
         // Propagation parameters length
-        int propagationParametersLength = processNoiseMatrix.getColumnDimension() - 6;
-        if ( propagationParametersLength < 0) {
-            propagationParametersLength = 0; 
+        int measurementsParametersSize = processNoiseMatrix.getColumnDimension() - (6 + propagationParametersSize);
+        if ( measurementsParametersSize < 0) {
+            measurementsParametersSize = 0;
         }
         
         // Prepare the statistics
@@ -297,13 +403,22 @@ public class UnivariateprocessNoiseTest {
             orbitalStatistics[i] = new StreamingStatistics();
         }
         StreamingStatistics[] propagationStatistics;
-        if (propagationParametersLength > 0) {
-            propagationStatistics = new StreamingStatistics[propagationParametersLength];
-            for (int i = 0; i < propagationParametersLength; i++) {
+        if (propagationParametersSize > 0) {
+            propagationStatistics = new StreamingStatistics[propagationParametersSize];
+            for (int i = 0; i < propagationParametersSize; i++) {
                 propagationStatistics[i] = new StreamingStatistics();
             }
         } else {
           propagationStatistics = null;  
+        }
+        StreamingStatistics[] measurementsStatistics;
+        if (propagationParametersSize > 0) {
+            measurementsStatistics = new StreamingStatistics[measurementsParametersSize];
+            for (int i = 0; i < measurementsParametersSize; i++) {
+                measurementsStatistics[i] = new StreamingStatistics();
+            }
+        } else {
+          measurementsStatistics = null;  
         }
         
         // Current orbit stored in an array
@@ -339,8 +454,7 @@ public class UnivariateprocessNoiseTest {
                                                                           univariateProcessNoise.getPositionAngle(),
                                                                           current.getDate(),
                                                                           current.getMu(),
-                                                                          current.getFrame())
-                                .getPVCoordinates();
+                                                                          current.getFrame()).getPVCoordinates();
             } catch (OrekitIllegalArgumentException e) {
                 // If orbit becomes inconsistent due to errors that are too large, print orbital values
                 System.out.println("i = " + i + " / Inconsistent Orbit");
@@ -368,11 +482,21 @@ public class UnivariateprocessNoiseTest {
             // -----------------------------
             
             // Extract the propagation parameters random vector and store them in the statistics
-            if (propagationParametersLength > 0) {
-                for (int j = 6; j < randomVector.length; j++) {
+            if (propagationParametersSize > 0) {
+                for (int j = 6; j < randomVector.length - measurementsParametersSize; j++) {
                     propagationStatistics[j - 6].addValue(randomVector[j]);
                 }
-            }                      
+            }       
+            
+            // Measurements parameters values
+            // -----------------------------
+            
+            // Extract the measurements parameters random vector and store them in the statistics
+            if (measurementsParametersSize > 0) {
+                for (int j = 6 + propagationParametersSize ; j < randomVector.length; j++) {
+                    measurementsStatistics[j - (6 + propagationParametersSize)].addValue(randomVector[j]);
+                }
+            }
         }
         
         // Get the real values and the statistics
@@ -398,16 +522,30 @@ public class UnivariateprocessNoiseTest {
         }
         
         // Get the values of the propagation functions and statistics
-        final double[] propagationValues = new double[propagationParametersLength];
-        final double[] propagationStatisticsValues = new double[propagationParametersLength];
-        final double[] propagationRelativeValues = new double[propagationParametersLength];
-        for (int i = 0; i < propagationParametersLength; i++) {
+        final double[] propagationValues = new double[propagationParametersSize];
+        final double[] propagationStatisticsValues = new double[propagationParametersSize];
+        final double[] propagationRelativeValues = new double[propagationParametersSize];
+        for (int i = 0; i < propagationParametersSize; i++) {
             propagationValues[i] = FastMath.abs(univariateProcessNoise.getPropagationParametersEvolution()[i].value(dt));
             propagationStatisticsValues[i] = propagationStatistics[i].getStandardDeviation();
             if (FastMath.abs(propagationValues[i]) > 1e-15) {
                 propagationRelativeValues[i] = FastMath.abs(1. - propagationStatisticsValues[i]/propagationValues[i]);
             } else {
                 propagationRelativeValues[i] = propagationStatisticsValues[i];
+            }
+        }
+        
+        // Get the values of the measurements functions and statistics
+        final double[] measurementsValues = new double[measurementsParametersSize];
+        final double[] measurementsStatisticsValues = new double[measurementsParametersSize];
+        final double[] measurementsRelativeValues = new double[measurementsParametersSize];
+        for (int i = 0; i < measurementsParametersSize; i++) {
+            measurementsValues[i] = FastMath.abs(univariateProcessNoise.getMeasurementsParametersEvolution()[i].value(dt));
+            measurementsStatisticsValues[i] = measurementsStatistics[i].getStandardDeviation();
+            if (FastMath.abs(propagationValues[i]) > 1e-15) {
+                measurementsRelativeValues[i] = FastMath.abs(1. - measurementsStatisticsValues[i]/measurementsValues[i]);
+            } else {
+                measurementsRelativeValues[i] = measurementsStatisticsValues[i];
             }
         }
         
@@ -421,14 +559,21 @@ public class UnivariateprocessNoiseTest {
             System.out.println("\tσ propag ref   = " + Arrays.toString(propagationValues));
             System.out.println("\tσ propag stat  = " + Arrays.toString(propagationStatisticsValues));
             System.out.println("\tσ propag %     = " + Arrays.toString(Arrays.stream(propagationRelativeValues).map(i -> i*100.).toArray()) + "\n");
+            
+            System.out.println("\tσ meas ref   = " + Arrays.toString(propagationValues));
+            System.out.println("\tσ meas stat  = " + Arrays.toString(propagationStatisticsValues));
+            System.out.println("\tσ meas %     = " + Arrays.toString(Arrays.stream(propagationRelativeValues).map(i -> i*100.).toArray()) + "\n");
         }
         
         // Test the values
         assertArrayEquals(new double[6], 
                           orbitalRelativeValues,
                           relativeTolerance);
-        assertArrayEquals(new double[propagationParametersLength],
+        assertArrayEquals(new double[propagationParametersSize],
                           propagationRelativeValues,
+                          relativeTolerance);
+        assertArrayEquals(new double[measurementsParametersSize],
+                          measurementsRelativeValues,
                           relativeTolerance);
     }
     
@@ -487,12 +632,14 @@ public class UnivariateprocessNoiseTest {
         lofCartesianOrbitalParametersEvolution[4] = new PolynomialFunction(new double[] {1., 1e-3, 0.});
         lofCartesianOrbitalParametersEvolution[5] = new PolynomialFunction(new double[] {1., 0., 0.});
 
+        // Evolution for propagation parameters error
         final UnivariateFunction[] propagationParametersEvolution =
-                        new UnivariateFunction[] {new PolynomialFunction(new double[] {10, 1., 1e-4}),
+                        new UnivariateFunction[] {new PolynomialFunction(new double[] {10., 1., 1e-4}),
                                                   new PolynomialFunction(new double[] {1000., 0., 0.})};
         
+        
         // Create a dummy initial covariance matrix
-        final RealMatrix initialCovarianceMatrix = MatrixUtils.createRealIdentityMatrix(7);
+        final RealMatrix initialCovarianceMatrix = MatrixUtils.createRealIdentityMatrix(8);
         
         // Set the process noise object
         // Define input LOF and output position angle

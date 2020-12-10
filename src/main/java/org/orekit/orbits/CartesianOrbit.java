@@ -27,6 +27,7 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitMessages;
@@ -444,17 +445,19 @@ public class CartesianOrbit extends Orbit {
 
         // the following equations rely on the specific choice of u explained above,
         // some coefficients that vanish to 0 in this case have already been removed here
-        final double ex      = (eCE - e2) * a / r;
-        final double ey      = -FastMath.sqrt(1 - e2) * eSE * a / r;
-        final double beta    = 1 / (1 + FastMath.sqrt(1 - e2));
-        final double thetaE0 = FastMath.atan2(ey + eSE * beta * ex, r / a + ex - eSE * beta * ey);
-        final double thetaM0 = thetaE0 - ex * FastMath.sin(thetaE0) + ey * FastMath.cos(thetaE0);
+        final double ex        = (eCE - e2) * a / r;
+        final double ey        = -FastMath.sqrt(1 - e2) * eSE * a / r;
+        final double beta      = 1 / (1 + FastMath.sqrt(1 - e2));
+        final double thetaE0   = FastMath.atan2(ey + eSE * beta * ex, r / a + ex - eSE * beta * ey);
+        final SinCos scThetaE0 = FastMath.sinCos(thetaE0);
+        final double thetaM0   = thetaE0 - ex * scThetaE0.sin() + ey * scThetaE0.cos();
 
         // compute in-plane shifted eccentric argument
         final double thetaM1 = thetaM0 + getKeplerianMeanMotion() * dt;
         final double thetaE1 = meanToEccentric(thetaM1, ex, ey);
-        final double cTE     = FastMath.cos(thetaE1);
-        final double sTE     = FastMath.sin(thetaE1);
+        final SinCos scTE    = FastMath.sinCos(thetaE1);
+        final double cTE     = scTE.cos();
+        final double sTE     = scTE.sin();
 
         // compute shifted in-plane Cartesian coordinates
         final double exey   = ex * ey;
@@ -581,11 +584,10 @@ public class CartesianOrbit extends Orbit {
         double thetaEMthetaM = 0.0;
         int    iter          = 0;
         do {
-            final double cosThetaE = FastMath.cos(thetaE);
-            final double sinThetaE = FastMath.sin(thetaE);
+            final SinCos scThetaE = FastMath.sinCos(thetaE);
 
-            final double f2 = ex * sinThetaE - ey * cosThetaE;
-            final double f1 = 1.0 - ex * cosThetaE - ey * sinThetaE;
+            final double f2 = ex * scThetaE.sin() - ey * scThetaE.cos();
+            final double f1 = 1.0 - ex * scThetaE.cos() - ey * scThetaE.sin();
             final double f0 = thetaEMthetaM - f2;
 
             final double f12 = 2.0 * f1;

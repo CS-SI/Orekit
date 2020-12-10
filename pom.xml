@@ -50,7 +50,7 @@
     <orekit.maven-install-plugin.version>3.0.0-M1</orekit.maven-install-plugin.version>
     <orekit.mathjax.config>&lt;script type=&quot;text/x-mathjax-config&quot;&gt;MathJax.Hub.Config({ TeX: { extensions: [&quot;autoload.js&quot;]}});&lt;/script&gt;</orekit.mathjax.config>
     <orekit.mathjax.enable>&lt;script type=&quot;text/javascript&quot; src=&quot;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML&quot;&gt;&lt;/script&gt;</orekit.mathjax.enable>
-    <orekit.hipparchus.version>1.7</orekit.hipparchus.version>
+    <orekit.hipparchus.version>1.8</orekit.hipparchus.version>
     <orekit.junit.version>4.12</orekit.junit.version>
     <orekit.compiler.source>1.8</orekit.compiler.source>
     <orekit.compiler.target>1.8</orekit.compiler.target>
@@ -228,13 +228,25 @@
       <name>&#201;douard Delente</name>
     </contributor>
     <contributor>
+      <name>Rapha&#235;l Ferm&#233;</name>
+    </contributor>
+    <contributor>
       <name>Christine Fernandez-Martin</name>
+    </contributor>
+    <contributor>
+      <name>Mikael Fillastre</name>
+    </contributor>
+    <contributor>
+      <name>Andrea Fiorentino</name>
     </contributor>
     <contributor>
       <name>Romaric Her</name>
     </contributor>
     <contributor>
       <name>James Housden</name>
+    </contributor>
+    <contributor>
+      <name>Shiva Iyer</name>
     </contributor>
     <contributor>
       <name>Fran&#231;ois-Xavier Laffont</name>
@@ -247,6 +259,9 @@
     </contributor>
     <contributor>
       <name>Lars N&#230;sbye Christensen</name>
+    </contributor>
+    <contributor>
+      <name>Thomas Paulet</name>
     </contributor>
     <contributor>
       <name>Steven Ports</name>
@@ -264,25 +279,16 @@
       <name>Beatriz Salazar Garc&#237;a</name>
     </contributor>
     <contributor>
-      <name>Ioanna Stypsanelli</name>
-    </contributor>
-    <contributor>
-      <name>Michael Turner</name>
-    </contributor>
-    <contributor>
       <name>Gabriele Serafini</name>
-    </contributor>
-    <contributor>
-      <name>Shiva Iyer</name>
     </contributor>
     <contributor>
       <name>David Soulard</name>
     </contributor>
     <contributor>
-      <name>Mikael Fillastre</name>
+      <name>Ioanna Stypsanelli</name>
     </contributor>
     <contributor>
-      <name>Andrea Fiorentino</name>
+      <name>Michael Turner</name>
     </contributor>
   </contributors>
 

@@ -113,7 +113,7 @@ public class GLONASSAnalyticalPropagatorTest {
         final PVCoordinates pv1 = propagator.getPVCoordinates(date, propagator.getECEF());
 
         // Checks
-        Assert.assertEquals(0., pv0.getPosition().distance(pv1.getPosition()), 1.9e-8);
+        Assert.assertEquals(0., pv0.getPosition().distance(pv1.getPosition()), 2.6e-8);
         Assert.assertEquals(0., pv0.getVelocity().distance(pv1.getVelocity()), 2.8e-12);
     }
 

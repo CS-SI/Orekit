@@ -179,6 +179,16 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
 
     /** {@inheritDoc} */
     @Override
+    protected ParameterDriver[] setAlbedoInfrared(final DSSTPropagatorBuilder propagatorBuilder,
+                                                  final CelestialBody sun, final double equatorialRadius,
+                                                  final double angularResolution,
+                                                  final RadiationSensitive spacecraft) {
+        throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
+                        "Relativity not implemented in DSST");
+    }
+
+    /** {@inheritDoc} */
+    @Override
     protected ParameterDriver[] setRelativity(final DSSTPropagatorBuilder propagatorBuilder) {
         throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                         "Relativity not implemented in DSST");
@@ -200,17 +210,11 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
     }
 
     /**
-     * Lageos 2 orbit determination test.
+     * Lageos 2 orbit determination test using laser data.
      *
      * This test uses both mean and osculating elements to perform the orbit determination.
      * It is possible to consider only mean elements by changing propagationType and
      * stateType keys.
-     *
-     * Using only mean elements, results are:
-     *    ΔP = 579 meters
-     *    ΔV = 1.4 meters per second
-     *    nb iterations  = 9
-     *    nb evaluations = 9
      */
     @Test
     public void testLageos2()
@@ -234,12 +238,12 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
 
         //test
         //definition of the accuracy for the test
-        final double distanceAccuracy = 133.95;
-        final double velocityAccuracy = 1.57e-1;
+        final double distanceAccuracy = 76.46;
+        final double velocityAccuracy = 1.58e-1;
 
         //test on the convergence
-        final int numberOfIte  = 5;
-        final int numberOfEval = 5;
+        final int numberOfIte  = 6;
+        final int numberOfEval = 6;
 
         Assert.assertEquals(numberOfIte, odLageos2.getNumberOfIteration());
         Assert.assertEquals(numberOfEval, odLageos2.getNumberOfEvaluation());
@@ -248,14 +252,15 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
         final Vector3D estimatedPos = odLageos2.getEstimatedPV().getPosition();
         final Vector3D estimatedVel = odLageos2.getEstimatedPV().getVelocity();
 
-        final Vector3D refPos = new Vector3D(-5532131.956902, 10025696.592156, -3578940.040009);
-        final Vector3D refVel = new Vector3D(-3871.275109, -607.880985, 4280.972530);
+        // Ref position from "lageos2_cpf_160212_5441.jax"
+        final Vector3D refPos = new Vector3D(-2551060.861, 9748629.197, -6528045.767);
+        final Vector3D refVel = new Vector3D(-4595.833, 1029.893, 3382.441);
         Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
         Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
 
         //test on statistic for the range residuals
-        final long nbRange = 258;
-        final double[] RefStatRange = { -75.038, 111.461, -0.426, 38.955 };
+        final long nbRange = 95;
+        final double[] RefStatRange = { -29.016, 59.104, 0.0, 14.968 };
         Assert.assertEquals(nbRange, odLageos2.getRangeStat().getN());
         Assert.assertEquals(RefStatRange[0], odLageos2.getRangeStat().getMin(),               1.0e-3);
         Assert.assertEquals(RefStatRange[1], odLageos2.getRangeStat().getMax(),               1.0e-3);

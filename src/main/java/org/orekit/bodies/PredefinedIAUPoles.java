@@ -23,6 +23,8 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
+import org.hipparchus.util.SinCos;
 import org.orekit.bodies.JPLEphemeridesLoader.EphemerisType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -544,51 +546,70 @@ abstract class PredefinedIAUPoles implements IAUPole {
         public Vector3D getPole(final AbsoluteDate date) {
             final double d = d(date);
             final double t = t(date);
+
+            final SinCos scE01 = FastMath.sinCos(FastMath.toRadians(d * E01_DOT + E01_0));
+            final SinCos scE02 = FastMath.sinCos(FastMath.toRadians(d * E02_DOT + E02_0));
+            final SinCos scE03 = FastMath.sinCos(FastMath.toRadians(d * E03_DOT + E03_0));
+            final SinCos scE04 = FastMath.sinCos(FastMath.toRadians(d * E04_DOT + E04_0));
+            final SinCos scE06 = FastMath.sinCos(FastMath.toRadians(d * E06_DOT + E06_0));
+            final SinCos scE10 = FastMath.sinCos(FastMath.toRadians(d * E10_DOT + E10_0));
+            final SinCos scE13 = FastMath.sinCos(FastMath.toRadians(d * E13_DOT + E13_0));
+
             return new Vector3D(FastMath.toRadians(t * ALPHA_DOT + ALPHA_0 +
-                                                   FastMath.sin(FastMath.toRadians(d * E01_DOT + E01_0)) * E01_SIN +
-                                                   FastMath.sin(FastMath.toRadians(d * E02_DOT + E02_0)) * E02_SIN +
-                                                   FastMath.sin(FastMath.toRadians(d * E03_DOT + E03_0)) * E03_SIN +
-                                                   FastMath.sin(FastMath.toRadians(d * E04_DOT + E04_0)) * E04_SIN +
-                                                   FastMath.sin(FastMath.toRadians(d * E06_DOT + E06_0)) * E06_SIN +
-                                                   FastMath.sin(FastMath.toRadians(d * E10_DOT + E10_0)) * E10_SIN +
-                                                   FastMath.sin(FastMath.toRadians(d * E13_DOT + E13_0)) * E13_SIN),
+                                                   scE01.sin() * E01_SIN +
+                                                   scE02.sin() * E02_SIN +
+                                                   scE03.sin() * E03_SIN +
+                                                   scE04.sin() * E04_SIN +
+                                                   scE06.sin() * E06_SIN +
+                                                   scE10.sin() * E10_SIN +
+                                                   scE13.sin() * E13_SIN),
                                 FastMath.toRadians(t * DELTA_DOT + DELTA_0 +
-                                                   FastMath.cos(FastMath.toRadians(d * E01_DOT + E01_0)) * E01_COS +
-                                                   FastMath.cos(FastMath.toRadians(d * E02_DOT + E02_0)) * E02_COS +
-                                                   FastMath.cos(FastMath.toRadians(d * E03_DOT + E03_0)) * E03_COS +
-                                                   FastMath.cos(FastMath.toRadians(d * E04_DOT + E04_0)) * E04_COS +
-                                                   FastMath.cos(FastMath.toRadians(d * E06_DOT + E06_0)) * E06_COS +
-                                                   FastMath.cos(FastMath.toRadians(d * E07_DOT + E07_0)) * E07_COS +
-                                                   FastMath.cos(FastMath.toRadians(d * E10_DOT + E10_0)) * E10_COS +
-                                                   FastMath.cos(FastMath.toRadians(d * E13_DOT + E13_0)) * E13_COS));
+                                                   scE01.cos() * E01_COS +
+                                                   scE02.cos() * E02_COS +
+                                                   scE03.cos() * E03_COS +
+                                                   scE04.cos() * E04_COS +
+                                                   scE06.cos() * E06_COS +
+                                                   FastMath.cos(FastMath.toRadians(d * E07_DOT + E07_0)) * E07_COS +  // only the cosine is needed
+                                                   scE10.cos() * E10_COS +
+                                                   scE13.cos() * E13_COS));
         }
 
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
             final T d = d(date);
             final T t = t(date);
+
+            final FieldSinCos<T> scE01 = FastMath.sinCos(FastMath.toRadians(d.multiply(E01_DOT).add(E01_0)));
+            final FieldSinCos<T> scE02 = FastMath.sinCos(FastMath.toRadians(d.multiply(E02_DOT).add(E02_0)));
+            final FieldSinCos<T> scE03 = FastMath.sinCos(FastMath.toRadians(d.multiply(E03_DOT).add(E03_0)));
+            final FieldSinCos<T> scE04 = FastMath.sinCos(FastMath.toRadians(d.multiply(E04_DOT).add(E04_0)));
+            final FieldSinCos<T> scE06 = FastMath.sinCos(FastMath.toRadians(d.multiply(E06_DOT).add(E06_0)));
+            final FieldSinCos<T> scE10 = FastMath.sinCos(FastMath.toRadians(d.multiply(E10_DOT).add(E10_0)));
+            final FieldSinCos<T> scE13 = FastMath.sinCos(FastMath.toRadians(d.multiply(E13_DOT).add(E13_0)));
+
             return new FieldVector3D<>(FastMath.toRadians(t.multiply(ALPHA_DOT).add(ALPHA_0).
-                                                 add(FastMath.toRadians(d.multiply(E01_DOT).add(E01_0)).sin().multiply(E01_SIN)).
-                                                 add(FastMath.toRadians(d.multiply(E02_DOT).add(E02_0)).sin().multiply(E02_SIN)).
-                                                 add(FastMath.toRadians(d.multiply(E03_DOT).add(E03_0)).sin().multiply(E03_SIN)).
-                                                 add(FastMath.toRadians(d.multiply(E04_DOT).add(E04_0)).sin().multiply(E04_SIN)).
-                                                 add(FastMath.toRadians(d.multiply(E06_DOT).add(E06_0)).sin().multiply(E06_SIN)).
-                                                 add(FastMath.toRadians(d.multiply(E10_DOT).add(E10_0)).sin().multiply(E10_SIN)).
-                                                 add(FastMath.toRadians(d.multiply(E13_DOT).add(E13_0)).sin().multiply(E13_SIN))),
+                                                 add(scE01.sin().multiply(E01_SIN)).
+                                                 add(scE02.sin().multiply(E02_SIN)).
+                                                 add(scE03.sin().multiply(E03_SIN)).
+                                                 add(scE04.sin().multiply(E04_SIN)).
+                                                 add(scE06.sin().multiply(E06_SIN)).
+                                                 add(scE10.sin().multiply(E10_SIN)).
+                                                 add(scE13.sin().multiply(E13_SIN))),
                                        FastMath.toRadians(t.multiply(DELTA_DOT).add(DELTA_0).
-                                                 add(FastMath.toRadians(d.multiply(E01_DOT).add(E01_0)).cos().multiply(E01_COS)).
-                                                 add(FastMath.toRadians(d.multiply(E02_DOT).add(E02_0)).cos().multiply(E02_COS)).
-                                                 add(FastMath.toRadians(d.multiply(E03_DOT).add(E03_0)).cos().multiply(E03_COS)).
-                                                 add(FastMath.toRadians(d.multiply(E04_DOT).add(E04_0)).cos().multiply(E04_COS)).
-                                                 add(FastMath.toRadians(d.multiply(E06_DOT).add(E06_0)).cos().multiply(E06_COS)).
-                                                 add(FastMath.toRadians(d.multiply(E07_DOT).add(E07_0)).cos().multiply(E07_COS)).
-                                                 add(FastMath.toRadians(d.multiply(E10_DOT).add(E10_0)).cos().multiply(E10_COS)).
-                                                 add(FastMath.toRadians(d.multiply(E13_DOT).add(E13_0)).cos().multiply(E13_COS))));
+                                                 add(scE01.cos().multiply(E01_COS)).
+                                                 add(scE02.cos().multiply(E02_COS)).
+                                                 add(scE03.cos().multiply(E03_COS)).
+                                                 add(scE04.cos().multiply(E04_COS)).
+                                                 add(scE06.cos().multiply(E06_COS)).
+                                                 add(FastMath.toRadians(d.multiply(E07_DOT).add(E07_0)).cos().multiply(E07_COS)).// only the cosine is needed
+                                                 add(scE10.cos().multiply(E10_COS)).
+                                                 add(scE13.cos().multiply(E13_COS))));
         }
 
         /** {@inheritDoc} */
         public double getPrimeMeridianAngle(final AbsoluteDate date) {
             final double d = d(date);
+
             return FastMath.toRadians(d * (d * W_DOT_DOT + W_DOT) + W_0 +
                                       FastMath.sin(FastMath.toRadians(d * E01_DOT + E01_0)) * E01_W_SIN +
                                       FastMath.sin(FastMath.toRadians(d * E02_DOT + E02_0)) * E02_W_SIN +
@@ -788,18 +809,24 @@ abstract class PredefinedIAUPoles implements IAUPole {
             final double jd = FastMath.toRadians(t * JD_DOT + JD_0);
             final double je = FastMath.toRadians(t * JE_DOT + JE_0);
 
+            final SinCos scJa = FastMath.sinCos(ja);
+            final SinCos scJb = FastMath.sinCos(jb);
+            final SinCos scJc = FastMath.sinCos(jc);
+            final SinCos scJd = FastMath.sinCos(jd);
+            final SinCos scJe = FastMath.sinCos(je);
+
             return new Vector3D(FastMath.toRadians(t * ALPHA_DOT + ALPHA_0 +
-                                                   FastMath.sin(ja) * JA_SIN +
-                                                   FastMath.sin(jb) * JB_SIN +
-                                                   FastMath.sin(jc) * JC_SIN +
-                                                   FastMath.sin(jd) * JD_SIN +
-                                                   FastMath.sin(je) * JE_SIN),
+                                                   scJa.sin() * JA_SIN +
+                                                   scJb.sin() * JB_SIN +
+                                                   scJc.sin() * JC_SIN +
+                                                   scJd.sin() * JD_SIN +
+                                                   scJe.sin() * JE_SIN),
                                 FastMath.toRadians(t * DELTA_DOT + DELTA_0 +
-                                                   FastMath.cos(ja) * JA_COS +
-                                                   FastMath.cos(jb) * JB_COS +
-                                                   FastMath.cos(jc) * JC_COS +
-                                                   FastMath.cos(jd) * JD_COS +
-                                                   FastMath.cos(je) * JE_COS));
+                                                   scJa.cos() * JA_COS +
+                                                   scJb.cos() * JB_COS +
+                                                   scJc.cos() * JC_COS +
+                                                   scJd.cos() * JD_COS +
+                                                   scJe.cos() * JE_COS));
         }
 
         /** {@inheritDoc} */
@@ -812,18 +839,24 @@ abstract class PredefinedIAUPoles implements IAUPole {
             final T jd = FastMath.toRadians(t.multiply(JD_DOT).add(JD_0));
             final T je = FastMath.toRadians(t.multiply(JE_DOT).add(JE_0));
 
+            final FieldSinCos<T> scJa = FastMath.sinCos(ja);
+            final FieldSinCos<T> scJb = FastMath.sinCos(jb);
+            final FieldSinCos<T> scJc = FastMath.sinCos(jc);
+            final FieldSinCos<T> scJd = FastMath.sinCos(jd);
+            final FieldSinCos<T> scJe = FastMath.sinCos(je);
+
             return new FieldVector3D<>(FastMath.toRadians(t.multiply(ALPHA_DOT).add(ALPHA_0).
-                                                 add(ja.sin().multiply(JA_SIN)).
-                                                 add(jb.sin().multiply(JB_SIN)).
-                                                 add(jc.sin().multiply(JC_SIN)).
-                                                 add(jd.sin().multiply(JD_SIN)).
-                                                 add(je.sin().multiply(JE_SIN))),
+                                                 add(scJa.sin().multiply(JA_SIN)).
+                                                 add(scJb.sin().multiply(JB_SIN)).
+                                                 add(scJc.sin().multiply(JC_SIN)).
+                                                 add(scJd.sin().multiply(JD_SIN)).
+                                                 add(scJe.sin().multiply(JE_SIN))),
                                        FastMath.toRadians(t.multiply(DELTA_DOT).add(DELTA_0).
-                                                 add(ja.cos().multiply(JA_COS)).
-                                                 add(jb.cos().multiply(JB_COS)).
-                                                 add(jc.cos().multiply(JC_COS)).
-                                                 add(jd.cos().multiply(JD_COS)).
-                                                 add(je.cos().multiply(JE_COS))));
+                                                 add(scJa.cos().multiply(JA_COS)).
+                                                 add(scJb.cos().multiply(JB_COS)).
+                                                 add(scJc.cos().multiply(JC_COS)).
+                                                 add(scJd.cos().multiply(JD_COS)).
+                                                 add(scJe.cos().multiply(JE_COS))));
 
         }
 
@@ -989,16 +1022,18 @@ abstract class PredefinedIAUPoles implements IAUPole {
 
         /** {@inheritDoc} */
         public Vector3D getPole(final AbsoluteDate date) {
-            final double n = FastMath.toRadians(t(date) * N_DOT + N_0);
-            return new Vector3D(FastMath.toRadians(FastMath.sin(n) * ALPHA_SIN + ALPHA_0),
-                                FastMath.toRadians(FastMath.cos(n) * DELTA_COS + DELTA_0));
+            final double n  = FastMath.toRadians(t(date) * N_DOT + N_0);
+            final SinCos sc = FastMath.sinCos(n);
+            return new Vector3D(FastMath.toRadians(sc.sin() * ALPHA_SIN + ALPHA_0),
+                                FastMath.toRadians(sc.cos() * DELTA_COS + DELTA_0));
         }
 
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
             final T n = FastMath.toRadians(t(date).multiply(N_DOT).add(N_0));
-            return new FieldVector3D<>(FastMath.toRadians(n.sin().multiply(ALPHA_SIN).add(ALPHA_0)),
-                                       FastMath.toRadians(n.cos().multiply(DELTA_COS).add(DELTA_0)));
+            final FieldSinCos<T> sc = FastMath.sinCos(n);
+            return new FieldVector3D<>(FastMath.toRadians(sc.sin().multiply(ALPHA_SIN).add(ALPHA_0)),
+                                       FastMath.toRadians(sc.cos().multiply(DELTA_COS).add(DELTA_0)));
         }
 
         /** {@inheritDoc} */

@@ -19,6 +19,7 @@ package org.orekit.propagation.events;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.SinCos;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -110,10 +111,11 @@ public class AlignmentDetector extends AbstractDetector<AlignmentDetector> {
                               final PVCoordinatesProvider body,
                               final double alignAngle) {
         super(maxCheck, threshold, maxIter, handler);
+        final SinCos sc    = FastMath.sinCos(alignAngle);
         this.body          = body;
         this.alignAngle    = alignAngle;
-        this.cosAlignAngle = FastMath.cos(alignAngle);
-        this.sinAlignAngle = FastMath.sin(alignAngle);
+        this.cosAlignAngle = sc.cos();
+        this.sinAlignAngle = sc.sin();
     }
 
     /** {@inheritDoc} */

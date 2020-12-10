@@ -23,6 +23,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
@@ -661,8 +662,9 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
             ql *= q;
             final double g6 = ck0[6] * ql;
 
-            final double cosI1 = FastMath.cos(mean.getI());
-            final double sinI1 = FastMath.sin(mean.getI());
+            final SinCos sc    = FastMath.sinCos(mean.getI());
+            final double cosI1 = sc.cos();
+            final double sinI1 = sc.sin();
             final double sinI2 = sinI1 * sinI1;
             final double sinI4 = sinI2 * sinI2;
             final double sinI6 = sinI2 * sinI4;

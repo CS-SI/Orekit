@@ -16,7 +16,10 @@
  */
 package org.orekit.files.ccsds;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.util.Arrays;
@@ -167,6 +170,56 @@ public class StreamingAemWriterTest {
         CartesianOrbit p = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
 
         return new KeplerianPropagator(p, attitudeProv);
+    }
+
+    /**
+     * Check writing an AEM with format parameters for attitude.
+     *
+     * @throws IOException on error
+     */
+    @Test
+    public void testWriteAemFormat() throws IOException {
+        // setup
+        String exampleFile = "/ccsds/AEMExample7.txt";
+        InputStream inEntry = getClass().getResourceAsStream(exampleFile);
+        AEMParser parser = new AEMParser();
+        AEMFile aemFile = parser.parse(inEntry, "AEMExample7.txt");
+
+        AttitudeEphemeridesBlock block = aemFile.getAttitudeBlocks().get(0);
+
+        TimeScale utc = TimeScalesFactory.getUTC();
+        Map<Keyword, String> metadata = new LinkedHashMap<>();
+        Map<Keyword, String> segmentData = new LinkedHashMap<>();
+
+        StringBuilder buffer = new StringBuilder();
+        StreamingAemWriter writer = new StreamingAemWriter(buffer, utc, metadata, "%.2f");
+        AEMSegment segment = writer.newSegment(segmentData);
+
+        for (TimeStampedAngularCoordinates coordinate : block.getAngularCoordinates()) {
+            segment.writeAttitudeEphemerisLine(coordinate, block.isFirst(), block.getAttitudeType(), block.getRotationOrder());
+        }
+
+        String expected = "2002-12-18T12:00:00.331 0.57 0.03 0.46 0.68\n" +
+                          "2002-12-18T12:01:00.331 0.42 -0.46 0.24 0.75\n" +
+                          "2002-12-18T12:02:00.331 -0.85 0.27 -0.07 0.46\n";
+
+        assertEquals(buffer.toString(), expected);
+
+        buffer = new StringBuilder();
+        // Default format
+        writer = new StreamingAemWriter(buffer, utc, metadata);
+        segment = writer.newSegment(segmentData);
+
+        for (TimeStampedAngularCoordinates coordinate : block.getAngularCoordinates()) {
+            segment.writeAttitudeEphemerisLine(coordinate, block.isFirst(), block.getAttitudeType(), block.getRotationOrder());
+        }
+
+        expected = "2002-12-18T12:00:00.331  0.56748  0.03146  0.45689  0.68427\n" +
+                   "2002-12-18T12:01:00.331  0.42319 -0.45697  0.23784  0.74533\n" +
+                   "2002-12-18T12:02:00.331 -0.84532  0.26974 -0.06532  0.45652\n";
+
+        assertEquals(buffer.toString(), expected);
+
     }
 
 }

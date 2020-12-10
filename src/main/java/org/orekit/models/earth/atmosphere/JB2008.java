@@ -21,8 +21,10 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
@@ -1074,13 +1076,10 @@ public class JB2008 implements Atmosphere {
 
         // SEMIANNUAL PHASE FUNCTION
         final double tau   = MathUtils.TWO_PI * (doy - 1.0) / 365;
-        final double taux2 = tau + tau;
-        final double sin1P = FastMath.sin(tau);
-        final double cos1P = FastMath.cos(tau);
-        final double sin2P = FastMath.sin(taux2);
-        final double cos2P = FastMath.cos(taux2);
-        final double gtz = GTM[0] + GTM[1] * sin1P + GTM[2] * cos1P + GTM[3] * sin2P + GTM[4] * cos2P +
-                           fsmb * (GTM[5] + GTM[6] * sin1P + GTM[7] * cos1P + GTM[8] * sin2P + GTM[9] * cos2P);
+        final SinCos sc1P = FastMath.sinCos(tau);
+        final SinCos sc2P = SinCos.sum(sc1P, sc1P);
+        final double gtz = GTM[0] + GTM[1] * sc1P.sin() + GTM[2] * sc1P.cos() + GTM[3] * sc2P.sin() + GTM[4] * sc2P.cos() +
+                   fsmb * (GTM[5] + GTM[6] * sc1P.sin() + GTM[7] * sc1P.cos() + GTM[8] * sc2P.sin() + GTM[9] * sc2P.cos());
 
         return FastMath.max(1.0e-6, fzz) * gtz;
 
@@ -1111,20 +1110,17 @@ public class JB2008 implements Atmosphere {
 
         // SEMIANNUAL PHASE FUNCTION
         final T tau   = doy.subtract(1).divide(365).multiply(MathUtils.TWO_PI);
-        final T taux2 = tau.add(tau);
-        final T sin1P = tau.sin();
-        final T cos1P = tau.cos();
-        final T sin2P = taux2.sin();
-        final T cos2P = taux2.cos();
-        final T gtz =           cos2P.multiply(GTM[9]).
-                            add(sin2P.multiply(GTM[8])).
-                            add(cos1P.multiply(GTM[7])).
-                            add(sin1P.multiply(GTM[6])).
+        final FieldSinCos<T> sc1P = FastMath.sinCos(tau);
+        final FieldSinCos<T> sc2P = FieldSinCos.sum(sc1P, sc1P);
+        final T gtz =           sc2P.cos().multiply(GTM[9]).
+                            add(sc2P.sin().multiply(GTM[8])).
+                            add(sc1P.cos().multiply(GTM[7])).
+                            add(sc1P.sin().multiply(GTM[6])).
                             add(GTM[5]).multiply(fsmb).
-                        add(    cos2P.multiply(GTM[4]).
-                            add(sin2P.multiply(GTM[3])).
-                            add(cos1P.multiply(GTM[2])).
-                            add(sin1P.multiply(GTM[1])).
+                        add(    sc2P.cos().multiply(GTM[4]).
+                            add(sc2P.sin().multiply(GTM[3])).
+                            add(sc1P.cos().multiply(GTM[2])).
+                            add(sc1P.sin().multiply(GTM[1])).
                             add(GTM[0]));
 
         return fzz.getReal() > 1.0e-6 ? gtz.multiply(fzz) : gtz.multiply(1.0e-6);

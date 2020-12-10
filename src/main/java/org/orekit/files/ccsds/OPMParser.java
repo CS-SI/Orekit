@@ -145,30 +145,35 @@ public class OPMParser extends ODMParser {
     }
 
     /** {@inheritDoc} */
+    @Override
     public OPMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
         return new OPMParser(newMissionReferenceDate, getMu(), getConventions(), isSimpleEOP(),
                              getLaunchYear(), getLaunchNumber(), getLaunchPiece(), getDataContext());
     }
 
     /** {@inheritDoc} */
+    @Override
     public OPMParser withMu(final double newMu) {
         return new OPMParser(getMissionReferenceDate(), newMu, getConventions(), isSimpleEOP(),
                              getLaunchYear(), getLaunchNumber(), getLaunchPiece(), getDataContext());
     }
 
     /** {@inheritDoc} */
+    @Override
     public OPMParser withConventions(final IERSConventions newConventions) {
         return new OPMParser(getMissionReferenceDate(), getMu(), newConventions, isSimpleEOP(),
                              getLaunchYear(), getLaunchNumber(), getLaunchPiece(), getDataContext());
     }
 
     /** {@inheritDoc} */
+    @Override
     public OPMParser withSimpleEOP(final boolean newSimpleEOP) {
         return new OPMParser(getMissionReferenceDate(), getMu(), getConventions(), newSimpleEOP,
                              getLaunchYear(), getLaunchNumber(), getLaunchPiece(), getDataContext());
     }
 
     /** {@inheritDoc} */
+    @Override
     public OPMParser withInternationalDesignator(final int newLaunchYear,
                                                  final int newLaunchNumber,
                                                  final String newLaunchPiece) {
@@ -176,6 +181,7 @@ public class OPMParser extends ODMParser {
                              newLaunchYear, newLaunchNumber, newLaunchPiece, getDataContext());
     }
 
+    /** {@inheritDoc} */
     @Override
     public OPMParser withDataContext(final DataContext newDataContext) {
         return new OPMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
@@ -195,6 +201,7 @@ public class OPMParser extends ODMParser {
     }
 
     /** {@inheritDoc} */
+    @Override
     public OPMFile parse(final InputStream stream, final String fileName) {
 
         // declare the mandatory keywords as expected

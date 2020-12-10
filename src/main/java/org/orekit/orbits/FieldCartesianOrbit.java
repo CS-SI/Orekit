@@ -30,6 +30,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -469,19 +470,21 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
 
         // the following equations rely on the specific choice of u explained above,
         // some coefficients that vanish to 0 in this case have already been removed here
-        final T ex      = eCE.subtract(e2).multiply(a).divide(r);
-        final T s       = e2.negate().add(1).sqrt();
-        final T ey      = s.negate().multiply(eSE).multiply(a).divide(r);
-        final T beta    = s.add(1).reciprocal();
-        final T thetaE0 = ey.add(eSE.multiply(beta).multiply(ex)).atan2(r.divide(a).add(ex).subtract(eSE.multiply(beta).multiply(ey)));
-        final T thetaM0 = thetaE0.subtract(ex.multiply(thetaE0.sin())).add(ey.multiply(thetaE0.cos()));
+        final T              ex        = eCE.subtract(e2).multiply(a).divide(r);
+        final T              s         = e2.negate().add(1).sqrt();
+        final T              ey        = s.negate().multiply(eSE).multiply(a).divide(r);
+        final T              beta      = s.add(1).reciprocal();
+        final T              thetaE0   = ey.add(eSE.multiply(beta).multiply(ex)).atan2(r.divide(a).add(ex).subtract(eSE.multiply(beta).multiply(ey)));
+        final FieldSinCos<T> scThetaE0 = FastMath.sinCos(thetaE0);
+        final T              thetaM0   = thetaE0.subtract(ex.multiply(scThetaE0.sin())).add(ey.multiply(scThetaE0.cos()));
 
         // compute in-plane shifted eccentric argument
-        final T sqrtMmuOA = a.reciprocal().multiply(getMu()).sqrt();
-        final T thetaM1   = thetaM0.add(sqrtMmuOA.divide(a).multiply(dt));
-        final T thetaE1   = meanToEccentric(thetaM1, ex, ey);
-        final T cTE       = thetaE1.cos();
-        final T sTE       = thetaE1.sin();
+        final T              sqrtMmuOA = a.reciprocal().multiply(getMu()).sqrt();
+        final T              thetaM1   = thetaM0.add(sqrtMmuOA.divide(a).multiply(dt));
+        final T              thetaE1   = meanToEccentric(thetaM1, ex, ey);
+        final FieldSinCos<T> scTE      = FastMath.sinCos(thetaE1);
+        final T              cTE       = scTE.cos();
+        final T              sTE       = scTE.sin();
 
         // compute shifted in-plane Cartesian coordinates
         final T exey   = ex.multiply(ey);
@@ -608,11 +611,10 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         T thetaEMthetaM = zero;
         int    iter          = 0;
         do {
-            final T cosThetaE = thetaE.cos();
-            final T sinThetaE = thetaE.sin();
+            final FieldSinCos<T> scThetaE = FastMath.sinCos(thetaE);
 
-            final T f2 = ex.multiply(sinThetaE).subtract(ey.multiply(cosThetaE));
-            final T f1 = one.subtract(ex.multiply(cosThetaE)).subtract(ey.multiply(sinThetaE));
+            final T f2 = ex.multiply(scThetaE.sin()).subtract(ey.multiply(scThetaE.cos()));
+            final T f1 = one.subtract(ex.multiply(scThetaE.cos())).subtract(ey.multiply(scThetaE.sin()));
             final T f0 = thetaEMthetaM.subtract(f2);
 
             final T f12 = f1.multiply(2.0);
