@@ -53,7 +53,7 @@ public class AGILeapSecondFilesLoader extends AbstractSelfFeedingLoader
      * DataContext#getDefault() default data context}.
      *
      * @param supportedNames regular expression for supported files names
-     * @see #TAIUTCDatFilesLoader(String, DataProvidersManager)
+     * @see #AGILeapSecondFilesLoader(String, DataProvidersManager)
      */
     @DefaultDataContext
     public AGILeapSecondFilesLoader(final String supportedNames) {

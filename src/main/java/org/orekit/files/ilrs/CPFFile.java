@@ -117,7 +117,7 @@ public class CPFFile implements EphemerisFile {
 
     /**
      * Set the interpolation sample.
-     * @param interpolationSample
+     * @param interpolationSample interpolation sample
      */
     public void setInterpolationSample(final int interpolationSample) {
         this.interpolationSample = interpolationSample;

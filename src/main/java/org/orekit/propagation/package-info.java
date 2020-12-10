@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 /**
- * <h1> Propagation </h1>
+ * <h2> Propagation </h2>
  *
  * This package provides tools to propagate orbital states with different methods.
  *
@@ -33,7 +33,7 @@
  * the state.
  * </p>
  *
- * <h2> Keplerian propagation </h2>
+ * <h3> Keplerian propagation </h3>
  *
  * <p> The {@link org.orekit.propagation.analytical.KeplerianPropagator}
  * implements the {@link org.orekit.propagation.Propagator}
@@ -43,7 +43,7 @@
  * {@link org.orekit.orbits.EquinoctialOrbit}
  * representation: only the mean anomaly value changes.
  *
- * <h2> Eckstein-Hechler propagation </h2>
+ * <h3> Eckstein-Hechler propagation </h3>
  *
  * <p> This analytical model is suited for near circular orbits and inclination
  * neither equatorial nor critical. It considers J2 to J6 potential
@@ -51,7 +51,7 @@
  * position. As the Keplerian propagator, it implements the
  * {@link org.orekit.propagation.Propagator} interface.
  *
- * <h2> Numerical propagation </h2>
+ * <h3> Numerical propagation </h3>
  *
  * <p> It is the most important part of the OREKIT project. Based on Hipparchus
  * integrators, the {@link org.orekit.propagation.numerical.NumericalPropagator}

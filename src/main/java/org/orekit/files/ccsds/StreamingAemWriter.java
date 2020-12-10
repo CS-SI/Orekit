@@ -44,7 +44,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  *
  * <p> Each instance corresponds to a single AEM file.
  *
- * <h3> Metadata </h3>
+ * <h2> Metadata </h2>
  *
  * <p> The AEM metadata used by this writer is described in the following table. Many
  * metadata items are optional or have default values so they do not need to be specified.
@@ -56,7 +56,8 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * <p> The AEM metadata for the whole AEM file is set in the {@link
  * #StreamingAemWriter(Appendable, TimeScale, Map) constructor}.
  *
- * <table summary="AEM metada">
+ * <table>
+ * <caption>AEM metadata</caption>
  *     <thead>
  *         <tr>
  *             <th>Keyword

@@ -26,7 +26,7 @@ import org.orekit.utils.IERSConventions;
 
 /** Factory for predefined reference frames.
  *
- * <h1> FramesFactory Presentation </h1>
+ * <h2> FramesFactory Presentation </h2>
  * <p>
  * Several predefined reference {@link Frame frames} are implemented in OREKIT.
  * They are linked together in a tree with the <i>Geocentric

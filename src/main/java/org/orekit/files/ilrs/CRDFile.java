@@ -360,7 +360,7 @@ public class CRDFile {
         /** Elevation [rad]. */
         private final double elevation;
 
-        /** Direction flag (0 = transmit & receive ; 1 = transmit ; 2 = receive). */
+        /** Direction flag (0 = transmit &#38; receive ; 1 = transmit ; 2 = receive). */
         private final int directionFlag;
 
         /** Angle origin indicator.
@@ -423,7 +423,7 @@ public class CRDFile {
         }
 
         /**
-         * Get the direction flag (0 = transmit & receive ; 1 = transmit ; 2 = receive).
+         * Get the direction flag (0 = transmit &#38; receive ; 1 = transmit ; 2 = receive).
          * @return the direction flag
          */
         public int getDirectionFlag() {
