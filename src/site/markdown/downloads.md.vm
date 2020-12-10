@@ -36,6 +36,10 @@ the one that better suits your needs. Source packages are the most complete
 ones since the other packages (binary jars, javadoc jars and even the bulk
 of this site) are created from these sources.
 
+Orekit source code can be also downloaded from our 
+[version control system](https://gitlab.orekit.org/orekit/orekit/-/releases)
+in .zip, .tar.gz, .tar.bz2, and .tar extensions.
+
 Orekit is also available in maven central repository,
 with groupID org.orekit and artifactId orekit so maven
 internal mechanism will download automatically all artifacts and dependencies
@@ -46,7 +50,7 @@ as required.
 
 |  package |                                              link                                                                                     |
 |----------|---------------------------------------------------------------------------------------------------------------------------------------|
-|  source  | [orekit-${version.key}-sources.zip](https://search.maven.org/remotecontent?filepath=org/orekit/orekit/${version.key}/orekit-${version.key}-sources.zip) |
+|  source  | [orekit-${version.key}-sources.jar](https://search.maven.org/remotecontent?filepath=org/orekit/orekit/${version.key}/orekit-${version.key}-sources.jar) |
 |  binary  | [orekit-${version.key}.jar](https://search.maven.org/remotecontent?filepath=org/orekit/orekit/${version.key}/orekit-${version.key}.jar)                 |
 |  javadoc | [orekit-${version.key}-javadoc.jar](https://search.maven.org/remotecontent?filepath=org/orekit/orekit/${version.key}/orekit-${version.key}-javadoc.jar) |
 version ${version.key} downloads (release date: ${version.value})
@@ -76,7 +80,7 @@ file from the forge, to unzip it anywhere you want, rename the `orekit-data-mast
 into `orekit-data` and add the following lines at the start of your program:
 
     File orekitData = new File("/path/to/the/folder/orekit-data");
-    DataProvidersManager manager = DataProvidersManager.getInstance();
+    DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
     manager.addProvider(new DirectoryCrawler(orekitData));
 
 This file contains the following data sets. Note that the data is updated only
@@ -92,6 +96,8 @@ needed for their computation.
   * JPL DE 430 planetary ephemerides from 1990 to 2069,
 
   * Eigen 06S gravity field,
+ 
+  * CSSI space weather file,
 
   * FES 2004 ocean tides model.
 
