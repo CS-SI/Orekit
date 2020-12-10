@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -172,8 +171,7 @@ public class ClockFile {
         this.timeSystem              = null;
     }
 
-    /** Add a new satellite with a given identifier to the list of
-     * stored satellites.
+    /** Add a new satellite with a given identifier to the list of stored satellites.
      * @param satId the satellite identifier
      */
     public void addSatellite(final String satId) {
@@ -183,13 +181,19 @@ public class ClockFile {
         }
     }
 
-    /** Add a new receiver to the list of
-     * stored receivers.
+    /** Add a new receiver to the list of stored receivers.
      * @param receiver the receiver
      */
     public void addReceiver(final Receiver receiver) {
+
+        boolean notInList = true;
+        for (Receiver rec : receivers) {
+            if (rec.designator.equals(receiver.designator)) {
+                notInList = false;
+            }
+        }
         // only add satellites which have not been added before
-        if (!receivers.contains(receiver)) {
+        if (notInList) {
             receivers.add(receiver);
         }
     }
@@ -237,13 +241,6 @@ public class ClockFile {
      */
     public int getNumberOfSatellites() {
         return satellites.size();
-    }
-
-    /** Get the satellite systems that are considered in the file as a set.
-     * @return the satellite systems that are considered by the file
-     */
-    public Set<SatelliteSystem> getSatelliteSystems() {
-        return Collections.unmodifiableSet(systemObservationTypes.keySet());
     }
 
 

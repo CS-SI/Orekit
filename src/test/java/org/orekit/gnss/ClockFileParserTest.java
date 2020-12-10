@@ -45,8 +45,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeSpanMap;
 
-import com.sun.org.apache.bcel.internal.generic.NEWARRAY;
-
 /** This class aims at validating the correct IGS clock file parsing and error handling. */
 public class ClockFileParserTest {
     
@@ -54,7 +52,7 @@ public class ClockFileParserTest {
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }
-
+    
     /** First example given in the 3.04 RINEX clock file format. */
     @Test
     public void testParseExple1V304() throws URISyntaxException, IOException {
@@ -72,6 +70,9 @@ public class ClockFileParserTest {
         final TimeSystem timeSystem = TimeSystem.GPS;
         final String programName = "TORINEXC V9.9";
         final String agencyName = "USNO";
+        final String comments = "EXAMPLE OF A CLOCK DATA ANALYSIS FILE\n" + 
+                                "IN THIS CASE ANALYSIS RESULTS FROM GPS ONLY ARE INCLUDED\n" +
+                                "No re-alignment of the clocks has been applied.\n";
         final String stationName = "";
         final String stationIdentifier = "";
         final String analysisCenterID = "USN";
@@ -103,7 +104,7 @@ public class ClockFileParserTest {
         final double clockAcceleration = 0.0;
         final double clockAccelerationSigma = 0.0;
         checkClockFileContent(file, version, satelliteSystem, timeSystem, 
-                              programName, agencyName, stationName, stationIdentifier,
+                              programName, agencyName, comments, stationName, stationIdentifier,
                               analysisCenterID, analysisCenterName, externalClockReference,
                               creationDateString, creationTimeString, creationZoneString, creationDate, 
                               numberOfLeapSeconds, numberOfLeapSecondsGPS, numberOfDBCS, numberOfPCVS,
@@ -139,6 +140,13 @@ public class ClockFileParserTest {
         final TimeSystem timeSystem = TimeSystem.GPS;
         final String programName = "CCLOCK";
         final String agencyName = "IGSACC @ GA & MIT";
+        final String comments = "GPS week: 1939   Day: 6   MJD: 57823\n" +
+                                "THE COMBINED CLOCKS ARE A WEIGHTED AVERAGE OF:\n" +
+                                "cod emr esa gfz jpl\n" +
+                                "THE FOLLOWING REFERENCE CLOCKS WERE USED BY ACs:\n" +
+                                "PIE1 HERS AMC2 ZECK\n" +
+                                "THE COMBINED CLOCKS ARE ALIGNED TO GPS TIME\n" +
+                                "USING THE SATELLITE BROADCAST EPHEMERIDES\n";
         final String stationName = "";
         final String stationIdentifier = "";
         final String analysisCenterID = "IGS";
@@ -170,7 +178,7 @@ public class ClockFileParserTest {
         final double clockAcceleration = 0.0;
         final double clockAccelerationSigma = 0.0;
         checkClockFileContent(file, version, satelliteSystem, timeSystem, 
-                              programName, agencyName, stationName, stationIdentifier,
+                              programName, agencyName, comments, stationName, stationIdentifier,
                               analysisCenterID, analysisCenterName, externalClockReference,
                               creationDateString, creationTimeString, creationZoneString, creationDate, 
                               numberOfLeapSeconds, numberOfLeapSecondsGPS, numberOfDBCS, numberOfPCVS,
@@ -200,6 +208,8 @@ public class ClockFileParserTest {
         final TimeSystem timeSystem = null;
         final String programName = "TORINEXC V9.9";
         final String agencyName = "USNO";
+        final String comments = "EXAMPLE OF A CLOCK DATA FILE\n" +
+                                "IN THIS CASE CALIBRATION/DISCONTINUITY DATA GIVEN\n";
         final String stationName = "USNO";
         final String stationIdentifier = "40451S003";
         final String analysisCenterID = "";
@@ -231,7 +241,7 @@ public class ClockFileParserTest {
         final double clockAcceleration = 0.0;
         final double clockAccelerationSigma = 0.0;
         checkClockFileContent(file, version, satelliteSystem, timeSystem, 
-                              programName, agencyName, stationName, stationIdentifier,
+                              programName, agencyName, comments, stationName, stationIdentifier,
                               analysisCenterID, analysisCenterName, externalClockReference,
                               creationDateString, creationTimeString, creationZoneString, creationDate, 
                               numberOfLeapSeconds, numberOfLeapSecondsGPS, numberOfDBCS, numberOfPCVS,
@@ -261,6 +271,7 @@ public class ClockFileParserTest {
         final TimeSystem timeSystem = null;
         final String programName = "autcln 3.33+MIG";
         final String agencyName = "MIT";
+        final String comments = "";
         final String stationName = "";
         final String stationIdentifier = "";
         final String analysisCenterID = "MIT";
@@ -292,7 +303,7 @@ public class ClockFileParserTest {
         final double clockAcceleration = 0.0;
         final double clockAccelerationSigma = 0.0;
         checkClockFileContent(file, version, satelliteSystem, timeSystem, 
-                              programName, agencyName, stationName, stationIdentifier,
+                              programName, agencyName, comments, stationName, stationIdentifier,
                               analysisCenterID, analysisCenterName, externalClockReference,
                               creationDateString, creationTimeString, creationZoneString, creationDate, 
                               numberOfLeapSeconds, numberOfLeapSecondsGPS, numberOfDBCS, numberOfPCVS,
@@ -322,6 +333,14 @@ public class ClockFileParserTest {
         final TimeSystem timeSystem = null;
         final String programName = "CCLOCK";
         final String agencyName = "IGSACC @ GA MIT";
+        final String comments = "GPS week: 2110   Day: 1   MJD: 59015\n" +
+                                "THE COMBINED CLOCKS ARE A WEIGHTED AVERAGE OF:\n" +
+                                "cod emr esa gfz jpl\n" +
+                                "THE FOLLOWING REFERENCE CLOCKS WERE USED BY ACs:\n" +
+                                "MGUE NRC1 HERS BRUX\n" +
+                                "THE COMBINED CLOCKS ARE ALIGNED TO GPS TIME\n" +
+                                "USING THE SATELLITE BROADCAST EPHEMERIDES\n" +
+                                "All clocks have been re-aligned to the IGS time scale: IGST\n";
         final String stationName = "";
         final String stationIdentifier = "";
         final String analysisCenterID = "IGS";
@@ -353,7 +372,7 @@ public class ClockFileParserTest {
         final double clockAcceleration = 0.0;
         final double clockAccelerationSigma = 0.0;
         checkClockFileContent(file, version, satelliteSystem, timeSystem, 
-                              programName, agencyName, stationName, stationIdentifier,
+                              programName, agencyName, comments, stationName, stationIdentifier,
                               analysisCenterID, analysisCenterName,  externalClockReference,
                               creationDateString, creationTimeString, creationZoneString, creationDate, 
                               numberOfLeapSeconds, numberOfLeapSecondsGPS, numberOfDBCS, numberOfPCVS,
@@ -365,7 +384,7 @@ public class ClockFileParserTest {
   
     /** An example of the 2.00 RINEX clock file format. */
     @Test
-    public void testParseExpleV200() throws URISyntaxException, IOException {
+    public void testParseExple1V200() throws URISyntaxException, IOException {
         
         // Parse file
         final String ex = "/gnss/clock/emr10491_truncated_200.clk";
@@ -380,6 +399,8 @@ public class ClockFileParserTest {
         final TimeSystem timeSystem = null;
         final String programName = "CLKRINEX V1.0";
         final String agencyName = "NRCan";
+        final String comments = "CLK ANT Z-OFFSET(M): II/IIA 1.023; IIR 0.000\n" + 
+                                "No re-alignment of the clocks has been applied.\n";
         final String stationName = "";
         final String stationIdentifier = "";
         final String analysisCenterID = "EMR";
@@ -411,7 +432,133 @@ public class ClockFileParserTest {
         final double clockAcceleration = 0.0;
         final double clockAccelerationSigma = 0.0;
         checkClockFileContent(file, version, satelliteSystem, timeSystem,
-                              programName, agencyName, stationName, stationIdentifier,
+                              programName, agencyName, comments, stationName, stationIdentifier,
+                              analysisCenterID, analysisCenterName, externalClockReference,
+                              creationDateString, creationTimeString, creationZoneString, creationDate, 
+                              numberOfLeapSeconds, numberOfLeapSecondsGPS, numberOfDBCS, numberOfPCVS,
+                              numberOfDataTypes, numberOfObservationTypes, frameString,
+                              numberOfReceivers, numberOfSatellites, numberOfDataLines, 
+                              id, type, timeScale, dataEpoch, numberOfValues, 
+                              clockBias, clockBiasSigma, clockRate, clockRateSigma, clockAcceleration, clockAccelerationSigma);
+    }
+
+    /** Another example of the 2.00 RINEX clock file format with another date time zone foramt. */
+    @Test
+    public void testParseExple2V200() throws URISyntaxException, IOException {
+        
+        // Parse file
+        final String ex = "/gnss/clock/jpl11456_truncated_200.clk";
+    
+        final ClockFileParser parser = new ClockFileParser();
+        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
+        final ClockFile file = parser.parse(fileName);
+        
+        // Check content of the file
+        final double version = 2.00;
+        final SatelliteSystem satelliteSystem = null;
+        final TimeSystem timeSystem = null;
+        final String programName = "tdp2clk v1.13";
+        final String agencyName = "JPL";
+        final String comments = "G11 G13 G14 G18 G20 G28      clk ant z-offset (m):  0.000\n" +
+                                "G01 G03 G04 G05 G06 G07 G08  clk ant z-offset (m):  1.023\n" +
+                                "G09 G10 G21 G22 G23 G24 G25  clk ant z-offset (m):  1.023\n" +
+                                "G26 G27 G29 G30 G31          clk ant z-offset (m):  1.023\n" +
+                                "clk ant z-offset (m): II/IIA 1.023; IIR 0.000\n" +
+                                "Re-alignment to GPS time by broadcast clocks and linear fit\n";
+        final String stationName = "";
+        final String stationIdentifier = "";
+        final String analysisCenterID = "JPL";
+        final String analysisCenterName = "Jet Propulsion Laboratory";
+        final String externalClockReference = "";
+        final String creationDateString = "2002 Jan 3";
+        final String creationTimeString = "13:36:17";
+        final String creationZoneString = "";
+        final AbsoluteDate creationDate = null; 
+        final int numberOfLeapSeconds = 13;
+        final int numberOfLeapSecondsGPS = 0;
+        final int numberOfDBCS = 0;
+        final int numberOfPCVS = 0;
+        final int numberOfDataTypes = 1; 
+        final int numberOfObservationTypes = 0;
+        final String frameString = "IGS00";
+        final int numberOfReceivers = 1;
+        final int numberOfSatellites = 0;
+        final int numberOfDataLines = 1;
+        final String id = "ALGO"; 
+        final ClockDataType type = ClockDataType.AR; 
+        final TimeScale timeScale = TimeScalesFactory.getUTC();
+        final AbsoluteDate dataEpoch = new AbsoluteDate(2001, 12, 22, 0, 0, 0.0, timeScale);
+        final int numberOfValues = 2;
+        final double clockBias = 1.598690662191e-06; 
+        final double clockBiasSigma = 1.067405104634e-10;
+        final double clockRate = 0.0;
+        final double clockRateSigma = 0.0;
+        final double clockAcceleration = 0.0;
+        final double clockAccelerationSigma = 0.0;
+        checkClockFileContent(file, version, satelliteSystem, timeSystem,
+                              programName, agencyName, comments, stationName, stationIdentifier,
+                              analysisCenterID, analysisCenterName, externalClockReference,
+                              creationDateString, creationTimeString, creationZoneString, creationDate, 
+                              numberOfLeapSeconds, numberOfLeapSecondsGPS, numberOfDBCS, numberOfPCVS,
+                              numberOfDataTypes, numberOfObservationTypes, frameString,
+                              numberOfReceivers, numberOfSatellites, numberOfDataLines, 
+                              id, type, timeScale, dataEpoch, numberOfValues, 
+                              clockBias, clockBiasSigma, clockRate, clockRateSigma, clockAcceleration, clockAccelerationSigma);
+    }
+
+    /** Another example of the 2.00 RINEX clock file format with another date time zone foramt. */
+    @Test
+    public void testParseExple3V200() throws URISyntaxException, IOException {
+        
+        // Parse file
+        final String ex = "/gnss/clock/cod17381_truncated_200.clk";
+    
+        final ClockFileParser parser = new ClockFileParser();
+        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
+        final ClockFile file = parser.parse(fileName);
+        
+        // Check content of the file
+        final double version = 2.00;
+        final SatelliteSystem satelliteSystem = null;
+        final TimeSystem timeSystem = TimeSystem.GPS;
+        final String programName = "CCRNXC V5.3";
+        final String agencyName = "AIUB";
+        final String comments = "CODE final GPS clock information for day 119, 2013, 3D-sol\n" +
+                                "Clock information consistent with phase and P1/P2 code data\n" +
+                                "Satellite/receiver clock values at intervals of 30/300 sec\n" +
+                                "High-rate (30 sec) clock interpolation based on phase data\n";
+        final String stationName = "";
+        final String stationIdentifier = "";
+        final String analysisCenterID = "COD";
+        final String analysisCenterName = "Center for Orbit Determination in Europe";
+        final String externalClockReference = "";
+        final String creationDateString = "04-MAY-13";
+        final String creationTimeString = "04:39";
+        final String creationZoneString = "";
+        final AbsoluteDate creationDate = null; 
+        final int numberOfLeapSeconds = 16;
+        final int numberOfLeapSecondsGPS = 0;
+        final int numberOfDBCS = 1;
+        final int numberOfPCVS = 1;
+        final int numberOfDataTypes = 2; 
+        final int numberOfObservationTypes = 0;
+        final String frameString = "IGb08";
+        final int numberOfReceivers = 2;
+        final int numberOfSatellites = 2;
+        final int numberOfDataLines = 5;
+        final String id = "AMC2"; 
+        final ClockDataType type = ClockDataType.AR; 
+        final TimeScale timeScale = TimeScalesFactory.getGPS();
+        final AbsoluteDate dataEpoch = new AbsoluteDate(2013, 04, 29, 0, 0, 30.0, timeScale);
+        final int numberOfValues = 1;
+        final double clockBias = 0.192333320310E-08; 
+        final double clockBiasSigma = 0.0;
+        final double clockRate = 0.0;
+        final double clockRateSigma = 0.0;
+        final double clockAcceleration = 0.0;
+        final double clockAccelerationSigma = 0.0;
+        checkClockFileContent(file, version, satelliteSystem, timeSystem,
+                              programName, agencyName, comments, stationName, stationIdentifier,
                               analysisCenterID, analysisCenterName, externalClockReference,
                               creationDateString, creationTimeString, creationZoneString, creationDate, 
                               numberOfLeapSeconds, numberOfLeapSecondsGPS, numberOfDBCS, numberOfPCVS,
@@ -572,6 +719,20 @@ public class ClockFileParserTest {
             Assert.assertArrayEquals(expected, satellites.toArray());
         }
     }
+
+    /** Test two same receivers and satellite.  */
+    @Test
+    public void testSameReceiversAndSatellites() throws IOException, URISyntaxException {
+        
+        // Parse file
+        final String ex = "/gnss/clock/two_same_receivers_and_satellites.clk";
+        final ClockFileParser parser = new ClockFileParser();
+        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
+        final ClockFile file = parser.parse(fileName);
+        
+        Assert.assertEquals(1, file.getNumberOfReceivers());
+        Assert.assertEquals(1, file.getNumberOfSatellites());
+    }
     
     /** Test the clock data type list.  */
     @Test
@@ -676,10 +837,11 @@ public class ClockFileParserTest {
         }
     }
     
+    
     /** Check the content of a clock file. */
     private void checkClockFileContent(final ClockFile file,
                                        final double version, final SatelliteSystem satelliteSystem, final TimeSystem timeSystem,
-                                       final String programName, final String agencyName,
+                                       final String programName, final String agencyName, final String comments,
                                        final String stationName, final String stationIdentifier,
                                        final String analysisCenterID, final String analysisCenterName, final String externalClockReference,
                                        final String creationDateString, final String creationTimeString, final String creationZoneString,
@@ -699,6 +861,7 @@ public class ClockFileParserTest {
         Assert.assertTrue(timeSystem == file.getTimeSystem());
         Assert.assertEquals(programName, file.getProgramName());
         Assert.assertEquals(agencyName, file.getAgencyName());
+        Assert.assertEquals(comments, file.getComments());
         Assert.assertEquals(stationName,file.getStationName());
         Assert.assertEquals(stationIdentifier,file.getStationIdentifier());
         Assert.assertEquals(analysisCenterID, file.getAnalysisCenterID());

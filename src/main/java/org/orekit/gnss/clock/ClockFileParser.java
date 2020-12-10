@@ -329,57 +329,15 @@ public class ClockFileParser {
                 if (pi.file.getFormatVersion() < 3.04) {
 
                     // Date string location before 3.04 format version
-                    dateString = line.substring(40, 60).trim();
+                    dateString = line.substring(40, 60);
 
                 } else {
 
                     // Date string location after 3.04 format version
-                    dateString = line.substring(42, 65).trim();
+                    dateString = line.substring(42, 65);
                 }
 
-                // Pattern for date format yyyy-mm-dd hh:dd
-                final Pattern pattern1 = Pattern.compile("^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}$");
-
-                // Pattern for date format yyyymmdd hhmmss zone or YYYYMMDD  HHMMSS zone
-                final Pattern pattern2 = Pattern.compile("^[0-9]{8} *[0-9]{6}.*$");
-
-                // Pattern for date format dd-MONTH-yyyy hh:mm
-                final Pattern pattern3 = Pattern.compile("^[0-9]*-...-[0-9]{4} [0-9]{2}:[0-9]{2}$");
-
-                if (pattern1.matcher(dateString).matches()) {
-
-                    pi.file.setCreationDateString(dateString.substring(0, 10).trim());
-                    pi.file.setCreationTimeString(dateString.substring(11, 16).trim());
-
-                } else if (pattern2.matcher(dateString).matches()) {
-
-                    final String creationDateString = dateString.substring(0, 8).trim();
-                    pi.file.setCreationDateString(creationDateString);
-
-                    final String creationTimeString = dateString.substring(9, 16).trim();
-                    pi.file.setCreationTimeString(creationTimeString);
-
-                    final String creationTimeZoneString = dateString.substring(16).trim();
-                    pi.file.setCreationTimeZoneString(creationTimeZoneString);
-
-                    // Get creation date in Orekit format
-                    final DateComponents dateComponents = new DateComponents(Integer.parseInt(creationDateString.substring(0, 4)),
-                                                                             Integer.parseInt(creationDateString.substring(4, 6)),
-                                                                             Integer.parseInt(creationDateString.substring(6, 8)));
-                    final TimeComponents timeComponents = new TimeComponents(Integer.parseInt(creationTimeString.substring(0, 2)),
-                                                                             Integer.parseInt(creationTimeString.substring(2, 4)),
-                                                                             Integer.parseInt(creationTimeString.substring(4, 6)));
-                    final AbsoluteDate creationDate = new AbsoluteDate(dateComponents,
-                                                                       timeComponents,
-                                                                       TimeSystem.parseTimeSystem(creationTimeZoneString).getTimeScale(pi.timeScales));
-                    pi.file.setCreationDate(creationDate);
-
-                } else if (pattern3.matcher(dateString).matches()) {
-                    pi.file.setCreationDateString(dateString.substring(0, 11).trim());
-                    pi.file.setCreationTimeString(dateString.substring(11, 16).trim());
-                } else {
-                    // Format is not handled or date is missing. Do nothing...
-                }
+                parseDateTimeZone(dateString, pi);
 
             }
 
@@ -408,7 +366,7 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_COMMENT, HEADER_SYSTEM_OBS, HEADER_TIME_SYSTEM, HEADER_LEAP_SECONDS, HEADER_LEAP_SECONDS_GNSS);
+                return Stream.of(HEADER_COMMENT, HEADER_SYSTEM_OBS, HEADER_TYPES_OF_DATA, HEADER_TIME_SYSTEM, HEADER_LEAP_SECONDS, HEADER_LEAP_SECONDS_GNSS, HEADER_END);
             }
         },
 
@@ -442,7 +400,8 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_SYSTEM_OBS, HEADER_SYSTEM_OBS_CONTINUATION, HEADER_TIME_SYSTEM, HEADER_LEAP_SECONDS, HEADER_LEAP_SECONDS_GNSS);
+                return Stream.of(HEADER_SYSTEM_OBS, HEADER_COMMENT, HEADER_SYSTEM_OBS_CONTINUATION,
+                                 HEADER_TIME_SYSTEM, HEADER_LEAP_SECONDS, HEADER_LEAP_SECONDS_GNSS);
             }
         },
 
@@ -470,7 +429,7 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_SYSTEM_OBS, HEADER_TIME_SYSTEM, HEADER_LEAP_SECONDS, HEADER_LEAP_SECONDS_GNSS);
+                return Stream.of(HEADER_SYSTEM_OBS, HEADER_TIME_SYSTEM, HEADER_COMMENT, HEADER_LEAP_SECONDS, HEADER_LEAP_SECONDS_GNSS);
             }
         },
 
@@ -495,7 +454,7 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_LEAP_SECONDS, HEADER_LEAP_SECONDS_GNSS, HEADER_DCBS, HEADER_PCVS, HEADER_TYPES_OF_DATA);
+                return Stream.of(HEADER_LEAP_SECONDS, HEADER_LEAP_SECONDS_GNSS, HEADER_COMMENT, HEADER_DCBS, HEADER_PCVS, HEADER_TYPES_OF_DATA);
             }
         },
 
@@ -518,7 +477,7 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_LEAP_SECONDS_GNSS, HEADER_DCBS, HEADER_PCVS, HEADER_TYPES_OF_DATA, HEADER_NUMBER_OF_CLOCK_REF);
+                return Stream.of(HEADER_LEAP_SECONDS_GNSS, HEADER_DCBS, HEADER_PCVS, HEADER_COMMENT, HEADER_TYPES_OF_DATA, HEADER_NUMBER_OF_CLOCK_REF);
             }
         },
 
@@ -541,7 +500,7 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_DCBS, HEADER_PCVS, HEADER_TYPES_OF_DATA, HEADER_NUMBER_OF_CLOCK_REF);
+                return Stream.of(HEADER_DCBS, HEADER_PCVS, HEADER_COMMENT, HEADER_TYPES_OF_DATA, HEADER_NUMBER_OF_CLOCK_REF);
             }
         },
 
@@ -575,7 +534,7 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_DCBS, HEADER_PCVS, HEADER_TYPES_OF_DATA, HEADER_END);
+                return Stream.of(HEADER_DCBS, HEADER_PCVS, HEADER_COMMENT, HEADER_TYPES_OF_DATA, HEADER_NUMBER_OF_CLOCK_REF, HEADER_END);
             }
         },
 
@@ -609,7 +568,7 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_PCVS, HEADER_TYPES_OF_DATA, HEADER_END);
+                return Stream.of(HEADER_DCBS, HEADER_PCVS, HEADER_COMMENT, HEADER_NUMBER_OF_CLOCK_REF, HEADER_TYPES_OF_DATA, HEADER_END);
             }
         },
 
@@ -637,7 +596,7 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_STATIONS_NAME, HEADER_ANALYSIS_CENTER, HEADER_END);
+                return Stream.of(HEADER_STATIONS_NAME, HEADER_COMMENT, HEADER_ANALYSIS_CENTER, HEADER_END);
             }
         },
 
@@ -664,7 +623,7 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_STATION_CLOCK_REF, HEADER_ANALYSIS_CENTER, HEADER_END);
+                return Stream.of(HEADER_STATION_CLOCK_REF, HEADER_COMMENT, HEADER_ANALYSIS_CENTER, HEADER_END);
             }
         },
 
@@ -684,7 +643,7 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_ANALYSIS_CENTER, HEADER_END);
+                return Stream.of(HEADER_ANALYSIS_CENTER, HEADER_COMMENT, HEADER_END);
             }
         },
 
@@ -712,8 +671,8 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_NUMBER_OF_CLOCK_REF, HEADER_NUMBER_OF_SOLN_STATIONS,
-                                 HEADER_LEAP_SECONDS, HEADER_LEAP_SECONDS_GNSS, HEADER_END);
+                return Stream.of(HEADER_NUMBER_OF_CLOCK_REF, HEADER_NUMBER_OF_SOLN_STATIONS, HEADER_DCBS, HEADER_PCVS,
+                                 HEADER_COMMENT, HEADER_LEAP_SECONDS, HEADER_LEAP_SECONDS_GNSS, HEADER_END);
             }
         },
 
@@ -772,7 +731,7 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_ANALYSIS_CLOCK_REF, HEADER_NUMBER_OF_SOLN_STATIONS, HEADER_NUMBER_OF_SOLN_SATS, HEADER_END);
+                return Stream.of(HEADER_ANALYSIS_CLOCK_REF, HEADER_COMMENT, HEADER_NUMBER_OF_SOLN_STATIONS, HEADER_NUMBER_OF_SOLN_SATS, HEADER_END);
             }
         },
 
@@ -811,7 +770,7 @@ public class ClockFileParser {
             @Override
             public Stream<LineParser> allowedNext() {
                 return Stream.of(HEADER_NUMBER_OF_CLOCK_REF, HEADER_ANALYSIS_CLOCK_REF, HEADER_NUMBER_OF_SOLN_STATIONS, HEADER_NUMBER_OF_SOLN_SATS,
-                                 HEADER_END);
+                                 HEADER_COMMENT, HEADER_END);
             }
         },
 
@@ -837,7 +796,7 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_SOLN_STATIONS, HEADER_NUMBER_OF_SOLN_SATS, HEADER_END);
+                return Stream.of(HEADER_SOLN_STATIONS, HEADER_COMMENT, HEADER_NUMBER_OF_SOLN_SATS, HEADER_END);
             }
         },
 
@@ -888,7 +847,7 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_SOLN_STATIONS, HEADER_NUMBER_OF_SOLN_SATS, HEADER_END);
+                return Stream.of(HEADER_SOLN_STATIONS, HEADER_COMMENT, HEADER_NUMBER_OF_SOLN_SATS, HEADER_END);
             }
         },
 
@@ -906,7 +865,7 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_PRN_LIST, HEADER_END);
+                return Stream.of(HEADER_PRN_LIST, HEADER_COMMENT, HEADER_END);
             }
         },
 
@@ -935,7 +894,7 @@ public class ClockFileParser {
             /** {@inheritDoc} */
             @Override
             public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_PRN_LIST, HEADER_DCBS, HEADER_PCVS, HEADER_END);
+                return Stream.of(HEADER_PRN_LIST, HEADER_COMMENT, HEADER_DCBS, HEADER_PCVS, HEADER_END);
             }
         },
 
@@ -1085,6 +1044,90 @@ public class ClockFileParser {
          */
         public boolean canHandle(final String line) {
             return pattern.matcher(line).matches();
+        }
+
+        /** Parse existing date - time - zone formats.
+         * If zone field is not missing, a proper Orekit date can be created and set into clock file object.
+         * This feature depends on the date format.
+         * @param dateString the whole date - time - zone string
+         * @param pi holder for transient data
+         */
+        private static void parseDateTimeZone(final String dateString, final ParseInfo pi) {
+
+            String date = "";
+            String time = "";
+            String zone = "";
+            DateComponents dateComponents = null;
+            TimeComponents timeComponents = null;
+
+            // Pattern for date format yyyy-mm-dd hh:mm
+            final Pattern pattern1 = Pattern.compile("^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}.*$");
+
+            // Pattern for date format yyyymmdd hhmmss zone or YYYYMMDD  HHMMSS zone
+            final Pattern pattern2 = Pattern.compile("^[0-9]{8}\\s{1,2}[0-9]{6}.*$");
+
+            // Pattern for date format dd-MONTH-yyyy hh:mm zone or d-MONTH-yyyy hh:mm zone
+            final Pattern pattern3 = Pattern.compile("^[0-9]{1,2}-[a-z,A-Z]{3}-[0-9]{4} [0-9]{2}:[0-9]{2}.*$");
+
+            // Pattern for date format dd-MONTH-yy hh:mm zone or d-MONTH-yy hh:mm zone
+            final Pattern pattern4 = Pattern.compile("^[0-9]{1,2}-[a-z,A-Z]{3}-[0-9]{2} [0-9]{2}:[0-9]{2}.*$");
+
+            // Pattern for date format yyyy MONTH dd hh:mm:ss or yyyy MONTH d hh:mm:ss
+            final Pattern pattern5 = Pattern.compile("^[0-9]{4} [a-z,A-Z]{3} [0-9]{1,2} [0-9]{2}:[0-9]{2}:[0-9]{2}.*$");
+
+            if (pattern1.matcher(dateString).matches()) {
+
+                date = dateString.substring(0, 10).trim();
+                time = dateString.substring(11, 16).trim();
+                zone = dateString.substring(16).trim();
+
+            } else if (pattern2.matcher(dateString).matches()) {
+
+                date = dateString.substring(0, 8).trim();
+                time = dateString.substring(9, 16).trim();
+                zone = dateString.substring(16).trim();
+
+                if (!zone.equals("")) {
+                    // Get date and time components
+                    dateComponents = new DateComponents(Integer.parseInt(date.substring(0, 4)),
+                                                        Integer.parseInt(date.substring(4, 6)),
+                                                        Integer.parseInt(date.substring(6, 8)));
+                    timeComponents = new TimeComponents(Integer.parseInt(time.substring(0, 2)),
+                                                        Integer.parseInt(time.substring(2, 4)),
+                                                        Integer.parseInt(time.substring(4, 6)));
+
+                }
+
+            } else if (pattern3.matcher(dateString).matches()) {
+
+                date = dateString.substring(0, 11).trim();
+                time = dateString.substring(11, 17).trim();
+                zone = dateString.substring(17).trim();
+
+            } else if (pattern4.matcher(dateString).matches()) {
+
+                date = dateString.substring(0, 9).trim();
+                time = dateString.substring(9, 15).trim();
+                zone = dateString.substring(15).trim();
+
+            } else if (pattern5.matcher(dateString).matches()) {
+
+                date = dateString.substring(0, 11).trim();
+                time = dateString.substring(11, 20).trim();
+
+            } else {
+                // Format is not handled or date is missing. Do nothing...
+            }
+
+            pi.file.setCreationDateString(date);
+            pi.file.setCreationTimeString(time);
+            pi.file.setCreationTimeZoneString(zone);
+
+            if (dateComponents != null) {
+                pi.file.setCreationDate(new AbsoluteDate(dateComponents,
+                                                         timeComponents,
+                                                         TimeSystem.parseTimeSystem(zone).getTimeScale(pi.timeScales)));
+            }
         }
     }
 
