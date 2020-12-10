@@ -16,11 +16,14 @@
  */
 package org.orekit.files.general;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
-import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.AggregateBoundedAttitudeProvider;
+import org.orekit.attitudes.BoundedAttitudeProvider;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.AngularDerivativesFilter;
@@ -96,6 +99,20 @@ public interface AttitudeEphemerisFile {
          */
         AbsoluteDate getStop();
 
+        /**
+         * Get the attitude provider corresponding to this ephemeris, combining data from all {@link
+         * #getSegments() segments}.
+         *
+         * @return an attitude provider for all the data in this attitude ephemeris file.
+         */
+        default BoundedAttitudeProvider getAttitudeProvider() {
+            final List<BoundedAttitudeProvider> providers = new ArrayList<>();
+            for (final AttitudeEphemerisSegment attitudeSegment : this.getSegments()) {
+                providers.add(attitudeSegment.getAttitudeProvider());
+            }
+            return new AggregateBoundedAttitudeProvider(providers);
+        }
+
     }
 
     /**
@@ -140,6 +157,13 @@ public interface AttitudeEphemerisFile {
          * @return the frame name as it appeared in the file (B).
          */
         String getRefFrameBString();
+
+        /**
+         * Get the reference frame from which attitude is defined.
+         *
+         * @return the reference frame from which attitude is defined
+         */
+        Frame getReferenceFrame();
 
         /**
          * Get the rotation direction of the attitude.
@@ -225,7 +249,9 @@ public interface AttitudeEphemerisFile {
          *
          * @return the attitude provider for this attitude ephemeris segment.
          */
-        AttitudeProvider getAttitudeProvider();
+        default BoundedAttitudeProvider getAttitudeProvider() {
+            return new EphemerisSegmentAttitudeProvider(this);
+        }
 
     }
 
