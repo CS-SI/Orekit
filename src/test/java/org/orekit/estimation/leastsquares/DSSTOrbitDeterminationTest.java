@@ -191,7 +191,7 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
     @Override
     protected ParameterDriver[] setRelativity(final DSSTPropagatorBuilder propagatorBuilder) {
         throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
-                        "Relativity not implemented in DSST");
+                        "Albedo and infrared not implemented in DSST");
     }
 
     /** {@inheritDoc} */
