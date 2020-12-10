@@ -51,6 +51,21 @@
  * position. As the Keplerian propagator, it implements the
  * {@link org.orekit.propagation.Propagator} interface.
  *
+ * <h3> TLE propagation </h3>
+ *
+ * <p> This analytical model allows propagating {org.orekit.propagation.analytical.tle.TLE}
+ * data using SGP4 or SDP4 models. It is very easy to initialize, only the initial
+ * TLE is needed. As the other analytical propagators, it implements the
+ * {@link org.orekit.propagation.Propagator} interface.
+ *
+ * <h3> GNSS propagation </h3>
+ *
+ * <p> These analytical models allow propagating navigation messages such as
+ * in GNSS almanacs available thanks to {@link org.orekit.gnss.SEMParser SEM}
+ * or {@link org.orekit.gnss.YUMAParser YUMA} files. Each GNSS constellation
+ * has its own propagation model availables in {@link org.orekit.propagation.analytical.gnss}
+ * package.
+ *
  * <h3> Numerical propagation </h3>
  *
  * <p> It is the most important part of the OREKIT project. Based on Hipparchus
@@ -60,10 +75,10 @@
  * fact quite clear and intuitive.
  *
  * <p>
- * The mathematical problem to integrate is a seven dimension time derivative
+ * The mathematical problem to integrate is a 6 dimension time derivative
  * equations system. The six first equations are given by the Gauss equations
- * (expressed in {@link org.orekit.orbits.EquinoctialOrbit}) and the seventh
- * is simply the flow rate and mass equation. This first order system is computed
+ * (expressed in {@link org.orekit.orbits.EquinoctialOrbit}).
+ * This first order system is computed
  * by the {@link org.orekit.propagation.numerical.TimeDerivativesEquations}
  * class. It will be instanced by the propagator and then be modified at each
  * step (a fixed t value) by all the needed {@link
@@ -76,6 +91,16 @@
  * time derivate at t0, and then calculates the next step state vector, and ask
  * for the next first time derivative, etc. until it reaches the final asked date.
  * </p>
+ *
+ * <h3> Semi-analytical propagation </h3>
+ *
+ * <p> Semi-analytical propagation in Orekit is based on Draper Semi-analytical
+ * Satellite Theory (DSST), which is applicable to all orbit types. DSST divides
+ * the computation of the osculating orbital elements into two contributions: the
+ * mean orbital elements and the short-periodic terms. Both models are developed
+ * in the equinoctial orbital elements via the Method of Averaging. Mean orbital
+ * elements are computed numerically while short period motion is computed using
+ * a combination of analytical and numerical techniques.
  *
  * @author Luc Maisonobe
  * @author Fabien Maussion
