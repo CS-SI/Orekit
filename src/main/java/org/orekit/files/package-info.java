@@ -19,7 +19,8 @@
  *
  * <p>The interfaces for ephemeris file parsers and writers are in the {@link org.orekit.files.general}
  * package. Specifically, see {@link org.orekit.files.general.EphemerisFile
- * EphemerisFile}. Each format is handled by a separate sub-package: {@link org.orekit.files.ccsds}, {@link
- * org.orekit.files.sp3}.</p>
+ * EphemerisFile} and {@link org.orekit.files.general.AttitudeEphemerisFile
+ * AttitudeEphemerisFile}. Each format is handled by a separate sub-package: {@link org.orekit.files.ccsds},
+ * {@link org.orekit.files.sp3}, {@link org.orekit.files.ilrs}, {@link org.orekit.files.sinex}.</p>
  */
 package org.orekit.files;

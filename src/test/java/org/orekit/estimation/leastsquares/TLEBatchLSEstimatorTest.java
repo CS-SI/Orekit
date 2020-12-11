@@ -209,10 +209,10 @@ public class TLEBatchLSEstimatorTest {
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         TLEEstimationTestUtils.checkFit(context, estimator, 3, 4,
-                                     0.0, 0.18,
-                                     0.0, 0.32,
-                                     0.0, 0.15,
-                                     0.0, 5.8e-05);
+                                        0.0, 0.18,
+                                        0.0, 0.32,
+                                        0.0, 0.15,
+                                        0.0, 5.8e-05);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one

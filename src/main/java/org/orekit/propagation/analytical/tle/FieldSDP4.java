@@ -18,6 +18,7 @@ package org.orekit.propagation.analytical.tle;
 
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathUtils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.frames.Frame;
@@ -113,8 +114,9 @@ abstract class FieldSDP4<T extends RealFieldElement<T>>  extends FieldTLEPropaga
         xl = xll.add(omgadf).add(xnode);
 
         // Dundee change:  Reset cosio,  sinio for new xinc:
-        cosi0 = FastMath.cos(xinc);
-        sini0 = FastMath.sin(xinc);
+        final FieldSinCos<T> scI0 = FastMath.sinCos(xinc);
+        cosi0 = scI0.cos();
+        sini0 = scI0.sin();
         e = em;
         i = xinc;
         omega = omgadf;

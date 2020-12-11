@@ -18,6 +18,7 @@ package org.orekit.propagation.analytical.tle;
 
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
@@ -101,8 +102,9 @@ public class FieldSGP4<T extends RealFieldElement<T>> extends FieldTLEPropagator
         // Also, the c3 term, the delta omega term, and the delta m term are dropped.
         lessThan220 = perige.getReal() < 220;
         if (!lessThan220) {
+            final FieldSinCos<T> scM0 = FastMath.sinCos(tle.getMeanAnomaly());
             final T c1sq = c1.multiply(c1);
-            delM0 = eta.multiply(FastMath.cos(tle.getMeanAnomaly())).add(1.0);
+            delM0 = eta.multiply(scM0.cos()).add(1.0);
             delM0 = delM0.multiply(delM0).multiply(delM0);
             d2 = a0dp.multiply(tsi).multiply(c1sq).multiply(4.0);
             final T temp = d2.multiply(tsi).multiply(c1).divide(3.0);
@@ -112,7 +114,7 @@ public class FieldSGP4<T extends RealFieldElement<T>> extends FieldTLEPropagator
             t4cof = d3.multiply(3.0).add(c1.multiply(d2.multiply(12.0).add(c1sq.multiply(10)))).multiply(0.25);
             t5cof = d4.multiply(3.0).add(c1.multiply(12.0).multiply(d3)).add(
                     d2.multiply(d2).multiply(6.0)).add(c1sq.multiply(15.0).multiply(d2.multiply(2).add(c1sq))).multiply(0.2);
-            sinM0 = FastMath.sin(tle.getMeanAnomaly());
+            sinM0 = scM0.sin();
             if (tle.getE().getReal() < 1e-4) {
                 omgcof = c1sq.getField().getZero();
                 xmcof = c1sq.getField().getZero();

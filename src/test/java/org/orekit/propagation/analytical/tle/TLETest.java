@@ -586,8 +586,8 @@ public class TLETest {
         checkConversion(geoTLE);
     }
 
-    protected void checkConversion(final TLE tle)
-        {
+    /** Check the State to TLE conversion. */
+    protected void checkConversion(final TLE tle) {
 
         Propagator p = TLEPropagator.selectExtrapolator(tle);
         final TLE converted = TLE.stateToTLE(p.getInitialState(), tle);

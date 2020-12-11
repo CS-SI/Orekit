@@ -110,7 +110,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
                                               final OneAxisEllipsoid body,
                                               final int degree, final int order) {
         throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
-                        "Ocean tides not implemented in DSST");
+                        "Ocean tides not implemented in TLE Propagator");
     }
 
     /** {@inheritDoc} */
@@ -120,7 +120,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
                                               final OneAxisEllipsoid body,
                                               final CelestialBody[] solidTidesBodies) {
         throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
-                                  "Solid tides not implemented in DSST");
+                                  "Solid tides not implemented in TLE Propagator");
     }
 
     /** {@inheritDoc} */
@@ -128,7 +128,8 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
     protected ParameterDriver[] setThirdBody(final TLEPropagatorBuilder propagatorBuilder,
                                              final CelestialBody thirdBody) {
         
-        return new ParameterDriver[0];
+        throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
+                        "Third body not implemented in TLE Propagator");
     }
 
     /** {@inheritDoc} */
@@ -136,7 +137,8 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
     protected ParameterDriver[] setDrag(final TLEPropagatorBuilder propagatorBuilder,
                                         final Atmosphere atmosphere, final DragSensitive spacecraft) {
 
-        return new ParameterDriver[0];
+        throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
+                        "Drag not implemented in TLE Propagator");
     }
 
     /** {@inheritDoc} */
@@ -144,7 +146,18 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
     protected ParameterDriver[] setSolarRadiationPressure(final TLEPropagatorBuilder propagatorBuilder, final CelestialBody sun,
                                                           final double equatorialRadius, final RadiationSensitive spacecraft) {
 
-        return new ParameterDriver[0];
+        throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
+                        "SRP not implemented in TLE Propagator");
+    }
+    
+    /** {@inheritDoc} */
+    @Override
+    protected ParameterDriver[] setAlbedoInfrared(final TLEPropagatorBuilder propagatorBuilder,
+                                                  final CelestialBody sun, final double equatorialRadius,
+                                                  final double angularResolution,
+                                                  final RadiationSensitive spacecraft) {
+        throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
+                        "Albedo and infrared not implemented in TLE Propagator");
     }
 
     /** {@inheritDoc} */
@@ -188,6 +201,8 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         final String line2 = "2 32711  55.4362 301.3402 0091577 207.7302 151.8353  2.00563580 58013";
         templateTLE = new TLE(line1, line2);
         templateTLE.getParametersDrivers()[0].setSelected(false);
+        notUseDopplerMeasurements();
+        notUseTimeSpanTroposphericModel();
 
         //orbit determination run.
         ResultBatchLeastSquares odGNSS = runBLS(input, false);
@@ -195,7 +210,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         //test
 
         //definition of the accuracy for the test
-        final double distanceAccuracy = 111.19;
+        final double distanceAccuracy = 113.46;
 
         //test on the convergence
         final int numberOfIte  = 4;
@@ -219,11 +234,12 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         final TimeStampedPVCoordinates ephem = propagator.propagate(odPV.getDate()).getPVCoordinates();
         final Vector3D refPos = ephem.getPosition();      
 
+        //test on the estimated position
         Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
         
         //test on statistic for the range residuals
         final long nbRange = 8211;
-        final double[] RefStatRange = { -13.781, 37.590, 3.525, 7.233 };
+        final double[] RefStatRange = { -13.708, 38.133, 3.616, 7.318 };
         
         Assert.assertEquals(nbRange, odGNSS.getRangeStat().getN());
         Assert.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               1.0e-3);
@@ -257,12 +273,12 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
 
         //test
         //definition of the accuracy for the test
-        final double distanceAccuracy = 249.7;
-        final double velocityAccuracy = 6.94e-2;
+        final double distanceAccuracy = 162.93;
+        final double velocityAccuracy = 2.94e-2;
 
         //test on the convergence
-        final int numberOfIte  = 5;
-        final int numberOfEval = 5;
+        final int numberOfIte  = 7;
+        final int numberOfEval = 7;
 
         Assert.assertEquals(numberOfIte, odLageos2.getNumberOfIteration());
         Assert.assertEquals(numberOfEval, odLageos2.getNumberOfEvaluation());
@@ -274,22 +290,21 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         final Vector3D estimatedPos = odPV.getPosition();
         final Vector3D estimatedVel = odPV.getVelocity();
 
-        //final Vector3D refPos = new Vector3D(-5532124.989973327, 10025700.01763335, -3578940.840115321);
-        //final Vector3D refVel = new Vector3D(-3871.2736402553, -607.8775965705, 4280.9744110925);
         final Vector3D refPos = new Vector3D(-5532131.956902, 10025696.592156, -3578940.040009);
         final Vector3D refVel = new Vector3D(-3871.275109, -607.880985, 4280.972530);
         Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
         Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
 
         //test on statistic for the range residuals
-        final long nbRange = 258;
-        //final double[] RefStatRange = { -2.795816, 6.171529, 0.310848, 1.657809 };
-        final double[] RefStatRange = { -71.8561, 94.7573, -0.3342, 32.02447 };
+        final long nbRange = 95;
+        final double[] RefStatRange = { -67.7496, 87.1117, 6.4482E-5, 33.6349 };
         Assert.assertEquals(nbRange, odLageos2.getRangeStat().getN());
         Assert.assertEquals(RefStatRange[0], odLageos2.getRangeStat().getMin(),               distanceAccuracy);
         Assert.assertEquals(RefStatRange[1], odLageos2.getRangeStat().getMax(),               distanceAccuracy);
         Assert.assertEquals(RefStatRange[2], odLageos2.getRangeStat().getMean(),              distanceAccuracy);
         Assert.assertEquals(RefStatRange[3], odLageos2.getRangeStat().getStandardDeviation(), distanceAccuracy);
+
     }
+
 }
 

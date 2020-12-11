@@ -86,8 +86,8 @@ public class Differentiation {
 
     /** Differentiate a vector function using finite differences.
      * @param function function to differentiate
-     * @param provider attitude provider to use for modified states
      * @param dimension dimension of the vector value of the function
+     * @param provider attitude provider to use for modified states
      * @param orbitType type used to map the orbit to a one dimensional array
      * @param positionAngle type of the position angle used for orbit mapping to array
      * @param dP user specified position error, used for step size computation for finite differences

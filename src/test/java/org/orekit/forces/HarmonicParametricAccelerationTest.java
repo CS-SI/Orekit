@@ -73,6 +73,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
+@Deprecated
 public class HarmonicParametricAccelerationTest extends AbstractForceModelTest {
 
     private Orbit initialOrbit;

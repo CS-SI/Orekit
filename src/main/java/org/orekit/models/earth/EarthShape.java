@@ -17,7 +17,6 @@
 package org.orekit.models.earth;
 
 import org.orekit.bodies.BodyShape;
-import org.orekit.models.earth.ReferenceEllipsoid;
 
 /**
  * All models of Earth's shape have some common properties that are not shared with

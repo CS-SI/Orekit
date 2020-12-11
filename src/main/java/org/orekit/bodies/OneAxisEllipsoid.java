@@ -26,7 +26,9 @@ import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.SinCos;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -308,15 +310,13 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
     /** {@inheritDoc} */
     public Vector3D transform(final GeodeticPoint point) {
         final double longitude = point.getLongitude();
-        final double cLambda   = FastMath.cos(longitude);
-        final double sLambda   = FastMath.sin(longitude);
+        final SinCos scLambda  = FastMath.sinCos(longitude);
         final double latitude  = point.getLatitude();
-        final double cPhi      = FastMath.cos(latitude);
-        final double sPhi      = FastMath.sin(latitude);
+        final SinCos scPhi     = FastMath.sinCos(latitude);
         final double h         = point.getAltitude();
-        final double n         = getA() / FastMath.sqrt(1.0 - e2 * sPhi * sPhi);
-        final double r         = (n + h) * cPhi;
-        return new Vector3D(r * cLambda, r * sLambda, (g2 * n + h) * sPhi);
+        final double n         = getA() / FastMath.sqrt(1.0 - e2 * scPhi.sin() * scPhi.sin());
+        final double r         = (n + h) * scPhi.cos();
+        return new Vector3D(r * scLambda.cos(), r * scLambda.sin(), (g2 * n + h) * scPhi.sin());
     }
 
     /** {@inheritDoc} */
@@ -326,10 +326,12 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         final T longitude = point.getLongitude();
         final T altitude  = point.getAltitude();
 
-        final T cLambda = longitude.cos();
-        final T sLambda = longitude.sin();
-        final T cPhi    = latitude.cos();
-        final T sPhi    = latitude.sin();
+        final FieldSinCos<T> scLambda = FastMath.sinCos(longitude);
+        final FieldSinCos<T> scPhi    = FastMath.sinCos(latitude);
+        final T cLambda = scLambda.cos();
+        final T sLambda = scLambda.sin();
+        final T cPhi    = scPhi.cos();
+        final T sPhi    = scPhi.sin();
         final T n       = sPhi.multiply(sPhi).multiply(e2).subtract(1.0).negate().sqrt().reciprocal().multiply(getA());
         final T r       = n.add(altitude).multiply(cPhi);
 

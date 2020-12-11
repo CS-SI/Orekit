@@ -48,11 +48,13 @@ public interface ODPropagatorBuilder extends PropagatorBuilder {
      * @param propagatorBuilders propagators builders used to evaluate the orbits.
      * @param covarianceMatricesProviders providers for covariance matrices
      * @param estimatedMeasurementsParameters measurement parameters to estimate
+     * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
      * @return a new model for Kalman Filter orbit determination
      */
     AbstractKalmanModel buildKalmanModel(List<ODPropagatorBuilder> propagatorBuilders,
                                          List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                                         ParameterDriversList estimatedMeasurementsParameters);
+                                         ParameterDriversList estimatedMeasurementsParameters,
+                                         CovarianceMatrixProvider measurementProcessNoiseMatrix);
 
     /** Reset the orbit in the propagator builder.
      * @param newOrbit New orbit to set in the propagator builder

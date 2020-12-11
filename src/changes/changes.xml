@@ -21,6 +21,121 @@
   </properties>
   <body>
     <release version="10.3" date="TBD" description="TBD">
+   	  <action dev="bryan" type="update" issue="741">
+      	Updated Hipparchus version to 1.8 and updated code with new functionalities.
+      </action>
+   	  <action dev="bryan" type="add" issue="740">
+      	Added aggregator for bounded attitude providers.
+      </action>
+   	  <action dev="thomas" type="add" issue="8">
+        Added Knocke's Earth rediffused radiation pressure force model.
+      </action>
+   	  <action dev="bryan" type="add" issue="739">
+      	Allowed initialization of attitude provider from attitude segment.
+      </action>
+      <action dev="raphael" type="add" issue="705">
+        Allowed writing an AEM file from a list of SpacecraftStates.
+      </action>
+      <action dev="luc" type="add" issue="738">
+        Added user-defined max iteration and convergence criterion in SecularAndHarmonic.
+      </action>
+      <action dev="luc" type="add" issue="737">
+        Added loading of AGI LeapSecond.dat files.
+      </action>
+      <action dev="raphael" type="add" issue="686">
+        Allowed user-defined format for ephemeris data lines in
+        StreamingAemWriter, AEMWriter, StreamingOemWriter and OEMWriter.
+      </action>
+   	  <action dev="bryan" type="fix" issue="683">
+      	Updated building instructions.
+      </action>
+   	  <action dev="bryan" type="add" issue="734">
+      	Added getters for phase measurement ambiguity driver.
+      </action>
+   	  <action dev="bryan" type="fix" issue="696">
+      	Allowed to configure initial covariance for measurements in Kalman Filter.
+      </action>
+      <action dev="thomas, bryan" type="add" issue="709">
+        Added clock drift contribution to range rate measurements.
+      </action>
+   	  <action dev="bryan" type="fix" issue="687">
+      	Fixed Javadoc of ElevationMask.
+      </action>
+      <action dev="raphael" type="fix" issue="711">
+        Allowed definition of a default interpolation degree in both AEMParser and OEMParser.
+      </action>
+      <action dev="bryan" type="add" issue="733">
+        Added Lense-Thirring and De Sitter relativistic effects.
+      </action>
+      <action dev="melanisti" type="fix" issue="725">
+        Fixed missing measurement parameter in InterSatellitesRange measurement.
+      </action>
+      <action dev="bryan" type="add" issue="732">
+        Added documentation for checkstyle configuration.
+      </action>
+   	  <action dev="thomas" type="fix" issue="730">
+      	Removed useless loop over an empty list
+      </action>
+      <action dev="luc" type="fix" issue="731">
+        Fixed parsing of some ICGEM gravity fields files.
+      </action>
+      <action dev="raphael" type="fix" issue="720">
+      	Added support for measurements parameters in UnivariateProcessNoise
+      </action>
+      <action dev="luc" type="fix" issue="729">
+        Fixed wrong handling of RESET-STATE in analytical propagators.
+      </action>
+      <action dev="luc" type="add" issue="728">
+        Allow creating a node detector without an orbit.
+      </action>
+      <action dev="bryan" type="add" issue="671">
+        Added support for laser ranging file formats.
+      </action>
+      <action dev="clement" type="fix" issue="724">
+        Remove range checks in TLE constructor.
+      </action>
+      <action dev="bryan" type="fix" issue="723">
+        Allowed AEM and OEM writers to write header comments.
+      </action>
+      <action dev="bryan" type="add" issue="719">
+        Added one-way GNSS range and phase measurements for LEO satellite
+        orbit determination applications.
+      </action>
+      <action dev="bryan" type="add" issue="716">
+        Added piecewise empirical force model.
+      </action>
+      <action dev="bryan" type="add" >
+        Considered a new implementation for empirical forces, to allow piecewise model.
+      </action>
+      <action dev="bryan" type="add" issue="703">
+        Added inter-satellites phase measurement.
+      </action>
+      <action dev="bryan" type="fix" issue="695">
+        Considered covariance matrix from Position measurement in Kalman estimator.
+      </action>
+      <action dev="bryan" type="fix" issue="718">
+        Fixed orbital state used for short periodic Jacobian computation.
+      </action>
+      <action dev="bryan" type="add" issue="704">
+        Allow using user specified velocity error for computing
+        tolerance vectors for integrators.
+      </action>
+      <action dev="bryan" type="add" issue="714">
+        Added frequency deviation for range-rate measurements.
+      </action>
+      <action dev="bryan" type="add" issue="715">
+        Added relativistic clock correction for range, phase and
+        inter-satellite range measurements.
+      </action>
+      <action dev="bryan" type="fix" issue="706">
+        Fixed missing measurement parameter in inter-satellites range measurement.
+      </action>
+   	  <action dev="thomas" type="fix" issue="713">
+        Fixed computation of DSST short period Jacobian.
+      </action>
+      <action dev="luc" type="fix" issue="699">
+        Fixed missing measurement parameter in Phase measurement
+      </action>
       <action dev="luc" type="fix" issue="701">
         Fixed wrong handling of propagation parameters by Kalman filter in multi-satellite
         context

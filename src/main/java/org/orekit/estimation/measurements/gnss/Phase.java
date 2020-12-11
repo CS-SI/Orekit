@@ -83,6 +83,7 @@ public class Phase extends AbstractMeasurement<Phase> {
                                                0.0, 1.0,
                                                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
         addParameterDriver(ambiguityDriver);
+        addParameterDriver(satellite.getClockOffsetDriver());
         addParameterDriver(station.getClockOffsetDriver());
         addParameterDriver(station.getEastOffsetDriver());
         addParameterDriver(station.getNorthOffsetDriver());
@@ -109,6 +110,14 @@ public class Phase extends AbstractMeasurement<Phase> {
      */
     public double getWavelength() {
         return wavelength;
+    }
+
+    /** Get the driver for phase ambiguity.
+     * @return the driver for phase ambiguity
+     * @since 10.3
+     */
+    public ParameterDriver getAmbiguityDriver() {
+        return ambiguityDriver;
     }
 
     /** {@inheritDoc} */

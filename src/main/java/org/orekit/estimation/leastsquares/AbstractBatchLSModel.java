@@ -236,6 +236,7 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
         for (int i = 0; i < propagators.length; ++i) {
             mappers[i] = configureDerivatives(propagators[i]);
             orbits[i]  = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(propagators[i].getInitialState().getOrbit());
+            computeInitialDerivatives(mappers[i], propagators[i]);
         }
         final PropagatorsParallelizer parallelizer =
                         new PropagatorsParallelizer(Arrays.asList(propagators), configureMeasurements(point));
@@ -484,12 +485,19 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
      */
     protected abstract AbstractPropagator[] buildPropagators();
 
-    /** Specific computation of derivatives.
+    /** Specific computation of derivatives considering propagated state.
      * This method allow to compute analytical derivatives.
      * @param mapper Jacobian mapper to calculate short period perturbations
      * @param state state used to calculate short period perturbations
      */
     protected abstract void computeDerivatives(AbstractJacobiansMapper mapper, SpacecraftState state);
+
+    /** Specific computation of derivatives considering initial state, prior propagation.
+     * This method allow to compute initial analytical derivatives such as the short periods in DSST case.
+     * @param mapper Jacobian mapper to calculate short period perturbations
+     * @param propagator the propagator
+     */
+    protected abstract void computeInitialDerivatives(AbstractJacobiansMapper mapper, AbstractPropagator propagator);
 
     /** Getter for the date of the first enabled meausurement.
      * @return date of the first enabled measurement

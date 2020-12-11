@@ -247,6 +247,9 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
                     // get state at event time
                     SpacecraftState eventState = restricted.getInterpolatedState(currentEvent.getEventDate());
 
+                    // restrict the interpolator to the first part of the step, up to the event
+                    restricted = restricted.restrictStep(previous, eventState);
+
                     // try to advance all event states to current time
                     for (final EventState<?> state : eventsStates) {
                         if (state != currentEvent && state.tryAdvance(eventState, interpolator)) {

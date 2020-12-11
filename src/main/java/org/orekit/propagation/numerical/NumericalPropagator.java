@@ -651,6 +651,32 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         final double v  = pv.getVelocity().getNorm();
         final double dV = orbit.getMu() * dP / (v * r2);
 
+        return tolerances(dP, dV, orbit, type);
+
+    }
+
+    /** Estimate tolerance vectors for integrators when propagating in orbits.
+     * <p>
+     * The errors are estimated from partial derivatives properties of orbits,
+     * starting from scalar position and velocity errors specified by the user.
+     * <p>
+     * The tolerances are only <em>orders of magnitude</em>, and integrator tolerances
+     * are only local estimates, not global ones. So some care must be taken when using
+     * these tolerances. Setting 1mm as a position error does NOT mean the tolerances
+     * will guarantee a 1mm error position after several orbits integration.
+     * </p>
+     * @param dP user specified position error
+     * @param dV user specified velocity error
+     * @param orbit reference orbit
+     * @param type propagation type for the meaning of the tolerance vectors elements
+     * (it may be different from {@code orbit.getType()})
+     * @return a two rows array, row 0 being the absolute tolerance error and row 1
+     * being the relative tolerance error
+     * @since 10.3
+     */
+    public static double[][] tolerances(final double dP, final double dV,
+                                        final Orbit orbit, final OrbitType type) {
+
         final double[] absTol = new double[7];
         final double[] relTol = new double[7];
 
@@ -687,7 +713,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         }
 
-        Arrays.fill(relTol, dP / FastMath.sqrt(r2));
+        Arrays.fill(relTol, dP / FastMath.sqrt(orbit.getPVCoordinates().getPosition().getNormSq()));
 
         return new double[][] {
             absTol, relTol

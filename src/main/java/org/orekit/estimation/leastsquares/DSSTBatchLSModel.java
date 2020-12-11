@@ -70,7 +70,6 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
         this.stateType       = stateType;
     }
 
-
     /** Configure the propagator to compute derivatives.
      * @param propagators {@link Propagator} to configure
      * @return mapper for this propagator
@@ -102,11 +101,24 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
         return new DSSTPropagator[getBuilders().length];
     }
 
+
     /** {@inheritDoc} */
-    @Override
     protected void computeDerivatives(final AbstractJacobiansMapper mapper,
                                       final SpacecraftState state) {
-        ((DSSTJacobiansMapper) mapper).setShortPeriodJacobians(state);
+        // does nothing
+        // DSST OD does not require more analytical derivative calculations
     }
 
+    /** {@inheritDoc} */
+    @Override
+    protected void computeInitialDerivatives(final AbstractJacobiansMapper mapper,
+                                             final AbstractPropagator propagator) {
+
+        final DSSTPropagator dsstPropagator = (DSSTPropagator) propagator;
+        final SpacecraftState initial = dsstPropagator.initialIsOsculating() ?
+                       DSSTPropagator.computeMeanState(dsstPropagator.getInitialState(), dsstPropagator.getAttitudeProvider(), dsstPropagator.getAllForceModels()) :
+                       dsstPropagator.getInitialState();
+        // compute short period derivatives at the beginning of the iteration
+        ((DSSTJacobiansMapper) mapper).setShortPeriodJacobians(initial);
+    }
 }

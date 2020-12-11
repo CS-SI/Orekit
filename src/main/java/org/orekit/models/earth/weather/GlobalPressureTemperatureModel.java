@@ -18,6 +18,7 @@ package org.orekit.models.earth.weather;
 
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
@@ -159,8 +160,9 @@ public class GlobalPressureTemperatureModel implements WeatherModel {
         int j = 0;
         for (int n = 0; n <= 9; n++) {
             for (int m = 0; m <= n; m++) {
-                final double pCosmLambda = p.getPnm(n, m) * FastMath.cos(m * longitude);
-                final double pSinmLambda = p.getPnm(n, m) * FastMath.sin(m * longitude);
+                final SinCos sc = FastMath.sinCos(m * longitude);
+                final double pCosmLambda = p.getPnm(n, m) * sc.cos();
+                final double pSinmLambda = p.getPnm(n, m) * sc.sin();
 
                 meanT0      = meanT0 +
                                 (abCoef.getAnmTemperatureMean(j) * pCosmLambda + abCoef.getBnmTemperatureMean(j) * pSinmLambda);

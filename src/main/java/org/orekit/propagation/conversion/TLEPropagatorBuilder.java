@@ -140,11 +140,13 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
         return new TLEBatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
     }
 
-    /** {@inheritDoc} */
-    public AbstractKalmanModel buildKalmanModel(final List<ODPropagatorBuilder> propagatorBuilders,
-                                   final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                                   final ParameterDriversList estimatedMeasurementsParameters) {
-        return new TLEKalmanModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters);
+    @Override
+    public AbstractKalmanModel
+        buildKalmanModel(final List<ODPropagatorBuilder> propagatorBuilders,
+                         final List<CovarianceMatrixProvider> covarianceMatricesProviders,
+                         final ParameterDriversList estimatedMeasurementsParameters,
+                         final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
+        return new TLEKalmanModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters, measurementProcessNoiseMatrix);
     }
 
 }

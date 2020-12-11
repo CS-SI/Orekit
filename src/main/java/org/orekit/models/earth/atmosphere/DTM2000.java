@@ -28,7 +28,9 @@ import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
@@ -509,11 +511,15 @@ public class DTM2000 implements Atmosphere {
             this.fbar = fbar;
             this.akp  = akp;
 
+            // Sine and cosine of local latitude and longitude
+            final SinCos scLat = FastMath.sinCos(lat);
+            final SinCos scLon = FastMath.sinCos(lon);
+
             // compute Legendre polynomials wrt geographic pole
-            final double c = FastMath.sin(lat);
+            final double c = scLat.sin();
             final double c2 = c * c;
             final double c4 = c2 * c2;
-            final double s = FastMath.cos(lat);
+            final double s = scLat.cos();
             final double s2 = s * s;
             p10 = c;
             p20 = 1.5 * c2 - 0.5;
@@ -542,13 +548,14 @@ public class DTM2000 implements Atmosphere {
             p20mg = 1.5 * cmg2 - 0.5;
             p40mg = 4.375 * cmg4 - 3.75 * cmg2 + 0.375;
 
-            clfl = FastMath.cos(lon);
-            slfl = FastMath.sin(lon);
+            clfl = scLon.cos();
+            slfl = scLon.sin();
 
             // local time
             hl0 = hl;
-            ch  = FastMath.cos(hl0);
-            sh  = FastMath.sin(hl0);
+            final SinCos scHlo = FastMath.sinCos(hl0);
+            ch  = scHlo.cos();
+            sh  = scHlo.sin();
             c2h = ch * ch - sh * sh;
             s2h = 2.0 * ch * sh;
             c3h = c2h * ch - s2h * sh;
@@ -978,11 +985,15 @@ public class DTM2000 implements Atmosphere {
             this.fbar = far;
             this.akp  = akp;
 
+            // Sine and cosine of local latitude and longitude
+            final FieldSinCos<T> scLat = FastMath.sinCos(lat);
+            final FieldSinCos<T> scLon = FastMath.sinCos(lon);
+
             // compute Legendre polynomials wrt geographic pole
-            final T c = lat.sin();
+            final T c = scLat.sin();
             final T c2 = c.multiply(c);
             final T c4 = c2.multiply(c2);
-            final T s = lat.cos();
+            final T s = scLat.cos();
             final T s2 = s.multiply(s);
             p10 = c;
             p20 = c2.multiply(1.5).subtract(0.5);
@@ -1011,13 +1022,14 @@ public class DTM2000 implements Atmosphere {
             p20mg = cmg2.multiply(1.5).subtract(0.5);
             p40mg = cmg4.multiply(4.375).subtract(cmg2.multiply(3.75)).add(0.375);
 
-            clfl = lon.cos();
-            slfl = lon.sin();
+            clfl = scLon.cos();
+            slfl = scLon.sin();
 
             // local time
             hl0 = hl;
-            ch  = hl0.cos();
-            sh  = hl0.sin();
+            final FieldSinCos<T> scHlo = FastMath.sinCos(hl0);
+            ch  = scHlo.cos();
+            sh  = scHlo.sin();
             c2h = ch.multiply(ch).subtract(sh.multiply(sh));
             s2h = ch.multiply(sh).multiply(2);
             c3h = c2h.multiply(ch).subtract(s2h.multiply(sh));

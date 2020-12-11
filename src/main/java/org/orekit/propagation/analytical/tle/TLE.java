@@ -411,6 +411,7 @@ public class TLE implements TimeStamped, Serializable {
 
         this.revolutionNumberAtEpoch = revolutionNumberAtEpoch;
 
+
         // don't build the line until really needed
         this.line1 = null;
         this.line2 = null;
@@ -1036,6 +1037,7 @@ public class TLE implements TimeStamped, Serializable {
                     lowerBound, upperBound);
         }
     }
+
 
     /** Check if this tle equals the provided tle.
      * <p>Due to the difference in precision between object and string

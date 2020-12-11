@@ -23,6 +23,7 @@ import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -380,14 +381,18 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
         final double qm = 2.3555557435 + 8328.6914257190 * t + 0.0001545547 * t2;
 
         // Commons parameters
-        final double cosOm = FastMath.cos(omegaM);
-        final double sinOm = FastMath.sin(omegaM);
-        final double cosIm = FastMath.cos(im);
-        final double sinIm = FastMath.sin(im);
-        final double cosEs = FastMath.cos(eps);
-        final double sinEs = FastMath.sin(eps);
-        final double cosGm = FastMath.cos(gammaM);
-        final double sinGm = FastMath.sin(gammaM);
+        final SinCos scOm  = FastMath.sinCos(omegaM);
+        final SinCos scIm  = FastMath.sinCos(im);
+        final SinCos scEs  = FastMath.sinCos(eps);
+        final SinCos scGm  = FastMath.sinCos(gammaM);
+        final double cosOm = scOm.cos();
+        final double sinOm = scOm.sin();
+        final double cosIm = scIm.cos();
+        final double sinIm = scIm.sin();
+        final double cosEs = scEs.cos();
+        final double sinEs = scEs.sin();
+        final double cosGm = scGm.cos();
+        final double sinGm = scGm.sin();
 
         // Intermediate parameters
         final double psiStar = cosOm * sinIm;
@@ -404,9 +409,10 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
         final double ek = getEccentricAnomaly(qm, em);
 
         // True Anomaly
-        final double vk =  getTrueAnomaly(ek, em);
-        final double sinVk = FastMath.sin(vk);
-        final double cosVk = FastMath.cos(vk);
+        final double vk    = getTrueAnomaly(ek, em);
+        final SinCos scVk  = FastMath.sinCos(vk);
+        final double sinVk = scVk.sin();
+        final double cosVk = scVk.cos();
 
         // Direction cosine
         final double epsM = eps11 * (sinVk * cosGm + cosVk * sinGm) + eps12 * (cosVk * cosGm - sinVk * sinGm);
@@ -455,15 +461,18 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
         final double ek = getEccentricAnomaly(qs, es);
 
         // True Anomaly
-        final double vk =  getTrueAnomaly(ek, es);
-        final double sinVk = FastMath.sin(vk);
-        final double cosVk = FastMath.cos(vk);
+        final double vk    =  getTrueAnomaly(ek, es);
+        final SinCos scVk  = FastMath.sinCos(vk);
+        final double sinVk = scVk.sin();
+        final double cosVk = scVk.cos();
 
         // Commons parameters
-        final double cosWs = FastMath.cos(ws);
-        final double sinWs = FastMath.sin(ws);
-        final double cosEs = FastMath.cos(eps);
-        final double sinEs = FastMath.sin(eps);
+        final SinCos scWs  = FastMath.sinCos(ws);
+        final SinCos scEs  = FastMath.sinCos(eps);
+        final double cosWs = scWs.cos();
+        final double sinWs = scWs.sin();
+        final double cosEs = scEs.cos();
+        final double sinEs = scEs.sin();
 
         // Direction cosine
         final double epsS = cosVk * cosWs - sinVk * sinWs;
@@ -519,8 +528,9 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
         for (int j = 0; j < 2; ++j) {
             final double f;
             double fd;
-            final double fdd  = e * FastMath.sin(E);
-            final double fddd = e * FastMath.cos(E);
+            final SinCos scE  = FastMath.sinCos(E);
+            final double fdd  = e * scE.sin();
+            final double fddd = e * scE.cos();
             if (noCancellationRisk) {
                 f  = (E - fdd) - reducedM;
                 fd = 1 - fddd;
@@ -575,8 +585,9 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
      * @return the true anomaly (rad)
      */
     private double getTrueAnomaly(final double ek, final double ecc) {
-        final double svk = FastMath.sqrt(1. - ecc * ecc) * FastMath.sin(ek);
-        final double cvk = FastMath.cos(ek) - ecc;
+        final SinCos scek = FastMath.sinCos(ek);
+        final double svk  = FastMath.sqrt(1. - ecc * ecc) * scek.sin();
+        final double cvk  = scek.cos() - ecc;
         return FastMath.atan2(svk, cvk);
     }
 
@@ -616,8 +627,9 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
         final double s = gmst + GLONASS_AV * (ti - 10800.);
 
         // Commons Parameters
-        final double cosS = FastMath.cos(s);
-        final double sinS = FastMath.sin(s);
+        final SinCos scS  = FastMath.sinCos(s);
+        final double cosS = scS.cos();
+        final double sinS = scS.sin();
 
         // Transformed coordinates
         final double x = x0 * cosS + y0 * sinS;
@@ -650,8 +662,9 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
         final double s = gmst + GLONASS_AV * dt;
 
         // Commons Parameters
-        final double cosS = FastMath.cos(s);
-        final double sinS = FastMath.sin(s);
+        final SinCos scS  = FastMath.sinCos(s);
+        final double cosS = scS.cos();
+        final double sinS = scS.sin();
 
         // PV coordinates in inertial frame
         final double x0  = glonassOrbit.getX() * cosS - glonassOrbit.getY() * sinS;
@@ -862,8 +875,9 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
             final double s = gmst + GLONASS_AV * dt;
 
             // Commons Parameters
-            final double cosS = FastMath.cos(s);
-            final double sinS = FastMath.sin(s);
+            final SinCos scS  = FastMath.sinCos(s);
+            final double cosS = scS.cos();
+            final double sinS = scS.sin();
 
             // Accelerations
             final double accX = glonassOrbit.getXDotDot() * cosS - glonassOrbit.getYDotDot() * sinS;

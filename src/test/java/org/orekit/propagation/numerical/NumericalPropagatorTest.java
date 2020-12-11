@@ -37,6 +37,7 @@ import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.ode.nonstiff.LutherIntegrator;
 import org.hipparchus.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
@@ -44,6 +45,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
+import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
@@ -58,10 +60,12 @@ import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.SHMFormatReader;
+import org.orekit.forces.maneuvers.ImpulseManeuver;
 import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.models.earth.atmosphere.DTM2000;
 import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstimation;
 import org.orekit.orbits.CartesianOrbit;
@@ -89,6 +93,8 @@ import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -945,6 +951,37 @@ public class NumericalPropagatorTest {
         }
     }
 
+    @Test
+    public void testIssue704() {
+
+        // Coordinates
+        final Orbit         orbit = initialState.getOrbit();
+        final PVCoordinates pv    = orbit.getPVCoordinates();
+
+        // dP
+        final double dP = 10.0;
+
+        // Computes dV
+        final double r2 = pv.getPosition().getNormSq();
+        final double v  = pv.getVelocity().getNorm();
+        final double dV = orbit.getMu() * dP / (v * r2);
+
+        // Verify: Cartesian case
+        final double[][] tolCart1 = NumericalPropagator.tolerances(dP, orbit, OrbitType.CARTESIAN);
+        final double[][] tolCart2 = NumericalPropagator.tolerances(dP, dV, orbit, OrbitType.CARTESIAN);
+        for (int i = 0; i < tolCart1.length; i++) {
+            Assert.assertArrayEquals(tolCart1[i], tolCart2[i], Double.MIN_VALUE);
+        }
+
+        // Verify: Non cartesian case
+        final double[][] tolKep1 = NumericalPropagator.tolerances(dP, orbit, OrbitType.KEPLERIAN);
+        final double[][] tolKep2 = NumericalPropagator.tolerances(dP, dV, orbit, OrbitType.KEPLERIAN);
+        for (int i = 0; i < tolCart1.length; i++) {
+            Assert.assertArrayEquals(tolKep1[i], tolKep2[i], Double.MIN_VALUE);
+        }
+
+    }
+
     private static class CheckingHandler<T extends EventDetector> implements EventHandler<T> {
 
         private final Action actionOnEvent;
@@ -1378,7 +1415,75 @@ public class NumericalPropagatorTest {
         // Handler is deactivated (no dates recorded between start and stop date)
         Assert.assertEquals(0, dateRecorderHandler.handledDatesOutOfInterval.size());
     }
-    
+
+    @Test
+    public void testResetStateForward() {
+        final Frame eme2000 = FramesFactory.getEME2000();
+        final AbsoluteDate date = new AbsoluteDate(new DateComponents(2008, 6, 23),
+                                                   new TimeComponents(14, 0, 0),
+                                                   TimeScalesFactory.getUTC());
+        final Orbit orbit = new KeplerianOrbit(8000000.0, 0.01, 0.87, 2.44, 0.21, -1.05, PositionAngle.MEAN,
+                                           eme2000,
+                                           date, Constants.EIGEN5C_EARTH_MU);
+        final NumericalPropagator propagator =
+                        new NumericalPropagator(new LutherIntegrator(300.0),
+                                                new LofOffset(eme2000, LOFType.LVLH));
+        propagator.resetInitialState(new SpacecraftState(orbit));
+
+        // maneuver along Z in attitude aligned with LVLH will change orbital plane
+        final AbsoluteDate maneuverDate = date.shiftedBy(1000.0);
+        propagator.addEventDetector(new ImpulseManeuver<>(new DateDetector(maneuverDate),
+                                                          new Vector3D(0.0, 0.0, -100.0),
+                                                          350.0));
+
+        final Vector3D initialNormal = orbit.getPVCoordinates().getMomentum();
+        propagator.setMasterMode(60.0, (state, isLast) -> {
+            final Vector3D currentNormal = state.getPVCoordinates().getMomentum();
+            if (state.getDate().isBefore(maneuverDate)) {
+                Assert.assertEquals(0.000, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
+            } else {
+                Assert.assertEquals(0.014, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
+            }
+        });
+
+        propagator.propagate(orbit.getDate().shiftedBy(1500.0));
+
+    }
+
+    @Test
+    public void testResetStateBackward() {
+        final Frame eme2000 = FramesFactory.getEME2000();
+        final AbsoluteDate date = new AbsoluteDate(new DateComponents(2008, 6, 23),
+                                                   new TimeComponents(14, 0, 0),
+                                                   TimeScalesFactory.getUTC());
+        final Orbit orbit = new KeplerianOrbit(8000000.0, 0.01, 0.87, 2.44, 0.21, -1.05, PositionAngle.MEAN,
+                                           eme2000,
+                                           date, Constants.EIGEN5C_EARTH_MU);
+        final NumericalPropagator propagator =
+                        new NumericalPropagator(new LutherIntegrator(300.0),
+                                                new LofOffset(eme2000, LOFType.LVLH));
+        propagator.resetInitialState(new SpacecraftState(orbit));
+
+        // maneuver along Z in attitude aligned with LVLH will change orbital plane
+        final AbsoluteDate maneuverDate = date.shiftedBy(-1000.0);
+        propagator.addEventDetector(new ImpulseManeuver<>(new DateDetector(maneuverDate),
+                                                          new Vector3D(0.0, 0.0, -100.0),
+                                                          350.0));
+
+        final Vector3D initialNormal = orbit.getPVCoordinates().getMomentum();
+        propagator.setMasterMode(60.0, (state, isLast) -> {
+            final Vector3D currentNormal = state.getPVCoordinates().getMomentum();
+            if (state.getDate().isAfter(maneuverDate)) {
+                Assert.assertEquals(0.000, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
+            } else {
+                Assert.assertEquals(0.014, Vector3D.angle(initialNormal, currentNormal), 1.0e-3);
+            }
+        });
+
+        propagator.propagate(orbit.getDate().shiftedBy(-1500.0));
+
+    }
+
     /** Record the dates treated by the handler.
      *  If they are out of an interval defined by a start and final date.
      */

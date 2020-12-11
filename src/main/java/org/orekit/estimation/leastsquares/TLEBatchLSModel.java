@@ -53,9 +53,9 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
      * @param observer observer to be notified at model calls
      */
     public TLEBatchLSModel(final ODPropagatorBuilder[] propagatorBuilders,
-                     final List<ObservedMeasurement<?>> measurements,
-                     final ParameterDriversList estimatedMeasurementsParameters,
-                     final ModelObserver observer) {
+                           final List<ObservedMeasurement<?>> measurements,
+                           final ParameterDriversList estimatedMeasurementsParameters,
+                           final ModelObserver observer) {
         // call super constructor
         super(propagatorBuilders, measurements, estimatedMeasurementsParameters, observer);
     }
@@ -96,10 +96,17 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
     }
 
     /** {@inheritDoc} */
-    @Override
     protected void computeDerivatives(final AbstractJacobiansMapper mapper,
                                       final SpacecraftState state) {
         ((TLEJacobiansMapper) mapper).computeDerivatives(state);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void computeInitialDerivatives(final AbstractJacobiansMapper mapper,
+                                             final AbstractPropagator propagator) {
+        // does nothing
+        // TLE OD does not require initial analytical derivative calculations
     }
 
 }

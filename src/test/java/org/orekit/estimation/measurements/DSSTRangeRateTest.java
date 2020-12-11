@@ -23,6 +23,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.estimation.DSSTContext;
 import org.orekit.estimation.DSSTEstimationTestUtils;
+import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeRateTroposphericDelayModifier;
 import org.orekit.models.earth.troposphere.SaastamoinenModel;
 import org.orekit.orbits.OrbitType;
@@ -50,9 +51,15 @@ public class DSSTRangeRateTest {
         // create perfect range rate measurements
         final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+
+        final double groundClockDrift =  4.8e-9;
+        for (final GroundStation station : context.stations) {
+            station.getClockDriftDriver().setValue(groundClockDrift);
+        }
+        final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements =
                         DSSTEstimationTestUtils.createMeasurements(propagator,
-                                                               new DSSTRangeRateMeasurementCreator(context, false),
+                                                               new DSSTRangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
         for (final ObservedMeasurement<?> m : measurements) {
             Assert.assertFalse(((RangeRate) m).isTwoWay());
@@ -107,9 +114,14 @@ public class DSSTRangeRateTest {
         // create perfect range rate measurements
         final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final double groundClockDrift =  4.8e-9;
+        for (final GroundStation station : context.stations) {
+            station.getClockDriftDriver().setValue(groundClockDrift);
+        }
+        final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements =
                         DSSTEstimationTestUtils.createMeasurements(propagator,
-                                                               new DSSTRangeRateMeasurementCreator(context, true),
+                                                               new DSSTRangeRateMeasurementCreator(context, true, satClkDrift),
                                                                1.0, 3.0, 300.0);
         for (final ObservedMeasurement<?> m : measurements) {
             Assert.assertTrue(((RangeRate) m).isTwoWay());
@@ -150,7 +162,7 @@ public class DSSTRangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 7.2e-6);
+        Assert.assertEquals(0, maxRelativeError, 1.1e-7);
 
     }
 
@@ -163,7 +175,15 @@ public class DSSTRangeRateTest {
                         context.createBuilder(true, 1.0e-6, 60.0, 0.001);
 
         // create perfect range rate measurements
+        final double groundClockDrift =  4.8e-9;
         for (final GroundStation station : context.stations) {
+            station.getClockDriftDriver().setValue(groundClockDrift);
+        }
+        final double satClkDrift = 3.2e-10;
+        final DSSTRangeRateMeasurementCreator creator = new DSSTRangeRateMeasurementCreator(context, false, satClkDrift);
+        creator.getSatellite().getClockDriftDriver().setSelected(true);
+        for (final GroundStation station : context.stations) {
+            station.getClockDriftDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -171,8 +191,8 @@ public class DSSTRangeRateTest {
         final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
-                        DSSTEstimationTestUtils.createMeasurements(propagator,
-                                                               new DSSTRangeRateMeasurementCreator(context, false),
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               creator,
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
@@ -193,11 +213,13 @@ public class DSSTRangeRateTest {
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);
             final ParameterDriver[] drivers = new ParameterDriver[] {
+                stationParameter.getClockDriftDriver(),
                 stationParameter.getEastOffsetDriver(),
                 stationParameter.getNorthOffsetDriver(),
-                stationParameter.getZenithOffsetDriver()
+                stationParameter.getZenithOffsetDriver(),
+                measurement.getSatellites().get(0).getClockDriftDriver()
             };
-            for (int i = 0; i < 3; ++i) {
+            for (int i = 0; i < drivers.length; ++i) {
                 final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
                 Assert.assertEquals(1, measurement.getDimension());
                 Assert.assertEquals(1, gradient.length);
@@ -228,6 +250,12 @@ public class DSSTRangeRateTest {
                         context.createBuilder(true, 1.0e-6, 60.0, 0.001);
 
         // create perfect range rate measurements
+        final double groundClockDrift =  4.8e-9;
+        for (final GroundStation station : context.stations) {
+            station.getClockDriftDriver().setValue(groundClockDrift);
+        }
+        final double satClkDrift = 3.2e-10;
+        final DSSTRangeRateMeasurementCreator creator = new DSSTRangeRateMeasurementCreator(context, true, satClkDrift);
         for (final GroundStation station : context.stations) {
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
@@ -237,7 +265,7 @@ public class DSSTRangeRateTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         DSSTEstimationTestUtils.createMeasurements(propagator,
-                                                               new DSSTRangeRateMeasurementCreator(context, true),
+                                                               creator,
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
@@ -262,7 +290,7 @@ public class DSSTRangeRateTest {
                 stationParameter.getNorthOffsetDriver(),
                 stationParameter.getZenithOffsetDriver()
             };
-            for (int i = 0; i < 3; ++i) {
+            for (int i = 0; i < drivers.length; ++i) {
                 final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
                 Assert.assertEquals(1, measurement.getDimension());
                 Assert.assertEquals(1, gradient.length);
@@ -280,7 +308,7 @@ public class DSSTRangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 9.6e-6);
+        Assert.assertEquals(0, maxRelativeError, 8.2e-7);
 
     }
 
@@ -295,9 +323,15 @@ public class DSSTRangeRateTest {
         // create perfect range rate measurements
         final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final double groundClockDrift =  4.8e-9;
+        for (final GroundStation station : context.stations) {
+            station.getClockDriftDriver().setValue(groundClockDrift);
+        }
+        final double satClkDrift = 3.2e-10;
+        final DSSTRangeRateMeasurementCreator creator = new DSSTRangeRateMeasurementCreator(context, false, satClkDrift);
         final List<ObservedMeasurement<?>> measurements =
                         DSSTEstimationTestUtils.createMeasurements(propagator,
-                                                               new DSSTRangeRateMeasurementCreator(context, false),
+                                                               creator,
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
@@ -336,10 +370,9 @@ public class DSSTRangeRateTest {
             }
 
         }
-        Assert.assertEquals(0, maxRelativeError, 7.4e-8);
+        Assert.assertEquals(0, maxRelativeError, 7.2e-8);
 
     }
-
 
     @Test
     public void testParameterDerivativesWithModifier() {
@@ -350,7 +383,15 @@ public class DSSTRangeRateTest {
                         context.createBuilder(true, 1.0e-6, 60.0, 0.001);
 
         // create perfect range rate measurements
+        final double groundClockDrift =  4.8e-9;
         for (final GroundStation station : context.stations) {
+            station.getClockDriftDriver().setValue(groundClockDrift);
+        }
+        final double satClkDrift = 3.2e-10;
+        final DSSTRangeRateMeasurementCreator creator = new DSSTRangeRateMeasurementCreator(context, false, satClkDrift);
+        creator.getSatellite().getClockDriftDriver().setSelected(true);
+        for (final GroundStation station : context.stations) {
+            station.getClockDriftDriver().setSelected(true);
             station.getEastOffsetDriver().setSelected(true);
             station.getNorthOffsetDriver().setSelected(true);
             station.getZenithOffsetDriver().setSelected(true);
@@ -359,7 +400,7 @@ public class DSSTRangeRateTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         DSSTEstimationTestUtils.createMeasurements(propagator,
-                                                               new DSSTRangeRateMeasurementCreator(context, false),
+                                                               creator,
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
@@ -383,11 +424,13 @@ public class DSSTRangeRateTest {
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);
             final ParameterDriver[] drivers = new ParameterDriver[] {
+                stationParameter.getClockDriftDriver(),
                 stationParameter.getEastOffsetDriver(),
                 stationParameter.getNorthOffsetDriver(),
-                stationParameter.getZenithOffsetDriver()
+                stationParameter.getZenithOffsetDriver(),
+                measurement.getSatellites().get(0).getClockDriftDriver()
             };
-            for (int i = 0; i < 3; ++i) {
+            for (int i = 0; i < drivers.length; ++i) {
                 final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
                 Assert.assertEquals(1, measurement.getDimension());
                 Assert.assertEquals(1, gradient.length);

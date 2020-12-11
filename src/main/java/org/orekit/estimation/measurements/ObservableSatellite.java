@@ -29,6 +29,9 @@ public class ObservableSatellite {
     /** Prefix for clock offset parameter driver, the propagator index will be appended to it. */
     public static final String CLOCK_OFFSET_PREFIX = "clock-offset-satellite-";
 
+    /** Prefix for clock drift parameter driver, the propagator index will be appended to it. */
+    public static final String CLOCK_DRIFT_PREFIX = "clock-drift-satellite-";
+
     /** Clock offset scaling factor.
      * <p>
      * We use a power of 2 to avoid numeric noise introduction
@@ -43,6 +46,9 @@ public class ObservableSatellite {
     /** Parameter driver for satellite clock offset. */
     private final ParameterDriver clockOffsetDriver;
 
+    /** Parameter driver for satellite clock drift. */
+    private final ParameterDriver clockDriftDriver;
+
     /** Simple constructor.
      * @param propagatorIndex index of the propagator related to this satellite
      */
@@ -51,6 +57,9 @@ public class ObservableSatellite {
         this.clockOffsetDriver = new ParameterDriver(CLOCK_OFFSET_PREFIX + propagatorIndex,
                                                      0.0, CLOCK_OFFSET_SCALE,
                                                      Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        this.clockDriftDriver = new ParameterDriver(CLOCK_DRIFT_PREFIX + propagatorIndex,
+                                                    0.0, CLOCK_OFFSET_SCALE,
+                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
     }
 
     /** Get the index of the propagator related to this satellite.
@@ -70,6 +79,17 @@ public class ObservableSatellite {
      */
     public ParameterDriver getClockOffsetDriver() {
         return clockOffsetDriver;
+    }
+
+    /** Get the clock drift parameter driver.
+     * <p>
+     * The drift is negative if the satellite clock is slowing down and positive if it is speeding up.
+     * </p>
+     * @return clock offset parameter driver
+     * @since 10.3
+     */
+    public ParameterDriver getClockDriftDriver() {
+        return clockDriftDriver;
     }
 
 }

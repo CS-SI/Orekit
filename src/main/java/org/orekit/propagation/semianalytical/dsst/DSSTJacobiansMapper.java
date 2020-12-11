@@ -262,44 +262,18 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
                     }
                 }
 
-                // The variational equations of the complete state Jacobian matrix have the following form:
-
-                //                     [ Adot ] = [ dShortPerioddState ] * [ A ]
-
-                // The A matrix and its derivative (Adot) are 6 * 6 matrices
-
-                // The following loops compute these expression taking care of the mapping of the
-                // A matrix into the single dimension array p and of the mapping of the
-                // Adot matrix into the single dimension array shortPeriodDerivatives.
-
+                // Get orbital short period derivatives with respect orbital elements.
                 for (int i = 0; i < dim; i++) {
-                    final double[] dShortPerioddStatei = dShortPerioddState[i];
                     for (int j = 0; j < dim; j++) {
-                        shortPeriodDerivatives[j + dim * i] =
-                                         dShortPerioddStatei[0] * p[j]           + dShortPerioddStatei[1] * p[j +     dim] + dShortPerioddStatei[2] * p[j + 2 * dim] +
-                                         dShortPerioddStatei[3] * p[j + 3 * dim] + dShortPerioddStatei[4] * p[j + 4 * dim] + dShortPerioddStatei[5] * p[j + 5 * dim];
+                        shortPeriodDerivatives[j + dim * i] = dShortPerioddState[i][j];
                     }
                 }
 
+                // Get orbital short period derivatives with respect to model parameters.
                 final int columnTop = dim * dim;
                 for (int k = 0; k < paramDim; k++) {
-                    // the variational equations of the parameters Jacobian matrix are computed
-                    // one column at a time, they have the following form:
-
-                    //             [ Bdot ] = [ dShortPerioddState ] * [ B ] + [ dShortPerioddParam ]
-
-                    // The B sub-columns and its derivative (Bdot) are 6 elements columns.
-
-                    // The following loops compute this expression taking care of the mapping of the
-                    // B columns into the single dimension array p and of the mapping of the
-                    // Bdot columns into the single dimension array shortPeriodDerivatives.
-
                     for (int i = 0; i < dim; ++i) {
-                        final double[] dShortPerioddStatei = dShortPerioddState[i];
-                        shortPeriodDerivatives[columnTop + (i + dim * k)] =
-                            dShortPerioddParam[i][k] +
-                            dShortPerioddStatei[0] * p[columnTop + k]                + dShortPerioddStatei[1] * p[columnTop + k +     paramDim] + dShortPerioddStatei[2] * p[columnTop + k + 2 * paramDim] +
-                            dShortPerioddStatei[3] * p[columnTop + k + 3 * paramDim] + dShortPerioddStatei[4] * p[columnTop + k + 4 * paramDim] + dShortPerioddStatei[5] * p[columnTop + k + 5 * paramDim];
+                        shortPeriodDerivatives[columnTop + (i + dim * k)] = dShortPerioddParam[i][k];
                     }
                 }
                 break;

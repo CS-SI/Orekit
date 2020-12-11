@@ -28,6 +28,7 @@ import org.hipparchus.linear.DiagonalMatrix;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresBuilder;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.SinCos;
 import org.orekit.time.AbsoluteDate;
 
 /** Class for fitting evolution of osculating orbital parameters.
@@ -54,6 +55,16 @@ public class SecularAndHarmonic {
     /** Observed points. */
     private List<WeightedObservedPoint> observedPoints;
 
+    /** RMS for convergence.
+     * @since 10.3
+     */
+    private double convergenceRMS;
+
+    /** Maximum number of iterations.
+     * @since 10.3
+     */
+    private int maxIter;
+
     /** Simple constructor.
      * @param secularDegree degree of polynomial secular part
      * @param pulsations pulsations of harmonic part
@@ -62,6 +73,8 @@ public class SecularAndHarmonic {
         this.secularDegree  = secularDegree;
         this.pulsations     = pulsations.clone();
         this.observedPoints = new ArrayList<WeightedObservedPoint>();
+        this.convergenceRMS = 0.0;
+        this.maxIter        = Integer.MAX_VALUE;
     }
 
     /** Reset fitting.
@@ -73,6 +86,26 @@ public class SecularAndHarmonic {
         reference = date;
         fitted    = initialGuess.clone();
         observedPoints.clear();
+    }
+
+    /** Set RMS for convergence.
+     * <p>
+     * The RMS is the square-root of the sum of squared of
+     * the residuals, divided by the number of measurements.
+     * </p>
+     * @param convergenceRMS RMS below which convergence is considered to have been reached
+     * @since 10.3
+     */
+    public void setConvergenceRMS(final double convergenceRMS) {
+        this.convergenceRMS = convergenceRMS;
+    }
+
+    /** Set maximum number of iterations.
+     * @param maxIter maximum number of iterations
+     * @since 10.3
+     */
+    public void setMaxIter(final int maxIter) {
+        this.maxIter = maxIter;
     }
 
     /** Add a fitting point.
@@ -130,7 +163,8 @@ public class SecularAndHarmonic {
                 // build a new least squares problem set up to fit a secular and harmonic curve to the observed points
                 return new LeastSquaresBuilder().
                         maxEvaluations(Integer.MAX_VALUE).
-                        maxIterations(Integer.MAX_VALUE).
+                        maxIterations(maxIter).
+                        checker((iteration, previous, current) -> current.getRMS() <= convergenceRMS).
                         start(fitted).
                         target(target).
                         weight(new DiagonalMatrix(weights)).
@@ -165,8 +199,9 @@ public class SecularAndHarmonic {
 
             // harmonic part
             for (int i = 0; i < pulsations.length; ++i) {
-                gradient[secularDegree + 2 * i + 1] = FastMath.cos(pulsations[i] * x);
-                gradient[secularDegree + 2 * i + 2] = FastMath.sin(pulsations[i] * x);
+                final SinCos sc = FastMath.sinCos(pulsations[i] * x);
+                gradient[secularDegree + 2 * i + 1] = sc.cos();
+                gradient[secularDegree + 2 * i + 2] = sc.sin();
             }
 
             return gradient;
@@ -294,8 +329,9 @@ public class SecularAndHarmonic {
 
         // harmonic part
         for (int i = 0; i < harmonics; ++i) {
-            value += parameters[secularDegree + 2 * i + 1] * FastMath.cos(pulsations[i] * time) +
-                     parameters[secularDegree + 2 * i + 2] * FastMath.sin(pulsations[i] * time);
+            final SinCos sc = FastMath.sinCos(pulsations[i] * time);
+            value += parameters[secularDegree + 2 * i + 1] * sc.cos() +
+                     parameters[secularDegree + 2 * i + 2] * sc.sin();
         }
 
         return value;
@@ -324,8 +360,9 @@ public class SecularAndHarmonic {
 
         // harmonic part
         for (int i = 0; i < harmonics; ++i) {
-            derivative += pulsations[i] * (-parameters[secularDegree + 2 * i + 1] * FastMath.sin(pulsations[i] * time) +
-                                            parameters[secularDegree + 2 * i + 2] * FastMath.cos(pulsations[i] * time));
+            final SinCos sc = FastMath.sinCos(pulsations[i] * time);
+            derivative += pulsations[i] * (-parameters[secularDegree + 2 * i + 1] * sc.sin() +
+                                            parameters[secularDegree + 2 * i + 2] * sc.cos());
         }
 
         return derivative;
@@ -354,9 +391,10 @@ public class SecularAndHarmonic {
 
         // harmonic part
         for (int i = 0; i < harmonics; ++i) {
+            final SinCos sc = FastMath.sinCos(pulsations[i] * time);
             d2 += -pulsations[i] * pulsations[i] *
-                  (parameters[secularDegree + 2 * i + 1] * FastMath.cos(pulsations[i] * time) +
-                   parameters[secularDegree + 2 * i + 2] * FastMath.sin(pulsations[i] * time));
+                  (parameters[secularDegree + 2 * i + 1] * sc.cos() +
+                   parameters[secularDegree + 2 * i + 2] * sc.sin());
         }
 
         return d2;

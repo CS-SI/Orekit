@@ -45,12 +45,14 @@ public class TLEKalmanModel extends AbstractKalmanModel {
      * @param propagatorBuilders propagators builders used to evaluate the orbits.
      * @param covarianceMatricesProviders providers for covariance matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
+     * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
      */
     public TLEKalmanModel(final List<ODPropagatorBuilder> propagatorBuilders,
                           final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                          final ParameterDriversList estimatedMeasurementParameters) {
+                          final ParameterDriversList estimatedMeasurementParameters,
+                          final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
         // call super constructor
-        super(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementParameters);
+        super(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementParameters, measurementProcessNoiseMatrix);
     }
 
     /** {@inheritDoc} */

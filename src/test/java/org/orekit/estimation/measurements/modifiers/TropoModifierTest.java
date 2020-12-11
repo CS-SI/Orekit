@@ -132,9 +132,17 @@ public class TropoModifierTest {
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final int    ambiguity         = 1234;
+        final double groundClockOffset =  12.0e-6;
+        for (final GroundStation station : context.stations) {
+            station.getClockOffsetDriver().setValue(groundClockOffset);
+        }
+        final double satClockOffset    = 345.0e-6;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new PhaseMeasurementCreator(context, Frequency.G01, 0),
+                                                               new PhaseMeasurementCreator(context, Frequency.G01,
+                                                                                           ambiguity,
+                                                                                           satClockOffset),
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
@@ -220,9 +228,17 @@ public class TropoModifierTest {
 
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final int    ambiguity         = 1234;
+        final double groundClockOffset =  12.0e-6;
+        for (final GroundStation station : context.stations) {
+            station.getClockOffsetDriver().setValue(groundClockOffset);
+        }
+        final double satClockOffset    = 345.0e-6;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new PhaseMeasurementCreator(context, Frequency.G01, 0),
+                                                               new PhaseMeasurementCreator(context, Frequency.G01,
+                                                                                           ambiguity,
+                                                                                           satClockOffset),
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
@@ -328,9 +344,10 @@ public class TropoModifierTest {
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context, false),
+                                                               new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
@@ -369,9 +386,10 @@ public class TropoModifierTest {
 
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context, false),
+                                                               new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 

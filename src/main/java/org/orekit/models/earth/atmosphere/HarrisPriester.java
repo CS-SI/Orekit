@@ -21,6 +21,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
+import org.hipparchus.util.SinCos;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -59,10 +60,9 @@ public class HarrisPriester implements Atmosphere {
 
     /** Lag angle for diurnal bulge. */
     private static final double LAG = FastMath.toRadians(30.0);
-    /** Lag angle cosine. */
-    private static final double COSLAG = FastMath.cos(LAG);
-    /** Lag angle sine. */
-    private static final double SINLAG = FastMath.sin(LAG);
+
+    /** Lag angle sine and cosine. */
+    private static final SinCos SCLAG = FastMath.sinCos(LAG);
 
     // CHECKSTYLE: stop NoWhitespaceAfter check
     /** Harris-Priester min-max density (kg/m3) vs. altitude (m) table.
@@ -288,8 +288,8 @@ public class HarrisPriester implements Atmosphere {
 
         // Diurnal bulge apex direction
         final Vector3D sunDir = sunInEarth.normalize();
-        final Vector3D bulDir = new Vector3D(sunDir.getX() * COSLAG - sunDir.getY() * SINLAG,
-                                             sunDir.getX() * SINLAG + sunDir.getY() * COSLAG,
+        final Vector3D bulDir = new Vector3D(sunDir.getX() * SCLAG.cos() - sunDir.getY() * SCLAG.sin(),
+                                             sunDir.getX() * SCLAG.sin() + sunDir.getY() * SCLAG.cos(),
                                              sunDir.getZ());
 
         // Cosine of angle Psi between the diurnal bulge apex and the satellite
@@ -340,8 +340,8 @@ public class HarrisPriester implements Atmosphere {
 
         // Diurnal bulge apex direction
         final Vector3D sunDir = sunInEarth.normalize();
-        final Vector3D bulDir = new Vector3D(sunDir.getX() * COSLAG - sunDir.getY() * SINLAG,
-                                             sunDir.getX() * SINLAG + sunDir.getY() * COSLAG,
+        final Vector3D bulDir = new Vector3D(sunDir.getX() * SCLAG.cos() - sunDir.getY() * SCLAG.sin(),
+                                             sunDir.getX() * SCLAG.sin() + sunDir.getY() * SCLAG.cos(),
                                              sunDir.getZ());
 
         // Cosine of angle Psi between the diurnal bulge apex and the satellite

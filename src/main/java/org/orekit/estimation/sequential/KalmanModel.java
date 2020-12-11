@@ -35,16 +35,31 @@ import org.orekit.utils.ParameterDriversList;
  */
 public class KalmanModel extends AbstractKalmanModel {
 
-    /** Kalman process model constructor (package private).
+    /** Kalman process model constructor.
+     * @param propagatorBuilders propagators builders used to evaluate the orbits.
+     * @param covarianceMatricesProviders providers for covariance matrices (orbital and propagation parameters)
+     * @param estimatedMeasurementParameters measurement parameters to estimate
+     * @deprecated since 10.3, replaced by {@link #KalmanModel(List, List, ParameterDriversList, CovarianceMatrixProvider)}
+     */
+    @Deprecated
+    public KalmanModel(final List<ODPropagatorBuilder> propagatorBuilders,
+                       final List<CovarianceMatrixProvider> covarianceMatricesProviders,
+                       final ParameterDriversList estimatedMeasurementParameters) {
+        this(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementParameters, null);
+    }
+
+    /** Kalman process model constructor.
      * @param propagatorBuilders propagators builders used to evaluate the orbits.
      * @param covarianceMatricesProviders providers for covariance matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
+     * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
      */
     public KalmanModel(final List<ODPropagatorBuilder> propagatorBuilders,
-          final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-          final ParameterDriversList estimatedMeasurementParameters) {
+                       final List<CovarianceMatrixProvider> covarianceMatricesProviders,
+                       final ParameterDriversList estimatedMeasurementParameters,
+                       final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
         // call super constructor
-        super(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementParameters);
+        super(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementParameters, measurementProcessNoiseMatrix);
     }
 
     /** {@inheritDoc} */
@@ -80,6 +95,7 @@ public class KalmanModel extends AbstractKalmanModel {
         }
 
     }
+
 
     /** {@inheritDoc} */
     @Override

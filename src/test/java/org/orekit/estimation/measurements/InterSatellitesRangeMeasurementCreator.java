@@ -35,26 +35,49 @@ public class InterSatellitesRangeMeasurementCreator extends MeasurementCreator {
     private final ObservableSatellite remote;
     private int count;
 
-    public InterSatellitesRangeMeasurementCreator(final BoundedPropagator ephemeris) {
-        this(ephemeris, Vector3D.ZERO, Vector3D.ZERO);
+    public InterSatellitesRangeMeasurementCreator(final BoundedPropagator ephemeris,
+                                                  final double localClockOffset,
+                                                  final double remoteClockOffset) {
+        this(ephemeris, localClockOffset, remoteClockOffset, Vector3D.ZERO, Vector3D.ZERO);
     }
 
     public InterSatellitesRangeMeasurementCreator(final BoundedPropagator ephemeris,
+                                                  final double localClockOffset,
+                                                  final double remoteClockOffset,
                                                   final Vector3D antennaPhaseCenter1,
                                                   final Vector3D antennaPhaseCenter2) {
         this.ephemeris           = ephemeris;
         this.antennaPhaseCenter1 = antennaPhaseCenter1;
         this.antennaPhaseCenter2 = antennaPhaseCenter2;
         this.local               = new ObservableSatellite(0);
+        this.local.getClockOffsetDriver().setValue(localClockOffset);
         this.remote              = new ObservableSatellite(1);
+        this.remote.getClockOffsetDriver().setValue(remoteClockOffset);
+    }
+
+    public ObservableSatellite getLocalSatellite() {
+        return local;
+    }
+
+    public ObservableSatellite getRemoteSatellite() {
+        return remote;
     }
 
     public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {
         count = 0;
+        if (local.getClockOffsetDriver().getReferenceDate() == null) {
+            local.getClockOffsetDriver().setReferenceDate(s0.getDate());
+        }
+        if (remote.getClockOffsetDriver().getReferenceDate() == null) {
+            remote.getClockOffsetDriver().setReferenceDate(s0.getDate());
+        }
     }
 
     public void handleStep(final SpacecraftState currentState, final boolean isLast) {
         try {
+            final double           remoteClk = remote.getClockOffsetDriver().getValue();
+            final double           localClk  = local.getClockOffsetDriver().getValue();
+            final double           deltaD    = Constants.SPEED_OF_LIGHT * (localClk - remoteClk);
             final AbsoluteDate     date      = currentState.getDate();
             final Vector3D         position  = currentState.toTransform().getInverse().transformPosition(antennaPhaseCenter1);
 
@@ -95,7 +118,7 @@ public class InterSatellitesRangeMeasurementCreator extends MeasurementCreator {
                                                         0.5 * (downLinkDistance + upLinkDistance), 1.0, 10));
             } else {
                 // generate a one-way measurement
-                addMeasurement(new InterSatellitesRange(local, remote, false, date, downLinkDistance, 1.0, 10));
+                addMeasurement(new InterSatellitesRange(local, remote, false, date.shiftedBy(localClk), downLinkDistance + deltaD, 1.0, 10));
             }
 
         } catch (OrekitException oe) {

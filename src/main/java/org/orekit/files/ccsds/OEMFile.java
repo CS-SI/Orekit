@@ -77,6 +77,7 @@ public class OEMFile extends ODMFile implements EphemerisFile {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public Map<String, OemSatelliteEphemeris> getSatellites() {
         final Map<String, List<EphemeridesBlock>> satellites = new HashMap<>();
@@ -91,6 +92,68 @@ public class OEMFile extends ODMFile implements EphemerisFile {
             ret.put(id, new OemSatelliteEphemeris(id, getMuUsed(), entry.getValue()));
         }
         return ret;
+    }
+
+
+    /** OEM ephemeris blocks for a single satellite. */
+    public static class OemSatelliteEphemeris implements SatelliteEphemeris {
+
+        /** ID of the satellite. */
+        private final String id;
+
+        /** Gravitational parameter for the satellite, in m^3 / s^2. */
+        private final double mu;
+
+        /** The ephemeris data for the satellite. */
+        private final List<EphemeridesBlock> blocks;
+
+        /**
+         * Create a container for the set of ephemeris blocks in the file that pertain to
+         * a single satellite.
+         *
+         * @param id     of the satellite.
+         * @param mu     standard gravitational parameter used to create orbits for the
+         *               satellite, in m^3 / s^2.
+         * @param blocks containing ephemeris data for the satellite.
+         */
+        public OemSatelliteEphemeris(final String id,
+                                     final double mu,
+                                     final List<EphemeridesBlock> blocks) {
+            this.id = id;
+            this.mu = mu;
+            this.blocks = blocks;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public String getId() {
+            return this.id;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double getMu() {
+            return this.mu;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public List<EphemeridesBlock> getSegments() {
+            return Collections.unmodifiableList(blocks);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public AbsoluteDate getStart() {
+            return blocks.get(0).getStart();
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public AbsoluteDate getStop() {
+            return blocks.get(blocks.size() - 1).getStop();
+        }
+
     }
 
     /** The Ephemerides Blocks class contain metadata, the list of ephemerides data
@@ -129,7 +192,7 @@ public class OEMFile extends ODMFile implements EphemerisFile {
         /** List of ephemerides data lines. */
         private List<TimeStampedPVCoordinates> ephemeridesDataLines;
 
-        /** True iff all data points in this block have accelleration data. */
+        /** True iff all data points in this block have acceleration data. */
         private boolean hasAcceleration;
 
         /** List of covariance matrices. */
@@ -157,6 +220,7 @@ public class OEMFile extends ODMFile implements EphemerisFile {
             return this.ephemeridesDataLines;
         }
 
+        /** {@inheritDoc} */
         @Override
         public CartesianDerivativesFilter getAvailableDerivatives() {
             return hasAcceleration ? CartesianDerivativesFilter.USE_PVA :
@@ -173,6 +237,7 @@ public class OEMFile extends ODMFile implements EphemerisFile {
             this.hasAcceleration = this.hasAcceleration && pointHasAcceleration;
         }
 
+        /** {@inheritDoc} */
         @Override
         public List<TimeStampedPVCoordinates> getCoordinates() {
             return Collections.unmodifiableList(this.ephemeridesDataLines);
@@ -192,26 +257,31 @@ public class OEMFile extends ODMFile implements EphemerisFile {
             return metaData;
         }
 
+        /** {@inheritDoc} */
         @Override
         public double getMu() {
             return getMuUsed();
         }
 
+        /** {@inheritDoc} */
         @Override
         public String getFrameCenterString() {
             return this.getMetaData().getCenterName();
         }
 
+        /** {@inheritDoc} */
         @Override
         public String getFrameString() {
             return this.getMetaData().getFrameString();
         }
 
+        /** {@inheritDoc} */
         @Override
         public Frame getFrame() {
             return this.getMetaData().getFrame();
         }
 
+        /** {@inheritDoc} */
         @Override
         public Frame getInertialFrame() {
             final Frame frame = getFrame();
@@ -221,11 +291,13 @@ public class OEMFile extends ODMFile implements EphemerisFile {
             return metaData.getODMFile().getDataContext().getFrames().getGCRF();
         }
 
+        /** {@inheritDoc} */
         @Override
         public String getTimeScaleString() {
             return this.getMetaData().getTimeSystem().toString();
         }
 
+        /** {@inheritDoc} */
         @Override
         public TimeScale getTimeScale() {
             return this.getMetaData().getTimeScale();
@@ -295,9 +367,10 @@ public class OEMFile extends ODMFile implements EphemerisFile {
             this.useableStopTime = useableStopTime;
         }
 
+        /** {@inheritDoc} */
         @Override
         public AbsoluteDate getStart() {
-            // usable start time overrides start time if it is set
+            // useable start time overrides start time if it is set
             final AbsoluteDate start = this.getUseableStartTime();
             if (start != null) {
                 return start;
@@ -306,6 +379,7 @@ public class OEMFile extends ODMFile implements EphemerisFile {
             }
         }
 
+        /** {@inheritDoc} */
         @Override
         public AbsoluteDate getStop() {
             // useable stop time overrides stop time if it is set
@@ -345,6 +419,7 @@ public class OEMFile extends ODMFile implements EphemerisFile {
             this.interpolationDegree = interpolationDegree;
         }
 
+        /** {@inheritDoc} */
         @Override
         public int getInterpolationSamples() {
             // From the standard it is not entirely clear how to interpret the degree.
@@ -454,60 +529,6 @@ public class OEMFile extends ODMFile implements EphemerisFile {
          */
         public Frame getFrame() {
             return frame;
-        }
-
-    }
-
-    /** OEM ephemeris blocks for a single satellite. */
-    public static class OemSatelliteEphemeris implements SatelliteEphemeris {
-
-        /** ID of the satellite. */
-        private final String id;
-        /** Gravitational prameter for the satellite, in m^3 / s^2. */
-        private final double mu;
-        /** The ephemeris data for the satellite. */
-        private final List<EphemeridesBlock> blocks;
-
-        /**
-         * Create a container for the set of ephemeris blocks in the file that pertain to
-         * a single satellite.
-         *
-         * @param id     of the satellite.
-         * @param mu     standard gravitational parameter used to create orbits for the
-         *               satellite, in m^3 / s^2.
-         * @param blocks containing ephemeris data for the satellite.
-         */
-        public OemSatelliteEphemeris(final String id,
-                                     final double mu,
-                                     final List<EphemeridesBlock> blocks) {
-            this.id = id;
-            this.mu = mu;
-            this.blocks = blocks;
-        }
-
-        @Override
-        public String getId() {
-            return this.id;
-        }
-
-        @Override
-        public double getMu() {
-            return this.mu;
-        }
-
-        @Override
-        public List<EphemeridesBlock> getSegments() {
-            return Collections.unmodifiableList(blocks);
-        }
-
-        @Override
-        public AbsoluteDate getStart() {
-            return blocks.get(0).getStart();
-        }
-
-        @Override
-        public AbsoluteDate getStop() {
-            return blocks.get(blocks.size() - 1).getStop();
         }
 
     }

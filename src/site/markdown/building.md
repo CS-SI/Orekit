@@ -20,6 +20,12 @@ All these tools are Java based and can run on many different operating
 systems, including Unix, GNU/Linux, Windows and Mac OS X. Some GNU/Linux
 distributions provide these tools in their packages repositories.
 
+The instructions below are for people seeking to modify the Orekit library.
+For instance, to include their own models or modifications in the library
+before using it in their applications.
+They are not intended for people who are simply trying to use or to include
+Orekit in their projects.
+
 ## Building with Maven 3
 
 [Maven](http://maven.apache.org/) is a build tool that goes far beyond

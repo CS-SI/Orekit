@@ -44,9 +44,9 @@ public class BatchLSModel extends AbstractBatchLSModel {
      * @param observer observer to be notified at model calls
      */
     public BatchLSModel(final ODPropagatorBuilder[] propagatorBuilders,
-                 final List<ObservedMeasurement<?>> measurements,
-                 final ParameterDriversList estimatedMeasurementsParameters,
-                 final ModelObserver observer) {
+                        final List<ObservedMeasurement<?>> measurements,
+                        final ParameterDriversList estimatedMeasurementsParameters,
+                        final ModelObserver observer) {
         // call super constructor
         super(propagatorBuilders, measurements, estimatedMeasurementsParameters, observer);
     }
@@ -83,9 +83,16 @@ public class BatchLSModel extends AbstractBatchLSModel {
     }
 
     /** {@inheritDoc} */
-    @Override
     protected void computeDerivatives(final AbstractJacobiansMapper mapper,
                                       final SpacecraftState state) {
+        // does nothing
+        // numerical method does not require analytical terms calculations
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void computeInitialDerivatives(final AbstractJacobiansMapper mapper,
+                                             final AbstractPropagator propagator) {
         // does nothing
         // numerical method does not require analytical terms calculations
     }

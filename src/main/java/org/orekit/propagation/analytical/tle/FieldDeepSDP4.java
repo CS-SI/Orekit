@@ -18,8 +18,10 @@ package org.orekit.propagation.analytical.tle;
 
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
@@ -208,11 +210,13 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
 
         final T zero = tle.getPerigeeArgument().getField().getZero();
 
-        final T sing = FastMath.sin(tle.getPerigeeArgument());
-        final T cosg = FastMath.cos(tle.getPerigeeArgument());
+        final FieldSinCos<T> scg  = FastMath.sinCos(tle.getPerigeeArgument());
+        final T sing = scg.sin();
+        final T cosg = scg.cos();
 
-        final T sinq = FastMath.sin(tle.getRaan());
-        final T cosq = FastMath.cos(tle.getRaan());
+        final FieldSinCos<T> scq  = FastMath.sinCos(tle.getRaan());
+        final T sinq = scq.sin();
+        final T cosq = scq.cos();
         final T aqnv = a0dp.reciprocal();
 
         // Compute julian days since 1900
@@ -232,8 +236,9 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
         omegaq = tle.getPerigeeArgument();
 
         final double xnodce = 4.5236020 - 9.2422029e-4 * daysSince1900;
-        final double stem = FastMath.sin(xnodce);
-        final double ctem = FastMath.cos(xnodce);
+        final SinCos scTem  = FastMath.sinCos(xnodce);
+        final double stem = scTem.sin();
+        final double ctem = scTem.cos();
         final double c_minus_gam = 0.228027132 * daysSince1900 - 1.1151842;
         final double gam = 5.8351514 + 0.0019443680 * daysSince1900;
 
@@ -246,8 +251,9 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
         double zx = 0.39785416 * stem / zsinil;
         final double zy = zcoshl * ctem + 0.91744867 * zsinhl * stem;
         zx = FastMath.atan2( zx, zy) + gam - xnodce;
-        zcosgl = FastMath.cos( zx);
-        zsingl = FastMath.sin( zx);
+        final SinCos scZx = FastMath.sinCos(zx);
+        zcosgl = scZx.cos();
+        zsingl = scZx.sin();
         zmos = MathUtils.normalizeAngle(6.2565837 + 0.017201977 * daysSince1900, FastMath.PI);
 
         // Do solar terms
@@ -584,9 +590,10 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
             // Update solar perturbations for time T
             T zm = t.multiply(ZNS).add(zmos);
             T zf = zm.add(FastMath.sin(zm).multiply(2 * ZES));
-            T sinzf = FastMath.sin(zf);
+            FieldSinCos<T> sczf = FastMath.sinCos(zf);
+            T sinzf = sczf.sin();
             T f2 = sinzf.multiply(sinzf).multiply(0.5).subtract(0.25);
-            T f3 = sinzf.multiply(FastMath.cos(zf)).multiply(-0.5);
+            T f3 = sinzf.multiply(sczf.cos()).multiply(-0.5);
             final T ses = se2.multiply(f2).add(se3.multiply(f3));
             final T sis = si2.multiply(f2).add(si3.multiply(f3));
             final T sls = sl2.multiply(f2).add(sl3.multiply(f3)).add(sl4.multiply(sinzf));
@@ -596,9 +603,10 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
             // Update lunar perturbations for time T
             zm = t.multiply(ZNL).add(zmol);
             zf = zm.add(FastMath.sin(zm).multiply(2 * ZEL));
-            sinzf = FastMath.sin(zf);
+            sczf = FastMath.sinCos(zf);
+            sinzf = sczf.sin();
             f2 =  sinzf.multiply(sinzf).multiply(0.5).subtract(0.25);
-            f3 = sinzf.multiply(FastMath.cos(zf)).multiply(-0.5);
+            f3 = sinzf.multiply(sczf.cos()).multiply(-0.5);
             final T sel = ee2.multiply(f2).add(e3.multiply(f3));
             final T sil = xi2.multiply(f2).add(xi3.multiply(f3));
             final T sll = xl2.multiply(f2).add(xl3.multiply(f3)).add(xl4.multiply(sinzf));
@@ -615,8 +623,9 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
 
         xinc = xinc.add(pinc);
 
-        final T sinis = FastMath.sin( xinc);
-        final T cosis = FastMath.cos( xinc);
+        final FieldSinCos<T> scis = FastMath.sinCos(xinc);
+        final T sinis = scis.sin();
+        final T cosis = scis.cos();
 
         /* Add solar/lunar perturbation correction to eccentricity: */
         em     = em.add(pe);
@@ -631,8 +640,9 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
             xnode  = xnode.add(temp_val);
         } else {
             // Apply periodics with Lyddane modification
-            final T sinok = FastMath.sin(xnode);
-            final T cosok = FastMath.cos(xnode);
+            final FieldSinCos<T> scok = FastMath.sinCos(xnode);
+            final T sinok = scok.sin();
+            final T cosok = scok.cos();
             final T alfdp =  ph.multiply(cosok).add((pinc.multiply(cosis).add(sinis)).multiply(sinok));
             final T betdp = ph.negate().multiply(sinok).add((pinc.multiply(cosis).add(sinis)).multiply(cosok));
             final T delta_xnode = MathUtils.normalizeAngle(FastMath.atan2(alfdp, betdp).subtract(xnode), t.getField().getZero());
@@ -645,8 +655,9 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
     /** Computes internal secular derivs. */
     private void computeSecularDerivs() {
 
-        final T sin_li = FastMath.sin(xli);
-        final T cos_li = FastMath.cos(xli);
+        final FieldSinCos<T> sc_li  = FastMath.sinCos(xli);
+        final T sin_li = sc_li.sin();
+        final T cos_li = sc_li.cos();
         final T sin_2li = sin_li.multiply(cos_li).multiply(2.);
         final T cos_2li = cos_li.multiply(cos_li).multiply(2.).subtract(1.);
 
@@ -665,8 +676,9 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
         } else {
             // orbit is a 12-hour resonant one
             final T xomi = omegaq.add(omgdot.multiply(atime));
-            final T sin_omi = FastMath.sin(xomi);
-            final T cos_omi = FastMath.cos(xomi);
+            final FieldSinCos<T> sc_omi  = FastMath.sinCos(xomi);
+            final T sin_omi = sc_omi.sin();
+            final T cos_omi = sc_omi.cos();
             final T sin_li_m_omi = sin_li.multiply(cos_omi).subtract(sin_omi.multiply(cos_li));
             final T sin_li_p_omi = sin_li.multiply(cos_omi).add(     sin_omi.multiply(cos_li));
             final T cos_li_m_omi = cos_li.multiply(cos_omi).add(     sin_omi.multiply(sin_li));

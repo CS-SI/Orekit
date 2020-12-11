@@ -33,6 +33,7 @@ import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
 import org.orekit.estimation.measurements.EstimationsProvider;
+import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.InterSatellitesRangeMeasurementCreator;
 import org.orekit.estimation.measurements.MultiplexedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -265,7 +266,7 @@ public class BatchLSEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context, antennaPhaseCenter, 0.0),
+                                                               new RangeMeasurementCreator(context, antennaPhaseCenter),
                                                                1.0, 3.0, 300.0);
 
         // create orbit estimator
@@ -370,9 +371,14 @@ public class BatchLSEstimatorTest {
         final BoundedPropagator ephemeris = closePropagator.getGeneratedEphemeris();
         Propagator propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                      propagatorBuilder1);
+        
+        final double localClockOffset  = 0.137e-6;
+        final double remoteClockOffset = 469.0e-6;
         final List<ObservedMeasurement<?>> r12 =
                         EstimationTestUtils.createMeasurements(propagator1,
-                                                               new InterSatellitesRangeMeasurementCreator(ephemeris),
+                                                               new InterSatellitesRangeMeasurementCreator(ephemeris,
+                                                                                                          localClockOffset,
+                                                                                                          remoteClockOffset),
                                                                1.0, 3.0, 300.0);
 
         // create perfect range measurements for first satellite
@@ -466,10 +472,10 @@ public class BatchLSEstimatorTest {
                                               before.getPVCoordinates().getVelocity()),
                             1.0e-6);
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
-                                     0.0, 2.3e-06,
-                                     0.0, 6.6e-06,
-                                     0.0, 6.4e-07,
-                                     0.0, 2.9e-10);
+                                     0.0, 2.6e-06,
+                                     0.0, 1.1e-05,
+                                     0.0, 8.3e-07,
+                                     0.0, 3.7e-10);
 
         final Orbit determined = new KeplerianOrbit(parameters.get( 6).getValue(),
                                                     parameters.get( 7).getValue(),
@@ -484,7 +490,7 @@ public class BatchLSEstimatorTest {
         Assert.assertEquals(0.0,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
                                               determined.getPVCoordinates().getPosition()),
-                            1.6e-6);
+                            2.8e-6);
         Assert.assertEquals(0.0,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                                               determined.getPVCoordinates().getVelocity()),
@@ -580,7 +586,7 @@ public class BatchLSEstimatorTest {
                                                                      propagatorBuilder1);
         final List<ObservedMeasurement<?>> r12 =
                         EstimationTestUtils.createMeasurements(propagator1,
-                                                               new InterSatellitesRangeMeasurementCreator(ephemeris),
+                                                               new InterSatellitesRangeMeasurementCreator(ephemeris, 0., 0.),
                                                                1.0, 3.0, 300.0);
 
         // create perfect range measurements for first satellite
@@ -730,9 +736,10 @@ public class BatchLSEstimatorTest {
         final BoundedPropagator ephemeris = closePropagator.getGeneratedEphemeris();
         Propagator propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                      propagatorBuilder1);
+        
         final List<ObservedMeasurement<?>> r12 =
                         EstimationTestUtils.createMeasurements(propagator1,
-                                                               new InterSatellitesRangeMeasurementCreator(ephemeris),
+                                                               new InterSatellitesRangeMeasurementCreator(ephemeris, 0., 0.),
                                                                1.0, 3.0, 300.0);
 
         // create perfect range measurements for first satellite
@@ -947,9 +954,14 @@ public class BatchLSEstimatorTest {
         // create perfect range rate measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final double groundClockDrift =  4.8e-9;
+        for (final GroundStation station : context.stations) {
+            station.getClockDriftDriver().setValue(groundClockDrift);
+        }
+        final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurements1 =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context, false),
+                                                               new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
 
         final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
@@ -992,9 +1004,14 @@ public class BatchLSEstimatorTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
+        final double groundClockDrift =  4.8e-9;
+        for (final GroundStation station : context.stations) {
+            station.getClockDriftDriver().setValue(groundClockDrift);
+        }
+        final double satClkDrift = 3.2e-10;
         final List<ObservedMeasurement<?>> measurementsRangeRate =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context, false),
+                                                               new RangeRateMeasurementCreator(context, false, satClkDrift),
                                                                1.0, 3.0, 300.0);
 
         // concat measurements

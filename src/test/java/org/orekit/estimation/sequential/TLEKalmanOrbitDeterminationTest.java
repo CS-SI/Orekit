@@ -173,6 +173,16 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
 
     /** {@inheritDoc} */
     @Override
+    protected ParameterDriver[] setAlbedoInfrared(final TLEPropagatorBuilder propagatorBuilder,
+                                                  final CelestialBody sun, final double equatorialRadius,
+                                                  final double angularResolution,
+                                                  final RadiationSensitive spacecraft) {
+        throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
+                        "Albedo and infrared not implemented in TLE Propagator");
+    }
+
+    /** {@inheritDoc} */
+    @Override
     protected ParameterDriver[] setRelativity(final TLEPropagatorBuilder propagatorBuilder) {
         throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                         "Relativity not implemented in TLE Propagator");
@@ -243,13 +253,13 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
 
         // Definition of the accuracy for the test
         // Initial TLE error at last measurement date is 3997m
-        final double distanceAccuracy = 3507.1;
-        final double velocityAccuracy = 1.641;
+        final double distanceAccuracy = 280.64;
+        final double velocityAccuracy = 0.046;
 
         // Tests
         
         // Number of measurements processed
-        final int numberOfMeas  = 258;
+        final int numberOfMeas  = 95;
         Assert.assertEquals(numberOfMeas, kalmanLageos2.getNumberOfMeasurements());
 
         //test on the estimated position and velocity
@@ -287,21 +297,18 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final List<DelegatingDriver> list = new ArrayList<DelegatingDriver>();
         list.addAll(kalmanLageos2.getMeasurementsParameters().getDrivers());
         sortParametersChanges(list);
-        // Batch LS values
-        //final double[] stationOffSet = { 1.659203,  0.861250,  -0.885352 };
-        //final double rangeBias = -0.286275;
-        final double[] stationOffSet = { 1.966749,  -2.074623,  2.265470 };
-        final double rangeBias = -3.570666;
+        final double[] stationOffSet = { 0.214786,  1.057400,  -0.54545 };
+        final double rangeBias = 0.12005;
         Assert.assertEquals(stationOffSet[0], list.get(0).getValue(), distanceAccuracy);
         Assert.assertEquals(stationOffSet[1], list.get(1).getValue(), distanceAccuracy);
         Assert.assertEquals(stationOffSet[2], list.get(2).getValue(), distanceAccuracy);
         Assert.assertEquals(rangeBias,        list.get(3).getValue(), distanceAccuracy);
 
         //test on statistic for the range residuals
-        final long nbRange = 258;
+        final long nbRange = 95;
         // Batch LS values
-        //final double[] RefStatRange = { -2.431135, 2.218644, 0.038483, 0.982017 };
-        final double[] RefStatRange = { -266.8611, 286.7649, 2.3465, 75.4043 };
+        //final double[] RefStatRange = { -67.7496, 87.1117, 6.4482E-5, 33.6349 };
+        final double[] RefStatRange = { -102.6947, 213.8392, 10.1282, 69.0727 };
         Assert.assertEquals(nbRange, kalmanLageos2.getRangeStat().getN());
         Assert.assertEquals(RefStatRange[0], kalmanLageos2.getRangeStat().getMin(),               distanceAccuracy);
         Assert.assertEquals(RefStatRange[1], kalmanLageos2.getRangeStat().getMax(),               distanceAccuracy);
@@ -330,6 +337,8 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final String line2 = "2 32711 055.4362 301.3402 0091581 207.7162 151.8496 02.00563594058026";
         templateTLE = new TLE(line1, line2);
         templateTLE.getParametersDrivers()[0].setSelected(false);
+        notUseDopplerMeasurements();
+        notUseTimeSpanTroposphericModel();
         
         // Default for test is Cartesian
         final OrbitType orbitType = OrbitType.KEPLERIAN;
@@ -355,8 +364,8 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         // Kalman orbit determination run.
         ResultKalman kalmanGNSS = runKalman(input, orbitType, print,
                                             keplerianOrbitalP, keplerianOrbitalQ,
-                                               null, null,
-                                               measurementP, measurementQ);
+                                            null, null,
+                                            measurementP, measurementQ);
 
         // Definition of the accuracy for the test
         // Initial TLE error at last measurement date is 1053.6m
