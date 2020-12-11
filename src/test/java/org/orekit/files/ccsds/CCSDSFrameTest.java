@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.utils.IERSConventions;
 
 

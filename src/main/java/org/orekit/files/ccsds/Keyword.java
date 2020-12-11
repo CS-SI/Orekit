@@ -48,9 +48,13 @@ public enum Keyword {
     /** Classification of this message.
      * @since 11.0
      */
-    MESSAGE_CLASSIF,
+    CLASSIFICATION,
     /** Spacecraft name for which the orbit state is provided. */
     OBJECT_NAME,
+    /** Alternate names fir this space object.
+     * @since 11.0
+     */
+    ALTERNATE_NAMES,
     /** Object identifier of the object for which the orbit state is provided. */
     OBJECT_ID,
     /** Origin of reference frame. */
@@ -275,11 +279,7 @@ public enum Keyword {
      * unless overridden by block-specific {@link #EPOCH_TZERO} values.
      * @since 11.0
      */
-    DEF_EPOCH_TZERO,
-    /** Time system in which {@link #DEF_EPOCH_TZERO} is defined.
-     * @since 11.0
-     */
-    DEF_TIME_SYSTEM,
+    EPOCH_TZERO,
     /** Number of clock seconds occurring during one SI second.
      * @since 11.0
      */

@@ -20,6 +20,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.utils.KeyValue;
 
 
 public class KeyValueTest {

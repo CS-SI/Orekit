@@ -14,11 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.orekit.files.ccsds.adm;
+
+import org.orekit.files.ccsds.NDMFile;
+
 /**
- *
- * This package is gathers sub-packages providing parsers/writers for various CCSDS messages.
- *
- * @author sports
- * @since 6.1
+ * The ADMFile (Attitude Data Message) class represents any of the two attitude
+ * messages used by the CCSDS, (i.e. the Attitude Parameter Message (APM),
+ * and the Attitude Ephemeris Message (AEM). It contains the information of the message's
+ * header and configuration data (set in the parser).
+ * <p>
+ * This class has no specific methods. It is used, in particular, to distinguish
+ * between the Orbit Data Message and the Attitude Data Message.
+ * </p>
+ * @author Bryan Cazabonne
+ * @since 10.2
  */
-package org.orekit.files.ccsds;
+public abstract class ADMFile extends NDMFile {
+
+    /**
+     * Constructor.
+     */
+    public ADMFile() {
+        // Do nothing
+    }
+
+}

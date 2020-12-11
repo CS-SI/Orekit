@@ -22,6 +22,9 @@ import java.util.List;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.adm.ADMFile;
+import org.orekit.files.ccsds.odm.ODMFile;
+import org.orekit.files.ccsds.tdm.TDMFile;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -50,6 +53,11 @@ public abstract class NDMFile {
 
     /** Creating agency or operator. */
     private String originator;
+
+    /** Unique ID identifying this message from a given originator.
+     * @since 11.0
+     */
+    private String messageID;
 
     /** Data context. */
     private DataContext dataContext;
@@ -150,6 +158,22 @@ public abstract class NDMFile {
      */
     public void setOriginator(final String originator) {
         this.originator = originator;
+    }
+
+    /** Get the message ID.
+     * @return unique (wrt originator) message ID.
+     * @since 11.0
+     */
+    public String getMessageID() {
+        return messageID;
+    }
+
+    /** Set the message ID.
+     * @param messageID unique (wrt originator) message ID
+     * @since 11.0
+     */
+    public void setMessageID(final String messageID) {
+        this.messageID = messageID;
     }
 
     /**

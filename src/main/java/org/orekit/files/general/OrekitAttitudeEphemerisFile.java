@@ -28,7 +28,7 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.AEMAttitudeType;
+import org.orekit.files.ccsds.adm.aem.AEMAttitudeType;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;

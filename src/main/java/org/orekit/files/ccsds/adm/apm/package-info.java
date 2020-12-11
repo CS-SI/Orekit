@@ -16,9 +16,9 @@
  */
 /**
  *
- * This package is gathers sub-packages providing parsers/writers for various CCSDS messages.
+ * This package contains class managing CCSDS Attitude Parameter Message.
  *
- * @author sports
- * @since 6.1
+ * @author Luc Maisonobe
+ * @since 11.0
  */
-package org.orekit.files.ccsds;
+package org.orekit.files.ccsds.adm.apm;

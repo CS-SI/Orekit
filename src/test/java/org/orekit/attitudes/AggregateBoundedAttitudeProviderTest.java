@@ -31,9 +31,9 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.AEMFile;
-import org.orekit.files.ccsds.AEMFile.AemSatelliteEphemeris;
-import org.orekit.files.ccsds.AEMParser;
+import org.orekit.files.ccsds.adm.aem.AEMFile;
+import org.orekit.files.ccsds.adm.aem.AEMParser;
+import org.orekit.files.ccsds.adm.aem.AEMFile.AemSatelliteEphemeris;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -58,7 +58,7 @@ public class AggregateBoundedAttitudeProviderTest {
     @Test
     public void testAEM() {
 
-        final String ex = "/ccsds/AEMExample10.txt";
+        final String ex = "/ccsds/adm/aem/AEMExample10.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM()).
                         withConventions(IERSConventions.IERS_2010).
@@ -91,7 +91,7 @@ public class AggregateBoundedAttitudeProviderTest {
 
     private <T extends RealFieldElement<T>> void doTestFieldAEM(final Field<T> field) {
 
-        final String ex = "/ccsds/AEMExample10.txt";
+        final String ex = "/ccsds/adm/aem/AEMExample10.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM()).
                         withConventions(IERSConventions.IERS_2010).
@@ -120,7 +120,7 @@ public class AggregateBoundedAttitudeProviderTest {
     @Test
     public void testOutsideBounds() throws Exception {
 
-        final String ex = "/ccsds/AEMExample10.txt";
+        final String ex = "/ccsds/adm/aem/AEMExample10.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM()).
                         withConventions(IERSConventions.IERS_2010).
@@ -153,7 +153,7 @@ public class AggregateBoundedAttitudeProviderTest {
 
     private <T extends RealFieldElement<T>> void doTestFieldOutsideBounds(final Field<T> field) throws Exception {
 
-        final String ex = "/ccsds/AEMExample10.txt";
+        final String ex = "/ccsds/adm/aem/AEMExample10.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM()).
                         withConventions(IERSConventions.IERS_2010).
