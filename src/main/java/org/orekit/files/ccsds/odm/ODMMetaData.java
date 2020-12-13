@@ -20,6 +20,8 @@ package org.orekit.files.ccsds.odm;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
@@ -38,6 +40,9 @@ import org.orekit.time.TimeScale;
  */
 public class ODMMetaData {
 
+    /** Pattern for international designator. */
+    private static final Pattern INTERNATIONAL_DESIGNATOR = Pattern.compile("(\\p{Digit}{4})-(\\p{Digit}{3})(\\p{Upper}{1,3})");
+
     /** ODM file to which these meta-data belong. */
     private final ODMFile odmFile;
 
@@ -49,15 +54,6 @@ public class ODMMetaData {
 
     /** Object identifier of the object for which the orbit state is provided. */
     private String objectID;
-
-    /** Launch Year. */
-    private int launchYear;
-
-    /** Launch number. */
-    private int launchNumber;
-
-    /** Piece of launch (from "A" to "ZZZ"). */
-    private String launchPiece;
 
     /** Origin of reference frame. */
     private String centerName;
@@ -165,46 +161,37 @@ public class ODMMetaData {
         this.objectID = objectID;
     }
 
-    /** Set the launch year.
-     * @param launchYear launch year
-     */
-    public void setLaunchYear(final int launchYear) {
-        this.launchYear = launchYear;
-    }
-
     /** Get the launch year.
      * @return launch year
      */
     public int getLaunchYear() {
-        return launchYear;
-    }
-
-    /** Set the launch number.
-     * @param launchNumber launch number
-     */
-    public void setLaunchNumber(final int launchNumber) {
-        this.launchNumber = launchNumber;
+        final Matcher matcher = INTERNATIONAL_DESIGNATOR.matcher(objectID);
+        if (matcher.matches()) {
+            return Integer.parseInt(matcher.group(1));
+        }
+        throw new OrekitException(OrekitMessages.NOT_VALID_INTERNATIONAL_DESIGNATOR, objectID);
     }
 
     /** Get the launch number.
      * @return launch number
      */
     public int getLaunchNumber() {
-        return launchNumber;
-    }
-
-    /** Set the piece of launch.
-     * @param launchPiece piece of launch
-     */
-    public void setLaunchPiece(final String launchPiece) {
-        this.launchPiece = launchPiece;
+        final Matcher matcher = INTERNATIONAL_DESIGNATOR.matcher(objectID);
+        if (matcher.matches()) {
+            return Integer.parseInt(matcher.group(2));
+        }
+        throw new OrekitException(OrekitMessages.NOT_VALID_INTERNATIONAL_DESIGNATOR, objectID);
     }
 
     /** Get the piece of launch.
      * @return piece of launch
      */
     public String getLaunchPiece() {
-        return launchPiece;
+        final Matcher matcher = INTERNATIONAL_DESIGNATOR.matcher(objectID);
+        if (matcher.matches()) {
+            return matcher.group(3);
+        }
+        throw new OrekitException(OrekitMessages.NOT_VALID_INTERNATIONAL_DESIGNATOR, objectID);
     }
 
     /** Get the origin of reference frame.

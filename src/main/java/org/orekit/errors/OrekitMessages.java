@@ -288,7 +288,8 @@ public enum OrekitMessages implements Localizable {
     CPF_UNEXPECTED_END_OF_FILE("Unexpected end of CPF file (after line {0})"),
     UNEXPECTED_FORMAT_FOR_ILRS_FILE("Unexpected file format. Must be {0} but is {1}"),
     CRD_UNEXPECTED_END_OF_FILE("Unexpected end of CRD file (after line {0})"),
-    INVALID_RANGE_INDICATOR_IN_CRD_FILE("Invalid range indicator {0} in CRD file header");
+    INVALID_RANGE_INDICATOR_IN_CRD_FILE("Invalid range indicator {0} in CRD file header"),
+    NOT_VALID_INTERNATIONAL_DESIGNATOR("{0} is not a valid international designator");
 
     // CHECKSTYLE: resume JavadocVariable check
 

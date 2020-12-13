@@ -128,7 +128,7 @@ public class OCMParser extends ODMParser {
      * @see #withDataContext(DataContext)
      */
     public OCMParser(final DataContext dataContext) {
-        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, 0, 0, "", dataContext);
+        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, dataContext);
     }
 
     /** Complete constructor.
@@ -136,60 +136,37 @@ public class OCMParser extends ODMParser {
      * @param mu gravitational coefficient
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param launchYear launch year for TLEs
-     * @param launchNumber launch number for TLEs
-     * @param launchPiece piece of launch (from "A" to "ZZZ") for TLEs
      * @param dataContext used to retrieve frames and time scales.
      */
     private OCMParser(final AbsoluteDate missionReferenceDate, final double mu,
                       final IERSConventions conventions, final boolean simpleEOP,
-                      final int launchYear, final int launchNumber, final String launchPiece,
                       final DataContext dataContext) {
-        super(missionReferenceDate, mu, conventions, simpleEOP, launchYear, launchNumber, launchPiece, dataContext);
+        super(missionReferenceDate, mu, conventions, simpleEOP, dataContext);
     }
 
     /** {@inheritDoc} */
     public OCMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
-        return new OCMParser(newMissionReferenceDate, getMu(), getConventions(), isSimpleEOP(),
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
-                             getDataContext());
+        return new OCMParser(newMissionReferenceDate, getMu(), getConventions(), isSimpleEOP(), getDataContext());
     }
 
     /** {@inheritDoc} */
     public OCMParser withMu(final double newMu) {
-        return new OCMParser(getMissionReferenceDate(), newMu, getConventions(), isSimpleEOP(),
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
-                             getDataContext());
+        return new OCMParser(getMissionReferenceDate(), newMu, getConventions(), isSimpleEOP(), getDataContext());
     }
 
     /** {@inheritDoc} */
     public OCMParser withConventions(final IERSConventions newConventions) {
-        return new OCMParser(getMissionReferenceDate(), getMu(), newConventions, isSimpleEOP(),
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
-                             getDataContext());
+        return new OCMParser(getMissionReferenceDate(), getMu(), newConventions, isSimpleEOP(), getDataContext());
     }
 
     /** {@inheritDoc} */
     public OCMParser withSimpleEOP(final boolean newSimpleEOP) {
-        return new OCMParser(getMissionReferenceDate(), getMu(), getConventions(), newSimpleEOP,
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
-                             getDataContext());
-    }
-
-    /** {@inheritDoc} */
-    public OCMParser withInternationalDesignator(final int newLaunchYear,
-                                                 final int newLaunchNumber,
-                                                 final String newLaunchPiece) {
-        return new OCMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
-                             newLaunchYear, newLaunchNumber, newLaunchPiece,
-                             getDataContext());
+        return new OCMParser(getMissionReferenceDate(), getMu(), getConventions(), newSimpleEOP, getDataContext());
     }
 
     @Override
     public OCMParser withDataContext(final DataContext newDataContext) {
-        return new OCMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
-                             newDataContext);
+        return new OCMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(), newDataContext);
     }
 
     /** {@inheritDoc} */
@@ -223,9 +200,6 @@ public class OCMParser extends ODMParser {
             pi.file.setMissionReferenceDate(getMissionReferenceDate());
             pi.file.setMuSet(getMu());
             pi.file.setConventions(getConventions());
-            pi.file.getMetaData().setLaunchYear(getLaunchYear());
-            pi.file.getMetaData().setLaunchNumber(getLaunchNumber());
-            pi.file.getMetaData().setLaunchPiece(getLaunchPiece());
 
             Section previousSection = Section.HEADER;
             Section section         = Section.HEADER;

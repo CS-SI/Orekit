@@ -127,7 +127,7 @@ public class OPMParser extends ODMParser {
      * @since 10.1
      */
     public OPMParser(final DataContext dataContext) {
-        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, 0, 0, "", dataContext);
+        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, dataContext);
     }
 
     /** Complete constructor.
@@ -135,61 +135,42 @@ public class OPMParser extends ODMParser {
      * @param mu gravitational coefficient
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param launchYear launch year for TLEs
-     * @param launchNumber launch number for TLEs
-     * @param launchPiece piece of launch (from "A" to "ZZZ") for TLEs
      * @param dataContext used to retrieve frames, time scales, etc.
      */
     private OPMParser(final AbsoluteDate missionReferenceDate, final double mu,
                       final IERSConventions conventions, final boolean simpleEOP,
-                      final int launchYear, final int launchNumber,
-                      final String launchPiece, final DataContext dataContext) {
-        super(missionReferenceDate, mu, conventions, simpleEOP, launchYear, launchNumber,
-                launchPiece, dataContext);
+                      final DataContext dataContext) {
+        super(missionReferenceDate, mu, conventions, simpleEOP, dataContext);
     }
 
     /** {@inheritDoc} */
     @Override
     public OPMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
-        return new OPMParser(newMissionReferenceDate, getMu(), getConventions(), isSimpleEOP(),
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(), getDataContext());
+        return new OPMParser(newMissionReferenceDate, getMu(), getConventions(), isSimpleEOP(), getDataContext());
     }
 
     /** {@inheritDoc} */
     @Override
     public OPMParser withMu(final double newMu) {
-        return new OPMParser(getMissionReferenceDate(), newMu, getConventions(), isSimpleEOP(),
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(), getDataContext());
+        return new OPMParser(getMissionReferenceDate(), newMu, getConventions(), isSimpleEOP(),  getDataContext());
     }
 
     /** {@inheritDoc} */
     @Override
     public OPMParser withConventions(final IERSConventions newConventions) {
-        return new OPMParser(getMissionReferenceDate(), getMu(), newConventions, isSimpleEOP(),
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(), getDataContext());
+        return new OPMParser(getMissionReferenceDate(), getMu(), newConventions, isSimpleEOP(), getDataContext());
     }
 
     /** {@inheritDoc} */
     @Override
     public OPMParser withSimpleEOP(final boolean newSimpleEOP) {
-        return new OPMParser(getMissionReferenceDate(), getMu(), getConventions(), newSimpleEOP,
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(), getDataContext());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public OPMParser withInternationalDesignator(final int newLaunchYear,
-                                                 final int newLaunchNumber,
-                                                 final String newLaunchPiece) {
-        return new OPMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
-                             newLaunchYear, newLaunchNumber, newLaunchPiece, getDataContext());
+        return new OPMParser(getMissionReferenceDate(), getMu(), getConventions(), newSimpleEOP, getDataContext());
     }
 
     /** {@inheritDoc} */
     @Override
     public OPMParser withDataContext(final DataContext newDataContext) {
-        return new OPMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
-                getLaunchYear(), getLaunchNumber(), getLaunchPiece(), newDataContext);
+        return new OPMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(), newDataContext);
     }
 
     /** {@inheritDoc} */
@@ -226,9 +207,6 @@ public class OPMParser extends ODMParser {
             pi.file.setMuSet(getMu());
             pi.file.setConventions(getConventions());
             pi.file.setDataContext(getDataContext());
-            pi.file.getMetaData().setLaunchYear(getLaunchYear());
-            pi.file.getMetaData().setLaunchNumber(getLaunchNumber());
-            pi.file.getMetaData().setLaunchPiece(getLaunchPiece());
 
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 ++pi.lineNumber;

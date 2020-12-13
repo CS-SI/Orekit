@@ -305,7 +305,6 @@ public class OEMParserTest {
                 withConventions(IERSConventions.IERS_2010).
                 withSimpleEOP(true).
                 withMu(CelestialBodyFactory.getMars().getGM()).
-                withInternationalDesignator(1996, 2, "A").
                 withMissionReferenceDate(new AbsoluteDate("1996-12-17T00:00:00.000",
                                                           TimeScalesFactory.getUTC()));
 

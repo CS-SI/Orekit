@@ -644,3 +644,6 @@ INVALID_RANGE_INDICATOR_IN_CRD_FILE = Indicateur de Range {0} est invalide dans 
 
 # Unexpected end of CRD file (after line {0})
 CRD_UNEXPECTED_END_OF_FILE = Fin de fichier CRD inattendue (après la ligne {0})
+
+# {0} is not a valid international designator
+NOT_VALID_INTERNATIONAL_DESIGNATOR = {0} n''est pas un numéro d''immatriculation international valide

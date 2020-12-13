@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
@@ -56,9 +55,6 @@ import org.orekit.utils.IERSConventions;
  */
 public abstract class ODMParser {
 
-    /** Pattern for international designator. */
-    private static final Pattern INTERNATIONAL_DESIGNATOR = Pattern.compile("(\\p{Digit}{4})-(\\p{Digit}{3})(\\p{Upper}{1,3})");
-
     /** Pattern for dash. */
     private static final Pattern DASH = Pattern.compile("-");
 
@@ -77,15 +73,6 @@ public abstract class ODMParser {
     /** Data context used for obtain frames and time scales. */
     private final DataContext dataContext;
 
-    /** Launch Year. */
-    private int launchYear;
-
-    /** Launch number. */
-    private int launchNumber;
-
-    /** Piece of launch (from "A" to "ZZZ"). */
-    private String launchPiece;
-
     /** Indicators for expected keywords.
      * @since 11.0
      */
@@ -99,20 +86,15 @@ public abstract class ODMParser {
      * @param mu gravitational coefficient
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param launchYear launch year for TLEs
-     * @param launchNumber launch number for TLEs
-     * @param launchPiece piece of launch (from "A" to "ZZZ") for TLEs
-     * @see #ODMParser(AbsoluteDate, double, IERSConventions, boolean, int, int, String, DataContext)
+     * @see #ODMParser(AbsoluteDate, double, IERSConventions, boolean, DataContext)
      * @deprecated use {@link #ODMParser(AbsoluteDate, double, IERSConventions, boolean,
      * int, int, String, DataContext)} instead.
      */
     @Deprecated
     @DefaultDataContext
     protected ODMParser(final AbsoluteDate missionReferenceDate, final double mu,
-                        final IERSConventions conventions, final boolean simpleEOP,
-                        final int launchYear, final int launchNumber, final String launchPiece) {
-        this(missionReferenceDate, mu, conventions, simpleEOP, launchYear, launchNumber,
-                launchPiece, DataContext.getDefault());
+                        final IERSConventions conventions, final boolean simpleEOP) {
+        this(missionReferenceDate, mu, conventions, simpleEOP, DataContext.getDefault());
     }
 
     /** Complete constructor.
@@ -120,24 +102,16 @@ public abstract class ODMParser {
      * @param mu gravitational coefficient
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param launchYear launch year for TLEs
-     * @param launchNumber launch number for TLEs
-     * @param launchPiece piece of launch (from "A" to "ZZZ") for TLEs
      * @param dataContext used to retrieve frames and time scales.
      * @since 10.1
      */
     protected ODMParser(final AbsoluteDate missionReferenceDate, final double mu,
                         final IERSConventions conventions, final boolean simpleEOP,
-                        final int launchYear, final int launchNumber,
-                        final String launchPiece,
                         final DataContext dataContext) {
         this.missionReferenceDate = missionReferenceDate;
         this.mu                   = mu;
         this.conventions          = conventions;
         this.simpleEOP            = simpleEOP;
-        this.launchYear           = launchYear;
-        this.launchNumber         = launchNumber;
-        this.launchPiece          = launchPiece;
         this.expected             = new HashSet<>();
         this.dataContext          = dataContext;
     }
@@ -200,44 +174,6 @@ public abstract class ODMParser {
      */
     public boolean isSimpleEOP() {
         return simpleEOP;
-    }
-
-    /** Set international designator.
-     * <p>
-     * This method may be used to ensure the launch year number and pieces are
-     * correctly set if they are not present in the CCSDS file header in the
-     * OBJECT_ID in the form YYYY-NNNP{PP}. If they are already in the header,
-     * they will be parsed automatically regardless of this method being called
-     * or not (i.e. header information override information set here).
-     * </p>
-     * @param newLaunchYear launch year
-     * @param newLaunchNumber launch number
-     * @param newLaunchPiece piece of launch (from "A" to "ZZZ")
-     * @return a new instance, with TLE settings replaced
-     */
-    public abstract ODMParser withInternationalDesignator(int newLaunchYear,
-                                                          int newLaunchNumber,
-                                                          String newLaunchPiece);
-
-    /** Get the launch year.
-     * @return launch year
-     */
-    public int getLaunchYear() {
-        return launchYear;
-    }
-
-    /** Get the launch number.
-     * @return launch number
-     */
-    public int getLaunchNumber() {
-        return launchNumber;
-    }
-
-    /** Get the piece of launch.
-     * @return piece of launch
-     */
-    public String getLaunchPiece() {
-        return launchPiece;
     }
 
     /**
@@ -353,12 +289,6 @@ public abstract class ODMParser {
 
             case OBJECT_ID: {
                 metaData.setObjectID(keyValue.getValue());
-                final Matcher matcher = INTERNATIONAL_DESIGNATOR.matcher(keyValue.getValue());
-                if (matcher.matches()) {
-                    metaData.setLaunchYear(Integer.parseInt(matcher.group(1)));
-                    metaData.setLaunchNumber(Integer.parseInt(matcher.group(2)));
-                    metaData.setLaunchPiece(matcher.group(3));
-                }
                 return true;
             }
 

@@ -53,10 +53,8 @@ public class OMMParserTest {
         // data.
         final String ex = "/ccsds/odm/omm/OMMExample1.txt";
 
-        // initialize parser with purposely wrong international designator
-        // (in order to check it is correctly overridden when parsing)
-        final OMMParser parser =
-                new OMMParser().withMu(398600e9).withInternationalDesignator(1998, 1, "a");
+        // initialize parser
+        final OMMParser parser = new OMMParser().withMu(398600e9);
 
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final OMMFile file = parser.parse(inEntry);
@@ -136,8 +134,7 @@ public class OMMParserTest {
         final OMMParser parser = new OMMParser().
                                  withMissionReferenceDate(new AbsoluteDate()).
                                  withConventions(IERSConventions.IERS_1996).
-                                 withSimpleEOP(true).
-                                 withInternationalDesignator(1998, 1, "a");
+                                 withSimpleEOP(true);
 
         final OMMFile file = parser.parse(name);
         Assert.assertEquals(3.0, file.getFormatVersion(), 1.0e-10);
@@ -167,8 +164,7 @@ public class OMMParserTest {
         final OMMParser parser = new OMMParser().
                                  withMissionReferenceDate(new AbsoluteDate()).
                                  withConventions(IERSConventions.IERS_1996).
-                                 withSimpleEOP(true).
-                                 withInternationalDesignator(1998, 1, "a");
+                                 withSimpleEOP(true);
 
         final OMMFile file = parser.parse(name);
         Assert.assertEquals(2.0, file.getFormatVersion(), 1.0e-10);
@@ -233,10 +229,8 @@ public class OMMParserTest {
         // simple test for OMM file, contains p/v entries and other mandatory data.
         final String ex = "/ccsds/odm/omm/OMMExample1.txt";
 
-        // initialize parser with purposely wrong international designator
-        // (in order to check it is correctly overridden when parsing)
-        final OMMParser parser =
-                new OMMParser().withMu(398600e9).withInternationalDesignator(1998, 1, "a");
+        // initialize parser
+        final OMMParser parser = new OMMParser().withMu(398600e9);
 
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final OMMFile file = parser.parse(inEntry, "OMMExample1.txt");

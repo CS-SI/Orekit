@@ -463,15 +463,32 @@ public class OPMParserTest {
     public void testParseOPM3NoDesignator()
             throws URISyntaxException {
         final String name = getClass().getResource("/ccsds/odm/opm/OPM-no-designator.txt").toURI().getPath();
-        OPMParser parser =
-                new OPMParser().withConventions(IERSConventions.IERS_2010).withInternationalDesignator(2060, 666, "XYZ");
+        OPMParser parser = new OPMParser().withConventions(IERSConventions.IERS_2010);
         final OPMFile file = parser.parse(name);
         Assert.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
                                                  TimeScalesFactory.getGMST(IERSConventions.IERS_2010, false)),
                             file.getMetaData().getFrameEpoch());
-        Assert.assertEquals(2060, file.getMetaData().getLaunchYear());
-        Assert.assertEquals(666, file.getMetaData().getLaunchNumber());
-        Assert.assertEquals("XYZ", file.getMetaData().getLaunchPiece());
+        try {
+            file.getMetaData().getLaunchYear();
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NOT_VALID_INTERNATIONAL_DESIGNATOR, oe.getSpecifier());
+            Assert.assertEquals("REDACTED FOR TEST PURPOSES", (String) oe.getParts()[0]);
+        }
+        try {
+            file.getMetaData().getLaunchNumber();
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NOT_VALID_INTERNATIONAL_DESIGNATOR, oe.getSpecifier());
+            Assert.assertEquals("REDACTED FOR TEST PURPOSES", (String) oe.getParts()[0]);
+        }
+        try {
+            file.getMetaData().getLaunchPiece();
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NOT_VALID_INTERNATIONAL_DESIGNATOR, oe.getSpecifier());
+            Assert.assertEquals("REDACTED FOR TEST PURPOSES", (String) oe.getParts()[0]);
+        }
     }
 
     @Test
