@@ -81,6 +81,7 @@ public enum OrekitMessages implements Localizable {
     CANNOT_PARSE_BOTH_TAU_AND_GAMMA("cannot parse both τ and γ from the same Poissons series file"),
     UNEXPECTED_END_OF_FILE_AFTER_LINE("unexpected end of file {0} (after line {1})"),
     UNABLE_TO_PARSE_LINE_IN_FILE("unable to parse line {0} of file {1}:\n{2}"),
+    UNABLE_TO_PARSE_ELEMENT_IN_FILE("unable to parse element {0} at line {1}, file {2}"),
     UNABLE_TO_FIND_FILE("unable to find file {0}"),
     SPACECRAFT_MASS_BECOMES_NEGATIVE("spacecraft mass becomes negative: {0} kg"),
     POSITIVE_FLOW_RATE("positive flow rate (q: {0})"), NO_GRAVITY_FIELD_DATA_LOADED("no gravity field data loaded"),

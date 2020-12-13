@@ -97,6 +97,9 @@ UNEXPECTED_END_OF_FILE_AFTER_LINE = fin imprevisto do ficheiro {0} (despois da l
 # unable to parse line {0} of file {1}:\n{2}
 UNABLE_TO_PARSE_LINE_IN_FILE = imposible de analiza-la liña {0} do ficheiro {1} :\n{2}
 
+# unable to parse element {0} at line {1}, file {2}
+UNABLE_TO_PARSE_ELEMENT_IN_FILE = <MISSING TRANSLATION>
+
 # unable to find file {0}
 UNABLE_TO_FIND_FILE = imposible de atopa-lo ficheiro {0}
 

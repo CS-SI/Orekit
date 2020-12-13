@@ -20,7 +20,7 @@ import org.hipparchus.util.FastMath;
 
 /** CCSDS/SANA units (km, km/s, degrees...).
  * @author Luc Maisonobe
- * @since 10.1
+ * @since 11.0
  */
 public enum CCSDSUnit {
 
