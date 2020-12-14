@@ -178,14 +178,11 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
     /** Suffix for elevation bias. */
     private final String ELEVATION_BIAS_SUFFIX = "/el bias";
 
-    /** Flag for pseudo range measurement use. */
-    private boolean usePseudoRange = true;
+    /** Flag for range measurement use. */
+    private boolean useRangeMeasurements;
 
     /** Flag for range rate measurement use. */
-    private boolean useDoppler = true;
-
-    /** Flag for time span troposheric mode luse. */
-    private boolean useTimeSpanTroposphericModel = true;
+    private boolean useRangeRateMeasurements;
 
     /** Create a gravity field from input parameters.
      * @param parser input file parser
@@ -356,6 +353,10 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
         // read sinex files
         final SINEXLoader                 stationPositionData      = readSinexFile(input, parser, ParameterKey.SINEX_POSITION_FILE);
         final SINEXLoader                 stationEccData           = readSinexFile(input, parser, ParameterKey.SINEX_ECC_FILE);
+        
+        // use measurement types flags
+        useRangeMeasurements                                       = parser.getBoolean(ParameterKey.USE_RANGE_MEASUREMENTS);
+        useRangeRateMeasurements                                   = parser.getBoolean(ParameterKey.USE_RANGE_RATE_MEASUREMENTS);
 
         final Map<String, StationData>    stations                 = createStationsData(parser, stationPositionData, stationEccData, conventions, body);
         final PVData                      pvData                   = createPVData(parser);
@@ -535,6 +536,10 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
         // read sinex files
         final SINEXLoader                 stationPositionData      = readSinexFile(input, parser, ParameterKey.SINEX_POSITION_FILE);
         final SINEXLoader                 stationEccData           = readSinexFile(input, parser, ParameterKey.SINEX_ECC_FILE);
+        
+        // use measurement types flags
+        useRangeMeasurements                                       = parser.getBoolean(ParameterKey.USE_RANGE_MEASUREMENTS);
+        useRangeRateMeasurements                                   = parser.getBoolean(ParameterKey.USE_RANGE_RATE_MEASUREMENTS);
 
         final Map<String, StationData>    stations                 = createStationsData(parser, stationPositionData, stationEccData, conventions, body);
         final PVData                      pvData                   = createPVData(parser);
@@ -1310,6 +1315,7 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
 
         final Map<String, StationData> stations       = new HashMap<String, StationData>();
 
+        final boolean   useTimeSpanTroposphericModel      = parser.getBoolean(ParameterKey.USE_TIME_SPAN_TROPOSPHERIC_MODEL);
         final String[]  stationNames                      = parser.getStringArray(ParameterKey.GROUND_STATION_NAME);
         final double[]  stationLatitudes                  = parser.getAngleArray(ParameterKey.GROUND_STATION_LATITUDE);
         final double[]  stationLongitudes                 = parser.getAngleArray(ParameterKey.GROUND_STATION_LONGITUDE);
@@ -1898,25 +1904,29 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
                     }
                     switch (fields[1]) {
                         case "RANGE" :
-                            final Range range = new RangeParser().parseFields(fields, stations, pvData, satellite,
-                                                                              satRangeBias, weights,
-                                                                              line, lineNumber, nd.getName());
-                            if (satAntennaRangeModifier != null) {
-                                range.addModifier(satAntennaRangeModifier);
+                            if (useRangeMeasurements) {
+                                final Range range = new RangeParser().parseFields(fields, stations, pvData, satellite,
+                                                                                  satRangeBias, weights,
+                                                                                  line, lineNumber, nd.getName());
+                                if (satAntennaRangeModifier != null) {
+                                    range.addModifier(satAntennaRangeModifier);
+                                }
+                                if (rangeOutliersManager != null) {
+                                    range.addModifier(rangeOutliersManager);
+                                }
+                                addIfNonZeroWeight(range, measurements);
                             }
-                            if (rangeOutliersManager != null) {
-                                range.addModifier(rangeOutliersManager);
-                            }
-                            addIfNonZeroWeight(range, measurements);
                             break;
                         case "RANGE_RATE" :
-                            final RangeRate rangeRate = new RangeRateParser().parseFields(fields, stations, pvData, satellite,
-                                                                                          satRangeBias, weights,
-                                                                                          line, lineNumber, nd.getName());
-                            if (rangeRateOutliersManager != null) {
-                                rangeRate.addModifier(rangeRateOutliersManager);
+                            if (useRangeRateMeasurements) {
+                                final RangeRate rangeRate = new RangeRateParser().parseFields(fields, stations, pvData, satellite,
+                                                                                              satRangeBias, weights,
+                                                                                              line, lineNumber, nd.getName());
+                                if (rangeRateOutliersManager != null) {
+                                    rangeRate.addModifier(rangeRateOutliersManager);
+                                }
+                                addIfNonZeroWeight(rangeRate, measurements);
                             }
-                            addIfNonZeroWeight(rangeRate, measurements);
                             break;
                         case "AZ_EL" :
                             final AngularAzEl angular = new AzElParser().parseFields(fields, stations, pvData, satellite,
@@ -2003,7 +2013,7 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
                 for (final ObservationData od : observationDataSet.getObservationData()) {
                     final double snr = od.getSignalStrength();
                     if (!Double.isNaN(od.getValue()) && (snr == 0 || snr >= 4)) {
-                        if (od.getObservationType().getMeasurementType() == MeasurementType.PSEUDO_RANGE && usePseudoRange) {
+                        if (od.getObservationType().getMeasurementType() == MeasurementType.PSEUDO_RANGE && useRangeMeasurements) {
                             // this is a measurement we want
                             final String stationName = observationDataSet.getHeader().getMarkerName() + "/" + od.getObservationType();
                             final StationData stationData = stations.get(stationName);
@@ -2036,7 +2046,7 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
                             }
                             addIfNonZeroWeight(range, measurements);
 
-                        } else if (od.getObservationType().getMeasurementType() == MeasurementType.DOPPLER && useDoppler) {
+                        } else if (od.getObservationType().getMeasurementType() == MeasurementType.DOPPLER && useRangeRateMeasurements) {
                             // this is a measurement we want
                             final String stationName = observationDataSet.getHeader().getMarkerName() + "/" + od.getObservationType();
                             final StationData stationData = stations.get(stationName);
@@ -2457,21 +2467,6 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
                 logEvaluation(em, rangeLog, rangeRateLog, azimuthLog, elevationLog, positionLog, velocityLog);
             }
         }
-    }
-
-    /** Prevent the use of pseudo range meausurements. */
-    public void notUsePseudoRangeMeasurements() {
-        this.usePseudoRange = false;
-    }
-
-    /** Prevent the use of Doppler meausurements. */
-    public void notUseDopplerMeasurements() {
-        this.useDoppler = false;
-    }
-    
-    /** Prevent the use of time span tropospheric model. */
-    public void notUseTimeSpanTroposphericModel() {
-        this.useTimeSpanTroposphericModel = false;
     }
     
 }

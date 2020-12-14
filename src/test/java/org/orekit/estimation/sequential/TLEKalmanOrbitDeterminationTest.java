@@ -337,8 +337,6 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final String line2 = "2 32711 055.4362 301.3402 0091581 207.7162 151.8496 02.00563594058026";
         templateTLE = new TLE(line1, line2);
         templateTLE.getParametersDrivers()[0].setSelected(false);
-        notUseDopplerMeasurements();
-        notUseTimeSpanTroposphericModel();
         
         // Default for test is Cartesian
         final OrbitType orbitType = OrbitType.KEPLERIAN;

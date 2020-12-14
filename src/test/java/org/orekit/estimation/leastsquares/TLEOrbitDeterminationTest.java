@@ -201,8 +201,6 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         final String line2 = "2 32711  55.4362 301.3402 0091577 207.7302 151.8353  2.00563580 58013";
         templateTLE = new TLE(line1, line2);
         templateTLE.getParametersDrivers()[0].setSelected(false);
-        notUseDopplerMeasurements();
-        notUseTimeSpanTroposphericModel();
 
         //orbit determination run.
         ResultBatchLeastSquares odGNSS = runBLS(input, false);
