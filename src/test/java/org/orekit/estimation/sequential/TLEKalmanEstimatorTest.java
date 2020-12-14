@@ -107,7 +107,7 @@ public class TLEKalmanEstimatorTest {
         // Build the Kalman filter
         final KalmanEstimator kalman = new KalmanEstimatorBuilder().
                         addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
-                        estimatedMeasurementsParameters(new ParameterDriversList()).
+                        estimatedMeasurementsParameters(new ParameterDriversList(), null).
                         build();
         
         // Filter the measurements and check the results
@@ -183,7 +183,7 @@ public class TLEKalmanEstimatorTest {
         // Build the Kalman filter
         final KalmanEstimator kalman = new KalmanEstimatorBuilder().
                         addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
-                        estimatedMeasurementsParameters(new ParameterDriversList()).
+                        estimatedMeasurementsParameters(new ParameterDriversList(), null).
                         build();
         
         // Filter the measurements and check the results
@@ -268,7 +268,7 @@ public class TLEKalmanEstimatorTest {
         // Build the Kalman filter
         final KalmanEstimator kalman = new KalmanEstimatorBuilder().
                         addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
-                        estimatedMeasurementsParameters(new ParameterDriversList()).
+                        estimatedMeasurementsParameters(new ParameterDriversList(), null).
                         build();
         
         // Filter the measurements and check the results
@@ -393,7 +393,7 @@ public class TLEKalmanEstimatorTest {
         final KalmanEstimatorBuilder kalmanBuilder = new KalmanEstimatorBuilder();
         kalmanBuilder.addPropagationConfiguration(propagatorBuilder,
                                                   new ConstantProcessNoise(MatrixUtils.createRealMatrix(6, 6)));
-        kalmanBuilder.estimatedMeasurementsParameters(new ParameterDriversList());
+        kalmanBuilder.estimatedMeasurementsParameters(new ParameterDriversList(), null);
         final KalmanEstimator kalman = kalmanBuilder.build();
         kalman.setObserver(estimation -> {
                 throw new DummyException();

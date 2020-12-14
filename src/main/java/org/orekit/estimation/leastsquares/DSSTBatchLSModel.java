@@ -19,6 +19,7 @@ package org.orekit.estimation.leastsquares;
 import java.util.List;
 
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.orbits.Orbit;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
@@ -111,7 +112,7 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
 
     /** {@inheritDoc} */
     @Override
-    protected void computeInitialDerivatives(final AbstractJacobiansMapper mapper,
+    protected Orbit computeInitialDerivatives(final AbstractJacobiansMapper mapper,
                                              final AbstractPropagator propagator) {
 
         final DSSTPropagator dsstPropagator = (DSSTPropagator) propagator;
@@ -120,5 +121,6 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
                        dsstPropagator.getInitialState();
         // compute short period derivatives at the beginning of the iteration
         ((DSSTJacobiansMapper) mapper).setShortPeriodJacobians(initial);
+        return initial.getOrbit();
     }
 }

@@ -19,6 +19,7 @@ package org.orekit.estimation.leastsquares;
 import java.util.List;
 
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.orbits.Orbit;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -91,10 +92,9 @@ public class BatchLSModel extends AbstractBatchLSModel {
 
     /** {@inheritDoc} */
     @Override
-    protected void computeInitialDerivatives(final AbstractJacobiansMapper mapper,
-                                             final AbstractPropagator propagator) {
-        // does nothing
-        // numerical method does not require analytical terms calculations
+    protected Orbit computeInitialDerivatives(final AbstractJacobiansMapper mapper,
+                                              final AbstractPropagator propagator) {
+        return propagator.getInitialState().getOrbit();
     }
 
 }

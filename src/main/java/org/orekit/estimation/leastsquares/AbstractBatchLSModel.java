@@ -35,9 +35,7 @@ import org.hipparchus.util.Incrementor;
 import org.hipparchus.util.Pair;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.PropagatorsParallelizer;
@@ -235,8 +233,7 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
         final Orbit[] orbits = new Orbit[propagators.length];
         for (int i = 0; i < propagators.length; ++i) {
             mappers[i] = configureDerivatives(propagators[i]);
-            orbits[i]  = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(propagators[i].getInitialState().getOrbit());
-            computeInitialDerivatives(mappers[i], propagators[i]);
+            orbits[i]  = computeInitialDerivatives(mappers[i], propagators[i]);
         }
         final PropagatorsParallelizer parallelizer =
                         new PropagatorsParallelizer(Arrays.asList(propagators), configureMeasurements(point));
@@ -496,8 +493,9 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
      * This method allow to compute initial analytical derivatives such as the short periods in DSST case.
      * @param mapper Jacobian mapper to calculate short period perturbations
      * @param propagator the propagator
+     * @return the orbit corresponding to the initial propagator state
      */
-    protected abstract void computeInitialDerivatives(AbstractJacobiansMapper mapper, AbstractPropagator propagator);
+    protected abstract Orbit computeInitialDerivatives(AbstractJacobiansMapper mapper, AbstractPropagator propagator);
 
     /** Getter for the date of the first enabled meausurement.
      * @return date of the first enabled measurement

@@ -21,6 +21,7 @@ import java.util.List;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.orbits.Orbit;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -103,10 +104,9 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
 
     /** {@inheritDoc} */
     @Override
-    protected void computeInitialDerivatives(final AbstractJacobiansMapper mapper,
-                                             final AbstractPropagator propagator) {
-        // does nothing
-        // TLE OD does not require initial analytical derivative calculations
+    protected Orbit computeInitialDerivatives(final AbstractJacobiansMapper mapper,
+                                              final AbstractPropagator propagator) {
+        return propagator.getInitialState().getOrbit();
     }
 
 }
