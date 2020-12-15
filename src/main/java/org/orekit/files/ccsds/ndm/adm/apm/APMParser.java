@@ -41,7 +41,7 @@ import org.orekit.utils.IERSConventions;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class APMParser extends ADMParser {
+public class APMParser extends ADMParser<APMFile> {
 
     /** Simple constructor.
      * <p>
@@ -95,7 +95,7 @@ public class APMParser extends ADMParser {
      * @see #withDataContext(DataContext)
      */
     public APMParser(final DataContext dataContext) {
-        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, 0, 0, "", dataContext);
+        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, dataContext);
     }
 
     /** Complete constructor.
@@ -103,67 +103,42 @@ public class APMParser extends ADMParser {
      * @param mu gravitational coefficient
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param launchYear launch year for TLEs
-     * @param launchNumber launch number for TLEs
-     * @param launchPiece piece of launch (from "A" to "ZZZ") for TLEs
      * @param dataContext used to retrieve frames, time scales, etc.
      */
     private APMParser(final AbsoluteDate missionReferenceDate, final double mu,
                       final IERSConventions conventions, final boolean simpleEOP,
-                      final int launchYear, final int launchNumber,
-                      final String launchPiece, final DataContext dataContext) {
-        super(missionReferenceDate, mu, conventions, simpleEOP, launchYear, launchNumber,
-                launchPiece, dataContext);
+                      final DataContext dataContext) {
+        super(missionReferenceDate, mu, conventions, simpleEOP, dataContext);
     }
 
     /** {@inheritDoc} */
     @Override
     public APMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
-        return new APMParser(newMissionReferenceDate, getMu(), getConventions(), isSimpleEOP(),
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
-                             getDataContext());
+        return new APMParser(newMissionReferenceDate, getMu(), getConventions(), isSimpleEOP(), getDataContext());
     }
 
     /** {@inheritDoc} */
     @Override
     public APMParser withMu(final double newMu) {
-        return new APMParser(getMissionReferenceDate(), newMu, getConventions(), isSimpleEOP(),
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
-                             getDataContext());
+        return new APMParser(getMissionReferenceDate(), newMu, getConventions(), isSimpleEOP(), getDataContext());
     }
 
     /** {@inheritDoc} */
     @Override
     public APMParser withConventions(final IERSConventions newConventions) {
-        return new APMParser(getMissionReferenceDate(), getMu(), newConventions, isSimpleEOP(),
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
-                             getDataContext());
+        return new APMParser(getMissionReferenceDate(), getMu(), newConventions, isSimpleEOP(), getDataContext());
     }
 
     /** {@inheritDoc} */
     @Override
     public APMParser withSimpleEOP(final boolean newSimpleEOP) {
-        return new APMParser(getMissionReferenceDate(), getMu(), getConventions(), newSimpleEOP,
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
-                             getDataContext());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public APMParser withInternationalDesignator(final int newLaunchYear,
-                                                 final int newLaunchNumber,
-                                                 final String newLaunchPiece) {
-        return new APMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
-                             newLaunchYear, newLaunchNumber, newLaunchPiece,
-                             getDataContext());
+        return new APMParser(getMissionReferenceDate(), getMu(), getConventions(), newSimpleEOP, getDataContext());
     }
 
     /** {@inheritDoc} */
     @Override
     public APMParser withDataContext(final DataContext dataContext) {
-        return new APMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
-                getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
-                dataContext);
+        return new APMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(), dataContext);
     }
 
     /** {@inheritDoc} */
@@ -244,8 +219,9 @@ public class APMParser extends ADMParser {
                         if (pi.maneuver != null) {
                             file.addManeuver(pi.maneuver);
                         }
-                        pi.maneuver = new APMFile.APMManeuver();
-                        pi.maneuver.setEpochStart(parseDate(pi.keyValue.getValue(), file.getMetaData().getTimeSystem()));
+                        pi.maneuver = new APMManeuver();
+                        pi.maneuver.setEpochStart(parseDate(pi.keyValue.getValue(),
+                                                            file.getSegments().get(0).getMetadata().getTimeSystem()));
                         if (!pi.commentTmp.isEmpty()) {
                             pi.maneuver.setComment(pi.commentTmp);
                             pi.commentTmp.clear();
@@ -282,7 +258,7 @@ public class APMParser extends ADMParser {
                         boolean parsed = false;
                         parsed = parsed || parseComment(pi.keyValue, pi.commentTmp);
                         parsed = parsed || parseHeaderEntry(pi.keyValue, file, pi.commentTmp);
-                        parsed = parsed || parseMetaDataEntry(pi.keyValue, file.getMetaData(), pi.commentTmp);
+                        parsed = parsed || parseMetaDataEntry(pi.keyValue, file.getMetadata(), pi.commentTmp);
                         parsed = parsed || parseGeneralStateDataEntry(pi.keyValue, file, pi.commentTmp);
                         if (!parsed) {
                             throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
@@ -334,7 +310,7 @@ public class APMParser extends ADMParser {
         private double q3;
 
         /** Current maneuver. */
-        private APMFile.APMManeuver maneuver;
+        private APMManeuver maneuver;
 
         /** Create a new {@link ParseInfo} object. */
         protected ParseInfo() {

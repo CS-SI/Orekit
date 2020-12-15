@@ -159,11 +159,11 @@ public class TDMParser extends DefaultHandler {
                       final IERSConventions conventions,
                       final boolean simpleEOP,
                       final DataContext dataContext) {
-        this.fileFormat = fileFormat;
+        this.fileFormat           = fileFormat;
         this.missionReferenceDate = missionReferenceDate;
         this.conventions          = conventions;
         this.simpleEOP            = simpleEOP;
-        this.dataContext = dataContext;
+        this.dataContext          = dataContext;
     }
 
     /** Set file format.
@@ -173,7 +173,7 @@ public class TDMParser extends DefaultHandler {
      */
     public TDMParser withFileFormat(final TDMFileFormat newFileFormat) {
         return new TDMParser(newFileFormat, getMissionReferenceDate(), getConventions(),
-                isSimpleEOP(), getDataContext());
+                             isSimpleEOP(), getDataContext());
     }
 
     /** Get file format.
@@ -191,7 +191,7 @@ public class TDMParser extends DefaultHandler {
      */
     public TDMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
         return new TDMParser(getFileFormat(), newMissionReferenceDate, getConventions(),
-                isSimpleEOP(), getDataContext());
+                             isSimpleEOP(), getDataContext());
     }
 
     /** Get initial date.
@@ -315,10 +315,10 @@ public class TDMParser extends DefaultHandler {
     public TDMFile parseKeyValue(final InputStream stream, final String fileName) {
 
         final KeyValueHandler handler = new KeyValueHandler(new ParseInfo(this.getMissionReferenceDate(),
-                                                                    this.getConventions(),
-                                                                    this.isSimpleEOP(),
-                                                                    fileName,
-                                                                    getDataContext()));
+                                                                          this.getConventions(),
+                                                                          this.isSimpleEOP(),
+                                                                          fileName,
+                                                                          getDataContext()));
         return handler.parse(stream, fileName);
     }
 
@@ -426,19 +426,19 @@ public class TDMParser extends DefaultHandler {
                           final boolean simpleEOP,
                           final String fileName,
                           final DataContext dataContext) {
-            this.missionReferenceDate = missionReferenceDate;
-            this.conventions          = conventions;
-            this.simpleEOP            = simpleEOP;
-            this.fileName             = fileName;
-            this.dataContext = dataContext;
-            this.lineNumber = 0;
-            this.line = "";
-            this.tdmFile = new TDMFile();
+            this.missionReferenceDate     = missionReferenceDate;
+            this.conventions              = conventions;
+            this.simpleEOP                = simpleEOP;
+            this.fileName                 = fileName;
+            this.dataContext              = dataContext;
+            this.lineNumber               = 0;
+            this.line                     = "";
+            this.tdmFile                  = new TDMFile();
             this.currentMetadata          = null;
             this.currentObservationsBlock = null;
-            this.parsingHeader   = false;
-            this.parsingMetaData = false;
-            this.parsingData     = false;
+            this.parsingHeader            = false;
+            this.parsingMetaData          = false;
+            this.parsingData              = false;
         }
 
         /** Parse a meta-data entry.<p>
@@ -639,7 +639,7 @@ public class TDMParser extends DefaultHandler {
          */
         private AbsoluteDate parseDate(final String date, final CcsdsTimeScale timeSystem) {
             return timeSystem.parseDate(date, conventions, missionReferenceDate,
-                    dataContext.getTimeScales());
+                                        dataContext.getTimeScales());
         }
     }
 

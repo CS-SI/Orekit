@@ -14,17 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.ccsds.ndm.adm.apm;
+package org.orekit.files.ccsds.ndm.adm;
 
-import org.orekit.bodies.CelestialBodies;
-import org.orekit.bodies.CelestialBody;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NDMMetadata;
 
 /** This class gathers the meta-data present in the Attitude Data Message (ADM).
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class APMMetadata extends NDMMetadata {
+public class ADMMetadata extends NDMMetadata {
+
+    /** Pattern for international designator. */
+    private static final Pattern INTERNATIONAL_DESIGNATOR = Pattern.compile("(\\p{Digit}{4})-(\\p{Digit}{3})(\\p{Upper}{1,3})");
 
     /** Spacecraft name for which the attitude data are provided. */
     private String objectName;
@@ -35,18 +41,10 @@ public class APMMetadata extends NDMMetadata {
     /** Origin of reference frame. */
     private String centerName;
 
-    /** Celestial body corresponding to the center name. */
-    private CelestialBody centerBody;
-
-    /** Tests whether the body corresponding to the center name can be
-     * created through {@link CelestialBodies} in order to obtain the
-     * corresponding gravitational coefficient. */
-    private boolean hasCreatableBody;
-
     /**
      * Create a new meta-data.
      */
-    public APMMetadata() {
+    public ADMMetadata() {
     }
 
     /**
@@ -81,6 +79,39 @@ public class APMMetadata extends NDMMetadata {
         this.objectID = objectID;
     }
 
+    /** Get the launch year.
+     * @return launch year
+     */
+    public int getLaunchYear() {
+        final Matcher matcher = INTERNATIONAL_DESIGNATOR.matcher(objectID);
+        if (matcher.matches()) {
+            return Integer.parseInt(matcher.group(1));
+        }
+        throw new OrekitException(OrekitMessages.NOT_VALID_INTERNATIONAL_DESIGNATOR, objectID);
+    }
+
+    /** Get the launch number.
+     * @return launch number
+     */
+    public int getLaunchNumber() {
+        final Matcher matcher = INTERNATIONAL_DESIGNATOR.matcher(objectID);
+        if (matcher.matches()) {
+            return Integer.parseInt(matcher.group(2));
+        }
+        throw new OrekitException(OrekitMessages.NOT_VALID_INTERNATIONAL_DESIGNATOR, objectID);
+    }
+
+    /** Get the piece of launch.
+     * @return piece of launch
+     */
+    public String getLaunchPiece() {
+        final Matcher matcher = INTERNATIONAL_DESIGNATOR.matcher(objectID);
+        if (matcher.matches()) {
+            return matcher.group(3);
+        }
+        throw new OrekitException(OrekitMessages.NOT_VALID_INTERNATIONAL_DESIGNATOR, objectID);
+    }
+
     /** Get the origin of reference frame.
      * @return the origin of reference frame.
      */
@@ -93,41 +124,6 @@ public class APMMetadata extends NDMMetadata {
      */
     public void setCenterName(final String centerName) {
         this.centerName = centerName;
-    }
-
-    /**
-     * Get the {@link CelestialBody} corresponding to the center name.
-     * @return the center body
-     */
-    public CelestialBody getCenterBody() {
-        return centerBody;
-    }
-
-    /**
-     * Set the {@link CelestialBody} corresponding to the center name.
-     * @param centerBody the {@link CelestialBody} to be set
-     */
-    public void setCenterBody(final CelestialBody centerBody) {
-        this.centerBody = centerBody;
-    }
-
-    /**
-     * Get boolean testing whether the body corresponding to the centerName
-     * attribute can be created through the {@link CelestialBodies}.
-     * @return true if {@link CelestialBody} can be created from centerName
-     *         false otherwise
-     */
-    public boolean getHasCreatableBody() {
-        return hasCreatableBody;
-    }
-
-    /**
-     * Set boolean testing whether the body corresponding to the centerName
-     * attribute can be created through the {@link CelestialBodies}.
-     * @param hasCreatableBody the boolean to be set.
-     */
-    public void setHasCreatableBody(final boolean hasCreatableBody) {
-        this.hasCreatableBody = hasCreatableBody;
     }
 
 }

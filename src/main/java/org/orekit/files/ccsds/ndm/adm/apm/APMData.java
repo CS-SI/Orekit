@@ -26,7 +26,7 @@ import org.orekit.files.ccsds.ndm.NDMData;
 import org.orekit.time.AbsoluteDate;
 
 /**
- * This class stores APM data lines.
+ * Container for Attitude Paramater Message data lines.
  * @author Bryan Cazabonne
  * @since 10.2
  */

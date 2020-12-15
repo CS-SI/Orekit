@@ -33,7 +33,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMFile;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMParser;
-import org.orekit.files.ccsds.ndm.adm.aem.AEMFile.AemSatelliteEphemeris;
+import org.orekit.files.ccsds.ndm.adm.aem.AEMSatelliteEphemeris;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -65,7 +65,7 @@ public class AggregateBoundedAttitudeProviderTest {
                         withSimpleEOP(true);
         final AEMFile file = parser.parse(inEntry, "AEMExample10.txt");
 
-        final AemSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
+        final AEMSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
         final BoundedAttitudeProvider provider = ephemeris.getAttitudeProvider();
 
         // Verify dates
@@ -98,7 +98,7 @@ public class AggregateBoundedAttitudeProviderTest {
                         withSimpleEOP(true);
         final AEMFile file = parser.parse(inEntry, "AEMExample10.txt");
 
-        final AemSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
+        final AEMSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
         final BoundedAttitudeProvider provider = ephemeris.getAttitudeProvider();
 
         // Verify dates
@@ -127,7 +127,7 @@ public class AggregateBoundedAttitudeProviderTest {
                         withSimpleEOP(true);
         final AEMFile file = parser.parse(inEntry, "AEMExample10.txt");
 
-        final AemSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
+        final AEMSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
         final BoundedAttitudeProvider provider = ephemeris.getAttitudeProvider();
         
         // before bound of first attitude provider
@@ -160,7 +160,7 @@ public class AggregateBoundedAttitudeProviderTest {
                         withSimpleEOP(true);
         final AEMFile file = parser.parse(inEntry, "AEMExample10.txt");
 
-        final AemSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
+        final AEMSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
         final BoundedAttitudeProvider provider = ephemeris.getAttitudeProvider();
         
         // before bound of first attitude provider

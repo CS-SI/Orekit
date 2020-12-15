@@ -58,14 +58,14 @@ public class OCMFile extends OGMFile {
      * @return meta data
      */
     @Override
-    public OCMMetaData getMetaData() {
+    public OCMMetaData getMetadata() {
         return metaData;
     }
 
     /** Get the comment for meta-data.
      * @return comment for meta-data
      */
-    public List<String> getMetaDataComment() {
+    public List<String> getMetadataComment() {
         return metaData.getComment();
     }
 

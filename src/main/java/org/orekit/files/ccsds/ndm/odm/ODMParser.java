@@ -351,7 +351,7 @@ public abstract class ODMParser {
             case EPOCH:
                 general.setEpochComment(comment);
                 comment.clear();
-                general.setEpoch(parseDate(keyValue.getValue(), general.getMetaData().getTimeSystem()));
+                general.setEpoch(parseDate(keyValue.getValue(), general.getMetadata().getTimeSystem()));
                 return true;
 
             case SEMI_MAJOR_AXIS:

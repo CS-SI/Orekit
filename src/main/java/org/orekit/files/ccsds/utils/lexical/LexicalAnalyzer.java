@@ -16,7 +16,10 @@
  */
 package org.orekit.files.ccsds.utils.lexical;
 
+import org.orekit.files.ccsds.ndm.NDMData;
 import org.orekit.files.ccsds.ndm.NDMFile;
+import org.orekit.files.ccsds.ndm.NDMHeader;
+import org.orekit.files.ccsds.ndm.NDMMetadata;
 
 /** Interface for CCSDS messages lexical analysis.
  * @author Luc Maisonobe
@@ -26,9 +29,12 @@ public interface LexicalAnalyzer {
 
     /** Parse a CCSDS Message file.
      * @param messageParser CCSDS Message parser to use
-     * @param <T> type of the CCSDS Message file
+     * @param <H> type of the header
+     * @param <M> type of the metadata
+     * @param <D> type of the data
      * @return parsed fileO
      */
-    <T extends NDMFile> T parse(MessageParser<T> messageParser);
+    <H extends NDMHeader, M extends NDMMetadata, D extends NDMData>
+        NDMFile<H, M, D> parse(MessageParser<H, M, D> messageParser);
 
 }

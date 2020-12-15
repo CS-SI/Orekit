@@ -239,8 +239,8 @@ public class StreamingOemWriterTest {
                     (ephemerisBlock.getCoordinates().size() - 1);
             String originator = oemFile.getOriginator();
             EphemeridesBlock block = oemFile.getEphemeridesBlocks().get(0);
-            String objectName = block.getMetaData().getObjectName();
-            String objectID = block.getMetaData().getObjectID();
+            String objectName = block.getMetadata().getObjectName();
+            String objectID = block.getMetadata().getObjectID();
 
             Map<Keyword, String> metadata = new LinkedHashMap<>();
             metadata.put(Keyword.ORIGINATOR, originator);
@@ -292,7 +292,7 @@ public class StreamingOemWriterTest {
                                                   EphemeridesBlock block2,
                                                   double p_tol,
                                                   double v_tol) {
-        compareOemEphemerisBlocksMetadata(block1.getMetaData(), block2.getMetaData());
+        compareOemEphemerisBlocksMetadata(block1.getMetadata(), block2.getMetadata());
         assertEquals(block1.getStart(), block2.getStart());
         assertEquals(block1.getStop(), block2.getStop());
         assertEquals(block1.getEphemeridesDataLines().size(), block2.getEphemeridesDataLines().size());

@@ -477,6 +477,6 @@ public abstract class OGMFile<H extends NDMHeader, M extends NDMMetadata, D exte
     /** Get the meta data.
      * @return meta data
      */
-    public abstract ODMMetadata getMetaData();
+    public abstract ODMMetadata getMetadata();
 
 }

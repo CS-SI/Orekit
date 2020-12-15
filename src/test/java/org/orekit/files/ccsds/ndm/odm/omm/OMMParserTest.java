@@ -71,16 +71,16 @@ public class OMMParserTest {
 
         // Check Metadata Block;
 
-        Assert.assertEquals("GOES 9", file.getMetaData().getObjectName());
-        Assert.assertEquals("1995-025A", file.getMetaData().getObjectID());
-        Assert.assertEquals("EARTH", file.getMetaData().getCenterName());
-        Assert.assertTrue(file.getMetaData().getHasCreatableBody());
-        Assert.assertEquals(file.getMetaData().getCenterBody(),
+        Assert.assertEquals("GOES 9", file.getMetadata().getObjectName());
+        Assert.assertEquals("1995-025A", file.getMetadata().getObjectID());
+        Assert.assertEquals("EARTH", file.getMetadata().getCenterName());
+        Assert.assertTrue(file.getMetadata().getHasCreatableBody());
+        Assert.assertEquals(file.getMetadata().getCenterBody(),
                             CelestialBodyFactory.getEarth());
-        Assert.assertEquals(file.getMetaData().getFrame(), FramesFactory.getTEME());
-        Assert.assertEquals(file.getMetaData().getTimeSystem(), CcsdsTimeScale.UTC);
-        Assert.assertEquals("SGP/SGP4", file.getMetaData().getMeanElementTheory());
-        Assert.assertEquals("TEME", file.getMetaData().getFrame().toString());
+        Assert.assertEquals(file.getMetadata().getFrame(), FramesFactory.getTEME());
+        Assert.assertEquals(file.getMetadata().getTimeSystem(), CcsdsTimeScale.UTC);
+        Assert.assertEquals("SGP/SGP4", file.getMetadata().getMeanElementTheory());
+        Assert.assertEquals("TEME", file.getMetadata().getFrame().toString());
         Assert.assertTrue(file.getTLERelatedParametersComment().isEmpty());
 
         // Check Mean Keplerian elements data block;
@@ -113,9 +113,9 @@ public class OMMParserTest {
         Assert.assertEquals(file.getBStar(), 0.0001, 1e-10);
         Assert.assertEquals(file.getMeanMotionDot(), -0.00000113 * FastMath.PI / 1.86624e9, 1e-12);
         Assert.assertEquals(file.getMeanMotionDotDot(), 0.0 * FastMath.PI / 5.3747712e13, 1e-10);
-        Assert.assertEquals(1995, file.getMetaData().getLaunchYear());
-        Assert.assertEquals(25, file.getMetaData().getLaunchNumber());
-        Assert.assertEquals("A", file.getMetaData().getLaunchPiece());
+        Assert.assertEquals(1995, file.getMetadata().getLaunchYear());
+        Assert.assertEquals(25, file.getMetadata().getLaunchNumber());
+        Assert.assertEquals("A", file.getMetadata().getLaunchPiece());
         file.generateCartesianOrbit();
         file.generateKeplerianOrbit();
         try {
@@ -150,9 +150,9 @@ public class OMMParserTest {
         Assert.assertEquals(FramesFactory.getTEME(), file.getCovRefFrame());
          file.getCovarianceMatrix();
         Assert.assertTrue(file.hasCovarianceMatrix());
-        Assert.assertEquals(1995, file.getMetaData().getLaunchYear());
-        Assert.assertEquals(25, file.getMetaData().getLaunchNumber());
-        Assert.assertEquals("A", file.getMetaData().getLaunchPiece());
+        Assert.assertEquals(1995, file.getMetadata().getLaunchYear());
+        Assert.assertEquals(25, file.getMetadata().getLaunchNumber());
+        Assert.assertEquals("A", file.getMetadata().getLaunchPiece());
         file.generateKeplerianOrbit();
 
     }
@@ -170,7 +170,7 @@ public class OMMParserTest {
 
         final OMMFile file = parser.parse(name);
         Assert.assertEquals(2.0, file.getFormatVersion(), 1.0e-10);
-        Assert.assertEquals(file.getMissionReferenceDate().shiftedBy(210840), file.getMetaData().getFrameEpoch());
+        Assert.assertEquals(file.getMissionReferenceDate().shiftedBy(210840), file.getMetadata().getFrameEpoch());
         Assert.assertEquals(6800e3, file.getA(), 1e-10);
         Assert.assertEquals(300, file.getMass(), 1e-10);
         Assert.assertEquals(5, file.getSolarRadArea(), 1e-10);
@@ -189,7 +189,7 @@ public class OMMParserTest {
         Assert.assertEquals(headerComment, file.getHeaderComment());
         ArrayList<String> metadataComment = new ArrayList<String>();
         metadataComment.add("this comment doesn't say much");
-        Assert.assertEquals(metadataComment, file.getMetaData().getComment());
+        Assert.assertEquals(metadataComment, file.getMetadata().getComment());
         ArrayList<String> epochComment = new ArrayList<String>();
         epochComment.add("the following data is what we're looking for");
         Assert.assertEquals(epochComment, file.getEpochComment());
@@ -199,9 +199,9 @@ public class OMMParserTest {
         ArrayList<String> dataCovarianceComment = new ArrayList<String>();
         dataCovarianceComment.add("Covariance matrix");
         Assert.assertEquals(dataCovarianceComment, file.getCovarianceComment());
-        Assert.assertEquals(1995, file.getMetaData().getLaunchYear());
-        Assert.assertEquals(25, file.getMetaData().getLaunchNumber());
-        Assert.assertEquals("A", file.getMetaData().getLaunchPiece());
+        Assert.assertEquals(1995, file.getMetadata().getLaunchYear());
+        Assert.assertEquals(25, file.getMetadata().getLaunchNumber());
+        Assert.assertEquals("A", file.getMetadata().getLaunchPiece());
         file.generateSpacecraftState();
         file.generateKeplerianOrbit();
 
@@ -238,7 +238,7 @@ public class OMMParserTest {
         final OMMFile file = parser.parse(inEntry, "OMMExample1.txt");
 
         final String satId = "1995-025A";
-        Assert.assertEquals(satId, file.getMetaData().getObjectID());
+        Assert.assertEquals(satId, file.getMetadata().getObjectID());
 
     }
 

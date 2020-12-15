@@ -302,20 +302,20 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
 
                     case START_TIME:
                         pi.lastEphemeridesBlock.setStartTime(parseDate(pi.keyValue.getValue(),
-                                                                       pi.lastEphemeridesBlock.getMetaData().getTimeSystem()));
+                                                                       pi.lastEphemeridesBlock.getMetadata().getTimeSystem()));
                         break;
 
                     case USEABLE_START_TIME:
                         pi.lastEphemeridesBlock.setUseableStartTime(parseDate(pi.keyValue.getValue(),
-                                                                              pi.lastEphemeridesBlock.getMetaData().getTimeSystem()));
+                                                                              pi.lastEphemeridesBlock.getMetadata().getTimeSystem()));
                         break;
 
                     case USEABLE_STOP_TIME:
-                        pi.lastEphemeridesBlock.setUseableStopTime(parseDate(pi.keyValue.getValue(), pi.lastEphemeridesBlock.getMetaData().getTimeSystem()));
+                        pi.lastEphemeridesBlock.setUseableStopTime(parseDate(pi.keyValue.getValue(), pi.lastEphemeridesBlock.getMetadata().getTimeSystem()));
                         break;
 
                     case STOP_TIME:
-                        pi.lastEphemeridesBlock.setStopTime(parseDate(pi.keyValue.getValue(), pi.lastEphemeridesBlock.getMetaData().getTimeSystem()));
+                        pi.lastEphemeridesBlock.setStopTime(parseDate(pi.keyValue.getValue(), pi.lastEphemeridesBlock.getMetadata().getTimeSystem()));
                         break;
 
                     case INTERPOLATION:
@@ -341,7 +341,7 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
                         parsed = parsed || parseHeaderEntry(pi.keyValue, file, pi.commentTmp);
                         if (pi.lastEphemeridesBlock != null) {
                             parsed = parsed || parseMetaDataEntry(pi.keyValue,
-                                                                  pi.lastEphemeridesBlock.getMetaData(), pi.commentTmp);
+                                                                  pi.lastEphemeridesBlock.getMetadata(), pi.commentTmp);
                             if (parsed && pi.keyValue.getKeyword() == Keyword.REF_FRAME_EPOCH) {
                                 pi.lastEphemeridesBlock.setHasRefFrameEpoch(true);
                             }
@@ -380,7 +380,7 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
                 pi.keyValue = new KeyValue(line, pi.lineNumber, pi.fileName);
                 if (pi.keyValue.getKeyword() == null) {
                     try (Scanner sc = new Scanner(line)) {
-                        final AbsoluteDate date = parseDate(sc.next(), pi.lastEphemeridesBlock.getMetaData().getTimeSystem());
+                        final AbsoluteDate date = parseDate(sc.next(), pi.lastEphemeridesBlock.getMetadata().getTimeSystem());
                         final Vector3D position = new Vector3D(Double.parseDouble(sc.next()) * 1000,
                                                                Double.parseDouble(sc.next()) * 1000,
                                                                Double.parseDouble(sc.next()) * 1000);
@@ -477,7 +477,7 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
                         pi.covRefLofType = null;
                         pi.covRefFrame   = null;
                         pi.lastMatrix    = MatrixUtils.createRealMatrix(6, 6);
-                        pi.epoch         = parseDate(pi.keyValue.getValue(), pi.lastEphemeridesBlock.getMetaData().getTimeSystem());
+                        pi.epoch         = parseDate(pi.keyValue.getValue(), pi.lastEphemeridesBlock.getMetadata().getTimeSystem());
                         break;
                     case COV_REF_FRAME :
                         final CCSDSFrame frame = parseCCSDSFrame(pi.keyValue.getValue());

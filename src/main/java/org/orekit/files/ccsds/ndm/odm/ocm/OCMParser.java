@@ -230,7 +230,7 @@ public class OCMParser extends ODMParser {
                         case META_STOP :
                             checkAllowedSection(pi, section, Section.META_DATA);
                             if (!pi.commentTmp.isEmpty()) {
-                                pi.file.getMetaData().setComment(pi.commentTmp);
+                                pi.file.getMetadata().setComment(pi.commentTmp);
                                 pi.commentTmp.clear();
                             }
                             previousSection = section;
@@ -239,8 +239,8 @@ public class OCMParser extends ODMParser {
 
                         case ORB_START : {
                             checkAllowedSection(pi, previousSection, Section.META_DATA, Section.ORBIT);
-                            final String defT0 = pi.file.getMetaData().getEpochT0String();
-                            final CcsdsTimeScale defTimSystem = pi.file.getMetaData().getTimeSystem();
+                            final String defT0 = pi.file.getMetadata().getEpochT0String();
+                            final CcsdsTimeScale defTimSystem = pi.file.getMetadata().getTimeSystem();
                             pi.file.getOrbitStateTimeHistories().add(pi.file.new OrbitStateHistory(defT0, defTimSystem));
                             section = Section.ORBIT;
                             break;
@@ -677,7 +677,7 @@ public class OCMParser extends ODMParser {
             /** {@inheritDoc}*/
             @Override
             protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
-                return parser.parseMetaDataEntry(pi.keyValue, pi.file.getMetaData(), pi.commentTmp);
+                return parser.parseMetaDataEntry(pi.keyValue, pi.file.getMetadata(), pi.commentTmp);
             }
         },
 

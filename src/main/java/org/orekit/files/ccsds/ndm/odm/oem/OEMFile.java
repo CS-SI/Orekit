@@ -71,11 +71,11 @@ public class OEMFile extends ODMFile implements EphemerisFile {
     /** Check that, according to the CCSDS standard, every OEMBlock has the same time system.
      */
     public void checkTimeSystems() {
-        final CcsdsTimeScale timeSystem = getEphemeridesBlocks().get(0).getMetaData().getTimeSystem();
+        final CcsdsTimeScale timeSystem = getEphemeridesBlocks().get(0).getMetadata().getTimeSystem();
         for (final EphemeridesBlock block : ephemeridesBlocks) {
-            if (!timeSystem.equals(block.getMetaData().getTimeSystem())) {
+            if (!timeSystem.equals(block.getMetadata().getTimeSystem())) {
                 throw new OrekitException(OrekitMessages.CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS,
-                                          timeSystem, block.getMetaData().getTimeSystem());
+                                          timeSystem, block.getMetadata().getTimeSystem());
             }
         }
     }
@@ -85,7 +85,7 @@ public class OEMFile extends ODMFile implements EphemerisFile {
     public Map<String, OemSatelliteEphemeris> getSatellites() {
         final Map<String, List<EphemeridesBlock>> satellites = new HashMap<>();
         for (final EphemeridesBlock ephemeridesBlock : ephemeridesBlocks) {
-            final String id = ephemeridesBlock.getMetaData().getObjectID();
+            final String id = ephemeridesBlock.getMetadata().getObjectID();
             satellites.putIfAbsent(id, new ArrayList<>());
             satellites.get(id).add(ephemeridesBlock);
         }
@@ -256,7 +256,7 @@ public class OEMFile extends ODMFile implements EphemerisFile {
         /** Get the meta-data for the block.
          * @return meta-data for the block
          */
-        public ODMMetadata getMetaData() {
+        public ODMMetadata getMetadata() {
             return metaData;
         }
 
@@ -269,19 +269,19 @@ public class OEMFile extends ODMFile implements EphemerisFile {
         /** {@inheritDoc} */
         @Override
         public String getFrameCenterString() {
-            return this.getMetaData().getCenterName();
+            return this.getMetadata().getCenterName();
         }
 
         /** {@inheritDoc} */
         @Override
         public String getFrameString() {
-            return this.getMetaData().getFrameString();
+            return this.getMetadata().getFrameString();
         }
 
         /** {@inheritDoc} */
         @Override
         public Frame getFrame() {
-            return this.getMetaData().getFrame();
+            return this.getMetadata().getFrame();
         }
 
         /** {@inheritDoc} */
@@ -297,13 +297,13 @@ public class OEMFile extends ODMFile implements EphemerisFile {
         /** {@inheritDoc} */
         @Override
         public String getTimeScaleString() {
-            return this.getMetaData().getTimeSystem().toString();
+            return this.getMetadata().getTimeSystem().toString();
         }
 
         /** {@inheritDoc} */
         @Override
         public TimeScale getTimeScale() {
-            return this.getMetaData().getTimeScale();
+            return this.getMetadata().getTimeScale();
         }
 
         /** Get start of total time span covered by ephemerides data and

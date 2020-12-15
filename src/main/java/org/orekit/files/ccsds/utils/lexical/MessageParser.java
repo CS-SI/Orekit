@@ -16,13 +16,19 @@
  */
 package org.orekit.files.ccsds.utils.lexical;
 
+import org.orekit.files.ccsds.ndm.NDMData;
 import org.orekit.files.ccsds.ndm.NDMFile;
+import org.orekit.files.ccsds.ndm.NDMHeader;
+import org.orekit.files.ccsds.ndm.NDMMetadata;
 
 /** Interface for parsing CCSDS messages.
+ * @param <H> type of the header
+ * @param <M> type of the metadata
+ * @param <D> type of the data
  * @author Luc Maisonobe
  * @since 11.0
  */
-public interface MessageParser<T extends NDMFile> {
+public interface MessageParser<H extends NDMHeader, M extends NDMMetadata, D extends NDMData> {
 
     /** Entry or block start marker found.
      * @param name name of the entry or block
@@ -42,6 +48,6 @@ public interface MessageParser<T extends NDMFile> {
     /** Build the file from parsed entries.
      * @return parsed file
      */
-    T build();
+    NDMFile<H, M, D> build();
 
 }

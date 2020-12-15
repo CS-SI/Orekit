@@ -61,7 +61,7 @@ public class OPMFile extends OGMFile {
      * @return meta data
      */
     @Override
-    public ODMMetadata getMetaData() {
+    public ODMMetadata getMetadata() {
         return metaData;
     }
 
@@ -132,7 +132,7 @@ public class OPMFile extends OGMFile {
     /** Get the comment for meta-data.
      * @return comment for meta-data
      */
-    public List<String> getMetaDataComment() {
+    public List<String> getMetadataComment() {
         return metaData.getComment();
     }
 

@@ -28,7 +28,8 @@ import org.orekit.bodies.CelestialBodies;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.adm.apm.APMMetadata;
+import org.orekit.files.ccsds.ndm.NDMFile;
+import org.orekit.files.ccsds.ndm.adm.aem.AEMMetadata;
 import org.orekit.files.ccsds.ndm.adm.apm.APMFile;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.CenterName;
@@ -51,7 +52,7 @@ import org.orekit.utils.IERSConventions;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public abstract class ADMParser {
+public abstract class ADMParser<T extends NDMFile<?,?,?>> {
 
     /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
     private final AbsoluteDate missionReferenceDate;
@@ -68,37 +69,20 @@ public abstract class ADMParser {
     /** Data context used for obtain frames and time scales. */
     private final DataContext dataContext;
 
-    /** Launch Year. */
-    private int launchYear;
-
-    /** Launch number. */
-    private int launchNumber;
-
-    /** Piece of launch (from "A" to "ZZZ"). */
-    private String launchPiece;
-
     /** Complete constructor.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @param mu gravitational coefficient
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param launchYear launch year for TLEs
-     * @param launchNumber launch number for TLEs
-     * @param launchPiece piece of launch (from "A" to "ZZZ") for TLEs
      * @param dataContext used to retrieve frames and time scales.
      */
     protected ADMParser(final AbsoluteDate missionReferenceDate, final double mu,
                         final IERSConventions conventions, final boolean simpleEOP,
-                        final int launchYear, final int launchNumber,
-                        final String launchPiece,
                         final DataContext dataContext) {
         this.missionReferenceDate = missionReferenceDate;
         this.mu                   = mu;
         this.conventions          = conventions;
         this.simpleEOP            = simpleEOP;
-        this.launchYear           = launchYear;
-        this.launchNumber         = launchNumber;
-        this.launchPiece          = launchPiece;
         this.dataContext          = dataContext;
     }
 
@@ -108,7 +92,7 @@ public abstract class ADMParser {
      * @return a new instance, with mission reference date replaced
      * @see #getMissionReferenceDate()
      */
-    public abstract ADMParser withMissionReferenceDate(AbsoluteDate newMissionReferenceDate);
+    public abstract ADMParser<T> withMissionReferenceDate(AbsoluteDate newMissionReferenceDate);
 
     /**
      * Get initial date.
@@ -125,7 +109,7 @@ public abstract class ADMParser {
      * @return a new instance, with gravitational coefficient date replaced
      * @see #getMu()
      */
-    public abstract ADMParser withMu(double newMu);
+    public abstract ADMParser<T> withMu(double newMu);
 
     /**
      * Get gravitational coefficient.
@@ -142,7 +126,7 @@ public abstract class ADMParser {
      * @return a new instance, with IERS conventions replaced
      * @see #getConventions()
      */
-    public abstract ADMParser withConventions(IERSConventions newConventions);
+    public abstract ADMParser<T> withConventions(IERSConventions newConventions);
 
     /**
      * Get IERS conventions.
@@ -159,7 +143,7 @@ public abstract class ADMParser {
      * @return a new instance, with EOP interpolation method replaced
      * @see #isSimpleEOP()
      */
-    public abstract ADMParser withSimpleEOP(boolean newSimpleEOP);
+    public abstract ADMParser<T> withSimpleEOP(boolean newSimpleEOP);
 
     /**
      * Get EOP interpolation method.
@@ -168,48 +152,6 @@ public abstract class ADMParser {
      */
     public boolean isSimpleEOP() {
         return simpleEOP;
-    }
-
-    /**
-     * Set international designator.
-     * <p>
-     * This method may be used to ensure the launch year number and pieces are
-     * correctly set if they are not present in the CCSDS file header in the
-     * OBJECT_ID in the form YYYY-NNNP{PP}. If they are already in the header,
-     * they will be parsed automatically regardless of this method being called
-     * or not (i.e. header information override information set here).
-     * </p>
-     * @param newLaunchYear launch year
-     * @param newLaunchNumber launch number
-     * @param newLaunchPiece piece of launch (from "A" to "ZZZ")
-     * @return a new instance, with TLE settings replaced
-     */
-    public abstract ADMParser withInternationalDesignator(int newLaunchYear,
-                                                          int newLaunchNumber,
-                                                          String newLaunchPiece);
-
-    /**
-     * Get the launch year.
-     * @return launch year
-     */
-    public int getLaunchYear() {
-        return launchYear;
-    }
-
-    /**
-     * Get the launch number.
-     * @return launch number
-     */
-    public int getLaunchNumber() {
-        return launchNumber;
-    }
-
-    /**
-     * Get the piece of launch.
-     * @return piece of launch
-     */
-    public String getLaunchPiece() {
-        return launchPiece;
     }
 
     /**
@@ -225,14 +167,14 @@ public abstract class ADMParser {
      * @param newDataContext used for frames, time scales, and celestial bodies.
      * @return a new instance with the data context replaced.
      */
-    public abstract ADMParser withDataContext(DataContext newDataContext);
+    public abstract ADMParser<T> withDataContext(DataContext newDataContext);
 
     /**
      * Parse a CCSDS Attitude Data Message.
      * @param fileName name of the file containing the message
      * @return parsed ADM file
      */
-    public ADMFile parse(final String fileName) {
+    public T parse(final String fileName) {
         try (InputStream stream = new FileInputStream(fileName)) {
             return parse(stream, fileName);
         } catch (IOException e) {
@@ -245,7 +187,7 @@ public abstract class ADMParser {
      * @param stream stream containing message
      * @return parsed ADM file
      */
-    public ADMFile parse(final InputStream stream) {
+    public T parse(final InputStream stream) {
         return parse(stream, "<unknown>");
     }
 
@@ -255,7 +197,7 @@ public abstract class ADMParser {
      * @param fileName name of the file containing the message (for error messages)
      * @return parsed ADM file
      */
-    public abstract ADMFile parse(InputStream stream, String fileName);
+    public abstract T parse(InputStream stream, String fileName);
 
     /**
      * Parse an entry from the header.
@@ -263,7 +205,7 @@ public abstract class ADMParser {
      * @param admFile instance to update with parsed entry
      * @return true if the keyword was a header keyword and has been parsed
      */
-    protected boolean parseHeaderEntry(final KeyValue keyValue, final ADMFile admFile) {
+    protected boolean parseHeaderEntry(final KeyValue keyValue, final T admFile) {
         switch (keyValue.getKeyword()) {
 
             case CREATION_DATE:
@@ -295,7 +237,7 @@ public abstract class ADMParser {
      * @return true if the keyword was a meta-data keyword and has been parsed
      */
     protected boolean parseMetaDataEntry(final KeyValue keyValue,
-                                         final APMMetadata metaData, final List<String> comment) {
+                                         final AEMMetadata metaData, final List<String> comment) {
         switch (keyValue.getKeyword()) {
             case OBJECT_NAME:
                 if (!comment.isEmpty()) {
@@ -362,7 +304,7 @@ public abstract class ADMParser {
             case EPOCH:
                 general.setEpochComment(comment);
                 comment.clear();
-                general.setEpoch(parseDate(keyValue.getValue(), general.getMetaData().getTimeSystem()));
+                general.setEpoch(parseDate(keyValue.getValue(), general.getMetadata().getTimeSystem()));
                 return true;
 
             case QC_DOT:

@@ -40,8 +40,8 @@ import org.orekit.files.ccsds.Keyword;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMFile;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMParser;
 import org.orekit.files.ccsds.ndm.adm.aem.StreamingAemWriter;
-import org.orekit.files.ccsds.ndm.adm.aem.AEMFile.AemSatelliteEphemeris;
-import org.orekit.files.ccsds.ndm.adm.aem.AEMFile.AttitudeEphemeridesBlock;
+import org.orekit.files.ccsds.ndm.adm.aem.AEMSatelliteEphemeris;
+import org.orekit.files.ccsds.ndm.adm.aem.AttitudeEphemeridesBlock;
 import org.orekit.files.ccsds.ndm.adm.aem.StreamingAemWriter.AEMSegment;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
@@ -85,15 +85,14 @@ public class StreamingAemWriterTest {
             AEMFile aemFile = parser.parse(inEntry, "AEMExample.txt");
 
             // Satellite attitude ephemeris as read from the reference file
-            AemSatelliteEphemeris satellite =
-                            aemFile.getSatellites().values().iterator().next();
+            AEMSatelliteEphemeris satellite = aemFile.getSatellites().values().iterator().next();
             AttitudeEphemeridesBlock ephemerisBlock = satellite.getSegments().get(0);
 
             // Meta data are extracted from the reference file
-            String originator   = aemFile.getOriginator();
-            String objectName   = ephemerisBlock.getMetaData().getObjectName();
-            String objectID     = ephemerisBlock.getMetaData().getObjectID();
-            String headerCmt    = aemFile.getHeaderComment().get(0);
+            String originator   = aemFile.getHeader().getOriginator();
+            String objectName   = ephemerisBlock.getMetadata().getObjectName();
+            String objectID     = ephemerisBlock.getMetadata().getObjectID();
+            String headerCmt    = aemFile.getHeader().getComments().get(0);
             String attitudeDir  = ephemerisBlock.getAttitudeDirection();
             String refFrameA    = ephemerisBlock.getRefFrameAString();
             String refFrameB    = ephemerisBlock.getRefFrameBString();

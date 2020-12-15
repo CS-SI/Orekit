@@ -96,8 +96,8 @@ public class OEMWriterTest {
         final EphemerisFile ephemerisFile = (EphemerisFile) oemFile;
 
         String originator = oemFile.getOriginator();
-        String objectName = oemFile.getEphemeridesBlocks().get(0).getMetaData().getObjectName();
-        String objectID = oemFile.getEphemeridesBlocks().get(0).getMetaData().getObjectID();
+        String objectName = oemFile.getEphemeridesBlocks().get(0).getMetadata().getObjectName();
+        String objectID = oemFile.getEphemeridesBlocks().get(0).getMetadata().getObjectID();
         String interpolationMethodString = oemFile.getEphemeridesBlocks().get(0).getInterpolationMethod();
         InterpolationMethod interpolationMethod = Enum.valueOf(InterpolationMethod.class, interpolationMethodString);
         String tempOEMFilePath = tempFolder.newFile("TestWriteOEM1.oem").toString();
@@ -141,8 +141,8 @@ public class OEMWriterTest {
         final OEMFile oemFile = parser.parse(inEntry, "OEMExample1.txt");
         final EphemerisFile ephemerisFile = (EphemerisFile) oemFile;
         String originator = oemFile.getOriginator();
-        String objectName = oemFile.getEphemeridesBlocks().get(0).getMetaData().getObjectName();
-        String objectID = oemFile.getEphemeridesBlocks().get(0).getMetaData().getObjectID();
+        String objectName = oemFile.getEphemeridesBlocks().get(0).getMetadata().getObjectName();
+        String objectID = oemFile.getEphemeridesBlocks().get(0).getMetadata().getObjectID();
         String interpolationMethodString = oemFile.getEphemeridesBlocks().get(0).getInterpolationMethod();
         InterpolationMethod interpolationMethod = Enum.valueOf(InterpolationMethod.class, interpolationMethodString);
         OEMWriter writer = new OEMWriter(interpolationMethod, originator, objectID, objectName);
@@ -187,8 +187,8 @@ public class OEMWriterTest {
         writer.write(tempOEMFilePath, ephemerisFile);
 
         final OEMFile generatedOemFile = parser.parse(tempOEMFilePath);
-        assertEquals(oemFile.getEphemeridesBlocks().get(0).getMetaData().getObjectID(),
-                generatedOemFile.getEphemeridesBlocks().get(0).getMetaData().getObjectID());
+        assertEquals(oemFile.getEphemeridesBlocks().get(0).getMetadata().getObjectID(),
+                generatedOemFile.getEphemeridesBlocks().get(0).getMetadata().getObjectID());
     }
 
     @Test
@@ -247,8 +247,8 @@ public class OEMWriterTest {
         StringBuilder buffer = new StringBuilder();
 
         OEMWriter writer = new OEMWriter(OEMWriter.DEFAULT_INTERPOLATION_METHOD, oemFile.getOriginator(),
-                                         oemFile.getEphemeridesBlocks().get(0).getMetaData().getObjectID(),
-                                         oemFile.getEphemeridesBlocks().get(0).getMetaData().getObjectName(),
+                                         oemFile.getEphemeridesBlocks().get(0).getMetadata().getObjectID(),
+                                         oemFile.getEphemeridesBlocks().get(0).getMetadata().getObjectName(),
                                          "%.2f", "%.3f");
 
         writer.write(buffer, oemFile);
@@ -261,8 +261,8 @@ public class OEMWriterTest {
 
         // Default format
         writer = new OEMWriter(OEMWriter.DEFAULT_INTERPOLATION_METHOD, oemFile.getOriginator(),
-                               oemFile.getEphemeridesBlocks().get(0).getMetaData().getObjectID(),
-                               oemFile.getEphemeridesBlocks().get(0).getMetaData().getObjectName());
+                               oemFile.getEphemeridesBlocks().get(0).getMetadata().getObjectID(),
+                               oemFile.getEphemeridesBlocks().get(0).getMetadata().getObjectName());
         buffer = new StringBuilder();
         writer.write(buffer, oemFile);
 
@@ -274,7 +274,7 @@ public class OEMWriterTest {
     }
 
     private static void compareOemEphemerisBlocks(EphemeridesBlock block1, EphemeridesBlock block2) {
-        compareOemEphemerisBlocksMetadata(block1.getMetaData(), block2.getMetaData());
+        compareOemEphemerisBlocksMetadata(block1.getMetadata(), block2.getMetadata());
         assertEquals(block1.getStart(), block2.getStart());
         assertEquals(block1.getStop(), block2.getStop());
         assertEquals(block1.getInterpolationDegree(), block2.getInterpolationDegree());

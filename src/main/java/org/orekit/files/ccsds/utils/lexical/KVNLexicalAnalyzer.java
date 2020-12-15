@@ -26,7 +26,10 @@ import java.util.regex.Pattern;
 
 import org.hipparchus.exception.DummyLocalizable;
 import org.orekit.errors.OrekitException;
+import org.orekit.files.ccsds.ndm.NDMData;
 import org.orekit.files.ccsds.ndm.NDMFile;
+import org.orekit.files.ccsds.ndm.NDMHeader;
+import org.orekit.files.ccsds.ndm.NDMMetadata;
 
 /** Lexical analyzer for Key-Value Notation CCSDS messages.
  * @author Luc Maisonobe
@@ -55,7 +58,8 @@ public class KVNLexicalAnalyzer implements LexicalAnalyzer {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends NDMFile> T parse(final MessageParser<T> messageParser) {
+    public <H extends NDMHeader, M extends NDMMetadata, D extends NDMData>
+        NDMFile<H, M, D> parse(final MessageParser<H, M, D> messageParser) {
         try (InputStreamReader isr = new InputStreamReader(stream, StandardCharsets.UTF_8);
              BufferedReader reader = new BufferedReader(isr)) {
 

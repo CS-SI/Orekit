@@ -16,11 +16,63 @@
  */
 package org.orekit.files.ccsds.ndm.adm.aem;
 
-import org.orekit.files.ccsds.ndm.NDMMetadata;
+import org.orekit.bodies.CelestialBodies;
+import org.orekit.bodies.CelestialBody;
+import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
 
-/** This class gathers the meta-data present in the Attitude Ephemeris Message (AEM).
+/** This class gathers the meta-data present in the Attitude Data Message (ADM).
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class AEMMetadata extends NDMMetadata {
+public class AEMMetadata extends ADMMetadata {
+
+    /** Celestial body corresponding to the center name. */
+    private CelestialBody centerBody;
+
+    /** Tests whether the body corresponding to the center name can be
+     * created through {@link CelestialBodies} in order to obtain the
+     * corresponding gravitational coefficient. */
+    private boolean hasCreatableBody;
+
+    /**
+     * Create a new meta-data.
+     */
+    public AEMMetadata() {
+    }
+
+    /**
+     * Get the {@link CelestialBody} corresponding to the center name.
+     * @return the center body
+     */
+    public CelestialBody getCenterBody() {
+        return centerBody;
+    }
+
+    /**
+     * Set the {@link CelestialBody} corresponding to the center name.
+     * @param centerBody the {@link CelestialBody} to be set
+     */
+    public void setCenterBody(final CelestialBody centerBody) {
+        this.centerBody = centerBody;
+    }
+
+    /**
+     * Get boolean testing whether the body corresponding to the centerName
+     * attribute can be created through the {@link CelestialBodies}.
+     * @return true if {@link CelestialBody} can be created from centerName
+     *         false otherwise
+     */
+    public boolean getHasCreatableBody() {
+        return hasCreatableBody;
+    }
+
+    /**
+     * Set boolean testing whether the body corresponding to the centerName
+     * attribute can be created through the {@link CelestialBodies}.
+     * @param hasCreatableBody the boolean to be set.
+     */
+    public void setHasCreatableBody(final boolean hasCreatableBody) {
+        this.hasCreatableBody = hasCreatableBody;
+    }
+
 }

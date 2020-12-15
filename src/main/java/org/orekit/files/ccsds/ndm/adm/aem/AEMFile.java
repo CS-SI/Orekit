@@ -22,10 +22,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NDMFile;
 import org.orekit.files.ccsds.ndm.NDMHeader;
-import org.orekit.files.ccsds.ndm.adm.aem.AEMData.AemSatelliteEphemeris;
-import org.orekit.files.ccsds.ndm.adm.aem.AEMData.AttitudeEphemeridesBlock;
+import org.orekit.files.ccsds.ndm.NDMSegment;
+import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.general.AttitudeEphemerisFile;
 
 /**
@@ -35,7 +37,7 @@ import org.orekit.files.general.AttitudeEphemerisFile;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class AEMFile extends NDMFile<NDMHeader, AEMMetadata, AEMData> implements AttitudeEphemerisFile {
+public class AEMFile extends NDMFile<NDMHeader, AEMMetadata, AttitudeEphemeridesBlock> implements AttitudeEphemerisFile {
 
     /** Simple constructor.
      */
@@ -45,20 +47,35 @@ public class AEMFile extends NDMFile<NDMHeader, AEMMetadata, AEMData> implements
 
     /** {@inheritDoc} */
     @Override
-    public Map<String, AemSatelliteEphemeris> getSatellites() {
+    public Map<String, AEMSatelliteEphemeris> getSatellites() {
         final Map<String, List<AttitudeEphemeridesBlock>> satellites = new HashMap<>();
-        for (final AttitudeEphemeridesBlock ephemeridesBlock : attitudeBlocks) {
-            final String id = ephemeridesBlock.getMetaData().getObjectID();
+        for (final NDMSegment<AEMMetadata, AttitudeEphemeridesBlock> segment : getSegments()) {
+            final String id = segment.getMetadata().getObjectID();
             satellites.putIfAbsent(id, new ArrayList<>());
-            satellites.get(id).add(ephemeridesBlock);
+            satellites.get(id).add(segment.getData());
         }
-        final Map<String, AemSatelliteEphemeris> ret = new HashMap<>();
+        final Map<String, AEMSatelliteEphemeris> ret = new HashMap<>();
         for (final Entry<String, List<AttitudeEphemeridesBlock>> entry : satellites.entrySet()) {
             final String id = entry.getKey();
-            ret.put(id, new AemSatelliteEphemeris(id, entry.getValue()));
+            ret.put(id, new AEMSatelliteEphemeris(id, entry.getValue()));
         }
         return ret;
     }
 
+    /**
+     * Check that, according to the CCSDS standard, every AEMBlock has the same time system.
+     */
+    public void checkTimeSystems() {
+        CcsdsTimeScale referenceTimeSystem = null;
+        for (final NDMSegment<AEMMetadata, AttitudeEphemeridesBlock> segment : getSegments()) {
+            final CcsdsTimeScale timeSystem = segment.getMetadata().getTimeSystem();
+            if (referenceTimeSystem == null) {
+                referenceTimeSystem = timeSystem;
+            } else if (!referenceTimeSystem.equals(timeSystem)) {
+                throw new OrekitException(OrekitMessages.CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS,
+                                          referenceTimeSystem, timeSystem);
+            }
+        }
+    }
 
 }

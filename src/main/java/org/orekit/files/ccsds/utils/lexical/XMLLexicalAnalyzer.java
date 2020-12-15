@@ -25,7 +25,10 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.hipparchus.exception.DummyLocalizable;
 import org.orekit.errors.OrekitException;
+import org.orekit.files.ccsds.ndm.NDMData;
 import org.orekit.files.ccsds.ndm.NDMFile;
+import org.orekit.files.ccsds.ndm.NDMHeader;
+import org.orekit.files.ccsds.ndm.NDMMetadata;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
@@ -56,10 +59,11 @@ public class XMLLexicalAnalyzer implements LexicalAnalyzer {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends NDMFile> T parse(final MessageParser<T> messageParser) {
+    public <H extends NDMHeader, M extends NDMMetadata, D extends NDMData>
+        NDMFile<H, M, D> parse(final MessageParser<H, M, D> messageParser) {
         try {
             // Create the handler
-            final XMLHandler<T> handler = new XMLHandler<T>(messageParser);
+            final XMLHandler<H, M, D> handler = new XMLHandler<>(messageParser);
 
             // Create the XML SAX parser factory
             final SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -88,12 +92,14 @@ public class XMLLexicalAnalyzer implements LexicalAnalyzer {
     }
 
     /** Handler for parsing XML file formats.
-     * @param <T> type of the CCSDS Message file
+     * @param <H> type of the header
+     * @param <M> type of the metadata
+     * @param <D> type of the data
      */
-    private class XMLHandler<T extends NDMFile> extends DefaultHandler {
+    private class XMLHandler<H extends NDMHeader, M extends NDMMetadata, D extends NDMData> extends DefaultHandler {
 
         /** CCSDS Message parser to use. */
-        private final MessageParser<T> messageParser;
+        private final MessageParser<H, M, D> messageParser;
 
         /** Locator used to get current line number. */
         private Locator locator;
@@ -104,7 +110,7 @@ public class XMLLexicalAnalyzer implements LexicalAnalyzer {
         /** Simple constructor.
          * @param messageParser CCSDS Message parser to use
          */
-        XMLHandler(final MessageParser<T> messageParser) {
+        XMLHandler(final MessageParser<H, M, D> messageParser) {
             this.messageParser = messageParser;
         }
 

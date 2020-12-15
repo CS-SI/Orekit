@@ -18,6 +18,7 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 
 import org.orekit.files.ccsds.ndm.NDMFile;
 import org.orekit.files.ccsds.ndm.NDMHeader;
+import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
 import org.orekit.time.AbsoluteDate;
 
 /**
@@ -26,7 +27,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class APMFile extends NDMFile<NDMHeader, APMMetadata, APMData> {
+public class APMFile extends NDMFile<NDMHeader, ADMMetadata, APMData> {
 
     /** Initial Date for MET or MRT time systems. */
     private AbsoluteDate missionReferenceDate;

@@ -36,10 +36,11 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.ndm.NDMSegment;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMAttitudeType;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMFile;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMParser;
-import org.orekit.files.ccsds.ndm.adm.aem.AEMFile.AttitudeEphemeridesBlock;
+import org.orekit.files.ccsds.ndm.adm.aem.AttitudeEphemeridesBlock;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMParser.AEMRotationOrder;
 import org.orekit.files.ccsds.ndm.odm.oem.OEMParser;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
@@ -67,104 +68,106 @@ public class AEMParserTest {
                         withConventions(IERSConventions.IERS_2010).
                         withSimpleEOP(true);
         final AEMFile file = parser.parse(inEntry, "AEMExample.txt");
+        final NDMSegment<AEMMetadata, AttitudeEphemeridesBlock> segment0 = file.getSegments().get(0);
+        final NDMSegment<AEMMetadata, AttitudeEphemeridesBlock> segment1 = file.getSegments().get(1);
         final AbsoluteDate start = new AbsoluteDate("1996-11-28T22:08:02.5555", TimeScalesFactory.getUTC());
         Assert.assertEquals(0.0, start.durationFrom(file.getSatellites().get("1996-062A").getStart()), Double.MIN_VALUE);
         final AbsoluteDate end = new AbsoluteDate("1996-12-28T21:23:00.5555", TimeScalesFactory.getUTC());
         Assert.assertEquals(0.0, end.durationFrom(file.getSatellites().get("1996-062A").getStop()), Double.MIN_VALUE);
         Assert.assertEquals("1996-062A", file.getSatellites().get("1996-062A").getId());
-        Assert.assertEquals(1.0, file.getFormatVersion(), Double.MIN_VALUE);
+        Assert.assertEquals(1.0, file.getHeader().getFormatVersion(), Double.MIN_VALUE);
         Assert.assertEquals(CelestialBodyFactory.getEarth().getGM(), file.getMu(), 1.0e-5);
         Assert.assertEquals(new AbsoluteDate(2002, 11, 4, 17, 22, 31.0, TimeScalesFactory.getUTC()),
-                            file.getCreationDate());
-        Assert.assertEquals("NASA/JPL", file.getOriginator());
-        Assert.assertEquals(CcsdsTimeScale.UTC,     file.getAttitudeBlocks().get(0).getMetaData().getTimeSystem());
-        Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getAttitudeBlocks().get(0).getMetaData().getObjectName());
-        Assert.assertEquals("1996-062A",            file.getAttitudeBlocks().get(0).getMetaData().getObjectID());
-        Assert.assertEquals("MARS BARYCENTER",      file.getAttitudeBlocks().get(0).getMetaData().getCenterName());
-        Assert.assertEquals(1996,                   file.getAttitudeBlocks().get(0).getMetaData().getLaunchYear());
-        Assert.assertEquals(62,                     file.getAttitudeBlocks().get(0).getMetaData().getLaunchNumber());
-        Assert.assertEquals("A",                    file.getAttitudeBlocks().get(0).getMetaData().getLaunchPiece());
-        Assert.assertFalse(file.getAttitudeBlocks().get(0).getMetaData().getHasCreatableBody());
-        Assert.assertNull(file.getAttitudeBlocks().get(0).getMetaData().getCenterBody());
+                            file.getHeader().getCreationDate());
+        Assert.assertEquals("NASA/JPL", file.getHeader().getOriginator());
+        Assert.assertEquals(CcsdsTimeScale.UTC,     segment0.getMetadata().getTimeSystem());
+        Assert.assertEquals("MARS GLOBAL SURVEYOR", segment0.getMetadata().getObjectName());
+        Assert.assertEquals("1996-062A",            segment0.getMetadata().getObjectID());
+        Assert.assertEquals("MARS BARYCENTER",      segment0.getMetadata().getCenterName());
+        Assert.assertEquals(1996,                   segment0.getMetadata().getLaunchYear());
+        Assert.assertEquals(62,                     segment0.getMetadata().getLaunchNumber());
+        Assert.assertEquals("A",                    segment0.getMetadata().getLaunchPiece());
+        Assert.assertFalse(segment0.getMetadata().getHasCreatableBody());
+        Assert.assertNull(segment0.getMetadata().getCenterBody());
         Assert.assertEquals(new AbsoluteDate(1996, 11, 28, 21, 29, 7.2555, TimeScalesFactory.getUTC()),
-                            file.getAttitudeBlocks().get(0).getStartTime());
+                            segment0.getData().getStartTime());
         Assert.assertEquals(new AbsoluteDate(1996, 11, 30, 1, 28, 2.5555, TimeScalesFactory.getUTC()),
-                            file.getAttitudeBlocks().get(0).getStopTime());
+                            segment0.getData().getStopTime());
         Assert.assertEquals(new AbsoluteDate(1996, 11, 28, 22, 8, 2.5555, TimeScalesFactory.getUTC()),
-                            file.getAttitudeBlocks().get(0).getUseableStartTime());
+                            segment0.getData().getUseableStartTime());
         Assert.assertEquals(new AbsoluteDate(1996, 11, 30, 1, 18, 2.5555, TimeScalesFactory.getUTC()),
-                            file.getAttitudeBlocks().get(0).getUseableStopTime());
-        Assert.assertEquals("HERMITE", file.getAttitudeBlocks().get(0).getInterpolationMethod());
-        Assert.assertEquals(7,         file.getAttitudeBlocks().get(0).getInterpolationDegree());
-        Assert.assertFalse(file.getAttitudeBlocks().get(0).isFirst());
-        Assert.assertEquals("EME2000",    file.getAttitudeBlocks().get(0).getRefFrameAString());
-        Assert.assertEquals("SC BODY 1",  file.getAttitudeBlocks().get(0).getRefFrameBString());
-        Assert.assertEquals("A2B",        file.getAttitudeBlocks().get(0).getAttitudeDirection());
-        Assert.assertEquals("QUATERNION", file.getAttitudeBlocks().get(0).getAttitudeType());
-        Assert.assertEquals(AngularDerivativesFilter.USE_R, file.getAttitudeBlocks().get(0).getAvailableDerivatives());
+                            segment0.getData().getUseableStopTime());
+        Assert.assertEquals("HERMITE", segment0.getData().getInterpolationMethod());
+        Assert.assertEquals(7,         segment0.getData().getInterpolationDegree());
+        Assert.assertFalse(segment0.getData().isFirst());
+        Assert.assertEquals("EME2000",    segment0.getData().getRefFrameAString());
+        Assert.assertEquals("SC BODY 1",  segment0.getData().getRefFrameBString());
+        Assert.assertEquals("A2B",        segment0.getData().getAttitudeDirection());
+        Assert.assertEquals("QUATERNION", segment0.getData().getAttitudeType());
+        Assert.assertEquals(AngularDerivativesFilter.USE_R, segment0.getData().getAvailableDerivatives());
         verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 11, 28, 21, 29, 7.2555, TimeScalesFactory.getUTC()),
                                                                    new Rotation(0.68427, 0.56748, 0.03146, 0.45689, false),
                                                                    Vector3D.ZERO,
                                                                    Vector3D.ZERO),
-                                 file.getAttitudeBlocks().get(0).getAngularCoordinates().get(0), 1.0e-5);
+                                 segment0.getData().getAngularCoordinates().get(0), 1.0e-5);
         verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 11, 28, 22, 8, 3.5555, TimeScalesFactory.getUTC()),
                                                                    new Rotation(0.74533, 0.42319, -0.45697, 0.23784, false),
                                                                    Vector3D.ZERO,
                                                                    Vector3D.ZERO),
-                                 file.getAttitudeBlocks().get(0).getAngularCoordinates().get(1), 1.0e-5);
+                                 segment0.getData().getAngularCoordinates().get(1), 1.0e-5);
         verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 11, 28, 22, 8, 4.5555, TimeScalesFactory.getUTC()),
                                                                    new Rotation(0.45652, -0.84532, 0.26974, -0.06532, false),
                                                                    Vector3D.ZERO,
                                                                    Vector3D.ZERO),
-                                 file.getAttitudeBlocks().get(0).getAngularCoordinates().get(2), 1.0e-5);
+                                 segment0.getData().getAngularCoordinates().get(2), 1.0e-5);
         ArrayList<String> ephemeridesDataLinesComment = new ArrayList<String>();
         ephemeridesDataLinesComment.add("This file was produced by M.R. Somebody, MSOO NAV/JPL, 2002 OCT 04.");
         ephemeridesDataLinesComment.add("It is to be used for attitude reconstruction only.  The relative accuracy of these");
         ephemeridesDataLinesComment.add("attitudes is 0.1 degrees per axis.");
-        Assert.assertEquals(ephemeridesDataLinesComment, file.getAttitudeBlocks().get(0).getMetaData().getComment());
+        Assert.assertEquals(ephemeridesDataLinesComment, segment0.getMetadata().getComments());
  
-        Assert.assertEquals(CcsdsTimeScale.UTC,         file.getAttitudeBlocks().get(1).getMetaData().getTimeSystem());
-        Assert.assertEquals(TimeScalesFactory.getUTC(), file.getAttitudeBlocks().get(1).getMetaData().getTimeScale());
-        Assert.assertEquals("MARS GLOBAL SURVEYOR",     file.getAttitudeBlocks().get(1).getMetaData().getObjectName());
-        Assert.assertEquals("1996-062A",                file.getAttitudeBlocks().get(1).getMetaData().getObjectID());
-        Assert.assertEquals("MARS BARYCENTER",          file.getAttitudeBlocks().get(1).getMetaData().getCenterName());
-        Assert.assertEquals(1996,                       file.getAttitudeBlocks().get(1).getMetaData().getLaunchYear());
-        Assert.assertEquals(62,                         file.getAttitudeBlocks().get(1).getMetaData().getLaunchNumber());
-        Assert.assertEquals("A",                        file.getAttitudeBlocks().get(1).getMetaData().getLaunchPiece());
-        Assert.assertFalse(file.getAttitudeBlocks().get(1).getMetaData().getHasCreatableBody());
-        Assert.assertNull(file.getAttitudeBlocks().get(1).getMetaData().getCenterBody());
+        Assert.assertEquals(CcsdsTimeScale.UTC,         segment1.getMetadata().getTimeSystem());
+        Assert.assertEquals(TimeScalesFactory.getUTC(), segment1.getMetadata().getTimeScale());
+        Assert.assertEquals("MARS GLOBAL SURVEYOR",     segment1.getMetadata().getObjectName());
+        Assert.assertEquals("1996-062A",                segment1.getMetadata().getObjectID());
+        Assert.assertEquals("MARS BARYCENTER",          segment1.getMetadata().getCenterName());
+        Assert.assertEquals(1996,                       segment1.getMetadata().getLaunchYear());
+        Assert.assertEquals(62,                         segment1.getMetadata().getLaunchNumber());
+        Assert.assertEquals("A",                        segment1.getMetadata().getLaunchPiece());
+        Assert.assertFalse(segment1.getMetadata().getHasCreatableBody());
+        Assert.assertNull(segment1.getMetadata().getCenterBody());
         Assert.assertEquals(new AbsoluteDate(1996, 12, 18, 12, 5, 0.5555, TimeScalesFactory.getUTC()),
-                            file.getAttitudeBlocks().get(1).getStartTime());
+                            segment1.getData().getStartTime());
         Assert.assertEquals(new AbsoluteDate(1996, 12, 28, 21, 28, 0.5555, TimeScalesFactory.getUTC()),
-                            file.getAttitudeBlocks().get(1).getStopTime());
+                            segment1.getData().getStopTime());
         Assert.assertEquals(new AbsoluteDate(1996, 12, 18, 12, 10, 0.5555, TimeScalesFactory.getUTC()),
-                            file.getAttitudeBlocks().get(1).getUseableStartTime());
+                            segment1.getData().getUseableStartTime());
         Assert.assertEquals(new AbsoluteDate(1996, 12, 28, 21, 23, 0.5555, TimeScalesFactory.getUTC()),
-                            file.getAttitudeBlocks().get(1).getUseableStopTime());
-        Assert.assertFalse(file.getAttitudeBlocks().get(1).isFirst());
-        Assert.assertEquals("EME2000",    file.getAttitudeBlocks().get(1).getRefFrameAString());
-        Assert.assertEquals("SC BODY 1",  file.getAttitudeBlocks().get(1).getRefFrameBString());
-        Assert.assertEquals("A2B",        file.getAttitudeBlocks().get(1).getAttitudeDirection());
-        Assert.assertEquals("QUATERNION", file.getAttitudeBlocks().get(1).getAttitudeType());
-        Assert.assertEquals(AngularDerivativesFilter.USE_R, file.getAttitudeBlocks().get(1).getAvailableDerivatives());
+                            segment1.getData().getUseableStopTime());
+        Assert.assertFalse(segment1.getData().isFirst());
+        Assert.assertEquals("EME2000",    segment1.getData().getRefFrameAString());
+        Assert.assertEquals("SC BODY 1",  segment1.getData().getRefFrameBString());
+        Assert.assertEquals("A2B",        segment1.getData().getAttitudeDirection());
+        Assert.assertEquals("QUATERNION", segment1.getData().getAttitudeType());
+        Assert.assertEquals(AngularDerivativesFilter.USE_R, segment1.getData().getAvailableDerivatives());
         verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 12, 18, 12, 5, 0.5555, TimeScalesFactory.getUTC()),
                                                                    new Rotation(0.72501, -0.64585, 0.018542, -0.23854, false),
                                                                    Vector3D.ZERO,
                                                                    Vector3D.ZERO),
-                                 file.getAttitudeBlocks().get(1).getAngularCoordinates().get(0), 1.0e-5);
+                                 segment1.getData().getAngularCoordinates().get(0), 1.0e-5);
         verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 12, 18, 12, 10, 5.5555, TimeScalesFactory.getUTC()),
                                                                    new Rotation(-0.16767, 0.87451, -0.43475, 0.13458, false),
                                                                    Vector3D.ZERO,
                                                                    Vector3D.ZERO),
-                                 file.getAttitudeBlocks().get(1).getAngularCoordinates().get(1), 1.0e-5);
+                                 segment1.getData().getAngularCoordinates().get(1), 1.0e-5);
         verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 12, 18, 12, 10, 10.5555, TimeScalesFactory.getUTC()),
                                                                    new Rotation(-0.71418, 0.03125, -0.65874, 0.23458, false),
                                                                    Vector3D.ZERO,
                                                                    Vector3D.ZERO),
-                                 file.getAttitudeBlocks().get(1).getAngularCoordinates().get(2), 1.0e-5);
+                                 segment1.getData().getAngularCoordinates().get(2), 1.0e-5);
         ArrayList<String> ephemeridesDataLinesComment2 = new ArrayList<String>();
         ephemeridesDataLinesComment2.add("This block begins after trajectory correction maneuver TCM-3.");
-        Assert.assertEquals(ephemeridesDataLinesComment2, file.getAttitudeBlocks().get(1).getMetaData().getComment());
+        Assert.assertEquals(ephemeridesDataLinesComment2, segment1.getMetadata().getComments());
     }
 
     @Test
@@ -175,33 +178,31 @@ public class AEMParserTest {
                 withSimpleEOP(true).
                 withMu(CelestialBodyFactory.getMars().getGM()).
                 withDataContext(DataContext.getDefault()).
-                withInternationalDesignator(1996, 2, "A").
                 withMissionReferenceDate(new AbsoluteDate("1996-12-17T00:00:00.000",
                                                           TimeScalesFactory.getUTC()));
 
         final AEMFile file = parser.parse(name);
+        final NDMSegment<AEMMetadata, AttitudeEphemeridesBlock> segment0 = file.getSegments().get(0);
         final List<String> headerComment = new ArrayList<String>();
         headerComment.add("comment");
-        Assert.assertEquals(headerComment, file.getHeaderComment());
+        Assert.assertEquals(headerComment, file.getHeader().getComments());
         final List<String> metadataComment = new ArrayList<String>();
         metadataComment.add("This file was produced by M.R. Somebody, MSOO NAV/JPL, 2002 OCT 04.");
         metadataComment.add("It is to be used for attitude reconstruction only.  The relative accuracy of these");
         metadataComment.add("attitudes is 0.1 degrees per axis.");
-        Assert.assertEquals(metadataComment, file.getAttitudeBlocks().get(0).getMetaData().getComment());
-        Assert.assertEquals("EME2000",       file.getAttitudeBlocks().get(0).getRefFrameAString());
-        Assert.assertEquals("SC BODY 1",     file.getAttitudeBlocks().get(0).getRefFrameBString());
-        List<AttitudeEphemeridesBlock> blocks = file.getAttitudeBlocks();
+        Assert.assertEquals(metadataComment, segment0.getMetadata().getComments());
+        Assert.assertEquals("EME2000",       segment0.getData().getRefFrameAString());
+        Assert.assertEquals("SC BODY 1",     segment0.getData().getRefFrameBString());
+        List<NDMSegment<AEMMetadata, AttitudeEphemeridesBlock>> blocks = file.getSegments();
         Assert.assertEquals(1, blocks.size());
         Assert.assertEquals(IERSConventions.IERS_2010, parser.getConventions());
         Assert.assertTrue(parser.isSimpleEOP());
         Assert.assertEquals(CelestialBodyFactory.getMars().getGM(), parser.getMu(), 1.0e-5);
         Assert.assertEquals(0.0, parser.getMissionReferenceDate().durationFrom(new AbsoluteDate(1996, 12, 17, 0, 0, 0.0, TimeScalesFactory.getUTC())), 1.0e-5);
-        Assert.assertEquals(1996, parser.getLaunchYear());
-        Assert.assertEquals(2, parser.getLaunchNumber());
-        Assert.assertEquals("A", parser.getLaunchPiece());
         Assert.assertEquals(DataContext.getDefault(), parser.getDataContext());
         Assert.assertEquals((new AbsoluteDate("1996-12-17T00:00:00.000",
-                                                          TimeScalesFactory.getUTC())), file.getMissionReferenceDate());
+                                              TimeScalesFactory.getUTC())),
+                            parser.getMissionReferenceDate());
     }
 
     @Test
@@ -224,9 +225,10 @@ public class AEMParserTest {
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM());
         final AEMFile file = parser.parse(inEntry, "AEMExample4.txt");
+        final NDMSegment<AEMMetadata, AttitudeEphemeridesBlock> segment0 = file.getSegments().get(0);
         final List<String> dataComment = new ArrayList<String>();
         dataComment.add("Spin KF ground solution, SPINKF rates");
-        Assert.assertEquals(dataComment, file.getAttitudeBlocks().get(0).getAttitudeDataLinesComment());
+        Assert.assertEquals(dataComment, segment0.getData().getAttitudeDataLinesComment());
     }
 
     @Test
@@ -235,25 +237,26 @@ public class AEMParserTest {
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM());
         final AEMFile file = parser.parse(inEntry, "AEMExample5.txt");
+        final NDMSegment<AEMMetadata, AttitudeEphemeridesBlock> segment0 = file.getSegments().get(0);
         final List<String> headerComment = new ArrayList<String>();
         headerComment.add("comment");
-        Assert.assertEquals(headerComment, file.getHeaderComment());
+        Assert.assertEquals(headerComment, file.getHeader().getComments());
         final List<String> metadataComment = new ArrayList<String>();
         metadataComment.add("This file was produced by M.R. Somebody, MSOO NAV/JPL, 2002 OCT 04.");
         metadataComment.add("It is to be used for attitude reconstruction only.  The relative accuracy of these");
         metadataComment.add("attitudes is 0.1 degrees per axis.");
-        Assert.assertEquals(metadataComment,        file.getAttitudeBlocks().get(0).getMetaData().getComment());
-        Assert.assertEquals(CcsdsTimeScale.UTC,     file.getAttitudeBlocks().get(0).getMetaData().getTimeSystem());
-        Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getAttitudeBlocks().get(0).getMetaData().getObjectName());
-        Assert.assertEquals("1996-062A",            file.getAttitudeBlocks().get(0).getMetaData().getObjectID());
-        Assert.assertEquals("MARS BARYCENTER",      file.getAttitudeBlocks().get(0).getMetaData().getCenterName());
-        Assert.assertEquals(1996,                   file.getAttitudeBlocks().get(0).getMetaData().getLaunchYear());
-        Assert.assertEquals(62,                     file.getAttitudeBlocks().get(0).getMetaData().getLaunchNumber());
-        Assert.assertEquals("A",                    file.getAttitudeBlocks().get(0).getMetaData().getLaunchPiece());
-        Assert.assertEquals("312",                  file.getAttitudeBlocks().get(0).getEulerRotSeq());
-        Assert.assertEquals("EME2000",              file.getAttitudeBlocks().get(0).getRateFrameString());
-        Assert.assertFalse(file.getAttitudeBlocks().get(0).getMetaData().getHasCreatableBody());
-        Assert.assertNull(file.getAttitudeBlocks().get(0).getMetaData().getCenterBody());
+        Assert.assertEquals(metadataComment,        segment0.getMetadata().getComments());
+        Assert.assertEquals(CcsdsTimeScale.UTC,     segment0.getMetadata().getTimeSystem());
+        Assert.assertEquals("MARS GLOBAL SURVEYOR", segment0.getMetadata().getObjectName());
+        Assert.assertEquals("1996-062A",            segment0.getMetadata().getObjectID());
+        Assert.assertEquals("MARS BARYCENTER",      segment0.getMetadata().getCenterName());
+        Assert.assertEquals(1996,                   segment0.getMetadata().getLaunchYear());
+        Assert.assertEquals(62,                     segment0.getMetadata().getLaunchNumber());
+        Assert.assertEquals("A",                    segment0.getMetadata().getLaunchPiece());
+        Assert.assertEquals("312",                  segment0.getData().getEulerRotSeq());
+        Assert.assertEquals("EME2000",              segment0.getData().getRateFrameString());
+        Assert.assertFalse(segment0.getMetadata().getHasCreatableBody());
+        Assert.assertNull(segment0.getMetadata().getCenterBody());
 
         // Reference values
         final AbsoluteDate refDate = new AbsoluteDate(1996, 11, 28, 21, 29, 7.2555, TimeScalesFactory.getUTC());
@@ -263,8 +266,8 @@ public class AEMParserTest {
         final Vector3D refAcc      = Vector3D.ZERO;
 
         // Computed angular coordinates
-        final TimeStampedAngularCoordinates ac = file.getAttitudeBlocks().get(0).getAngularCoordinates().get(0);
-        final double[] angles = ac.getRotation().getAngles(AEMRotationOrder.getRotationOrder(file.getAttitudeBlocks().get(0).getEulerRotSeq()), RotationConvention.FRAME_TRANSFORM);
+        final TimeStampedAngularCoordinates ac = segment0.getData().getAngularCoordinates().get(0);
+        final double[] angles = ac.getRotation().getAngles(AEMRotationOrder.getRotationOrder(segment0.getData().getEulerRotSeq()), RotationConvention.FRAME_TRANSFORM);
         Assert.assertEquals(0.0, refDate.durationFrom(ac.getDate()),                 1.0e-5);
         Assert.assertEquals(0.0, refRate.distance(ac.getRotationRate()),             1.0e-5);
         Assert.assertEquals(0.0, refAcc.distance(ac.getRotationAcceleration()),      1.0e-5);
@@ -344,7 +347,7 @@ public class AEMParserTest {
         //verify
         Assert.assertEquals(
                 CelestialBodyFactory.getEarth(),
-                actual.getAttitudeBlocks().get(0).getMetaData().getCenterBody());
+                actual.getSegments().get(0).getMetadata().getCenterBody());
     }
 
     @Test
@@ -457,14 +460,14 @@ public class AEMParserTest {
         AEMParser parser = new AEMParser();
 
         final AEMFile file = parser.parse(name);
-        Assert.assertEquals(7, file.getAttitudeBlocks().get(0).getInterpolationDegree());
-        Assert.assertEquals(1, file.getAttitudeBlocks().get(1).getInterpolationDegree());
+        Assert.assertEquals(7, file.getSegments().get(0).getData().getInterpolationDegree());
+        Assert.assertEquals(1, file.getSegments().get(1).getData().getInterpolationDegree());
 
         parser = parser.withInterpolationDegree(5);
 
         final AEMFile file2 = parser.parse(name);
-        Assert.assertEquals(7, file2.getAttitudeBlocks().get(0).getInterpolationDegree());
-        Assert.assertEquals(5, file2.getAttitudeBlocks().get(1).getInterpolationDegree());
+        Assert.assertEquals(7, file2.getSegments().get(0).getData().getInterpolationDegree());
+        Assert.assertEquals(5, file2.getSegments().get(1).getData().getInterpolationDegree());
     }
 
     @Test
@@ -477,17 +480,18 @@ public class AEMParserTest {
         parser.setLocalScBodyReferenceFrameA(FramesFactory.getEME2000());
         parser.setLocalScBodyReferenceFrameB(FramesFactory.getGCRF());
         final AEMFile file = parser.parse(inEntry, "AEMExample8.txt");
-        Assert.assertEquals(FramesFactory.getEME2000(), file.getAttitudeBlocks().get(0).getReferenceFrame());
+        final NDMSegment<AEMMetadata, AttitudeEphemeridesBlock> segment0 = file.getSegments().get(0);
+        Assert.assertEquals(FramesFactory.getEME2000(), segment0.getData().getReferenceFrame());
 
-        final BoundedAttitudeProvider provider = file.getAttitudeBlocks().get(0).getAttitudeProvider();
+        final BoundedAttitudeProvider provider = segment0.getData().getAttitudeProvider();
         Attitude attitude = provider.getAttitude(null, new AbsoluteDate("1996-11-28T22:08:03.555", TimeScalesFactory.getUTC()), null);
         Rotation rotation = attitude.getRotation();
         Assert.assertEquals(0.42319,  rotation.getQ1(), 0.0001);
         Assert.assertEquals(-0.45697, rotation.getQ2(), 0.0001);
         Assert.assertEquals(0.23784,  rotation.getQ3(), 0.0001);
         Assert.assertEquals(0.74533,  rotation.getQ0(), 0.0001);
-        Assert.assertEquals(0.0, provider.getMinDate().durationFrom(file.getAttitudeBlocks().get(0).getStart()), 0.0001);
-        Assert.assertEquals(0.0, provider.getMaxDate().durationFrom(file.getAttitudeBlocks().get(0).getStop()), 0.0001);
+        Assert.assertEquals(0.0, provider.getMinDate().durationFrom(segment0.getData().getStart()), 0.0001);
+        Assert.assertEquals(0.0, provider.getMaxDate().durationFrom(segment0.getData().getStop()), 0.0001);
 
     }
 
@@ -500,17 +504,19 @@ public class AEMParserTest {
                         withSimpleEOP(true);
         parser.setLocalScBodyReferenceFrameB(FramesFactory.getGCRF());
         final AEMFile file = parser.parse(inEntry, "AEMExample9.txt");
-        Assert.assertEquals(FramesFactory.getITRF(ITRFVersion.ITRF_93, IERSConventions.IERS_2010, true), file.getAttitudeBlocks().get(0).getReferenceFrame());
+        final NDMSegment<AEMMetadata, AttitudeEphemeridesBlock> segment0 = file.getSegments().get(0);
+        Assert.assertEquals(FramesFactory.getITRF(ITRFVersion.ITRF_93, IERSConventions.IERS_2010, true),
+                            segment0.getData().getReferenceFrame());
 
-        final BoundedAttitudeProvider provider = file.getAttitudeBlocks().get(0).getAttitudeProvider();
+        final BoundedAttitudeProvider provider = segment0.getData().getAttitudeProvider();
         Attitude attitude = provider.getAttitude(null, new AbsoluteDate("1996-11-28T22:08:03.555", TimeScalesFactory.getUTC()), null);
         Rotation rotation = attitude.getRotation();
         Assert.assertEquals(0.42319,  rotation.getQ1(), 0.0001);
         Assert.assertEquals(-0.45697, rotation.getQ2(), 0.0001);
         Assert.assertEquals(0.23784,  rotation.getQ3(), 0.0001);
         Assert.assertEquals(0.74533,  rotation.getQ0(), 0.0001);
-        Assert.assertEquals(0.0, provider.getMinDate().durationFrom(file.getAttitudeBlocks().get(0).getStart()), 0.0001);
-        Assert.assertEquals(0.0, provider.getMaxDate().durationFrom(file.getAttitudeBlocks().get(0).getStop()), 0.0001);
+        Assert.assertEquals(0.0, provider.getMinDate().durationFrom(segment0.getData().getStart()), 0.0001);
+        Assert.assertEquals(0.0, provider.getMaxDate().durationFrom(segment0.getData().getStop()), 0.0001);
 
     }
 

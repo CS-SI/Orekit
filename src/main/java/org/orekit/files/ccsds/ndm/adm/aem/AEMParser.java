@@ -49,7 +49,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class AEMParser extends ADMParser implements AttitudeEphemerisFileParser {
+public class AEMParser extends ADMParser<AEMFile> implements AttitudeEphemerisFileParser {
 
     /** Pattern for dash. */
     private static final Pattern DASH = Pattern.compile("-");
@@ -147,7 +147,7 @@ public class AEMParser extends ADMParser implements AttitudeEphemerisFileParser 
      * @see #withDataContext(DataContext)
      */
     public AEMParser(final DataContext dataContext) {
-        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, 0, 0, "", 1, dataContext);
+        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, 1, dataContext);
     }
 
     /**
@@ -156,56 +156,37 @@ public class AEMParser extends ADMParser implements AttitudeEphemerisFileParser 
      * @param mu gravitational coefficient
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param launchYear launch year for TLEs
-     * @param launchNumber launch number for TLEs
-     * @param launchPiece piece of launch (from "A" to "ZZZ") for TLEs
      * @param interpolationDegree default interpolation degree
      * @param dataContext used to retrieve frames, time scales, etc.
      */
     private AEMParser(final AbsoluteDate missionReferenceDate, final double mu,
                       final IERSConventions conventions, final boolean simpleEOP,
-                      final int launchYear, final int launchNumber,
-                      final String launchPiece, final int interpolationDegree,
-                      final DataContext dataContext) {
-        super(missionReferenceDate, mu, conventions, simpleEOP, launchYear, launchNumber,
-                launchPiece, dataContext);
+                      final int interpolationDegree, final DataContext dataContext) {
+        super(missionReferenceDate, mu, conventions, simpleEOP, dataContext);
         this.interpolationDegree = interpolationDegree;
     }
 
     /** {@inheritDoc} */
     public AEMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
         return new AEMParser(newMissionReferenceDate, getMu(), getConventions(), isSimpleEOP(),
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
                              getInterpolationDegree(), getDataContext());
     }
 
     /** {@inheritDoc} */
     public AEMParser withMu(final double newMu) {
         return new AEMParser(getMissionReferenceDate(), newMu, getConventions(), isSimpleEOP(),
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
                              getInterpolationDegree(), getDataContext());
     }
 
     /** {@inheritDoc} */
     public AEMParser withConventions(final IERSConventions newConventions) {
         return new AEMParser(getMissionReferenceDate(), getMu(), newConventions, isSimpleEOP(),
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
                              getInterpolationDegree(), getDataContext());
     }
 
     /** {@inheritDoc} */
     public AEMParser withSimpleEOP(final boolean newSimpleEOP) {
         return new AEMParser(getMissionReferenceDate(), getMu(), getConventions(), newSimpleEOP,
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
-                             getInterpolationDegree(), getDataContext());
-    }
-
-    /** {@inheritDoc} */
-    public AEMParser withInternationalDesignator(final int newLaunchYear,
-                                                 final int newLaunchNumber,
-                                                 final String newLaunchPiece) {
-        return new AEMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
-                             newLaunchYear, newLaunchNumber, newLaunchPiece,
                              getInterpolationDegree(), getDataContext());
     }
 
@@ -213,7 +194,6 @@ public class AEMParser extends ADMParser implements AttitudeEphemerisFileParser 
     @Override
     public AEMParser withDataContext(final DataContext dataContext) {
         return new AEMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
                              getInterpolationDegree(), dataContext);
     }
 
@@ -230,7 +210,6 @@ public class AEMParser extends ADMParser implements AttitudeEphemerisFileParser 
      */
     public AEMParser withInterpolationDegree(final int newInterpolationDegree) {
         return new AEMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
                              newInterpolationDegree, getDataContext());
     }
 
@@ -348,20 +327,20 @@ public class AEMParser extends ADMParser implements AttitudeEphemerisFileParser 
 
                     case START_TIME:
                         pi.lastEphemeridesBlock.setStartTime(parseDate(pi.keyValue.getValue(),
-                                                                       pi.lastEphemeridesBlock.getMetaData().getTimeSystem()));
+                                                                       pi.lastEphemeridesBlock.getMetadata().getTimeSystem()));
                         break;
 
                     case USEABLE_START_TIME:
                         pi.lastEphemeridesBlock.setUseableStartTime(parseDate(pi.keyValue.getValue(),
-                                                                              pi.lastEphemeridesBlock.getMetaData().getTimeSystem()));
+                                                                              pi.lastEphemeridesBlock.getMetadata().getTimeSystem()));
                         break;
 
                     case USEABLE_STOP_TIME:
-                        pi.lastEphemeridesBlock.setUseableStopTime(parseDate(pi.keyValue.getValue(), pi.lastEphemeridesBlock.getMetaData().getTimeSystem()));
+                        pi.lastEphemeridesBlock.setUseableStopTime(parseDate(pi.keyValue.getValue(), pi.lastEphemeridesBlock.getMetadata().getTimeSystem()));
                         break;
 
                     case STOP_TIME:
-                        pi.lastEphemeridesBlock.setStopTime(parseDate(pi.keyValue.getValue(), pi.lastEphemeridesBlock.getMetaData().getTimeSystem()));
+                        pi.lastEphemeridesBlock.setStopTime(parseDate(pi.keyValue.getValue(), pi.lastEphemeridesBlock.getMetadata().getTimeSystem()));
                         break;
 
                     case ATTITUDE_TYPE:
@@ -403,7 +382,7 @@ public class AEMParser extends ADMParser implements AttitudeEphemerisFileParser 
                         parsed = parsed || parseHeaderEntry(pi.keyValue, file, pi.commentTmp);
                         if (pi.lastEphemeridesBlock != null) {
                             parsed = parsed || parseMetaDataEntry(pi.keyValue,
-                                                                  pi.lastEphemeridesBlock.getMetaData(), pi.commentTmp);
+                                                                  pi.lastEphemeridesBlock.getMetadata(), pi.commentTmp);
                         }
                         if (!parsed) {
                             throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
@@ -438,7 +417,7 @@ public class AEMParser extends ADMParser implements AttitudeEphemerisFileParser 
                 pi.keyValue = new KeyValue(line, pi.lineNumber, pi.fileName);
                 if (pi.keyValue.getKeyword() == null) {
                     try (Scanner sc = new Scanner(line)) {
-                        final AbsoluteDate date = parseDate(sc.next(), pi.lastEphemeridesBlock.getMetaData().getTimeSystem());
+                        final AbsoluteDate date = parseDate(sc.next(), pi.lastEphemeridesBlock.getMetadata().getTimeSystem());
                         // Create an array with the maximum possible size
                         final double[] attitudeData = new double[MAX_SIZE];
                         int index = 0;
@@ -452,16 +431,11 @@ public class AEMParser extends ADMParser implements AttitudeEphemerisFileParser 
                                                                                                        pi.lastEphemeridesBlock.isFirst(),
                                                                                                        rotationOrder);
                         pi.lastEphemeridesBlock.getAttitudeDataLines().add(epDataLine);
-                        pi.lastEphemeridesBlock.updateAngularDerivativesFilter(attType.getAngularDerivativesFilter());
-                    } catch (NumberFormatException nfe) {
-                        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                  pi.lineNumber, pi.fileName, line);
-                    }
-                } else {
+                        pi.lastEphemeridesBlock.updateAngularDet
                     switch (pi.keyValue.getKeyword()) {
 
                         case DATA_START:
-                            // Do nothing
+                            pi.lastEphemeridesBlock = new AttitudeEphemeridesBlock(pi.lastMetadata);
                             break;
 
                         case DATA_STOP:
@@ -544,7 +518,7 @@ public class AEMParser extends ADMParser implements AttitudeEphemerisFileParser 
     private static class ParseInfo {
 
         /** Ephemerides block being parsed. */
-        private AEMFile.AttitudeEphemeridesBlock lastEphemeridesBlock;
+        private AttitudeEphemeridesBlock lastEphemeridesBlock;
 
         /** Name of the file. */
         private String fileName;

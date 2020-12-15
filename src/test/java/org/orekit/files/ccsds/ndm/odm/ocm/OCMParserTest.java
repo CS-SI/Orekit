@@ -103,10 +103,10 @@ public class OCMParserTest {
                                                    ex.substring(ex.lastIndexOf('/') + 1));
 
         // check the default values that are not set in this simple file
-        Assert.assertEquals("CSPOC",              file.getMetaData().getCatalogName());
-        Assert.assertEquals(1.0,                  file.getMetaData().getSecClockPerSISecond(), 1.0e-15);
-        Assert.assertEquals(Constants.JULIAN_DAY, file.getMetaData().getSecPerDay(),           1.0e-15);
-        Assert.assertEquals("LINEAR",             file.getMetaData().getInterpMethodEOP());
+        Assert.assertEquals("CSPOC",              file.getMetadata().getCatalogName());
+        Assert.assertEquals(1.0,                  file.getMetadata().getSecClockPerSISecond(), 1.0e-15);
+        Assert.assertEquals(Constants.JULIAN_DAY, file.getMetadata().getSecPerDay(),           1.0e-15);
+        Assert.assertEquals("LINEAR",             file.getMetadata().getInterpMethodEOP());
 
         // Check Header Block;
         Assert.assertEquals(3.0, file.getFormatVersion(), 1.0e-10);
@@ -115,16 +115,16 @@ public class OCMParserTest {
 
         // OCM is the only message for which OBJECT_NAME, OBJECT_ID,
         // CENTER_NAME and REF_FRAME are not mandatory, they are not present in this minimal file
-        Assert.assertNull(file.getMetaData().getObjectName());
-        Assert.assertNull(file.getMetaData().getObjectID());
-        Assert.assertNull(file.getMetaData().getCenterName());
-        Assert.assertNull(file.getMetaData().getRefFrame());
+        Assert.assertNull(file.getMetadata().getObjectName());
+        Assert.assertNull(file.getMetadata().getObjectID());
+        Assert.assertNull(file.getMetadata().getCenterName());
+        Assert.assertNull(file.getMetadata().getRefFrame());
 
         Assert.assertEquals("JPL", file.getOriginator());
 
         final AbsoluteDate t0 = new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172, TimeScalesFactory.getUTC());
-        Assert.assertEquals(t0, file.getMetaData().getEpochT0());
-        Assert.assertEquals(TimeScalesFactory.getUTC(), file.getMetaData().getTimeSystem().getTimeScale(null));
+        Assert.assertEquals(t0, file.getMetadata().getEpochT0());
+        Assert.assertEquals(TimeScalesFactory.getUTC(), file.getMetadata().getTimeSystem().getTimeScale(null));
 
         // orbit data
         Assert.assertEquals(1, file.getOrbitStateTimeHistories().size());
@@ -135,7 +135,7 @@ public class OCMParserTest {
         Assert.assertEquals(CCSDSFrame.ITRF2000, history.getOrbRefFrame());
         Assert.assertEquals(ElementsType.CARTPV, history.getOrbType());
         Assert.assertEquals(0.0, history.getOrbEpochT0().durationFrom(t0), 1.0e-15);
-        Assert.assertEquals(file.getMetaData().getTimeSystem(), history.getOrbTimeSystem());
+        Assert.assertEquals(file.getMetadata().getTimeSystem(), history.getOrbTimeSystem());
         List<OCMFile.OrbitalState> states = history.getOrbitalStates();
         Assert.assertEquals(4, states.size());
 
@@ -189,24 +189,24 @@ public class OCMParserTest {
         Assert.assertEquals(3.0, file.getFormatVersion(), 1.0e-10);
         Assert.assertEquals("COMMENT This OCM reflects the latest conditions post-maneuver A67Z\n" + 
                             "COMMENT This example shows the specification of multiple comment lines",
-                            file.getMetaDataComment());
+                            file.getMetadataComment());
         Assert.assertEquals(new AbsoluteDate(1998, 11, 06, 9, 23, 57, TimeScalesFactory.getUTC()),
                             file.getCreationDate());
 
         Assert.assertEquals("JAXA",                                file.getOriginator());
-        Assert.assertEquals("R. Rabbit",                           file.getMetaData().getOriginatorPOC());
-        Assert.assertEquals("Flight Dynamics Mission Design Lead", file.getMetaData().getOriginatorPosition());
-        Assert.assertEquals("(719)555-1234",                       file.getMetaData().getOriginatorPhone());
-        Assert.assertEquals("Mr. Rodgers",                         file.getMetaData().getTechPOC());
-        Assert.assertEquals("(719)555-1234",                       file.getMetaData().getTechPhone());
-        Assert.assertEquals("email@email.XXX ",                    file.getMetaData().getTechAddress());
-        Assert.assertEquals("GODZILLA 5",                          file.getMetaData().getObjectName());
-        Assert.assertEquals("1998-999A",                           file.getMetaData().getInternationalDesignator());
+        Assert.assertEquals("R. Rabbit",                           file.getMetadata().getOriginatorPOC());
+        Assert.assertEquals("Flight Dynamics Mission Design Lead", file.getMetadata().getOriginatorPosition());
+        Assert.assertEquals("(719)555-1234",                       file.getMetadata().getOriginatorPhone());
+        Assert.assertEquals("Mr. Rodgers",                         file.getMetadata().getTechPOC());
+        Assert.assertEquals("(719)555-1234",                       file.getMetadata().getTechPhone());
+        Assert.assertEquals("email@email.XXX ",                    file.getMetadata().getTechAddress());
+        Assert.assertEquals("GODZILLA 5",                          file.getMetadata().getObjectName());
+        Assert.assertEquals("1998-999A",                           file.getMetadata().getInternationalDesignator());
         Assert.assertEquals(new AbsoluteDate(1998, 12, 18, TimeScalesFactory.getUTC()),
-                            file.getMetaData().getEpochT0());
-        Assert.assertEquals("UT1", file.getMetaData().getTimeSystem().getTimeScale(IERSConventions.IERS_2010).getName());
-        Assert.assertEquals(36.0,                                  file.getMetaData().getTaimutcT0(), 1.0e-15);
-        Assert.assertEquals(0.357,                                 file.getMetaData().getUt1mutcT0(), 1.0e-15);
+                            file.getMetadata().getEpochT0());
+        Assert.assertEquals("UT1", file.getMetadata().getTimeSystem().getTimeScale(IERSConventions.IERS_2010).getName());
+        Assert.assertEquals(36.0,                                  file.getMetadata().getTaimutcT0(), 1.0e-15);
+        Assert.assertEquals(0.357,                                 file.getMetadata().getUt1mutcT0(), 1.0e-15);
 
         // TODO test orbit data
 
@@ -228,13 +228,13 @@ public class OCMParserTest {
 
         // Check Header Block;
         Assert.assertEquals(3.0, file.getFormatVersion(), 1.0e-10);
-        Assert.assertEquals(0, file.getMetaDataComment().size());
+        Assert.assertEquals(0, file.getMetadataComment().size());
         Assert.assertEquals(new AbsoluteDate(1998, 11, 06, 9, 23, 57, TimeScalesFactory.getUTC()),
                             file.getCreationDate());
 
         Assert.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172, TimeScalesFactory.getUTC()),
-                            file.getMetaData().getEpochT0());
-        Assert.assertEquals("UTC", file.getMetaData().getTimeSystem().getTimeScale(IERSConventions.IERS_2010).getName());
+                            file.getMetadata().getEpochT0());
+        Assert.assertEquals("UTC", file.getMetadata().getTimeSystem().getTimeScale(IERSConventions.IERS_2010).getName());
 
         // TODO test orbit data
 
@@ -266,92 +266,92 @@ public class OCMParserTest {
         Assert.assertEquals(new AbsoluteDate(2019, 7, 23, 10, 29, 31.576, TimeScalesFactory.getUTC()),
                             file.getCreationDate());
 
-        Assert.assertEquals(1,                                     file.getMetaData().getComment().size());
-        Assert.assertEquals("Metadata comment",                    file.getMetaData().getComment().get(0));
+        Assert.assertEquals(1,                                     file.getMetadata().getComment().size());
+        Assert.assertEquals("Metadata comment",                    file.getMetadata().getComment().get(0));
         Assert.assertEquals("JPL",                                 file.getOriginator());
-        Assert.assertEquals("MR. RODGERS",                         file.getMetaData().getOriginatorPOC());
-        Assert.assertEquals("FLIGHT DYNAMICS MISSION DESIGN LEAD", file.getMetaData().getOriginatorPosition());
-        Assert.assertEquals("+49615130312",                        file.getMetaData().getOriginatorPhone());
-        Assert.assertEquals("JOHN.DOE@EXAMPLE.ORG",                file.getMetaData().getOriginatorAddress());
-        Assert.assertEquals("NASA",                                file.getMetaData().getTechOrg());
-        Assert.assertEquals("MAXWELL SMART",                       file.getMetaData().getTechPOC());
-        Assert.assertEquals("+49615130312",                        file.getMetaData().getTechPhone());
-        Assert.assertEquals("MAX@EXAMPLE.ORG",                     file.getMetaData().getTechAddress());
-        Assert.assertEquals("ABC-12-33",                           file.getMetaData().getPrevMessageID());
+        Assert.assertEquals("MR. RODGERS",                         file.getMetadata().getOriginatorPOC());
+        Assert.assertEquals("FLIGHT DYNAMICS MISSION DESIGN LEAD", file.getMetadata().getOriginatorPosition());
+        Assert.assertEquals("+49615130312",                        file.getMetadata().getOriginatorPhone());
+        Assert.assertEquals("JOHN.DOE@EXAMPLE.ORG",                file.getMetadata().getOriginatorAddress());
+        Assert.assertEquals("NASA",                                file.getMetadata().getTechOrg());
+        Assert.assertEquals("MAXWELL SMART",                       file.getMetadata().getTechPOC());
+        Assert.assertEquals("+49615130312",                        file.getMetadata().getTechPhone());
+        Assert.assertEquals("MAX@EXAMPLE.ORG",                     file.getMetadata().getTechAddress());
+        Assert.assertEquals("ABC-12-33",                           file.getMetadata().getPrevMessageID());
         Assert.assertEquals(new AbsoluteDate(2001, 11, 6, 11, 17, 33, TimeScalesFactory.getUTC()),
-                            file.getMetaData().getPrevMessageEpoch());
-        Assert.assertEquals("ABC-12-35",                           file.getMetaData().getNextMessageID());
+                            file.getMetadata().getPrevMessageEpoch());
+        Assert.assertEquals("ABC-12-35",                           file.getMetadata().getNextMessageID());
         Assert.assertEquals(new AbsoluteDate(2001, 11, 7, 11, 17, 33, TimeScalesFactory.getUTC()),
-                            file.getMetaData().getNextMessageEpoch());
-        Assert.assertEquals("FOUO",                                file.getMetaData().getClassification());
-        Assert.assertEquals(1,                                     file.getMetaData().getAttMessageLink().size());
-        Assert.assertEquals("ADM-MSG-35132.TXT",                   file.getMetaData().getAttMessageLink().get(0));
-        Assert.assertEquals(2,                                     file.getMetaData().getCdmMessageLink().size());
-        Assert.assertEquals("CDM-MSG-35132.TXT",                   file.getMetaData().getCdmMessageLink().get(0));
-        Assert.assertEquals("CDM-MSG-35133.TXT",                   file.getMetaData().getCdmMessageLink().get(1));
-        Assert.assertEquals(2,                                     file.getMetaData().getPrmMessageLink().size());
-        Assert.assertEquals("PRM-MSG-35132.TXT",                   file.getMetaData().getPrmMessageLink().get(0));
-        Assert.assertEquals("PRM-MSG-35133.TXT",                   file.getMetaData().getPrmMessageLink().get(1));
-        Assert.assertEquals(2,                                     file.getMetaData().getRdmMessageLink().size());
-        Assert.assertEquals("RDM-MSG-35132.TXT",                   file.getMetaData().getRdmMessageLink().get(0));
-        Assert.assertEquals("RDM-MSG-35133.TXT",                   file.getMetaData().getRdmMessageLink().get(1));
-        Assert.assertEquals(3,                                     file.getMetaData().getTdmMessageLink().size());
-        Assert.assertEquals("TDM-MSG-35132.TXT",                   file.getMetaData().getTdmMessageLink().get(0));
-        Assert.assertEquals("TDM-MSG-35133.TXT",                   file.getMetaData().getTdmMessageLink().get(1));
-        Assert.assertEquals("TDM-MSG-35134.TXT",                   file.getMetaData().getTdmMessageLink().get(2));
-        Assert.assertEquals("UNKNOWN",                             file.getMetaData().getObjectName());
-        Assert.assertEquals("9999-999Z",                           file.getMetaData().getInternationalDesignator());
-        Assert.assertEquals("22444",                               file.getMetaData().getObjectID());
-        Assert.assertEquals("INTELSAT",                            file.getMetaData().getOperator());
-        Assert.assertEquals("SIRIUS",                              file.getMetaData().getOwner());
-        Assert.assertEquals("EOS",                                 file.getMetaData().getMission());
-        Assert.assertEquals("SPIRE",                               file.getMetaData().getConstellation());
+                            file.getMetadata().getNextMessageEpoch());
+        Assert.assertEquals("FOUO",                                file.getMetadata().getClassification());
+        Assert.assertEquals(1,                                     file.getMetadata().getAttMessageLink().size());
+        Assert.assertEquals("ADM-MSG-35132.TXT",                   file.getMetadata().getAttMessageLink().get(0));
+        Assert.assertEquals(2,                                     file.getMetadata().getCdmMessageLink().size());
+        Assert.assertEquals("CDM-MSG-35132.TXT",                   file.getMetadata().getCdmMessageLink().get(0));
+        Assert.assertEquals("CDM-MSG-35133.TXT",                   file.getMetadata().getCdmMessageLink().get(1));
+        Assert.assertEquals(2,                                     file.getMetadata().getPrmMessageLink().size());
+        Assert.assertEquals("PRM-MSG-35132.TXT",                   file.getMetadata().getPrmMessageLink().get(0));
+        Assert.assertEquals("PRM-MSG-35133.TXT",                   file.getMetadata().getPrmMessageLink().get(1));
+        Assert.assertEquals(2,                                     file.getMetadata().getRdmMessageLink().size());
+        Assert.assertEquals("RDM-MSG-35132.TXT",                   file.getMetadata().getRdmMessageLink().get(0));
+        Assert.assertEquals("RDM-MSG-35133.TXT",                   file.getMetadata().getRdmMessageLink().get(1));
+        Assert.assertEquals(3,                                     file.getMetadata().getTdmMessageLink().size());
+        Assert.assertEquals("TDM-MSG-35132.TXT",                   file.getMetadata().getTdmMessageLink().get(0));
+        Assert.assertEquals("TDM-MSG-35133.TXT",                   file.getMetadata().getTdmMessageLink().get(1));
+        Assert.assertEquals("TDM-MSG-35134.TXT",                   file.getMetadata().getTdmMessageLink().get(2));
+        Assert.assertEquals("UNKNOWN",                             file.getMetadata().getObjectName());
+        Assert.assertEquals("9999-999Z",                           file.getMetadata().getInternationalDesignator());
+        Assert.assertEquals("22444",                               file.getMetadata().getObjectID());
+        Assert.assertEquals("INTELSAT",                            file.getMetadata().getOperator());
+        Assert.assertEquals("SIRIUS",                              file.getMetadata().getOwner());
+        Assert.assertEquals("EOS",                                 file.getMetadata().getMission());
+        Assert.assertEquals("SPIRE",                               file.getMetadata().getConstellation());
         Assert.assertEquals(new AbsoluteDate(2011, 11, 8, 11, 17, 33, TimeScalesFactory.getUTC()),
-                            file.getMetaData().getLaunchEpoch());
-        Assert.assertEquals("FRANCE",                              file.getMetaData().getLaunchCountry());
-        Assert.assertEquals("FRENCH GUIANA",                       file.getMetaData().getLaunchSite());
-        Assert.assertEquals("ARIANESPACE",                         file.getMetaData().getLaunchProvider());
-        Assert.assertEquals("ULA",                                 file.getMetaData().getLaunchIntegrator());
-        Assert.assertEquals("LC-41",                               file.getMetaData().getLaunchPad());
-        Assert.assertEquals("GROUND",                              file.getMetaData().getLaunchPlatform());
+                            file.getMetadata().getLaunchEpoch());
+        Assert.assertEquals("FRANCE",                              file.getMetadata().getLaunchCountry());
+        Assert.assertEquals("FRENCH GUIANA",                       file.getMetadata().getLaunchSite());
+        Assert.assertEquals("ARIANESPACE",                         file.getMetadata().getLaunchProvider());
+        Assert.assertEquals("ULA",                                 file.getMetadata().getLaunchIntegrator());
+        Assert.assertEquals("LC-41",                               file.getMetadata().getLaunchPad());
+        Assert.assertEquals("GROUND",                              file.getMetadata().getLaunchPlatform());
         Assert.assertEquals(new AbsoluteDate(2021, 11, 8, 11, 17, 33, TimeScalesFactory.getUTC()),
-                            file.getMetaData().getReleaseEpoch());
+                            file.getMetadata().getReleaseEpoch());
         Assert.assertEquals(new AbsoluteDate(2031, 11, 8, 11, 17, 33, TimeScalesFactory.getUTC()),
-                            file.getMetaData().getMissionStartEpoch());
+                            file.getMetadata().getMissionStartEpoch());
         Assert.assertEquals(new AbsoluteDate(2041, 11, 8, 11, 17, 33, TimeScalesFactory.getUTC()),
-                            file.getMetaData().getMissionEndEpoch());
+                            file.getMetadata().getMissionEndEpoch());
         Assert.assertEquals(new AbsoluteDate(2051, 11, 8, 11, 17, 33, TimeScalesFactory.getUTC()),
-                            file.getMetaData().getReentryEpoch());
-        Assert.assertEquals(22.0 * Constants.JULIAN_DAY,           file.getMetaData().getLifetime(), 1.0e-15);
-        Assert.assertEquals("COMSPOC",                             file.getMetaData().getCatalogName());
-        Assert.assertEquals("Payload",                             file.getMetaData().getObjectType().toString());
-        Assert.assertEquals("Operational",                         file.getMetaData().getOpsStatus().toString());
-        Assert.assertEquals("Extended Geostationary Orbit",        file.getMetaData().getOrbitType().toString());
-        Assert.assertEquals(8,                                     file.getMetaData().getOcmDataElements().size());
-        Assert.assertEquals("ORB",                                 file.getMetaData().getOcmDataElements().get(0));
-        Assert.assertEquals("PHYSCHAR",                            file.getMetaData().getOcmDataElements().get(1));
-        Assert.assertEquals("MNVR",                                file.getMetaData().getOcmDataElements().get(2));
-        Assert.assertEquals("COV",                                 file.getMetaData().getOcmDataElements().get(3));
-        Assert.assertEquals("OD",                                  file.getMetaData().getOcmDataElements().get(4));
-        Assert.assertEquals("PERTS",                               file.getMetaData().getOcmDataElements().get(5));
-        Assert.assertEquals("STM",                                 file.getMetaData().getOcmDataElements().get(6));
-        Assert.assertEquals("USER",                                file.getMetaData().getOcmDataElements().get(7));
+                            file.getMetadata().getReentryEpoch());
+        Assert.assertEquals(22.0 * Constants.JULIAN_DAY,           file.getMetadata().getLifetime(), 1.0e-15);
+        Assert.assertEquals("COMSPOC",                             file.getMetadata().getCatalogName());
+        Assert.assertEquals("Payload",                             file.getMetadata().getObjectType().toString());
+        Assert.assertEquals("Operational",                         file.getMetadata().getOpsStatus().toString());
+        Assert.assertEquals("Extended Geostationary Orbit",        file.getMetadata().getOrbitType().toString());
+        Assert.assertEquals(8,                                     file.getMetadata().getOcmDataElements().size());
+        Assert.assertEquals("ORB",                                 file.getMetadata().getOcmDataElements().get(0));
+        Assert.assertEquals("PHYSCHAR",                            file.getMetadata().getOcmDataElements().get(1));
+        Assert.assertEquals("MNVR",                                file.getMetadata().getOcmDataElements().get(2));
+        Assert.assertEquals("COV",                                 file.getMetadata().getOcmDataElements().get(3));
+        Assert.assertEquals("OD",                                  file.getMetadata().getOcmDataElements().get(4));
+        Assert.assertEquals("PERTS",                               file.getMetadata().getOcmDataElements().get(5));
+        Assert.assertEquals("STM",                                 file.getMetadata().getOcmDataElements().get(6));
+        Assert.assertEquals("USER",                                file.getMetadata().getOcmDataElements().get(7));
         Assert.assertEquals(new AbsoluteDate(2001,11, 10, 11, 17, 33.0, TimeScalesFactory.getUTC()),
-                            file.getMetaData().getEpochT0());
-        Assert.assertEquals("UTC", file.getMetaData().getTimeSystem().getTimeScale(null).getName());
-        Assert.assertEquals(2.5,                                   file.getMetaData().getSecClockPerSISecond(), 1.0e-15);
-        Assert.assertEquals(88740.0,                               file.getMetaData().getSecPerDay(), 1.0e-15);
+                            file.getMetadata().getEpochT0());
+        Assert.assertEquals("UTC", file.getMetadata().getTimeSystem().getTimeScale(null).getName());
+        Assert.assertEquals(2.5,                                   file.getMetadata().getSecClockPerSISecond(), 1.0e-15);
+        Assert.assertEquals(88740.0,                               file.getMetadata().getSecPerDay(), 1.0e-15);
         Assert.assertEquals(12.0,
-                            file.getMetaData().getEarliestTime().durationFrom(file.getMetaData().getEpochT0()),
+                            file.getMetadata().getEarliestTime().durationFrom(file.getMetadata().getEpochT0()),
                             1.0e-15);
         Assert.assertEquals(new AbsoluteDate(2001,11, 13, TimeScalesFactory.getUTC()),
-                            file.getMetaData().getLatestTime());
-        Assert.assertEquals(20.0 * Constants.JULIAN_DAY,           file.getMetaData().getTimeSpan(), 1.0e-15);
-        Assert.assertEquals(36.0,                                  file.getMetaData().getTaimutcT0(), 1.0e-15);
-        Assert.assertEquals(0.357,                                 file.getMetaData().getUt1mutcT0(), 1.0e-15);
+                            file.getMetadata().getLatestTime());
+        Assert.assertEquals(20.0 * Constants.JULIAN_DAY,           file.getMetadata().getTimeSpan(), 1.0e-15);
+        Assert.assertEquals(36.0,                                  file.getMetadata().getTaimutcT0(), 1.0e-15);
+        Assert.assertEquals(0.357,                                 file.getMetadata().getUt1mutcT0(), 1.0e-15);
         Assert.assertEquals("CELESTRAK EOP FILE DOWNLOADED FROM HTTP://CELESTRAK.COM/SPACEDATA/EOP-LAST5YEARS.TXT AT 2001-11-08T00:00:00",
-                            file.getMetaData().getEopSource());
-        Assert.assertEquals("LAGRANGE ORDER 5",                    file.getMetaData().getInterpMethodEOP());
+                            file.getMetadata().getEopSource());
+        Assert.assertEquals("LAGRANGE ORDER 5",                    file.getMetadata().getInterpMethodEOP());
 
         // TODO test orbit data
 

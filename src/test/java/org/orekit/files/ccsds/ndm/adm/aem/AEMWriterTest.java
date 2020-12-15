@@ -46,9 +46,8 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMFile;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMParser;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMWriter;
-import org.orekit.files.ccsds.ndm.adm.aem.AEMFile.AemSatelliteEphemeris;
-import org.orekit.files.ccsds.ndm.adm.aem.AEMFile.AttitudeEphemeridesBlock;
-import org.orekit.files.ccsds.ndm.adm.apm.APMMetadata;
+import org.orekit.files.ccsds.ndm.adm.aem.AEMSatelliteEphemeris;
+import org.orekit.files.ccsds.ndm.adm.aem.AttitudeEphemeridesBlock;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
@@ -93,8 +92,8 @@ public class AEMWriterTest {
         final AEMFile aemFile = parser.parse(inEntry, "AEMExample.txt");
 
         String originator = aemFile.getOriginator();
-        String objectName = aemFile.getAttitudeBlocks().get(0).getMetaData().getObjectName();
-        String objectID   = aemFile.getAttitudeBlocks().get(0).getMetaData().getObjectID();
+        String objectName = aemFile.getAttitudeBlocks().get(0).getMetadata().getObjectName();
+        String objectID   = aemFile.getAttitudeBlocks().get(0).getMetadata().getObjectID();
         String tempAEMFilePath = tempFolder.newFile("TestWriteAEM1.aem").toString();
         AEMWriter writer = new AEMWriter(originator, objectID, objectName);
         writer.write(tempAEMFilePath, aemFile);
@@ -131,8 +130,8 @@ public class AEMWriterTest {
                 .withConventions(IERSConventions.IERS_2010);
         final AEMFile aemFile = parser.parse(inEntry, "AEMExample.txt");
         String originator = aemFile.getOriginator();
-        String objectName = aemFile.getAttitudeBlocks().get(0).getMetaData().getObjectName();
-        String objectID = aemFile.getAttitudeBlocks().get(0).getMetaData().getObjectID();
+        String objectName = aemFile.getAttitudeBlocks().get(0).getMetadata().getObjectName();
+        String objectID = aemFile.getAttitudeBlocks().get(0).getMetadata().getObjectID();
         AEMWriter writer = new AEMWriter(originator, objectID, objectName);
         try {
             writer.write((BufferedWriter) null, aemFile);
@@ -173,8 +172,8 @@ public class AEMWriterTest {
         writer.write(tempAEMFilePath, aemFile);
 
         final AEMFile generatedAemFile = parser.parse(tempAEMFilePath);
-        assertEquals(aemFile.getAttitudeBlocks().get(0).getMetaData().getObjectID(),
-                generatedAemFile.getAttitudeBlocks().get(0).getMetaData().getObjectID());
+        assertEquals(aemFile.getAttitudeBlocks().get(0).getMetadata().getObjectID(),
+                generatedAemFile.getAttitudeBlocks().get(0).getMetadata().getObjectID());
     }
 
     @Deprecated
@@ -257,8 +256,8 @@ public class AEMWriterTest {
         StringBuilder buffer = new StringBuilder();
 
         AEMWriter writer = new AEMWriter(aemFile.getOriginator(),
-                                         aemFile.getAttitudeBlocks().get(0).getMetaData().getObjectID(),
-                                         aemFile.getAttitudeBlocks().get(0).getMetaData().getObjectName(),
+                                         aemFile.getAttitudeBlocks().get(0).getMetadata().getObjectID(),
+                                         aemFile.getAttitudeBlocks().get(0).getMetadata().getObjectName(),
                                          "%.2f");
 
         writer.write(buffer, aemFile);
@@ -271,8 +270,8 @@ public class AEMWriterTest {
 
         // Default format
         writer = new AEMWriter(aemFile.getOriginator(),
-                               aemFile.getAttitudeBlocks().get(0).getMetaData().getObjectID(),
-                               aemFile.getAttitudeBlocks().get(0).getMetaData().getObjectName());
+                               aemFile.getAttitudeBlocks().get(0).getMetadata().getObjectID(),
+                               aemFile.getAttitudeBlocks().get(0).getMetadata().getObjectName());
         buffer = new StringBuilder();
         writer.write(buffer, aemFile);
 
@@ -284,7 +283,7 @@ public class AEMWriterTest {
     }
 
     private static void compareAemAttitudeBlocks(AttitudeEphemeridesBlock block1, AttitudeEphemeridesBlock block2) {
-        compareAemAttitudeBlocksMetadata(block1.getMetaData(), block2.getMetaData());
+        compareAemAttitudeBlocksMetadata(block1.getMetadata(), block2.getMetadata());
         assertEquals(0.0, block1.getStart().durationFrom(block2.getStart()), DATE_PRECISION);
         assertEquals(0.0, block1.getStop().durationFrom(block2.getStop()),   DATE_PRECISION);
         assertEquals(block1.getInterpolationDegree(), block2.getInterpolationDegree());
@@ -303,7 +302,7 @@ public class AEMWriterTest {
         }
     }
 
-    private static void compareAemAttitudeBlocksMetadata(APMMetadata meta1, APMMetadata meta2) {
+    private static void compareAemAttitudeBlocksMetadata(AEMMetadata meta1, AEMMetadata meta2) {
         assertEquals(meta1.getObjectID(),         meta2.getObjectID());
         assertEquals(meta1.getObjectName(),       meta2.getObjectName());
         assertEquals(meta1.getCenterName(),       meta2.getCenterName());
@@ -322,7 +321,7 @@ public class AEMWriterTest {
         }
     }
 
-    private class StandInSatelliteEphemeris extends AemSatelliteEphemeris {
+    private class StandInSatelliteEphemeris extends AEMSatelliteEphemeris {
         final List<AttitudeEphemeridesBlock> blocks;
 
         @Deprecated
@@ -354,14 +353,14 @@ public class AEMWriterTest {
     }
 
     private class StandInEphemerisFile extends AEMFile {
-        private final Map<String, AemSatelliteEphemeris> satEphem;
+        private final Map<String, AEMSatelliteEphemeris> satEphem;
 
         public StandInEphemerisFile() {
-            this.satEphem = new HashMap<String, AemSatelliteEphemeris>();
+            this.satEphem = new HashMap<String, AEMSatelliteEphemeris>();
         }
 
         @Override
-        public Map<String, AemSatelliteEphemeris> getSatellites() {
+        public Map<String, AEMSatelliteEphemeris> getSatellites() {
             return satEphem;
         }
 

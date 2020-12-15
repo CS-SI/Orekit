@@ -255,7 +255,7 @@ public class OPMParser extends ODMParser {
                             file.addManeuver(pi.maneuver);
                         }
                         pi.maneuver = new OPMFile.Maneuver();
-                        pi.maneuver.setEpochIgnition(parseDate(pi.keyValue.getValue(), file.getMetaData().getTimeSystem()));
+                        pi.maneuver.setEpochIgnition(parseDate(pi.keyValue.getValue(), file.getMetadata().getTimeSystem()));
                         if (!pi.commentTmp.isEmpty()) {
                             pi.maneuver.setComment(pi.commentTmp);
                             pi.commentTmp.clear();
@@ -304,7 +304,7 @@ public class OPMParser extends ODMParser {
                         boolean parsed = false;
                         parsed = parsed || parseComment(pi.keyValue, pi.commentTmp);
                         parsed = parsed || parseHeaderEntry(pi.keyValue, file, pi.commentTmp);
-                        parsed = parsed || parseMetaDataEntry(pi.keyValue, file.getMetaData(), pi.commentTmp);
+                        parsed = parsed || parseMetaDataEntry(pi.keyValue, file.getMetadata(), pi.commentTmp);
                         parsed = parsed || parseGeneralStateDataEntry(pi.keyValue, file, pi.commentTmp);
                         if (!parsed) {
                             throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);

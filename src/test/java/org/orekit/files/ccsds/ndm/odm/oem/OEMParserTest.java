@@ -75,15 +75,15 @@ public class OEMParserTest {
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM());
         final OEMFile file = parser.parse(inEntry, "OEMExample1.txt");
-        Assert.assertEquals(CcsdsTimeScale.UTC, file.getEphemeridesBlocks().get(0).getMetaData().getTimeSystem());
-        Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getEphemeridesBlocks().get(0).getMetaData().getObjectName());
-        Assert.assertEquals("1996-062A", file.getEphemeridesBlocks().get(0).getMetaData().getObjectID());
-        Assert.assertEquals("MARS BARYCENTER", file.getEphemeridesBlocks().get(0).getMetaData().getCenterName());
-        Assert.assertEquals(1996, file.getEphemeridesBlocks().get(0).getMetaData().getLaunchYear());
-        Assert.assertEquals(62, file.getEphemeridesBlocks().get(0).getMetaData().getLaunchNumber());
-        Assert.assertEquals("A", file.getEphemeridesBlocks().get(0).getMetaData().getLaunchPiece());
-        Assert.assertFalse(file.getEphemeridesBlocks().get(0).getMetaData().getHasCreatableBody());
-        Assert.assertNull(file.getEphemeridesBlocks().get(0).getMetaData().getCenterBody());
+        Assert.assertEquals(CcsdsTimeScale.UTC, file.getEphemeridesBlocks().get(0).getMetadata().getTimeSystem());
+        Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getEphemeridesBlocks().get(0).getMetadata().getObjectName());
+        Assert.assertEquals("1996-062A", file.getEphemeridesBlocks().get(0).getMetadata().getObjectID());
+        Assert.assertEquals("MARS BARYCENTER", file.getEphemeridesBlocks().get(0).getMetadata().getCenterName());
+        Assert.assertEquals(1996, file.getEphemeridesBlocks().get(0).getMetadata().getLaunchYear());
+        Assert.assertEquals(62, file.getEphemeridesBlocks().get(0).getMetadata().getLaunchNumber());
+        Assert.assertEquals("A", file.getEphemeridesBlocks().get(0).getMetadata().getLaunchPiece());
+        Assert.assertFalse(file.getEphemeridesBlocks().get(0).getMetadata().getHasCreatableBody());
+        Assert.assertNull(file.getEphemeridesBlocks().get(0).getMetadata().getCenterBody());
         Assert.assertEquals(new AbsoluteDate(1996, 12, 18, 12, 00, 0.331, TimeScalesFactory.getUTC()),
                             file.getEphemeridesBlocks().get(0).getStartTime());
         Assert.assertEquals(new AbsoluteDate(1996, 12, 28, 21, 28, 0.331, TimeScalesFactory.getUTC()),
@@ -171,9 +171,9 @@ public class OEMParserTest {
                 .withMu(CelestialBodyFactory.getEarth().getGM())
                 .withConventions(IERSConventions.IERS_2010);
         final OEMFile file = parser.parse(inEntry);
-        Assert.assertEquals(CcsdsTimeScale.UTC, file.getEphemeridesBlocks().get(0).getMetaData().getTimeSystem());
-        Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getEphemeridesBlocks().get(0).getMetaData().getObjectName());
-        Assert.assertEquals("1996-062A", file.getEphemeridesBlocks().get(0).getMetaData().getObjectID());
+        Assert.assertEquals(CcsdsTimeScale.UTC, file.getEphemeridesBlocks().get(0).getMetadata().getTimeSystem());
+        Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getEphemeridesBlocks().get(0).getMetadata().getObjectName());
+        Assert.assertEquals("1996-062A", file.getEphemeridesBlocks().get(0).getMetadata().getObjectID());
 
         Assert.assertEquals(1, file.getSatellites().size());
         Assert.assertEquals(true, file.getSatellites().containsKey("1996-062A"));
@@ -191,7 +191,7 @@ public class OEMParserTest {
         Assert.assertEquals(actualBlock.getMu(), file.getMuUsed(), 0);
         Assert.assertEquals(actualBlock.getFrameString(), "EME2000");
         Assert.assertEquals(actualBlock.getFrameCenterString(), "MARS BARYCENTER");
-        Assert.assertEquals(actualBlock.getMetaData().getHasCreatableBody(), false);
+        Assert.assertEquals(actualBlock.getMetadata().getHasCreatableBody(), false);
         // Frame not creatable since it's center can't be created.
         try {
             actualBlock.getFrame();
@@ -224,9 +224,9 @@ public class OEMParserTest {
                 .withMu(CelestialBodyFactory.getEarth().getGM())
                 .withConventions(IERSConventions.IERS_2010);
         final OEMFile file = parser.parse(inEntry);
-        Assert.assertEquals(CcsdsTimeScale.UTC, file.getEphemeridesBlocks().get(0).getMetaData().getTimeSystem());
-        Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getEphemeridesBlocks().get(0).getMetaData().getObjectName());
-        Assert.assertEquals("1996-062A", file.getEphemeridesBlocks().get(0).getMetaData().getObjectID());
+        Assert.assertEquals(CcsdsTimeScale.UTC, file.getEphemeridesBlocks().get(0).getMetadata().getTimeSystem());
+        Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getEphemeridesBlocks().get(0).getMetadata().getObjectName());
+        Assert.assertEquals("1996-062A", file.getEphemeridesBlocks().get(0).getMetadata().getObjectID());
 
         Assert.assertEquals(1, file.getSatellites().size());
         Assert.assertEquals(true, file.getSatellites().containsKey("1996-062A"));
@@ -317,7 +317,7 @@ public class OEMParserTest {
         final List<String> metadataComment = new ArrayList<String>();
         metadataComment.add("comment 1");
         metadataComment.add("comment 2");
-        Assert.assertEquals(metadataComment, file.getEphemeridesBlocks().get(0).getMetaData().getComment());
+        Assert.assertEquals(metadataComment, file.getEphemeridesBlocks().get(0).getMetadata().getComment());
         Assert.assertEquals("TOD", file.getEphemeridesBlocks().get(0).getFrameString());
         Assert.assertEquals("EME2000", file.getEphemeridesBlocks().get(1).getFrameString());
         List<EphemeridesBlock> blocks = file.getEphemeridesBlocks();
@@ -408,7 +408,7 @@ public class OEMParserTest {
         //verify
         Assert.assertEquals(
                 CelestialBodyFactory.getEarth(),
-                actual.getEphemeridesBlocks().get(0).getMetaData().getCenterBody());
+                actual.getEphemeridesBlocks().get(0).getMetadata().getCenterBody());
     }
 
     @Test
