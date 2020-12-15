@@ -27,8 +27,8 @@ import java.util.Map.Entry;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.odm.ODMFile;
 import org.orekit.files.ccsds.ndm.odm.ODMMetadata;
+import org.orekit.files.ccsds.ndm.odm.OGMFile;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.frames.Frame;
@@ -46,13 +46,16 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Evan Ward
  * @since 6.1
  */
-public class OEMFile extends ODMFile implements EphemerisFile {
+public class OEMFile extends OGMFile<OEMHeader, OEMMetadata, OEMData> implements EphemerisFile {
 
     /** List of ephemeris blocks. */
     private List<EphemeridesBlock> ephemeridesBlocks;
 
-    /** OEMFile constructor. */
-    public OEMFile() {
+    /** Create a new OEM file object.
+     * @param header file header
+     */
+    OEMFile(final H header) {
+        super(header);
         ephemeridesBlocks = new ArrayList<EphemeridesBlock>();
     }
 

@@ -171,7 +171,7 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
         for (final AttitudeEphemerisSegment segment : segments) {
             // Segment specific metadata
             metadata.clear();
-            metadata.put(Keyword.CENTER_NAME,          segment.getFrameCenterString());
+            metadata.put(Keyword.CENTER_NAME,          segment.getCenterName());
             metadata.put(Keyword.REF_FRAME_A,          segment.getRefFrameAString());
             metadata.put(Keyword.REF_FRAME_B,          segment.getRefFrameBString());
             metadata.put(Keyword.ATTITUDE_DIR,         segment.getAttitudeDirection());

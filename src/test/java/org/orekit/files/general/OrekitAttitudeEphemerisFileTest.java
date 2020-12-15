@@ -122,7 +122,7 @@ public class OrekitAttitudeEphemerisFileTest {
         assertEquals(OrekitSatelliteAttitudeEphemeris.DEFAULT_REF_FRAME_A, segment.getRefFrameAString());
         assertEquals(OrekitSatelliteAttitudeEphemeris.DEFAULT_REF_FRAME_B, segment.getRefFrameBString());
         assertEquals(OrekitSatelliteAttitudeEphemeris.DEFAULT_ATTITUDE_DIR, segment.getAttitudeDirection());
-        assertEquals(DataContext.getDefault().getCelestialBodies().getEarth().getName(), segment.getFrameCenterString());
+        assertEquals(DataContext.getDefault().getCelestialBodies().getEarth().getName(), segment.getCenterName());
         assertEquals(DataContext.getDefault().getTimeScales().getUTC().getName(), segment.getTimeScaleString());
         assertEquals(DataContext.getDefault().getTimeScales().getUTC(), segment.getTimeScale());
         assertEquals(0.0, states.get(0).getDate().durationFrom(segment.getStart()), 1.0e-15);
@@ -149,7 +149,7 @@ public class OrekitAttitudeEphemerisFileTest {
         assertEquals(states.get(0).getDate(), segment.getStart());
         assertEquals(states.get(states.size() - 1).getDate(), segment.getStop());
         assertEquals(states.size(), segment.getAngularCoordinates().size());
-        assertEquals(body.getName().toUpperCase(), segment.getFrameCenterString());
+        assertEquals(body.getName().toUpperCase(), segment.getCenterName());
         for (int i = 0; i < states.size(); i++) {
             TimeStampedAngularCoordinates expected = states.get(i).getAttitude().getOrientation();
             TimeStampedAngularCoordinates actual = segment.getAngularCoordinates().get(i);

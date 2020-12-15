@@ -687,8 +687,8 @@ public class TDMParser extends DefaultHandler {
 
             // Adds the observation to current observation block
             parseInfo.currentObservationsBlock.addObservation(parseInfo.keyValue.getKeyword().name(),
-                                                       epoch,
-                                                       measurement);
+                                                              epoch,
+                                                              measurement);
         }
 
         /** Parse a CCSDS Tracking Data Message with KEYVALUE format.
@@ -722,18 +722,6 @@ public class TDMParser extends DefaultHandler {
                                 tdmFile.getHeader().setFormatVersion(parseInfo.keyValue.getDoubleValue());
                                 break;
 
-                            case CREATION_DATE:
-                                // Set creation date
-                                tdmFile.getHeader().setCreationDate(new AbsoluteDate(
-                                        parseInfo.keyValue.getValue(),
-                                        parseInfo.dataContext.getTimeScales().getUTC()));
-                                break;
-
-                            case ORIGINATOR:
-                                // Set originator
-                                tdmFile.getHeader().setOriginator(parseInfo.keyValue.getValue());
-                                break;
-
                                 // Comments
                             case COMMENT:
                                 if (parseInfo.parsingHeader) {
@@ -746,6 +734,18 @@ public class TDMParser extends DefaultHandler {
                                     throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD,
                                                               parseInfo.lineNumber, parseInfo.fileName, parseInfo.line);
                                 }
+                                break;
+
+                            case CREATION_DATE:
+                                // Set creation date
+                                tdmFile.getHeader().setCreationDate(new AbsoluteDate(
+                                        parseInfo.keyValue.getValue(),
+                                        parseInfo.dataContext.getTimeScales().getUTC()));
+                                break;
+
+                            case ORIGINATOR:
+                                // Set originator
+                                tdmFile.getHeader().setOriginator(parseInfo.keyValue.getValue());
                                 break;
 
                                 // Start/Strop keywords

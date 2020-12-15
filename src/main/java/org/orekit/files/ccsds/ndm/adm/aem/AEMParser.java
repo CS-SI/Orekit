@@ -36,6 +36,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.Keyword;
 import org.orekit.files.ccsds.ndm.adm.ADMParser;
+import org.orekit.files.ccsds.ndm.tdm.TDMMetadata;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.KeyValue;
 import org.orekit.files.general.AttitudeEphemerisFileParser;
@@ -289,7 +290,6 @@ public class AEMParser extends ADMParser<AEMFile> implements AttitudeEphemerisFi
 
             // set the additional data that has been configured prior the parsing by the user.
             pi.file.setMissionReferenceDate(getMissionReferenceDate());
-            pi.file.setMu(getMu());
             pi.file.setConventions(getConventions());
             pi.file.setDataContext(getDataContext());
 
@@ -308,8 +308,10 @@ public class AEMParser extends ADMParser<AEMFile> implements AttitudeEphemerisFi
                         break;
 
                     case META_START:
-                        file.addAttitudeBlock();
-                        pi.lastEphemeridesBlock = file.getAttitudeBlocks().get(file.getAttitudeBlocks().size() - 1);
+                        // Indicate the start of meta-data parsing for this block
+                        pi.currentMetadata = new AEMMetadata();
+                        pi.parsingHeader   = false;
+                        pi.parsingMetaData = true;
                         pi.lastEphemeridesBlock.setInterpolationDegree(getInterpolationDegree());
                         break;
 
@@ -382,7 +384,7 @@ public class AEMParser extends ADMParser<AEMFile> implements AttitudeEphemerisFi
                         parsed = parsed || parseHeaderEntry(pi.keyValue, file, pi.commentTmp);
                         if (pi.lastEphemeridesBlock != null) {
                             parsed = parsed || parseMetaDataEntry(pi.keyValue,
-                                                                  pi.lastEphemeridesBlock.getMetadata(), pi.commentTmp);
+                                                                  pi.lastEphemeridesBlock.getMetadata());
                         }
                         if (!parsed) {
                             throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
@@ -517,8 +519,11 @@ public class AEMParser extends ADMParser<AEMFile> implements AttitudeEphemerisFi
     /** Private class used to stock AEM parsing info. */
     private static class ParseInfo {
 
-        /** Ephemerides block being parsed. */
-        private AttitudeEphemeridesBlock lastEphemeridesBlock;
+        /** Metadata for current observation block. */
+        private AEMMetadata currentMetadata;
+
+        /** Current Ephemerides block being parsed. */
+        private AttitudeEphemeridesBlock currentEphemeridesBlock;
 
         /** Name of the file. */
         private String fileName;
@@ -535,11 +540,23 @@ public class AEMParser extends ADMParser<AEMFile> implements AttitudeEphemerisFi
         /** Stored comments. */
         private List<String> commentTmp;
 
+        /** Boolean indicating if the parser is currently parsing a header block. */
+        private boolean parsingHeader;
+
+        /** Boolean indicating if the parser is currently parsing a meta-data block. */
+        private boolean parsingMetaData;
+
+        /** Boolean indicating if the parser is currently parsing a data block. */
+        private boolean parsingData;
+
         /** Create a new {@link ParseInfo} object. */
         protected ParseInfo() {
-            lineNumber = 0;
-            file       = new AEMFile();
-            commentTmp = new ArrayList<String>();
+            lineNumber      = 0;
+            file            = new AEMFile();
+            commentTmp      = new ArrayList<>();
+            parsingHeader   = false;
+            parsingMetaData = false;
+            parsingData     = false;
         }
     }
 

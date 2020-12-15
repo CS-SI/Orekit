@@ -24,9 +24,8 @@ import java.util.Map.Entry;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.NDMFile;
-import org.orekit.files.ccsds.ndm.NDMHeader;
 import org.orekit.files.ccsds.ndm.NDMSegment;
+import org.orekit.files.ccsds.ndm.adm.ADMFile;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.general.AttitudeEphemerisFile;
 
@@ -37,13 +36,7 @@ import org.orekit.files.general.AttitudeEphemerisFile;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class AEMFile extends NDMFile<NDMHeader, AEMMetadata, AttitudeEphemeridesBlock> implements AttitudeEphemerisFile {
-
-    /** Simple constructor.
-     */
-    public AEMFile() {
-        super(new NDMHeader());
-    }
+public class AEMFile extends ADMFile<AEMMetadata, AttitudeEphemeridesBlock> implements AttitudeEphemerisFile {
 
     /** {@inheritDoc} */
     @Override

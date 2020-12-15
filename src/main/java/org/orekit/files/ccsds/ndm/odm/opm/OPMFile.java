@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.files.ccsds.ndm.odm.ODMMetadata;
 import org.orekit.files.ccsds.ndm.odm.OGMFile;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
@@ -37,10 +36,10 @@ import org.orekit.utils.PVCoordinates;
  * @author sports
  * @since 6.1
  */
-public class OPMFile extends OGMFile {
+public class OPMFile extends OGMFile<OPMHeader, OPMMetadata, OPMData> {
 
     /** Meta-data. */
-    private final ODMMetadata metaData;
+    private final OPMMetadata metaData;
 
     /** Position vector (m). */
     private Vector3D position;
@@ -51,9 +50,12 @@ public class OPMFile extends OGMFile {
     /** Maneuvers. */
     private List<Maneuver> maneuvers;
 
-    /** Create a new OPM file object. */
-    OPMFile() {
-        metaData  = new ODMMetadata(this);
+    /** Create a new OPM file object.
+     * @param header file header
+     */
+    OPMFile(final OPMHeader header) {
+        super(header);
+        metaData  = new OPMMetadata(this);
         maneuvers = new ArrayList<Maneuver>();
     }
 

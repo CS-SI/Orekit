@@ -237,25 +237,22 @@ public abstract class ODMParser {
     /** Parse an entry from the header.
      * @param keyValue key = value pair
      * @param odmFile instance to update with parsed entry
-     * @param comment previous comment lines, will be emptied if used by the keyword
      * @return true if the keyword was a header keyword and has been parsed
      */
-    protected boolean parseHeaderEntry(final KeyValue keyValue,
-                                       final ODMFile odmFile, final List<String> comment) {
+    protected boolean parseHeaderEntry(final KeyValue keyValue, final ODMFile odmFile) {
         switch (keyValue.getKeyword()) {
 
+            case COMMENT:
+                odmFile.getHeader().addComment(keyValue.getValue());
+                return true;
+
             case CREATION_DATE:
-                if (!comment.isEmpty()) {
-                    odmFile.setHeaderComment(comment);
-                    comment.clear();
-                }
-                odmFile.setCreationDate(new AbsoluteDate(
-                        keyValue.getValue(),
-                        dataContext.getTimeScales().getUTC()));
+                odmFile.getHeader().setCreationDate(new AbsoluteDate(keyValue.getValue(),
+                                                                     dataContext.getTimeScales().getUTC()));
                 return true;
 
             case ORIGINATOR:
-                odmFile.setOriginator(keyValue.getValue());
+                odmFile.getHeader().setOriginator(keyValue.getValue());
                 return true;
 
             case MESSAGE_ID:

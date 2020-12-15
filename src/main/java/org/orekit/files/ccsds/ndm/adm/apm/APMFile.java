@@ -16,10 +16,8 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
-import org.orekit.files.ccsds.ndm.NDMFile;
-import org.orekit.files.ccsds.ndm.NDMHeader;
+import org.orekit.files.ccsds.ndm.adm.ADMFile;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
-import org.orekit.time.AbsoluteDate;
 
 /**
  * This class stores all the information of the Attitude Parameter Message (APM) File parsed
@@ -27,30 +25,5 @@ import org.orekit.time.AbsoluteDate;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class APMFile extends NDMFile<NDMHeader, ADMMetadata, APMData> {
-
-    /** Initial Date for MET or MRT time systems. */
-    private AbsoluteDate missionReferenceDate;
-
-    /** Simple constructor. */
-    public APMFile() {
-        super(new NDMHeader());
-    }
-
-    /**
-     * Get reference date for Mission Elapsed Time and Mission Relative Time time systems.
-     * @return the reference date
-     */
-    public AbsoluteDate getMissionReferenceDate() {
-        return missionReferenceDate;
-    }
-
-    /**
-     * Set reference date for Mission Elapsed Time and Mission Relative Time time systems.
-     * @param missionReferenceDate reference date for Mission Elapsed Time and Mission Relative Time time systems.
-     */
-    public void setMissionReferenceDate(final AbsoluteDate missionReferenceDate) {
-        this.missionReferenceDate = missionReferenceDate;
-    }
-
+public class APMFile extends ADMFile<ADMMetadata, APMData> {
 }

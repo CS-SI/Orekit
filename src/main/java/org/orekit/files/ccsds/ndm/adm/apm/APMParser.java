@@ -27,11 +27,14 @@ import java.util.List;
 import org.hipparchus.complex.Quaternion;
 import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
 import org.orekit.files.ccsds.ndm.adm.ADMParser;
+import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.KeyValue;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
@@ -161,14 +164,13 @@ public class APMParser extends ADMParser<APMFile> {
             // initialize internal data structures
             final ParseInfo pi = new ParseInfo();
             pi.fileName = fileName;
-            final APMFile file = pi.file;
 
             // set the additional data that has been configured prior the parsing by the user.
             pi.file.setMissionReferenceDate(getMissionReferenceDate());
-            pi.file.setMu(getMu());
             pi.file.setConventions(getConventions());
             pi.file.setDataContext(getDataContext());
 
+            pi.parsingHeader = true;
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 ++pi.lineNumber;
                 if (line.trim().length() == 0) {
@@ -184,19 +186,19 @@ public class APMParser extends ADMParser<APMFile> {
                 switch (pi.keyValue.getKeyword()) {
 
                     case CCSDS_APM_VERS:
-                        file.getHeader().setFormatVersion(pi.keyValue.getDoubleValue());
+                        pi.file.getHeader().setFormatVersion(pi.keyValue.getDoubleValue());
                         break;
 
                     case Q_FRAME_A:
-                        file.setQuaternionFrameAString(pi.keyValue.getValue());
+                        pi.data.setQuaternionFrameAString(pi.keyValue.getValue());
                         break;
 
                     case Q_FRAME_B:
-                        file.setQuaternionFrameBString(pi.keyValue.getValue());
+                        pi.data.setQuaternionFrameBString(pi.keyValue.getValue());
                         break;
 
                     case Q_DIR:
-                        file.setAttitudeQuaternionDirection(pi.keyValue.getValue());
+                        pi.data.setAttitudeQuaternionDirection(pi.keyValue.getValue());
                         break;
 
                     case QC:
@@ -217,11 +219,10 @@ public class APMParser extends ADMParser<APMFile> {
 
                     case MAN_EPOCH_START:
                         if (pi.maneuver != null) {
-                            file.addManeuver(pi.maneuver);
+                            pi.data.addManeuver(pi.maneuver);
                         }
                         pi.maneuver = new APMManeuver();
-                        pi.maneuver.setEpochStart(parseDate(pi.keyValue.getValue(),
-                                                            file.getSegments().get(0).getMetadata().getTimeSystem()));
+                        pi.maneuver.setEpochStart(parseDate(pi.keyValue.getValue(), pi.metadata.getTimeSystem()));
                         if (!pi.commentTmp.isEmpty()) {
                             pi.maneuver.setComment(pi.commentTmp);
                             pi.commentTmp.clear();
@@ -255,11 +256,23 @@ public class APMParser extends ADMParser<APMFile> {
                         break;
 
                     default:
-                        boolean parsed = false;
-                        parsed = parsed || parseComment(pi.keyValue, pi.commentTmp);
-                        parsed = parsed || parseHeaderEntry(pi.keyValue, file, pi.commentTmp);
-                        parsed = parsed || parseMetaDataEntry(pi.keyValue, file.getMetadata(), pi.commentTmp);
-                        parsed = parsed || parseGeneralStateDataEntry(pi.keyValue, file, pi.commentTmp);
+                        final boolean parsed;
+                        if (pi.parsingHeader) {
+                            parsed = parseHeaderEntry(pi.keyValue, pi.file);
+                            if (pi.file.getHeader().getOriginator() != null) {
+                                // this was the end of the header part
+                                pi.parsingHeader   = false;
+                                pi.parsingMetaData = true;
+                            }
+                        } else if (pi.parsingMetaData) {
+                            parsed = parseMetaDataEntry(pi.keyValue, pi.metadata);
+                            if (pi.metadata.getTimeSystem() != null) {
+                                // this was the end of the metadata part
+                                pi.parsingMetaData = false;
+                            }
+                        } else {
+                            parsed = parseGeneralStateDataEntry(pi.keyValue, pi.metadata, pi.data, pi.commentTmp);
+                        }
                         if (!parsed) {
                             throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
                         }
@@ -268,15 +281,222 @@ public class APMParser extends ADMParser<APMFile> {
 
             }
 
-            file.setQuaternion(new Quaternion(pi.q0, pi.q1, pi.q2, pi.q3));
+            pi.data.setQuaternion(new Quaternion(pi.q0, pi.q1, pi.q2, pi.q3));
             if (pi.maneuver != null) {
-                file.addManeuver(pi.maneuver);
+                pi.data.addManeuver(pi.maneuver);
             }
-            return file;
+            pi.file.addSegment(pi.metadata, pi.data);
+            return pi.file;
 
         } catch (IOException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
         }
+    }
+
+    /**
+     * Parse a general state data key = value entry.
+     * @param keyValue key = value pair
+     * @param metadata metadata associated with the parsed data
+     * @param data instance to update with parsed entry
+     * @param comments temporary storage for comments
+     * @return true if the keyword was a meta-data keyword and has been parsed
+     */
+    private boolean parseGeneralStateDataEntry(final KeyValue keyValue,
+                                               final ADMMetadata metadata, final APMData data,
+                                               final List<String> comments) {
+        switch (keyValue.getKeyword()) {
+
+            case COMMENT:
+                comments.add(keyValue.getValue());
+                return true;
+
+            case EPOCH:
+                data.setEpoch(parseDate(keyValue.getValue(), metadata.getTimeSystem()));
+                return true;
+
+            case QC_DOT:
+                data.setQuaternionDot(new Quaternion(keyValue.getDoubleValue(),
+                                                        data.getQuaternionDot().getQ1(),
+                                                        data.getQuaternionDot().getQ2(),
+                                                        data.getQuaternionDot().getQ3()));
+                return true;
+
+            case Q1_DOT:
+                data.setQuaternionDot(new Quaternion(data.getQuaternionDot().getQ0(),
+                                                        keyValue.getDoubleValue(),
+                                                        data.getQuaternionDot().getQ2(),
+                                                        data.getQuaternionDot().getQ3()));
+                return true;
+
+            case Q2_DOT:
+                data.setQuaternionDot(new Quaternion(data.getQuaternionDot().getQ0(),
+                                                        data.getQuaternionDot().getQ1(),
+                                                        keyValue.getDoubleValue(),
+                                                        data.getQuaternionDot().getQ3()));
+                return true;
+
+            case Q3_DOT:
+                data.setQuaternionDot(new Quaternion(data.getQuaternionDot().getQ0(),
+                                                        data.getQuaternionDot().getQ1(),
+                                                        data.getQuaternionDot().getQ2(),
+                                                        keyValue.getDoubleValue()));
+                return true;
+
+            case EULER_FRAME_A:
+                data.setEulerComment(comments);
+                comments.clear();
+                data.setEulerFrameAString(keyValue.getValue());
+                return true;
+
+            case EULER_FRAME_B:
+                data.setEulerFrameBString(keyValue.getValue());
+                return true;
+
+            case EULER_DIR:
+                data.setEulerDirection(keyValue.getValue());
+                return true;
+
+            case EULER_ROT_SEQ:
+                data.setEulerRotSeq(keyValue.getValue());
+                return true;
+
+            case RATE_FRAME:
+                data.setRateFrameString(keyValue.getValue());
+                return true;
+
+            case X_ANGLE:
+                data.setRotationAngles(new Vector3D(toRadians(keyValue),
+                                                       data.getRotationAngles().getY(),
+                                                       data.getRotationAngles().getZ()));
+                return true;
+
+            case Y_ANGLE:
+                data.setRotationAngles(new Vector3D(data.getRotationAngles().getX(),
+                                                       toRadians(keyValue),
+                                                       data.getRotationAngles().getZ()));
+                return true;
+
+            case Z_ANGLE:
+                data.setRotationAngles(new Vector3D(data.getRotationAngles().getX(),
+                                                       data.getRotationAngles().getY(),
+                                                       toRadians(keyValue)));
+                return true;
+
+            case X_RATE:
+                data.setRotationRates(new Vector3D(toRadians(keyValue),
+                                                      data.getRotationRates().getY(),
+                                                      data.getRotationRates().getZ()));
+                return true;
+
+            case Y_RATE:
+                data.setRotationRates(new Vector3D(data.getRotationRates().getX(),
+                                                      toRadians(keyValue),
+                                                      data.getRotationRates().getZ()));
+                return true;
+
+            case Z_RATE:
+                data.setRotationRates(new Vector3D(data.getRotationRates().getX(),
+                                                      data.getRotationRates().getY(),
+                                                      toRadians(keyValue)));
+                return true;
+
+            case SPIN_FRAME_A:
+                data.setSpinComment(comments);
+                comments.clear();
+                data.setSpinFrameAString(keyValue.getValue());
+                return true;
+
+            case SPIN_FRAME_B:
+                data.setSpinFrameBString(keyValue.getValue());
+                return true;
+
+            case SPIN_DIR:
+                data.setSpinDirection(keyValue.getValue());
+                return true;
+
+            case SPIN_ALPHA:
+                data.setSpinAlpha(toRadians(keyValue));
+                return true;
+
+            case SPIN_DELTA:
+                data.setSpinDelta(toRadians(keyValue));
+                return true;
+
+            case SPIN_ANGLE:
+                data.setSpinAngle(toRadians(keyValue));
+                return true;
+
+            case SPIN_ANGLE_VEL:
+                data.setSpinAngleVel(toRadians(keyValue));
+                return true;
+
+            case NUTATION:
+                data.setNutation(toRadians(keyValue));
+                return true;
+
+            case NUTATION_PER:
+                data.setNutationPeriod(keyValue.getDoubleValue());
+                return true;
+
+            case NUTATION_PHASE:
+                data.setNutationPhase(toRadians(keyValue));
+                return true;
+
+            case INERTIA_REF_FRAME:
+                data.setSpacecraftComment(comments);
+                comments.clear();
+                data.setInertiaRefFrameString(keyValue.getValue());
+                return true;
+
+            case I11:
+                data.setI11(keyValue.getDoubleValue());
+                return true;
+
+            case I22:
+                data.setI22(keyValue.getDoubleValue());
+                return true;
+
+            case I33:
+                data.setI33(keyValue.getDoubleValue());
+                return true;
+
+            case I12:
+                data.setI12(keyValue.getDoubleValue());
+                return true;
+
+            case I13:
+                data.setI13(keyValue.getDoubleValue());
+                return true;
+
+            case I23:
+                data.setI23(keyValue.getDoubleValue());
+                return true;
+
+            default:
+                return false;
+
+        }
+
+    }
+
+    /**
+     * Parse a date.
+     * @param date date to parse, as the value of a CCSDS key=value line
+     * @param timeSystem time system to use
+     * @return parsed date
+     */
+    private AbsoluteDate parseDate(final String date, final CcsdsTimeScale timeSystem) {
+        return timeSystem.parseDate(date, getConventions(), getMissionReferenceDate(),
+                                    getDataContext().getTimeScales());
+    }
+
+    /**
+     * Convert a {@link KeyValue} in degrees to a real value in randians.
+     * @param keyValue key value
+     * @return the value in radians
+     */
+    private double toRadians(final KeyValue keyValue) {
+        return FastMath.toRadians(keyValue.getDoubleValue());
     }
 
     /** Private class used to stock APM parsing info. */
@@ -284,6 +504,12 @@ public class APMParser extends ADMParser<APMFile> {
 
         /** APM file being read. */
         private APMFile file;
+
+        /** APM metadata being read. */
+        private ADMMetadata metadata;
+
+        /** APM data being read. */
+        private APMData data;
 
         /** Name of the file. */
         private String fileName;
@@ -312,12 +538,22 @@ public class APMParser extends ADMParser<APMFile> {
         /** Current maneuver. */
         private APMManeuver maneuver;
 
+        /** Boolean indicating if the parser is currently parsing a header block. */
+        private boolean parsingHeader;
+
+        /** Boolean indicating if the parser is currently parsing a meta-data block. */
+        private boolean parsingMetaData;
+
         /** Create a new {@link ParseInfo} object. */
         protected ParseInfo() {
-            file       = new APMFile();
-            lineNumber = 0;
-            commentTmp = new ArrayList<String>();
-            maneuver   = null;
+            file            = new APMFile();
+            metadata        = new ADMMetadata();
+            data            = new APMData();
+            lineNumber      = 0;
+            commentTmp      = new ArrayList<String>();
+            maneuver        = null;
+            parsingHeader   = false;
+            parsingMetaData = false;
         }
     }
 

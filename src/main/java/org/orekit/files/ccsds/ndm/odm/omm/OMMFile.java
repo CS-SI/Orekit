@@ -37,7 +37,7 @@ import org.orekit.propagation.analytical.tle.TLE;
  * @author sports
  * @since 6.1
  */
-public class OMMFile extends OGMFile {
+public class OMMFile extends OGMFile<OMMHeader, OMMMetadata, OMMData> {
 
     /** Meta-data. */
     private final OMMMetaData metaData;
@@ -79,8 +79,11 @@ public class OMMFile extends OGMFile {
     /** TLE related parameters comments. The list contains a string for each line of comment. */
     private List<String> dataTleRelatedParametersComment;
 
-    /** Create a new OMM file object. */
-    OMMFile() {
+    /** Create a new OMM file object.
+     * @param header file header
+     */
+    OMMFile(final H header) {
+        super(header);
         metaData = new OMMMetaData(this);
     }
 

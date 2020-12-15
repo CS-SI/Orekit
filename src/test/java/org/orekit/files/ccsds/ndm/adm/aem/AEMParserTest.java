@@ -76,7 +76,6 @@ public class AEMParserTest {
         Assert.assertEquals(0.0, end.durationFrom(file.getSatellites().get("1996-062A").getStop()), Double.MIN_VALUE);
         Assert.assertEquals("1996-062A", file.getSatellites().get("1996-062A").getId());
         Assert.assertEquals(1.0, file.getHeader().getFormatVersion(), Double.MIN_VALUE);
-        Assert.assertEquals(CelestialBodyFactory.getEarth().getGM(), file.getMu(), 1.0e-5);
         Assert.assertEquals(new AbsoluteDate(2002, 11, 4, 17, 22, 31.0, TimeScalesFactory.getUTC()),
                             file.getHeader().getCreationDate());
         Assert.assertEquals("NASA/JPL", file.getHeader().getOriginator());

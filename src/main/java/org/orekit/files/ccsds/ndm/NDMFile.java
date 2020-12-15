@@ -45,9 +45,6 @@ public abstract class NDMFile<H extends NDMHeader, M extends NDMMetadata, D exte
     /** IERS conventions used. */
     private IERSConventions conventions;
 
-    /** Gravitational coefficient. */
-    private double mu;
-
     /** Header. */
     private H header;
 
@@ -59,25 +56,8 @@ public abstract class NDMFile<H extends NDMHeader, M extends NDMMetadata, D exte
      * @param header file header
      */
     protected NDMFile(final H header) {
-        this.mu       = Double.NaN;
         this.header   = header;
         this.segments = new ArrayList<>();
-    }
-
-    /**
-     * Get the used gravitational coefficient.
-     * @return the coefficient
-     */
-    public double getMu() {
-        return mu;
-    }
-
-    /**
-     * Set the used gravitational coefficient.
-     * @param mu the coefficient to set
-     */
-    public void setMu(final double mu) {
-        this.mu = mu;
     }
 
     /**

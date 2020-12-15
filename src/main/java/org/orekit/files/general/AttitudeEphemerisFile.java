@@ -142,7 +142,7 @@ public interface AttitudeEphemerisFile {
          *
          * @return the name of the frame center
          */
-        String getFrameCenterString();
+        String getCenterName();
 
         /**
          * Get the reference frame A specifier as it appeared in the file.

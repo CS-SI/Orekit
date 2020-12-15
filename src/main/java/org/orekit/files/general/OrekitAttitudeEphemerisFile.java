@@ -500,7 +500,7 @@ public class OrekitAttitudeEphemerisFile implements AttitudeEphemerisFile {
 
         /** {@inheritDoc} */
         @Override
-        public String getFrameCenterString() {
+        public String getCenterName() {
             return frameCenterString;
         }
 

@@ -21,7 +21,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.orekit.data.DataContext;
+import org.orekit.errors.OrekitException;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
+import org.orekit.time.TimeScale;
+import org.orekit.utils.IERSConventions;
 
 /** This class gathers the meta-data present in the Navigation Data Message (ADM, ODM and TDM).
  * @author Luc Maisonobe
@@ -59,6 +63,18 @@ public class NDMMetadata {
      */
     public void setTimeSystem(final CcsdsTimeScale timeSystem) {
         this.timeSystem = timeSystem;
+    }
+
+    /**
+     * Get the time scale.
+     * @param conventions IERS conventions to use
+     * @param dataContext data context ontianing all time scales
+     * @return the time scale.
+     * @see #getTimeSystem()
+     * @throws OrekitException if there is not corresponding time scale.
+     */
+    public TimeScale getTimeScale(final IERSConventions conventions, final DataContext dataContext) {
+        return getTimeSystem().getTimeScale(conventions, dataContext.getTimeScales());
     }
 
     /** Get the metadata comment.
