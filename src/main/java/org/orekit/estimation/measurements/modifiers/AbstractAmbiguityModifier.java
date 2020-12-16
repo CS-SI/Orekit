@@ -47,7 +47,7 @@ public class AbstractAmbiguityModifier {
      * @param ambiguity initial value of ambiguity
      */
     public AbstractAmbiguityModifier(final int key, final double ambiguity) {
-        this.ambiguity = new ParameterDriver("amgiguity-" + key, ambiguity, AMBIGUITY_SCALE,
+        this.ambiguity = new ParameterDriver("ambiguity-" + key, ambiguity, AMBIGUITY_SCALE,
                                              Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
     }
 
