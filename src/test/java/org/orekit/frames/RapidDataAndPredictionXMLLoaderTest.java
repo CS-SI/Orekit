@@ -23,6 +23,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.data.AbstractFilesLoaderTest;
@@ -56,7 +57,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
         } catch (OrekitException e) {
             // Malformed URL exception indicates external resource was disabled
             // file not found exception indicates parser tried to load the resource
-            Assert.assertThat(e.getCause(),
+            MatcherAssert.assertThat(e.getCause(),
                     CoreMatchers.instanceOf(MalformedURLException.class));
         }
 

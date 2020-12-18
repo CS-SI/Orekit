@@ -19,6 +19,7 @@ package org.orekit.forces;
 
 import java.util.List;
 
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -397,7 +398,7 @@ public class BoxAndSolarArraySpacecraftTest {
         Vector3D newHeadOnDrag  = cube.dragAcceleration(date, frame, position, rotation, mass, density, headOnVelocity,
                                                         getDragParameters(cube));
         Vector3D oldHeadOnDrag  = oldDragAcceleration(cube, date, frame, position, rotation, mass, density, headOnVelocity);
-        Assert.assertThat(newHeadOnDrag, OrekitMatchers.vectorCloseTo(oldHeadOnDrag.scalarMultiply(2), 1));
+        MatcherAssert.assertThat(newHeadOnDrag, OrekitMatchers.vectorCloseTo(oldHeadOnDrag.scalarMultiply(2), 1));
 
         // on an angle, the no lift implementation applies drag to the velocity direction
         // instead of to the facet normal direction. In the symmetrical case, this implies
@@ -411,7 +412,7 @@ public class BoxAndSolarArraySpacecraftTest {
         Vector3D oldDiagDrag = oldDragAcceleration(cube, date, frame, position, rotation, mass, density, diagonalVelocity);
         double oldMissingCoeff = 2.0 / FastMath.sqrt(3.0);
         Vector3D fixedOldDrag = new Vector3D(oldMissingCoeff, oldDiagDrag);
-        Assert.assertThat(newDiagDrag, OrekitMatchers.vectorCloseTo(fixedOldDrag, 1));
+        MatcherAssert.assertThat(newDiagDrag, OrekitMatchers.vectorCloseTo(fixedOldDrag, 1));
 
     }
 
