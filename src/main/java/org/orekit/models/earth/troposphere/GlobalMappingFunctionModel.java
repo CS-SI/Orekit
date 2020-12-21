@@ -24,6 +24,7 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
@@ -54,6 +55,9 @@ import org.orekit.utils.ParameterDriver;
  *
  */
 public class GlobalMappingFunctionModel implements MappingFunction {
+
+    /** Multiplication factor for mapping function coefficients. */
+    private static final double FACTOR = 1.0e-5;
 
     /** Geodetic site latitude, radians.*/
     private final double latitude;
@@ -145,17 +149,20 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         int j = 0;
         for (int n = 0; n <= 9; n++) {
             for (int m = 0; m <= n; m++) {
-                a0Hydro   = a0Hydro + (abCoef.getAHMean(j) * p.getPnm(n, m) * FastMath.cos(m * longitude) +
-                                abCoef.getBHMean(j) * p.getPnm(n, m) * FastMath.sin(m * longitude)) * 1e-5;
+                // Sine and cosine of m * longitude
+                final SinCos sc = FastMath.sinCos(m * longitude);
+                // Compute coefficients
+                a0Hydro   = a0Hydro + (abCoef.getAHMean(j) * p.getPnm(n, m) * sc.cos() +
+                                       abCoef.getBHMean(j) * p.getPnm(n, m) * sc.sin()) * FACTOR;
 
-                a0Wet     = a0Wet + (abCoef.getAWMean(j) * p.getPnm(n, m) * FastMath.cos(m * longitude) +
-                                abCoef.getBWMean(j) * p.getPnm(n, m) * FastMath.sin(m * longitude)) * 1e-5;
+                a0Wet     = a0Wet + (abCoef.getAWMean(j) * p.getPnm(n, m) * sc.cos() +
+                                     abCoef.getBWMean(j) * p.getPnm(n, m) * sc.sin()) * FACTOR;
 
-                amplHydro = amplHydro + (abCoef.getAHAmplitude(j) * p.getPnm(n, m) * FastMath.cos(m * longitude) +
-                                abCoef.getBHAmplitude(j) * p.getPnm(n, m) * FastMath.sin(m * longitude)) * 1e-5;
+                amplHydro = amplHydro + (abCoef.getAHAmplitude(j) * p.getPnm(n, m) * sc.cos() +
+                                         abCoef.getBHAmplitude(j) * p.getPnm(n, m) * sc.sin()) * FACTOR;
 
-                amplWet   = amplWet + (abCoef.getAWAmplitude(j) * p.getPnm(n, m) * FastMath.cos(m * longitude) +
-                                abCoef.getBWAmplitude(j) * p.getPnm(n, m) * FastMath.sin(m * longitude)) * 1e-5;
+                amplWet   = amplWet + (abCoef.getAWAmplitude(j) * p.getPnm(n, m) * sc.cos() +
+                                       abCoef.getBWAmplitude(j) * p.getPnm(n, m) * sc.sin()) * FACTOR;
 
                 j = j + 1;
             }
@@ -232,17 +239,20 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         int j = 0;
         for (int n = 0; n <= 9; n++) {
             for (int m = 0; m <= n; m++) {
-                a0Hydro   = a0Hydro.add((abCoef.getAHMean(j) * p.getPnm(n, m) * FastMath.cos(m * longitude) +
-                                abCoef.getBHMean(j) * p.getPnm(n, m) * FastMath.sin(m * longitude)) * 1e-5);
+                // Sine and cosine of m * longitude
+                final SinCos sc = FastMath.sinCos(m * longitude);
+                // Compute coefficients
+                a0Hydro   = a0Hydro.add((abCoef.getAHMean(j) * p.getPnm(n, m) * sc.cos() +
+                                         abCoef.getBHMean(j) * p.getPnm(n, m) * sc.sin()) * FACTOR);
 
-                a0Wet     = a0Wet.add((abCoef.getAWMean(j) * p.getPnm(n, m) * FastMath.cos(m * longitude) +
-                                abCoef.getBWMean(j) * p.getPnm(n, m) * FastMath.sin(m * longitude)) * 1e-5);
+                a0Wet     = a0Wet.add((abCoef.getAWMean(j) * p.getPnm(n, m) * sc.cos() +
+                                       abCoef.getBWMean(j) * p.getPnm(n, m) * sc.sin()) * FACTOR);
 
-                amplHydro = amplHydro.add((abCoef.getAHAmplitude(j) * p.getPnm(n, m) * FastMath.cos(m * longitude) +
-                                abCoef.getBHAmplitude(j) * p.getPnm(n, m) * FastMath.sin(m * longitude)) * 1e-5);
+                amplHydro = amplHydro.add((abCoef.getAHAmplitude(j) * p.getPnm(n, m) * sc.cos() +
+                                           abCoef.getBHAmplitude(j) * p.getPnm(n, m) * sc.sin()) * FACTOR);
 
-                amplWet   = amplWet.add((abCoef.getAWAmplitude(j) * p.getPnm(n, m) * FastMath.cos(m * longitude) +
-                                abCoef.getBWAmplitude(j) * p.getPnm(n, m) * FastMath.sin(m * longitude)) * 1e-5);
+                amplWet   = amplWet.add((abCoef.getAWAmplitude(j) * p.getPnm(n, m) * sc.cos() +
+                                         abCoef.getBWAmplitude(j) * p.getPnm(n, m) * sc.sin()) * FACTOR);
 
                 j = j + 1;
             }

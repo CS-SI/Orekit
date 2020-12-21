@@ -26,7 +26,9 @@ import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.SinCos;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -80,22 +82,22 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
 
     /** Simple constructor.
      * <p>Standard values for Earth models can be found in the {@link org.orekit.utils.Constants Constants} class:</p>
-     * <table border="1" cellpadding="5" style="background-color:#f5f5dc;" summary="">
+     * <table border="1" style="background-color:#f5f5dc;">
      * <caption>Ellipsoid Models</caption>
      * <tr style="background-color:#c9d5c9;"><th>model</th><th>a<sub>e</sub> (m)</th> <th>f</th></tr>
-     * <tr><td style="background-color:#c9d5c9;">GRS 80</td>
+     * <tr><td style="background-color:#c9d5c9; padding:5px">GRS 80</td>
      *     <td>{@link org.orekit.utils.Constants#GRS80_EARTH_EQUATORIAL_RADIUS Constants.GRS80_EARTH_EQUATORIAL_RADIUS}</td>
      *     <td>{@link org.orekit.utils.Constants#GRS80_EARTH_FLATTENING Constants.GRS80_EARTH_FLATTENING}</td></tr>
-     * <tr><td style="background-color:#c9d5c9;">WGS84</td>
+     * <tr><td style="background-color:#c9d5c9; padding:5px">WGS84</td>
      *     <td>{@link org.orekit.utils.Constants#WGS84_EARTH_EQUATORIAL_RADIUS Constants.WGS84_EARTH_EQUATORIAL_RADIUS}</td>
      *     <td>{@link org.orekit.utils.Constants#WGS84_EARTH_FLATTENING Constants.WGS84_EARTH_FLATTENING}</td></tr>
-     * <tr><td style="background-color:#c9d5c9;">IERS96</td>
+     * <tr><td style="background-color:#c9d5c9; padding:5px">IERS96</td>
      *     <td>{@link org.orekit.utils.Constants#IERS96_EARTH_EQUATORIAL_RADIUS Constants.IERS96_EARTH_EQUATORIAL_RADIUS}</td>
      *     <td>{@link org.orekit.utils.Constants#IERS96_EARTH_FLATTENING Constants.IERS96_EARTH_FLATTENING}</td></tr>
-     * <tr><td style="background-color:#c9d5c9;">IERS2003</td>
+     * <tr><td style="background-color:#c9d5c9; padding:5px">IERS2003</td>
      *     <td>{@link org.orekit.utils.Constants#IERS2003_EARTH_EQUATORIAL_RADIUS Constants.IERS2003_EARTH_EQUATORIAL_RADIUS}</td>
      *     <td>{@link org.orekit.utils.Constants#IERS2003_EARTH_FLATTENING Constants.IERS2003_EARTH_FLATTENING}</td></tr>
-     * <tr><td style="background-color:#c9d5c9;">IERS2010</td>
+     * <tr><td style="background-color:#c9d5c9; padding:5px">IERS2010</td>
      *     <td>{@link org.orekit.utils.Constants#IERS2010_EARTH_EQUATORIAL_RADIUS Constants.IERS2010_EARTH_EQUATORIAL_RADIUS}</td>
      *     <td>{@link org.orekit.utils.Constants#IERS2010_EARTH_FLATTENING Constants.IERS2010_EARTH_FLATTENING}</td></tr>
      * </table>
@@ -308,15 +310,13 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
     /** {@inheritDoc} */
     public Vector3D transform(final GeodeticPoint point) {
         final double longitude = point.getLongitude();
-        final double cLambda   = FastMath.cos(longitude);
-        final double sLambda   = FastMath.sin(longitude);
+        final SinCos scLambda  = FastMath.sinCos(longitude);
         final double latitude  = point.getLatitude();
-        final double cPhi      = FastMath.cos(latitude);
-        final double sPhi      = FastMath.sin(latitude);
+        final SinCos scPhi     = FastMath.sinCos(latitude);
         final double h         = point.getAltitude();
-        final double n         = getA() / FastMath.sqrt(1.0 - e2 * sPhi * sPhi);
-        final double r         = (n + h) * cPhi;
-        return new Vector3D(r * cLambda, r * sLambda, (g2 * n + h) * sPhi);
+        final double n         = getA() / FastMath.sqrt(1.0 - e2 * scPhi.sin() * scPhi.sin());
+        final double r         = (n + h) * scPhi.cos();
+        return new Vector3D(r * scLambda.cos(), r * scLambda.sin(), (g2 * n + h) * scPhi.sin());
     }
 
     /** {@inheritDoc} */
@@ -326,10 +326,12 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         final T longitude = point.getLongitude();
         final T altitude  = point.getAltitude();
 
-        final T cLambda = longitude.cos();
-        final T sLambda = longitude.sin();
-        final T cPhi    = latitude.cos();
-        final T sPhi    = latitude.sin();
+        final FieldSinCos<T> scLambda = FastMath.sinCos(longitude);
+        final FieldSinCos<T> scPhi    = FastMath.sinCos(latitude);
+        final T cLambda = scLambda.cos();
+        final T sLambda = scLambda.sin();
+        final T cPhi    = scPhi.cos();
+        final T sPhi    = scPhi.sin();
         final T n       = sPhi.multiply(sPhi).multiply(e2).subtract(1.0).negate().sqrt().reciprocal().multiply(getA());
         final T r       = n.add(altitude).multiply(cPhi);
 

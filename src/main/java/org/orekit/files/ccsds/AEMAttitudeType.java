@@ -31,6 +31,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
 /** Enumerate for AEM attitude type.
@@ -77,6 +78,11 @@ public enum AEMAttitudeType {
 
             // Return
             return new TimeStampedAngularCoordinates(date, rotation, Vector3D.ZERO, Vector3D.ZERO);
+        }
+
+        @Override
+        public AngularDerivativesFilter getAngularDerivativesFilter() {
+            return AngularDerivativesFilter.USE_R;
         }
 
     },
@@ -138,6 +144,11 @@ public enum AEMAttitudeType {
             return new TimeStampedAngularCoordinates(date, fieldRotation);
         }
 
+        @Override
+        public AngularDerivativesFilter getAngularDerivativesFilter() {
+            return AngularDerivativesFilter.USE_RR;
+        }
+
     },
 
     /** Quaternion and rotation rate. */
@@ -194,6 +205,11 @@ public enum AEMAttitudeType {
             return new TimeStampedAngularCoordinates(date, rotation, rotationRate, Vector3D.ZERO);
         }
 
+        @Override
+        public AngularDerivativesFilter getAngularDerivativesFilter() {
+            return AngularDerivativesFilter.USE_RR;
+        }
+
     },
 
     /** Euler angles. */
@@ -231,6 +247,11 @@ public enum AEMAttitudeType {
                                                    alpha1, alpha2, alpha3);
             // Return
             return new TimeStampedAngularCoordinates(date, rotation, Vector3D.ZERO, Vector3D.ZERO);
+        }
+
+        @Override
+        public AngularDerivativesFilter getAngularDerivativesFilter() {
+            return AngularDerivativesFilter.USE_R;
         }
 
     },
@@ -281,6 +302,11 @@ public enum AEMAttitudeType {
             return new TimeStampedAngularCoordinates(date, rotation, rotationRate, Vector3D.ZERO);
         }
 
+        @Override
+        public AngularDerivativesFilter getAngularDerivativesFilter() {
+            return AngularDerivativesFilter.USE_RR;
+        }
+
     },
 
     /** Spin. */
@@ -304,6 +330,14 @@ public enum AEMAttitudeType {
             throw new OrekitException(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, getName());
         }
 
+        @Override
+        public AngularDerivativesFilter getAngularDerivativesFilter() {
+            // Attitude parameters in the Specified Reference Frame for a Spin Stabilized Satellite
+            // are optional in CCSDS AEM format. Support for this attitude type is not implemented
+            // yet in Orekit.
+            throw new OrekitException(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, getName());
+        }
+
     },
 
     /** Spin and nutation. */
@@ -321,6 +355,14 @@ public enum AEMAttitudeType {
         @Override
         public TimeStampedAngularCoordinates getAngularCoordinates(final AbsoluteDate date, final double[] data,
                                                                    final boolean isFirst, final RotationOrder order) {
+            // Attitude parameters in the Specified Reference Frame for a Spin Stabilized Satellite
+            // are optional in CCSDS AEM format. Support for this attitude type is not implemented
+            // yet in Orekit.
+            throw new OrekitException(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, getName());
+        }
+
+        @Override
+        public AngularDerivativesFilter getAngularDerivativesFilter() {
             // Attitude parameters in the Specified Reference Frame for a Spin Stabilized Satellite
             // are optional in CCSDS AEM format. Support for this attitude type is not implemented
             // yet in Orekit.
@@ -398,5 +440,11 @@ public enum AEMAttitudeType {
      */
     public abstract TimeStampedAngularCoordinates getAngularCoordinates(AbsoluteDate date, double[] attitudeData,
                                                                         boolean isFirst, RotationOrder order);
+
+    /**
+     * Get the angular derivative filter corresponding to the attitude data.
+     * @return the angular derivative filter corresponding to the attitude data
+     */
+    public abstract AngularDerivativesFilter getAngularDerivativesFilter();
 
 }

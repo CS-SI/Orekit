@@ -28,6 +28,7 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
+import org.hipparchus.util.SinCos;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.drag.DragSensitive;
@@ -624,7 +625,8 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         if (referenceDate != null) {
             // use a simple rotation at fixed rate
             final double alpha = rotationRate * date.durationFrom(referenceDate);
-            return new Vector3D(FastMath.cos(alpha), saX, FastMath.sin(alpha), saY);
+            final SinCos scAlpha = FastMath.sinCos(alpha);
+            return new Vector3D(scAlpha.cos(), saX, scAlpha.sin(), saY);
         }
 
         // compute orientation for best lighting

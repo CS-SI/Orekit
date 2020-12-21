@@ -31,7 +31,6 @@ import org.orekit.estimation.leastsquares.BatchLSEstimator;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeMeasurementCreator;
-import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;

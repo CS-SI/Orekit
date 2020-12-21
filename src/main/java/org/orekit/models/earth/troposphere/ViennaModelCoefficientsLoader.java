@@ -325,6 +325,11 @@ public class ViennaModelCoefficientsLoader extends AbstractSelfFeedingLoader
                                       lineNumber, name, line);
         }
 
+        // Check that ah, aw, zh and zw were found (only one check is enough)
+        if (ah.isEmpty()) {
+            throw new OrekitException(OrekitMessages.NO_VIENNA_ACOEF_OR_ZENITH_DELAY_IN_FILE, name);
+        }
+
         final int dimLat = latitudes.size();
         final int dimLon = longitudes.size();
 
@@ -369,11 +374,6 @@ public class ViennaModelCoefficientsLoader extends AbstractSelfFeedingLoader
         coefficientsA[1] = functionAW.value(latitude, longitude);
         zenithDelay[0]   = functionZH.value(latitude, longitude);
         zenithDelay[1]   = functionZW.value(latitude, longitude);
-
-        // Check that ah, aw, zh and zw were found
-        if (coefficientsA == null || zenithDelay == null) {
-            throw new OrekitException(OrekitMessages.NO_VIENNA_ACOEF_OR_ZENITH_DELAY_IN_FILE, name);
-        }
 
     }
 

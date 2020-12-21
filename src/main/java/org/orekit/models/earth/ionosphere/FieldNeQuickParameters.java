@@ -21,6 +21,7 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.SinCos;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeComponents;
@@ -468,7 +469,8 @@ class FieldNeQuickParameters <T extends RealFieldElement<T>> {
         for (int i = 0; i < cf2.length; i++) {
             T sum = field.getZero();
             for (int k = 0; k < 6; k++) {
-                sum = sum.add(af2[i][2 * k + 1].multiply(FastMath.sin((k + 1) * t)).add(af2[i][2 * (k + 1)].multiply(FastMath.cos((k + 1) * t))));
+                final SinCos sc = FastMath.sinCos((k + 1) * t);
+                sum = sum.add(af2[i][2 * k + 1].multiply(sc.sin()).add(af2[i][2 * (k + 1)].multiply(sc.cos())));
             }
             cf2[i] = af2[i][0].add(sum);
         }
@@ -488,7 +490,8 @@ class FieldNeQuickParameters <T extends RealFieldElement<T>> {
         for (int i = 0; i < cm3.length; i++) {
             T sum = field.getZero();
             for (int k = 0; k < 4; k++) {
-                sum = sum.add(am3[i][2 * k + 1].multiply(FastMath.sin((k + 1) * t)).add(am3[i][2 * (k + 1)].multiply(FastMath.cos((k + 1) * t))));
+                final SinCos sc = FastMath.sinCos((k + 1) * t);
+                sum = sum.add(am3[i][2 * k + 1].multiply(sc.sin()).add(am3[i][2 * (k + 1)].multiply(sc.cos())));
             }
             cm3[i] = am3[i][0].add(sum);
         }
@@ -539,9 +542,10 @@ class FieldNeQuickParameters <T extends RealFieldElement<T>> {
         // latitude and longitude terms
         int index = 12;
         for (int i = 1; i < q.length; i++) {
+            final FieldSinCos<T> sc = FastMath.sinCos(longitude.multiply(i));
             for (int j = 0; j < q[i]; j++) {
-                g[index++] = m[j].multiply(p[i - 1]).multiply(FastMath.cos(longitude.multiply(i)));
-                g[index++] = m[j].multiply(p[i - 1]).multiply(FastMath.sin(longitude.multiply(i)));
+                g[index++] = m[j].multiply(p[i - 1]).multiply(sc.cos());
+                g[index++] = m[j].multiply(p[i - 1]).multiply(sc.sin());
             }
         }
 
@@ -595,9 +599,10 @@ class FieldNeQuickParameters <T extends RealFieldElement<T>> {
         // latitude and longitude terms
         int index = 7;
         for (int i = 1; i < r.length; i++) {
+            final FieldSinCos<T> sc = FastMath.sinCos(longitude.multiply(i));
             for (int j = 0; j < r[i]; j++) {
-                g[index++] = m[j].multiply(p[i - 1]).multiply(FastMath.cos(longitude.multiply(i)));
-                g[index++] = m[j].multiply(p[i - 1]).multiply(FastMath.sin(longitude.multiply(i)));
+                g[index++] = m[j].multiply(p[i - 1]).multiply(sc.cos());
+                g[index++] = m[j].multiply(p[i - 1]).multiply(sc.sin());
             }
         }
 

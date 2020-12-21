@@ -47,7 +47,7 @@ public class Position extends AbstractMeasurement<Position> {
         }
     };
 
-    /** Covariance matrix of the PV measurement (size 3x3). */
+    /** Covariance matrix of the position only measurement (size 3x3). */
     private final double[][] covarianceMatrix;
 
     /** Constructor with one double for the standard deviation.
@@ -93,7 +93,7 @@ public class Position extends AbstractMeasurement<Position> {
      * <p>The measurement must be in the orbit propagation frame.</p>
      * @param date date of the measurement
      * @param position position
-     * @param covarianceMatrix 6x6 covariance matrix of the PV measurement
+     * @param covarianceMatrix 3x3 covariance matrix of the position only measurement
      * @param baseWeight base weight
      * @param satellite satellite related to this measurement
      * @since 9.3
@@ -180,7 +180,7 @@ public class Position extends AbstractMeasurement<Position> {
 
     /** Extract standard deviations from a 3x3 position covariance matrix.
      * Check the size of the position covariance matrix first.
-     * @param pCovarianceMatrix the 3x" possition covariance matrix
+     * @param pCovarianceMatrix the 3x" position covariance matrix
      * @return the standard deviations (3-sized vector), they are
      * the square roots of the diagonal elements of the covariance matrix in input.
      */

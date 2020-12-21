@@ -89,6 +89,9 @@ public class GroundStation {
     /** Suffix for ground station position and clock offset parameters names. */
     public static final String OFFSET_SUFFIX = "-offset";
 
+    /** Suffix for ground clock drift parameters name. */
+    public static final String DRIFT_SUFFIX = "-drift-clock";
+
     /** Suffix for ground station intermediate frame name. */
     public static final String INTERMEDIATE_SUFFIX = "-intermediate";
 
@@ -125,6 +128,9 @@ public class GroundStation {
 
     /** Driver for clock offset. */
     private final ParameterDriver clockOffsetDriver;
+
+    /** Driver for clock drift. */
+    private final ParameterDriver clockDriftDriver;
 
     /** Driver for position offset along the East axis. */
     private final ParameterDriver eastOffsetDriver;
@@ -205,6 +211,10 @@ public class GroundStation {
                                                      0.0, CLOCK_OFFSET_SCALE,
                                                      Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 
+        this.clockDriftDriver = new ParameterDriver(baseFrame.getName() + DRIFT_SUFFIX,
+                                                    0.0, CLOCK_OFFSET_SCALE,
+                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+
         this.eastOffsetDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX + "-East",
                                                     0.0, POSITION_OFFSET_SCALE,
                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
@@ -233,6 +243,14 @@ public class GroundStation {
      */
     public ParameterDriver getClockOffsetDriver() {
         return clockOffsetDriver;
+    }
+
+    /** Get a driver allowing to change station clock drift (which is related to measurement date).
+     * @return driver for station clock drift
+     * @since 10.3
+     */
+    public ParameterDriver getClockDriftDriver() {
+        return clockDriftDriver;
     }
 
     /** Get a driver allowing to change station position along East axis.

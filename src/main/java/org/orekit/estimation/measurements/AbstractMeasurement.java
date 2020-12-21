@@ -85,9 +85,6 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
                                   final List<ObservableSatellite> satellites) {
 
         this.supportedParameters = new ArrayList<ParameterDriver>();
-        for (final ParameterDriver parameterDriver : supportedParameters) {
-            this.supportedParameters.add(parameterDriver);
-        }
 
         this.date       = date;
         this.observed   = new double[] {

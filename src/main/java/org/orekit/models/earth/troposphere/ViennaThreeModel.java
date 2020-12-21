@@ -24,6 +24,7 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
@@ -143,8 +144,9 @@ public class ViennaThreeModel implements DiscreteTroposphericModel {
         int j = 0;
         for (int n = 0; n <= 12; n++) {
             for (int m = 0; m <= n; m++) {
-                final double pCosmLambda = p.getPnm(n, m) * FastMath.cos(m * longitude);
-                final double pSinmLambda = p.getPnm(n, m) * FastMath.sin(m * longitude);
+                final SinCos sc = FastMath.sinCos(m * longitude);
+                final double pCosmLambda = p.getPnm(n, m) * sc.cos();
+                final double pSinmLambda = p.getPnm(n, m) * sc.sin();
 
                 a0Bh = a0Bh + (AnmBnm.getAnmBh(j, 0) * pCosmLambda + AnmBnm.getBnmBh(j, 0) * pSinmLambda);
                 a0Bw = a0Bw + (AnmBnm.getAnmBw(j, 0) * pCosmLambda + AnmBnm.getBnmBw(j, 0) * pSinmLambda);
@@ -230,8 +232,9 @@ public class ViennaThreeModel implements DiscreteTroposphericModel {
         int j = 0;
         for (int n = 0; n <= 12; n++) {
             for (int m = 0; m <= n; m++) {
-                final T pCosmLambda = zero.add(p.getPnm(n, m) * FastMath.cos(m * longitude));
-                final T pSinmLambda = zero.add(p.getPnm(n, m) * FastMath.sin(m * longitude));
+                final SinCos sc = FastMath.sinCos(m * longitude);
+                final T pCosmLambda = zero.add(p.getPnm(n, m) * sc.cos());
+                final T pSinmLambda = zero.add(p.getPnm(n, m) * sc.sin());
 
                 a0Bh = a0Bh.add(pCosmLambda.multiply(AnmBnm.getAnmBh(j, 0)).add(pSinmLambda.multiply(AnmBnm.getBnmBh(j, 0))));
                 a0Bw = a0Bw.add(pCosmLambda.multiply(AnmBnm.getAnmBw(j, 0)).add(pSinmLambda.multiply(AnmBnm.getBnmBw(j, 0))));
@@ -375,14 +378,14 @@ public class ViennaThreeModel implements DiscreteTroposphericModel {
      */
     private double computeSeasonalFit(final int doy, final double A0, final double A1,
                                       final double A2, final double B1, final double B2) {
+
         final double coef = (doy / 365.25) * 2 * FastMath.PI;
+        final SinCos sc1  = FastMath.sinCos(coef);
+        final SinCos sc2  = FastMath.sinCos(2.0 * coef);
 
-        final double cosCoef  = FastMath.cos(coef);
-        final double sinCoef  = FastMath.sin(coef);
-        final double cos2Coef = FastMath.cos(coef * 2.0);
-        final double sin2Coef = FastMath.sin(coef * 2.0);
-
-        return A0 + A1 * cosCoef + B1 * sinCoef + A2 * cos2Coef + B2 * sin2Coef;
+        return A0 +
+               A1 * sc1.cos() + B1 * sc1.sin() +
+               A2 * sc2.cos() + B2 * sc2.sin();
     }
 
     /** Computes the empirical temporal information for the mapping function
@@ -399,13 +402,12 @@ public class ViennaThreeModel implements DiscreteTroposphericModel {
     private <T extends RealFieldElement<T>> T computeSeasonalFit(final int doy, final T A0, final T A1,
                                                                  final T A2, final T B1, final T B2) {
         final double coef = (doy / 365.25) * 2 * FastMath.PI;
+        final SinCos sc1  = FastMath.sinCos(coef);
+        final SinCos sc2  = FastMath.sinCos(2.0 * coef);
 
-        final double cosCoef  = FastMath.cos(coef);
-        final double sinCoef  = FastMath.sin(coef);
-        final double cos2Coef = FastMath.cos(coef * 2.0);
-        final double sin2Coef = FastMath.sin(coef * 2.0);
-
-        return A0.add(A1.multiply(cosCoef)).add(B1.multiply(sinCoef)).add(A2.multiply(cos2Coef)).add(B2.multiply(sin2Coef));
+        return A0.add(
+               A1.multiply(sc1.cos())).add(B1.multiply(sc1.sin())).add(
+               A2.multiply(sc2.cos())).add(B2.multiply(sc2.sin()));
     }
 
     /** Computes the P<sub>nm</sub>(cos(polarDist)) coefficients.

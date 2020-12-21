@@ -27,6 +27,7 @@ import org.orekit.frames.FieldTransform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -68,6 +69,8 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
                      final boolean twoway, final ObservableSatellite satellite) {
         super(date, rangeRate, sigma, baseWeight, Arrays.asList(satellite));
         addParameterDriver(station.getClockOffsetDriver());
+        addParameterDriver(station.getClockDriftDriver());
+        addParameterDriver(satellite.getClockDriftDriver());
         addParameterDriver(station.getEastOffsetDriver());
         addParameterDriver(station.getNorthOffsetDriver());
         addParameterDriver(station.getZenithOffsetDriver());
@@ -109,7 +112,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         // Parameters:
         //  - 0..2 - Position of the spacecraft in inertial frame
         //  - 3..5 - Velocity of the spacecraft in inertial frame
-        //  - 6..n - station parameters (clock offset, station offsets, pole, prime meridian...)
+        //  - 6..n - station parameters (clock offset, clock drift, station offsets, pole, prime meridian...)
         int nbParams = 6;
         final Map<String, Integer> indices = new HashMap<>();
         for (ParameterDriver driver : getParametersDrivers()) {
@@ -152,7 +155,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         // one-way (downlink) range-rate
         final EstimatedMeasurement<RangeRate> evalOneWay1 =
                         oneWayTheoreticalEvaluation(iteration, evaluation, true,
-                                                    stationDownlink, transitPV, transitState, indices);
+                                                    stationDownlink, transitPV, transitState, indices, nbParams);
         final EstimatedMeasurement<RangeRate> estimated;
         if (twoway) {
             // one-way (uplink) light time correction
@@ -173,7 +176,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
 
             final EstimatedMeasurement<RangeRate> evalOneWay2 =
                             oneWayTheoreticalEvaluation(iteration, evaluation, false,
-                                                        stationUplink, transitPV, transitState, indices);
+                                                        stationUplink, transitPV, transitState, indices, nbParams);
 
             // combine uplink and downlink values
             estimated = new EstimatedMeasurement<>(this, iteration, evaluation,
@@ -223,6 +226,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
      * @param transitPV spacecraft coordinates at onboard signal transit
      * @param transitState orbital state at onboard signal transit
      * @param indices indices of the estimated parameters in derivatives computations
+     * @param nbParams the number of estimated parameters in derivative computations
      * @return theoretical value
      * @see #evaluate(SpacecraftStatet)
      */
@@ -230,7 +234,8 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
                                                                         final TimeStampedFieldPVCoordinates<Gradient> stationPV,
                                                                         final TimeStampedFieldPVCoordinates<Gradient> transitPV,
                                                                         final SpacecraftState transitState,
-                                                                        final Map<String, Integer> indices) {
+                                                                        final Map<String, Integer> indices,
+                                                                        final int nbParams) {
 
         // prepare the evaluation
         final EstimatedMeasurement<RangeRate> estimated =
@@ -252,8 +257,22 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         // radial direction
         final FieldVector3D<Gradient> lineOfSight      = relativePosition.normalize();
 
+        // line of sight velocity
+        final Gradient lineOfSightVelocity = FieldVector3D.dotProduct(relativeVelocity, lineOfSight);
+
         // range rate
-        final Gradient rangeRate = FieldVector3D.dotProduct(relativeVelocity, lineOfSight);
+        Gradient rangeRate = lineOfSightVelocity;
+
+        if (!twoway) {
+            // clock drifts, taken in account only in case of one way
+            final ObservableSatellite satellite    = getSatellites().get(0);
+            final Gradient            dtsDot       = satellite.getClockDriftDriver().getValue(nbParams, indices);
+            final Gradient            dtgDot       = station.getClockDriftDriver().getValue(nbParams, indices);
+
+            final Gradient clockDriftBiais = dtgDot.subtract(dtsDot).multiply(Constants.SPEED_OF_LIGHT);
+
+            rangeRate = rangeRate.add(clockDriftBiais);
+        }
 
         estimated.setEstimatedValue(rangeRate.getValue());
 

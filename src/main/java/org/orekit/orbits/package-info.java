@@ -28,7 +28,7 @@
  * org.orekit.orbits.CartesianOrbit Cartesian} representations are supported.
  * </p>
  *
- * <h3>Design History</h3>
+ * <h2>Design History</h2>
  * <p>
  * Early designs for the orbit package were much more complex than the current design.
  * Looking back at these designs, they tried to do far too much in a single class and
@@ -58,7 +58,7 @@
  * easy to maintain and reusable.
  * </p>
  *
- * <h3>Current state versus evolving state</h3>
+ * <h2>Current state versus evolving state</h2>
  * <p>
  * From the early design, the various orbit classes retained only the kinematical
  * notions at a single time. They basically represent the current state, and
@@ -93,7 +93,7 @@
  * conversions to other frames without having to externally preserve a mapping
  * between orbits and their frame: it is already done. As an example, getting
  * the position and velocity of a satellite given by a circular orbit in a ground
- * station frame is simply a matter of calling <tt>orbit.getPVCoordinates(stationFrame)</tt>,
+ * station frame is simply a matter of calling <code>orbit.getPVCoordinates(stationFrame)</code>,
  * regardless of the frame in which the orbit is defined (GCRF, EME2000, ...).
  * </p>
  *
@@ -114,7 +114,7 @@
  * interface.
  * </p>
  *
- * <h3>Representations Conversions</h3>
+ * <h2>Representations Conversions</h2>
  * <p>
  * All representations can be converted into all other ones. No error is triggered
  * if some conversion is ambiguous (like converting a perfectly circular orbit from

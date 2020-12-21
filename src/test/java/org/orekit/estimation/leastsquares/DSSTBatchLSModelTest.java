@@ -18,6 +18,7 @@ package org.orekit.estimation.leastsquares;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -31,13 +32,17 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.estimation.DSSTContext;
 import org.orekit.estimation.DSSTEstimationTestUtils;
+import org.orekit.estimation.DSSTForce;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
+import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
@@ -106,7 +111,7 @@ public class DSSTBatchLSModelTest {
         for (ObservedMeasurement<?> measurement : measurements) {
             for (int k = 0; k < measurement.getDimension(); ++k) {
                 // the value is already a weighted residual
-                Assert.assertEquals(0.0, value.getFirst().getEntry(index++), 5.e-7);
+                Assert.assertEquals(0.0, value.getFirst().getEntry(index++), 6.3e-8);
             }
         }
         Assert.assertEquals(index, value.getFirst().getDimension());
@@ -150,6 +155,83 @@ public class DSSTBatchLSModelTest {
         final DSSTBatchLSModel model = new DSSTBatchLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver, PropagationType.MEAN, PropagationType.MEAN);
         // Test forward propagation flag to false
         assertEquals(false, model.isForwardPropagation());
+    }
+
+    @Test
+    public void testIssue718() {
+
+        // Context
+        final DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        // Force models
+        final DSSTForce zonal = DSSTForce.ZONAL;
+        final List<DSSTForceModel> forces = new ArrayList<>();
+        forces.add(zonal.getForceModel(context));
+
+        // Create propagator builders
+        final DSSTPropagatorBuilder propagatorBuilderMean =
+                        context.createBuilder(true, 0.01, 600.0, 1.0);
+        final DSSTPropagatorBuilder propagatorBuilderOsc  =
+                        context.createBuilder(PropagationType.OSCULATING, PropagationType.OSCULATING, true, 0.01, 600.0, 1.0, zonal);
+
+        // Propagators
+        final Propagator propagatorMean = DSSTEstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilderMean);
+        final Propagator propagatorOsc  = DSSTEstimationTestUtils.createPropagator(context.initialOrbit, propagatorBuilderOsc);
+
+        // Measurements
+        final List<ObservedMeasurement<?>> measurements = DSSTEstimationTestUtils.createMeasurements(propagatorMean, new PVMeasurementCreator(),
+                                                                                                     0.0, 1.0, 300.0);
+        // Empty list of measurement parameters
+        final ParameterDriversList estimatedMeasurementsParameters = new ParameterDriversList();
+
+        // Verify MEAN case
+        final ModelObserver observerMean = new ModelObserver() {
+            /** {@inheritDoc} */
+            @Override
+            public void modelCalled(final Orbit[] newOrbits,
+                                    final Map<ObservedMeasurement<?>, EstimatedMeasurement<?>> newEvaluations) {
+                // Verify length
+                Assert.assertEquals(1, newOrbits.length);
+                // Verify first orbit
+                Assert.assertEquals(0, context.initialOrbit.getDate().durationFrom(newOrbits[0].getDate()), 1.0e-15);
+                Assert.assertEquals(0, Vector3D.distance(context.initialOrbit.getPVCoordinates().getPosition(),
+                                                         newOrbits[0].getPVCoordinates().getPosition()), 1.0e-15);
+
+            }
+        };
+        
+        final DSSTBatchLSModel modelMean = propagatorBuilderMean.buildLSModel(new DSSTPropagatorBuilder[] {propagatorBuilderMean}, measurements, estimatedMeasurementsParameters, observerMean);
+        modelMean.setIterationsCounter(new Incrementor(100));
+        modelMean.setEvaluationsCounter(new Incrementor(100));
+
+        // Evaluate model (MEAN)
+        modelMean.value(new ArrayRealVector(propagatorBuilderMean.getSelectedNormalizedParameters()));
+
+        // Verify OSCULATING case
+        final ModelObserver observerOsc = new ModelObserver() {
+            /** {@inheritDoc} */
+            @Override
+            public void modelCalled(final Orbit[] newOrbits,
+                                    final Map<ObservedMeasurement<?>, EstimatedMeasurement<?>> newEvaluations) {
+                // Compute mean state from osculating propagator
+                final SpacecraftState meanState = DSSTPropagator.computeMeanState(propagatorOsc.getInitialState(), propagatorOsc.getAttitudeProvider(), forces);
+                // Verify length
+                Assert.assertEquals(1, newOrbits.length);
+                // Verify first orbit
+                Assert.assertEquals(0, context.initialOrbit.getDate().durationFrom(newOrbits[0].getDate()), 1.0e-15);
+                Assert.assertEquals(0, Vector3D.distance(meanState.getPVCoordinates().getPosition(),
+                                                         newOrbits[0].getPVCoordinates().getPosition()), 1.0e-15);
+
+            }
+        };
+
+        final DSSTBatchLSModel modelOsc = propagatorBuilderOsc.buildLSModel(new DSSTPropagatorBuilder[] {propagatorBuilderOsc}, measurements, estimatedMeasurementsParameters, observerOsc);
+        modelOsc.setIterationsCounter(new Incrementor(100));
+        modelOsc.setEvaluationsCounter(new Incrementor(100));
+
+        // Evaluate model (OSCULATING)
+        modelOsc.value(new ArrayRealVector(propagatorBuilderOsc.getSelectedNormalizedParameters()));
+
     }
 
 }

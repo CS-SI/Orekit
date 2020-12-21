@@ -78,11 +78,17 @@ public class KalmanModel implements KalmanODModel {
     /** End columns for each estimated orbit. */
     private final int[] orbitsEndColumns;
 
+    /** Map for propagation parameters columns. */
+    private final Map<String, Integer> propagationParameterColumns;
+
     /** Map for measurements parameters columns. */
     private final Map<String, Integer> measurementParameterColumns;
 
     /** Providers for covariance matrices. */
     private final List<CovarianceMatrixProvider> covarianceMatricesProviders;
+
+    /** Process noise matrix provider for measurement parameters. */
+    private final CovarianceMatrixProvider measurementProcessNoiseMatrix;
 
     /** Indirection arrays to extract the noise components for estimated parameters. */
     private final int[][] covarianceIndirection;
@@ -120,14 +126,29 @@ public class KalmanModel implements KalmanODModel {
     /** Corrected measurement. */
     private EstimatedMeasurement<?> correctedMeasurement;
 
-    /** Kalman process model constructor (package private).
+    /** Kalman process model constructor.
+     * @param propagatorBuilders propagators builders used to evaluate the orbits.
+     * @param covarianceMatricesProviders providers for covariance matrices (orbital and propagation parameters)
+     * @param estimatedMeasurementParameters measurement parameters to estimate
+     * @deprecated since 10.3, replaced by {@link #KalmanModel(List, List, ParameterDriversList, CovarianceMatrixProvider)}
+     */
+    @Deprecated
+    public KalmanModel(final List<IntegratedPropagatorBuilder> propagatorBuilders,
+                       final List<CovarianceMatrixProvider> covarianceMatricesProviders,
+                       final ParameterDriversList estimatedMeasurementParameters) {
+        this(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementParameters, null);
+    }
+
+    /** Kalman process model constructor.
      * @param propagatorBuilders propagators builders used to evaluate the orbits.
      * @param covarianceMatricesProviders providers for covariance matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
+     * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
      */
     public KalmanModel(final List<IntegratedPropagatorBuilder> propagatorBuilders,
-          final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-          final ParameterDriversList estimatedMeasurementParameters) {
+                       final List<CovarianceMatrixProvider> covarianceMatricesProviders,
+                       final ParameterDriversList estimatedMeasurementParameters,
+                       final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
 
         this.builders                        = propagatorBuilders;
         this.estimatedMeasurementsParameters = estimatedMeasurementParameters;
@@ -185,7 +206,7 @@ public class KalmanModel implements KalmanODModel {
         estimatedPropagationParametersNames.sort(Comparator.naturalOrder());
 
         // Populate the map of propagation drivers' columns and update the total number of columns
-        final Map<String, Integer> propagationParameterColumns = new HashMap<>(estimatedPropagationParametersNames.size());
+        propagationParameterColumns = new HashMap<>(estimatedPropagationParametersNames.size());
         for (final String driverName : estimatedPropagationParametersNames) {
             propagationParameterColumns.put(driverName, columns);
             ++columns;
@@ -201,8 +222,9 @@ public class KalmanModel implements KalmanODModel {
         }
 
         // Store providers for process noise matrices
-        this.covarianceMatricesProviders = covarianceMatricesProviders;
-        this.covarianceIndirection       = new int[covarianceMatricesProviders.size()][columns];
+        this.covarianceMatricesProviders   = covarianceMatricesProviders;
+        this.measurementProcessNoiseMatrix = measurementProcessNoiseMatrix;
+        this.covarianceIndirection         = new int[covarianceMatricesProviders.size()][columns];
         for (int k = 0; k < covarianceIndirection.length; ++k) {
             final ParameterDriversList orbitDrivers      = builders.get(k).getOrbitalParametersDrivers();
             final ParameterDriversList parametersDrivers = builders.get(k).getPropagationParametersDrivers();
@@ -265,12 +287,30 @@ public class KalmanModel implements KalmanODModel {
         // Set up initial covariance
         final RealMatrix physicalProcessNoise = MatrixUtils.createRealMatrix(columns, columns);
         for (int k = 0; k < covarianceMatricesProviders.size(); ++k) {
-            final RealMatrix noiseK = covarianceMatricesProviders.get(k).
+
+            // Number of estimated measurement parameters
+            final int nbMeas = estimatedMeasurementParameters.getNbParams();
+
+            // Number of estimated dynamic parameters (orbital + propagation)
+            final int nbDyn  = orbitsEndColumns[k] - orbitsStartColumns[k] +
+                               estimatedPropagationParameters[k].getNbParams();
+
+            // Covariance matrix
+            final RealMatrix noiseK = MatrixUtils.createRealMatrix(nbDyn + nbMeas, nbDyn + nbMeas);
+            final RealMatrix noiseP = covarianceMatricesProviders.get(k).
                                       getInitialCovarianceMatrix(correctedSpacecraftStates[k]);
+            noiseK.setSubMatrix(noiseP.getData(), 0, 0);
+            if (measurementProcessNoiseMatrix != null) {
+                final RealMatrix noiseM = measurementProcessNoiseMatrix.
+                                          getInitialCovarianceMatrix(correctedSpacecraftStates[k]);
+                noiseK.setSubMatrix(noiseM.getData(), nbDyn, nbDyn);
+            }
+
             checkDimension(noiseK.getRowDimension(),
                            builders.get(k).getOrbitalParametersDrivers(),
                            builders.get(k).getPropagationParametersDrivers(),
                            estimatedMeasurementsParameters);
+
             final int[] indK = covarianceIndirection[k];
             for (int i = 0; i < indK.length; ++i) {
                 if (indK[i] >= 0) {
@@ -730,8 +770,8 @@ public class KalmanModel implements KalmanODModel {
                 final RealMatrix dMdPp = dMdY.multiply(dYdPp);
                 for (int i = 0; i < dMdPp.getRowDimension(); ++i) {
                     for (int j = 0; j < nbParams; ++j) {
-                        final ParameterDriver delegating = allEstimatedPropagationParameters.getDrivers().get(j);
-                        measurementMatrix.setEntry(i, orbitsEndColumns[p] + j,
+                        final ParameterDriver delegating = estimatedPropagationParameters[p].getDrivers().get(j);
+                        measurementMatrix.setEntry(i, propagationParameterColumns.get(delegating.getName()),
                                                    dMdPp.getEntry(i, j) / sigma[i] * delegating.getScale());
                     }
                 }
@@ -919,13 +959,32 @@ public class KalmanModel implements KalmanODModel {
         final RealMatrix physicalProcessNoise = MatrixUtils.createRealMatrix(previousState.getDimension(),
                                                                              previousState.getDimension());
         for (int k = 0; k < covarianceMatricesProviders.size(); ++k) {
-            final RealMatrix noiseK = covarianceMatricesProviders.get(k).
+
+            // Number of estimated measurement parameters
+            final int nbMeas = estimatedMeasurementsParameters.getNbParams();
+
+            // Number of estimated dynamic parameters (orbital + propagation)
+            final int nbDyn  = orbitsEndColumns[k] - orbitsStartColumns[k] +
+                               estimatedPropagationParameters[k].getNbParams();
+
+            // Covariance matrix
+            final RealMatrix noiseK = MatrixUtils.createRealMatrix(nbDyn + nbMeas, nbDyn + nbMeas);
+            final RealMatrix noiseP = covarianceMatricesProviders.get(k).
                                       getProcessNoiseMatrix(correctedSpacecraftStates[k],
                                                             predictedSpacecraftStates[k]);
+            noiseK.setSubMatrix(noiseP.getData(), 0, 0);
+            if (measurementProcessNoiseMatrix != null) {
+                final RealMatrix noiseM = measurementProcessNoiseMatrix.
+                                          getProcessNoiseMatrix(correctedSpacecraftStates[k],
+                                                                predictedSpacecraftStates[k]);
+                noiseK.setSubMatrix(noiseM.getData(), nbDyn, nbDyn);
+            }
+
             checkDimension(noiseK.getRowDimension(),
                            builders.get(k).getOrbitalParametersDrivers(),
                            builders.get(k).getPropagationParametersDrivers(),
                            estimatedMeasurementsParameters);
+
             final int[] indK = covarianceIndirection[k];
             for (int i = 0; i < indK.length; ++i) {
                 if (indK[i] >= 0) {

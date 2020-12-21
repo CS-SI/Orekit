@@ -28,6 +28,7 @@ import org.hipparchus.linear.RealVector;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
+import org.orekit.estimation.measurements.Position;
 import org.orekit.propagation.conversion.IntegratedPropagatorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
@@ -93,11 +94,31 @@ public class KalmanEstimator {
      * @param propagatorBuilders propagators builders used to evaluate the orbit.
      * @param processNoiseMatricesProviders providers for process noise matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
+     * @deprecated since 10.3, replaced by
+     * {@link #KalmanEstimator(MatrixDecomposer, List, List, ParameterDriversList, CovarianceMatrixProvider)}
      */
+    @Deprecated
     KalmanEstimator(final MatrixDecomposer decomposer,
                     final List<IntegratedPropagatorBuilder> propagatorBuilders,
                     final List<CovarianceMatrixProvider> processNoiseMatricesProviders,
                     final ParameterDriversList estimatedMeasurementParameters) {
+        this(decomposer, propagatorBuilders, processNoiseMatricesProviders,
+             estimatedMeasurementParameters, null);
+    }
+
+    /** Kalman filter estimator constructor (package private).
+     * @param decomposer decomposer to use for the correction phase
+     * @param propagatorBuilders propagators builders used to evaluate the orbit.
+     * @param processNoiseMatricesProviders providers for process noise matrices
+     * @param estimatedMeasurementParameters measurement parameters to estimate
+     * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
+     * @since 10.3
+     */
+    KalmanEstimator(final MatrixDecomposer decomposer,
+                    final List<IntegratedPropagatorBuilder> propagatorBuilders,
+                    final List<CovarianceMatrixProvider> processNoiseMatricesProviders,
+                    final ParameterDriversList estimatedMeasurementParameters,
+                    final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
 
         this.propagatorBuilders = propagatorBuilders;
         this.referenceDate      = propagatorBuilders.get(0).getInitialOrbitDate();
@@ -106,9 +127,8 @@ public class KalmanEstimator {
         // Build the process model and measurement model
         this.processModel = propagatorBuilders.get(0).buildKalmanModel(propagatorBuilders,
                                                                    processNoiseMatricesProviders,
-                                                                   estimatedMeasurementParameters);
-        //this.processModel = new KalmanModel(propagatorBuilders, processNoiseMatricesProviders,
-                                      //estimatedMeasurementParameters);
+                                                                   estimatedMeasurementParameters,
+                                                                   measurementProcessNoiseMatrix);
 
         this.filter = new ExtendedKalmanFilter<>(decomposer, processModel, processModel.getEstimate());
 
@@ -259,6 +279,10 @@ public class KalmanEstimator {
             // For PV measurements we do have a covariance matrix and thus a correlation coefficients matrix
             final PV pv = (PV) observedMeasurement;
             covariance = MatrixUtils.createRealMatrix(pv.getCorrelationCoefficientsMatrix());
+        } else if (observedMeasurement instanceof Position) {
+            // For Position measurements we do have a covariance matrix and thus a correlation coefficients matrix
+            final Position position = (Position) observedMeasurement;
+            covariance = MatrixUtils.createRealMatrix(position.getCorrelationCoefficientsMatrix());
         } else {
             // For other measurements we do not have a covariance matrix.
             // Thus the correlation coefficients matrix is an identity matrix.

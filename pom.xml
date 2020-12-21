@@ -5,7 +5,7 @@
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
-  <version>10.2</version>
+  <version>10.3</version>
   <name>ORbit Extrapolation KIT</name>
   <url>http://www.orekit.org/</url>
 
@@ -20,12 +20,12 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <orekit.spotbugs-maven-plugin.version>4.0.4</orekit.spotbugs-maven-plugin.version>
-    <orekit.jacoco-maven-plugin.version>0.8.5</orekit.jacoco-maven-plugin.version>
-    <orekit.maven-bundle-plugin.version>4.2.1</orekit.maven-bundle-plugin.version>
+    <orekit.spotbugs-maven-plugin.version>4.1.4</orekit.spotbugs-maven-plugin.version>
+    <orekit.jacoco-maven-plugin.version>0.8.6</orekit.jacoco-maven-plugin.version>
+    <orekit.maven-bundle-plugin.version>5.1.1</orekit.maven-bundle-plugin.version>
     <orekit.maven-changes-plugin.version>2.12.1</orekit.maven-changes-plugin.version>
     <orekit.maven-checkstyle-plugin.version>3.1.1</orekit.maven-checkstyle-plugin.version>
-    <orekit.checkstyle.version>8.33</orekit.checkstyle.version>
+    <orekit.checkstyle.version>8.38</orekit.checkstyle.version>
     <orekit.maven-clean-plugin.version>3.1.0</orekit.maven-clean-plugin.version>
     <orekit.maven-compiler-plugin.version>3.8.1</orekit.maven-compiler-plugin.version>
     <orekit.maven-javadoc-plugin.version>3.2.0</orekit.maven-javadoc-plugin.version>
@@ -33,8 +33,8 @@
     <orekit.maven-jxr-plugin.version>3.0.0</orekit.maven-jxr-plugin.version>
     <orekit.plantuml-maven-plugin.version>1.2</orekit.plantuml-maven-plugin.version>
     <orekit.plantuml.version>1.2020.14</orekit.plantuml.version>
-    <orekit.maven-project-info-reports-plugin.version>3.1.0</orekit.maven-project-info-reports-plugin.version>
-    <orekit.maven-resources-plugin.version>3.1.0</orekit.maven-resources-plugin.version>
+    <orekit.maven-project-info-reports-plugin.version>3.1.1</orekit.maven-project-info-reports-plugin.version>
+    <orekit.maven-resources-plugin.version>3.2.0</orekit.maven-resources-plugin.version>
     <orekit.maven-site-plugin.version>3.9.1</orekit.maven-site-plugin.version>
     <orekit.maven-wagon-ssh-plugin.version>3.4.1</orekit.maven-wagon-ssh-plugin.version>
     <orekit.maven-source-plugin.version>3.2.1</orekit.maven-source-plugin.version>
@@ -42,7 +42,7 @@
          https://issues.apache.org/jira/browse/SUREFIRE-1628 -->
     <orekit.maven-surefire-plugin.version>2.22.2</orekit.maven-surefire-plugin.version>
     <orekit.maven-surefire-report-plugin.version>3.0.0-M5</orekit.maven-surefire-report-plugin.version>
-    <orekit.mockito-core.version>3.3.3</orekit.mockito-core.version>
+    <orekit.mockito-core.version>3.6.28</orekit.mockito-core.version>
     <orekit.jgit.buildnumber.version>1.2.10</orekit.jgit.buildnumber.version>
     <orekit.build-helper-maven-plugin.version>3.2.0</orekit.build-helper-maven-plugin.version>
     <orekit.nexus-staging-maven-plugin.version>1.6.8</orekit.nexus-staging-maven-plugin.version>
@@ -50,7 +50,7 @@
     <orekit.maven-install-plugin.version>3.0.0-M1</orekit.maven-install-plugin.version>
     <orekit.mathjax.config>&lt;script type=&quot;text/x-mathjax-config&quot;&gt;MathJax.Hub.Config({ TeX: { extensions: [&quot;autoload.js&quot;]}});&lt;/script&gt;</orekit.mathjax.config>
     <orekit.mathjax.enable>&lt;script type=&quot;text/javascript&quot; src=&quot;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML&quot;&gt;&lt;/script&gt;</orekit.mathjax.enable>
-    <orekit.hipparchus.version>1.7</orekit.hipparchus.version>
+    <orekit.hipparchus.version>1.8</orekit.hipparchus.version>
     <orekit.junit.version>4.12</orekit.junit.version>
     <orekit.compiler.source>1.8</orekit.compiler.source>
     <orekit.compiler.target>1.8</orekit.compiler.target>
@@ -228,13 +228,25 @@
       <name>&#201;douard Delente</name>
     </contributor>
     <contributor>
+      <name>Rapha&#235;l Ferm&#233;</name>
+    </contributor>
+    <contributor>
       <name>Christine Fernandez-Martin</name>
+    </contributor>
+    <contributor>
+      <name>Mikael Fillastre</name>
+    </contributor>
+    <contributor>
+      <name>Andrea Fiorentino</name>
     </contributor>
     <contributor>
       <name>Romaric Her</name>
     </contributor>
     <contributor>
       <name>James Housden</name>
+    </contributor>
+    <contributor>
+      <name>Shiva Iyer</name>
     </contributor>
     <contributor>
       <name>Fran&#231;ois-Xavier Laffont</name>
@@ -247,6 +259,9 @@
     </contributor>
     <contributor>
       <name>Lars N&#230;sbye Christensen</name>
+    </contributor>
+    <contributor>
+      <name>Thomas Paulet</name>
     </contributor>
     <contributor>
       <name>Steven Ports</name>
@@ -264,25 +279,16 @@
       <name>Beatriz Salazar Garc&#237;a</name>
     </contributor>
     <contributor>
-      <name>Ioanna Stypsanelli</name>
-    </contributor>
-    <contributor>
-      <name>Michael Turner</name>
-    </contributor>
-    <contributor>
       <name>Gabriele Serafini</name>
-    </contributor>
-    <contributor>
-      <name>Shiva Iyer</name>
     </contributor>
     <contributor>
       <name>David Soulard</name>
     </contributor>
     <contributor>
-      <name>Mikael Fillastre</name>
+      <name>Ioanna Stypsanelli</name>
     </contributor>
     <contributor>
-      <name>Andrea Fiorentino</name>
+      <name>Michael Turner</name>
     </contributor>
   </contributors>
 

@@ -17,6 +17,7 @@
 package org.orekit.propagation.analytical.tle;
 
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
@@ -94,8 +95,9 @@ public class SGP4 extends TLEPropagator {
         // Also, the c3 term, the delta omega term, and the delta m term are dropped.
         lessThan220 = perige < 220;
         if (!lessThan220) {
+            final SinCos scM0 = FastMath.sinCos(tle.getMeanAnomaly());
             final double c1sq = c1 * c1;
-            delM0 = 1.0 + eta * FastMath.cos(tle.getMeanAnomaly());
+            delM0 = 1.0 + eta * scM0.cos();
             delM0 *= delM0 * delM0;
             d2 = 4 * a0dp * tsi * c1sq;
             final double temp = d2 * tsi * c1 / 3.0;
@@ -104,7 +106,7 @@ public class SGP4 extends TLEPropagator {
             t3cof = d2 + 2 * c1sq;
             t4cof = 0.25 * (3 * d3 + c1 * (12 * d2 + 10 * c1sq));
             t5cof = 0.2 * (3 * d4 + 12 * c1 * d3 + 6 * d2 * d2 + 15 * c1sq * (2 * d2 + c1sq));
-            sinM0 = FastMath.sin(tle.getMeanAnomaly());
+            sinM0 = scM0.sin();
             if (tle.getE() < 1e-4) {
                 omgcof = 0.;
                 xmcof = 0.;

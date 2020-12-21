@@ -88,6 +88,12 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
                                 final AbsoluteDate date, final double range,
                                 final double sigma, final double baseWeight) {
         super(date, range, sigma, baseWeight, Arrays.asList(local, remote));
+        // for one way and two ways measurements, the local satellite clock offsets affects the measurement
+        addParameterDriver(local.getClockOffsetDriver());
+        if (!twoWay) {
+            // for one way measurements, the remote satellite clock offsets also affects the measurement
+            addParameterDriver(remote.getClockOffsetDriver());
+        }
         this.twoway = twoWay;
     }
 
@@ -193,6 +199,14 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
         final double[] derivatives = range.getGradient();
         estimated.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 0,  6));
         estimated.setStateDerivatives(1, Arrays.copyOfRange(derivatives, 6, 12));
+
+        // Set partial derivatives with respect to parameters
+        for (final ParameterDriver driver : getParametersDrivers()) {
+            final Integer index = indices.get(driver.getName());
+            if (index != null) {
+                estimated.setParameterDerivatives(driver, derivatives[index]);
+            }
+        }
 
         return estimated;
 

@@ -44,7 +44,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  *
  * <p> Each instance corresponds to a single AEM file.
  *
- * <h3> Metadata </h3>
+ * <h2> Metadata </h2>
  *
  * <p> The AEM metadata used by this writer is described in the following table. Many
  * metadata items are optional or have default values so they do not need to be specified.
@@ -56,7 +56,8 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * <p> The AEM metadata for the whole AEM file is set in the {@link
  * #StreamingAemWriter(Appendable, TimeScale, Map) constructor}.
  *
- * <table summary="AEM metada">
+ * <table>
+ * <caption>AEM metadata</caption>
  *     <thead>
  *         <tr>
  *             <th>Keyword
@@ -219,10 +220,19 @@ public class StreamingAemWriter {
     /** Default value for {@link Keyword#ORIGINATOR}. */
     public static final String DEFAULT_ORIGINATOR = "OREKIT";
 
+    /**
+     * Default format used for attitude ephemeris data output: 5 digits
+     * after the decimal point and leading space for positive values.
+     */
+    public static final String DEFAULT_ATTITUDE_FORMAT = "% .5f";
+
     /** New line separator for output file. See 5.4.5. */
     private static final String NEW_LINE = "\n";
 
-    /** Standardized locale to use, to ensure files can be exchanged without internationalization issues. */
+    /**
+     * Standardized locale to use, to ensure files can be exchanged without
+     * internationalization issues.
+     */
     private static final Locale STANDARDIZED_LOCALE = Locale.US;
 
     /** String format used for all key/value pair lines. **/
@@ -237,8 +247,12 @@ public class StreamingAemWriter {
     /** Time scale for all dates except {@link Keyword#CREATION_DATE}. */
     private final TimeScale timeScale;
 
+    /** Format for attitude ephemeris data output. */
+    private final String attitudeFormat;
+
     /**
      * Create an AEM writer that streams data to the given output stream.
+     * {@link #DEFAULT_ATTITUDE_FORMAT Default formatting} will be used for attitude ephemeris data.
      *
      * @param writer    The output stream for the AEM file. Most methods will append data
      *                  to this {@code writer}.
@@ -249,6 +263,26 @@ public class StreamingAemWriter {
     public StreamingAemWriter(final Appendable writer,
                               final TimeScale timeScale,
                               final Map<Keyword, String> metadata) {
+        this(writer, timeScale, metadata, DEFAULT_ATTITUDE_FORMAT);
+    }
+
+    /**
+     * Create an AEM writer than streams data to the given output stream as
+     * {@link #StreamingAemWriter(Appendable, TimeScale, Map)} with
+     * {@link java.util.Formatter format parameters} for attitude ephemeris data.
+     *
+     * @param writer    The output stream for the AEM file. Most methods will append data
+     *                  to this {@code writer}.
+     * @param timeScale for all times in the AEM except {@link Keyword#CREATION_DATE}. See
+     *                  Section 4.2.5.4.2 and Annex A.
+     * @param metadata  for the satellite.
+     * @param attitudeFormat format parameters for attitude ephemeris data output.
+     * @since 10.3
+     */
+    public StreamingAemWriter(final Appendable writer,
+                              final TimeScale timeScale,
+                              final Map<Keyword, String> metadata,
+                              final String attitudeFormat) {
         this.writer    = writer;
         this.timeScale = timeScale;
         this.metadata  = new LinkedHashMap<>(metadata);
@@ -261,6 +295,7 @@ public class StreamingAemWriter {
                 ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT));
         this.metadata.putIfAbsent(Keyword.ORIGINATOR, DEFAULT_ORIGINATOR);
         this.metadata.putIfAbsent(Keyword.TIME_SYSTEM, timeScale.getName());
+        this.attitudeFormat = attitudeFormat;
     }
 
     /**
@@ -420,7 +455,7 @@ public class StreamingAemWriter {
             final double[]        data = type.getAttitudeData(attitude, isFirst, rotationOrder);
             final int             size = data.length;
             for (int index = 0; index < size; index++) {
-                writer.append(Double.toString(data[index]));
+                writer.append(String.format(STANDARDIZED_LOCALE, attitudeFormat, data[index]));
                 final String space = (index == size - 1) ? "" : " ";
                 writer.append(space);
             }

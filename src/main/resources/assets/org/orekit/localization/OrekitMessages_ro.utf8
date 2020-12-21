@@ -158,10 +158,10 @@ MISSING_SECOND_TLE_LINE = a doua linie TLE este așteptată după linia {0}:\n{0
 TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = liniile TLE nu se referă la același obiect:\n{0}\n{1}
 
 # invalid TLE parameter for object {0}: {1} = {2}
-TLE_INVALID_PARAMETER = parametru TLE invalid pentru obiectul {0}: {1} = {2}
+TLE_INVALID_PARAMETER = parametru TLE nevalid pentru obiectul {0}: {1} = {2}
 
 # invalid TLE parameter {0}: {1} not in range [{2}, {3}]
-TLE_INVALID_PARAMETER_RANGE = <MISSING TRANSLATION>
+TLE_INVALID_PARAMETER_RANGE = parametrul TLE {0} este nevalid: {1} nu este în intervalul [{2}, {3}]
 
 # wrong checksum of TLE line {0}, expected {1} but got {2} ({3})
 TLE_CHECKSUM_ERROR = sumă de control eronată pentru linia TLE {0}, {2} în loc de valoarea așteptată {1} ({3})
@@ -200,10 +200,10 @@ NON_EXISTENT_HMS_TIME = oră inexistentă {0}:{1}:{2}
 NON_EXISTENT_TIME = oră inexistentă {0}
 
 # out of range seconds number: {0}
-OUT_OF_RANGE_SECONDS_NUMBER = secundă în afara domeniului: {0}
+OUT_OF_RANGE_SECONDS_NUMBER = numărul de secunde în afara domeniului: {0}
 
 # out of range seconds number: {0} is not in [{1}, {2})
-OUT_OF_RANGE_SECONDS_NUMBER_DETAIL = <MISSING TRANSLATION>
+OUT_OF_RANGE_SECONDS_NUMBER_DETAIL = numărul de secunde în afara domeniului: {0} nu este în [{1}, {2})
 
 # angle type not supported, supported angles: {0}, {1} and {2}
 ANGLE_TYPE_NOT_SUPPORTED = tip de unghi nesuportat, unghiuri suportate: {0}, {1} și {2}
@@ -299,10 +299,10 @@ ORBIT_ANOMALY_OUT_OF_HYPERBOLIC_RANGE = anomalia reală {0} în afara domeniului
 HYPERBOLIC_ORBIT_NOT_HANDLED_AS = orbitele hiperbolice nu pot fi tratate ca instanțe de {0}
 
 # invalid preamble field in CCSDS date: {0}
-CCSDS_DATE_INVALID_PREAMBLE_FIELD = preambul invalid într-o dată CCSDS: {0}
+CCSDS_DATE_INVALID_PREAMBLE_FIELD = preambul nevalid într-o dată CCSDS: {0}
 
 # invalid time field length in CCSDS date: {0}, expected {1}
-CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = lungime invalidă pentru câmpul timp dintr-o dată CCSDS: {0} în loc de valoarea așteptată {1}
+CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = lungime nevalidă pentru câmpul timp dintr-o dată CCSDS: {0} în loc de valoarea așteptată {1}
 
 # missing agency epoch in CCSDS date
 CCSDS_DATE_MISSING_AGENCY_EPOCH = epocă de referință specifică agenției lipsă din data CCSDS
@@ -395,10 +395,10 @@ NON_CHRONOLOGICALLY_SORTED_ENTRIES = înregistrările generate nu sunt în ordin
 NO_DATA_GENERATED = nu există informații generate în jurul datei: {0}
 
 # unable to generate new data before {0}, data requested for {1}
-UNABLE_TO_GENERATE_NEW_DATA_BEFORE = <MISSING TRANSLATION>
+UNABLE_TO_GENERATE_NEW_DATA_BEFORE = imposibil de generat noi date înainte de {0}, date solicitate pentru {1}
 
 # unable to generate new data after {0}, data requested for {1}
-UNABLE_TO_GENERATE_NEW_DATA_AFTER = <MISSING TRANSLATION>
+UNABLE_TO_GENERATE_NEW_DATA_AFTER = imposibil de generat noi date după {0}, date solicitate pentru {1}
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = imposibil de calculat anomalia excentrică hiperbolică pornind de la anomalia medie după {0} iterații
@@ -453,6 +453,9 @@ CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = utilizarea sistemului de timp {0} în fișie
 
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 NOT_ENOUGH_PROPAGATORS = Crearea unui propagator combinator necesită cel puțin un propagator, dar nici unul nu a fost definit.
+
+# Creating an aggregate attitude provider requires at least one constituent attitude provider, but none were provided.
+NOT_ENOUGH_ATTITUDE_PROVIDERS = Crearea unui furnizor de atitudine agregat necesită cel puțin un furnizor de atitudine, dar niciunul nu a fost definit.
 
 # argument {0} cannot be null
 NULL_ARGUMENT = argumentul {0} nu poate fi nul
@@ -539,7 +542,7 @@ NO_VIENNA_ACOEF_OR_ZENITH_DELAY_IN_FILE = fișierul {0} nu conține coeficienți
 IRREGULAR_OR_INCOMPLETE_GRID = grilă neregulată sau incompletă în fișierul {0}
 
 # invalid satellite system {0}
-INVALID_SATELLITE_SYSTEM = sistemul satelit {0} este invalid
+INVALID_SATELLITE_SYSTEM = sistemul satelit {0} este nevalid
 
 # IONEX file {0} does not contain TEC data for date {1}
 NO_TEC_DATA_IN_FILE_FOR_DATE = fișierul IONEX {0} nu conține informații TEC pentru data {1}
@@ -571,13 +574,13 @@ MODIP_GRID_NOT_LOADED = nu poate încărca grila MODIP din {0}
 NEQUICK_F2_FM3_NOT_LOADED = imposibil de încărcat coeficienții NeQuick f2 sau fm3 din {0}
 
 # Cannot compute around {0}
-CANNOT_COMPUTE_LAGRANGIAN = <MISSING TRANSLATION>
+CANNOT_COMPUTE_LAGRANGIAN = imposibil de calculat în jurul lui {0}
 
 # The trajectory does not cross XZ Plane, it will not result in a Halo Orbit
-TRAJECTORY_NOT_CROSSING_XZPLANE = <MISSING TRANSLATION>
+TRAJECTORY_NOT_CROSSING_XZPLANE = Traiectoria nu intersectează Planul XZ, nu va rezulta o Orbită Halo
 
 # The multiple shooting problem is underconstrained : {0} free variables, {1} constraints
-MULTIPLE_SHOOTING_UNDERCONSTRAINED = <MISSING TRANSLATION>
+MULTIPLE_SHOOTING_UNDERCONSTRAINED = Problema multiple shooting este subconstrânsă: {0} variabile libere, {1} constrângeri
 
 # file {0} is not a supported Hatanaka-compressed file
 NOT_A_SUPPORTED_HATANAKA_COMPRESSED_FILE = fișierul {0} nu este recunoscut ca fișier comprimat prin metoda Hatakana
@@ -595,34 +598,47 @@ NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = observațiile de la datele {0} și {1
 EXCEPTIONAL_DATA_CONTEXT = a fost detectată o utilizare a ExceptionalDataContext. Acest mecanism este utilizat în general pentru detectarea unei erori de dezvoltare
 
 # inconsistent time systems in the attitude blocks: {0} ≠ {1}
-CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = <MISSING TRANSLATION>
+CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = sisteme de timp inconsistente în blocurile de atitudine: {0} ≠ {1}
 
 # invalid attitude type {0}
-CCSDS_AEM_NULL_ATTITUDE_TYPE = <MISSING TRANSLATION>
+CCSDS_AEM_NULL_ATTITUDE_TYPE = tip de atitudine nevalid {0}
 
 # attitude type {0} in CCSDS AEM files is not implemented in Orekit
-CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED = <MISSING TRANSLATION>
+CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED = tipul de atitudine {0} din fișierele CCSDS AEM nu este implementat în Orekit
 
 # the rotation sequence of the Euler angles {0} is invalid
-CCSDS_AEM_INVALID_ROTATION_SEQUENCE = <MISSING TRANSLATION>
+CCSDS_AEM_INVALID_ROTATION_SEQUENCE = secvența de rotație a unghiurilor Euler {0} este nevalidă
 
 # observations {0}, {1} and {2} must have different dates
-NON_DIFFERENT_DATES_FOR_OBSERVATIONS = <MISSING TRANSLATION>
+NON_DIFFERENT_DATES_FOR_OBSERVATIONS = observațiile {0}, {1} și {2} trebuie să aibă date diferite
 
 # observations are not in the same plane
-NON_COPLANAR_POINTS = <MISSING TRANSLATION>
+NON_COPLANAR_POINTS = observațiile nu sunt în același plan
 
 # invalid parameter {0}: {1} not in range [{2}, {3}]
-INVALID_PARAMETER_RANGE = <MISSING TRANSLATION>
+INVALID_PARAMETER_RANGE = parametrul {0} este nevalid: {1} nu este în intervalul [{2}, {3}]
 
 # The parameter {0} should not be null in {1}
-PARAMETER_NOT_SET = <MISSING TRANSLATION>
+PARAMETER_NOT_SET = Parametrul {0} nu ar trebui să fie nul în {1}
 
 # {0} is not implemented
-FUNCTION_NOT_IMPLEMENTED = <MISSING TRANSLATION>
+FUNCTION_NOT_IMPLEMENTED = {0} nu este implementată
 
 # Impossible to execute {0} with {1} set to {2}
-INVALID_TYPE_FOR_FUNCTION = <MISSING TRANSLATION>
+INVALID_TYPE_FOR_FUNCTION = Imposibil de executat {0} cu {1} setat la {2}
 
 # No data could be parsed from file {0}
-NO_DATA_IN_FILE = <MISSING TRANSLATION>
+NO_DATA_IN_FILE = Niciun fel de date nu au putut fi extrase din fișierul {0}
+
+# Unexpected end of CPF file (after line {0})
+CPF_UNEXPECTED_END_OF_FILE = Sfârșit neașteptat al fișierului CPF (după linia {0})
+
+# Unexpected file format. Must be {0} but is {1}
+UNEXPECTED_FORMAT_FOR_ILRS_FILE = Formatul fișierului este neașteptat. Trebuie să fie {0} dar este {1}
+
+# invalid range indicator {0} in CRD file header
+INVALID_RANGE_INDICATOR_IN_CRD_FILE = Indicatorul de interval {0} este nevalid în antetul fișierului CRD
+
+# Unexpected end of CRD file (after line {0})
+CRD_UNEXPECTED_END_OF_FILE = Sfârșit neașteptat al fișierului CRD (după linia {0})
+

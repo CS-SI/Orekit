@@ -66,6 +66,12 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
     /** Gravity field. */
     private UnnormalizedSphericalHarmonicsProvider gravityField;
 
+    /** Propagation type (mean or mean + osculating). */
+    private PropagationType propagationType;
+
+    /** Initial state type (defined using mean or osculating elements). */
+    private PropagationType stateType;
+
     /** {@inheritDoc} */
     @Override
     protected void createGravityField(final KeyValueFileParser<ParameterKey> parser)
@@ -88,8 +94,7 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
                                                             final ODEIntegratorBuilder builder,
                                                             final double positionScale) {
         final EquinoctialOrbit equiOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(referenceOrbit);
-        return new DSSTPropagatorBuilder(equiOrbit, builder, positionScale,
-                                         PropagationType.MEAN, PropagationType.MEAN);
+        return new DSSTPropagatorBuilder(equiOrbit, builder, positionScale, propagationType, stateType);
     }
 
     /** {@inheritDoc} */
@@ -174,9 +179,19 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setRelativity(final DSSTPropagatorBuilder propagatorBuilder) {
+    protected ParameterDriver[] setAlbedoInfrared(final DSSTPropagatorBuilder propagatorBuilder,
+                                                  final CelestialBody sun, final double equatorialRadius,
+                                                  final double angularResolution,
+                                                  final RadiationSensitive spacecraft) {
         throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                         "Relativity not implemented in DSST");
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected ParameterDriver[] setRelativity(final DSSTPropagatorBuilder propagatorBuilder) {
+        throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
+                        "Albedo and infrared not implemented in DSST");
     }
 
     /** {@inheritDoc} */
@@ -194,9 +209,14 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
         propagatorBuilder.setAttitudeProvider(attitudeProvider);
     }
 
+    /**
+     * Lageos 2 orbit determination test using laser data.
+     *
+     * This test uses both mean and osculating elements to perform the orbit determination.
+     * It is possible to consider only mean elements by changing propagationType and
+     * stateType keys.
+     */
     @Test
-    // Orbit determination using only mean elements for Lageos2 based on SLR (range) measurements
-    // For better accuracy, adding short period terms is necessary
     public void testLageos2()
         throws URISyntaxException, IllegalArgumentException, IOException,
                OrekitException, ParseException {
@@ -209,17 +229,21 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
+        // configure propagation and initial state types
+        propagationType = PropagationType.OSCULATING;
+        stateType = PropagationType.OSCULATING;
+
         //orbit determination run.
         ResultBatchLeastSquares odLageos2 = runBLS(input, false);
 
         //test
         //definition of the accuracy for the test
-        final double distanceAccuracy = 579;
-        final double velocityAccuracy = 1.4;
+        final double distanceAccuracy = 76.46;
+        final double velocityAccuracy = 1.58e-1;
 
         //test on the convergence
-        final int numberOfIte  = 9;
-        final int numberOfEval = 9;
+        final int numberOfIte  = 6;
+        final int numberOfEval = 6;
 
         Assert.assertEquals(numberOfIte, odLageos2.getNumberOfIteration());
         Assert.assertEquals(numberOfEval, odLageos2.getNumberOfEvaluation());
@@ -228,28 +252,43 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
         final Vector3D estimatedPos = odLageos2.getEstimatedPV().getPosition();
         final Vector3D estimatedVel = odLageos2.getEstimatedPV().getVelocity();
 
-        //final Vector3D refPos = new Vector3D(-5532124.989973327, 10025700.01763335, -3578940.840115321);
-        //final Vector3D refVel = new Vector3D(-3871.2736402553, -607.8775965705, 4280.9744110925);
-        final Vector3D refPos = new Vector3D(-5532131.956902, 10025696.592156, -3578940.040009);
-        final Vector3D refVel = new Vector3D(-3871.275109, -607.880985, 4280.972530);
+        // Ref position from "lageos2_cpf_160212_5441.jax"
+        final Vector3D refPos = new Vector3D(-2551060.861, 9748629.197, -6528045.767);
+        final Vector3D refVel = new Vector3D(-4595.833, 1029.893, 3382.441);
         Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
         Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
 
         //test on statistic for the range residuals
-        final long nbRange = 258;
-        //final double[] RefStatRange = { -2.795816, 6.171529, 0.310848, 1.657809 };
-        final double[] RefStatRange = { -2.431135, 2.218644, 0.038483, 0.982017 };
+        final long nbRange = 95;
+        final double[] RefStatRange = { -29.016, 59.104, 0.0, 14.968 };
         Assert.assertEquals(nbRange, odLageos2.getRangeStat().getN());
-        Assert.assertEquals(RefStatRange[0], odLageos2.getRangeStat().getMin(),               distanceAccuracy);
-        Assert.assertEquals(RefStatRange[1], odLageos2.getRangeStat().getMax(),               distanceAccuracy);
-        Assert.assertEquals(RefStatRange[2], odLageos2.getRangeStat().getMean(),              distanceAccuracy);
-        Assert.assertEquals(RefStatRange[3], odLageos2.getRangeStat().getStandardDeviation(), distanceAccuracy);
+        Assert.assertEquals(RefStatRange[0], odLageos2.getRangeStat().getMin(),               1.0e-3);
+        Assert.assertEquals(RefStatRange[1], odLageos2.getRangeStat().getMax(),               1.0e-3);
+        Assert.assertEquals(RefStatRange[2], odLageos2.getRangeStat().getMean(),              1.0e-3);
+        Assert.assertEquals(RefStatRange[3], odLageos2.getRangeStat().getStandardDeviation(), 1.0e-3);
 
     }
 
+    /**
+     * GNSS orbit determination test.
+     *
+     * This test uses both mean and osculating elements to perform the orbit determination.
+     * It is possible to consider only mean elements by changing propagationType and
+     * stateType keys.
+     *
+     * Using only mean elements, results are:
+     *    ΔP = 59 meters
+     *    ΔV = 0.23 meters per second
+     *
+     *    nb iterations  = 2
+     *    nb evaluations = 3
+     *
+     *    min residual  = -83.945 meters
+     *    max residual  = 59.365 meters
+     *    mean residual = 0.23 meters
+     *    RMS = 20.857 meters 
+     */
     @Test
-    // Orbit determination using only mean elements for GNSS satellite based on range measurements
-    // For better accuracy, adding short period terms is necessary
     public void testGNSS()
         throws URISyntaxException, IllegalArgumentException, IOException,
                OrekitException, ParseException {
@@ -262,17 +301,21 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
+        // configure propagation and initial state types
+        propagationType = PropagationType.OSCULATING;
+        stateType = PropagationType.OSCULATING;
+
         //orbit determination run.
         ResultBatchLeastSquares odGNSS = runBLS(input, false);
 
         //test
         //definition of the accuracy for the test
-        final double distanceAccuracy = 59;
-        final double velocityAccuracy = 0.23;
+        final double distanceAccuracy = 6.95;
+        final double velocityAccuracy = 2.46e-3;
 
         //test on the convergence
-        final int numberOfIte  = 2;
-        final int numberOfEval = 3;
+        final int numberOfIte  = 3;
+        final int numberOfEval = 4;
 
         Assert.assertEquals(numberOfIte, odGNSS.getNumberOfIteration());
         Assert.assertEquals(numberOfEval, odGNSS.getNumberOfEvaluation());
@@ -287,11 +330,11 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
 
         //test on statistic for the range residuals
         final long nbRange = 4009;
-        final double[] RefStatRange = { -83.945, 59.365, 0.0, 20.857 };
+        final double[] RefStatRange = { -3.497, 2.594, 0.0, 0.837 };
         Assert.assertEquals(nbRange, odGNSS.getRangeStat().getN());
         Assert.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               1.0e-3);
         Assert.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               1.0e-3);
-        Assert.assertEquals(RefStatRange[2], odGNSS.getRangeStat().getMean(),              0.23);
+        Assert.assertEquals(RefStatRange[2], odGNSS.getRangeStat().getMean(),              1.0e-3);
         Assert.assertEquals(RefStatRange[3], odGNSS.getRangeStat().getStandardDeviation(), 1.0e-3);
 
     }

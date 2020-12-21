@@ -28,6 +28,7 @@ import org.hipparchus.analysis.solvers.BaseUnivariateSolver;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolverUtils;
 import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
@@ -162,6 +163,60 @@ public class SecularAndHarmonicTest {
                                      1e-14);
         }
 
+    }
+
+    @Test
+    public void testLinear() {
+        SecularAndHarmonic sh = new SecularAndHarmonic(1);
+        sh.setConvergenceRMS(1.0e-6);
+        sh.setMaxIter(5);
+        sh.resetFitting(AbsoluteDate.J2000_EPOCH, 0.0, 0.0);
+        sh.addPoint(sh.getReferenceDate().shiftedBy(1.0), 1.0);
+        sh.addPoint(sh.getReferenceDate().shiftedBy(2.0), 2.0);
+        sh.addPoint(sh.getReferenceDate().shiftedBy(3.0), 3.0);
+        sh.fit();
+        Assert.assertEquals(0.0, sh.getFittedParameters()[0], 1.0e-15);
+        Assert.assertEquals(1.0, sh.getFittedParameters()[1], 1.0e-15);
+    }
+
+    @Test
+    public void testImpossibleConvergence() {
+        SecularAndHarmonic sh = new SecularAndHarmonic(1);
+        sh.setConvergenceRMS(1.0e-6);
+        sh.setMaxIter(5);
+        sh.resetFitting(AbsoluteDate.J2000_EPOCH, 0.0, 0.0);
+        sh.addPoint(sh.getReferenceDate().shiftedBy(1.0), 1.0);
+        sh.addPoint(sh.getReferenceDate().shiftedBy(2.0), 2.0);
+        sh.addPoint(sh.getReferenceDate().shiftedBy(3.0), Double.NaN);
+        try {
+            sh.fit();
+            Assert.fail("an exception should have been thrown");
+        } catch (MathIllegalStateException mise) {
+            Assert.assertEquals(LocalizedCoreFormats.MAX_COUNT_EXCEEDED, mise.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testConvergence() {
+        try {
+            doTestConvergence(0.2, 3);
+            Assert.fail("an exception should have been thrown");
+        } catch (MathIllegalStateException mise) {
+            Assert.assertEquals(LocalizedCoreFormats.MAX_COUNT_EXCEEDED, mise.getSpecifier());
+        }
+        doTestConvergence(0.3, 3);
+    }
+
+    private void doTestConvergence(final double rms, final int maxIter) {
+        SecularAndHarmonic sh = new SecularAndHarmonic(0, 1.0, 2.0, 3.0);
+        sh.setConvergenceRMS(rms);
+        sh.setMaxIter(maxIter);
+        sh.resetFitting(AbsoluteDate.J2000_EPOCH, new double[7]);
+        for (double t = -1.0; t <= 1.0; t += 0.125) {
+            // step function
+            sh.addPoint(sh.getReferenceDate().shiftedBy(t), FastMath.copySign(1.0, t));
+        }
+        sh.fit();
     }
 
     @Test

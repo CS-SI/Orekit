@@ -86,6 +86,16 @@ import org.orekit.estimation.sequential.KalmanEstimation;
 import org.orekit.estimation.sequential.KalmanEstimator;
 import org.orekit.estimation.sequential.KalmanEstimatorBuilder;
 import org.orekit.estimation.sequential.KalmanObserver;
+import org.orekit.files.ilrs.CRDFile;
+import org.orekit.files.ilrs.CRDFile.CRDDataBlock;
+import org.orekit.files.ilrs.CRDFile.Meteo;
+import org.orekit.files.ilrs.CRDFile.MeteorologicalMeasurement;
+import org.orekit.files.ilrs.CRDFile.RangeMeasurement;
+import org.orekit.files.ilrs.CRDHeader;
+import org.orekit.files.ilrs.CRDHeader.RangeType;
+import org.orekit.files.ilrs.CRDParser;
+import org.orekit.files.sinex.SINEXLoader;
+import org.orekit.files.sinex.Station;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.drag.IsotropicDrag;
 import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
@@ -119,6 +129,7 @@ import org.orekit.models.earth.troposphere.DiscreteTroposphericModel;
 import org.orekit.models.earth.troposphere.EstimatedTroposphericModel;
 import org.orekit.models.earth.troposphere.GlobalMappingFunctionModel;
 import org.orekit.models.earth.troposphere.MappingFunction;
+import org.orekit.models.earth.troposphere.MendesPavlisModel;
 import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
 import org.orekit.models.earth.troposphere.SaastamoinenModel;
 import org.orekit.models.earth.troposphere.TimeSpanEstimatedTroposphericModel;
@@ -254,6 +265,18 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
     protected abstract ParameterDriver[] setSolarRadiationPressure(T propagatorBuilder, CelestialBody sun,
                                                                    double equatorialRadius, RadiationSensitive spacecraft);
 
+    /** Set Earth's albedo and infrared force model.
+     * @param propagatorBuilder propagator builder
+     * @param sun Sun model
+     * @param equatorialRadius central body equatorial radius (for shadow computation)
+     * @param angularResolution angular resolution in radians
+     * @param spacecraft spacecraft model
+     * @return drivers for the force model
+     */
+    protected abstract ParameterDriver[] setAlbedoInfrared(T propagatorBuilder, CelestialBody sun,
+                                                           double equatorialRadius, double angularResolution,
+                                                           RadiationSensitive spacecraft);
+
     /** Set relativity force model.
      * @param propagatorBuilder propagator builder
      * @return drivers for the force model
@@ -319,7 +342,11 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
         // estimator
         final BatchLSEstimator estimator = createEstimator(parser, propagatorBuilder);
 
-        final Map<String, StationData>    stations                 = createStationsData(parser, conventions, body);
+        // read sinex files
+        final SINEXLoader                 stationPositionData      = readSinexFile(input, parser, ParameterKey.SINEX_POSITION_FILE);
+        final SINEXLoader                 stationEccData           = readSinexFile(input, parser, ParameterKey.SINEX_ECC_FILE);
+
+        final Map<String, StationData>    stations                 = createStationsData(parser, stationPositionData, stationEccData, conventions, body);
         final PVData                      pvData                   = createPVData(parser);
         final ObservableSatellite         satellite                = createObservableSatellite(parser);
         final Bias<Range>                 satRangeBias             = createSatRangeBias(parser);
@@ -350,6 +377,10 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
                                                          parser.getString(ParameterKey.SATELLITE_ID_IN_RINEX_FILES),
                                                          stations, satellite, satRangeBias, satAntennaRangeModifier, weights,
                                                          rangeOutliersManager, rangeRateOutliersManager, shapiroRangeModifier));
+            } else if (Pattern.matches(CRDParser.DEFAULT_CRD_SUPPORTED_NAMES, nd.getName())) {
+                // the measurements come from a CRD file
+                independentMeasurements.addAll(readCrd(nd, stations, parser, satellite, satRangeBias,
+                                                       weights, rangeOutliersManager, shapiroRangeModifier));
             } else {
                 // the measurements come from an Orekit custom file
                 independentMeasurements.addAll(readMeasurements(nd,
@@ -490,7 +521,11 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
         final T propagatorBuilder =
                         configurePropagatorBuilder(parser, conventions, body, initialGuess);
 
-        final Map<String, StationData>    stations                 = createStationsData(parser, conventions, body);
+        // read sinex files
+        final SINEXLoader                 stationPositionData      = readSinexFile(input, parser, ParameterKey.SINEX_POSITION_FILE);
+        final SINEXLoader                 stationEccData           = readSinexFile(input, parser, ParameterKey.SINEX_ECC_FILE);
+
+        final Map<String, StationData>    stations                 = createStationsData(parser, stationPositionData, stationEccData, conventions, body);
         final PVData                      pvData                   = createPVData(parser);
         final ObservableSatellite         satellite                = createObservableSatellite(parser);
         final Bias<Range>                 satRangeBias             = createSatRangeBias(parser);
@@ -522,6 +557,10 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
                                                          parser.getString(ParameterKey.SATELLITE_ID_IN_RINEX_FILES),
                                                          stations, satellite, satRangeBias, satAntennaRangeModifier, weights,
                                                          rangeOutliersManager, rangeRateOutliersManager, shapiroRangeModifier));
+            } else if (Pattern.matches(CRDParser.DEFAULT_CRD_SUPPORTED_NAMES, nd.getName())) {
+                // the measurements come from a CRD file
+                independentMeasurements.addAll(readCrd(nd, stations, parser, satellite, satRangeBias,
+                                                       weights, rangeOutliersManager, shapiroRangeModifier));
             } else {
                 // the measurements come from an Orekit custom file
                 independentMeasurements.addAll(readMeasurements(nd,
@@ -570,11 +609,10 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
         
         // Build the full covariance matrix and process noise matrix
         final int nbPropag = (propagationP != null)?propagationP.getRowDimension():0;
-        final int nbMeas   = (measurementP != null)?measurementP.getRowDimension():0;
-        final RealMatrix initialP = MatrixUtils.createRealMatrix(6 + nbPropag + nbMeas,
-                                                                 6 + nbPropag + nbMeas);
-        final RealMatrix Q = MatrixUtils.createRealMatrix(6 + nbPropag + nbMeas,
-                                                          6 + nbPropag + nbMeas);
+        final RealMatrix initialP = MatrixUtils.createRealMatrix(6 + nbPropag,
+                                                                 6 + nbPropag);
+        final RealMatrix Q = MatrixUtils.createRealMatrix(6 + nbPropag,
+                                                          6 + nbPropag);
         // Orbital part
         initialP.setSubMatrix(orbitalP.getData(), 0, 0);
         Q.setSubMatrix(orbitalQ.getData(), 0, 0);
@@ -584,18 +622,15 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
             initialP.setSubMatrix(propagationP.getData(), 6, 6);
             Q.setSubMatrix(propagationQ.getData(), 6, 6);
         }
-        
-        // Measurement part
-        if (measurementP != null) {
-            initialP.setSubMatrix(measurementP.getData(), 6 + nbPropag, 6 + nbPropag);
-            Q.setSubMatrix(measurementQ.getData(), 6 + nbPropag, 6 + nbPropag);
-        }
 
         // Build the Kalman
-        final KalmanEstimator kalman = new KalmanEstimatorBuilder().
-                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
-                        estimatedMeasurementsParameters(estimatedMeasurementsParameters).
-                        build();
+        final KalmanEstimatorBuilder kalmanBuilder = new KalmanEstimatorBuilder().
+                        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q));
+        if (measurementP != null) {
+            // Measurement part
+            kalmanBuilder.estimatedMeasurementsParameters(estimatedMeasurementsParameters, new ConstantProcessNoise(measurementP, measurementQ));
+        }
+        final KalmanEstimator kalman = kalmanBuilder.build();
 
         // Add an observer
         kalman.setObserver(new KalmanObserver() {
@@ -982,6 +1017,24 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
             }
         }
 
+        // Earth's albedo and infrared
+        if (parser.containsKey(ParameterKey.EARTH_ALBEDO_INFRARED) && parser.getBoolean(ParameterKey.EARTH_ALBEDO_INFRARED)) {
+            final double  cr               = parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_CR);
+            final double  area             = parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_AREA);
+            final boolean cREstimated      = parser.getBoolean(ParameterKey.SOLAR_RADIATION_PRESSURE_CR_ESTIMATED);
+            final double angularResolution = parser.getAngle(ParameterKey.ALBEDO_INFRARED_ANGULAR_RESOLUTION);
+            final ParameterDriver[] drivers = setAlbedoInfrared(propagatorBuilder, CelestialBodyFactory.getSun(),
+                                                                body.getEquatorialRadius(), angularResolution,
+                                                                new IsotropicRadiationSingleCoefficient(area, cr));
+            if (cREstimated) {
+                for (final ParameterDriver driver : drivers) {
+                    if (driver.getName().equals(RadiationSensitive.REFLECTION_COEFFICIENT)) {
+                        driver.setSelected(true);
+                    }
+                }
+            }
+        }
+
         // post-Newtonian correction force due to general relativity
         if (parser.containsKey(ParameterKey.GENERAL_RELATIVITY) && parser.getBoolean(ParameterKey.GENERAL_RELATIVITY)) {
             setRelativity(propagatorBuilder);
@@ -1230,12 +1283,16 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
 
     /** Set up stations.
      * @param parser input file parser
+     * @param sinexPosition sinex file containing station position (can be null)
+     * @param sinexEcc sinex file containing station eccentricities (can be null)
      * @param conventions IERS conventions to use
      * @param body central body
      * @return name to station data map
-          * @throws NoSuchElementException if input parameters are missing
+     * @throws NoSuchElementException if input parameters are missing
      */
     private Map<String, StationData> createStationsData(final KeyValueFileParser<ParameterKey> parser,
+                                                        final SINEXLoader sinexPosition,
+                                                        final SINEXLoader sinexEcc,
                                                         final IERSConventions conventions,
                                                         final OneAxisEllipsoid body)
         throws NoSuchElementException {
@@ -1339,9 +1396,15 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
             }
 
             // the station itself
-            final GeodeticPoint position = new GeodeticPoint(stationLatitudes[i],
-                                                             stationLongitudes[i],
-                                                             stationAltitudes[i]);
+            final GeodeticPoint position;
+            if (sinexPosition != null) {
+                // A sinex file is available -> use the station positions inside the file
+                final Station stationData = sinexPosition.getStation(stationNames[i]);
+                position = body.transform(stationData.getPosition(), body.getBodyFrame(), stationData.getEpoch());
+            } else {
+                // If a sinex file is not available -> use the values in input file
+                position = new GeodeticPoint(stationLatitudes[i], stationLongitudes[i], stationAltitudes[i]);
+            }
             final TopocentricFrame topo = new TopocentricFrame(body, position, stationNames[i]);
             final GroundStation station = new GroundStation(topo, eopHistory, displacements);
             station.getClockOffsetDriver().setReferenceValue(stationClockOffsets[i]);
@@ -1352,6 +1415,17 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
             station.getEastOffsetDriver().setSelected(stationPositionEstimated[i]);
             station.getNorthOffsetDriver().setSelected(stationPositionEstimated[i]);
             station.getZenithOffsetDriver().setSelected(stationPositionEstimated[i]);
+
+            // Take into consideration station eccentricities if not null
+            if (sinexEcc != null) {
+                final Station stationEcc = sinexEcc.getStation(stationNames[i]);
+                station.getZenithOffsetDriver().setValue(stationEcc.getEccentricities().getX());
+                station.getZenithOffsetDriver().setReferenceValue(stationEcc.getEccentricities().getX());
+                station.getNorthOffsetDriver().setValue(stationEcc.getEccentricities().getY());
+                station.getNorthOffsetDriver().setReferenceValue(stationEcc.getEccentricities().getY());
+                station.getEastOffsetDriver().setValue(stationEcc.getEccentricities().getZ());
+                station.getEastOffsetDriver().setReferenceValue(stationEcc.getEccentricities().getZ());
+            }
 
             // range
             final double rangeSigma = stationRangeSigma[i];
@@ -1719,6 +1793,44 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
 
     }
 
+    /** Read a sinex file corresponding to the given key.
+     * @param input input file
+     * @param parser input file parser
+     * @param key name of the file
+     * @return container for sinex data or null if key does not exist
+     * @throws IOException if file is not read properly
+     */
+    private SINEXLoader readSinexFile(final File input,
+                                      final KeyValueFileParser<ParameterKey> parser,
+                                      final ParameterKey key)
+        throws IOException {
+
+        // Verify if the key is defined
+        if (parser.containsKey(key)) {
+
+            // File name
+            final String fileName = parser.getString(key);
+
+            // Read the file
+            NamedData nd = new NamedData(fileName, () -> new FileInputStream(new File(input.getParentFile(), fileName)));
+            for (final DataFilter filter : Arrays.asList(new GzipFilter(),
+                                                         new UnixCompressFilter(),
+                                                         new HatanakaCompressFilter())) {
+                nd = filter.filter(nd);
+            }
+
+            // Return a configured SINEX file
+            return new SINEXLoader(nd.getStreamOpener().openStream(), nd.getName());
+
+        } else {
+
+            // File is not defines, return a null object
+            return null;
+
+        }
+
+    }
+
     /** Read a measurements file.
      * @param nd named data containing measurements
      * @param stations name to stations data map
@@ -1930,6 +2042,129 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
 
         return measurements;
 
+    }
+
+    /** Read a Consolidated Ranging Data measurements file.
+     * @param nd named data containing measurements
+     * @param stations name to stations data map
+     * @param kvParser input file parser
+     * @param satellite observable satellite
+     * @param satRangeBias range bias
+     * @param weights range weight
+     * @param rangeOutliersManager outlier filter for range measurements
+     * @param shapiroRange correction for general relativity
+     * @return a list of observable measurements
+     * @throws IOException if measurement file cannot be read
+     */
+    private List<ObservedMeasurement<?>> readCrd(final NamedData nd,
+                                                 final Map<String, StationData> stations,
+                                                 final KeyValueFileParser<ParameterKey> kvParser,
+                                                 final ObservableSatellite satellite,
+                                                 final Bias<Range> satRangeBias,
+                                                 final Weights weights,
+                                                 final OutlierFilter<Range> rangeOutliersManager,
+                                                 final ShapiroRangeModifier shapiroRange)
+        throws IOException {
+
+        // Initialize an empty list of measurements
+        final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
+
+        // Initialise parser and read file
+        final CRDParser parser =  new CRDParser();
+        final CRDFile   file   = parser.parse(nd.getStreamOpener().openStream());
+
+        // Loop on data block
+        for (final CRDDataBlock block : file.getDataBlocks()) {
+
+            // Header
+            final CRDHeader header = block.getHeader();
+
+            // Wavelength (meters)
+            final double wavelength = block.getConfigurationRecords().getSystemRecord().getWavelength();
+
+            // Meteo data
+            final Meteo meteo = block.getMeteoData();
+
+            // Station data
+            final StationData stationData = stations.get(String.valueOf(header.getSystemIdentifier()));
+
+            // Loop on measurements
+            for (final RangeMeasurement range : block.getRangeData()) {
+
+                // Time of flight
+                final double timeOfFlight = range.getTimeOfFlight();
+
+                // Transmit time
+                final AbsoluteDate transmitTime = range.getDate();
+                // If epoch corresponds to bounce time, take into consideration the time of flight to compute the transmit time
+                if (range.getEpochEvent() == 1) {
+                    transmitTime.shiftedBy(-0.5 * timeOfFlight);
+                }
+
+                // Received time taking into consideration the time of flight (two-way)
+                final AbsoluteDate receivedTime = transmitTime.shiftedBy(timeOfFlight);
+
+                // Range value
+                boolean twoWays = false;
+                double rangeValue = timeOfFlight * Constants.SPEED_OF_LIGHT;
+                // If the range is a two way range, the value is divided by 2 to fit in Orekit Range object requirements
+                if (header.getRangeType() == RangeType.TWO_WAY) {
+                    twoWays = true;
+                    rangeValue = 0.5 * rangeValue;
+                }
+
+                // Meteorological record for the current epoch
+                final MeteorologicalMeasurement meteoData = meteo.getMeteo(receivedTime);
+
+                // Initialize range
+                final Range measurement = new Range(stationData.getStation(), twoWays, receivedTime, rangeValue,
+                                                    stationData.getRangeSigma(), weights.getRangeBaseWeight(), satellite);
+
+                // Center of mass correction
+                if (kvParser.containsKey(ParameterKey.RANGE_CENTER_OF_MASS_CORRECTION)) {
+                    final double bias = kvParser.getDouble(ParameterKey.RANGE_CENTER_OF_MASS_CORRECTION);
+                    final Bias<Range> centerOfMass = new Bias<Range>(new String[] {"center of mass"},
+                                    new double[] {bias}, new double[] {1.0}, new double[] {Double.NEGATIVE_INFINITY},
+                                    new double[] {Double.POSITIVE_INFINITY});
+                    measurement.addModifier(centerOfMass);
+                }
+
+                // Tropospheric model
+                final DiscreteTroposphericModel model;
+                if (meteoData != null) {
+                    model = new MendesPavlisModel(meteoData.getTemperature(), meteoData.getPressure() * 1000.0, 0.01 * meteoData.getHumidity(),
+                                                  stationData.getStation().getBaseFrame().getPoint().getLatitude(), wavelength * 1.0e6);
+                } else {
+                    model = MendesPavlisModel.getStandardModel(stationData.getStation().getBaseFrame().getPoint().getLatitude(), wavelength * 1.0e6);
+                }
+                measurement.addModifier(new RangeTroposphericDelayModifier(model));
+
+                // Shapiro
+                if (shapiroRange != null) {
+                    measurement.addModifier(shapiroRange);
+                }
+
+                // Station bias
+                if (stationData.getRangeBias() != null) {
+                    measurement.addModifier(stationData.getRangeBias());
+                }
+
+                // Satellite range bias
+                if (satRangeBias != null) {
+                    measurement.addModifier(satRangeBias);
+                }
+
+                // Range outlier filter
+                if (rangeOutliersManager != null) {
+                    measurement.addModifier(rangeOutliersManager);
+                }
+
+                addIfNonZeroWeight(measurement, measurements);
+            }
+
+        }
+
+        return measurements;
     }
 
     /** Multiplex measurements.

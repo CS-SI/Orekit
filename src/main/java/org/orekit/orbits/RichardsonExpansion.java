@@ -18,6 +18,7 @@ package org.orekit.orbits;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.SinCos;
 import org.orekit.bodies.CR3BPSystem;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -219,45 +220,48 @@ public class RichardsonExpansion {
         final double az = azr / (gamma * dDim);
 
         // X-Axis Halo Orbit Amplitude
-        final double ax   = FastMath.sqrt((delta + l2 * az * az) / -l1);
-        final double nu   = 1.0 + s1 * ax * ax + s2 * az * az;
-        final double tau  = nu * t;
-        final double tau1 = wp * tau + phi;
-        final double m    = (type == LibrationOrbitFamily.NORTHERN) ? 1 : 3;
-        final double dm   = 2 - m;
+        final double ax      = FastMath.sqrt((delta + l2 * az * az) / -l1);
+        final double nu      = 1.0 + s1 * ax * ax + s2 * az * az;
+        final double tau     = nu * t;
+        final double tau1    = wp * tau + phi;
+        final double m       = (type == LibrationOrbitFamily.NORTHERN) ? 1 : 3;
+        final double dm      = 2 - m;
+        final SinCos scTau1  = FastMath.sinCos(tau1);
+        final SinCos sc2Tau1 = SinCos.sum(scTau1, scTau1);
+        final SinCos sc3Tau1 = SinCos.sum(scTau1, sc2Tau1);
 
         // First guess position relative to its Lagrangian point
         final double firstx =
                         a21 * ax * ax +
-                        a22 * az * az - ax * FastMath.cos(tau1) +
-                        (a23 * ax * ax - a24 * az * az) * FastMath.cos(2.0 * tau1) +
-                        (a31 * ax * ax * ax - a32 * ax * az * az) * FastMath.cos(3.0 * tau1);
+                        a22 * az * az - ax * scTau1.cos() +
+                        (a23 * ax * ax - a24 * az * az) * sc2Tau1.cos() +
+                        (a31 * ax * ax * ax - a32 * ax * az * az) * sc3Tau1.cos();
 
         final double firsty =
-                        k * ax * FastMath.sin(tau1) +
-                        (b21 * ax * ax - b22 * az * az) * FastMath.sin(2.0 * tau1) +
-                        (b31 * ax * ax * ax - b32 * ax * az * az) * FastMath.sin(3.0 * tau1);
+                        k * ax * scTau1.sin() +
+                        (b21 * ax * ax - b22 * az * az) * sc2Tau1.sin() +
+                        (b31 * ax * ax * ax - b32 * ax * az * az) * sc3Tau1.sin();
 
         final double firstz =
-                        dm * az * FastMath.cos(tau1) +
-                        dm * d21 * ax * az * (FastMath.cos(2.0 * tau1) - 3.0) +
-                        dm * (d32 * az * ax * ax - d31 * az * az * az) * FastMath .cos(3.0 * tau1);
+                        dm * az * scTau1.cos() +
+                        dm * d21 * ax * az * (sc2Tau1.cos() - 3.0) +
+                        dm * (d32 * az * ax * ax - d31 * az * az * az) * sc3Tau1.cos();
 
         // First guess Velocity relative to its Lagrangian point
         final double vx =
-                        ax * wp * nu * FastMath.sin(tau1) -
-                        2.0 * (a23 * ax * ax - a24 * az * az) * wp * nu * FastMath.sin(2.0 * tau1) -
-                        3.0 * (a31 * ax * ax * ax - a32 * ax * az * az) * wp * nu * FastMath.sin(3.0 * tau1);
+                        ax * wp * nu * scTau1.sin() -
+                        2.0 * (a23 * ax * ax - a24 * az * az) * wp * nu * sc2Tau1.sin() -
+                        3.0 * (a31 * ax * ax * ax - a32 * ax * az * az) * wp * nu * sc3Tau1.sin();
 
         final double vy =
-                        k * ax * wp * nu * FastMath.cos(tau1) +
-                        2.0 * wp * nu * (b21 * ax * ax - b22 * az * az) * FastMath.cos(2.0 * tau1) +
-                        3.0 * wp * nu * (b31 * ax * ax * ax - b32 * ax * az * az) * FastMath.cos(3.0 * tau1);
+                        k * ax * wp * nu * scTau1.cos() +
+                        2.0 * wp * nu * (b21 * ax * ax - b22 * az * az) * sc2Tau1.cos() +
+                        3.0 * wp * nu * (b31 * ax * ax * ax - b32 * ax * az * az) * sc3Tau1.cos();
 
         final double vz =
-                        -dm * az * wp * nu * FastMath.sin(tau1) -
-                        2.0 * dm * d21 * ax * az * wp * nu * FastMath.sin(2.0 * tau1) -
-                        3.0 * dm * (d32 * az * ax * ax - d31 * az * az * az) * wp * nu * FastMath.sin(3.0 * tau1);
+                        -dm * az * wp * nu * scTau1.sin() -
+                        2.0 * dm * d21 * ax * az * wp * nu * sc2Tau1.sin() -
+                        3.0 * dm * (d32 * az * ax * ax - d31 * az * az * az) * wp * nu * sc3Tau1.sin();
 
         // Return PV Coordinates
         return point == LagrangianPoints.L1 ?

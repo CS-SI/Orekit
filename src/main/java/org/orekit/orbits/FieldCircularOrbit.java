@@ -25,6 +25,7 @@ import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -285,15 +286,13 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
         raan = node.getY().atan2(node.getX());
 
         // 2D-coordinates in the canonical frame
-        final T cosRaan = raan.cos();
-        final T sinRaan = raan.sin();
-        final T cosI    = i.cos();
-        final T sinI    = i.sin();
+        final FieldSinCos<T> scRaan = FastMath.sinCos(raan);
+        final FieldSinCos<T> scI    = FastMath.sinCos(i);
         final T xP      = pvP.getX();
         final T yP      = pvP.getY();
         final T zP      = pvP.getZ();
-        final T x2      = (xP.multiply(cosRaan).add(yP .multiply(sinRaan))).divide(a);
-        final T y2      = (yP.multiply(cosRaan).subtract(xP.multiply(sinRaan))).multiply(cosI).add(zP.multiply(sinI)).divide(a);
+        final T x2      = (xP.multiply(scRaan.cos()).add(yP .multiply(scRaan.sin()))).divide(a);
+        final T y2      = (yP.multiply(scRaan.cos()).subtract(xP.multiply(scRaan.sin()))).multiply(scI.cos()).add(zP.multiply(scI.sin())).divide(a);
 
         // compute eccentricity vector
         final T eSE    = FieldVector3D.dotProduct(pvP, pvV).divide(a.multiply(mu).sqrt());
@@ -387,8 +386,9 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
         final T h2 = hx.multiply(hx).add(hy.multiply(hy));
         final T h  = h2.sqrt();
         raan = hy.atan2(hx);
-        final T cosRaan = h.getReal() == 0 ? raan.cos() : hx.divide(h);
-        final T sinRaan = h.getReal() == 0 ? raan.sin() : hy.divide(h);
+        final FieldSinCos<T> scRaan = FastMath.sinCos(raan);
+        final T cosRaan = h.getReal() == 0 ? scRaan.cos() : hx.divide(h);
+        final T sinRaan = h.getReal() == 0 ? scRaan.sin() : hy.divide(h);
         final T equiEx = op.getEquinoctialEx();
         final T equiEy = op.getEquinoctialEy();
         ex   = equiEx.multiply(cosRaan).add(equiEy.multiply(sinRaan));
@@ -441,7 +441,8 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
 
     /** {@inheritDoc} */
     public T getEquinoctialEx() {
-        return ex.multiply(raan.cos()).subtract(ey.multiply(raan.sin()));
+        final FieldSinCos<T> sc = FastMath.sinCos(raan);
+        return ex.multiply(sc.cos()).subtract(ey.multiply(sc.sin()));
     }
 
     /** {@inheritDoc} */
@@ -451,16 +452,16 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
             return null;
         }
 
-        final T cosRaan = raan.cos();
-        final T sinRaan = raan.sin();
-        return exDot.subtract(ey.multiply(raanDot)).multiply(cosRaan).
-               subtract(eyDot.add(ex.multiply(raanDot)).multiply(sinRaan));
+        final FieldSinCos<T> sc = FastMath.sinCos(raan);
+        return exDot.subtract(ey.multiply(raanDot)).multiply(sc.cos()).
+               subtract(eyDot.add(ex.multiply(raanDot)).multiply(sc.sin()));
 
     }
 
     /** {@inheritDoc} */
     public T getEquinoctialEy() {
-        return ey.multiply(raan.cos()).add(ex.multiply(raan.sin()));
+        final FieldSinCos<T> sc = FastMath.sinCos(raan);
+        return ey.multiply(sc.cos()).add(ex.multiply(sc.sin()));
     }
 
     /** {@inheritDoc} */
@@ -470,10 +471,9 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
             return null;
         }
 
-        final T cosRaan = raan.cos();
-        final T sinRaan = raan.sin();
-        return eyDot.add(ex.multiply(raanDot)).multiply(cosRaan).
-               add(exDot.subtract(ey.multiply(raanDot)).multiply(sinRaan));
+        final FieldSinCos<T> sc = FastMath.sinCos(raan);
+        return eyDot.add(ex.multiply(raanDot)).multiply(sc.cos()).
+               add(exDot.subtract(ey.multiply(raanDot)).multiply(sc.sin()));
 
     }
 
@@ -511,7 +511,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
         if (FastMath.abs(i.getReal() - FastMath.PI) < 1.0e-10) {
             return zero.add(Double.NaN);
         }
-        return  raan.cos().multiply(i.divide(2).tan());
+        return raan.cos().multiply(i.divide(2).tan());
     }
 
     /** {@inheritDoc} */
@@ -526,11 +526,10 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
             return zero.add(Double.NaN);
         }
 
-        final T cosRaan = raan.cos();
-        final T sinRaan = raan.sin();
-        final T tan     = i.multiply(0.5).tan();
-        return cosRaan.multiply(0.5).multiply(tan.multiply(tan).add(1)).multiply(iDot).
-               subtract(sinRaan.multiply(tan).multiply(raanDot));
+        final FieldSinCos<T> sc = FastMath.sinCos(raan);
+        final T tan             = i.multiply(0.5).tan();
+        return sc.cos().multiply(0.5).multiply(tan.multiply(tan).add(1)).multiply(iDot).
+               subtract(sc.sin().multiply(tan).multiply(raanDot));
 
     }
 
@@ -555,11 +554,10 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
             return zero.add(Double.NaN);
         }
 
-        final T cosRaan = raan.cos();
-        final T sinRaan = raan.sin();
+        final FieldSinCos<T> sc = FastMath.sinCos(raan);
         final T tan     = i.multiply(0.5).tan();
-        return sinRaan.multiply(0.5).multiply(tan.multiply(tan).add(1)).multiply(iDot).
-               add(cosRaan.multiply(tan).multiply(raanDot));
+        return sc.sin().multiply(0.5).multiply(tan.multiply(tan).add(1)).multiply(iDot).
+               add(sc.cos().multiply(tan).multiply(raanDot));
 
     }
 
@@ -653,12 +651,11 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
      * @return the true latitude argument.
      */
     public static <T extends RealFieldElement<T>> T eccentricToTrue(final T alphaE, final T ex, final T ey) {
-        final T epsilon   = ex.multiply(ex).add(ey.multiply(ey)).negate().add(1).sqrt();
-        final T cosAlphaE = alphaE.cos();
-        final T sinAlphaE = alphaE.sin();
-        return alphaE.add(ex.multiply(sinAlphaE).subtract(ey.multiply(cosAlphaE)).divide(
-                                      epsilon.add(1).subtract(ex.multiply(cosAlphaE)).subtract(
-                                      ey.multiply(sinAlphaE))).atan().multiply(2));
+        final T epsilon               = ex.multiply(ex).add(ey.multiply(ey)).negate().add(1).sqrt();
+        final FieldSinCos<T> scAlphaE = FastMath.sinCos(alphaE);
+        return alphaE.add(ex.multiply(scAlphaE.sin()).subtract(ey.multiply(scAlphaE.cos())).divide(
+                                      epsilon.add(1).subtract(ex.multiply(scAlphaE.cos())).subtract(
+                                      ey.multiply(scAlphaE.sin()))).atan().multiply(2));
     }
 
     /** Computes the eccentric latitude argument from the true latitude argument.
@@ -669,11 +666,10 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
      * @return the eccentric latitude argument.
      */
     public static <T extends RealFieldElement<T>> T trueToEccentric(final T alphaV, final T ex, final T ey) {
-        final T epsilon   = ex.multiply(ex).add(ey.multiply(ey)).negate().add(1).sqrt();
-        final T cosAlphaV = alphaV.cos();
-        final T sinAlphaV = alphaV.sin();
-        return alphaV.add(ey.multiply(cosAlphaV).subtract(ex.multiply(sinAlphaV)).divide
-                                      (epsilon.add(1).add(ex.multiply(cosAlphaV).add(ey.multiply(sinAlphaV)))).atan().multiply(2));
+        final T epsilon               = ex.multiply(ex).add(ey.multiply(ey)).negate().add(1).sqrt();
+        final FieldSinCos<T> scAlphaV = FastMath.sinCos(alphaV);
+        return alphaV.add(ey.multiply(scAlphaV.cos()).subtract(ex.multiply(scAlphaV.sin())).divide
+                                      (epsilon.add(1).add(ex.multiply(scAlphaV.cos()).add(ey.multiply(scAlphaV.sin())))).atan().multiply(2));
     }
 
     /** Computes the eccentric latitude argument from the mean latitude argument.
@@ -688,15 +684,14 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
         // with alphaE = PA + E and
         //      alphaM = PA + M = alphaE - ex.sin(alphaE) + ey.cos(alphaE)
 
-        T alphaE        = alphaM;
-        T shift         = alphaM.getField().getZero();
-        T alphaEMalphaM = alphaM.getField().getZero();
-        T cosAlphaE     = alphaE.cos();
-        T sinAlphaE     = alphaE.sin();
+        T alphaE                = alphaM;
+        T shift                 = alphaM.getField().getZero();
+        T alphaEMalphaM         = alphaM.getField().getZero();
+        FieldSinCos<T> scAlphaE = FastMath.sinCos(alphaE);
         int    iter     = 0;
         do {
-            final T f2 = ex.multiply(sinAlphaE).subtract(ey.multiply(cosAlphaE));
-            final T f1 = ex.negate().multiply(cosAlphaE).subtract(ey.multiply(sinAlphaE)).add(1);
+            final T f2 = ex.multiply(scAlphaE.sin()).subtract(ey.multiply(scAlphaE.cos()));
+            final T f1 = ex.negate().multiply(scAlphaE.cos()).subtract(ey.multiply(scAlphaE.sin())).add(1);
             final T f0 = alphaEMalphaM.subtract(f2);
 
             final T f12 = f1.multiply(2);
@@ -704,8 +699,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
 
             alphaEMalphaM  = alphaEMalphaM.subtract(shift);
             alphaE         = alphaM.add(alphaEMalphaM);
-            cosAlphaE      = alphaE.cos();
-            sinAlphaE      = alphaE.sin();
+            scAlphaE       = FastMath.sinCos(alphaE);
         } while ((++iter < 50) && (FastMath.abs(shift.getReal()) > 1.0e-12));
         return alphaE;
 
@@ -719,7 +713,8 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
      * @return the mean latitude argument.
      */
     public static <T extends RealFieldElement<T>> T eccentricToMean(final T alphaE, final T ex, final T ey) {
-        return alphaE.subtract(ex.multiply(alphaE.sin()).subtract(ey.multiply(alphaE.cos())));
+        final FieldSinCos<T> scAlphaE = FastMath.sinCos(alphaE);
+        return alphaE.subtract(ex.multiply(scAlphaE.sin()).subtract(ey.multiply(scAlphaE.cos())));
     }
 
     /** {@inheritDoc} */
@@ -836,8 +831,9 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
         final T beta = eta.reciprocal();
 
         // eccentric latitude argument
-        final T cLe    = lE.cos();
-        final T sLe    = lE.sin();
+        final FieldSinCos<T> scLe = FastMath.sinCos(lE);
+        final T cLe    = scLe.cos();
+        final T sLe    = scLe.sin();
         final T exCeyS = equEx.multiply(cLe).add(equEy.multiply(sLe));
         // coordinates of position and velocity in the orbital plane
         final T x      = a.multiply(beta.negate().multiply(ey2).add(1).multiply(cLe).add(beta.multiply(exey).multiply(sLe)).subtract(equEx));
@@ -1078,10 +1074,12 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
         final T eCosE      = rOa.negate().add(1);
         final T eSinE      = pv.multiply(oOsqrtMuA);
 
-        final T cosI       = i.cos();
-        final T sinI       = i.sin();
-        final T cosRaan    = raan.cos();
-        final T sinRaan    = raan.sin();
+        final FieldSinCos<T> scI    = FastMath.sinCos(i);
+        final FieldSinCos<T> scRaan = FastMath.sinCos(raan);
+        final T cosI       = scI.cos();
+        final T sinI       = scI.sin();
+        final T cosRaan    = scRaan.cos();
+        final T sinRaan    = scRaan.sin();
 
         // da
         fillHalfRow(aOr.multiply(2.0).multiply(aOr2), position, jacobian[0], 0);
@@ -1208,10 +1206,11 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
         // daM = (1 - ex cos aE - ey sin aE) dE - sin aE dex + cos aE dey
         // which is inverted and rewritten as:
         // daE = a/r daM + sin aE a/r dex - cos aE a/r dey
-        final T alphaE = getAlphaE();
-        final T cosAe  = alphaE.cos();
-        final T sinAe  = alphaE.sin();
-        final T aOr    = one.divide(one.subtract(ex.multiply(cosAe)).subtract(ey.multiply(sinAe)));
+        final T alphaE            = getAlphaE();
+        final FieldSinCos<T> scAe = FastMath.sinCos(alphaE);
+        final T cosAe             = scAe.cos();
+        final T sinAe             = scAe.sin();
+        final T aOr               = one.divide(one.subtract(ex.multiply(cosAe)).subtract(ey.multiply(sinAe)));
 
         // update longitude row
         final T[] rowEx = jacobian[1];
@@ -1242,22 +1241,23 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
         // cY = -cos aE (sqrt(1-ex^2-ey^2) + 1) + ex + ey (ex sin aE - ey cos aE) / sqrt(1-ex^2-ey^2)
         // which can be solved to find the differential of the true latitude
         // daV = (cT + cE) / cT daE + cX / cT deX + cY / cT deX
-        final T alphaE    = getAlphaE();
-        final T cosAe     = alphaE.cos();
-        final T sinAe     = alphaE.sin();
-        final T eSinE     = ex.multiply(sinAe).subtract(ey.multiply(cosAe));
-        final T ecosE     = ex.multiply(cosAe).add(ey.multiply(sinAe));
-        final T e2        = ex.multiply(ex).add(ey.multiply(ey));
-        final T epsilon   = (one.subtract(e2)).sqrt();
-        final T onePeps   = one.add(epsilon);
-        final T d         = onePeps.subtract(ecosE);
-        final T cT        = (d.multiply(d).add(eSinE.multiply(eSinE))).divide(2);
-        final T cE        = ecosE.multiply(onePeps).subtract(e2);
-        final T cX        = ex.multiply(eSinE).divide(epsilon).subtract(ey).add(sinAe.multiply(onePeps));
-        final T cY        = ey.multiply(eSinE).divide(epsilon).add(ex).subtract(cosAe.multiply(onePeps));
-        final T factorLe  = (cT.add(cE)).divide(cT);
-        final T factorEx  = cX.divide(cT);
-        final T factorEy  = cY.divide(cT);
+        final T alphaE            = getAlphaE();
+        final FieldSinCos<T> scAe = FastMath.sinCos(alphaE);
+        final T cosAe             = scAe.cos();
+        final T sinAe             = scAe.sin();
+        final T eSinE             = ex.multiply(sinAe).subtract(ey.multiply(cosAe));
+        final T ecosE             = ex.multiply(cosAe).add(ey.multiply(sinAe));
+        final T e2                = ex.multiply(ex).add(ey.multiply(ey));
+        final T epsilon           = (one.subtract(e2)).sqrt();
+        final T onePeps           = one.add(epsilon);
+        final T d                 = onePeps.subtract(ecosE);
+        final T cT                = (d.multiply(d).add(eSinE.multiply(eSinE))).divide(2);
+        final T cE                = ecosE.multiply(onePeps).subtract(e2);
+        final T cX                = ex.multiply(eSinE).divide(epsilon).subtract(ey).add(sinAe.multiply(onePeps));
+        final T cY                = ey.multiply(eSinE).divide(epsilon).add(ex).subtract(cosAe.multiply(onePeps));
+        final T factorLe          = (cT.add(cE)).divide(cT);
+        final T factorEx          = cX.divide(cT);
+        final T factorEy          = cY.divide(cT);
 
         // update latitude row
         final T[] rowEx = jacobian[1];
@@ -1276,18 +1276,19 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
         final T oMe2;
         final T ksi;
         final T n = a.reciprocal().multiply(gm).sqrt().divide(a);
+        final FieldSinCos<T> sc = FastMath.sinCos(alphaV);
         switch (type) {
             case MEAN :
                 pDot[5] = pDot[5].add(n);
                 break;
             case ECCENTRIC :
                 oMe2  = one.subtract(ex.multiply(ex)).subtract(ey.multiply(ey));
-                ksi   = one.add(ex.multiply(alphaV.cos())).add(ey.multiply(alphaV.sin()));
+                ksi   = one.add(ex.multiply(sc.cos())).add(ey.multiply(sc.sin()));
                 pDot[5] = pDot[5].add(n.multiply(ksi).divide(oMe2));
                 break;
             case TRUE :
                 oMe2  = one.subtract(ex.multiply(ex)).subtract(ey.multiply(ey));
-                ksi   = one.add(ex.multiply(alphaV.cos())).add(ey.multiply(alphaV.sin()));
+                ksi   = one.add(ex.multiply(sc.cos())).add(ey.multiply(sc.sin()));
                 pDot[5] = pDot[5].add(n.multiply(ksi).multiply(ksi).divide(oMe2.multiply(oMe2.sqrt())));
                 break;
             default :

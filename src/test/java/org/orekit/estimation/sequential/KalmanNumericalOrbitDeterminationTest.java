@@ -39,9 +39,11 @@ import org.orekit.estimation.common.AbstractOrbitDetermination;
 import org.orekit.estimation.common.ParameterKey;
 import org.orekit.estimation.common.ResultKalman;
 import org.orekit.forces.ForceModel;
-import org.orekit.forces.PolynomialParametricAcceleration;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
+import org.orekit.forces.empirical.AccelerationModel;
+import org.orekit.forces.empirical.ParametricAcceleration;
+import org.orekit.forces.empirical.PolynomialAccelerationModel;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.OceanTides;
 import org.orekit.forces.gravity.Relativity;
@@ -50,6 +52,7 @@ import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.radiation.KnockeRediffusedForceModel;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.models.earth.atmosphere.Atmosphere;
@@ -169,6 +172,17 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
 
     /** {@inheritDoc} */
     @Override
+    protected ParameterDriver[] setAlbedoInfrared(final NumericalPropagatorBuilder propagatorBuilder,
+                                                  final CelestialBody sun, final double equatorialRadius,
+                                                  final double angularResolution,
+                                                  final RadiationSensitive spacecraft) {
+        final ForceModel albedoIR = new KnockeRediffusedForceModel(sun, spacecraft, equatorialRadius, angularResolution);
+        propagatorBuilder.addForceModel(albedoIR);
+        return albedoIR.getParametersDrivers();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     protected ParameterDriver[] setRelativity(final NumericalPropagatorBuilder propagatorBuilder) {
         final ForceModel relativityModel = new Relativity(gravityField.getMu());
         propagatorBuilder.addForceModel(relativityModel);
@@ -179,7 +193,8 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
     @Override
     protected ParameterDriver[] setPolynomialAcceleration(final NumericalPropagatorBuilder propagatorBuilder,
                                                           final String name, final Vector3D direction, final int degree) {
-        final ForceModel polynomialModel = new PolynomialParametricAcceleration(direction, true, name, null, degree);
+        final AccelerationModel accModel = new PolynomialAccelerationModel(name, null, degree);
+        final ForceModel polynomialModel = new ParametricAcceleration(direction, true, accModel);
         propagatorBuilder.addForceModel(polynomialModel);
         return polynomialModel.getParametersDrivers();
     }
@@ -199,7 +214,7 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
         final boolean print = false;
         
         // input in resources directory
-        final String inputPath = KalmanNumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/od_test_Lageos2.in").toURI().getPath();
+        final String inputPath = KalmanNumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/kalman_od_test_Lageos2.in").toURI().getPath();
         final File input  = new File(inputPath);
 
         // configure Orekit data acces

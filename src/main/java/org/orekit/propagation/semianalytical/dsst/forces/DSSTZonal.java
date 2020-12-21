@@ -31,7 +31,9 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.SinCos;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
@@ -1512,12 +1514,11 @@ public class DSSTZonal implements DSSTForceModel {
             for (int j = 1; j <= maxFrequencyShortPeriodics; j++) {
                 final double[] c = slot.cij[j].value(meanOrbit.getDate());
                 final double[] s = slot.sij[j].value(meanOrbit.getDate());
-                final double cos = FastMath.cos(j * L);
-                final double sin = FastMath.sin(j * L);
+                final SinCos sc  = FastMath.sinCos(j * L);
                 for (int i = 0; i < 6; i++) {
                     // add corresponding term to the short periodic variation
-                    shortPeriodicVariation[i] += c[i] * cos;
-                    shortPeriodicVariation[i] += s[i] * sin;
+                    shortPeriodicVariation[i] += c[i] * sc.cos();
+                    shortPeriodicVariation[i] += s[i] * sc.sin();
                 }
             }
 
@@ -1657,14 +1658,13 @@ public class DSSTZonal implements DSSTForceModel {
             }
 
             for (int j = 1; j <= maxFrequencyShortPeriodics; j++) {
-                final T[] c = slot.cij[j].value(meanOrbit.getDate());
-                final T[] s = slot.sij[j].value(meanOrbit.getDate());
-                final T cos = FastMath.cos(L.multiply(j));
-                final T sin = FastMath.sin(L.multiply(j));
+                final T[]            c   = slot.cij[j].value(meanOrbit.getDate());
+                final T[]            s   = slot.sij[j].value(meanOrbit.getDate());
+                final FieldSinCos<T> sc  = FastMath.sinCos(L.multiply(j));
                 for (int i = 0; i < 6; i++) {
                     // add corresponding term to the short periodic variation
-                    shortPeriodicVariation[i] = shortPeriodicVariation[i].add(c[i].multiply(cos));
-                    shortPeriodicVariation[i] = shortPeriodicVariation[i].add(s[i].multiply(sin));
+                    shortPeriodicVariation[i] = shortPeriodicVariation[i].add(c[i].multiply(sc.cos()));
+                    shortPeriodicVariation[i] = shortPeriodicVariation[i].add(s[i].multiply(sc.sin()));
                 }
             }
 

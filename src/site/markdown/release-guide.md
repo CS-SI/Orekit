@@ -3,8 +3,8 @@
 This release guide is largely inspired from [Hipparchus Release
 Guide](https://www.hipparchus.org/release-guide.html). It lists the steps that
 have been used in the past to release a new version of Orekit. When in doubt
-ask the experts: Sébastien Dinot <sebastien.dinot@c-s.fr> for website questions
-and Luc Maisonobe <luc.maisonobe@c-s.fr> for everything else.
+ask the experts: Sébastien Dinot <sebastien.dinot@csgroup.eu> for website questions
+and Luc Maisonobe <luc.maisonobe@csgroup.eu> for everything else.
 
 ## Prerequisites
 
@@ -39,12 +39,12 @@ earlier. The version in CentOS 7 works, the version in Ubuntu 18.04 does not.
 ## Verify the status of develop branch
 
 Before anything, check on the [continuous integration
-site](https://ci.orekit.org/job/Orekit/job/develop/) that everything is fine on
+site](https://sonar.orekit.org/dashboard?id=org.orekit%3Aorekit) that everything is fine on
 develop branch:
 
 * All tests pass;
-* Code coverage with JaCoCo is up to the requirements;
-* There are no Maven, Java, Javadoc, Checkstyle and SpotBugs error or warning.
+* Code coverage is up to the requirements;
+* There are no bugs, vulnerabilities or code smells.
 
 If not, fix the warnings and errors first!
 
@@ -224,6 +224,14 @@ Remove `orekit-X.Y.source-jar*` since they are duplicates of the
 `orekit-X.Y-sources.jar*` artifacts. (We can’t figure out how to make maven
 stop producing these duplicate artifacts). Then click the “Close” button.
 
+## Update Orekit in Orekit test site
+
+One edit need to be made to the Orekit website before calling the vote. Fetch the current code:
+
+    git clone https://gitlab.orekit.org/orekit/website-2015
+
+Switch to `develop` branch and edit `_data/orekit/versions.yml` by adding the new version X.Y to the list.
+
 ## Calling for the vote
 
 Everything is now ready so the developers and PMC can vote for the release.
@@ -248,7 +256,7 @@ and content of the form:
     <https://gitlab.orekit.org/orekit/orekit/tree/X.Y-RCn>
 
     The release notes can be read here:
-    <https://orekit.org/staging/site-orekit-X.Y/changes-report.html>.
+    <https://test.orekit.org/site-orekit-X.Y/changes-report.html>
 
     Maven artifacts are available at
     <https://oss.sonatype.org/content/repositories/orgorekit-xxxx/>.
@@ -323,11 +331,7 @@ Navigate to Projects > Orekit > Releases and make sure it looks nice.
 
 ## Update Orekit site
 
-Several edits need to be made to the Orekit website. Fetch the current code:
-
-    git clone https://gitlab.orekit.org/orekit/website-2015
-
-Edit `_data/orekit/versions.yml` by adding the new version X.Y to the list.
+Several edits need to be made to the Orekit website after the vote.
 
 Edit `download/.htaccess` and replace the URLs of the 3 Orekit artifacts
 with the ones used to create the release notes.
@@ -369,8 +373,8 @@ and content of the form:
     This version depends on Hipparchus X'.Y'
 
     For complete release notes please see:
-    https://orekit.org/site-orekit-X.Y/changes-report.html
+    https://www.orekit.org/site-orekit-X.Y/changes-report.html
 
     The maven artifacts are available in maven central. 
     The source and binaries can be retrieved from the forge releases page:
-    https://gitlab.orekit.org/orekit/orekit/releases
+    https://gitlab.orekit.org/orekit/orekit/-/releases

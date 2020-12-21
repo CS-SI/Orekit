@@ -220,6 +220,8 @@ public enum OrekitMessages implements Localizable {
     NOT_ENOUGH_GNSS_FOR_DOP("only {0} GNSS orbits are provided while {1} are needed to compute the DOP"),
     NOT_ENOUGH_PROPAGATORS(
             "Creating an aggregate propagator requires at least one constituent propagator, but none were provided."),
+    NOT_ENOUGH_ATTITUDE_PROVIDERS(
+                    "Creating an aggregate attitude provider requires at least one constituent attitude provider, but none were provided."),
     NULL_ARGUMENT("argument {0} cannot be null"), VALUE_NOT_FOUND("value {0} not found in {1}"),
     EPHEMERIS_FILE_NO_MULTI_SUPPORT("Ephemeris file format does not support multiple space objects"),
     KLOBUCHAR_ALPHA_BETA_NOT_LOADED("Klobuchar coefficients α or β could not be loaded from {0}"),
@@ -281,7 +283,11 @@ public enum OrekitMessages implements Localizable {
     PARAMETER_NOT_SET("The parameter {0} should not be null in {1}"),
     FUNCTION_NOT_IMPLEMENTED("{0} is not implemented"),
     INVALID_TYPE_FOR_FUNCTION("Impossible to execute {0} with {1} set to {2}"),
-    NO_DATA_IN_FILE("No data could be parsed from file {0}");
+    NO_DATA_IN_FILE("No data could be parsed from file {0}"),
+    CPF_UNEXPECTED_END_OF_FILE("Unexpected end of CPF file (after line {0})"),
+    UNEXPECTED_FORMAT_FOR_ILRS_FILE("Unexpected file format. Must be {0} but is {1}"),
+    CRD_UNEXPECTED_END_OF_FILE("Unexpected end of CRD file (after line {0})"),
+    INVALID_RANGE_INDICATOR_IN_CRD_FILE("Invalid range indicator {0} in CRD file header");
 
     // CHECKSTYLE: resume JavadocVariable check
 

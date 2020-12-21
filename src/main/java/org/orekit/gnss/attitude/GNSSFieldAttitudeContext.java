@@ -26,6 +26,7 @@ import org.hipparchus.analysis.solvers.UnivariateSolverUtils;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.SinCos;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
@@ -488,8 +489,9 @@ class GNSSFieldAttitudeContext<T extends RealFieldElement<T>> implements FieldTi
         final FieldPVCoordinates<T> velocity      = new FieldPVCoordinates<>(v, a, keplerianJerk);
         final FieldPVCoordinates<T> momentum      = svPV.crossProduct(velocity);
 
-        final FieldDerivativeStructure<T> c = FastMath.cos(yaw).negate();
-        final FieldDerivativeStructure<T> s = FastMath.sin(yaw).negate();
+        final FieldSinCos<FieldDerivativeStructure<T>> sc = FastMath.sinCos(yaw);
+        final FieldDerivativeStructure<T> c = sc.cos().negate();
+        final FieldDerivativeStructure<T> s = sc.sin().negate();
         final T                           z = yaw.getFactory().getValueField().getZero();
         final FieldVector3D<T> m0 = new FieldVector3D<>(s.getValue(),              c.getValue(),              z);
         final FieldVector3D<T> m1 = new FieldVector3D<>(s.getPartialDerivative(1), c.getPartialDerivative(1), z);

@@ -85,6 +85,12 @@ solar.radiation.pressure.cr.estimated = true
 ## SRP area (m^2)
 solar.radiation.pressure.area = 50
 
+## Earth's Albedo and Infrared (true/false) [true]
+## It reuses the configuration of the solar radiation pressure for the reflection coefficient
+earth.albedo.infrared = true
+## Angular resolution
+albedo.infrared.angular.resolution = 15.0
+
 # Post-Newtonian correction force due to general relativity (true/false) [false]
 general.relativity = true
 

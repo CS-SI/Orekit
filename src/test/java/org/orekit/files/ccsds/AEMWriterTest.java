@@ -51,6 +51,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
 
 public class AEMWriterTest {
 
+    // The default format writes 5 digits after the decimal point hence the quaternion precision
     private static final double QUATERNION_PRECISION = 1e-5;
     private static final double DATE_PRECISION = 1e-3;
 
@@ -172,8 +173,9 @@ public class AEMWriterTest {
                 generatedAemFile.getAttitudeBlocks().get(0).getMetaData().getObjectID());
     }
 
+    @Deprecated
     @Test
-    public void testMultisatelliteFile() throws IOException {
+    public void testMultisatelliteFileDeprecated() throws IOException {
         final String id1 = "ID1";
         final String id2 = "ID2";
         AEMFile file = new StandInEphemerisFile();
@@ -194,6 +196,87 @@ public class AEMWriterTest {
         tempAEMFilePath = tempFolder.newFile("TestAEMMultisatellite-2.aem").toString();
         AEMWriter writer2 = new AEMWriter(null, id1, null);
         writer2.write(tempAEMFilePath, file);
+    }
+
+    @Test
+    public void testMultisatelliteFile() throws IOException {
+        final String id1 = "ID1";
+        final String id2 = "ID2";
+        AEMFile file = new StandInEphemerisFile();
+        file.getSatellites().put(id1, new StandInSatelliteEphemeris(id1, new ArrayList<>()));
+        file.getSatellites().put(id2, new StandInSatelliteEphemeris(id2, new ArrayList<>()));
+
+        String tempAEMFilePath = tempFolder.newFile("TestAEMMultisatellite-1.aem").toString();
+
+        AEMWriter writer1 = new AEMWriter();
+
+        try {
+            writer1.write(tempAEMFilePath, file);
+            fail("Should have thrown OrekitIllegalArgumentException due to multiple satellites");
+        } catch (OrekitIllegalArgumentException e) {
+            assertEquals(OrekitMessages.EPHEMERIS_FILE_NO_MULTI_SUPPORT, e.getSpecifier());
+        }
+
+        tempAEMFilePath = tempFolder.newFile("TestAEMMultisatellite-2.aem").toString();
+        AEMWriter writer2 = new AEMWriter(null, id1, null);
+        writer2.write(tempAEMFilePath, file);
+    }
+
+    @Test
+    public void testIssue723() throws IOException {
+        final String ex = "/ccsds/AEMExample2.txt";
+        final InputStream inEntry = getClass().getResourceAsStream(ex);
+        final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM())
+                .withConventions(IERSConventions.IERS_2010);
+        final AEMFile aemFile = parser.parse(inEntry, "AEMExample2.txt");
+
+        String tempAEMFilePath = tempFolder.newFile("TestAEMIssue723.aem").toString();
+        AEMWriter writer = new AEMWriter();
+        writer.write(tempAEMFilePath, aemFile);
+
+        final AEMFile generatedAemFile = parser.parse(tempAEMFilePath);
+        assertEquals(aemFile.getHeaderComment().get(0), generatedAemFile.getHeaderComment().get(0));
+    }
+
+    /**
+     * Check writing an AEM with format parameters for attitude.
+     *
+     * @throws IOException on error
+     */
+    @Test
+    public void testWriteAemFormat() throws IOException {
+        // setup
+        String exampleFile = "/ccsds/AEMExample7.txt";
+        InputStream inEntry = getClass().getResourceAsStream(exampleFile);
+        AEMParser parser = new AEMParser().withConventions(IERSConventions.IERS_2010);
+        AEMFile aemFile = parser.parse(inEntry, "AEMExample7.txt");
+        StringBuilder buffer = new StringBuilder();
+
+        AEMWriter writer = new AEMWriter(aemFile.getOriginator(),
+                                         aemFile.getAttitudeBlocks().get(0).getMetaData().getObjectID(),
+                                         aemFile.getAttitudeBlocks().get(0).getMetaData().getObjectName(),
+                                         "%.2f");
+
+        writer.write(buffer, aemFile);
+
+        String[] lines = buffer.toString().split("\n");
+
+        assertEquals(lines[21], "2002-12-18T12:00:00.331 0.57 0.03 0.46 0.68");
+        assertEquals(lines[22], "2002-12-18T12:01:00.331 0.42 -0.46 0.24 0.75");
+        assertEquals(lines[23], "2002-12-18T12:02:00.331 -0.85 0.27 -0.07 0.46");
+
+        // Default format
+        writer = new AEMWriter(aemFile.getOriginator(),
+                               aemFile.getAttitudeBlocks().get(0).getMetaData().getObjectID(),
+                               aemFile.getAttitudeBlocks().get(0).getMetaData().getObjectName());
+        buffer = new StringBuilder();
+        writer.write(buffer, aemFile);
+
+        String[] lines2 = buffer.toString().split("\n");
+
+        assertEquals(lines2[21], "2002-12-18T12:00:00.331  0.56748  0.03146  0.45689  0.68427");
+        assertEquals(lines2[22], "2002-12-18T12:01:00.331  0.42319 -0.45697  0.23784  0.74533");
+        assertEquals(lines2[23], "2002-12-18T12:02:00.331 -0.84532  0.26974 -0.06532  0.45652");
     }
 
     private static void compareAemAttitudeBlocks(AttitudeEphemeridesBlock block1, AttitudeEphemeridesBlock block2) {
@@ -238,8 +321,14 @@ public class AEMWriterTest {
     private class StandInSatelliteEphemeris extends AemSatelliteEphemeris {
         final List<AttitudeEphemeridesBlock> blocks;
 
+        @Deprecated
         public StandInSatelliteEphemeris(List<AttitudeEphemeridesBlock> blocks) {
             super(blocks);
+            this.blocks = blocks;
+        }
+
+        public StandInSatelliteEphemeris(String id, List<AttitudeEphemeridesBlock> blocks) {
+            super(id, blocks);
             this.blocks = blocks;
         }
 

@@ -28,7 +28,6 @@ import org.orekit.estimation.Context;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.MeasurementCreator;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.estimation.measurements.modifiers.PhaseAmbiguityModifier;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -44,19 +43,26 @@ public class PhaseMeasurementCreator extends MeasurementCreator {
     private final double                 wavelength;
     private final PhaseAmbiguityModifier ambiguity;
     private final Vector3D               antennaPhaseCenter;
-    private final ObservableSatellite satellite;
+    private final ObservableSatellite    satellite;
 
-    public PhaseMeasurementCreator(final Context context, final Frequency frequency, final int ambiguity) {
-        this(context, frequency, ambiguity, Vector3D.ZERO);
+    public PhaseMeasurementCreator(final Context context, final Frequency frequency,
+                                   final int ambiguity, final double satClockOffset) {
+        this(context, frequency, ambiguity, satClockOffset, Vector3D.ZERO);
     }
 
     public PhaseMeasurementCreator(final Context context, final Frequency frequency,
-                                   final int ambiguity, final Vector3D antennaPhaseCenter) {
+                                   final int ambiguity, final double satClockOffset,
+                                   final Vector3D antennaPhaseCenter) {
         this.context            = context;
         this.wavelength         = frequency.getWavelength();
         this.ambiguity          = new PhaseAmbiguityModifier(0, ambiguity);
         this.antennaPhaseCenter = antennaPhaseCenter;
         this.satellite          = new ObservableSatellite(0);
+        this.satellite.getClockOffsetDriver().setValue(satClockOffset);
+    }
+
+    public ObservableSatellite getSatellite() {
+        return satellite;
     }
 
     public void init(SpacecraftState s0, AbsoluteDate t, double step) {
@@ -77,12 +83,18 @@ public class PhaseMeasurementCreator extends MeasurementCreator {
             }
 
         }
+        if (satellite.getClockOffsetDriver().getReferenceDate() == null) {
+            satellite.getClockOffsetDriver().setReferenceDate(s0.getDate());
+        }
     }
 
     public void handleStep(final SpacecraftState currentState, final boolean isLast) {
         try {
-            double n = ambiguity.getParametersDrivers().get(0).getValue();
+            final double n      = ambiguity.getParametersDrivers().get(0).getValue();
             for (final GroundStation station : context.stations) {
+                final double           groundClk = station.getClockOffsetDriver().getValue();
+                final double           satClk    = satellite.getClockOffsetDriver().getValue();
+                final double           deltaD    = Constants.SPEED_OF_LIGHT * (groundClk - satClk);
                 final AbsoluteDate     date      = currentState.getDate();
                 final Frame            inertial  = currentState.getFrame();
                 final Vector3D         position  = currentState.toTransform().getInverse().transformPosition(antennaPhaseCenter);
@@ -92,18 +104,18 @@ public class PhaseMeasurementCreator extends MeasurementCreator {
 
                     final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
                         public double value(final double x) {
-                            final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(x));
+                            final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(groundClk + x));
                             final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
                             return d - x * Constants.SPEED_OF_LIGHT;
                         }
                     }, -1.0, 1.0);
                     final AbsoluteDate receptionDate  = currentState.getDate().shiftedBy(downLinkDelay);
                     final Vector3D stationAtReception =
-                                    station.getOffsetToInertial(inertial, receptionDate).transformPosition(Vector3D.ZERO);
+                                    station.getOffsetToInertial(inertial, receptionDate.shiftedBy(groundClk)).transformPosition(Vector3D.ZERO);
                     final double downLinkDistance = Vector3D.distance(position, stationAtReception);
 
-                    final Phase phase = new Phase(station, receptionDate,
-                                                  downLinkDistance / wavelength - n,
+                    final Phase phase = new Phase(station, receptionDate.shiftedBy(groundClk),
+                                                  (downLinkDistance + deltaD) / wavelength + n,
                                                   wavelength, 1.0, 10, satellite);
                     phase.addModifier(ambiguity);
                     addMeasurement(phase);

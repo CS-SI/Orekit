@@ -23,7 +23,6 @@ import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.models.earth.tessellation.Tile;
 
 public class TileTest {
 

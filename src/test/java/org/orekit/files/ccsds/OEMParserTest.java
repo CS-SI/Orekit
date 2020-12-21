@@ -458,6 +458,28 @@ public class OEMParserTest {
     }
 
     /**
+     * Check if the parser enters the correct interpolation degree
+     * (the parsed one or the default if there is none)
+     */
+    @Test
+    public void testDefaultInterpolationDegree()
+        throws URISyntaxException {
+
+        final String name = getClass().getResource("/ccsds/OEMExample8.txt").toURI().getPath();
+        OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM());
+
+        final OEMFile file = parser.parse(name);
+        Assert.assertEquals(1, file.getEphemeridesBlocks().get(0).getInterpolationDegree());
+        Assert.assertEquals(7, file.getEphemeridesBlocks().get(1).getInterpolationDegree());
+
+        parser = parser.withInterpolationDegree(5);
+
+        final OEMFile file2 = parser.parse(name);
+        Assert.assertEquals(5, file2.getEphemeridesBlocks().get(0).getInterpolationDegree());
+        Assert.assertEquals(7, file2.getEphemeridesBlocks().get(1).getInterpolationDegree());
+    }
+
+    /**
      * Check the parser can parse several ITRF frames. Test case for #361.
      */
     @Test

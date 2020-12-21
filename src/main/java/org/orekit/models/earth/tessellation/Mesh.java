@@ -28,6 +28,7 @@ import org.hipparchus.geometry.spherical.twod.S2Point;
 import org.hipparchus.geometry.spherical.twod.SphericalPolygonsSet;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
+import org.hipparchus.util.SinCos;
 import org.orekit.bodies.Ellipse;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -626,9 +627,10 @@ class Mesh {
             // compute approximated arrival point, assuming constant radius of curvature
             final Vector3D delta = v.subtract(omega3D);
             final double   theta = motion.getNorm() / delta.getNorm();
+            final SinCos   sc    = FastMath.sinCos(theta);
             final Vector3D approximated = new Vector3D(1, omega3D,
-                                                       FastMath.cos(theta), delta,
-                                                       FastMath.sin(theta) / theta, motion);
+                                                       sc.cos(), delta,
+                                                       sc.sin() / theta, motion);
 
             // convert to spherical coordinates
             final GeodeticPoint approximatedGP = ellipsoid.transform(approximated, ellipsoid.getBodyFrame(), null);

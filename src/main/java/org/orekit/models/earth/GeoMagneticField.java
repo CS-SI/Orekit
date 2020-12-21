@@ -18,6 +18,7 @@ package org.orekit.models.earth;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.SinCos;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -337,15 +338,15 @@ public class GeoMagneticField {
         // to Earth Centered Earth Fixed Cartesian coordinates, and then to spherical coordinates.
 
         final double lat = gp.getLatitude();
+        final SinCos sc  = FastMath.sinCos(lat);
         final double heightAboveEllipsoid = gp.getAltitude();
-        final double sinLat = FastMath.sin(lat);
 
         // compute the local radius of curvature on the reference ellipsoid
-        final double rc = a / FastMath.sqrt(1.0d - epssq * sinLat * sinLat);
+        final double rc = a / FastMath.sqrt(1.0d - epssq * sc.sin() * sc.sin());
 
         // compute ECEF Cartesian coordinates of specified point (for longitude=0)
-        final double xp = (rc + heightAboveEllipsoid) * FastMath.cos(lat);
-        final double zp = (rc * (1.0d - epssq) + heightAboveEllipsoid) * sinLat;
+        final double xp = (rc + heightAboveEllipsoid) * sc.cos();
+        final double zp = (rc * (1.0d - epssq) + heightAboveEllipsoid) * sc.sin();
 
         // compute spherical radius and angle lambda and phi of specified point
         final double r = FastMath.hypot(xp, zp);
@@ -364,10 +365,11 @@ public class GeoMagneticField {
 
         // difference between the spherical and geodetic latitudes
         final double psi = sph.phi - gp.getLatitude();
+        final SinCos sc  = FastMath.sinCos(psi);
 
         // rotate spherical field components to the geodetic system
-        final double Bz = field.getX() * FastMath.sin(psi) + field.getZ() * FastMath.cos(psi);
-        final double Bx = field.getX() * FastMath.cos(psi) - field.getZ() * FastMath.sin(psi);
+        final double Bz = field.getX() * sc.sin() + field.getZ() * sc.cos();
+        final double Bx = field.getX() * sc.cos() - field.getZ() * sc.sin();
         final double By = field.getY();
 
         return new Vector3D(Bx, By, Bz);
@@ -544,14 +546,13 @@ public class GeoMagneticField {
             cmLambda[0] = 1.0d;
             smLambda[0] = 0.0d;
 
-            final double cosLambda = FastMath.cos(sph.lambda);
-            final double sinLambda = FastMath.sin(sph.lambda);
-            cmLambda[1] = cosLambda;
-            smLambda[1] = sinLambda;
+            final SinCos scLambda = FastMath.sinCos(sph.lambda);
+            cmLambda[1] = scLambda.cos();
+            smLambda[1] = scLambda.sin();
 
             for (int m = 2; m <= maxN; m++) {
-                cmLambda[m] = cmLambda[m - 1] * cosLambda - smLambda[m - 1] * sinLambda;
-                smLambda[m] = cmLambda[m - 1] * sinLambda + smLambda[m - 1] * cosLambda;
+                cmLambda[m] = cmLambda[m - 1] * scLambda.cos() - smLambda[m - 1] * scLambda.sin();
+                smLambda[m] = cmLambda[m - 1] * scLambda.sin() + smLambda[m - 1] * scLambda.cos();
             }
         }
     }
@@ -603,7 +604,7 @@ public class GeoMagneticField {
                         index1 = (n - 1) * n / 2 + m;
                         mP[index] = x * mP[index1];
                         mPDeriv[index] = x * mPDeriv[index1] - z * mP[index1];
-                    } else if (n > 1 && n != m) {
+                    } else if (n > 1) {
                         index1 = (n - 2) * (n - 1) / 2 + m;
                         index2 = (n - 1) * n / 2 + m;
                         if (m > n - 2) {

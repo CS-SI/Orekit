@@ -57,9 +57,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *
  * <p>Instances of this class are guaranteed to be immutable.</p>
  *
- * <h1> Examples </h1>
+ * <h2> Examples </h2>
  *
- * <h2> Example of translation from R<sub>A</sub> to R<sub>B</sub> </h2>
+ * <h3> Example of translation from R<sub>A</sub> to R<sub>B</sub> </h3>
  *
  * <p> We want to transform the {@link FieldPVCoordinates} PV<sub>A</sub> to
  * PV<sub>B</sub> with :
@@ -78,7 +78,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * PVB = R1toR2.transformPVCoordinate(PVA);
  * </pre>
  *
- * <h2> Example of rotation from R<sub>A</sub> to R<sub>B</sub> </h2>
+ * <h3> Example of rotation from R<sub>A</sub> to R<sub>B</sub> </h3>
  * <p> We want to transform the {@link FieldPVCoordinates} PV<sub>A</sub> to
  * PV<sub>B</sub> with
  *
