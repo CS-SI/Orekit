@@ -2,7 +2,7 @@
 
 <project name="orekit" default="jar" basedir=".">
 
-  <property name="project.version"         value="10.2" />
+  <property name="project.version"         value="10.3" />
 
   <property name="src.dir"                 location="src"                    />
   <property name="main.src.dir"            value="${src.dir}/main/java"      />
@@ -18,7 +18,7 @@
 
   <property name="lib.dir"                 location="lib"                    />
 
-  <property name="hipparchus.version"       value="1.7"                                    />
+  <property name="hipparchus.version"       value="1.8"                                            />
   <property name="hipparchus.core.jar"      value="hipparchus-core-${hipparchus.version}.jar"      />
   <property name="hipparchus.geometry.jar"  value="hipparchus-geometry-${hipparchus.version}.jar"  />
   <property name="hipparchus.ode.jar"       value="hipparchus-ode-${hipparchus.version}.jar"       />
@@ -30,7 +30,7 @@
   <property name="junit.version"            value="4.12"                                           />
   <property name="junit.jar"                value="junit-${junit.version}.jar"                     />
   <property name="junit.maven.path"         value="junit/junit"                                    />
-  <property name="mockito.version"          value="3.3.3"                                          />
+  <property name="mockito.version"          value="3.6.28"                                         />
   <property name="mockito.jar"              value="mockito-core-${mockito.version}.jar"            />
   <property name="mockito.maven.path"       value="org/mockito/mockito-core"                       />
   <property name="bytebuddy.version"        value="1.9.10"                                         />

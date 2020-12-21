@@ -91,7 +91,7 @@
         * ocean tides, with or without ocean pole tide
         * Earth's albedo and infrared
         * empirical accelerations to account for the unmodeled forces
-        * general relativity
+        * general relativity (including Lense-Thirring and De Sitter corrections)
         * multiple maneuvers
         * state of the art ODE integrators (adaptive stepsize with error control,
           continuous output, switching functions, G-stop, step normalization ...)
