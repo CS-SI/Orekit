@@ -216,6 +216,48 @@ public class DSSTTesseralTest {
     }
 
     @Test
+    public void testIssue736() {
+
+        // Central Body geopotential 4x4
+        final UnnormalizedSphericalHarmonicsProvider provider =
+                GravityFieldFactory.getUnnormalizedProvider(4, 4);
+
+        // Frames and epoch
+        final Frame frame = FramesFactory.getEME2000();
+        final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
+        final AbsoluteDate initDate = new AbsoluteDate(2007, 4, 16, 0, 46, 42.400, TimeScalesFactory.getUTC());
+
+        // Initial orbit
+        final Orbit orbit = new EquinoctialOrbit(2.655989E7, 2.719455286199036E-4, 0.0041543085910249414,
+                                                 -0.3412974060023717, 0.3960084733107685,
+                                                 8.566537840341699, PositionAngle.TRUE,
+                                                 frame, initDate, provider.getMu());
+
+        // Force model
+        final DSSTForceModel tesseral = new DSSTTesseral(earthFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
+        final double[] parameters = tesseral.getParameters();
+
+        // Initialize force model
+        tesseral.initialize(new AuxiliaryElements(orbit, 1), PropagationType.MEAN, parameters);
+
+        // Eccentricity shift
+        final Orbit shfitedOrbit = new EquinoctialOrbit(2.655989E7, 0.02, 0.0041543085910249414,
+                                                 -0.3412974060023717, 0.3960084733107685,
+                                                 8.566537840341699, PositionAngle.TRUE,
+                                                 frame, initDate, provider.getMu());
+
+        final double[] elements = tesseral.getMeanElementRate(new SpacecraftState(shfitedOrbit), new AuxiliaryElements(shfitedOrbit, 1), parameters);
+
+        // The purpose of this test is not to verify a specific value.
+        // Its purpose is to verify that a NullPointerException does not
+        // occur when calculating initial values of Hansen Coefficients
+        for (int i = 0; i < elements.length; i++) {
+            Assert.assertTrue(elements[i] != 0);
+        }
+
+    }
+
+    @Test
     public void testOutOfRangeException() {
         // Central Body geopotential 1x0
         final UnnormalizedSphericalHarmonicsProvider provider =
