@@ -131,10 +131,10 @@ public class NumericalPropagatorTest {
         propagator.propagate(target);
 
         // verify
-        Assert.assertThat(actualDate[0], CoreMatchers.is(target));
-        Assert.assertThat(actualState[0].getDate().durationFrom(initDate),
+        MatcherAssert.assertThat(actualDate[0], CoreMatchers.is(target));
+        MatcherAssert.assertThat(actualState[0].getDate().durationFrom(initDate),
                 CoreMatchers.is(0.0));
-        Assert.assertThat(actualState[0].getPVCoordinates(),
+        MatcherAssert.assertThat(actualState[0].getPVCoordinates(),
                 OrekitMatchers.pvIs(initialState.getPVCoordinates()));
     }
 
@@ -155,7 +155,7 @@ public class NumericalPropagatorTest {
         for (SpacecraftState state : states) {
             PVCoordinates actual =
                     ephemeris.propagate(state.getDate()).getPVCoordinates();
-            Assert.assertThat(actual, OrekitMatchers.pvIs(state.getPVCoordinates()));
+            MatcherAssert.assertThat(actual, OrekitMatchers.pvIs(state.getPVCoordinates()));
         }
     }
 

@@ -27,7 +27,7 @@
   <property name="hipparchus.filtering.jar" value="hipparchus-filtering-${hipparchus.version}.jar" />
   <property name="hipparchus.stat.jar"      value="hipparchus-stat-${hipparchus.version}.jar"      />
   <property name="hipparchus.maven.path"    value="org/hipparchus"                                 />
-  <property name="junit.version"            value="4.12"                                           />
+  <property name="junit.version"            value="4.13.1"                                           />
   <property name="junit.jar"                value="junit-${junit.version}.jar"                     />
   <property name="junit.maven.path"         value="junit/junit"                                    />
   <property name="mockito.version"          value="3.6.28"                                         />

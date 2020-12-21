@@ -17,10 +17,10 @@
 package org.orekit.propagation.numerical;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
 
 import java.util.stream.Stream;
 
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -96,8 +96,8 @@ public class PartialDerivativesEquationsTest {
         pde.computeDerivatives(state, pdot);
 
         //verify
-        assertThat(forceModel.accelerationDerivativesPosition.toVector3D(), is(pv.getPosition()));
-        assertThat(forceModel.accelerationDerivativesVelocity.toVector3D(), is(pv.getVelocity()));
+        MatcherAssert.assertThat(forceModel.accelerationDerivativesPosition.toVector3D(), is(pv.getPosition()));
+        MatcherAssert.assertThat(forceModel.accelerationDerivativesVelocity.toVector3D(), is(pv.getVelocity()));
 
     }
 

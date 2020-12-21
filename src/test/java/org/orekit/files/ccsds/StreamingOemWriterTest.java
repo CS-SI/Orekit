@@ -17,7 +17,6 @@
 package org.orekit.files.ccsds;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -30,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64;
@@ -87,49 +87,49 @@ public class StreamingOemWriterTest {
             if (!ccsdsFrame.isLof()) {
                 Frame frame = ccsdsFrame.getFrame(IERSConventions.IERS_2010, true);
                 String actual = StreamingOemWriter.guessFrame(frame);
-                assertThat(actual, CoreMatchers.is(ccsdsFrame.name()));
+                MatcherAssert.assertThat(actual, CoreMatchers.is(ccsdsFrame.name()));
             }
         }
 
         // check common Orekit frames from FramesFactory
-        assertThat(StreamingOemWriter.guessFrame(FramesFactory.getGCRF()),
+        MatcherAssert.assertThat(StreamingOemWriter.guessFrame(FramesFactory.getGCRF()),
                 CoreMatchers.is("GCRF"));
-        assertThat(StreamingOemWriter.guessFrame(FramesFactory.getEME2000()),
+        MatcherAssert.assertThat(StreamingOemWriter.guessFrame(FramesFactory.getEME2000()),
                 CoreMatchers.is("EME2000"));
-        assertThat(
+        MatcherAssert.assertThat(
                 StreamingOemWriter.guessFrame(
                         FramesFactory.getITRFEquinox(IERSConventions.IERS_2010, true)),
                 CoreMatchers.is("GRC"));
-        assertThat(StreamingOemWriter.guessFrame(FramesFactory.getICRF()),
+        MatcherAssert.assertThat(StreamingOemWriter.guessFrame(FramesFactory.getICRF()),
                 CoreMatchers.is("ICRF"));
-        assertThat(
+        MatcherAssert.assertThat(
                    StreamingOemWriter.guessFrame(
                            FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                    CoreMatchers.is("ITRF2014"));
-        assertThat(StreamingOemWriter.guessFrame(FramesFactory.getGTOD(true)),
+        MatcherAssert.assertThat(StreamingOemWriter.guessFrame(FramesFactory.getGTOD(true)),
                 CoreMatchers.is("TDR"));
-        assertThat(StreamingOemWriter.guessFrame(FramesFactory.getTEME()),
+        MatcherAssert.assertThat(StreamingOemWriter.guessFrame(FramesFactory.getTEME()),
                 CoreMatchers.is("TEME"));
-        assertThat(StreamingOemWriter.guessFrame(FramesFactory.getTOD(true)),
+        MatcherAssert.assertThat(StreamingOemWriter.guessFrame(FramesFactory.getTOD(true)),
                 CoreMatchers.is("TOD"));
 
         // check that guessed name loses the IERS conventions and simpleEOP flag
         for (ITRFVersion version : ITRFVersion.values()) {
             final String name = version.getName().replaceAll("-", "");
             for (final IERSConventions conventions : IERSConventions.values()) {
-                assertThat(StreamingOemWriter.guessFrame(FramesFactory.getITRF(version, conventions, true)),
+                MatcherAssert.assertThat(StreamingOemWriter.guessFrame(FramesFactory.getITRF(version, conventions, true)),
                            CoreMatchers.is(name));
-                assertThat(StreamingOemWriter.guessFrame(FramesFactory.getITRF(version, conventions, false)),
+                MatcherAssert.assertThat(StreamingOemWriter.guessFrame(FramesFactory.getITRF(version, conventions, false)),
                            CoreMatchers.is(name));
             }
         }
 
         // check other names in Annex A
-        assertThat(
+        MatcherAssert.assertThat(
                 StreamingOemWriter.guessFrame(
                         CelestialBodyFactory.getMars().getInertiallyOrientedFrame()),
                 CoreMatchers.is("MCI"));
-        assertThat(
+        MatcherAssert.assertThat(
                 StreamingOemWriter.guessFrame(
                         CelestialBodyFactory.getSolarSystemBarycenter()
                                 .getInertiallyOrientedFrame()),
@@ -138,7 +138,7 @@ public class StreamingOemWriterTest {
         CcsdsModifiedFrame frame = new CcsdsModifiedFrame(
                 FramesFactory.getEME2000(), "EME2000",
                 CelestialBodyFactory.getMars(), "MARS");
-        assertThat(StreamingOemWriter.guessFrame(frame), CoreMatchers.is("EME2000"));
+        MatcherAssert.assertThat(StreamingOemWriter.guessFrame(frame), CoreMatchers.is("EME2000"));
         Vector3D v = frame.getTransformProvider().getTransform(AbsoluteDate.J2000_EPOCH).getTranslation();
         FieldVector3D<Decimal64> v64 = frame.getTransformProvider().getTransform(FieldAbsoluteDate.getJ2000Epoch(Decimal64Field.getInstance())).getTranslation();
         Assert.assertEquals(0.0, FieldVector3D.distance(v64, v).getReal(), 1.0e-10);
@@ -149,12 +149,12 @@ public class StreamingOemWriterTest {
                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                           new GeodeticPoint(1.2, 2.3, 45.6),
                                           "dummy");
-        assertThat(StreamingOemWriter.guessFrame(topo), CoreMatchers.is("dummy"));
+        MatcherAssert.assertThat(StreamingOemWriter.guessFrame(topo), CoreMatchers.is("dummy"));
 
         // check a fake ICRF
         Frame fakeICRF = new Frame(FramesFactory.getGCRF(), Transform.IDENTITY,
                                       CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER + "/inertial");
-        assertThat(StreamingOemWriter.guessFrame(fakeICRF), CoreMatchers.is("ICRF"));
+        MatcherAssert.assertThat(StreamingOemWriter.guessFrame(fakeICRF), CoreMatchers.is("ICRF"));
     }
 
     /**
@@ -170,22 +170,22 @@ public class StreamingOemWriterTest {
         for (CenterName centerName : centerNames) {
             CelestialBody body = centerName.getCelestialBody();
             String name = centerName.name().replace('_', ' ');
-            assertThat(StreamingOemWriter.guessCenter(body.getInertiallyOrientedFrame()),
+            MatcherAssert.assertThat(StreamingOemWriter.guessCenter(body.getInertiallyOrientedFrame()),
                     CoreMatchers.is(name));
-            assertThat(StreamingOemWriter.guessCenter(body.getBodyOrientedFrame()),
+            MatcherAssert.assertThat(StreamingOemWriter.guessCenter(body.getBodyOrientedFrame()),
                     CoreMatchers.is(name));
         }
         // Earth-Moon Barycenter is special
         CelestialBody emb = CenterName.EARTH_MOON.getCelestialBody();
-        assertThat(StreamingOemWriter.guessCenter(emb.getInertiallyOrientedFrame()),
+        MatcherAssert.assertThat(StreamingOemWriter.guessCenter(emb.getInertiallyOrientedFrame()),
                 CoreMatchers.is("EARTH-MOON BARYCENTER"));
-        assertThat(StreamingOemWriter.guessCenter(emb.getBodyOrientedFrame()),
+        MatcherAssert.assertThat(StreamingOemWriter.guessCenter(emb.getBodyOrientedFrame()),
                 CoreMatchers.is("EARTH-MOON BARYCENTER"));
         // check some special CCSDS frames
         CcsdsModifiedFrame frame = new CcsdsModifiedFrame(
                 FramesFactory.getEME2000(), "EME2000",
                 CelestialBodyFactory.getMars(), "MARS");
-        assertThat(StreamingOemWriter.guessCenter(frame), CoreMatchers.is("MARS"));
+        MatcherAssert.assertThat(StreamingOemWriter.guessCenter(frame), CoreMatchers.is("MARS"));
 
         // check unknown frame
         Frame topo = new TopocentricFrame(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -193,7 +193,7 @@ public class StreamingOemWriterTest {
                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                           new GeodeticPoint(1.2, 2.3, 45.6),
                                           "dummy");
-        assertThat(StreamingOemWriter.guessCenter(topo), CoreMatchers.is("UNKNOWN"));
+        MatcherAssert.assertThat(StreamingOemWriter.guessCenter(topo), CoreMatchers.is("UNKNOWN"));
     }
 
 
