@@ -338,22 +338,7 @@ public class DSSTTesseral implements DSSTForceModel {
         // Set the highest power of the eccentricity in the analytical power
         // series expansion for the averaged high order resonant central body
         // spherical harmonic perturbation
-        final double e = auxiliaryElements.getEcc();
-        if (e <= 0.005) {
-            maxEccPow = 3;
-        } else if (e <= 0.02) {
-            maxEccPow = 4;
-        } else if (e <= 0.1) {
-            maxEccPow = 7;
-        } else if (e <= 0.2) {
-            maxEccPow = 10;
-        } else if (e <= 0.3) {
-            maxEccPow = 12;
-        } else if (e <= 0.4) {
-            maxEccPow = 15;
-        } else {
-            maxEccPow = 20;
-        }
+        maxEccPow = getMaxEccPow(auxiliaryElements.getEcc());
 
         // Set the maximum power of the eccentricity to use in Hansen coefficient Kernel expansion.
         maxHansen = maxEccPow / 2;
@@ -362,7 +347,7 @@ public class DSSTTesseral implements DSSTForceModel {
         final double ratio = context.getRatio();
 
         // Compute the non resonant tesseral harmonic terms if not set by the user
-        getResonantAndNonResonantTerms(type, context);
+        getResonantAndNonResonantTerms(type, context.getOrbitPeriod(), ratio);
 
         hansen = new HansenObjects(ratio, type);
 
@@ -397,22 +382,7 @@ public class DSSTTesseral implements DSSTForceModel {
             // Set the highest power of the eccentricity in the analytical power
             // series expansion for the averaged high order resonant central body
             // spherical harmonic perturbation
-            final double e = auxiliaryElements.getEcc().getReal();
-            if (e <= 0.005) {
-                maxEccPow = 3;
-            } else if (e <= 0.02) {
-                maxEccPow = 4;
-            } else if (e <= 0.1) {
-                maxEccPow = 7;
-            } else if (e <= 0.2) {
-                maxEccPow = 10;
-            } else if (e <= 0.3) {
-                maxEccPow = 12;
-            } else if (e <= 0.4) {
-                maxEccPow = 15;
-            } else {
-                maxEccPow = 20;
-            }
+            maxEccPow = getMaxEccPow(auxiliaryElements.getEcc().getReal());
 
             // Set the maximum power of the eccentricity to use in Hansen coefficient Kernel expansion.
             maxHansen = maxEccPow / 2;
@@ -421,7 +391,8 @@ public class DSSTTesseral implements DSSTForceModel {
             final T ratio = context.getRatio();
 
             // Compute the non resonant tesseral harmonic terms if not set by the user
-            getResonantAndNonResonantTerms(type, context, field);
+            // Field information is not important here
+            getResonantAndNonResonantTerms(type, context.getOrbitPeriod().getReal(), ratio.getReal());
 
             mMax = FastMath.max(maxOrderTesseralSP, maxOrderMdailyTesseralSP);
 
@@ -442,6 +413,30 @@ public class DSSTTesseral implements DSSTForceModel {
         fieldShortPeriodTerms.put(field, ftspc);
         return Collections.singletonList(ftspc);
 
+    }
+
+    /**
+     * Get the maximum power of the eccentricity to use in summation over s.
+     * @param e eccentricity
+     * @return the maximum power of the eccentricity
+     */
+    private int getMaxEccPow(final double e) {
+        // maxEccPow depends on satellite eccentricity
+        if (e <= 0.005) {
+            return 3;
+        } else if (e <= 0.02) {
+            return 4;
+        } else if (e <= 0.1) {
+            return 7;
+        } else if (e <= 0.2) {
+            return 10;
+        } else if (e <= 0.3) {
+            return 12;
+        } else if (e <= 0.4) {
+            return 15;
+        } else {
+            return 20;
+        }
     }
 
     /** Performs initialization at each integration step for the current force model.
@@ -780,67 +775,24 @@ public class DSSTTesseral implements DSSTForceModel {
       * Get the resonant and non-resonant tesseral terms in the central body spherical harmonic field.
       *
       * @param type type of the elements used during the propagation
-      * @param context container for attributes
+      * @param orbitPeriod Keplerian period
+      * @param ratio ratio of satellite period to central body rotation period
       */
-    private void getResonantAndNonResonantTerms(final PropagationType type, final DSSTTesseralContext context) {
+    private void getResonantAndNonResonantTerms(final PropagationType type, final double orbitPeriod,
+                                                final double ratio) {
 
         // Compute natural resonant terms
         final double tolerance = 1. / FastMath.max(MIN_PERIOD_IN_SAT_REV,
-                                                   MIN_PERIOD_IN_SECONDS / context.getOrbitPeriod());
+                                                   MIN_PERIOD_IN_SECONDS / orbitPeriod);
 
         // Search the resonant orders in the tesseral harmonic field
         resOrders.clear();
         nonResOrders.clear();
         for (int m = 1; m <= maxOrder; m++) {
-            final double resonance = context.getRatio() * m;
+            final double resonance = ratio * m;
             int jRes = 0;
             final int jComputedRes = (int) FastMath.round(resonance);
             if (jComputedRes > 0 && jComputedRes <= maxFrequencyShortPeriodics && FastMath.abs(resonance - jComputedRes) <= tolerance) {
-                // Store each resonant index and order
-                resOrders.add(m);
-                jRes = jComputedRes;
-            }
-
-            if (type == PropagationType.OSCULATING && maxDegreeTesseralSP >= 0 && m <= maxOrderTesseralSP) {
-                //compute non resonant orders in the tesseral harmonic field
-                final List<Integer> listJofM = new ArrayList<Integer>();
-                //for the moment we take only the pairs (j,m) with |j| <= maxDegree + maxEccPow (from |s-j| <= maxEccPow and |s| <= maxDegree)
-                for (int j = -maxFrequencyShortPeriodics; j <= maxFrequencyShortPeriodics; j++) {
-                    if (j != 0 && j != jRes) {
-                        listJofM.add(j);
-                    }
-                }
-
-                nonResOrders.put(m, listJofM);
-            }
-        }
-    }
-
-    /**
-     * Get the non-resonant tesseral terms in the central body spherical harmonic field.
-     *
-     * @param <T> type of the elements
-     * @param type type of the elements used during the propagation
-     * @param context container for attributes
-     * @param field field used by default
-     */
-    private <T extends RealFieldElement<T>> void getResonantAndNonResonantTerms(final PropagationType type,
-                                                                                final FieldDSSTTesseralContext<T> context,
-                                                                                final Field<T> field) {
-
-        final T zero = field.getZero();
-        // Compute natural resonant terms
-        final T tolerance = FastMath.max(zero.add(MIN_PERIOD_IN_SAT_REV),
-                                         context.getOrbitPeriod().divide(MIN_PERIOD_IN_SECONDS).reciprocal()).reciprocal();
-
-        // Search the resonant orders in the tesseral harmonic field
-        resOrders.clear();
-        nonResOrders.clear();
-        for (int m = 1; m <= maxOrder; m++) {
-            final T resonance = context.getRatio().multiply(m);
-            int jRes = 0;
-            final int jComputedRes = (int) FastMath.round(resonance);
-            if (jComputedRes > 0 && jComputedRes <= maxFrequencyShortPeriodics && FastMath.abs(resonance.subtract(jComputedRes)).getReal() <= tolerance.getReal()) {
                 // Store each resonant index and order
                 resOrders.add(m);
                 jRes = jComputedRes;
