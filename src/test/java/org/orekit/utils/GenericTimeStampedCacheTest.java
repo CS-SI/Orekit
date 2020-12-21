@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well1024a;
 import org.junit.Assert;
@@ -268,7 +269,7 @@ public class GenericTimeStampedCacheTest {
             cache.getNeighbors(central);
             Assert.fail("Expected Exception");
         } catch (TimeStampedCacheException e) {
-            Assert.assertThat(e.getMessage(),
+            MatcherAssert.assertThat(e.getMessage(),
                     CoreMatchers.containsString(central.toString()));
         }
     }
@@ -289,7 +290,7 @@ public class GenericTimeStampedCacheTest {
             cache.getNeighbors(central);
             Assert.fail("Expected Exception");
         } catch (TimeStampedCacheException e) {
-            Assert.assertThat(e.getMessage(),
+            MatcherAssert.assertThat(e.getMessage(),
                     CoreMatchers.containsString(central.toString()));
         }
     }

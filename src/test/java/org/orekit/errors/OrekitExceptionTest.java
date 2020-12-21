@@ -21,6 +21,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.exception.DummyLocalizable;
 import org.junit.Assert;
 import org.junit.Test;
@@ -64,9 +65,9 @@ public class OrekitExceptionTest {
 
         // verify
         String actual = writer.toString();
-        Assert.assertThat(actual,
+        MatcherAssert.assertThat(actual,
                 CoreMatchers.containsString(message.getSourceString()));
-        Assert.assertThat(actual,
+        MatcherAssert.assertThat(actual,
                 CoreMatchers.containsString("IllegalStateException: bad message"));
     }
 
