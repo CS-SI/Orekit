@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm.adm.aem;
 import java.util.Collections;
 import java.util.List;
 
+import org.orekit.files.general.AttitudeEphemerisFile.AttitudeEphemerisSegment;
 import org.orekit.files.general.AttitudeEphemerisFile.SatelliteAttitudeEphemeris;
 import org.orekit.time.AbsoluteDate;
 
@@ -31,7 +32,7 @@ public class AEMSatelliteEphemeris implements SatelliteAttitudeEphemeris {
     private final String id;
 
     /** The attitude ephemeris data for the satellite. */
-    private final List<AttitudeEphemeridesBlock> blocks;
+    private final List<AttitudeEphemerisSegment> blocks;
 
     /**
      * Create a container for the set of ephemeris blocks in the file that pertain to
@@ -40,7 +41,7 @@ public class AEMSatelliteEphemeris implements SatelliteAttitudeEphemeris {
      * @param blocks containing ephemeris data for the satellite.
      * @since 10.3
      */
-    public AEMSatelliteEphemeris(final String id, final List<AttitudeEphemeridesBlock> blocks) {
+    public AEMSatelliteEphemeris(final String id, final List<AttitudeEphemerisSegment> blocks) {
         this.id = id;
         this.blocks = blocks;
     }
@@ -53,20 +54,20 @@ public class AEMSatelliteEphemeris implements SatelliteAttitudeEphemeris {
 
     /** {@inheritDoc} */
     @Override
-    public List<AttitudeEphemeridesBlock> getSegments() {
+    public List<AttitudeEphemerisSegment> getSegments() {
         return Collections.unmodifiableList(blocks);
     }
 
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getStart() {
-        return blocks.get(0).getStart();
+        return blocks.get(0).getMetadata().getStart();
     }
 
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getStop() {
-        return blocks.get(blocks.size() - 1).getStop();
+        return blocks.get(blocks.size() - 1).getMetadata().getStop();
     }
 
 }

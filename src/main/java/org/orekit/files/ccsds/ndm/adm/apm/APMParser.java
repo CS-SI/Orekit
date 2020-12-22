@@ -34,7 +34,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
 import org.orekit.files.ccsds.ndm.adm.ADMParser;
-import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.KeyValue;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
@@ -477,17 +476,6 @@ public class APMParser extends ADMParser<APMFile> {
 
         }
 
-    }
-
-    /**
-     * Parse a date.
-     * @param date date to parse, as the value of a CCSDS key=value line
-     * @param timeSystem time system to use
-     * @return parsed date
-     */
-    private AbsoluteDate parseDate(final String date, final CcsdsTimeScale timeSystem) {
-        return timeSystem.parseDate(date, getConventions(), getMissionReferenceDate(),
-                                    getDataContext().getTimeScales());
     }
 
     /**

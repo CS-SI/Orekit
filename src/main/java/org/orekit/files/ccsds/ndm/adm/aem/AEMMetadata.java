@@ -17,15 +17,25 @@
 package org.orekit.files.ccsds.ndm.adm.aem;
 
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
+import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
+import org.orekit.utils.IERSConventions;
 
 /** This class gathers the meta-data present in the Attitude Data Message (ADM).
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class AEMMetadata extends ADMMetadata {
+public class AEMMetadata extends ADMMetadata implements AttitudeEphemerisFile.AttitudeEphemerisSegmentMetadata {
+
+    /** IERS conventions to use. */
+    private final IERSConventions conventions;
+
+    /** Data context. */
+    private final DataContext dataContext;
 
     /** The reference frame A specifier, as it appeared in the file. */
     private String refFrameAString;
@@ -74,6 +84,21 @@ public class AEMMetadata extends ADMMetadata {
 
     /** The rotation order. */
     private RotationOrder rotationOrder;
+
+    /** Simple constructor.
+     * @param conventions IERS conventions to use
+     * @param dataContext data context to use
+     */
+    public AEMMetadata(final IERSConventions conventions, final DataContext dataContext) {
+        this.conventions = conventions;
+        this.dataContext = dataContext;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public TimeScale getTimeScale() {
+        return getTimeScale(conventions, dataContext);
+    }
 
     /**
      * Get the reference frame A specifier as it appeared in the file.

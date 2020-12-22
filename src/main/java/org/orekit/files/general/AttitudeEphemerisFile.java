@@ -116,7 +116,7 @@ public interface AttitudeEphemerisFile {
     }
 
     /**
-     * A segment of an attitude ephemeris for a satellite.
+     * Segment of an attitude ephemeris for a satellite.
      *
      * <p> Segments are typically used to split an ephemeris around discontinuous events
      * such as maneuvers.
@@ -128,13 +128,39 @@ public interface AttitudeEphemerisFile {
      */
     interface AttitudeEphemerisSegment {
 
-        /**
-         * Get an unmodifiable list of attitude data lines.
-         *
-         * @return a list of attitude data
+        /** Get the segment metadata.
+         * @return segment metadata
          */
-        List<? extends TimeStampedAngularCoordinates> getAngularCoordinates();
+        AttitudeEphemerisSegmentMetadata getMetadata();
 
+        /** Get the segment data.
+         * @return segment data
+         */
+        AttitudeEphemerisSegmentData getData();
+
+        /**
+         * Get the attitude provider for this attitude ephemeris segment.
+         *
+         * @return the attitude provider for this attitude ephemeris segment.
+         */
+        default BoundedAttitudeProvider getAttitudeProvider() {
+            return new EphemerisSegmentAttitudeProvider(getMetadata(), getData());
+        }
+
+    }
+
+    /**
+     * Metadata part of the segment of an attitude ephemeris for a satellite.
+     *
+     * <p> Segments are typically used to split an ephemeris around discontinuous events
+     * such as maneuvers.
+     *
+     * @author Raphaël Fermé
+     * @see AttitudeEphemerisFile
+     * @see SatelliteAttitudeEphemeris
+     * @since 10.3
+     */
+    interface AttitudeEphemerisSegmentMetadata {
         /**
          * Get the name of the center of the coordinate system the ephemeris is provided
          * in. This may be a natural origin, such as the center of the Earth, another
@@ -203,24 +229,9 @@ public interface AttitudeEphemerisFile {
 
         /**
          * Get the time scale for this ephemeris segment.
-         *
          * @return the time scale for this segment. Never {@code null}.
          */
         TimeScale getTimeScale();
-
-        /**
-         * Get the start date of this ephemeris segment.
-         *
-         * @return ephemeris segment start date.
-         */
-        AbsoluteDate getStart();
-
-        /**
-         * Get the end date of this ephemeris segment.
-         *
-         * @return ephemeris segment end date.
-         */
-        AbsoluteDate getStop();
 
         /**
          * Get the interpolation method to be used.
@@ -237,21 +248,48 @@ public interface AttitudeEphemerisFile {
         int getInterpolationSamples();
 
         /**
+         * Get the start date of this ephemeris segment.
+         *
+         * @return ephemeris segment start date.
+         */
+        AbsoluteDate getStart();
+
+        /**
+         * Get the end date of this ephemeris segment.
+         *
+         * @return ephemeris segment end date.
+         */
+        AbsoluteDate getStop();
+
+    }
+
+    /**
+     * Data part of the segment of an attitude ephemeris for a satellite.
+     *
+     * <p> Segments are typically used to split an ephemeris around discontinuous events
+     * such as maneuvers.
+     *
+     * @author Raphaël Fermé
+     * @see AttitudeEphemerisFile
+     * @see SatelliteAttitudeEphemeris
+     * @since 10.3
+     */
+    interface AttitudeEphemerisSegmentData {
+
+        /**
+         * Get an unmodifiable list of attitude data lines.
+         *
+         * @return a list of attitude data
+         */
+        List<? extends TimeStampedAngularCoordinates> getAngularCoordinates();
+
+        /**
          * Get which derivatives of angular data are available in this attitude ephemeris segment.
          *
          * @return a value indicating if the file contains rotation and/or rotation rate
          *         and/or acceleration data.
          */
         AngularDerivativesFilter getAvailableDerivatives();
-
-        /**
-         * Get the attitude provider for this attitude ephemeris segment.
-         *
-         * @return the attitude provider for this attitude ephemeris segment.
-         */
-        default BoundedAttitudeProvider getAttitudeProvider() {
-            return new EphemerisSegmentAttitudeProvider(this);
-        }
 
     }
 

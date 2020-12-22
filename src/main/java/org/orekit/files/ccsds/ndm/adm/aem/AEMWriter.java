@@ -102,28 +102,27 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
 
     /** {@inheritDoc} */
     @Override
-    public void write(final Appendable writer, final AttitudeEphemerisFile ephemerisFile)
+    public void writeHeader(final Appendable writer)
+        throws IOException {
+        if (writer == null) {
+            throw new OrekitIllegalArgumentException(OrekitMessages.NULL_ARGUMENT, "writer");
+        }
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void writeSegment(final Appendable writer,
+                             final AttitudeEphemerisFile.AttitudeEphemerisSegmentMetadata metadata,
+                             final AttitudeEphemerisFile.AttitudeEphemerisSegmentData data)
         throws IOException {
 
         if (writer == null) {
             throw new OrekitIllegalArgumentException(OrekitMessages.NULL_ARGUMENT, "writer");
         }
 
-        if (ephemerisFile == null) {
+        if (metadata == null) {
             return;
-        }
-
-        final String idToProcess;
-        if (spaceObjectId != null) {
-            if (ephemerisFile.getSatellites().containsKey(spaceObjectId)) {
-                idToProcess = spaceObjectId;
-            } else {
-                throw new OrekitIllegalArgumentException(OrekitMessages.VALUE_NOT_FOUND, spaceObjectId, "ephemerisFile");
-            }
-        } else if (ephemerisFile.getSatellites().keySet().size() == 1) {
-            idToProcess = ephemerisFile.getSatellites().keySet().iterator().next();
-        } else {
-            throw new OrekitIllegalArgumentException(OrekitMessages.EPHEMERIS_FILE_NO_MULTI_SUPPORT);
         }
 
         // Get satellite and attitude ephemeris segments to output.
@@ -138,10 +137,10 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
 
         final String objectName = this.spaceObjectName == null ? idToProcess : this.spaceObjectName;
         // Only one time scale per AEM file, see Section 4.2.5.4.2
-        final TimeScale timeScale = firstSegment.getTimeScale();
+        final TimeScale timeScale = firstSegment.getMetadata().getTimeScale();
         // Metadata that is constant for the whole AEM file
         final Map<Keyword, String> metadata = new LinkedHashMap<>();
-        metadata.put(Keyword.TIME_SYSTEM, firstSegment.getTimeScaleString());
+        metadata.put(Keyword.TIME_SYSTEM, firstSegment.getMetadata().getTimeScaleString());
         metadata.put(Keyword.ORIGINATOR,  this.originator);
         // Only one object in an AEM file, see Section 2.3.1
         metadata.put(Keyword.OBJECT_NAME,   objectName);
@@ -171,24 +170,25 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
         for (final AttitudeEphemerisSegment segment : segments) {
             // Segment specific metadata
             metadata.clear();
-            metadata.put(Keyword.CENTER_NAME,          segment.getCenterName());
-            metadata.put(Keyword.REF_FRAME_A,          segment.getRefFrameAString());
-            metadata.put(Keyword.REF_FRAME_B,          segment.getRefFrameBString());
-            metadata.put(Keyword.ATTITUDE_DIR,         segment.getAttitudeDirection());
-            metadata.put(Keyword.START_TIME,           segment.getStart().toString(timeScale));
-            metadata.put(Keyword.STOP_TIME,            segment.getStop().toString(timeScale));
-            metadata.put(Keyword.ATTITUDE_TYPE,        segment.getAttitudeType());
-            metadata.put(Keyword.INTERPOLATION_METHOD, segment.getInterpolationMethod());
+            metadata.put(Keyword.CENTER_NAME,          segment.getMetadata().getCenterName());
+            metadata.put(Keyword.REF_FRAME_A,          segment.getMetadata().getRefFrameAString());
+            metadata.put(Keyword.REF_FRAME_B,          segment.getMetadata().getRefFrameBString());
+            metadata.put(Keyword.ATTITUDE_DIR,         segment.getMetadata().getAttitudeDirection());
+            metadata.put(Keyword.START_TIME,           segment.getMetadata().getStart().toString(timeScale));
+            metadata.put(Keyword.STOP_TIME,            segment.getMetadata().getStop().toString(timeScale));
+            metadata.put(Keyword.ATTITUDE_TYPE,        segment.getMetadata().getAttitudeType());
+            metadata.put(Keyword.INTERPOLATION_METHOD, segment.getMetadata().getInterpolationMethod());
             metadata.put(Keyword.INTERPOLATION_DEGREE,
-                         String.valueOf(segment.getInterpolationSamples() - 1));
+                         String.valueOf(segment.getMetadata().getInterpolationSamples() - 1));
 
             final AEMSegment segmentWriter = aemWriter.newSegment(metadata);
             segmentWriter.writeMetadata();
             segmentWriter.startAttitudeBlock();
             // Loop on attitude data
-            for (final TimeStampedAngularCoordinates coordinates : segment.getAngularCoordinates()) {
-                segmentWriter.writeAttitudeEphemerisLine(coordinates, segment.isFirst(),
-                                                         segment.getAttitudeType(), segment.getRotationOrder());
+            for (final TimeStampedAngularCoordinates coordinates : segment.getData().getAngularCoordinates()) {
+                segmentWriter.writeAttitudeEphemerisLine(coordinates, segment.getMetadata().isFirst(),
+                                                         segment.getMetadata().getAttitudeType(),
+                                                         segment.getMetadata().getRotationOrder());
             }
             segmentWriter.endAttitudeBlock();
         }

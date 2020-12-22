@@ -36,7 +36,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.Keyword;
 import org.orekit.files.ccsds.ndm.adm.ADMParser;
-import org.orekit.files.ccsds.ndm.tdm.TDMMetadata;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.KeyValue;
 import org.orekit.files.general.AttitudeEphemerisFileParser;
@@ -309,82 +308,92 @@ public class AEMParser extends ADMParser<AEMFile> implements AttitudeEphemerisFi
 
                     case META_START:
                         // Indicate the start of meta-data parsing for this block
-                        pi.currentMetadata = new AEMMetadata();
+                        pi.currentMetadata = new AEMMetadata(getConventions(), getDataContext());
                         pi.parsingHeader   = false;
                         pi.parsingMetaData = true;
-                        pi.lastEphemeridesBlock.setInterpolationDegree(getInterpolationDegree());
+                        pi.parsingData     = false;
+                        pi.currentMetadata.setInterpolationDegree(getInterpolationDegree());
                         break;
 
                     case REF_FRAME_A:
-                        pi.lastEphemeridesBlock.setRefFrameAString(pi.keyValue.getValue());
+                        pi.currentMetadata.setRefFrameAString(pi.keyValue.getValue());
                         break;
 
                     case REF_FRAME_B:
-                        pi.lastEphemeridesBlock.setRefFrameBString(pi.keyValue.getValue());
+                        pi.currentMetadata.setRefFrameBString(pi.keyValue.getValue());
                         break;
 
                     case ATTITUDE_DIR:
-                        pi.lastEphemeridesBlock.setAttitudeDirection(pi.keyValue.getValue());
+                        pi.currentMetadata.setAttitudeDirection(pi.keyValue.getValue());
                         break;
 
                     case START_TIME:
-                        pi.lastEphemeridesBlock.setStartTime(parseDate(pi.keyValue.getValue(),
-                                                                       pi.lastEphemeridesBlock.getMetadata().getTimeSystem()));
+                        pi.currentMetadata.setStartTime(parseDate(pi.keyValue.getValue(),
+                                                                  pi.currentMetadata.getTimeSystem()));
                         break;
 
                     case USEABLE_START_TIME:
-                        pi.lastEphemeridesBlock.setUseableStartTime(parseDate(pi.keyValue.getValue(),
-                                                                              pi.lastEphemeridesBlock.getMetadata().getTimeSystem()));
+                        pi.currentMetadata.setUseableStartTime(parseDate(pi.keyValue.getValue(),
+                                                                         pi.currentMetadata.getTimeSystem()));
                         break;
 
                     case USEABLE_STOP_TIME:
-                        pi.lastEphemeridesBlock.setUseableStopTime(parseDate(pi.keyValue.getValue(), pi.lastEphemeridesBlock.getMetadata().getTimeSystem()));
+                        pi.currentMetadata.setUseableStopTime(parseDate(pi.keyValue.getValue(), pi.currentMetadata.getTimeSystem()));
                         break;
 
                     case STOP_TIME:
-                        pi.lastEphemeridesBlock.setStopTime(parseDate(pi.keyValue.getValue(), pi.lastEphemeridesBlock.getMetadata().getTimeSystem()));
+                        pi.currentMetadata.setStopTime(parseDate(pi.keyValue.getValue(), pi.currentMetadata.getTimeSystem()));
                         break;
 
                     case ATTITUDE_TYPE:
-                        pi.lastEphemeridesBlock.setAttitudeType(pi.keyValue.getValue());
+                        pi.currentMetadata.setAttitudeType(pi.keyValue.getValue());
                         break;
 
                     case QUATERNION_TYPE:
                         final boolean isFirst = (pi.keyValue.getValue().equals("FIRST")) ? true : false;
-                        pi.lastEphemeridesBlock.setIsFirst(isFirst);
+                        pi.currentMetadata.setIsFirst(isFirst);
                         break;
 
                     case EULER_ROT_SEQ:
-                        pi.lastEphemeridesBlock.setEulerRotSeq(pi.keyValue.getValue());
-                        pi.lastEphemeridesBlock.setRotationOrder(AEMRotationOrder.getRotationOrder(pi.keyValue.getValue()));
+                        pi.currentMetadata.setEulerRotSeq(pi.keyValue.getValue());
+                        pi.currentMetadata.setRotationOrder(AEMRotationOrder.getRotationOrder(pi.keyValue.getValue()));
                         break;
 
                     case RATE_FRAME:
-                        pi.lastEphemeridesBlock.setRateFrameString(pi.keyValue.getValue());
+                        pi.currentMetadata.setRateFrameString(pi.keyValue.getValue());
                         break;
 
                     case INTERPOLATION_METHOD:
-                        pi.lastEphemeridesBlock.setInterpolationMethod(pi.keyValue.getValue());
+                        pi.currentMetadata.setInterpolationMethod(pi.keyValue.getValue());
                         break;
 
                     case INTERPOLATION_DEGREE:
-                        pi.lastEphemeridesBlock.setInterpolationDegree(Integer.parseInt(pi.keyValue.getValue()));
+                        pi.currentMetadata.setInterpolationDegree(Integer.parseInt(pi.keyValue.getValue()));
                         break;
 
                     case META_STOP:
                         // Set attitude reference frame
                         parseReferenceFrame(pi);
-                        // Read attitude ephemeris data lines
-                        parseEphemeridesDataLines(reader, pi);
+                        pi.parsingMetaData = false;
                         break;
 
                     default:
-                        boolean parsed = false;
-                        parsed = parsed || parseComment(pi.keyValue, pi.commentTmp);
-                        parsed = parsed || parseHeaderEntry(pi.keyValue, file, pi.commentTmp);
-                        if (pi.lastEphemeridesBlock != null) {
-                            parsed = parsed || parseMetaDataEntry(pi.keyValue,
-                                                                  pi.lastEphemeridesBlock.getMetadata());
+                        final boolean parsed;
+                        if (pi.parsingHeader) {
+                            parsed = parseHeaderEntry(pi.keyValue, pi.file);
+                        } else if (pi.parsingMetaData) {
+                            parsed = parseMetaDataEntry(pi.keyValue, pi.currentMetadata);
+                            if (pi.currentMetadata.getTimeSystem() != null) {
+                                // this was the end of the metadata part
+                                pi.parsingMetaData = false;
+                            }
+                        } else {
+                            if (pi.keyValue.getKeyword() == Keyword.COMMENT) {
+                                pi.currentEphemeridesBlock.addComment(pi.keyValue.getValue());
+                            } else {
+                                parseEphemeridesDataLines(reader, pi);
+                            }
+                            parsed = true;
                         }
                         if (!parsed) {
                             throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
@@ -419,31 +428,30 @@ public class AEMParser extends ADMParser<AEMFile> implements AttitudeEphemerisFi
                 pi.keyValue = new KeyValue(line, pi.lineNumber, pi.fileName);
                 if (pi.keyValue.getKeyword() == null) {
                     try (Scanner sc = new Scanner(line)) {
-                        final AbsoluteDate date = parseDate(sc.next(), pi.lastEphemeridesBlock.getMetadata().getTimeSystem());
+                        final AbsoluteDate date = parseDate(sc.next(), pi.currentMetadata.getTimeSystem());
                         // Create an array with the maximum possible size
                         final double[] attitudeData = new double[MAX_SIZE];
                         int index = 0;
                         while (sc.hasNext()) {
                             attitudeData[index++] = Double.parseDouble(sc.next());
                         }
-                        final AEMAttitudeType attType = AEMAttitudeType.getAttitudeType(pi.lastEphemeridesBlock.getAttitudeType());
-                        final RotationOrder rotationOrder = pi.lastEphemeridesBlock.getRotationOrder();
+                        final AEMAttitudeType attType = AEMAttitudeType.getAttitudeType(pi.currentMetadata.getAttitudeType());
+                        final RotationOrder rotationOrder = pi.currentMetadata.getRotationOrder();
 
                         final TimeStampedAngularCoordinates epDataLine = attType.getAngularCoordinates(date, attitudeData,
-                                                                                                       pi.lastEphemeridesBlock.isFirst(),
+                                                                                                       pi.currentMetadata.isFirst(),
                                                                                                        rotationOrder);
-                        pi.lastEphemeridesBlock.getAttitudeDataLines().add(epDataLine);
-                        pi.lastEphemeridesBlock.updateAngularDet
+                        pi.currentEphemeridesBlock.getAttitudeDataLines().add(epDataLine);
+                        pi.currentEphemeridesBlock.updateAngularDerivativesFilter(attType.getAngularDerivativesFilter());
+                    }
+                } else {
                     switch (pi.keyValue.getKeyword()) {
 
                         case DATA_START:
-                            pi.lastEphemeridesBlock = new AttitudeEphemeridesBlock(pi.lastMetadata);
+                            pi.currentEphemeridesBlock = new AttitudeEphemeridesBlock(pi.file, pi.currentMetadata);
                             break;
 
                         case DATA_STOP:
-                            pi.lastEphemeridesBlock.setAttitudeDataLinesComment(pi.commentTmp);
-                            pi.commentTmp.clear();
-                            //pi.lineNumber--;
                             reader.reset();
                             reader.readLine();
                             return;
@@ -456,9 +464,9 @@ public class AEMParser extends ADMParser<AEMFile> implements AttitudeEphemerisFi
                             throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
                     }
                 }
-            }
-            reader.mark(300);
+                reader.mark(300);
 
+            }
         }
     }
 
@@ -469,20 +477,20 @@ public class AEMParser extends ADMParser<AEMFile> implements AttitudeEphemerisFi
     private void parseReferenceFrame(final ParseInfo pi) {
 
         // Reference frame A
-        final String frameAString = DASH.matcher(j2000Check(pi.lastEphemeridesBlock.getRefFrameAString())).replaceAll("");
+        final String frameAString = DASH.matcher(j2000Check(pi.currentMetadata.getRefFrameAString())).replaceAll("");
         final Frame frameA = isDefinedFrame(frameAString) ?
                                     CCSDSFrame.valueOf(frameAString).getFrame(getConventions(), isSimpleEOP(), getDataContext()) :
                                         localScBodyReferenceFrameA;
 
         // Reference frame B
-        final String frameBString = DASH.matcher(j2000Check(pi.lastEphemeridesBlock.getRefFrameBString())).replaceAll("");
+        final String frameBString = DASH.matcher(j2000Check(pi.currentMetadata.getRefFrameBString())).replaceAll("");
         final Frame frameB = isDefinedFrame(frameBString) ?
                                     CCSDSFrame.valueOf(frameBString).getFrame(getConventions(), isSimpleEOP(), getDataContext()) :
                                         localScBodyReferenceFrameB;
 
         // Set the attitude reference frame
-        final String direction = pi.lastEphemeridesBlock.getAttitudeDirection();
-        pi.lastEphemeridesBlock.setReferenceFrame("A2B".equals(direction) ? frameA : frameB);
+        final String direction = pi.currentMetadata.getAttitudeDirection();
+        pi.currentMetadata.setReferenceFrame("A2B".equals(direction) ? frameA : frameB);
 
     }
 

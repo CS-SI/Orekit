@@ -280,4 +280,15 @@ public abstract class ADMParser<T extends NDMFile<?, ?, ?>> {
         }
     }
 
+    /**
+     * Parse a date.
+     * @param date date to parse, as the value of a CCSDS key=value line
+     * @param timeSystem time system to use
+     * @return parsed date
+     */
+    protected AbsoluteDate parseDate(final String date, final CcsdsTimeScale timeSystem) {
+        return timeSystem.parseDate(date, getConventions(), getMissionReferenceDate(),
+                                    getDataContext().getTimeScales());
+    }
+
 }

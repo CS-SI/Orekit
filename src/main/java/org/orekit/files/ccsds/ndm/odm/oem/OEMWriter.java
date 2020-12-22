@@ -193,10 +193,10 @@ public class OEMWriter implements EphemerisFileWriter {
         if (ephemerisFile instanceof OEMFile) {
             // Cast to OEMFile
             final OEMFile oemFile = (OEMFile) ephemerisFile;
-            if (!oemFile.getHeaderComment().isEmpty()) {
+            if (!oemFile.getHeader().getComments().isEmpty()) {
                 // Loop on comments
                 final StringBuffer buffer = new StringBuffer();
-                for (String comment : oemFile.getHeaderComment()) {
+                for (String comment : oemFile.getHeader().getComments()()) {
                     buffer.append(comment);
                 }
                 // Update metadata

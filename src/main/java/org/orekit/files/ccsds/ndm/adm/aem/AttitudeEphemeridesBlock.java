@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.orekit.files.ccsds.ndm.NDMData;
+import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
@@ -29,7 +30,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * and the list of attitude data lines.
  * @author Bryan Cazabonne
  */
-public class AttitudeEphemeridesBlock implements NDMData {
+public class AttitudeEphemeridesBlock implements NDMData, AttitudeEphemerisFile.AttitudeEphemerisSegmentData {
 
     /** List of data lines. */
     private final List<TimeStampedAngularCoordinates> attitudeDataLines;
@@ -46,7 +47,8 @@ public class AttitudeEphemeridesBlock implements NDMData {
      * @param metadata metadata associated with these data
      */
     public AttitudeEphemeridesBlock(final AEMFile file, final AEMMetadata metadata) {
-        this.attitudeDataLines = new ArrayList<>();
+        attitudeDataLines        = new ArrayList<>();
+        attitudeDataLinesComment = new ArrayList<>();
     }
 
     /**
@@ -86,11 +88,11 @@ public class AttitudeEphemeridesBlock implements NDMData {
         return attitudeDataLinesComment;
     }
 
-    /** Set the attitude data lines comment.
-     * @param ephemeridesDataLinesComment the comment to be set
+    /** Add an attitude data line comment.
+     * @param comment comment line to add
      */
-    public void setAttitudeDataLinesComment(final List<String> ephemeridesDataLinesComment) {
-        this.attitudeDataLinesComment = new ArrayList<String>(ephemeridesDataLinesComment);
+    public void addComment(final String comment) {
+        this.attitudeDataLinesComment.add(comment);
     }
 
 }
