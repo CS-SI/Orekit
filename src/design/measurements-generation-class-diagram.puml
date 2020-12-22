@@ -25,6 +25,7 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
+  skinparam linetype              ortho
 
   package org.hipparchus #ECEBD8 {
       interface RandomVectorGenerator
@@ -44,7 +45,7 @@
     }
     package estimation.measurements #DDEBD8 {
 
-      package generation #CEEBD8 {
+      package generation #CBDBC8 {
 
         interface "MeasurementBuilder<T>" as MeasurementBuilder_T_ {
           +addModifier(estimationModifier)

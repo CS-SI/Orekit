@@ -25,6 +25,7 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
+  skinparam linetype              ortho
 
   package org.hipparchus #ECEBD8 {
 
@@ -43,7 +44,7 @@
 
     package estimation #DDEBD8 {
 
-      package measurements #CEEBD8 {
+      package measurements #CBDBC8 {
         class EstimatedMeasurement
         interface ObservedMeasurement {
           +estimate(state)
@@ -51,7 +52,7 @@
         EstimatedMeasurement <-left- ObservedMeasurement
       }
 
-      package sequential #CEEBD8 {
+      package sequential #CBDBC8 {
 
         interface ProcessNoiseMatrixProvider
 
