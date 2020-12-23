@@ -329,6 +329,19 @@ set the artifacts in the release notes.
 
 Navigate to Projects > Orekit > Releases and make sure it looks nice.
 
+## Synchronize the Github mirror
+
+To enhance the visibility of the project, [a mirror](https://github.com/CS-SI/Orekit) is maintained on Github. The releases created on Gitlab are not automatically pushed on this mirror. They have to be declared manually to make visible the vitality of Orekit.
+
+1. Login to Github
+2. Go to the [Orekit releases](https://github.com/CS-SI/Orekit/releases) page
+3. Click on the [Draft a new release](https://github.com/CS-SI/Orekit/releases) button
+4. In the "Tag version" field of the form and in the "Release title" field, enter the tag of the release to be declared
+5. Describe the release as it has been done on Gitlab
+6. Click on "Publish release"
+
+Github automically adds two assets (zip and tarball archives of the tagged source code)
+
 ## Update Orekit site
 
 Several edits need to be made to the Orekit website after the vote.
