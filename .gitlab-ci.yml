@@ -19,7 +19,7 @@ variables:
   # when running from the command line.
   # `installAtEnd` and `deployAtEnd` are only effective with recent version of the corresponding plugins.
   MAVEN_CLI_OPTS: "-s .CI/maven-settings.xml --batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true"
-  SONAR_PROJECT_KEY="${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}"
+  SONAR_PROJECT_KEY="${CI_PROJECT_NAMESPACE}:${CI_PROJECT_NAME}"
   SONAR_PROJECT_NAME="${PROJECT_TITLE} (${SONAR_PROJECT_KEY})"
 
 verify:
