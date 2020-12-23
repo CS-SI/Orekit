@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -46,12 +46,35 @@ import org.orekit.propagation.events.handlers.StopOnIncreasing;
  */
 public class NodeDetector extends AbstractDetector<NodeDetector> {
 
+    /** Default max check interval. */
+    private static final double DEFAULT_MAX_CHECK = 1800.0;
+
+    /** Default convergence threshold. */
+    private static final double DEFAULT_THRESHOLD = 1.0e-3;
+
     /** Frame in which the equator is defined. */
     private final Frame frame;
 
     /** Build a new instance.
+     * <p>The default {@link #getMaxCheckInterval() max check interval}
+     * is set to 1800s, it can be changed using {@link #withMaxCheck(double)}
+     * in the fluent API. The default {@link #getThreshold() convergence threshold}
+     * is set to 1.0e-3s, it can be changed using {@link #withThreshold(double)}
+     * in the fluent API.</p>
+     * @param frame frame in which the equator is defined (typical
+     * values are {@link org.orekit.frames.FramesFactory#getEME2000() EME<sub>2000</sub>} or
+     * {@link org.orekit.frames.FramesFactory#getITRF(org.orekit.utils.IERSConventions, boolean) ITRF})
+     * @since 10.3
+     */
+    public NodeDetector(final Frame frame) {
+        this(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+             new StopOnIncreasing<NodeDetector>(), frame);
+    }
+
+    /** Build a new instance.
      * <p>The orbit is used only to set an upper bound for the max check interval
-     * to period/3 and to set the convergence threshold according to orbit size.</p>
+     * to a value related to nodes separation (as computed by a Keplerian model)
+     * and to set the convergence threshold according to orbit size.</p>
      * @param orbit initial orbit
      * @param frame frame in which the equator is defined (typical
      * values are {@link org.orekit.frames.FramesFactory#getEME2000() EME<sub>2000</sub>} or
@@ -63,7 +86,7 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
 
     /** Build a new instance.
      * <p>The orbit is used only to set an upper bound for the max check interval
-     * to period/3.</p>
+     * to a value related to nodes separation (as computed by a Keplerian model).</p>
      * @param threshold convergence threshold (s)
      * @param orbit initial orbit
      * @param frame frame in which the equator is defined (typical

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -39,8 +39,10 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Converter for states and parameters arrays.
  * @author Bryan Cazabonne
+ * @deprecated as of 10.2, replaced by {@link IonosphericGradientConverter}
  * @since 10.0
  */
+@Deprecated
 public class IonosphericDSConverter {
 
     /** Dimension of the state. */
@@ -89,11 +91,10 @@ public class IonosphericDSConverter {
         // mass never has derivatives
         final DerivativeStructure dsM = factory.constant(state.getMass());
 
-        final DerivativeStructure dsMu = factory.constant(state.getMu());
-
         final FieldOrbit<DerivativeStructure> dsOrbit =
                         new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(state.getDate(), posDS, velDS, accDS),
-                                                  state.getFrame(), dsMu);
+                                                  state.getFrame(),
+                                                  factory.getDerivativeField().getZero().add(state.getMu()));
 
         final FieldAttitude<DerivativeStructure> dsAttitude;
         if (freeStateParameters > 3) {
@@ -149,7 +150,7 @@ public class IonosphericDSConverter {
                                                                                           extend(pv0.getPosition(),     factory),
                                                                                           extend(pv0.getVelocity(),     factory),
                                                                                           extend(pv0.getAcceleration(), factory)),
-                                                      s0.getFrame(), s0.getMu());
+                                                      s0.getFrame(), extend(s0.getMu(), factory));
 
             // attitude
             final FieldAngularCoordinates<DerivativeStructure> ac0 = s0.getAttitude().getOrientation();

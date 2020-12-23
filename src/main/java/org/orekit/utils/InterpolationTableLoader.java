@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StreamTokenizer;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.LinkedList;
 import java.util.List;
@@ -93,7 +94,7 @@ public class InterpolationTableLoader implements DataLoader {
         final LinkedList<List<Double>> cellValues = new LinkedList<List<Double>>();
 
         final StreamTokenizer tokenizer =
-            new StreamTokenizer(new BufferedReader(new InputStreamReader(input, "UTF-8")));
+            new StreamTokenizer(new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8)));
 
         // ignore comments starting with a #
         tokenizer.commentChar('#');

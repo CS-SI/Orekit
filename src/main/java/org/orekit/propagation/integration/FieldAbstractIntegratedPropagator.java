@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -437,6 +437,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
     protected FieldSpacecraftState<T> propagate(final FieldAbsoluteDate<T> tEnd, final boolean activateHandlers) {
         try {
 
+            initializePropagation();
+
             if (getInitialState().getDate().equals(tEnd)) {
                 // don't extrapolate
                 return getInitialState();
@@ -462,7 +464,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
             setUpUserEventDetectors();
 
             // convert space flight dynamics API to math API
-            final FieldODEState<T> mathInitialState = createInitialState(getInitialIntegrationState());
+            final FieldSpacecraftState<T> initialIntegrationState = getInitialIntegrationState();
+            final FieldODEState<T> mathInitialState = createInitialState(initialIntegrationState);
             final FieldExpandableODE<T> mathODE = createODE(integrator, mathInitialState);
             equationsMapper = mathODE.getMapper();
             mathInterpolator = null;
@@ -473,7 +476,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
             // mathematical integration
             final FieldODEStateAndDerivative<T> mathFinalState;
 
-            beforeIntegration(getInitialState(), tEnd);
+            beforeIntegration(initialIntegrationState, tEnd);
             mathFinalState = integrator.integrate(mathODE, mathInitialState,
                                                   tEnd.durationFrom(getInitialState().getDate()));
 
@@ -814,6 +817,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
 
             final FieldSpacecraftState<T> oldState = getCompleteState(s.getTime(), s.getCompleteState(), s.getCompleteDerivative());
             final FieldSpacecraftState<T> newState = detector.resetState(oldState);
+            stateChanged(newState);
 
             // main part
             final T[] primary    = MathArrays.buildArray(getField(), s.getPrimaryStateDimension());
@@ -826,8 +830,9 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
                 final FieldAdditionalEquations<T> additional = additionalEquations.get(i);
                 final T[] NState = newState.getAdditionalState(additional.getName());
                 secondary[i] = MathArrays.buildArray(getField(), NState.length);
-                for (int j = 0; j < NState.length; j++)
+                for (int j = 0; j < NState.length; j++) {
                     secondary[i][j] = NState[j];
+                }
             }
 
             return new FieldODEState<>(newState.getDate().durationFrom(getStartDate()),

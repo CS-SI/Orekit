@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -113,7 +113,7 @@ public class GLONASSAnalyticalPropagatorTest {
         final PVCoordinates pv1 = propagator.getPVCoordinates(date, propagator.getECEF());
 
         // Checks
-        Assert.assertEquals(0., pv0.getPosition().distance(pv1.getPosition()), 1.9e-8);
+        Assert.assertEquals(0., pv0.getPosition().distance(pv1.getPosition()), 2.6e-8);
         Assert.assertEquals(0., pv0.getVelocity().distance(pv1.getVelocity()), 2.8e-12);
     }
 

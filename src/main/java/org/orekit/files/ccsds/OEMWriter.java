@@ -1,5 +1,5 @@
 /* Copyright 2016 Applied Defense Solutions (ADS)
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * ADS licenses this file to You under the Apache License, Version 2.0
@@ -23,6 +23,8 @@ import java.util.Map;
 
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.OEMFile.CovarianceMatrix;
+import org.orekit.files.ccsds.OEMFile.EphemeridesBlock;
 import org.orekit.files.ccsds.StreamingOemWriter.Segment;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.files.general.EphemerisFile.EphemerisSegment;
@@ -39,7 +41,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @since 9.0
  * @see <a href="https://public.ccsds.org/Pubs/502x0b2c1.pdf">CCSDS 502.0-B-2 Orbit Data
  *      Messages</a>
- * @see <a href="https://public.ccsds.org/Pubs/500x0g3.pdf">CCSDS 500.0-G-3 Navigation
+ * @see <a href="https://public.ccsds.org/Pubs/500x0g4.pdf">CCSDS 500.0-G-4 Navigation
  *      Data Definitions and Conventions</a>
  * @see StreamingOemWriter
  */
@@ -54,11 +56,7 @@ public class OEMWriter implements EphemerisFileWriter {
     /** Default originator field value if user specifies none. **/
     public static final String DEFAULT_ORIGINATOR = "OREKIT";
 
-    /**
-     * The space object ID we want to export, or null if we will process
-     * whichever space object is in an {@link EphemerisFile} with only one space
-     * object in it.
-     */
+    /** The interpolation method for ephemeris data. */
     private final InterpolationMethod interpolationMethod;
 
     /** Originator name, usually the organization and/or country. **/
@@ -73,34 +71,73 @@ public class OEMWriter implements EphemerisFileWriter {
     /** Space object name, usually a common name for an object like "ISS". **/
     private final String spaceObjectName;
 
+    /** Format for position ephemeris data output. */
+    private final String positionFormat;
+
+    /** Format for velocity ephemeris data output. */
+    private final String velocityFormat;
+
     /**
      * Standard default constructor that creates a writer with default
      * configurations.
      */
     public OEMWriter() {
-        this(DEFAULT_INTERPOLATION_METHOD, DEFAULT_ORIGINATOR, null, null);
+        this(DEFAULT_INTERPOLATION_METHOD, DEFAULT_ORIGINATOR, null, null,
+             StreamingOemWriter.DEFAULT_POSITION_FORMAT,
+             StreamingOemWriter.DEFAULT_VELOCITY_FORMAT);
     }
 
     /**
      * Constructor used to create a new OEM writer configured with the necessary
      * parameters to successfully fill in all required fields that aren't part
-     * of a standard @{link EphemerisFile} object.
+     * of a standard {@link EphemerisFile} object and using default formatting for
+     * {@link StreamingOemWriter#DEFAULT_POSITION_FORMAT position} and
+     * {@link StreamingOemWriter#DEFAULT_VELOCITY_FORMAT velocity} ephemeris data output.
      *
      * @param interpolationMethod
-     *            The interpolation method to specify in the OEM file
+     *            the interpolation method to specify in the OEM file
      * @param originator
-     *            The originator field string
+     *            the originator field string
      * @param spaceObjectId
-     *            The spacecraft ID
+     *            the spacecraft ID
      * @param spaceObjectName
-     *            The space object common name
+     *            the space object common name
      */
-    public OEMWriter(final InterpolationMethod interpolationMethod, final String originator, final String spaceObjectId,
-            final String spaceObjectName) {
+    public OEMWriter(final InterpolationMethod interpolationMethod, final String originator,
+            final String spaceObjectId, final String spaceObjectName) {
+        this(interpolationMethod, originator, spaceObjectId, spaceObjectName,
+                StreamingOemWriter.DEFAULT_POSITION_FORMAT,
+                StreamingOemWriter.DEFAULT_VELOCITY_FORMAT);
+    }
+
+    /**
+     * Constructor used to create a new OEM writer configured with the necessary
+     * parameters to successfully fill in all required fields that aren't part
+     * of a standard {@link EphemerisFile} object and user-defined position and
+     * velocity ephemeris data output {@link java.util.Formatter format}.
+     *
+     * @param interpolationMethod
+     *            the interpolation method to specify in the OEM file
+     * @param originator
+     *            the originator field string
+     * @param spaceObjectId
+     *            the spacecraft ID
+     * @param spaceObjectName
+     *            the space object common name
+     * @param positionFormat
+     *            format parameters for position ephemeris data output
+     * @param velocityFormat
+     *            format parameters for velocity ephemeris data output
+     */
+    public OEMWriter(final InterpolationMethod interpolationMethod, final String originator,
+            final String spaceObjectId, final String spaceObjectName,
+            final String positionFormat, final String velocityFormat) {
         this.interpolationMethod = interpolationMethod;
         this.originator = originator;
         this.spaceObjectId = spaceObjectId;
         this.spaceObjectName = spaceObjectName;
+        this.positionFormat = positionFormat;
+        this.velocityFormat = velocityFormat;
     }
 
     /** {@inheritDoc} */
@@ -150,8 +187,24 @@ public class OEMWriter implements EphemerisFileWriter {
         metadata.put(Keyword.OBJECT_ID, idToProcess);
         metadata.put(Keyword.OBJECT_NAME, objectName);
         metadata.put(Keyword.INTERPOLATION, this.interpolationMethod.toString());
+
+        // Header comments. If header comments are presents, they are assembled together in a single line
+        if (ephemerisFile instanceof OEMFile) {
+            // Cast to OEMFile
+            final OEMFile oemFile = (OEMFile) ephemerisFile;
+            if (!oemFile.getHeaderComment().isEmpty()) {
+                // Loop on comments
+                final StringBuffer buffer = new StringBuffer();
+                for (String comment : oemFile.getHeaderComment()) {
+                    buffer.append(comment);
+                }
+                // Update metadata
+                metadata.put(Keyword.COMMENT, buffer.toString());
+            }
+        }
+
         final StreamingOemWriter oemWriter =
-                new StreamingOemWriter(writer, timeScale, metadata);
+                new StreamingOemWriter(writer, timeScale, metadata, positionFormat, velocityFormat);
         oemWriter.writeHeader();
 
         for (final EphemerisSegment segment : segments) {
@@ -163,10 +216,19 @@ public class OEMWriter implements EphemerisFileWriter {
             metadata.put(Keyword.STOP_TIME, segment.getStop().toString(timeScale));
             metadata.put(Keyword.INTERPOLATION_DEGREE,
                     String.valueOf(segment.getInterpolationSamples() - 1));
+
             final Segment segmentWriter = oemWriter.newSegment(null, metadata);
             segmentWriter.writeMetadata();
             for (final TimeStampedPVCoordinates coordinates : segment.getCoordinates()) {
                 segmentWriter.writeEphemerisLine(coordinates);
+            }
+
+            if (segment instanceof EphemeridesBlock) {
+                final EphemeridesBlock curr_ephem_block = (EphemeridesBlock) segment;
+                final List<CovarianceMatrix> covarianceMatrices = curr_ephem_block.getCovarianceMatrices();
+                if (!covarianceMatrices.isEmpty()) {
+                    segmentWriter.writeCovarianceMatrices(covarianceMatrices);
+                }
             }
         }
     }

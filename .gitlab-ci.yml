@@ -1,0 +1,78 @@
+stages:
+- verify
+- deploy
+
+default:
+  # Default image
+  image: registry.orekit.org/orekit/ci-utils/maven:3.3.9-jdk-8
+  # Cache downloaded dependencies and plugins between builds.
+  # To keep cache across branches add 'key: "$CI_JOB_REF_NAME"'
+  cache:
+    paths:
+      - .m2/repository
+
+variables:
+  # This will supress any download for dependencies and plugins or upload messages which would clutter the console log.
+  # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
+  # As of Maven 3.3.0 instead of this you may define these options in `.mvn/maven.config` so the same config is used
+  # when running from the command line.
+  # `installAtEnd` and `deployAtEnd` are only effective with recent version of the corresponding plugins.
+  MAVEN_CLI_OPTS: "-s .CI/maven-settings.xml --batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true"
+
+verify:
+  stage: verify
+  script:
+    - mvn $MAVEN_CLI_OPTS verify site
+    - mvn $MAVEN_CLI_OPTS sonar:sonar -Dsonar.login=${SONAR_TOKEN} -Dsonar.branch.name=${CI_COMMIT_REF_NAME}
+  artifacts:
+    paths:
+      - target/*.jar
+      - target/site
+    reports:
+      junit:
+        - target/surefire-reports/*.xml
+
+# On main branches (develop, release-*, master)
+# the produced artifacts are deployed on the Nexus of the project
+# (https://packages.orekit.org/)
+deploy:artifacts:
+  stage: deploy
+  script:
+    - mvn $MAVEN_CLI_OPTS javadoc:jar source:jar deploy -DskipTests=true -Pci-deploy
+  artifacts:
+    paths:
+      - target/*.jar
+  only:
+    - develop@orekit/orekit
+    - /^release-[.0-9]+$/@orekit/orekit
+    - master@orekit/orekit
+
+
+deploy:site:
+  stage: deploy
+  before_script:
+  ##
+  ## Create the SSH directory and give it the right permissions
+  ##
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+
+  ##
+  ## We're using tr to fix line endings which makes ed25519 keys work
+  ## without extra base64 encoding.
+  ## https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
+  ##
+  - echo "$SSH_SECRET_KEY" > ~/.ssh/id_website
+  - chmod 700 ~/.ssh/id_website
+  
+  ##
+  ## Add known hosts
+  ##
+  - cp $SSH_KNOWN_HOSTS ~/.ssh/known_hosts
+  script:
+  - mvn $MAVEN_CLI_OPTS site:deploy
+  only:
+  - master@orekit/orekit
+  - /^release-[.0-9]+$/@orekit/orekit
+  - develop@orekit/orekit

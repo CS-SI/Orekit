@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
@@ -35,7 +36,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -67,7 +67,7 @@ public class SolarBodyTest {
         final Frame refFrame = FramesFactory.getICRF();
         final TimeScale tdb = TimeScalesFactory.getTDB();
         final InputStream inEntry = getClass().getResourceAsStream("/naif/DE431-ephemeris-NAIF.txt");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inEntry, "UTF-8"));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inEntry, StandardCharsets.UTF_8));
         for (String line = reader.readLine(); line != null; line = reader.readLine()) {
             line = line.trim();
             if (!line.isEmpty() && !line.startsWith("#")) {
@@ -424,14 +424,9 @@ public class SolarBodyTest {
          */
         public BodyAttraction(final CelestialBody body) {
             this.parametersDrivers = new ParameterDriver[1];
-            try {
-                parametersDrivers[0] = new ParameterDriver(body.getName() + ATTRACTION_COEFFICIENT_SUFFIX,
-                                                           body.getGM(), 1.0e-5 * body.getGM(),
-                                                           0.0, Double.POSITIVE_INFINITY);
-            } catch (OrekitException oe) {
-                // this should never occur as valueChanged above never throws an exception
-                throw new OrekitInternalError(oe);
-            }
+            parametersDrivers[0] = new ParameterDriver(body.getName() + ATTRACTION_COEFFICIENT_SUFFIX,
+                                                       body.getGM(), 1.0e-5 * body.getGM(),
+                                                       0.0, Double.POSITIVE_INFINITY);
             this.body = body;
         }
 

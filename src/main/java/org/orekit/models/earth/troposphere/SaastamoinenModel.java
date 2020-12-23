@@ -18,6 +18,7 @@ package org.orekit.models.earth.troposphere;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
@@ -27,6 +28,8 @@ import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.analysis.polynomials.PolynomialSplineFunction;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -62,6 +65,15 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
     /** Default file name for δR correction term table. */
     public static final String DELTA_R_FILE_NAME = "^saastamoinen-correction\\.txt$";
 
+    /** Default lowest acceptable elevation angle [rad]. */
+    public static final double DEFAULT_LOW_ELEVATION_THRESHOLD = 0.05;
+
+    /** First pattern for δR correction term table. */
+    private static final Pattern FIRST_DELTA_R_PATTERN = Pattern.compile("^\\^");
+
+    /** Second pattern for δR correction term table. */
+    private static final Pattern SECOND_DELTA_R_PATTERN = Pattern.compile("\\$$");
+
     /** X values for the B function. */
     private static final double[] X_VALUES_FOR_B = {
         0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0
@@ -95,8 +107,27 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
     /** The humidity [percent]. */
     private double r0;
 
+    /** Lowest acceptable elevation angle [rad]. */
+    private double lowElevationThreshold;
+
+    /**
+     * Create a new Saastamoinen model for the troposphere using the given environmental
+     * conditions and table from the reference book.
+     *
+     * @param t0 the temperature at the station [K]
+     * @param p0 the atmospheric pressure at the station [mbar]
+     * @param r0 the humidity at the station [fraction] (50% -&gt; 0.5)
+     * @see #SaastamoinenModel(double, double, double, String, DataProvidersManager)
+     * @since 10.1
+     */
+    public SaastamoinenModel(final double t0, final double p0, final double r0) {
+        this(t0, p0, r0, defaultDeltaR());
+    }
+
     /** Create a new Saastamoinen model for the troposphere using the given
-     * environmental conditions.
+     * environmental conditions. This constructor uses the {@link DataContext#getDefault()
+     * default data context} if {@code deltaRFileName != null}.
+     *
      * @param t0 the temperature at the station [K]
      * @param p0 the atmospheric pressure at the station [mbar]
      * @param r0 the humidity at the station [fraction] (50% -&gt; 0.5)
@@ -104,14 +135,41 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
      * correction term table (typically {@link #DELTA_R_FILE_NAME}), if null
      * default values from the reference book are used
      * @since 7.1
+     * @see #SaastamoinenModel(double, double, double, String, DataProvidersManager)
      */
+    @DefaultDataContext
     public SaastamoinenModel(final double t0, final double p0, final double r0,
                              final String deltaRFileName) {
+        this(t0, p0, r0, deltaRFileName,
+                DataContext.getDefault().getDataProvidersManager());
+    }
+
+    /** Create a new Saastamoinen model for the troposphere using the given
+     * environmental conditions. This constructor allows the user to specify the source of
+     * of the δR file.
+     *
+     * @param t0 the temperature at the station [K]
+     * @param p0 the atmospheric pressure at the station [mbar]
+     * @param r0 the humidity at the station [fraction] (50% -&gt; 0.5)
+     * @param deltaRFileName regular expression for filename containing δR
+     * correction term table (typically {@link #DELTA_R_FILE_NAME}), if null
+     * default values from the reference book are used
+     * @param dataProvidersManager provides access to auxiliary data.
+     * @since 10.1
+     */
+    public SaastamoinenModel(final double t0,
+                             final double p0,
+                             final double r0,
+                             final String deltaRFileName,
+                             final DataProvidersManager dataProvidersManager) {
         this(t0, p0, r0,
-             deltaRFileName == null ? defaultDeltaR() : loadDeltaR(deltaRFileName));
+             deltaRFileName == null ?
+                     defaultDeltaR() :
+                     loadDeltaR(deltaRFileName, dataProvidersManager));
     }
 
     /** Create a new Saastamoinen model.
+     *
      * @param t0 the temperature at the station [K]
      * @param p0 the atmospheric pressure at the station [mbar]
      * @param r0 the humidity at the station [fraction] (50% -> 0.5)
@@ -126,6 +184,7 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
         this.bFunction      = new LinearInterpolator().interpolate(X_VALUES_FOR_B, Y_VALUES_FOR_B);
         this.eFunction      = new PolynomialFunction(E_COEFFICIENTS);
         this.deltaRFunction = deltaR;
+        this.lowElevationThreshold = DEFAULT_LOW_ELEVATION_THRESHOLD;
     }
 
     /** Create a new Saastamoinen model using a standard atmosphere model.
@@ -139,7 +198,7 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
      * @return a Saastamoinen model with standard environmental values
      */
     public static SaastamoinenModel getStandardModel() {
-        return new SaastamoinenModel(273.16 + 18, 1013.25, 0.5, (String) null);
+        return new SaastamoinenModel(273.16 + 18, 1013.25, 0.5);
     }
 
     /** {@inheritDoc}
@@ -147,13 +206,20 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
      * The Saastamoinen model is not defined for altitudes below 0.0. for continuity
      * reasons, we use the value for h = 0 when altitude is negative.
      * </p>
+     * <p>
+     * There are also numerical issues for elevation angles close to zero. For continuity reasons,
+     * elevations lower than a threshold will use the value obtained
+     * for the threshold itself.
+     * </p>
+     * @see #getLowElevationThreshold()
+     * @see #setLowElevationThreshold(double)
      */
     public double pathDelay(final double elevation, final double height,
                             final double[] parameters, final AbsoluteDate date) {
 
-        // there are no data in the model for negative altitudes
-        // we use the data for the lowest available altitude: 0.0
-        final double fixedHeight = FastMath.max(0.0, height);
+        // there are no data in the model for negative altitudes and altitude bigger than 5000 m
+        // limit the height to a range of [0, 5000] m
+        final double fixedHeight = FastMath.min(FastMath.max(0, height), 5000);
 
         // the corrected temperature using a temperature gradient of -6.5 K/km
         final double T = t0 - 6.5e-3 * fixedHeight;
@@ -168,7 +234,7 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
         final double e = R * FastMath.exp(eFunction.value(T));
 
         // calculate the zenith angle from the elevation
-        final double z = FastMath.abs(0.5 * FastMath.PI - elevation);
+        final double z = FastMath.abs(0.5 * FastMath.PI - FastMath.max(elevation, lowElevationThreshold));
 
         // get correction factor
         final double deltaR = getDeltaR(fixedHeight, z);
@@ -186,15 +252,22 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
      * The Saastamoinen model is not defined for altitudes below 0.0. for continuity
      * reasons, we use the value for h = 0 when altitude is negative.
      * </p>
+     * <p>
+     * There are also numerical issues for elevation angles close to zero. For continuity reasons,
+     * elevations lower than a threshold will use the value obtained
+     * for the threshold itself.
+     * </p>
+     * @see #getLowElevationThreshold()
+     * @see #setLowElevationThreshold(double)
      */
     public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final T height,
                                                        final T[] parameters, final FieldAbsoluteDate<T> date) {
 
         final Field<T> field = height.getField();
         final T zero = field.getZero();
-        // there are no data in the model for negative altitudes
-        // we use the data for the lowest available altitude: 0.0
-        final T fixedHeight = FastMath.max(zero, height);
+        // there are no data in the model for negative altitudes and altitude bigger than 5000 m
+        // limit the height to a range of [0, 5000] m
+        final T fixedHeight = FastMath.min(FastMath.max(zero, height), zero.add(5000));
 
         // the corrected temperature using a temperature gradient of -6.5 K/km
         final T T = fixedHeight.multiply(6.5e-3).negate().add(t0);
@@ -209,7 +282,7 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
         final T e = R.multiply(FastMath.exp(eFunction.value(T)));
 
         // calculate the zenith angle from the elevation
-        final T z = FastMath.abs(elevation.negate().add(0.5 * FastMath.PI));
+        final T z = FastMath.abs(FastMath.max(elevation, zero.add(lowElevationThreshold)).negate().add(0.5 * FastMath.PI));
 
         // get correction factor
         final T deltaR = getDeltaR(fixedHeight, z, field);
@@ -257,13 +330,16 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
     /** Load δR function.
      * @param deltaRFileName regular expression for filename containing δR
      * correction term table
+     * @param dataProvidersManager provides access to auxiliary data.
      * @return δR function
      */
-    private static BilinearInterpolatingFunction loadDeltaR(final String deltaRFileName) {
+    private static BilinearInterpolatingFunction loadDeltaR(
+            final String deltaRFileName,
+            final DataProvidersManager dataProvidersManager) {
 
         // read the δR interpolation function from the config file
         final InterpolationTableLoader loader = new InterpolationTableLoader();
-        DataProvidersManager.getInstance().feed(deltaRFileName, loader);
+        dataProvidersManager.feed(deltaRFileName, loader);
         if (!loader.stillAcceptsData()) {
             final double[] elevations = loader.getOrdinateGrid();
             for (int i = 0; i < elevations.length; ++i) {
@@ -273,7 +349,9 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
                                                      loader.getValuesSamples());
         }
         throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE,
-                                  deltaRFileName.replaceAll("^\\^", "").replaceAll("\\$$", ""));
+                                  SECOND_DELTA_R_PATTERN.
+                                  matcher(FIRST_DELTA_R_PATTERN.matcher(deltaRFileName).replaceAll("")).
+                                  replaceAll(""));
     }
 
     /** Create the default δR function.
@@ -286,12 +364,12 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
         // is assumed to be the same value as for 80.
 
         // the height in m
-        final double xValForR[] = {
+        final double[] xValForR = {
             0, 500, 1000, 1500, 2000, 3000, 4000, 5000
         };
 
         // the zenith angle
-        final double yValForR[] = {
+        final double[] yValForR = {
             FastMath.toRadians( 0.00), FastMath.toRadians(60.00), FastMath.toRadians(66.00), FastMath.toRadians(70.00),
             FastMath.toRadians(73.00), FastMath.toRadians(75.00), FastMath.toRadians(76.00), FastMath.toRadians(77.00),
             FastMath.toRadians(78.00), FastMath.toRadians(78.50), FastMath.toRadians(79.00), FastMath.toRadians(79.50),
@@ -368,5 +446,24 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
         return Collections.emptyList();
     }
 
+    /** Get the low elevation threshold value for path delay computation.
+     * @return low elevation threshold, in rad.
+     * @see #pathDelay(double, double, double[], AbsoluteDate)
+     * @see #pathDelay(RealFieldElement, RealFieldElement, RealFieldElement[], FieldAbsoluteDate)
+     * @since 10.2
+     */
+    public double getLowElevationThreshold() {
+        return lowElevationThreshold;
+    }
+
+    /** Set the low elevation threshold value for path delay computation.
+     * @param lowElevationThreshold The new value for the threshold [rad]
+     * @see #pathDelay(double, double, double[], AbsoluteDate)
+     * @see #pathDelay(RealFieldElement, RealFieldElement, RealFieldElement[], FieldAbsoluteDate)
+     * @since 10.2
+     */
+    public void setLowElevationThreshold(final double lowElevationThreshold) {
+        this.lowElevationThreshold = lowElevationThreshold;
+    }
 }
 

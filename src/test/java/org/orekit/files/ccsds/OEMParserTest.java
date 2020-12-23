@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -26,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.Array2DRowRealMatrix;
@@ -245,9 +246,13 @@ public class OEMParserTest {
         Transform actualTransform = eme2000.getTransformTo(actualFrame, actualStart);
         CelestialBody mars = CelestialBodyFactory.getMars();
         TimeStampedPVCoordinates marsPV = mars.getPVCoordinates(actualStart, eme2000);
-        Assert.assertEquals(actualTransform.getTranslation(), marsPV.getPosition());
-        Assert.assertEquals(actualTransform.getVelocity(), marsPV.getVelocity());
-        Assert.assertEquals(actualTransform.getAcceleration(), marsPV.getAcceleration());
+        TimeStampedPVCoordinates marsPV_in_marscentered_frame = mars.getPVCoordinates(actualStart, actualFrame);
+        MatcherAssert.assertThat(
+        		marsPV_in_marscentered_frame,
+                OrekitMatchers.pvCloseTo(PVCoordinates.ZERO, 1e-3));
+        Assert.assertEquals(actualTransform.getTranslation(), marsPV.getPosition().negate());
+        Assert.assertEquals(actualTransform.getVelocity(), marsPV.getVelocity().negate());
+        Assert.assertEquals(actualTransform.getAcceleration(), marsPV.getAcceleration().negate());
         Assert.assertEquals(
                 Rotation.distance(actualTransform.getRotation(), Rotation.IDENTITY),
                 0.0, 0.0);
@@ -279,10 +284,10 @@ public class OEMParserTest {
 
         final int ulps = 12;
         for (TimeStampedPVCoordinates coord : dataLines) {
-            Assert.assertThat(
+            MatcherAssert.assertThat(
                     propagator.getPVCoordinates(coord.getDate(), actualFrame),
                     OrekitMatchers.pvCloseTo(coord, ulps));
-            Assert.assertThat(
+            MatcherAssert.assertThat(
                     propagator.propagate(coord.getDate()).getPVCoordinates(),
                     OrekitMatchers.pvCloseTo(coord, ulps));
         }
@@ -451,6 +456,28 @@ public class OEMParserTest {
             Assert.assertEquals(91, ((Integer) oe.getParts()[0]).intValue());
             Assert.assertTrue(((String) oe.getParts()[2]).startsWith("USER_DEFINED_TEST_KEY"));
         }
+    }
+
+    /**
+     * Check if the parser enters the correct interpolation degree
+     * (the parsed one or the default if there is none)
+     */
+    @Test
+    public void testDefaultInterpolationDegree()
+        throws URISyntaxException {
+
+        final String name = getClass().getResource("/ccsds/OEMExample8.txt").toURI().getPath();
+        OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM());
+
+        final OEMFile file = parser.parse(name);
+        Assert.assertEquals(1, file.getEphemeridesBlocks().get(0).getInterpolationDegree());
+        Assert.assertEquals(7, file.getEphemeridesBlocks().get(1).getInterpolationDegree());
+
+        parser = parser.withInterpolationDegree(5);
+
+        final OEMFile file2 = parser.parse(name);
+        Assert.assertEquals(5, file2.getEphemeridesBlocks().get(0).getInterpolationDegree());
+        Assert.assertEquals(7, file2.getEphemeridesBlocks().get(1).getInterpolationDegree());
     }
 
     /**

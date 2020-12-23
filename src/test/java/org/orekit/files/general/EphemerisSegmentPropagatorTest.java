@@ -1,3 +1,19 @@
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.files.general;
 
 import java.lang.reflect.InvocationTargetException;
@@ -6,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
 import org.junit.Before;
@@ -115,35 +132,35 @@ public class EphemerisSegmentPropagatorTest {
         BoundedPropagator propagator = ephemeris.getPropagator();
 
         //verify
-        Assert.assertThat(propagator.getMinDate(), CoreMatchers.is(start));
-        Assert.assertThat(propagator.getMaxDate(), CoreMatchers.is(end));
-        Assert.assertThat(propagator.getFrame(), CoreMatchers.is(frame));
+        MatcherAssert.assertThat(propagator.getMinDate(), CoreMatchers.is(start));
+        MatcherAssert.assertThat(propagator.getMaxDate(), CoreMatchers.is(end));
+        MatcherAssert.assertThat(propagator.getFrame(), CoreMatchers.is(frame));
         int ulps = 0;
         PVCoordinates expected = new PVCoordinates(
                 new Vector3D(6778137, 0, 0),
                 new Vector3D(1.0 / 30, 0, 0));
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 propagator.propagate(start).getPVCoordinates(),
                 OrekitMatchers.pvCloseTo(expected, ulps));
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 propagator.getPVCoordinates(start, frame),
                 OrekitMatchers.pvCloseTo(expected, ulps));
         expected = new PVCoordinates(
                 new Vector3D(6778137 + 2, 0, 0),
                 new Vector3D(2 / 30.0, 0, 0));
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 propagator.propagate(start.shiftedBy(45)).getPVCoordinates(),
                 OrekitMatchers.pvCloseTo(expected, ulps));
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 propagator.getPVCoordinates(start.shiftedBy(45), frame),
                 OrekitMatchers.pvCloseTo(expected, ulps));
         expected = new PVCoordinates(
                 new Vector3D(6778137 + 3, 0, 0),
                 new Vector3D(2 / 30.0, 0, 0));
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 propagator.propagate(end).getPVCoordinates(),
                 OrekitMatchers.pvCloseTo(expected, ulps));
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 propagator.getPVCoordinates(end, frame),
                 OrekitMatchers.pvCloseTo(expected, ulps));
         // check reset state is prohibited

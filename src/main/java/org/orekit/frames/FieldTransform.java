@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -57,9 +57,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *
  * <p>Instances of this class are guaranteed to be immutable.</p>
  *
- * <h1> Examples </h1>
+ * <h2> Examples </h2>
  *
- * <h2> Example of translation from R<sub>A</sub> to R<sub>B</sub> </h2>
+ * <h3> Example of translation from R<sub>A</sub> to R<sub>B</sub> </h3>
  *
  * <p> We want to transform the {@link FieldPVCoordinates} PV<sub>A</sub> to
  * PV<sub>B</sub> with :
@@ -78,7 +78,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * PVB = R1toR2.transformPVCoordinate(PVA);
  * </pre>
  *
- * <h2> Example of rotation from R<sub>A</sub> to R<sub>B</sub> </h2>
+ * <h3> Example of rotation from R<sub>A</sub> to R<sub>B</sub> </h3>
  * <p> We want to transform the {@link FieldPVCoordinates} PV<sub>A</sub> to
  * PV<sub>B</sub> with
  *
@@ -914,7 +914,8 @@ public class FieldTransform<T extends RealFieldElement<T>>
          * @param field field for the components
          */
         FieldIdentityTransform(final Field<T> field) {
-            super(FieldAbsoluteDate.getJ2000Epoch(field), AbsoluteDate.J2000_EPOCH,
+            super(FieldAbsoluteDate.getArbitraryEpoch(field),
+                  FieldAbsoluteDate.getArbitraryEpoch(field).toAbsoluteDate(),
                   FieldPVCoordinates.getZero(field),
                   FieldAngularCoordinates.getIdentity(field));
         }

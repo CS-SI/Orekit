@@ -1,3 +1,19 @@
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.files.general;
 
 import static org.junit.Assert.assertEquals;
@@ -70,8 +86,10 @@ public class OrekitEphemerisFileTest {
     @Test
     public void testWritingToOEM() throws IOException {
         final double muTolerance = 1e-12;
-        final double positionTolerance = 1e-8;
-        final double velocityTolerance = 1e-8;
+        // As the default format for position is 3 digits after decimal point in km the max precision in m is 1
+        final double positionTolerance = 1.;
+        // As the default format for velocity is 5 digits after decimal point in km/s the max precision in m/s is 1e-2
+        final double velocityTolerance = 1e-2;
         final String satId = "SATELLITE1";
         final double sma = 10000000;
         final double inc = Math.toRadians(45.0);
@@ -152,7 +170,7 @@ public class OrekitEphemerisFileTest {
         propagator.propagate(segment.getStart(), segment.getStop());
         ephemerisSegmentPropagator.propagate(segment.getStart(), segment.getStop());
 
-        final double dateEpsilon = 1.0e-9;
+        final double dateEpsilon = 4.2e-5;
         assertTrue(referenceLogger.getLoggedEvents().size() > 0);
         assertEquals(referenceLogger.getLoggedEvents().size(), lookupLogger.getLoggedEvents().size());
         for (int i = 0; i < referenceLogger.getLoggedEvents().size(); i++) {

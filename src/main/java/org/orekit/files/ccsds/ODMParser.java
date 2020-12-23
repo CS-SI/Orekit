@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -24,10 +24,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.bodies.CelestialBodies;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 
 /**
@@ -50,6 +52,9 @@ public abstract class ODMParser {
     /** Pattern for international designator. */
     private static final Pattern INTERNATIONAL_DESIGNATOR = Pattern.compile("(\\p{Digit}{4})-(\\p{Digit}{3})(\\p{Upper}{1,3})");
 
+    /** Pattern for dash. */
+    private static final Pattern DASH = Pattern.compile("-");
+
     /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
     private final AbsoluteDate missionReferenceDate;
 
@@ -62,6 +67,9 @@ public abstract class ODMParser {
     /** Indicator for simple or accurate EOP interpolation. */
     private final  boolean simpleEOP;
 
+    /** Data context used for obtain frames and time scales. */
+    private final DataContext dataContext;
+
     /** Launch Year. */
     private int launchYear;
 
@@ -72,6 +80,9 @@ public abstract class ODMParser {
     private String launchPiece;
 
     /** Complete constructor.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @param mu gravitational coefficient
      * @param conventions IERS Conventions
@@ -79,10 +90,35 @@ public abstract class ODMParser {
      * @param launchYear launch year for TLEs
      * @param launchNumber launch number for TLEs
      * @param launchPiece piece of launch (from "A" to "ZZZ") for TLEs
+     * @see #ODMParser(AbsoluteDate, double, IERSConventions, boolean, int, int, String, DataContext)
+     * @deprecated use {@link #ODMParser(AbsoluteDate, double, IERSConventions, boolean,
+     * int, int, String, DataContext)} instead.
      */
+    @Deprecated
+    @DefaultDataContext
     protected ODMParser(final AbsoluteDate missionReferenceDate, final double mu,
                         final IERSConventions conventions, final boolean simpleEOP,
                         final int launchYear, final int launchNumber, final String launchPiece) {
+        this(missionReferenceDate, mu, conventions, simpleEOP, launchYear, launchNumber,
+                launchPiece, DataContext.getDefault());
+    }
+
+    /** Complete constructor.
+     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * @param mu gravitational coefficient
+     * @param conventions IERS Conventions
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
+     * @param launchYear launch year for TLEs
+     * @param launchNumber launch number for TLEs
+     * @param launchPiece piece of launch (from "A" to "ZZZ") for TLEs
+     * @param dataContext used to retrieve frames and time scales.
+     * @since 10.1
+     */
+    protected ODMParser(final AbsoluteDate missionReferenceDate, final double mu,
+                        final IERSConventions conventions, final boolean simpleEOP,
+                        final int launchYear, final int launchNumber,
+                        final String launchPiece,
+                        final DataContext dataContext) {
         this.missionReferenceDate = missionReferenceDate;
         this.mu                   = mu;
         this.conventions          = conventions;
@@ -90,6 +126,7 @@ public abstract class ODMParser {
         this.launchYear           = launchYear;
         this.launchNumber         = launchNumber;
         this.launchPiece          = launchPiece;
+        this.dataContext          = dataContext;
     }
 
     /** Set initial date.
@@ -109,7 +146,7 @@ public abstract class ODMParser {
 
     /** Set gravitational coefficient.
      * @param newMu gravitational coefficient to use while parsing
-     * @return a new instance, with gravitational coefficient date replaced
+     * @return a new instance, with gravitational coefficient value replaced
      * @see #getMu()
      */
     public abstract ODMParser withMu(double newMu);
@@ -156,7 +193,7 @@ public abstract class ODMParser {
      * <p>
      * This method may be used to ensure the launch year number and pieces are
      * correctly set if they are not present in the CCSDS file header in the
-     * OBJECT_ID in the form YYYY-NNN-P{PP}. If they are already in the header,
+     * OBJECT_ID in the form YYYY-NNNP{PP}. If they are already in the header,
      * they will be parsed automatically regardless of this method being called
      * or not (i.e. header information override information set here).
      * </p>
@@ -189,6 +226,23 @@ public abstract class ODMParser {
     public String getLaunchPiece() {
         return launchPiece;
     }
+
+    /**
+     * Get the data context used for getting frames, time scales, and celestial bodies.
+     *
+     * @return the data context.
+     */
+    public DataContext getDataContext() {
+        return dataContext;
+    }
+
+    /**
+     * Set the data context.
+     *
+     * @param newDataContext used for frames, time scales, and celestial bodies.
+     * @return a new instance with the data context replaced.
+     */
+    public abstract ODMParser withDataContext(DataContext newDataContext);
 
     /** Parse a CCSDS Orbit Data Message.
      * @param fileName name of the file containing the message
@@ -246,7 +300,9 @@ public abstract class ODMParser {
                     odmFile.setHeaderComment(comment);
                     comment.clear();
                 }
-                odmFile.setCreationDate(new AbsoluteDate(keyValue.getValue(), TimeScalesFactory.getUTC()));
+                odmFile.setCreationDate(new AbsoluteDate(
+                        keyValue.getValue(),
+                        dataContext.getTimeScales().getUTC()));
                 return true;
 
             case ORIGINATOR:
@@ -302,15 +358,19 @@ public abstract class ODMParser {
                 for (final CenterName c : CenterName.values()) {
                     if (c.name().equals(canonicalValue)) {
                         metaData.setHasCreatableBody(true);
-                        metaData.setCenterBody(c.getCelestialBody());
-                        metaData.getODMFile().setMuCreated(c.getCelestialBody().getGM());
+                        final CelestialBodies celestialBodies =
+                                getDataContext().getCelestialBodies();
+                        metaData.setCenterBody(c.getCelestialBody(celestialBodies));
+                        metaData.getODMFile().setMuCreated(
+                                c.getCelestialBody(celestialBodies).getGM());
                     }
                 }
                 return true;
 
             case REF_FRAME:
                 metaData.setFrameString(keyValue.getValue());
-                metaData.setRefFrame(parseCCSDSFrame(keyValue.getValue()).getFrame(getConventions(), isSimpleEOP()));
+                metaData.setRefFrame(parseCCSDSFrame(keyValue.getValue())
+                        .getFrame(getConventions(), isSimpleEOP(), getDataContext()));
                 return true;
 
             case REF_FRAME_EPOCH:
@@ -431,7 +491,8 @@ public abstract class ODMParser {
                 if (covFrame.isLof()) {
                     general.setCovRefLofType(covFrame.getLofType());
                 } else {
-                    general.setCovRefFrame(covFrame.getFrame(getConventions(), isSimpleEOP()));
+                    general.setCovRefFrame(covFrame
+                            .getFrame(getConventions(), isSimpleEOP(), getDataContext()));
                 }
                 return true;
 
@@ -534,7 +595,7 @@ public abstract class ODMParser {
      * @return CCSDS frame corresponding to the name
      */
     protected CCSDSFrame parseCCSDSFrame(final String frameName) {
-        return CCSDSFrame.valueOf(frameName.replaceAll("-", ""));
+        return CCSDSFrame.valueOf(DASH.matcher(frameName).replaceAll(""));
     }
 
     /** Parse a date.
@@ -543,7 +604,8 @@ public abstract class ODMParser {
      * @return parsed date
      */
     protected AbsoluteDate parseDate(final String date, final CcsdsTimeScale timeSystem) {
-        return timeSystem.parseDate(date, conventions, missionReferenceDate);
+        return timeSystem.parseDate(date, conventions, missionReferenceDate,
+                getDataContext().getTimeScales());
     }
 
 }

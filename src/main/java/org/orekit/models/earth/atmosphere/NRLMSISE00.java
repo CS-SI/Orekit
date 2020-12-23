@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -24,10 +24,14 @@ import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.SinCos;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -36,7 +40,6 @@ import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -1012,6 +1015,36 @@ public class NRLMSISE00 implements Atmosphere {
     /** Switches for cross effects. */
     private final int[] swc;
 
+    /** UT time scale. */
+    private final TimeScale ut;
+
+    /** Constructor.
+     * <p>
+     * The model is constructed with all switches set to 1.
+     * </p>
+     * <p>
+     * Parameters are mandatory only for the
+     * {@link #getDensity(AbsoluteDate, Vector3D, Frame) getDensity()} and
+     * {@link #getVelocity(AbsoluteDate, Vector3D, Frame) getVelocity()} methods.
+     * </p>
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param parameters the solar and magnetic activity data
+     * @param sun the Sun position
+     * @param earth the Earth body shape
+     * @see #NRLMSISE00(NRLMSISE00InputParameters, PVCoordinatesProvider, BodyShape,
+     * TimeScale)
+     */
+    @DefaultDataContext
+    public NRLMSISE00(final NRLMSISE00InputParameters parameters,
+                      final PVCoordinatesProvider sun,
+                      final BodyShape earth) {
+        this(parameters, sun, earth,
+                DataContext.getDefault().getTimeScales()
+                        .getUT1(IERSConventions.IERS_2010, true));
+    }
+
     /** Constructor.
      * <p>
      * The model is constructed with all switches set to 1.
@@ -1024,11 +1057,16 @@ public class NRLMSISE00 implements Atmosphere {
      * @param parameters the solar and magnetic activity data
      * @param sun the Sun position
      * @param earth the Earth body shape
+     * @param ut UT time scale. The original documentation for NRLMSISE00 does not
+     *           distinguish between UTC and UT1. In Orekit 10.0 {@code
+     *           TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true)} was used.
+     * @since 10.1
      */
     public NRLMSISE00(final NRLMSISE00InputParameters parameters,
                       final PVCoordinatesProvider sun,
-                      final BodyShape earth) {
-        this(parameters, sun, earth, allOnes(), allOnes());
+                      final BodyShape earth,
+                      final TimeScale ut) {
+        this(parameters, sun, earth, allOnes(), allOnes(), ut);
     }
 
     /** Constructor.
@@ -1045,17 +1083,20 @@ public class NRLMSISE00 implements Atmosphere {
      * @param earth the Earth body shape
      * @param sw switches for main effects
      * @param swc switches for cross effects
+     * @param ut UT time scale.
      */
     private NRLMSISE00(final NRLMSISE00InputParameters parameters,
-                      final PVCoordinatesProvider sun,
-                      final BodyShape earth,
-                      final int[] sw,
-                      final int[] swc) {
+                       final PVCoordinatesProvider sun,
+                       final BodyShape earth,
+                       final int[] sw,
+                       final int[] swc,
+                       final TimeScale ut) {
         this.inputParams = parameters;
         this.sun         = sun;
         this.earth       = earth;
         this.sw          = sw;
         this.swc         = swc;
+        this.ut = ut;
     }
 
     /** Change a switch.
@@ -1086,7 +1127,7 @@ public class NRLMSISE00 implements Atmosphere {
             newSwc[number] = newSw[number];
         }
 
-        return new NRLMSISE00(inputParams, sun, earth, newSwc, newSwc);
+        return new NRLMSISE00(inputParams, sun, earth, newSwc, newSwc, ut);
 
     }
 
@@ -1119,7 +1160,7 @@ public class NRLMSISE00 implements Atmosphere {
         }
 
         // compute day number in current year and the seconds within the day
-        final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true));
+        final DateTimeComponents dtc = date.getComponents(ut);
         final int    doy = dtc.getDate().getDayOfYear();
         final double sec = dtc.getTime().getSecondsInLocalDay();
 
@@ -1156,10 +1197,9 @@ public class NRLMSISE00 implements Atmosphere {
         }
 
         // compute day number in current year and the seconds within the day
-        final TimeScale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
-        final DateTimeComponents dtc = dateD.getComponents(ut1);
+        final DateTimeComponents dtc = dateD.getComponents(ut);
         final int    doy = dtc.getDate().getDayOfYear();
-        final T sec = date.durationFrom(new AbsoluteDate(dtc.getDate(), TimeComponents.H00, ut1));
+        final T sec = date.durationFrom(new AbsoluteDate(dtc.getDate(), TimeComponents.H00, ut));
 
         // compute geodetic position (km and °)
         final FieldGeodeticPoint<T> inBody = earth.transform(position, frame, date);
@@ -1394,8 +1434,9 @@ public class NRLMSISE00 implements Atmosphere {
             final double latr = DEG_TO_RAD * lat;
 
             // Calculate legendre polynomials
-            final double c = FastMath.sin(latr);
-            final double s = FastMath.cos(latr);
+            final SinCos scLatr = FastMath.sinCos(latr);
+            final double c      = scLatr.sin();
+            final double s      = scLatr.cos();
 
             plg[0][1] = c;
             plg[0][2] = ( 3.0 * c * plg[0][1] - 1.0) / 2.0;
@@ -1426,14 +1467,15 @@ public class NRLMSISE00 implements Atmosphere {
             // Calculate additional data
             if (!(sw[7] == 0 && sw[8] == 0 && sw[14] == 0)) {
                 final double tloc = HOUR_TO_RAD * hl;
-                final double tlx2 = tloc + tloc;
-                final double tlx3 = tloc + tlx2;
-                stloc  = FastMath.sin(tloc);
-                ctloc  = FastMath.cos(tloc);
-                s2tloc = FastMath.sin(tlx2);
-                c2tloc = FastMath.cos(tlx2);
-                s3tloc = FastMath.sin(tlx3);
-                c3tloc = FastMath.cos(tlx3);
+                final SinCos sc  = FastMath.sinCos(tloc);
+                final SinCos sc2 = SinCos.sum(sc, sc);
+                final SinCos sc3 = SinCos.sum(sc, sc2);
+                stloc  = sc.sin();
+                ctloc  = sc.cos();
+                s2tloc = sc2.sin();
+                c2tloc = sc2.cos();
+                s3tloc = sc3.sin();
+                c3tloc = sc3.cos();
             } else {
                 stloc  = 0;
                 ctloc  = 0;
@@ -2024,18 +2066,19 @@ public class NRLMSISE00 implements Atmosphere {
             }
 
             if (sw[10] != 0) {
-                final double lonr = DEG_TO_RAD * lon;
+                final double lonr   = DEG_TO_RAD * lon;
+                final SinCos scLonr = FastMath.sinCos(lonr);
                 // Longitudinal
                 if (sw[11] != 0) {
                     t[10] = (1.0 + p[80] * dfa * swc[1]) *
                             ((p[64]  * plg[1][2] + p[65]  * plg[1][4] + p[66]  * plg[1][6] +
                               p[103] * plg[1][1] + p[104] * plg[1][3] + p[105] * plg[1][5] +
                              (p[109] * plg[1][1] + p[110] * plg[1][3] + p[111] * plg[1][5]) * swc[5] * cd14) *
-                             FastMath.cos(lonr) +
+                             scLonr.cos() +
                              (p[90]  * plg[1][2] + p[91]  * plg[1][4] + p[92]  * plg[1][6] +
                               p[106] * plg[1][1] + p[107] * plg[1][3] + p[108] * plg[1][5] +
                              (p[112] * plg[1][1] + p[113] * plg[1][3] + p[114] * plg[1][5]) * swc[5] * cd14) *
-                             FastMath.sin(lonr));
+                             scLonr.sin());
                 }
 
                 // ut and mixed ut, longitude
@@ -2149,15 +2192,16 @@ public class NRLMSISE00 implements Atmosphere {
 
             // Longitudinal
             if (!(sw[10] == 0 || sw[11] == 0)) {
-                final double lonr = DEG_TO_RAD * lon;
+                final double lonr   = DEG_TO_RAD * lon;
+                final SinCos scLonr = FastMath.sinCos(lonr);
                 t[10] = (1.0 + plg[0][1] * (p[80] * swc[5] * FastMath.cos(DAY_TO_RAD * (doy - p[81])) +
                                             p[85] * swc[6] * FastMath.cos(2.0 * DAY_TO_RAD * (doy - p[86]))) +
                                p[83] * swc[3] * FastMath.cos(DAY_TO_RAD * (doy - p[84])) +
                                p[87] * swc[4] * FastMath.cos(2.0 * DAY_TO_RAD * (doy - p[88]))) *
                         ((p[64] * plg[1][2] + p[65] * plg[1][4] + p[66] * plg[1][6] +
-                          p[74] * plg[1][1] + p[75] * plg[1][3] + p[76] * plg[1][5]) * FastMath.cos(lonr) +
+                          p[74] * plg[1][1] + p[75] * plg[1][3] + p[76] * plg[1][5]) * scLonr.cos() +
                          (p[90] * plg[1][2] + p[91] * plg[1][4] + p[92] * plg[1][6] +
-                          p[77] * plg[1][1] + p[78] * plg[1][3] + p[79] * plg[1][5]) * FastMath.sin(lonr));
+                          p[77] * plg[1][1] + p[78] * plg[1][3] + p[79] * plg[1][5]) * scLonr.sin());
             }
 
             // Sum all effects
@@ -2792,8 +2836,9 @@ public class NRLMSISE00 implements Atmosphere {
             final T latr = lat.multiply(DEG_TO_RAD);
 
             // Calculate legendre polynomials
-            final T c = latr.sin();
-            final T s = latr.cos();
+            final FieldSinCos<T> scLatr = FastMath.sinCos(latr);
+            final T c = scLatr.sin();
+            final T s = scLatr.cos();
 
             plg[0][1] = c;
             plg[0][2] = c.multiply( 3.0).multiply(plg[0][1]).subtract(1.0).divide(2.0);
@@ -2824,14 +2869,15 @@ public class NRLMSISE00 implements Atmosphere {
             // Calculate additional data
             if (!(sw[7] == 0 && sw[8] == 0 && sw[14] == 0)) {
                 final T tloc = hl.multiply(HOUR_TO_RAD);
-                final T tlx2 = tloc.add(tloc);
-                final T tlx3 = tloc.add(tlx2);
-                stloc  = tloc.sin();
-                ctloc  = tloc.cos();
-                s2tloc = tlx2.sin();
-                c2tloc = tlx2.cos();
-                s3tloc = tlx3.sin();
-                c3tloc = tlx3.cos();
+                final FieldSinCos<T> sc  = FastMath.sinCos(tloc);
+                final FieldSinCos<T> sc2 = FieldSinCos.sum(sc, sc);
+                final FieldSinCos<T> sc3 = FieldSinCos.sum(sc, sc2);
+                stloc  = sc.sin();
+                ctloc  = sc.cos();
+                s2tloc = sc2.sin();
+                c2tloc = sc2.cos();
+                s3tloc = sc3.sin();
+                c3tloc = sc3.cos();
             } else {
                 stloc  = zero;
                 ctloc  = zero;
@@ -3440,16 +3486,17 @@ public class NRLMSISE00 implements Atmosphere {
 
             if (sw[10] != 0) {
                 final T lonr = lon.multiply(DEG_TO_RAD);
+                final FieldSinCos<T> scLonr = FastMath.sinCos(lonr);
                 // Longitudinal
                 if (sw[11] != 0) {
                     t[10] =         plg[1][2].multiply(p[ 64]) .add(plg[1][4].multiply(p[ 65])).add(plg[1][6].multiply(p[ 66])).
                                 add(plg[1][1].multiply(p[103])).add(plg[1][3].multiply(p[104])).add(plg[1][5].multiply(p[105])).
                                 add((plg[1][1].multiply(p[109])).add(plg[1][3].multiply(p[110])).add(plg[1][5].multiply(p[111])).multiply(swc[5] * cd14)).
-                                multiply(lonr.cos()).
+                                multiply(scLonr.cos()).
                             add(    plg[1][2].multiply(p[ 90]) .add(plg[1][4].multiply(p[ 91])).add(plg[1][6].multiply(p[ 92])).
                                 add(plg[1][1].multiply(p[106])).add(plg[1][3].multiply(p[107])).add(plg[1][5].multiply(p[108])).
                                 add((plg[1][1].multiply(p[112])).add(plg[1][3].multiply(p[113])).add(plg[1][5].multiply(p[114])).multiply(swc[5] * cd14)).
-                                multiply(lonr.sin())).
+                                multiply(scLonr.sin())).
                             multiply(1.0 + p[80] * dfa * swc[1]);
                 }
 
@@ -3570,6 +3617,7 @@ public class NRLMSISE00 implements Atmosphere {
             // Longitudinal
             if (!(sw[10] == 0 || sw[11] == 0)) {
                 final T lonr = lon.multiply(DEG_TO_RAD);
+                final FieldSinCos<T> scLonr = FastMath.sinCos(lonr);
                 t[10] = plg[0][1].multiply(p[80] * swc[5] * FastMath.cos(DAY_TO_RAD * (doy - p[81])) +
                                            p[85] * swc[6] * FastMath.cos(2.0 * DAY_TO_RAD * (doy - p[86]))).
                        add(1.0 +
@@ -3580,13 +3628,13 @@ public class NRLMSISE00 implements Atmosphere {
                                 add(plg[1][6].multiply(p[66])).
                                 add(plg[1][1].multiply(p[74])).
                                 add(plg[1][3].multiply(p[75])).
-                                add(plg[1][5].multiply(p[76])).multiply(lonr.cos()).
+                                add(plg[1][5].multiply(p[76])).multiply(scLonr.cos()).
                           add(      plg[1][2].multiply(p[90]).
                                 add(plg[1][4].multiply(p[91])).
                                 add(plg[1][6].multiply(p[92])).
                                 add(plg[1][1].multiply(p[77])).
                                 add(plg[1][3].multiply(p[78])).
-                                add(plg[1][5].multiply(p[79])).multiply(lonr.sin())));
+                                add(plg[1][5].multiply(p[79])).multiply(scLonr.sin())));
             }
 
             // Sum all effects

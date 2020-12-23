@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
@@ -210,34 +210,34 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
                 final int dim = 6;
                 final double[][] dShortPerioddState = new double[dim][dim];
                 final double[][] dShortPerioddParam = new double[dim][paramDim];
-                final DSSTDSConverter converter = new DSSTDSConverter(s, propagator.getAttitudeProvider());
+                final DSSTGradientConverter converter = new DSSTGradientConverter(s, propagator.getAttitudeProvider());
 
                 // Compute Jacobian
                 for (final DSSTForceModel forceModel : propagator.getAllForceModels()) {
 
-                    final FieldSpacecraftState<DerivativeStructure> dsState = converter.getState(forceModel);
-                    final DerivativeStructure[] dsParameters = converter.getParameters(dsState, forceModel);
-                    final FieldAuxiliaryElements<DerivativeStructure> auxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), I);
+                    final FieldSpacecraftState<Gradient> dsState = converter.getState(forceModel);
+                    final Gradient[] dsParameters = converter.getParameters(dsState, forceModel);
+                    final FieldAuxiliaryElements<Gradient> auxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), I);
 
-                    final DerivativeStructure zero = dsState.getDate().getField().getZero();
-                    final List<FieldShortPeriodTerms<DerivativeStructure>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<DerivativeStructure>>();
+                    final Gradient zero = dsState.getDate().getField().getZero();
+                    final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<>();
                     shortPeriodTerms.addAll(forceModel.initialize(auxiliaryElements, propagationType, dsParameters));
                     forceModel.updateShortPeriodTerms(dsParameters, dsState);
-                    final DerivativeStructure[] shortPeriod = new DerivativeStructure[6];
+                    final Gradient[] shortPeriod = new Gradient[6];
                     Arrays.fill(shortPeriod, zero);
-                    for (final FieldShortPeriodTerms<DerivativeStructure> spt : shortPeriodTerms) {
-                        final DerivativeStructure[] spVariation = spt.value(dsState.getOrbit());
+                    for (final FieldShortPeriodTerms<Gradient> spt : shortPeriodTerms) {
+                        final Gradient[] spVariation = spt.value(dsState.getOrbit());
                         for (int i = 0; i < spVariation .length; i++) {
                             shortPeriod[i] = shortPeriod[i].add(spVariation[i]);
                         }
                     }
 
-                    final double[] derivativesASP  = shortPeriod[0].getAllDerivatives();
-                    final double[] derivativesExSP = shortPeriod[1].getAllDerivatives();
-                    final double[] derivativesEySP = shortPeriod[2].getAllDerivatives();
-                    final double[] derivativesHxSP = shortPeriod[3].getAllDerivatives();
-                    final double[] derivativesHySP = shortPeriod[4].getAllDerivatives();
-                    final double[] derivativesLSP  = shortPeriod[5].getAllDerivatives();
+                    final double[] derivativesASP  = shortPeriod[0].getGradient();
+                    final double[] derivativesExSP = shortPeriod[1].getGradient();
+                    final double[] derivativesEySP = shortPeriod[2].getGradient();
+                    final double[] derivativesHxSP = shortPeriod[3].getGradient();
+                    final double[] derivativesHySP = shortPeriod[4].getGradient();
+                    final double[] derivativesLSP  = shortPeriod[5].getGradient();
 
                     // update Jacobian with respect to state
                     addToRow(derivativesASP,  0, dShortPerioddState);
@@ -251,55 +251,29 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
                     for (ParameterDriver driver : forceModel.getParametersDrivers()) {
                         if (driver.isSelected()) {
                             final int parameterIndex = map.get(driver);
-                            ++index;
                             dShortPerioddParam[0][parameterIndex] += derivativesASP[index];
                             dShortPerioddParam[1][parameterIndex] += derivativesExSP[index];
                             dShortPerioddParam[2][parameterIndex] += derivativesEySP[index];
                             dShortPerioddParam[3][parameterIndex] += derivativesHxSP[index];
                             dShortPerioddParam[4][parameterIndex] += derivativesHySP[index];
                             dShortPerioddParam[5][parameterIndex] += derivativesLSP[index];
+                            ++index;
                         }
                     }
                 }
 
-                // The variational equations of the complete state Jacobian matrix have the following form:
-
-                //                     [ Adot ] = [ dShortPerioddState ] * [ A ]
-
-                // The A matrix and its derivative (Adot) are 6 * 6 matrices
-
-                // The following loops compute these expression taking care of the mapping of the
-                // A matrix into the single dimension array p and of the mapping of the
-                // Adot matrix into the single dimension array shortPeriodDerivatives.
-
+                // Get orbital short period derivatives with respect orbital elements.
                 for (int i = 0; i < dim; i++) {
-                    final double[] dShortPerioddStatei = dShortPerioddState[i];
                     for (int j = 0; j < dim; j++) {
-                        shortPeriodDerivatives[j + dim * i] =
-                                         dShortPerioddStatei[0] * p[j]           + dShortPerioddStatei[1] * p[j +     dim] + dShortPerioddStatei[2] * p[j + 2 * dim] +
-                                         dShortPerioddStatei[3] * p[j + 3 * dim] + dShortPerioddStatei[4] * p[j + 4 * dim] + dShortPerioddStatei[5] * p[j + 5 * dim];
+                        shortPeriodDerivatives[j + dim * i] = dShortPerioddState[i][j];
                     }
                 }
 
+                // Get orbital short period derivatives with respect to model parameters.
                 final int columnTop = dim * dim;
                 for (int k = 0; k < paramDim; k++) {
-                    // the variational equations of the parameters Jacobian matrix are computed
-                    // one column at a time, they have the following form:
-
-                    //             [ Bdot ] = [ dShortPerioddState ] * [ B ] + [ dShortPerioddParam ]
-
-                    // The B sub-columns and its derivative (Bdot) are 6 elements columns.
-
-                    // The following loops compute this expression taking care of the mapping of the
-                    // B columns into the single dimension array p and of the mapping of the
-                    // Bdot columns into the single dimension array shortPeriodDerivatives.
-
                     for (int i = 0; i < dim; ++i) {
-                        final double[] dShortPerioddStatei = dShortPerioddState[i];
-                        shortPeriodDerivatives[columnTop + (i + dim * k)] =
-                            dShortPerioddParam[i][k] +
-                            dShortPerioddStatei[0] * p[columnTop + k]                + dShortPerioddStatei[1] * p[columnTop + k +     paramDim] + dShortPerioddStatei[2] * p[columnTop + k + 2 * paramDim] +
-                            dShortPerioddStatei[3] * p[columnTop + k + 3 * paramDim] + dShortPerioddStatei[4] * p[columnTop + k + 4 * paramDim] + dShortPerioddStatei[5] * p[columnTop + k + 5 * paramDim];
+                        shortPeriodDerivatives[columnTop + (i + dim * k)] = dShortPerioddParam[i][k];
                     }
                 }
                 break;
@@ -317,7 +291,7 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
                           final double[][] dMeanElementRatedElement) {
 
         for (int i = 0; i < 6; i++) {
-            dMeanElementRatedElement[index][i] += derivatives[i + 1];
+            dMeanElementRatedElement[index][i] += derivatives[i];
         }
 
     }

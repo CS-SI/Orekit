@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -23,27 +23,32 @@ import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.GLONASSEphemeris;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.PropagationType;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.gnss.GLONASSOrbitalElements;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.StateMapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GLONASSDate;
+import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * This class propagates GLONASS orbits using numerical integration.
@@ -136,6 +141,9 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
     /** Flag for availability of projections of acceleration transmitted within the navigation message. */
     private final boolean isAccAvailable;
 
+    /** Data context used for propagation. */
+    private final DataContext dataContext;
+
     /**
      * This nested class aims at building a GLONASSNumericalPropagator.
      * <p>It implements the classical builder pattern.</p>
@@ -155,7 +163,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
 
         // Optional parameters
         /** The attitude provider. */
-        private AttitudeProvider attitudeProvider = DEFAULT_LAW;
+        private AttitudeProvider attitudeProvider;
 
         /** The mass. */
         private double mass = DEFAULT_MASS;
@@ -163,14 +171,21 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
         /** The ECI frame. */
         private Frame eci  = null;
 
+        /** Data context for the propagator. */
+        private DataContext dataContext;
+
         /**
          * Initializes the builder.
          * <p>The attitude provider is set by default to the
-         *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW}.<br>
+         *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW} in the
+         *  default data context.<br>
          * The mass is set by default to the
          *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
+         * The data context is by default to the
+         *  {@link DataContext#getDefault() default data context}.<br>
          * The ECI frame is set by default to the
-         *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame}.<br>
+         *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame} in the default data
+         *  context.<br>
          * </p>
          *
          * @param integrator 4th order Runge-Kutta as recommended by GLONASS ICD
@@ -181,13 +196,16 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
          * @see #mass(double mass)
          * @see #eci(Frame inertial)
          */
+        @DefaultDataContext
         public Builder(final ClassicalRungeKuttaIntegrator integrator,
                        final GLONASSEphemeris glonassOrbElt,
                        final boolean isAccAvailable) {
             this.isAccAvailable = isAccAvailable;
             this.integrator     = integrator;
             this.orbit          = glonassOrbElt;
-            this.eci            = FramesFactory.getEME2000();
+            this.dataContext    = DataContext.getDefault();
+            this.eci            = dataContext.getFrames().getEME2000();
+            attitudeProvider = Propagator.getDefaultLaw(dataContext.getFrames());
         }
 
         /**
@@ -224,6 +242,18 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
         }
 
         /**
+         * Sets the data context used by the propagator. Does not update the ECI frame
+         * which must be done separately using {@link #eci(Frame)}.
+         *
+         * @param context used for propagation.
+         * @return the updated builder.
+         */
+        public Builder dataContext(final DataContext context) {
+            this.dataContext = context;
+            return this;
+        }
+
+        /**
          * Finalizes the build.
          *
          * @return the built GPSPropagator
@@ -240,6 +270,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
      */
     public GLONASSNumericalPropagator(final Builder builder) {
         super(builder.integrator, PropagationType.MEAN);
+        this.dataContext = builder.dataContext;
         this.isAccAvailable = builder.isAccAvailable;
         // Stores the GLONASS orbital elements
         this.glonassOrbit = builder.orbit;
@@ -247,7 +278,9 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
         this.eci = builder.eci;
         // Sets the mass
         this.mass = builder.mass;
-        this.initDate = new GLONASSDate(glonassOrbit.getDate());
+        this.initDate = new GLONASSDate(
+                glonassOrbit.getDate(),
+                dataContext.getTimeScales().getGLONASS());
 
         // Initialize state mapper
         initMapper();
@@ -273,6 +306,25 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
      */
     public GLONASSOrbitalElements getGLONASSOrbitalElements() {
         return glonassOrbit;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public SpacecraftState propagate(final AbsoluteDate date) {
+        // Spacecraft state in inertial frame
+        final SpacecraftState stateInInertial = super.propagate(date);
+
+        // Build the spacecraft state in inertial frame
+        final PVCoordinates pvInPZ90 = getPVInPZ90(stateInInertial);
+        final AbsolutePVCoordinates absPV = new AbsolutePVCoordinates(
+                dataContext.getFrames().getPZ9011(IERSConventions.IERS_2010, true),
+                stateInInertial.getDate(), pvInPZ90);
+        final TimeStampedPVCoordinates pvInInertial = absPV.getPVCoordinates(eci);
+        final SpacecraftState transformedState = new SpacecraftState(new CartesianOrbit(pvInInertial, eci, pvInInertial.getDate(), GLONASSOrbitalElements.GLONASS_MU),
+                                                                stateInInertial.getAttitude(),
+                                                                stateInInertial.getMass(), stateInInertial.getAdditionalStates());
+
+        return transformedState;
     }
 
     /**
@@ -329,14 +381,18 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
         final double qm = 2.3555557435 + 8328.6914257190 * t + 0.0001545547 * t2;
 
         // Commons parameters
-        final double cosOm = FastMath.cos(omegaM);
-        final double sinOm = FastMath.sin(omegaM);
-        final double cosIm = FastMath.cos(im);
-        final double sinIm = FastMath.sin(im);
-        final double cosEs = FastMath.cos(eps);
-        final double sinEs = FastMath.sin(eps);
-        final double cosGm = FastMath.cos(gammaM);
-        final double sinGm = FastMath.sin(gammaM);
+        final SinCos scOm  = FastMath.sinCos(omegaM);
+        final SinCos scIm  = FastMath.sinCos(im);
+        final SinCos scEs  = FastMath.sinCos(eps);
+        final SinCos scGm  = FastMath.sinCos(gammaM);
+        final double cosOm = scOm.cos();
+        final double sinOm = scOm.sin();
+        final double cosIm = scIm.cos();
+        final double sinIm = scIm.sin();
+        final double cosEs = scEs.cos();
+        final double sinEs = scEs.sin();
+        final double cosGm = scGm.cos();
+        final double sinGm = scGm.sin();
 
         // Intermediate parameters
         final double psiStar = cosOm * sinIm;
@@ -353,9 +409,10 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
         final double ek = getEccentricAnomaly(qm, em);
 
         // True Anomaly
-        final double vk =  getTrueAnomaly(ek, em);
-        final double sinVk = FastMath.sin(vk);
-        final double cosVk = FastMath.cos(vk);
+        final double vk    = getTrueAnomaly(ek, em);
+        final SinCos scVk  = FastMath.sinCos(vk);
+        final double sinVk = scVk.sin();
+        final double cosVk = scVk.cos();
 
         // Direction cosine
         final double epsM = eps11 * (sinVk * cosGm + cosVk * sinGm) + eps12 * (cosVk * cosGm - sinVk * sinGm);
@@ -404,15 +461,18 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
         final double ek = getEccentricAnomaly(qs, es);
 
         // True Anomaly
-        final double vk =  getTrueAnomaly(ek, es);
-        final double sinVk = FastMath.sin(vk);
-        final double cosVk = FastMath.cos(vk);
+        final double vk    =  getTrueAnomaly(ek, es);
+        final SinCos scVk  = FastMath.sinCos(vk);
+        final double sinVk = scVk.sin();
+        final double cosVk = scVk.cos();
 
         // Commons parameters
-        final double cosWs = FastMath.cos(ws);
-        final double sinWs = FastMath.sin(ws);
-        final double cosEs = FastMath.cos(eps);
-        final double sinEs = FastMath.sin(eps);
+        final SinCos scWs  = FastMath.sinCos(ws);
+        final SinCos scEs  = FastMath.sinCos(eps);
+        final double cosWs = scWs.cos();
+        final double sinWs = scWs.sin();
+        final double cosEs = scEs.cos();
+        final double sinEs = scEs.sin();
 
         // Direction cosine
         final double epsS = cosVk * cosWs - sinVk * sinWs;
@@ -468,8 +528,9 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
         for (int j = 0; j < 2; ++j) {
             final double f;
             double fd;
-            final double fdd  = e * FastMath.sin(E);
-            final double fddd = e * FastMath.cos(E);
+            final SinCos scE  = FastMath.sinCos(E);
+            final double fdd  = e * scE.sin();
+            final double fddd = e * scE.cos();
             if (noCancellationRisk) {
                 f  = (E - fdd) - reducedM;
                 fd = 1 - fddd;
@@ -524,8 +585,9 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
      * @return the true anomaly (rad)
      */
     private double getTrueAnomaly(final double ek, final double ecc) {
-        final double svk = FastMath.sqrt(1. - ecc * ecc) * FastMath.sin(ek);
-        final double cvk = FastMath.cos(ek) - ecc;
+        final SinCos scek = FastMath.sinCos(ek);
+        final double svk  = FastMath.sqrt(1. - ecc * ecc) * scek.sin();
+        final double cvk  = scek.cos() - ecc;
         return FastMath.atan2(svk, cvk);
     }
 
@@ -555,7 +617,9 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
         final double vz0 = vel.getZ();
 
         // Greenwich Mean Sidereal Time (GMST)
-        final GLONASSDate gloDate = new GLONASSDate(state.getDate());
+        final GLONASSDate gloDate = new GLONASSDate(
+                state.getDate(),
+                dataContext.getTimeScales().getGLONASS());
         final double gmst = gloDate.getGMST();
 
         final double ti = glonassOrbit.getTime() + dt;
@@ -563,8 +627,9 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
         final double s = gmst + GLONASS_AV * (ti - 10800.);
 
         // Commons Parameters
-        final double cosS = FastMath.cos(s);
-        final double sinS = FastMath.sin(s);
+        final SinCos scS  = FastMath.sinCos(s);
+        final double cosS = scS.cos();
+        final double sinS = scS.sin();
 
         // Transformed coordinates
         final double x = x0 * cosS + y0 * sinS;
@@ -597,8 +662,9 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
         final double s = gmst + GLONASS_AV * dt;
 
         // Commons Parameters
-        final double cosS = FastMath.cos(s);
-        final double sinS = FastMath.sin(s);
+        final SinCos scS  = FastMath.sinCos(s);
+        final double cosS = scS.cos();
+        final double sinS = scS.sin();
 
         // PV coordinates in inertial frame
         final double x0  = glonassOrbit.getX() * cosS - glonassOrbit.getY() * sinS;
@@ -683,7 +749,9 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
         public double[] computeDerivatives(final SpacecraftState state) {
 
             // Date in Glonass form
-            final GLONASSDate gloDate = new GLONASSDate(state.getDate());
+            final GLONASSDate gloDate = new GLONASSDate(
+                    state.getDate(),
+                    dataContext.getTimeScales().getGLONASS());
 
             // Position and Velocity vectors
             final Vector3D vel = state.getPVCoordinates().getVelocity();
@@ -721,12 +789,15 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
             if (isAccAvailable) {
                 acc = getLuniSolarPerturbations(gloDate);
             } else {
-                final Vector3D accMoon = computeLuniSolarPerturbations(state,
-                                                                       moonElements[0], moonElements[1], moonElements[2],
-                                                                       moonElements[3], CelestialBodyFactory.getMoon().getGM());
-                final Vector3D accSun = computeLuniSolarPerturbations(state,
-                                                                      sunElements[0], sunElements[1], sunElements[2],
-                                                                      sunElements[3], CelestialBodyFactory.getSun().getGM());
+                final Vector3D accMoon = computeLuniSolarPerturbations(
+                        state, moonElements[0], moonElements[1], moonElements[2],
+                        moonElements[3],
+                        dataContext.getCelestialBodies().getMoon().getGM());
+                final Vector3D accSun = computeLuniSolarPerturbations(
+                        state,
+                        sunElements[0], sunElements[1], sunElements[2],
+                        sunElements[3],
+                        dataContext.getCelestialBodies().getSun().getGM());
                 acc = accMoon.add(accSun);
             }
 
@@ -804,8 +875,9 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
             final double s = gmst + GLONASS_AV * dt;
 
             // Commons Parameters
-            final double cosS = FastMath.cos(s);
-            final double sinS = FastMath.sin(s);
+            final SinCos scS  = FastMath.sinCos(s);
+            final double cosS = scS.cos();
+            final double sinS = scS.sin();
 
             // Accelerations
             final double accX = glonassOrbit.getXDotDot() * cosS - glonassOrbit.getYDotDot() * sinS;

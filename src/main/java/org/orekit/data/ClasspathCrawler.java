@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -27,12 +27,12 @@ import java.util.regex.Pattern;
 
 import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.exception.LocalizedCoreFormats;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
 
 /** Provider for data files stored as resources in the classpath.
-
  * <p>
  * This class handles a list of data files or zip/jar archives located in the
  * classpath. Since the classpath is not a tree structure the list elements
@@ -46,7 +46,8 @@ import org.orekit.errors.OrekitMessages;
  * data and another one for system-wide or general data.
  * </p>
  * <p>
- * Gzip-compressed files are supported.
+ * All {@link DataProvidersManager#addFilter(DataFilter) registered}
+ * {@link DataFilter filters} are applied.
  * </p>
  * <p>
  * Zip archives entries are supported recursively.
@@ -85,7 +86,7 @@ public class ClasspathCrawler implements DataProvider {
      */
     public ClasspathCrawler(final ClassLoader classLoader, final String... list) {
 
-        listElements = new ArrayList<String>();
+        listElements = new ArrayList<>();
         this.classLoader = classLoader;
 
         // check the resources
@@ -93,24 +94,31 @@ public class ClasspathCrawler implements DataProvider {
             if (!"".equals(name)) {
 
                 final String convertedName = name.replace('\\', '/');
-                final InputStream stream = classLoader.getResourceAsStream(convertedName);
-                if (stream == null) {
-                    throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_RESOURCE, name);
-                }
-
-                listElements.add(convertedName);
-                try {
-                    stream.close();
+                try (InputStream stream = classLoader.getResourceAsStream(convertedName)) {
+                    if (stream == null) {
+                        throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_RESOURCE, name);
+                    }
+                    listElements.add(convertedName);
                 } catch (IOException exc) {
                     // ignore this error
                 }
+
             }
         }
 
     }
 
-    /** {@inheritDoc} */
+    @Override
+    @Deprecated
+    @DefaultDataContext
     public boolean feed(final Pattern supported, final DataLoader visitor) {
+        return feed(supported, visitor, DataContext.getDefault().getDataProvidersManager());
+    }
+
+    /** {@inheritDoc} */
+    public boolean feed(final Pattern supported,
+                        final DataLoader visitor,
+                        final DataProvidersManager manager) {
 
         try {
             OrekitException delayedException = null;
@@ -123,13 +131,13 @@ public class ClasspathCrawler implements DataProvider {
 
                             // browse inside the zip/jar file
                             final DataProvider zipProvider = new ZipJarCrawler(name);
-                            loaded = zipProvider.feed(supported, visitor) || loaded;
+                            loaded = zipProvider.feed(supported, visitor, manager) || loaded;
 
                         } else {
 
                             // apply all registered filters
                             NamedData data = new NamedData(name, () -> classLoader.getResourceAsStream(name));
-                            data = DataProvidersManager.getInstance().applyAllFilters(data);
+                            data = manager.applyAllFilters(data);
 
                             if (supported.matcher(data.getName()).matches()) {
                                 // visit the current file
@@ -160,10 +168,8 @@ public class ClasspathCrawler implements DataProvider {
 
             return loaded;
 
-        } catch (IOException ioe) {
+        } catch (IOException | ParseException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
-        } catch (ParseException pe) {
-            throw new OrekitException(pe, new DummyLocalizable(pe.getMessage()));
         }
 
     }

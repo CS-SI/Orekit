@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -51,6 +51,7 @@ import org.orekit.utils.Constants;
  * Third Edition, Amendment 1.</li> </ol>
  *
  * @author Evan Ward
+ * @author Guylaine Prat
  */
 public class ReferenceEllipsoid extends OneAxisEllipsoid implements EarthShape {
 
@@ -242,4 +243,42 @@ public class ReferenceEllipsoid extends OneAxisEllipsoid implements EarthShape {
         );
     }
 
+    /**
+     * Get the IERS96 ellipsoid, attached to the given body frame.
+     *
+     * @param bodyFrame the earth centered fixed frame
+     * @return an IERS96 reference ellipsoid
+     */
+    public static ReferenceEllipsoid getIers96(final Frame bodyFrame) {
+        return new ReferenceEllipsoid(Constants.IERS96_EARTH_EQUATORIAL_RADIUS,
+                Constants.IERS96_EARTH_FLATTENING, bodyFrame,
+                Constants.IERS96_EARTH_MU,
+                Constants.IERS96_EARTH_ANGULAR_VELOCITY);
+    }
+
+    /**
+     * Get the IERS2003 ellipsoid, attached to the given body frame.
+     *
+     * @param bodyFrame the earth centered fixed frame
+     * @return an IERS2003 reference ellipsoid
+     */
+    public static ReferenceEllipsoid getIers2003(final Frame bodyFrame) {
+        return new ReferenceEllipsoid(Constants.IERS2003_EARTH_EQUATORIAL_RADIUS,
+                Constants.IERS2003_EARTH_FLATTENING, bodyFrame,
+                Constants.IERS2003_EARTH_MU,
+                Constants.IERS2003_EARTH_ANGULAR_VELOCITY);
+    }
+
+    /**
+     * Get the IERS2010 ellipsoid, attached to the given body frame.
+     *
+     * @param bodyFrame the earth centered fixed frame
+     * @return an IERS2010 reference ellipsoid
+     */
+    public static ReferenceEllipsoid getIers2010(final Frame bodyFrame) {
+        return new ReferenceEllipsoid(Constants.IERS2010_EARTH_EQUATORIAL_RADIUS,
+                Constants.IERS2010_EARTH_FLATTENING, bodyFrame,
+                Constants.IERS2010_EARTH_MU,
+                Constants.IERS2010_EARTH_ANGULAR_VELOCITY);
+    }
 }

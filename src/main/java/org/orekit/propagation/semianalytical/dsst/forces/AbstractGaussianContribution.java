@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -31,7 +31,9 @@ import org.hipparchus.analysis.UnivariateVectorFunction;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.SinCos;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
@@ -421,8 +423,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         double maxDiff = FastMath.abs(meanRef[0] - meanCur[0]) / auxiliaryElements.getSma();
         // Corrects mean element rates
         for (int i = 1; i < meanRef.length; i++) {
-            final double diff = FastMath.abs(meanRef[i] - meanCur[i]);
-            if (maxDiff < diff) maxDiff = diff;
+            maxDiff = FastMath.max(maxDiff, FastMath.abs(meanRef[i] - meanCur[i]));
         }
         return maxDiff;
     }
@@ -443,8 +444,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         T maxDiff = FastMath.abs(meanRef[0].subtract(meanCur[0])).divide(auxiliaryElements.getSma());;
         // Corrects mean element rates
         for (int i = 1; i < meanRef.length; i++) {
-            final T diff = FastMath.abs(meanRef[i].subtract(meanCur[i]));
-            if (maxDiff.getReal() < diff.getReal()) maxDiff = diff;
+            maxDiff = FastMath.max(maxDiff, FastMath.abs(meanRef[i].subtract(meanCur[i])));
         }
         return maxDiff;
     }
@@ -656,8 +656,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final T dLm = shiftedLm.subtract(auxiliaryElements.getLM());
             final T dt = dLm.divide(context.getMeanMotion());
 
-            final T cosL = FastMath.cos(x);
-            final T sinL = FastMath.sin(x);
+            final FieldSinCos<T> scL = FastMath.sinCos(x);
+            final T cosL = scL.cos();
+            final T sinL = scL.sin();
             final T roa  = auxiliaryElements.getB().multiply(auxiliaryElements.getB()).divide(auxiliaryElements.getH().multiply(sinL).add(auxiliaryElements.getK().multiply(cosL)).add(1.));
             final T roa2 = roa.multiply(roa);
             final T r    = auxiliaryElements.getSma().multiply(roa);
@@ -725,8 +726,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             } else {
                 val = MathArrays.buildArray(field, dimension * 2);
                 //Compute cos(j*L) and sin(j*L);
-                final T cosjL = j == 1 ? cosL : FastMath.cos(x.multiply(j));
-                final T sinjL = j == 1 ? sinL : FastMath.sin(x.multiply(j));
+                final FieldSinCos<T> scjL = FastMath.sinCos(x.multiply(j));
+                final T cosjL = j == 1 ? cosL : scjL.cos();
+                final T sinjL = j == 1 ? sinL : scjL.sin();
 
                 for (int i = 0; i < 6; i++) {
                     // da<sub>i</sub>/dv * cos(jL)
@@ -752,8 +754,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @return Eccentric longitude
          */
         private T trueToEccentric (final T lv) {
-            final T cosLv   = FastMath.cos(lv);
-            final T sinLv   = FastMath.sin(lv);
+            final FieldSinCos<T> sclV = FastMath.sinCos(lv);
+            final T cosLv   = sclV.cos();
+            final T sinLv   = sclV.sin();
             final T num     = auxiliaryElements.getH().multiply(cosLv).subtract(auxiliaryElements.getK().multiply(sinLv));
             final T den     = auxiliaryElements.getB().add(auxiliaryElements.getK().multiply(cosLv)).add(auxiliaryElements.getH().multiply(sinLv)).add(1.);
             return FastMath.atan(num.divide(den)).multiply(2.).add(lv);
@@ -764,7 +767,8 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @return Mean longitude
          */
         private T eccentricToMean (final T le) {
-            return le.subtract(auxiliaryElements.getK().multiply(FastMath.sin(le))).add(auxiliaryElements.getH().multiply(FastMath.cos(le)));
+            final FieldSinCos<T> scle = FastMath.sinCos(le);
+            return le.subtract(auxiliaryElements.getK().multiply(scle.sin())).add(auxiliaryElements.getH().multiply(scle.cos()));
         }
 
         /** Compute δa/δv.
@@ -895,8 +899,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final double dLm = shiftedLm - auxiliaryElements.getLM();
             final double dt = dLm / context.getMeanMotion();
 
-            final double cosL = FastMath.cos(x);
-            final double sinL = FastMath.sin(x);
+            final SinCos scL  = FastMath.sinCos(x);
+            final double cosL = scL.cos();
+            final double sinL = scL.sin();
             final double roa  = auxiliaryElements.getB() * auxiliaryElements.getB() / (1. + auxiliaryElements.getH() * sinL + auxiliaryElements.getK() * cosL);
             final double roa2 = roa * roa;
             final double r    = auxiliaryElements.getSma() * roa;
@@ -964,8 +969,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             } else {
                 val = new double[12];
                 //Compute cos(j*L) and sin(j*L);
-                final double cosjL = j == 1 ? cosL : FastMath.cos(j * x);
-                final double sinjL = j == 1 ? sinL : FastMath.sin(j * x);
+                final SinCos scjL  = FastMath.sinCos(j * x);
+                final double cosjL = j == 1 ? cosL : scjL.cos();
+                final double sinjL = j == 1 ? sinL : scjL.sin();
 
                 for (int i = 0; i < 6; i++) {
                     // da<sub>i</sub>/dv * cos(jL)
@@ -982,10 +988,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @return Eccentric longitude
          */
         private double trueToEccentric (final double lv) {
-            final double cosLv   = FastMath.cos(lv);
-            final double sinLv   = FastMath.sin(lv);
-            final double num     = auxiliaryElements.getH() * cosLv - auxiliaryElements.getK() * sinLv;
-            final double den     = auxiliaryElements.getB() + 1. + auxiliaryElements.getK() * cosLv + auxiliaryElements.getH() * sinLv;
+            final SinCos scLv    = FastMath.sinCos(lv);
+            final double num     = auxiliaryElements.getH() * scLv.cos() - auxiliaryElements.getK() * scLv.sin();
+            final double den     = auxiliaryElements.getB() + 1. + auxiliaryElements.getK() * scLv.cos() + auxiliaryElements.getH() * scLv.sin();
             return lv + 2. * FastMath.atan(num / den);
         }
 
@@ -994,7 +999,8 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @return Mean longitude
          */
         private double eccentricToMean (final double le) {
-            return le - auxiliaryElements.getK() * FastMath.sin(le) + auxiliaryElements.getH() * FastMath.cos(le);
+            final SinCos scLe = FastMath.sinCos(le);
+            return le - auxiliaryElements.getK() * scLe.sin() + auxiliaryElements.getH() * scLe.cos();
         }
 
         /** Converts true longitude to mean longitude.
@@ -2155,8 +2161,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             for (int j = 1; j <= JMAX; j++) {
                 final double[] c = slot.cij[j].value(meanOrbit.getDate());
                 final double[] s = slot.sij[j].value(meanOrbit.getDate());
-                final double cos = FastMath.cos(j * L);
-                final double sin = FastMath.sin(j * L);
+                final SinCos sc  = FastMath.sinCos(j * L);
+                final double cos = sc.cos();
+                final double sin = sc.sin();
                 for (int i = 0; i < 6; i++) {
                     // add corresponding term to the short periodic variation
                     shortPeriodicVariation[i] += c[i] * cos;
@@ -2419,8 +2426,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             for (int j = 1; j <= JMAX; j++) {
                 final T[] c = slot.cij[j].value(meanOrbit.getDate());
                 final T[] s = slot.sij[j].value(meanOrbit.getDate());
-                final T cos = FastMath.cos(L.multiply(j));
-                final T sin = FastMath.sin(L.multiply(j));
+                final FieldSinCos<T> sc = FastMath.sinCos(L.multiply(j));
+                final T cos = sc.cos();
+                final T sin = sc.sin();
                 for (int i = 0; i < 6; i++) {
                     // add corresponding term to the short periodic variation
                     shortPeriodicVariation[i] = shortPeriodicVariation[i].add(c[i].multiply(cos));

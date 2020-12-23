@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -90,10 +91,8 @@ public class SimpleTimeStampedTableParser<T extends TimeStamped> {
         }
         final Pattern regularLinePattern = Pattern.compile(builder.toString());
 
-        try {
-
-            // setup the reader
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+        // setup the reader
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
 
             final List<T> table = new ArrayList<T>();
 

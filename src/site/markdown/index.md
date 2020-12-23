@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2019 CS Systèmes d'Information
+<!--- Copyright 2002-2020 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -28,14 +28,15 @@
     * high accuracy absolute dates
     * time scales (TAI, UTC, UT1, GPS, TT, TCG, TDB, TCB, GMST, GST, GLONASS, QZSS, BDT, IRNSS ...)
     * transparent handling of leap seconds
+    * support for CCSDS time code standards
 
   * Geometry
 
     * frames hierarchy supporting fixed and time-dependent
       (or telemetry-dependent) frames
     * predefined frames (EME2000/J2000, ICRF, GCRF, all ITRF from 1988 to 2014
-      and intermediate frames, TOD, MOD, GTOD and TOD frames, Veis, topocentric, tnw and qsw
-      local orbital frames, Moon, Sun, planets, solar system barycenter,
+      and intermediate frames, TOD, MOD, GTOD and TOD frames, Veis, topocentric, TEME and PZ-90.11 frames,
+      tnw and qsw local orbital frames, Moon, Sun, planets, solar system barycenter,
       Earth-Moon barycenter, ecliptic)
     * user extensible (used operationally in real time with a set of about 60 frames on
       several spacecraft)
@@ -46,7 +47,8 @@
     * composite transforms reduction and caching for efficiency
     * extensible central body shapes models (with predefined spherical and ellipsoidic shapes)
     * Cartesian and geodesic coordinates, kinematics
-    * Computation of Dilution Of Precision (DOP) with respect to GNSS constellations
+    * computation of Dilution Of Precision (DOP) with respect to GNSS constellations
+    * projection of sensor Field Of View footprint on ground for any FoV shape
 
   * Spacecraft state
 
@@ -66,43 +68,44 @@
     * analytical models for small maneuvers without propagation
     * impulse maneuvers for any propagator type
     * continuous maneuvers for numerical propagator type
+    * configurable low thrust maneuver model based on event detectors
+    * propulsion models intended to be used with maneuver class
+    * user-friendly interface for the maneuver triggers
 
   * Propagation
 
     * analytical propagation models
-      * Kepler
-      * Eckstein-Heschler
-      * SDP4/SGP4 with 2006 corrections
-      * GNSS: GPS, QZSS, Galileo, GLONASS, and Beidou
+        * Kepler
+        * Eckstein-Heschler
+        * SDP4/SGP4 with 2006 corrections
+        * GNSS: GPS, QZSS, Galileo, GLONASS, Beidou, IRNSS and SBAS
     * numerical propagators
-
-      * central attraction
-      * gravity models including time-dependent like trends and pulsations
-        (automatic reading of ICGEM (new Eigen models), SHM (old Eigen models),
-        EGM and GRGS gravity field files formats, even compressed)
-      * atmospheric drag
-      * third body attraction (with data for Sun, Moon and all solar systems planets)
-      * radiation pressure with eclipses
-      * solid tides, with or without solid pole tide
-      * ocean tides, with or without ocean pole tide
-      * general relativity
-      * multiple maneuvers
-      * state of the art ODE integrators (adaptive stepsize with error control,
-        continuous output, switching functions, G-stop, step normalization ...)
-      * computation of Jacobians with respect to orbital parameters and selected
-        force models parameters
-      * serialization mechanism to store complete results on persistent storage for
-        later use
-      * propagation in non-inertial frames (e.g. for Lagrange point halo orbits)
-
+        * central attraction
+        * gravity models including time-dependent like trends and pulsations
+          (automatic reading of ICGEM (new Eigen models), SHM (old Eigen models),
+          EGM and GRGS gravity field files formats, even compressed)
+        * atmospheric drag
+        * third body attraction (with data for Sun, Moon and all solar systems planets)
+        * radiation pressure with eclipses
+        * solid tides, with or without solid pole tide
+        * ocean tides, with or without ocean pole tide
+        * Earth's albedo and infrared
+        * empirical accelerations to account for the unmodeled forces
+        * general relativity (including Lense-Thirring and De Sitter corrections)
+        * multiple maneuvers
+        * state of the art ODE integrators (adaptive stepsize with error control,
+          continuous output, switching functions, G-stop, step normalization ...)
+        * computation of Jacobians with respect to orbital parameters and selected
+          force models parameters
+        * serialization mechanism to store complete results on persistent storage for
+          later use
+        * propagation in non-inertial frames (e.g. for Lagrange point halo orbits)
     * semi-analytical propagation model (DSST) with customizable force models
+    * trajectories around Lagragian points using CR3BP model
     * tabulated ephemerides
-
-      * file based
-      * memory based
-      * integration based
-
-    * specialized GPS propagation, using SEM or YUMA files
+        * file based
+        * memory based
+        * integration based
     * Taylor-algebra (or any other real field) version of most of the above propagators,
         with all force models, events detection, orbits types, coordinates types and frames
         allowing high order uncertainties and derivatives computation or very fast Monte-Carlo
@@ -110,44 +113,38 @@
     * unified interface above analytical/numerical/tabulated propagators for easy
       switch from coarse analysis to fine simulation with one line change
     * all propagators can be used in several different modes
-
-      * slave mode: propagator is driven by calling application
-      * master mode: propagator drives application callback functions
-      * ephemeris generation mode: all intermediate results are stored during
-        propagation and provided back to the application which can navigate at will
-        through them, effectively using the propagated orbit as if it was an
-        analytical model, even if it really is a numerically propagated one, which
-        is ideal for search and iterative algorithms
-
+        * slave mode: propagator is driven by calling application
+        * master mode: propagator drives application callback functions
+        * ephemeris generation mode: all intermediate results are stored during
+          propagation and provided back to the application which can navigate at will
+          through them, effectively using the propagated orbit as if it was an
+          analytical model, even if it really is a numerically propagated one, which
+          is ideal for search and iterative algorithms
     * handling of discrete events during integration
       (models changes, G-stop, simple notifications ...)
     * predefined discrete events
-
-      * eclipse (both umbra and penumbra)
-      * ascending and descending node crossing
-      * anomaly, latitude argument or longitude argument crossings,
-        with either true, eccentric or mean angles
-      * apogee and perigee crossing
-      * alignment with some body in the orbital plane
-        (with customizable threshold angle)
-      * angular separation thresholds crossing between spacecraft and a beacon (typically the Sun)
-        as seen from an observer (typically a ground station)
-      * raising/setting with respect to a ground location
-        (with customizable triggering elevation and ground mask, optionally considering refraction)
-      * date and on-the-fly resetting countdown
-      * latitude, longitude, altitude crossing
-      * latitude, longitude extremum
-      * elevation extremum
-      * anomaly, latitude argument, or longitude argument crossings, either true, mean or eccentric
-      * moving target detection (with optional radius) in spacecraft sensor Field Of View (any shape, with special case for circular)
-      * spacecraft detection in ground based Field Of View (any shape)
-      * sensor Field Of View (any shape) overlapping complex geographic zone
-      * complex geographic zones traversal
-      * inter-satellites direct view
-      * ground at night
-      * impulse maneuvers occurrence
-      * geomagnetic intensity
-
+        * eclipse (both umbra and penumbra)
+        * ascending and descending node crossing
+        * apogee and perigee crossing
+        * alignment with some body in the orbital plane
+          (with customizable threshold angle)
+        * angular separation thresholds crossing between spacecraft and a beacon (typically the Sun)
+          as seen from an observer (typically a ground station)
+        * raising/setting with respect to a ground location
+          (with customizable triggering elevation and ground mask, optionally considering refraction)
+        * date and on-the-fly resetting countdown
+        * latitude, longitude, altitude crossing
+        * latitude, longitude extremum
+        * elevation extremum
+        * anomaly, latitude argument, or longitude argument crossings, either true, mean or eccentric
+        * moving target detection (with optional radius) in spacecraft sensor Field Of View (any shape, with special case for circular)
+        * spacecraft detection in ground based Field Of View (any shape)
+        * sensor Field Of View (any shape) overlapping complex geographic zone
+        * complex geographic zones traversal
+        * inter-satellites direct view
+        * ground at night
+        * impulse maneuvers occurrence
+        * geomagnetic intensity
     * possibility of slightly shifting events in time (for example to switch from
       solar pointing mode to something else a few minutes before eclipse entry and
       reverting to solar pointing mode a few minutes after eclipse exit)
@@ -163,79 +160,80 @@
 
     * extensible attitude evolution models
     * predefined laws
-
-      * central body related attitude (nadir pointing, center pointing, target pointing, yaw compensation, yaw-steering),
-      * orbit referenced attitudes (LOF aligned, offset on all axes),
-      * space referenced attitudes (inertial, celestial body-pointed, spin-stabilized)
-      * tabulated attitudes, either respective to inertial frame or respective to Local Orbital Frames
-      * specific law for GNSS satellites: GPS (block IIA, block IIF, block IIF), GLONASS, GALILEO, BEIDOU (GEO, IGSO, MEO)
+        * central body related attitude (nadir pointing, center pointing, target pointing, yaw compensation, yaw-steering),
+        * orbit referenced attitudes (LOF aligned, offset on all axes),
+        * space referenced attitudes (inertial, celestial body-pointed, spin-stabilized)
+        * tabulated attitudes, either respective to inertial frame or respective to Local Orbital Frames
+        * specific law for GNSS satellites: GPS (block IIA, block IIF, block IIF), GLONASS, GALILEO, BEIDOU (GEO, IGSO, MEO)
+    * loading of CCSDS Attitude Data Messages (both AEM, and APM types are supported)
 
   * Orbit determination
   
     * batch least squares fitting
-
-      * optimizers choice (Levenberg-Marquardt or Gauss-Newton)
-      * decomposition algorithms choice (QR, LU, SVD, Cholesky)
-      * choice between forming normal equations or not
-
+        * optimizers choice (Levenberg-Marquardt or Gauss-Newton)
+        * decomposition algorithms choice (QR, LU, SVD, Cholesky)
+        * choice between forming normal equations or not
     *  Kalman filtering
-
-      * customizable process noise matrices providers
-      * time dependent process noise provider
-
+        * customizable process noise matrices providers
+        * time dependent process noise provider
     * parameters estimation
-
-      * orbital parameters estimation (or only a subset if desired)
-      * force model parameters estimation (drag coefficients, radiation pressure coefficients,
-        central attraction, maneuver thrust or flow rate)
-      * measurements parameters estimation (biases, satellite clock offset, station clock offset,
-        station position, pole motion and rate, prime meridian correction and rate, total zenith
-        delay in tropospheric correction)
-
-    * Use numerical propagator or DSST propagator
+        * orbital parameters estimation (or only a subset if desired)
+        * force model parameters estimation (drag coefficients, radiation pressure coefficients,
+          central attraction, maneuver thrust or flow rate)
+        * measurements parameters estimation (biases, satellite clock offset, station clock offset,
+          station position, pole motion and rate, prime meridian correction and rate, total zenith
+          delay in tropospheric correction)
+    * can be used with both numerical propagator or DSST propagator
     * multi-satellites orbit determination
+    * initial orbit determination methods (Gibbs, Gooding, Lambert and Laplace)
     * ground stations displacements due to solid tides
     * ground stations displacements due to ocean loading (based on Onsala Space Observatory files in BLQ format)
     * several predefined measurements
-
-      * range
-      * range rate (one way and two way)
-      * turn-around range
-      * azimuth/elevation
-      * right ascension/declination
-      * position-velocity
-      * position
-      * inter-satellites range (one way and two way)
-      * GNSS code
-      * GNSS phase with integer ambiguity resolution (not complete yet and experimental)
-
+        * range
+        * range rate (one way and two way)
+        * turn-around range
+        * azimuth/elevation
+        * right ascension/declination
+        * position-velocity
+        * position
+        * inter-satellites range (one way and two way)
+        * inter-satellites GNSS phase
+        * GNSS code
+        * GNSS phase with integer ambiguity resolution and wind-up effect
+        * multiplexed
     * possibility to add custom measurements
+    * loading of ILRS CRD laser ranging measurements file
     * several predefined modifiers
-
-      * tropospheric effects
-      * ionospheric effects
-      * station offsets
-      * biases
-      * delays
-      * Antenna Phase Center
-      * Shapiro relativistic effect
-
+        * tropospheric effects
+        * ionospheric effects
+        * clock relativistic effects
+        * station offsets
+        * biases
+        * delays
+        * Antenna Phase Center
+        * Shapiro relativistic effect
     * possibility to add custom measurement modifiers (even for predefined events)
+    * combination of GNSS measurements
+        * dual frequency combination of measurements
+          (Geometry-free, Ionosphere-free, Narrow-lane, Wide-lane and Melbourne-Wübbena)
+        * single frequency combination of measurements
+          (Phase minus code and GRAPHIC)
     * possibility to parse CCSDS Tracking Data Message files
     * measurements generation
-
-      * with measurements feasibility triggered by regular event detectors
-        (ground visibility, ground at night, sunlit satellite, inter satellites
-         direct view, boolean combination...)
-      * with measurement scheduling as fixed step streams (optionally aligned with round UTC time)
-      * with measurement scheduling as high rate bursts rest periods (optionally aligned with round UTC time)
-      * possibility to customize measurement scheduling
+        * with measurements feasibility triggered by regular event detectors
+          (ground visibility, ground at night, sunlit satellite, inter satellites
+           direct view, boolean combination...)
+        * with measurement scheduling as fixed step streams (optionally aligned with round UTC time)
+        * with measurement scheduling as high rate bursts rest periods (optionally aligned with round UTC time)
+        * possibility to customize measurement scheduling
 
   * GNSS
 
     * computation of Dilution Of Precision
     * loading of ANTEX antenna models file
     * loading of RINEX observation files (version 2 and version 3)
+    * support for Hatanaka compact RINEX format
+    * loading of SINEX station file
 
   * Orbit file handling
   
@@ -243,15 +241,19 @@
     * loading of CCSDS Orbit Data Messages (both OPM, OEM, and OMM types are supported)
     * loading of SEM and YUMA files for GPS constellation
     * exporting of ephemeris in CCSDS OEM file format
+    * loading of ILRS CPF orbit files
 
   * Earth models
   
     * atmospheric models (DTM2000, Jacchia-Bowman 2008, NRL MSISE 2000, Harris-Priester and simple exponential models), and Marshall solar Activity Future Estimation, optionally with lift component
+    * support for CSSI space weather data
     * tropospheric delay (modified Saastamoinen, Mendes-Pavlis, Vienna 1, Vienna 3, estimated, fixed)
     * tropospheric refraction correction angle (Recommendation ITU-R P.834-7 and Saemundssen's formula quoted by Meeus)
     * tropospheric model for laser ranging (Marini-Murray)
     * Klobuchar ionospheric model (including parsing α and β coefficients from University of Bern Astronomical Institute files)
     * Global Ionospheric Map model
+    * NeQuick ionospheric model
+    * VTEC estimated ionospheric model
     * Global Pression and Temperature models (GPT and GPT2)
     * geomagnetic field (WMM, IGRF)
     * geoid model from any gravity field
@@ -261,14 +263,17 @@
     
   * Customizable data loading
 
-    * loading from local disk
+    * loading by exploring folders hierarchy on local disk
+    * loading from explicit lists of files on local disk
     * loading from classpath
     * loading from network (even through internet proxies)
     * support for zip archives
     * automatic decompression of gzip compressed (.gz) files upon loading
     * automatic decompression of Unix compressed (.Z) files upon loading
+    * automatic decompression of Hatanaka compressed files upon loading
     * plugin mechanism to add filtering like custom decompression algorithms, deciphering or monitoring
     * plugin mechanism to delegate loading to user defined database or data access library
+    * possibility to have different data context (a way to separate sets of EOP, leap seconds, etc)
 
   * Localized in several languages
 
@@ -301,8 +306,8 @@ interoperability in space systems.
 
 ## Maintained library
 
-Orekit has been in development since 2002 inside [CS Systèmes
-d'Information](http://www.c-s.fr/) and is still used and maintained by its
+Orekit has been in development since 2002 inside [CS GROUP](http://www.c-s.fr/)
+and is still used and maintained by its
 experts and an open community. It is ruled by a meritocratic governance
 model and the Project Management Committee involves actors from
 industry (CS, Thales Alenia Space, Applied Defense Solutions), research

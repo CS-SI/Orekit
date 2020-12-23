@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,14 +17,14 @@
 package org.orekit.propagation.semianalytical.dsst;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.ode.nonstiff.DormandPrince54Integrator;
 import org.hipparchus.util.MathArrays;
 import org.junit.Before;
@@ -107,12 +107,12 @@ public class DSSTPartialDerivativesEquationsTest {
         pde.computeDerivatives(state, pdot);
 
         //verify
-        assertThat(forceModel.sma.getReal(), is(state.getA()));
-        assertThat(forceModel.ex.getReal(),  is(state.getEquinoctialEx()));
-        assertThat(forceModel.ey.getReal(),  is(state.getEquinoctialEy()));
-        assertThat(forceModel.hx.getReal(),  is(state.getHx()));
-        assertThat(forceModel.hy.getReal(),  is(state.getHy()));
-        assertThat(forceModel.l.getReal(),   is(state.getLv()));
+        MatcherAssert.assertThat(forceModel.sma.getReal(), is(state.getA()));
+        MatcherAssert.assertThat(forceModel.ex.getReal(),  is(state.getEquinoctialEx()));
+        MatcherAssert.assertThat(forceModel.ey.getReal(),  is(state.getEquinoctialEy()));
+        MatcherAssert.assertThat(forceModel.hx.getReal(),  is(state.getHx()));
+        MatcherAssert.assertThat(forceModel.hy.getReal(),  is(state.getHy()));
+        MatcherAssert.assertThat(forceModel.l.getReal(),   is(state.getLv()));
 
     }
 
@@ -120,22 +120,22 @@ public class DSSTPartialDerivativesEquationsTest {
     private static class MockForceModel implements DSSTForceModel {
 
         /** semi major axis. */
-        public DerivativeStructure sma;
+        public Gradient sma;
 
         /**  first component of the eccentricity vector. */
-        public DerivativeStructure ex;
+        public Gradient ex;
         
         /** second component of the eccentricity vector. */
-        public DerivativeStructure ey;
+        public Gradient ey;
         
         /** first component of the inclination vector. */
-        public DerivativeStructure hx;
+        public Gradient hx;
         
         /** second component of the inclination vector. */
-        public DerivativeStructure hy;
+        public Gradient hy;
         
         /** true latitude argument. */
-        public DerivativeStructure l;
+        public Gradient l;
 
         @Override
         public List<ShortPeriodTerms> initialize(AuxiliaryElements auxiliaryElements,
@@ -170,12 +170,12 @@ public class DSSTPartialDerivativesEquationsTest {
             
             final Field<T> field = state.getDate().getField();
             
-            this.sma = (DerivativeStructure) state.getA();
-            this.ex  = (DerivativeStructure) state.getEquinoctialEx();
-            this.ey  = (DerivativeStructure) state.getEquinoctialEy();
-            this.hx  = (DerivativeStructure) state.getHx();
-            this.hy  = (DerivativeStructure) state.getHy();
-            this.l   = (DerivativeStructure) state.getLv();
+            this.sma = (Gradient) state.getA();
+            this.ex  = (Gradient) state.getEquinoctialEx();
+            this.ey  = (Gradient) state.getEquinoctialEy();
+            this.hx  = (Gradient) state.getHx();
+            this.hy  = (Gradient) state.getHy();
+            this.l   = (Gradient) state.getLv();
             
             final T[] elements = MathArrays.buildArray(field, 6);
             elements[0] = state.getA();

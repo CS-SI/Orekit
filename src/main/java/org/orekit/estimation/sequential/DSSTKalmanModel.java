@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -35,6 +35,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
 import org.orekit.orbits.Orbit;
@@ -82,11 +83,17 @@ public class DSSTKalmanModel implements KalmanODModel {
     /** End columns for each estimated orbit. */
     private final int[] orbitsEndColumns;
 
+    /** Map for propagation parameters columns. */
+    private final Map<String, Integer> propagationParameterColumns;
+
     /** Map for measurements parameters columns. */
     private final Map<String, Integer> measurementParameterColumns;
 
     /** Providers for covariance matrices. */
     private final List<CovarianceMatrixProvider> covarianceMatricesProviders;
+
+    /** Process noise matrix provider for measurement parameters. */
+    private final CovarianceMatrixProvider measurementProcessNoiseMatrix;
 
     /** Indirection arrays to extract the noise components for estimated parameters. */
     private final int[][] covarianceIndirection;
@@ -130,18 +137,39 @@ public class DSSTKalmanModel implements KalmanODModel {
     /** Type of the elements used to define the orbital state.*/
     private PropagationType stateType;
 
-    /** Kalman process model constructor (package private).
+    /** Kalman process model constructor.
      * @param propagatorBuilders propagators builders used to evaluate the orbits.
      * @param covarianceMatricesProviders providers for covariance matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
      * @param propagationType type of the orbit used for the propagation (mean or osculating)
      * @param stateType type of the elements used to define the orbital state (mean or osculating)
+     * @deprecated since 10.3, replaced by {@link
+     * #DSSTKalmanModel(List, List, ParameterDriversList, CovarianceMatrixProvider, PropagationType, PropagationType)}
+     */
+    @Deprecated
+    public DSSTKalmanModel(final List<IntegratedPropagatorBuilder> propagatorBuilders,
+                           final List<CovarianceMatrixProvider> covarianceMatricesProviders,
+                           final ParameterDriversList estimatedMeasurementParameters,
+                           final PropagationType propagationType,
+                           final PropagationType stateType) {
+        this(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementParameters,
+             null, propagationType, stateType);
+    }
+
+    /** Kalman process model constructor.
+     * @param propagatorBuilders propagators builders used to evaluate the orbits.
+     * @param covarianceMatricesProviders providers for covariance matrices
+     * @param estimatedMeasurementParameters measurement parameters to estimate
+     * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
+     * @param propagationType type of the orbit used for the propagation (mean or osculating)
+     * @param stateType type of the elements used to define the orbital state (mean or osculating)
      */
     public DSSTKalmanModel(final List<IntegratedPropagatorBuilder> propagatorBuilders,
-          final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-          final ParameterDriversList estimatedMeasurementParameters,
-          final PropagationType propagationType,
-          final PropagationType stateType) {
+                           final List<CovarianceMatrixProvider> covarianceMatricesProviders,
+                           final ParameterDriversList estimatedMeasurementParameters,
+                           final CovarianceMatrixProvider measurementProcessNoiseMatrix,
+                           final PropagationType propagationType,
+                           final PropagationType stateType) {
 
         this.builders                        = propagatorBuilders;
         this.estimatedMeasurementsParameters = estimatedMeasurementParameters;
@@ -201,7 +229,7 @@ public class DSSTKalmanModel implements KalmanODModel {
         estimatedPropagationParametersNames.sort(Comparator.naturalOrder());
 
         // Populate the map of propagation drivers' columns and update the total number of columns
-        final Map<String, Integer> propagationParameterColumns = new HashMap<>(estimatedPropagationParametersNames.size());
+        propagationParameterColumns = new HashMap<>(estimatedPropagationParametersNames.size());
         for (final String driverName : estimatedPropagationParametersNames) {
             propagationParameterColumns.put(driverName, columns);
             ++columns;
@@ -217,8 +245,9 @@ public class DSSTKalmanModel implements KalmanODModel {
         }
 
         // Store providers for process noise matrices
-        this.covarianceMatricesProviders = covarianceMatricesProviders;
-        this.covarianceIndirection       = new int[covarianceMatricesProviders.size()][columns];
+        this.covarianceMatricesProviders   = covarianceMatricesProviders;
+        this.measurementProcessNoiseMatrix = measurementProcessNoiseMatrix;
+        this.covarianceIndirection         = new int[covarianceMatricesProviders.size()][columns];
         for (int k = 0; k < covarianceIndirection.length; ++k) {
             final ParameterDriversList orbitDrivers      = builders.get(k).getOrbitalParametersDrivers();
             final ParameterDriversList parametersDrivers = builders.get(k).getPropagationParametersDrivers();
@@ -281,12 +310,30 @@ public class DSSTKalmanModel implements KalmanODModel {
         // Set up initial covariance
         final RealMatrix physicalProcessNoise = MatrixUtils.createRealMatrix(columns, columns);
         for (int k = 0; k < covarianceMatricesProviders.size(); ++k) {
-            final RealMatrix noiseK = covarianceMatricesProviders.get(k).
+
+            // Number of estimated measurement parameters
+            final int nbMeas = estimatedMeasurementParameters.getNbParams();
+
+            // Number of estimated dynamic parameters (orbital + propagation)
+            final int nbDyn  = orbitsEndColumns[k] - orbitsStartColumns[k] +
+                               estimatedPropagationParameters[k].getNbParams();
+
+            // Covariance matrix
+            final RealMatrix noiseK = MatrixUtils.createRealMatrix(nbDyn + nbMeas, nbDyn + nbMeas);
+            final RealMatrix noiseP = covarianceMatricesProviders.get(k).
                                       getInitialCovarianceMatrix(correctedSpacecraftStates[k]);
+            noiseK.setSubMatrix(noiseP.getData(), 0, 0);
+            if (measurementProcessNoiseMatrix != null) {
+                final RealMatrix noiseM = measurementProcessNoiseMatrix.
+                                          getInitialCovarianceMatrix(correctedSpacecraftStates[k]);
+                noiseK.setSubMatrix(noiseM.getData(), nbDyn, nbDyn);
+            }
+
             checkDimension(noiseK.getRowDimension(),
                            builders.get(k).getOrbitalParametersDrivers(),
                            builders.get(k).getPropagationParametersDrivers(),
                            estimatedMeasurementsParameters);
+
             final int[] indK = covarianceIndirection[k];
             for (int i = 0; i < indK.length; ++i) {
                 if (indK[i] >= 0) {
@@ -751,8 +798,8 @@ public class DSSTKalmanModel implements KalmanODModel {
                 final RealMatrix dMdPp = dMdY.multiply(dYdPp);
                 for (int i = 0; i < dMdPp.getRowDimension(); ++i) {
                     for (int j = 0; j < nbParams; ++j) {
-                        final ParameterDriver delegating = allEstimatedPropagationParameters.getDrivers().get(j);
-                        measurementMatrix.setEntry(i, orbitsEndColumns[p] + j,
+                        final ParameterDriver delegating = estimatedPropagationParameters[p].getDrivers().get(j);
+                        measurementMatrix.setEntry(i, propagationParameterColumns.get(delegating.getName()),
                                                    dMdPp.getEntry(i, j) / sigma[i] * delegating.getScale());
                     }
                 }
@@ -931,7 +978,7 @@ public class DSSTKalmanModel implements KalmanODModel {
         // so far. We use this to be able to apply the OutlierFilter modifiers on the predicted measurement.
         predictedMeasurement = observedMeasurement.estimate(currentMeasurementNumber,
                                                             currentMeasurementNumber,
-                                                            predictedSpacecraftStates);
+                                                            filterRelevant(observedMeasurement, predictedSpacecraftStates));
 
         // Normalized measurement matrix (nxm)
         final RealMatrix measurementMatrix = getMeasurementMatrix();
@@ -940,9 +987,27 @@ public class DSSTKalmanModel implements KalmanODModel {
         final RealMatrix physicalProcessNoise = MatrixUtils.createRealMatrix(previousState.getDimension(),
                                                                              previousState.getDimension());
         for (int k = 0; k < covarianceMatricesProviders.size(); ++k) {
-            final RealMatrix noiseK = covarianceMatricesProviders.get(k).
+
+            // Number of estimated measurement parameters
+            final int nbMeas = estimatedMeasurementsParameters.getNbParams();
+
+            // Number of estimated dynamic parameters (orbital + propagation)
+            final int nbDyn  = orbitsEndColumns[k] - orbitsStartColumns[k] +
+                               estimatedPropagationParameters[k].getNbParams();
+
+            // Covariance matrix
+            final RealMatrix noiseK = MatrixUtils.createRealMatrix(nbDyn + nbMeas, nbDyn + nbMeas);
+            final RealMatrix noiseP = covarianceMatricesProviders.get(k).
                                       getProcessNoiseMatrix(correctedSpacecraftStates[k],
                                                             predictedSpacecraftStates[k]);
+            noiseK.setSubMatrix(noiseP.getData(), 0, 0);
+            if (measurementProcessNoiseMatrix != null) {
+                final RealMatrix noiseM = measurementProcessNoiseMatrix.
+                                          getProcessNoiseMatrix(correctedSpacecraftStates[k],
+                                                                predictedSpacecraftStates[k]);
+                noiseK.setSubMatrix(noiseM.getData(), nbDyn, nbDyn);
+            }
+
             checkDimension(noiseK.getRowDimension(),
                            builders.get(k).getOrbitalParametersDrivers(),
                            builders.get(k).getPropagationParametersDrivers(),
@@ -1008,11 +1073,26 @@ public class DSSTKalmanModel implements KalmanODModel {
         // Compute the estimated measurement using estimated spacecraft state
         correctedMeasurement = observedMeasurement.estimate(currentMeasurementNumber,
                                                             currentMeasurementNumber,
-                                                            correctedSpacecraftStates);
+                                                            filterRelevant(observedMeasurement, correctedSpacecraftStates));
         // Update the trajectory
         // ---------------------
         updateReferenceTrajectories(estimatedPropagators);
 
+    }
+
+    /** Filter relevant states for a measurement.
+     * @param observedMeasurement measurement to consider
+     * @param allStates all states
+     * @return array containing only the states relevant to the measurement
+     * @since 10.1
+     */
+    private SpacecraftState[] filterRelevant(final ObservedMeasurement<?> observedMeasurement, final SpacecraftState[] allStates) {
+        final List<ObservableSatellite> satellites = observedMeasurement.getSatellites();
+        final SpacecraftState[] relevantStates = new SpacecraftState[satellites.size()];
+        for (int i = 0; i < relevantStates.length; ++i) {
+            relevantStates[i] = allStates[satellites.get(i).getPropagatorIndex()];
+        }
+        return relevantStates;
     }
 
     /** Set the predicted normalized state vector.

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -387,7 +387,7 @@ public class NRLMSISE00Test {
         for (int i = 1; i <= 23; ++i) {
             atm = atm.withSwitch(i, 1);
         }
-        doTestDoubleMethod(atm, random, "globe7", 2.0e-14, 2.0e-16);
+        doTestDoubleMethod(atm, random, "globe7", 2.0e-14, 2.2e-16);
     }
 
     @Test

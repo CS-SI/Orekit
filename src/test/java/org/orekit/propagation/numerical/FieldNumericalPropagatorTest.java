@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -38,7 +38,7 @@ import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
@@ -1219,6 +1219,47 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
+    public void testIssue704() {
+        doTestIssue704(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestIssue704(final Field<T> field) {
+
+        T zero = field.getZero();
+
+        // Coordinates
+        final FieldAbsoluteDate<T> initDate = FieldAbsoluteDate.getJ2000Epoch(field);
+        final FieldVector3D<T>     position = new FieldVector3D<>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
+        final FieldVector3D<T>     velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
+        final FieldOrbit<T>        orbit    = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
+                                                                          FramesFactory.getEME2000(), initDate, zero.add(mu));
+        final FieldPVCoordinates<T> pv = orbit.getPVCoordinates();
+
+        // dP
+        final T dP = zero.add(10.0);
+
+        // Computes dV
+        final T r2 = pv.getPosition().getNormSq();
+        final T v  = pv.getVelocity().getNorm();
+        final T dV = dP.multiply(orbit.getMu()).divide(v.multiply(r2));
+
+        // Verify: Cartesian case
+        final double[][] tolCart1 = FieldNumericalPropagator.tolerances(dP, orbit, OrbitType.CARTESIAN);
+        final double[][] tolCart2 = FieldNumericalPropagator.tolerances(dP, dV, orbit, OrbitType.CARTESIAN);
+        for (int i = 0; i < tolCart1.length; i++) {
+            Assert.assertArrayEquals(tolCart1[i], tolCart2[i], Double.MIN_VALUE);
+        }
+
+        // Verify: Non cartesian case
+        final double[][] tolKep1 = FieldNumericalPropagator.tolerances(dP, orbit, OrbitType.KEPLERIAN);
+        final double[][] tolKep2 = FieldNumericalPropagator.tolerances(dP, dV, orbit, OrbitType.KEPLERIAN);
+        for (int i = 0; i < tolCart1.length; i++) {
+            Assert.assertArrayEquals(tolKep1[i], tolKep2[i], Double.MIN_VALUE);
+        }
+
+    }
+
+    @Test
     public void testShiftKeplerianEllipticTrueWithoutDerivatives() {
         doTestShiftKeplerianEllipticTrueWithoutDerivatives(Decimal64Field.getInstance());
     }
@@ -1727,7 +1768,7 @@ public class FieldNumericalPropagatorTest {
         MarshallSolarActivityFutureEstimation msafe =
                         new MarshallSolarActivityFutureEstimation("Jan2000F10-edited-data\\.txt",
                                                                   MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
-        DataProvidersManager.getInstance().feed(msafe.getSupportedNames(), msafe);
+        DataContext.getDefault().getDataProvidersManager().feed(msafe.getSupportedNames(), msafe);
         DTM2000 atmosphere = new DTM2000(msafe, CelestialBodyFactory.getSun(), earth);
         np.addForceModel(new DragForce(atmosphere, new IsotropicDrag(spacecraftArea, spacecraftDragCoefficient)));
 
@@ -1746,9 +1787,9 @@ public class FieldNumericalPropagatorTest {
         final FieldVector3D<T>     position     = new FieldVector3D<>(zero.add(6896874.444705),
                                                                       zero.add(1956581.072644),
                                                                       zero.add(-147476.245054));
-        final FieldVector3D<T>     velocity     = new FieldVector3D<>(zero.add(166.816407662),
-                                                                      zero.add(-1106.783301861),
-                                                                      zero.add(-7372.745712770));
+        final FieldVector3D<T>     velocity     = new FieldVector3D<>(zero.add(169.816407662),
+                                                                      zero.add(-1126.783301861),
+                                                                      zero.add(-7332.745712770));
         final TimeStampedFieldPVCoordinates<T> pv = new TimeStampedFieldPVCoordinates<>(date, position, velocity, FieldVector3D.getZero(field));
         final Frame frame = FramesFactory.getEME2000();
         final double mu   = Constants.EIGEN5C_EARTH_MU;

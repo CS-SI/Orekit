@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,22 +17,21 @@
 package org.orekit.orbits;
 
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.FDSFactory;
-import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -84,9 +83,8 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  */
 public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrbit<T> {
 
-    /** Factory for first time derivatives. */
-    private static final Map<Field<? extends RealFieldElement<?>>, FDSFactory<? extends RealFieldElement<?>>> FACTORIES =
-                    new HashMap<>();
+    /** Name of the eccentricity parameter. */
+    private static final String ECCENTRICITY = "eccentricity";
 
     /** First coefficient to compute Kepler equation solver starter. */
     private static final double A;
@@ -152,7 +150,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
 
     /** Creates a new instance.
      * @param a  semi-major axis (m), negative for hyperbolic orbits
-     * @param e eccentricity
+     * @param e eccentricity (positive or equal to 0)
      * @param i inclination (rad)
      * @param pa perigee argument (ω, rad)
      * @param raan right ascension of ascending node (Ω, rad)
@@ -178,7 +176,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
 
     /** Creates a new instance.
      * @param a  semi-major axis (m), negative for hyperbolic orbits
-     * @param e eccentricity
+     * @param e eccentricity (positive or equal to 0)
      * @param i inclination (rad)
      * @param pa perigee argument (ω, rad)
      * @param raan right ascension of ascending node (Ω, rad)
@@ -210,9 +208,8 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             throw new OrekitIllegalArgumentException(OrekitMessages.ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE, a.getReal(), e.getReal());
         }
 
-        if (!FACTORIES.containsKey(a.getField())) {
-            FACTORIES.put(a.getField(), new FDSFactory<>(a.getField(), 1, 1));
-        }
+        // Checking eccentricity range
+        checkParameterRangeInclusive(ECCENTRICITY, e.getReal(), 0.0, Double.POSITIVE_INFINITY);
 
         this.a       =    a;
         this.aDot    =    aDot;
@@ -235,30 +232,28 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         this.PLUS_K = FieldVector3D.getPlusK(a.getField());
 
         if (hasDerivatives()) {
-            @SuppressWarnings("unchecked")
-            final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
-            final FieldDerivativeStructure<T> eDS = factory.build(e, eDot);
-            final FieldDerivativeStructure<T> anomalyDS  = factory.build(anomaly,  anomalyDot);
-            final FieldDerivativeStructure<T> vDS;
+            final FieldUnivariateDerivative1<T> eUD        = new FieldUnivariateDerivative1<>(e, eDot);
+            final FieldUnivariateDerivative1<T> anomalyUD  = new FieldUnivariateDerivative1<>(anomaly,  anomalyDot);
+            final FieldUnivariateDerivative1<T> vUD;
             switch (type) {
                 case MEAN :
-                    vDS = (a.getReal() < 0) ?
-                          hyperbolicEccentricToTrue(meanToHyperbolicEccentric(anomalyDS, eDS), eDS) :
-                          ellipticEccentricToTrue(meanToEllipticEccentric(anomalyDS, eDS), eDS);
+                    vUD = (a.getReal() < 0) ?
+                          hyperbolicEccentricToTrue(meanToHyperbolicEccentric(anomalyUD, eUD), eUD) :
+                          ellipticEccentricToTrue(meanToEllipticEccentric(anomalyUD, eUD), eUD);
                     break;
                 case ECCENTRIC :
-                    vDS = (a.getReal() < 0) ?
-                          hyperbolicEccentricToTrue(anomalyDS, eDS) :
-                          ellipticEccentricToTrue(anomalyDS, eDS);
+                    vUD = (a.getReal() < 0) ?
+                          hyperbolicEccentricToTrue(anomalyUD, eUD) :
+                          ellipticEccentricToTrue(anomalyUD, eUD);
                     break;
                 case TRUE :
-                    vDS = anomalyDS;
+                    vUD = anomalyUD;
                     break;
                 default : // this should never happen
                     throw new OrekitInternalError(null);
             }
-            this.v    = vDS.getValue();
-            this.vDot = vDS.getPartialDerivative(1);
+            this.v    = vUD.getValue();
+            this.vDot = vUD.getDerivative(1);
         } else {
             switch (type) {
                 case MEAN :
@@ -372,7 +367,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             final T eSE = FieldVector3D.dotProduct(pvP, pvV).divide(muA.sqrt());
             final T eCE = rV2OnMu.subtract(1);
             e = (eSE.multiply(eSE).add(eCE.multiply(eCE))).sqrt();
-            v = ellipticEccentricToTrue(eSE.atan2(eCE), e); //(atan2(eSE, eCE));
+            v = ellipticEccentricToTrue(eSE.atan2(eCE), e);
         } else {
             // hyperbolic orbit
             final T eSH = FieldVector3D.dotProduct(pvP, pvV).divide(muA.negate().sqrt());
@@ -381,6 +376,9 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             v = hyperbolicEccentricToTrue((eCH.add(eSH)).divide(eCH.subtract(eSH)).log().divide(2), e);
         }
 
+        // Checking eccentricity range
+        checkParameterRangeInclusive(ECCENTRICITY, e.getReal(), 0.0, Double.POSITIVE_INFINITY);
+
         // compute perigee argument
         final FieldVector3D<T> node = new FieldVector3D<>(raan, zero);
         final T px = FieldVector3D.dotProduct(pvP, node);
@@ -388,10 +386,6 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         pa = py.atan2(px).subtract(v);
 
         partialPV = pvCoordinates;
-
-        if (!FACTORIES.containsKey(a.getField())) {
-            FACTORIES.put(a.getField(), new FDSFactory<>(a.getField(), 1, 1));
-        }
 
         if (reliableAcceleration) {
             // we have a relevant acceleration, we can compute derivatives
@@ -414,14 +408,12 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             // mean anomaly derivative including Keplerian motion and convert to true anomaly
             final T MDot = getKeplerianMeanMotion().
                            add(jacobian[5][3].multiply(aX)).add(jacobian[5][4].multiply(aY)).add(jacobian[5][5].multiply(aZ));
-            @SuppressWarnings("unchecked")
-            final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
-            final FieldDerivativeStructure<T> eDS = factory.build(e, eDot);
-            final FieldDerivativeStructure<T> MDS = factory.build(getMeanAnomaly(), MDot);
-            final FieldDerivativeStructure<T> vDS = (a.getReal() < 0) ?
-                                            FieldKeplerianOrbit.hyperbolicEccentricToTrue(FieldKeplerianOrbit.meanToHyperbolicEccentric(MDS, eDS), eDS) :
-                                            FieldKeplerianOrbit.ellipticEccentricToTrue(FieldKeplerianOrbit.meanToEllipticEccentric(MDS, eDS), eDS);
-            vDot = vDS.getPartialDerivative(1);
+            final FieldUnivariateDerivative1<T> eUD = new FieldUnivariateDerivative1<>(e, eDot);
+            final FieldUnivariateDerivative1<T> MUD = new FieldUnivariateDerivative1<>(getMeanAnomaly(), MDot);
+            final FieldUnivariateDerivative1<T> vUD = (a.getReal() < 0) ?
+                                            FieldKeplerianOrbit.hyperbolicEccentricToTrue(FieldKeplerianOrbit.meanToHyperbolicEccentric(MUD, eUD), eUD) :
+                                            FieldKeplerianOrbit.ellipticEccentricToTrue(FieldKeplerianOrbit.meanToEllipticEccentric(MUD, eUD), eUD);
+            vDot = vUD.getDerivative(1);
 
         } else {
             // acceleration is either almost zero or NaN,
@@ -570,14 +562,12 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             return null;
         }
 
-        @SuppressWarnings("unchecked")
-        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
-        final FieldDerivativeStructure<T> eDS = factory.build(e, eDot);
-        final FieldDerivativeStructure<T> vDS = factory.build(v, vDot);
-        final FieldDerivativeStructure<T> EDS = (a.getReal() < 0) ?
-                                                trueToHyperbolicEccentric(vDS, eDS) :
-                                                trueToEllipticEccentric(vDS, eDS);
-        return EDS.getPartialDerivative(1);
+        final FieldUnivariateDerivative1<T> eUD = new FieldUnivariateDerivative1<>(e, eDot);
+        final FieldUnivariateDerivative1<T> vUD = new FieldUnivariateDerivative1<>(v, vDot);
+        final FieldUnivariateDerivative1<T> EUD = (a.getReal() < 0) ?
+                                                trueToHyperbolicEccentric(vUD, eUD) :
+                                                trueToEllipticEccentric(vUD, eUD);
+        return EUD.getDerivative(1);
 
     }
 
@@ -602,14 +592,12 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             return null;
         }
 
-        @SuppressWarnings("unchecked")
-        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
-        final FieldDerivativeStructure<T> eDS = factory.build(e, eDot);
-        final FieldDerivativeStructure<T> vDS = factory.build(v, vDot);
-        final FieldDerivativeStructure<T> MDS = (a.getReal() < 0) ?
-                                                hyperbolicEccentricToMean(trueToHyperbolicEccentric(vDS, eDS), eDS) :
-                                                ellipticEccentricToMean(trueToEllipticEccentric(vDS, eDS), eDS);
-        return MDS.getPartialDerivative(1);
+        final FieldUnivariateDerivative1<T> eUD = new FieldUnivariateDerivative1<>(e, eDot);
+        final FieldUnivariateDerivative1<T> vUD = new FieldUnivariateDerivative1<>(v, vDot);
+        final FieldUnivariateDerivative1<T> MUD = (a.getReal() < 0) ?
+                                                hyperbolicEccentricToMean(trueToHyperbolicEccentric(vUD, eUD), eUD) :
+                                                ellipticEccentricToMean(trueToEllipticEccentric(vUD, eUD), eUD);
+        return MUD.getDerivative(1);
 
     }
 
@@ -650,7 +638,8 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      */
     public static <T extends RealFieldElement<T>> T ellipticEccentricToTrue(final T E, final T e) {
         final T beta = e.divide(e.multiply(e).negate().add(1).sqrt().add(1));
-        return E.add(beta.multiply(E.sin()).divide(beta.multiply(E.cos()).subtract(1).negate()).atan().multiply(2));
+        final FieldSinCos<T> scE = FastMath.sinCos(E);
+        return E.add(beta.multiply(scE.sin()).divide(beta.multiply(scE.cos()).subtract(1).negate()).atan().multiply(2));
     }
 
     /** Computes the elliptic eccentric anomaly from the true anomaly.
@@ -661,7 +650,8 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      */
     public static <T extends RealFieldElement<T>> T trueToEllipticEccentric(final T v, final T e) {
         final T beta = e.divide(e.multiply(e).negate().add(1).sqrt().add(1));
-        return v.subtract((beta.multiply(v.sin()).divide(beta.multiply(v.cos()).add(1))).atan().multiply(2));
+        final FieldSinCos<T> scv = FastMath.sinCos(v);
+        return v.subtract((beta.multiply(scv.sin()).divide(beta.multiply(scv.cos()).add(1))).atan().multiply(2));
     }
 
     /** Computes the true anomaly from the hyperbolic eccentric anomaly.
@@ -683,7 +673,8 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * @return H the hyperbolic eccentric anomaly
      */
     public static <T extends RealFieldElement<T>> T trueToHyperbolicEccentric(final T v, final T e) {
-        final T sinhH = e.multiply(e).subtract(1).sqrt().multiply(v.sin()).divide(e.multiply(v.cos()).add(1));
+        final FieldSinCos<T> scv = FastMath.sinCos(v);
+        final T sinhH = e.multiply(e).subtract(1).sqrt().multiply(scv.sin()).divide(e.multiply(scv.cos()).add(1));
         return sinhH.asinh();
     }
 
@@ -710,7 +701,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      */
     public static <T extends RealFieldElement<T>> T meanToEllipticEccentric(final T M, final T e) {
         // reduce M to [-PI PI) interval
-        final T reducedM = normalizeAngle(M, M.getField().getZero());
+        final T reducedM = MathUtils.normalizeAngle(M, M.getField().getZero());
 
         // compute start value according to A. W. Odell and R. H. Gooding S12 starter
         T E;
@@ -742,8 +733,9 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
 
             final T f;
             T fd;
-            final T fdd  = e.multiply(E.sin());
-            final T fddd = e.multiply(E.cos());
+            final FieldSinCos<T> scE = FastMath.sinCos(E);
+            final T fdd  = e.multiply(scE.sin());
+            final T fddd = e.multiply(scE.cos());
 
             if (noCancellationRisk) {
 
@@ -874,12 +866,10 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             return null;
         }
 
-        @SuppressWarnings("unchecked")
-        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
-        final FieldDerivativeStructure<T> eDS    = factory.build(e,    eDot);
-        final FieldDerivativeStructure<T> paDS   = factory.build(pa,   paDot);
-        final FieldDerivativeStructure<T> raanDS = factory.build(raan, raanDot);
-        return eDS.multiply(paDS.add(raanDS).cos()).getPartialDerivative(1);
+        final FieldUnivariateDerivative1<T> eUD    = new FieldUnivariateDerivative1<>(e,    eDot);
+        final FieldUnivariateDerivative1<T> paUD   = new FieldUnivariateDerivative1<>(pa,   paDot);
+        final FieldUnivariateDerivative1<T> raanUD = new FieldUnivariateDerivative1<>(raan, raanDot);
+        return eUD.multiply(paUD.add(raanUD).cos()).getDerivative(1);
 
     }
 
@@ -895,12 +885,10 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             return null;
         }
 
-        @SuppressWarnings("unchecked")
-        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
-        final FieldDerivativeStructure<T> eDS    = factory.build(e,    eDot);
-        final FieldDerivativeStructure<T> paDS   = factory.build(pa,   paDot);
-        final FieldDerivativeStructure<T> raanDS = factory.build(raan, raanDot);
-        return eDS.multiply(paDS.add(raanDS).sin()).getPartialDerivative(1);
+        final FieldUnivariateDerivative1<T> eUD    = new FieldUnivariateDerivative1<>(e,    eDot);
+        final FieldUnivariateDerivative1<T> paUD   = new FieldUnivariateDerivative1<>(pa,   paDot);
+        final FieldUnivariateDerivative1<T> raanUD = new FieldUnivariateDerivative1<>(raan, raanDot);
+        return eUD.multiply(paUD.add(raanUD).sin()).getDerivative(1);
 
     }
 
@@ -925,11 +913,9 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             return this.zero.add(Double.NaN);
         }
 
-        @SuppressWarnings("unchecked")
-        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
-        final FieldDerivativeStructure<T> iDS    = factory.build(i,    iDot);
-        final FieldDerivativeStructure<T> raanDS = factory.build(raan, raanDot);
-        return raanDS.cos().multiply(iDS.multiply(0.5).tan()).getPartialDerivative(1);
+        final FieldUnivariateDerivative1<T> iUD    = new FieldUnivariateDerivative1<>(i,    iDot);
+        final FieldUnivariateDerivative1<T> raanUD = new FieldUnivariateDerivative1<>(raan, raanDot);
+        return raanUD.cos().multiply(iUD.multiply(0.5).tan()).getDerivative(1);
 
     }
 
@@ -954,11 +940,9 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             return this.zero.add(Double.NaN);
         }
 
-        @SuppressWarnings("unchecked")
-        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
-        final FieldDerivativeStructure<T> iDS    = factory.build(i,    iDot);
-        final FieldDerivativeStructure<T> raanDS = factory.build(raan, raanDot);
-        return raanDS.sin().multiply(iDS.multiply(0.5).tan()).getPartialDerivative(1);
+        final FieldUnivariateDerivative1<T> iUD    = new FieldUnivariateDerivative1<>(i,    iDot);
+        final FieldUnivariateDerivative1<T> raanUD = new FieldUnivariateDerivative1<>(raan, raanDot);
+        return raanUD.sin().multiply(iUD.multiply(0.5).tan()).getDerivative(1);
 
     }
 
@@ -1008,12 +992,15 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         }
 
         // preliminary variables
-        final T cosRaan = raan.cos();
-        final T sinRaan = raan.sin();
-        final T cosPa   = pa.cos();
-        final T sinPa   = pa.sin();
-        final T cosI    = i.cos();
-        final T sinI    = i.sin();
+        final FieldSinCos<T> scRaan = FastMath.sinCos(raan);
+        final FieldSinCos<T> scPa   = FastMath.sinCos(pa);
+        final FieldSinCos<T> scI    = FastMath.sinCos(i);
+        final T cosRaan = scRaan.cos();
+        final T sinRaan = scRaan.sin();
+        final T cosPa   = scPa.cos();
+        final T sinPa   = scPa.sin();
+        final T cosI    = scI.cos();
+        final T sinI    = scI.sin();
         final T crcp    = cosRaan.multiply(cosPa);
         final T crsp    = cosRaan.multiply(sinPa);
         final T srcp    = sinRaan.multiply(cosPa);
@@ -1028,11 +1015,11 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             // elliptical case
 
             // elliptic eccentric anomaly
-            final T uME2   = e.negate().add(1).multiply(e.add(1));
-            final T s1Me2  = uME2.sqrt();
-            final T E      = getEccentricAnomaly();
-            final T cosE   = E.cos();
-            final T sinE   = E.sin();
+            final T uME2             = e.negate().add(1).multiply(e.add(1));
+            final T s1Me2            = uME2.sqrt();
+            final FieldSinCos<T> scE = FastMath.sinCos(getEccentricAnomaly());
+            final T cosE             = scE.cos();
+            final T sinE             = scE.sin();
 
             // coordinates of position and velocity in the orbital plane
             final T x      = a.multiply(cosE.subtract(e));
@@ -1050,11 +1037,12 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             // hyperbolic case
 
             // compute position and velocity factors
-            final T sinV      = v.sin();
-            final T cosV      = v.cos();
-            final T f         = a.multiply(e.multiply(e).negate().add(1));
-            final T posFactor = f.divide(e.multiply(cosV).add(1));
-            final T velFactor = FastMath.sqrt(getMu().divide(f));
+            final FieldSinCos<T> scV = FastMath.sinCos(v);
+            final T sinV             = scV.sin();
+            final T cosV             = scV.cos();
+            final T f                = a.multiply(e.multiply(e).negate().add(1));
+            final T posFactor        = f.divide(e.multiply(cosV).add(1));
+            final T velFactor        = FastMath.sqrt(getMu().divide(f));
 
             final FieldVector3D<T> position     = new FieldVector3D<>(posFactor.multiply(cosV), p, posFactor.multiply(sinV), q);
             final FieldVector3D<T> velocity     = new FieldVector3D<>(velFactor.multiply(sinV).negate(), p, velFactor.multiply(e.add(cosV)), q);
@@ -1208,9 +1196,9 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             } else {
                 final T dt      = kep.getDate().durationFrom(previousDate);
                 final T keplerM = previousM.add(kep.getKeplerianMeanMotion().multiply(dt));
-                continuousPA   = normalizeAngle(kep.getPerigeeArgument(), previousPA);
-                continuousRAAN = normalizeAngle(kep.getRightAscensionOfAscendingNode(), previousRAAN);
-                continuousM    = normalizeAngle(kep.getMeanAnomaly(), keplerM);
+                continuousPA   = MathUtils.normalizeAngle(kep.getPerigeeArgument(), previousPA);
+                continuousRAAN = MathUtils.normalizeAngle(kep.getRightAscensionOfAscendingNode(), previousRAAN);
+                continuousM    = MathUtils.normalizeAngle(kep.getMeanAnomaly(), keplerM);
             }
             previousDate = kep.getDate();
             previousPA   = continuousPA;
@@ -1303,10 +1291,12 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final T epsilon    = oMe2.sqrt();
         final T sqrtRec    = epsilon.reciprocal();
 
-        final T cosI       = i.cos();
-        final T sinI       = i.sin();
-        final T cosPA      = pa.cos();
-        final T sinPA      = pa.sin();
+        final FieldSinCos<T> scI  = FastMath.sinCos(i);
+        final FieldSinCos<T> scPA = FastMath.sinCos(pa);
+        final T cosI       = scI.cos();
+        final T sinI       = scI.sin();
+        final T cosPA      = scPA.cos();
+        final T sinPA      = scPA.sin();
 
         final T pv         = FieldVector3D.dotProduct(position, velocity);
         final T cosE       = a.subtract(r).divide(a.multiply(e));
@@ -1435,8 +1425,9 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final T a2         = a.multiply(a);
         final T rOa        = r.divide(absA);
 
-        final T cosI       = i.cos();
-        final T sinI       = i.sin();
+        final FieldSinCos<T> scI = FastMath.sinCos(i);
+        final T cosI       = scI.cos();
+        final T sinI       = scI.sin();
 
         final T pv         = FieldVector3D.dotProduct(position, velocity);
 
@@ -1550,16 +1541,14 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         // dM = (1 - e cos E) dE - sin E de
         // which is inverted and rewritten as:
         // dE = a/r dM + sin E a/r de
-        final T eccentricAnomaly = getEccentricAnomaly();
-        final T cosE             = eccentricAnomaly.cos();
-        final T sinE             = eccentricAnomaly.sin();
-        final T aOr              = e.negate().multiply(cosE).add(1).reciprocal();
+        final FieldSinCos<T> scE = FastMath.sinCos(getEccentricAnomaly());
+        final T aOr              = e.negate().multiply(scE.cos()).add(1).reciprocal();
 
         // update anomaly row
         final T[] eRow           = jacobian[1];
         final T[] anomalyRow     = jacobian[5];
         for (int j = 0; j < anomalyRow.length; ++j) {
-            anomalyRow[j] = aOr.multiply(anomalyRow[j].add(sinE.multiply(eRow[j])));
+            anomalyRow[j] = aOr.multiply(anomalyRow[j].add(scE.sin().multiply(eRow[j])));
         }
 
         return jacobian;
@@ -1629,12 +1618,10 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final T e2               = e.multiply(e);
         final T oMe2             = e2.negate().add(1);
         final T epsilon          = oMe2.sqrt();
-        final T eccentricAnomaly = getEccentricAnomaly();
-        final T cosE             = eccentricAnomaly.cos();
-        final T sinE             = eccentricAnomaly.sin();
-        final T aOr              = e.multiply(cosE).negate().add(1).reciprocal();
+        final FieldSinCos<T> scE = FastMath.sinCos(getEccentricAnomaly());
+        final T aOr              = e.multiply(scE.cos()).negate().add(1).reciprocal();
         final T aFactor          = epsilon.multiply(aOr);
-        final T eFactor          = sinE.multiply(aOr).divide(epsilon);
+        final T eFactor          = scE.sin().multiply(aOr).divide(epsilon);
 
         // update anomaly row
         final T[] eRow           = jacobian[1];
@@ -1725,6 +1712,28 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
                                   append(";}").toString();
     }
 
+    /** Check if the given parameter is within an acceptable range.
+     * The bounds are inclusive: an exception is raised when either of those conditions are met:
+     * <ul>
+     *     <li>The parameter is strictly greater than upperBound</li>
+     *     <li>The parameter is strictly lower than lowerBound</li>
+     * </ul>
+     * <p>
+     * In either of these cases, an OrekitException is raised.
+     * </p>
+     * @param parameterName name of the parameter
+     * @param parameter value of the parameter
+     * @param lowerBound lower bound of the acceptable range (inclusive)
+     * @param upperBound upper bound of the acceptable range (inclusive)
+     */
+    private void checkParameterRangeInclusive(final String parameterName, final double parameter,
+                                              final double lowerBound, final double upperBound) {
+        if ((parameter < lowerBound) || (parameter > upperBound)) {
+            throw new OrekitException(OrekitMessages.INVALID_PARAMETER_RANGE, parameterName,
+                                      parameter, lowerBound, upperBound);
+        }
+    }
+
     /**
      * Normalize an angle in a 2&pi; wide interval around a center value.
      * <p>This method has three main uses:</p>
@@ -1743,7 +1752,9 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * @param center center of the desired 2&pi; interval for the result
      * @param <T> the type of the field elements
      * @return a-2k&pi; with integer k and center-&pi; &lt;= a-2k&pi; &lt;= center+&pi;
+     * @deprecated replaced by {@link MathUtils#normalizeAngle(RealFieldElement, RealFieldElement)}
      */
+    @Deprecated
     public static <T extends RealFieldElement<T>> T normalizeAngle(final T a, final T center) {
         return a.subtract(2 * FastMath.PI * FastMath.floor((a.getReal() + FastMath.PI - center.getReal()) / (2 * FastMath.PI)));
     }

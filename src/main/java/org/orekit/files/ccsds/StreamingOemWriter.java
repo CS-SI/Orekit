@@ -1,5 +1,5 @@
 /* Contributed in the public domain.
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,17 +19,26 @@ package org.orekit.files.ccsds;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.linear.RealMatrix;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.OEMFile.CovarianceMatrix;
 import org.orekit.frames.FactoryManagedFrame;
 import org.orekit.frames.Frame;
+import org.orekit.frames.LOFType;
 import org.orekit.frames.Predefined;
 import org.orekit.frames.VersionedITRF;
 import org.orekit.propagation.Propagator;
@@ -39,7 +48,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
@@ -48,7 +56,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * <p> Each instance corresponds to a single OEM file. A new OEM ephemeris segment is
  * started by calling {@link #newSegment(Frame, Map)}.
  *
- * <h3> Metadata </h3>
+ * <h2> Metadata </h2>
  *
  * <p> The OEM metadata used by this writer is described in the following table. Many
  * metadata items are optional or have default values so they do not need to be specified.
@@ -62,7 +70,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * be overridden for a particular segment using the {@code metadata} argument to {@link
  * #newSegment(Frame, Map)}.
  *
- * <table summary="OEM metada">
+ * <table>
+ * <caption>OEM metadata</caption>
  *     <thead>
  *         <tr>
  *             <th>Keyword
@@ -162,7 +171,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *        <tr>
  *            <td>{@link Keyword#INTERPOLATION}
  *            <td>Segment
- *            <td>No
+ *            <td>Noupday
  *            <td>
  *            <td>Table 5-3
  *        <tr>
@@ -185,7 +194,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * are EME2000, GCRF, GRC, ICRF, ITRF2000, ITRF-93, ITRF-97, MCI, TDR, TEME, and TOD.
  * Additionally ITRF followed by a four digit year may be used.
  *
- * <h3> Examples </h3>
+ * <h2> Examples </h2>
  *
  * <p> This class can be used as a step handler for a {@link Propagator}, or on its own.
  * Either way the object name and ID must be specified. The following example shows its
@@ -230,7 +239,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Evan Ward
  * @see <a href="https://public.ccsds.org/Pubs/502x0b2c1.pdf">CCSDS 502.0-B-2 Orbit Data
  *      Messages</a>
- * @see <a href="https://public.ccsds.org/Pubs/500x0g3.pdf">CCSDS 500.0-G-3 Navigation
+ * @see <a href="https://public.ccsds.org/Pubs/500x0g4.pdf">CCSDS 500.0-G-4 Navigation
  *      Data Definitions and Conventions</a>
  * @see OEMWriter
  */
@@ -238,32 +247,59 @@ public class StreamingOemWriter {
 
     /** Version number implemented. **/
     public static final String CCSDS_OEM_VERS = "2.0";
+
     /** Default value for {@link Keyword#ORIGINATOR}. */
     public static final String DEFAULT_ORIGINATOR = "OREKIT";
 
+    /**
+     * Default format used for position ephemeris data output: 3 digits
+     * after the decimal point and leading space for positive values.
+     */
+    public static final String DEFAULT_POSITION_FORMAT = "% .3f";
+
+    /**
+     * Default format used for velocity ephemeris data output: 5 digits
+     * after the decimal point and leading space for positive values.
+     */
+    public static final String DEFAULT_VELOCITY_FORMAT = "% .5f";
+
     /** New line separator for output file. See 6.3.6. */
     private static final String NEW_LINE = "\n";
+
     /**
      * Standardized locale to use, to ensure files can be exchanged without
      * internationalization issues.
      */
     private static final Locale STANDARDIZED_LOCALE = Locale.US;
+
     /** String format used for all key/value pair lines. **/
     private static final String KV_FORMAT = "%s = %s%n";
+
     /** Factor for converting meters to km. */
     private static final double M_TO_KM = 1e-3;
+
     /** Suffix of the name of the inertial frame attached to a planet. */
     private static final String INERTIAL_FRAME_SUFFIX = "/inertial";
 
     /** Output stream. */
     private final Appendable writer;
+
     /** Metadata for this OEM file. */
     private final Map<Keyword, String> metadata;
+
     /** Time scale for all dates except {@link Keyword#CREATION_DATE}. */
     private final TimeScale timeScale;
 
+    /** Format for position ephemeris data output. */
+    private final String positionFormat;
+
+    /** Format for velocity ephemeris data output. */
+    private final String velocityFormat;
+
     /**
-     * Create an OEM writer than streams data to the given output stream.
+     * Create an OEM writer than streams data to the given output stream. Default formatting for
+     * {@link #DEFAULT_POSITION_FORMAT position} and {@link #DEFAULT_VELOCITY_FORMAT velocity}
+     * will be used for position and velocity ephemeris data.
      *
      * @param writer    The output stream for the OEM file. Most methods will append data
      *                  to this {@code writer}.
@@ -275,16 +311,41 @@ public class StreamingOemWriter {
     public StreamingOemWriter(final Appendable writer,
                               final TimeScale timeScale,
                               final Map<Keyword, String> metadata) {
+        this(writer, timeScale, metadata, DEFAULT_POSITION_FORMAT, DEFAULT_VELOCITY_FORMAT);
+    }
 
+    /**
+     * Create an OEM writer than streams data to the given output stream as
+     * {@link #StreamingOemWriter(Appendable, TimeScale, Map)} with
+     * {@link java.util.Formatter format parameters} for position and velocity ephemeris data.
+     *
+     * @param writer    The output stream for the OEM file. Most methods will append data
+     *                  to this {@code writer}.
+     * @param timeScale for all times in the OEM except {@link Keyword#CREATION_DATE}. See
+     *                  Section 5.2.4.5 and Annex A.
+     * @param metadata  for the satellite. Can be overridden in {@link #newSegment(Frame,
+     *                  Map)} for a specific segment. See {@link StreamingOemWriter}.
+     * @param positionFormat format parameters for position ephemeris data output.
+     * @param velocityFormat format parameters for velocity ephemeris data output.
+     * @since 10.3
+     */
+    public StreamingOemWriter(final Appendable writer,
+                              final TimeScale timeScale,
+                              final Map<Keyword, String> metadata,
+                              final String positionFormat,
+                              final String velocityFormat) {
         this.writer = writer;
         this.timeScale = timeScale;
         this.metadata = new LinkedHashMap<>(metadata);
         // set default metadata
         this.metadata.putIfAbsent(Keyword.CCSDS_OEM_VERS, CCSDS_OEM_VERS);
+        // creation date is informational only
         this.metadata.putIfAbsent(Keyword.CREATION_DATE,
-                new AbsoluteDate(new Date(), TimeScalesFactory.getUTC()).toString());
+                ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT));
         this.metadata.putIfAbsent(Keyword.ORIGINATOR, DEFAULT_ORIGINATOR);
         this.metadata.putIfAbsent(Keyword.TIME_SYSTEM, timeScale.getName());
+        this.positionFormat = positionFormat;
+        this.velocityFormat = velocityFormat;
     }
 
     /**
@@ -486,13 +547,59 @@ public class StreamingOemWriter {
             final String epoch = dateToString(pv.getDate().getComponents(timeScale));
             writer.append(epoch).append(" ");
             // output in km, see Section 6.6.2.1
-            writer.append(Double.toString(pv.getPosition().getX() * M_TO_KM)).append(" ");
-            writer.append(Double.toString(pv.getPosition().getY() * M_TO_KM)).append(" ");
-            writer.append(Double.toString(pv.getPosition().getZ() * M_TO_KM)).append(" ");
-            writer.append(Double.toString(pv.getVelocity().getX() * M_TO_KM)).append(" ");
-            writer.append(Double.toString(pv.getVelocity().getY() * M_TO_KM)).append(" ");
-            writer.append(Double.toString(pv.getVelocity().getZ() * M_TO_KM));
+            writer.append(String.format(STANDARDIZED_LOCALE, positionFormat,
+                                        pv.getPosition().getX() * M_TO_KM)).append(" ");
+            writer.append(String.format(STANDARDIZED_LOCALE, positionFormat,
+                                        pv.getPosition().getY() * M_TO_KM)).append(" ");
+            writer.append(String.format(STANDARDIZED_LOCALE, positionFormat,
+                                        pv.getPosition().getZ() * M_TO_KM)).append(" ");
+            writer.append(String.format(STANDARDIZED_LOCALE, velocityFormat,
+                                        pv.getVelocity().getX() * M_TO_KM)).append(" ");
+            writer.append(String.format(STANDARDIZED_LOCALE, velocityFormat,
+                                        pv.getVelocity().getY() * M_TO_KM)).append(" ");
+            writer.append(String.format(STANDARDIZED_LOCALE, velocityFormat,
+                                        pv.getVelocity().getZ() * M_TO_KM));
             writer.append(NEW_LINE);
+        }
+
+        /**
+         * Write covariance matrices of the segment according to section 5.2.5.
+         *
+         * @param covarianceMatrices the list of covariance matrices related to the segment.
+         * @throws IOException if the output stream throws one while writing.
+         */
+        public void writeCovarianceMatrices(final List<CovarianceMatrix> covarianceMatrices)
+                throws IOException {
+            writer.append("COVARIANCE_START").append(NEW_LINE);
+            // Sort to ensure having the matrices in chronological order when
+            // they are in the same data section (see section 5.2.5.7)
+            Collections.sort(covarianceMatrices, (mat1, mat2)->mat1.getEpoch().compareTo(mat2.getEpoch()));
+            for (final CovarianceMatrix covarianceMatrix : covarianceMatrices) {
+                final String epoch = dateToString(covarianceMatrix.getEpoch().getComponents(timeScale));
+                writeKeyValue(Keyword.EPOCH, epoch);
+
+                if (covarianceMatrix.getFrame() != null ) {
+                    writeKeyValue(Keyword.COV_REF_FRAME, guessFrame(covarianceMatrix.getFrame()));
+                } else if (covarianceMatrix.getLofType() != null) {
+                    if (covarianceMatrix.getLofType() == LOFType.QSW) {
+                        writeKeyValue(Keyword.COV_REF_FRAME, "RTN");
+                    } else if (covarianceMatrix.getLofType() == LOFType.TNW) {
+                        writeKeyValue(Keyword.COV_REF_FRAME, covarianceMatrix.getLofType().name());
+                    } else {
+                        throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, toString());
+                    }
+                }
+
+                final RealMatrix covRealMatrix = covarianceMatrix.getMatrix();
+                for (int i = 0; i < covRealMatrix.getRowDimension(); i++) {
+                    writer.append(Double.toString(covRealMatrix.getEntry(i, 0)));
+                    for (int j = 1; j < i + 1; j++) {
+                        writer.append(" ").append(Double.toString(covRealMatrix.getEntry(i, j)));
+                    }
+                    writer.append(NEW_LINE);
+                }
+            }
+            writer.append("COVARIANCE_STOP").append(NEW_LINE).append(NEW_LINE);
         }
 
         /**

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.Iterator;
 import java.util.SortedSet;
@@ -29,9 +30,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.AbstractSelfFeedingLoader;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.models.earth.atmosphere.DTM2000InputParameters;
 import org.orekit.models.earth.atmosphere.NRLMSISE00InputParameters;
@@ -40,7 +45,6 @@ import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.DateComponents;
 import org.orekit.time.Month;
 import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.Constants;
 
@@ -95,7 +99,8 @@ import org.orekit.utils.Constants;
  * @author Evan Ward
  * @author Pascal Parraud
  */
-public class MarshallSolarActivityFutureEstimation implements DataLoader, DTM2000InputParameters, NRLMSISE00InputParameters {
+public class MarshallSolarActivityFutureEstimation extends AbstractSelfFeedingLoader
+        implements DataLoader, DTM2000InputParameters, NRLMSISE00InputParameters {
 
     /** Default regular expression for the supported name that work with all officially published files.
      * @since 10.0
@@ -129,6 +134,9 @@ public class MarshallSolarActivityFutureEstimation implements DataLoader, DTM200
     /** Selected strength level of activity. */
     private final StrengthLevel strengthLevel;
 
+    /** UTC time scale. */
+    private final TimeScale utc;
+
     /** First available date. */
     private AbsoluteDate firstDate;
 
@@ -141,10 +149,8 @@ public class MarshallSolarActivityFutureEstimation implements DataLoader, DTM200
     /** Current set of solar activity parameters. */
     private LineParameters currentParam;
 
-    /** Regular expression for supported files names. */
-    private final String supportedNames;
-
-    /** Simple constructor.
+    /** Simple constructor. This constructor uses the {@link DataContext#getDefault()
+     * default data context}.
      * <p>
      * The original file names used by NASA Marshall space center are of the
      * form: may2019f10_prd.txt or Oct1999F10.TXT. So a recommended regular
@@ -153,15 +159,37 @@ public class MarshallSolarActivityFutureEstimation implements DataLoader, DTM200
      * </p>
      * @param supportedNames regular expression for supported files names
      * @param strengthLevel selected strength level of activity
+     * @see #MarshallSolarActivityFutureEstimation(String, StrengthLevel, DataProvidersManager, TimeScale)
      */
+    @DefaultDataContext
     public MarshallSolarActivityFutureEstimation(final String supportedNames,
                                                  final StrengthLevel strengthLevel) {
+        this(supportedNames, strengthLevel,
+                DataContext.getDefault().getDataProvidersManager(),
+                DataContext.getDefault().getTimeScales().getUTC());
+    }
+
+    /**
+     * Constructor that allows specifying the source of the MSAFE auxiliary data files.
+     *
+     * @param supportedNames regular expression for supported files names
+     * @param strengthLevel selected strength level of activity
+     * @param dataProvidersManager provides access to auxiliary data files.
+     * @param utc UTC time scale.
+     * @since 10.1
+     */
+    public MarshallSolarActivityFutureEstimation(
+            final String supportedNames,
+            final StrengthLevel strengthLevel,
+            final DataProvidersManager dataProvidersManager,
+            final TimeScale utc) {
+        super(supportedNames, dataProvidersManager);
 
         firstDate           = null;
         lastDate            = null;
-        data                = new TreeSet<TimeStamped>(new ChronologicalComparator());
-        this.supportedNames = supportedNames;
+        data                = new TreeSet<>(new ChronologicalComparator());
         this.strengthLevel  = strengthLevel;
+        this.utc = utc;
 
         // the data lines have the following form:
         // 2010.5003   JUL    83.4      81.3      78.7       6.4       5.9       5.2
@@ -235,17 +263,15 @@ public class MarshallSolarActivityFutureEstimation implements DataLoader, DTM200
 
     }
 
-    /** Get the supported names for data files.
-     * @return regular expression for the supported names for data files
-     */
+    @Override
     public String getSupportedNames() {
-        return supportedNames;
+        return super.getSupportedNames();
     }
 
     /** {@inheritDoc} */
     public AbsoluteDate getMinDate() {
         if (firstDate == null) {
-            DataProvidersManager.getInstance().feed(getSupportedNames(), this);
+            feed(this);
         }
         return firstDate;
     }
@@ -253,7 +279,7 @@ public class MarshallSolarActivityFutureEstimation implements DataLoader, DTM200
     /** {@inheritDoc} */
     public AbsoluteDate getMaxDate() {
         if (lastDate == null) {
-            DataProvidersManager.getInstance().feed(getSupportedNames(), this);
+            feed(this);
         }
         return lastDate;
     }
@@ -482,72 +508,74 @@ public class MarshallSolarActivityFutureEstimation implements DataLoader, DTM200
                 break;
         }
 
-        // read the data
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
         boolean inData = false;
-        final TimeScale utc = TimeScalesFactory.getUTC();
         DateComponents fileDate = null;
-        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-            line = line.trim();
-            if (line.length() > 0) {
-                final Matcher matcher = dataPattern.matcher(line);
-                if (matcher.matches()) {
+        // read the data
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
 
-                    // we are in the data section
-                    inData = true;
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                line = line.trim();
+                if (line.length() > 0) {
+                    final Matcher matcher = dataPattern.matcher(line);
+                    if (matcher.matches()) {
 
-                    // extract the data from the line
-                    final int year = Integer.parseInt(matcher.group(1));
-                    final Month month = Month.parseMonth(matcher.group(2));
-                    final AbsoluteDate date = new AbsoluteDate(year, month, 1, utc);
-                    if (fileDate == null) {
-                        // the first entry of each file correspond exactly to 6 months before file publication
-                        // so we compute the file date by adding 6 months to its first entry
-                        if (month.getNumber() > 6) {
-                            fileDate = new DateComponents(year + 1, month.getNumber() - 6, 1);
-                        } else {
-                            fileDate = new DateComponents(year, month.getNumber() + 6, 1);
+                        // we are in the data section
+                        inData = true;
+
+                        // extract the data from the line
+                        final int year = Integer.parseInt(matcher.group(1));
+                        final Month month = Month.parseMonth(matcher.group(2));
+                        final AbsoluteDate date = new AbsoluteDate(year, month, 1, this.utc);
+                        if (fileDate == null) {
+                            // the first entry of each file correspond exactly to 6 months before file publication
+                            // so we compute the file date by adding 6 months to its first entry
+                            if (month.getNumber() > 6) {
+                                fileDate = new DateComponents(year + 1, month.getNumber() - 6, 1);
+                            } else {
+                                fileDate = new DateComponents(year, month.getNumber() + 6, 1);
+                            }
                         }
-                    }
 
-                    // check if there is already an entry for this date or not
-                    boolean addEntry = false;
-                    final Iterator<TimeStamped> iterator = data.tailSet(date).iterator();
-                    if (iterator.hasNext()) {
-                        final LineParameters existingEntry = (LineParameters) iterator.next();
-                        if (existingEntry.getDate().equals(date)) {
-                            // there is an entry for this date
-                            if (existingEntry.getFileDate().compareTo(fileDate) < 0) {
-                                // the entry was read from an earlier file
-                                // we replace it with the new entry as it is fresher
-                                iterator.remove();
+                        // check if there is already an entry for this date or not
+                        boolean addEntry = false;
+                        final Iterator<TimeStamped> iterator = data.tailSet(date).iterator();
+                        if (iterator.hasNext()) {
+                            final LineParameters existingEntry = (LineParameters) iterator.next();
+                            if (existingEntry.getDate().equals(date)) {
+                                // there is an entry for this date
+                                if (existingEntry.getFileDate().compareTo(fileDate) < 0) {
+                                    // the entry was read from an earlier file
+                                    // we replace it with the new entry as it is fresher
+                                    iterator.remove();
+                                    addEntry = true;
+                                }
+                            } else {
+                                // it is the first entry we get for this date
                                 addEntry = true;
                             }
                         } else {
                             // it is the first entry we get for this date
                             addEntry = true;
                         }
-                    } else {
-                        // it is the first entry we get for this date
-                        addEntry = true;
-                    }
-                    if (addEntry) {
-                        // we must add the new entry
-                        data.add(new LineParameters(fileDate, date,
-                                                    Double.parseDouble(matcher.group(f107Group)),
-                                                    Double.parseDouble(matcher.group(apGroup))));
-                    }
+                        if (addEntry) {
+                            // we must add the new entry
+                            data.add(new LineParameters(fileDate, date,
+                                                        Double.parseDouble(matcher.group(f107Group)),
+                                                        Double.parseDouble(matcher.group(apGroup))));
+                        }
 
-                } else {
-                    if (inData) {
-                        // we have already read some data, so we are not in the header anymore
-                        // however, we don't recognize this non-empty line,
-                        // we consider the file is corrupted
-                        throw new OrekitException(OrekitMessages.NOT_A_MARSHALL_SOLAR_ACTIVITY_FUTURE_ESTIMATION_FILE,
-                                                  name);
+                    } else {
+                        if (inData) {
+                            // we have already read some data, so we are not in the header anymore
+                            // however, we don't recognize this non-empty line,
+                            // we consider the file is corrupted
+                            throw new OrekitException(OrekitMessages.NOT_A_MARSHALL_SOLAR_ACTIVITY_FUTURE_ESTIMATION_FILE,
+                                                      name);
+                        }
                     }
                 }
             }
+
         }
 
         if (data.isEmpty()) {
@@ -562,6 +590,50 @@ public class MarshallSolarActivityFutureEstimation implements DataLoader, DTM200
     /** {@inheritDoc} */
     public boolean stillAcceptsData() {
         return true;
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * @return data transfer object that will be serialized
+     */
+    @DefaultDataContext
+    private Object writeReplace() {
+        return new DataTransferObject(getSupportedNames(), strengthLevel);
+    }
+
+    /** Internal class used only for serialization. */
+    @DefaultDataContext
+    private static class DataTransferObject implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = -5212198874900835369L;
+
+        /** Regular expression that matches the names of the IONEX files. */
+        private final String supportedNames;
+
+        /** Selected strength level of activity. */
+        private final StrengthLevel strengthLevel;
+
+        /** Simple constructor.
+         * @param supportedNames regular expression for supported files names
+         * @param strengthLevel selected strength level of activity
+         */
+        DataTransferObject(final String supportedNames,
+                           final StrengthLevel strengthLevel) {
+            this.supportedNames = supportedNames;
+            this.strengthLevel  = strengthLevel;
+        }
+
+        /** Replace the deserialized data transfer object with a {@link MarshallSolarActivityFutureEstimation}.
+         * @return replacement {@link MarshallSolarActivityFutureEstimation}
+         */
+        private Object readResolve() {
+            try {
+                return new MarshallSolarActivityFutureEstimation(supportedNames, strengthLevel);
+            } catch (OrekitException oe) {
+                throw new OrekitInternalError(oe);
+            }
+        }
+
     }
 
 }

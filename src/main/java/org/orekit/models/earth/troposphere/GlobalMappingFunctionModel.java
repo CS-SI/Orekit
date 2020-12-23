@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -24,10 +24,13 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.SinCos;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.ParameterDriver;
 
 /** The Global Mapping Function  model for radio techniques.
@@ -53,19 +56,43 @@ import org.orekit.utils.ParameterDriver;
  */
 public class GlobalMappingFunctionModel implements MappingFunction {
 
+    /** Multiplication factor for mapping function coefficients. */
+    private static final double FACTOR = 1.0e-5;
+
     /** Geodetic site latitude, radians.*/
     private final double latitude;
 
     /** Geodetic site longitude, radians.*/
     private final double longitude;
 
+    /** UTC time scale. */
+    private final TimeScale utc;
+
+    /** Build a new instance.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param latitude geodetic latitude of the station, in radians
+     * @param longitude geodetic latitude of the station, in radians
+     * @see #GlobalMappingFunctionModel(double, double, TimeScale)
+     */
+    @DefaultDataContext
+    public GlobalMappingFunctionModel(final double latitude, final double longitude) {
+        this(latitude, longitude, DataContext.getDefault().getTimeScales().getUTC());
+    }
+
     /** Build a new instance.
      * @param latitude geodetic latitude of the station, in radians
      * @param longitude geodetic latitude of the station, in radians
+     * @param utc UTC time scale.
+     * @since 10.1
      */
-    public GlobalMappingFunctionModel(final double latitude, final double longitude) {
+    public GlobalMappingFunctionModel(final double latitude,
+                                      final double longitude,
+                                      final TimeScale utc) {
         this.latitude  = latitude;
         this.longitude = longitude;
+        this.utc = utc;
     }
 
     /** {@inheritDoc} */
@@ -73,7 +100,7 @@ public class GlobalMappingFunctionModel implements MappingFunction {
     public double[] mappingFactors(final double elevation, final double height,
                                    final double[] parameters, final AbsoluteDate date) {
         // Day of year computation
-        final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getUTC());
+        final DateTimeComponents dtc = date.getComponents(utc);
         final int dofyear = dtc.getDate().getDayOfYear();
 
         // bh and ch constants (Boehm, J et al, 2006) | HYDROSTATIC PART
@@ -122,17 +149,20 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         int j = 0;
         for (int n = 0; n <= 9; n++) {
             for (int m = 0; m <= n; m++) {
-                a0Hydro   = a0Hydro + (abCoef.getAHMean(j) * p.getPnm(n, m) * FastMath.cos(m * longitude) +
-                                abCoef.getBHMean(j) * p.getPnm(n, m) * FastMath.sin(m * longitude)) * 1e-5;
+                // Sine and cosine of m * longitude
+                final SinCos sc = FastMath.sinCos(m * longitude);
+                // Compute coefficients
+                a0Hydro   = a0Hydro + (abCoef.getAHMean(j) * p.getPnm(n, m) * sc.cos() +
+                                       abCoef.getBHMean(j) * p.getPnm(n, m) * sc.sin()) * FACTOR;
 
-                a0Wet     = a0Wet + (abCoef.getAWMean(j) * p.getPnm(n, m) * FastMath.cos(m * longitude) +
-                                abCoef.getBWMean(j) * p.getPnm(n, m) * FastMath.sin(m * longitude)) * 1e-5;
+                a0Wet     = a0Wet + (abCoef.getAWMean(j) * p.getPnm(n, m) * sc.cos() +
+                                     abCoef.getBWMean(j) * p.getPnm(n, m) * sc.sin()) * FACTOR;
 
-                amplHydro = amplHydro + (abCoef.getAHAmplitude(j) * p.getPnm(n, m) * FastMath.cos(m * longitude) +
-                                abCoef.getBHAmplitude(j) * p.getPnm(n, m) * FastMath.sin(m * longitude)) * 1e-5;
+                amplHydro = amplHydro + (abCoef.getAHAmplitude(j) * p.getPnm(n, m) * sc.cos() +
+                                         abCoef.getBHAmplitude(j) * p.getPnm(n, m) * sc.sin()) * FACTOR;
 
-                amplWet   = amplWet + (abCoef.getAWAmplitude(j) * p.getPnm(n, m) * FastMath.cos(m * longitude) +
-                                abCoef.getBWAmplitude(j) * p.getPnm(n, m) * FastMath.sin(m * longitude)) * 1e-5;
+                amplWet   = amplWet + (abCoef.getAWAmplitude(j) * p.getPnm(n, m) * sc.cos() +
+                                       abCoef.getBWAmplitude(j) * p.getPnm(n, m) * sc.sin()) * FACTOR;
 
                 j = j + 1;
             }
@@ -158,7 +188,7 @@ public class GlobalMappingFunctionModel implements MappingFunction {
     public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final T height,
                                                               final T[] parameters, final FieldAbsoluteDate<T> date) {
         // Day of year computation
-        final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getUTC());
+        final DateTimeComponents dtc = date.getComponents(utc);
         final int dofyear = dtc.getDate().getDayOfYear();
 
         final Field<T> field = date.getField();
@@ -209,17 +239,20 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         int j = 0;
         for (int n = 0; n <= 9; n++) {
             for (int m = 0; m <= n; m++) {
-                a0Hydro   = a0Hydro.add((abCoef.getAHMean(j) * p.getPnm(n, m) * FastMath.cos(m * longitude) +
-                                abCoef.getBHMean(j) * p.getPnm(n, m) * FastMath.sin(m * longitude)) * 1e-5);
+                // Sine and cosine of m * longitude
+                final SinCos sc = FastMath.sinCos(m * longitude);
+                // Compute coefficients
+                a0Hydro   = a0Hydro.add((abCoef.getAHMean(j) * p.getPnm(n, m) * sc.cos() +
+                                         abCoef.getBHMean(j) * p.getPnm(n, m) * sc.sin()) * FACTOR);
 
-                a0Wet     = a0Wet.add((abCoef.getAWMean(j) * p.getPnm(n, m) * FastMath.cos(m * longitude) +
-                                abCoef.getBWMean(j) * p.getPnm(n, m) * FastMath.sin(m * longitude)) * 1e-5);
+                a0Wet     = a0Wet.add((abCoef.getAWMean(j) * p.getPnm(n, m) * sc.cos() +
+                                       abCoef.getBWMean(j) * p.getPnm(n, m) * sc.sin()) * FACTOR);
 
-                amplHydro = amplHydro.add((abCoef.getAHAmplitude(j) * p.getPnm(n, m) * FastMath.cos(m * longitude) +
-                                abCoef.getBHAmplitude(j) * p.getPnm(n, m) * FastMath.sin(m * longitude)) * 1e-5);
+                amplHydro = amplHydro.add((abCoef.getAHAmplitude(j) * p.getPnm(n, m) * sc.cos() +
+                                           abCoef.getBHAmplitude(j) * p.getPnm(n, m) * sc.sin()) * FACTOR);
 
-                amplWet   = amplWet.add((abCoef.getAWAmplitude(j) * p.getPnm(n, m) * FastMath.cos(m * longitude) +
-                                abCoef.getBWAmplitude(j) * p.getPnm(n, m) * FastMath.sin(m * longitude)) * 1e-5);
+                amplWet   = amplWet.add((abCoef.getAWAmplitude(j) * p.getPnm(n, m) * sc.cos() +
+                                         abCoef.getBWAmplitude(j) * p.getPnm(n, m) * sc.sin()) * FACTOR);
 
                 j = j + 1;
             }

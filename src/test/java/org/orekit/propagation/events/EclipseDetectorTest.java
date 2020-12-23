@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -110,7 +110,7 @@ public class EclipseDetectorTest {
         Assert.assertEquals( 4310.742, events.get(2).getState().getDate().durationFrom(iniDate), 1.0e-3);
         Assert.assertTrue(events.get(3).getEventDetector() == withoutFlattening);
         Assert.assertTrue(events.get(3).isIncreasing());
-        Assert.assertEquals( 4317.155, events.get(3).getState().getDate().durationFrom(iniDate), 1.0e-3);
+        Assert.assertEquals( 4317.155, events.get(3).getState().getDate().durationFrom(iniDate), 1.6e-3);
         Assert.assertTrue(events.get(4).getEventDetector() == withoutFlattening);
         Assert.assertFalse(events.get(4).isIncreasing());
         Assert.assertEquals( 8189.250, events.get(4).getState().getDate().durationFrom(iniDate), 1.0e-3);

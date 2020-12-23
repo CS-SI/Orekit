@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -136,7 +136,7 @@ public class DSSTKalmanModelTest {
         // Initialize Kalman
         final KalmanEstimatorBuilder kalmanBuilder = new KalmanEstimatorBuilder();
         kalmanBuilder.addPropagationConfiguration(propagatorBuilder, covMatrixProvider);
-        kalmanBuilder.estimatedMeasurementsParameters(estimatedMeasurementsParameters);
+        kalmanBuilder.estimatedMeasurementsParameters(estimatedMeasurementsParameters, null);
         this.kalman = kalmanBuilder.build();
         this.modelLogger = new ModelLogger();
         kalman.setObserver(modelLogger);
@@ -219,6 +219,7 @@ public class DSSTKalmanModelTest {
         final DSSTKalmanModel model = new DSSTKalmanModel(Arrays.asList(propagatorBuilder),
                                                   Arrays.asList(covMatrixProvider),
                                                   estimatedMeasurementsParameters,
+                                                  null,
                                                   PropagationType.MEAN,
                                                   PropagationType.MEAN);
 

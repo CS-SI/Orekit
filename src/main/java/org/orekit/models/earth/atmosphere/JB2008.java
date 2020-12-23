@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,16 +21,22 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -171,16 +177,41 @@ public class JB2008 implements Atmosphere {
     /** Earth body shape. */
     private BodyShape earth;
 
+    /** UTC time scale. */
+    private final TimeScale utc;
+
     /** Constructor with space environment information for internal computation.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param parameters the solar and magnetic activity data
      * @param sun the sun position
      * @param earth the earth body shape
+     * @see #JB2008(JB2008InputParameters, PVCoordinatesProvider, BodyShape, TimeScale)
      */
+    @DefaultDataContext
     public JB2008(final JB2008InputParameters parameters,
                   final PVCoordinatesProvider sun, final BodyShape earth) {
+        this(parameters, sun, earth, DataContext.getDefault().getTimeScales().getUTC());
+    }
+
+    /**
+     * Constructor with space environment information for internal computation.
+     *
+     * @param parameters the solar and magnetic activity data
+     * @param sun        the sun position
+     * @param earth      the earth body shape
+     * @param utc        UTC time scale. Used to computed the day fraction.
+     * @since 10.1
+     */
+    public JB2008(final JB2008InputParameters parameters,
+                  final PVCoordinatesProvider sun,
+                  final BodyShape earth,
+                  final TimeScale utc) {
         this.earth = earth;
         this.sun = sun;
         this.inputParams = parameters;
+        this.utc = utc;
     }
 
     /** {@inheritDoc} */
@@ -1045,13 +1076,10 @@ public class JB2008 implements Atmosphere {
 
         // SEMIANNUAL PHASE FUNCTION
         final double tau   = MathUtils.TWO_PI * (doy - 1.0) / 365;
-        final double taux2 = tau + tau;
-        final double sin1P = FastMath.sin(tau);
-        final double cos1P = FastMath.cos(tau);
-        final double sin2P = FastMath.sin(taux2);
-        final double cos2P = FastMath.cos(taux2);
-        final double gtz = GTM[0] + GTM[1] * sin1P + GTM[2] * cos1P + GTM[3] * sin2P + GTM[4] * cos2P +
-                           fsmb * (GTM[5] + GTM[6] * sin1P + GTM[7] * cos1P + GTM[8] * sin2P + GTM[9] * cos2P);
+        final SinCos sc1P = FastMath.sinCos(tau);
+        final SinCos sc2P = SinCos.sum(sc1P, sc1P);
+        final double gtz = GTM[0] + GTM[1] * sc1P.sin() + GTM[2] * sc1P.cos() + GTM[3] * sc2P.sin() + GTM[4] * sc2P.cos() +
+                   fsmb * (GTM[5] + GTM[6] * sc1P.sin() + GTM[7] * sc1P.cos() + GTM[8] * sc2P.sin() + GTM[9] * sc2P.cos());
 
         return FastMath.max(1.0e-6, fzz) * gtz;
 
@@ -1082,20 +1110,17 @@ public class JB2008 implements Atmosphere {
 
         // SEMIANNUAL PHASE FUNCTION
         final T tau   = doy.subtract(1).divide(365).multiply(MathUtils.TWO_PI);
-        final T taux2 = tau.add(tau);
-        final T sin1P = tau.sin();
-        final T cos1P = tau.cos();
-        final T sin2P = taux2.sin();
-        final T cos2P = taux2.cos();
-        final T gtz =           cos2P.multiply(GTM[9]).
-                            add(sin2P.multiply(GTM[8])).
-                            add(cos1P.multiply(GTM[7])).
-                            add(sin1P.multiply(GTM[6])).
+        final FieldSinCos<T> sc1P = FastMath.sinCos(tau);
+        final FieldSinCos<T> sc2P = FieldSinCos.sum(sc1P, sc1P);
+        final T gtz =           sc2P.cos().multiply(GTM[9]).
+                            add(sc2P.sin().multiply(GTM[8])).
+                            add(sc1P.cos().multiply(GTM[7])).
+                            add(sc1P.sin().multiply(GTM[6])).
                             add(GTM[5]).multiply(fsmb).
-                        add(    cos2P.multiply(GTM[4]).
-                            add(sin2P.multiply(GTM[3])).
-                            add(cos1P.multiply(GTM[2])).
-                            add(sin1P.multiply(GTM[1])).
+                        add(    sc2P.cos().multiply(GTM[4]).
+                            add(sc2P.sin().multiply(GTM[3])).
+                            add(sc1P.cos().multiply(GTM[2])).
+                            add(sc1P.sin().multiply(GTM[1])).
                             add(GTM[0]));
 
         return fzz.getReal() > 1.0e-6 ? gtz.multiply(fzz) : gtz.multiply(1.0e-6);
@@ -1185,7 +1210,9 @@ public class JB2008 implements Atmosphere {
         }
 
         // compute MJD date
-        final double dateMJD = date.durationFrom(AbsoluteDate.MODIFIED_JULIAN_EPOCH) / Constants.JULIAN_DAY;
+        final DateTimeComponents dt = date.getComponents(utc);
+        final double dateMJD = dt.getDate().getMJD() +
+                dt.getTime().getSecondsInLocalDay() / Constants.JULIAN_DAY;
 
         // compute geodetic position
         final GeodeticPoint inBody = earth.transform(position, frame, date);
@@ -1221,7 +1248,12 @@ public class JB2008 implements Atmosphere {
         }
 
         // compute MJD date
-        final T dateMJD = date.durationFrom(AbsoluteDate.MODIFIED_JULIAN_EPOCH).divide(Constants.JULIAN_DAY);
+        final DateTimeComponents components = date.getComponents(utc);
+        final T dateMJD = date
+                .durationFrom(new FieldAbsoluteDate<>(date.getField(), components, utc))
+                .add(components.getTime().getSecondsInLocalDay())
+                .divide(Constants.JULIAN_DAY)
+                .add(components.getDate().getMJD());
 
         // compute geodetic position (km and °)
         final FieldGeodeticPoint<T> inBody = earth.transform(position, frame, date);

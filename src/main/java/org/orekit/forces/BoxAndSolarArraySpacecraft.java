@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -28,6 +28,7 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
+import org.hipparchus.util.SinCos;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.drag.DragSensitive;
@@ -624,7 +625,8 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         if (referenceDate != null) {
             // use a simple rotation at fixed rate
             final double alpha = rotationRate * date.durationFrom(referenceDate);
-            return new Vector3D(FastMath.cos(alpha), saX, FastMath.sin(alpha), saY);
+            final SinCos scAlpha = FastMath.sinCos(alpha);
+            return new Vector3D(scAlpha.cos(), saX, scAlpha.sin(), saY);
         }
 
         // compute orientation for best lighting

@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -24,8 +24,10 @@ import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
@@ -38,6 +40,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.PropagationType;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
@@ -158,18 +161,46 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * for {@link #setOrbitType(OrbitType) propagation
      * orbit type} and {@link PositionAngle#TRUE} for {@link
      * #setPositionAngleType(PositionAngle) position angle type}.
+     *
+     * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     *
      * @param integrator numerical integrator to use for propagation.
+     * @see #NumericalPropagator(ODEIntegrator, AttitudeProvider)
      */
+    @DefaultDataContext
     public NumericalPropagator(final ODEIntegrator integrator) {
+        this(integrator,
+                Propagator.getDefaultLaw(DataContext.getDefault().getFrames()));
+    }
+
+    /** Create a new instance of NumericalPropagator, based on orbit definition mu.
+     * After creation, the instance is empty, i.e. the attitude provider is set to an
+     * unspecified default law and there are no perturbing forces at all.
+     * This means that if {@link #addForceModel addForceModel} is not
+     * called after creation, the integrated orbit will follow a Keplerian
+     * evolution only. The defaults are {@link OrbitType#EQUINOCTIAL}
+     * for {@link #setOrbitType(OrbitType) propagation
+     * orbit type} and {@link PositionAngle#TRUE} for {@link
+     * #setPositionAngleType(PositionAngle) position angle type}.
+     * @param integrator numerical integrator to use for propagation.
+     * @param attitudeProvider the attitude law.
+     * @since 10.1
+     */
+    public NumericalPropagator(final ODEIntegrator integrator,
+                               final AttitudeProvider attitudeProvider) {
         super(integrator, PropagationType.MEAN);
         forceModels = new ArrayList<ForceModel>();
         initMapper();
-        setAttitudeProvider(DEFAULT_LAW);
+        setAttitudeProvider(attitudeProvider);
         setSlaveMode();
         setOrbitType(OrbitType.EQUINOCTIAL);
         setPositionAngleType(PositionAngle.TRUE);
     }
 
+    /** Set the flag to ignore or not the creation of a {@link NewtonianAttraction}.
+     * @param ignoreCentralAttraction if true, {@link NewtonianAttraction} is <em>not</em>
+     * added automatically if missing
+     */
     public void setIgnoreCentralAttraction(final boolean ignoreCentralAttraction) {
         this.ignoreCentralAttraction = ignoreCentralAttraction;
     }
@@ -620,6 +651,32 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         final double v  = pv.getVelocity().getNorm();
         final double dV = orbit.getMu() * dP / (v * r2);
 
+        return tolerances(dP, dV, orbit, type);
+
+    }
+
+    /** Estimate tolerance vectors for integrators when propagating in orbits.
+     * <p>
+     * The errors are estimated from partial derivatives properties of orbits,
+     * starting from scalar position and velocity errors specified by the user.
+     * <p>
+     * The tolerances are only <em>orders of magnitude</em>, and integrator tolerances
+     * are only local estimates, not global ones. So some care must be taken when using
+     * these tolerances. Setting 1mm as a position error does NOT mean the tolerances
+     * will guarantee a 1mm error position after several orbits integration.
+     * </p>
+     * @param dP user specified position error
+     * @param dV user specified velocity error
+     * @param orbit reference orbit
+     * @param type propagation type for the meaning of the tolerance vectors elements
+     * (it may be different from {@code orbit.getType()})
+     * @return a two rows array, row 0 being the absolute tolerance error and row 1
+     * being the relative tolerance error
+     * @since 10.3
+     */
+    public static double[][] tolerances(final double dP, final double dV,
+                                        final Orbit orbit, final OrbitType type) {
+
         final double[] absTol = new double[7];
         final double[] relTol = new double[7];
 
@@ -656,7 +713,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         }
 
-        Arrays.fill(relTol, dP / FastMath.sqrt(r2));
+        Arrays.fill(relTol, dP / FastMath.sqrt(orbit.getPVCoordinates().getPosition().getNormSq()));
 
         return new double[][] {
             absTol, relTol

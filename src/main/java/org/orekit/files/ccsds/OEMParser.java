@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -28,6 +29,8 @@ import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFileParser;
@@ -43,6 +46,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @since 6.1
  */
 public class OEMParser extends ODMParser implements EphemerisFileParser {
+
+    /** Default interpolation degree. */
+    private int interpolationDegree;
 
     /** Simple constructor.
      * <p>
@@ -72,9 +78,70 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
      * parse some reference frames or UT1 time scale, it must be initialized before
      * parsing by calling {@link #withConventions(IERSConventions)}.
      * </p>
+     * <p>
+     * The international designator parameters (launch year, launch number and
+     * launch piece) are not set here. If they are needed, they must be initialized before
+     * parsing by calling {@link #withInternationalDesignator(int, int, String)}
+     * </p>
+     * <p>
+     * The default interpolation degree is not set here. It is set to one by default. If another value
+     * is needed it must be initialized before parsing by calling {@link #withInterpolationDegree(int)}
+     * </p>
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}. See
+     * {@link #withDataContext(DataContext)}.
      */
+    @DefaultDataContext
     public OEMParser() {
-        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, 0, 0, "");
+        this(DataContext.getDefault());
+    }
+
+    /** Constructor with data context.
+     * <p>
+     * This class is immutable, and hence thread safe. When parts
+     * must be changed, such as reference date for Mission Elapsed Time or
+     * Mission Relative Time time systems, or the gravitational coefficient or
+     * the IERS conventions, the various {@code withXxx} methods must be called,
+     * which create a new immutable instance with the new parameters. This
+     * is a combination of the
+     * <a href="https://en.wikipedia.org/wiki/Builder_pattern">builder design
+     * pattern</a> and a
+     * <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
+     * interface</a>.
+     * </p>
+     * <p>
+     * The initial date for Mission Elapsed Time and Mission Relative Time time systems is not set here.
+     * If such time systems are used, it must be initialized before parsing by calling {@link
+     * #withMissionReferenceDate(AbsoluteDate)}.
+     * </p>
+     * <p>
+     * The gravitational coefficient is not set here. If it is needed in order
+     * to parse Cartesian orbits where the value is not set in the CCSDS file, it must
+     * be initialized before parsing by calling {@link #withMu(double)}.
+     * </p>
+     * <p>
+     * The IERS conventions to use is not set here. If it is needed in order to
+     * parse some reference frames or UT1 time scale, it must be initialized before
+     * parsing by calling {@link #withConventions(IERSConventions)}.
+     * </p>
+     * <p>
+     * The international designator parameters (launch year, launch number and
+     * launch piece) are not set here. If they are needed, they must be initialized before
+     * parsing by calling {@link #withInternationalDesignator(int, int, String)}
+     * </p>
+     * <p>
+     * The default interpolation degree is not set here. It is set to one by default. If another value
+     * is needed it must be initialized before parsing by calling {@link #withInterpolationDegree(int)}
+     * </p>
+     *
+     * @param dataContext used by the parser.
+     *
+     * @see #OEMParser()
+     * @see #withDataContext(DataContext)
+     * @since 10.1
+     */
+    public OEMParser(final DataContext dataContext) {
+        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, 0, 0, "", 1, dataContext);
     }
 
     /** Complete constructor.
@@ -85,43 +152,93 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
      * @param launchYear launch year for TLEs
      * @param launchNumber launch number for TLEs
      * @param launchPiece piece of launch (from "A" to "ZZZ") for TLEs
+     * @param interpolationDegree interpolation degree
+     * @param dataContext used to retrieve frames, time scales, etc.
      */
     private OEMParser(final AbsoluteDate missionReferenceDate, final double mu,
                       final IERSConventions conventions, final boolean simpleEOP,
-                      final int launchYear, final int launchNumber, final String launchPiece) {
-        super(missionReferenceDate, mu, conventions, simpleEOP, launchYear, launchNumber, launchPiece);
+                      final int launchYear, final int launchNumber,
+                      final String launchPiece, final int interpolationDegree,
+                      final DataContext dataContext) {
+        super(missionReferenceDate, mu, conventions, simpleEOP, launchYear, launchNumber,
+                launchPiece, dataContext);
+        this.interpolationDegree = interpolationDegree;
     }
 
     /** {@inheritDoc} */
+    @Override
     public OEMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
         return new OEMParser(newMissionReferenceDate, getMu(), getConventions(), isSimpleEOP(),
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece());
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
+                             getInterpolationDegree(), getDataContext());
     }
 
     /** {@inheritDoc} */
+    @Override
     public OEMParser withMu(final double newMu) {
         return new OEMParser(getMissionReferenceDate(), newMu, getConventions(), isSimpleEOP(),
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece());
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
+                             getInterpolationDegree(), getDataContext());
     }
 
     /** {@inheritDoc} */
+    @Override
     public OEMParser withConventions(final IERSConventions newConventions) {
         return new OEMParser(getMissionReferenceDate(), getMu(), newConventions, isSimpleEOP(),
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece());
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
+                             getInterpolationDegree(), getDataContext());
     }
 
     /** {@inheritDoc} */
+    @Override
     public OEMParser withSimpleEOP(final boolean newSimpleEOP) {
         return new OEMParser(getMissionReferenceDate(), getMu(), getConventions(), newSimpleEOP,
-                             getLaunchYear(), getLaunchNumber(), getLaunchPiece());
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
+                             getInterpolationDegree(), getDataContext());
     }
 
     /** {@inheritDoc} */
+    @Override
     public OEMParser withInternationalDesignator(final int newLaunchYear,
                                                  final int newLaunchNumber,
                                                  final String newLaunchPiece) {
         return new OEMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
-                             newLaunchYear, newLaunchNumber, newLaunchPiece);
+                             newLaunchYear, newLaunchNumber, newLaunchPiece,
+                             getInterpolationDegree(), getDataContext());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public OEMParser withDataContext(final DataContext dataContext) {
+        return new OEMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
+                             getInterpolationDegree(), dataContext);
+    }
+
+    /** Set default interpolation degree.
+     * <p>
+     * This method may be used to set a default interpolation degree which will be used
+     * when no interpolation degree is parsed in the meta-data of the file. Upon instantiation
+     * with {@link #OEMParser(DataContext)} the default interpolation degree is one.
+     * </p>
+     * @param newInterpolationDegree default interpolation degree to use while parsing
+     * @return a new instance, with interpolation degree data replaced
+     * @see #getInterpolationDegree()
+     * @since 10.3
+     */
+    public OEMParser withInterpolationDegree(final int newInterpolationDegree) {
+        return new OEMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece(),
+                             newInterpolationDegree, getDataContext());
+    }
+
+    /** Get default interpolation degree.
+     * @return interpolationDegree default interpolation degree to use while parsing
+     * @see #withInterpolationDegree(int)
+     * @since 10.3
+     */
+    public int getInterpolationDegree() {
+        return interpolationDegree;
     }
 
     /** {@inheritDoc} */
@@ -137,14 +254,16 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
     }
 
     /** {@inheritDoc} */
+    @Override
     public OEMFile parse(final InputStream stream, final String fileName) {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
             return parse(reader, fileName);
         } catch (IOException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public OEMFile parse(final BufferedReader reader, final String fileName) {
 
@@ -159,6 +278,7 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
             pi.file.setMissionReferenceDate(getMissionReferenceDate());
             pi.file.setMuSet(getMu());
             pi.file.setConventions(getConventions());
+            pi.file.setDataContext(getDataContext());
 
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 ++pi.lineNumber;
@@ -180,6 +300,7 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
                         pi.lastEphemeridesBlock.getMetaData().setLaunchYear(getLaunchYear());
                         pi.lastEphemeridesBlock.getMetaData().setLaunchNumber(getLaunchNumber());
                         pi.lastEphemeridesBlock.getMetaData().setLaunchPiece(getLaunchPiece());
+                        pi.lastEphemeridesBlock.setInterpolationDegree(getInterpolationDegree());
                         break;
 
                     case START_TIME:
@@ -205,7 +326,7 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
                         break;
 
                     case INTERPOLATION_DEGREE:
-                        pi.lastEphemeridesBlock.setInterpolationDegree(Integer .parseInt(pi.keyValue.getValue()));
+                        pi.lastEphemeridesBlock.setInterpolationDegree(Integer.parseInt(pi.keyValue.getValue()));
                         break;
 
                     case META_STOP:
@@ -257,9 +378,7 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
             if (line.trim().length() > 0) {
                 pi.keyValue = new KeyValue(line, pi.lineNumber, pi.fileName);
                 if (pi.keyValue.getKeyword() == null) {
-                    Scanner sc = null;
-                    try {
-                        sc = new Scanner(line);
+                    try (Scanner sc = new Scanner(line)) {
                         final AbsoluteDate date = parseDate(sc.next(), pi.lastEphemeridesBlock.getMetaData().getTimeSystem());
                         final Vector3D position = new Vector3D(Double.parseDouble(sc.next()) * 1000,
                                                                Double.parseDouble(sc.next()) * 1000,
@@ -286,10 +405,6 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
                     } catch (NumberFormatException nfe) {
                         throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                   pi.lineNumber, pi.fileName, line);
-                    } finally {
-                        if (sc != null) {
-                            sc.close();
-                        }
                     }
                 } else {
                     switch (pi.keyValue.getKeyword()) {
@@ -337,27 +452,22 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
             }
             pi.keyValue = new KeyValue(line, pi.lineNumber, pi.fileName);
             if (pi.keyValue.getKeyword() == null) {
-                final Scanner sc = new Scanner(line);
-                for (int j = 0; j < i + 1; j++) {
-                    try {
+                try (Scanner sc = new Scanner(line)) {
+                    for (int j = 0; j < i + 1; j++) {
                         pi.lastMatrix.addToEntry(i, j, Double.parseDouble(sc.next()));
-                    } catch (NumberFormatException nfe) {
-                        sc.close();
-                        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                  pi.lineNumber, pi.fileName, line);
+                        if (j != i) {
+                            pi.lastMatrix.addToEntry(j, i, pi.lastMatrix.getEntry(i, j));
+                        }
                     }
-                    if (j != i) {
-                        pi.lastMatrix.addToEntry(j, i, pi.lastMatrix.getEntry(i, j));
+                    if (i == 5) {
+                        final OEMFile.CovarianceMatrix cm =
+                                new OEMFile.CovarianceMatrix(pi.epoch, pi.covRefLofType, pi.covRefFrame, pi.lastMatrix);
+                        pi.lastEphemeridesBlock.getCovarianceMatrices().add(cm);
                     }
-                }
-                if (i == 5) {
-                    final OEMFile.CovarianceMatrix cm =
-                            new OEMFile.CovarianceMatrix(pi.epoch, pi.covRefLofType, pi.covRefFrame, pi.lastMatrix);
-                    pi.lastEphemeridesBlock.getCovarianceMatrices().add(cm);
-                }
-                i++;
-                if (sc != null) {
-                    sc.close();
+                    i++;
+                } catch (NumberFormatException nfe) {
+                    throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                              pi.lineNumber, pi.fileName, line);
                 }
             } else {
                 switch (pi.keyValue.getKeyword()) {
@@ -375,7 +485,7 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
                             pi.covRefFrame   = null;
                         } else {
                             pi.covRefLofType = null;
-                            pi.covRefFrame   = frame.getFrame(getConventions(), isSimpleEOP());
+                            pi.covRefFrame   = frame.getFrame(getConventions(), isSimpleEOP(), getDataContext());
                         }
                         break;
                     case COVARIANCE_STOP :

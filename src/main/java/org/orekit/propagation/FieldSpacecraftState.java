@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -424,10 +424,11 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
         final Map<String, T[]> newMap = new HashMap<String, T[]>(additional.size() + 1);
         newMap.putAll(additional);
         newMap.put(name, value.clone());
-        if (absPva == null)
+        if (absPva == null) {
             return new FieldSpacecraftState<>(orbit, attitude, mass, newMap);
-        else
+        } else {
             return new FieldSpacecraftState<>(absPva, attitude, mass, newMap);
+        }
     }
 
     /** Check orbit and attitude dates are equal.
@@ -504,15 +505,15 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      * Sun and Moon third bodies attractions, drag and solar radiation pressure.
      * Beware that these results will be different for other orbits.
      * </p>
-     * <table border="1" cellpadding="5">
+     * <table border="1">
      * <caption>Extrapolation Error</caption>
-     * <tr bgcolor="#ccccff"><th>interpolation time (s)</th>
+     * <tr style="background-color: #ccccff;"><th>interpolation time (s)</th>
      * <th>position error without derivatives (m)</th><th>position error with derivatives (m)</th></tr>
-     * <tr><td bgcolor="#eeeeff"> 60</td><td>  18</td><td> 1.1</td></tr>
-     * <tr><td bgcolor="#eeeeff">120</td><td>  72</td><td> 9.1</td></tr>
-     * <tr><td bgcolor="#eeeeff">300</td><td> 447</td><td> 140</td></tr>
-     * <tr><td bgcolor="#eeeeff">600</td><td>1601</td><td>1067</td></tr>
-     * <tr><td bgcolor="#eeeeff">900</td><td>3141</td><td>3307</td></tr>
+     * <tr><td style="background-color: #eeeeff; padding:5px"> 60</td><td>  18</td><td> 1.1</td></tr>
+     * <tr><td style="background-color: #eeeeff; padding:5px">120</td><td>  72</td><td> 9.1</td></tr>
+     * <tr><td style="background-color: #eeeeff; padding:5px">300</td><td> 447</td><td> 140</td></tr>
+     * <tr><td style="background-color: #eeeeff; padding:5px">600</td><td>1601</td><td>1067</td></tr>
+     * <tr><td style="background-color: #eeeeff; padding:5px">900</td><td>3141</td><td>3307</td></tr>
      * </table>
      * @param dt time shift in seconds
      * @return a new state, shifted with respect to the instance (which is immutable)
@@ -545,15 +546,15 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
      * Sun and Moon third bodies attractions, drag and solar radiation pressure.
      * Beware that these results will be different for other orbits.
      * </p>
-     * <table border="1" cellpadding="5">
+     * <table border="1">
      * <caption>Extrapolation Error</caption>
-     * <tr bgcolor="#ccccff"><th>interpolation time (s)</th>
+     * <tr style="background-color: #ccccff;"><th>interpolation time (s)</th>
      * <th>position error without derivatives (m)</th><th>position error with derivatives (m)</th></tr>
-     * <tr><td bgcolor="#eeeeff"> 60</td><td>  18</td><td> 1.1</td></tr>
-     * <tr><td bgcolor="#eeeeff">120</td><td>  72</td><td> 9.1</td></tr>
-     * <tr><td bgcolor="#eeeeff">300</td><td> 447</td><td> 140</td></tr>
-     * <tr><td bgcolor="#eeeeff">600</td><td>1601</td><td>1067</td></tr>
-     * <tr><td bgcolor="#eeeeff">900</td><td>3141</td><td>3307</td></tr>
+     * <tr><td style="background-color: #eeeeff; padding:5px"> 60</td><td>  18</td><td> 1.1</td></tr>
+     * <tr><td style="background-color: #eeeeff; padding:5px">120</td><td>  72</td><td> 9.1</td></tr>
+     * <tr><td style="background-color: #eeeeff; padding:5px">300</td><td> 447</td><td> 140</td></tr>
+     * <tr><td style="background-color: #eeeeff; padding:5px">600</td><td>1601</td><td>1067</td></tr>
+     * <tr><td style="background-color: #eeeeff; padding:5px">900</td><td>3141</td><td>3307</td></tr>
      * </table>
      * @param dt time shift in seconds
      * @return a new state, shifted with respect to the instance (which is immutable)

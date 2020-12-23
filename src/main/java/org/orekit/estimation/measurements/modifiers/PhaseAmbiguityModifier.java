@@ -1,5 +1,5 @@
-/* Copyright 2002-2019 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,10 +16,8 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.util.FastMath;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.gnss.Phase;
@@ -30,18 +28,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Luc Maisonobe
  * @since 9.2
  */
-public class PhaseAmbiguityModifier implements EstimationModifier<Phase> {
-
-    /** Ambiguity scale factor.
-     * <p>
-     * We use a power of 2 to avoid numeric noise introduction
-     * in the multiplications/divisions sequences.
-     * </p>
-     */
-    private static final double AMBIGUITY_SCALE = FastMath.scalb(1.0, 26);
-
-    /** Ambiguity parameter. */
-    private final ParameterDriver ambiguity;
+public class PhaseAmbiguityModifier extends AbstractAmbiguityModifier implements EstimationModifier<Phase> {
 
     /** Constructor.
      * <p>
@@ -55,30 +42,18 @@ public class PhaseAmbiguityModifier implements EstimationModifier<Phase> {
      * @param ambiguity initial value of ambiguity
      */
     public PhaseAmbiguityModifier(final int key, final double ambiguity) {
-        this.ambiguity = new ParameterDriver("amgiguity-" + key,
-                                             ambiguity, AMBIGUITY_SCALE,
-                                             Double.NEGATIVE_INFINITY,
-                                             Double.POSITIVE_INFINITY);
+        super(key, ambiguity);
     }
 
     /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
-        return Collections.singletonList(ambiguity);
+        return getDrivers();
     }
 
     @Override
     public void modify(final EstimatedMeasurement<Phase> estimated) {
-
-        // apply the ambiguity to the measurement value
-        final double[] value = estimated.getEstimatedValue();
-        value[0] += ambiguity.getValue();
-        if (ambiguity.isSelected()) {
-            // add the partial derivatives
-            estimated.setParameterDerivatives(ambiguity, 1.0);
-        }
-        estimated.setEstimatedValue(value);
-
+        doModify(estimated);
     }
 
 }

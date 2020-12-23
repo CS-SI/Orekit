@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!-- Copyright 2002-2019 CS Systèmes d'Information
-  Licensed to CS Systèmes d'Information (CS) under one or more
+<!-- Copyright 2002-2020 CS GROUP
+  Licensed to CS GROUP (CS) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
   CS licenses this file to You under the Apache License, Version 2.0
@@ -20,7 +20,486 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="10.1" date="TBD" description="TBD">
+    <release version="11.0" date="TBD" description="TBD">
+   	  <action dev="bryan" type="update" issue="743">
+      	Updated JUnit version to 4.13.1.
+      </action>
+    </release>
+    <release version="10.3" date="2020-12-21"
+             description="Version 10.3 is a minor release of Orekit.
+             It includes both new features and bug fixes. New features introduced
+             in 10.3 are: relativistic clock correction for range, phase, and range rate
+             measurements, piece wise models for empirical forces, one-way GNSS code
+             and phase measurements, support for laser ranging data (both CPF and
+             CRD formats), Lense-Thirring and De Sitter relativistic corrections to
+             satellite acceleration, support for AGI leap second files, new interfaces
+             for attitude ephemeris files, Knocke model for Earth's albedo and infrared,
+             as well as several other new features. This release includes an important
+             fix in DSST orbit determination allowing to used short period Jacobian
+             during state transition matrix calculation. It also fixes issues in Kalman
+             orbit determination and CCSDS ADM format. See the list below for a full
+             description of the changes.">
+   	  <action dev="bryan" type="update" issue="741">
+      	Updated Hipparchus version to 1.8 and updated code with new functionalities.
+      </action>
+   	  <action dev="bryan" type="add" issue="740">
+      	Added aggregator for bounded attitude providers.
+      </action>
+   	  <action dev="thomas" type="add" issue="8">
+        Added Knocke's Earth rediffused radiation pressure force model.
+      </action>
+   	  <action dev="bryan" type="add" issue="739">
+      	Allowed initialization of attitude provider from attitude segment.
+      </action>
+      <action dev="raphael" type="add" issue="705">
+        Allowed writing an AEM file from a list of SpacecraftStates.
+      </action>
+      <action dev="luc" type="add" issue="738">
+        Added user-defined max iteration and convergence criterion in SecularAndHarmonic.
+      </action>
+      <action dev="luc" type="add" issue="737">
+        Added loading of AGI LeapSecond.dat files.
+      </action>
+      <action dev="raphael" type="add" issue="686">
+        Allowed user-defined format for ephemeris data lines in
+        StreamingAemWriter, AEMWriter, StreamingOemWriter and OEMWriter.
+      </action>
+   	  <action dev="bryan" type="fix" issue="683">
+      	Updated building instructions.
+      </action>
+   	  <action dev="bryan" type="add" issue="734">
+      	Added getters for phase measurement ambiguity driver.
+      </action>
+   	  <action dev="bryan" type="fix" issue="696">
+      	Allowed to configure initial covariance for measurements in Kalman Filter.
+      </action>
+      <action dev="thomas, bryan" type="add" issue="709">
+        Added clock drift contribution to range rate measurements.
+      </action>
+   	  <action dev="bryan" type="fix" issue="687">
+      	Fixed Javadoc of ElevationMask.
+      </action>
+      <action dev="raphael" type="fix" issue="711">
+        Allowed definition of a default interpolation degree in both AEMParser and OEMParser.
+      </action>
+      <action dev="bryan" type="add" issue="733">
+        Added Lense-Thirring and De Sitter relativistic effects.
+      </action>
+      <action dev="melanisti" type="fix" issue="725">
+        Fixed missing measurement parameter in InterSatellitesRange measurement.
+      </action>
+      <action dev="bryan" type="add" issue="732">
+        Added documentation for checkstyle configuration.
+      </action>
+   	  <action dev="thomas" type="fix" issue="730">
+      	Removed useless loop over an empty list
+      </action>
+      <action dev="luc" type="fix" issue="731">
+        Fixed parsing of some ICGEM gravity fields files.
+      </action>
+      <action dev="raphael" type="fix" issue="720">
+      	Added support for measurements parameters in UnivariateProcessNoise
+      </action>
+      <action dev="luc" type="fix" issue="729">
+        Fixed wrong handling of RESET-STATE in analytical propagators.
+      </action>
+      <action dev="luc" type="add" issue="728">
+        Allow creating a node detector without an orbit.
+      </action>
+      <action dev="bryan" type="add" issue="671">
+        Added support for laser ranging file formats.
+      </action>
+      <action dev="clement" type="fix" issue="724">
+        Remove range checks in TLE constructor.
+      </action>
+      <action dev="bryan" type="fix" issue="723">
+        Allowed AEM and OEM writers to write header comments.
+      </action>
+      <action dev="bryan" type="add" issue="719">
+        Added one-way GNSS range and phase measurements for LEO satellite
+        orbit determination applications.
+      </action>
+      <action dev="bryan" type="add" issue="716">
+        Added piecewise empirical force model.
+      </action>
+      <action dev="bryan" type="add" >
+        Considered a new implementation for empirical forces, to allow piecewise model.
+      </action>
+      <action dev="bryan" type="add" issue="703">
+        Added inter-satellites phase measurement.
+      </action>
+      <action dev="bryan" type="fix" issue="695">
+        Considered covariance matrix from Position measurement in Kalman estimator.
+      </action>
+      <action dev="bryan" type="fix" issue="718">
+        Fixed orbital state used for short periodic Jacobian computation.
+      </action>
+      <action dev="bryan" type="add" issue="704">
+        Allow using user specified velocity error for computing
+        tolerance vectors for integrators.
+      </action>
+      <action dev="bryan" type="add" issue="714">
+        Added frequency deviation for range-rate measurements.
+      </action>
+      <action dev="bryan" type="add" issue="715">
+        Added relativistic clock correction for range, phase and
+        inter-satellite range measurements.
+      </action>
+      <action dev="bryan" type="fix" issue="706">
+        Fixed missing measurement parameter in inter-satellites range measurement.
+      </action>
+   	  <action dev="thomas" type="fix" issue="713">
+        Fixed computation of DSST short period Jacobian.
+      </action>
+      <action dev="luc" type="fix" issue="699">
+        Fixed missing measurement parameter in Phase measurement
+      </action>
+      <action dev="luc" type="fix" issue="701">
+        Fixed wrong handling of propagation parameters by Kalman filter in multi-satellite
+        context
+      </action>
+    </release>
+    <release version="10.2" date="2020-07-14"
+             description="Version 10.2 is a minor release of Orekit.
+             It includes both new features and bug fixes. New features introduced
+             in 10.2 are: support for CCSDS ADM files, modelling of trajectories
+             around Lagrangian points using CR3BP model, a piece wise drag force model,
+             a time span tropospheric estimated model, an estimated ionospheric model,
+             an improved modelling of the GNSS phase measurement, several bug fixes
+             for date functionnalities, a new organization of the maneuvers package,
+             a configurable low thrust maneuver model based on detectors,
+             support for CSSI space weather data, , as well as several other minor
+             features and bug fixes. See the list below for a full description
+             of the changes.">
+      <action dev="bryan" type="fix" issue="661">
+        Fixed visibility of WindUpFactory.
+      </action>
+      <action dev="bryan" type="update" >
+        Increased visibility of setters in CCSDS ADM related classes.
+      </action>
+      <action dev="clement" type="add" issue="656">
+        Added CssiSpaceWeatherLoader which provides three-hourly space weather
+        data and implements DTM2000InputParameters and NRLMSISE00InputParameters
+      </action>
+      <action dev="maxime" type="update" issue="690">
+        Increased visibility of setters in CCSDS OEM related classes.
+      </action>
+      <action dev="bryan" type="update" >
+        Improved Orekit performance by using new Hipparchus' differentiation classes.
+      </action>
+      <action dev="bryan" type="update" issue="682">
+        Changed visibility of OrbitType parameter drivers' names to public.
+      </action>
+      <action dev="evan" type="add" issue="684" due-to="Mikael">
+        Fix infinite loop in event detection when a RESET_* event causes two other events
+        to occur simultaneously and discontinuously.
+      </action>
+      <action dev="evan" type="add" issue="684">
+        Add FieldFunctionalDetector.
+      </action>
+      <action dev="mikael" type="add">
+        Added a configurable low thrust maneuver based on detectors.
+      </action>
+      <action dev="bryan" type="fix" issue="605">
+        Added support for Rinex C0, L0, S0 and D0 observation types.
+      </action>
+      <action dev="bryan" type="fix" issue="641">
+        Allow Pattern functionalities instead of String.replaceAll() and String.split().
+      </action>
+      <action dev="evan" type="fix" issue="658">
+        Fix invalid hour when using TimeScale(double) or TimeScale(int, double) with a
+        value in [86400, 86401]. Treat these values as indicating a leap second.
+      </action>
+      <action dev="evan" type="add" issue="677">
+        Add AbsoluteDate.toStringRfc3339() and DateTimeComponents.toStringRfc3339().
+      </action>
+      <action dev="evan" type="fix" issue="681">
+        Fix AbsoluteDate.getComponents(...) produces invalid times.
+      </action>
+      <action dev="evan" type="fix" issue="676">
+        Fix AbsoluteDate.getComponents(utc) throws "non-existent time 23:59:61".
+      </action>
+      <action dev="bryan" type="fix" issue="651">
+        Improved use of try with resources statement.
+      </action>
+      <action dev="bryan" type="fix" issue="679" due-to="luc, maxime">
+        Improved testRetrogradeOrbit in CircularOrbit and KeplerianOrbit tests.
+      </action>
+      <action dev="bryan" type="fix" issue="680">
+        Allowed ephemeris class to be used with absolute PV coordinates.
+      </action>
+      <action dev="bryan" type="fix" issue="674">
+        Added an exception if eccentricity is negative for keplerian orbit.
+      </action>
+      <action dev="evan" type="fix" issue="667">
+        Fix build on CentOS/RedHat 7.
+      </action>
+      <action dev="bryan" type="fix" issue="662">
+        Fixed forgotten additional state in Ephemeris propagator.
+      </action>
+      <action dev="evan" type="update">
+        Improve error message for TimeStampedCache by including requested date.
+      </action>
+      <action dev="bryan" type="fix" issue="663">
+        Fixed initialization of the triggering event for ImpulseManeuver class.
+      </action>
+      <action dev="clement" type="fix" issue="664">
+        Fix sign of RAAN and PA parameters in TLE constructor if negative, range check most other orbit parameters.
+      </action>
+      <action dev="bryan" type="add" issue="669">
+        Added estimated ionospheric model.
+      </action>
+      <action dev="bryan" type="add" issue="645">
+        Merged phase-measurement branch into develop.
+      </action>
+      <action dev="bryan" type="add" >
+        Added a time span tropospheric estimated model.
+      </action>
+      <action dev="bryan" type="add" issue="646">
+        Merged cr3bp branch into develop.
+      </action>
+      <action dev="bryan" type="add" issue="660">
+        Improved exception handling in IODGibbs.
+      </action>
+      <action dev="bryan" type="add" issue="647">
+        Improved package-info documentation.
+      </action>
+      <action dev="nick" type="update" >
+        Upgrade maven-checkstyle-plugin to 3.1.1.
+      </action>
+      <action dev="bryan" type="add" issue="657">
+        Added multiplexed Orekit fixed step handler.
+      </action>
+      <action dev="bryan" type="add" issue="655">
+        Added support for CCSDS ADM files.
+      </action>
+      <action dev="maxime" type="add" issue="649">
+        Added a piece wise drag force model: TimeSpanDragForce in forces package.
+      </action>
+      <action dev="yannick" type="fix" issue="654">
+        Prevent divergence of Saastomoinen model pathDelay method at low elevation.
+      </action>
+      <action dev="bryan" type="fix" issue="542">
+        Removed duplicated BUILDING.txt file.
+      </action>
+      <action dev="bryan" type="add" issue="504">
+        Allowed Eckstein Hechler propagator to be initialized with a mean orbit.
+      </action>
+      <action dev="bryan" type="update" issue="644">
+        Removed try and catch statements for ParameterDriver initialization.
+      </action>
+      <action dev="bryan" type="fix" issue="613">
+        Allowed DSST propagation in osculating type with event detectors.
+      </action>
+    </release>
+    <release version="10.1" date="2020-02-19"
+             description="Version 10.1 is a minor release of Orekit.
+             It includes both new features and bug fixes. New features introduced
+             in 10.1 are: wind-up effect for phase measurement, NeQuick ionospheric model,
+             support for Hatanaka compact RINEX format, methods for the combination
+             of GNSS measurements, Laplace method for initial orbit determination,
+             a new Field Of View package, comparison methods for absolute dates,
+             a new multiplexed measurement, specialized propagators for GNSS constellation,
+             default constructors for DSST force models, covariance matrices in OEM writer,
+             a new data context implementation, connection with Gitlab CI, improved documentation,
+             the migration of the tutorials to a separate sister project, as well as several other minor
+             features and bug fixes. See the list below for a full description of the changes.">
+      <action dev="ward" type="fix">
+        Improve performance of loading CCSDS files.
+      </action>
+      <action dev="ward" type="fix" issue="639" due-to="qmor">
+        In Ellipsoid.pointOnLimb(...) improved numerical stability by cancelling terms.
+      </action>
+      <action dev="maxime" type="fix" issue="639" due-to="qmor">
+        Fixed pointOnLimb method in bodies.Ellipsoid class. Normalized equations should now avoid numerical issues.
+      </action>
+      <action dev="evan" type="fix" issue="627">
+        Fix TimeScalesFactory.getGMST(conventions, simpleEop) always returning the same
+        value.
+      </action>
+      <action dev="evan" type="fix" issue="636">
+        Fix UT1 and Earth rotation during a leap second. Was off by 1 second.
+      </action>
+      <action dev="luc" type="fix" issue="635">
+        Fixed inconsistency in constant thrust maneuver acceleration.
+      </action>
+      <action dev="evan" type="add" >
+        Added an annotation and a compiler plugin that generates a warning
+        when default context is used without being explicitly annotated.
+      </action>
+      <action dev="luc" type="fix" issue="632" due-to="Evan Ward">
+        Fixed projection to ellipsoid at pole.
+      </action>
+      <action dev="evan,luc,yannick" type="add" issue="607">
+        Add DataContext, a way to load separate sets of EOP, leap seconds, etc.
+      </action>
+      <action dev="luc" type="fix" issue="630">
+        Improve performance of UnixCompressFilter.
+      </action>
+      <action dev="luc" type="fix" issue="631">
+        Improve performance of HatanakaCompressFilter.
+      </action>
+      <action dev="evan" type="fix" issue="629">
+        Improve performance of ZipJarCrawler.
+      </action>
+      <action dev="bryan" type="add" issue="625">
+      	Added default constructors for DSSTZonal and DSSTTesseral. 
+      </action>   
+      <action dev="bryan" type="add" issue="622">
+      	Added OrekitException for unknown number of frequencies in ANTEX files. 
+      </action>
+      <action dev="bryan" type="add" issue="621">
+      	Added OrekitException in the case where IONEX header is corrupted. 
+      </action>
+      <action dev="dylan" type="add" issue="359">
+      	Added a specific test for issue 359 in BatchLSEstimatorTest.
+      	The test verifies that a Newtonian attraction is known
+      	by both the propagator builder and the propagator when
+      	it is not added explicitly.
+      </action>
+      <action dev="dylan" type="add" issue="367">
+      	Added write of covariance matrices in OEMWriter.
+      </action>
+      <action dev="dylan" type="fix" issue="619">
+        Fixed origin transform in CcsdsModifierFrame.
+      </action>
+      <action dev="bryan" type="add" issue="611">
+        Added SBAS orbit propagator.
+      </action>
+      <action dev="bryan" type="fix" issue="617">
+        Fixed null pointer exception in MultiplexedMeasurement.
+      </action>
+      <action dev="luc" type="fix" issue="575">
+        Allow users to provide custom convergence checkers for
+        batch least squares orbit determination.
+      </action>
+      <action dev="luc" type="add" issue="614">
+        Added multiplexed measurements.
+      </action>
+      <action dev="luc" type="fix" issue="616">
+        Fixed missed changes updates in ParameterDriversList embedding
+        other ParameterDriversList instances.
+      </action>
+      <action dev="luc" type="update">
+        Moved tutorials to a separate sister project.
+      </action>
+      <action dev="bryan" type="add" due-to="Shiva Iyer">
+        Added Laplace method for initial orbit determination.
+      </action>
+      <action dev="bryan" type="fix" issue="612">
+        Fixed DSST orbit determination tutorial.
+      </action>
+      <action dev="bryan" type="add" issue="610">
+        Added IRNSS orbit propagator.
+      </action>
+      <action dev="bryan" type="add" issue="608">
+        Added support for RINEX 3.04 files.
+      </action>
+      <action dev="gabb" type="fix" issue="533">
+        Fixed bugs in the derivatives computation in IodGooding.
+        Fixed bugs in IodLambert when there's more than an half revolution
+        between start and final position.
+      </action>
+      <action dev="bryan" type="fix" issue="604">
+        Fixed parsing of compact RINEX files with wrong key in header
+        produced by some Septentrio receivers.
+      </action>
+      <action dev="luc" type="fix" issue="603">
+        Fixed parsing of compact RINEX files with missing types in header
+        produced by some Septentrio receivers.
+      </action>
+      <action dev="evan" type="fix" issue="589">
+        Improve performance of AggregateBoundedPropagator by factor of 2.
+      </action>
+      <action dev="luc" type="fix" issue="600">
+        Fixed parsing of compact RINEX files with many observation types.
+      </action>
+      <action dev="bryan" type="fix">
+        Fixed poor design of GLONASS numerical propagator.
+      </action>
+      <action dev="luc" type="fix" issue="599">
+        Fixed an issue in projection to flat ellipse.
+      </action>
+      <action dev="bryan" type="fix" issue="598">
+        Added lazily addition of Newtonian attraction to the DSST and
+        numerical propagator builders.
+      </action>
+      <action dev="luc" type="add" issue="595">
+        Added EllipticalFieldOfView (with two different ways to define the
+        ellipticity constraint) that can be used in FieldOfViewDetector,
+        GroundFieldOfViewDetector and FootprintOverlapDetector.
+      </action>
+      <action dev="luc" type="add">
+        Fields of view with regular polygonal shape can now be built either
+        based on a defining cone inside the Fov and touching it at edges
+        middle points, or based on a defining cone outside the Fov and touching
+        it at vertices.
+      </action>
+      <action dev="luc" type="add" issue="594">
+        Added CircularFieldOfView that can be used in FieldOfViewDetector,
+        GroundFieldOfViewDetector and FootprintOverlapDetector.
+      </action>
+      <action dev="luc" type="add">
+        Set up a general hierarchy for Field Of View with various shapes. At
+        start, it includes DoubleDihedraFieldOfView and PolygonalFieldOfView.
+      </action>
+      <action dev="luc" type="add" issue="592">
+        Added FilesListCrawler to load files from an explicit list.
+      </action>
+      <action dev="evan" type="fix" issue="583">
+        Fix AbsoluteDate.compareTo() for future/past infinity.
+      </action>
+      <action dev="luc" type="fix" issue="588">
+        Fixed wrong handling of spacecraft states in multi-satellites orbit determination
+        and multi-satellite measurements generation.
+      </action>
+      <action dev="bryan" type="fix" issue="585">
+        Improved contributing guide.
+      </action>
+      <action dev="petrus" type="fix" issue="570">
+        Make FieldOfView.getFootprint public.
+      </action>
+      <action dev="bryan" type="add">
+        Added combination of measurements.
+      </action>
+      <action dev="bryan" type="fix">
+        Fix values of GPS C2D, L2D, D2D and S2D frequencies.
+      </action>
+      <action dev="bryan" type="add">
+        Add Nequick ionospheric model.
+      </action>
+      <action dev="luc" type="fix" issue="581">
+        Fixed spurious empty line insertion during Rinex 2 decompression
+        when the number of observations per satellite is a multiple of 5
+      </action>
+      <action dev="luc" type="fix" issue="580">
+        Fixed decompression of very small negative values in Hatanaka
+        Compact RINEX format.
+      </action>
+      <action dev="luc" type="fix" issue="578">
+        Orbit determination tutorials (and tests too) now supports compressed
+        measurement files (gzip, Unix compress, Hatanaka Compact RINEX).
+      </action>
+      <action dev="luc" type="fix" issue="579">
+        Handle properly special events flags in Hatanaka Compact RINEX format.
+      </action>
+      <action dev="luc" type="fix" issue="483">
+        Reset additional state changed by event handlers and not managed by any
+        additional state providers.
+      </action>
+      <action dev="luc" type="add" issue="472">
+        Added support for Hatanaka Compact RINEX format.
+      </action>
+      <action dev="luc" type="fix" issue="574">
+        Cope with input stream readers that keep asking for new bytes after end
+        of Unix compressed files has been reached.
+      </action>
+      <action dev="luc" type="fix" issue="573">
+        Added detection of some corrupted Unix-compressed files.
+      </action>
+      <action dev="bryan" type="fix" issue="572">
+        Fixed the Saastamoinen model when station altitude is bigger than 5000.0 meters.
+      </action>
       <action dev="luc" type="fix" issue="568">
         Fixed too fast step increase in a bracketing attempt.
       </action>
