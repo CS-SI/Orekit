@@ -20,9 +20,11 @@ package org.orekit.files.ccsds.ndm.tdm;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.NDMMetadata;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.IERSConventions;
 
 /** The TDMMetadata class gathers the meta-data present in the Tracking Data Message (TDM).<p>
  *  References:<p>
@@ -195,13 +197,15 @@ public class TDMMetadata extends NDMMetadata {
     private String correctionsApplied;
 
     /** Create a new TDM meta-data.
+     * @param conventions IERS conventions to use
+     * @param dataContext data context to use
      */
-    public TDMMetadata() {
+    public TDMMetadata(final IERSConventions conventions, final DataContext dataContext) {
+        super(conventions, dataContext);
         participants   = new TreeMap<>();
         transmitDelays = new TreeMap<>();
         receiveDelays  = new TreeMap<>();
     }
-
 
     /** Getter for the startTime.
      * @return the startTime

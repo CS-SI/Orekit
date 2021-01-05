@@ -61,13 +61,13 @@ public class AEMSatelliteEphemeris implements SatelliteAttitudeEphemeris {
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getStart() {
-        return blocks.get(0).getMetadata().getStart();
+        return blocks.get(0).getStart();
     }
 
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getStop() {
-        return blocks.get(blocks.size() - 1).getMetadata().getStop();
+        return blocks.get(blocks.size() - 1).getStop();
     }
 
 }

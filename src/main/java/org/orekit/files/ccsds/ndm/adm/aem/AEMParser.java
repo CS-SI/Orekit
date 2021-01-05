@@ -21,9 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.regex.Pattern;
@@ -311,7 +309,6 @@ public class AEMParser extends ADMParser<AEMFile> implements AttitudeEphemerisFi
                         pi.currentMetadata = new AEMMetadata(getConventions(), getDataContext());
                         pi.parsingHeader   = false;
                         pi.parsingMetaData = true;
-                        pi.parsingData     = false;
                         pi.currentMetadata.setInterpolationDegree(getInterpolationDegree());
                         break;
 
@@ -383,16 +380,8 @@ public class AEMParser extends ADMParser<AEMFile> implements AttitudeEphemerisFi
                             parsed = parseHeaderEntry(pi.keyValue, pi.file);
                         } else if (pi.parsingMetaData) {
                             parsed = parseMetaDataEntry(pi.keyValue, pi.currentMetadata);
-                            if (pi.currentMetadata.getTimeSystem() != null) {
-                                // this was the end of the metadata part
-                                pi.parsingMetaData = false;
-                            }
                         } else {
-                            if (pi.keyValue.getKeyword() == Keyword.COMMENT) {
-                                pi.currentEphemeridesBlock.addComment(pi.keyValue.getValue());
-                            } else {
-                                parseEphemeridesDataLines(reader, pi);
-                            }
+                            parseEphemeridesDataLines(reader, pi);
                             parsed = true;
                         }
                         if (!parsed) {
@@ -441,14 +430,14 @@ public class AEMParser extends ADMParser<AEMFile> implements AttitudeEphemerisFi
                         final TimeStampedAngularCoordinates epDataLine = attType.getAngularCoordinates(date, attitudeData,
                                                                                                        pi.currentMetadata.isFirst(),
                                                                                                        rotationOrder);
-                        pi.currentEphemeridesBlock.getAttitudeDataLines().add(epDataLine);
+                        pi.currentEphemeridesBlock.addData(epDataLine);
                         pi.currentEphemeridesBlock.updateAngularDerivativesFilter(attType.getAngularDerivativesFilter());
                     }
                 } else {
                     switch (pi.keyValue.getKeyword()) {
 
                         case DATA_START:
-                            pi.currentEphemeridesBlock = new AttitudeEphemeridesBlock(pi.file, pi.currentMetadata);
+                            pi.currentEphemeridesBlock = new AEMData();
                             break;
 
                         case DATA_STOP:
@@ -457,7 +446,7 @@ public class AEMParser extends ADMParser<AEMFile> implements AttitudeEphemerisFi
                             return;
 
                         case COMMENT:
-                            pi.commentTmp.add(pi.keyValue.getValue());
+                            pi.currentEphemeridesBlock.addComment(pi.keyValue.getValue());
                             break;
 
                         default :
@@ -531,7 +520,7 @@ public class AEMParser extends ADMParser<AEMFile> implements AttitudeEphemerisFi
         private AEMMetadata currentMetadata;
 
         /** Current Ephemerides block being parsed. */
-        private AttitudeEphemeridesBlock currentEphemeridesBlock;
+        private AEMData currentEphemeridesBlock;
 
         /** Name of the file. */
         private String fileName;
@@ -545,26 +534,18 @@ public class AEMParser extends ADMParser<AEMFile> implements AttitudeEphemerisFi
         /** Key value of the line being read. */
         private KeyValue keyValue;
 
-        /** Stored comments. */
-        private List<String> commentTmp;
-
         /** Boolean indicating if the parser is currently parsing a header block. */
         private boolean parsingHeader;
 
         /** Boolean indicating if the parser is currently parsing a meta-data block. */
         private boolean parsingMetaData;
 
-        /** Boolean indicating if the parser is currently parsing a data block. */
-        private boolean parsingData;
-
         /** Create a new {@link ParseInfo} object. */
         protected ParseInfo() {
             lineNumber      = 0;
             file            = new AEMFile();
-            commentTmp      = new ArrayList<>();
             parsingHeader   = false;
             parsingMetaData = false;
-            parsingData     = false;
         }
     }
 

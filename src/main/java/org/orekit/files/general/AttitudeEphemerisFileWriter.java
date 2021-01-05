@@ -18,11 +18,12 @@ package org.orekit.files.general;
 
 import java.io.IOException;
 
+
 /**
  * An interface for writing out ephemeris files to disk.
  *
  * <p>
- * An attitude ephemeris consists of one or more satellites each an ID unique
+ * An {@link AttitudeEphemerisFile} consists of one or more satellites each an ID unique
  * within the file. The ephemeris for each satellite consists of one or more
  * segments.
  *
@@ -37,24 +38,19 @@ import java.io.IOException;
 public interface AttitudeEphemerisFileWriter {
 
     /**
-     * Write file header.
+     * Write the passed in {@link AttitudeEphemerisFile} using the passed in
+     * {@link Appendable}.
      *
-     * @param writer a configured Appendable to feed with text
-     * @throws IOException if any buffer writing operations fail
+     * @param writer
+     *            a configured Appendable to feed with text
+     * @param ephemerisFile
+     *            a populated ephemeris file to serialize into the buffer
+     * @throws IOException
+     *             if any buffer writing operations fail or if the underlying
+     *             format doesn't support a configuration in the EphemerisFile
+     *             (for example having multiple satellites in one file, having
+     *             the origin at an unspecified celestial body, etc.)
      */
-    void writeHeader(Appendable writer) throws IOException;
-
-    /**
-     * Write one segment.
-     *
-     * @param writer a configured Appendable to feed with text
-     * @param metadata segment metadata
-     * @param data segment data
-     * @throws IOException if any buffer writing operations fail
-     */
-    void writeSegment(Appendable writer,
-                      AttitudeEphemerisFile.AttitudeEphemerisSegmentMetadata metadata,
-                      AttitudeEphemerisFile.AttitudeEphemerisSegmentData data)
-        throws IOException;
+    void write(Appendable writer, AttitudeEphemerisFile ephemerisFile) throws IOException;
 
 }

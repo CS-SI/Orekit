@@ -25,12 +25,9 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.BoundedAttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.files.general.AttitudeEphemerisFile.AttitudeEphemerisSegment;
-import org.orekit.files.general.AttitudeEphemerisFile.AttitudeEphemerisSegmentData;
-import org.orekit.files.general.AttitudeEphemerisFile.AttitudeEphemerisSegmentMetadata;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.ImmutableTimeStampedCache;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -44,34 +41,20 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  */
 public class EphemerisSegmentAttitudeProvider implements BoundedAttitudeProvider {
 
-    /** Reference frame from which attitude is computed. */
-    private final Frame referenceFrame;
-
-    /** Start date. */
-    private final AbsoluteDate start;
-
-    /** End date. */
-    private final AbsoluteDate end;
-
-    /** Derivation order. */
-    private final AngularDerivativesFilter filter;
-
     /** Cached attitude table. */
     private final transient ImmutableTimeStampedCache<TimeStampedAngularCoordinates> table;
 
+    /** Tabular data from which this attitude provider is built. */
+    private final AttitudeEphemerisSegment segment;
+
     /**
      * Constructor.
-     * @param metadata attitude metadata
-     * @param data attitude data
+     * @param segment segment containing the attitude data for this provider.
      */
-    public EphemerisSegmentAttitudeProvider(final AttitudeEphemerisSegmentMetadata metadata,
-                                            final AttitudeEphemerisSegmentData data) {
-        this.referenceFrame = metadata.getReferenceFrame();
-        this.start          = metadata.getStart();
-        this.end            = metadata.getStop();
-        this.filter         = data.getAvailableDerivatives();
-        this.table          =  new ImmutableTimeStampedCache<TimeStampedAngularCoordinates>(metadata.getInterpolationSamples(),
-                                                                                            data.getAngularCoordinates());
+    public EphemerisSegmentAttitudeProvider(final AttitudeEphemerisSegment segment) {
+        this.segment = segment;
+        this.table   = new ImmutableTimeStampedCache<TimeStampedAngularCoordinates>(segment.getInterpolationSamples(),
+                                                                                    segment.getAngularCoordinates());
     }
 
     /** {@inheritDoc} */
@@ -84,10 +67,10 @@ public class EphemerisSegmentAttitudeProvider implements BoundedAttitudeProvider
 
         // Interpolate attitude data
         final TimeStampedAngularCoordinates interpolatedAttitude =
-                TimeStampedAngularCoordinates.interpolate(date, filter, attitudeSample);
+                TimeStampedAngularCoordinates.interpolate(date, segment.getAvailableDerivatives(), attitudeSample);
 
         // Build the interpolated attitude
-        return new Attitude(referenceFrame, interpolatedAttitude);
+        return new Attitude(segment.getReferenceFrame(), interpolatedAttitude);
 
     }
 
@@ -103,23 +86,23 @@ public class EphemerisSegmentAttitudeProvider implements BoundedAttitudeProvider
 
         // Interpolate attitude data
         final TimeStampedFieldAngularCoordinates<T> interpolatedAttitude =
-                TimeStampedFieldAngularCoordinates.interpolate(date, filter, attitudeSample);
+                TimeStampedFieldAngularCoordinates.interpolate(date, segment.getAvailableDerivatives(), attitudeSample);
 
         // Build the interpolated attitude
-        return new FieldAttitude<>(referenceFrame, interpolatedAttitude);
+        return new FieldAttitude<>(segment.getReferenceFrame(), interpolatedAttitude);
 
     }
 
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getMinDate() {
-        return start;
+        return segment.getStart();
     }
 
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getMaxDate() {
-        return end;
+        return segment.getStop();
     }
 
 }

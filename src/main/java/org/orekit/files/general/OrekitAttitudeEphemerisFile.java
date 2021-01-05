@@ -193,8 +193,7 @@ public class OrekitAttitudeEphemerisFile implements AttitudeEphemerisFile {
          */
         @DefaultDataContext
         public OrekitAttitudeEphemerisSegment addNewSegment(final List<SpacecraftState> states,
-                                                            final String interpolationMethod,
-                                                            final int interpolationSamples) {
+                                                final String interpolationMethod, final int interpolationSamples) {
             return this.addNewSegment(states, interpolationMethod, interpolationSamples, DEFAULT_ATTITUDE_TYPE,
                                       DEFAULT_IS_FIRST, DEFAULT_ROTATION_ORDER);
         }
@@ -400,7 +399,7 @@ public class OrekitAttitudeEphemerisFile implements AttitudeEphemerisFile {
         }
     }
 
-    public static class OrekitAttitudeEphemerisSegmentData implements AttitudeEphemerisSegmentData {
+    public static class OrekitAttitudeEphemerisSegment implements AttitudeEphemerisSegment {
 
         /** List of attitude data lines. */
         private List<TimeStampedAngularCoordinates> attitudeDataLines;

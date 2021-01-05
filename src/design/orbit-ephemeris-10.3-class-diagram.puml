@@ -31,9 +31,23 @@
 
     package files #DDEBD8 {
 
+       package sp3 #CBDBC8 {
+          class SP3File
+       }
+
+       package ilrs #CBDBC8 {
+         class CPFFile
+       }
+
       package general #CBDBC8 {
 
         class OrekitEphemerisFile
+
+        class EphemerisSegmentPropagator
+        interface EphemerisFileParser {
+          +EphemerisFile parse(reader, fileName)
+          +EphemerisFile parse(fileName)
+        }
 
         interface EphemerisFileWriter {
           +write(EphemerisFile)
@@ -68,11 +82,15 @@
           +getPropagator()
         }
 
-        EphemerisFile *--> EphemerisFile.SatelliteEphemeris
+        SP3File ..|> EphemerisFile
+        CPFFile ..|> EphemerisFile
+        EphemerisFile.SatelliteEphemeris <--* EphemerisFile
         EphemerisFile.SatelliteEphemeris o--> EphemerisFile.EphemerisSegment
+        EphemerisSegmentPropagator *--> "1" EphemerisFile.SatelliteEphemeris
 
         OrekitEphemerisFile ..|> EphemerisFile
-        EphemerisFileWriter --> EphemerisFile
+        EphemerisFile <-- EphemerisFileWriter
+        EphemerisFile <-- EphemerisFileParser : create
 
       }
 
@@ -84,23 +102,13 @@
         OemWriter --> StreamingOemWriter
         EphemerisFileWriter <|.. OemWriter
       }
-
-     package sp3 #CBDBC8 {
-       class SP3File
-       SP3File ..|> EphemerisFile
-     }
-
-     package ilrs #CBDBC8 {
-       class CPFFile
-       CPFFile ..|> EphemerisFile
-     }
-
     }
 
     package propagation #DDEBD8 {
       interface BoundedPropagator
-      BoundedPropagator <-- EphemerisFile.SatelliteEphemeris
+      BoundedPropagator <-left- EphemerisFile.SatelliteEphemeris
       BoundedPropagator <-- EphemerisFile.EphemerisSegment
+      BoundedPropagator <|.. EphemerisSegmentPropagator
     }
 
   }

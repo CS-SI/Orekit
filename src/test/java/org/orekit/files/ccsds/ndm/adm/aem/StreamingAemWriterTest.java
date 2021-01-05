@@ -41,7 +41,7 @@ import org.orekit.files.ccsds.ndm.adm.aem.AEMFile;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMParser;
 import org.orekit.files.ccsds.ndm.adm.aem.StreamingAemWriter;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMSatelliteEphemeris;
-import org.orekit.files.ccsds.ndm.adm.aem.AttitudeEphemeridesBlock;
+import org.orekit.files.ccsds.ndm.adm.aem.AEMData;
 import org.orekit.files.ccsds.ndm.adm.aem.StreamingAemWriter.AEMSegment;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
@@ -86,7 +86,7 @@ public class StreamingAemWriterTest {
 
             // Satellite attitude ephemeris as read from the reference file
             AEMSatelliteEphemeris satellite = aemFile.getSatellites().values().iterator().next();
-            AttitudeEphemeridesBlock ephemerisBlock = satellite.getSegments().get(0);
+            AEMData ephemerisBlock = satellite.getSegments().get(0);
 
             // Meta data are extracted from the reference file
             String originator   = aemFile.getHeader().getOriginator();
@@ -138,7 +138,7 @@ public class StreamingAemWriterTest {
 
             // There is only one attitude ephemeris block
             Assert.assertEquals(1, generatedAemFile.getAttitudeBlocks().size());
-            AttitudeEphemeridesBlock attitudeBlocks = generatedAemFile.getAttitudeBlocks().get(0);
+            AEMData attitudeBlocks = generatedAemFile.getAttitudeBlocks().get(0);
             // There are 7 data lines in the attitude ephemeris block
             List<TimeStampedAngularCoordinates> ac  = attitudeBlocks.getAngularCoordinates();
             Assert.assertEquals(7, ac.size());
@@ -188,7 +188,7 @@ public class StreamingAemWriterTest {
         AEMParser parser = new AEMParser();
         AEMFile aemFile = parser.parse(inEntry, "AEMExample7.txt");
 
-        AttitudeEphemeridesBlock block = aemFile.getAttitudeBlocks().get(0);
+        AEMData block = aemFile.getAttitudeBlocks().get(0);
 
         TimeScale utc = TimeScalesFactory.getUTC();
         Map<Keyword, String> metadata = new LinkedHashMap<>();

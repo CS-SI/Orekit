@@ -751,7 +751,8 @@ public class TDMParser extends DefaultHandler {
                                 // Start/Strop keywords
                             case META_START:
                                 // Indicate the start of meta-data parsing for this block
-                                parseInfo.currentMetadata = new TDMMetadata();
+                                parseInfo.currentMetadata = new TDMMetadata(parseInfo.conventions,
+                                                                            parseInfo.dataContext);
                                 parseInfo.parsingHeader   = false;
                                 parseInfo.parsingMetaData = true;
                                 break;
@@ -956,7 +957,8 @@ public class TDMParser extends DefaultHandler {
 
                     case metadata:
                         // Indicate the start of meta-data parsing for this block
-                        parseInfo.currentMetadata = new TDMMetadata();
+                        parseInfo.currentMetadata = new TDMMetadata(parseInfo.conventions,
+                                                                    parseInfo.dataContext);
                         parseInfo.parsingMetaData = true;
                         break;
 

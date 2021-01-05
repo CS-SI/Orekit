@@ -21,16 +21,14 @@ import java.util.Collections;
 import java.util.List;
 
 import org.orekit.files.ccsds.ndm.NDMData;
-import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
 /**
- * The Attitude Ephemerides Blocks class contain metadata
- * and the list of attitude data lines.
+ * The Attitude Ephemerides data blocks class contain list of attitude data points.
  * @author Bryan Cazabonne
  */
-public class AttitudeEphemeridesBlock implements NDMData, AttitudeEphemerisFile.AttitudeEphemerisSegmentData {
+public class AEMData implements NDMData {
 
     /** List of data lines. */
     private final List<TimeStampedAngularCoordinates> attitudeDataLines;
@@ -43,30 +41,29 @@ public class AttitudeEphemeridesBlock implements NDMData, AttitudeEphemerisFile.
 
     /**
      * Constructor.
-     * @param file message file these data belong to
-     * @param metadata metadata associated with these data
      */
-    public AttitudeEphemeridesBlock(final AEMFile file, final AEMMetadata metadata) {
+    public AEMData() {
         attitudeDataLines        = new ArrayList<>();
         attitudeDataLinesComment = new ArrayList<>();
     }
 
-    /**
-     * Get the list of attitude data lines.
-     * @return a list of data
+    /** Add a data point.
+     * @param data data point to add
      */
-    public List<TimeStampedAngularCoordinates> getAttitudeDataLines() {
-        return attitudeDataLines;
+    public void addData(final TimeStampedAngularCoordinates data) {
+        attitudeDataLines.add(data);
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /** Get an unmodifiable view of the data points.
+     * @return unmodifiable vie of the data points
+     */
     public List<TimeStampedAngularCoordinates> getAngularCoordinates() {
         return Collections.unmodifiableList(this.attitudeDataLines);
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /** Get the derivatives available in the block.
+     * @return derivatives available in the block
+     */
     public AngularDerivativesFilter getAvailableDerivatives() {
         return angularDerivativesFilter;
     }

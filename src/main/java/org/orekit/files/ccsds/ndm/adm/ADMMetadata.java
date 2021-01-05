@@ -21,9 +21,11 @@ import java.util.regex.Pattern;
 
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NDMMetadata;
+import org.orekit.utils.IERSConventions;
 
 /** This class gathers the meta-data present in the Attitude Data Message (ADM).
  * @author Bryan Cazabonne
@@ -51,10 +53,12 @@ public class ADMMetadata extends NDMMetadata {
      * corresponding gravitational coefficient. */
     private boolean hasCreatableBody;
 
-    /**
-     * Create a new meta-data.
+    /** Create a new meta-data.
+     * @param conventions IERS conventions to use
+     * @param dataContext data context to use
      */
-    public ADMMetadata() {
+    public ADMMetadata(final IERSConventions conventions, final DataContext dataContext) {
+        super(conventions, dataContext);
     }
 
     /**

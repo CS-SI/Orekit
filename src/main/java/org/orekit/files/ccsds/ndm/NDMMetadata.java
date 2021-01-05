@@ -33,16 +33,26 @@ import org.orekit.utils.IERSConventions;
  */
 public class NDMMetadata {
 
+    /** IERS conventions to use. */
+    private final IERSConventions conventions;
+
+    /** Data context. */
+    private final DataContext dataContext;
+
     /** Metadata comments. The list contains a string for each line of comment. */
-    private List<String> comments;
+    private final List<String> comments;
 
     /** Time System: used for metadata, orbit state and covariance data. */
     private CcsdsTimeScale timeSystem;
 
     /** Create a new meta-data.
+     * @param conventions IERS conventions to use
+     * @param dataContext data context to use
      */
-    public NDMMetadata() {
-        comments = new ArrayList<String>();
+    public NDMMetadata(final IERSConventions conventions, final DataContext dataContext) {
+        this.conventions = conventions;
+        this.dataContext = dataContext;
+        this.comments    = new ArrayList<String>();
     }
 
     /** Get the Time System that: for OPM, is used for metadata, state vector,
@@ -67,13 +77,11 @@ public class NDMMetadata {
 
     /**
      * Get the time scale.
-     * @param conventions IERS conventions to use
-     * @param dataContext data context ontianing all time scales
      * @return the time scale.
      * @see #getTimeSystem()
      * @throws OrekitException if there is not corresponding time scale.
      */
-    public TimeScale getTimeScale(final IERSConventions conventions, final DataContext dataContext) {
+    public TimeScale getTimeScale() {
         return getTimeSystem().getTimeScale(conventions, dataContext.getTimeScales());
     }
 

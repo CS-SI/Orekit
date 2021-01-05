@@ -47,7 +47,7 @@ import org.orekit.files.ccsds.ndm.adm.aem.AEMFile;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMParser;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMWriter;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMSatelliteEphemeris;
-import org.orekit.files.ccsds.ndm.adm.aem.AttitudeEphemeridesBlock;
+import org.orekit.files.ccsds.ndm.adm.aem.AEMData;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
@@ -282,17 +282,17 @@ public class AEMWriterTest {
         assertEquals(lines2[23], "2002-12-18T12:02:00.331 -0.84532  0.26974 -0.06532  0.45652");
     }
 
-    private static void compareAemAttitudeBlocks(AttitudeEphemeridesBlock block1, AttitudeEphemeridesBlock block2) {
+    private static void compareAemAttitudeBlocks(AEMData block1, AEMData block2) {
         compareAemAttitudeBlocksMetadata(block1.getMetadata(), block2.getMetadata());
         assertEquals(0.0, block1.getStart().durationFrom(block2.getStart()), DATE_PRECISION);
         assertEquals(0.0, block1.getStop().durationFrom(block2.getStop()),   DATE_PRECISION);
         assertEquals(block1.getInterpolationDegree(), block2.getInterpolationDegree());
         assertEquals(block1.getInterpolationMethod(), block2.getInterpolationMethod());
-        assertEquals(block1.getAttitudeDataLines().size(), block2.getAttitudeDataLines().size());
-        for (int i = 0; i < block1.getAttitudeDataLines().size(); i++) {
-            TimeStampedAngularCoordinates c1 = block1.getAttitudeDataLines().get(i);
+        assertEquals(block1.getAngularCoordinates().size(), block2.getAngularCoordinates().size());
+        for (int i = 0; i < block1.getAngularCoordinates().size(); i++) {
+            TimeStampedAngularCoordinates c1 = block1.getAngularCoordinates().get(i);
             Rotation rot1 = c1.getRotation();
-            TimeStampedAngularCoordinates c2 = block2.getAttitudeDataLines().get(i);
+            TimeStampedAngularCoordinates c2 = block2.getAngularCoordinates().get(i);
             Rotation rot2 = c2.getRotation();
             assertEquals(0.0, c1.getDate().durationFrom(c2.getDate()), DATE_PRECISION);
             assertEquals(rot1.getQ0(), rot2.getQ0(), QUATERNION_PRECISION);
@@ -322,21 +322,21 @@ public class AEMWriterTest {
     }
 
     private class StandInSatelliteEphemeris extends AEMSatelliteEphemeris {
-        final List<AttitudeEphemeridesBlock> blocks;
+        final List<AEMData> blocks;
 
         @Deprecated
-        public StandInSatelliteEphemeris(List<AttitudeEphemeridesBlock> blocks) {
+        public StandInSatelliteEphemeris(List<AEMData> blocks) {
             super(blocks);
             this.blocks = blocks;
         }
 
-        public StandInSatelliteEphemeris(String id, List<AttitudeEphemeridesBlock> blocks) {
+        public StandInSatelliteEphemeris(String id, List<AEMData> blocks) {
             super(id, blocks);
             this.blocks = blocks;
         }
 
         @Override
-        public List<AttitudeEphemeridesBlock> getSegments() {
+        public List<AEMData> getSegments() {
             return blocks;
         }
 

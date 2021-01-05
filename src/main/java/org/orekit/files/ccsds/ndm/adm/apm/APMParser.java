@@ -161,7 +161,7 @@ public class APMParser extends ADMParser<APMFile> {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
 
             // initialize internal data structures
-            final ParseInfo pi = new ParseInfo();
+            final ParseInfo pi = new ParseInfo(getConventions(), getDataContext());
             pi.fileName = fileName;
 
             // set the additional data that has been configured prior the parsing by the user.
@@ -532,10 +532,13 @@ public class APMParser extends ADMParser<APMFile> {
         /** Boolean indicating if the parser is currently parsing a meta-data block. */
         private boolean parsingMetaData;
 
-        /** Create a new {@link ParseInfo} object. */
-        protected ParseInfo() {
+        /** Create a new {@link ParseInfo} object.
+         * @param conventions IERS conventions to use
+         * @param dataContext data context to use
+         */
+        ParseInfo(final IERSConventions conventions, final DataContext dataContext) {
             file            = new APMFile();
-            metadata        = new ADMMetadata();
+            metadata        = new ADMMetadata(conventions, dataContext);
             data            = new APMData();
             lineNumber      = 0;
             commentTmp      = new ArrayList<String>();
