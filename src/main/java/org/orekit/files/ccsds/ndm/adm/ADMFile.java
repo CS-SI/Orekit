@@ -16,21 +16,18 @@
  */
 package org.orekit.files.ccsds.ndm.adm;
 
-import org.orekit.files.ccsds.ndm.NDMData;
 import org.orekit.files.ccsds.ndm.NDMFile;
 import org.orekit.files.ccsds.ndm.NDMHeader;
-import org.orekit.files.ccsds.ndm.NDMMetadata;
 import org.orekit.time.AbsoluteDate;
 
 /**
  * This class stores all the information of the Attitude Parameter Message (APM) File parsed
  * by APMParser. It contains the header and the metadata and a the data lines.
- * @param <M> type of the metadata
- * @param <D> type of the data
+ * @param <S> type of the segment
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class ADMFile<M extends NDMMetadata, D extends NDMData> extends NDMFile<NDMHeader, M, D> {
+public class ADMFile<S extends ADMSegment<?, ?>> extends NDMFile<NDMHeader, S> {
 
     /** Initial Date for MET or MRT time systems. */
     private AbsoluteDate missionReferenceDate;

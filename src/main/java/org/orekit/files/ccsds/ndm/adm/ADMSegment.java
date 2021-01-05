@@ -14,38 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.ccsds.utils.lexical;
+package org.orekit.files.ccsds.ndm.adm;
 
-import org.orekit.files.ccsds.ndm.NDMFile;
-import org.orekit.files.ccsds.ndm.NDMHeader;
+import org.orekit.files.ccsds.ndm.NDMData;
 import org.orekit.files.ccsds.ndm.NDMSegment;
 
-/** Interface for parsing CCSDS messages.
- * @param <H> type of the header
- * @param <S> type of the segment
- * @author Luc Maisonobe
- * @since 11.0
+/**
+ * This class stores the metadata and data for one attitude segment.
+ * @param <M> type of the metadata
+ * @param <D> type of the data
+ * @author Bryan Cazabonne
+ * @since 10.2
  */
-public interface MessageParser<H extends NDMHeader, S extends NDMSegment<?, ?>> {
+public class ADMSegment<M extends ADMMetadata, D extends NDMData> extends NDMSegment<M, D> {
 
-    /** Entry or block start marker found.
-     * @param name name of the entry or block
+    /** Simple constructor.
+     * @param metadata segment metadata
+     * @param data segment data
      */
-    void start(String name);
-
-    /** Handle an entry.
-     * @param entry entry found
-     */
-    void entry(Entry entry);
-
-    /** Entry or block end marker found.
-     * @param name name of the entry or block
-     */
-    void end(String name);
-
-    /** Build the file from parsed entries.
-     * @return parsed file
-     */
-    NDMFile<H, S> build();
+    public ADMSegment(final M metadata, final D data) {
+        super(metadata, data);
+    }
 
 }

@@ -35,6 +35,7 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.Keyword;
+import org.orekit.files.ccsds.ndm.NDMSegment;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.KeyValue;
@@ -769,7 +770,7 @@ public class TDMParser extends DefaultHandler {
                                 break;
 
                             case DATA_STOP:
-                                tdmFile.addSegment(parseInfo.currentMetadata, parseInfo.currentObservationsBlock);
+                                tdmFile.addSegment(new NDMSegment<>(parseInfo.currentMetadata, parseInfo.currentObservationsBlock));
                                 // Indicate the end of data parsing for this block
                                 parseInfo.parsingData = false;
                                 break;
@@ -1026,7 +1027,7 @@ public class TDMParser extends DefaultHandler {
                         break;
 
                     case segment:
-                        parseInfo.tdmFile.addSegment(parseInfo.currentMetadata, parseInfo.currentObservationsBlock);
+                        parseInfo.tdmFile.addSegment(new NDMSegment<>(parseInfo.currentMetadata, parseInfo.currentObservationsBlock));
                         break;
 
                     case metadata:

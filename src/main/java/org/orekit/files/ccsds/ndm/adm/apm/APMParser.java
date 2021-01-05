@@ -34,6 +34,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
 import org.orekit.files.ccsds.ndm.adm.ADMParser;
+import org.orekit.files.ccsds.ndm.adm.ADMSegment;
 import org.orekit.files.ccsds.utils.KeyValue;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
@@ -284,7 +285,7 @@ public class APMParser extends ADMParser<APMFile> {
             if (pi.maneuver != null) {
                 pi.data.addManeuver(pi.maneuver);
             }
-            pi.file.addSegment(pi.metadata, pi.data);
+            pi.file.addSegment(new ADMSegment<>(pi.metadata, pi.data));
             return pi.file;
 
         } catch (IOException ioe) {
@@ -310,6 +311,8 @@ public class APMParser extends ADMParser<APMFile> {
                 return true;
 
             case EPOCH:
+                data.setEpochComment(comments);
+                comments.clear();
                 data.setEpoch(parseDate(keyValue.getValue(), metadata.getTimeSystem()));
                 return true;
 

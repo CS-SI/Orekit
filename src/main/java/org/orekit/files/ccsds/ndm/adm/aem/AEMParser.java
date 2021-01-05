@@ -290,6 +290,7 @@ public class AEMParser extends ADMParser<AEMFile> implements AttitudeEphemerisFi
             pi.file.setConventions(getConventions());
             pi.file.setDataContext(getDataContext());
 
+            pi.parsingHeader = true;
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 ++pi.lineNumber;
                 if (line.trim().length() == 0) {
@@ -297,7 +298,13 @@ public class AEMParser extends ADMParser<AEMFile> implements AttitudeEphemerisFi
                 }
                 pi.keyValue = new KeyValue(line, pi.lineNumber, pi.fileName);
                 if (pi.keyValue.getKeyword() == null) {
-                    throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
+                    if (pi.parsingData) {
+                        parseEphemeridesDataLine(line, pi);
+                        continue;
+                    } else {
+                        throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD,
+                                                  pi.lineNumber, pi.fileName, line);
+                    }
                 }
                 switch (pi.keyValue.getKeyword()) {
                     case CCSDS_AEM_VERS:
@@ -309,6 +316,7 @@ public class AEMParser extends ADMParser<AEMFile> implements AttitudeEphemerisFi
                         pi.currentMetadata = new AEMMetadata(getConventions(), getDataContext());
                         pi.parsingHeader   = false;
                         pi.parsingMetaData = true;
+                        pi.parsingData     = false;
                         pi.currentMetadata.setInterpolationDegree(getInterpolationDegree());
                         break;
 
@@ -374,15 +382,29 @@ public class AEMParser extends ADMParser<AEMFile> implements AttitudeEphemerisFi
                         pi.parsingMetaData = false;
                         break;
 
+                    case DATA_START:
+                        pi.currentEphemeridesBlock = new AEMData();
+                        pi.parsingData             = true;
+                        break;
+
+                    case DATA_STOP:
+                        file.addSegment(new AEMSegment(pi.currentMetadata, pi.currentEphemeridesBlock));
+                        pi.currentMetadata         = null;
+                        pi.currentEphemeridesBlock = null;
+                        pi.parsingData             = false;
+                        break;
+
                     default:
                         final boolean parsed;
                         if (pi.parsingHeader) {
                             parsed = parseHeaderEntry(pi.keyValue, pi.file);
                         } else if (pi.parsingMetaData) {
                             parsed = parseMetaDataEntry(pi.keyValue, pi.currentMetadata);
-                        } else {
-                            parseEphemeridesDataLines(reader, pi);
+                        } else if (pi.parsingData && pi.keyValue.getKeyword() == Keyword.COMMENT) {
+                            pi.currentEphemeridesBlock.addComment(pi.keyValue.getValue());
                             parsed = true;
+                        } else {
+                            parsed = false;
                         }
                         if (!parsed) {
                             throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
@@ -403,59 +425,30 @@ public class AEMParser extends ADMParser<AEMFile> implements AttitudeEphemerisFi
     /**
      * Parse an attitude ephemeris data line and add its content
      * to the attitude ephemerides block.
-     * @param reader the reader
+     * @param line data line to parse
      * @param pi the parser info
      * @exception IOException if an error occurs while reading from the stream
      */
-    private void parseEphemeridesDataLines(final BufferedReader reader,  final ParseInfo pi)
-        throws IOException {
-
-        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-
-            ++pi.lineNumber;
-            if (line.trim().length() > 0) {
-                pi.keyValue = new KeyValue(line, pi.lineNumber, pi.fileName);
-                if (pi.keyValue.getKeyword() == null) {
-                    try (Scanner sc = new Scanner(line)) {
-                        final AbsoluteDate date = parseDate(sc.next(), pi.currentMetadata.getTimeSystem());
-                        // Create an array with the maximum possible size
-                        final double[] attitudeData = new double[MAX_SIZE];
-                        int index = 0;
-                        while (sc.hasNext()) {
-                            attitudeData[index++] = Double.parseDouble(sc.next());
-                        }
-                        final AEMAttitudeType attType = AEMAttitudeType.getAttitudeType(pi.currentMetadata.getAttitudeType());
-                        final RotationOrder rotationOrder = pi.currentMetadata.getRotationOrder();
-
-                        final TimeStampedAngularCoordinates epDataLine = attType.getAngularCoordinates(date, attitudeData,
-                                                                                                       pi.currentMetadata.isFirst(),
-                                                                                                       rotationOrder);
-                        pi.currentEphemeridesBlock.addData(epDataLine);
-                        pi.currentEphemeridesBlock.updateAngularDerivativesFilter(attType.getAngularDerivativesFilter());
-                    }
-                } else {
-                    switch (pi.keyValue.getKeyword()) {
-
-                        case DATA_START:
-                            pi.currentEphemeridesBlock = new AEMData();
-                            break;
-
-                        case DATA_STOP:
-                            reader.reset();
-                            reader.readLine();
-                            return;
-
-                        case COMMENT:
-                            pi.currentEphemeridesBlock.addComment(pi.keyValue.getValue());
-                            break;
-
-                        default :
-                            throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
-                    }
-                }
-                reader.mark(300);
-
+    private void parseEphemeridesDataLine(final String line, final ParseInfo pi) throws IOException {
+        try (Scanner sc = new Scanner(line)) {
+            final AbsoluteDate date = parseDate(sc.next(), pi.currentMetadata.getTimeSystem());
+            // Create an array with the maximum possible size
+            final double[] attitudeData = new double[MAX_SIZE];
+            int index = 0;
+            while (sc.hasNext()) {
+                attitudeData[index++] = Double.parseDouble(sc.next());
             }
+            final AEMAttitudeType attType = AEMAttitudeType.getAttitudeType(pi.currentMetadata.getAttitudeType());
+            final RotationOrder rotationOrder = pi.currentMetadata.getRotationOrder();
+
+            final TimeStampedAngularCoordinates epDataLine = attType.getAngularCoordinates(date, attitudeData,
+                                                                                           pi.currentMetadata.isFirst(),
+                                                                                           rotationOrder);
+            pi.currentEphemeridesBlock.addData(epDataLine);
+            pi.currentEphemeridesBlock.updateAngularDerivativesFilter(attType.getAngularDerivativesFilter());
+        } catch (NumberFormatException nfe) {
+            throw new OrekitException(nfe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                      pi.lineNumber, pi.fileName, line);
         }
     }
 
@@ -540,12 +533,16 @@ public class AEMParser extends ADMParser<AEMFile> implements AttitudeEphemerisFi
         /** Boolean indicating if the parser is currently parsing a meta-data block. */
         private boolean parsingMetaData;
 
+        /** Boolean indicating if the parser is currently parsing a data block. */
+        private boolean parsingData;
+
         /** Create a new {@link ParseInfo} object. */
         protected ParseInfo() {
             lineNumber      = 0;
             file            = new AEMFile();
             parsingHeader   = false;
             parsingMetaData = false;
+            parsingData     = false;
         }
     }
 

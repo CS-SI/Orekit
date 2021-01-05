@@ -32,12 +32,11 @@ import org.orekit.utils.IERSConventions;
  * It contains the information of the message's header and configuration data
  * (set in the parser).
  * @param <H> type of the header
- * @param <M> type of the metadata
- * @param <D> type of the data
+ * @param <S> type of the segments
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public abstract class NDMFile<H extends NDMHeader, M extends NDMMetadata, D extends NDMData> {
+public abstract class NDMFile<H extends NDMHeader, S extends NDMSegment<?, ?>> {
 
     /** Data context. */
     private DataContext dataContext;
@@ -49,7 +48,7 @@ public abstract class NDMFile<H extends NDMHeader, M extends NDMMetadata, D exte
     private H header;
 
     /** segments list. */
-    private List<NDMSegment<M, D>> segments;
+    private List<S> segments;
 
     /**
      * Constructor.
@@ -74,18 +73,17 @@ public abstract class NDMFile<H extends NDMHeader, M extends NDMMetadata, D exte
      * @return segments
      * @since 11.0
      */
-    public List<NDMSegment<M, D>> getSegments() {
+    public List<S> getSegments() {
         return Collections.unmodifiableList(segments);
     }
 
     /**
      * Add a ({@link NDMMetadata metadata}, {@link NDMData data}) pair to the segments.
-     * @param metadata metadata part of the segment
-     * @param data data part of the segment
+     * @param segment segment to add
      * @since 11.0
      */
-    public void addSegment(final M metadata, final D data) {
-        segments.add(new NDMSegment<>(metadata, data));
+    public void addSegment(final S segment) {
+        segments.add(segment);
     }
 
     /**

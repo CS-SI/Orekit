@@ -23,6 +23,7 @@ import java.util.Map;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.attitudes.AggregateBoundedAttitudeProvider;
 import org.orekit.attitudes.BoundedAttitudeProvider;
+import org.orekit.attitudes.TabulatedProvider;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -250,7 +251,9 @@ public interface AttitudeEphemerisFile {
          * @return the attitude provider for this attitude ephemeris segment.
          */
         default BoundedAttitudeProvider getAttitudeProvider() {
-            return new EphemerisSegmentAttitudeProvider(this);
+            return new TabulatedProvider(getReferenceFrame(), getAngularCoordinates(),
+                                         getInterpolationSamples(), getAvailableDerivatives(),
+                                         getStart(), getStop());
         }
 
     }

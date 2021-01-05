@@ -18,15 +18,14 @@ package org.orekit.files.ccsds.ndm.adm.aem;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.NDMSegment;
 import org.orekit.files.ccsds.ndm.adm.ADMFile;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.general.AttitudeEphemerisFile;
-import org.orekit.files.general.OrekitAttitudeEphemerisFile;
 
 /**
  * This class stocks all the information of the Attitude Ephemeris Message (AEM) File parsed
@@ -35,29 +34,22 @@ import org.orekit.files.general.OrekitAttitudeEphemerisFile;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class AEMFile extends ADMFile<AEMMetadata, AEMData> implements AttitudeEphemerisFile {
+public class AEMFile extends ADMFile<AEMSegment> implements AttitudeEphemerisFile {
 
     /** {@inheritDoc} */
     @Override
     public Map<String, AEMSatelliteEphemeris> getSatellites() {
-        final Map<String, AEMSatelliteEphemeris> ret = new HashMap<>();
-        for (final NDMSegment<AEMMetadata, AEMData> segment : getSegments()) {
+        final Map<String, List<AEMSegment>> byId = new HashMap<>();
+        for (final AEMSegment segment : getSegments()) {
             final String id = segment.getMetadata().getObjectID();
-            if (!ret.containsKey(id)) {
-                ret.put(id, new AEMSatelliteEphemeris(id, new ArrayList<>()));
+            if (!byId.containsKey(id)) {
+                byId.put(id, new ArrayList<>());
             }
-            ret.get(id).getSegments().add(new OrekitAttitudeEphemerisFile.OrekitAttitudeEphemerisSegment(segment.getData().getAngularCoordinates(),
-                                                                                                         segment.getMetadata().getCenterName(),
-                                                                                                         segment.getMetadata().getRefFrameAString(),
-                                                                                                         segment.getMetadata().getRefFrameBString(),
-                                                                                                         segment.getMetadata().getAttitudeDirection(),
-                                                                                                         segment.getMetadata().getAttitudeType(),
-                                                                                                         segment.getMetadata().isFirst(),
-                                                                                                         segment.getMetadata().getRotationOrder(),
-                                                                                                         segment.getMetadata().getTimeScale(),
-                                                                                                         segment.getMetadata().getInterpolationMethod(),
-                                                                                                         segment.getMetadata().getInterpolationSamples(),
-                                                                                                         segment.getMetadata().getReferenceFrame()));
+            byId.get(id).add(segment);
+        }
+        final Map<String, AEMSatelliteEphemeris> ret = new HashMap<>();
+        for (final Map.Entry<String, List<AEMSegment>> entry : byId.entrySet()) {
+            ret.put(entry.getKey(), new AEMSatelliteEphemeris(entry.getKey(), entry.getValue()));
         }
         return ret;
     }
@@ -67,7 +59,7 @@ public class AEMFile extends ADMFile<AEMMetadata, AEMData> implements AttitudeEp
      */
     public void checkTimeSystems() {
         CcsdsTimeScale referenceTimeSystem = null;
-        for (final NDMSegment<AEMMetadata, AEMData> segment : getSegments()) {
+        for (final AEMSegment segment : getSegments()) {
             final CcsdsTimeScale timeSystem = segment.getMetadata().getTimeSystem();
             if (referenceTimeSystem == null) {
                 referenceTimeSystem = timeSystem;

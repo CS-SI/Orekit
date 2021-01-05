@@ -32,7 +32,7 @@ public class AEMSatelliteEphemeris implements SatelliteAttitudeEphemeris {
     private final String id;
 
     /** The attitude ephemeris data for the satellite. */
-    private final List<AttitudeEphemerisSegment> blocks;
+    private final List<? extends AttitudeEphemerisSegment> blocks;
 
     /**
      * Create a container for the set of ephemeris blocks in the file that pertain to
@@ -41,7 +41,7 @@ public class AEMSatelliteEphemeris implements SatelliteAttitudeEphemeris {
      * @param blocks containing ephemeris data for the satellite.
      * @since 10.3
      */
-    public AEMSatelliteEphemeris(final String id, final List<AttitudeEphemerisSegment> blocks) {
+    public AEMSatelliteEphemeris(final String id, final List<? extends AttitudeEphemerisSegment> blocks) {
         this.id = id;
         this.blocks = blocks;
     }

@@ -34,7 +34,7 @@ public class NDMSegment<M extends NDMMetadata, D extends NDMData> {
      * @param metadata segment metadata
      * @param data segment data
      */
-    NDMSegment(final M metadata, final D data) {
+    public NDMSegment(final M metadata, final D data) {
         this.metadata = metadata;
         this.data     = data;
     }

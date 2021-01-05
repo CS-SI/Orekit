@@ -25,10 +25,9 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.hipparchus.exception.DummyLocalizable;
 import org.orekit.errors.OrekitException;
-import org.orekit.files.ccsds.ndm.NDMData;
 import org.orekit.files.ccsds.ndm.NDMFile;
 import org.orekit.files.ccsds.ndm.NDMHeader;
-import org.orekit.files.ccsds.ndm.NDMMetadata;
+import org.orekit.files.ccsds.ndm.NDMSegment;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
@@ -59,11 +58,11 @@ public class XMLLexicalAnalyzer implements LexicalAnalyzer {
 
     /** {@inheritDoc} */
     @Override
-    public <H extends NDMHeader, M extends NDMMetadata, D extends NDMData>
-        NDMFile<H, M, D> parse(final MessageParser<H, M, D> messageParser) {
+    public <H extends NDMHeader, S extends NDMSegment<?, ?>>
+        NDMFile<H, S> parse(final MessageParser<H, S> messageParser) {
         try {
             // Create the handler
-            final XMLHandler<H, M, D> handler = new XMLHandler<>(messageParser);
+            final XMLHandler<H, S> handler = new XMLHandler<>(messageParser);
 
             // Create the XML SAX parser factory
             final SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -93,13 +92,12 @@ public class XMLLexicalAnalyzer implements LexicalAnalyzer {
 
     /** Handler for parsing XML file formats.
      * @param <H> type of the header
-     * @param <M> type of the metadata
-     * @param <D> type of the data
+     * @param <S> type of the segments
      */
-    private class XMLHandler<H extends NDMHeader, M extends NDMMetadata, D extends NDMData> extends DefaultHandler {
+    private class XMLHandler<H extends NDMHeader, S extends NDMSegment<?, ?>> extends DefaultHandler {
 
         /** CCSDS Message parser to use. */
-        private final MessageParser<H, M, D> messageParser;
+        private final MessageParser<H, S> messageParser;
 
         /** Locator used to get current line number. */
         private Locator locator;
@@ -110,7 +108,7 @@ public class XMLLexicalAnalyzer implements LexicalAnalyzer {
         /** Simple constructor.
          * @param messageParser CCSDS Message parser to use
          */
-        XMLHandler(final MessageParser<H, M, D> messageParser) {
+        XMLHandler(final MessageParser<H, S> messageParser) {
             this.messageParser = messageParser;
         }
 

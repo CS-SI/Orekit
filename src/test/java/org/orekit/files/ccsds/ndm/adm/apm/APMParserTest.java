@@ -31,8 +31,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NDMSegment;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
-import org.orekit.files.ccsds.ndm.adm.apm.APMFile;
-import org.orekit.files.ccsds.ndm.adm.apm.APMParser;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;

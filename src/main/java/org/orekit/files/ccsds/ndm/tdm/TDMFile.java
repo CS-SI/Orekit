@@ -35,7 +35,7 @@ import org.orekit.files.ccsds.utils.CcsdsTimeScale;
  * @author Maxime Journot
  * @since 9.0
  */
-public class TDMFile extends NDMFile<NDMHeader, TDMMetadata, ObservationsBlock> {
+public class TDMFile extends NDMFile<NDMHeader, NDMSegment<TDMMetadata, ObservationsBlock>> {
 
     /** Simple constructor. */
     public TDMFile() {

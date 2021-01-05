@@ -37,12 +37,7 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NDMSegment;
-import org.orekit.files.ccsds.ndm.adm.aem.AEMAttitudeType;
-import org.orekit.files.ccsds.ndm.adm.aem.AEMFile;
-import org.orekit.files.ccsds.ndm.adm.aem.AEMParser;
-import org.orekit.files.ccsds.ndm.adm.aem.AEMData;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMParser.AEMRotationOrder;
-import org.orekit.files.ccsds.ndm.odm.oem.OEMParser;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
@@ -192,7 +187,7 @@ public class AEMParserTest {
         Assert.assertEquals(metadataComment, segment0.getMetadata().getComments());
         Assert.assertEquals("EME2000",       segment0.getMetadata().getRefFrameAString());
         Assert.assertEquals("SC BODY 1",     segment0.getMetadata().getRefFrameBString());
-        List<NDMSegment<AEMMetadata, AEMData>> blocks = file.getSegments();
+        List<AEMSegment> blocks = file.getSegments();
         Assert.assertEquals(1, blocks.size());
         Assert.assertEquals(IERSConventions.IERS_2010, parser.getConventions());
         Assert.assertTrue(parser.isSimpleEOP());
@@ -306,7 +301,7 @@ public class AEMParserTest {
         final String realName = getClass().getResource("/ccsds/adm/aem/AEMExample.txt").toURI().getPath();
         final String wrongName = realName + "xxxxx";
         try {
-            new OEMParser().parse(wrongName);
+            new AEMParser().parse(wrongName);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
@@ -479,10 +474,10 @@ public class AEMParserTest {
         parser.setLocalScBodyReferenceFrameA(FramesFactory.getEME2000());
         parser.setLocalScBodyReferenceFrameB(FramesFactory.getGCRF());
         final AEMFile file = parser.parse(inEntry, "AEMExample8.txt");
-        final NDMSegment<AEMMetadata, AEMData> segment0 = file.getSegments().get(0);
+        final AEMSegment segment0 = file.getSegments().get(0);
         Assert.assertEquals(FramesFactory.getEME2000(), segment0.getMetadata().getReferenceFrame());
 
-        final BoundedAttitudeProvider provider = segment0.getData().getAttitudeProvider();
+        final BoundedAttitudeProvider provider = segment0.getAttitudeProvider();
         Attitude attitude = provider.getAttitude(null, new AbsoluteDate("1996-11-28T22:08:03.555", TimeScalesFactory.getUTC()), null);
         Rotation rotation = attitude.getRotation();
         Assert.assertEquals(0.42319,  rotation.getQ1(), 0.0001);
@@ -503,11 +498,11 @@ public class AEMParserTest {
                         withSimpleEOP(true);
         parser.setLocalScBodyReferenceFrameB(FramesFactory.getGCRF());
         final AEMFile file = parser.parse(inEntry, "AEMExample9.txt");
-        final NDMSegment<AEMMetadata, AEMData> segment0 = file.getSegments().get(0);
+        final AEMSegment segment0 = file.getSegments().get(0);
         Assert.assertEquals(FramesFactory.getITRF(ITRFVersion.ITRF_93, IERSConventions.IERS_2010, true),
                             segment0.getMetadata().getReferenceFrame());
 
-        final BoundedAttitudeProvider provider = segment0.getData().getAttitudeProvider();
+        final BoundedAttitudeProvider provider = segment0.getAttitudeProvider();
         Attitude attitude = provider.getAttitude(null, new AbsoluteDate("1996-11-28T22:08:03.555", TimeScalesFactory.getUTC()), null);
         Rotation rotation = attitude.getRotation();
         Assert.assertEquals(0.42319,  rotation.getQ1(), 0.0001);

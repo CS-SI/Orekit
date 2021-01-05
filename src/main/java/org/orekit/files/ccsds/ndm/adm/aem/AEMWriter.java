@@ -28,7 +28,7 @@ import java.util.Map;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.Keyword;
-import org.orekit.files.ccsds.ndm.adm.aem.StreamingAemWriter.AEMSegment;
+import org.orekit.files.ccsds.ndm.adm.aem.StreamingAemWriter.SegmentWriter;
 import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.files.general.AttitudeEphemerisFile.SatelliteAttitudeEphemeris;
 import org.orekit.files.general.AttitudeEphemerisFile.AttitudeEphemerisSegment;
@@ -185,7 +185,7 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
             metadata.put(Keyword.INTERPOLATION_DEGREE,
                          String.valueOf(segment.getInterpolationSamples() - 1));
 
-            final AEMSegment segmentWriter = aemWriter.newSegment(metadata);
+            final SegmentWriter segmentWriter = aemWriter.newSegment(metadata);
             segmentWriter.writeMetadata();
             segmentWriter.startAttitudeBlock();
             // Loop on attitude data

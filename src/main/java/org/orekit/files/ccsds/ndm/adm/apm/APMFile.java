@@ -18,6 +18,7 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 
 import org.orekit.files.ccsds.ndm.adm.ADMFile;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
+import org.orekit.files.ccsds.ndm.adm.ADMSegment;
 
 /**
  * This class stores all the information of the Attitude Parameter Message (APM) File parsed
@@ -25,5 +26,5 @@ import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class APMFile extends ADMFile<ADMMetadata, APMData> {
+public class APMFile extends ADMFile<ADMSegment<ADMMetadata, APMData>> {
 }

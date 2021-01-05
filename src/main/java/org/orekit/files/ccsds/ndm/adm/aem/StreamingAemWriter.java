@@ -334,10 +334,10 @@ public class StreamingAemWriter {
      *                        required and how they are determined.
      * @return a new AEM segment, ready for writing.
      */
-    public AEMSegment newSegment(final Map<Keyword, String> segmentMetadata) {
+    public SegmentWriter newSegment(final Map<Keyword, String> segmentMetadata) {
         final Map<Keyword, String> meta = new LinkedHashMap<>(this.metadata);
         meta.putAll(segmentMetadata);
-        return new AEMSegment(meta);
+        return new SegmentWriter(meta);
     }
 
     /**
@@ -360,7 +360,7 @@ public class StreamingAemWriter {
     }
 
     /** A writer for a segment of an AEM. */
-    public class AEMSegment implements OrekitFixedStepHandler {
+    public class SegmentWriter implements OrekitFixedStepHandler {
 
         /** Metadata for this AEM Segment. */
         private final Map<Keyword, String> metadata;
@@ -369,7 +369,7 @@ public class StreamingAemWriter {
          * Create a new segment writer.
          * @param metadata to use when writing this segment.
          */
-        private AEMSegment(final Map<Keyword, String> metadata) {
+        private SegmentWriter(final Map<Keyword, String> metadata) {
             this.metadata = metadata;
         }
 
@@ -481,6 +481,7 @@ public class StreamingAemWriter {
                 this.metadata.putIfAbsent(Keyword.START_TIME, start);
                 this.metadata.putIfAbsent(Keyword.STOP_TIME, stop);
                 this.writeMetadata();
+                this.startAttitudeBlock();
             } catch (IOException e) {
                 throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE,
                         e.getLocalizedMessage());
@@ -514,6 +515,9 @@ public class StreamingAemWriter {
                 writeAttitudeEphemerisLine(currentState.getAttitude().getOrientation(), isFirst,
                                            attitudeType, order);
 
+                if (isLast) {
+                    endAttitudeBlock();
+                }
             } catch (IOException e) {
                 throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE,
                         e.getLocalizedMessage());

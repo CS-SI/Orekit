@@ -37,12 +37,6 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.files.ccsds.Keyword;
-import org.orekit.files.ccsds.ndm.adm.aem.AEMFile;
-import org.orekit.files.ccsds.ndm.adm.aem.AEMParser;
-import org.orekit.files.ccsds.ndm.adm.aem.StreamingAemWriter;
-import org.orekit.files.ccsds.ndm.adm.aem.AEMSatelliteEphemeris;
-import org.orekit.files.ccsds.ndm.adm.aem.AEMData;
-import org.orekit.files.ccsds.ndm.adm.aem.StreamingAemWriter.AEMSegment;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -85,8 +79,7 @@ public class StreamingAemWriterTest {
             AEMFile aemFile = parser.parse(inEntry, "AEMExample.txt");
 
             // Satellite attitude ephemeris as read from the reference file
-            AEMSatelliteEphemeris satellite = aemFile.getSatellites().values().iterator().next();
-            AEMData ephemerisBlock = satellite.getSegments().get(0);
+            AEMSegment ephemerisBlock = aemFile.getSegments().get(0);
 
             // Meta data are extracted from the reference file
             String originator   = aemFile.getHeader().getOriginator();
@@ -119,7 +112,7 @@ public class StreamingAemWriterTest {
             StringBuilder buffer = new StringBuilder();
             StreamingAemWriter writer = new StreamingAemWriter(buffer, utc, metadata);
             writer.writeHeader();
-            AEMSegment segment = writer.newSegment(segmentData);
+            StreamingAemWriter.SegmentWriter segment = writer.newSegment(segmentData);
             
             KeplerianPropagator propagator = createPropagator(ephemerisBlock.getStart(),
                                                               new InertialProvider(ephemerisBlock.getAngularCoordinates().get(0).getRotation(),
@@ -137,10 +130,10 @@ public class StreamingAemWriterTest {
             AEMFile generatedAemFile = parser.parse(reader, "buffer");
 
             // There is only one attitude ephemeris block
-            Assert.assertEquals(1, generatedAemFile.getAttitudeBlocks().size());
-            AEMData attitudeBlocks = generatedAemFile.getAttitudeBlocks().get(0);
+            Assert.assertEquals(1, generatedAemFile.getSegments().size());
+            AEMSegment attitudeBlocks = generatedAemFile.getSegments().get(0);
             // There are 7 data lines in the attitude ephemeris block
-            List<TimeStampedAngularCoordinates> ac  = attitudeBlocks.getAngularCoordinates();
+            List<? extends TimeStampedAngularCoordinates> ac  = attitudeBlocks.getAngularCoordinates();
             Assert.assertEquals(7, ac.size());
 
             // Verify
@@ -188,7 +181,7 @@ public class StreamingAemWriterTest {
         AEMParser parser = new AEMParser();
         AEMFile aemFile = parser.parse(inEntry, "AEMExample7.txt");
 
-        AEMData block = aemFile.getAttitudeBlocks().get(0);
+        AEMSegment block = aemFile.getSegments().get(0);
 
         TimeScale utc = TimeScalesFactory.getUTC();
         Map<Keyword, String> metadata = new LinkedHashMap<>();
@@ -196,7 +189,7 @@ public class StreamingAemWriterTest {
 
         StringBuilder buffer = new StringBuilder();
         StreamingAemWriter writer = new StreamingAemWriter(buffer, utc, metadata, "%.2f");
-        AEMSegment segment = writer.newSegment(segmentData);
+        StreamingAemWriter.SegmentWriter segment = writer.newSegment(segmentData);
 
         for (TimeStampedAngularCoordinates coordinate : block.getAngularCoordinates()) {
             segment.writeAttitudeEphemerisLine(coordinate, block.isFirst(), block.getAttitudeType(), block.getRotationOrder());

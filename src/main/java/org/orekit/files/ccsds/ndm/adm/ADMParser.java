@@ -46,7 +46,7 @@ import org.orekit.utils.IERSConventions;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public abstract class ADMParser<T extends NDMFile<?, ?, ?>> {
+public abstract class ADMParser<T extends NDMFile<?, ?>> {
 
     /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
     private final AbsoluteDate missionReferenceDate;
