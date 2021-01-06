@@ -490,7 +490,7 @@ public class APMParser extends ADMParser<APMFile> {
         return FastMath.toRadians(keyValue.getDoubleValue());
     }
 
-    /** Private class used to stock APM parsing info. */
+    /** Private class used to store APM parsing info. */
     private static class ParseInfo {
 
         /** APM file being read. */

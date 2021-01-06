@@ -24,7 +24,6 @@ import org.orekit.bodies.CelestialBodies;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.NDMFile;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.CenterName;
 import org.orekit.files.ccsds.utils.KeyValue;
@@ -42,11 +41,12 @@ import org.orekit.utils.IERSConventions;
  * href="https://en.wikipedia.org/wiki/Builder_pattern">builder design
  * pattern</a> and a <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
  * interface</a>.
+ * <T> type of the parsed file
  *
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public abstract class ADMParser<T extends NDMFile<?, ?>> {
+public abstract class ADMParser<T extends ADMFile<?>> {
 
     /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
     private final AbsoluteDate missionReferenceDate;

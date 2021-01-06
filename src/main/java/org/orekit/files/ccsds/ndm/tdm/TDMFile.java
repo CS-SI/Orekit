@@ -24,7 +24,7 @@ import org.orekit.files.ccsds.ndm.NDMHeader;
 import org.orekit.files.ccsds.ndm.NDMSegment;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 
-/** This class stocks all the information of the CCSDS Tracking Data Message file parsed by TDMParser or TDMXMLParser. <p>
+/** This class stores all the information of the CCSDS Tracking Data Message file parsed by TDMParser or TDMXMLParser. <p>
  * It contains the header and a list of Observations Blocks each containing
  * TDM metadata and a list of observation data lines. <p>
  * At this level the observations are not Orekit objects but custom object containing a keyword (type of observation),

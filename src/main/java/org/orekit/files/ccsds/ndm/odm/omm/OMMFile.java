@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.files.ccsds.ndm.odm.ODMMetadata;
-import org.orekit.files.ccsds.ndm.odm.OGMFile;
+import org.orekit.files.ccsds.ndm.odm.OStateData;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
@@ -37,7 +37,7 @@ import org.orekit.propagation.analytical.tle.TLE;
  * @author sports
  * @since 6.1
  */
-public class OMMFile extends OGMFile<OMMHeader, OMMMetadata, OMMData> {
+public class OMMFile extends OStateData<OMMHeader, OMMMetadata, OMMData> {
 
     /** Meta-data. */
     private final OMMMetaData metaData;

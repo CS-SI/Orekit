@@ -19,28 +19,19 @@ package org.orekit.files.ccsds.ndm.odm;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.NDMData;
 import org.orekit.files.ccsds.ndm.NDMFile;
-import org.orekit.files.ccsds.ndm.NDMHeader;
-import org.orekit.files.ccsds.ndm.NDMMetadata;
+import org.orekit.files.ccsds.ndm.NDMSegment;
 import org.orekit.time.AbsoluteDate;
 
 /**
  * The ODMFile (Orbit Data Message) class represents any of the three orbit messages used by the CCSDS,
  * i.e. the Orbit Parameter Message (OPM), the Mean-Elements Message (OMM) and the Orbit Ephemeris Message (OEM).
  * It contains the information of the message's header and configuration data (set in the parser).
- * @param <H> type of the header
- * @param <M> type of the metadata
- * @param <D> type of the data
+ * @param <S> type of the segments
  * @author sports
  * @since 6.1
  */
-public abstract class ODMFile<H extends NDMHeader, M extends NDMMetadata, D extends NDMData> extends NDMFile<H, M, D> {
-
-    /** Unique ID identifying this message from a given originator.
-     * @since 11.0
-     */
-    private String messageID;
+public abstract class ODMFile<S extends NDMSegment<?, ?>> extends NDMFile<ODMHeader, S> {
 
     /** Gravitational coefficient set by the user in the parser. */
     private double muSet;
@@ -63,28 +54,12 @@ public abstract class ODMFile<H extends NDMHeader, M extends NDMMetadata, D exte
     /** ODMFile constructor.
      * @param header file header
      */
-    protected ODMFile(final H header) {
+    protected ODMFile(final ODMHeader header) {
         super(header);
         muSet     = Double.NaN;
         muParsed  = Double.NaN;
         muCreated = Double.NaN;
         muUsed    = Double.NaN;
-    }
-
-    /** Get the message ID.
-     * @return unique (wrt originator) message ID.
-     * @since 11.0
-     */
-    public String getMessageID() {
-        return messageID;
-    }
-
-    /** Set the message ID.
-     * @param messageID unique (wrt originator) message ID
-     * @since 11.0
-     */
-    public void setMessageID(final String messageID) {
-        this.messageID = messageID;
     }
 
     /**

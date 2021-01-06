@@ -310,7 +310,7 @@ public class OMMParser extends ODMParser {
         }
     }
 
-    /** Private class used to stock OMM parsing info.
+    /** Private class used to store OMM parsing info.
      * @author sports
      */
     private static class ParseInfo {

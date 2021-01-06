@@ -368,7 +368,7 @@ public class TDMParser extends DefaultHandler {
         }
     }
 
-    /** Private class used to stock TDM parsing info.
+    /** Private class used to store TDM parsing info.
      * @author sports
      */
     private static class ParseInfo {

@@ -22,7 +22,10 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.files.ccsds.ndm.odm.OGMFile;
+import org.orekit.files.ccsds.ndm.NDMSegment;
+import org.orekit.files.ccsds.ndm.odm.ODMHeader;
+import org.orekit.files.ccsds.ndm.odm.OStateData;
+import org.orekit.files.ccsds.ndm.odm.OCommonMetadata;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
@@ -36,10 +39,7 @@ import org.orekit.utils.PVCoordinates;
  * @author sports
  * @since 6.1
  */
-public class OPMFile extends OGMFile<OPMHeader, OPMMetadata, OPMData> {
-
-    /** Meta-data. */
-    private final OPMMetadata metaData;
+public class OPMFile extends OStateData<NDMSegment<OCommonMetadata, OPMData>> {
 
     /** Position vector (m). */
     private Vector3D position;
@@ -53,18 +53,9 @@ public class OPMFile extends OGMFile<OPMHeader, OPMMetadata, OPMData> {
     /** Create a new OPM file object.
      * @param header file header
      */
-    OPMFile(final OPMHeader header) {
+    OPMFile(final ODMHeader header) {
         super(header);
-        metaData  = new OPMMetadata(this);
         maneuvers = new ArrayList<Maneuver>();
-    }
-
-    /** Get the meta data.
-     * @return meta data
-     */
-    @Override
-    public ODMMetadata getMetadata() {
-        return metaData;
     }
 
     /** Get position vector.

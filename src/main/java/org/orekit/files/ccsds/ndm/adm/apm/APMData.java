@@ -26,7 +26,7 @@ import org.orekit.files.ccsds.ndm.NDMData;
 import org.orekit.time.AbsoluteDate;
 
 /**
- * Container for Attitude Paramater Message data lines.
+ * Container for Attitude Parameter Message data lines.
  * @author Bryan Cazabonne
  * @since 10.2
  */

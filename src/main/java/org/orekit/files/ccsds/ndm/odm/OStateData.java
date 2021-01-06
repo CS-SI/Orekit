@@ -28,25 +28,17 @@ import org.hipparchus.linear.RealMatrix;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NDMData;
-import org.orekit.files.ccsds.ndm.NDMHeader;
-import org.orekit.files.ccsds.ndm.NDMMetadata;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.time.AbsoluteDate;
 
 /** This class gathers the general state data present in both OPM and OMM files.
- * <p>
- * This class does not appear in the CCSDS standard, it is only a design
- * feature of Orekit to reduce code duplication.
- * </p>
- * @param <H> type of the header
- * @param <M> type of the metadata
- * @param <D> type of the data
+ * @param <S> type of the segments
  * @author sports
  * @since 6.1
  */
-public abstract class OGMFile<H extends NDMHeader, M extends NDMMetadata, D extends NDMData> extends ODMFile<H, M, D> {
+public abstract class OStateData implements NDMData {
 
     /** Epoch of state vector and optional Keplerian elements. */
     private AbsoluteDate epoch;
@@ -115,11 +107,9 @@ public abstract class OGMFile<H extends NDMHeader, M extends NDMMetadata, D exte
     /** Covariance matrix data comments. The list contains a string for each line of comment. */
     private List<String> covarianceComment;
 
-    /** Create a new OGM file object.
-     * @param header file header
+    /** Create an empty state data set.
      */
-    protected OGMFile(final H header) {
-        super(header);
+    protected OStateData() {
         mass                     = Double.NaN;
         userDefinedParameters    = new HashMap<String, String>();
         epochComment             = Collections.emptyList();
@@ -473,10 +463,5 @@ public abstract class OGMFile<H extends NDMHeader, M extends NDMMetadata, D exte
     void setCovarianceComment(final List<String> comment) {
         covarianceComment = new ArrayList<String>(comment);
     }
-
-    /** Get the meta data.
-     * @return meta data
-     */
-    public abstract ODMMetadata getMetadata();
 
 }

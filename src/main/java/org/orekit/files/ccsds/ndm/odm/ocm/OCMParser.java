@@ -42,7 +42,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OCMParser extends ODMParser {
+public class OCMParser extends ODMParser<OCMFile> {
 
     /** Mandatory keywords. */
     private static final Keyword[] MANDATORY_KEYWORDS = {
@@ -632,7 +632,7 @@ public class OCMParser extends ODMParser {
         }
     }
 
-    /** Private class used to stock OCM parsing info.
+    /** Private class used to store OCM parsing info.
      * @author sports
      */
     private static class ParseInfo {

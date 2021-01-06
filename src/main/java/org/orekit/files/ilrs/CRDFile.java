@@ -29,7 +29,7 @@ import org.orekit.time.TimeStamped;
 import org.orekit.utils.ImmutableTimeStampedCache;
 
 /**
- * This class stocks all the information of the Consolidated laser ranging Data Format (CRD) parsed
+ * This class stores all the information of the Consolidated laser ranging Data Format (CRD) parsed
  * by CRDParser. It contains the header and a list of data records.
  * @author Bryan Cazabonne
  * @since 10.3

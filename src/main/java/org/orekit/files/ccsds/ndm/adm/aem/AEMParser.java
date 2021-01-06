@@ -506,7 +506,7 @@ public class AEMParser extends ADMParser<AEMFile> implements AttitudeEphemerisFi
         return false;
     }
 
-    /** Private class used to stock AEM parsing info. */
+    /** Private class used to store AEM parsing info. */
     private static class ParseInfo {
 
         /** Metadata for current observation block. */

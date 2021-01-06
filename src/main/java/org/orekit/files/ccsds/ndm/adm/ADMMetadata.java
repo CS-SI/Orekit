@@ -16,14 +16,9 @@
  */
 package org.orekit.files.ccsds.ndm.adm;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NDMMetadata;
 import org.orekit.utils.IERSConventions;
 
@@ -32,9 +27,6 @@ import org.orekit.utils.IERSConventions;
  * @since 10.2
  */
 public class ADMMetadata extends NDMMetadata {
-
-    /** Pattern for international designator. */
-    private static final Pattern INTERNATIONAL_DESIGNATOR = Pattern.compile("(\\p{Digit}{4})-(\\p{Digit}{3})(\\p{Upper}{1,3})");
 
     /** Spacecraft name for which the attitude data are provided. */
     private String objectName;
@@ -97,33 +89,21 @@ public class ADMMetadata extends NDMMetadata {
      * @return launch year
      */
     public int getLaunchYear() {
-        final Matcher matcher = INTERNATIONAL_DESIGNATOR.matcher(objectID);
-        if (matcher.matches()) {
-            return Integer.parseInt(matcher.group(1));
-        }
-        throw new OrekitException(OrekitMessages.NOT_VALID_INTERNATIONAL_DESIGNATOR, objectID);
+        return getLaunchYear(objectID);
     }
 
     /** Get the launch number.
      * @return launch number
      */
     public int getLaunchNumber() {
-        final Matcher matcher = INTERNATIONAL_DESIGNATOR.matcher(objectID);
-        if (matcher.matches()) {
-            return Integer.parseInt(matcher.group(2));
-        }
-        throw new OrekitException(OrekitMessages.NOT_VALID_INTERNATIONAL_DESIGNATOR, objectID);
+        return getLaunchNumber(objectID);
     }
 
     /** Get the piece of launch.
      * @return piece of launch
      */
     public String getLaunchPiece() {
-        final Matcher matcher = INTERNATIONAL_DESIGNATOR.matcher(objectID);
-        if (matcher.matches()) {
-            return matcher.group(3);
-        }
-        throw new OrekitException(OrekitMessages.NOT_VALID_INTERNATIONAL_DESIGNATOR, objectID);
+        return getLaunchPiece(objectID);
     }
 
     /** Get the origin of reference frame.

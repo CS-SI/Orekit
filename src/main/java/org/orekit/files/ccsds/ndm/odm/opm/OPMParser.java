@@ -328,7 +328,7 @@ public class OPMParser extends ODMParser {
         }
     }
 
-    /** Private class used to stock OPM parsing info.
+    /** Private class used to store OPM parsing info.
      * @author sports
      */
     private static class ParseInfo {

@@ -28,7 +28,7 @@ import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.general.AttitudeEphemerisFile;
 
 /**
- * This class stocks all the information of the Attitude Ephemeris Message (AEM) File parsed
+ * This class stores all the information of the Attitude Ephemeris Message (AEM) File parsed
  * by AEMParser. It contains the header and a list of Attitude Ephemerides Blocks each
  * containing metadata and a list of attitude ephemerides data lines.
  * @author Bryan Cazabonne

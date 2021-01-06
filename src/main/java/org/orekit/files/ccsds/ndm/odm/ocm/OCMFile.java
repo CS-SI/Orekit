@@ -21,8 +21,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.orekit.files.ccsds.ndm.NDMSegment;
+import org.orekit.files.ccsds.ndm.odm.ODMFile;
 import org.orekit.files.ccsds.ndm.odm.ODMMetadata;
-import org.orekit.files.ccsds.ndm.odm.OGMFile;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CCSDSUnit;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
@@ -40,7 +41,7 @@ import org.orekit.utils.Constants;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OCMFile extends OGMFile {
+public class OCMFile extends ODMFile<NDMSegment<OCMMetadata, OCMData>> {
 
     /** Meta-data. */
     private final OCMMetaData metaData;

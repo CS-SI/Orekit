@@ -20,9 +20,12 @@ package org.orekit.files.ccsds.ndm;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.IERSConventions;
@@ -32,6 +35,9 @@ import org.orekit.utils.IERSConventions;
  * @since 11.0
  */
 public class NDMMetadata {
+
+    /** Pattern for international designator. */
+    private static final Pattern INTERNATIONAL_DESIGNATOR = Pattern.compile("(\\p{Digit}{4})-(\\p{Digit}{3})(\\p{Upper}{1,3})");
 
     /** IERS conventions to use. */
     private final IERSConventions conventions;
@@ -98,6 +104,42 @@ public class NDMMetadata {
      */
     public void addComment(final String comment) {
         this.comments.add(comment);
+    }
+
+    /** Get the launch year.
+     * @param objectID object identifier
+     * @return launch year
+     */
+    protected int getLaunchYear(final String objectID) {
+        final Matcher matcher = INTERNATIONAL_DESIGNATOR.matcher(objectID);
+        if (matcher.matches()) {
+            return Integer.parseInt(matcher.group(1));
+        }
+        throw new OrekitException(OrekitMessages.NOT_VALID_INTERNATIONAL_DESIGNATOR, objectID);
+    }
+
+    /** Get the launch number.
+     * @param objectID object identifier
+     * @return launch number
+     */
+    protected int getLaunchNumber(final String objectID) {
+        final Matcher matcher = INTERNATIONAL_DESIGNATOR.matcher(objectID);
+        if (matcher.matches()) {
+            return Integer.parseInt(matcher.group(2));
+        }
+        throw new OrekitException(OrekitMessages.NOT_VALID_INTERNATIONAL_DESIGNATOR, objectID);
+    }
+
+    /** Get the piece of launch.
+     * @param objectID object identifier
+     * @return piece of launch
+     */
+    protected String getLaunchPiece(final String objectID) {
+        final Matcher matcher = INTERNATIONAL_DESIGNATOR.matcher(objectID);
+        if (matcher.matches()) {
+            return matcher.group(3);
+        }
+        throw new OrekitException(OrekitMessages.NOT_VALID_INTERNATIONAL_DESIGNATOR, objectID);
     }
 
 }

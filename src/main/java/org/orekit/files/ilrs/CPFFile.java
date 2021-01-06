@@ -32,7 +32,7 @@ import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
- * This class stocks all the information of the Consolidated laser ranging Prediction File (CPF) parsed
+ * This class stores all the information of the Consolidated laser ranging Prediction File (CPF) parsed
  * by CPFParser. It contains the header and a list of ephemeris entry.
  * @author Bryan Cazabonne
  * @since 10.3

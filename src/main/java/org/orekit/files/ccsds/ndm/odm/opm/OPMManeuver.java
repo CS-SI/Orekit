@@ -1,0 +1,163 @@
+/* Copyright 2002-2020 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.orekit.files.ccsds.ndm.odm.opm;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.frames.Frame;
+import org.orekit.frames.LOFType;
+import org.orekit.time.AbsoluteDate;
+
+/** Maneuver in an OPM file.
+ * @author sports
+ * @since 6.1
+ */
+public class OPMManeuver {
+
+    /** Epoch ignition. */
+    private AbsoluteDate epochIgnition;
+
+    /** Coordinate system for velocity increment vector, for Local Orbital Frames. */
+    private LOFType refLofType;
+
+    /** Coordinate system for velocity increment vector, for absolute frames. */
+    private Frame refFrame;
+
+    /** Duration (value is 0 for impulsive maneuver). */
+    private double duration;
+
+    /** Mass change during maneuver (value is < 0). */
+    private double deltaMass;
+
+    /** Velocity increment. */
+    private Vector3D dV;
+
+    /** Maneuvers data comment, each string in the list corresponds to one line of comment. */
+    private List<String> comments;
+
+    /** Simple constructor.
+     */
+    public OPMManeuver() {
+        this.dV       = Vector3D.ZERO;
+        this.comments = new ArrayList<>();
+    }
+
+    /** Get epoch ignition.
+     * @return epoch ignition
+     */
+    public AbsoluteDate getEpochIgnition() {
+        return epochIgnition;
+    }
+
+    /** Set epoch ignition.
+     * @param epochIgnition epoch ignition
+     */
+    void setEpochIgnition(final AbsoluteDate epochIgnition) {
+        this.epochIgnition = epochIgnition;
+    }
+
+    /** Get coordinate system for velocity increment vector, for Local Orbital Frames.
+     * @return coordinate system for velocity increment vector, for Local Orbital Frames
+     */
+    public LOFType getRefLofType() {
+        return refLofType;
+    }
+
+    /** Set coordinate system for velocity increment vector, for Local Orbital Frames.
+     * @param refLofType coordinate system for velocity increment vector, for Local Orbital Frames
+     */
+    public void setRefLofType(final LOFType refLofType) {
+        this.refLofType = refLofType;
+        this.refFrame   = null;
+    }
+
+    /** Get Coordinate system for velocity increment vector, for absolute frames.
+     * @return coordinate system for velocity increment vector, for absolute frames
+     */
+    public Frame getRefFrame() {
+        return refFrame;
+    }
+
+    /** Set Coordinate system for velocity increment vector, for absolute frames.
+     * @param refFrame coordinate system for velocity increment vector, for absolute frames
+     */
+    public void setRefFrame(final Frame refFrame) {
+        this.refLofType = null;
+        this.refFrame   = refFrame;
+    }
+
+    /** Get duration (value is 0 for impulsive maneuver).
+     * @return duration (value is 0 for impulsive maneuver)
+     */
+    public double getDuration() {
+        return duration;
+    }
+
+    /** Set duration (value is 0 for impulsive maneuver).
+     * @param duration duration (value is 0 for impulsive maneuver)
+     */
+    public void setDuration(final double duration) {
+        this.duration = duration;
+    }
+
+    /** Get mass change during maneuver (value is &lt; 0).
+     * @return mass change during maneuver (value is &lt; 0)
+     */
+    public double getDeltaMass() {
+        return deltaMass;
+    }
+
+    /** Set mass change during maneuver (value is &lt; 0).
+     * @param deltaMass mass change during maneuver (value is &lt; 0)
+     */
+    public void setDeltaMass(final double deltaMass) {
+        this.deltaMass = deltaMass;
+    }
+
+    /** Get velocity increment.
+     * @return velocity increment
+     */
+    public Vector3D getDV() {
+        return dV;
+    }
+
+    /** Set velocity increment.
+     * @param dV velocity increment
+     */
+    public void setdV(final Vector3D dV) {
+        this.dV = dV;
+    }
+
+    /** Get the maneuvers data comment, each string in the list corresponds to one line of comment.
+     * @return maneuvers data comment, each string in the list corresponds to one line of comment
+     */
+    public List<String> getComment() {
+        return Collections.unmodifiableList(comments);
+    }
+
+    /** Add a maneuver comment.
+     * @param comment comment to add
+     */
+    public void addComment(final String comment) {
+        comments.add(comment);
+    }
+
+}

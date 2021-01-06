@@ -49,7 +49,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author sports
  * @since 6.1
  */
-public class OEMParser extends ODMParser implements EphemerisFileParser {
+public class OEMParser extends ODMParser<OEMFile> implements EphemerisFileParser {
 
     /** Mandatory keywords.
      * @since 11.0
@@ -498,7 +498,7 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
         }
     }
 
-    /** Private class used to stock OEM parsing info.
+    /** Private class used to store OEM parsing info.
      * @author sports
      */
     private static class ParseInfo {
