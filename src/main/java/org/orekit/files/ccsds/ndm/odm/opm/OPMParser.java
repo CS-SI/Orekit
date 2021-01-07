@@ -43,7 +43,7 @@ import org.orekit.utils.IERSConventions;
  * @author sports
  * @since 6.1
  */
-public class OPMParser extends OStateParser<OPMFile> {
+public class OPMParser extends OStateParser<OPMFile, OPMParser> {
 
     /** Mandatory keywords.
      * @since 10.1
@@ -156,18 +156,6 @@ public class OPMParser extends OStateParser<OPMFile> {
 
     /** {@inheritDoc} */
     @Override
-    public OPMFile parse(final String fileName) {
-        return (OPMFile) super.parse(fileName);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public OPMFile parse(final InputStream stream) {
-        return (OPMFile) super.parse(stream);
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public OPMFile parse(final InputStream stream, final String fileName) {
 
         // declare the mandatory keywords as expected
@@ -181,12 +169,8 @@ public class OPMParser extends OStateParser<OPMFile> {
             // initialize internal data structures
             final ParseInfo pi = new ParseInfo(getConventions(), getDataContext());
             pi.fileName = fileName;
-
-            // set the additional data that has been configured prior the parsing by the user.
-            pi.file.setConventions(getConventions());
-            pi.file.setDataContext(getDataContext());
-
             pi.parsingHeader = true;
+
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 ++pi.lineNumber;
                 if (line.trim().length() == 0) {
@@ -390,11 +374,13 @@ public class OPMParser extends OStateParser<OPMFile> {
         private OPMManeuver maneuver;
 
         /** Create a new {@link ParseInfo} object.
-            * @param conventions IERS conventions to use
-            * @param dataContext data context to use
+         * @param conventions IERS conventions to use
+         * @param dataContext data context to use
          */
         protected ParseInfo(final IERSConventions conventions, final DataContext dataContext) {
             file            = new OPMFile();
+            file.setConventions(conventions);
+            file.setDataContext(dataContext);
             metadata        = new OCommonMetadata(conventions, dataContext);
             data            = new OPMData();
             parsingHeader   = false;

@@ -31,10 +31,11 @@ import org.orekit.utils.IERSConventions;
 
 /** Common parser for Orbit Parameter/Ephemeris/Mean Message files.
  * @param <T> type of the ODM file
+ * @param <P> type of the parser
  * @author Luc Maisonobe
  * @since 11.0
  */
-public abstract class OCommonParser<T extends ODMFile<?>> extends ODMParser<T> {
+public abstract class OCommonParser<T extends ODMFile<?>, P extends ODMParser<T, ?>> extends ODMParser<T, P> {
 
     /** Pattern for dash. */
     private static final Pattern DASH = Pattern.compile("-");
@@ -73,7 +74,7 @@ public abstract class OCommonParser<T extends ODMFile<?>> extends ODMParser<T> {
      * @return a new instance, with mission reference date replaced
      * @see #getMissionReferenceDate()
      */
-    public OCommonParser<T> withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
+    public P withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
         return create(getConventions(), isSimpleEOP(), getDataContext(), newMissionReferenceDate, muSet);
     }
 
@@ -90,13 +91,13 @@ public abstract class OCommonParser<T extends ODMFile<?>> extends ODMParser<T> {
      * @return a new instance, with gravitational coefficient value replaced
      * @see #getMu()
      */
-    public OCommonParser<T> withMu(final double newMu) {
+    public P withMu(final double newMu) {
         return create(getConventions(), isSimpleEOP(), getDataContext(), missionReferenceDate, newMu);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected OCommonParser<T> create(final IERSConventions newConventions,
+    protected P create(final IERSConventions newConventions,
                                       final boolean newSimpleEOP,
                                       final DataContext newDataContext) {
         return create(newConventions, newSimpleEOP, newDataContext, missionReferenceDate, muSet);
@@ -110,11 +111,11 @@ public abstract class OCommonParser<T extends ODMFile<?>> extends ODMParser<T> {
      * @param newMu gravitational coefficient to use while parsing
      * @return a new instance with changed parameters
      */
-    protected abstract OCommonParser<T> create(IERSConventions newConventions,
-                                               boolean newSimpleEOP,
-                                               DataContext newDataContext,
-                                               AbsoluteDate newMissionReferenceDate,
-                                               double newMu);
+    protected abstract P create(IERSConventions newConventions,
+                               boolean newSimpleEOP,
+                               DataContext newDataContext,
+                               AbsoluteDate newMissionReferenceDate,
+                               double newMu);
 
     /** Parse a meta-data key = value entry.
      * @param keyValue key = value pair

@@ -31,8 +31,9 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.Keyword;
-import org.orekit.files.ccsds.ndm.odm.ODMMetadata;
-import org.orekit.files.ccsds.ndm.odm.ODMParser;
+import org.orekit.files.ccsds.ndm.NDMSegment;
+import org.orekit.files.ccsds.ndm.odm.OCommonMetadata;
+import org.orekit.files.ccsds.ndm.odm.OStateParser;
 import org.orekit.files.ccsds.utils.KeyValue;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
@@ -41,7 +42,7 @@ import org.orekit.utils.IERSConventions;
  * @author sports
  * @since 6.1
  */
-public class OMMParser extends ODMParser {
+public class OMMParser extends OStateParser<OMMFile, OMMParser> {
 
     /** Mandatory keywords.
      * @since 10.1
@@ -138,62 +139,41 @@ public class OMMParser extends ODMParser {
      * @since 10.1
      */
     public OMMParser(final DataContext dataContext) {
-        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, dataContext);
+        this(null, true, dataContext, AbsoluteDate.FUTURE_INFINITY, Double.NaN);
     }
 
     /** Complete constructor.
-     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
-     * @param mu gravitational coefficient
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
+     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * @param mu gravitational coefficient
      */
-    private OMMParser(final AbsoluteDate missionReferenceDate, final double mu,
-                      final IERSConventions conventions, final boolean simpleEOP,
-                      final DataContext dataContext) {
-        super(missionReferenceDate, mu, conventions, simpleEOP, dataContext);
+    private OMMParser(final IERSConventions conventions, final boolean simpleEOP,
+                      final DataContext dataContext, final AbsoluteDate missionReferenceDate,
+                      final double mu) {
+        super(conventions, simpleEOP, dataContext, missionReferenceDate, mu);
     }
 
     /** {@inheritDoc} */
     @Override
-    public OMMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
-        return new OMMParser(newMissionReferenceDate, getMu(), getConventions(), isSimpleEOP(), getDataContext());
+    protected OMMParser create(final IERSConventions newConventions,
+                               final boolean newSimpleEOP,
+                               final DataContext newDataContext,
+                               final AbsoluteDate newMissionReferenceDate,
+                               final double newMu) {
+        return new OMMParser(newConventions, newSimpleEOP, newDataContext, newMissionReferenceDate, newMu);
     }
 
     /** {@inheritDoc} */
     @Override
-    public OMMParser withMu(final double newMu) {
-        return new OMMParser(getMissionReferenceDate(), newMu, getConventions(), isSimpleEOP(), getDataContext());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public OMMParser withConventions(final IERSConventions newConventions) {
-        return new OMMParser(getMissionReferenceDate(), getMu(), newConventions, isSimpleEOP(), getDataContext());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public OMMParser withSimpleEOP(final boolean newSimpleEOP) {
-        return new OMMParser(getMissionReferenceDate(), getMu(), getConventions(), newSimpleEOP, getDataContext());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public OMMParser withDataContext(final DataContext newDataContext) {
-        return new OMMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(), newDataContext);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public OMMFile parse(final String fileName) {
-        return (OMMFile) super.parse(fileName);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public OMMFile parse(final InputStream stream) {
-        return (OMMFile) super.parse(stream);
+    protected boolean parseMetaDataEntry(final KeyValue keyValue, final OCommonMetadata metadata) {
+        if (keyValue.getKeyword() == Keyword.MEAN_ELEMENT_THEORY) {
+            ((OMMMetadata) metadata).setMeanElementTheory(keyValue.getValue());
+            return true;
+        } else {
+            return super.parseMetaDataEntry(keyValue, metadata);
+        }
     }
 
     /** {@inheritDoc} */
@@ -209,15 +189,9 @@ public class OMMParser extends ODMParser {
              BufferedReader reader = new BufferedReader(isr)) {
 
             // initialize internal data structures
-            final ParseInfo pi = new ParseInfo();
+            final ParseInfo pi = new ParseInfo(getConventions(), getDataContext());
             pi.fileName = fileName;
-            final OMMFile file = pi.file;
-
-            // set the additional data that has been configured prior the parsing by the user.
-            pi.file.setMissionReferenceDate(getMissionReferenceDate());
-            pi.file.setMuSet(getMu());
-            pi.file.setConventions(getConventions());
-            pi.file.setDataContext(getDataContext());
+            pi.parsingHeader = true;
 
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 ++pi.lineNumber;
@@ -232,57 +206,81 @@ public class OMMParser extends ODMParser {
                 declareFound(pi.keyValue.getKeyword());
 
                 switch (pi.keyValue.getKeyword()) {
+
+                    case COMMENT:
+                        if (pi.file.getHeader().getCreationDate() == null) {
+                            pi.file.getHeader().addComment(pi.keyValue.getValue());
+                        } else if (pi.metadata.getObjectName() == null) {
+                            pi.metadata.addComment(pi.keyValue.getValue());
+                        } else {
+                            pi.commentTmp.add(pi.keyValue.getValue());
+                        }
+                        break;
+
                     case CCSDS_OMM_VERS:
-                        file.setFormatVersion(pi.keyValue.getDoubleValue());
+                        pi.file.getHeader().setFormatVersion(pi.keyValue.getDoubleValue());
                         break;
 
                     case MEAN_MOTION:
                         // as we have found mean motion, we don't expect semi majar axis anymore
                         declareFound(Keyword.SEMI_MAJOR_AXIS);
-                        file.setMeanMotion(pi.keyValue.getDoubleValue() * FastMath.PI / 43200.0);
+                        pi.data.setMeanMotion(pi.keyValue.getDoubleValue() * FastMath.PI / 43200.0);
                         break;
 
                     case EPHEMERIS_TYPE:
-                        file.setTLERelatedParametersComment(pi.commentTmp);
+                        pi.data.setTLERelatedParametersComment(pi.commentTmp);
                         pi.commentTmp.clear();
-                        file.setEphemerisType(Integer.parseInt(pi.keyValue.getValue()));
+                        pi.data.setEphemerisType(Integer.parseInt(pi.keyValue.getValue()));
                         break;
 
                     case CLASSIFICATION_TYPE:
-                        file.setClassificationType(pi.keyValue.getValue().charAt(0));
+                        pi.data.setClassificationType(pi.keyValue.getValue().charAt(0));
                         break;
 
                     case NORAD_CAT_ID:
-                        file.setNoradID(Integer.parseInt(pi.keyValue.getValue()));
+                        pi.data.setNoradID(Integer.parseInt(pi.keyValue.getValue()));
                         break;
 
                     case ELEMENT_SET_NO:
-                        file.setElementSetNo(pi.keyValue.getValue());
+                        pi.data.setElementSetNo(pi.keyValue.getValue());
                         break;
 
                     case REV_AT_EPOCH:
-                        file.setRevAtEpoch(Integer.parseInt(pi.keyValue.getValue()));
+                        pi.data.setRevAtEpoch(Integer.parseInt(pi.keyValue.getValue()));
                         break;
 
                     case BSTAR:
-                        file.setbStar(pi.keyValue.getDoubleValue());
+                        pi.data.setbStar(pi.keyValue.getDoubleValue());
                         break;
 
                     case MEAN_MOTION_DOT:
-                        file.setMeanMotionDot(pi.keyValue.getDoubleValue() * FastMath.PI / 1.86624e9);
+                        pi.data.setMeanMotionDot(pi.keyValue.getDoubleValue() * FastMath.PI / 1.86624e9);
                         break;
 
                     case MEAN_MOTION_DDOT:
-                        file.setMeanMotionDotDot(pi.keyValue.getDoubleValue() *
-                                                 FastMath.PI / 5.3747712e13);
+                        pi.data.setMeanMotionDotDot(pi.keyValue.getDoubleValue() *
+                                                    FastMath.PI / 5.3747712e13);
                         break;
 
                     default:
-                        boolean parsed = false;
-                        parsed = parsed || parseComment(pi.keyValue, pi.commentTmp);
-                        parsed = parsed || parseHeaderEntry(pi.keyValue, file, pi.commentTmp);
-                        parsed = parsed || parseMetaDataEntry(pi.keyValue, file.getMetadata(), pi.commentTmp);
-                        parsed = parsed || parseGeneralStateDataEntry(pi.keyValue, file, pi.commentTmp);
+                        boolean parsed = false;;
+                        if (pi.parsingHeader) {
+                            parsed = parseHeaderEntry(pi.keyValue, pi.file);
+                            if (!parsed) {
+                                pi.parsingHeader   = false;
+                                pi.parsingMetaData = true;
+                            }
+                        }
+                        if (pi.parsingMetaData) {
+                            parsed = parseMetaDataEntry(pi.keyValue, pi.metadata);
+                            if (!parsed) {
+                                pi.parsingMetaData = false;
+                                pi.parsingData     = true;
+                            }
+                        }
+                        if (pi.parsingData) {
+                            parsed = parseGeneralStateDataEntry(pi.keyValue, pi.metadata, pi.data, pi.commentTmp);
+                        }
                         if (!parsed) {
                             throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
                         }
@@ -292,21 +290,12 @@ public class OMMParser extends ODMParser {
             // check all mandatory keywords have been found
             checkExpected(fileName);
 
-            return file;
+            pi.file.addSegment(new NDMSegment<>(pi.metadata, pi.data));
+            pi.file.setMu(getSelectedMu());
+
+            return pi.file;
         } catch (IOException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected boolean parseMetaDataEntry(final KeyValue keyValue,
-                                         final ODMMetadata metaData, final List<String> comment) {
-        if (keyValue.getKeyword() == Keyword.MEAN_ELEMENT_THEORY) {
-            ((OMMFile.OMMMetaData) metaData).setMeanElementTheory(keyValue.getValue());
-            return true;
-        } else {
-            return super.parseMetaDataEntry(keyValue, metaData, comment);
         }
     }
 
@@ -317,6 +306,21 @@ public class OMMParser extends ODMParser {
 
         /** OMM file being read. */
         private OMMFile file;
+
+        /** OMM metadata being read. */
+        private OMMMetadata metadata;
+
+        /** OMM data being read. */
+        private OMMData data;
+
+        /** Boolean indicating if the parser is currently parsing a header block. */
+        private boolean parsingHeader;
+
+        /** Boolean indicating if the parser is currently parsing a meta-data block. */
+        private boolean parsingMetaData;
+
+        /** Boolean indicating if the parser is currently parsing a data block. */
+        private boolean parsingData;
 
         /** Name of the file. */
         private String fileName;
@@ -330,10 +334,20 @@ public class OMMParser extends ODMParser {
         /** Stored comments. */
         private List<String> commentTmp;
 
-        /** Create a new {@link ParseInfo} object. */
-        protected ParseInfo() {
+        /** Create a new {@link ParseInfo} object.
+         * @param conventions IERS conventions to use
+         * @param dataContext data context to use
+         */
+        protected ParseInfo(final IERSConventions conventions, final DataContext dataContext) {
+            file            = new OMMFile();
+            file.setConventions(conventions);
+            file.setDataContext(dataContext);
+            metadata        = new OMMMetadata(conventions, dataContext);
+            data            = new OMMData();
+            parsingHeader   = false;
+            parsingMetaData = false;
+            parsingData     = false;
             lineNumber = 0;
-            file = new OMMFile();
             commentTmp = new ArrayList<String>();
         }
     }

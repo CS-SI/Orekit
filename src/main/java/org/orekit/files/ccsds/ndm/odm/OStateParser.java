@@ -28,10 +28,11 @@ import org.orekit.utils.IERSConventions;
 
 /** Parser for general state data present in both OPM and OMM files.
  * @param <T> type of the ODM file
+ * @param <P> type of the parser
  * @author Luc Maisonobe
  * @since 11.0
  */
-public abstract class OStateParser<T extends ODMFile<?>> extends OCommonParser<T> {
+public abstract class OStateParser<T extends ODMFile<?>, P extends ODMParser<T, ?>> extends OCommonParser<T, P> {
 
     /** Complete constructor.
      * @param conventions IERS Conventions

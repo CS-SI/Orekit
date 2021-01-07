@@ -41,12 +41,13 @@ import org.orekit.utils.IERSConventions;
  * href="https://en.wikipedia.org/wiki/Builder_pattern">builder design
  * pattern</a> and a <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
  * interface</a>.
- * <T> type of the parsed file
+ * @param <T> type of the parsed file
+ * @param <P> type of the parser
  *
  * @author Luc Maisonobe
  * @since 6.1
  */
-public abstract class ODMParser<T extends ODMFile<?>> {
+public abstract class ODMParser<T extends ODMFile<?>, P extends ODMParser<T, ?>> {
 
     /** IERS Conventions. */
     private final  IERSConventions conventions;
@@ -81,7 +82,7 @@ public abstract class ODMParser<T extends ODMFile<?>> {
      * @return a new instance, with IERS conventions replaced
      * @see #getConventions()
      */
-    public ODMParser<T> withConventions(final IERSConventions newConventions) {
+    public P withConventions(final IERSConventions newConventions) {
         return create(newConventions, simpleEOP, dataContext);
     }
 
@@ -98,7 +99,7 @@ public abstract class ODMParser<T extends ODMFile<?>> {
      * @return a new instance, with EOP interpolation method replaced
      * @see #isSimpleEOP()
      */
-    public ODMParser<T> withSimpleEOP(final boolean newSimpleEOP) {
+    public P withSimpleEOP(final boolean newSimpleEOP) {
         return create(conventions, newSimpleEOP, dataContext);
     }
 
@@ -125,7 +126,7 @@ public abstract class ODMParser<T extends ODMFile<?>> {
      * @param newDataContext used for frames, time scales, and celestial bodies.
      * @return a new instance with the data context replaced.
      */
-    public ODMParser<T> withDataContext(final DataContext newDataContext) {
+    public P withDataContext(final DataContext newDataContext) {
         return create(getConventions(), isSimpleEOP(), newDataContext);
     }
 
@@ -136,9 +137,9 @@ public abstract class ODMParser<T extends ODMFile<?>> {
      * @return a new instance with changed parameters
      * @since 11.0
      */
-    protected abstract ODMParser<T> create(IERSConventions newConventions,
-                                           boolean newSimpleEOP,
-                                           DataContext newDataContext);
+    protected abstract P create(IERSConventions newConventions,
+                                boolean newSimpleEOP,
+                                DataContext newDataContext);
 
     /** Parse a CCSDS Orbit Data Message.
      * @param fileName name of the file containing the message
