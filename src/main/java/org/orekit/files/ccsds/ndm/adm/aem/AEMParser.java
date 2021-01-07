@@ -47,7 +47,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class AEMParser extends ADMParser<AEMFile> implements AttitudeEphemerisFileParser {
+public class AEMParser extends ADMParser<AEMFile, AEMParser> implements AttitudeEphemerisFileParser {
 
     /** Pattern for dash. */
     private static final Pattern DASH = Pattern.compile("-");
@@ -145,54 +145,52 @@ public class AEMParser extends ADMParser<AEMFile> implements AttitudeEphemerisFi
      * @see #withDataContext(DataContext)
      */
     public AEMParser(final DataContext dataContext) {
-        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, 1, dataContext);
+        this(null, true, dataContext, AbsoluteDate.FUTURE_INFINITY, Double.NaN, 1);
     }
 
     /**
      * Complete constructor.
-     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
-     * @param mu gravitational coefficient
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param interpolationDegree default interpolation degree
      * @param dataContext used to retrieve frames, time scales, etc.
+     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * @param mu gravitational coefficient
+     * @param interpolationDegree default interpolation degree
      */
-    private AEMParser(final AbsoluteDate missionReferenceDate, final double mu,
-                      final IERSConventions conventions, final boolean simpleEOP,
-                      final int interpolationDegree, final DataContext dataContext) {
-        super(missionReferenceDate, mu, conventions, simpleEOP, dataContext);
+    private AEMParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
+                      final AbsoluteDate missionReferenceDate, final double mu,
+                      final int interpolationDegree) {
+        super(conventions, simpleEOP, dataContext, missionReferenceDate, mu);
         this.interpolationDegree = interpolationDegree;
     }
 
     /** {@inheritDoc} */
-    public AEMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
-        return new AEMParser(newMissionReferenceDate, getMu(), getConventions(), isSimpleEOP(),
-                             getInterpolationDegree(), getDataContext());
-    }
-
-    /** {@inheritDoc} */
-    public AEMParser withMu(final double newMu) {
-        return new AEMParser(getMissionReferenceDate(), newMu, getConventions(), isSimpleEOP(),
-                             getInterpolationDegree(), getDataContext());
-    }
-
-    /** {@inheritDoc} */
-    public AEMParser withConventions(final IERSConventions newConventions) {
-        return new AEMParser(getMissionReferenceDate(), getMu(), newConventions, isSimpleEOP(),
-                             getInterpolationDegree(), getDataContext());
-    }
-
-    /** {@inheritDoc} */
-    public AEMParser withSimpleEOP(final boolean newSimpleEOP) {
-        return new AEMParser(getMissionReferenceDate(), getMu(), getConventions(), newSimpleEOP,
-                             getInterpolationDegree(), getDataContext());
-    }
-
-    /** {@inheritDoc} */
     @Override
-    public AEMParser withDataContext(final DataContext dataContext) {
-        return new AEMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
-                             getInterpolationDegree(), dataContext);
+    protected AEMParser create(final IERSConventions newConventions,
+                               final boolean newSimpleEOP,
+                               final DataContext newDataContext,
+                               final AbsoluteDate newMissionReferenceDate,
+                               final double newMu) {
+        return create(newConventions, newSimpleEOP, newDataContext, newMissionReferenceDate, newMu, interpolationDegree);
+    }
+
+    /** Build a new instance.
+     * @param newConventions IERS conventions to use while parsing
+     * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
+     * @param newDataContext data context used for frames, time scales, and celestial bodies
+     * @param newMissionReferenceDate mission reference date to use while parsing
+     * @param newMu gravitational coefficient to use while parsing
+     * @param newInterpolationdegree default interpolation degree
+     * @return a new instance with changed parameters
+     * @since 11.0
+     */
+    protected AEMParser create(final IERSConventions newConventions,
+                               final boolean newSimpleEOP,
+                               final DataContext newDataContext,
+                               final AbsoluteDate newMissionReferenceDate,
+                               final double newMu,
+                               final int newInterpolationdegree) {
+        return new AEMParser(newConventions, newSimpleEOP, newDataContext, newMissionReferenceDate, newMu, newInterpolationdegree);
     }
 
     /** Set default interpolation degree.
@@ -207,8 +205,8 @@ public class AEMParser extends ADMParser<AEMFile> implements AttitudeEphemerisFi
      * @since 10.3
      */
     public AEMParser withInterpolationDegree(final int newInterpolationDegree) {
-        return new AEMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
-                             newInterpolationDegree, getDataContext());
+        return new AEMParser(getConventions(), isSimpleEOP(), getDataContext(), getMissionReferenceDate(),
+                             getMu(), newInterpolationDegree);
     }
 
     /**
@@ -250,18 +248,6 @@ public class AEMParser extends ADMParser<AEMFile> implements AttitudeEphemerisFi
      */
     public int getInterpolationDegree() {
         return interpolationDegree;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public AEMFile parse(final String fileName) {
-        return (AEMFile) super.parse(fileName);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public AEMFile parse(final InputStream stream) {
-        return (AEMFile) super.parse(stream);
     }
 
     /** {@inheritDoc} */

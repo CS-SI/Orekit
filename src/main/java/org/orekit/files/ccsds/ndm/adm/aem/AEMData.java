@@ -58,7 +58,7 @@ public class AEMData implements NDMData {
      * @return unmodifiable vie of the data points
      */
     public List<TimeStampedAngularCoordinates> getAngularCoordinates() {
-        return Collections.unmodifiableList(this.attitudeDataLines);
+        return Collections.unmodifiableList(attitudeDataLines);
     }
 
     /** Get the derivatives available in the block.
@@ -68,11 +68,8 @@ public class AEMData implements NDMData {
         return angularDerivativesFilter;
     }
 
-    /**
-     * Update the value of {@link #angularDerivativesFilter}.
-     *
-     * @param pointAngularDerivativesFilter enumerate for selecting which derivatives to use in
-     *                                      attitude data.
+    /** Update the {@link #getAvailableDerivatives() available derivatives}.
+     * @param pointAngularDerivativesFilter enumerate for selecting which derivatives to use in attitude data.
      */
     void updateAngularDerivativesFilter(final AngularDerivativesFilter pointAngularDerivativesFilter) {
         this.angularDerivativesFilter = pointAngularDerivativesFilter;

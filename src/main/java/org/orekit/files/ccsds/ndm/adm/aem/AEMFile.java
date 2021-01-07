@@ -42,9 +42,7 @@ public class AEMFile extends ADMFile<AEMSegment> implements AttitudeEphemerisFil
         final Map<String, List<AEMSegment>> byId = new HashMap<>();
         for (final AEMSegment segment : getSegments()) {
             final String id = segment.getMetadata().getObjectID();
-            if (!byId.containsKey(id)) {
-                byId.put(id, new ArrayList<>());
-            }
+            byId.putIfAbsent(id, new ArrayList<>());
             byId.get(id).add(segment);
         }
         final Map<String, AEMSatelliteEphemeris> ret = new HashMap<>();

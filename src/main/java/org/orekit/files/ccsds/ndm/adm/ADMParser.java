@@ -41,12 +41,13 @@ import org.orekit.utils.IERSConventions;
  * href="https://en.wikipedia.org/wiki/Builder_pattern">builder design
  * pattern</a> and a <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
  * interface</a>.
- * <T> type of the parsed file
+ * @param <T> type of the parsed file
+ * @param <P> type of the parser
  *
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public abstract class ADMParser<T extends ADMFile<?>> {
+public abstract class ADMParser<T extends ADMFile<?>, P extends ADMParser<T, ?>> {
 
     /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
     private final AbsoluteDate missionReferenceDate;
@@ -64,15 +65,14 @@ public abstract class ADMParser<T extends ADMFile<?>> {
     private final DataContext dataContext;
 
     /** Complete constructor.
-     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
-     * @param mu gravitational coefficient
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames and time scales.
+     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * @param mu gravitational coefficient
      */
-    protected ADMParser(final AbsoluteDate missionReferenceDate, final double mu,
-                        final IERSConventions conventions, final boolean simpleEOP,
-                        final DataContext dataContext) {
+    protected ADMParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
+                        final AbsoluteDate missionReferenceDate, final double mu) {
         this.missionReferenceDate = missionReferenceDate;
         this.mu                   = mu;
         this.conventions          = conventions;
@@ -80,39 +80,20 @@ public abstract class ADMParser<T extends ADMFile<?>> {
         this.dataContext          = dataContext;
     }
 
-    /**
-     * Set initial date.
+    /** Build a new instance.
+     * @param newConventions IERS conventions to use while parsing
+     * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
+     * @param newDataContext data context used for frames, time scales, and celestial bodies
      * @param newMissionReferenceDate mission reference date to use while parsing
-     * @return a new instance, with mission reference date replaced
-     * @see #getMissionReferenceDate()
-     */
-    public abstract ADMParser<T> withMissionReferenceDate(AbsoluteDate newMissionReferenceDate);
-
-    /**
-     * Get initial date.
-     * @return mission reference date to use while parsing
-     * @see #withMissionReferenceDate(AbsoluteDate)
-     */
-    public AbsoluteDate getMissionReferenceDate() {
-        return missionReferenceDate;
-    }
-
-    /**
-     * Set gravitational coefficient.
      * @param newMu gravitational coefficient to use while parsing
-     * @return a new instance, with gravitational coefficient date replaced
-     * @see #getMu()
+     * @return a new instance with changed parameters
+     * @since 11.0
      */
-    public abstract ADMParser<T> withMu(double newMu);
-
-    /**
-     * Get gravitational coefficient.
-     * @return gravitational coefficient to use while parsing
-     * @see #withMu(double)
-     */
-    public double getMu() {
-        return mu;
-    }
+    protected abstract P create(IERSConventions newConventions,
+                                boolean newSimpleEOP,
+                                DataContext newDataContext,
+                                AbsoluteDate newMissionReferenceDate,
+                                double newMu);
 
     /**
      * Set IERS conventions.
@@ -120,7 +101,9 @@ public abstract class ADMParser<T extends ADMFile<?>> {
      * @return a new instance, with IERS conventions replaced
      * @see #getConventions()
      */
-    public abstract ADMParser<T> withConventions(IERSConventions newConventions);
+    public P withConventions(final IERSConventions newConventions) {
+        return create(newConventions, isSimpleEOP(), getDataContext(), getMissionReferenceDate(), getMu());
+    }
 
     /**
      * Get IERS conventions.
@@ -137,7 +120,9 @@ public abstract class ADMParser<T extends ADMFile<?>> {
      * @return a new instance, with EOP interpolation method replaced
      * @see #isSimpleEOP()
      */
-    public abstract ADMParser<T> withSimpleEOP(boolean newSimpleEOP);
+    public P withSimpleEOP(final boolean newSimpleEOP) {
+        return create(getConventions(), newSimpleEOP, getDataContext(), getMissionReferenceDate(), getMu());
+    }
 
     /**
      * Get EOP interpolation method.
@@ -161,7 +146,47 @@ public abstract class ADMParser<T extends ADMFile<?>> {
      * @param newDataContext used for frames, time scales, and celestial bodies.
      * @return a new instance with the data context replaced.
      */
-    public abstract ADMParser<T> withDataContext(DataContext newDataContext);
+    public P withDataContext(final DataContext newDataContext) {
+        return create(getConventions(), isSimpleEOP(), newDataContext, getMissionReferenceDate(), getMu());
+    }
+
+    /**
+     * Set initial date.
+     * @param newMissionReferenceDate mission reference date to use while parsing
+     * @return a new instance, with mission reference date replaced
+     * @see #getMissionReferenceDate()
+     */
+    public P withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
+        return create(getConventions(), isSimpleEOP(), getDataContext(), newMissionReferenceDate, getMu());
+    }
+
+    /**
+     * Get initial date.
+     * @return mission reference date to use while parsing
+     * @see #withMissionReferenceDate(AbsoluteDate)
+     */
+    public AbsoluteDate getMissionReferenceDate() {
+        return missionReferenceDate;
+    }
+
+    /**
+     * Set gravitational coefficient.
+     * @param newMu gravitational coefficient to use while parsing
+     * @return a new instance, with gravitational coefficient date replaced
+     * @see #getMu()
+     */
+    public P withMu(final double newMu) {
+        return create(getConventions(), isSimpleEOP(), getDataContext(), getMissionReferenceDate(), newMu);
+    }
+
+    /**
+     * Get gravitational coefficient.
+     * @return gravitational coefficient to use while parsing
+     * @see #withMu(double)
+     */
+    public double getMu() {
+        return mu;
+    }
 
     /**
      * Parse a CCSDS Attitude Data Message.

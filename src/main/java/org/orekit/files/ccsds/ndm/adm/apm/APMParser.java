@@ -44,7 +44,7 @@ import org.orekit.utils.IERSConventions;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class APMParser extends ADMParser<APMFile> {
+public class APMParser extends ADMParser<APMFile, APMParser> {
 
     /** Simple constructor.
      * <p>
@@ -98,62 +98,29 @@ public class APMParser extends ADMParser<APMFile> {
      * @see #withDataContext(DataContext)
      */
     public APMParser(final DataContext dataContext) {
-        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, dataContext);
+        this(null, true, dataContext, AbsoluteDate.FUTURE_INFINITY, Double.NaN);
     }
 
     /** Complete constructor.
-     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
-     * @param mu gravitational coefficient
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
+     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * @param mu gravitational coefficient
      */
-    private APMParser(final AbsoluteDate missionReferenceDate, final double mu,
-                      final IERSConventions conventions, final boolean simpleEOP,
-                      final DataContext dataContext) {
-        super(missionReferenceDate, mu, conventions, simpleEOP, dataContext);
+    private APMParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
+                      final AbsoluteDate missionReferenceDate, final double mu) {
+        super(conventions, simpleEOP, dataContext, missionReferenceDate, mu);
     }
 
     /** {@inheritDoc} */
     @Override
-    public APMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
-        return new APMParser(newMissionReferenceDate, getMu(), getConventions(), isSimpleEOP(), getDataContext());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public APMParser withMu(final double newMu) {
-        return new APMParser(getMissionReferenceDate(), newMu, getConventions(), isSimpleEOP(), getDataContext());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public APMParser withConventions(final IERSConventions newConventions) {
-        return new APMParser(getMissionReferenceDate(), getMu(), newConventions, isSimpleEOP(), getDataContext());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public APMParser withSimpleEOP(final boolean newSimpleEOP) {
-        return new APMParser(getMissionReferenceDate(), getMu(), getConventions(), newSimpleEOP, getDataContext());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public APMParser withDataContext(final DataContext dataContext) {
-        return new APMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(), dataContext);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public APMFile parse(final String fileName) {
-        return (APMFile) super.parse(fileName);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public APMFile parse(final InputStream stream) {
-        return (APMFile) super.parse(stream);
+    protected APMParser create(final IERSConventions newConventions,
+                               final boolean newSimpleEOP,
+                               final DataContext newDataContext,
+                               final AbsoluteDate newMissionReferenceDate,
+                               final double newMu) {
+        return new APMParser(newConventions, newSimpleEOP, newDataContext, newMissionReferenceDate, newMu);
     }
 
     /** {@inheritDoc} */
