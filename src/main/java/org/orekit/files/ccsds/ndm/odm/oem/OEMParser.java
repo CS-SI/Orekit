@@ -34,7 +34,8 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.Keyword;
-import org.orekit.files.ccsds.ndm.odm.ODMParser;
+import org.orekit.files.ccsds.ndm.adm.aem.AEMMetadata;
+import org.orekit.files.ccsds.ndm.odm.OCommonParser;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.KeyValue;
 import org.orekit.files.general.EphemerisFileParser;
@@ -49,7 +50,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author sports
  * @since 6.1
  */
-public class OEMParser extends ODMParser<OEMFile> implements EphemerisFileParser {
+public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements EphemerisFileParser {
 
     /** Mandatory keywords.
      * @since 11.0
@@ -155,57 +156,54 @@ public class OEMParser extends ODMParser<OEMFile> implements EphemerisFileParser
      * @since 10.1
      */
     public OEMParser(final DataContext dataContext) {
-        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, 1, dataContext);
+        this(null, true, dataContext, AbsoluteDate.FUTURE_INFINITY, Double.NaN, 1);
     }
 
     /** Complete constructor.
-     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
-     * @param mu gravitational coefficient
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param interpolationDegree interpolation degree
      * @param dataContext used to retrieve frames, time scales, etc.
+     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * @param mu gravitational coefficient
+     * @param interpolationDegree interpolation degree
      */
-    private OEMParser(final AbsoluteDate missionReferenceDate, final double mu,
-                      final IERSConventions conventions, final boolean simpleEOP,
-                      final int interpolationDegree, final DataContext dataContext) {
-        super(missionReferenceDate, mu, conventions, simpleEOP, dataContext);
+    private OEMParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
+                      final AbsoluteDate missionReferenceDate, final double mu,
+                      final int interpolationDegree) {
+        super(conventions, simpleEOP, dataContext, missionReferenceDate, mu);
         this.interpolationDegree = interpolationDegree;
     }
 
     /** {@inheritDoc} */
     @Override
-    public OEMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
-        return new OEMParser(newMissionReferenceDate, getMu(), getConventions(), isSimpleEOP(),
-                             getInterpolationDegree(), getDataContext());
+    protected OEMParser create(final IERSConventions newConventions,
+                               final boolean newSimpleEOP,
+                               final DataContext newDataContext,
+                               final AbsoluteDate newMissionReferenceDate,
+                               final double newMu) {
+        return create(newConventions, newSimpleEOP, newDataContext,
+                      newMissionReferenceDate, newMu,
+                      interpolationDegree);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public OEMParser withMu(final double newMu) {
-        return new OEMParser(getMissionReferenceDate(), newMu, getConventions(), isSimpleEOP(),
-                             getInterpolationDegree(), getDataContext());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public OEMParser withConventions(final IERSConventions newConventions) {
-        return new OEMParser(getMissionReferenceDate(), getMu(), newConventions, isSimpleEOP(),
-                             getInterpolationDegree(), getDataContext());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public OEMParser withSimpleEOP(final boolean newSimpleEOP) {
-        return new OEMParser(getMissionReferenceDate(), getMu(), getConventions(), newSimpleEOP,
-                             getInterpolationDegree(), getDataContext());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public OEMParser withDataContext(final DataContext dataContext) {
-        return new OEMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
-                             getInterpolationDegree(), dataContext);
+    /** Build a new instance.
+     * @param newConventions IERS conventions to use while parsing
+     * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
+     * @param newDataContext data context used for frames, time scales, and celestial bodies
+     * @param newMissionReferenceDate mission reference date to use while parsing
+     * @param newMu gravitational coefficient to use while parsing
+     * @param newInterpolationDegree interpolation degree
+     * @return a new instance with changed parameters
+     */
+    protected OEMParser create(final IERSConventions newConventions,
+                               final boolean newSimpleEOP,
+                               final DataContext newDataContext,
+                               final AbsoluteDate newMissionReferenceDate,
+                               final double newMu,
+                               final int newInterpolationDegree) {
+        return new OEMParser(newConventions, newSimpleEOP, newDataContext,
+                             newMissionReferenceDate, newMu,
+                             newInterpolationDegree);
     }
 
     /** Set default interpolation degree.
@@ -217,32 +215,20 @@ public class OEMParser extends ODMParser<OEMFile> implements EphemerisFileParser
      * @param newInterpolationDegree default interpolation degree to use while parsing
      * @return a new instance, with interpolation degree data replaced
      * @see #getInterpolationDegree()
-     * @since 10.3
+     * @since 11.0
      */
     public OEMParser withInterpolationDegree(final int newInterpolationDegree) {
-        return new OEMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
-                             newInterpolationDegree, getDataContext());
+        return new OEMParser(getConventions(), isSimpleEOP(), getDataContext(), getMissionReferenceDate(),
+                             getMuSet(), newInterpolationDegree);
     }
 
     /** Get default interpolation degree.
      * @return interpolationDegree default interpolation degree to use while parsing
      * @see #withInterpolationDegree(int)
-     * @since 10.3
+     * @since 11.0
      */
     public int getInterpolationDegree() {
         return interpolationDegree;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public OEMFile parse(final String fileName) {
-        return (OEMFile) super.parse(fileName);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public OEMFile parse(final InputStream stream) {
-        return (OEMFile) super.parse(stream);
     }
 
     /** {@inheritDoc} */
@@ -267,15 +253,9 @@ public class OEMParser extends ODMParser<OEMFile> implements EphemerisFileParser
         try {
 
             // initialize internal data structures
-            final ParseInfo pi = new ParseInfo();
-            pi.fileName = fileName;
-            final OEMFile file = pi.file;
-
-            // set the additional data that has been configured prior the parsing by the user.
-            pi.file.setMissionReferenceDate(getMissionReferenceDate());
-            pi.file.setMuSet(getMu());
-            pi.file.setConventions(getConventions());
-            pi.file.setDataContext(getDataContext());
+            final ParseInfo pi = new ParseInfo(getConventions(), getDataContext());
+            pi.fileName      = fileName;
+            pi.parsingHeader = true;
 
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 ++pi.lineNumber;
@@ -284,67 +264,86 @@ public class OEMParser extends ODMParser<OEMFile> implements EphemerisFileParser
                 }
                 pi.keyValue = new KeyValue(line, pi.lineNumber, pi.fileName);
                 if (pi.keyValue.getKeyword() == null) {
-                    throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
+                    if (pi.parsingData) {
+                        parseEphemeridesDataLine(line, pi);
+                        continue;
+                    } else {
+                        throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
+                    }
                 }
 
                 declareFound(pi.keyValue.getKeyword());
 
                 switch (pi.keyValue.getKeyword()) {
                     case CCSDS_OEM_VERS:
-                        file.setFormatVersion(pi.keyValue.getDoubleValue());
+                        pi.file.getHeader().setFormatVersion(pi.keyValue.getDoubleValue());
                         break;
 
                     case META_START:
-                        file.addEphemeridesBlock();
-                        pi.lastEphemeridesBlock = file.getEphemeridesBlocks().get(file.getEphemeridesBlocks().size() - 1);
-                        pi.lastEphemeridesBlock.setInterpolationDegree(getInterpolationDegree());
+                        // Indicate the start of meta-data parsing for this block
+                        pi.metadata          = new OEMMetadata(getConventions(), getDataContext());
+                        pi.parsingHeader     = false;
+                        pi.parsingMetaData   = true;
+                        pi.parsingData       = false;
+                        pi.parsingCovariance = false;
+                        pi.metadata.setInterpolationDegree(getInterpolationDegree());
                         break;
 
                     case START_TIME:
-                        pi.lastEphemeridesBlock.setStartTime(parseDate(pi.keyValue.getValue(),
-                                                                       pi.lastEphemeridesBlock.getMetadata().getTimeSystem()));
+                        pi.metadata.setStartTime(parseDate(pi.keyValue.getValue(),
+                                                           pi.metadata.getTimeSystem()));
                         break;
 
                     case USEABLE_START_TIME:
-                        pi.lastEphemeridesBlock.setUseableStartTime(parseDate(pi.keyValue.getValue(),
-                                                                              pi.lastEphemeridesBlock.getMetadata().getTimeSystem()));
+                        pi.metadata.setUseableStartTime(parseDate(pi.keyValue.getValue(),
+                                                                  pi.metadata.getTimeSystem()));
                         break;
 
                     case USEABLE_STOP_TIME:
-                        pi.lastEphemeridesBlock.setUseableStopTime(parseDate(pi.keyValue.getValue(), pi.lastEphemeridesBlock.getMetadata().getTimeSystem()));
+                        pi.metadata.setUseableStopTime(parseDate(pi.keyValue.getValue(), pi.metadata.getTimeSystem()));
                         break;
 
                     case STOP_TIME:
-                        pi.lastEphemeridesBlock.setStopTime(parseDate(pi.keyValue.getValue(), pi.lastEphemeridesBlock.getMetadata().getTimeSystem()));
+                        pi.metadata.setStopTime(parseDate(pi.keyValue.getValue(), pi.metadata.getTimeSystem()));
                         break;
 
                     case INTERPOLATION:
-                        pi.lastEphemeridesBlock.setInterpolationMethod(pi.keyValue.getValue());
+                        pi.metadata.setInterpolationMethod(pi.keyValue.getValue());
                         break;
 
                     case INTERPOLATION_DEGREE:
-                        pi.lastEphemeridesBlock.setInterpolationDegree(Integer.parseInt(pi.keyValue.getValue()));
+                        pi.metadata.setInterpolationDegree(Integer.parseInt(pi.keyValue.getValue()));
                         break;
 
                     case META_STOP:
-                        file.setMuUsed();
-                        parseEphemeridesDataLines(reader, pi);
+                        pi.parsingMetaData = false;
+                        pi.parsingData     = true;
                         break;
 
                     case COVARIANCE_START:
-                        parseCovarianceDataLines(reader, pi);
+                        pi.parsingData       = false;
+                        pi.parsingCovariance = true;
+                        break;
+
+                    case COVARIANCE_STOP:
+                        pi.parsingCovariance = false;
+                        pi.parsingData       = true;
                         break;
 
                     default:
-                        boolean parsed = false;
-                        parsed = parsed || parseComment(pi.keyValue, pi.commentTmp);
-                        parsed = parsed || parseHeaderEntry(pi.keyValue, file, pi.commentTmp);
-                        if (pi.lastEphemeridesBlock != null) {
-                            parsed = parsed || parseMetaDataEntry(pi.keyValue,
-                                                                  pi.lastEphemeridesBlock.getMetadata(), pi.commentTmp);
-                            if (parsed && pi.keyValue.getKeyword() == Keyword.REF_FRAME_EPOCH) {
-                                pi.lastEphemeridesBlock.setHasRefFrameEpoch(true);
-                            }
+                        final boolean parsed;
+                        if (pi.parsingHeader) {
+                            parsed = parseHeaderEntry(pi.keyValue, pi.file);
+                        } else if (pi.parsingMetaData) {
+                            parsed = parseMetaDataEntry(pi.keyValue, pi.metadata);
+                        } else if (pi.parsingData && pi.keyValue.getKeyword() == Keyword.COMMENT) {
+                            pi.currentEphemeridesBlock.addComment(pi.keyValue.getValue());
+                            parsed = true;
+                        } else if (pi.parsingCovariance && pi.keyValue.getKeyword() == Keyword.COMMENT) {
+                            pi.currentEphemeridesBlock.addComment(pi.keyValue.getValue());
+                            parsed = true;
+                        } else {
+                            parsed = false;
                         }
                         if (!parsed) {
                             throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
@@ -355,8 +354,8 @@ public class OEMParser extends ODMParser<OEMFile> implements EphemerisFileParser
             // check all mandatory keywords have been found
             checkExpected(fileName);
 
-            file.checkTimeSystems();
-            return file;
+            pi.file.checkTimeSystems();
+            return pi.file;
         } catch (IOException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
         }
@@ -503,17 +502,32 @@ public class OEMParser extends ODMParser<OEMFile> implements EphemerisFileParser
      */
     private static class ParseInfo {
 
-        /** Ephemerides block being parsed. */
-        private OEMFile.EphemeridesBlock lastEphemeridesBlock;
+        /** OEM file being read. */
+        private OEMFile file;
+
+        /** OEM metadata being read. */
+        private OEMMetadata metadata;
+
+        /** OEM data being read. */
+        private OEMData data;
+
+        /** Boolean indicating if the parser is currently parsing a header block. */
+        private boolean parsingHeader;
+
+        /** Boolean indicating if the parser is currently parsing a meta-data block. */
+        private boolean parsingMetaData;
+
+        /** Boolean indicating if the parser is currently parsing a data block. */
+        private boolean parsingData;
+
+        /** Boolean indicating if the parser is currently parsing a covariance block. */
+        private boolean parsingCovariance;
 
         /** Name of the file. */
         private String fileName;
 
         /** Current line number. */
         private int lineNumber;
-
-        /** OEM file being read. */
-        private OEMFile file;
 
         /** Key value of the line being read. */
         private KeyValue keyValue;
@@ -532,11 +546,21 @@ public class OEMParser extends ODMParser<OEMFile> implements EphemerisFileParser
         /** Stored comments. */
         private List<String> commentTmp;
 
-        /** Create a new {@link ParseInfo} object. */
-        protected ParseInfo() {
-            lineNumber = 0;
-            file = new OEMFile();
-            commentTmp = new ArrayList<String>();
+        /** Create a new {@link ParseInfo} object.
+         * @param conventions IERS conventions to use
+         * @param dataContext data context to use
+         */
+        protected ParseInfo(final IERSConventions conventions, final DataContext dataContext) {
+            file            = new OEMFile();
+            file.setConventions(conventions);
+            file.setDataContext(dataContext);
+            metadata        = new OEMMetadata(conventions, dataContext);
+            data            = new OEMData();
+            parsingHeader   = false;
+            parsingMetaData = false;
+            parsingData     = false;
+            lineNumber      = 0;
+            commentTmp      = new ArrayList<String>();
         }
     }
 }

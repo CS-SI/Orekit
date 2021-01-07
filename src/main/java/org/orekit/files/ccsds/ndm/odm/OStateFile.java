@@ -65,7 +65,7 @@ public abstract class OStateFile<M extends OCommonMetadata, D extends OStateData
 
     /** Get the gravitational coefficient to use for building Cartesian/Keplerian orbits.
      * <p>
-     * This methiod throws an exception if the gravitational coefficient has not been set properly
+     * This method throws an exception if the gravitational coefficient has not been set properly
      * </p>
      * @return gravitational coefficient to use for building Cartesian/Keplerian orbits
      */

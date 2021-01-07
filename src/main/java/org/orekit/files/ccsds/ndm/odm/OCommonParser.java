@@ -53,15 +53,14 @@ public abstract class OCommonParser<T extends ODMFile<?>, P extends ODMParser<T,
     private AbsoluteDate missionReferenceDate;
 
     /** Complete constructor.
-     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
-     * @param mu gravitational coefficient
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames and time scales.
+     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * @param mu gravitational coefficient
      */
-    protected OCommonParser(final AbsoluteDate missionReferenceDate, final double mu,
-                            final IERSConventions conventions, final boolean simpleEOP,
-                            final DataContext dataContext) {
+    protected OCommonParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
+                            final AbsoluteDate missionReferenceDate, final double mu) {
         super(conventions, simpleEOP, dataContext);
         this.missionReferenceDate = missionReferenceDate;
         this.muSet                = mu;
@@ -117,6 +116,13 @@ public abstract class OCommonParser<T extends ODMFile<?>, P extends ODMParser<T,
                                AbsoluteDate newMissionReferenceDate,
                                double newMu);
 
+    /** Get the gravitational coefficient set at construction or by calling {@link #withMu()}.
+     * @return gravitational coefficient set at construction or by calling {@link #withMu()}
+     */
+    protected double getMuSet() {
+        return muSet;
+    }
+
     /** Parse a meta-data key = value entry.
      * @param keyValue key = value pair
      * @param metaData instance to update with parsed entry
@@ -163,15 +169,11 @@ public abstract class OCommonParser<T extends ODMFile<?>, P extends ODMParser<T,
                     return true;
 
                 case REF_FRAME_EPOCH:
-                    metaData.setFrameEpochString(keyValue.getValue());
+                    metaData.setFrameEpoch(parseDate(keyValue.getValue(), metaData.getTimeSystem()));
                     return true;
 
                 case TIME_SYSTEM:
-                    final CcsdsTimeScale timeSystem = CcsdsTimeScale.parse(keyValue.getValue());
-                    metaData.setTimeSystem(timeSystem);
-                    if (metaData.getFrameEpochString() != null) {
-                        metaData.setFrameEpoch(parseDate(metaData.getFrameEpochString(), timeSystem));
-                    }
+                    metaData.setTimeSystem(CcsdsTimeScale.parse(keyValue.getValue()));
                     return true;
 
                 default:

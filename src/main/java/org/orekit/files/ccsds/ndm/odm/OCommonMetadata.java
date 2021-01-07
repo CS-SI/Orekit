@@ -61,10 +61,6 @@ public class OCommonMetadata extends ODMMetadata {
 
     /** Epoch of reference frame, if not intrinsic to the definition of the
      * reference frame. */
-    private String frameEpochString;
-
-    /** Epoch of reference frame, if not intrinsic to the definition of the
-     * reference frame. */
     private AbsoluteDate frameEpoch;
 
     /** Create a new meta-data.
@@ -241,22 +237,6 @@ public class OCommonMetadata extends ODMMetadata {
      */
     public void setFrameString(final String frame) {
         this.refFrameString = frame;
-    }
-
-    /** Get epoch of reference frame, if not intrinsic to the definition of the
-     * reference frame.
-     * @return epoch of reference frame
-     */
-    public String getFrameEpochString() {
-        return frameEpochString;
-    }
-
-    /** Set epoch of reference frame, if not intrinsic to the definition of the
-     * reference frame.
-     * @param frameEpochString the epoch of reference frame to be set
-     */
-    public void setFrameEpochString(final String frameEpochString) {
-        this.frameEpochString = frameEpochString;
     }
 
     /** Get epoch of reference frame, if not intrinsic to the definition of the

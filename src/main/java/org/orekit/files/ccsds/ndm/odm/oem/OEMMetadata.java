@@ -17,16 +17,8 @@
 
 package org.orekit.files.ccsds.ndm.odm.oem;
 
-import org.orekit.bodies.CelestialBodies;
-import org.orekit.bodies.CelestialBody;
-import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.odm.OCommonMetadata;
-import org.orekit.files.ccsds.utils.CcsdsModifiedFrame;
-import org.orekit.files.ccsds.utils.CcsdsTimeScale;
-import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -36,31 +28,25 @@ import org.orekit.utils.IERSConventions;
  */
 public class OEMMetadata extends OCommonMetadata {
 
-    /** Time System: used for metadata, orbit state and covariance data. */
-    private CcsdsTimeScale timeSystem;
+    /** Start of total time span covered by ephemerides data and covariance data. */
+    private AbsoluteDate startTime;
 
-    /** Celestial body corresponding to the center name. */
-    private CelestialBody centerBody;
+    /** End of total time span covered by ephemerides data and covariance data. */
+    private AbsoluteDate stopTime;
 
-    /** Tests whether the body corresponding to the center name can be
-     * created through {@link CelestialBodies} in order to obtain the
-     * corresponding gravitational coefficient. */
-    private boolean hasCreatableBody;
+    /** Start of useable time span covered by ephemerides data, it may be
+     * necessary to allow for proper interpolation. */
+    private AbsoluteDate useableStartTime;
 
-    /** Reference frame in which data are given: used for state vector
-     * and Keplerian elements data (and for the covariance reference frame if none is given). */
-    private Frame refFrame;
+    /** End of useable time span covered by ephemerides data, it may be
+     * necessary to allow for proper interpolation. */
+    private AbsoluteDate useableStopTime;
 
-    /** The reference frame specifier, as it appeared in the file. */
-    private String refFrameString;
+    /** The interpolation method to be used. */
+    private String interpolationMethod;
 
-    /** Epoch of reference frame, if not intrinsic to the definition of the
-     * reference frame. */
-    private String frameEpochString;
-
-    /** Epoch of reference frame, if not intrinsic to the definition of the
-     * reference frame. */
-    private AbsoluteDate frameEpoch;
+    /** The interpolation degree. */
+    private int interpolationDegree;
 
     /** Create a new meta-data.
      * @param conventions IERS conventions to use
@@ -70,155 +56,126 @@ public class OEMMetadata extends OCommonMetadata {
         super(conventions, dataContext);
     }
 
-    /** Get the Time System that: for OPM, is used for metadata, state vector,
-     * maneuver and covariance data, for OMM, is used for metadata, orbit state
-     * and covariance data, for OEM, is used for metadata, ephemeris and
+    /** Get start of total time span covered by ephemerides data and
      * covariance data.
-     * @return the time system
+     * @return the start time
      */
-    public CcsdsTimeScale getTimeSystem() {
-        return timeSystem;
+    public AbsoluteDate getStartTime() {
+        return startTime;
     }
 
-    /** Set the Time System that: for OPM, is used for metadata, state vector,
-     * maneuver and covariance data, for OMM, is used for metadata, orbit state
-     * and covariance data, for OEM, is used for metadata, ephemeris and
+    /** Set start of total time span covered by ephemerides data and
      * covariance data.
-     * @param timeSystem the time system to be set
+     * @param startTime the time to be set
      */
-    public void setTimeSystem(final CcsdsTimeScale timeSystem) {
-        this.timeSystem = timeSystem;
+    public void setStartTime(final AbsoluteDate startTime) {
+        this.startTime = startTime;
     }
 
-    /** Get the {@link CelestialBody} corresponding to the center name.
-     * @return the center body
+    /** Get end of total time span covered by ephemerides data and covariance
+     * data.
+     * @return the stop time
      */
-    public CelestialBody getCenterBody() {
-        return centerBody;
+    public AbsoluteDate getStopTime() {
+        return stopTime;
     }
 
-    /** Set the {@link CelestialBody} corresponding to the center name.
-     * @param centerBody the {@link CelestialBody} to be set
+    /** Set end of total time span covered by ephemerides data and covariance
+     * data.
+     * @param stopTime the time to be set
      */
-    public void setCenterBody(final CelestialBody centerBody) {
-        this.centerBody = centerBody;
+    public void setStopTime(final AbsoluteDate stopTime) {
+        this.stopTime = stopTime;
     }
 
-    /** Get boolean testing whether the body corresponding to the centerName
-     * attribute can be created through the {@link CelestialBodies}.
-     * @return true if {@link CelestialBody} can be created from centerName
-     *         false otherwise
+    /** Get start of useable time span covered by ephemerides data, it may be
+     * necessary to allow for proper interpolation.
+     * @return the useable start time
      */
-    public boolean getHasCreatableBody() {
-        return hasCreatableBody;
+    public AbsoluteDate getUseableStartTime() {
+        return useableStartTime;
     }
 
-    /** Set boolean testing whether the body corresponding to the centerName
-     * attribute can be created through the {@link CelestialBodies}.
-     * @param hasCreatableBody the boolean to be set.
+    /** Set start of useable time span covered by ephemerides data, it may be
+     * necessary to allow for proper interpolation.
+     * @param useableStartTime the time to be set
      */
-    public void setHasCreatableBody(final boolean hasCreatableBody) {
-        this.hasCreatableBody = hasCreatableBody;
+    public void setUseableStartTime(final AbsoluteDate useableStartTime) {
+        this.useableStartTime = useableStartTime;
+    }
+
+    /** Get end of useable time span covered by ephemerides data, it may be
+     * necessary to allow for proper interpolation.
+     * @return the useable stop time
+     */
+    public AbsoluteDate getUseableStopTime() {
+        return useableStopTime;
+    }
+
+    /** Set end of useable time span covered by ephemerides data, it may be
+     * necessary to allow for proper interpolation.
+     * @param useableStopTime the time to be set
+     */
+    public void setUseableStopTime(final AbsoluteDate useableStopTime) {
+        this.useableStopTime = useableStopTime;
     }
 
     /**
-     * Get the reference frame in which data are given: used for state vector and
-     * Keplerian elements data (and for the covariance reference frame if none is given).
+     * Get the start date of this ephemeris segment.
      *
-     * @return the reference frame
+     * @return ephemeris segment start date.
      */
-    public Frame getFrame() {
-        final Frame frame = this.getRefFrame();
-        final CelestialBody body = this.getCenterBody();
-        if (body == null) {
-            throw new OrekitException(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY,
-                    this.getCenterName());
+    public AbsoluteDate getStart() {
+        // useable start time overrides start time if it is set
+        final AbsoluteDate start = this.getUseableStartTime();
+        if (start != null) {
+            return start;
+        } else {
+            return this.getStartTime();
         }
-        // Just return frame if we don't need to shift the center based on CENTER_NAME
-        // MCI and ICRF are the only non-earth centered frames specified in Annex A.
-        final String frameString = this.getFrameString();
-        final boolean isMci = "MCI".equals(frameString);
-        final boolean isIcrf = "ICRF".equals(frameString);
-        final boolean isSolarSystemBarycenter =
-                CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER.equals(body.getName());
-        if ((!(isMci || isIcrf) && CelestialBodyFactory.EARTH.equals(body.getName())) ||
-                (isMci && CelestialBodyFactory.MARS.equals(body.getName())) ||
-                (isIcrf && isSolarSystemBarycenter)) {
-            return frame;
+    }
+
+    /**
+     * Get the stop date of this ephemeris segment.
+     *
+     * @return ephemeris segment stop date.
+     */
+    public AbsoluteDate getStop() {
+        // useable stop time overrides stop time if it is set
+        final AbsoluteDate stop = this.getUseableStopTime();
+        if (stop != null) {
+            return stop;
+        } else {
+            return this.getStopTime();
         }
-        // else, translate frame to specified center.
-        return new CcsdsModifiedFrame(frame, frameString, body, this.getCenterName());
     }
 
-    /**
-     * Get the the value of {@code REF_FRAME} as an Orekit {@link Frame}. The {@code
-     * CENTER_NAME} key word has not been applied yet, so the returned frame may not
-     * correspond to the reference frame of the data in the file.
-     *
-     * @return The reference frame specified by the {@code REF_FRAME} keyword.
-     * @see #getFrame()
+    /** Get the interpolation method to be used.
+     * @return the interpolation method
      */
-    public Frame getRefFrame() {
-        return refFrame;
+    public String getInterpolationMethod() {
+        return interpolationMethod;
     }
 
-    /** Set the reference frame in which data are given: used for state vector
-     * and Keplerian elements data (and for the covariance reference frame if none is given).
-     * @param refFrame the reference frame to be set
+    /** Set the interpolation method to be used.
+     * @param interpolationMethod the interpolation method to be set
      */
-    public void setRefFrame(final Frame refFrame) {
-        this.refFrame = refFrame;
+    public void setInterpolationMethod(final String interpolationMethod) {
+        this.interpolationMethod = interpolationMethod;
     }
 
-    /**
-     * Get the reference frame specifier as it appeared in the file.
-     *
-     * @return the frame name as it appeared in the file.
-     * @see #getFrame()
+    /** Get the interpolation degree.
+     * @return the interpolation degree
      */
-    public String getFrameString() {
-        return this.refFrameString;
+    public int getInterpolationDegree() {
+        return interpolationDegree;
     }
 
-    /**
-     * Set the reference frame name.
-     *
-     * @param frame specifier as it appeared in the file.
+    /** Set the interpolation degree.
+     * @param interpolationDegree the interpolation degree to be set
      */
-    public void setFrameString(final String frame) {
-        this.refFrameString = frame;
-    }
-
-    /** Get epoch of reference frame, if not intrinsic to the definition of the
-     * reference frame.
-     * @return epoch of reference frame
-     */
-    public String getFrameEpochString() {
-        return frameEpochString;
-    }
-
-    /** Set epoch of reference frame, if not intrinsic to the definition of the
-     * reference frame.
-     * @param frameEpochString the epoch of reference frame to be set
-     */
-    public void setFrameEpochString(final String frameEpochString) {
-        this.frameEpochString = frameEpochString;
-    }
-
-    /** Get epoch of reference frame, if not intrinsic to the definition of the
-     * reference frame.
-     * @return epoch of reference frame
-     */
-    public AbsoluteDate getFrameEpoch() {
-        return frameEpoch;
-    }
-
-    /** Set epoch of reference frame, if not intrinsic to the definition of the
-     * reference frame.
-     * @param frameEpoch the epoch of reference frame to be set
-     */
-    public void setFrameEpoch(final AbsoluteDate frameEpoch) {
-        this.frameEpoch = frameEpoch;
+    public void setInterpolationDegree(final int interpolationDegree) {
+        this.interpolationDegree = interpolationDegree;
     }
 
 }

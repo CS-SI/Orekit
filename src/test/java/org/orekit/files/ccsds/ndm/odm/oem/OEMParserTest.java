@@ -39,10 +39,6 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.odm.oem.OEMFile;
-import org.orekit.files.ccsds.ndm.odm.oem.OEMParser;
-import org.orekit.files.ccsds.ndm.odm.oem.OEMFile.EphemeridesBlock;
-import org.orekit.files.ccsds.ndm.odm.oem.OEMFile.OemSatelliteEphemeris;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.frames.FactoryManagedFrame;
 import org.orekit.frames.Frame;
@@ -75,39 +71,39 @@ public class OEMParserTest {
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM());
         final OEMFile file = parser.parse(inEntry, "OEMExample1.txt");
-        Assert.assertEquals(CcsdsTimeScale.UTC, file.getEphemeridesBlocks().get(0).getMetadata().getTimeSystem());
-        Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getEphemeridesBlocks().get(0).getMetadata().getObjectName());
-        Assert.assertEquals("1996-062A", file.getEphemeridesBlocks().get(0).getMetadata().getObjectID());
-        Assert.assertEquals("MARS BARYCENTER", file.getEphemeridesBlocks().get(0).getMetadata().getCenterName());
-        Assert.assertEquals(1996, file.getEphemeridesBlocks().get(0).getMetadata().getLaunchYear());
-        Assert.assertEquals(62, file.getEphemeridesBlocks().get(0).getMetadata().getLaunchNumber());
-        Assert.assertEquals("A", file.getEphemeridesBlocks().get(0).getMetadata().getLaunchPiece());
-        Assert.assertFalse(file.getEphemeridesBlocks().get(0).getMetadata().getHasCreatableBody());
-        Assert.assertNull(file.getEphemeridesBlocks().get(0).getMetadata().getCenterBody());
+        Assert.assertEquals(CcsdsTimeScale.UTC, file.getSegments().get(0).getMetadata().getTimeSystem());
+        Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getSegments().get(0).getMetadata().getObjectName());
+        Assert.assertEquals("1996-062A", file.getSegments().get(0).getMetadata().getObjectID());
+        Assert.assertEquals("MARS BARYCENTER", file.getSegments().get(0).getMetadata().getCenterName());
+        Assert.assertEquals(1996, file.getSegments().get(0).getMetadata().getLaunchYear());
+        Assert.assertEquals(62, file.getSegments().get(0).getMetadata().getLaunchNumber());
+        Assert.assertEquals("A", file.getSegments().get(0).getMetadata().getLaunchPiece());
+        Assert.assertFalse(file.getSegments().get(0).getMetadata().getHasCreatableBody());
+        Assert.assertNull(file.getSegments().get(0).getMetadata().getCenterBody());
         Assert.assertEquals(new AbsoluteDate(1996, 12, 18, 12, 00, 0.331, TimeScalesFactory.getUTC()),
-                            file.getEphemeridesBlocks().get(0).getStartTime());
+                            file.getSegments().get(0).getMetadata().getStartTime());
         Assert.assertEquals(new AbsoluteDate(1996, 12, 28, 21, 28, 0.331, TimeScalesFactory.getUTC()),
-                            file.getEphemeridesBlocks().get(0).getStopTime());
+                            file.getSegments().get(0).getMetadata().getStopTime());
         Assert.assertEquals(new AbsoluteDate(1996, 12, 18, 12, 10, 0.331, TimeScalesFactory.getUTC()),
-                            file.getEphemeridesBlocks().get(0).getUseableStartTime());
+                            file.getSegments().get(0).getMetadata().getUseableStartTime());
         Assert.assertEquals(new AbsoluteDate(1996, 12, 28, 21, 23, 0.331, TimeScalesFactory.getUTC()),
-                            file.getEphemeridesBlocks().get(0).getUseableStopTime());
-        Assert.assertEquals("HERMITE", file.getEphemeridesBlocks().get(0).getInterpolationMethod());
-        Assert.assertEquals(7, file.getEphemeridesBlocks().get(0).getInterpolationDegree());
+                            file.getSegments().get(0).getMetadata().getUseableStopTime());
+        Assert.assertEquals("HERMITE", file.getSegments().get(0).getMetadata().getInterpolationMethod());
+        Assert.assertEquals(7, file.getSegments().get(0).getMetadata().getInterpolationDegree());
         ArrayList<String> ephemeridesDataLinesComment = new ArrayList<String>();
         ephemeridesDataLinesComment.add("This file was produced by M.R. Somebody, MSOO NAV/JPL, 1996NOV 04. It is");
         ephemeridesDataLinesComment.add("to be used for DSN scheduling purposes only.");
-        Assert.assertEquals(ephemeridesDataLinesComment, file.getEphemeridesBlocks().get(0).getEphemeridesDataLinesComment());
+        Assert.assertEquals(ephemeridesDataLinesComment, file.getSegments().get(0).getData().getEphemeridesDataLinesComment());
         CartesianOrbit orbit = new CartesianOrbit(new PVCoordinates
                                                   (new Vector3D(2789.619 * 1000, -280.045 * 1000, -1746.755 * 1000),
                                                    new Vector3D(4.73372 * 1000, -2.49586 * 1000, -1.04195 * 1000)),
                                                    FramesFactory.getEME2000(),
                                                    new AbsoluteDate("1996-12-18T12:00:00.331", TimeScalesFactory.getUTC()),
                                                    CelestialBodyFactory.getEarth().getGM());
-        Assert.assertArrayEquals(orbit.getPVCoordinates().getPosition().toArray(), file.getEphemeridesBlocks().get(0).getEphemeridesDataLines().get(0).getPosition().toArray(), 1e-10);
-        Assert.assertArrayEquals(orbit.getPVCoordinates().getVelocity().toArray(), file.getEphemeridesBlocks().get(0).getEphemeridesDataLines().get(0).getVelocity().toArray(), 1e-10);
-        Assert.assertArrayEquals((new Vector3D(1, 1, 1)).toArray(), file.getEphemeridesBlocks().get(1).getEphemeridesDataLines().get(0).getAcceleration().toArray(), 1e-10);
-        Assert.assertEquals(Vector3D.ZERO, file.getEphemeridesBlocks().get(1).getEphemeridesDataLines().get(1).getAcceleration());
+        Assert.assertArrayEquals(orbit.getPVCoordinates().getPosition().toArray(), file.getSegments().get(0).getData().getEphemeridesDataLines().get(0).getPosition().toArray(), 1e-10);
+        Assert.assertArrayEquals(orbit.getPVCoordinates().getVelocity().toArray(), file.getSegments().get(0).getData().getEphemeridesDataLines().get(0).getVelocity().toArray(), 1e-10);
+        Assert.assertArrayEquals((new Vector3D(1, 1, 1)).toArray(), file.getSegments().get(1).getData().getEphemeridesDataLines().get(0).getAcceleration().toArray(), 1e-10);
+        Assert.assertEquals(Vector3D.ZERO, file.getSegments().get(1).getData().getEphemeridesDataLines().get(1).getAcceleration());
         final Array2DRowRealMatrix covMatrix = new Array2DRowRealMatrix(6, 6);
         final double[] column1 = {
             3.331349476038534e-04, 4.618927349220216e-04,
@@ -148,18 +144,18 @@ public class OEMParserTest {
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 6; j++) {
                 Assert.assertEquals(covMatrix.getEntry(i, j),
-                                    file.getEphemeridesBlocks().get(2).getCovarianceMatrices().get(0).getMatrix().getEntry(i, j),
+                                    file.getSegments().get(2).getCovarianceMatrices().get(0).getMatrix().getEntry(i, j),
                                     1e-10);
             }
         }
         Assert.assertEquals(new AbsoluteDate("1996-12-28T21:29:07.267", TimeScalesFactory.getUTC()),
-                            file.getEphemeridesBlocks().get(2).getCovarianceMatrices().get(0).getEpoch());
+                            file.getSegments().get(2).getCovarianceMatrices().get(0).getEpoch());
         Assert.assertEquals(LOFType.QSW,
-                            file.getEphemeridesBlocks().get(2).getCovarianceMatrices().get(0).getLofType());
-        Assert.assertNull(file.getEphemeridesBlocks().get(2).getCovarianceMatrices().get(0).getFrame());
+                            file.getSegments().get(2).getCovarianceMatrices().get(0).getLofType());
+        Assert.assertNull(file.getSegments().get(2).getCovarianceMatrices().get(0).getFrame());
         Assert.assertEquals(FramesFactory.getEME2000(),
-                            file.getEphemeridesBlocks().get(2).getCovarianceMatrices().get(1).getFrame());
-        Assert.assertNull(file.getEphemeridesBlocks().get(2).getCovarianceMatrices().get(1).getLofType());
+                            file.getSegments().get(2).getCovarianceMatrices().get(1).getFrame());
+        Assert.assertNull(file.getSegments().get(2).getCovarianceMatrices().get(1).getLofType());
     }
 
     @Test
@@ -171,9 +167,9 @@ public class OEMParserTest {
                 .withMu(CelestialBodyFactory.getEarth().getGM())
                 .withConventions(IERSConventions.IERS_2010);
         final OEMFile file = parser.parse(inEntry);
-        Assert.assertEquals(CcsdsTimeScale.UTC, file.getEphemeridesBlocks().get(0).getMetadata().getTimeSystem());
-        Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getEphemeridesBlocks().get(0).getMetadata().getObjectName());
-        Assert.assertEquals("1996-062A", file.getEphemeridesBlocks().get(0).getMetadata().getObjectID());
+        Assert.assertEquals(CcsdsTimeScale.UTC, file.getSegments().get(0).getMetadata().getTimeSystem());
+        Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getSegments().get(0).getMetadata().getObjectName());
+        Assert.assertEquals("1996-062A", file.getSegments().get(0).getMetadata().getObjectID());
 
         Assert.assertEquals(1, file.getSatellites().size());
         Assert.assertEquals(true, file.getSatellites().containsKey("1996-062A"));
@@ -182,13 +178,12 @@ public class OEMParserTest {
         Assert.assertEquals("1996-062A", file.getSatellites().values().iterator().next().getId());
         Assert.assertEquals(
                 new AbsoluteDate("1996-12-18T12:00:00.331", TimeScalesFactory.getUTC()),
-                file.getEphemeridesBlocks().get(0).getStartTime());
+                file.getSegments().get(0).getMetadata().getStartTime());
 
-        final OemSatelliteEphemeris satellite = file.getSatellites().get("1996-062A");
+        final OEMSatelliteEphemeris satellite = file.getSatellites().get("1996-062A");
         Assert.assertEquals(satellite.getId(), "1996-062A");
-        Assert.assertEquals(satellite.getMu(), file.getMuUsed(), 0);
-        final EphemeridesBlock actualBlock = satellite.getSegments().get(0);
-        Assert.assertEquals(actualBlock.getMu(), file.getMuUsed(), 0);
+        final OEMSegment actualBlock = satellite.getSegments().get(0);
+        Assert.assertEquals(CelestialBodyFactory.getMars().getGM(), actualBlock.getMu(), 1.0);
         Assert.assertEquals(actualBlock.getFrameString(), "EME2000");
         Assert.assertEquals(actualBlock.getFrameCenterString(), "MARS BARYCENTER");
         Assert.assertEquals(actualBlock.getMetadata().getHasCreatableBody(), false);
@@ -224,9 +219,9 @@ public class OEMParserTest {
                 .withMu(CelestialBodyFactory.getEarth().getGM())
                 .withConventions(IERSConventions.IERS_2010);
         final OEMFile file = parser.parse(inEntry);
-        Assert.assertEquals(CcsdsTimeScale.UTC, file.getEphemeridesBlocks().get(0).getMetadata().getTimeSystem());
-        Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getEphemeridesBlocks().get(0).getMetadata().getObjectName());
-        Assert.assertEquals("1996-062A", file.getEphemeridesBlocks().get(0).getMetadata().getObjectID());
+        Assert.assertEquals(CcsdsTimeScale.UTC, file.getSegments().get(0).getMetadata().getTimeSystem());
+        Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getSegments().get(0).getMetadata().getObjectName());
+        Assert.assertEquals("1996-062A", file.getSegments().get(0).getMetadata().getObjectID());
 
         Assert.assertEquals(1, file.getSatellites().size());
         Assert.assertEquals(true, file.getSatellites().containsKey("1996-062A"));
@@ -235,13 +230,12 @@ public class OEMParserTest {
         Assert.assertEquals("1996-062A", file.getSatellites().values().iterator().next().getId());
         Assert.assertEquals(
                 new AbsoluteDate("2002-12-18T12:00:00.331", TimeScalesFactory.getUTC()),
-                file.getEphemeridesBlocks().get(0).getStartTime());
+                file.getSegments().get(0).getMetadata().getStartTime());
 
-        OemSatelliteEphemeris satellite = file.getSatellites().get("1996-062A");
+        OEMSatelliteEphemeris satellite = file.getSatellites().get("1996-062A");
         Assert.assertEquals(satellite.getId(), "1996-062A");
-        Assert.assertEquals(satellite.getMu(), file.getMuUsed(), 0);
-        EphemeridesBlock actualBlock = satellite.getSegments().get(0);
-        Assert.assertEquals(actualBlock.getMu(), file.getMuUsed(), 0);
+        OEMSegment actualBlock = satellite.getSegments().get(0);
+        Assert.assertEquals(CelestialBodyFactory.getMars().getGM(), actualBlock.getMu(), 1.0);
         FactoryManagedFrame eme2000 = FramesFactory.getEME2000();
         Frame actualFrame = actualBlock.getFrame();
         AbsoluteDate actualStart = satellite.getStart();
@@ -266,8 +260,8 @@ public class OEMParserTest {
         Assert.assertEquals(actualBlock.getTimeScale(), TimeScalesFactory.getUTC());
         Assert.assertEquals(actualBlock.getAvailableDerivatives(),
                 CartesianDerivativesFilter.USE_PV);
-        Assert.assertEquals(satellite.getSegments().get(0).getStartTime(), actualStart);
-        Assert.assertEquals(satellite.getSegments().get(2).getStopTime(), satellite.getStop());
+        Assert.assertEquals(satellite.getSegments().get(0).getMetadata().getStartTime(), actualStart);
+        Assert.assertEquals(satellite.getSegments().get(2).getMetadata().getStopTime(), satellite.getStop());
 
         final BoundedPropagator propagator = satellite.getPropagator();
         Assert.assertEquals(propagator.getMinDate(), satellite.getStart());
@@ -276,8 +270,8 @@ public class OEMParserTest {
         Assert.assertEquals(propagator.getMaxDate(), satellite.getSegments().get(2).getStop());
 
         final List<TimeStampedPVCoordinates> dataLines = new ArrayList<>();
-        for (EphemeridesBlock block : file.getEphemeridesBlocks()) {
-            for (TimeStampedPVCoordinates dataLine : block.getEphemeridesDataLines()) {
+        for (OEMSegment block : file.getSegments()) {
+            for (TimeStampedPVCoordinates dataLine : block.getData().getEphemeridesDataLines()) {
                 if (dataLine.getDate().compareTo(satellite.getStart()) >= 0) {
                     dataLines.add(dataLine);
                 }
@@ -303,31 +297,33 @@ public class OEMParserTest {
             throws URISyntaxException {
 
         final String name = getClass().getResource("/ccsds/odm/oem/OEMExample2.txt").toURI().getPath();
+        final AbsoluteDate missionReferenceDate = new AbsoluteDate("1996-12-17T00:00:00.000", TimeScalesFactory.getUTC());
         OEMParser parser = new OEMParser().
                 withConventions(IERSConventions.IERS_2010).
                 withSimpleEOP(true).
                 withMu(CelestialBodyFactory.getMars().getGM()).
-                withMissionReferenceDate(new AbsoluteDate("1996-12-17T00:00:00.000",
-                                                          TimeScalesFactory.getUTC()));
+                withMissionReferenceDate(missionReferenceDate);
 
         final OEMFile file = parser.parse(name);
         final List<String> headerComment = new ArrayList<String>();
         headerComment.add("comment");
-        Assert.assertEquals(headerComment, file.getHeaderComment());
+        Assert.assertEquals(headerComment, file.getHeader().getComments());
         final List<String> metadataComment = new ArrayList<String>();
         metadataComment.add("comment 1");
         metadataComment.add("comment 2");
-        Assert.assertEquals(metadataComment, file.getEphemeridesBlocks().get(0).getMetadata().getComments());
-        Assert.assertEquals("TOD", file.getEphemeridesBlocks().get(0).getFrameString());
-        Assert.assertEquals("EME2000", file.getEphemeridesBlocks().get(1).getFrameString());
-        List<EphemeridesBlock> blocks = file.getEphemeridesBlocks();
+        Assert.assertEquals(metadataComment, file.getSegments().get(0).getMetadata().getComments());
+        Assert.assertEquals("TOD", file.getSegments().get(0).getFrameString());
+        Assert.assertEquals("EME2000", file.getSegments().get(1).getFrameString());
+        List<OEMSegment> blocks = file.getSegments();
         Assert.assertEquals(2, blocks.size());
-        Assert.assertTrue(blocks.get(0).getHasRefFrameEpoch());
         Assert.assertEquals(129600.331,
-                            blocks.get(0).getStartTime().durationFrom(file.getMissionReferenceDate()),
+                            blocks.get(0).getMetadata().getFrameEpoch().durationFrom(missionReferenceDate),
+                            1.0e-15);
+        Assert.assertEquals(129600.331,
+                            blocks.get(0).getMetadata().getStartTime().durationFrom(missionReferenceDate),
                             1.0e-15);
         Assert.assertEquals(941347.267,
-                            blocks.get(1).getStartTime().durationFrom(file.getMissionReferenceDate()),
+                            blocks.get(1).getMetadata().getStartTime().durationFrom(missionReferenceDate),
                             1.0e-15);
 
     }
@@ -408,7 +404,7 @@ public class OEMParserTest {
         //verify
         Assert.assertEquals(
                 CelestialBodyFactory.getEarth(),
-                actual.getEphemeridesBlocks().get(0).getMetadata().getCenterBody());
+                actual.getSegments().get(0).getMetadata().getCenterBody());
     }
 
     @Test
@@ -471,14 +467,14 @@ public class OEMParserTest {
         OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM());
 
         final OEMFile file = parser.parse(name);
-        Assert.assertEquals(1, file.getEphemeridesBlocks().get(0).getInterpolationDegree());
-        Assert.assertEquals(7, file.getEphemeridesBlocks().get(1).getInterpolationDegree());
+        Assert.assertEquals(1, file.getSegments().get(0).getMetadata().getInterpolationDegree());
+        Assert.assertEquals(7, file.getSegments().get(1).getMetadata().getInterpolationDegree());
 
         parser = parser.withInterpolationDegree(5);
 
         final OEMFile file2 = parser.parse(name);
-        Assert.assertEquals(5, file2.getEphemeridesBlocks().get(0).getInterpolationDegree());
-        Assert.assertEquals(7, file2.getEphemeridesBlocks().get(1).getInterpolationDegree());
+        Assert.assertEquals(5, file2.getSegments().get(0).getMetadata().getInterpolationDegree());
+        Assert.assertEquals(7, file2.getSegments().get(1).getMetadata().getInterpolationDegree());
     }
 
     /**
@@ -518,7 +514,7 @@ public class OEMParserTest {
             OEMFile actual = parser.parse(input);
 
             // verify
-            EphemeridesBlock actualBlock = actual.getEphemeridesBlocks().get(0);
+            OEMSegment actualBlock = actual.getSegments().get(0);
             Assert.assertEquals(actualBlock.getFrameString(), frameName);
             // check expected frame
             Frame actualFrame = actualBlock.getFrame();

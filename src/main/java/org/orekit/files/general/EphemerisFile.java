@@ -79,8 +79,7 @@ public interface EphemerisFile {
         /**
          * Get the standard gravitational parameter for the satellite.
          *
-         * @return the gravitational parameter use in {@link #getPropagator()}, in m^3 /
-         * s^2.
+         * @return the gravitational parameter use in {@link #getPropagator()}, in m³/s².
          */
         double getMu();
 
@@ -107,8 +106,7 @@ public interface EphemerisFile {
         /**
          * Get the end date of the ephemeris.
          *
-         * <p> The date returned by this method is equivalent to {@code
-         * getPropagator().getMaxDate()}.
+         * <p> The date returned by this method is equivalent to {@code getPropagator().getMaxDate()}.
          *
          * @return ephemeris end date.
          */
@@ -159,8 +157,7 @@ public interface EphemerisFile {
         /**
          * Get the standard gravitational parameter for the satellite.
          *
-         * @return the gravitational parameter use in {@link #getPropagator()}, in m^3 /
-         * s^2.
+         * @return the gravitational parameter use in {@link #getPropagator()}, in m³/s².
          */
         double getMu();
 

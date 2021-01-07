@@ -61,6 +61,20 @@ public class NDMMetadata {
         this.comments    = new ArrayList<String>();
     }
 
+    /** Get the IERS conventions.
+     * @return IERS conventions
+     */
+    public IERSConventions getConventions() {
+        return conventions;
+    }
+
+    /** Get the data context.
+     * @return data context
+     */
+    public DataContext getDataContext() {
+        return dataContext;
+    }
+
     /** Get the Time System that: for OPM, is used for metadata, state vector,
      * maneuver and covariance data, for OMM, is used for metadata, orbit state
      * and covariance data, for OEM, is used for metadata, ephemeris and

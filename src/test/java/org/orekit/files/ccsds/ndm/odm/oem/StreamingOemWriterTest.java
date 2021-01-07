@@ -230,7 +230,7 @@ public class StreamingOemWriterTest {
                     .withConventions(IERSConventions.IERS_2010);
             OEMFile oemFile = parser.parse(inEntry, "OEMExample1.txt");
 
-            OemSatelliteEphemeris satellite =
+            OEMSatelliteEphemeris satellite =
                     oemFile.getSatellites().values().iterator().next();
             EphemeridesBlock ephemerisBlock = satellite.getSegments().get(0);
             Frame frame = ephemerisBlock.getFrame();
