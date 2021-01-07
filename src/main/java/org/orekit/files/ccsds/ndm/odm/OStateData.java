@@ -43,6 +43,9 @@ public abstract class OStateData implements NDMData {
     /** Epoch of state vector and optional Keplerian elements. */
     private AbsoluteDate epoch;
 
+    /** Gravitational coefficient. */
+    private double mu;
+
     /** Orbit semi-major axis (m). */
     private double a;
 
@@ -130,6 +133,22 @@ public abstract class OStateData implements NDMData {
      */
     void setEpoch(final AbsoluteDate epoch) {
         this.epoch = epoch;
+    }
+
+    /**
+     * Set the gravitational coefficient.
+     * @param mu the coefficient to be set
+     */
+    void setMu(final double mu) {
+        this.mu = mu;
+    }
+
+    /**
+     * Get the gravitational coefficient.
+     * @return gravitational coefficient
+     */
+    public double getMu() {
+        return mu;
     }
 
     /** Get the orbit semi-major axis.

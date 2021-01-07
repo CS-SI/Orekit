@@ -230,7 +230,7 @@ public class OCMParser extends ODMParser<OCMFile> {
                         case META_STOP :
                             checkAllowedSection(pi, section, Section.META_DATA);
                             if (!pi.commentTmp.isEmpty()) {
-                                pi.file.getMetadata().setComment(pi.commentTmp);
+                                pi.file.getMetadata().setComments(pi.commentTmp);
                                 pi.commentTmp.clear();
                             }
                             previousSection = section;

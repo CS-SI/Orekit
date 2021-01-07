@@ -43,14 +43,14 @@ public class APMManeuver {
     private Vector3D torque;
 
     /** Maneuvers data comment, each string in the list corresponds to one line of comment. */
-    private List<String> comment;
+    private List<String> comments;
 
     /**
      * Simple constructor.
      */
     public APMManeuver() {
         this.torque  = Vector3D.ZERO;
-        this.comment = Collections.emptyList();
+        this.comments = Collections.emptyList();
     }
 
     /**
@@ -121,16 +121,16 @@ public class APMManeuver {
      * Get the maneuvers data comment, each string in the list corresponds to one line of comment.
      * @return maneuvers data comment, each string in the list corresponds to one line of comment
      */
-    public List<String> getComment() {
-        return Collections.unmodifiableList(comment);
+    public List<String> getComments() {
+        return Collections.unmodifiableList(comments);
     }
 
     /**
      * Set the maneuvers data comment, each string in the list corresponds to one line of comment.
-     * @param comment maneuvers data comment, each string in the list corresponds to one line of comment
+     * @param comments maneuvers data comment, each string in the list corresponds to one line of comment
      */
-    public void setComment(final List<String> comment) {
-        this.comment = new ArrayList<>(comment);
+    public void setComments(final List<String> comments) {
+        this.comments = new ArrayList<>(comments);
     }
 
 }

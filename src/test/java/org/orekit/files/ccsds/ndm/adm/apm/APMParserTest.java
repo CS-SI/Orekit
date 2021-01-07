@@ -216,7 +216,7 @@ public class APMParserTest {
         maneuverComment.add("Data follows for 1 planned maneuver.");
         maneuverComment.add("First attitude maneuver for: MARS SPIRIT");
         maneuverComment.add("Impulsive, torque direction fixed in body frame");
-        Assert.assertEquals(maneuverComment, segment.getData().getManeuver(0).getComment());
+        Assert.assertEquals(maneuverComment, segment.getData().getManeuver(0).getComments());
         Assert.assertTrue(segment.getData().getHasManeuver());
         Assert.assertEquals(1, segment.getData().getNbManeuvers());
         Assert.assertEquals(1, segment.getData().getManeuvers().size());

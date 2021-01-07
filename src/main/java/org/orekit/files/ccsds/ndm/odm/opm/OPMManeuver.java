@@ -146,18 +146,20 @@ public class OPMManeuver {
         this.dV = dV;
     }
 
-    /** Get the maneuvers data comment, each string in the list corresponds to one line of comment.
+    /**
+     * Get the maneuvers data comment, each string in the list corresponds to one line of comment.
      * @return maneuvers data comment, each string in the list corresponds to one line of comment
      */
-    public List<String> getComment() {
+    public List<String> getComments() {
         return Collections.unmodifiableList(comments);
     }
 
-    /** Add a maneuver comment.
-     * @param comment comment to add
+    /**
+     * Set the maneuvers data comment, each string in the list corresponds to one line of comment.
+     * @param comments maneuvers data comment, each string in the list corresponds to one line of comment
      */
-    public void addComment(final String comment) {
-        comments.add(comment);
+    public void setComments(final List<String> comments) {
+        this.comments = new ArrayList<>(comments);
     }
 
 }

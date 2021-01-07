@@ -97,6 +97,7 @@ public enum CcsdsTimeScale {
                                       final IERSConventions conventions,
                                       final AbsoluteDate missionReferenceDate,
                                       final TimeScales timeScales) {
+            // TODO: implement SCLK, delegating interpretation to user-provided method
             throw new OrekitException(
                     OrekitMessages.CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED,
                     this.name());

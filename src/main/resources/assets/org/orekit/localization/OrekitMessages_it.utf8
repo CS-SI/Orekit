@@ -319,6 +319,9 @@ CCSDS_UNEXPECTED_KEYWORD = parola-chiave inattesa alla linea {0} del file CCSDS 
 # the central body gravitational coefficient cannot be retrieved from the ODM
 CCSDS_UNKNOWN_GM = il coefficiente d''attrazione gravitazionale del corpo centrale non può essere recuperato nell''ODM
 
+# unknown central body {0}
+CCSDS_UNKNOWN_CENTER = <MISSING TRANSLATION>
+
 # there is no spacecraft mass associated with this ODM file
 CCSDS_UNKNOWN_SPACECRAFT_MASS = nessuna massa associata al veicolo spaziale nel file ODM
 

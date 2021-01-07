@@ -189,7 +189,7 @@ public class OMMParserTest {
         Assert.assertEquals(headerComment, file.getHeaderComment());
         ArrayList<String> metadataComment = new ArrayList<String>();
         metadataComment.add("this comment doesn't say much");
-        Assert.assertEquals(metadataComment, file.getMetadata().getComment());
+        Assert.assertEquals(metadataComment, file.getMetadata().getComments());
         ArrayList<String> epochComment = new ArrayList<String>();
         epochComment.add("the following data is what we're looking for");
         Assert.assertEquals(epochComment, file.getEpochComment());

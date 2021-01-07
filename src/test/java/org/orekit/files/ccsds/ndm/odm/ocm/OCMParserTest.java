@@ -109,7 +109,7 @@ public class OCMParserTest {
         Assert.assertEquals("LINEAR",             file.getMetadata().getInterpMethodEOP());
 
         // Check Header Block;
-        Assert.assertEquals(3.0, file.getFormatVersion(), 1.0e-10);
+        Assert.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
         Assert.assertEquals(new AbsoluteDate(1998, 11, 06, 9, 23, 57, TimeScalesFactory.getUTC()),
                             file.getCreationDate());
 
@@ -266,8 +266,8 @@ public class OCMParserTest {
         Assert.assertEquals(new AbsoluteDate(2019, 7, 23, 10, 29, 31.576, TimeScalesFactory.getUTC()),
                             file.getCreationDate());
 
-        Assert.assertEquals(1,                                     file.getMetadata().getComment().size());
-        Assert.assertEquals("Metadata comment",                    file.getMetadata().getComment().get(0));
+        Assert.assertEquals(1,                                     file.getMetadata().getComments().size());
+        Assert.assertEquals("Metadata comment",                    file.getMetadata().getComments().get(0));
         Assert.assertEquals("JPL",                                 file.getOriginator());
         Assert.assertEquals("MR. RODGERS",                         file.getMetadata().getOriginatorPOC());
         Assert.assertEquals("FLIGHT DYNAMICS MISSION DESIGN LEAD", file.getMetadata().getOriginatorPosition());

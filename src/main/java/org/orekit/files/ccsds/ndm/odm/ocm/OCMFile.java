@@ -67,7 +67,7 @@ public class OCMFile extends ODMFile<NDMSegment<OCMMetadata, OCMData>> {
      * @return comment for meta-data
      */
     public List<String> getMetadataComment() {
-        return metaData.getComment();
+        return metaData.getComments();
     }
 
     /** Get the orbit state time histories.

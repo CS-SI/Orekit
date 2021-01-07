@@ -317,7 +317,7 @@ public class OEMParserTest {
         final List<String> metadataComment = new ArrayList<String>();
         metadataComment.add("comment 1");
         metadataComment.add("comment 2");
-        Assert.assertEquals(metadataComment, file.getEphemeridesBlocks().get(0).getMetadata().getComment());
+        Assert.assertEquals(metadataComment, file.getEphemeridesBlocks().get(0).getMetadata().getComments());
         Assert.assertEquals("TOD", file.getEphemeridesBlocks().get(0).getFrameString());
         Assert.assertEquals("EME2000", file.getEphemeridesBlocks().get(1).getFrameString());
         List<EphemeridesBlock> blocks = file.getEphemeridesBlocks();

@@ -16,13 +16,12 @@
  */
 package org.orekit.files.ccsds.ndm.odm;
 
-import java.util.List;
 import java.util.regex.Pattern;
 
-import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.data.DataContext;
-import org.orekit.files.ccsds.Keyword;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.CenterName;
@@ -31,6 +30,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
 /** Common parser for Orbit Parameter/Ephemeris/Mean Message files.
+ * @param <T> type of the ODM file
  * @author Luc Maisonobe
  * @since 11.0
  */
@@ -39,11 +39,17 @@ public abstract class OCommonParser<T extends ODMFile<?>> extends ODMParser<T> {
     /** Pattern for dash. */
     private static final Pattern DASH = Pattern.compile("-");
 
-    /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
-    private final AbsoluteDate missionReferenceDate;
+    /** Gravitational coefficient set by the user in the parser. */
+    private double muSet;
 
-    /** Gravitational coefficient. */
-    private final  double mu;
+    /** Gravitational coefficient parsed in the ODM File. */
+    private double muParsed;
+
+    /** Gravitational coefficient created from the knowledge of the central body. */
+    private double muCreated;
+
+    /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
+    private AbsoluteDate missionReferenceDate;
 
     /** Complete constructor.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
@@ -51,14 +57,15 @@ public abstract class OCommonParser<T extends ODMFile<?>> extends ODMParser<T> {
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames and time scales.
-     * @since 10.1
      */
     protected OCommonParser(final AbsoluteDate missionReferenceDate, final double mu,
                             final IERSConventions conventions, final boolean simpleEOP,
                             final DataContext dataContext) {
         super(conventions, simpleEOP, dataContext);
         this.missionReferenceDate = missionReferenceDate;
-        this.mu                   = mu;
+        this.muSet                = mu;
+        this.muParsed             = Double.NaN;
+        this.muCreated            = Double.NaN;
     }
 
     /** Set initial date.
@@ -66,11 +73,13 @@ public abstract class OCommonParser<T extends ODMFile<?>> extends ODMParser<T> {
      * @return a new instance, with mission reference date replaced
      * @see #getMissionReferenceDate()
      */
-    public abstract OCommonParser<T> withMissionReferenceDate(AbsoluteDate newMissionReferenceDate);
+    public OCommonParser<T> withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
+        return create(getConventions(), isSimpleEOP(), getDataContext(), newMissionReferenceDate, muSet);
+    }
 
-    /** Get initial date.
-     * @return mission reference date to use while parsing
-     * @see #withMissionReferenceDate(AbsoluteDate)
+    /**
+     * Get reference date for Mission Elapsed Time and Mission Relative Time time systems.
+     * @return the reference date
      */
     public AbsoluteDate getMissionReferenceDate() {
         return missionReferenceDate;
@@ -81,29 +90,31 @@ public abstract class OCommonParser<T extends ODMFile<?>> extends ODMParser<T> {
      * @return a new instance, with gravitational coefficient value replaced
      * @see #getMu()
      */
-    public abstract OCommonParser<T> withMu(double newMu);
-
-    /** Get gravitational coefficient.
-     * @return gravitational coefficient to use while parsing
-     * @see #withMu(double)
-     */
-    public double getMu() {
-        return mu;
+    public OCommonParser<T> withMu(final double newMu) {
+        return create(getConventions(), isSimpleEOP(), getDataContext(), missionReferenceDate, newMu);
     }
 
-    /** Parse a comment line.
-     * @param keyValue key=value pair containing the comment
-     * @param comment placeholder where the current comment line should be added
-     * @return true if the line was a comment line and was parsed
-     */
-    protected boolean parseComment(final KeyValue keyValue, final List<String> comment) {
-        if (keyValue.getKeyword() == Keyword.COMMENT) {
-            comment.add(keyValue.getValue());
-            return true;
-        } else {
-            return false;
-        }
+    /** {@inheritDoc} */
+    @Override
+    protected OCommonParser<T> create(final IERSConventions newConventions,
+                                      final boolean newSimpleEOP,
+                                      final DataContext newDataContext) {
+        return create(newConventions, newSimpleEOP, newDataContext, missionReferenceDate, muSet);
     }
+
+    /** Build a new instance.
+     * @param newConventions IERS conventions to use while parsing
+     * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
+     * @param newDataContext data context used for frames, time scales, and celestial bodies
+     * @param newMissionReferenceDate mission reference date to use while parsing
+     * @param newMu gravitational coefficient to use while parsing
+     * @return a new instance with changed parameters
+     */
+    protected abstract OCommonParser<T> create(IERSConventions newConventions,
+                                               boolean newSimpleEOP,
+                                               DataContext newDataContext,
+                                               AbsoluteDate newMissionReferenceDate,
+                                               double newMu);
 
     /** Parse a meta-data key = value entry.
      * @param keyValue key = value pair
@@ -132,15 +143,16 @@ public abstract class OCommonParser<T extends ODMFile<?>> extends ODMParser<T> {
                     } else {
                         canonicalValue = keyValue.getValue();
                     }
-                    for (final CenterName c : CenterName.values()) {
-                        if (c.name().equals(canonicalValue)) {
-                            metaData.setHasCreatableBody(true);
-                            final CelestialBodies celestialBodies =
-                                            getDataContext().getCelestialBodies();
-                            metaData.setCenterBody(c.getCelestialBody(celestialBodies));
-                            metaData.setMuCreated(c.getCelestialBody(celestialBodies).getGM());
-                        }
+                    final CenterName c;
+                    try {
+                        c = CenterName.valueOf(canonicalValue);
+                    } catch (IllegalArgumentException n) {
+                        throw new OrekitException(n, OrekitMessages.CCSDS_UNKNOWN_CENTER, keyValue.getValue());
                     }
+                    metaData.setHasCreatableBody(true);
+                    final CelestialBodies celestialBodies = getDataContext().getCelestialBodies();
+                    metaData.setCenterBody(c.getCelestialBody(celestialBodies));
+                    setMuCreated(c.getCelestialBody(celestialBodies).getGM());
                     return true;
 
                 case REF_FRAME:
@@ -167,202 +179,6 @@ public abstract class OCommonParser<T extends ODMFile<?>> extends ODMParser<T> {
         }
     }
 
-    /** Parse a general state data key = value entry.
-     * @param keyValue key = value pair
-     * @param general instance to update with parsed entry
-     * @param comment previous comment lines, will be emptied if used by the keyword
-     * @return true if the keyword was a meta-data keyword and has been parsed
-     */
-    protected boolean parseGeneralStateDataEntry(final KeyValue keyValue,
-                                                 final T general, final List<String> comment) {
-        switch (keyValue.getKeyword()) {
-
-            case EPOCH:
-                general.setEpochComment(comment);
-                comment.clear();
-                general.setEpoch(parseDate(keyValue.getValue(), general.getMetadata().getTimeSystem()));
-                return true;
-
-            case SEMI_MAJOR_AXIS:
-                // as we have found semi major axis we don't expect mean motion anymore
-                declareFound(Keyword.MEAN_MOTION);
-                general.setKeplerianElementsComment(comment);
-                comment.clear();
-                general.setA(keyValue.getDoubleValue() * 1000);
-                general.setHasKeplerianElements(true);
-                return true;
-
-            case ECCENTRICITY:
-                general.setE(keyValue.getDoubleValue());
-                return true;
-
-            case INCLINATION:
-                general.setI(FastMath.toRadians(keyValue.getDoubleValue()));
-                return true;
-
-            case RA_OF_ASC_NODE:
-                general.setRaan(FastMath.toRadians(keyValue.getDoubleValue()));
-                return true;
-
-            case ARG_OF_PERICENTER:
-                general.setPa(FastMath.toRadians(keyValue.getDoubleValue()));
-                return true;
-
-            case TRUE_ANOMALY:
-                general.setAnomalyType("TRUE");
-                general.setAnomaly(FastMath.toRadians(keyValue.getDoubleValue()));
-                return true;
-
-            case MEAN_ANOMALY:
-                general.setAnomalyType("MEAN");
-                general.setAnomaly(FastMath.toRadians(keyValue.getDoubleValue()));
-                return true;
-
-            case GM:
-                general.setMuParsed(keyValue.getDoubleValue() * 1e9);
-                return true;
-
-            case MASS:
-                comment.addAll(0, general.getSpacecraftComment());
-                general.setSpacecraftComment(comment);
-                comment.clear();
-                general.setMass(keyValue.getDoubleValue());
-                return true;
-
-            case SOLAR_RAD_AREA:
-                comment.addAll(0, general.getSpacecraftComment());
-                general.setSpacecraftComment(comment);
-                comment.clear();
-                general.setSolarRadArea(keyValue.getDoubleValue());
-                return true;
-
-            case SOLAR_RAD_COEFF:
-                comment.addAll(0, general.getSpacecraftComment());
-                general.setSpacecraftComment(comment);
-                comment.clear();
-                general.setSolarRadCoeff(keyValue.getDoubleValue());
-                return true;
-
-            case DRAG_AREA:
-                comment.addAll(0, general.getSpacecraftComment());
-                general.setSpacecraftComment(comment);
-                comment.clear();
-                general.setDragArea(keyValue.getDoubleValue());
-                return true;
-
-            case DRAG_COEFF:
-                comment.addAll(0, general.getSpacecraftComment());
-                general.setSpacecraftComment(comment);
-                comment.clear();
-                general.setDragCoeff(keyValue.getDoubleValue());
-                return true;
-
-            case COV_REF_FRAME:
-                general.setCovarianceComment(comment);
-                comment.clear();
-                final CCSDSFrame covFrame = parseCCSDSFrame(keyValue.getValue());
-                if (covFrame.isLof()) {
-                    general.setCovRefLofType(covFrame.getLofType());
-                } else {
-                    general.setCovRefFrame(covFrame
-                            .getFrame(getConventions(), isSimpleEOP(), getDataContext()));
-                }
-                return true;
-
-            case CX_X:
-                general.createCovarianceMatrix();
-                general.setCovarianceMatrixEntry(0, 0, keyValue.getDoubleValue() * 1.0e6);
-                return true;
-
-            case CY_X:
-                general.setCovarianceMatrixEntry(0, 1, keyValue.getDoubleValue() * 1.0e6);
-                return true;
-
-            case CY_Y:
-                general.setCovarianceMatrixEntry(1, 1, keyValue.getDoubleValue() * 1.0e6);
-                return true;
-
-            case CZ_X:
-                general.setCovarianceMatrixEntry(0, 2, keyValue.getDoubleValue() * 1.0e6);
-                return true;
-
-            case CZ_Y:
-                general.setCovarianceMatrixEntry(1, 2, keyValue.getDoubleValue() * 1.0e6);
-                return true;
-
-            case CZ_Z:
-                general.setCovarianceMatrixEntry(2, 2, keyValue.getDoubleValue() * 1.0e6);
-                return true;
-
-            case CX_DOT_X:
-                general.setCovarianceMatrixEntry(0, 3, keyValue.getDoubleValue() * 1.0e6);
-                return true;
-
-            case CX_DOT_Y:
-                general.setCovarianceMatrixEntry(1, 3, keyValue.getDoubleValue() * 1.0e6);
-                return true;
-
-            case CX_DOT_Z:
-                general.setCovarianceMatrixEntry(2, 3, keyValue.getDoubleValue() * 1.0e6);
-                return true;
-
-            case CX_DOT_X_DOT:
-                general.setCovarianceMatrixEntry(3, 3, keyValue.getDoubleValue() * 1.0e6);
-                return true;
-
-            case CY_DOT_X:
-                general.setCovarianceMatrixEntry(0, 4, keyValue.getDoubleValue() * 1.0e6);
-                return true;
-
-            case CY_DOT_Y:
-                general.setCovarianceMatrixEntry(1, 4, keyValue.getDoubleValue() * 1.0e6);
-                return true;
-
-            case CY_DOT_Z:
-                general.setCovarianceMatrixEntry(2, 4, keyValue.getDoubleValue() * 1.0e6);
-                return true;
-
-            case CY_DOT_X_DOT:
-                general.setCovarianceMatrixEntry(3, 4, keyValue.getDoubleValue() * 1.0e6);
-                return true;
-
-            case CY_DOT_Y_DOT:
-                general.setCovarianceMatrixEntry(4, 4, keyValue.getDoubleValue() * 1.0e6);
-                return true;
-
-            case CZ_DOT_X:
-                general.setCovarianceMatrixEntry(0, 5, keyValue.getDoubleValue() * 1.0e6);
-                return true;
-
-            case CZ_DOT_Y:
-                general.setCovarianceMatrixEntry(1, 5, keyValue.getDoubleValue() * 1.0e6);
-                return true;
-
-            case CZ_DOT_Z:
-                general.setCovarianceMatrixEntry(2, 5, keyValue.getDoubleValue() * 1.0e6);
-                return true;
-
-            case CZ_DOT_X_DOT:
-                general.setCovarianceMatrixEntry(3, 5, keyValue.getDoubleValue() * 1.0e6);
-                return true;
-
-            case CZ_DOT_Y_DOT:
-                general.setCovarianceMatrixEntry(4, 5, keyValue.getDoubleValue() * 1.0e6);
-                return true;
-
-            case CZ_DOT_Z_DOT:
-                general.setCovarianceMatrixEntry(5, 5, keyValue.getDoubleValue() * 1.0e6);
-                return true;
-
-            case USER_DEFINED_X:
-                general.setUserDefinedParameters(keyValue.getKey(), keyValue.getValue());
-                return true;
-
-            default:
-                return false;
-        }
-    }
-
     /** Parse a CCSDS frame.
      * @param frameName name of the frame, as the value of a CCSDS key=value line
      * @return CCSDS frame corresponding to the name
@@ -378,7 +194,45 @@ public abstract class OCommonParser<T extends ODMFile<?>> extends ODMParser<T> {
      */
     protected AbsoluteDate parseDate(final String date, final CcsdsTimeScale timeSystem) {
         return timeSystem.parseDate(date, getConventions(), missionReferenceDate,
-                getDataContext().getTimeScales());
+                                    getDataContext().getTimeScales());
+    }
+
+    /**
+     * Set the gravitational coefficient parsed in the ODM File.
+     * @param muParsed the coefficient to be set
+     */
+    void setMuParsed(final double muParsed) {
+        this.muParsed = muParsed;
+    }
+
+    /**
+     * Set the gravitational coefficient created from the knowledge of the central body.
+     * @param muCreated the coefficient to be set
+     */
+    void setMuCreated(final double muCreated) {
+        this.muCreated = muCreated;
+    }
+
+    /**
+     * Select the gravitational coefficient to use.
+     * In order of decreasing priority, finalMU is set equal to:
+     * <ol>
+     *   <li>the coefficient parsed in the file,</li>
+     *   <li>the coefficient set by the user with the parser's method setMu,</li>
+     *   <li>the coefficient created from the knowledge of the central body.</li>
+     * </ol>
+     * @return selected gravitational coefficient
+     */
+    public double getSelectedMu() {
+        if (!Double.isNaN(muParsed)) {
+            return muParsed;
+        } else if (!Double.isNaN(muSet)) {
+            return muSet;
+        } else if (!Double.isNaN(muCreated)) {
+            return muCreated;
+        } else {
+            throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_GM);
+        }
     }
 
 }

@@ -31,7 +31,9 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.Keyword;
-import org.orekit.files.ccsds.ndm.odm.ODMParser;
+import org.orekit.files.ccsds.ndm.NDMSegment;
+import org.orekit.files.ccsds.ndm.odm.OCommonMetadata;
+import org.orekit.files.ccsds.ndm.odm.OStateParser;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.KeyValue;
 import org.orekit.time.AbsoluteDate;
@@ -41,7 +43,7 @@ import org.orekit.utils.IERSConventions;
  * @author sports
  * @since 6.1
  */
-public class OPMParser extends ODMParser {
+public class OPMParser extends OStateParser<OPMFile> {
 
     /** Mandatory keywords.
      * @since 10.1
@@ -127,50 +129,29 @@ public class OPMParser extends ODMParser {
      * @since 10.1
      */
     public OPMParser(final DataContext dataContext) {
-        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, dataContext);
+        this(null, true, dataContext, AbsoluteDate.FUTURE_INFINITY, Double.NaN);
     }
 
     /** Complete constructor.
-     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
-     * @param mu gravitational coefficient
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
+     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * @param mu gravitational coefficient
      */
-    private OPMParser(final AbsoluteDate missionReferenceDate, final double mu,
-                      final IERSConventions conventions, final boolean simpleEOP,
-                      final DataContext dataContext) {
-        super(missionReferenceDate, mu, conventions, simpleEOP, dataContext);
+    private OPMParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
+                      final AbsoluteDate missionReferenceDate, final double mu) {
+        super(conventions, simpleEOP, dataContext, missionReferenceDate, mu);
     }
 
     /** {@inheritDoc} */
     @Override
-    public OPMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
-        return new OPMParser(newMissionReferenceDate, getMu(), getConventions(), isSimpleEOP(), getDataContext());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public OPMParser withMu(final double newMu) {
-        return new OPMParser(getMissionReferenceDate(), newMu, getConventions(), isSimpleEOP(),  getDataContext());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public OPMParser withConventions(final IERSConventions newConventions) {
-        return new OPMParser(getMissionReferenceDate(), getMu(), newConventions, isSimpleEOP(), getDataContext());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public OPMParser withSimpleEOP(final boolean newSimpleEOP) {
-        return new OPMParser(getMissionReferenceDate(), getMu(), getConventions(), newSimpleEOP, getDataContext());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public OPMParser withDataContext(final DataContext newDataContext) {
-        return new OPMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(), newDataContext);
+    protected OPMParser create(final IERSConventions newConventions,
+                               final boolean newSimpleEOP,
+                               final DataContext newDataContext,
+                               final AbsoluteDate newMissionReferenceDate,
+                               final double newMu) {
+        return new OPMParser(newConventions, newSimpleEOP, newDataContext, newMissionReferenceDate, newMu);
     }
 
     /** {@inheritDoc} */
@@ -198,16 +179,14 @@ public class OPMParser extends ODMParser {
              BufferedReader reader = new BufferedReader(isr)) {
 
             // initialize internal data structures
-            final ParseInfo pi = new ParseInfo();
+            final ParseInfo pi = new ParseInfo(getConventions(), getDataContext());
             pi.fileName = fileName;
-            final OPMFile file = pi.file;
 
             // set the additional data that has been configured prior the parsing by the user.
-            pi.file.setMissionReferenceDate(getMissionReferenceDate());
-            pi.file.setMuSet(getMu());
             pi.file.setConventions(getConventions());
             pi.file.setDataContext(getDataContext());
 
+            pi.parsingHeader = true;
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 ++pi.lineNumber;
                 if (line.trim().length() == 0) {
@@ -222,8 +201,18 @@ public class OPMParser extends ODMParser {
 
                 switch (pi.keyValue.getKeyword()) {
 
+                    case COMMENT:
+                        if (pi.file.getHeader().getCreationDate() == null) {
+                            pi.file.getHeader().addComment(pi.keyValue.getValue());
+                        } else if (pi.metadata.getObjectName() == null) {
+                            pi.metadata.addComment(pi.keyValue.getValue());
+                        } else {
+                            pi.commentTmp.add(pi.keyValue.getValue());
+                        }
+                        break;
+
                     case CCSDS_OPM_VERS:
-                        file.setFormatVersion(pi.keyValue.getDoubleValue());
+                        pi.file.getHeader().setFormatVersion(pi.keyValue.getDoubleValue());
                         break;
 
                     case X:
@@ -252,12 +241,12 @@ public class OPMParser extends ODMParser {
 
                     case MAN_EPOCH_IGNITION:
                         if (pi.maneuver != null) {
-                            file.addManeuver(pi.maneuver);
+                            pi.data.addManeuver(pi.maneuver);
                         }
-                        pi.maneuver = new OPMFile.Maneuver();
-                        pi.maneuver.setEpochIgnition(parseDate(pi.keyValue.getValue(), file.getMetadata().getTimeSystem()));
+                        pi.maneuver = new OPMManeuver();
+                        pi.maneuver.setEpochIgnition(parseDate(pi.keyValue.getValue(), pi.metadata.getTimeSystem()));
                         if (!pi.commentTmp.isEmpty()) {
-                            pi.maneuver.setComment(pi.commentTmp);
+                            pi.maneuver.setComments(pi.commentTmp);
                             pi.commentTmp.clear();
                         }
                         break;
@@ -301,11 +290,24 @@ public class OPMParser extends ODMParser {
                         break;
 
                     default:
-                        boolean parsed = false;
-                        parsed = parsed || parseComment(pi.keyValue, pi.commentTmp);
-                        parsed = parsed || parseHeaderEntry(pi.keyValue, file, pi.commentTmp);
-                        parsed = parsed || parseMetaDataEntry(pi.keyValue, file.getMetadata(), pi.commentTmp);
-                        parsed = parsed || parseGeneralStateDataEntry(pi.keyValue, file, pi.commentTmp);
+                        boolean parsed = false;;
+                        if (pi.parsingHeader) {
+                            parsed = parseHeaderEntry(pi.keyValue, pi.file);
+                            if (!parsed) {
+                                pi.parsingHeader   = false;
+                                pi.parsingMetaData = true;
+                            }
+                        }
+                        if (pi.parsingMetaData) {
+                            parsed = parseMetaDataEntry(pi.keyValue, pi.metadata);
+                            if (!parsed) {
+                                pi.parsingMetaData = false;
+                                pi.parsingData     = true;
+                            }
+                        }
+                        if (pi.parsingData) {
+                            parsed = parseGeneralStateDataEntry(pi.keyValue, pi.metadata, pi.data, pi.commentTmp);
+                        }
                         if (!parsed) {
                             throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
                         }
@@ -316,13 +318,16 @@ public class OPMParser extends ODMParser {
             // check all mandatory keywords have been found
             checkExpected(fileName);
 
-            file.setPosition(new Vector3D(pi.x, pi.y, pi.z));
-            file.setVelocity(new Vector3D(pi.x_dot, pi.y_dot, pi.z_dot));
+            pi.data.setPosition(new Vector3D(pi.x, pi.y, pi.z));
+            pi.data.setVelocity(new Vector3D(pi.x_dot, pi.y_dot, pi.z_dot));
             if (pi.maneuver != null) {
-                file.addManeuver(pi.maneuver);
+                pi.data.addManeuver(pi.maneuver);
             }
+            pi.file.addSegment(new NDMSegment<>(pi.metadata, pi.data));
 
-            return file;
+            pi.file.setMu(getSelectedMu());
+
+            return pi.file;
         } catch (IOException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
         }
@@ -335,6 +340,21 @@ public class OPMParser extends ODMParser {
 
         /** OPM file being read. */
         private OPMFile file;
+
+        /** OPM metadata being read. */
+        private OCommonMetadata metadata;
+
+        /** OPM data being read. */
+        private OPMData data;
+
+        /** Boolean indicating if the parser is currently parsing a header block. */
+        private boolean parsingHeader;
+
+        /** Boolean indicating if the parser is currently parsing a meta-data block. */
+        private boolean parsingMetaData;
+
+        /** Boolean indicating if the parser is currently parsing a data block. */
+        private boolean parsingData;
 
         /** Name of the file. */
         private String fileName;
@@ -367,14 +387,22 @@ public class OPMParser extends ODMParser {
         private double z_dot;
 
         /** Current maneuver. */
-        private OPMFile.Maneuver maneuver;
+        private OPMManeuver maneuver;
 
-        /** Create a new {@link ParseInfo} object. */
-        protected ParseInfo() {
-            file       = new OPMFile();
-            lineNumber = 0;
-            commentTmp = new ArrayList<String>();
-            maneuver   = null;
+        /** Create a new {@link ParseInfo} object.
+            * @param conventions IERS conventions to use
+            * @param dataContext data context to use
+         */
+        protected ParseInfo(final IERSConventions conventions, final DataContext dataContext) {
+            file            = new OPMFile();
+            metadata        = new OCommonMetadata(conventions, dataContext);
+            data            = new OPMData();
+            parsingHeader   = false;
+            parsingMetaData = false;
+            parsingData     = false;
+            lineNumber      = 0;
+            commentTmp      = new ArrayList<String>();
+            maneuver        = null;
         }
     }
 }

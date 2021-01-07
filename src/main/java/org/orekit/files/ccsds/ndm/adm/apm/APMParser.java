@@ -224,7 +224,7 @@ public class APMParser extends ADMParser<APMFile> {
                         pi.maneuver = new APMManeuver();
                         pi.maneuver.setEpochStart(parseDate(pi.keyValue.getValue(), pi.metadata.getTimeSystem()));
                         if (!pi.commentTmp.isEmpty()) {
-                            pi.maneuver.setComment(pi.commentTmp);
+                            pi.maneuver.setComments(pi.commentTmp);
                             pi.commentTmp.clear();
                         }
                         break;
