@@ -106,7 +106,7 @@ public class OrekitEphemerisFile implements EphemerisFile {
          */
         public OrekitSatelliteEphemeris(final String id) {
             this.id = id;
-            this.segments = new ArrayList<OrekitEphemerisSegment>();
+            this.segments = new ArrayList<>();
         }
 
         /** {@inheritDoc} */
@@ -255,7 +255,7 @@ public class OrekitEphemerisFile implements EphemerisFile {
                 this.stopDate = stop;
             }
 
-            final List<TimeStampedPVCoordinates> coordinates = new ArrayList<TimeStampedPVCoordinates>();
+            final List<TimeStampedPVCoordinates> coordinates = new ArrayList<>();
             for (SpacecraftState state : states) {
                 coordinates.add(state.getPVCoordinates());
             }

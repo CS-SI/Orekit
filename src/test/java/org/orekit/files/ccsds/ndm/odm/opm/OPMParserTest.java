@@ -383,18 +383,6 @@ public class OPMParserTest {
     }
 
     @Test
-    public void testUnknownCenter()
-            throws URISyntaxException {
-        final String name = getClass().getResource("/ccsds/odm/opm/OPM-unknown-center.txt").toURI().getPath();
-        try {
-            new OPMParser().withConventions(IERSConventions.IERS_2010).parse(name);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_UNKNOWN_CENTER, oe.getSpecifier());
-        }
-    }
-
-    @Test
     public void testMissingMu()
             throws URISyntaxException {
         final String name = getClass().getResource("/ccsds/odm/opm/OPMExample1.txt").toURI().getPath();

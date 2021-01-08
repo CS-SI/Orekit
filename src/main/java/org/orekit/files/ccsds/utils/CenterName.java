@@ -16,6 +16,8 @@
  */
 package org.orekit.files.ccsds.utils;
 
+import java.util.function.Function;
+
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
@@ -27,122 +29,55 @@ import org.orekit.data.DataContext;
  */
 public enum CenterName {
     /** Solar system barycenter aggregated body. */
-    SOLAR_SYSTEM_BARYCENTER {
+    SOLAR_SYSTEM_BARYCENTER(celestialBodies -> celestialBodies.getSolarSystemBarycenter()),
 
-        /** {@inheritDoc}
-         * @param celestialBodies*/
-        public CelestialBody getCelestialBody(final CelestialBodies celestialBodies) {
-            return celestialBodies.getSolarSystemBarycenter();
-        }
-    },
     /** Sun body. */
-    SUN {
+    SUN(celestialBodies -> celestialBodies.getSun()),
 
-        /** {@inheritDoc}
-         * @param celestialBodies*/
-        public CelestialBody getCelestialBody(final CelestialBodies celestialBodies) {
-            return celestialBodies.getSun();
-        }
-    },
     /** Mercury body. */
-    MERCURY {
+    MERCURY(celestialBodies -> celestialBodies.getMercury()),
 
-        /** {@inheritDoc}
-         * @param celestialBodies*/
-        public CelestialBody getCelestialBody(final CelestialBodies celestialBodies) {
-            return celestialBodies.getMercury();
-        }
-    },
     /** Venus body. */
-    VENUS {
+    VENUS(celestialBodies -> celestialBodies.getVenus()),
 
-        /** {@inheritDoc}
-         * @param celestialBodies*/
-        public CelestialBody getCelestialBody(final CelestialBodies celestialBodies) {
-            return celestialBodies.getVenus();
-        }
-    },
     /** Earth-Moon barycenter bodies pair. */
-    EARTH_MOON {
+    EARTH_MOON(celestialBodies -> celestialBodies.getEarthMoonBarycenter()),
 
-        /** {@inheritDoc}
-         * @param celestialBodies*/
-        public CelestialBody getCelestialBody(final CelestialBodies celestialBodies) {
-            return celestialBodies.getEarthMoonBarycenter();
-        }
-    },
     /** Earth body. */
-    EARTH {
+    EARTH(celestialBodies -> celestialBodies.getEarth()),
 
-        /** {@inheritDoc}
-         * @param celestialBodies*/
-        public CelestialBody getCelestialBody(final CelestialBodies celestialBodies) {
-            return celestialBodies.getEarth();
-        }
-    },
     /** Moon body. */
-    MOON {
+    MOON(celestialBodies -> celestialBodies.getMoon()),
 
-        /** {@inheritDoc}
-         * @param celestialBodies*/
-        public CelestialBody getCelestialBody(final CelestialBodies celestialBodies) {
-            return celestialBodies.getMoon();
-        }
-    },
     /** Mars body. */
-    MARS {
+    MARS(celestialBodies -> celestialBodies.getMars()),
 
-        /** {@inheritDoc}
-         * @param celestialBodies*/
-        public CelestialBody getCelestialBody(final CelestialBodies celestialBodies) {
-            return celestialBodies.getMars();
-        }
-    },
     /** Jupiter body. */
-    JUPITER {
+    JUPITER(celestialBodies -> celestialBodies.getJupiter()),
 
-        /** {@inheritDoc}
-         * @param celestialBodies*/
-        public CelestialBody getCelestialBody(final CelestialBodies celestialBodies) {
-            return celestialBodies.getJupiter();
-        }
-    },
     /** Saturn body. */
-    SATURN {
+    SATURN(celestialBodies -> celestialBodies.getSaturn()),
 
-        /** {@inheritDoc}
-         * @param celestialBodies*/
-        public CelestialBody getCelestialBody(final CelestialBodies celestialBodies) {
-            return celestialBodies.getSaturn();
-        }
-    },
     /** Uranus body. */
-    URANUS {
+    URANUS(celestialBodies -> celestialBodies.getUranus()),
 
-        /** {@inheritDoc}
-         * @param celestialBodies*/
-        public CelestialBody getCelestialBody(final CelestialBodies celestialBodies) {
-            return celestialBodies.getUranus();
-        }
-    },
     /** Neptune body. */
-    NEPTUNE {
+    NEPTUNE(celestialBodies -> celestialBodies.getNeptune()),
 
-        /** {@inheritDoc}
-         * @param celestialBodies*/
-        public CelestialBody getCelestialBody(final CelestialBodies celestialBodies) {
-            return celestialBodies.getNeptune();
-        }
-    },
     /** Pluto body. */
-    PLUTO {
+    PLUTO(celestialBodies -> celestialBodies.getPluto());
 
-        /** {@inheritDoc}
-         * @param celestialBodies*/
-        public CelestialBody getCelestialBody(final CelestialBodies celestialBodies) {
-            return celestialBodies.getPluto();
-        }
-    };
+    /** Celestial body getter.
+     * @return getter for celestial body
+     */
+    private final Function<CelestialBodies, CelestialBody> celestialBodyGetter;
+
+    /** Simple constructor.
+     * @param celestialBodyGetter getter for celestial body
+     */
+    CenterName(final Function<CelestialBodies, CelestialBody> celestialBodyGetter) {
+        this.celestialBodyGetter = celestialBodyGetter;
+    }
 
     /**
      * Get the celestial body corresponding to the CCSDS constant.
@@ -164,6 +99,8 @@ public enum CenterName {
      * @return celestial body corresponding to the CCSDS constant
      * @since 10.1
      */
-    public abstract CelestialBody getCelestialBody(CelestialBodies celestialBodies);
+    public CelestialBody getCelestialBody(final CelestialBodies celestialBodies) {
+        return celestialBodyGetter.apply(celestialBodies);
+    }
 
 }

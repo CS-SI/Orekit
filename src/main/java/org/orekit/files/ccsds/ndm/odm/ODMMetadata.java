@@ -43,7 +43,7 @@ public class ODMMetadata extends NDMMetadata {
      */
     public ODMMetadata(final IERSConventions conventions, final DataContext dataContext) {
         super(conventions, dataContext);
-        comments = new ArrayList<String>();
+        comments = new ArrayList<>();
     }
 
     /** Get the spacecraft name for which the orbit state is provided.

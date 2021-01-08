@@ -24,9 +24,7 @@ import java.util.Map;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.Keyword;
-import org.orekit.files.ccsds.ndm.odm.oem.OEMFile.CovarianceMatrix;
-import org.orekit.files.ccsds.ndm.odm.oem.OEMFile.EphemeridesBlock;
-import org.orekit.files.ccsds.ndm.odm.oem.StreamingOemWriter.Segment;
+import org.orekit.files.ccsds.ndm.odm.oem.StreamingOemWriter.SegmentWriter;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.files.general.EphemerisFile.EphemerisSegment;
 import org.orekit.files.general.EphemerisFileWriter;
@@ -48,14 +46,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class OEMWriter implements EphemerisFileWriter {
 
-    /** Version number implemented. **/
-    public static final String CCSDS_OEM_VERS = "2.0";
-
     /** Default interpolation method if the user specifies none. **/
     public static final InterpolationMethod DEFAULT_INTERPOLATION_METHOD = InterpolationMethod.LAGRANGE;
-
-    /** Default originator field value if user specifies none. **/
-    public static final String DEFAULT_ORIGINATOR = "OREKIT";
 
     /** The interpolation method for ephemeris data. */
     private final InterpolationMethod interpolationMethod;
@@ -83,7 +75,7 @@ public class OEMWriter implements EphemerisFileWriter {
      * configurations.
      */
     public OEMWriter() {
-        this(DEFAULT_INTERPOLATION_METHOD, DEFAULT_ORIGINATOR, null, null,
+        this(DEFAULT_INTERPOLATION_METHOD, StreamingOemWriter.DEFAULT_ORIGINATOR, null, null,
              StreamingOemWriter.DEFAULT_POSITION_FORMAT,
              StreamingOemWriter.DEFAULT_VELOCITY_FORMAT);
     }
@@ -105,10 +97,10 @@ public class OEMWriter implements EphemerisFileWriter {
      *            the space object common name
      */
     public OEMWriter(final InterpolationMethod interpolationMethod, final String originator,
-            final String spaceObjectId, final String spaceObjectName) {
+                     final String spaceObjectId, final String spaceObjectName) {
         this(interpolationMethod, originator, spaceObjectId, spaceObjectName,
-                StreamingOemWriter.DEFAULT_POSITION_FORMAT,
-                StreamingOemWriter.DEFAULT_VELOCITY_FORMAT);
+             StreamingOemWriter.DEFAULT_POSITION_FORMAT,
+             StreamingOemWriter.DEFAULT_VELOCITY_FORMAT);
     }
 
     /**
@@ -131,8 +123,8 @@ public class OEMWriter implements EphemerisFileWriter {
      *            format parameters for velocity ephemeris data output
      */
     public OEMWriter(final InterpolationMethod interpolationMethod, final String originator,
-            final String spaceObjectId, final String spaceObjectName,
-            final String positionFormat, final String velocityFormat) {
+                     final String spaceObjectId, final String spaceObjectName,
+                     final String positionFormat, final String velocityFormat) {
         this.interpolationMethod = interpolationMethod;
         this.originator = originator;
         this.spaceObjectId = spaceObjectId;
@@ -183,6 +175,8 @@ public class OEMWriter implements EphemerisFileWriter {
         // metadata that is constant for the whole OEM file
         final Map<Keyword, String> metadata = new LinkedHashMap<>();
         metadata.put(Keyword.TIME_SYSTEM, firstSegment.getTimeScaleString());
+
+        // TODO: ORIGINATOR belongs to header, not metadata
         metadata.put(Keyword.ORIGINATOR, this.originator);
         // Only one object in an OEM file, see Section 2.1
         metadata.put(Keyword.OBJECT_ID, idToProcess);
@@ -196,10 +190,11 @@ public class OEMWriter implements EphemerisFileWriter {
             if (!oemFile.getHeader().getComments().isEmpty()) {
                 // Loop on comments
                 final StringBuffer buffer = new StringBuffer();
-                for (String comment : oemFile.getHeader().getComments()()) {
+                for (String comment : oemFile.getHeader().getComments()) {
                     buffer.append(comment);
                 }
                 // Update metadata
+                // TODO: comments should not be assembled in a single line
                 metadata.put(Keyword.COMMENT, buffer.toString());
             }
         }
@@ -218,15 +213,14 @@ public class OEMWriter implements EphemerisFileWriter {
             metadata.put(Keyword.INTERPOLATION_DEGREE,
                     String.valueOf(segment.getInterpolationSamples() - 1));
 
-            final Segment segmentWriter = oemWriter.newSegment(null, metadata);
+            final SegmentWriter segmentWriter = oemWriter.newSegment(null, metadata);
             segmentWriter.writeMetadata();
             for (final TimeStampedPVCoordinates coordinates : segment.getCoordinates()) {
                 segmentWriter.writeEphemerisLine(coordinates);
             }
 
-            if (segment instanceof EphemeridesBlock) {
-                final EphemeridesBlock curr_ephem_block = (EphemeridesBlock) segment;
-                final List<CovarianceMatrix> covarianceMatrices = curr_ephem_block.getCovarianceMatrices();
+            if (segment instanceof OEMSegment) {
+                final List<CovarianceMatrix> covarianceMatrices = ((OEMSegment) segment).getCovarianceMatrices();
                 if (!covarianceMatrices.isEmpty()) {
                     segmentWriter.writeCovarianceMatrices(covarianceMatrices);
                 }

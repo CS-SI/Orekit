@@ -24,7 +24,6 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.utils.CcsdsModifiedFrame;
-import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
@@ -34,9 +33,6 @@ import org.orekit.utils.IERSConventions;
  * @since 11.0
  */
 public class OCommonMetadata extends ODMMetadata {
-
-    /** Time System: used for metadata, orbit state and covariance data. */
-    private CcsdsTimeScale timeSystem;
 
     /** Object identifier of the object for which the orbit state is provided. */
     private String objectID;
@@ -61,6 +57,10 @@ public class OCommonMetadata extends ODMMetadata {
 
     /** Epoch of reference frame, if not intrinsic to the definition of the
      * reference frame. */
+    private String frameEpochString;
+
+    /** Epoch of reference frame, if not intrinsic to the definition of the
+     * reference frame. */
     private AbsoluteDate frameEpoch;
 
     /** Create a new meta-data.
@@ -69,26 +69,6 @@ public class OCommonMetadata extends ODMMetadata {
      */
     public OCommonMetadata(final IERSConventions conventions, final DataContext dataContext) {
         super(conventions, dataContext);
-    }
-
-    /** Get the Time System that: for OPM, is used for metadata, state vector,
-     * maneuver and covariance data, for OMM, is used for metadata, orbit state
-     * and covariance data, for OEM, is used for metadata, ephemeris and
-     * covariance data.
-     * @return the time system
-     */
-    public CcsdsTimeScale getTimeSystem() {
-        return timeSystem;
-    }
-
-    /** Set the Time System that: for OPM, is used for metadata, state vector,
-     * maneuver and covariance data, for OMM, is used for metadata, orbit state
-     * and covariance data, for OEM, is used for metadata, ephemeris and
-     * covariance data.
-     * @param timeSystem the time system to be set
-     */
-    public void setTimeSystem(final CcsdsTimeScale timeSystem) {
-        this.timeSystem = timeSystem;
     }
 
     /** Get the spacecraft ID for which the orbit state is provided.
@@ -237,6 +217,22 @@ public class OCommonMetadata extends ODMMetadata {
      */
     public void setFrameString(final String frame) {
         this.refFrameString = frame;
+    }
+
+    /** Get epoch of reference frame, if not intrinsic to the definition of the
+     * reference frame.
+     * @return epoch of reference frame
+     */
+    String getFrameEpochString() {
+        return frameEpochString;
+    }
+
+    /** Set epoch of reference frame, if not intrinsic to the definition of the
+     * reference frame.
+     * @param frameEpochString the epoch of reference frame to be set
+     */
+    void setFrameEpochString(final String frameEpochString) {
+        this.frameEpochString = frameEpochString;
     }
 
     /** Get epoch of reference frame, if not intrinsic to the definition of the

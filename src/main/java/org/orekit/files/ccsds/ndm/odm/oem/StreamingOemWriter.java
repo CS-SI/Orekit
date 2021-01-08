@@ -22,6 +22,7 @@ import java.text.DecimalFormatSymbols;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -36,7 +37,6 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.Keyword;
-import org.orekit.files.ccsds.ndm.odm.oem.OEMFile.CovarianceMatrix;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsModifiedFrame;
 import org.orekit.frames.FactoryManagedFrame;
@@ -149,7 +149,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *            <td>{@link Keyword#START_TIME}
  *            <td>Segment
  *            <td>Yes
- *            <td>Date of initial state in {@link Segment#init(SpacecraftState,
+ *            <td>Date of initial state in {@link SegmentWriter#init(SpacecraftState,
  *                AbsoluteDate, double) Segment.init(...)}
  *            <td>Table 5-3, 6.5.9
  *        <tr>
@@ -162,7 +162,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *            <td>{@link Keyword#STOP_TIME}
  *            <td>Segment
  *            <td>Yes
- *            <td>Target date in {@link Segment#init(SpacecraftState,
+ *            <td>Target date in {@link SegmentWriter#init(SpacecraftState,
  *                AbsoluteDate, double) Segment.init(...)}
  *            <td>Table 5-3, 6.5.9
  *        <tr>
@@ -449,7 +449,7 @@ public class StreamingOemWriter {
      * method must be called to create a writer for each ephemeris segment.
      *
      * @param frame           the reference frame to use for the segment. If this value is
-     *                        {@code null} then {@link Segment#handleStep(SpacecraftState,
+     *                        {@code null} then {@link SegmentWriter#handleStep(SpacecraftState,
      *                        boolean)} will throw a {@link NullPointerException} and the
      *                        metadata item {@link Keyword#REF_FRAME} must be specified in
      *                        the metadata.
@@ -459,7 +459,7 @@ public class StreamingOemWriter {
      *                        required and how they are determined.
      * @return a new OEM segment, ready for writing.
      */
-    public Segment newSegment(final Frame frame,
+    public SegmentWriter newSegment(final Frame frame,
                               final Map<Keyword, String> segmentMetadata) {
         final Map<Keyword, String> meta = new LinkedHashMap<>(this.metadata);
         meta.putAll(segmentMetadata);
@@ -469,11 +469,11 @@ public class StreamingOemWriter {
         if (!meta.containsKey(Keyword.CENTER_NAME)) {
             meta.put(Keyword.CENTER_NAME, guessCenter(frame));
         }
-        return new Segment(frame, meta);
+        return new SegmentWriter(frame, meta);
     }
 
     /** A writer for a segment of an OEM. */
-    public class Segment implements OrekitFixedStepHandler {
+    public class SegmentWriter implements OrekitFixedStepHandler {
 
         /** Reference frame of the output states. */
         private final Frame frame;
@@ -487,8 +487,8 @@ public class StreamingOemWriter {
          *                 boolean)}.
          * @param metadata to use when writing this segment.
          */
-        private Segment(final Frame frame, final Map<Keyword, String> metadata) {
-            this.frame = frame;
+        private SegmentWriter(final Frame frame, final Map<Keyword, String> metadata) {
+            this.frame    = frame;
             this.metadata = metadata;
         }
 
@@ -545,8 +545,7 @@ public class StreamingOemWriter {
          * @param pv the time, position, and velocity to write.
          * @throws IOException if the output stream throws one while writing.
          */
-        public void writeEphemerisLine(final TimeStampedPVCoordinates pv)
-                throws IOException {
+        public void writeEphemerisLine(final TimeStampedPVCoordinates pv) throws IOException {
             final String epoch = dateToString(pv.getDate().getComponents(timeScale));
             writer.append(epoch).append(" ");
             // output in km, see Section 6.6.2.1
@@ -571,13 +570,13 @@ public class StreamingOemWriter {
          * @param covarianceMatrices the list of covariance matrices related to the segment.
          * @throws IOException if the output stream throws one while writing.
          */
-        public void writeCovarianceMatrices(final List<CovarianceMatrix> covarianceMatrices)
-                throws IOException {
+        public void writeCovarianceMatrices(final List<CovarianceMatrix> covarianceMatrices) throws IOException {
             writer.append("COVARIANCE_START").append(NEW_LINE);
             // Sort to ensure having the matrices in chronological order when
             // they are in the same data section (see section 5.2.5.7)
-            Collections.sort(covarianceMatrices, (mat1, mat2)->mat1.getEpoch().compareTo(mat2.getEpoch()));
-            for (final CovarianceMatrix covarianceMatrix : covarianceMatrices) {
+            final List<CovarianceMatrix> sorted = new ArrayList<>(covarianceMatrices);
+            Collections.sort(sorted, (mat1, mat2)->mat1.getEpoch().compareTo(mat2.getEpoch()));
+            for (final CovarianceMatrix covarianceMatrix : sorted) {
                 final String epoch = dateToString(covarianceMatrix.getEpoch().getComponents(timeScale));
                 writeKeyValue(Keyword.EPOCH, epoch);
 
@@ -624,7 +623,7 @@ public class StreamingOemWriter {
                 this.writeMetadata();
             } catch (IOException e) {
                 throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE,
-                        e.getLocalizedMessage());
+                                          e.getLocalizedMessage());
             }
         }
 

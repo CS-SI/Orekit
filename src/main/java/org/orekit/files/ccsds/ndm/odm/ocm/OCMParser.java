@@ -656,7 +656,7 @@ public class OCMParser extends ODMParser<OCMFile> {
         protected ParseInfo() {
             file       = new OCMFile();
             lineNumber = 0;
-            commentTmp = new ArrayList<String>();
+            commentTmp = new ArrayList<>();
         }
     }
 

@@ -41,24 +41,20 @@ import org.orekit.files.general.EphemerisFile;
  */
 public class OEMFile extends ODMFile<OEMSegment> implements EphemerisFile {
 
-    /** List of ephemeris blocks. */
-    private List<OEMSegment> ephemeridesBlocks;
-
     /** Create a new OEM file object.
      */
     OEMFile() {
         super(new ODMHeader());
-        ephemeridesBlocks = new ArrayList<OEMSegment>();
     }
 
     /** {@inheritDoc} */
     @Override
     public Map<String, OEMSatelliteEphemeris> getSatellites() {
         final Map<String, List<OEMSegment>> byId = new HashMap<>();
-        for (final OEMSegment ephemeridesBlock : ephemeridesBlocks) {
-            final String id = ephemeridesBlock.getMetadata().getObjectID();
+        for (final OEMSegment segment : getSegments()) {
+            final String id = segment.getMetadata().getObjectID();
             byId.putIfAbsent(id, new ArrayList<>());
-            byId.get(id).add(ephemeridesBlock);
+            byId.get(id).add(segment);
         }
         final Map<String, OEMSatelliteEphemeris> ret = new HashMap<>();
         for (final Map.Entry<String, List<OEMSegment>> entry : byId.entrySet()) {

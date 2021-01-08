@@ -348,7 +348,7 @@ public class OMMParser extends OStateParser<OMMFile, OMMParser> {
             parsingMetaData = false;
             parsingData     = false;
             lineNumber = 0;
-            commentTmp = new ArrayList<String>();
+            commentTmp = new ArrayList<>();
         }
     }
 }

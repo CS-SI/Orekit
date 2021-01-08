@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 import org.hipparchus.exception.DummyLocalizable;
@@ -34,7 +35,6 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.Keyword;
-import org.orekit.files.ccsds.ndm.adm.aem.AEMMetadata;
 import org.orekit.files.ccsds.ndm.odm.OCommonParser;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.KeyValue;
@@ -231,6 +231,109 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
         return interpolationDegree;
     }
 
+    /**
+     * Parse an ephemeris data line and add its content to the ephemerides block.
+     *
+     * @param line data line to parse
+     * @param pi the parser info
+     * @exception IOException if an error occurs while reading from the stream
+     */
+    private void parseEphemeridesDataLine(final String line,  final ParseInfo pi) throws IOException {
+
+        try (Scanner sc = new Scanner(line)) {
+            final AbsoluteDate date = parseDate(sc.next(), pi.metadata.getTimeSystem());
+            final Vector3D position = new Vector3D(Double.parseDouble(sc.next()) * 1000,
+                                                   Double.parseDouble(sc.next()) * 1000,
+                                                   Double.parseDouble(sc.next()) * 1000);
+            final Vector3D velocity = new Vector3D(Double.parseDouble(sc.next()) * 1000,
+                                                   Double.parseDouble(sc.next()) * 1000,
+                                                   Double.parseDouble(sc.next()) * 1000);
+            Vector3D acceleration = Vector3D.NaN;
+            boolean hasAcceleration = false;
+            if (sc.hasNext()) {
+                acceleration = new Vector3D(Double.parseDouble(sc.next()) * 1000,
+                                            Double.parseDouble(sc.next()) * 1000,
+                                            Double.parseDouble(sc.next()) * 1000);
+                hasAcceleration = true;
+            }
+            final TimeStampedPVCoordinates epDataLine;
+            if (hasAcceleration) {
+                epDataLine = new TimeStampedPVCoordinates(date, position, velocity, acceleration);
+            } else {
+                epDataLine = new TimeStampedPVCoordinates(date, position, velocity);
+            }
+            pi.data.addData(epDataLine, hasAcceleration);
+        } catch (NumberFormatException nfe) {
+            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                      pi.lineNumber, pi.fileName, line);
+        }
+    }
+
+    /**
+     * Parse a covariance data line.
+     *
+     * @param line covariance line to parse
+     * @param pi the parser info
+     * @throws IOException if an error occurs while reading from the stream
+     */
+    private void parseCovarianceDataLine(final String line, final ParseInfo pi)
+        throws IOException {
+
+        int row = 0;
+        if (pi.lastMatrix == null) {
+            // create uninitialized matrix
+            pi.lastMatrix = MatrixUtils.createRealMatrix(6, 6);
+            for (int i = 0; i < pi.lastMatrix.getRowDimension(); ++i) {
+                pi.lastMatrix.setEntry(i, 0, Double.NaN);
+            }
+        } else {
+            // find the row to parse
+            while (!Double.isNaN(pi.lastMatrix.getEntry(row, 0))) {
+                ++row;
+            }
+        }
+
+        try (Scanner sc = new Scanner(line)) {
+            for (int j = 0; j < row + 1; j++) {
+                final double c =  Double.parseDouble(sc.next());
+                pi.lastMatrix.setEntry(row, j, c);
+                pi.lastMatrix.setEntry(j, row, c);
+            }
+            if (sc.hasNext()) {
+                // too many fields in the line
+                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                          pi.lineNumber, pi.fileName, line);
+            }
+        } catch (NoSuchElementException | NumberFormatException nfe) {
+            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                      pi.lineNumber, pi.fileName, line);
+        }
+
+        if (row == pi.lastMatrix.getRowDimension() - 1) {
+            // this was the last row
+            pi.data.addCovarianceMatrix(new CovarianceMatrix(pi.covEpoch,
+                                                             pi.covRefLofType,
+                                                             pi.covRefFrame,
+                                                             pi.lastMatrix));
+            pi.covEpoch      = null;
+            pi.covRefLofType = null;
+            pi.covRefFrame   = null;
+            pi.lastMatrix    = null;
+        }
+
+    }
+
+    /** Check no matrix is being filled up.
+     * @param line covariance line to parse
+     * @param pi the parser info
+     */
+    private void checkNoMatrix(final String line, final ParseInfo pi) {
+        if (pi.lastMatrix != null) {
+            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                      pi.lineNumber, pi.fileName, line);
+        }
+    }
+
     /** {@inheritDoc} */
     @Override
     public OEMFile parse(final InputStream stream, final String fileName) {
@@ -265,7 +368,14 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
                 pi.keyValue = new KeyValue(line, pi.lineNumber, pi.fileName);
                 if (pi.keyValue.getKeyword() == null) {
                     if (pi.parsingData) {
+                        if (!pi.commentTmp.isEmpty()) {
+                            pi.data.setEphemeridesDataLinesComment(pi.commentTmp);
+                            pi.commentTmp.clear();
+                        }
                         parseEphemeridesDataLine(line, pi);
+                        continue;
+                    } else if (pi.parsingCovariance) {
+                        parseCovarianceDataLine(line, pi);
                         continue;
                     } else {
                         throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
@@ -275,11 +385,26 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
                 declareFound(pi.keyValue.getKeyword());
 
                 switch (pi.keyValue.getKeyword()) {
+
+                    case COMMENT:
+                        if (pi.file.getHeader().getCreationDate() == null) {
+                            pi.file.getHeader().addComment(pi.keyValue.getValue());
+                        } else if (pi.metadata != null && pi.metadata.getObjectName() == null) {
+                            pi.metadata.addComment(pi.keyValue.getValue());
+                        } else {
+                            pi.commentTmp.add(pi.keyValue.getValue());
+                        }
+                        break;
+
                     case CCSDS_OEM_VERS:
                         pi.file.getHeader().setFormatVersion(pi.keyValue.getDoubleValue());
                         break;
 
                     case META_START:
+                        if (pi.metadata != null) {
+                            // this is a new segment, we have to wrap up the previous one
+                            pi.file.addSegment(new OEMSegment(pi.metadata, pi.data, getSelectedMu()));
+                        }
                         // Indicate the start of meta-data parsing for this block
                         pi.metadata          = new OEMMetadata(getConventions(), getDataContext());
                         pi.parsingHeader     = false;
@@ -317,17 +442,36 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
 
                     case META_STOP:
                         pi.parsingMetaData = false;
+                        pi.data            = new OEMData();
                         pi.parsingData     = true;
                         break;
 
                     case COVARIANCE_START:
                         pi.parsingData       = false;
                         pi.parsingCovariance = true;
+                        pi.lastMatrix        = null;
+                        break;
+
+                    case EPOCH :
+                        checkNoMatrix(line, pi);
+                        pi.covEpoch = parseDate(pi.keyValue.getValue(), pi.metadata.getTimeSystem());
+                        break;
+
+                    case COV_REF_FRAME :
+                        checkNoMatrix(line, pi);
+                        final CCSDSFrame frame = parseCCSDSFrame(pi.keyValue.getValue());
+                        if (frame.isLof()) {
+                            pi.covRefLofType = frame.getLofType();
+                            pi.covRefFrame   = null;
+                        } else {
+                            pi.covRefLofType = null;
+                            pi.covRefFrame   = frame.getFrame(getConventions(), isSimpleEOP(), getDataContext());
+                        }
                         break;
 
                     case COVARIANCE_STOP:
+                        checkNoMatrix(line, pi);
                         pi.parsingCovariance = false;
-                        pi.parsingData       = true;
                         break;
 
                     default:
@@ -336,11 +480,8 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
                             parsed = parseHeaderEntry(pi.keyValue, pi.file);
                         } else if (pi.parsingMetaData) {
                             parsed = parseMetaDataEntry(pi.keyValue, pi.metadata);
-                        } else if (pi.parsingData && pi.keyValue.getKeyword() == Keyword.COMMENT) {
-                            pi.currentEphemeridesBlock.addComment(pi.keyValue.getValue());
-                            parsed = true;
-                        } else if (pi.parsingCovariance && pi.keyValue.getKeyword() == Keyword.COMMENT) {
-                            pi.currentEphemeridesBlock.addComment(pi.keyValue.getValue());
+                        } else if (pi.keyValue.getKeyword() == Keyword.COMMENT) {
+                            pi.commentTmp.add(pi.keyValue.getValue());
                             parsed = true;
                         } else {
                             parsed = false;
@@ -354,146 +495,14 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
             // check all mandatory keywords have been found
             checkExpected(fileName);
 
+            // wrap up last segment
+            pi.file.addSegment(new OEMSegment(pi.metadata, pi.data, getSelectedMu()));
+
             pi.file.checkTimeSystems();
             return pi.file;
+
         } catch (IOException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
-        }
-    }
-
-    /**
-     * Parse an ephemeris data line and add its content to the ephemerides
-     * block.
-     *
-     * @param reader the reader
-     * @param pi the parser info
-     * @exception IOException if an error occurs while reading from the stream
-     */
-    private void parseEphemeridesDataLines(final BufferedReader reader,  final ParseInfo pi)
-        throws IOException {
-
-        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-
-            ++pi.lineNumber;
-            if (line.trim().length() > 0) {
-                pi.keyValue = new KeyValue(line, pi.lineNumber, pi.fileName);
-                if (pi.keyValue.getKeyword() == null) {
-                    try (Scanner sc = new Scanner(line)) {
-                        final AbsoluteDate date = parseDate(sc.next(), pi.lastEphemeridesBlock.getMetadata().getTimeSystem());
-                        final Vector3D position = new Vector3D(Double.parseDouble(sc.next()) * 1000,
-                                                               Double.parseDouble(sc.next()) * 1000,
-                                                               Double.parseDouble(sc.next()) * 1000);
-                        final Vector3D velocity = new Vector3D(Double.parseDouble(sc.next()) * 1000,
-                                                               Double.parseDouble(sc.next()) * 1000,
-                                                               Double.parseDouble(sc.next()) * 1000);
-                        Vector3D acceleration = Vector3D.NaN;
-                        boolean hasAcceleration = false;
-                        if (sc.hasNext()) {
-                            acceleration = new Vector3D(Double.parseDouble(sc.next()) * 1000,
-                                                        Double.parseDouble(sc.next()) * 1000,
-                                                        Double.parseDouble(sc.next()) * 1000);
-                            hasAcceleration = true;
-                        }
-                        final TimeStampedPVCoordinates epDataLine;
-                        if (hasAcceleration) {
-                            epDataLine = new TimeStampedPVCoordinates(date, position, velocity, acceleration);
-                        } else {
-                            epDataLine = new TimeStampedPVCoordinates(date, position, velocity);
-                        }
-                        pi.lastEphemeridesBlock.getEphemeridesDataLines().add(epDataLine);
-                        pi.lastEphemeridesBlock.updateHasAcceleration(hasAcceleration);
-                    } catch (NumberFormatException nfe) {
-                        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                  pi.lineNumber, pi.fileName, line);
-                    }
-                } else {
-                    switch (pi.keyValue.getKeyword()) {
-                        case META_START:
-                            pi.lastEphemeridesBlock.setEphemeridesDataLinesComment(pi.commentTmp);
-                            pi.commentTmp.clear();
-                            pi.lineNumber--;
-                            reader.reset();
-                            return;
-                        case COVARIANCE_START:
-                            pi.lastEphemeridesBlock.setEphemeridesDataLinesComment(pi.commentTmp);
-                            pi.commentTmp.clear();
-                            pi.lineNumber--;
-                            reader.reset();
-                            return;
-                        case COMMENT:
-                            pi.commentTmp.add(pi.keyValue.getValue());
-                            break;
-                        default :
-                            throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
-                    }
-                }
-            }
-            reader.mark(300);
-
-        }
-    }
-
-    /**
-     * Parse the covariance data lines, create a set of CovarianceMatrix objects
-     * and add them in the covarianceMatrices list of the ephemerides block.
-     *
-     * @param reader the reader
-     * @param pi the parser info
-     * @throws IOException if an error occurs while reading from the stream
-     */
-    private void parseCovarianceDataLines(final BufferedReader reader, final ParseInfo pi)
-        throws IOException {
-        int i = 0;
-        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-
-            ++pi.lineNumber;
-            if (line.trim().length() == 0) {
-                continue;
-            }
-            pi.keyValue = new KeyValue(line, pi.lineNumber, pi.fileName);
-            if (pi.keyValue.getKeyword() == null) {
-                try (Scanner sc = new Scanner(line)) {
-                    for (int j = 0; j < i + 1; j++) {
-                        pi.lastMatrix.addToEntry(i, j, Double.parseDouble(sc.next()));
-                        if (j != i) {
-                            pi.lastMatrix.addToEntry(j, i, pi.lastMatrix.getEntry(i, j));
-                        }
-                    }
-                    if (i == 5) {
-                        final OEMFile.CovarianceMatrix cm =
-                                new OEMFile.CovarianceMatrix(pi.epoch, pi.covRefLofType, pi.covRefFrame, pi.lastMatrix);
-                        pi.lastEphemeridesBlock.getCovarianceMatrices().add(cm);
-                    }
-                    i++;
-                } catch (NumberFormatException nfe) {
-                    throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                              pi.lineNumber, pi.fileName, line);
-                }
-            } else {
-                switch (pi.keyValue.getKeyword()) {
-                    case EPOCH :
-                        i                = 0;
-                        pi.covRefLofType = null;
-                        pi.covRefFrame   = null;
-                        pi.lastMatrix    = MatrixUtils.createRealMatrix(6, 6);
-                        pi.epoch         = parseDate(pi.keyValue.getValue(), pi.lastEphemeridesBlock.getMetadata().getTimeSystem());
-                        break;
-                    case COV_REF_FRAME :
-                        final CCSDSFrame frame = parseCCSDSFrame(pi.keyValue.getValue());
-                        if (frame.isLof()) {
-                            pi.covRefLofType = frame.getLofType();
-                            pi.covRefFrame   = null;
-                        } else {
-                            pi.covRefLofType = null;
-                            pi.covRefFrame   = frame.getFrame(getConventions(), isSimpleEOP(), getDataContext());
-                        }
-                        break;
-                    case COVARIANCE_STOP :
-                        return;
-                    default :
-                        throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
-                }
-            }
         }
     }
 
@@ -533,13 +542,14 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
         private KeyValue keyValue;
 
         /** Stored epoch. */
-        private AbsoluteDate epoch;
+        private AbsoluteDate covEpoch;
 
         /** Covariance reference type of Local Orbital Frame. */
         private LOFType covRefLofType;
 
         /** Covariance reference frame. */
         private Frame covRefFrame;
+
         /** Stored matrix. */
         private RealMatrix lastMatrix;
 
@@ -554,13 +564,14 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
             file            = new OEMFile();
             file.setConventions(conventions);
             file.setDataContext(dataContext);
-            metadata        = new OEMMetadata(conventions, dataContext);
-            data            = new OEMData();
+            metadata        = null;
+            data            = null;
             parsingHeader   = false;
             parsingMetaData = false;
             parsingData     = false;
             lineNumber      = 0;
-            commentTmp      = new ArrayList<String>();
+            commentTmp      = new ArrayList<>();
         }
     }
+
 }

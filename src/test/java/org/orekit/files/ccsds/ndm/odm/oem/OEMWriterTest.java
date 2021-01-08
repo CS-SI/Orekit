@@ -43,12 +43,6 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.odm.ODMMetadata;
-import org.orekit.files.ccsds.ndm.odm.oem.OEMFile;
-import org.orekit.files.ccsds.ndm.odm.oem.OEMParser;
-import org.orekit.files.ccsds.ndm.odm.oem.OEMWriter;
-import org.orekit.files.ccsds.ndm.odm.oem.OEMFile.CovarianceMatrix;
-import org.orekit.files.ccsds.ndm.odm.oem.OEMFile.EphemeridesBlock;
 import org.orekit.files.ccsds.ndm.odm.oem.OEMWriter.InterpolationMethod;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.time.AbsoluteDate;
@@ -95,10 +89,10 @@ public class OEMWriterTest {
         final OEMFile oemFile = parser.parse(inEntry, "OEMExample1.txt");
         final EphemerisFile ephemerisFile = (EphemerisFile) oemFile;
 
-        String originator = oemFile.getOriginator();
-        String objectName = oemFile.getEphemeridesBlocks().get(0).getMetadata().getObjectName();
-        String objectID = oemFile.getEphemeridesBlocks().get(0).getMetadata().getObjectID();
-        String interpolationMethodString = oemFile.getEphemeridesBlocks().get(0).getInterpolationMethod();
+        String originator = oemFile.getHeader().getOriginator();
+        String objectName = oemFile.getSegments().get(0).getMetadata().getObjectName();
+        String objectID = oemFile.getSegments().get(0).getMetadata().getObjectID();
+        String interpolationMethodString = oemFile.getSegments().get(0).getMetadata().getInterpolationMethod();
         InterpolationMethod interpolationMethod = Enum.valueOf(InterpolationMethod.class, interpolationMethodString);
         String tempOEMFilePath = tempFolder.newFile("TestWriteOEM1.oem").toString();
         OEMWriter writer = new OEMWriter(interpolationMethod, originator, objectID, objectName);
@@ -118,7 +112,7 @@ public class OEMWriterTest {
         final EphemerisFile ephemerisFile = (EphemerisFile) oemFile;
 
         String badObjectId = "12345";
-        String interpolationMethodString = oemFile.getEphemeridesBlocks().get(0).getInterpolationMethod();
+        String interpolationMethodString = oemFile.getSegments().get(0).getMetadata().getInterpolationMethod();
         InterpolationMethod interpolationMethod = Enum.valueOf(InterpolationMethod.class, interpolationMethodString);
         String tempOEMFilePath = tempFolder.newFile("TestOEMUnfoundSpaceId.oem").toString();
         OEMWriter writer = new OEMWriter(interpolationMethod, null, badObjectId, null);
@@ -140,10 +134,10 @@ public class OEMWriterTest {
                 .withConventions(IERSConventions.IERS_2010);
         final OEMFile oemFile = parser.parse(inEntry, "OEMExample1.txt");
         final EphemerisFile ephemerisFile = (EphemerisFile) oemFile;
-        String originator = oemFile.getOriginator();
-        String objectName = oemFile.getEphemeridesBlocks().get(0).getMetadata().getObjectName();
-        String objectID = oemFile.getEphemeridesBlocks().get(0).getMetadata().getObjectID();
-        String interpolationMethodString = oemFile.getEphemeridesBlocks().get(0).getInterpolationMethod();
+        String originator = oemFile.getHeader().getOriginator();
+        String objectName = oemFile.getSegments().get(0).getMetadata().getObjectName();
+        String objectID = oemFile.getSegments().get(0).getMetadata().getObjectID();
+        String interpolationMethodString = oemFile.getSegments().get(0).getMetadata().getInterpolationMethod();
         InterpolationMethod interpolationMethod = Enum.valueOf(InterpolationMethod.class, interpolationMethodString);
         OEMWriter writer = new OEMWriter(interpolationMethod, originator, objectID, objectName);
         try {
@@ -187,8 +181,8 @@ public class OEMWriterTest {
         writer.write(tempOEMFilePath, ephemerisFile);
 
         final OEMFile generatedOemFile = parser.parse(tempOEMFilePath);
-        assertEquals(oemFile.getEphemeridesBlocks().get(0).getMetadata().getObjectID(),
-                generatedOemFile.getEphemeridesBlocks().get(0).getMetadata().getObjectID());
+        assertEquals(oemFile.getSegments().get(0).getMetadata().getObjectID(),
+                generatedOemFile.getSegments().get(0).getMetadata().getObjectID());
     }
 
     @Test
@@ -229,7 +223,7 @@ public class OEMWriterTest {
         writer.write(tempOEMFilePath, oemFile);
 
         final OEMFile generatedOemFile = parser.parse(tempOEMFilePath);
-        assertEquals(oemFile.getHeaderComment().get(0), generatedOemFile.getHeaderComment().get(0));
+        assertEquals(oemFile.getHeader().getComments().get(0), generatedOemFile.getHeader().getComments().get(0));
     }
 
     /**
@@ -246,9 +240,10 @@ public class OEMWriterTest {
         OEMFile oemFile = parser.parse(inEntry, "OEMExample4.txt");
         StringBuilder buffer = new StringBuilder();
 
-        OEMWriter writer = new OEMWriter(OEMWriter.DEFAULT_INTERPOLATION_METHOD, oemFile.getOriginator(),
-                                         oemFile.getEphemeridesBlocks().get(0).getMetadata().getObjectID(),
-                                         oemFile.getEphemeridesBlocks().get(0).getMetadata().getObjectName(),
+        OEMWriter writer = new OEMWriter(OEMWriter.DEFAULT_INTERPOLATION_METHOD,
+                                         oemFile.getHeader().getOriginator(),
+                                         oemFile.getSegments().get(0).getMetadata().getObjectID(),
+                                         oemFile.getSegments().get(0).getMetadata().getObjectName(),
                                          "%.2f", "%.3f");
 
         writer.write(buffer, oemFile);
@@ -260,9 +255,10 @@ public class OEMWriterTest {
         assertEquals(lines[18], "2002-12-18T12:02:00.331 2776.03 -336.86 -2008.68 5.637 -2.340 -1.947");
 
         // Default format
-        writer = new OEMWriter(OEMWriter.DEFAULT_INTERPOLATION_METHOD, oemFile.getOriginator(),
-                               oemFile.getEphemeridesBlocks().get(0).getMetadata().getObjectID(),
-                               oemFile.getEphemeridesBlocks().get(0).getMetadata().getObjectName());
+        writer = new OEMWriter(OEMWriter.DEFAULT_INTERPOLATION_METHOD,
+                               oemFile.getHeader().getOriginator(),
+                               oemFile.getSegments().get(0).getMetadata().getObjectID(),
+                               oemFile.getSegments().get(0).getMetadata().getObjectName());
         buffer = new StringBuilder();
         writer.write(buffer, oemFile);
 
@@ -273,16 +269,16 @@ public class OEMWriterTest {
         assertEquals(lines2[18], "2002-12-18T12:02:00.331  2776.033 -336.859 -2008.682  5.63678 -2.33951 -1.94687");
     }
 
-    private static void compareOemEphemerisBlocks(EphemeridesBlock block1, EphemeridesBlock block2) {
+    private static void compareOemEphemerisBlocks(OEMSegment block1, OEMSegment block2) {
         compareOemEphemerisBlocksMetadata(block1.getMetadata(), block2.getMetadata());
         assertEquals(block1.getStart(), block2.getStart());
         assertEquals(block1.getStop(), block2.getStop());
-        assertEquals(block1.getInterpolationDegree(), block2.getInterpolationDegree());
-        assertEquals(block1.getInterpolationMethod(), block2.getInterpolationMethod());
-        assertEquals(block1.getEphemeridesDataLines().size(), block2.getEphemeridesDataLines().size());
-        for (int i = 0; i < block1.getEphemeridesDataLines().size(); i++) {
-            TimeStampedPVCoordinates c1 = block1.getEphemeridesDataLines().get(i);
-            TimeStampedPVCoordinates c2 = block2.getEphemeridesDataLines().get(i);
+        assertEquals(block1.getMetadata().getInterpolationDegree(), block2.getMetadata().getInterpolationDegree());
+        assertEquals(block1.getMetadata().getInterpolationMethod(), block2.getMetadata().getInterpolationMethod());
+        assertEquals(block1.getData().getEphemeridesDataLines().size(), block2.getData().getEphemeridesDataLines().size());
+        for (int i = 0; i < block1.getData().getEphemeridesDataLines().size(); i++) {
+            TimeStampedPVCoordinates c1 = block1.getData().getEphemeridesDataLines().get(i);
+            TimeStampedPVCoordinates c2 = block2.getData().getEphemeridesDataLines().get(i);
             assertEquals(c1.getDate(), c2.getDate());
             assertEquals(c1.getPosition() + " -> " + c2.getPosition(), 0.0,
                     Vector3D.distance(c1.getPosition(), c2.getPosition()), POSITION_PRECISION);
@@ -300,7 +296,7 @@ public class OEMWriterTest {
         }
     }
 
-    private static void compareOemEphemerisBlocksMetadata(ODMMetadata meta1, ODMMetadata meta2) {
+    private static void compareOemEphemerisBlocksMetadata(OEMMetadata meta1, OEMMetadata meta2) {
         assertEquals(meta1.getObjectID(), meta2.getObjectID());
         assertEquals(meta1.getObjectName(), meta2.getObjectName());
         assertEquals(meta1.getCenterName(), meta2.getCenterName());
@@ -309,10 +305,10 @@ public class OEMWriterTest {
     }
 
     static void compareOemFiles(OEMFile file1, OEMFile file2) {
-        assertEquals(file1.getOriginator(), file2.getOriginator());
-        assertEquals(file1.getEphemeridesBlocks().size(), file2.getEphemeridesBlocks().size());
-        for (int i = 0; i < file1.getEphemeridesBlocks().size(); i++) {
-            compareOemEphemerisBlocks(file1.getEphemeridesBlocks().get(i), file2.getEphemeridesBlocks().get(i));
+        assertEquals(file1.getHeader().getOriginator(), file2.getHeader().getOriginator());
+        assertEquals(file1.getSegments().size(), file2.getSegments().size());
+        for (int i = 0; i < file1.getSegments().size(); i++) {
+            compareOemEphemerisBlocks(file1.getSegments().get(i), file2.getSegments().get(i));
         }
     }
 
@@ -330,7 +326,6 @@ public class OEMWriterTest {
 
         @Override
         public double getMu() {
-            // TODO Auto-generated method stub
             return 0;
         }
 
@@ -342,13 +337,11 @@ public class OEMWriterTest {
 
         @Override
         public AbsoluteDate getStart() {
-            // TODO Auto-generated method stub
             return null;
         }
 
         @Override
         public AbsoluteDate getStop() {
-            // TODO Auto-generated method stub
             return null;
         }
 

@@ -319,9 +319,6 @@ CCSDS_UNEXPECTED_KEYWORD = μη αναμενόμενη λέξη-κλειδί σ�
 # the central body gravitational coefficient cannot be retrieved from the ODM
 CCSDS_UNKNOWN_GM = το κεντρικό σώμα συντελεστή βαρύτητας δεν μπορεί να ανακτηθεί από το ODM
 
-# unknown central body {0}
-CCSDS_UNKNOWN_CENTER = <MISSING TRANSLATION>
-
 # there is no spacecraft mass associated with this ODM file
 CCSDS_UNKNOWN_SPACECRAFT_MASS = δεν υπάρχει μάζα διαστημικού οχήματος που συνδέεται με αυτό το αρχείο ODM
 

@@ -387,7 +387,7 @@ public class OPMParser extends OStateParser<OPMFile, OPMParser> {
             parsingMetaData = false;
             parsingData     = false;
             lineNumber      = 0;
-            commentTmp      = new ArrayList<String>();
+            commentTmp      = new ArrayList<>();
             maneuver        = null;
         }
     }

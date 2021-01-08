@@ -47,19 +47,24 @@ public class OEMData implements NDMData {
     /** EphemeridesBlock constructor. */
     public OEMData() {
         ephemeridesDataLines       = new ArrayList<>();
-        covarianceMatrices         = new ArrayList<CovarianceMatrix>();
+        covarianceMatrices         = new ArrayList<>();
         cartesianDerivativesFilter = CartesianDerivativesFilter.USE_PVA;
     }
 
     /** Add a data point.
      * @param data data point to add
+     * @param hasAcceleration true if the current data point has acceleration data.
      */
-    public void addData(final TimeStampedPVCoordinates data) {
+    public void addData(final TimeStampedPVCoordinates data, final boolean hasAcceleration) {
         ephemeridesDataLines.add(data);
+        if (!hasAcceleration) {
+            // as soon as one point misses acceleration we consider it is not available at all
+            cartesianDerivativesFilter = CartesianDerivativesFilter.USE_PV;
+        }
     }
 
     /** Add a covariance matrix.
-     * @param covarianceMatrix covariance matrix to add
+     * @param covarianceMatrix covariance matrix to dd
      */
     public void addCovarianceMatrix(final CovarianceMatrix covarianceMatrix) {
         covarianceMatrices.add(covarianceMatrix);
@@ -77,17 +82,6 @@ public class OEMData implements NDMData {
      */
     public CartesianDerivativesFilter getAvailableDerivatives() {
         return cartesianDerivativesFilter;
-    }
-
-    /** Update the {@link #getAvailableDerivatives() available derivatives}.
-     *
-     * @param pointHasAcceleration true if the current data point has acceleration data.
-     */
-    void updateHasAcceleration(final boolean pointHasAcceleration) {
-        if (!pointHasAcceleration) {
-            // as soon as one point misses acceleration we consider it is not available at all
-            cartesianDerivativesFilter = CartesianDerivativesFilter.USE_PV;
-        }
     }
 
     /** Get an unmodifiable view of the data points.
@@ -115,7 +109,7 @@ public class OEMData implements NDMData {
      * @param ephemeridesDataLinesComment the comment to be set
      */
     public void setEphemeridesDataLinesComment(final List<String> ephemeridesDataLinesComment) {
-        this.ephemeridesDataLinesComment = new ArrayList<String>(ephemeridesDataLinesComment);
+        this.ephemeridesDataLinesComment = new ArrayList<>(ephemeridesDataLinesComment);
     }
 
 }

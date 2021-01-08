@@ -161,7 +161,7 @@ public class OCMFile extends ODMFile<NDMSegment<OCMMetadata, OCMData>> {
          * @param comment comment to set
          */
         void setComment(final List<String> comment) {
-            this.comment = new ArrayList<String>(comment);
+            this.comment = new ArrayList<>(comment);
         }
 
         /** Get orbit identification number.

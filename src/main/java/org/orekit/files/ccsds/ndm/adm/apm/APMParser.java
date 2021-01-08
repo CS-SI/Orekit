@@ -511,7 +511,7 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
             metadata        = new ADMMetadata(conventions, dataContext);
             data            = new APMData();
             lineNumber      = 0;
-            commentTmp      = new ArrayList<String>();
+            commentTmp      = new ArrayList<>();
             maneuver        = null;
             parsingHeader   = false;
             parsingMetaData = false;

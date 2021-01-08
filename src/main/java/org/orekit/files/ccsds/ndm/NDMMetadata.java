@@ -58,7 +58,7 @@ public class NDMMetadata {
     public NDMMetadata(final IERSConventions conventions, final DataContext dataContext) {
         this.conventions = conventions;
         this.dataContext = dataContext;
-        this.comments    = new ArrayList<String>();
+        this.comments    = new ArrayList<>();
     }
 
     /** Get the IERS conventions.

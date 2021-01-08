@@ -127,7 +127,7 @@ public class OrekitAttitudeEphemerisFile implements AttitudeEphemerisFile {
          */
         public OrekitSatelliteAttitudeEphemeris(final String id) {
             this.id = id;
-            this.segments = new ArrayList<OrekitAttitudeEphemerisSegment>();
+            this.segments = new ArrayList<>();
         }
 
         /** {@inheritDoc} */
@@ -386,7 +386,7 @@ public class OrekitAttitudeEphemerisFile implements AttitudeEphemerisFile {
                 this.stopDate = stop;
             }
 
-            final List<TimeStampedAngularCoordinates> attitudeDataLines = new ArrayList<TimeStampedAngularCoordinates>();
+            final List<TimeStampedAngularCoordinates> attitudeDataLines = new ArrayList<>();
             for (SpacecraftState state : states) {
                 attitudeDataLines.add(state.getAttitude().getOrientation());
             }

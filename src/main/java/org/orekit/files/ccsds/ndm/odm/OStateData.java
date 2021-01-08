@@ -438,7 +438,7 @@ public abstract class OStateData implements NDMData {
      * @param comment comment to set
      */
     void setEpochComment(final List<String> comment) {
-        epochComment = new ArrayList<String>(comment);
+        epochComment = new ArrayList<>(comment);
     }
 
     /** Get the comment for Keplerian elements.
@@ -452,7 +452,7 @@ public abstract class OStateData implements NDMData {
      * @param comment comment to set
      */
     void setKeplerianElementsComment(final List<String> comment) {
-        keplerianElementsComment = new ArrayList<String>(comment);
+        keplerianElementsComment = new ArrayList<>(comment);
     }
 
     /** Get the comment for spacecraft.
@@ -466,7 +466,7 @@ public abstract class OStateData implements NDMData {
      * @param comment comment to set
      */
     void setSpacecraftComment(final List<String> comment) {
-        spacecraftComment = new ArrayList<String>(comment);
+        spacecraftComment = new ArrayList<>(comment);
     }
 
     /** Get the comment for covariance.
@@ -480,7 +480,7 @@ public abstract class OStateData implements NDMData {
      * @param comment comment to set
      */
     void setCovarianceComment(final List<String> comment) {
-        covarianceComment = new ArrayList<String>(comment);
+        covarianceComment = new ArrayList<>(comment);
     }
 
 }

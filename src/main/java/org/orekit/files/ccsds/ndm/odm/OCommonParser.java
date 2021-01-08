@@ -153,13 +153,13 @@ public abstract class OCommonParser<T extends ODMFile<?>, P extends ODMParser<T,
                     final CenterName c;
                     try {
                         c = CenterName.valueOf(canonicalValue);
+                        metaData.setHasCreatableBody(true);
+                        final CelestialBodies celestialBodies = getDataContext().getCelestialBodies();
+                        metaData.setCenterBody(c.getCelestialBody(celestialBodies));
+                        setMuCreated(c.getCelestialBody(celestialBodies).getGM());
                     } catch (IllegalArgumentException n) {
-                        throw new OrekitException(n, OrekitMessages.CCSDS_UNKNOWN_CENTER, keyValue.getValue());
+                        // intentionally ignored, as there is no limit to acceptable center names
                     }
-                    metaData.setHasCreatableBody(true);
-                    final CelestialBodies celestialBodies = getDataContext().getCelestialBodies();
-                    metaData.setCenterBody(c.getCelestialBody(celestialBodies));
-                    setMuCreated(c.getCelestialBody(celestialBodies).getGM());
                     return true;
 
                 case REF_FRAME:
@@ -169,11 +169,18 @@ public abstract class OCommonParser<T extends ODMFile<?>, P extends ODMParser<T,
                     return true;
 
                 case REF_FRAME_EPOCH:
-                    metaData.setFrameEpoch(parseDate(keyValue.getValue(), metaData.getTimeSystem()));
+                    // for OPM, OEM and OMM, REF_FRAME_EPOCH appears in metadata *before* TIME_SYSTEM
+                    // so we can only store the string value here, it will be converted later on
+                    metaData.setFrameEpochString(keyValue.getValue());
                     return true;
 
                 case TIME_SYSTEM:
-                    metaData.setTimeSystem(CcsdsTimeScale.parse(keyValue.getValue()));
+                    final CcsdsTimeScale timeSystem = CcsdsTimeScale.parse(keyValue.getValue());
+                    metaData.setTimeSystem(timeSystem);
+                    if (metaData.getFrameEpochString() != null) {
+                        // convert ref frame epoch to a proper data now that we know the time system
+                        metaData.setFrameEpoch(parseDate(metaData.getFrameEpochString(), timeSystem));
+                    }
                     return true;
 
                 default:

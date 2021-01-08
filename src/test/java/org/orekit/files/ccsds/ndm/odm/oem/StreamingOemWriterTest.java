@@ -43,13 +43,7 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.files.ccsds.Keyword;
-import org.orekit.files.ccsds.ndm.odm.ODMMetadata;
-import org.orekit.files.ccsds.ndm.odm.oem.OEMFile;
-import org.orekit.files.ccsds.ndm.odm.oem.OEMParser;
-import org.orekit.files.ccsds.ndm.odm.oem.StreamingOemWriter;
-import org.orekit.files.ccsds.ndm.odm.oem.OEMFile.EphemeridesBlock;
-import org.orekit.files.ccsds.ndm.odm.oem.OEMFile.OemSatelliteEphemeris;
-import org.orekit.files.ccsds.ndm.odm.oem.StreamingOemWriter.Segment;
+import org.orekit.files.ccsds.ndm.odm.oem.StreamingOemWriter.SegmentWriter;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsModifiedFrame;
 import org.orekit.files.ccsds.utils.CenterName;
@@ -232,13 +226,13 @@ public class StreamingOemWriterTest {
 
             OEMSatelliteEphemeris satellite =
                     oemFile.getSatellites().values().iterator().next();
-            EphemeridesBlock ephemerisBlock = satellite.getSegments().get(0);
+            OEMSegment ephemerisBlock = satellite.getSegments().get(0);
             Frame frame = ephemerisBlock.getFrame();
-            double step = ephemerisBlock.getStopTime()
-                    .durationFrom(ephemerisBlock.getStartTime()) /
+            double step = ephemerisBlock.getMetadata().getStopTime()
+                    .durationFrom(ephemerisBlock.getMetadata().getStartTime()) /
                     (ephemerisBlock.getCoordinates().size() - 1);
-            String originator = oemFile.getOriginator();
-            EphemeridesBlock block = oemFile.getEphemeridesBlocks().get(0);
+            String originator = oemFile.getHeader().getOriginator();
+            OEMSegment block = oemFile.getSegments().get(0);
             String objectName = block.getMetadata().getObjectName();
             String objectID = block.getMetadata().getObjectID();
 
@@ -253,7 +247,7 @@ public class StreamingOemWriterTest {
             StringBuilder buffer = new StringBuilder();
             StreamingOemWriter writer = new StreamingOemWriter(buffer, utc, metadata);
             writer.writeHeader();
-            Segment segment = writer.newSegment(frame, segmentData);
+            SegmentWriter segment = writer.newSegment(frame, segmentData);
             BoundedPropagator propagator = satellite.getPropagator();
             propagator.setMasterMode(step, segment);
             propagator.propagate(propagator.getMinDate(), propagator.getMaxDate());
@@ -288,17 +282,17 @@ public class StreamingOemWriterTest {
 
     }
 
-    private static void compareOemEphemerisBlocks(EphemeridesBlock block1,
-                                                  EphemeridesBlock block2,
+    private static void compareOemEphemerisBlocks(OEMSegment block1,
+                                                  OEMSegment block2,
                                                   double p_tol,
                                                   double v_tol) {
         compareOemEphemerisBlocksMetadata(block1.getMetadata(), block2.getMetadata());
         assertEquals(block1.getStart(), block2.getStart());
         assertEquals(block1.getStop(), block2.getStop());
-        assertEquals(block1.getEphemeridesDataLines().size(), block2.getEphemeridesDataLines().size());
-        for (int i = 0; i < block1.getEphemeridesDataLines().size(); i++) {
-            TimeStampedPVCoordinates c1 = block1.getEphemeridesDataLines().get(i);
-            TimeStampedPVCoordinates c2 = block2.getEphemeridesDataLines().get(i);
+        assertEquals(block1.getData().getEphemeridesDataLines().size(), block2.getData().getEphemeridesDataLines().size());
+        for (int i = 0; i < block1.getData().getEphemeridesDataLines().size(); i++) {
+            TimeStampedPVCoordinates c1 = block1.getData().getEphemeridesDataLines().get(i);
+            TimeStampedPVCoordinates c2 = block2.getData().getEphemeridesDataLines().get(i);
             assertEquals(c1.getDate(), c2.getDate());
             assertEquals(c1.getPosition() + " -> " + c2.getPosition(), 0.0,
                     Vector3D.distance(c1.getPosition(), c2.getPosition()), p_tol);
@@ -308,7 +302,7 @@ public class StreamingOemWriterTest {
 
     }
 
-    private static void compareOemEphemerisBlocksMetadata(ODMMetadata meta1, ODMMetadata meta2) {
+    private static void compareOemEphemerisBlocksMetadata(OEMMetadata meta1, OEMMetadata meta2) {
         assertEquals(meta1.getObjectID(), meta2.getObjectID());
         assertEquals(meta1.getObjectName(), meta2.getObjectName());
         assertEquals(meta1.getCenterName(), meta2.getCenterName());
@@ -316,18 +310,11 @@ public class StreamingOemWriterTest {
         assertEquals(meta1.getTimeSystem(), meta2.getTimeSystem());
     }
 
-    static void compareOemFiles(OEMFile file1,
-                                OEMFile file2,
-                                double p_tol,
-                                double v_tol) {
-        assertEquals(file1.getOriginator(), file2.getOriginator());
-        assertEquals(file1.getEphemeridesBlocks().size(), file2.getEphemeridesBlocks().size());
-        for (int i = 0; i < file1.getEphemeridesBlocks().size(); i++) {
-            compareOemEphemerisBlocks(
-                    file1.getEphemeridesBlocks().get(i),
-                    file2.getEphemeridesBlocks().get(i),
-                    p_tol,
-                    v_tol);
+    static void compareOemFiles(OEMFile file1, OEMFile file2, double p_tol, double v_tol) {
+        assertEquals(file1.getHeader().getOriginator(), file2.getHeader().getOriginator());
+        assertEquals(file1.getSegments().size(), file2.getSegments().size());
+        for (int i = 0; i < file1.getSegments().size(); i++) {
+            compareOemEphemerisBlocks(file1.getSegments().get(i), file2.getSegments().get(i), p_tol, v_tol);
         }
     }
 
@@ -344,7 +331,7 @@ public class StreamingOemWriterTest {
         OEMParser parser = new OEMParser();
         OEMFile oemFile = parser.parse(inEntry, "OEMExample4.txt");
 
-        EphemeridesBlock block = oemFile.getEphemeridesBlocks().get(0);
+        OEMSegment block = oemFile.getSegments().get(0);
         Frame frame = block.getFrame();
 
         TimeScale utc = TimeScalesFactory.getUTC();
@@ -353,7 +340,7 @@ public class StreamingOemWriterTest {
 
         StringBuilder buffer = new StringBuilder();
         StreamingOemWriter writer = new StreamingOemWriter(buffer, utc, metadata, "%.2f", "%.3f");
-        Segment segment = writer.newSegment(frame, segmentData);
+        SegmentWriter segment = writer.newSegment(frame, segmentData);
 
         for (TimeStampedPVCoordinates coordinate : block.getCoordinates()) {
             segment.writeEphemerisLine(coordinate);

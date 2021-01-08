@@ -215,7 +215,7 @@ public class OMMData extends OStateData  {
      * @param comment comment to set
      */
     void setTLERelatedParametersComment(final List<String> comment) {
-        dataTleRelatedParametersComment = new ArrayList<String>(comment);
+        dataTleRelatedParametersComment = new ArrayList<>(comment);
     }
 
 }

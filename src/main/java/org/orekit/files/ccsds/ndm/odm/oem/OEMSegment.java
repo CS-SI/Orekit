@@ -38,21 +38,15 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class OEMSegment extends NDMSegment<OEMMetadata, OEMData> implements EphemerisFile.EphemerisSegment {
 
     /** Gravitational coefficient to use for building Cartesian/Keplerian orbits. */
-    private double mu;
+    private final double mu;
 
     /** Simple constructor.
      * @param metadata segment metadata
      * @param data segment data
-     */
-    public OEMSegment(final OEMMetadata metadata, final OEMData data) {
-        super(metadata, data);
-        mu = Double.NaN;
-    }
-
-    /** Set the gravitational coefficient to use for building Cartesian/Keplerian orbits.
      * @param mu gravitational coefficient to use for building Cartesian/Keplerian orbits
      */
-    public void setMu(final double mu) {
+    public OEMSegment(final OEMMetadata metadata, final OEMData data, final double mu) {
+        super(metadata, data);
         this.mu = mu;
     }
 

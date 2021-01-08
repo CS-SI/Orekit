@@ -484,7 +484,7 @@ public class StreamingAemWriter {
                 this.startAttitudeBlock();
             } catch (IOException e) {
                 throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE,
-                        e.getLocalizedMessage());
+                                          e.getLocalizedMessage());
             }
         }
 

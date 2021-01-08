@@ -319,10 +319,7 @@ CCSDS_UNEXPECTED_KEYWORD = unexpected keyword in CCSDS line number {0} of file {
 # the central body gravitational coefficient cannot be retrieved from the ODM
 CCSDS_UNKNOWN_GM = the central body gravitational coefficient cannot be retrieved from the ODM
 
-# unknown central body {0}
-CCSDS_UNKNOWN_CENTER = unknown central body {0}
-
-s# there is no spacecraft mass associated with this ODM file
+# there is no spacecraft mass associated with this ODM file
 CCSDS_UNKNOWN_SPACECRAFT_MASS = there is no spacecraft mass associated with this ODM file
 
 # no IERS conventions have been set before parsing
