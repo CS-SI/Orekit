@@ -21,7 +21,13 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
-   	  <action dev="bryan" type="update" issue="743">
+      <action dev="bryan" type="update" issue="601">
+      	Changed getPVInPZ90() method to private.
+      </action>
+      <action dev="bryan" type="fix" issue="744">
+      	Fixed calculation of CR3BP constants.
+      </action>
+      <action dev="bryan" type="update" issue="743">
       	Updated JUnit version to 4.13.1.
       </action>
     </release>
