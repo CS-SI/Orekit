@@ -34,7 +34,7 @@ public class AEMData implements NDMData {
     private final List<TimeStampedAngularCoordinates> attitudeDataLines;
 
     /** Data Lines comments. The list contains a string for each line of comment. */
-    private List<String> attitudeDataLinesComment;
+    private final List<String> attitudeDataLinesComment;
 
     /** Enumerate for selecting which derivatives to use in {@link #attitudeDataLines}. */
     private AngularDerivativesFilter angularDerivativesFilter;
@@ -55,7 +55,7 @@ public class AEMData implements NDMData {
     }
 
     /** Get an unmodifiable view of the data points.
-     * @return unmodifiable vie of the data points
+     * @return unmodifiable view of the data points
      */
     public List<TimeStampedAngularCoordinates> getAngularCoordinates() {
         return Collections.unmodifiableList(attitudeDataLines);

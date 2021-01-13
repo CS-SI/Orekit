@@ -55,12 +55,12 @@ public class APMParserTest {
         final String ex = "/ccsds/adm/apm/APMExample.txt";
 
         // Initialize the parser
-        final APMParser parser = new APMParser().withMu(398600e9).
-                withConventions(IERSConventions.IERS_2010).
-                withSimpleEOP(true).
-                withDataContext(DataContext.getDefault()).
-                withMissionReferenceDate(new AbsoluteDate("2002-09-30T14:28:15.117",
-                                                          TimeScalesFactory.getUTC()));
+        final APMParser parser = new APMParser().
+                                 withConventions(IERSConventions.IERS_2010).
+                                 withSimpleEOP(true).
+                                 withDataContext(DataContext.getDefault()).
+                                 withMissionReferenceDate(new AbsoluteDate("2002-09-30T14:28:15.117",
+                                                                           TimeScalesFactory.getUTC()));
 
         final InputStream inEntry = getClass().getResourceAsStream(ex);
 
@@ -118,12 +118,12 @@ public class APMParserTest {
         final String ex = "/ccsds/adm/apm/APMExample2.txt";
 
         // Initialize the parser
-        final APMParser parser = new APMParser().withMu(398600e9).
-                withConventions(IERSConventions.IERS_2010).
-                withSimpleEOP(true).
-                withDataContext(DataContext.getDefault()).
-                withMissionReferenceDate(new AbsoluteDate("2002-09-30T14:28:15.117",
-                                                          TimeScalesFactory.getUTC()));
+        final APMParser parser = new APMParser().
+                                 withConventions(IERSConventions.IERS_2010).
+                                 withSimpleEOP(true).
+                                 withDataContext(DataContext.getDefault()).
+                                 withMissionReferenceDate(new AbsoluteDate("2002-09-30T14:28:15.117",
+                                                                           TimeScalesFactory.getUTC()));
 
         final InputStream inEntry = getClass().getResourceAsStream(ex);
 
@@ -238,12 +238,12 @@ public class APMParserTest {
         final String ex = "/ccsds/adm/apm/APMExample3.txt";
 
         // Initialize the parser
-        final APMParser parser = new APMParser().withMu(398600e9).
-                withConventions(IERSConventions.IERS_2010).
-                withSimpleEOP(true).
-                withDataContext(DataContext.getDefault()).
-                withMissionReferenceDate(new AbsoluteDate("2002-09-30T14:28:15.117",
-                                                          TimeScalesFactory.getUTC()));
+        final APMParser parser = new APMParser().
+                                 withConventions(IERSConventions.IERS_2010).
+                                 withSimpleEOP(true).
+                                 withDataContext(DataContext.getDefault()).
+                                 withMissionReferenceDate(new AbsoluteDate("2002-09-30T14:28:15.117",
+                                                                           TimeScalesFactory.getUTC()));
 
         final InputStream inEntry = getClass().getResourceAsStream(ex);
 
@@ -316,12 +316,12 @@ public class APMParserTest {
         final String ex = "/ccsds/adm/apm/APMExample4.txt";
 
         // Initialize the parser
-        final APMParser parser = new APMParser().withMu(398600e9).
-                withConventions(IERSConventions.IERS_2010).
-                withSimpleEOP(true).
-                withDataContext(DataContext.getDefault()).
-                withMissionReferenceDate(new AbsoluteDate("2002-09-30T14:28:15.117",
-                                                          TimeScalesFactory.getUTC()));
+        final APMParser parser = new APMParser().
+                                 withConventions(IERSConventions.IERS_2010).
+                                 withSimpleEOP(true).
+                                 withDataContext(DataContext.getDefault()).
+                                 withMissionReferenceDate(new AbsoluteDate("2002-09-30T14:28:15.117",
+                                                                           TimeScalesFactory.getUTC()));
 
         final InputStream inEntry = getClass().getResourceAsStream(ex);
 
@@ -375,7 +375,7 @@ public class APMParserTest {
     @Test
     public void testNotImplementedTimeSystems() {
         try {
-            new APMParser().withMu(CelestialBodyFactory.getMars().getGM()).parse(getClass().getResourceAsStream("/ccsds/adm/apm/APM-inconsistent-time-systems.txt"));
+            new APMParser().parse(getClass().getResourceAsStream("/ccsds/adm/apm/APM-inconsistent-time-systems.txt"));
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED, oe.getSpecifier());
             Assert.assertEquals("BCE", oe.getParts()[0]);

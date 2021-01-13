@@ -28,7 +28,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMFile;
@@ -60,7 +59,7 @@ public class AggregateBoundedAttitudeProviderTest {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM()).
+        final AEMParser parser = new AEMParser().
                         withConventions(IERSConventions.IERS_2010).
                         withSimpleEOP(true);
         final AEMFile file = parser.parse(inEntry, "AEMExample10.txt");
@@ -93,7 +92,7 @@ public class AggregateBoundedAttitudeProviderTest {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM()).
+        final AEMParser parser = new AEMParser().
                         withConventions(IERSConventions.IERS_2010).
                         withSimpleEOP(true);
         final AEMFile file = parser.parse(inEntry, "AEMExample10.txt");
@@ -122,7 +121,7 @@ public class AggregateBoundedAttitudeProviderTest {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM()).
+        final AEMParser parser = new AEMParser().
                         withConventions(IERSConventions.IERS_2010).
                         withSimpleEOP(true);
         final AEMFile file = parser.parse(inEntry, "AEMExample10.txt");
@@ -155,9 +154,9 @@ public class AggregateBoundedAttitudeProviderTest {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM()).
-                        withConventions(IERSConventions.IERS_2010).
-                        withSimpleEOP(true);
+        final AEMParser parser = new AEMParser().
+                                 withConventions(IERSConventions.IERS_2010).
+                                 withSimpleEOP(true);
         final AEMFile file = parser.parse(inEntry, "AEMExample10.txt");
 
         final AEMSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");

@@ -39,7 +39,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.orekit.Utils;
-import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.IERSConventions;
@@ -80,8 +79,7 @@ public class AEMWriterTest {
     public void testWriteAEM1() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM())
-                .withConventions(IERSConventions.IERS_2010);
+        final AEMParser parser = new AEMParser().withConventions(IERSConventions.IERS_2010);
         final AEMFile aemFile = parser.parse(inEntry, "AEMExample.txt");
 
         String originator = aemFile.getHeader().getOriginator();
@@ -99,8 +97,7 @@ public class AEMWriterTest {
     public void testUnfoundSpaceId() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM())
-                .withConventions(IERSConventions.IERS_2010);
+        final AEMParser parser = new AEMParser().withConventions(IERSConventions.IERS_2010);
         final AEMFile aemFile = parser.parse(inEntry, "OEMExample.txt");
 
         String badObjectId = "12345";
@@ -119,8 +116,7 @@ public class AEMWriterTest {
     public void testNullFile() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM())
-                .withConventions(IERSConventions.IERS_2010);
+        final AEMParser parser = new AEMParser().withConventions(IERSConventions.IERS_2010);
         final AEMFile aemFile = parser.parse(inEntry, "AEMExample.txt");
         String originator = aemFile.getHeader().getOriginator();
         String objectName = aemFile.getSegments().get(0).getMetadata().getObjectName();
@@ -156,8 +152,7 @@ public class AEMWriterTest {
     public void testUnisatelliteFileWithDefault() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM())
-                .withConventions(IERSConventions.IERS_2010);
+        final AEMParser parser = new AEMParser().withConventions(IERSConventions.IERS_2010);
         final AEMFile aemFile = parser.parse(inEntry, "AEMExample.txt");
 
         String tempAEMFilePath = tempFolder.newFile("TestOEMUnisatelliteWithDefault.oem").toString();
@@ -197,8 +192,7 @@ public class AEMWriterTest {
     public void testIssue723() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample2.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM())
-                .withConventions(IERSConventions.IERS_2010);
+        final AEMParser parser = new AEMParser().withConventions(IERSConventions.IERS_2010);
         final AEMFile aemFile = parser.parse(inEntry, "AEMExample2.txt");
 
         String tempAEMFilePath = tempFolder.newFile("TestAEMIssue723.aem").toString();

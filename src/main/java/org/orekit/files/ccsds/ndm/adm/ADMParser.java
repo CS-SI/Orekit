@@ -16,14 +16,13 @@
  */
 package org.orekit.files.ccsds.ndm.adm;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.ndm.NDMParser;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.CenterName;
 import org.orekit.files.ccsds.utils.KeyValue;
@@ -34,12 +33,10 @@ import org.orekit.utils.IERSConventions;
  * Base class for all CCSDS Attitude Data Message parsers.
  *
  * <p> This base class is immutable, and hence thread safe. When parts must be
- * changed, such as reference date for Mission Elapsed Time or Mission Relative
- * Time time systems, or the gravitational coefficient or the IERS conventions,
- * the various {@code withXxx} methods must be called, which create a new
- * immutable instance with the new parameters. This is a combination of the <a
- * href="https://en.wikipedia.org/wiki/Builder_pattern">builder design
- * pattern</a> and a <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
+ * changed, such as the IERS conventions or data context, the various {@code withXxx}
+ * methods must be called, which create a new immutable instance with the new parameters.
+ * This is a combination of the <a href="https://en.wikipedia.org/wiki/Builder_pattern">builder
+ * design pattern</a> and a <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
  * interface</a>.
  * @param <T> type of the parsed file
  * @param <P> type of the parser
@@ -47,37 +44,29 @@ import org.orekit.utils.IERSConventions;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public abstract class ADMParser<T extends ADMFile<?>, P extends ADMParser<T, ?>> {
+public abstract class ADMParser<T extends ADMFile<?>, P extends ADMParser<T, ?>> extends NDMParser<T, P> {
 
     /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
     private final AbsoluteDate missionReferenceDate;
-
-    /** Gravitational coefficient. */
-    private final  double mu;
-
-    /** IERS Conventions. */
-    private final  IERSConventions conventions;
-
-    /** Indicator for simple or accurate EOP interpolation. */
-    private final  boolean simpleEOP;
-
-    /** Data context used for obtain frames and time scales. */
-    private final DataContext dataContext;
 
     /** Complete constructor.
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames and time scales.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
-     * @param mu gravitational coefficient
      */
     protected ADMParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
-                        final AbsoluteDate missionReferenceDate, final double mu) {
+                        final AbsoluteDate missionReferenceDate) {
+        super(conventions, simpleEOP, dataContext);
         this.missionReferenceDate = missionReferenceDate;
-        this.mu                   = mu;
-        this.conventions          = conventions;
-        this.simpleEOP            = simpleEOP;
-        this.dataContext          = dataContext;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected P create(final IERSConventions newConventions,
+                       final boolean newSimpleEOP,
+                       final DataContext newDataContext) {
+        return create(newConventions, newSimpleEOP, newDataContext, missionReferenceDate);
     }
 
     /** Build a new instance.
@@ -85,70 +74,13 @@ public abstract class ADMParser<T extends ADMFile<?>, P extends ADMParser<T, ?>>
      * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param newDataContext data context used for frames, time scales, and celestial bodies
      * @param newMissionReferenceDate mission reference date to use while parsing
-     * @param newMu gravitational coefficient to use while parsing
      * @return a new instance with changed parameters
      * @since 11.0
      */
     protected abstract P create(IERSConventions newConventions,
                                 boolean newSimpleEOP,
                                 DataContext newDataContext,
-                                AbsoluteDate newMissionReferenceDate,
-                                double newMu);
-
-    /**
-     * Set IERS conventions.
-     * @param newConventions IERS conventions to use while parsing
-     * @return a new instance, with IERS conventions replaced
-     * @see #getConventions()
-     */
-    public P withConventions(final IERSConventions newConventions) {
-        return create(newConventions, isSimpleEOP(), getDataContext(), getMissionReferenceDate(), getMu());
-    }
-
-    /**
-     * Get IERS conventions.
-     * @return IERS conventions to use while parsing
-     * @see #withConventions(IERSConventions)
-     */
-    public IERSConventions getConventions() {
-        return conventions;
-    }
-
-    /**
-     * Set EOP interpolation method.
-     * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @return a new instance, with EOP interpolation method replaced
-     * @see #isSimpleEOP()
-     */
-    public P withSimpleEOP(final boolean newSimpleEOP) {
-        return create(getConventions(), newSimpleEOP, getDataContext(), getMissionReferenceDate(), getMu());
-    }
-
-    /**
-     * Get EOP interpolation method.
-     * @return true if tidal effects are ignored when interpolating EOP
-     * @see #withSimpleEOP(boolean)
-     */
-    public boolean isSimpleEOP() {
-        return simpleEOP;
-    }
-
-    /**
-     * Get the data context used for getting frames, time scales, and celestial bodies.
-     * @return the data context.
-     */
-    public DataContext getDataContext() {
-        return dataContext;
-    }
-
-    /**
-     * Set the data context.
-     * @param newDataContext used for frames, time scales, and celestial bodies.
-     * @return a new instance with the data context replaced.
-     */
-    public P withDataContext(final DataContext newDataContext) {
-        return create(getConventions(), isSimpleEOP(), newDataContext, getMissionReferenceDate(), getMu());
-    }
+                                AbsoluteDate newMissionReferenceDate);
 
     /**
      * Set initial date.
@@ -157,7 +89,7 @@ public abstract class ADMParser<T extends ADMFile<?>, P extends ADMParser<T, ?>>
      * @see #getMissionReferenceDate()
      */
     public P withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
-        return create(getConventions(), isSimpleEOP(), getDataContext(), newMissionReferenceDate, getMu());
+        return create(getConventions(), isSimpleEOP(), getDataContext(), newMissionReferenceDate);
     }
 
     /**
@@ -167,47 +99,6 @@ public abstract class ADMParser<T extends ADMFile<?>, P extends ADMParser<T, ?>>
      */
     public AbsoluteDate getMissionReferenceDate() {
         return missionReferenceDate;
-    }
-
-    /**
-     * Set gravitational coefficient.
-     * @param newMu gravitational coefficient to use while parsing
-     * @return a new instance, with gravitational coefficient date replaced
-     * @see #getMu()
-     */
-    public P withMu(final double newMu) {
-        return create(getConventions(), isSimpleEOP(), getDataContext(), getMissionReferenceDate(), newMu);
-    }
-
-    /**
-     * Get gravitational coefficient.
-     * @return gravitational coefficient to use while parsing
-     * @see #withMu(double)
-     */
-    public double getMu() {
-        return mu;
-    }
-
-    /**
-     * Parse a CCSDS Attitude Data Message.
-     * @param fileName name of the file containing the message
-     * @return parsed ADM file
-     */
-    public T parse(final String fileName) {
-        try (InputStream stream = new FileInputStream(fileName)) {
-            return parse(stream, fileName);
-        } catch (IOException e) {
-            throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, fileName);
-        }
-    }
-
-    /**
-     * Parse a CCSDS Attitude Data Message.
-     * @param stream stream containing message
-     * @return parsed ADM file
-     */
-    public T parse(final InputStream stream) {
-        return parse(stream, "<unknown>");
     }
 
     /**
@@ -233,7 +124,7 @@ public abstract class ADMParser<T extends ADMFile<?>, P extends ADMParser<T, ?>>
 
             case CREATION_DATE:
                 admFile.getHeader().setCreationDate(new AbsoluteDate(keyValue.getValue(),
-                                                                     dataContext.getTimeScales().getUTC()));
+                                                                     getDataContext().getTimeScales().getUTC()));
                 return true;
 
             case ORIGINATOR:
@@ -303,17 +194,6 @@ public abstract class ADMParser<T extends ADMFile<?>, P extends ADMParser<T, ?>>
             default:
                 return false;
         }
-    }
-
-    /**
-     * Parse a date.
-     * @param date date to parse, as the value of a CCSDS key=value line
-     * @param timeSystem time system to use
-     * @return parsed date
-     */
-    protected AbsoluteDate parseDate(final String date, final CcsdsTimeScale timeSystem) {
-        return timeSystem.parseDate(date, getConventions(), getMissionReferenceDate(),
-                                    getDataContext().getTimeScales());
     }
 
 }

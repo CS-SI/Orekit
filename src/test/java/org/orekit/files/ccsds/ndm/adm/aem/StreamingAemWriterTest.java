@@ -35,7 +35,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
-import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.files.ccsds.Keyword;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
@@ -75,7 +74,7 @@ public class StreamingAemWriterTest {
 
             // Reference AEM file
             InputStream inEntry = getClass().getResourceAsStream(ex);
-            AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM()).withConventions(IERSConventions.IERS_2010);
+            AEMParser parser = new AEMParser().withConventions(IERSConventions.IERS_2010);
             AEMFile aemFile = parser.parse(inEntry, "AEMExample.txt");
 
             // Satellite attitude ephemeris as read from the reference file

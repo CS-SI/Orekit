@@ -59,7 +59,7 @@ public class AEMParserTest {
     public void testParseAEM1() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM()).
+        final AEMParser parser = new AEMParser().
                         withConventions(IERSConventions.IERS_2010).
                         withSimpleEOP(true);
         final AEMFile file = parser.parse(inEntry, "AEMExample.txt");
@@ -170,7 +170,6 @@ public class AEMParserTest {
         AEMParser parser = new AEMParser().
                 withConventions(IERSConventions.IERS_2010).
                 withSimpleEOP(true).
-                withMu(CelestialBodyFactory.getMars().getGM()).
                 withDataContext(DataContext.getDefault()).
                 withMissionReferenceDate(new AbsoluteDate("1996-12-17T00:00:00.000",
                                                           TimeScalesFactory.getUTC()));
@@ -191,7 +190,6 @@ public class AEMParserTest {
         Assert.assertEquals(1, blocks.size());
         Assert.assertEquals(IERSConventions.IERS_2010, parser.getConventions());
         Assert.assertTrue(parser.isSimpleEOP());
-        Assert.assertEquals(CelestialBodyFactory.getMars().getGM(), parser.getMu(), 1.0e-5);
         Assert.assertEquals(0.0, parser.getMissionReferenceDate().durationFrom(new AbsoluteDate(1996, 12, 17, 0, 0, 0.0, TimeScalesFactory.getUTC())), 1.0e-5);
         Assert.assertEquals(DataContext.getDefault(), parser.getDataContext());
         Assert.assertEquals((new AbsoluteDate("1996-12-17T00:00:00.000",
@@ -203,7 +201,7 @@ public class AEMParserTest {
     public void testParseAEM3() throws URISyntaxException {
         final String ex = "/ccsds/adm/aem/AEMExample3.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM());
+        final AEMParser parser = new AEMParser();
         
         try {
             parser.parse(inEntry, "AEMExample3.txt");
@@ -217,7 +215,7 @@ public class AEMParserTest {
     public void testParseAEM4() throws URISyntaxException {
         final String ex = "/ccsds/adm/aem/AEMExample4.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM());
+        final AEMParser parser = new AEMParser();
         final AEMFile file = parser.parse(inEntry, "AEMExample4.txt");
         final NDMSegment<AEMMetadata, AEMData> segment0 = file.getSegments().get(0);
         final List<String> dataComment = new ArrayList<String>();
@@ -229,7 +227,7 @@ public class AEMParserTest {
     public void testParseAEM5() throws URISyntaxException {
         final String ex = "/ccsds/adm/aem/AEMExample5.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM());
+        final AEMParser parser = new AEMParser();
         final AEMFile file = parser.parse(inEntry, "AEMExample5.txt");
         final NDMSegment<AEMMetadata, AEMData> segment0 = file.getSegments().get(0);
         final List<String> headerComment = new ArrayList<String>();
@@ -274,7 +272,7 @@ public class AEMParserTest {
     public void testParseAEM6() throws URISyntaxException {
         final String ex = "/ccsds/adm/aem/AEMExample6.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM());
+        final AEMParser parser = new AEMParser();
         
         try {
             parser.parse(inEntry, "AEMExample6.txt");
@@ -312,7 +310,7 @@ public class AEMParserTest {
     @Test
     public void testMissingAttitudeType() {
         try {
-            new AEMParser().withMu(CelestialBodyFactory.getMars().getGM()).parse(getClass().getResourceAsStream("/ccsds/adm/aem/AEM-missing-attitude-type.txt"));
+            new AEMParser().parse(getClass().getResourceAsStream("/ccsds/adm/aem/AEM-missing-attitude-type.txt"));
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_AEM_NULL_ATTITUDE_TYPE, oe.getSpecifier());
         }
@@ -321,7 +319,7 @@ public class AEMParserTest {
     @Test
     public void testInconsistentTimeSystems() {
         try {
-            new AEMParser().withMu(CelestialBodyFactory.getMars().getGM()).parse(getClass().getResourceAsStream("/ccsds/adm/aem/AEM-inconsistent-time-systems.txt"));
+            new AEMParser().parse(getClass().getResourceAsStream("/ccsds/adm/aem/AEM-inconsistent-time-systems.txt"));
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS, oe.getSpecifier());
             Assert.assertEquals(CcsdsTimeScale.UTC, oe.getParts()[0]);
@@ -374,7 +372,7 @@ public class AEMParserTest {
     @Test
     public void testEphemerisNumberFormatErrorType() {
         try {
-            new AEMParser().withMu(CelestialBodyFactory.getMars().getGM()).
+            new AEMParser().
             parse(getClass().getResourceAsStream("/ccsds/adm/aem/AEM-ephemeris-number-format-error.txt"),
                                                  "AEM-ephemeris-number-format-error.txt");
         } catch (OrekitException oe) {
@@ -392,7 +390,7 @@ public class AEMParserTest {
         // simple test for AEM file, contains p/v entries and other mandatory data.
         final String name = getClass().getResource("/ccsds/adm/aem/AEM-keyword-within-ephemeris.txt").toURI().getPath();
         try {
-            new AEMParser().withMu(CelestialBodyFactory.getMars().getGM()).parse(name);
+            new AEMParser().parse(name);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
@@ -406,7 +404,7 @@ public class AEMParserTest {
         // simple test for AEM file, contains a wrong keyword in the metadata.
         final String name = getClass().getResource("/ccsds/adm/aem/AEM-inconsistent-rotation-sequence.txt").toURI().getPath();
         try {
-            new AEMParser().withMu(CelestialBodyFactory.getMars().getGM()).parse(name);
+            new AEMParser().parse(name);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_AEM_INVALID_ROTATION_SEQUENCE, oe.getSpecifier());
@@ -418,7 +416,7 @@ public class AEMParserTest {
     public void testMissingConvention() throws URISyntaxException {
         final String ex = "/ccsds/adm/aem/AEMExample.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM());
+        final AEMParser parser = new AEMParser();
         final AEMFile file = parser.parse(inEntry, "AEMExample.txt");
         try {
             file.getConventions();
@@ -468,9 +466,9 @@ public class AEMParserTest {
     public void testIssue739() {
         final String ex = "/ccsds/adm/aem/AEMExample8.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM()).
-                        withConventions(IERSConventions.IERS_2010).
-                        withSimpleEOP(true);
+        final AEMParser parser = new AEMParser().
+                                 withConventions(IERSConventions.IERS_2010).
+                                 withSimpleEOP(true);
         parser.setLocalScBodyReferenceFrameA(FramesFactory.getEME2000());
         parser.setLocalScBodyReferenceFrameB(FramesFactory.getGCRF());
         final AEMFile file = parser.parse(inEntry, "AEMExample8.txt");
@@ -493,9 +491,9 @@ public class AEMParserTest {
     public void testIssue739_2() {
         final String ex = "/ccsds/adm/aem/AEMExample9.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser().withMu(CelestialBodyFactory.getEarth().getGM()).
-                        withConventions(IERSConventions.IERS_2010).
-                        withSimpleEOP(true);
+        final AEMParser parser = new AEMParser().
+                                 withConventions(IERSConventions.IERS_2010).
+                                 withSimpleEOP(true);
         parser.setLocalScBodyReferenceFrameB(FramesFactory.getGCRF());
         final AEMFile file = parser.parse(inEntry, "AEMExample9.txt");
         final AEMSegment segment0 = file.getSegments().get(0);

@@ -145,7 +145,7 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
      * @see #withDataContext(DataContext)
      */
     public AEMParser(final DataContext dataContext) {
-        this(null, true, dataContext, AbsoluteDate.FUTURE_INFINITY, Double.NaN, 1);
+        this(null, true, dataContext, AbsoluteDate.FUTURE_INFINITY, 1);
     }
 
     /**
@@ -154,13 +154,11 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
-     * @param mu gravitational coefficient
      * @param interpolationDegree default interpolation degree
      */
     private AEMParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
-                      final AbsoluteDate missionReferenceDate, final double mu,
-                      final int interpolationDegree) {
-        super(conventions, simpleEOP, dataContext, missionReferenceDate, mu);
+                      final AbsoluteDate missionReferenceDate, final int interpolationDegree) {
+        super(conventions, simpleEOP, dataContext, missionReferenceDate);
         this.interpolationDegree = interpolationDegree;
     }
 
@@ -169,9 +167,8 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
     protected AEMParser create(final IERSConventions newConventions,
                                final boolean newSimpleEOP,
                                final DataContext newDataContext,
-                               final AbsoluteDate newMissionReferenceDate,
-                               final double newMu) {
-        return create(newConventions, newSimpleEOP, newDataContext, newMissionReferenceDate, newMu, interpolationDegree);
+                               final AbsoluteDate newMissionReferenceDate) {
+        return create(newConventions, newSimpleEOP, newDataContext, newMissionReferenceDate, interpolationDegree);
     }
 
     /** Build a new instance.
@@ -179,7 +176,6 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
      * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param newDataContext data context used for frames, time scales, and celestial bodies
      * @param newMissionReferenceDate mission reference date to use while parsing
-     * @param newMu gravitational coefficient to use while parsing
      * @param newInterpolationdegree default interpolation degree
      * @return a new instance with changed parameters
      * @since 11.0
@@ -188,9 +184,8 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
                                final boolean newSimpleEOP,
                                final DataContext newDataContext,
                                final AbsoluteDate newMissionReferenceDate,
-                               final double newMu,
                                final int newInterpolationdegree) {
-        return new AEMParser(newConventions, newSimpleEOP, newDataContext, newMissionReferenceDate, newMu, newInterpolationdegree);
+        return new AEMParser(newConventions, newSimpleEOP, newDataContext, newMissionReferenceDate, newInterpolationdegree);
     }
 
     /** Set default interpolation degree.
@@ -206,7 +201,7 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
      */
     public AEMParser withInterpolationDegree(final int newInterpolationDegree) {
         return new AEMParser(getConventions(), isSimpleEOP(), getDataContext(), getMissionReferenceDate(),
-                             getMu(), newInterpolationDegree);
+                             newInterpolationDegree);
     }
 
     /**

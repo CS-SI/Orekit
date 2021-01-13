@@ -98,7 +98,7 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
      * @see #withDataContext(DataContext)
      */
     public APMParser(final DataContext dataContext) {
-        this(null, true, dataContext, AbsoluteDate.FUTURE_INFINITY, Double.NaN);
+        this(null, true, dataContext, AbsoluteDate.FUTURE_INFINITY);
     }
 
     /** Complete constructor.
@@ -106,11 +106,10 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
-     * @param mu gravitational coefficient
      */
     private APMParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
-                      final AbsoluteDate missionReferenceDate, final double mu) {
-        super(conventions, simpleEOP, dataContext, missionReferenceDate, mu);
+                      final AbsoluteDate missionReferenceDate) {
+        super(conventions, simpleEOP, dataContext, missionReferenceDate);
     }
 
     /** {@inheritDoc} */
@@ -118,9 +117,8 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
     protected APMParser create(final IERSConventions newConventions,
                                final boolean newSimpleEOP,
                                final DataContext newDataContext,
-                               final AbsoluteDate newMissionReferenceDate,
-                               final double newMu) {
-        return new APMParser(newConventions, newSimpleEOP, newDataContext, newMissionReferenceDate, newMu);
+                               final AbsoluteDate newMissionReferenceDate) {
+        return new APMParser(newConventions, newSimpleEOP, newDataContext, newMissionReferenceDate);
     }
 
     /** {@inheritDoc} */
