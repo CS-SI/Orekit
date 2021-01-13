@@ -16,8 +16,6 @@
  */
 package org.orekit.files.ccsds.ndm.odm;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
@@ -26,6 +24,7 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.Keyword;
+import org.orekit.files.ccsds.ndm.NDMParser;
 import org.orekit.files.ccsds.utils.KeyValue;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
@@ -47,16 +46,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 6.1
  */
-public abstract class ODMParser<T extends ODMFile<?>, P extends ODMParser<T, ?>> {
-
-    /** IERS Conventions. */
-    private final  IERSConventions conventions;
-
-    /** Indicator for simple or accurate EOP interpolation. */
-    private final  boolean simpleEOP;
-
-    /** Data context used for obtain frames and time scales. */
-    private final DataContext dataContext;
+public abstract class ODMParser<T extends ODMFile<?>, P extends ODMParser<T, ?>> extends NDMParser<T, P> {
 
     /** Indicators for expected keywords.
      * @since 11.0
@@ -71,95 +61,10 @@ public abstract class ODMParser<T extends ODMFile<?>, P extends ODMParser<T, ?>>
      */
     protected ODMParser(final IERSConventions conventions, final boolean simpleEOP,
                         final DataContext dataContext) {
-        this.conventions = conventions;
-        this.simpleEOP   = simpleEOP;
+        super(conventions, simpleEOP, dataContext);
         this.expected    = new HashSet<>();
-        this.dataContext = dataContext;
     }
 
-    /** Set IERS conventions.
-     * @param newConventions IERS conventions to use while parsing
-     * @return a new instance, with IERS conventions replaced
-     * @see #getConventions()
-     */
-    public P withConventions(final IERSConventions newConventions) {
-        return create(newConventions, simpleEOP, dataContext);
-    }
-
-    /** Get IERS conventions.
-     * @return IERS conventions to use while parsing
-     * @see #withConventions(IERSConventions)
-     */
-    public IERSConventions getConventions() {
-        return conventions;
-    }
-
-    /** Set EOP interpolation method.
-     * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @return a new instance, with EOP interpolation method replaced
-     * @see #isSimpleEOP()
-     */
-    public P withSimpleEOP(final boolean newSimpleEOP) {
-        return create(conventions, newSimpleEOP, dataContext);
-    }
-
-    /** Get EOP interpolation method.
-     * @return true if tidal effects are ignored when interpolating EOP
-     * @see #withSimpleEOP(boolean)
-     */
-    public boolean isSimpleEOP() {
-        return simpleEOP;
-    }
-
-    /**
-     * Get the data context used for getting frames, time scales, and celestial bodies.
-     *
-     * @return the data context.
-     */
-    public DataContext getDataContext() {
-        return dataContext;
-    }
-
-    /**
-     * Set the data context.
-     *
-     * @param newDataContext used for frames, time scales, and celestial bodies.
-     * @return a new instance with the data context replaced.
-     */
-    public P withDataContext(final DataContext newDataContext) {
-        return create(getConventions(), isSimpleEOP(), newDataContext);
-    }
-
-    /** Build a new instance.
-     * @param newConventions IERS conventions to use while parsing
-     * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param newDataContext data context used for frames, time scales, and celestial bodies
-     * @return a new instance with changed parameters
-     * @since 11.0
-     */
-    protected abstract P create(IERSConventions newConventions,
-                                boolean newSimpleEOP,
-                                DataContext newDataContext);
-
-    /** Parse a CCSDS Orbit Data Message.
-     * @param fileName name of the file containing the message
-     * @return parsed orbit
-     */
-    public T parse(final String fileName) {
-        try (InputStream stream = new FileInputStream(fileName)) {
-            return parse(stream, fileName);
-        } catch (IOException e) {
-            throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, fileName);
-        }
-    }
-
-    /** Parse a CCSDS Orbit Data Message.
-     * @param stream stream containing message
-     * @return parsed orbit
-     */
-    public T parse(final InputStream stream) {
-        return parse(stream, "<unknown>");
-    }
 
     /** Parse a CCSDS Orbit Data Message.
      * @param stream stream containing message
@@ -178,7 +83,7 @@ public abstract class ODMParser<T extends ODMFile<?>, P extends ODMParser<T, ?>>
 
             case CREATION_DATE:
                 odmFile.getHeader().setCreationDate(new AbsoluteDate(keyValue.getValue(),
-                                                                     dataContext.getTimeScales().getUTC()));
+                                                                     getDataContext().getTimeScales().getUTC()));
                 return true;
 
             case ORIGINATOR:
@@ -198,18 +103,22 @@ public abstract class ODMParser<T extends ODMFile<?>, P extends ODMParser<T, ?>>
 
     /** Parse a meta-data key = value entry.
      * @param keyValue key = value pair
-     * @param metaData instance to update with parsed entry
+     * @param metadata instance to update with parsed entry
+     * @param lineNumber number of line being parsed
+     * @param fileName name of the parsed file
+     * @param line full parsed line
      * @return true if the keyword was a meta-data keyword and has been parsed
      */
-    protected boolean parseMetaDataEntry(final KeyValue keyValue, final ODMMetadata metaData) {
+    protected boolean parseMetaDataEntry(final KeyValue keyValue, final ODMMetadata metadata,
+                                         final int lineNumber, final String fileName, final String line) {
         switch (keyValue.getKeyword()) {
 
             case COMMENT:
-                metaData.addComment(keyValue.getValue());
+                metadata.addComment(keyValue.getValue());
                 return true;
 
             case OBJECT_NAME:
-                metaData.setObjectName(keyValue.getValue());
+                metadata.setObjectName(keyValue.getValue());
                 return true;
 
             default:

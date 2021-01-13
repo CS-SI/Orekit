@@ -272,19 +272,19 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
             pi.file.setDataContext(getDataContext());
 
             pi.parsingHeader = true;
-            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+            for (pi.line = reader.readLine(); pi.line != null; pi.line = reader.readLine()) {
                 ++pi.lineNumber;
-                if (line.trim().length() == 0) {
+                if (pi.line.trim().length() == 0) {
                     continue;
                 }
-                pi.keyValue = new KeyValue(line, pi.lineNumber, pi.fileName);
+                pi.keyValue = new KeyValue(pi.line, pi.lineNumber, pi.fileName);
                 if (pi.keyValue.getKeyword() == null) {
                     if (pi.parsingData) {
-                        parseEphemeridesDataLine(line, pi);
+                        parseEphemeridesDataLine(pi.line, pi);
                         continue;
                     } else {
                         throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD,
-                                                  pi.lineNumber, pi.fileName, line);
+                                                  pi.lineNumber, pi.fileName, pi.line);
                     }
                 }
                 switch (pi.keyValue.getKeyword()) {
@@ -315,20 +315,26 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
 
                     case START_TIME:
                         pi.currentMetadata.setStartTime(parseDate(pi.keyValue.getValue(),
-                                                                  pi.currentMetadata.getTimeSystem()));
+                                                                  pi.currentMetadata.getTimeSystem(),
+                                                                  pi.lineNumber, pi.fileName, pi.line));
                         break;
 
                     case USEABLE_START_TIME:
                         pi.currentMetadata.setUseableStartTime(parseDate(pi.keyValue.getValue(),
-                                                                         pi.currentMetadata.getTimeSystem()));
+                                                                         pi.currentMetadata.getTimeSystem(),
+                                                                         pi.lineNumber, pi.fileName, pi.line));
                         break;
 
                     case USEABLE_STOP_TIME:
-                        pi.currentMetadata.setUseableStopTime(parseDate(pi.keyValue.getValue(), pi.currentMetadata.getTimeSystem()));
+                        pi.currentMetadata.setUseableStopTime(parseDate(pi.keyValue.getValue(),
+                                                                        pi.currentMetadata.getTimeSystem(),
+                                                                        pi.lineNumber, pi.fileName, pi.line));
                         break;
 
                     case STOP_TIME:
-                        pi.currentMetadata.setStopTime(parseDate(pi.keyValue.getValue(), pi.currentMetadata.getTimeSystem()));
+                        pi.currentMetadata.setStopTime(parseDate(pi.keyValue.getValue(),
+                                                                 pi.currentMetadata.getTimeSystem(),
+                                                                 pi.lineNumber, pi.fileName, pi.line));
                         break;
 
                     case ATTITUDE_TYPE:
@@ -388,7 +394,8 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
                             parsed = false;
                         }
                         if (!parsed) {
-                            throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
+                            throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD,
+                                                      pi.lineNumber, pi.fileName, pi.line);
                         }
                 }
 
@@ -412,7 +419,8 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
      */
     private void parseEphemeridesDataLine(final String line, final ParseInfo pi) throws IOException {
         try (Scanner sc = new Scanner(line)) {
-            final AbsoluteDate date = parseDate(sc.next(), pi.currentMetadata.getTimeSystem());
+            final AbsoluteDate date = parseDate(sc.next(), pi.currentMetadata.getTimeSystem(),
+                                                pi.lineNumber, pi.fileName, pi.line);
             // Create an array with the maximum possible size
             final double[] attitudeData = new double[MAX_SIZE];
             int index = 0;
@@ -501,6 +509,9 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
 
         /** Current line number. */
         private int lineNumber;
+
+        /** Current line. */
+        private String line;
 
         /** AEM file being read. */
         private AEMFile file;

@@ -17,34 +17,30 @@
 
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import org.orekit.files.ccsds.ndm.NDMSegment;
-import org.orekit.files.ccsds.ndm.odm.ODMFile;
+import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.odm.ODMMetadata;
-import org.orekit.files.ccsds.utils.CCSDSFrame;
-import org.orekit.files.ccsds.utils.CCSDSUnit;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
-import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.propagation.Propagator;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeStamped;
-import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 
 /** Meta-data for {@link OCMMetadata Orbit Comprehensive Message}.
  * @since 11.0
  */
 public class OCMMetadata extends ODMMetadata {
 
+    /** Default interpolation method for EOP and Space Weather data. */
+    private final String DEFAULT_INTERPOLATION_METHOD = "LINEAR";
+
     /** Classification for this message. */
     private String classification;
 
     /** Alternate names for this space object. */
     private List<String> alternateNames;
+
+    /** Unique satellite identification designator for the object. */
+    private String objectDesignator;
 
     /** Programmatic Point Of Contact at originator. */
     private String originatorPOC;
@@ -74,16 +70,10 @@ public class OCMMetadata extends ODMMetadata {
     private String techAddress;
 
     /** Unique ID identifying previous message from a given originator. */
-    private String prevMessageID;
-
-    /** Creation date of previous message from a given originator. */
-    private String prevMessageEpoch;
+    private String previousMessageID;
 
     /** Unique ID identifying next message from a given originator. */
     private String nextMessageID;
-
-    /** Creation date of next message from a given originator. */
-    private String nextMessageEpoch;
 
     /** Names of Attitude Data Messages link to this Orbit Data Message. */
     private List<String> attMessageLink;
@@ -97,9 +87,6 @@ public class OCMMetadata extends ODMMetadata {
     /** Names of Reentry Data Messages link to this Orbit Data Message. */
     private List<String> rdmMessageLink;
 
-    /** Names of Tracking Data Messages link to this Orbit Data Message. */
-    private List<String> tdmMessageLink;
-
     /** International designator for the object as assigned by the UN Committee
      * on Space Research (COSPAR) and the US National Space Science Data Center (NSSDC). */
     private String internationalDesignator;
@@ -110,47 +97,11 @@ public class OCMMetadata extends ODMMetadata {
     /** Owner of the space object. */
     private String owner;
 
-    /** Name of the space object mission. */
-    private String mission;
-
     /** Name of the constellation this space object belongs to. */
     private String constellation;
 
-    /** Epoch of initial launch. */
-    private String launchEpoch;
-
-    /** Country of launch. */
-    private String launchCountry;
-
-    /** Launch site. */
-    private String launchSite;
-
-    /** Launch provider. */
-    private String launchProvider;
-
-    /** Integrator of launch. */
-    private String launchIntegrator;
-
-    /** Launch pad. */
-    private String launchPad;
-
-    /** Launch platform. */
-    private String launchPlatform;
-
-    /** Epoch of the <em>most recent</em> deployement of this space object in the parent/child deployement sequence. */
-    private String releaseEpoch;
-
-    /** Epoch of the beginning of mission operations. */
-    private String missionStartEpoch;
-
-    /** Epoch of the cessation of mission operations. */
-    private String missionEndEpoch;
-
-    /** Epoch (actual or estimated) of the space object reentry. */
-    private String reentryEpoch;
-
-    /** Estimated remaining lifetime in days. */
-    private double lifetime;
+    /** Name of the country where the space object owner is based. */
+    private String country;
 
     /** Specification of satellite catalog source. */
     private String catalogName;
@@ -161,27 +112,33 @@ public class OCMMetadata extends ODMMetadata {
     /** Operational status. */
     private OpsStatus opsStatus;
 
-    /** Orbit type. */
-    private OrbitType orbitType;
+    /** Orbit catgory. */
+    private OrbitCategory orbitCategory;
 
     /** List of elements of information data blocks included in this message. */
     private List<String> ocmDataElements;
 
     /** Epoch to which <em>all</em> relative times are referenced in data blocks;
      * unless overridden by block-specific {@code EPOCH_TZERO} values. */
-    private String epochT0;
+    private AbsoluteDate epochT0;
+
+    /** Epoch corresponding to t=0 for the spacecraft clock. */
+    private AbsoluteDate sclkEpoch;
 
     /** Number of clock seconds occurring during one SI second. */
-    private double secClockPerSISecond;
+    private double clockSecPerSISec;
 
-    /** Number of SI seconds in the chosen central body’s “day”. */
-    private double secPerDay;
+    /** Creation date of previous message from a given originator. */
+    private AbsoluteDate previousMessageEpoch;
+
+    /** Creation date of next message from a given originator. */
+    private AbsoluteDate nextMessageEpoch;
 
     /** Time of the earliest data contained in the OCM. */
-    private String earliestTime;
+    private AbsoluteDate startTime;
 
     /** Time of the latest data contained in the OCM. */
-    private String latestTime;
+    private AbsoluteDate stopTime;
 
     /** Span of time that the OCM covers. */
     private double timeSpan;
@@ -198,16 +155,26 @@ public class OCMMetadata extends ODMMetadata {
     /** Interpolation method for Earth Orientation Parameters. */
     private String interpMethodEOP;
 
+    /** Interpolation method for Space Weather data. */
+    private String interpMethodSW;
+
+    /** Source and version of celestial body (e.g. Sun/Earth/Planetary). */
+    private String celestialSource;
+
     /** Create a new meta-data.
-     * @param ocmFile OCM file to which these meta-data belongs
+     * @param conventions IERS conventions to use
+     * @param dataContext data context to use
      */
-    OCMMetadata() {
+    OCMMetadata(final IERSConventions conventions, final DataContext dataContext) {
+
+        super(conventions, dataContext);
 
         // set up the few fields that have default values as per CCSDS standard
+        setTimeSystem(CcsdsTimeScale.UTC);
         catalogName         = "CSPOC";
-        secClockPerSISecond = 1.0;
-        secPerDay           = Constants.JULIAN_DAY;
-        interpMethodEOP     = "LINEAR";
+        clockSecPerSISec = 1.0;
+        interpMethodEOP     = DEFAULT_INTERPOLATION_METHOD;
+        interpMethodSW      = DEFAULT_INTERPOLATION_METHOD;
 
     }
 
@@ -237,6 +204,20 @@ public class OCMMetadata extends ODMMetadata {
      */
     public void setAlternateNames(final List<String> alternateNames) {
         this.alternateNames = alternateNames;
+    }
+
+    /** Get the unique satellite identification designator for the object.
+     * @return unique satellite identification designator for the object.
+     */
+    public String getObjectDesignator() {
+        return objectDesignator;
+    }
+
+    /** Set the unique satellite identification designator for the object.
+     * @param objectDesignator unique satellite identification designator for the object
+     */
+    void setObjectDesignator(final String objectDesignator) {
+        this.objectDesignator = objectDesignator;
     }
 
     /** Get the programmatic Point Of Contact at originator.
@@ -368,29 +349,29 @@ public class OCMMetadata extends ODMMetadata {
     /** Get the unique ID identifying previous message from a given originator.
      * @return unique ID identifying previous message from a given originator
      */
-    public String getPrevMessageID() {
-        return prevMessageID;
+    public String getPreviousMessageID() {
+        return previousMessageID;
     }
 
     /** Set the unique ID identifying previous message from a given originator.
-     * @param prevMessageID unique ID identifying previous message from a given originator
+     * @param previousMessageID unique ID identifying previous message from a given originator
      */
-    void setPrevMessageID(final String prevMessageID) {
-        this.prevMessageID = prevMessageID;
+    void setPreviousMessageID(final String previousMessageID) {
+        this.previousMessageID = previousMessageID;
     }
 
     /** Get the creation date of previous message from a given originator.
      * @return creation date of previous message from a given originator
      */
-    public AbsoluteDate getPrevMessageEpoch() {
-        return absoluteToEpoch(prevMessageEpoch);
+    public AbsoluteDate getPreviousMessageEpoch() {
+        return previousMessageEpoch;
     }
 
     /** Set the creation date of previous message from a given originator.
-     * @param prevMessageEpoch creation date of previous message from a given originator
+     * @param previousMessageEpoch creation date of previous message from a given originator
      */
-    void setPrevMessageEpoch(final String prevMessageEpoch) {
-        this.prevMessageEpoch = prevMessageEpoch;
+    void setPreviousMessageEpoch(final AbsoluteDate previousMessageEpoch) {
+        this.previousMessageEpoch = previousMessageEpoch;
     }
 
     /** Get the unique ID identifying next message from a given originator.
@@ -411,13 +392,13 @@ public class OCMMetadata extends ODMMetadata {
      * @return creation date of next message from a given originator
      */
     public AbsoluteDate getNextMessageEpoch() {
-        return absoluteToEpoch(nextMessageEpoch);
+        return nextMessageEpoch;
     }
 
     /** Set the creation date of next message from a given originator.
      * @param nextMessageEpoch creation date of next message from a given originator
      */
-    void setNextMessageEpoch(final String nextMessageEpoch) {
+    void setNextMessageEpoch(final AbsoluteDate nextMessageEpoch) {
         this.nextMessageEpoch = nextMessageEpoch;
     }
 
@@ -477,20 +458,6 @@ public class OCMMetadata extends ODMMetadata {
         this.rdmMessageLink = rdmMessageLink;
     }
 
-    /** Get the names of Tracking Data Messages link to this Orbit Data Message.
-     * @return names of Tracking Data Messages link to this Orbit Data Message
-     */
-    public List<String> getTdmMessageLink() {
-        return tdmMessageLink;
-    }
-
-    /** Set the names of Tracking Data Messages link to this Orbit Data Message.
-     * @param tdmMessageLink names of Tracking Data Messages link to this Orbit Data Message
-     */
-    void setTdmMessageLink(final List<String> tdmMessageLink) {
-        this.tdmMessageLink = tdmMessageLink;
-    }
-
     /** Get the international designator for the object.
      * @return international designator for the object
      */
@@ -533,20 +500,6 @@ public class OCMMetadata extends ODMMetadata {
         this.owner = owner;
     }
 
-    /** Get the name of the space object mission.
-     * @return name of the space object mission
-     */
-    public String getMission() {
-        return mission;
-    }
-
-    /** Set the name of the space object mission.
-     * @param mission name of the space object mission
-     */
-    void setMission(final String mission) {
-        this.mission = mission;
-    }
-
     /** Get the name of the constellation this space object belongs to.
      * @return name of the constellation this space object belongs to
      */
@@ -561,172 +514,18 @@ public class OCMMetadata extends ODMMetadata {
         this.constellation = constellation;
     }
 
-    /** Get the epoch of initial launch.
-     * @return epoch of initial launch
+    /** Get the name of the country where the space object owner is based.
+     * @return name of the country where the space object owner is based
      */
-    public AbsoluteDate getLaunchEpoch() {
-        return absoluteToEpoch(launchEpoch);
+    public String getCountry() {
+        return country;
     }
 
-    /** Set the epoch of initial launch.
-     * @param launchEpoch epoch of initial launch
+    /** Set the name of the country where the space object owner is based.
+     * @param country name of the country where the space object owner is based
      */
-    void setLaunchEpoch(final String launchEpoch) {
-        this.launchEpoch = launchEpoch;
-    }
-
-    /** Get the country of launch.
-     * @return country of launch
-     */
-    public String getLaunchCountry() {
-        return launchCountry;
-    }
-
-    /** Set the country of launch.
-     * @param launchCountry country of launch
-     */
-    void setLaunchCountry(final String launchCountry) {
-        this.launchCountry = launchCountry;
-    }
-
-    /** Get the launch site.
-     * @return launch site
-     */
-    public String getLaunchSite() {
-        return launchSite;
-    }
-
-    /** Set the launch site.
-     * @param launchSite launch site
-     */
-    void setLaunchSite(final String launchSite) {
-        this.launchSite = launchSite;
-    }
-
-    /** Get the launch provider.
-     * @return launch provider
-     */
-    public String getLaunchProvider() {
-        return launchProvider;
-    }
-
-    /** Set the launch provider.
-     * @param launchProvider launch provider
-     */
-    void setLaunchProvider(final String launchProvider) {
-        this.launchProvider = launchProvider;
-    }
-
-    /** Get the integrator of launch.
-     * @return integrator of launch
-     */
-    public String getLaunchIntegrator() {
-        return launchIntegrator;
-    }
-
-    /** Set the integrator of launch.
-     * @param launchIntegrator integrator of launch
-     */
-    void setLaunchIntegrator(final String launchIntegrator) {
-        this.launchIntegrator = launchIntegrator;
-    }
-
-    /** Get the launch pad.
-     * @return launch pad
-     */
-    public String getLaunchPad() {
-        return launchPad;
-    }
-
-    /** Set the launch pad.
-     * @param launchPad launch pad
-     */
-    void setLaunchPad(final String launchPad) {
-        this.launchPad = launchPad;
-    }
-
-    /** Get the launch platform.
-     * @return launch platform
-     */
-    public String getLaunchPlatform() {
-        return launchPlatform;
-    }
-
-    /** Set the launch platform.
-     * @param launchPlatform launch platform
-     */
-    void setLaunchPlatform(final String launchPlatform) {
-        this.launchPlatform = launchPlatform;
-    }
-
-    /** Get the epoch of the <em>most recent</em> deployement of this space object.
-     * @return epoch of the <em>most recent</em> deployement of this space object
-     */
-    public AbsoluteDate getReleaseEpoch() {
-        return absoluteToEpoch(releaseEpoch);
-    }
-
-    /** Set the epoch of the <em>most recent</em> deployement of this space object.
-     * @param releaseEpoch epoch of the <em>most recent</em> deployement of this space object
-     */
-    void setReleaseEpoch(final String releaseEpoch) {
-        this.releaseEpoch = releaseEpoch;
-    }
-
-    /** Get the epoch of the beginning of mission operations.
-     * @return epoch of the beginning of mission operations
-     */
-    public AbsoluteDate getMissionStartEpoch() {
-        return absoluteToEpoch(missionStartEpoch);
-    }
-
-    /** Set the epoch of the beginning of mission operations.
-     * @param missionStartEpoch epoch of the beginning of mission operations
-     */
-    void setMissionStartEpoch(final String missionStartEpoch) {
-        this.missionStartEpoch = missionStartEpoch;
-    }
-
-    /** Get the epoch of the cessation of mission operations.
-     * @return epoch of the cessation of mission operations
-     */
-    public AbsoluteDate getMissionEndEpoch() {
-        return absoluteToEpoch(missionEndEpoch);
-    }
-
-    /** Set the epoch of the cessation of mission operations.
-     * @param missionEndEpoch epoch of the cessation of mission operations
-     */
-    void setMissionEndEpoch(final String missionEndEpoch) {
-        this.missionEndEpoch = missionEndEpoch;
-    }
-
-    /** Get the epoch (actual or estimated) of the space object reentry.
-     * @return epoch (actual or estimated) of the space object reentry
-     */
-    public AbsoluteDate getReentryEpoch() {
-        return absoluteToEpoch(reentryEpoch);
-    }
-
-    /** Set the epoch (actual or estimated) of the space object reentry.
-     * @param reentryEpoch epoch (actual or estimated) of the space object reentry
-     */
-    void setReentryEpoch(final String reentryEpoch) {
-        this.reentryEpoch = reentryEpoch;
-    }
-
-    /** Get the estimated remaining lifetime in days.
-     * @return estimated remaining lifetime in days
-     */
-    public double getLifetime() {
-        return lifetime;
-    }
-
-    /** Set the estimated remaining lifetime in days.
-     * @param lifetime estimated remaining lifetime in days
-     */
-    void setLifetime(final double lifetime) {
-        this.lifetime = lifetime;
+    void setCountry(final String country) {
+        this.country = country;
     }
 
     /** Get the specification of satellite catalog source.
@@ -771,18 +570,18 @@ public class OCMMetadata extends ODMMetadata {
         this.opsStatus = opsStatus;
     }
 
-    /** Get the orbit type.
-     * @return orbit type
+    /** Get the orbit category.
+     * @return orbit category
      */
-    public OrbitType getOrbitType() {
-        return orbitType;
+    public OrbitCategory getOrbitCategory() {
+        return orbitCategory;
     }
 
-    /** Set the orbit type.
-     * @param orbitType orbit type
+    /** Set the orbit category.
+     * @param orbitCategory orbit category
      */
-    void setOrbitType(final OrbitType orbitType) {
-        this.orbitType = orbitType;
+    void setOrbitCategory(final OrbitCategory orbitCategory) {
+        this.orbitCategory = orbitCategory;
     }
 
     /** Get the list of elements of information data blocks included in this message.
@@ -802,89 +601,82 @@ public class OCMMetadata extends ODMMetadata {
     /** Get the epoch to which <em>all</em> relative times are referenced in data blocks.
      * @return epoch to which <em>all</em> relative times are referenced in data blocks
      */
-    String getEpochT0String() {
-        return epochT0;
-    }
-
-    /** Get the epoch to which <em>all</em> relative times are referenced in data blocks.
-     * @return epoch to which <em>all</em> relative times are referenced in data blocks
-     */
     public AbsoluteDate getEpochT0() {
-        return absoluteToEpoch(epochT0);
+        return epochT0;
     }
 
     /** Set the epoch to which <em>all</em> relative times are referenced in data blocks.
      * @param epochT0 epoch to which <em>all</em> relative times are referenced in data blocks
      */
-    void setEpochT0(final String epochT0) {
+    void setEpochT0(final AbsoluteDate epochT0) {
         this.epochT0 = epochT0;
+    }
+
+    /** Get the epoch corresponding to t=0 for the spacecraft clock.
+     * @return epoch corresponding to t=0 for the spacecraft clock
+     */
+    public AbsoluteDate getSclkEpoch() {
+        return sclkEpoch;
+    }
+
+    /** Set the epoch corresponding to t=0 for the spacecraft clock.
+     * @param sclkEpoch epoch corresponding to t=0 for the spacecraft clock
+     */
+    void setSclkEpoch(final AbsoluteDate sclkEpoch) {
+        this.sclkEpoch = sclkEpoch;
     }
 
     /** Get the number of clock seconds occurring during one SI second.
      * @return number of clock seconds occurring during one SI second
      */
-    public double getSecClockPerSISecond() {
-        return secClockPerSISecond;
+    public double getClockSecPerSISec() {
+        return clockSecPerSISec;
     }
 
     /** Set the number of clock seconds occurring during one SI second.
-     * @param secClockPerSISecond number of clock seconds occurring during one SI second
+     * @param secClockPerSISec number of clock seconds occurring during one SI second
      */
-    void setSecClockPerSISecond(final double secClockPerSISecond) {
-        this.secClockPerSISecond = secClockPerSISecond;
-    }
-
-    /** Get the number of SI seconds in the chosen central body’s “day”.
-     * @return number of SI seconds in the chosen central body’s “day”
-     */
-    public double getSecPerDay() {
-        return secPerDay;
-    }
-
-    /** Set the number of SI seconds in the chosen central body’s “day”.
-     * @param secPerDay number of SI seconds in the chosen central body’s “day”
-     */
-    void setSecPerDay(final double secPerDay) {
-        this.secPerDay = secPerDay;
+    void setClockSecPerSISec(final double secClockPerSISec) {
+        this.clockSecPerSISec = secClockPerSISec;
     }
 
     /** Get the time of the earliest data contained in the OCM.
      * @return time of the earliest data contained in the OCM
      */
-    public AbsoluteDate getEarliestTime() {
-        return absoluteOrRelativeToEpoch(earliestTime);
+    public AbsoluteDate getStartTime() {
+        return startTime;
     }
 
     /** Set the time of the earliest data contained in the OCM.
-     * @param earliestTime time of the earliest data contained in the OCM
+     * @param startTime time of the earliest data contained in the OCM
      */
-    void setEarliestTime(final String earliestTime) {
-        this.earliestTime = earliestTime;
+    void setStartTime(final AbsoluteDate startTime) {
+        this.startTime = startTime;
     }
 
     /** Get the time of the latest data contained in the OCM.
      * @return time of the latest data contained in the OCM
      */
-    public AbsoluteDate getLatestTime() {
-        return absoluteOrRelativeToEpoch(latestTime);
+    public AbsoluteDate getStopTime() {
+        return stopTime;
     }
 
     /** Set the time of the latest data contained in the OCM.
-     * @param latestTime time of the latest data contained in the OCM
+     * @param stopTime time of the latest data contained in the OCM
      */
-    void setLatestTime(final String latestTime) {
-        this.latestTime = latestTime;
+    void setStopTime(final AbsoluteDate stopTime) {
+        this.stopTime = stopTime;
     }
 
-    /** Get the span of time that the OCM covers.
-     * @return span of time that the OCM covers
+    /** Get the span of time in seconds that the OCM covers.
+     * @return span of time in seconds that the OCM covers
      */
     public double getTimeSpan() {
         return timeSpan;
     }
 
-    /** Set the span of time that the OCM covers.
-     * @param timeSpan span of time that the OCM covers
+    /** Set the span of time in seconds that the OCM covers.
+     * @param timeSpan span of time in seconds that the OCM covers
      */
     void setTimeSpan(final double timeSpan) {
         this.timeSpan = timeSpan;
@@ -946,30 +738,32 @@ public class OCMMetadata extends ODMMetadata {
         this.interpMethodEOP = interpMethodEOP;
     }
 
-    /** Convert a string to an epoch.
-     * @param value string to convert
-     * @return converted epoch
+    /** Get the interpolation method for Space Weather data.
+     * @return interpolation method for Space Weather data
      */
-    private AbsoluteDate absoluteToEpoch(final String value) {
-        return getTimeSystem().parseDate(value,
-                                         getODMFile().getConventions(),
-                                         getODMFile().getMissionReferenceDate());
+    public String getInterpMethodSW() {
+        return interpMethodSW;
     }
 
-    /** Convert a string to an epoch.
-     * @param value string to convert
-     * @return converted epoch
+    /** Set the interpolation method for Space Weather data.
+     * @param interpMethodSW interpolation method for Space Weather data
      */
-    private AbsoluteDate absoluteOrRelativeToEpoch(final String value) {
-        if (value.contains("T")) {
-            // absolute date
-            return getTimeSystem().parseDate(value,
-                                             getODMFile().getConventions(),
-                                             getODMFile().getMissionReferenceDate());
-        } else {
-            // relative date
-            return getEpochT0().shiftedBy(Double.parseDouble(value));
-        }
+    void setInterpMethodSW(final String interpMethodSW) {
+        this.interpMethodSW = interpMethodSW;
+    }
+
+    /** Get the source and version of celestial body (e.g. Sun/Earth/Planetary).
+     * @return source and version of celestial body (e.g. Sun/Earth/Planetary)
+     */
+    public String getCelestialSource() {
+        return celestialSource;
+    }
+
+    /** Set the source and version of celestial body (e.g. Sun/Earth/Planetary).
+     * @param celestialSource source and version of celestial body (e.g. Sun/Earth/Planetary)
+     */
+    void setCelestialSource(final String celestialSource) {
+        this.celestialSource = celestialSource;
     }
 
 }

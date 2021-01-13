@@ -7,9 +7,7 @@ ORIGINATOR                = JPL
 
 META_START
 COMMENT  first metadata section is expected
-TIME_SYSTEM               = UTC
 EPOCH_TZERO               = 2001-11-06T11:17:33
-EARLIEST_TIME             = DT=123
 META_STOP
 
 META_START

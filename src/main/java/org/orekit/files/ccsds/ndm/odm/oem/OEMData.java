@@ -85,7 +85,7 @@ public class OEMData implements NDMData {
     }
 
     /** Get an unmodifiable view of the data points.
-     * @return unmodifiable vie of the data points
+     * @return unmodifiable view of the data points
      */
     public List<TimeStampedPVCoordinates> getCoordinates() {
         return Collections.unmodifiableList(ephemeridesDataLines);

@@ -340,8 +340,8 @@ CCSDS_TDM_INCONSISTENT_DATA_LINE = Inconsistent data line in TDM file at line {0
 # No CCSDS TDM keyword was found at line {0} of file {1}:\n{2}
 CCSDS_TDM_KEYWORD_NOT_FOUND = No CCSDS TDM keyword was found at line {0} of file {1}:\n{2}
 
-# Parameter {0} needs a time system to be interpreted
-CCSDS_TIME_SYSTEM_NOT_READ_YET = Parameter {0} needs a time system to be interpreted
+# Time system should have already been set before line {0} of file {1}:\n{2}
+CCSDS_TIME_SYSTEM_NOT_READ_YET = Time system should have already been set before line {0} of file {1}:\n{2}
 
 # Inconsistent XML observation block at line {0} of TDM file {1}.\nA TDM observation block should be as follows\n\t<observation>\n\t\t<EPOCH>epoch</EPOCH>\n\t\t<KEYWORD>value</KEYWORD>\n\t</observation>
 CCSDS_TDM_XML_INCONSISTENT_DATA_BLOCK = Inconsistent XML observation block at line {0} of TDM file {1}.\nA TDM observation block should be as follows\n\t<observation>\n\t\t<EPOCH>epoch</EPOCH>\n\t\t<KEYWORD>value</KEYWORD>\n\t</observation>

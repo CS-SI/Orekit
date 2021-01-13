@@ -17,7 +17,6 @@
 package org.orekit.files.ccsds.ndm.tdm;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -35,8 +34,8 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.Keyword;
+import org.orekit.files.ccsds.ndm.NDMParser;
 import org.orekit.files.ccsds.ndm.NDMSegment;
-import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.KeyValue;
 import org.orekit.time.AbsoluteDate;
@@ -74,10 +73,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Maxime Journot
  * @since 9.0
  */
-public class TDMParser extends DefaultHandler {
-
-    /** Pattern for dash. */
-    private static final Pattern DASH = Pattern.compile("-");
+public class TDMParser extends NDMParser<TDMFile, TDMParser> {
 
     /** Pattern for delimiting regular expressions. */
     private static final Pattern SEPARATOR = Pattern.compile("\\s+");
@@ -101,20 +97,10 @@ public class TDMParser extends DefaultHandler {
     /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
     private final AbsoluteDate missionReferenceDate;
 
-    /** IERS Conventions. */
-    private final  IERSConventions conventions;
-
-    /** Indicator for simple or accurate EOP interpolation. */
-    private final  boolean simpleEOP;
-
-    /** Data context for frames, time scales, etc. */
-    private final DataContext dataContext;
-
     /** Simple constructor.
      * <p>
      * This class is immutable, and hence thread safe. When parts
-     * must be changed, such fiel format or reference date for Mission Elapsed Time or
-     * Mission Relative Time time systems, or the IERS conventions,
+     * must be changed, such as IERS conventions, EOP style or data context,
      * the various {@code withXxx} methods must be called,
      * which create a new immutable instance with the new parameters. This
      * is a combination of the
@@ -144,27 +130,54 @@ public class TDMParser extends DefaultHandler {
      */
     @DefaultDataContext
     public TDMParser() {
-        this(TDMFileFormat.UNKNOWN, AbsoluteDate.FUTURE_INFINITY, null, true,
-                DataContext.getDefault());
+        this(null, true, DataContext.getDefault(), TDMFileFormat.UNKNOWN, AbsoluteDate.FUTURE_INFINITY);
     }
 
     /** Complete constructor.
-     * @param fileFormat The format of the file: KEYVALUE or XML
-     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
+     * @param fileFormat The format of the file: KEYVALUE or XML
+     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      */
-    private TDMParser(final TDMFileFormat fileFormat,
-                      final AbsoluteDate missionReferenceDate,
-                      final IERSConventions conventions,
+    private TDMParser(final IERSConventions conventions,
                       final boolean simpleEOP,
-                      final DataContext dataContext) {
+                      final DataContext dataContext,
+                      final TDMFileFormat fileFormat,
+                      final AbsoluteDate missionReferenceDate) {
+        super(conventions, simpleEOP, dataContext);
         this.fileFormat           = fileFormat;
         this.missionReferenceDate = missionReferenceDate;
-        this.conventions          = conventions;
-        this.simpleEOP            = simpleEOP;
-        this.dataContext          = dataContext;
+    }
+
+    /** Build a new instance.
+     * @param newConventions IERS conventions to use while parsing
+     * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
+     * @param newDataContext data context used for frames, time scales, and celestial bodies
+     * @return a new instance with changed parameters
+     * @since 11.0
+     */
+    protected TDMParser create(final IERSConventions newConventions,
+                               final boolean newSimpleEOP,
+                               final DataContext newDataContext) {
+        return create(newConventions, newSimpleEOP, newDataContext, fileFormat, missionReferenceDate);
+    }
+
+    /** Build a new instance.
+     * @param newConventions IERS conventions to use while parsing
+     * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
+     * @param newDataContext data context used for frames, time scales, and celestial bodies
+     * @param newFileFormat The format of the file: KEYVALUE or XML
+     * @param newMissionReferenceDate mission reference date to use while parsing
+     * @return a new instance with changed parameters
+     * @since 11.0
+     */
+    protected TDMParser create(final IERSConventions newConventions,
+                               final boolean newSimpleEOP,
+                               final DataContext newDataContext,
+                               final TDMFileFormat newFileFormat,
+                               final AbsoluteDate newMissionReferenceDate) {
+        return new TDMParser(newConventions, newSimpleEOP, newDataContext, newFileFormat, newMissionReferenceDate);
     }
 
     /** Set file format.
@@ -173,8 +186,7 @@ public class TDMParser extends DefaultHandler {
      * @see #getFileFormat()
      */
     public TDMParser withFileFormat(final TDMFileFormat newFileFormat) {
-        return new TDMParser(newFileFormat, getMissionReferenceDate(), getConventions(),
-                             isSimpleEOP(), getDataContext());
+        return create(getConventions(), isSimpleEOP(), getDataContext(), newFileFormat, getMissionReferenceDate());
     }
 
     /** Get file format.
@@ -191,8 +203,8 @@ public class TDMParser extends DefaultHandler {
      * @see #getMissionReferenceDate()
      */
     public TDMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
-        return new TDMParser(getFileFormat(), newMissionReferenceDate, getConventions(),
-                             isSimpleEOP(), getDataContext());
+        return new TDMParser(getConventions(), isSimpleEOP(), getDataContext(),
+                             getFileFormat(), newMissionReferenceDate);
     }
 
     /** Get initial date.
@@ -201,82 +213,6 @@ public class TDMParser extends DefaultHandler {
      */
     public AbsoluteDate getMissionReferenceDate() {
         return missionReferenceDate;
-    }
-
-    /** Set IERS conventions.
-     * @param newConventions IERS conventions to use while parsing
-     * @return a new instance, with IERS conventions replaced
-     * @see #getConventions()
-     */
-    public TDMParser withConventions(final IERSConventions newConventions) {
-        return new TDMParser(getFileFormat(), getMissionReferenceDate(), newConventions,
-                isSimpleEOP(), getDataContext());
-    }
-
-    /** Get IERS conventions.
-     * @return IERS conventions to use while parsing
-     * @see #withConventions(IERSConventions)
-     */
-    public IERSConventions getConventions() {
-        return conventions;
-    }
-
-    /** Set EOP interpolation method.
-     * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @return a new instance, with EOP interpolation method replaced
-     * @see #isSimpleEOP()
-     */
-    public TDMParser withSimpleEOP(final boolean newSimpleEOP) {
-        return new TDMParser(getFileFormat(), getMissionReferenceDate(), getConventions(),
-                newSimpleEOP, getDataContext());
-    }
-
-    /** Get EOP interpolation method.
-     * @return true if tidal effects are ignored when interpolating EOP
-     * @see #withSimpleEOP(boolean)
-     */
-    public boolean isSimpleEOP() {
-        return simpleEOP;
-    }
-
-    /**
-     * Get the data context.
-     *
-     * @return the data context used for retrieving frames, time scales, etc.
-     */
-    public DataContext getDataContext() {
-        return dataContext;
-    }
-
-    /**
-     * Set the data context.
-     *
-     * @param newDataContext used for retrieving frames, time scales, etc.
-     * @return a new instance with the data context replaced.
-     */
-    public TDMParser withDataContext(final DataContext newDataContext) {
-        return new TDMParser(getFileFormat(), getMissionReferenceDate(), getConventions(),
-                isSimpleEOP(), newDataContext);
-    }
-
-    /** Parse a CCSDS Tracking Data Message.
-     * @param fileName name of the file containing the message
-     * @return parsed file content in a TDMFile object
-     */
-    public TDMFile parse(final String fileName) {
-        try (InputStream stream = new FileInputStream(fileName)) {
-            return parse(stream, fileName);
-        } catch (IOException ioe) {
-            throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, fileName);
-        }
-    }
-
-    /** Parse a CCSDS Tracking Data Message.
-     * @param stream stream containing message
-     * @return parsed file content in a TDMFile object
-     */
-    public TDMFile parse(final InputStream stream) {
-        return parse(stream, "<unknown>");
     }
 
     /** Parse a CCSDS Tracking Data Message.
@@ -371,19 +307,7 @@ public class TDMParser extends DefaultHandler {
     /** Private class used to store TDM parsing info.
      * @author sports
      */
-    private static class ParseInfo {
-
-        /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
-        private final AbsoluteDate missionReferenceDate;
-
-        /** IERS Conventions. */
-        private final  IERSConventions conventions;
-
-        /** Indicator for simple or accurate EOP interpolation. */
-        private final  boolean simpleEOP;
-
-        /** Data context. */
-        private final DataContext dataContext;
+    private class ParseInfo {
 
         /** Name of the file. */
         private String fileName;
@@ -427,11 +351,7 @@ public class TDMParser extends DefaultHandler {
                           final boolean simpleEOP,
                           final String fileName,
                           final DataContext dataContext) {
-            this.missionReferenceDate     = missionReferenceDate;
-            this.conventions              = conventions;
-            this.simpleEOP                = simpleEOP;
             this.fileName                 = fileName;
-            this.dataContext              = dataContext;
             this.lineNumber               = 0;
             this.line                     = "";
             this.tdmFile                  = new TDMFile();
@@ -457,10 +377,12 @@ public class TDMParser extends DefaultHandler {
 
                         // Convert start/stop time to AbsoluteDate if they have been read already
                         if (currentMetadata.getStartTimeString() != null) {
-                            currentMetadata.setStartTime(parseDate(currentMetadata.getStartTimeString(), timeSystem));
+                            currentMetadata.setStartTime(parseDate(currentMetadata.getStartTimeString(), timeSystem,
+                                                                   lineNumber, fileName, line));
                         }
                         if (currentMetadata.getStopTimeString() != null) {
-                            currentMetadata.setStopTime(parseDate(currentMetadata.getStopTimeString(), timeSystem));
+                            currentMetadata.setStopTime(parseDate(currentMetadata.getStopTimeString(), timeSystem,
+                                                                  lineNumber, fileName, line));
                         }
                         break;
 
@@ -470,7 +392,8 @@ public class TDMParser extends DefaultHandler {
 
                         // If time system has already been defined, convert the start time to an AbsoluteDate
                         if (currentMetadata.getTimeSystem() != null) {
-                            currentMetadata.setStartTime(parseDate(keyValue.getValue(), currentMetadata.getTimeSystem()));
+                            currentMetadata.setStartTime(parseDate(keyValue.getValue(), currentMetadata.getTimeSystem(),
+                                                                   lineNumber, fileName, line));
                         }
                         break;
 
@@ -480,7 +403,8 @@ public class TDMParser extends DefaultHandler {
 
                         // If time system has already been defined, convert the start time to an AbsoluteDate
                         if (currentMetadata.getTimeSystem() != null) {
-                            currentMetadata.setStopTime(parseDate(keyValue.getValue(), currentMetadata.getTimeSystem()));
+                            currentMetadata.setStopTime(parseDate(keyValue.getValue(), currentMetadata.getTimeSystem(),
+                                                                  lineNumber, fileName, line));
                         }
                         break;
 
@@ -561,7 +485,7 @@ public class TDMParser extends DefaultHandler {
                     case REFERENCE_FRAME:
                         currentMetadata.setReferenceFrameString(keyValue.getValue());
                         currentMetadata.setReferenceFrame(parseCCSDSFrame(keyValue.getValue()).
-                                        getFrame(this.conventions, this.simpleEOP, dataContext));
+                                        getFrame(getConventions(), isSimpleEOP(), getDataContext()));
                         break;
 
                     case TRANSMIT_DELAY_1: case TRANSMIT_DELAY_2: case TRANSMIT_DELAY_3:
@@ -625,27 +549,10 @@ public class TDMParser extends DefaultHandler {
             }
         }
 
-        /** Parse a CCSDS frame.
-         * @param frameName name of the frame, as the value of a CCSDS key=value line
-         * @return CCSDS frame corresponding to the name
-         */
-        private CCSDSFrame parseCCSDSFrame(final String frameName) {
-            return CCSDSFrame.valueOf(DASH.matcher(frameName).replaceAll(""));
-        }
-
-        /** Parse a date.
-         * @param date date to parse, as the value of a CCSDS key=value line
-         * @param timeSystem time system to use
-         * @return parsed date
-         */
-        private AbsoluteDate parseDate(final String date, final CcsdsTimeScale timeSystem) {
-            return timeSystem.parseDate(date, conventions, missionReferenceDate,
-                                        dataContext.getTimeScales());
-        }
     }
 
     /** Handler for parsing KEYVALUE file formats. */
-    private static class KeyValueHandler {
+    private class KeyValueHandler {
 
         /** ParseInfo object. */
         private ParseInfo parseInfo;
@@ -676,7 +583,8 @@ public class TDMParser extends DefaultHandler {
             }
 
             // Convert the date to an AbsoluteDate object (OrekitException if it fails)
-            final AbsoluteDate epoch = parseInfo.parseDate(fields[0], parseInfo.currentMetadata.getTimeSystem());
+            final AbsoluteDate epoch = parseDate(fields[0], parseInfo.currentMetadata.getTimeSystem(),
+                                                 parseInfo.lineNumber, parseInfo.fileName, parseInfo.line);
             final double measurement;
             try {
                 // Convert the value to double (NumberFormatException if it fails)
@@ -739,9 +647,8 @@ public class TDMParser extends DefaultHandler {
 
                             case CREATION_DATE:
                                 // Set creation date
-                                tdmFile.getHeader().setCreationDate(new AbsoluteDate(
-                                        parseInfo.keyValue.getValue(),
-                                        parseInfo.dataContext.getTimeScales().getUTC()));
+                                tdmFile.getHeader().setCreationDate(new AbsoluteDate(parseInfo.keyValue.getValue(),
+                                                                                     getDataContext().getTimeScales().getUTC()));
                                 break;
 
                             case ORIGINATOR:
@@ -752,8 +659,7 @@ public class TDMParser extends DefaultHandler {
                                 // Start/Strop keywords
                             case META_START:
                                 // Indicate the start of meta-data parsing for this block
-                                parseInfo.currentMetadata = new TDMMetadata(parseInfo.conventions,
-                                                                            parseInfo.dataContext);
+                                parseInfo.currentMetadata = new TDMMetadata(getConventions(), getDataContext());
                                 parseInfo.parsingHeader   = false;
                                 parseInfo.parsingMetaData = true;
                                 break;
@@ -803,7 +709,7 @@ public class TDMParser extends DefaultHandler {
     }
 
     /** Handler for parsing XML file formats. */
-    private static class XMLHandler extends DefaultHandler {
+    private class XMLHandler extends DefaultHandler {
 
         /** ParseInfo object. */
         private ParseInfo parseInfo;
@@ -869,9 +775,8 @@ public class TDMParser extends DefaultHandler {
 
                         case CREATION_DATE:
                             // Set creation date
-                            parseInfo.tdmFile.getHeader().setCreationDate(new AbsoluteDate(
-                                    parseInfo.keyValue.getValue(),
-                                    parseInfo.dataContext.getTimeScales().getUTC()));
+                            parseInfo.tdmFile.getHeader().setCreationDate(new AbsoluteDate(parseInfo.keyValue.getValue(),
+                                                                                           getDataContext().getTimeScales().getUTC()));
                             break;
 
                         case ORIGINATOR:
@@ -958,8 +863,7 @@ public class TDMParser extends DefaultHandler {
 
                     case metadata:
                         // Indicate the start of meta-data parsing for this block
-                        parseInfo.currentMetadata = new TDMMetadata(parseInfo.conventions,
-                                                                    parseInfo.dataContext);
+                        parseInfo.currentMetadata = new TDMMetadata(getConventions(), getDataContext());
                         parseInfo.parsingMetaData = true;
                         break;
 
@@ -1064,8 +968,11 @@ public class TDMParser extends DefaultHandler {
             switch(currentKeyword) {
                 case EPOCH:
                     // Convert the date to an AbsoluteDate object (OrekitException if it fails)
-                    currentObservationEpoch = parseInfo.parseDate(parseInfo.keyValue.getValue(),
-                                                                  parseInfo.currentMetadata.getTimeSystem());
+                    currentObservationEpoch = parseDate(parseInfo.keyValue.getValue(),
+                                                        parseInfo.currentMetadata.getTimeSystem(),
+                                                        parseInfo.lineNumber,
+                                                        parseInfo.fileName,
+                                                        parseInfo.line);
                     break;
                 default:
                     try {

@@ -57,8 +57,8 @@ public enum CcsdsTimeScale {
                                       final TimeScales timeScales) {
             final DateTimeComponents clock = DateTimeComponents.parseDateTime(date);
             final double offset = clock.getDate().getYear() * Constants.JULIAN_YEAR +
-                    clock.getDate().getDayOfYear() * Constants.JULIAN_DAY +
-                    clock.getTime().getSecondsInUTCDay();
+                                  clock.getDate().getDayOfYear() * Constants.JULIAN_DAY +
+                                  clock.getTime().getSecondsInUTCDay();
             return missionReferenceDate.shiftedBy(offset);
         }
 
@@ -78,8 +78,8 @@ public enum CcsdsTimeScale {
                                       final TimeScales timeScales) {
             final DateTimeComponents clock = DateTimeComponents.parseDateTime(date);
             final double offset = clock.getDate().getYear() * Constants.JULIAN_YEAR +
-                    clock.getDate().getDayOfYear() * Constants.JULIAN_DAY +
-                    clock.getTime().getSecondsInUTCDay();
+                                  clock.getDate().getDayOfYear() * Constants.JULIAN_DAY +
+                                  clock.getTime().getSecondsInUTCDay();
             return missionReferenceDate.shiftedBy(offset);
         }
 
@@ -176,7 +176,7 @@ public enum CcsdsTimeScale {
                                   final IERSConventions conventions,
                                   final AbsoluteDate missionReferenceDate) {
         return parseDate(date, conventions, missionReferenceDate,
-                DataContext.getDefault().getTimeScales());
+                         DataContext.getDefault().getTimeScales());
     }
 
     /**

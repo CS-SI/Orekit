@@ -38,7 +38,6 @@ public abstract class OStateFile<M extends OCommonMetadata, D extends OStateData
     /** Create a new OPM file object.
      */
     protected OStateFile() {
-        super(new ODMHeader());
         mu = Double.NaN;
     }
 

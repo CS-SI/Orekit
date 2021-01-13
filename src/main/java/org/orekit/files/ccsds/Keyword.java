@@ -16,6 +16,8 @@
  */
 package org.orekit.files.ccsds;
 
+import org.orekit.files.ccsds.ndm.odm.ocm.OrbitCategory;
+
 /** Keywords for CCSDS Navigation Data Messages.<p>
  * Only these should be used.<p>
  *  The enumeration is split in 3 parts:<p>
@@ -55,6 +57,10 @@ public enum Keyword {
      * @since 11.0
      */
     ALTERNATE_NAMES,
+    /** Unique satellite identification designator for the object.
+     * @since 11.0
+     */
+    OBJECT_DESIGNATOR,
     /** Object identifier of the object for which the orbit state is provided. */
     OBJECT_ID,
     /** Origin of reference frame. */
@@ -150,23 +156,15 @@ public enum Keyword {
     /** Unique ID identifying previous message from a given originator.
      * @since 11.0
      */
-    PREV_MESSAGE_ID,
-    /** Creation date of previous message from a given originator.
-     * @since 11.0
-     */
-    PREV_MESSAGE_EPOCH,
+    PREVIOUS_MESSAGE_ID,
     /** Unique ID identifying next message from a given originator.
      * @since 11.0
      */
     NEXT_MESSAGE_ID,
-    /** Creation date of next message from a given originator.
-     * @since 11.0
-     */
-    NEXT_MESSAGE_EPOCH,
     /** Names of Attitude Data Messages link to this Orbit Data Message.
      * @since 11.0
      */
-    ATT_MESSAGE_LINK,
+    ADM_MESSAGE_LINK,
     /** Names of Conjunction Data Messages link to this Orbit Data Message.
      * @since 11.0
      */
@@ -179,10 +177,6 @@ public enum Keyword {
      * @since 11.0
      */
     RDM_MESSAGE_LINK,
-    /** Names of Tracking Data Messages link to this Orbit Data Message.
-     * @since 11.0
-     */
-    TDM_MESSAGE_LINK,
     /** International designator for the object as assigned by the UN Committee
      * on Space Research (COSPAR) and the US National Space Science Data Center (NSSDC).
      * @since 11.0
@@ -196,66 +190,14 @@ public enum Keyword {
      * @since 11.0
      */
     OWNER,
-    /** Name of the space object mission.
+    /** Name of the country where the space object owner is based.
      * @since 11.0
      */
-    MISSION,
+    COUNTRY,
     /** Name of the constellation this space object belongs to.
      * @since 11.0
      */
     CONSTELLATION,
-    /** Epoch of initial launch.
-     * @since 11.0
-     */
-    LAUNCH_EPOCH,
-    /** Country of launch.
-     * @since 11.0
-     */
-    LAUNCH_COUNTRY,
-    /** Site of launch.
-     * @since 11.0
-     */
-    LAUNCH_SITE,
-    /** Provider of launch.
-     * @since 11.0
-     */
-    LAUNCH_PROVIDER,
-    /** Integrator of launch.
-     * @since 11.0
-     */
-    LAUNCH_INTEGRATOR,
-    /** Pad of launch.
-     * @since 11.0
-     */
-    LAUNCH_PAD,
-    /** Launch platform.
-     * @since 11.0
-     */
-    LAUNCH_PLATFORM,
-    /** Epoch of the <em>most recent</em> deployement of this space object in the parent/child deployement sequence.
-     * @since 11.0
-     */
-    RELEASE_EPOCH,
-    /** Epoch of the beginning of mission operations.
-     * @since 11.0
-     */
-    MISSION_START_EPOCH,
-    /** Epoch of the cessation of mission operations.
-     * @since 11.0
-     */
-    MISSION_END_EPOCH,
-    /** Epoch (actual or estimated) of the space object reentry.
-     * @since 11.0
-     */
-    REENTRY_EPOCH,
-    /** Estimated remaining lifetime in days.
-     * @since 11.0
-     */
-    LIFETIME,
-    /** Specification of satellite catalog source.
-     * @since 11.0
-     */
-    CATALOG_NAME,
     /** Type of object.
      * @see CCSDSObjectType
      * @since 11.0
@@ -266,11 +208,15 @@ public enum Keyword {
      * @since 11.0
      */
     OPS_STATUS,
-    /** Orbit type.
-     * @see CCSDSOrbitType
+    /** Orbit category.
+     * @see OrbitCategory
      * @since 11.0
      */
-    ORBIT_TYPE,
+    ORBIT_CATEGORY,
+    /** Specification of satellite catalog source.
+     * @since 11.0
+     */
+    CATALOG_NAME,
     /** List of elements of information data blocks included in this message.
      * @since 11.0
      */
@@ -280,22 +226,22 @@ public enum Keyword {
      * @since 11.0
      */
     EPOCH_TZERO,
+    /** Epoch corresponding to t=0 for the spacecraft clock.
+     * @since 11.0
+     */
+    SCLK_EPOCH,
     /** Number of clock seconds occurring during one SI second.
      * @since 11.0
      */
-    SEC_CLK_PER_SI_SEC,
-    /** Number of SI seconds in the chosen central body’s “day”.
+    SCLK_SEC_PER_SI_SEC,
+    /** Creation date of previous message from a given originator.
      * @since 11.0
      */
-    SEC_PER_DAY,
-    /** Time of the earliest data contained in the OCM.
+    PREVIOUS_MESSAGE_EPOCH,
+    /** Creation date of next message from a given originator.
      * @since 11.0
      */
-    EARLIEST_TIME,
-    /** Time of the latest data contained in the OCM.
-     * @since 11.0
-     */
-    LATEST_TIME,
+    NEXT_MESSAGE_EPOCH,
     /** Span of time that the OCM covers.
      * @since 11.0
      */
@@ -316,6 +262,14 @@ public enum Keyword {
      * @since 11.0
      */
     INTERP_METHOD_EOP,
+    /** Interpolation method for space weather data.
+     * @since 11.0
+     */
+    INTERP_METHOD_SW,
+    /** Source and version of celestial body (e.g. Sun/Earth/Planetary).
+     * @since 11.0
+     */
+    CELESTIAL_SOURCE,
     /** Start of orbit data section.
      * @since 11.0
      */

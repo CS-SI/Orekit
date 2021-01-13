@@ -16,11 +16,11 @@
  */
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
-/** Orbit type used in CCSDS {@link OCMFile Orbit Comprehensive Messages}.
+/** Orbit category used in CCSDS {@link OCMFile Orbit Comprehensive Messages}.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public enum OrbitType {
+public enum OrbitCategory {
 
     /** Extended Geostationary Orbit, 37948 < a < 46380 km, e < 0.25, i < 25°. */
     EGO("Extended Geostationary Orbit"),
@@ -73,7 +73,7 @@ public enum OrbitType {
     /** Simple constructor.
      * @param description description
      */
-    OrbitType(final String description) {
+    OrbitCategory(final String description) {
         this.description = description;
     }
 

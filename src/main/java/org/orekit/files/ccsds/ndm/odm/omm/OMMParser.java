@@ -167,12 +167,13 @@ public class OMMParser extends OStateParser<OMMFile, OMMParser> {
 
     /** {@inheritDoc} */
     @Override
-    protected boolean parseMetaDataEntry(final KeyValue keyValue, final OCommonMetadata metadata) {
+    protected boolean parseMetaDataEntry(final KeyValue keyValue, final OCommonMetadata metadata,
+                                         final int lineNumber, final String fileName, final String line) {
         if (keyValue.getKeyword() == Keyword.MEAN_ELEMENT_THEORY) {
             ((OMMMetadata) metadata).setMeanElementTheory(keyValue.getValue());
             return true;
         } else {
-            return super.parseMetaDataEntry(keyValue, metadata);
+            return super.parseMetaDataEntry(keyValue, metadata, lineNumber, fileName, line);
         }
     }
 
@@ -193,14 +194,15 @@ public class OMMParser extends OStateParser<OMMFile, OMMParser> {
             pi.fileName = fileName;
             pi.parsingHeader = true;
 
-            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+            for (pi.line = reader.readLine(); pi.line != null; pi.line = reader.readLine()) {
                 ++pi.lineNumber;
-                if (line.trim().length() == 0) {
+                if (pi.line.trim().length() == 0) {
                     continue;
                 }
-                pi.keyValue = new KeyValue(line, pi.lineNumber, pi.fileName);
+                pi.keyValue = new KeyValue(pi.line, pi.lineNumber, pi.fileName);
                 if (pi.keyValue.getKeyword() == null) {
-                    throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
+                    throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD,
+                                              pi.lineNumber, pi.fileName, pi.line);
                 }
 
                 declareFound(pi.keyValue.getKeyword());
@@ -272,17 +274,20 @@ public class OMMParser extends OStateParser<OMMFile, OMMParser> {
                             }
                         }
                         if (pi.parsingMetaData) {
-                            parsed = parseMetaDataEntry(pi.keyValue, pi.metadata);
+                            parsed = parseMetaDataEntry(pi.keyValue, pi.metadata,
+                                                        pi.lineNumber, pi.fileName, pi.line);
                             if (!parsed) {
                                 pi.parsingMetaData = false;
                                 pi.parsingData     = true;
                             }
                         }
                         if (pi.parsingData) {
-                            parsed = parseGeneralStateDataEntry(pi.keyValue, pi.metadata, pi.data, pi.commentTmp);
+                            parsed = parseGeneralStateDataEntry(pi.keyValue, pi.metadata, pi.data, pi.commentTmp,
+                                                                pi.lineNumber, pi.fileName, pi.line);
                         }
                         if (!parsed) {
-                            throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
+                            throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD,
+                                                      pi.lineNumber, pi.fileName, pi.line);
                         }
                 }
             }
@@ -327,6 +332,9 @@ public class OMMParser extends OStateParser<OMMFile, OMMParser> {
 
         /** Current line number. */
         private int lineNumber;
+
+        /** Current line. */
+        private String line;
 
         /** Key value of the line being read. */
         private KeyValue keyValue;

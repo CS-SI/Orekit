@@ -25,7 +25,6 @@ import java.util.Map;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.odm.ODMFile;
-import org.orekit.files.ccsds.ndm.odm.ODMHeader;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.general.EphemerisFile;
 
@@ -40,12 +39,6 @@ import org.orekit.files.general.EphemerisFile;
  * @since 6.1
  */
 public class OEMFile extends ODMFile<OEMSegment> implements EphemerisFile {
-
-    /** Create a new OEM file object.
-     */
-    OEMFile() {
-        super(new ODMHeader());
-    }
 
     /** {@inheritDoc} */
     @Override

@@ -16,13 +16,10 @@
  */
 package org.orekit.files.ccsds.ndm.odm;
 
-import java.util.regex.Pattern;
-
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.CenterName;
 import org.orekit.files.ccsds.utils.KeyValue;
@@ -36,9 +33,6 @@ import org.orekit.utils.IERSConventions;
  * @since 11.0
  */
 public abstract class OCommonParser<T extends ODMFile<?>, P extends ODMParser<T, ?>> extends ODMParser<T, P> {
-
-    /** Pattern for dash. */
-    private static final Pattern DASH = Pattern.compile("-");
 
     /** Gravitational coefficient set by the user in the parser. */
     private double muSet;
@@ -123,13 +117,25 @@ public abstract class OCommonParser<T extends ODMFile<?>, P extends ODMParser<T,
         return muSet;
     }
 
-    /** Parse a meta-data key = value entry.
+    /** {@inheritDoc} */
+    @Override
+    protected AbsoluteDate parseDate(final String date, final CcsdsTimeScale timeSystem,
+                                     final int lineNumber, final String fileName, final String line) {
+        return timeSystem.parseDate(date, getConventions(), missionReferenceDate,
+                                    getDataContext().getTimeScales());
+    }
+
+   /** Parse a meta-data key = value entry.
      * @param keyValue key = value pair
      * @param metaData instance to update with parsed entry
+     * @param lineNumber number of line being parsed
+     * @param fileName name of the parsed file
+     * @param line full parsed line
      * @return true if the keyword was a meta-data keyword and has been parsed
      */
-    protected boolean parseMetaDataEntry(final KeyValue keyValue, final OCommonMetadata metaData) {
-        if (super.parseMetaDataEntry(keyValue, metaData)) {
+    protected boolean parseMetaDataEntry(final KeyValue keyValue, final OCommonMetadata metaData,
+                                         final int lineNumber, final String fileName, final String line) {
+        if (super.parseMetaDataEntry(keyValue, metaData, lineNumber, fileName, line)) {
             return true;
         } else {
             switch (keyValue.getKeyword()) {
@@ -179,7 +185,8 @@ public abstract class OCommonParser<T extends ODMFile<?>, P extends ODMParser<T,
                     metaData.setTimeSystem(timeSystem);
                     if (metaData.getFrameEpochString() != null) {
                         // convert ref frame epoch to a proper data now that we know the time system
-                        metaData.setFrameEpoch(parseDate(metaData.getFrameEpochString(), timeSystem));
+                        metaData.setFrameEpoch(parseDate(metaData.getFrameEpochString(), timeSystem,
+                                                         lineNumber, fileName, line));
                     }
                     return true;
 
@@ -187,24 +194,6 @@ public abstract class OCommonParser<T extends ODMFile<?>, P extends ODMParser<T,
                     return false;
             }
         }
-    }
-
-    /** Parse a CCSDS frame.
-     * @param frameName name of the frame, as the value of a CCSDS key=value line
-     * @return CCSDS frame corresponding to the name
-     */
-    protected CCSDSFrame parseCCSDSFrame(final String frameName) {
-        return CCSDSFrame.valueOf(DASH.matcher(frameName).replaceAll(""));
-    }
-
-    /** Parse a date.
-     * @param date date to parse, as the value of a CCSDS key=value line
-     * @param timeSystem time system to use
-     * @return parsed date
-     */
-    protected AbsoluteDate parseDate(final String date, final CcsdsTimeScale timeSystem) {
-        return timeSystem.parseDate(date, getConventions(), missionReferenceDate,
-                                    getDataContext().getTimeScales());
     }
 
     /**

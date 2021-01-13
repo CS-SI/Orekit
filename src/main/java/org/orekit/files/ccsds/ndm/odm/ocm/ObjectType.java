@@ -23,7 +23,7 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 public enum ObjectType {
 
     /** Payload. */
-    PL("Payload"),
+    PAYLOAD("Payload"),
 
     /** Payload mission-related. */
     PM("Payload mission-related"),

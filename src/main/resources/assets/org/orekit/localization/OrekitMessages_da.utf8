@@ -340,8 +340,8 @@ CCSDS_TDM_INCONSISTENT_DATA_LINE = Ikke konsistent datalinje i TDM-fil i linje {
 # No CCSDS TDM keyword was found at line {0} of file {1}:\n{2}
 CCSDS_TDM_KEYWORD_NOT_FOUND = Intet CCSDS TDM nøgleord blev fundet i linje {0} af fil {1}:\n{2}
 
-# Parameter {0} needs a time system to be interpreted
-CCSDS_TIME_SYSTEM_NOT_READ_YET = Parameter {0} kræver et tidssystem for at kunne fortolkes
+# Time system should have already been set before line {0} of file {1}:\n{2}
+CCSDS_TIME_SYSTEM_NOT_READ_YET = <MISSING TRANSLATION>
 
 # Inconsistent XML observation block at line {0} of TDM file {1}.\nA TDM observation block should be as follows\n\t<observation>\n\t\t<EPOCH>epoch</EPOCH>\n\t\t<KEYWORD>value</KEYWORD>\n\t</observation>
 CCSDS_TDM_XML_INCONSISTENT_DATA_BLOCK = Ikke-konsistent XML observationsblok i linje {0} af TDM fil {1}.\nEn TDM observationsblok skal være som følger\n\t<observation>\n\t\t<EPOCH>epoke</EPOCH>\n\t\t<KEYWORD>værdi</KEYWORD>\n\t</observation>

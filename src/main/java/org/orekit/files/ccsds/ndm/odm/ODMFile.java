@@ -28,12 +28,10 @@ import org.orekit.files.ccsds.ndm.NDMSegment;
  */
 public abstract class ODMFile<S extends NDMSegment<?, ?>> extends NDMFile<ODMHeader, S> {
 
-    /**
-     * Constructor.
-     * @param header file header
+    /** Simple constructor.
      */
-    protected ODMFile(final ODMHeader header) {
-        super(header);
+    protected ODMFile() {
+        super(new ODMHeader());
     }
 
 }

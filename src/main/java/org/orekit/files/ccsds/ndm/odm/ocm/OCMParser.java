@@ -21,16 +21,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.hipparchus.exception.DummyLocalizable;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.Keyword;
-import org.orekit.files.ccsds.ndm.odm.ODMMetadata;
+import org.orekit.files.ccsds.ndm.NDMSegment;
 import org.orekit.files.ccsds.ndm.odm.ODMParser;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.KeyValue;
@@ -42,7 +41,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OCMParser extends ODMParser<OCMFile> {
+public class OCMParser extends ODMParser<OCMFile, OCMParser> {
 
     /** Mandatory keywords. */
     private static final Keyword[] MANDATORY_KEYWORDS = {
@@ -50,17 +49,13 @@ public class OCMParser extends ODMParser<OCMFile> {
         Keyword.EPOCH_TZERO, Keyword.META_START, Keyword.META_STOP
     };
 
-    /** Prefix for relative times. */
-    private static final String RELATIVE_PREFIX = "DT=";
-
-    /** Prefix for absolute times. */
-    private static final String ABSOLUTE_PREFIX = "T=";
+    /** Gravitational coefficient set by the user in the parser. */
+    private double mu;
 
     /** Simple constructor.
      * <p>
      * This class is immutable, and hence thread safe. When parts
-     * must be changed, such as reference date for Mission Elapsed Time or
-     * Mission Relative Time time systems, or the gravitational coefficient or
+     * must be changed, such as the gravitational coefficient or
      * the IERS conventions, the various {@code withXxx} methods must be called,
      * which create a new immutable instance with the new parameters. This
      * is a combination of the
@@ -68,11 +63,6 @@ public class OCMParser extends ODMParser<OCMFile> {
      * pattern</a> and a
      * <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
      * interface</a>.
-     * </p>
-     * <p>
-     * The initial date for Mission Elapsed Time and Mission Relative Time time systems is not set here.
-     * If such time systems are used, it must be initialized before parsing by calling {@link
-     * #withMissionReferenceDate(AbsoluteDate)}.
      * </p>
      * <p>
      * The gravitational coefficient is not set here. If it is needed in order
@@ -86,6 +76,7 @@ public class OCMParser extends ODMParser<OCMFile> {
      * </p>
      * <p>This method uses the {@link DataContext#getDefault() default data context}. See
      * {@link #withDataContext(DataContext)}.
+     * </p>
      */
     @DefaultDataContext
     public OCMParser() {
@@ -95,8 +86,7 @@ public class OCMParser extends ODMParser<OCMFile> {
     /** Simple constructor.
      * <p>
      * This class is immutable, and hence thread safe. When parts
-     * must be changed, such as reference date for Mission Elapsed Time or
-     * Mission Relative Time time systems, or the gravitational coefficient or
+     * must be changed, such as the gravitational coefficient or
      * the IERS conventions, the various {@code withXxx} methods must be called,
      * which create a new immutable instance with the new parameters. This
      * is a combination of the
@@ -104,11 +94,6 @@ public class OCMParser extends ODMParser<OCMFile> {
      * pattern</a> and a
      * <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
      * interface</a>.
-     * </p>
-     * <p>
-     * The initial date for Mission Elapsed Time and Mission Relative Time time systems is not set here.
-     * If such time systems are used, it must be initialized before parsing by calling {@link
-     * #withMissionReferenceDate(AbsoluteDate)}.
      * </p>
      * <p>
      * The gravitational coefficient is not set here. If it is needed in order
@@ -124,57 +109,50 @@ public class OCMParser extends ODMParser<OCMFile> {
      * @see #withDataContext(DataContext)
      */
     public OCMParser(final DataContext dataContext) {
-        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, dataContext);
+        this(null, true, dataContext, Double.NaN);
     }
 
     /** Complete constructor.
-     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
-     * @param mu gravitational coefficient
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames and time scales.
+     * @param mu gravitational coefficient
      */
-    private OCMParser(final AbsoluteDate missionReferenceDate, final double mu,
-                      final IERSConventions conventions, final boolean simpleEOP,
-                      final DataContext dataContext) {
-        super(missionReferenceDate, mu, conventions, simpleEOP, dataContext);
+    private OCMParser(final IERSConventions conventions, final boolean simpleEOP,
+                      final DataContext dataContext, final double mu) {
+        super(conventions, simpleEOP, dataContext);
+        this.mu = mu;
     }
 
-    /** {@inheritDoc} */
-    public OCMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
-        return new OCMParser(newMissionReferenceDate, getMu(), getConventions(), isSimpleEOP(), getDataContext());
-    }
-
-    /** {@inheritDoc} */
+    /** Set gravitational coefficient.
+     * @param newMu gravitational coefficient to use while parsing
+     * @return a new instance, with gravitational coefficient value replaced
+     * @see #getMu()
+     */
     public OCMParser withMu(final double newMu) {
-        return new OCMParser(getMissionReferenceDate(), newMu, getConventions(), isSimpleEOP(), getDataContext());
-    }
-
-    /** {@inheritDoc} */
-    public OCMParser withConventions(final IERSConventions newConventions) {
-        return new OCMParser(getMissionReferenceDate(), getMu(), newConventions, isSimpleEOP(), getDataContext());
-    }
-
-    /** {@inheritDoc} */
-    public OCMParser withSimpleEOP(final boolean newSimpleEOP) {
-        return new OCMParser(getMissionReferenceDate(), getMu(), getConventions(), newSimpleEOP, getDataContext());
-    }
-
-    @Override
-    public OCMParser withDataContext(final DataContext newDataContext) {
-        return new OCMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(), newDataContext);
+        return create(getConventions(), isSimpleEOP(), getDataContext(), newMu);
     }
 
     /** {@inheritDoc} */
     @Override
-    public OCMFile parse(final String fileName) {
-        return (OCMFile) super.parse(fileName);
+    protected OCMParser create(final IERSConventions newConventions,
+                               final boolean newSimpleEOP,
+                               final DataContext newDataContext) {
+        return create(newConventions, newSimpleEOP, newDataContext, mu);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public OCMFile parse(final InputStream stream) {
-        return (OCMFile) super.parse(stream);
+    /** Build a new instance.
+     * @param newConventions IERS conventions to use while parsing
+     * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
+     * @param newDataContext data context used for frames, time scales, and celestial bodies
+     * @param newMu gravitational coefficient to use while parsing
+     * @return a new instance with changed parameters
+     */
+    protected OCMParser create(final IERSConventions newConventions,
+                               final boolean newSimpleEOP,
+                               final DataContext newDataContext,
+                               final double newMu) {
+        return new OCMParser(newConventions, newSimpleEOP, newDataContext, newMu);
     }
 
     /** {@inheritDoc} */
@@ -188,28 +166,22 @@ public class OCMParser extends ODMParser<OCMFile> {
         try (InputStreamReader isr = new InputStreamReader(stream, StandardCharsets.UTF_8);
              BufferedReader reader = new BufferedReader(isr)) {
             // initialize internal data structures
-            final ParseInfo pi = new ParseInfo();
-            pi.fileName = fileName;
-            final OCMFile file = pi.file;
-
-            // set the additional data that has been configured prior the parsing by the user.
-            pi.file.setMissionReferenceDate(getMissionReferenceDate());
-            pi.file.setMuSet(getMu());
-            pi.file.setConventions(getConventions());
+            final ParseInfo pi = new ParseInfo(getConventions(), getDataContext());
+            pi.fileName        = fileName;
 
             Section previousSection = Section.HEADER;
             Section section         = Section.HEADER;
-            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+            for (pi.line = reader.readLine(); pi.line != null; pi.line = reader.readLine()) {
                 ++pi.lineNumber;
-                if (line.trim().length() == 0) {
+                if (pi.line.trim().length() == 0) {
                     continue;
                 }
-                pi.keyValue = new KeyValue(line, pi.lineNumber, pi.fileName);
+                pi.keyValue = new KeyValue(pi.line, pi.lineNumber, pi.fileName);
                 if (pi.keyValue.getKeyword() == null) {
                     // we do not change section, maybe the current section can deal with null keywords
                     if (!section.parseEntry(this, pi)) {
                         throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                  pi.lineNumber, pi.fileName, line);
+                                                  pi.lineNumber, pi.fileName, pi.line);
                     }
                 } else {
                     // there is a keyword in this line
@@ -217,8 +189,43 @@ public class OCMParser extends ODMParser<OCMFile> {
 
                     switch (pi.keyValue.getKeyword()) {
 
+                        case COMMENT:
+                            switch (section) {
+                                case HEADER:
+                                    pi.file.getHeader().addComment(pi.keyValue.getValue());
+                                    break;
+                                case META_DATA :
+                                    pi.metadata.addComment(pi.keyValue.getValue());
+                                    break;
+                                case ORBIT :
+                                    pi.orbitalStateHistory.addComment(pi.keyValue.getValue());
+                                    break;
+                                case PHYSICS :
+                                    // TODO
+                                    break;
+                                case COVARIANCE :
+                                    // TODO
+                                    break;
+                                case MANEUVER :
+                                    // TODO
+                                    break;
+                                case PERTURBATIONS :
+                                    // TODO
+                                    break;
+                                case ORBIT_DETERMINATION :
+                                    // TODO
+                                    break;
+                                case USER_DEFINED :
+                                    // TODO
+                                    break;
+                                case UNDEFINED : default :
+                                    // this should never happen
+                                    throw new OrekitInternalError(null);
+                            }
+                            break;
+
                         case CCSDS_OCM_VERS:
-                            file.setFormatVersion(pi.keyValue.getDoubleValue());
+                            pi.file.getHeader().setFormatVersion(pi.keyValue.getDoubleValue());
                             break;
 
                         case META_START :
@@ -229,31 +236,23 @@ public class OCMParser extends ODMParser<OCMFile> {
 
                         case META_STOP :
                             checkAllowedSection(pi, section, Section.META_DATA);
-                            if (!pi.commentTmp.isEmpty()) {
-                                pi.file.getMetadata().setComments(pi.commentTmp);
-                                pi.commentTmp.clear();
-                            }
                             previousSection = section;
                             section         = Section.UNDEFINED;
                             break;
 
                         case ORB_START : {
                             checkAllowedSection(pi, previousSection, Section.META_DATA, Section.ORBIT);
-                            final String defT0 = pi.file.getMetadata().getEpochT0String();
-                            final CcsdsTimeScale defTimSystem = pi.file.getMetadata().getTimeSystem();
-                            pi.file.getOrbitStateTimeHistories().add(pi.file.new OrbitStateHistory(defT0, defTimSystem));
+                            final AbsoluteDate defT0 = pi.metadata.getEpochT0();
+                            final CcsdsTimeScale defTimSystem = pi.metadata.getTimeSystem();
+                            pi.orbitalStateHistory = new OrbitalStateHistory(defT0, defTimSystem);
                             section = Section.ORBIT;
                             break;
                         }
 
                         case ORB_STOP : {
                             checkAllowedSection(pi, section, Section.ORBIT);
-                            final List<OCMFile.OrbitStateHistory> histories = pi.file.getOrbitStateTimeHistories();
-                            final OCMFile.OrbitStateHistory history = histories.get(histories.size() - 1);
-                            if (!pi.commentTmp.isEmpty()) {
-                                history.setComment(pi.commentTmp);
-                                pi.commentTmp.clear();
-                            }
+                            pi.data.add(pi.orbitalStateHistory);
+                            pi.orbitalStateHistory = null;
                             previousSection = section;
                             section         = Section.UNDEFINED;
                             break;
@@ -283,23 +282,10 @@ public class OCMParser extends ODMParser<OCMFile> {
                             section         = Section.UNDEFINED;
                             break;
 
-                        case STM_START :
-                            checkAllowedSection(pi, previousSection,
-                                                Section.META_DATA, Section.ORBIT, Section.PHYSICS,
-                                                Section.COVARIANCE, Section.STM);
-                            section = Section.STM;
-                            break;
-
-                        case STM_STOP :
-                            checkAllowedSection(pi, section, Section.STM);
-                            previousSection = section;
-                            section         = Section.UNDEFINED;
-                            break;
-
                         case MAN_START :
                             checkAllowedSection(pi, previousSection,
                                                 Section.META_DATA, Section.ORBIT, Section.PHYSICS,
-                                                Section.COVARIANCE, Section.STM, Section.MANEUVER);
+                                                Section.COVARIANCE, Section.MANEUVER);
                             section = Section.MANEUVER;
                             break;
 
@@ -312,7 +298,7 @@ public class OCMParser extends ODMParser<OCMFile> {
                         case PERT_START :
                             checkAllowedSection(pi, previousSection,
                                                 Section.META_DATA, Section.ORBIT, Section.PHYSICS,
-                                                Section.COVARIANCE, Section.STM, Section.MANEUVER);
+                                                Section.COVARIANCE, Section.MANEUVER);
                             section = Section.PERTURBATIONS;
                             break;
 
@@ -325,7 +311,7 @@ public class OCMParser extends ODMParser<OCMFile> {
                         case OD_START :
                             checkAllowedSection(pi, previousSection,
                                                 Section.META_DATA, Section.ORBIT, Section.PHYSICS,
-                                                Section.COVARIANCE, Section.STM, Section.MANEUVER,
+                                                Section.COVARIANCE, Section.MANEUVER,
                                                 Section.PERTURBATIONS);
                             section = Section.ORBIT_DETERMINATION;
                             break;
@@ -339,7 +325,7 @@ public class OCMParser extends ODMParser<OCMFile> {
                         case USER_START :
                             checkAllowedSection(pi, previousSection,
                                                 Section.META_DATA, Section.ORBIT, Section.PHYSICS,
-                                                Section.COVARIANCE, Section.STM, Section.MANEUVER,
+                                                Section.COVARIANCE, Section.MANEUVER,
                                                 Section.PERTURBATIONS, Section.ORBIT_DETERMINATION);
                             section = Section.USER_DEFINED;
                             break;
@@ -351,11 +337,9 @@ public class OCMParser extends ODMParser<OCMFile> {
                             break;
 
                         default:
-                            if (pi.keyValue.getKeyword() == Keyword.COMMENT) {
-                                parseComment(pi.keyValue, pi.commentTmp);
-                            } else if (!section.parseEntry(this, pi)) {
+                            if (!section.parseEntry(this, pi)) {
                                 throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD,
-                                                          pi.lineNumber, pi.fileName, line);
+                                                          pi.lineNumber, pi.fileName, pi.line);
                             }
                     }
 
@@ -365,7 +349,10 @@ public class OCMParser extends ODMParser<OCMFile> {
             // check all mandatory keywords have been found
             checkExpected(fileName);
 
-            return file;
+            pi.file.addSegment(new NDMSegment<>(pi.metadata, pi.data));
+
+            return pi.file;
+
         } catch (IOException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
         }
@@ -391,245 +378,200 @@ public class OCMParser extends ODMParser<OCMFile> {
 
     }
 
-    /** {@inheritDoc} */
-    @Override
-    protected boolean parseMetaDataEntry(final KeyValue keyValue,
-                                         final ODMMetadata metaData, final List<String> comment) {
-        final OCMFile.OCMMetaData cMetaData = (OCMFile.OCMMetaData) metaData;
+    /** Parse a meta-data key = value entry.
+     * @param keyValue key = value pair
+     * @param metadata instance to update with parsed entry
+     * @param lineNumber number of line being parsed
+     * @param fileName name of the parsed file
+     * @param line full parsed line
+     * @return true if the keyword was a meta-data keyword and has been parsed
+     */
+    protected boolean parseMetaDataEntry(final KeyValue keyValue, final OCMMetadata metadata,
+                                         final int lineNumber, final String fileName, final String line) {
         switch (keyValue.getKeyword()) {
             case CLASSIFICATION:
-                cMetaData.setClassification(keyValue.getValue());
+                metadata.setClassification(keyValue.getValue());
                 return true;
 
-            case ORIGINATOR_POC:
-                cMetaData.setOriginatorPOC(keyValue.getValue());
-                break;
-
-            case ORIGINATOR_POSITION:
-                cMetaData.setOriginatorPosition(keyValue.getValue());
-                break;
-
-            case ORIGINATOR_PHONE:
-                cMetaData.setOriginatorPhone(keyValue.getValue());
-                break;
-
-            case ORIGINATOR_ADDRESS:
-                cMetaData.setOriginatorAddress(keyValue.getValue());
-                break;
-
-            case TECH_ORG:
-                cMetaData.setTechOrg(keyValue.getValue());
-                break;
-
-            case TECH_POC:
-                cMetaData.setTechPOC(keyValue.getValue());
-                break;
-
-            case TECH_POSITION:
-                cMetaData.setTechPosition(keyValue.getValue());
-                break;
-
-            case TECH_PHONE:
-                cMetaData.setTechPhone(keyValue.getValue());
-                break;
-
-            case TECH_ADDRESS:
-                cMetaData.setTechAddress(keyValue.getValue());
-                break;
-
-            case PREV_MESSAGE_ID:
-                cMetaData.setPrevMessageID(keyValue.getValue());
-                break;
-
-            case PREV_MESSAGE_EPOCH:
-                cMetaData.setPrevMessageEpoch(keyValue.getValue());
-                break;
-
-            case NEXT_MESSAGE_ID:
-                cMetaData.setNextMessageID(keyValue.getValue());
-                break;
-
-            case NEXT_MESSAGE_EPOCH:
-                cMetaData.setNextMessageEpoch(keyValue.getValue());
-                break;
-
-            case ATT_MESSAGE_LINK:
-                cMetaData.setAttMessageLink(keyValue.getListValue());
-                break;
-
-            case CDM_MESSAGE_LINK:
-                cMetaData.setCdmMessageLink(keyValue.getListValue());
-                break;
-
-            case PRM_MESSAGE_LINK:
-                cMetaData.setPrmMessageLink(keyValue.getListValue());
-                break;
-
-            case RDM_MESSAGE_LINK:
-                cMetaData.setRdmMessageLink(keyValue.getListValue());
-                break;
-
-            case TDM_MESSAGE_LINK:
-                cMetaData.setTdmMessageLink(keyValue.getListValue());
-                break;
-
-            case OBJECT_NAME:
-                cMetaData.setObjectName(keyValue.getValue());
-                break;
-
             case ALTERNATE_NAMES:
-                cMetaData.setAlternateNames(keyValue.getListValue());
+                metadata.setAlternateNames(keyValue.getListValue());
+                break;
+
+            case OBJECT_DESIGNATOR:
+                metadata.setObjectDesignator(keyValue.getValue());
                 break;
 
             case INTERNATIONAL_DESIGNATOR:
-                cMetaData.setInternationalDesignator(keyValue.getValue());
+                metadata.setInternationalDesignator(keyValue.getValue());
                 break;
 
-            case OPERATOR:
-                cMetaData.setOperator(keyValue.getValue());
+            case ORIGINATOR_POC:
+                metadata.setOriginatorPOC(keyValue.getValue());
                 break;
 
-            case OWNER:
-                cMetaData.setOwner(keyValue.getValue());
+            case ORIGINATOR_POSITION:
+                metadata.setOriginatorPosition(keyValue.getValue());
                 break;
 
-            case MISSION:
-                cMetaData.setMission(keyValue.getValue());
+            case ORIGINATOR_PHONE:
+                metadata.setOriginatorPhone(keyValue.getValue());
                 break;
 
-            case CONSTELLATION:
-                cMetaData.setConstellation(keyValue.getValue());
+            case ORIGINATOR_ADDRESS:
+                metadata.setOriginatorAddress(keyValue.getValue());
                 break;
 
-            case LAUNCH_EPOCH:
-                cMetaData.setLaunchEpoch(keyValue.getValue());
+            case TECH_ORG:
+                metadata.setTechOrg(keyValue.getValue());
                 break;
 
-            case LAUNCH_COUNTRY:
-                cMetaData.setLaunchCountry(keyValue.getValue());
+            case TECH_POC:
+                metadata.setTechPOC(keyValue.getValue());
                 break;
 
-            case LAUNCH_SITE:
-                cMetaData.setLaunchSite(keyValue.getValue());
+            case TECH_POSITION:
+                metadata.setTechPosition(keyValue.getValue());
                 break;
 
-            case LAUNCH_PROVIDER:
-                cMetaData.setLaunchProvider(keyValue.getValue());
+            case TECH_PHONE:
+                metadata.setTechPhone(keyValue.getValue());
                 break;
 
-            case LAUNCH_INTEGRATOR:
-                cMetaData.setLaunchIntegrator(keyValue.getValue());
+            case TECH_ADDRESS:
+                metadata.setTechAddress(keyValue.getValue());
                 break;
 
-            case LAUNCH_PAD:
-                cMetaData.setLaunchPad(keyValue.getValue());
+            case PREVIOUS_MESSAGE_ID:
+                metadata.setPreviousMessageID(keyValue.getValue());
                 break;
 
-            case LAUNCH_PLATFORM:
-                cMetaData.setLaunchPlatform(keyValue.getValue());
+            case NEXT_MESSAGE_ID:
+                metadata.setNextMessageID(keyValue.getValue());
                 break;
 
-            case RELEASE_EPOCH:
-                cMetaData.setReleaseEpoch(keyValue.getValue());
+            case ADM_MESSAGE_LINK:
+                metadata.setAttMessageLink(keyValue.getListValue());
                 break;
 
-            case MISSION_START_EPOCH:
-                cMetaData.setMissionStartEpoch(keyValue.getValue());
+            case CDM_MESSAGE_LINK:
+                metadata.setCdmMessageLink(keyValue.getListValue());
                 break;
 
-            case MISSION_END_EPOCH:
-                cMetaData.setMissionEndEpoch(keyValue.getValue());
+            case PRM_MESSAGE_LINK:
+                metadata.setPrmMessageLink(keyValue.getListValue());
                 break;
 
-            case REENTRY_EPOCH:
-                cMetaData.setReentryEpoch(keyValue.getValue());
-                break;
-
-            case LIFETIME:
-                cMetaData.setLifetime(keyValue.getDoubleValue() * Constants.JULIAN_DAY);
+            case RDM_MESSAGE_LINK:
+                metadata.setRdmMessageLink(keyValue.getListValue());
                 break;
 
             case CATALOG_NAME:
-                cMetaData.setCatalogName(keyValue.getValue());
+                metadata.setCatalogName(keyValue.getValue());
+                break;
+
+            case OPERATOR:
+                metadata.setOperator(keyValue.getValue());
+                break;
+
+            case OWNER:
+                metadata.setOwner(keyValue.getValue());
+                break;
+
+            case COUNTRY:
+                metadata.setCountry(keyValue.getValue());
+                break;
+
+            case CONSTELLATION:
+                metadata.setConstellation(keyValue.getValue());
                 break;
 
             case OBJECT_TYPE:
-                cMetaData.setObjectType(ObjectType.valueOf(keyValue.getValue()));
+                metadata.setObjectType(ObjectType.valueOf(keyValue.getValue()));
                 break;
 
             case OPS_STATUS:
-                cMetaData.setOpsStatus(OpsStatus.valueOf(keyValue.getValue()));
+                metadata.setOpsStatus(OpsStatus.valueOf(keyValue.getValue()));
                 break;
 
-            case ORBIT_TYPE:
-                cMetaData.setOrbitType(OrbitType.valueOf(keyValue.getValue()));
+            case ORBIT_CATEGORY:
+                metadata.setOrbitCategory(OrbitCategory.valueOf(keyValue.getValue()));
                 break;
 
             case OCM_DATA_ELEMENTS:
-                cMetaData.setOcmDataElements(keyValue.getListValue());
-                break;
-
-            case EPOCH_TZERO:
-                cMetaData.setEpochT0(keyValue.getValue());
+                metadata.setOcmDataElements(keyValue.getListValue());
                 break;
 
             case TIME_SYSTEM:
-                cMetaData.setTimeSystem(CcsdsTimeScale.parse(keyValue.getValue()));
+                metadata.setTimeSystem(CcsdsTimeScale.parse(keyValue.getValue()));
                 break;
 
-            case SEC_CLK_PER_SI_SEC:
-                cMetaData.setSecClockPerSISecond(keyValue.getDoubleValue());
+            case EPOCH_TZERO:
+                metadata.setEpochT0(parseDate(keyValue.getValue(), metadata.getTimeSystem(),
+                                              lineNumber, fileName, line));
                 break;
 
-            case SEC_PER_DAY:
-                cMetaData.setSecPerDay(keyValue.getDoubleValue());
+            case SCLK_EPOCH:
+                metadata.setSclkEpoch(parseDate(keyValue.getValue(), metadata.getTimeSystem(),
+                                                lineNumber, fileName, line));
                 break;
 
-            case EARLIEST_TIME:
-                cMetaData.setEarliestTime(filterAbsoluteOrRelative(keyValue));
+            case SCLK_SEC_PER_SI_SEC:
+                metadata.setClockSecPerSISec(keyValue.getDoubleValue());
                 break;
 
-            case LATEST_TIME:
-                cMetaData.setLatestTime(filterAbsoluteOrRelative(keyValue));
+            case PREVIOUS_MESSAGE_EPOCH:
+                metadata.setPreviousMessageEpoch(parseDate(keyValue.getValue(), metadata.getTimeSystem(),
+                                                           lineNumber, fileName, line));
+                break;
+
+            case NEXT_MESSAGE_EPOCH:
+                metadata.setNextMessageEpoch(parseDate(keyValue.getValue(), metadata.getTimeSystem(),
+                                                       lineNumber, fileName, line));
+                break;
+
+            case START_TIME:
+                metadata.setStartTime(parseDate(keyValue.getValue(), metadata.getTimeSystem(),
+                                                lineNumber, fileName, line));
+                break;
+
+            case STOP_TIME:
+                metadata.setStopTime(parseDate(keyValue.getValue(), metadata.getTimeSystem(),
+                                               lineNumber, fileName, line));
                 break;
 
             case TIME_SPAN:
-                cMetaData.setTimeSpan(keyValue.getDoubleValue() * Constants.JULIAN_DAY);
+                metadata.setTimeSpan(keyValue.getDoubleValue() * Constants.JULIAN_DAY);
                 break;
 
             case TAIMUTC_AT_TZERO:
-                cMetaData.setTaimutcT0(keyValue.getDoubleValue());
+                metadata.setTaimutcT0(keyValue.getDoubleValue());
                 break;
 
             case UT1MUTC_AT_TZERO:
-                cMetaData.setUt1mutcT0(keyValue.getDoubleValue());
+                metadata.setUt1mutcT0(keyValue.getDoubleValue());
                 break;
 
             case EOP_SOURCE:
-                cMetaData.setEopSource(keyValue.getValue());
+                metadata.setEopSource(keyValue.getValue());
                 break;
 
             case INTERP_METHOD_EOP:
-                cMetaData.setInterpMethodEOP(keyValue.getValue());
+                metadata.setInterpMethodEOP(keyValue.getValue());
+                break;
+
+            case INTERP_METHOD_SW:
+                metadata.setInterpMethodSW(keyValue.getValue());
+                break;
+
+            case CELESTIAL_SOURCE:
+                metadata.setCelestialSource(keyValue.getValue());
                 break;
 
             default:
-                return super.parseMetaDataEntry(keyValue, metaData, comment);
+                return super.parseMetaDataEntry(keyValue, metadata,
+                                                lineNumber, fileName, line);
         }
         return true;
-    }
-
-    /** Filter absolute or relative date.
-     * @param keyValue key-value pair
-     * @return absolute or relative string
-     */
-    private String filterAbsoluteOrRelative(final KeyValue keyValue) {
-        if (keyValue.getValue().startsWith(RELATIVE_PREFIX) ||
-            keyValue.getValue().startsWith(ABSOLUTE_PREFIX)) {
-            return keyValue.getValue().substring(keyValue.getValue().indexOf('=') + 1);
-        } else {
-            throw keyValue.generateException();
-        }
     }
 
     /** Private class used to store OCM parsing info.
@@ -640,24 +582,40 @@ public class OCMParser extends ODMParser<OCMFile> {
         /** OCM file being read. */
         private OCMFile file;
 
+        /** OCM metadata being read. */
+        private OCMMetadata metadata;
+
+        /** OCM data being read. */
+        private OCMData data;
+
+        /** Current orbital history. */
+        private OrbitalStateHistory orbitalStateHistory;
+
         /** Name of the file. */
         private String fileName;
 
         /** Current line number. */
         private int lineNumber;
 
+        /** current line. */
+        private String line;
+
         /** Key value of the line being read. */
         private KeyValue keyValue;
 
-        /** Stored comments. */
-        private List<String> commentTmp;
-
-        /** Create a new {@link ParseInfo} object. */
-        protected ParseInfo() {
-            file       = new OCMFile();
-            lineNumber = 0;
-            commentTmp = new ArrayList<>();
+        /** Create a new {@link ParseInfo} object.
+         * @param conventions IERS conventions to use
+         * @param dataContext data context to use
+         */
+        ParseInfo(final IERSConventions conventions, final DataContext dataContext) {
+            file                  = new OCMFile();
+            file.setConventions(conventions);
+            file.setDataContext(dataContext);
+            metadata              = new OCMMetadata(conventions, dataContext);
+            data                  = new OCMData();
+            lineNumber            = 0;
         }
+
     }
 
     /** Enumerate for various data sections. */
@@ -668,7 +626,7 @@ public class OCMParser extends ODMParser<OCMFile> {
             /** {@inheritDoc}*/
             @Override
             protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
-                return parser.parseHeaderEntry(pi.keyValue, pi.file, pi.commentTmp);
+                return parser.parseHeaderEntry(pi.keyValue, pi.file);
             }
         },
 
@@ -677,7 +635,8 @@ public class OCMParser extends ODMParser<OCMFile> {
             /** {@inheritDoc}*/
             @Override
             protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
-                return parser.parseMetaDataEntry(pi.keyValue, pi.file.getMetadata(), pi.commentTmp);
+                return parser.parseMetaDataEntry(pi.keyValue, pi.metadata,
+                                                 pi.lineNumber, pi.fileName, pi.line);
             }
         },
 
@@ -686,19 +645,21 @@ public class OCMParser extends ODMParser<OCMFile> {
             /** {@inheritDoc}*/
             @Override
             protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
-                final List<OCMFile.OrbitStateHistory> histories = pi.file.getOrbitStateTimeHistories();
-                final OCMFile.OrbitStateHistory       history   = histories.get(histories.size() - 1);
                 if (pi.keyValue.getKeyword() == null) {
                     // this is an orbital state line
-                    final String   trimmed  = pi.keyValue.getLine().trim();
-                    final int      k        = trimmed.indexOf(' ');
-                    final String[] elements = trimmed.substring(k).trim().split("\\s+");
-                    if (trimmed.startsWith(RELATIVE_PREFIX)) {
-                        return history.addStateRelative(trimmed.substring(trimmed.indexOf('=') + 1, trimmed.indexOf(' ')),
-                                                        elements);
-                    } else if (trimmed.startsWith(ABSOLUTE_PREFIX)) {
-                        return history.addStateAbsolute(trimmed.substring(trimmed.indexOf('=') + 1, trimmed.indexOf(' ')),
-                                                        elements);
+                    final String[] elements = pi.keyValue.getLine().trim().split("\\s+");
+                    final AbsoluteDate date;
+                    if (elements.length > 0) {
+                        if (elements[0].indexOf('T') > 0) {
+                            // there is a 'T' in the first field, the date is absolute
+                            date = parser.parseDate(elements[0],
+                                                    pi.orbitalStateHistory.getOrbTimeSystem(),
+                                                    pi.lineNumber, pi.fileName, pi.line);
+                        } else {
+                            // no 'T' in the first field, the date is relative
+                            date = pi.metadata.getEpochT0().shiftedBy(Double.parseDouble(elements[0]));
+                        }
+                        return pi.orbitalStateHistory.addState(date, elements, 1);
                     } else {
                         return false;
                     }
@@ -706,46 +667,50 @@ public class OCMParser extends ODMParser<OCMFile> {
                     // this is a key=value line
                     switch (pi.keyValue.getKeyword()) {
                         case ORB_ID :
-                            history.setOrbID(pi.keyValue.getValue());
+                            pi.orbitalStateHistory.setOrbID(pi.keyValue.getValue());
                             break;
                         case ORB_PREV_ID :
-                            history.setOrbPrevID(pi.keyValue.getValue());
+                            pi.orbitalStateHistory.setOrbPrevID(pi.keyValue.getValue());
                             break;
                         case ORB_NEXT_ID :
-                            history.setOrbNextID(pi.keyValue.getValue());
+                            pi.orbitalStateHistory.setOrbNextID(pi.keyValue.getValue());
                             break;
                         case ORB_BASIS :
-                            history.setOrbBasis(OrbitBasis.valueOf(pi.keyValue.getValue()));
+                            pi.orbitalStateHistory.setOrbBasis(OrbitBasis.valueOf(pi.keyValue.getValue()));
                             break;
                         case ORB_BASIS_ID :
-                            history.setOrbBasisID(pi.keyValue.getValue());
+                            pi.orbitalStateHistory.setOrbBasisID(pi.keyValue.getValue());
                             break;
                         case ORB_AVERAGING :
-                            history.setOrbAveraging(pi.keyValue.getValue());
+                            pi.orbitalStateHistory.setOrbAveraging(pi.keyValue.getValue());
                             break;
                         case ORB_EPOCH_TZERO :
-                            history.setOrbEpochT0(pi.keyValue.getValue());
+                            pi.orbitalStateHistory.setOrbEpochT0(parser.parseDate(pi.keyValue.getValue(),
+                                                                                  pi.orbitalStateHistory.getOrbTimeSystem(),
+                                                                                  pi.lineNumber, pi.fileName, pi.line));
                             break;
                         case ORB_TIME_SYSTEM :
-                            history.setOrbTimeSystem(CcsdsTimeScale.parse(pi.keyValue.getValue()));
+                            pi.orbitalStateHistory.setOrbTimeSystem(CcsdsTimeScale.parse(pi.keyValue.getValue()));
                             break;
                         case CENTER_NAME :
-                            history.setCenterName(pi.keyValue.getValue());
+                            pi.orbitalStateHistory.setCenterName(pi.keyValue.getValue());
                             break;
                         case ORB_REF_FRAME :
-                            history.setOrbRefFrame(parser.parseCCSDSFrame(pi.keyValue.getValue()));
+                            pi.orbitalStateHistory.setOrbRefFrame(parser.parseCCSDSFrame(pi.keyValue.getValue()));
                             break;
                         case ORB_FRAME_EPOCH :
-                            history.setOrbFrameEpoch(pi.keyValue.getValue());
+                            pi.orbitalStateHistory.setOrbFrameEpoch(parser.parseDate(pi.keyValue.getValue(),
+                                                                                     pi.orbitalStateHistory.getOrbTimeSystem(),
+                                                                                     pi.lineNumber, pi.fileName, pi.line));
                             break;
                         case ORB_TYPE :
-                            history.setOrbType(ElementsType.valueOf(pi.keyValue.getValue()));
+                            pi.orbitalStateHistory.setOrbType(ElementsType.valueOf(pi.keyValue.getValue()));
                             break;
                         case ORB_N :
-                            history.setOrbN(Integer.parseInt(pi.keyValue.getValue()));
+                            pi.orbitalStateHistory.setOrbN(Integer.parseInt(pi.keyValue.getValue()));
                             break;
                         case ORB_ELEMENTS :
-                            history.setOrbElements(pi.keyValue.getValue());
+                            pi.orbitalStateHistory.setOrbElements(pi.keyValue.getValue());
                             break;
                         default :
                             return false;
@@ -767,21 +732,6 @@ public class OCMParser extends ODMParser<OCMFile> {
 
         /** Covariance data section. */
         COVARIANCE {
-            /** {@inheritDoc}*/
-            @Override
-            protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
-                if (pi.keyValue.getKeyword() == null) {
-                    // TODO
-                    return true;
-                } else {
-                    // TODO
-                    return true;
-                }
-            }
-        },
-
-        /** State transition matrix data section. */
-        STM {
             /** {@inheritDoc}*/
             @Override
             protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {

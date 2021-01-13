@@ -51,16 +51,21 @@ public abstract class OStateParser<T extends ODMFile<?>, P extends ODMParser<T, 
      * @param metadata metadata used for interpreting data
      * @param data instance to update with parsed entry
      * @param comment previous comment lines, will be emptied if used by the keyword
+     * @param lineNumber number of line being parsed
+     * @param fileName name of the parsed file
+     * @param line full parsed line
      * @return true if the keyword was a meta-data keyword and has been parsed
      */
     protected boolean parseGeneralStateDataEntry(final KeyValue keyValue, final OCommonMetadata metadata,
-                                                 final OStateData data, final List<String> comment) {
+                                                 final OStateData data, final List<String> comment,
+                                                 final int lineNumber, final String fileName, final String line) {
         switch (keyValue.getKeyword()) {
 
             case EPOCH:
                 data.setEpochComment(comment);
                 comment.clear();
-                data.setEpoch(parseDate(keyValue.getValue(), metadata.getTimeSystem()));
+                data.setEpoch(parseDate(keyValue.getValue(), metadata.getTimeSystem(),
+                                        lineNumber, fileName, line));
                 return true;
 
             case SEMI_MAJOR_AXIS:
