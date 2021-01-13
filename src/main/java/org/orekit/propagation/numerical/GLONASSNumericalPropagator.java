@@ -598,7 +598,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
      * @param state spacecraft state after integration
      * @return the PV coordinates in the ECEF PZ-90.
      */
-    public PVCoordinates getPVInPZ90(final SpacecraftState state) {
+    private PVCoordinates getPVInPZ90(final SpacecraftState state) {
 
         // Compute time difference between start date and end date
         final double dt = state.getDate().durationFrom(initDate.getDate());
