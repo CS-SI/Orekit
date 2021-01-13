@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well1024a;
 import org.junit.Assert;
@@ -268,7 +269,7 @@ public class GenericTimeStampedCacheTest {
             cache.getNeighbors(central);
             Assert.fail("Expected Exception");
         } catch (TimeStampedCacheException e) {
-            Assert.assertThat(e.getMessage(),
+            MatcherAssert.assertThat(e.getMessage(),
                     CoreMatchers.containsString(central.toString()));
         }
     }
@@ -289,7 +290,7 @@ public class GenericTimeStampedCacheTest {
             cache.getNeighbors(central);
             Assert.fail("Expected Exception");
         } catch (TimeStampedCacheException e) {
-            Assert.assertThat(e.getMessage(),
+            MatcherAssert.assertThat(e.getMessage(),
                     CoreMatchers.containsString(central.toString()));
         }
     }

@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2020 CS GROUP
+<!--- Copyright 2002-2021 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -91,7 +91,7 @@
         * ocean tides, with or without ocean pole tide
         * Earth's albedo and infrared
         * empirical accelerations to account for the unmodeled forces
-        * general relativity
+        * general relativity (including Lense-Thirring and De Sitter corrections)
         * multiple maneuvers
         * state of the art ODE integrators (adaptive stepsize with error control,
           continuous output, switching functions, G-stop, step normalization ...)
