@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -65,7 +66,7 @@ public class ZipJarCrawlerTest {
         }
         public void loadData(InputStream input, String name) {
             ++count;
-            Assert.assertThat(name, CoreMatchers.containsString("!/"));
+            MatcherAssert.assertThat(name, CoreMatchers.containsString("!/"));
         }
         public int getCount() {
             return count;

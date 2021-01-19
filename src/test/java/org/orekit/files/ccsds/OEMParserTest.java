@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.Array2DRowRealMatrix;
@@ -246,7 +247,7 @@ public class OEMParserTest {
         CelestialBody mars = CelestialBodyFactory.getMars();
         TimeStampedPVCoordinates marsPV = mars.getPVCoordinates(actualStart, eme2000);
         TimeStampedPVCoordinates marsPV_in_marscentered_frame = mars.getPVCoordinates(actualStart, actualFrame);
-        Assert.assertThat(
+        MatcherAssert.assertThat(
         		marsPV_in_marscentered_frame,
                 OrekitMatchers.pvCloseTo(PVCoordinates.ZERO, 1e-3));
         Assert.assertEquals(actualTransform.getTranslation(), marsPV.getPosition().negate());
@@ -283,10 +284,10 @@ public class OEMParserTest {
 
         final int ulps = 12;
         for (TimeStampedPVCoordinates coord : dataLines) {
-            Assert.assertThat(
+            MatcherAssert.assertThat(
                     propagator.getPVCoordinates(coord.getDate(), actualFrame),
                     OrekitMatchers.pvCloseTo(coord, ulps));
-            Assert.assertThat(
+            MatcherAssert.assertThat(
                     propagator.propagate(coord.getDate()).getPVCoordinates(),
                     OrekitMatchers.pvCloseTo(coord, ulps));
         }
