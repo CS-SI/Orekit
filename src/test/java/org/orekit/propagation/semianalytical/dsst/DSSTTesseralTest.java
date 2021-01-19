@@ -17,6 +17,8 @@
 package org.orekit.propagation.semianalytical.dsst;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -275,6 +277,24 @@ public class DSSTTesseralTest {
         } catch (OrekitException oe) {
             Assert.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
         }
+    }
+
+    @Test
+    public void testGetMaxEccPow()
+        throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        final UnnormalizedSphericalHarmonicsProvider provider =
+                        GravityFieldFactory.getUnnormalizedProvider(4, 4);;
+        final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
+        final DSSTTesseral force = new DSSTTesseral(earthFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
+        Method getMaxEccPow = DSSTTesseral.class.getDeclaredMethod("getMaxEccPow", Double.TYPE);
+        getMaxEccPow.setAccessible(true);
+        Assert.assertEquals(3,  getMaxEccPow.invoke(force, 0.0));
+        Assert.assertEquals(4,  getMaxEccPow.invoke(force, 0.01));
+        Assert.assertEquals(7,  getMaxEccPow.invoke(force, 0.08));
+        Assert.assertEquals(10, getMaxEccPow.invoke(force, 0.15));
+        Assert.assertEquals(12, getMaxEccPow.invoke(force, 0.25));
+        Assert.assertEquals(15, getMaxEccPow.invoke(force, 0.35));
+        Assert.assertEquals(20, getMaxEccPow.invoke(force, 1.0));
     }
 
     @Before
