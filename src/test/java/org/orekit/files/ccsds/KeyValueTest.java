@@ -29,16 +29,16 @@ public class KeyValueTest {
     public void testUppercase() {
         for (final Keyword keyword : Keyword.values()) {
             if (keyword.toString().toUpperCase().equals(keyword.toString())) {
-                KeyValue kv = new KeyValue("  " + keyword + " = " + "aaa", 12, "dummy");
-                Assert.assertEquals(keyword, kv.getKeyword());
-                Assert.assertEquals(keyword.toString(), kv.getKey());
+                KeyValue entry = new KeyValue("  " + keyword + " = " + "aaa", 12, "dummy");
+                Assert.assertEquals(keyword, entry.getKeyword());
+                Assert.assertEquals(keyword.toString(), entry.getKey());
                 if (keyword == Keyword.COMMENT) {
-                    Assert.assertEquals("aaa", kv.getValue());
+                    Assert.assertEquals("aaa", entry.getValue());
                 } else {
-                    Assert.assertEquals("AAA", kv.getValue());
+                    Assert.assertEquals("AAA", entry.getValue());
                 }
                 try {
-                    kv.getDoubleValue();
+                    entry.getDoubleValue();
                     Assert.fail("an exception should have been thrown");
                 } catch (OrekitException oe) {
                     Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
@@ -51,41 +51,41 @@ public class KeyValueTest {
 
     @Test
     public void testUserDefined() {
-        KeyValue kv = new KeyValue("USER_DEFINED_TEST_KEY = Orekit", 3, "dummy");
-        Assert.assertEquals(Keyword.USER_DEFINED_X, kv.getKeyword());
-        Assert.assertEquals("USER_DEFINED_TEST_KEY", kv.getKey());
-        Assert.assertEquals("OREKIT", kv.getValue());
+        KeyValue entry = new KeyValue("USER_DEFINED_TEST_KEY = Orekit", 3, "dummy");
+        Assert.assertEquals(Keyword.USER_DEFINED_X, entry.getKeyword());
+        Assert.assertEquals("USER_DEFINED_TEST_KEY", entry.getKey());
+        Assert.assertEquals("OREKIT", entry.getValue());
     }
 
     @Test
     public void testUnknownKey() {
-        KeyValue kv = new KeyValue("INEXISTENT_KEY = 1.0e-5", 5, "dummy");
-        Assert.assertNull(kv.getKeyword());
-        Assert.assertEquals("INEXISTENT_KEY", kv.getKey());
-        Assert.assertEquals("1.0E-5", kv.getValue());
-        Assert.assertEquals(1.0e-5, kv.getDoubleValue(), 1.0e-15);
+        KeyValue entry = new KeyValue("INEXISTENT_KEY = 1.0e-5", 5, "dummy");
+        Assert.assertNull(entry.getKeyword());
+        Assert.assertEquals("INEXISTENT_KEY", entry.getKey());
+        Assert.assertEquals("1.0E-5", entry.getValue());
+        Assert.assertEquals(1.0e-5, entry.getDoubleValue(), 1.0e-15);
     }
 
     @Test
     public void testBadSyntax() {
-        KeyValue kv = new KeyValue("there are no equal sign in this line", 17, "dummy");
-        Assert.assertNull(kv.getKeyword());
-        Assert.assertEquals("", kv.getKey());
-        Assert.assertEquals("", kv.getValue());
+        KeyValue entry = new KeyValue("there are no equal sign in this line", 17, "dummy");
+        Assert.assertNull(entry.getKeyword());
+        Assert.assertEquals("", entry.getKey());
+        Assert.assertEquals("", entry.getValue());
     }
 
     @Test
     public void testUnderscoreEqualsBlank() {
-        KeyValue kv = new KeyValue("CENTER_NAME = EARTH_BARYCENTER", 1, "dummy");
-        Assert.assertEquals(Keyword.CENTER_NAME, kv.getKeyword());
-        Assert.assertEquals("EARTH BARYCENTER", kv.getValue());
+        KeyValue entry = new KeyValue("CENTER_NAME = EARTH_BARYCENTER", 1, "dummy");
+        Assert.assertEquals(Keyword.CENTER_NAME, entry.getKeyword());
+        Assert.assertEquals("EARTH BARYCENTER", entry.getValue());
     }
 
     @Test
     public void testCoalescedBlanks() {
-        KeyValue kv = new KeyValue("CENTER_NAME = EARTH    ___     BARYCENTER    ", 1, "dummy");
-        Assert.assertEquals(Keyword.CENTER_NAME, kv.getKeyword());
-        Assert.assertEquals("EARTH BARYCENTER", kv.getValue());
+        KeyValue entry = new KeyValue("CENTER_NAME = EARTH    ___     BARYCENTER    ", 1, "dummy");
+        Assert.assertEquals(Keyword.CENTER_NAME, entry.getKeyword());
+        Assert.assertEquals("EARTH BARYCENTER", entry.getValue());
     }
 
 }

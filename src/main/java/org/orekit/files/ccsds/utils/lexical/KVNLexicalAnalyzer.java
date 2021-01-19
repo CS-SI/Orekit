@@ -17,6 +17,7 @@
 package org.orekit.files.ccsds.utils.lexical;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -26,9 +27,8 @@ import java.util.regex.Pattern;
 
 import org.hipparchus.exception.DummyLocalizable;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NDMFile;
-import org.orekit.files.ccsds.ndm.NDMHeader;
-import org.orekit.files.ccsds.ndm.NDMSegment;
 
 /** Lexical analyzer for Key-Value Notation CCSDS messages.
  * @author Luc Maisonobe
@@ -36,15 +36,66 @@ import org.orekit.files.ccsds.ndm.NDMSegment;
  */
 public class KVNLexicalAnalyzer implements LexicalAnalyzer {
 
-    /** Regular expression for splitting lines. */
-    private static final Pattern PATTERN =
-            Pattern.compile("\\p{Space}*([A-Z][A-Z_0-9]*)\\p{Space}*=?\\p{Space}*(.*?)\\p{Space}*(?:\\[.*\\])?\\p{Space}*");
+    /** Regular expression matching blanks at start of line. */
+    private static final String LINE_START          = "^\\p{Blank}*";
+
+    /** Regular expression matching the special COMMENT key that must be stored in the matcher. */
+    private static final String COMMENT_KEY         = "(COMMENT)\\p{Blank}*";
+
+    /** Regular expression matching a non-comment key that must be stored in the matcher. */
+    private static final String NON_COMMENT_KEY     = "([A-Z][A-Z_0-9]*)\\p{Blank}*=\\p{Blank}*";
+
+    /** Regular expression matching a no-value key starting a block that must be stored in the matcher. */
+    private static final String START_KEY           = "([A-Z][A-Z_0-9]*)_START";
+
+    /** Regular expression matching a no-value key ending a block that must be stored in the matcher. */
+    private static final String STOP_KEY            = "([A-Z][A-Z_0-9]*)_STOP";
+
+    /** Regular expression matching a value that must be stored in the matcher. */
+    private static final String VALUE               = "(\\p{Graph}.*?)";
+
+    /** Regular expression matching units that must be stored in the matcher. */
+    private static final String UNITS               = "(?:\\p{Blank}+\\[([-*/A-Za-z0-9]*)\\])?";
+
+    /** Regular expression matching blanks at end of line. */
+    private static final String LINE_END            = "\\p{Blank}*$";
+
+    /** Regular expression matching comment entry. */
+    private static final Pattern COMMENT_ENTRY      = Pattern.compile(LINE_START + COMMENT_KEY + VALUE + LINE_END);
+
+    /** Regular expression matching non-comment entry with optional units. */
+    private static final Pattern NON_COMMENT_ENTRY  = Pattern.compile(LINE_START + NON_COMMENT_KEY + VALUE + UNITS + LINE_END);
+
+    /** Regular expression matching no-value entry starting a block. */
+    private static final Pattern START_ENTRY        = Pattern.compile(LINE_START + START_KEY + LINE_END);
+
+    /** Regular expression matching no-value entry ending a block. */
+    private static final Pattern STOP_ENTRY         = Pattern.compile(LINE_START + STOP_KEY + LINE_END);
 
     /** Stream containing message. */
     private final InputStream stream;
 
     /** Name of the file containing the message (for error messages). */
     private final String fileName;
+
+    /** Simple constructor.
+     * @param fileName name of the file containing the message (for error messages)
+     */
+    public KVNLexicalAnalyzer(final String fileName) {
+        try {
+            this.stream   = new FileInputStream(fileName);
+            this.fileName = fileName;
+        } catch (IOException e) {
+            throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, fileName);
+        }
+    }
+
+    /** Simple constructor.
+     * @param stream stream containing message
+     */
+    public KVNLexicalAnalyzer(final InputStream stream) {
+        this(stream, "<unknown>");
+    }
 
     /** Simple constructor.
      * @param stream stream containing message
@@ -57,8 +108,9 @@ public class KVNLexicalAnalyzer implements LexicalAnalyzer {
 
     /** {@inheritDoc} */
     @Override
-    public <H extends NDMHeader, S extends NDMSegment<?, ?>>
-        NDMFile<H, S> parse(final MessageParser<H, S> messageParser) {
+    public <T extends NDMFile<?, ?>, P extends MessageParser<T, ?>>
+        T accept(final MessageParser<T, P> messageParser) {
+        messageParser.reset();
         try (InputStreamReader isr = new InputStreamReader(stream, StandardCharsets.UTF_8);
              BufferedReader reader = new BufferedReader(isr)) {
 
@@ -69,12 +121,42 @@ public class KVNLexicalAnalyzer implements LexicalAnalyzer {
                     continue;
                 }
 
-                final Matcher matcher = PATTERN.matcher(line);
-                if (matcher.matches()) {
-                    final String key   = matcher.group(1);
-                    final String value = matcher.group(2);
-                    messageParser.start(key);
-                    messageParser.entry(new KVNEntry(key, value, line, lineNumber, fileName));
+                final Matcher nonComment = NON_COMMENT_ENTRY.matcher(line);
+                if (nonComment.matches()) {
+                    // regular key=value line
+                    messageParser.process(new ParseEvent(EventType.ENTRY,
+                                                         nonComment.group(1), nonComment.group(2),
+                                                         nonComment.groupCount() > 2 ? nonComment.group(3) : null,
+                                                         lineNumber, fileName));
+                } else {
+                    final Matcher comment = COMMENT_ENTRY.matcher(line);
+                    if (comment.matches()) {
+                        // comment line
+                        messageParser.process(new ParseEvent(EventType.ENTRY,
+                                                             comment.group(1), comment.group(2), null,
+                                                             lineNumber, fileName));
+                    } else {
+                        final Matcher start = START_ENTRY.matcher(line);
+                        if (start.matches()) {
+                            // block start
+                            messageParser.process(new ParseEvent(EventType.START,
+                                                                 start.group(1), null, null,
+                                                                 lineNumber, fileName));
+                        } else {
+                            final Matcher stop = STOP_ENTRY.matcher(line);
+                            if (stop.matches()) {
+                                // block end
+                                messageParser.process(new ParseEvent(EventType.END,
+                                                                     stop.group(1), null, null,
+                                                                     lineNumber, fileName));
+                            } else {
+                                // raw data line
+                                messageParser.process(new ParseEvent(EventType.RAW_LINE,
+                                                                     null, line, null,
+                                                                     lineNumber, fileName));
+                            }
+                        }
+                    }
                 }
 
             }

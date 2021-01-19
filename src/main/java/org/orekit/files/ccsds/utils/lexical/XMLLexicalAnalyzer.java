@@ -16,6 +16,7 @@
  */
 package org.orekit.files.ccsds.utils.lexical;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -25,9 +26,8 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.hipparchus.exception.DummyLocalizable;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NDMFile;
-import org.orekit.files.ccsds.ndm.NDMHeader;
-import org.orekit.files.ccsds.ndm.NDMSegment;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
@@ -41,11 +41,39 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class XMLLexicalAnalyzer implements LexicalAnalyzer {
 
+    /** Attribute name for id. */
+    private static final String ID = "id";
+
+    /** Attribute name for version. */
+    private static final String VERSION = "version";
+
+    /** Attribute name for units. */
+    private static final String UNITS = "units";
+
     /** Stream containing message. */
     private final InputStream stream;
 
     /** Name of the file containing the message (for error messages). */
     private final String fileName;
+
+    /** Simple constructor.
+     * @param fileName name of the file containing the message (for error messages)
+     */
+    public XMLLexicalAnalyzer(final String fileName) {
+        try {
+            this.stream   = new FileInputStream(fileName);
+            this.fileName = fileName;
+        } catch (IOException e) {
+            throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, fileName);
+        }
+    }
+
+    /** Simple constructor.
+     * @param stream stream containing message
+     */
+    public XMLLexicalAnalyzer(final InputStream stream) {
+        this(stream, "<unknown>");
+    }
 
     /** Simple constructor.
      * @param stream stream containing message
@@ -58,11 +86,11 @@ public class XMLLexicalAnalyzer implements LexicalAnalyzer {
 
     /** {@inheritDoc} */
     @Override
-    public <H extends NDMHeader, S extends NDMSegment<?, ?>>
-        NDMFile<H, S> parse(final MessageParser<H, S> messageParser) {
+    public <T extends NDMFile<?, ?>, P extends MessageParser<T, ?>>
+        T accept(final MessageParser<T, P> messageParser) {
         try {
             // Create the handler
-            final XMLHandler<H, S> handler = new XMLHandler<>(messageParser);
+            final DefaultHandler handler = new XMLHandler(messageParser);
 
             // Create the XML SAX parser factory
             final SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -71,6 +99,7 @@ public class XMLLexicalAnalyzer implements LexicalAnalyzer {
             final SAXParser saxParser = factory.newSAXParser();
 
             // Read the xml file
+            messageParser.reset();
             saxParser.parse(stream, handler);
 
             // Get the content of the file
@@ -91,13 +120,14 @@ public class XMLLexicalAnalyzer implements LexicalAnalyzer {
     }
 
     /** Handler for parsing XML file formats.
-     * @param <H> type of the header
-     * @param <S> type of the segments
      */
-    private class XMLHandler<H extends NDMHeader, S extends NDMSegment<?, ?>> extends DefaultHandler {
+    private class XMLHandler extends DefaultHandler {
 
         /** CCSDS Message parser to use. */
-        private final MessageParser<H, S> messageParser;
+        private final MessageParser<?, ?> messageParser;
+
+        /** Flag for starting stage. */
+        private boolean starting;
 
         /** Locator used to get current line number. */
         private Locator locator;
@@ -105,11 +135,21 @@ public class XMLLexicalAnalyzer implements LexicalAnalyzer {
         /** Name of the current element. */
         private String currentElementName;
 
+        /** Line number of the current entry. */
+        private int currentLineNumber;
+
+        /** Content of the current entry. */
+        private String currentContent;
+
+        /** Units of the current element, if any. */
+        private String currentUnits;
+
         /** Simple constructor.
          * @param messageParser CCSDS Message parser to use
          */
-        XMLHandler(final MessageParser<H, S> messageParser) {
+        XMLHandler(final MessageParser<?, ?> messageParser) {
             this.messageParser = messageParser;
+            this.starting      = true;
         }
 
         /** {@inheritDoc} */
@@ -121,26 +161,72 @@ public class XMLLexicalAnalyzer implements LexicalAnalyzer {
         /** {@inheritDoc} */
         @Override
         public void characters(final char[] ch, final int start, final int length) throws SAXException {
-            // currentElementName is set to null in function endElement every time an end tag is parsed.
-            // Thus only the characters between a start and an end tags are parsed.
             if (currentElementName != null) {
-                final String content = new String(ch, start, length);
-                messageParser.entry(new XMLEntry(currentElementName, content, locator, fileName));
+                // we are only interested in leaf elements between one start and one end tag
+                // when nested elements occur, this method is called with the spurious whitespace
+                // characters (space, tab, end of line) that occur between two successive start tags.
+                // We don't want these characters, so we delay the processing of the content until
+                // the closing tag is found, thus allowing to drop them by resetting content
+                // each time a start tag is found
+                currentLineNumber = locator.getLineNumber();
+                currentContent    = new String(ch, start, length);
             }
         }
 
         /** {@inheritDoc} */
         @Override
         public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) {
+
+            if (starting) {
+                // this is the first element in the file, it must contains the format file version
+                if (messageParser.getFormatVersionKey().equals(attributes.getValue(ID))) {
+                    // generate a parse event for the file format version
+                    messageParser.process(new ParseEvent(EventType.ENTRY,
+                                                         messageParser.getFormatVersionKey(),
+                                                         attributes.getValue(VERSION),
+                                                         null,
+                                                         locator.getLineNumber(), fileName));
+                    starting = false;
+                } else {
+                    throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, fileName);
+                }
+            }
+
+            // process start tag
+            messageParser.process(new ParseEvent(EventType.START,
+                                                 qName, null, null,
+                                                 locator.getLineNumber(), fileName));
+
             currentElementName = qName;
-            messageParser.start(currentElementName);
+            currentUnits       = attributes.getValue(UNITS);
+            currentLineNumber  = -1;
+            currentContent     = null;
+
         }
 
         /** {@inheritDoc} */
         @Override
         public void endElement(final String uri, final String localName, final String qName) {
+
+            if (currentContent != null) {
+                // we have found in succession a start tag, some content, and an end tag
+                // we are sure we have found a leaf element, so we can now process its content
+                // which was delayed until now
+                messageParser.process(new ParseEvent(EventType.ENTRY,
+                                                     currentElementName, currentContent, currentUnits,
+                                                     currentLineNumber, fileName));
+            }
+
+            // process end tag
+            messageParser.process(new ParseEvent(EventType.END,
+                                                 qName, null, null,
+                                                 locator.getLineNumber(), fileName));
+
             currentElementName = null;
-            messageParser.end(currentElementName);
+            currentUnits       = null;
+            currentLineNumber  = -1;
+            currentContent     = null;
+
         }
 
         /** {@inheritDoc} */

@@ -16,20 +16,31 @@
  */
 package org.orekit.files.ccsds.utils.lexical;
 
-import org.orekit.files.ccsds.ndm.NDMFile;
-
-/** Interface for CCSDS messages lexical analysis.
+/** Enumerate for events occurring during CCSDS file parsing.
+ * <p>
+ * Parse events correspond to:
+ * <ul>
+ *   <li>bloc start</li>
+ *   <li>entry content</li>
+ *   <li>bloc end</li>
+ * </ul>
+ * </p>
+ * @see ParrseEvent
  * @author Luc Maisonobe
  * @since 11.0
  */
-public interface LexicalAnalyzer {
+public enum EventType {
 
-    /** Parse a CCSDS Message file.
-     * @param messageParser CCSDS Message parser to use
-     * @param <T> type of the file
-     * @param <P> type of the parser
-     * @return parsed fileO
-     */
-    <T extends NDMFile<?, ?>, P extends MessageParser<T, ?>> T accept(MessageParser<T, P> messageParser);
+    /** Block or entry start event. */
+    START,
+
+    /** Entry content event. */
+    ENTRY,
+
+    /** Block or entry end event. */
+    END,
+
+    /** Raw line event. */
+    RAW_LINE;
 
 }

@@ -16,40 +16,28 @@
  */
 package org.orekit.files.ccsds.utils.lexical;
 
+import java.util.Deque;
+
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.xml.sax.Locator;
 
-/** Container for a simple entry in a KVN (Key-Value Notation) file.
+/**
+ * Special {@link ParsingState} used at end of message, to generate an error if spurious data is found.
+ *
  * @author Luc Maisonobe
  * @since 11.0
  */
-class XMLEntry extends Entry {
+public class EndOfMessageState implements ParsingState {
 
-    /** Number of the line from which pair is extracted. */
-    private final int lineNumber;
-
-    /** Name of the file. */
-    private final String fileName;
-
-    /** Simple constructor.
-     * @param name name of the entry
-     * @param content content of the entry
-     * @param locator SAX event locator
-     * @param fileName name of the file
+    /** {@inheritDoc}
+     * <p>
+     * This method always generate an error, as no data is expected in this state.
+     * </p>
      */
-    XMLEntry(final String name, final String content,
-             final Locator locator, final String fileName) {
-        super(name, content);
-        this.lineNumber = locator.getLineNumber();
-        this.fileName   = fileName;
-    }
-
-    /** {@inheritDoc} */
     @Override
-    protected OrekitException generateException() {
-        return new OrekitException(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE,
-                                   getName(), lineNumber, fileName);
+    public ParsingState parseEvent(final ParseEvent event, final Deque<ParseEvent> next) {
+        throw new OrekitException(OrekitMessages.UNEXPECTED_DATA_AT_LINE_IN_FILE,
+                                  event.getLineNumber(), event.getFileName());
     }
 
 }
