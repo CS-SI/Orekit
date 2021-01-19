@@ -92,7 +92,13 @@ public abstract class AbstractDualFrequencyCombination implements MeasurementCom
         }
 
         // Combined value
-        final double combinedValue = getCombinedValue(od1.getValue(), freq1, od2.getValue(), freq2);
+        final double combinedValue;
+        if (obsType1.getMeasurementType() == MeasurementType.CARRIER_PHASE) {
+             combinedValue = getCombinedValue(od1.getValue()*(Constants.SPEED_OF_LIGHT/(obsType1.getFrequency(system).getMHzFrequency()*1e6)), freq1, od2.getValue()*(Constants.SPEED_OF_LIGHT/(obsType2.getFrequency(system).getMHzFrequency()*1e6)), freq2);
+
+        }else {
+             combinedValue = getCombinedValue(od1.getValue(), freq1, od2.getValue(), freq2);
+        }
 
         // Combined frequency
         final double combinedFrequency = getCombinedFrequency(freq1, freq2);
