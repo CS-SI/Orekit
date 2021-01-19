@@ -163,11 +163,12 @@ public class OCMMetadata extends ODMMetadata {
 
     /** Create a new meta-data.
      * @param conventions IERS conventions to use
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext data context to use
      */
-    OCMMetadata(final IERSConventions conventions, final DataContext dataContext) {
+    OCMMetadata(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext) {
 
-        super(conventions, dataContext);
+        super(conventions, simpleEOP, dataContext);
 
         // set up the few fields that have default values as per CCSDS standard
         setTimeSystem(CcsdsTimeScale.UTC);

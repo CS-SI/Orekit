@@ -79,10 +79,11 @@ public class AEMMetadata extends ADMMetadata {
 
     /** Simple constructor.
      * @param conventions IERS conventions to use
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext data context to use
      */
-    public AEMMetadata(final IERSConventions conventions, final DataContext dataContext) {
-        super(conventions, dataContext);
+    public AEMMetadata(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext) {
+        super(conventions, simpleEOP, dataContext);
     }
 
     /**

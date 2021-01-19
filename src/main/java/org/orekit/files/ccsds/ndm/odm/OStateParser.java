@@ -23,6 +23,7 @@ import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.Keyword;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.KeyValue;
+import org.orekit.files.ccsds.utils.lexical.ParsingState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -37,13 +38,15 @@ public abstract class OStateParser<T extends ODMFile<?>, P extends ODMParser<T, 
     /** Complete constructor.
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param dataContext used to retrieve frames and time scales.
+     * @param dataContext used to retrieve frames and time scales
+     * @param initialState initial parsing state
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @param mu gravitational coefficient
      */
-    protected OStateParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
+    protected OStateParser(final IERSConventions conventions, final boolean simpleEOP,
+                           final DataContext dataContext, final ParsingState initialState,
                            final AbsoluteDate missionReferenceDate, final double mu) {
-        super(conventions, simpleEOP, dataContext, missionReferenceDate, mu);
+        super(conventions, simpleEOP, dataContext, initialState, missionReferenceDate, mu);
     }
 
     /** Parse a general state data key = value entry.

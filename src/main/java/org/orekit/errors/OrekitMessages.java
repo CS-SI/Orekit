@@ -74,6 +74,7 @@ public enum OrekitMessages implements Localizable {
     NOT_A_SUPPORTED_IERS_DATA_FILE("file {0} is not a supported IERS data file"),
     INCONSISTENT_DATES_IN_IERS_FILE("inconsistent dates in IERS file {0}: {1}-{2}-{3} and MJD {4}"),
     UNEXPECTED_DATA_AFTER_LINE_IN_FILE("unexpected data after line {0} in file {1}: {2}"),
+    UNEXPECTED_DATA_AT_LINE_IN_FILE("unexpected data at line {0} in file {1}"),
     NON_CHRONOLOGICAL_DATES_IN_FILE("non-chronological dates in file {0}, line {1}"),
     NO_IERS_UTC_TAI_HISTORY_DATA_LOADED("no IERS UTC-TAI history data loaded"),
     NO_ENTRIES_IN_IERS_UTC_TAI_HISTORY_FILE("no entries found in IERS UTC-TAI history file {0}"),
@@ -168,14 +169,8 @@ public enum OrekitMessages implements Localizable {
             "use of time system {0} in CCSDS files requires an additional ICD and is not implemented in Orekit"),
     CCSDS_NO_CORRESPONDING_TIME_SCALE("the CCSDS time system {0} has no corresponding Orekit TimeScale."),
     CCSDS_TDM_INCONSISTENT_TIME_SYSTEMS("Inconsistent time systems in the observations blocks: {0} ≠ {1}"),
-    CCSDS_TDM_INCONSISTENT_DATA_LINE("Inconsistent data line in TDM file at line {0} of file {1}.\n" +
-            "A TDM data line should be as follows \"keyword = epoch value\".\n" + "Whereas read data line is: {2}"),
-    CCSDS_TDM_XML_INCONSISTENT_DATA_BLOCK("Inconsistent XML observation block at line {0} of TDM file {1}.\n" +
-            "A TDM observation block should be as follows\n\t<observation>\n\t\t<EPOCH>epoch</EPOCH>\n" +
-            "\t\t<KEYWORD>value</KEYWORD>\n\t</observation>"),
     CCSDS_TDM_KEYWORD_NOT_FOUND("No CCSDS TDM keyword was found at line {0} of file {1}:\n{2}"),
-    CCSDS_TIME_SYSTEM_NOT_READ_YET("Time system should have already been set before line {0} of file {1}:\n{2}"),
-    CCSDS_TDM_UNKNOWN_FORMAT("TDM file {0} format is unknown. Please specify a file format: KEYVALUE or XML"),
+    CCSDS_TIME_SYSTEM_NOT_READ_YET("Time system should have already been set before line {0} of file {1}"),
     CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS("inconsistent time systems in the attitude blocks: {0} ≠ {1}"),
     CCSDS_AEM_NULL_ATTITUDE_TYPE("invalid attitude type {0}"),
     CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED("attitude type {0} in CCSDS AEM files is not implemented in Orekit"),
@@ -239,7 +234,8 @@ public enum OrekitMessages implements Localizable {
     UNKNOWN_RINEX_FREQUENCY("unknown RINEX frequency {0} in file {1}, line {2}"),
     MISMATCHED_FREQUENCIES("mismatched frequencies in file {0}, line {1} (expected {2}, got {3})"),
     WRONG_COLUMNS_NUMBER("wrong number of columns in file {0}, line {1} (expected {2} columns, got {3} columns)"),
-    UNSUPPORTED_FILE_FORMAT("unsupported format for file {0}"), INCOMPLETE_HEADER("incomplete header in file {0}"),
+    UNSUPPORTED_FILE_FORMAT("unsupported format for file {0}"),
+    INCOMPLETE_HEADER("incomplete header in file {0}"),
     INCONSISTENT_NUMBER_OF_SATS(
             "inconsistent number of satellites in line {0}, file {1}: observation with {2} satellites and number of max satellites is {3}"),
     INCONSISTENT_SATELLITE_SYSTEM(

@@ -16,7 +16,6 @@
  */
 package org.orekit.files.ccsds.ndm.odm;
 
-import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -26,6 +25,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.Keyword;
 import org.orekit.files.ccsds.ndm.NDMParser;
 import org.orekit.files.ccsds.utils.KeyValue;
+import org.orekit.files.ccsds.utils.lexical.ParsingState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -56,22 +56,16 @@ public abstract class ODMParser<T extends ODMFile<?>, P extends ODMParser<T, ?>>
     /** Complete constructor.
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param dataContext used to retrieve frames and time scales.
+     * @param dataContext used to retrieve frames and time scales
+     * @param initialState initial parsing state
      * @since 10.1
      */
     protected ODMParser(final IERSConventions conventions, final boolean simpleEOP,
-                        final DataContext dataContext) {
-        super(conventions, simpleEOP, dataContext);
+                        final DataContext dataContext, final ParsingState initialState) {
+        super(conventions, simpleEOP, dataContext, initialState);
         this.expected    = new HashSet<>();
     }
 
-
-    /** Parse a CCSDS Orbit Data Message.
-     * @param stream stream containing message
-     * @param fileName name of the file containing the message (for error messages)
-     * @return parsed orbit
-     */
-    public abstract T parse(InputStream stream, String fileName);
 
     /** Parse an entry from the header.
      * @param keyValue key = value pair

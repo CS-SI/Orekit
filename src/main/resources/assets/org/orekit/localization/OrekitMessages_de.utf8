@@ -76,6 +76,9 @@ INCONSISTENT_DATES_IN_IERS_FILE = inkonsistente Datumsangaben in IERS Datei {0}:
 # unexpected data after line {0} in file {1}: {2}
 UNEXPECTED_DATA_AFTER_LINE_IN_FILE = unerwartete Daten nach Zeile {0} in der Datei {1}: {2}
 
+# unexpected data at line {0} in file {1}
+UNEXPECTED_DATA_AT_LINE_IN_FILE = <MISSING TRANSLATION>
+
 # non-chronological dates in file {0}, line {1}
 NON_CHRONOLOGICAL_DATES_IN_FILE = nicht chronologische Daten, abgelegt unter Datei {0}, Zeile {1}
 
@@ -334,20 +337,11 @@ CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = inkonsistente Zeitreferenz im Ephemeris-Bl
 # Inconsistent time systems in the observations blocks: {0} ≠ {1}
 CCSDS_TDM_INCONSISTENT_TIME_SYSTEMS = Inkonsistente Zeitsysteme in den Beobachtungsblöcken: {0} ≠ {1}
 
-# Inconsistent data line in TDM file at line {0} of file {1}.\nA TDM data line should be as follows \"keyword = epoch value\".\nWhereas read data line is: {2}
-CCSDS_TDM_INCONSISTENT_DATA_LINE = Inkonsistente Daten in der TDM Datei bei Zeile {0} in Datei {1}.\nEine TDM Zeile sollte wie folgt aussehen: \"keyword = epoch value\".\nMomentane Zeile: {2}
-
 # No CCSDS TDM keyword was found at line {0} of file {1}:\n{2}
 CCSDS_TDM_KEYWORD_NOT_FOUND = Kein CCSDS TDM Schlagwort bei Zeile {0} in Datei {1} gefunden:\n{2}
 
-# Time system should have already been set before line {0} of file {1}:\n{2}
+# Time system should have already been set before line {0} of file {1}
 CCSDS_TIME_SYSTEM_NOT_READ_YET = <MISSING TRANSLATION>
-
-# Inconsistent XML observation block at line {0} of TDM file {1}.\nA TDM observation block should be as follows\n\t<observation>\n\t\t<EPOCH>epoch</EPOCH>\n\t\t<KEYWORD>value</KEYWORD>\n\t</observation>
-CCSDS_TDM_XML_INCONSISTENT_DATA_BLOCK = Inkonsistente XML Beobachtungsblock bei Zeile {0} in TDM Datum {1}.\nEin TDM Beobachtungsblock sollte wie folgt aussehen:\n\t<observation>\n\t\t<EPOCH>epoch</EPOCH>\n\t\t<KEYWORD>value</KEYWORD>\n\t</observation>
-
-# TDM file {0} format is unknown. Please specify a file format: KEYVALUE or XML
-CCSDS_TDM_UNKNOWN_FORMAT = Das Format der TDM Datei {0} ist unbekannt. Bitte geben Sie ein Format an: KEYVALUE oder XML
 
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE = Name "{0}" wird bereits für einen anderen Zustand verwendet

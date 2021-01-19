@@ -36,6 +36,7 @@ import org.orekit.files.ccsds.ndm.odm.OCommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.OStateParser;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.KeyValue;
+import org.orekit.files.ccsds.utils.lexical.ParsingState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -129,19 +130,21 @@ public class OPMParser extends OStateParser<OPMFile, OPMParser> {
      * @since 10.1
      */
     public OPMParser(final DataContext dataContext) {
-        this(null, true, dataContext, AbsoluteDate.FUTURE_INFINITY, Double.NaN);
+        this(null, true, dataContext, null, AbsoluteDate.FUTURE_INFINITY, Double.NaN);
     }
 
     /** Complete constructor.
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
+     * @param initialState initial parsing state
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @param mu gravitational coefficient
      */
-    private OPMParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
+    private OPMParser(final IERSConventions conventions, final boolean simpleEOP,
+                      final DataContext dataContext, final ParsingState initialState,
                       final AbsoluteDate missionReferenceDate, final double mu) {
-        super(conventions, simpleEOP, dataContext, missionReferenceDate, mu);
+        super(conventions, simpleEOP, dataContext, initialState, missionReferenceDate, mu);
     }
 
     /** {@inheritDoc} */
@@ -149,14 +152,16 @@ public class OPMParser extends OStateParser<OPMFile, OPMParser> {
     protected OPMParser create(final IERSConventions newConventions,
                                final boolean newSimpleEOP,
                                final DataContext newDataContext,
+                               final ParsingState newInitialState,
                                final AbsoluteDate newMissionReferenceDate,
                                final double newMu) {
-        return new OPMParser(newConventions, newSimpleEOP, newDataContext, newMissionReferenceDate, newMu);
+        return new OPMParser(newConventions, newSimpleEOP, newDataContext, newInitialState,
+                             newMissionReferenceDate, newMu);
     }
 
     /** {@inheritDoc} */
     @Override
-    public OPMFile parse(final InputStream stream, final String fileName) {
+    public OPMFile oldParse(final InputStream stream, final String fileName) {
 
         // declare the mandatory keywords as expected
         for (final Keyword keyword : MANDATORY_KEYWORDS) {
@@ -167,7 +172,7 @@ public class OPMParser extends OStateParser<OPMFile, OPMParser> {
              BufferedReader reader = new BufferedReader(isr)) {
 
             // initialize internal data structures
-            final ParseInfo pi = new ParseInfo(getConventions(), getDataContext());
+            final ParseInfo pi = new ParseInfo(getConventions(), isSimpleEOP(), getDataContext());
             pi.fileName = fileName;
             pi.parsingHeader = true;
 
@@ -176,52 +181,52 @@ public class OPMParser extends OStateParser<OPMFile, OPMParser> {
                 if (pi.line.trim().length() == 0) {
                     continue;
                 }
-                pi.keyValue = new KeyValue(pi.line, pi.lineNumber, pi.fileName);
-                if (pi.keyValue.getKeyword() == null) {
+                pi.entry = new KeyValue(pi.line, pi.lineNumber, pi.fileName);
+                if (pi.entry.getKeyword() == null) {
                     throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD,
                                               pi.lineNumber, pi.fileName, pi.line);
                 }
 
-                declareFound(pi.keyValue.getKeyword());
+                declareFound(pi.entry.getKeyword());
 
-                switch (pi.keyValue.getKeyword()) {
+                switch (pi.entry.getKeyword()) {
 
                     case COMMENT:
                         if (pi.file.getHeader().getCreationDate() == null) {
-                            pi.file.getHeader().addComment(pi.keyValue.getValue());
+                            pi.file.getHeader().addComment(pi.entry.getValue());
                         } else if (pi.metadata.getObjectName() == null) {
-                            pi.metadata.addComment(pi.keyValue.getValue());
+                            pi.metadata.addComment(pi.entry.getValue());
                         } else {
-                            pi.commentTmp.add(pi.keyValue.getValue());
+                            pi.commentTmp.add(pi.entry.getValue());
                         }
                         break;
 
                     case CCSDS_OPM_VERS:
-                        pi.file.getHeader().setFormatVersion(pi.keyValue.getDoubleValue());
+                        pi.file.getHeader().setFormatVersion(pi.entry.getDoubleValue());
                         break;
 
                     case X:
-                        pi.x = pi.keyValue.getDoubleValue() * 1000;
+                        pi.x = pi.entry.getDoubleValue() * 1000;
                         break;
 
                     case Y:
-                        pi.y = pi.keyValue.getDoubleValue() * 1000;
+                        pi.y = pi.entry.getDoubleValue() * 1000;
                         break;
 
                     case Z:
-                        pi.z = pi.keyValue.getDoubleValue() * 1000;
+                        pi.z = pi.entry.getDoubleValue() * 1000;
                         break;
 
                     case X_DOT:
-                        pi.x_dot = pi.keyValue.getDoubleValue() * 1000;
+                        pi.x_dot = pi.entry.getDoubleValue() * 1000;
                         break;
 
                     case Y_DOT:
-                        pi.y_dot = pi.keyValue.getDoubleValue() * 1000;
+                        pi.y_dot = pi.entry.getDoubleValue() * 1000;
                         break;
 
                     case Z_DOT:
-                        pi.z_dot = pi.keyValue.getDoubleValue() * 1000;
+                        pi.z_dot = pi.entry.getDoubleValue() * 1000;
                         break;
 
                     case MAN_EPOCH_IGNITION:
@@ -229,7 +234,7 @@ public class OPMParser extends OStateParser<OPMFile, OPMParser> {
                             pi.data.addManeuver(pi.maneuver);
                         }
                         pi.maneuver = new OPMManeuver();
-                        pi.maneuver.setEpochIgnition(parseDate(pi.keyValue.getValue(), pi.metadata.getTimeSystem(),
+                        pi.maneuver.setEpochIgnition(parseDate(pi.entry.getValue(), pi.metadata.getTimeSystem(),
                                                                pi.lineNumber, pi.fileName, pi.line));
                         if (!pi.commentTmp.isEmpty()) {
                             pi.maneuver.setComments(pi.commentTmp);
@@ -238,15 +243,15 @@ public class OPMParser extends OStateParser<OPMFile, OPMParser> {
                         break;
 
                     case MAN_DURATION:
-                        pi.maneuver.setDuration(pi.keyValue.getDoubleValue());
+                        pi.maneuver.setDuration(pi.entry.getDoubleValue());
                         break;
 
                     case MAN_DELTA_MASS:
-                        pi.maneuver.setDeltaMass(pi.keyValue.getDoubleValue());
+                        pi.maneuver.setDeltaMass(pi.entry.getDoubleValue());
                         break;
 
                     case MAN_REF_FRAME:
-                        final CCSDSFrame manFrame = parseCCSDSFrame(pi.keyValue.getValue());
+                        final CCSDSFrame manFrame = parseCCSDSFrame(pi.entry.getValue());
                         if (manFrame.isLof()) {
                             pi.maneuver.setRefLofType(manFrame.getLofType());
                         } else {
@@ -258,34 +263,34 @@ public class OPMParser extends OStateParser<OPMFile, OPMParser> {
                         break;
 
                     case MAN_DV_1:
-                        pi.maneuver.setdV(new Vector3D(pi.keyValue.getDoubleValue() * 1000,
+                        pi.maneuver.setdV(new Vector3D(pi.entry.getDoubleValue() * 1000,
                                                        pi.maneuver.getDV().getY(),
                                                        pi.maneuver.getDV().getZ()));
                         break;
 
                     case MAN_DV_2:
                         pi.maneuver.setdV(new Vector3D(pi.maneuver.getDV().getX(),
-                                                       pi.keyValue.getDoubleValue() * 1000,
+                                                       pi.entry.getDoubleValue() * 1000,
                                                        pi.maneuver.getDV().getZ()));
                         break;
 
                     case MAN_DV_3:
                         pi.maneuver.setdV(new Vector3D(pi.maneuver.getDV().getX(),
                                                        pi.maneuver.getDV().getY(),
-                                                       pi.keyValue.getDoubleValue() * 1000));
+                                                       pi.entry.getDoubleValue() * 1000));
                         break;
 
                     default:
                         boolean parsed = false;;
                         if (pi.parsingHeader) {
-                            parsed = parseHeaderEntry(pi.keyValue, pi.file);
+                            parsed = parseHeaderEntry(pi.entry, pi.file);
                             if (!parsed) {
                                 pi.parsingHeader   = false;
                                 pi.parsingMetaData = true;
                             }
                         }
                         if (pi.parsingMetaData) {
-                            parsed = parseMetaDataEntry(pi.keyValue, pi.metadata,
+                            parsed = parseMetaDataEntry(pi.entry, pi.metadata,
                                                         pi.lineNumber, pi.fileName, pi.line);
                             if (!parsed) {
                                 pi.parsingMetaData = false;
@@ -293,7 +298,7 @@ public class OPMParser extends OStateParser<OPMFile, OPMParser> {
                             }
                         }
                         if (pi.parsingData) {
-                            parsed = parseGeneralStateDataEntry(pi.keyValue, pi.metadata, pi.data, pi.commentTmp,
+                            parsed = parseGeneralStateDataEntry(pi.entry, pi.metadata, pi.data, pi.commentTmp,
                                                                 pi.lineNumber, pi.fileName, pi.line);
                         }
                         if (!parsed) {
@@ -355,7 +360,7 @@ public class OPMParser extends OStateParser<OPMFile, OPMParser> {
         private String line;
 
         /** Key value of the line being read. */
-        private KeyValue keyValue;
+        private KeyValue entry;
 
         /** Stored comments. */
         private List<String> commentTmp;
@@ -383,13 +388,14 @@ public class OPMParser extends OStateParser<OPMFile, OPMParser> {
 
         /** Create a new {@link ParseInfo} object.
          * @param conventions IERS conventions to use
+         * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
          * @param dataContext data context to use
          */
-        protected ParseInfo(final IERSConventions conventions, final DataContext dataContext) {
+        protected ParseInfo(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext) {
             file            = new OPMFile();
             file.setConventions(conventions);
             file.setDataContext(dataContext);
-            metadata        = new OCommonMetadata(conventions, dataContext);
+            metadata        = new OCommonMetadata(conventions, simpleEOP, dataContext);
             data            = new OPMData();
             parsingHeader   = false;
             parsingMetaData = false;

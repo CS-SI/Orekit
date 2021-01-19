@@ -76,6 +76,9 @@ INCONSISTENT_DATES_IN_IERS_FILE = ukonsekvente datoer i IERS filen {0}: {1}-{2}-
 # unexpected data after line {0} in file {1}: {2}
 UNEXPECTED_DATA_AFTER_LINE_IN_FILE = uventet data etter linje {0} i filen {1}: {2}
 
+# unexpected data at line {0} in file {1}
+UNEXPECTED_DATA_AT_LINE_IN_FILE = <MISSING TRANSLATION>
+
 # non-chronological dates in file {0}, line {1}
 NON_CHRONOLOGICAL_DATES_IN_FILE = ikkekronologiske datoer i filen {0}, linje {1}
 
@@ -334,20 +337,11 @@ CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = ukonsekvente tidssystemer i efemerideblokk
 # Inconsistent time systems in the observations blocks: {0} ≠ {1}
 CCSDS_TDM_INCONSISTENT_TIME_SYSTEMS = Ukonsekvente tidssystemer i observasjonsblokkene: {0} ≠ {1}
 
-# Inconsistent data line in TDM file at line {0} of file {1}.\nA TDM data line should be as follows \"keyword = epoch value\".\nWhereas read data line is: {2}
-CCSDS_TDM_INCONSISTENT_DATA_LINE = Ukonsekvente datalinje i TDM filen, linje {0} i filen {1}.\nEn TDM datalinje må være som følgene: \"keyword = epoch value\".\nFant følgene datalinje: {2}
-
 # No CCSDS TDM keyword was found at line {0} of file {1}:\n{2}
 CCSDS_TDM_KEYWORD_NOT_FOUND = Fant ingen CCSDS TDM nøkkel på linje {0} i filen {1}:\n{2}
 
-# Time system should have already been set before line {0} of file {1}:\n{2}
+# Time system should have already been set before line {0} of file {1}
 CCSDS_TIME_SYSTEM_NOT_READ_YET = <MISSING TRANSLATION>
-
-# Inconsistent XML observation block at line {0} of TDM file {1}.\nA TDM observation block should be as follows\n\t<observation>\n\t\t<EPOCH>epoch</EPOCH>\n\t\t<KEYWORD>value</KEYWORD>\n\t</observation>
-CCSDS_TDM_XML_INCONSISTENT_DATA_BLOCK = Ukonsekvent XML observasjonsblokk på linje {0} i TDM filen {1}.\nEn TDM observasjonsblokk må være som følgene:\n\t<observation>\n\t\t<EPOCH>epoch</EPOCH>\n\t\t<KEYWORD>value</KEYWORD>\n\t</observation>
-
-# TDM file {0} format is unknown. Please specify a file format: KEYVALUE or XML
-CCSDS_TDM_UNKNOWN_FORMAT = TDM filen {0}'s format er ukjent. Vennligst oppgi fileformat KEYVALUE eller XML
 
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE = navnet "{0}" er allerede brukt for en annen tilstand

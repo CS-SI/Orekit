@@ -198,10 +198,11 @@ public class TDMMetadata extends NDMMetadata {
 
     /** Create a new TDM meta-data.
      * @param conventions IERS conventions to use
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext data context to use
      */
-    public TDMMetadata(final IERSConventions conventions, final DataContext dataContext) {
-        super(conventions, dataContext);
+    public TDMMetadata(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext) {
+        super(conventions, simpleEOP, dataContext);
         participants   = new TreeMap<>();
         transmitDelays = new TreeMap<>();
         receiveDelays  = new TreeMap<>();
@@ -221,20 +222,6 @@ public class TDMMetadata extends NDMMetadata {
         this.startTime = startTime;
     }
 
-    /** Getter for the startTime String.
-     * @return the startTime String
-     */
-    public String getStartTimeString() {
-        return startTimeString;
-    }
-
-    /** Setter for the startTime String.
-     * @param startTimeString the startTime String to set
-     */
-    public void setStartTimeString(final String startTimeString) {
-        this.startTimeString = startTimeString;
-    }
-
     /** Getter for the stopTime.
      * @return the stopTime
      */
@@ -247,20 +234,6 @@ public class TDMMetadata extends NDMMetadata {
      */
     public void setStopTime(final AbsoluteDate stopTime) {
         this.stopTime = stopTime;
-    }
-
-    /** Getter for the stopTime String.
-     * @return the stopTime String
-     */
-    public String getStopTimeString() {
-        return stopTimeString;
-    }
-
-    /** Setter for the stopTime String.
-     * @param stopTimeString the stopTime String to set
-     */
-    public void setStopTimeString(final String stopTimeString) {
-        this.stopTimeString = stopTimeString;
     }
 
     /** Getter for the participants.
@@ -522,20 +495,6 @@ public class TDMMetadata extends NDMMetadata {
      */
     public void setReferenceFrame(final Frame refFrame) {
         this.referenceFrame = refFrame;
-    }
-
-    /** Get the reference frame specifier as it appeared in the file.
-     * @return the frame name as it appeared in the file.
-     */
-    public String getReferenceFrameString() {
-        return this.referenceFrameString;
-    }
-
-    /** Set the reference frame name.
-     * @param frame specifier as it appeared in the file.
-     */
-    public void setReferenceFrameString(final String frame) {
-        this.referenceFrameString = frame;
     }
 
     /** Getter for the transmitDelays.

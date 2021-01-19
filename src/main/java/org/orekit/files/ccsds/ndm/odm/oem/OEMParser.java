@@ -38,6 +38,7 @@ import org.orekit.files.ccsds.Keyword;
 import org.orekit.files.ccsds.ndm.odm.OCommonParser;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.KeyValue;
+import org.orekit.files.ccsds.utils.lexical.ParsingState;
 import org.orekit.files.general.EphemerisFileParser;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
@@ -156,21 +157,23 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
      * @since 10.1
      */
     public OEMParser(final DataContext dataContext) {
-        this(null, true, dataContext, AbsoluteDate.FUTURE_INFINITY, Double.NaN, 1);
+        this(null, true, dataContext, null, AbsoluteDate.FUTURE_INFINITY, Double.NaN, 1);
     }
 
     /** Complete constructor.
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
+     * @param initialState initial parsing state
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @param mu gravitational coefficient
      * @param interpolationDegree interpolation degree
      */
-    private OEMParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
+    private OEMParser(final IERSConventions conventions, final boolean simpleEOP,
+                      final DataContext dataContext, final ParsingState initialState,
                       final AbsoluteDate missionReferenceDate, final double mu,
                       final int interpolationDegree) {
-        super(conventions, simpleEOP, dataContext, missionReferenceDate, mu);
+        super(conventions, simpleEOP, dataContext, initialState, missionReferenceDate, mu);
         this.interpolationDegree = interpolationDegree;
     }
 
@@ -179,17 +182,18 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
     protected OEMParser create(final IERSConventions newConventions,
                                final boolean newSimpleEOP,
                                final DataContext newDataContext,
+                               final ParsingState newInitialState,
                                final AbsoluteDate newMissionReferenceDate,
                                final double newMu) {
-        return create(newConventions, newSimpleEOP, newDataContext,
-                      newMissionReferenceDate, newMu,
-                      interpolationDegree);
+        return create(newConventions, newSimpleEOP, newDataContext, newInitialState,
+                      newMissionReferenceDate, newMu, interpolationDegree);
     }
 
     /** Build a new instance.
      * @param newConventions IERS conventions to use while parsing
      * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param newDataContext data context used for frames, time scales, and celestial bodies
+     * @param newInitialState initial parsing state
      * @param newMissionReferenceDate mission reference date to use while parsing
      * @param newMu gravitational coefficient to use while parsing
      * @param newInterpolationDegree interpolation degree
@@ -198,12 +202,12 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
     protected OEMParser create(final IERSConventions newConventions,
                                final boolean newSimpleEOP,
                                final DataContext newDataContext,
+                               final ParsingState newInitialState,
                                final AbsoluteDate newMissionReferenceDate,
                                final double newMu,
                                final int newInterpolationDegree) {
-        return new OEMParser(newConventions, newSimpleEOP, newDataContext,
-                             newMissionReferenceDate, newMu,
-                             newInterpolationDegree);
+        return new OEMParser(newConventions, newSimpleEOP, newDataContext, newInitialState,
+                             newMissionReferenceDate, newMu, newInterpolationDegree);
     }
 
     /** Set default interpolation degree.
@@ -218,8 +222,8 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
      * @since 11.0
      */
     public OEMParser withInterpolationDegree(final int newInterpolationDegree) {
-        return new OEMParser(getConventions(), isSimpleEOP(), getDataContext(), getMissionReferenceDate(),
-                             getMuSet(), newInterpolationDegree);
+        return new OEMParser(getConventions(), isSimpleEOP(), getDataContext(), getInitialState(),
+                             getMissionReferenceDate(), getMuSet(), newInterpolationDegree);
     }
 
     /** Get default interpolation degree.
@@ -336,7 +340,7 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
 
     /** {@inheritDoc} */
     @Override
-    public OEMFile parse(final InputStream stream, final String fileName) {
+    public OEMFile oldParse(final InputStream stream, final String fileName) {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
             return parse(reader, fileName);
         } catch (IOException ioe) {
@@ -365,8 +369,8 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
                 if (pi.line.trim().length() == 0) {
                     continue;
                 }
-                pi.keyValue = new KeyValue(pi.line, pi.lineNumber, pi.fileName);
-                if (pi.keyValue.getKeyword() == null) {
+                pi.entry = new KeyValue(pi.line, pi.lineNumber, pi.fileName);
+                if (pi.entry.getKeyword() == null) {
                     if (pi.parsingData) {
                         if (!pi.commentTmp.isEmpty()) {
                             pi.data.setEphemeridesDataLinesComment(pi.commentTmp);
@@ -383,22 +387,22 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
                     }
                 }
 
-                declareFound(pi.keyValue.getKeyword());
+                declareFound(pi.entry.getKeyword());
 
-                switch (pi.keyValue.getKeyword()) {
+                switch (pi.entry.getKeyword()) {
 
                     case COMMENT:
                         if (pi.file.getHeader().getCreationDate() == null) {
-                            pi.file.getHeader().addComment(pi.keyValue.getValue());
+                            pi.file.getHeader().addComment(pi.entry.getValue());
                         } else if (pi.metadata != null && pi.metadata.getObjectName() == null) {
-                            pi.metadata.addComment(pi.keyValue.getValue());
+                            pi.metadata.addComment(pi.entry.getValue());
                         } else {
-                            pi.commentTmp.add(pi.keyValue.getValue());
+                            pi.commentTmp.add(pi.entry.getValue());
                         }
                         break;
 
                     case CCSDS_OEM_VERS:
-                        pi.file.getHeader().setFormatVersion(pi.keyValue.getDoubleValue());
+                        pi.file.getHeader().setFormatVersion(pi.entry.getDoubleValue());
                         break;
 
                     case META_START:
@@ -407,7 +411,7 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
                             pi.file.addSegment(new OEMSegment(pi.metadata, pi.data, getSelectedMu()));
                         }
                         // Indicate the start of meta-data parsing for this block
-                        pi.metadata          = new OEMMetadata(getConventions(), getDataContext());
+                        pi.metadata          = new OEMMetadata(getConventions(), isSimpleEOP(), getDataContext());
                         pi.parsingHeader     = false;
                         pi.parsingMetaData   = true;
                         pi.parsingData       = false;
@@ -416,33 +420,33 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
                         break;
 
                     case START_TIME:
-                        pi.metadata.setStartTime(parseDate(pi.keyValue.getValue(),
+                        pi.metadata.setStartTime(parseDate(pi.entry.getValue(),
                                                            pi.metadata.getTimeSystem(),
                                                            pi.lineNumber, pi.fileName, pi.line));
                         break;
 
                     case USEABLE_START_TIME:
-                        pi.metadata.setUseableStartTime(parseDate(pi.keyValue.getValue(),
+                        pi.metadata.setUseableStartTime(parseDate(pi.entry.getValue(),
                                                                   pi.metadata.getTimeSystem(),
                                                                   pi.lineNumber, pi.fileName, pi.line));
                         break;
 
                     case USEABLE_STOP_TIME:
-                        pi.metadata.setUseableStopTime(parseDate(pi.keyValue.getValue(), pi.metadata.getTimeSystem(),
+                        pi.metadata.setUseableStopTime(parseDate(pi.entry.getValue(), pi.metadata.getTimeSystem(),
                                                                  pi.lineNumber, pi.fileName, pi.line));
                         break;
 
                     case STOP_TIME:
-                        pi.metadata.setStopTime(parseDate(pi.keyValue.getValue(), pi.metadata.getTimeSystem(),
+                        pi.metadata.setStopTime(parseDate(pi.entry.getValue(), pi.metadata.getTimeSystem(),
                                                           pi.lineNumber, pi.fileName, pi.line));
                         break;
 
                     case INTERPOLATION:
-                        pi.metadata.setInterpolationMethod(pi.keyValue.getValue());
+                        pi.metadata.setInterpolationMethod(pi.entry.getValue());
                         break;
 
                     case INTERPOLATION_DEGREE:
-                        pi.metadata.setInterpolationDegree(Integer.parseInt(pi.keyValue.getValue()));
+                        pi.metadata.setInterpolationDegree(Integer.parseInt(pi.entry.getValue()));
                         break;
 
                     case META_STOP:
@@ -459,13 +463,13 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
 
                     case EPOCH :
                         checkNoMatrix(pi);
-                        pi.covEpoch = parseDate(pi.keyValue.getValue(), pi.metadata.getTimeSystem(),
+                        pi.covEpoch = parseDate(pi.entry.getValue(), pi.metadata.getTimeSystem(),
                                                 pi.lineNumber, pi.fileName, pi.line);
                         break;
 
                     case COV_REF_FRAME :
                         checkNoMatrix(pi);
-                        final CCSDSFrame frame = parseCCSDSFrame(pi.keyValue.getValue());
+                        final CCSDSFrame frame = parseCCSDSFrame(pi.entry.getValue());
                         if (frame.isLof()) {
                             pi.covRefLofType = frame.getLofType();
                             pi.covRefFrame   = null;
@@ -483,12 +487,12 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
                     default:
                         final boolean parsed;
                         if (pi.parsingHeader) {
-                            parsed = parseHeaderEntry(pi.keyValue, pi.file);
+                            parsed = parseHeaderEntry(pi.entry, pi.file);
                         } else if (pi.parsingMetaData) {
-                            parsed = parseMetaDataEntry(pi.keyValue, pi.metadata,
+                            parsed = parseMetaDataEntry(pi.entry, pi.metadata,
                                                         pi.lineNumber, pi.fileName, pi.line);
-                        } else if (pi.keyValue.getKeyword() == Keyword.COMMENT) {
-                            pi.commentTmp.add(pi.keyValue.getValue());
+                        } else if (pi.entry.getKeyword() == Keyword.COMMENT) {
+                            pi.commentTmp.add(pi.entry.getValue());
                             parsed = true;
                         } else {
                             parsed = false;
@@ -550,7 +554,7 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
         private String line;
 
         /** Key value of the line being read. */
-        private KeyValue keyValue;
+        private KeyValue entry;
 
         /** Stored epoch. */
         private AbsoluteDate covEpoch;

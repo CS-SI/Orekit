@@ -65,7 +65,7 @@ public class APMParserTest {
         final InputStream inEntry = getClass().getResourceAsStream(ex);
 
         // Generated APM file
-        final APMFile file = parser.parse(inEntry, "APMExample.txt");
+        final APMFile file = parser.oldParse(inEntry, "APMExample.txt");
 
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
@@ -128,7 +128,7 @@ public class APMParserTest {
         final InputStream inEntry = getClass().getResourceAsStream(ex);
 
         // Generated APM file
-        final APMFile file = parser.parse(inEntry, "APMExample2.txt");
+        final APMFile file = parser.oldParse(inEntry, "APMExample2.txt");
 
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
@@ -248,7 +248,7 @@ public class APMParserTest {
         final InputStream inEntry = getClass().getResourceAsStream(ex);
 
         // Generated APM file
-        final APMFile file = parser.parse(inEntry, "APMExample3.txt");
+        final APMFile file = parser.oldParse(inEntry, "APMExample3.txt");
 
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
@@ -326,7 +326,7 @@ public class APMParserTest {
         final InputStream inEntry = getClass().getResourceAsStream(ex);
 
         // Generated APM file
-        final APMFile file = parser.parse(inEntry, "APMExample4.txt");
+        final APMFile file = parser.oldParse(inEntry, "APMExample4.txt");
 
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
@@ -398,7 +398,7 @@ public class APMParserTest {
     @Test
     public void testWrongADMType() {
         try {
-            new APMParser().parse(getClass().getResourceAsStream("/ccsds/adm/aem/AEMExample.txt"), "AEMExample.txt");
+            new APMParser().oldParse(getClass().getResourceAsStream("/ccsds/adm/aem/AEMExample.txt"), "AEMExample.txt");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
             Assert.assertEquals(1, oe.getParts()[0]);
@@ -411,7 +411,7 @@ public class APMParserTest {
     public void testNumberFormatErrorType() {
         try {
             APMParser parser = new APMParser().withConventions(IERSConventions.IERS_2010);
-            parser.parse(getClass().getResourceAsStream("/ccsds/adm/apm/APM-number-format-error.txt"),
+            parser.oldParse(getClass().getResourceAsStream("/ccsds/adm/apm/APM-number-format-error.txt"),
                          "APM-number-format-error.txt");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());

@@ -17,7 +17,6 @@
 package org.orekit.files.ccsds.ndm.tdm;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -31,8 +30,10 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.tdm.TDMParser.TDMFileFormat;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
+import org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer;
+import org.orekit.files.ccsds.utils.lexical.LexicalAnalyzer;
+import org.orekit.files.ccsds.utils.lexical.XMLLexicalAnalyzer;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -49,21 +50,20 @@ import org.orekit.time.TimeScalesFactory;
 public class TDMParserTest {
 
     @Before
-    public void setUp()
-                    throws Exception {
+    public void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
     @Test
     public void testParseTdmExternalResourceIssue368() {
         // setup
-        TDMParser parser = new TDMParser().withFileFormat(TDMFileFormat.XML);
         String name = "/ccsds/tdm/xml/TDM-external-doctype.xml";
-        InputStream in = TDMParserTest.class.getResourceAsStream(name);
+        LexicalAnalyzer lexicalAnalyzer =
+                        new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
 
         try {
             // action
-            parser.parse(in, name);
+            lexicalAnalyzer.accept(new TDMParser());
 
             // verify
             Assert.fail("Expected Exception");
@@ -80,10 +80,10 @@ public class TDMParserTest {
         // Example 2 of [1]
         // See Figure D-2: TDM Example: One-Way Data w/Frequency Offset
         // Data lines number was cut down to 7
-        final String ex = "/ccsds/tdm/kvn/TDMExample2.txt";
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final TDMParser parser = new TDMParser().withFileFormat(TDMParser.TDMFileFormat.KEYVALUE);
-        final TDMFile file = parser.parse(inEntry, ex);
+        final String name = "/ccsds/tdm/kvn/TDMExample2.txt";
+        LexicalAnalyzer lexicalAnalyzer =
+                        new KVNLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final TDMFile file = lexicalAnalyzer.accept(new TDMParser());
         validateTDMExample2(file);
     }
 
@@ -93,10 +93,10 @@ public class TDMParserTest {
         // Example 4 of [1]
         // See Figure D-4: TDM Example: Two-Way Ranging Data Only
         // Data lines number was cut down to 20
-        final String ex = "/ccsds/tdm/kvn/TDMExample4.txt";
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final TDMParser parser = new TDMParser();
-        final TDMFile file = parser.parseKeyValue(inEntry, ex);
+        final String name = "/ccsds/tdm/kvn/TDMExample4.txt";
+        LexicalAnalyzer lexicalAnalyzer =
+                        new KVNLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final TDMFile file = lexicalAnalyzer.accept(new TDMParser());
         validateTDMExample4(file);
     }
 
@@ -106,10 +106,10 @@ public class TDMParserTest {
         // Example 6 of [1]
         // See Figure D-6: TDM Example: Four-Way Data
         // Data lines number was cut down to 16
-        final String ex = "/ccsds/tdm/kvn/TDMExample6.txt";
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final TDMParser parser = new TDMParser();
-        final TDMFile file = parser.parse(inEntry, ex);
+        final String name = "/ccsds/tdm/kvn/TDMExample6.txt";
+        LexicalAnalyzer lexicalAnalyzer =
+                        new KVNLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final TDMFile file = lexicalAnalyzer.accept(new TDMParser());
         validateTDMExample6(file);
     }
 
@@ -119,10 +119,10 @@ public class TDMParserTest {
         // Example 8 of [1]
         // See Figure D-8: TDM Example: Angles, Range, Doppler Combined in Single TDM
         // Data lines number was cut down to 18
-        final String ex = "/ccsds/tdm/kvn/TDMExample8.txt";
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final TDMParser parser = new TDMParser();
-        final TDMFile file = parser.parse(inEntry, ex);
+        final String name = "/ccsds/tdm/kvn/TDMExample8.txt";
+        LexicalAnalyzer lexicalAnalyzer =
+                        new KVNLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final TDMFile file = lexicalAnalyzer.accept(new TDMParser());
         validateTDMExample8(file);
     }
 
@@ -131,10 +131,10 @@ public class TDMParserTest {
 
         // Example 15 of [1]
         // See Figure D-15: TDM Example: Clock Bias/Drift Only
-        final String ex = "/ccsds/tdm/kvn/TDMExample15.txt";
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final TDMParser parser = new TDMParser();
-        final TDMFile file = parser.parse(inEntry, ex);
+        final String name = "/ccsds/tdm/kvn/TDMExample15.txt";
+        LexicalAnalyzer lexicalAnalyzer =
+                        new KVNLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final TDMFile file = lexicalAnalyzer.accept(new TDMParser());
         validateTDMExample15(file);
     }
 
@@ -142,10 +142,10 @@ public class TDMParserTest {
     public void testParseTdmKeyValueExampleAllKeywords() throws IOException {
 
         // Testing all TDM keywords
-        final String ex = "/ccsds/tdm/kvn/TDMExampleAllKeywords.txt";
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final TDMParser parser = new TDMParser();
-        final TDMFile file = parser.parse(inEntry, ex);
+        final String name = "/ccsds/tdm/kvn/TDMExampleAllKeywords.txt";
+        LexicalAnalyzer lexicalAnalyzer =
+                        new KVNLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final TDMFile file = lexicalAnalyzer.accept(new TDMParser());
         validateTDMExampleAllKeywords(file);
     }
 
@@ -155,10 +155,10 @@ public class TDMParserTest {
         // Example 2 of [1]
         // See Figure D-2: TDM Example: One-Way Data w/Frequency Offset
         // Data lines number was cut down to 7
-        final String ex = "/ccsds/tdm/xml/TDMExample2.xml";
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final TDMParser parser = new TDMParser().withFileFormat(TDMParser.TDMFileFormat.XML);
-        final TDMFile file = parser.parse(inEntry, ex);
+        final String name = "/ccsds/tdm/xml/TDMExample2.xml";
+        LexicalAnalyzer lexicalAnalyzer =
+                        new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final TDMFile file = lexicalAnalyzer.accept(new TDMParser());
         validateTDMExample2(file);
     }
 
@@ -168,10 +168,10 @@ public class TDMParserTest {
         // Example 4 of [1]
         // See Figure D-4: TDM Example: Two-Way Ranging Data Only
         // Data lines number was cut down to 20
-        final String ex = "/ccsds/tdm/xml/TDMExample4.xml";
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final TDMParser parser = new TDMParser();
-        final TDMFile file = parser.parseXml(inEntry, ex);
+        final String name = "/ccsds/tdm/xml/TDMExample4.xml";
+        LexicalAnalyzer lexicalAnalyzer =
+                        new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final TDMFile file = lexicalAnalyzer.accept(new TDMParser());
         validateTDMExample4(file);
     }
 
@@ -181,10 +181,10 @@ public class TDMParserTest {
         // Example 6 of [1]
         // See Figure D-6: TDM Example: Four-Way Data
         // Data lines number was cut down to 16
-        final String ex = "/ccsds/tdm/xml/TDMExample6.xml";
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final TDMParser parser = new TDMParser();
-        final TDMFile file = parser.parse(inEntry, ex);
+        final String name = "/ccsds/tdm/xml/TDMExample6.xml";
+        LexicalAnalyzer lexicalAnalyzer =
+                        new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final TDMFile file = lexicalAnalyzer.accept(new TDMParser());
         validateTDMExample6(file);
     }
 
@@ -194,10 +194,10 @@ public class TDMParserTest {
         // Example 8 of [1]
         // See Figure D-8: TDM Example: Angles, Range, Doppler Combined in Single TDM
         // Data lines number was cut down to 18
-        final String ex = "/ccsds/tdm/xml/TDMExample8.xml";
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final TDMParser parser = new TDMParser();
-        final TDMFile file = parser.parse(inEntry, ex);
+        final String name = "/ccsds/tdm/xml/TDMExample8.xml";
+        LexicalAnalyzer lexicalAnalyzer =
+                        new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final TDMFile file = lexicalAnalyzer.accept(new TDMParser());
         validateTDMExample8(file);
     }
 
@@ -206,10 +206,10 @@ public class TDMParserTest {
 
         // Example 15 of [1]
         // See Figure D-15: TDM Example: Clock Bias/Drift Only
-        final String ex = "/ccsds/tdm/xml/TDMExample15.xml";
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final TDMParser parser = new TDMParser();
-        final TDMFile file = parser.parse(inEntry, ex);
+        final String name = "/ccsds/tdm/xml/TDMExample15.xml";
+        LexicalAnalyzer lexicalAnalyzer =
+                        new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final TDMFile file = lexicalAnalyzer.accept(new TDMParser());
         validateTDMExample15(file);
     }
 
@@ -217,10 +217,10 @@ public class TDMParserTest {
     public void testParseTdmXmlExampleAllKeywords() throws IOException {
 
         // Testing all TDM keywords
-        final String ex = "/ccsds/tdm/xml/TDMExampleAllKeywords.xml";
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final TDMParser parser = new TDMParser();
-        final TDMFile file = parser.parse(inEntry, ex);
+        final String name = "/ccsds/tdm/xml/TDMExampleAllKeywords.xml";
+        LexicalAnalyzer lexicalAnalyzer =
+                        new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final TDMFile file = lexicalAnalyzer.accept(new TDMParser());
         validateTDMExampleAllKeywords(file);
     }
 
@@ -228,16 +228,14 @@ public class TDMParserTest {
     public void testDataNumberFormatErrorTypeKeyValue() {
         try {
             // Number format exception in data part
-            final String ex = "/ccsds/tdm/kvn/TDM-data-number-format-error.txt";
-            final InputStream inEntry = getClass().getResourceAsStream(ex);
-            final TDMParser parser = new TDMParser();
-            parser.parse(inEntry, ex);
-            Assert.fail("An Orekit Exception \"UNABLE_TO_PARSE_LINE_IN_FILE\" should have been thrown");
+            final String name = "/ccsds/tdm/kvn/TDM-data-number-format-error.txt";
+            new KVNLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name).accept(new TDMParser());
+            Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
-            Assert.assertEquals(26, oe.getParts()[0]);
-            Assert.assertEquals("/ccsds/tdm/kvn/TDM-data-number-format-error.txt", oe.getParts()[1]);
-            Assert.assertEquals("RECEIVE_FREQ_1 = 2005-159T17:41:03 this-is-not-a-number", ((String) oe.getParts()[2]).trim());
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
+            Assert.assertEquals("RECEIVE_FREQ_1", oe.getParts()[0]);
+            Assert.assertEquals(26, oe.getParts()[1]);
+            Assert.assertEquals("/ccsds/tdm/kvn/TDM-data-number-format-error.txt", oe.getParts()[2]);
         }
     }
 
@@ -245,16 +243,14 @@ public class TDMParserTest {
     public void testDataNumberFormatErrorTypeXml() {
         try {
             // Number format exception in data part
-            final String ex = "/ccsds/tdm/xml/TDM-data-number-format-error.xml";
-            final InputStream inEntry = getClass().getResourceAsStream(ex);
-            final TDMParser parser = new TDMParser();
-            parser.parse(inEntry, ex);
-            Assert.fail("An Orekit Exception \"UNABLE_TO_PARSE_LINE_IN_FILE\" should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
-            Assert.assertEquals(47, oe.getParts()[0]);
-            Assert.assertEquals("/ccsds/tdm/xml/TDM-data-number-format-error.xml", oe.getParts()[1]);
-            Assert.assertEquals("<RECEIVE_FREQ_1>this-is-not-a-number</RECEIVE_FREQ_1>", ((String) oe.getParts()[2]).trim());
+            final String name = "/ccsds/tdm/xml/TDM-data-number-format-error.xml";
+            new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name).accept(new TDMParser());
+            Assert.fail("An exception should have been thrown");
+                    } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
+            Assert.assertEquals("RECEIVE_FREQ_1", oe.getParts()[0]);
+            Assert.assertEquals(47, oe.getParts()[1]);
+            Assert.assertEquals("/ccsds/tdm/xml/TDM-data-number-format-error.xml", oe.getParts()[2]);
         }
     }
 
@@ -262,16 +258,14 @@ public class TDMParserTest {
     public void testMetaDataNumberFormatErrorTypeKeyValue() {
         try {
             // Number format exception in metadata part
-            final String ex = "/ccsds/tdm/kvn/TDM-metadata-number-format-error.txt";
-            final InputStream inEntry = getClass().getResourceAsStream(ex);
-            final TDMParser parser = new TDMParser();
-            parser.parse(inEntry, ex);
+            final String name = "/ccsds/tdm/kvn/TDM-metadata-number-format-error.txt";
+            new KVNLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name).accept(new TDMParser());
             Assert.fail("An Orekit Exception \"UNABLE_TO_PARSE_LINE_IN_FILE\" should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
-            Assert.assertEquals(17, oe.getParts()[0]);
-            Assert.assertEquals("/ccsds/tdm/kvn/TDM-metadata-number-format-error.txt", oe.getParts()[1]);
-            Assert.assertEquals("TRANSMIT_DELAY_1 = this-is-not-a-number", ((String) oe.getParts()[2]).trim());
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
+            Assert.assertEquals("TRANSMIT_DELAY_1", oe.getParts()[0]);
+            Assert.assertEquals(17, oe.getParts()[1]);
+            Assert.assertEquals("/ccsds/tdm/kvn/TDM-metadata-number-format-error.txt", oe.getParts()[2]);
         }
     }
 
@@ -279,16 +273,14 @@ public class TDMParserTest {
     public void testMetaDataNumberFormatErrorTypeXml() {
         try {
             // Number format exception in metadata part
-            final String ex = "/ccsds/tdm/xml/TDM-metadata-number-format-error.xml";
-            final InputStream inEntry = getClass().getResourceAsStream(ex);
-            final TDMParser parser = new TDMParser();
-            parser.parse(inEntry, ex);
-            Assert.fail("An Orekit Exception \"UNABLE_TO_PARSE_LINE_IN_FILE\" should have been thrown");
+            final String name = "/ccsds/tdm/xml/TDM-metadata-number-format-error.xml";
+            new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name).accept(new TDMParser());
+            Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
-            Assert.assertEquals(26, oe.getParts()[0]);
-            Assert.assertEquals("/ccsds/tdm/xml/TDM-metadata-number-format-error.xml", oe.getParts()[1]);
-            Assert.assertEquals("<TRANSMIT_DELAY_1>this-is-not-a-number</TRANSMIT_DELAY_1>", ((String) oe.getParts()[2]).trim());
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
+            Assert.assertEquals("TRANSMIT_DELAY_1", oe.getParts()[0]);
+            Assert.assertEquals(24, oe.getParts()[1]);
+            Assert.assertEquals("/ccsds/tdm/xml/TDM-metadata-number-format-error.xml", oe.getParts()[2]);
         }
     }
 
@@ -298,8 +290,8 @@ public class TDMParserTest {
         final String realName = getClass().getResource("/ccsds/odm/oem/OEMExample2.txt").toURI().getPath();
         final String wrongName = realName + "xxxxx";
         try {
-            new TDMParser().parse(wrongName);
-            Assert.fail("An Orekit Exception \"UNABLE_TO_FIND_FILE\" should have been thrown");
+            new KVNLexicalAnalyzer(wrongName);
+            Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
             Assert.assertEquals(wrongName, oe.getParts()[0]);
@@ -310,8 +302,9 @@ public class TDMParserTest {
     public void testInconsistentTimeSystemsKeyValue() {
         // Inconsistent time systems between two sets of data
         try {
-            new TDMParser().withFileFormat(TDMFileFormat.KEYVALUE).parse(getClass().getResourceAsStream("/ccsds/tdm/kvn/TDM-inconsistent-time-systems.txt"));
-            Assert.fail("An Orekit Exception \"CCSDS_TDM_INCONSISTENT_TIME_SYSTEMS\" should have been thrown");
+            final String name = "/ccsds/tdm/kvn/TDM-inconsistent-time-systems.txt";
+            new KVNLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name).accept(new TDMParser());
+            Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_TDM_INCONSISTENT_TIME_SYSTEMS, oe.getSpecifier());
             Assert.assertEquals(CcsdsTimeScale.UTC, oe.getParts()[0]);
@@ -323,8 +316,9 @@ public class TDMParserTest {
     public void testInconsistentTimeSystemsXml() {
         // Inconsistent time systems between two sets of data
         try {
-            new TDMParser().withFileFormat(TDMFileFormat.XML).parse(getClass().getResourceAsStream("/ccsds/tdm/xml/TDM-inconsistent-time-systems.xml"));
-            Assert.fail("An Orekit Exception \"CCSDS_TDM_INCONSISTENT_TIME_SYSTEMS\" should have been thrown");
+            final String name = "/ccsds/tdm/xml/TDM-inconsistent-time-systems.xml";
+            new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name).accept(new TDMParser());
+            Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_TDM_INCONSISTENT_TIME_SYSTEMS, oe.getSpecifier());
             Assert.assertEquals(CcsdsTimeScale.UTC, oe.getParts()[0]);
@@ -336,16 +330,16 @@ public class TDMParserTest {
     public void testWrongDataKeywordKeyValue()
                     throws URISyntaxException {
         // Unknown CCSDS keyword was read in data part
-        final String ex = "/ccsds/tdm/kvn/TDM-data-wrong-keyword.txt";
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
+        final String name = "/ccsds/tdm/kvn/TDM-data-wrong-keyword.txt";
+        final LexicalAnalyzer lexicalAnalyzer = new KVNLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
         try {
-            new TDMParser().parse(inEntry, ex);
-            Assert.fail("An exception \"CCSDS_UNEXPECTED_KEYWORD\"should have been thrown");
+            lexicalAnalyzer.accept(new TDMParser());
+            Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
-            Assert.assertEquals(26, oe.getParts()[0]);
-            Assert.assertEquals("%s","/ccsds/tdm/kvn/TDM-data-wrong-keyword.txt", oe.getParts()[1]);
-            Assert.assertEquals("WRONG_KEYWORD  = 2005-159T17:41:03 -294.9673", ((String) oe.getParts()[2]).trim());
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
+            Assert.assertEquals("WRONG_KEYWORD", oe.getParts()[0]);
+            Assert.assertEquals(26, oe.getParts()[1]);
+            Assert.assertEquals("%s","/ccsds/tdm/kvn/TDM-data-wrong-keyword.txt", oe.getParts()[2]);
         }
     }
 
@@ -353,16 +347,16 @@ public class TDMParserTest {
     public void testWrongDataKeywordXml()
                     throws URISyntaxException {
         // Unknown CCSDS keyword was read in data part
-        final String ex = "/ccsds/tdm/xml/TDM-data-wrong-keyword.xml";
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
+        final String name = "/ccsds/tdm/xml/TDM-data-wrong-keyword.xml";
+        final LexicalAnalyzer lexicalAnalyzer = new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
         try {
-            new TDMParser().parse(inEntry, ex);
-            Assert.fail("An exception \"CCSDS_UNEXPECTED_KEYWORD\"should have been thrown");
+            lexicalAnalyzer.accept(new TDMParser());
+            Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
-            Assert.assertEquals(47, oe.getParts()[0]);
-            Assert.assertEquals(ex, oe.getParts()[1]);
-            Assert.assertEquals("<WRONG_KEYWORD>", oe.getParts()[2]);
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
+            Assert.assertEquals("WRONG_KEYWORD", oe.getParts()[0]);
+            Assert.assertEquals(47, oe.getParts()[1]);
+            Assert.assertEquals(name, oe.getParts()[2]);
         }
     }
 
@@ -370,16 +364,16 @@ public class TDMParserTest {
     public void testWrongMetaDataKeywordKeyValue()
                     throws URISyntaxException {
         // Unknown CCSDS keyword was read in data part
-        final String ex = "/ccsds/tdm/kvn/TDM-metadata-wrong-keyword.txt";
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
+        final String name = "/ccsds/tdm/kvn/TDM-metadata-wrong-keyword.txt";
+        final LexicalAnalyzer lexicalAnalyzer = new KVNLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
         try {
-            new TDMParser().parse(inEntry, ex);
-            Assert.fail("An exception \"CCSDS_UNEXPECTED_KEYWORD\"should have been thrown");
+            lexicalAnalyzer.accept(new TDMParser());
+            Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
-            Assert.assertEquals(16, oe.getParts()[0]);
-            Assert.assertEquals("/ccsds/tdm/kvn/TDM-metadata-wrong-keyword.txt", oe.getParts()[1]);
-            Assert.assertEquals("WRONG_KEYWORD = 32021035200.0", ((String) oe.getParts()[2]).trim());
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
+            Assert.assertEquals("WRONG_KEYWORD", oe.getParts()[0]);
+            Assert.assertEquals(16, oe.getParts()[1]);
+            Assert.assertEquals("/ccsds/tdm/kvn/TDM-metadata-wrong-keyword.txt", oe.getParts()[2]);
         }
     }
 
@@ -387,27 +381,27 @@ public class TDMParserTest {
     public void testWrongMetaDataKeywordXml()
                     throws URISyntaxException {
         // Unknown CCSDS keyword was read in data part
-        final String ex = "/ccsds/tdm/xml/TDM-metadata-wrong-keyword.xml";
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
+        final String name = "/ccsds/tdm/xml/TDM-metadata-wrong-keyword.xml";
+        final LexicalAnalyzer lexicalAnalyzer = new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
         try {
-            new TDMParser().parse(inEntry, ex);
-            Assert.fail("An exception \"CCSDS_UNEXPECTED_KEYWORD\"should have been thrown");
+            lexicalAnalyzer.accept(new TDMParser());
+            Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
-            Assert.assertEquals(15, oe.getParts()[0]);
-            Assert.assertEquals("/ccsds/tdm/xml/TDM-metadata-wrong-keyword.xml", oe.getParts()[1]);
-            Assert.assertEquals("<WRONG_KEYWORD>", ((String) oe.getParts()[2]).trim());
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
+            Assert.assertEquals("WRONG_KEYWORD", oe.getParts()[0]);
+            Assert.assertEquals(23, oe.getParts()[1]);
+            Assert.assertEquals("/ccsds/tdm/xml/TDM-metadata-wrong-keyword.xml", oe.getParts()[2]);
         }
     }
 
     @Test
     public void testWrongTimeSystemKeyValue() {
         // Time system not implemented CCSDS keyword was read in data part
-        final String ex = "/ccsds/tdm/kvn/TDM-metadata-timesystem-not-implemented.txt";
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
+        final String name = "/ccsds/tdm/kvn/TDM-metadata-timesystem-not-implemented.txt";
+        final LexicalAnalyzer lexicalAnalyzer = new KVNLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
         try {
-            new TDMParser().parse(inEntry, ex);
-            Assert.fail("An exception \"CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED\"should have been thrown");
+            lexicalAnalyzer.accept(new TDMParser());
+            Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED, oe.getSpecifier());
             Assert.assertEquals("WRONG-TIME-SYSTEM", oe.getParts()[0]);
@@ -417,11 +411,11 @@ public class TDMParserTest {
     @Test
     public void testWrongTimeSystemXml() {
         // Time system not implemented CCSDS keyword was read in data part
-        final String ex = "/ccsds/tdm/xml/TDM-metadata-timesystem-not-implemented.xml";
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
+        final String name = "/ccsds/tdm/xml/TDM-metadata-timesystem-not-implemented.xml";
+        final LexicalAnalyzer lexicalAnalyzer = new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
         try {
-            new TDMParser().parse(inEntry, ex);
-            Assert.fail("An exception \"CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED\"should have been thrown");
+            lexicalAnalyzer.accept(new TDMParser());
+            Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED, oe.getSpecifier());
             Assert.assertEquals("WRONG-TIME-SYSTEM", oe.getParts()[0]);
@@ -429,47 +423,48 @@ public class TDMParserTest {
     }
 
     @Test
+    public void testMissingTimeSystemXml() {
+        // Time system not implemented CCSDS keyword was read in data part
+        final String name = "/ccsds/tdm/xml/TDM-missing-timesystem.xml";
+        final LexicalAnalyzer lexicalAnalyzer = new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        try {
+            lexicalAnalyzer.accept(new TDMParser());
+            Assert.fail("An exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_TIME_SYSTEM_NOT_READ_YET, oe.getSpecifier());
+            Assert.assertEquals(18, oe.getParts()[0]);
+        }
+    }
+
+    @Test
     public void testInconsistentDataLineKeyValue() {
         // Inconsistent data line in KeyValue file (3 fields after keyword instead of 2)
-        final String ex = "/ccsds/tdm/kvn/TDM-data-inconsistent-line.txt";
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
+        final String name = "/ccsds/tdm/kvn/TDM-data-inconsistent-line.txt";
+        final LexicalAnalyzer lexicalAnalyzer = new KVNLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
         try {
-            new TDMParser().parse(inEntry, ex);
-            Assert.fail("An exception \"CCSDS_TDM_INCONSISTENT_DATA_LINE\"should have been thrown");
+            lexicalAnalyzer.accept(new TDMParser());
+            Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_TDM_INCONSISTENT_DATA_LINE, oe.getSpecifier());
-            Assert.assertEquals(25, oe.getParts()[0]);
-            Assert.assertEquals("/ccsds/tdm/kvn/TDM-data-inconsistent-line.txt", oe.getParts()[1]);
-            Assert.assertEquals("RECEIVE_FREQ_1 = 2005-159T17:41:02 -333.0551 this-should-not-be-here", oe.getParts()[2]);
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
+            Assert.assertEquals("RECEIVE_FREQ_1", oe.getParts()[0]);
+            Assert.assertEquals(25, oe.getParts()[1]);
+            Assert.assertEquals("/ccsds/tdm/kvn/TDM-data-inconsistent-line.txt", oe.getParts()[2]);
         }
     }
 
     @Test
     public void testInconsistentDataBlockXml() {
         // Inconsistent data block in XML file
-        final String ex = "/ccsds/tdm/xml/TDM-data-inconsistent-block.xml";
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
+        final String name = "/ccsds/tdm/xml/TDM-data-inconsistent-block.xml";
+        final LexicalAnalyzer lexicalAnalyzer = new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
         try {
-            new TDMParser().parse(inEntry, ex);
-            Assert.fail("An exception \"CCSDS_TDM_XML_INCONSISTENT_DATA_BLOCK\"should have been thrown");
+            lexicalAnalyzer.accept(new TDMParser());
+            Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_TDM_XML_INCONSISTENT_DATA_BLOCK, oe.getSpecifier());
-            Assert.assertEquals(33, oe.getParts()[0]);
-            Assert.assertEquals("/ccsds/tdm/xml/TDM-data-inconsistent-block.xml", oe.getParts()[1]);
-        }
-    }
-
-    @Test
-    public void testUnknownFileFormat() {
-        // Unknown file format
-        final String ex = "/ccsds/tdm/kvn/TDM-unknown-file-format.unknown";
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        try {
-            new TDMParser().parse(inEntry, ex);
-            Assert.fail("An exception \"CCSDS_TDM_UNKNOWN_FORMAT\"should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_TDM_UNKNOWN_FORMAT, oe.getSpecifier());
-            Assert.assertEquals("/ccsds/tdm/kvn/TDM-unknown-file-format.unknown", oe.getParts()[0]);
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
+            Assert.assertEquals("TRANSMIT_FREQ_2", oe.getParts()[0]);
+            Assert.assertEquals(32, oe.getParts()[1]);
+            Assert.assertEquals("/ccsds/tdm/xml/TDM-data-inconsistent-block.xml", oe.getParts()[2]);
         }
     }
 
@@ -496,7 +491,7 @@ public class TDMParserTest {
         Assert.assertEquals(new AbsoluteDate("2005-159T17:41:00", utc).durationFrom(metadata.getStartTime()), 0.0, 0.0);
         Assert.assertEquals(new AbsoluteDate("2005-159T17:41:40", utc).durationFrom(metadata.getStopTime()), 0.0, 0.0);
         Assert.assertEquals("DSS-25", metadata.getParticipants().get(1));
-        Assert.assertEquals("YYYY-NNNA", metadata.getParticipants().get(2));
+        Assert.assertEquals("yyyy-nnnA", metadata.getParticipants().get(2));
         Assert.assertEquals("SEQUENTIAL", metadata.getMode());
         Assert.assertEquals("2,1", metadata.getPath());
         Assert.assertEquals(1.0, metadata.getIntegrationInterval(), 0.0);
@@ -555,7 +550,7 @@ public class TDMParserTest {
 
         Assert.assertEquals(CcsdsTimeScale.UTC, metadata.getTimeSystem());
         Assert.assertEquals("DSS-24", metadata.getParticipants().get(1));
-        Assert.assertEquals("YYYY-NNNA", metadata.getParticipants().get(2));
+        Assert.assertEquals("yyyy-nnnA", metadata.getParticipants().get(2));
         Assert.assertEquals("SEQUENTIAL", metadata.getMode());
         Assert.assertEquals("1,2,1", metadata.getPath());
         Assert.assertEquals("START", metadata.getIntegrationRef());
@@ -735,9 +730,7 @@ public class TDMParserTest {
         final TDMMetadata metadata2 = file.getSegments().get(1).getMetadata();
 
         Assert.assertEquals(CcsdsTimeScale.UTC, metadata2.getTimeSystem());
-        Assert.assertEquals("2007-08-29T06:00:02.000", metadata2.getStartTimeString());
         Assert.assertEquals(new AbsoluteDate("2007-08-29T06:00:02.000", utc).durationFrom(metadata2.getStartTime()), 0.0, 0.0);
-        Assert.assertEquals("2007-08-29T13:00:02.000", metadata2.getStopTimeString());
         Assert.assertEquals(new AbsoluteDate("2007-08-29T13:00:02.000", utc).durationFrom(metadata2.getStopTime()), 0.0, 0.0);
         Assert.assertEquals("WHM1", metadata2.getParticipants().get(1));
         Assert.assertEquals("SAT", metadata2.getParticipants().get(2));
@@ -928,11 +921,9 @@ public class TDMParserTest {
 
         Assert.assertEquals(CcsdsTimeScale.UTC, metadata.getTimeSystem());
         Assert.assertEquals(new AbsoluteDate("2017-06-14T10:53:00.000", utc).durationFrom(metadata.getStartTime()), 0.0, 0.0);
-        Assert.assertEquals("2017-06-14T10:53:00.000", metadata.getStartTimeString());
         Assert.assertEquals(new AbsoluteDate("2017-06-15T10:53:00.000", utc).durationFrom(metadata.getStopTime()), 0.0, 0.0);
-        Assert.assertEquals("2017-06-15T10:53:00.000", metadata.getStopTimeString());
         Assert.assertEquals("DSS-25", metadata.getParticipants().get(1));
-        Assert.assertEquals("YYYY-NNNA", metadata.getParticipants().get(2));
+        Assert.assertEquals("yyyy-nnnA", metadata.getParticipants().get(2));
         Assert.assertEquals("P3", metadata.getParticipants().get(3));
         Assert.assertEquals("P4", metadata.getParticipants().get(4));
         Assert.assertEquals("P5", metadata.getParticipants().get(5));
@@ -952,7 +943,7 @@ public class TDMParserTest {
         Assert.assertEquals(32768.0, metadata.getRangeModulus(), 0.0);
         Assert.assertEquals("RU", metadata.getRangeUnits());
         Assert.assertEquals("RADEC", metadata.getAngleType());
-        Assert.assertEquals("EME2000", metadata.getReferenceFrameString());
+        Assert.assertEquals("EME2000", metadata.getReferenceFrame().getName());
         Assert.assertEquals(true,FramesFactory.getEME2000().equals(metadata.getReferenceFrame()));
         Assert.assertEquals(0.000077, metadata.getTransmitDelays().get(1), 0.0);
         Assert.assertEquals(0.000077, metadata.getTransmitDelays().get(2), 0.0);

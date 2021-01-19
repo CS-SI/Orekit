@@ -42,6 +42,9 @@ public class NDMMetadata {
     /** IERS conventions to use. */
     private final IERSConventions conventions;
 
+    /** Indicator for simple or accurate EOP interpolation. */
+    private final  boolean simpleEOP;
+
     /** Data context. */
     private final DataContext dataContext;
 
@@ -53,10 +56,12 @@ public class NDMMetadata {
 
     /** Create a new meta-data.
      * @param conventions IERS conventions to use
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext data context to use
      */
-    public NDMMetadata(final IERSConventions conventions, final DataContext dataContext) {
+    public NDMMetadata(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext) {
         this.conventions = conventions;
+        this.simpleEOP   = simpleEOP;
         this.dataContext = dataContext;
         this.comments    = new ArrayList<>();
     }
@@ -66,6 +71,13 @@ public class NDMMetadata {
      */
     public IERSConventions getConventions() {
         return conventions;
+    }
+
+    /** Get EOP interpolation method.
+     * @return true if tidal effects are ignored when interpolating EOP
+     */
+    public boolean isSimpleEOP() {
+        return simpleEOP;
     }
 
     /** Get the data context.

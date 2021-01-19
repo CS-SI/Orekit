@@ -67,7 +67,7 @@ public class OPMParserTest {
 
         final InputStream inEntry = getClass().getResourceAsStream(ex);
 
-        final OPMFile file = parser.parse(inEntry, "OPMExample1.txt");
+        final OPMFile file = parser.oldParse(inEntry, "OPMExample1.txt");
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
 
         // Check Header Block;
@@ -133,14 +133,14 @@ public class OPMParserTest {
         final OPMParser parser = new OPMParser();
 
         try {
-            parser.parse(getClass().getResourceAsStream(ex), "OPMExample2.txt");
+            parser.oldParse(getClass().getResourceAsStream(ex), "OPMExample2.txt");
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS, oe.getSpecifier());
         }
         final OPMFile file = parser.
                         withConventions(IERSConventions.IERS_2010).
-                        parse(getClass().getResourceAsStream(ex), "OPMExample2.txt");
+                        oldParse(getClass().getResourceAsStream(ex), "OPMExample2.txt");
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
 
         // Check Header Block;
@@ -251,7 +251,7 @@ public class OPMParserTest {
         final OPMParser parser = new OPMParser();
         final InputStream inEntry = getClass().getResourceAsStream(ex);
 
-        final OPMFile file = parser.parse(inEntry, "OPMExample2.txt");
+        final OPMFile file = parser.oldParse(inEntry, "OPMExample2.txt");
         try {
             file.getConventions();
             Assert.fail("an exception should have been thrown");
@@ -502,7 +502,7 @@ public class OPMParserTest {
                            withMissionReferenceDate(new AbsoluteDate()).
                            withConventions(IERSConventions.IERS_2010);
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final OPMFile file = parser.parse(inEntry, "OPMExample4.txt");
+        final OPMFile file = parser.oldParse(inEntry, "OPMExample4.txt");
         file.getMetadata().getFrame().toString();
         file.getMetadata().getObjectID();
         file.getData().getEpoch();
@@ -630,7 +630,7 @@ public class OPMParserTest {
                                  withConventions(IERSConventions.IERS_2010);
 
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final OPMFile file = parser.parse(inEntry, "OPMExample4.txt");
+        final OPMFile file = parser.oldParse(inEntry, "OPMExample4.txt");
 
         final String satId = "2000-028A";
         Assert.assertEquals(satId, file.getMetadata().getObjectID());
@@ -661,7 +661,7 @@ public class OPMParserTest {
     @Test
     public void testWrongODMType() {
         try {
-            new OPMParser().parse(getClass().getResourceAsStream("/ccsds/odm/omm/OMMExample1.txt"), "OMMExample1.txt");
+            new OPMParser().oldParse(getClass().getResourceAsStream("/ccsds/odm/omm/OMMExample1.txt"), "OMMExample1.txt");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
             Assert.assertEquals(1, oe.getParts()[0]);
@@ -674,7 +674,7 @@ public class OPMParserTest {
     public void testNumberFormatErrorType() {
         try {
             OPMParser parser = new OPMParser().withConventions(IERSConventions.IERS_2010);
-            parser.parse(getClass().getResourceAsStream("/ccsds/odm/opm/OPM-number-format-error.txt"),
+            parser.oldParse(getClass().getResourceAsStream("/ccsds/odm/opm/OPM-number-format-error.txt"),
                          "OPM-number-format-error.txt");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());

@@ -26,6 +26,7 @@ import org.orekit.files.ccsds.ndm.NDMParser;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.CenterName;
 import org.orekit.files.ccsds.utils.KeyValue;
+import org.orekit.files.ccsds.utils.lexical.ParsingState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -52,12 +53,14 @@ public abstract class ADMParser<T extends ADMFile<?>, P extends ADMParser<T, ?>>
     /** Complete constructor.
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param dataContext used to retrieve frames and time scales.
+     * @param dataContext used to retrieve frames and time scales
+     * @param initialState initial parsing state
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      */
-    protected ADMParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
+    protected ADMParser(final IERSConventions conventions, final boolean simpleEOP,
+                        final DataContext dataContext, final ParsingState initialState,
                         final AbsoluteDate missionReferenceDate) {
-        super(conventions, simpleEOP, dataContext);
+        super(conventions, simpleEOP, dataContext, initialState);
         this.missionReferenceDate = missionReferenceDate;
     }
 
@@ -65,14 +68,16 @@ public abstract class ADMParser<T extends ADMFile<?>, P extends ADMParser<T, ?>>
     @Override
     protected P create(final IERSConventions newConventions,
                        final boolean newSimpleEOP,
-                       final DataContext newDataContext) {
-        return create(newConventions, newSimpleEOP, newDataContext, missionReferenceDate);
+                       final DataContext newDataContext,
+                       final ParsingState newInitialState) {
+        return create(newConventions, newSimpleEOP, newDataContext, newInitialState, missionReferenceDate);
     }
 
     /** Build a new instance.
      * @param newConventions IERS conventions to use while parsing
      * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param newDataContext data context used for frames, time scales, and celestial bodies
+     * @param newInitialState initial parsing state
      * @param newMissionReferenceDate mission reference date to use while parsing
      * @return a new instance with changed parameters
      * @since 11.0
@@ -80,6 +85,7 @@ public abstract class ADMParser<T extends ADMFile<?>, P extends ADMParser<T, ?>>
     protected abstract P create(IERSConventions newConventions,
                                 boolean newSimpleEOP,
                                 DataContext newDataContext,
+                                ParsingState newInitialState,
                                 AbsoluteDate newMissionReferenceDate);
 
     /**
@@ -89,7 +95,8 @@ public abstract class ADMParser<T extends ADMFile<?>, P extends ADMParser<T, ?>>
      * @see #getMissionReferenceDate()
      */
     public P withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
-        return create(getConventions(), isSimpleEOP(), getDataContext(), newMissionReferenceDate);
+        return create(getConventions(), isSimpleEOP(), getDataContext(), getInitialState(),
+                      newMissionReferenceDate);
     }
 
     /**
@@ -107,7 +114,7 @@ public abstract class ADMParser<T extends ADMFile<?>, P extends ADMParser<T, ?>>
      * @param fileName name of the file containing the message (for error messages)
      * @return parsed ADM file
      */
-    public abstract T parse(InputStream stream, String fileName);
+    public abstract T oldParse(InputStream stream, String fileName);
 
     /**
      * Parse an entry from the header.
@@ -182,9 +189,8 @@ public abstract class ADMParser<T extends ADMFile<?>, P extends ADMParser<T, ?>>
 
             case TIME_SYSTEM:
                 if (!CcsdsTimeScale.contains(keyValue.getValue())) {
-                    throw new OrekitException(
-                            OrekitMessages.CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED,
-                            keyValue.getValue());
+                    throw new OrekitException(OrekitMessages.CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED,
+                                              keyValue.getValue());
                 }
                 final CcsdsTimeScale timeSystem =
                         CcsdsTimeScale.valueOf(keyValue.getValue());

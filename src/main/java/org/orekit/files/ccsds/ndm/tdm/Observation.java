@@ -28,7 +28,7 @@ import org.orekit.time.AbsoluteDate;
  *  - a timetag, the epoch of the observation;<p>
  *  - a measurement, the value of the observation.<p>
  * @see Keyword
- * @author mjournot
+ * @author Maxime Journot
  */
 public class Observation {
 

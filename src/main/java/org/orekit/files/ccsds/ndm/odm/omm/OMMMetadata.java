@@ -29,10 +29,11 @@ public class OMMMetadata extends OCommonMetadata {
 
     /** Create a new meta-data.
      * @param conventions IERS conventions to use
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext data context to use
      */
-    public OMMMetadata(final IERSConventions conventions, final DataContext dataContext) {
-        super(conventions, dataContext);
+    public OMMMetadata(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext) {
+        super(conventions, simpleEOP, dataContext);
     }
 
     /** Get the description of the Mean Element Theory.

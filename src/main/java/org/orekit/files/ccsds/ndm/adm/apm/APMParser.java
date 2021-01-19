@@ -36,6 +36,7 @@ import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
 import org.orekit.files.ccsds.ndm.adm.ADMParser;
 import org.orekit.files.ccsds.ndm.adm.ADMSegment;
 import org.orekit.files.ccsds.utils.KeyValue;
+import org.orekit.files.ccsds.utils.lexical.ParsingState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -98,18 +99,20 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
      * @see #withDataContext(DataContext)
      */
     public APMParser(final DataContext dataContext) {
-        this(null, true, dataContext, AbsoluteDate.FUTURE_INFINITY);
+        this(null, true, dataContext, null, AbsoluteDate.FUTURE_INFINITY);
     }
 
     /** Complete constructor.
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
+     * @param initialState initial parsing state
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      */
-    private APMParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
+    private APMParser(final IERSConventions conventions, final boolean simpleEOP,
+                      final DataContext dataContext, final ParsingState initialState,
                       final AbsoluteDate missionReferenceDate) {
-        super(conventions, simpleEOP, dataContext, missionReferenceDate);
+        super(conventions, simpleEOP, dataContext, initialState, missionReferenceDate);
     }
 
     /** {@inheritDoc} */
@@ -117,17 +120,18 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
     protected APMParser create(final IERSConventions newConventions,
                                final boolean newSimpleEOP,
                                final DataContext newDataContext,
+                               final ParsingState newInitialState,
                                final AbsoluteDate newMissionReferenceDate) {
-        return new APMParser(newConventions, newSimpleEOP, newDataContext, newMissionReferenceDate);
+        return new APMParser(newConventions, newSimpleEOP, newDataContext, newInitialState, newMissionReferenceDate);
     }
 
     /** {@inheritDoc} */
     @Override
-    public APMFile parse(final InputStream stream, final String fileName) {
+    public APMFile oldParse(final InputStream stream, final String fileName) {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
 
             // initialize internal data structures
-            final ParseInfo pi = new ParseInfo(getConventions(), getDataContext());
+            final ParseInfo pi = new ParseInfo(getConventions(), isSimpleEOP(), getDataContext());
             pi.fileName = fileName;
 
             // set the additional data that has been configured prior the parsing by the user.
@@ -142,45 +146,45 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
                     // Blank line
                     continue;
                 }
-                pi.keyValue = new KeyValue(pi.line, pi.lineNumber, pi.fileName);
-                if (pi.keyValue.getKeyword() == null) {
+                pi.entry = new KeyValue(pi.line, pi.lineNumber, pi.fileName);
+                if (pi.entry.getKeyword() == null) {
                     // Unexpected keyword. An exception is thrown.
                     throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD,
                                               pi.lineNumber, pi.fileName, pi.line);
                 }
 
-                switch (pi.keyValue.getKeyword()) {
+                switch (pi.entry.getKeyword()) {
 
                     case CCSDS_APM_VERS:
-                        pi.file.getHeader().setFormatVersion(pi.keyValue.getDoubleValue());
+                        pi.file.getHeader().setFormatVersion(pi.entry.getDoubleValue());
                         break;
 
                     case Q_FRAME_A:
-                        pi.data.setQuaternionFrameAString(pi.keyValue.getValue());
+                        pi.data.setQuaternionFrameAString(pi.entry.getValue());
                         break;
 
                     case Q_FRAME_B:
-                        pi.data.setQuaternionFrameBString(pi.keyValue.getValue());
+                        pi.data.setQuaternionFrameBString(pi.entry.getValue());
                         break;
 
                     case Q_DIR:
-                        pi.data.setAttitudeQuaternionDirection(pi.keyValue.getValue());
+                        pi.data.setAttitudeQuaternionDirection(pi.entry.getValue());
                         break;
 
                     case QC:
-                        pi.q0 = pi.keyValue.getDoubleValue();
+                        pi.q0 = pi.entry.getDoubleValue();
                         break;
 
                     case Q1:
-                        pi.q1 = pi.keyValue.getDoubleValue();
+                        pi.q1 = pi.entry.getDoubleValue();
                         break;
 
                     case Q2:
-                        pi.q2 = pi.keyValue.getDoubleValue();
+                        pi.q2 = pi.entry.getDoubleValue();
                         break;
 
                     case Q3:
-                        pi.q3 = pi.keyValue.getDoubleValue();
+                        pi.q3 = pi.entry.getDoubleValue();
                         break;
 
                     case MAN_EPOCH_START:
@@ -188,7 +192,7 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
                             pi.data.addManeuver(pi.maneuver);
                         }
                         pi.maneuver = new APMManeuver();
-                        pi.maneuver.setEpochStart(parseDate(pi.keyValue.getValue(), pi.metadata.getTimeSystem(),
+                        pi.maneuver.setEpochStart(parseDate(pi.entry.getValue(), pi.metadata.getTimeSystem(),
                                                             pi.lineNumber, pi.fileName, pi.line));
                         if (!pi.commentTmp.isEmpty()) {
                             pi.maneuver.setComments(pi.commentTmp);
@@ -197,42 +201,42 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
                         break;
 
                     case MAN_DURATION:
-                        pi.maneuver.setDuration(pi.keyValue.getDoubleValue());
+                        pi.maneuver.setDuration(pi.entry.getDoubleValue());
                         break;
 
                     case MAN_REF_FRAME:
-                        pi.maneuver.setRefFrameString(pi.keyValue.getValue());
+                        pi.maneuver.setRefFrameString(pi.entry.getValue());
                         break;
 
                     case MAN_TOR_1:
-                        pi.maneuver.setTorque(new Vector3D(pi.keyValue.getDoubleValue(),
+                        pi.maneuver.setTorque(new Vector3D(pi.entry.getDoubleValue(),
                                                            pi.maneuver.getTorque().getY(),
                                                            pi.maneuver.getTorque().getZ()));
                         break;
 
                     case MAN_TOR_2:
                         pi.maneuver.setTorque(new Vector3D(pi.maneuver.getTorque().getX(),
-                                                           pi.keyValue.getDoubleValue(),
+                                                           pi.entry.getDoubleValue(),
                                                            pi.maneuver.getTorque().getZ()));
                         break;
 
                     case MAN_TOR_3:
                         pi.maneuver.setTorque(new Vector3D(pi.maneuver.getTorque().getX(),
                                                            pi.maneuver.getTorque().getY(),
-                                                           pi.keyValue.getDoubleValue()));
+                                                           pi.entry.getDoubleValue()));
                         break;
 
                     default:
                         final boolean parsed;
                         if (pi.parsingHeader) {
-                            parsed = parseHeaderEntry(pi.keyValue, pi.file);
+                            parsed = parseHeaderEntry(pi.entry, pi.file);
                             if (pi.file.getHeader().getOriginator() != null) {
                                 // this was the end of the header part
                                 pi.parsingHeader   = false;
                                 pi.parsingMetaData = true;
                             }
                         } else if (pi.parsingMetaData) {
-                            parsed = parseMetaDataEntry(pi.keyValue, pi.metadata);
+                            parsed = parseMetaDataEntry(pi.entry, pi.metadata);
                             if (pi.metadata.getTimeSystem() != null) {
                                 // this was the end of the metadata part
                                 pi.parsingMetaData = false;
@@ -267,21 +271,21 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
      * @return true if the keyword was a meta-data keyword and has been parsed
      */
     private boolean parseGeneralStateDataEntry(final ParseInfo pi) {
-        switch (pi.keyValue.getKeyword()) {
+        switch (pi.entry.getKeyword()) {
 
             case COMMENT:
-                pi.commentTmp.add(pi.keyValue.getValue());
+                pi.commentTmp.add(pi.entry.getValue());
                 return true;
 
             case EPOCH:
                 pi.data.setEpochComment(pi.commentTmp);
                 pi.commentTmp.clear();
-                pi.data.setEpoch(parseDate(pi.keyValue.getValue(), pi.metadata.getTimeSystem(),
+                pi.data.setEpoch(parseDate(pi.entry.getValue(), pi.metadata.getTimeSystem(),
                                         pi.lineNumber, pi.fileName, pi.line));
                 return true;
 
             case QC_DOT:
-                pi.data.setQuaternionDot(new Quaternion(pi.keyValue.getDoubleValue(),
+                pi.data.setQuaternionDot(new Quaternion(pi.entry.getDoubleValue(),
                                                         pi.data.getQuaternionDot().getQ1(),
                                                         pi.data.getQuaternionDot().getQ2(),
                                                         pi.data.getQuaternionDot().getQ3()));
@@ -289,7 +293,7 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
 
             case Q1_DOT:
                 pi.data.setQuaternionDot(new Quaternion(pi.data.getQuaternionDot().getQ0(),
-                                                        pi.keyValue.getDoubleValue(),
+                                                        pi.entry.getDoubleValue(),
                                                         pi.data.getQuaternionDot().getQ2(),
                                                         pi.data.getQuaternionDot().getQ3()));
                 return true;
@@ -297,7 +301,7 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
             case Q2_DOT:
                 pi.data.setQuaternionDot(new Quaternion(pi.data.getQuaternionDot().getQ0(),
                                                         pi.data.getQuaternionDot().getQ1(),
-                                                        pi.keyValue.getDoubleValue(),
+                                                        pi.entry.getDoubleValue(),
                                                         pi.data.getQuaternionDot().getQ3()));
                 return true;
 
@@ -305,137 +309,137 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
                 pi.data.setQuaternionDot(new Quaternion(pi.data.getQuaternionDot().getQ0(),
                                                         pi.data.getQuaternionDot().getQ1(),
                                                         pi.data.getQuaternionDot().getQ2(),
-                                                        pi.keyValue.getDoubleValue()));
+                                                        pi.entry.getDoubleValue()));
                 return true;
 
             case EULER_FRAME_A:
                 pi.data.setEulerComment(pi.commentTmp);
                 pi.commentTmp.clear();
-                pi.data.setEulerFrameAString(pi.keyValue.getValue());
+                pi.data.setEulerFrameAString(pi.entry.getValue());
                 return true;
 
             case EULER_FRAME_B:
-                pi.data.setEulerFrameBString(pi.keyValue.getValue());
+                pi.data.setEulerFrameBString(pi.entry.getValue());
                 return true;
 
             case EULER_DIR:
-                pi.data.setEulerDirection(pi.keyValue.getValue());
+                pi.data.setEulerDirection(pi.entry.getValue());
                 return true;
 
             case EULER_ROT_SEQ:
-                pi.data.setEulerRotSeq(pi.keyValue.getValue());
+                pi.data.setEulerRotSeq(pi.entry.getValue());
                 return true;
 
             case RATE_FRAME:
-                pi.data.setRateFrameString(pi.keyValue.getValue());
+                pi.data.setRateFrameString(pi.entry.getValue());
                 return true;
 
             case X_ANGLE:
-                pi.data.setRotationAngles(new Vector3D(toRadians(pi.keyValue),
+                pi.data.setRotationAngles(new Vector3D(toRadians(pi.entry),
                                                        pi.data.getRotationAngles().getY(),
                                                        pi.data.getRotationAngles().getZ()));
                 return true;
 
             case Y_ANGLE:
                 pi.data.setRotationAngles(new Vector3D(pi.data.getRotationAngles().getX(),
-                                                       toRadians(pi.keyValue),
+                                                       toRadians(pi.entry),
                                                        pi.data.getRotationAngles().getZ()));
                 return true;
 
             case Z_ANGLE:
                 pi.data.setRotationAngles(new Vector3D(pi.data.getRotationAngles().getX(),
                                                        pi.data.getRotationAngles().getY(),
-                                                       toRadians(pi.keyValue)));
+                                                       toRadians(pi.entry)));
                 return true;
 
             case X_RATE:
-                pi.data.setRotationRates(new Vector3D(toRadians(pi.keyValue),
+                pi.data.setRotationRates(new Vector3D(toRadians(pi.entry),
                                                       pi.data.getRotationRates().getY(),
                                                       pi.data.getRotationRates().getZ()));
                 return true;
 
             case Y_RATE:
                 pi.data.setRotationRates(new Vector3D(pi.data.getRotationRates().getX(),
-                                                      toRadians(pi.keyValue),
+                                                      toRadians(pi.entry),
                                                       pi.data.getRotationRates().getZ()));
                 return true;
 
             case Z_RATE:
                 pi.data.setRotationRates(new Vector3D(pi.data.getRotationRates().getX(),
                                                       pi.data.getRotationRates().getY(),
-                                                      toRadians(pi.keyValue)));
+                                                      toRadians(pi.entry)));
                 return true;
 
             case SPIN_FRAME_A:
                 pi.data.setSpinComment(pi.commentTmp);
                 pi.commentTmp.clear();
-                pi.data.setSpinFrameAString(pi.keyValue.getValue());
+                pi.data.setSpinFrameAString(pi.entry.getValue());
                 return true;
 
             case SPIN_FRAME_B:
-                pi.data.setSpinFrameBString(pi.keyValue.getValue());
+                pi.data.setSpinFrameBString(pi.entry.getValue());
                 return true;
 
             case SPIN_DIR:
-                pi.data.setSpinDirection(pi.keyValue.getValue());
+                pi.data.setSpinDirection(pi.entry.getValue());
                 return true;
 
             case SPIN_ALPHA:
-                pi.data.setSpinAlpha(toRadians(pi.keyValue));
+                pi.data.setSpinAlpha(toRadians(pi.entry));
                 return true;
 
             case SPIN_DELTA:
-                pi.data.setSpinDelta(toRadians(pi.keyValue));
+                pi.data.setSpinDelta(toRadians(pi.entry));
                 return true;
 
             case SPIN_ANGLE:
-                pi.data.setSpinAngle(toRadians(pi.keyValue));
+                pi.data.setSpinAngle(toRadians(pi.entry));
                 return true;
 
             case SPIN_ANGLE_VEL:
-                pi.data.setSpinAngleVel(toRadians(pi.keyValue));
+                pi.data.setSpinAngleVel(toRadians(pi.entry));
                 return true;
 
             case NUTATION:
-                pi.data.setNutation(toRadians(pi.keyValue));
+                pi.data.setNutation(toRadians(pi.entry));
                 return true;
 
             case NUTATION_PER:
-                pi.data.setNutationPeriod(pi.keyValue.getDoubleValue());
+                pi.data.setNutationPeriod(pi.entry.getDoubleValue());
                 return true;
 
             case NUTATION_PHASE:
-                pi.data.setNutationPhase(toRadians(pi.keyValue));
+                pi.data.setNutationPhase(toRadians(pi.entry));
                 return true;
 
             case INERTIA_REF_FRAME:
                 pi.data.setSpacecraftComment(pi.commentTmp);
                 pi.commentTmp.clear();
-                pi.data.setInertiaRefFrameString(pi.keyValue.getValue());
+                pi.data.setInertiaRefFrameString(pi.entry.getValue());
                 return true;
 
             case I11:
-                pi.data.setI11(pi.keyValue.getDoubleValue());
+                pi.data.setI11(pi.entry.getDoubleValue());
                 return true;
 
             case I22:
-                pi.data.setI22(pi.keyValue.getDoubleValue());
+                pi.data.setI22(pi.entry.getDoubleValue());
                 return true;
 
             case I33:
-                pi.data.setI33(pi.keyValue.getDoubleValue());
+                pi.data.setI33(pi.entry.getDoubleValue());
                 return true;
 
             case I12:
-                pi.data.setI12(pi.keyValue.getDoubleValue());
+                pi.data.setI12(pi.entry.getDoubleValue());
                 return true;
 
             case I13:
-                pi.data.setI13(pi.keyValue.getDoubleValue());
+                pi.data.setI13(pi.entry.getDoubleValue());
                 return true;
 
             case I23:
-                pi.data.setI23(pi.keyValue.getDoubleValue());
+                pi.data.setI23(pi.entry.getDoubleValue());
                 return true;
 
             default:
@@ -476,7 +480,7 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
         private String line;
 
         /** Key value of the line being read. */
-        private KeyValue keyValue;
+        private KeyValue entry;
 
         /** Stored comments. */
         private List<String> commentTmp;
@@ -504,11 +508,12 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
 
         /** Create a new {@link ParseInfo} object.
          * @param conventions IERS conventions to use
+         * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
          * @param dataContext data context to use
          */
-        ParseInfo(final IERSConventions conventions, final DataContext dataContext) {
+        ParseInfo(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext) {
             file            = new APMFile();
-            metadata        = new ADMMetadata(conventions, dataContext);
+            metadata        = new ADMMetadata(conventions, simpleEOP, dataContext);
             data            = new APMData();
             lineNumber      = 0;
             commentTmp      = new ArrayList<>();

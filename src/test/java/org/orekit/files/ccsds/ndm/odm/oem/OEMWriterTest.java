@@ -86,7 +86,7 @@ public class OEMWriterTest {
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM())
                 .withConventions(IERSConventions.IERS_2010);
-        final OEMFile oemFile = parser.parse(inEntry, "OEMExample1.txt");
+        final OEMFile oemFile = parser.oldParse(inEntry, "OEMExample1.txt");
         final EphemerisFile ephemerisFile = (EphemerisFile) oemFile;
 
         String originator = oemFile.getHeader().getOriginator();
@@ -108,7 +108,7 @@ public class OEMWriterTest {
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM())
                 .withConventions(IERSConventions.IERS_2010);
-        final OEMFile oemFile = parser.parse(inEntry, "OEMExample1.txt");
+        final OEMFile oemFile = parser.oldParse(inEntry, "OEMExample1.txt");
         final EphemerisFile ephemerisFile = (EphemerisFile) oemFile;
 
         String badObjectId = "12345";
@@ -132,7 +132,7 @@ public class OEMWriterTest {
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM())
                 .withConventions(IERSConventions.IERS_2010);
-        final OEMFile oemFile = parser.parse(inEntry, "OEMExample1.txt");
+        final OEMFile oemFile = parser.oldParse(inEntry, "OEMExample1.txt");
         final EphemerisFile ephemerisFile = (EphemerisFile) oemFile;
         String originator = oemFile.getHeader().getOriginator();
         String objectName = oemFile.getSegments().get(0).getMetadata().getObjectName();
@@ -173,7 +173,7 @@ public class OEMWriterTest {
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM())
                 .withConventions(IERSConventions.IERS_2010);
-        final OEMFile oemFile = parser.parse(inEntry, "OEMExample1.txt");
+        final OEMFile oemFile = parser.oldParse(inEntry, "OEMExample1.txt");
         final EphemerisFile ephemerisFile = (EphemerisFile) oemFile;
 
         String tempOEMFilePath = tempFolder.newFile("TestOEMUnisatelliteWithDefault.oem").toString();
@@ -216,7 +216,7 @@ public class OEMWriterTest {
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM())
                 .withConventions(IERSConventions.IERS_2010);
-        final OEMFile oemFile = parser.parse(inEntry, "OEMExampleWithHeaderComment.txt");
+        final OEMFile oemFile = parser.oldParse(inEntry, "OEMExampleWithHeaderComment.txt");
 
         String tempOEMFilePath = tempFolder.newFile("TestOEMIssue723.aem").toString();
         OEMWriter writer = new OEMWriter();
@@ -237,7 +237,7 @@ public class OEMWriterTest {
         String exampleFile = "/ccsds/odm/oem/OEMExample4.txt";
         InputStream inEntry = getClass().getResourceAsStream(exampleFile);
         OEMParser parser = new OEMParser().withConventions(IERSConventions.IERS_2010);
-        OEMFile oemFile = parser.parse(inEntry, "OEMExample4.txt");
+        OEMFile oemFile = parser.oldParse(inEntry, "OEMExample4.txt");
         StringBuilder buffer = new StringBuilder();
 
         OEMWriter writer = new OEMWriter(OEMWriter.DEFAULT_INTERPOLATION_METHOD,

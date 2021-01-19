@@ -33,6 +33,7 @@ import org.orekit.files.ccsds.ndm.NDMSegment;
 import org.orekit.files.ccsds.ndm.odm.ODMParser;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.KeyValue;
+import org.orekit.files.ccsds.utils.lexical.ParsingState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -109,18 +110,20 @@ public class OCMParser extends ODMParser<OCMFile, OCMParser> {
      * @see #withDataContext(DataContext)
      */
     public OCMParser(final DataContext dataContext) {
-        this(null, true, dataContext, Double.NaN);
+        this(null, true, dataContext, null, Double.NaN);
     }
 
     /** Complete constructor.
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param dataContext used to retrieve frames and time scales.
+     * @param dataContext used to retrieve frames and time scales
+     * @param initialState initial parsing state
      * @param mu gravitational coefficient
      */
     private OCMParser(final IERSConventions conventions, final boolean simpleEOP,
-                      final DataContext dataContext, final double mu) {
-        super(conventions, simpleEOP, dataContext);
+                      final DataContext dataContext, final ParsingState initialState,
+                      final double mu) {
+        super(conventions, simpleEOP, dataContext, initialState);
         this.mu = mu;
     }
 
@@ -130,33 +133,36 @@ public class OCMParser extends ODMParser<OCMFile, OCMParser> {
      * @see #getMu()
      */
     public OCMParser withMu(final double newMu) {
-        return create(getConventions(), isSimpleEOP(), getDataContext(), newMu);
+        return create(getConventions(), isSimpleEOP(), getDataContext(), getInitialState(), newMu);
     }
 
     /** {@inheritDoc} */
     @Override
     protected OCMParser create(final IERSConventions newConventions,
                                final boolean newSimpleEOP,
-                               final DataContext newDataContext) {
-        return create(newConventions, newSimpleEOP, newDataContext, mu);
+                               final DataContext newDataContext,
+                               final ParsingState newInitialState) {
+        return create(newConventions, newSimpleEOP, newDataContext, newInitialState, mu);
     }
 
     /** Build a new instance.
      * @param newConventions IERS conventions to use while parsing
      * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param newDataContext data context used for frames, time scales, and celestial bodies
+     * @param newInitialState initial parsing state
      * @param newMu gravitational coefficient to use while parsing
      * @return a new instance with changed parameters
      */
     protected OCMParser create(final IERSConventions newConventions,
                                final boolean newSimpleEOP,
                                final DataContext newDataContext,
+                               final ParsingState newInitialState,
                                final double newMu) {
-        return new OCMParser(newConventions, newSimpleEOP, newDataContext, newMu);
+        return new OCMParser(newConventions, newSimpleEOP, newDataContext, newInitialState, newMu);
     }
 
     /** {@inheritDoc} */
-    public OCMFile parse(final InputStream stream, final String fileName) {
+    public OCMFile oldParse(final InputStream stream, final String fileName) {
 
         // declare the mandatory keywords as expected
         for (final Keyword keyword : MANDATORY_KEYWORDS) {
@@ -166,7 +172,7 @@ public class OCMParser extends ODMParser<OCMFile, OCMParser> {
         try (InputStreamReader isr = new InputStreamReader(stream, StandardCharsets.UTF_8);
              BufferedReader reader = new BufferedReader(isr)) {
             // initialize internal data structures
-            final ParseInfo pi = new ParseInfo(getConventions(), getDataContext());
+            final ParseInfo pi = new ParseInfo(getConventions(), isSimpleEOP(), getDataContext());
             pi.fileName        = fileName;
 
             Section previousSection = Section.HEADER;
@@ -176,8 +182,8 @@ public class OCMParser extends ODMParser<OCMFile, OCMParser> {
                 if (pi.line.trim().length() == 0) {
                     continue;
                 }
-                pi.keyValue = new KeyValue(pi.line, pi.lineNumber, pi.fileName);
-                if (pi.keyValue.getKeyword() == null) {
+                pi.entry = new KeyValue(pi.line, pi.lineNumber, pi.fileName);
+                if (pi.entry.getKeyword() == null) {
                     // we do not change section, maybe the current section can deal with null keywords
                     if (!section.parseEntry(this, pi)) {
                         throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
@@ -185,20 +191,20 @@ public class OCMParser extends ODMParser<OCMFile, OCMParser> {
                     }
                 } else {
                     // there is a keyword in this line
-                    declareFound(pi.keyValue.getKeyword());
+                    declareFound(pi.entry.getKeyword());
 
-                    switch (pi.keyValue.getKeyword()) {
+                    switch (pi.entry.getKeyword()) {
 
                         case COMMENT:
                             switch (section) {
                                 case HEADER:
-                                    pi.file.getHeader().addComment(pi.keyValue.getValue());
+                                    pi.file.getHeader().addComment(pi.entry.getValue());
                                     break;
                                 case META_DATA :
-                                    pi.metadata.addComment(pi.keyValue.getValue());
+                                    pi.metadata.addComment(pi.entry.getValue());
                                     break;
                                 case ORBIT :
-                                    pi.orbitalStateHistory.addComment(pi.keyValue.getValue());
+                                    pi.orbitalStateHistory.addComment(pi.entry.getValue());
                                     break;
                                 case PHYSICS :
                                     // TODO
@@ -225,7 +231,7 @@ public class OCMParser extends ODMParser<OCMFile, OCMParser> {
                             break;
 
                         case CCSDS_OCM_VERS:
-                            pi.file.getHeader().setFormatVersion(pi.keyValue.getDoubleValue());
+                            pi.file.getHeader().setFormatVersion(pi.entry.getDoubleValue());
                             break;
 
                         case META_START :
@@ -374,7 +380,7 @@ public class OCMParser extends ODMParser<OCMFile, OCMParser> {
 
         // the current section was not allowed here
         throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD,
-                                  pi.lineNumber, pi.fileName, pi.keyValue.getLine());
+                                  pi.lineNumber, pi.fileName, pi.entry.getLine());
 
     }
 
@@ -601,17 +607,18 @@ public class OCMParser extends ODMParser<OCMFile, OCMParser> {
         private String line;
 
         /** Key value of the line being read. */
-        private KeyValue keyValue;
+        private KeyValue entry;
 
         /** Create a new {@link ParseInfo} object.
          * @param conventions IERS conventions to use
+         * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
          * @param dataContext data context to use
          */
-        ParseInfo(final IERSConventions conventions, final DataContext dataContext) {
+        ParseInfo(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext) {
             file                  = new OCMFile();
             file.setConventions(conventions);
             file.setDataContext(dataContext);
-            metadata              = new OCMMetadata(conventions, dataContext);
+            metadata              = new OCMMetadata(conventions, simpleEOP, dataContext);
             data                  = new OCMData();
             lineNumber            = 0;
         }
@@ -626,7 +633,7 @@ public class OCMParser extends ODMParser<OCMFile, OCMParser> {
             /** {@inheritDoc}*/
             @Override
             protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
-                return parser.parseHeaderEntry(pi.keyValue, pi.file);
+                return parser.parseHeaderEntry(pi.entry, pi.file);
             }
         },
 
@@ -635,7 +642,7 @@ public class OCMParser extends ODMParser<OCMFile, OCMParser> {
             /** {@inheritDoc}*/
             @Override
             protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
-                return parser.parseMetaDataEntry(pi.keyValue, pi.metadata,
+                return parser.parseMetaDataEntry(pi.entry, pi.metadata,
                                                  pi.lineNumber, pi.fileName, pi.line);
             }
         },
@@ -645,9 +652,9 @@ public class OCMParser extends ODMParser<OCMFile, OCMParser> {
             /** {@inheritDoc}*/
             @Override
             protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
-                if (pi.keyValue.getKeyword() == null) {
+                if (pi.entry.getKeyword() == null) {
                     // this is an orbital state line
-                    final String[] elements = pi.keyValue.getLine().trim().split("\\s+");
+                    final String[] elements = pi.entry.getLine().trim().split("\\s+");
                     final AbsoluteDate date;
                     if (elements.length > 0) {
                         if (elements[0].indexOf('T') > 0) {
@@ -665,52 +672,52 @@ public class OCMParser extends ODMParser<OCMFile, OCMParser> {
                     }
                 } else {
                     // this is a key=value line
-                    switch (pi.keyValue.getKeyword()) {
+                    switch (pi.entry.getKeyword()) {
                         case ORB_ID :
-                            pi.orbitalStateHistory.setOrbID(pi.keyValue.getValue());
+                            pi.orbitalStateHistory.setOrbID(pi.entry.getValue());
                             break;
                         case ORB_PREV_ID :
-                            pi.orbitalStateHistory.setOrbPrevID(pi.keyValue.getValue());
+                            pi.orbitalStateHistory.setOrbPrevID(pi.entry.getValue());
                             break;
                         case ORB_NEXT_ID :
-                            pi.orbitalStateHistory.setOrbNextID(pi.keyValue.getValue());
+                            pi.orbitalStateHistory.setOrbNextID(pi.entry.getValue());
                             break;
                         case ORB_BASIS :
-                            pi.orbitalStateHistory.setOrbBasis(OrbitBasis.valueOf(pi.keyValue.getValue()));
+                            pi.orbitalStateHistory.setOrbBasis(OrbitBasis.valueOf(pi.entry.getValue()));
                             break;
                         case ORB_BASIS_ID :
-                            pi.orbitalStateHistory.setOrbBasisID(pi.keyValue.getValue());
+                            pi.orbitalStateHistory.setOrbBasisID(pi.entry.getValue());
                             break;
                         case ORB_AVERAGING :
-                            pi.orbitalStateHistory.setOrbAveraging(pi.keyValue.getValue());
+                            pi.orbitalStateHistory.setOrbAveraging(pi.entry.getValue());
                             break;
                         case ORB_EPOCH_TZERO :
-                            pi.orbitalStateHistory.setOrbEpochT0(parser.parseDate(pi.keyValue.getValue(),
+                            pi.orbitalStateHistory.setOrbEpochT0(parser.parseDate(pi.entry.getValue(),
                                                                                   pi.orbitalStateHistory.getOrbTimeSystem(),
                                                                                   pi.lineNumber, pi.fileName, pi.line));
                             break;
                         case ORB_TIME_SYSTEM :
-                            pi.orbitalStateHistory.setOrbTimeSystem(CcsdsTimeScale.parse(pi.keyValue.getValue()));
+                            pi.orbitalStateHistory.setOrbTimeSystem(CcsdsTimeScale.parse(pi.entry.getValue()));
                             break;
                         case CENTER_NAME :
-                            pi.orbitalStateHistory.setCenterName(pi.keyValue.getValue());
+                            pi.orbitalStateHistory.setCenterName(pi.entry.getValue());
                             break;
                         case ORB_REF_FRAME :
-                            pi.orbitalStateHistory.setOrbRefFrame(parser.parseCCSDSFrame(pi.keyValue.getValue()));
+                            pi.orbitalStateHistory.setOrbRefFrame(parser.parseCCSDSFrame(pi.entry.getValue()));
                             break;
                         case ORB_FRAME_EPOCH :
-                            pi.orbitalStateHistory.setOrbFrameEpoch(parser.parseDate(pi.keyValue.getValue(),
+                            pi.orbitalStateHistory.setOrbFrameEpoch(parser.parseDate(pi.entry.getValue(),
                                                                                      pi.orbitalStateHistory.getOrbTimeSystem(),
                                                                                      pi.lineNumber, pi.fileName, pi.line));
                             break;
                         case ORB_TYPE :
-                            pi.orbitalStateHistory.setOrbType(ElementsType.valueOf(pi.keyValue.getValue()));
+                            pi.orbitalStateHistory.setOrbType(ElementsType.valueOf(pi.entry.getValue()));
                             break;
                         case ORB_N :
-                            pi.orbitalStateHistory.setOrbN(Integer.parseInt(pi.keyValue.getValue()));
+                            pi.orbitalStateHistory.setOrbN(Integer.parseInt(pi.entry.getValue()));
                             break;
                         case ORB_ELEMENTS :
-                            pi.orbitalStateHistory.setOrbElements(pi.keyValue.getValue());
+                            pi.orbitalStateHistory.setOrbElements(pi.entry.getValue());
                             break;
                         default :
                             return false;
@@ -735,7 +742,7 @@ public class OCMParser extends ODMParser<OCMFile, OCMParser> {
             /** {@inheritDoc}*/
             @Override
             protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
-                if (pi.keyValue.getKeyword() == null) {
+                if (pi.entry.getKeyword() == null) {
                     // TODO
                     return true;
                 } else {
@@ -750,7 +757,7 @@ public class OCMParser extends ODMParser<OCMFile, OCMParser> {
             /** {@inheritDoc}*/
             @Override
             protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
-                if (pi.keyValue.getKeyword() == null) {
+                if (pi.entry.getKeyword() == null) {
                     // TODO
                     return true;
                 } else {

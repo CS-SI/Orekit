@@ -96,7 +96,7 @@ public class OCMParserTest {
         final String   ex  = "/ccsds/odm/ocm/OCMExample1.txt";
         final OCMFile file = new OCMParser().
                              withConventions(IERSConventions.IERS_2010).
-                             parse(getClass().getResourceAsStream(ex),
+                             oldParse(getClass().getResourceAsStream(ex),
                                                    ex.substring(ex.lastIndexOf('/') + 1));
 
         // check the default values that are not set in this simple file
@@ -175,7 +175,7 @@ public class OCMParserTest {
     @Test
     public void testParseOCM2() {
         final String   ex  = "/ccsds/odm/ocm/OCMExample2.txt";
-        final OCMFile file = new OCMParser().parse(getClass().getResourceAsStream(ex),
+        final OCMFile file = new OCMParser().oldParse(getClass().getResourceAsStream(ex),
                                                    ex.substring(ex.lastIndexOf('/') + 1));
 
         // Check Header Block;
@@ -216,7 +216,7 @@ public class OCMParserTest {
         final String   ex  = "/ccsds/odm/ocm/OCMExample3.txt";
         final OCMFile file = new OCMParser().
                              withConventions(IERSConventions.IERS_2010).
-                             parse(getClass().getResourceAsStream(ex),
+                             oldParse(getClass().getResourceAsStream(ex),
                                                    ex.substring(ex.lastIndexOf('/') + 1));
 
         // Check Header Block;
@@ -246,7 +246,7 @@ public class OCMParserTest {
         final String   ex  = "/ccsds/odm/ocm/OCMExample4.txt";
         final OCMFile file = new OCMParser().
                         withConventions(IERSConventions.IERS_2010).
-                        parse(getClass().getResourceAsStream(ex), ex.substring(ex.lastIndexOf('/') + 1));
+                        oldParse(getClass().getResourceAsStream(ex), ex.substring(ex.lastIndexOf('/') + 1));
 
         // Check Header Block;
         Assert.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);

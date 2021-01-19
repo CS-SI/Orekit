@@ -36,6 +36,7 @@ import org.orekit.files.ccsds.Keyword;
 import org.orekit.files.ccsds.ndm.adm.ADMParser;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.KeyValue;
+import org.orekit.files.ccsds.utils.lexical.ParsingState;
 import org.orekit.files.general.AttitudeEphemerisFileParser;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -145,7 +146,7 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
      * @see #withDataContext(DataContext)
      */
     public AEMParser(final DataContext dataContext) {
-        this(null, true, dataContext, AbsoluteDate.FUTURE_INFINITY, 1);
+        this(null, true, dataContext, null, AbsoluteDate.FUTURE_INFINITY, 1);
     }
 
     /**
@@ -153,12 +154,14 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
+     * @param initialState initial parsing state
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @param interpolationDegree default interpolation degree
      */
-    private AEMParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
+    private AEMParser(final IERSConventions conventions, final boolean simpleEOP,
+                      final DataContext dataContext, final ParsingState initialState,
                       final AbsoluteDate missionReferenceDate, final int interpolationDegree) {
-        super(conventions, simpleEOP, dataContext, missionReferenceDate);
+        super(conventions, simpleEOP, dataContext, initialState, missionReferenceDate);
         this.interpolationDegree = interpolationDegree;
     }
 
@@ -167,14 +170,17 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
     protected AEMParser create(final IERSConventions newConventions,
                                final boolean newSimpleEOP,
                                final DataContext newDataContext,
+                               final ParsingState newInitialState,
                                final AbsoluteDate newMissionReferenceDate) {
-        return create(newConventions, newSimpleEOP, newDataContext, newMissionReferenceDate, interpolationDegree);
+        return create(newConventions, newSimpleEOP, newDataContext, newInitialState,
+                      newMissionReferenceDate, interpolationDegree);
     }
 
     /** Build a new instance.
      * @param newConventions IERS conventions to use while parsing
      * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param newDataContext data context used for frames, time scales, and celestial bodies
+     * @param newInitialState initial parsing state
      * @param newMissionReferenceDate mission reference date to use while parsing
      * @param newInterpolationdegree default interpolation degree
      * @return a new instance with changed parameters
@@ -183,9 +189,11 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
     protected AEMParser create(final IERSConventions newConventions,
                                final boolean newSimpleEOP,
                                final DataContext newDataContext,
+                               final ParsingState newInitialState,
                                final AbsoluteDate newMissionReferenceDate,
                                final int newInterpolationdegree) {
-        return new AEMParser(newConventions, newSimpleEOP, newDataContext, newMissionReferenceDate, newInterpolationdegree);
+        return new AEMParser(newConventions, newSimpleEOP, newDataContext, newInitialState,
+                             newMissionReferenceDate, newInterpolationdegree);
     }
 
     /** Set default interpolation degree.
@@ -200,8 +208,8 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
      * @since 10.3
      */
     public AEMParser withInterpolationDegree(final int newInterpolationDegree) {
-        return new AEMParser(getConventions(), isSimpleEOP(), getDataContext(), getMissionReferenceDate(),
-                             newInterpolationDegree);
+        return new AEMParser(getConventions(), isSimpleEOP(), getDataContext(), getInitialState(),
+                             getMissionReferenceDate(), newInterpolationDegree);
     }
 
     /**
@@ -247,7 +255,7 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
 
     /** {@inheritDoc} */
     @Override
-    public AEMFile parse(final InputStream stream, final String fileName) {
+    public AEMFile oldParse(final InputStream stream, final String fileName) {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
             return parse(reader, fileName);
         } catch (IOException ioe) {
@@ -277,8 +285,8 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
                 if (pi.line.trim().length() == 0) {
                     continue;
                 }
-                pi.keyValue = new KeyValue(pi.line, pi.lineNumber, pi.fileName);
-                if (pi.keyValue.getKeyword() == null) {
+                pi.entry = new KeyValue(pi.line, pi.lineNumber, pi.fileName);
+                if (pi.entry.getKeyword() == null) {
                     if (pi.parsingData) {
                         parseEphemeridesDataLine(pi.line, pi);
                         continue;
@@ -287,14 +295,14 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
                                                   pi.lineNumber, pi.fileName, pi.line);
                     }
                 }
-                switch (pi.keyValue.getKeyword()) {
+                switch (pi.entry.getKeyword()) {
                     case CCSDS_AEM_VERS:
-                        file.getHeader().setFormatVersion(pi.keyValue.getDoubleValue());
+                        file.getHeader().setFormatVersion(pi.entry.getDoubleValue());
                         break;
 
                     case META_START:
                         // Indicate the start of meta-data parsing for this block
-                        pi.currentMetadata = new AEMMetadata(getConventions(), getDataContext());
+                        pi.currentMetadata = new AEMMetadata(getConventions(), isSimpleEOP(), getDataContext());
                         pi.parsingHeader   = false;
                         pi.parsingMetaData = true;
                         pi.parsingData     = false;
@@ -302,65 +310,65 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
                         break;
 
                     case REF_FRAME_A:
-                        pi.currentMetadata.setRefFrameAString(pi.keyValue.getValue());
+                        pi.currentMetadata.setRefFrameAString(pi.entry.getValue());
                         break;
 
                     case REF_FRAME_B:
-                        pi.currentMetadata.setRefFrameBString(pi.keyValue.getValue());
+                        pi.currentMetadata.setRefFrameBString(pi.entry.getValue());
                         break;
 
                     case ATTITUDE_DIR:
-                        pi.currentMetadata.setAttitudeDirection(pi.keyValue.getValue());
+                        pi.currentMetadata.setAttitudeDirection(pi.entry.getValue());
                         break;
 
                     case START_TIME:
-                        pi.currentMetadata.setStartTime(parseDate(pi.keyValue.getValue(),
+                        pi.currentMetadata.setStartTime(parseDate(pi.entry.getValue(),
                                                                   pi.currentMetadata.getTimeSystem(),
                                                                   pi.lineNumber, pi.fileName, pi.line));
                         break;
 
                     case USEABLE_START_TIME:
-                        pi.currentMetadata.setUseableStartTime(parseDate(pi.keyValue.getValue(),
+                        pi.currentMetadata.setUseableStartTime(parseDate(pi.entry.getValue(),
                                                                          pi.currentMetadata.getTimeSystem(),
                                                                          pi.lineNumber, pi.fileName, pi.line));
                         break;
 
                     case USEABLE_STOP_TIME:
-                        pi.currentMetadata.setUseableStopTime(parseDate(pi.keyValue.getValue(),
+                        pi.currentMetadata.setUseableStopTime(parseDate(pi.entry.getValue(),
                                                                         pi.currentMetadata.getTimeSystem(),
                                                                         pi.lineNumber, pi.fileName, pi.line));
                         break;
 
                     case STOP_TIME:
-                        pi.currentMetadata.setStopTime(parseDate(pi.keyValue.getValue(),
+                        pi.currentMetadata.setStopTime(parseDate(pi.entry.getValue(),
                                                                  pi.currentMetadata.getTimeSystem(),
                                                                  pi.lineNumber, pi.fileName, pi.line));
                         break;
 
                     case ATTITUDE_TYPE:
-                        pi.currentMetadata.setAttitudeType(pi.keyValue.getValue());
+                        pi.currentMetadata.setAttitudeType(pi.entry.getValue());
                         break;
 
                     case QUATERNION_TYPE:
-                        final boolean isFirst = (pi.keyValue.getValue().equals("FIRST")) ? true : false;
+                        final boolean isFirst = (pi.entry.getValue().equals("FIRST")) ? true : false;
                         pi.currentMetadata.setIsFirst(isFirst);
                         break;
 
                     case EULER_ROT_SEQ:
-                        pi.currentMetadata.setEulerRotSeq(pi.keyValue.getValue());
-                        pi.currentMetadata.setRotationOrder(AEMRotationOrder.getRotationOrder(pi.keyValue.getValue()));
+                        pi.currentMetadata.setEulerRotSeq(pi.entry.getValue());
+                        pi.currentMetadata.setRotationOrder(AEMRotationOrder.getRotationOrder(pi.entry.getValue()));
                         break;
 
                     case RATE_FRAME:
-                        pi.currentMetadata.setRateFrameString(pi.keyValue.getValue());
+                        pi.currentMetadata.setRateFrameString(pi.entry.getValue());
                         break;
 
                     case INTERPOLATION_METHOD:
-                        pi.currentMetadata.setInterpolationMethod(pi.keyValue.getValue());
+                        pi.currentMetadata.setInterpolationMethod(pi.entry.getValue());
                         break;
 
                     case INTERPOLATION_DEGREE:
-                        pi.currentMetadata.setInterpolationDegree(Integer.parseInt(pi.keyValue.getValue()));
+                        pi.currentMetadata.setInterpolationDegree(Integer.parseInt(pi.entry.getValue()));
                         break;
 
                     case META_STOP:
@@ -384,11 +392,11 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
                     default:
                         final boolean parsed;
                         if (pi.parsingHeader) {
-                            parsed = parseHeaderEntry(pi.keyValue, pi.file);
+                            parsed = parseHeaderEntry(pi.entry, pi.file);
                         } else if (pi.parsingMetaData) {
-                            parsed = parseMetaDataEntry(pi.keyValue, pi.currentMetadata);
-                        } else if (pi.parsingData && pi.keyValue.getKeyword() == Keyword.COMMENT) {
-                            pi.currentEphemeridesBlock.addComment(pi.keyValue.getValue());
+                            parsed = parseMetaDataEntry(pi.entry, pi.currentMetadata);
+                        } else if (pi.parsingData && pi.entry.getKeyword() == Keyword.COMMENT) {
+                            pi.currentEphemeridesBlock.addComment(pi.entry.getValue());
                             parsed = true;
                         } else {
                             parsed = false;
@@ -517,7 +525,7 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
         private AEMFile file;
 
         /** Key value of the line being read. */
-        private KeyValue keyValue;
+        private KeyValue entry;
 
         /** Boolean indicating if the parser is currently parsing a header block. */
         private boolean parsingHeader;

@@ -47,10 +47,11 @@ public class ADMMetadata extends NDMMetadata {
 
     /** Create a new meta-data.
      * @param conventions IERS conventions to use
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext data context to use
      */
-    public ADMMetadata(final IERSConventions conventions, final DataContext dataContext) {
-        super(conventions, dataContext);
+    public ADMMetadata(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext) {
+        super(conventions, simpleEOP, dataContext);
     }
 
     /**

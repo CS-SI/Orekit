@@ -231,7 +231,7 @@ public class OMMParserTest {
         final OMMParser parser = new OMMParser().withMu(398600e9);
 
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final OMMFile file = parser.parse(inEntry, "OMMExample1.txt");
+        final OMMFile file = parser.oldParse(inEntry, "OMMExample1.txt");
 
         final String satId = "1995-025A";
         Assert.assertEquals(satId, file.getMetadata().getObjectID());
@@ -241,7 +241,7 @@ public class OMMParserTest {
     @Test
     public void testWrongODMType() {
         try {
-            new OMMParser().parse(getClass().getResourceAsStream("/ccsds/odm/oem/OEMExample1.txt"), "OEMExample1.txt");
+            new OMMParser().oldParse(getClass().getResourceAsStream("/ccsds/odm/oem/OEMExample1.txt"), "OEMExample1.txt");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
             Assert.assertEquals(1, oe.getParts()[0]);
@@ -253,7 +253,7 @@ public class OMMParserTest {
     @Test
     public void testNumberFormatErrorType() {
         try {
-            new OMMParser().parse(getClass().getResourceAsStream("/ccsds/odm/omm/OMM-number-format-error.txt"),
+            new OMMParser().oldParse(getClass().getResourceAsStream("/ccsds/odm/omm/OMM-number-format-error.txt"),
                                                                  "OMM-number-format-error.txt");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());

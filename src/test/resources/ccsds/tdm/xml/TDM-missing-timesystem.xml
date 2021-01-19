@@ -15,14 +15,12 @@
     <segment>
       <metadata>
         <COMMENT>Note: SPC10 switched back to Maser1 from Maser2 on 2005-142</COMMENT>
-        <TIME_SYSTEM>UTC</TIME_SYSTEM>
         <START_TIME>2005-05-22T12:00:00.000</START_TIME>
         <STOP_TIME>2005-05-25T12:00:00.000</STOP_TIME>
         <PARTICIPANT_1>DSS-10</PARTICIPANT_1>
         <PARTICIPANT_2>UTC-NIST</PARTICIPANT_2>
       </metadata>
       <data>
-        <COMMENT>This is a data comment</COMMENT>
         <observation>
           <EPOCH>2005-05-22T12:00:00.000</EPOCH>
           <CLOCK_BIAS>9.56E-7</CLOCK_BIAS>
@@ -55,15 +53,13 @@
     </segment>
     <segment>
       <metadata>
-        <COMMENT>This is a meta-data comment</COMMENT>
-        <TIME_SYSTEM>UTC</TIME_SYSTEM>
+        <TIME_SYSTEM>TCG</TIME_SYSTEM>
         <START_TIME>2005-05-22T12:00:00.000</START_TIME>
         <STOP_TIME>2005-05-25T12:00:00.000</STOP_TIME>
         <PARTICIPANT_1>DSS-40</PARTICIPANT_1>
         <PARTICIPANT_2>UTC-NIST</PARTICIPANT_2>
       </metadata>
       <data>
-        <COMMENT>This is a data comment</COMMENT>
         <observation>
           <EPOCH>2005-05-22T12:00:00.000</EPOCH>
           <CLOCK_BIAS>-7.4E-7</CLOCK_BIAS>
@@ -96,7 +92,6 @@
     </segment>
     <segment>
       <metadata>
-        <COMMENT>This is a meta-data comment</COMMENT>
         <TIME_SYSTEM>UTC</TIME_SYSTEM>
         <START_TIME>2005-05-22T12:00:00.000</START_TIME>
         <STOP_TIME>2005-05-25T12:00:00.000</STOP_TIME>
@@ -104,7 +99,6 @@
         <PARTICIPANT_2>UTC-NIST</PARTICIPANT_2>
       </metadata>
       <data>
-        <COMMENT>This is a data comment</COMMENT>
         <observation>
           <EPOCH>2005-05-22T12:00:00.000</EPOCH>
           <CLOCK_BIAS>-1.782E-6</CLOCK_BIAS>
