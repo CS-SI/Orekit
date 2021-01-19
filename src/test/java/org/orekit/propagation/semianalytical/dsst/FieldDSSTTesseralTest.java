@@ -258,6 +258,53 @@ public class FieldDSSTTesseralTest {
     }
 
     @Test
+    public void testIssue736() {
+        doTestIssue736(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestIssue736(final Field<T> field) {
+
+        // Central Body geopotential 4x4
+        final UnnormalizedSphericalHarmonicsProvider provider =
+                GravityFieldFactory.getUnnormalizedProvider(4, 4);
+
+        // Frames and epoch
+        final Frame frame = FramesFactory.getEME2000();
+        final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
+        final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, 2007, 04, 16, 0, 46, 42.400, TimeScalesFactory.getUTC());
+        
+        // Orbit
+        final T zero = field.getZero();
+        final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(zero.add(2.655989E7), zero.add(2.719455286199036E-4),
+                                                                zero.add(0.0041543085910249414), zero.add(-0.3412974060023717),
+                                                                zero.add(0.3960084733107685), zero.add(8.566537840341699),
+                                                                PositionAngle.TRUE, frame, initDate, zero.add(3.986004415E14));
+
+        // Force model
+        final DSSTForceModel tesseral = new DSSTTesseral(earthFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
+        final T[] parameters = tesseral.getParameters(field);
+
+        // Initialize force model
+        tesseral.initialize(new FieldAuxiliaryElements<>(orbit, 1), PropagationType.MEAN, parameters);
+
+        // Eccentricity shift
+        final FieldOrbit<T> shfitedOrbit = new FieldEquinoctialOrbit<>(zero.add(2.655989E7), zero.add(0.02),
+                        zero.add(0.0041543085910249414), zero.add(-0.3412974060023717),
+                        zero.add(0.3960084733107685), zero.add(8.566537840341699),
+                        PositionAngle.TRUE, frame, initDate, zero.add(3.986004415E14));
+
+        final T[] elements = tesseral.getMeanElementRate(new FieldSpacecraftState<>(shfitedOrbit), new FieldAuxiliaryElements<>(shfitedOrbit, 1), parameters);
+
+        // The purpose of this test is not to verify a specific value.
+        // Its purpose is to verify that a NullPointerException does not
+        // occur when calculating initial values of Hansen Coefficients
+        for (int i = 0; i < elements.length; i++) {
+            Assert.assertTrue(elements[i].getReal() != 0);
+        }
+
+    }
+
+    @Test
     @SuppressWarnings("unchecked")
     public void testShortPeriodTermsStateDerivatives() {
         
