@@ -22,7 +22,7 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.NDMHeaderParsingState;
 import org.orekit.files.ccsds.ndm.NDMSegment;
-import org.orekit.files.ccsds.utils.CcsdsTimeScale;
+import org.orekit.files.ccsds.ndm.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.EventType;
 import org.orekit.files.ccsds.utils.lexical.MessageParser;
 import org.orekit.files.ccsds.utils.lexical.ParseEvent;
@@ -70,9 +70,6 @@ public class TDMParser extends MessageParser<TDMFile, TDMParser> {
 
     /** Current Observation Block being parsed. */
     private ObservationsBlock currentObservationsBlock;
-
-    /** Current observation epoch. */
-    private AbsoluteDate currentObservationEpoch;
 
     /** TDMFile object being filled. */
     private TDMFile tdmFile;
@@ -174,7 +171,7 @@ public class TDMParser extends MessageParser<TDMFile, TDMParser> {
         tdmFile                  = new TDMFile();
         currentMetadata          = null;
         currentObservationsBlock = null;
-        reset(new NDMHeaderParsingState(getConventions(),  missionReferenceDate, getFormatVersionKey(),
+        reset(new NDMHeaderParsingState(getDataContext(), getFormatVersionKey(),
                                         tdmFile.getHeader(), this::parseStructureEvent));
     }
 
@@ -196,7 +193,7 @@ public class TDMParser extends MessageParser<TDMFile, TDMParser> {
                 // ignored
                 return this::parseStructureEvent;
             case "header":
-                return new NDMHeaderParsingState(getConventions(),  missionReferenceDate, getFormatVersionKey(),
+                return new NDMHeaderParsingState(getDataContext(), getFormatVersionKey(),
                                                  tdmFile.getHeader(), this::parseStructureEvent);
             case "body":
                 // ignored
@@ -207,7 +204,7 @@ public class TDMParser extends MessageParser<TDMFile, TDMParser> {
             case "META" : case "metadata" :
                 if (event.getType() == EventType.START) {
                     // next parse events will be handled as metadata
-                    currentMetadata = new TDMMetadata(getConventions(), isSimpleEOP(), getDataContext());
+                    currentMetadata = new TDMMetadata();
                     return this::parseMetadataEvent;
                 } else if (event.getType() == EventType.END) {
                     // nothing to do here, we expect a DATA_START next
@@ -239,7 +236,13 @@ public class TDMParser extends MessageParser<TDMFile, TDMParser> {
     private ParsingState parseMetadataEvent(final ParseEvent event, final Deque<ParseEvent> next) {
         try {
             final TDMMetadataKey key = TDMMetadataKey.valueOf(event.getName());
-            key.parse(event, currentMetadata);
+            key.parse(event,
+                      new ParsingContext(this::getConventions,
+                                         this::isSimpleEOP,
+                                         this::getDataContext,
+                                         this::getMissionReferenceDate,
+                                         currentMetadata::getTimeSystem),
+                      currentMetadata);
             return this::parseMetadataEvent;
         } catch (IllegalArgumentException iae) {
             // event has not been recognized, it is most probably the end of the metadata section
@@ -257,7 +260,13 @@ public class TDMParser extends MessageParser<TDMFile, TDMParser> {
     private ParsingState parseDataEvent(final ParseEvent event, final Deque<ParseEvent> next) {
         try {
             final TDMDataKey key = TDMDataKey.valueOf(event.getName());
-            key.parse(event, this);
+            key.parse(event,
+                      new ParsingContext(this::getConventions,
+                                         this::isSimpleEOP,
+                                         this::getDataContext,
+                                         this::getMissionReferenceDate,
+                                         currentMetadata::getTimeSystem),
+                      currentObservationsBlock);
             return this::parseDataEvent;
         } catch (IllegalArgumentException iae) {
             // event has not been recognized, it is most probably the end of the data section
@@ -265,43 +274,6 @@ public class TDMParser extends MessageParser<TDMFile, TDMParser> {
             next.offerLast(event);
             return this::parseStructureEvent;
         }
-    }
-
-    /** Get the time system for current metadata.
-     * @return time system for current metadata
-     */
-    CcsdsTimeScale getMetadataTimeSystem() {
-        return currentMetadata.getTimeSystem();
-    }
-
-    /** Add a comment to the observation block.
-     * @param comment comment to add
-     */
-    void addObservationsBlockComment(final String comment) {
-        currentObservationsBlock.addComment(comment);
-    }
-
-    /** Add the epoch of current observation.
-     * @param epoch current observation epoch
-     */
-    void addObservationEpoch(final AbsoluteDate epoch) {
-        currentObservationEpoch = epoch;
-    }
-
-    /** Check if observation epoch has been set.
-     * @return true if observation epoch has been set
-     */
-    boolean hasObservationEpoch() {
-        return currentObservationEpoch != null;
-    }
-
-    /** Add the value of current observation.
-     * @param keyword keyword of the observation
-     * @param measurement measurement of the observation
-     */
-    void addObservationValue(final String keyword, final double measurement) {
-        currentObservationsBlock.addObservation(keyword, currentObservationEpoch, measurement);
-        currentObservationEpoch = null;
     }
 
 }

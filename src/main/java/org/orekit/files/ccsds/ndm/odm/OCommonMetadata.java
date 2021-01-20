@@ -20,13 +20,11 @@ package org.orekit.files.ccsds.ndm.odm;
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.utils.CcsdsModifiedFrame;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.IERSConventions;
 
 /** Common metadata for Orbit Parameter/Ephemeris/Mean Message files.
  * @author Luc Maisonobe
@@ -62,15 +60,6 @@ public class OCommonMetadata extends ODMMetadata {
     /** Epoch of reference frame, if not intrinsic to the definition of the
      * reference frame. */
     private AbsoluteDate frameEpoch;
-
-    /** Create a new meta-data.
-     * @param conventions IERS conventions to use
-     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param dataContext data context to use
-     */
-    public OCommonMetadata(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext) {
-        super(conventions, simpleEOP, dataContext);
-    }
 
     /** Get the spacecraft ID for which the orbit state is provided.
      * @return the spacecraft ID

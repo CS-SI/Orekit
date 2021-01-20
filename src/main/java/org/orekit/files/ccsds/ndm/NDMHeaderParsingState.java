@@ -18,11 +18,11 @@ package org.orekit.files.ccsds.ndm;
 
 import java.util.Deque;
 
-import org.orekit.files.ccsds.utils.CcsdsTimeScale;
+import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.utils.lexical.EventType;
 import org.orekit.files.ccsds.utils.lexical.ParseEvent;
 import org.orekit.files.ccsds.utils.lexical.ParsingState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.IERSConventions;
 
 /** {@link ParsingState} for {@link NDMHeader NDM header}.
  * @author Luc Maisonobe
@@ -30,11 +30,8 @@ import org.orekit.utils.IERSConventions;
  */
 public class NDMHeaderParsingState implements ParsingState {
 
-    /** IERS Conventions. */
-    private final IERSConventions conventions;
-
-    /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
-    private final AbsoluteDate missionReferenceDate;
+    /** Data context used for getting frames, time scales, and celestial bodies. */
+    private final DataContext dataContext;
 
     /** Key for format version. */
     private final String formatVersionKey;
@@ -46,20 +43,18 @@ public class NDMHeaderParsingState implements ParsingState {
     private final ParsingState nextState;
 
     /** Simple constructor.
-     * @param conventions IERS Conventions
-     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * @param dataContext data context used for getting frames, time scales, and celestial bodies
      * @param formatVersionKey key for format version
      * @param header header to fill
-     * @param nextState state to use when this state annot parse an event by itself
+     * @param nextState state to use when this state cannot parse an event by itself
      */
-    public NDMHeaderParsingState(final IERSConventions conventions, final AbsoluteDate missionReferenceDate,
+    public NDMHeaderParsingState(final DataContext dataContext,
                                  final String formatVersionKey, final NDMHeader header,
                                  final ParsingState nextState) {
-        this.conventions          = conventions;
-        this.missionReferenceDate = missionReferenceDate;
-        this.nextState            = nextState;
-        this.formatVersionKey     = formatVersionKey;
-        this.header               = header;
+        this.dataContext      = dataContext;
+        this.nextState        = nextState;
+        this.formatVersionKey = formatVersionKey;
+        this.header           = header;
     }
 
     /** {@inheritDoc} */
@@ -78,8 +73,10 @@ public class NDMHeaderParsingState implements ParsingState {
                 return this;
 
             case "CREATION_DATE" :
-                event.processAsDate(header::setCreationDate, CcsdsTimeScale.UTC,
-                                    conventions, missionReferenceDate);
+                if (event.getType() == EventType.ENTRY) {
+                    header.setCreationDate(new AbsoluteDate(event.getContent(),
+                                                            dataContext.getTimeScales().getUTC()));
+                }
                 return this;
 
             case "ORIGINATOR" :

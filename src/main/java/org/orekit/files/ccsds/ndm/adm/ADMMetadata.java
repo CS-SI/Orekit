@@ -18,9 +18,8 @@ package org.orekit.files.ccsds.ndm.adm;
 
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
-import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.NDMMetadata;
-import org.orekit.utils.IERSConventions;
+import org.orekit.files.ccsds.utils.CenterName;
 
 /** This class gathers the meta-data present in the Attitude Data Message (ADM).
  * @author Bryan Cazabonne
@@ -44,15 +43,6 @@ public class ADMMetadata extends NDMMetadata {
      * created through {@link CelestialBodies} in order to obtain theO
      * corresponding gravitational coefficient. */
     private boolean hasCreatableBody;
-
-    /** Create a new meta-data.
-     * @param conventions IERS conventions to use
-     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param dataContext data context to use
-     */
-    public ADMMetadata(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext) {
-        super(conventions, simpleEOP, dataContext);
-    }
 
     /**
      * Get the spacecraft name for which the attitude data are provided.
@@ -115,10 +105,37 @@ public class ADMMetadata extends NDMMetadata {
     }
 
     /** Set the origin of reference frame.
-     * @param centerName the origin of reference frame to be set
+     * @param name the origin of reference frame to be set
+     * @param celestialBodies factory for celestial bodies
      */
-    public void setCenterName(final String centerName) {
-        this.centerName = centerName;
+    public void setCenterName(final String name, final CelestialBodies celestialBodies) {
+
+        // store the name itself
+        this.centerName = name;
+
+        // change the name to a canonical one in some cases
+        final String canonicalValue;
+        if ("SOLAR SYSTEM BARYCENTER".equals(centerName) || "SSB".equals(centerName)) {
+            canonicalValue = "SOLAR_SYSTEM_BARYCENTER";
+        } else if ("EARTH MOON BARYCENTER".equals(centerName) || "EARTH-MOON BARYCENTER".equals(centerName) ||
+                   "EARTH BARYCENTER".equals(centerName) || "EMB".equals(centerName)) {
+            canonicalValue = "EARTH_MOON";
+        } else {
+            canonicalValue = centerName;
+        }
+
+        final CenterName c;
+        try {
+            c = CenterName.valueOf(canonicalValue);
+        } catch (IllegalArgumentException iae) {
+            hasCreatableBody = false;
+            centerBody       = null;
+            return;
+        }
+
+        hasCreatableBody = true;
+        centerBody       = c.getCelestialBody(celestialBodies);
+
     }
 
     /**
@@ -145,15 +162,6 @@ public class ADMMetadata extends NDMMetadata {
      */
     public boolean getHasCreatableBody() {
         return hasCreatableBody;
-    }
-
-    /**
-     * Set boolean testing whether the body corresponding to the centerName
-     * attribute can be created through the {@link CelestialBodies}.
-     * @param hasCreatableBody the boolean to be set.
-     */
-    public void setHasCreatableBody(final boolean hasCreatableBody) {
-        this.hasCreatableBody = hasCreatableBody;
     }
 
 }

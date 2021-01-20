@@ -302,7 +302,7 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
 
                     case META_START:
                         // Indicate the start of meta-data parsing for this block
-                        pi.currentMetadata = new AEMMetadata(getConventions(), isSimpleEOP(), getDataContext());
+                        pi.currentMetadata = new AEMMetadata();
                         pi.parsingHeader   = false;
                         pi.parsingMetaData = true;
                         pi.parsingData     = false;
@@ -383,7 +383,8 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
                         break;
 
                     case DATA_STOP:
-                        file.addSegment(new AEMSegment(pi.currentMetadata, pi.currentEphemeridesBlock));
+                        file.addSegment(new AEMSegment(pi.currentMetadata, pi.currentEphemeridesBlock,
+                                                       getConventions(), getDataContext()));
                         pi.currentMetadata         = null;
                         pi.currentEphemeridesBlock = null;
                         pi.parsingData             = false;

@@ -408,10 +408,11 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
                     case META_START:
                         if (pi.metadata != null) {
                             // this is a new segment, we have to wrap up the previous one
-                            pi.file.addSegment(new OEMSegment(pi.metadata, pi.data, getSelectedMu()));
+                            pi.file.addSegment(new OEMSegment(pi.metadata, pi.data,
+                                                              getConventions(), getDataContext(), getSelectedMu()));
                         }
                         // Indicate the start of meta-data parsing for this block
-                        pi.metadata          = new OEMMetadata(getConventions(), isSimpleEOP(), getDataContext());
+                        pi.metadata          = new OEMMetadata();
                         pi.parsingHeader     = false;
                         pi.parsingMetaData   = true;
                         pi.parsingData       = false;
@@ -508,7 +509,8 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
             checkExpected(fileName);
 
             // wrap up last segment
-            pi.file.addSegment(new OEMSegment(pi.metadata, pi.data, getSelectedMu()));
+            pi.file.addSegment(new OEMSegment(pi.metadata, pi.data,
+                                              getConventions(), getDataContext(), getSelectedMu()));
 
             pi.file.checkTimeSystems();
             return pi.file;

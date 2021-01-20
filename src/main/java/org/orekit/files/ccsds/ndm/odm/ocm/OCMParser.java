@@ -172,7 +172,7 @@ public class OCMParser extends ODMParser<OCMFile, OCMParser> {
         try (InputStreamReader isr = new InputStreamReader(stream, StandardCharsets.UTF_8);
              BufferedReader reader = new BufferedReader(isr)) {
             // initialize internal data structures
-            final ParseInfo pi = new ParseInfo(getConventions(), isSimpleEOP(), getDataContext());
+            final ParseInfo pi = new ParseInfo(getConventions(), getDataContext());
             pi.fileName        = fileName;
 
             Section previousSection = Section.HEADER;
@@ -611,14 +611,13 @@ public class OCMParser extends ODMParser<OCMFile, OCMParser> {
 
         /** Create a new {@link ParseInfo} object.
          * @param conventions IERS conventions to use
-         * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
          * @param dataContext data context to use
          */
-        ParseInfo(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext) {
+        ParseInfo(final IERSConventions conventions, final DataContext dataContext) {
             file                  = new OCMFile();
             file.setConventions(conventions);
             file.setDataContext(dataContext);
-            metadata              = new OCMMetadata(conventions, simpleEOP, dataContext);
+            metadata              = new OCMMetadata();
             data                  = new OCMData();
             lineNumber            = 0;
         }

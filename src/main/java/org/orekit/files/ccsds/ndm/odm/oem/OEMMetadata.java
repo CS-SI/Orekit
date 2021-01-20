@@ -17,10 +17,8 @@
 
 package org.orekit.files.ccsds.ndm.odm.oem;
 
-import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.odm.OCommonMetadata;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.IERSConventions;
 
 /** Metadata for Orbit Ephemeris Message files.
  * @author Luc Maisonobe
@@ -47,15 +45,6 @@ public class OEMMetadata extends OCommonMetadata {
 
     /** The interpolation degree. */
     private int interpolationDegree;
-
-    /** Create a new meta-data.
-     * @param conventions IERS conventions to use
-     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param dataContext data context to use
-     */
-    public OEMMetadata(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext) {
-        super(conventions, simpleEOP, dataContext);
-    }
 
     /** Get start of total time span covered by ephemerides data and
      * covariance data.

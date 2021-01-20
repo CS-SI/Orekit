@@ -194,7 +194,7 @@ public class OMMParser extends OStateParser<OMMFile, OMMParser> {
              BufferedReader reader = new BufferedReader(isr)) {
 
             // initialize internal data structures
-            final ParseInfo pi = new ParseInfo(getConventions(), isSimpleEOP(), getDataContext());
+            final ParseInfo pi = new ParseInfo(getConventions(), getDataContext());
             pi.fileName = fileName;
             pi.parsingHeader = true;
 
@@ -348,14 +348,13 @@ public class OMMParser extends OStateParser<OMMFile, OMMParser> {
 
         /** Create a new {@link ParseInfo} object.
          * @param conventions IERS conventions to use
-         * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
          * @param dataContext data context to use
          */
-        protected ParseInfo(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext) {
+        protected ParseInfo(final IERSConventions conventions, final DataContext dataContext) {
             file            = new OMMFile();
             file.setConventions(conventions);
             file.setDataContext(dataContext);
-            metadata        = new OMMMetadata(conventions, simpleEOP, dataContext);
+            metadata        = new OMMMetadata();
             data            = new OMMData();
             parsingHeader   = false;
             parsingMetaData = false;

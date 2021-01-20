@@ -19,11 +19,9 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.util.List;
 
-import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.odm.ODMMetadata;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.IERSConventions;
 
 /** Meta-data for {@link OCMMetadata Orbit Comprehensive Message}.
  * @since 11.0
@@ -162,13 +160,8 @@ public class OCMMetadata extends ODMMetadata {
     private String celestialSource;
 
     /** Create a new meta-data.
-     * @param conventions IERS conventions to use
-     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param dataContext data context to use
      */
-    OCMMetadata(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext) {
-
-        super(conventions, simpleEOP, dataContext);
+    OCMMetadata() {
 
         // set up the few fields that have default values as per CCSDS standard
         setTimeSystem(CcsdsTimeScale.UTC);

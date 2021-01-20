@@ -18,6 +18,7 @@ package org.orekit.files.ccsds.ndm.tdm;
 
 import java.util.regex.Pattern;
 
+import org.orekit.files.ccsds.ndm.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.EventType;
 import org.orekit.files.ccsds.utils.lexical.ParseEvent;
 import org.orekit.time.AbsoluteDate;
@@ -30,16 +31,13 @@ import org.orekit.time.AbsoluteDate;
 public enum TDMDataKey {
 
     /** Observation wrapper. */
-    observation((event, tdmParser) -> tdmParser.addObservationEpoch(null)),
+    observation((event, context, observationsBlock) -> observationsBlock.addObservationEpoch(null)),
 
     /** Comment entry. */
-    COMMENT((event, tdmParser) -> event.processAsFreeTextString(tdmParser::addObservationsBlockComment)),
+    COMMENT((event, context, observationsBlock) -> event.processAsFreeTextString(observationsBlock::addComment)),
 
     /** Epoch entry. */
-    EPOCH((event, tdmParser) -> event.processAsDate(tdmParser::addObservationEpoch,
-                                                    tdmParser.getMetadataTimeSystem(),
-                                                    tdmParser.getConventions(),
-                                                    tdmParser.getMissionReferenceDate())),
+    EPOCH((event, context, observationsBlock) -> event.processAsDate(observationsBlock::addObservationEpoch, context)),
 
     // Signal related keywords.
     /** Data: Carrier power [dBW].<p>
@@ -203,18 +201,20 @@ public enum TDMDataKey {
 
     /** Parse an observation line.
      * @param event parse event
-     * @param tdmParser parser to fill
+     * @param context parsing context
+     * @param observationsBlock observation block to fill
      */
-    private void parseObservationEvent(final ParseEvent event, final TDMParser tdmParser) {
+    private void parseObservationEvent(final ParseEvent event, final ParsingContext context,
+                                       final ObservationsBlock observationsBlock) {
 
         if (event.getType() == EventType.ENTRY) {
             // in an XML file, an observation element contains only the value, the epoch has been parsed before
             // in a KVN file, an observation line should contains both epoch and value
 
-            if (tdmParser.hasObservationEpoch()) {
+            if (observationsBlock.hasObservationEpoch()) {
                 // we are parsing an XML file with epoch already parsed
                 // parse the measurement
-                tdmParser.addObservationValue(event.getName(), event.getContentAsDouble());
+                observationsBlock.addObservationValue(event.getName(), event.getContentAsDouble());
             } else {
 
                 // we are parsing a KVN file and need to parse both epoch and measurement
@@ -223,15 +223,14 @@ public enum TDMDataKey {
                     throw event.generateException();
                 }
                 // parse the epoch
-                final AbsoluteDate epoch =
-                                tdmParser.getMetadataTimeSystem().parseDate(fields[0],
-                                                                            tdmParser.getConventions(),
-                                                                            tdmParser.getMissionReferenceDate());
-                tdmParser.addObservationEpoch(epoch);
+                final AbsoluteDate epoch = context.getTimeScale().parseDate(fields[0],
+                                                                            context.getConventions(),
+                                                                            context.getMissionReferenceDate());
+                observationsBlock.addObservationEpoch(epoch);
 
                 // parse the measurement
                 try {
-                    tdmParser.addObservationValue(event.getName(), Double.parseDouble(fields[1]));
+                    observationsBlock.addObservationValue(event.getName(), Double.parseDouble(fields[1]));
                 } catch (NumberFormatException nfe) {
                     throw event.generateException();
                 }
@@ -242,19 +241,22 @@ public enum TDMDataKey {
 
     /** Parse an event.
      * @param event parse event
-     * @param tdmParser parser to fill
+     * @param context parsing context
+     * @param observationsBlock observation block to fill
      */
-    public void parse(final ParseEvent event, final TDMParser tdmParser) {
-        parser.parse(event, tdmParser);
+    public void parse(final ParseEvent event, final ParsingContext context,
+                      final ObservationsBlock observationsBlock) {
+        parser.parse(event, context, observationsBlock);
     }
 
     /** Interface for parsing one data entry. */
     interface DataEntryParser {
         /** Parse one metadata entry.
          * @param event parse event
-         * @param tdmParser parser to fill
+         * @param context parsing context
+         * @param observationsBlock observation block to fill
          */
-        void parse(ParseEvent event, TDMParser tdmParser);
+        void parse(ParseEvent event, ParsingContext context, ObservationsBlock observationsBlock);
     }
 
 }

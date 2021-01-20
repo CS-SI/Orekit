@@ -20,14 +20,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.ndm.ParsingContext;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
+import org.orekit.files.ccsds.utils.CenterName;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.IERSConventions;
 
 /** Event occurring during CCSDS file parsing.
  * <p>
@@ -111,6 +111,17 @@ public class ParseEvent {
         return content;
     }
 
+    /** Get the normalized content of the entry.
+     * <p>
+     * Normalized strings have '_' characters replaced by spaces,
+     * and multiple spaces collapsed as one space only.
+     * </p>
+     * @return entry normalized content
+     */
+    public String getNormalizedContent() {
+        return SPACE.matcher(content.replace('_', ' ')).replaceAll(" ");
+    }
+
     /** Get the content of the entry as a double.
      * @return content as a double
      */
@@ -154,18 +165,6 @@ public class ParseEvent {
         return fileName;
     }
 
-    /** Normalize a string.
-     * <p>
-     * Normalized strings have '_' characters replaced by spaces,
-     * and multiple spaces collapsed as one space only.
-     * </p>
-     * @param original original string
-     * @return nurmalized string
-     */
-    private String normalize(final String original) {
-        return SPACE.matcher(original.replace('_', ' ')).replaceAll(" ");
-    }
-
     /** Process the content as a free-text string.
      * @param consumer consumer of the free-text string
      * @see #processAsNormalizedString(StringConsumer)
@@ -182,7 +181,7 @@ public class ParseEvent {
      */
     public void processAsNormalizedString(final StringConsumer consumer) {
         if (type == EventType.ENTRY) {
-            consumer.accept(normalize(content));
+            consumer.accept(getNormalizedContent());
         }
     }
 
@@ -192,7 +191,7 @@ public class ParseEvent {
      */
     public void processAsIndexedNormalizedString(final IndexedStringConsumer consumer, final int index) {
         if (type == EventType.ENTRY) {
-            consumer.accept(index, normalize(content));
+            consumer.accept(index, getNormalizedContent());
         }
     }
 
@@ -201,7 +200,7 @@ public class ParseEvent {
      */
     public void processAsNormalizedStringList(final StringListConsumer consumer) {
         if (type == EventType.ENTRY) {
-            consumer.accept(Arrays.asList(normalize(content).split(COMMA_SEPARATORS)));
+            consumer.accept(Arrays.asList(getNormalizedContent().split(COMMA_SEPARATORS)));
         }
     }
 
@@ -235,20 +234,17 @@ public class ParseEvent {
 
     /** Process the content as a date.
      * @param consumer consumer of the date
-     * @param timeScale time system to use for interpreting the date
-     * @param conventions IERS Conventions
-     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * @param context parsing context
      */
-    public void processAsDate(final DateConsumer consumer,
-                              final CcsdsTimeScale timeScale,
-                              final IERSConventions conventions,
-                              final AbsoluteDate missionReferenceDate) {
+    public void processAsDate(final DateConsumer consumer, final ParsingContext context) {
         if (type == EventType.ENTRY) {
-            if (timeScale == null) {
+            if (context.getTimeScale() == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_TIME_SYSTEM_NOT_READ_YET,
                                           getLineNumber(), getFileName());
             }
-            consumer.accept(timeScale.parseDate(content, conventions, missionReferenceDate));
+            consumer.accept(context.getTimeScale().parseDate(content,
+                                                             context.getConventions(),
+                                                             context.getMissionReferenceDate()));
         }
     }
 
@@ -263,17 +259,38 @@ public class ParseEvent {
 
     /** Process the content as a frame.
      * @param consumer consumer of the frame
-     * @param conventions IERS Conventions
-     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param dataContext used to retrieve frames, time scales, etc.
+     * @param context parsing context
      */
-    public void processAsFrame(final FrameConsumer consumer,
-                               final IERSConventions conventions,
-                               final boolean simpleEOP,
-                               final DataContext dataContext) {
+    public void processAsFrame(final FrameConsumer consumer, final ParsingContext context) {
         if (type == EventType.ENTRY) {
             final CCSDSFrame frame = CCSDSFrame.valueOf(DASH.matcher(content).replaceAll(""));
-            consumer.accept(frame.getFrame(conventions, simpleEOP, dataContext));
+            consumer.accept(frame.getFrame(context.getConventions(),
+                                           context.isSimpleEOP(),
+                                           context.getDataContext()));
+        }
+    }
+
+    /** Process the content as a body center.
+     * @param consumer consumer of the body center
+     * @param complainIfUnknown if true, unknown centers generate an exception, otherwise
+     * they are silently ignored
+     */
+    public void processAsCenter(final CenterConsumer consumer, final boolean complainIfUnknown) {
+        if (type == EventType.ENTRY) {
+            String canonicalValue = getNormalizedContent();
+            if (canonicalValue.equals("SOLAR SYSTEM BARYCENTER") || canonicalValue.equals("SSB")) {
+                canonicalValue = "SOLAR_SYSTEM_BARYCENTER";
+            } else if (canonicalValue.equals("EARTH MOON BARYCENTER") || canonicalValue.equals("EARTH-MOON BARYCENTER") ||
+                       canonicalValue.equals("EARTH BARYCENTER") || canonicalValue.equals("EMB")) {
+                canonicalValue = "EARTH_MOON";
+            }
+            try {
+                consumer.accept(CenterName.valueOf(canonicalValue));
+            } catch (IllegalArgumentException iae) {
+                if (complainIfUnknown) {
+                    throw generateException();
+                }
+            }
         }
     }
 
@@ -357,6 +374,14 @@ public class ParseEvent {
          * @param value value to consume
          */
         void accept(Frame value);
+    }
+
+    /** Interface representing instance methods that consume center values. */
+    public interface CenterConsumer {
+        /** Consume a body center.
+         * @param value value to consume
+         */
+        void accept(CenterName value);
     }
 
 }

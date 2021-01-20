@@ -17,11 +17,9 @@
 package org.orekit.files.ccsds.ndm.adm.aem;
 
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
-import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.IERSConventions;
 
 /** This class gathers the meta-data present in the Attitude Data Message (ADM).
  * @author Bryan Cazabonne
@@ -76,15 +74,6 @@ public class AEMMetadata extends ADMMetadata {
 
     /** The rotation order. */
     private RotationOrder rotationOrder;
-
-    /** Simple constructor.
-     * @param conventions IERS conventions to use
-     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param dataContext data context to use
-     */
-    public AEMMetadata(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext) {
-        super(conventions, simpleEOP, dataContext);
-    }
 
     /**
      * Get the reference frame A specifier as it appeared in the file.

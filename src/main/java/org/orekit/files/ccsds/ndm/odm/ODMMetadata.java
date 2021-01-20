@@ -21,9 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.NDMMetadata;
-import org.orekit.utils.IERSConventions;
 
 /** This class gathers the meta-data present in the Orbital Data Message (ODM).
  * @author sports
@@ -38,12 +36,8 @@ public class ODMMetadata extends NDMMetadata {
     private List<String> comments;
 
     /** Create a new meta-data.
-     * @param conventions IERS conventions to use
-     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param dataContext data context to use
      */
-    public ODMMetadata(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext) {
-        super(conventions, simpleEOP, dataContext);
+    public ODMMetadata() {
         comments = new ArrayList<>();
     }
 

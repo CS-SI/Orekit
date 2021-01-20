@@ -23,12 +23,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
-import org.orekit.time.TimeScale;
-import org.orekit.utils.IERSConventions;
 
 /** This class gathers the meta-data present in the Navigation Data Message (ADM, ODM and TDM).
  * @author Luc Maisonobe
@@ -39,15 +36,6 @@ public class NDMMetadata {
     /** Pattern for international designator. */
     private static final Pattern INTERNATIONAL_DESIGNATOR = Pattern.compile("(\\p{Digit}{4})-(\\p{Digit}{3})(\\p{Upper}{1,3})");
 
-    /** IERS conventions to use. */
-    private final IERSConventions conventions;
-
-    /** Indicator for simple or accurate EOP interpolation. */
-    private final  boolean simpleEOP;
-
-    /** Data context. */
-    private final DataContext dataContext;
-
     /** Metadata comments. The list contains a string for each line of comment. */
     private final List<String> comments;
 
@@ -55,36 +43,9 @@ public class NDMMetadata {
     private CcsdsTimeScale timeSystem;
 
     /** Create a new meta-data.
-     * @param conventions IERS conventions to use
-     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param dataContext data context to use
      */
-    public NDMMetadata(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext) {
-        this.conventions = conventions;
-        this.simpleEOP   = simpleEOP;
-        this.dataContext = dataContext;
-        this.comments    = new ArrayList<>();
-    }
-
-    /** Get the IERS conventions.
-     * @return IERS conventions
-     */
-    public IERSConventions getConventions() {
-        return conventions;
-    }
-
-    /** Get EOP interpolation method.
-     * @return true if tidal effects are ignored when interpolating EOP
-     */
-    public boolean isSimpleEOP() {
-        return simpleEOP;
-    }
-
-    /** Get the data context.
-     * @return data context
-     */
-    public DataContext getDataContext() {
-        return dataContext;
+    public NDMMetadata() {
+        this.comments = new ArrayList<>();
     }
 
     /** Get the Time System that: for OPM, is used for metadata, state vector,
@@ -105,16 +66,6 @@ public class NDMMetadata {
      */
     public void setTimeSystem(final CcsdsTimeScale timeSystem) {
         this.timeSystem = timeSystem;
-    }
-
-    /**
-     * Get the time scale.
-     * @return the time scale.
-     * @see #getTimeSystem()
-     * @throws OrekitException if there is not corresponding time scale.
-     */
-    public TimeScale getTimeScale() {
-        return getTimeSystem().getTimeScale(conventions, dataContext.getTimeScales());
     }
 
     /** Get the metadata comment.

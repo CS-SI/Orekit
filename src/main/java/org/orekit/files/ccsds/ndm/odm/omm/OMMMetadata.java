@@ -17,24 +17,13 @@
 
 package org.orekit.files.ccsds.ndm.odm.omm;
 
-import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.odm.OCommonMetadata;
-import org.orekit.utils.IERSConventions;
 
 public class OMMMetadata extends OCommonMetadata {
 
     /** Description of the Mean Element Theory. Indicates the proper method to employ
      * to propagate the state. */
     private String meanElementTheory;
-
-    /** Create a new meta-data.
-     * @param conventions IERS conventions to use
-     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param dataContext data context to use
-     */
-    public OMMMetadata(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext) {
-        super(conventions, simpleEOP, dataContext);
-    }
 
     /** Get the description of the Mean Element Theory.
      * @return the mean element theory

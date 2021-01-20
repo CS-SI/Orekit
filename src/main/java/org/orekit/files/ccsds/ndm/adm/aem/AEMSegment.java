@@ -19,12 +19,14 @@ package org.orekit.files.ccsds.ndm.adm.aem;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.adm.ADMSegment;
 import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.AngularDerivativesFilter;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
 /**
@@ -34,12 +36,23 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  */
 public class AEMSegment extends ADMSegment<AEMMetadata, AEMData> implements AttitudeEphemerisFile.AttitudeEphemerisSegment {
 
+    /** IERS conventions to use. */
+    private final IERSConventions conventions;
+
+    /** Data context. */
+    private final DataContext dataContext;
+
     /** Simple constructor.
      * @param metadata segment metadata
      * @param data segment data
+     * @param conventions IERS conventions to use
+     * @param dataContext data context to use
      */
-    public AEMSegment(final AEMMetadata metadata, final AEMData data) {
+    public AEMSegment(final AEMMetadata metadata, final AEMData data,
+                      final IERSConventions conventions, final DataContext dataContext) {
         super(metadata, data);
+        this.conventions = conventions;
+        this.dataContext = dataContext;
     }
 
     /** {@inheritDoc} */
@@ -105,7 +118,7 @@ public class AEMSegment extends ADMSegment<AEMMetadata, AEMData> implements Atti
     /** {@inheritDoc} */
     @Override
     public TimeScale getTimeScale() {
-        return getMetadata().getTimeScale();
+        return getMetadata().getTimeSystem().getTimeScale(conventions, dataContext.getTimeScales());
     }
 
     /** {@inheritDoc} */

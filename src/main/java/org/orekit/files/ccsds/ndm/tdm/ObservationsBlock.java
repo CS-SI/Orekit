@@ -35,6 +35,9 @@ import org.orekit.time.AbsoluteDate;
  */
 public class ObservationsBlock implements NDMData {
 
+    /** Current observation epoch. */
+    private AbsoluteDate currentObservationEpoch;
+
     /** List of observations data lines. */
     private List<Observation> observations;
 
@@ -45,6 +48,29 @@ public class ObservationsBlock implements NDMData {
     public ObservationsBlock() {
         observations = new ArrayList<>();
         comments     = new ArrayList<>();
+    }
+
+    /** Add the epoch of current observation.
+     * @param epoch current observation epoch
+     */
+    void addObservationEpoch(final AbsoluteDate epoch) {
+        currentObservationEpoch = epoch;
+    }
+
+    /** Check if observation epoch has been set.
+     * @return true if observation epoch has been set
+     */
+    boolean hasObservationEpoch() {
+        return currentObservationEpoch != null;
+    }
+
+    /** Add the value of current observation.
+     * @param keyword keyword of the observation
+     * @param measurement measurement of the observation
+     */
+    void addObservationValue(final String keyword, final double measurement) {
+        addObservation(keyword, currentObservationEpoch, measurement);
+        currentObservationEpoch = null;
     }
 
     /** Get the list of Observations data lines.

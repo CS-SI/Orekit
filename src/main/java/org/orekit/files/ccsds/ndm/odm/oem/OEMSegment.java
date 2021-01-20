@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm.odm.oem;
 
 import java.util.List;
 
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NDMSegment;
@@ -27,6 +28,7 @@ import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.CartesianDerivativesFilter;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** The Ephemerides Blocks class contain metadata, the list of ephemerides data
@@ -37,17 +39,28 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class OEMSegment extends NDMSegment<OEMMetadata, OEMData> implements EphemerisFile.EphemerisSegment {
 
+    /** IERS conventions to use. */
+    private final IERSConventions conventions;
+
+    /** Data context. */
+    private final DataContext dataContext;
+
     /** Gravitational coefficient to use for building Cartesian/Keplerian orbits. */
     private final double mu;
 
     /** Simple constructor.
      * @param metadata segment metadata
      * @param data segment data
+     * @param conventions IERS conventions to use
+     * @param dataContext data context to use
      * @param mu gravitational coefficient to use for building Cartesian/Keplerian orbits
      */
-    public OEMSegment(final OEMMetadata metadata, final OEMData data, final double mu) {
+    public OEMSegment(final OEMMetadata metadata, final OEMData data,
+                      final IERSConventions conventions, final DataContext dataContext, final double mu) {
         super(metadata, data);
-        this.mu = mu;
+        this.conventions = conventions;
+        this.dataContext = dataContext;
+        this.mu          = mu;
     }
 
     /** {@inheritDoc} */
@@ -107,7 +120,7 @@ public class OEMSegment extends NDMSegment<OEMMetadata, OEMData> implements Ephe
         if (frame.isPseudoInertial()) {
             return frame;
         }
-        return getMetadata().getDataContext().getFrames().getGCRF();
+        return dataContext.getFrames().getGCRF();
     }
 
     /** {@inheritDoc} */
@@ -119,7 +132,7 @@ public class OEMSegment extends NDMSegment<OEMMetadata, OEMData> implements Ephe
     /** {@inheritDoc} */
     @Override
     public TimeScale getTimeScale() {
-        return getMetadata().getTimeScale();
+        return getMetadata().getTimeSystem().getTimeScale(conventions, dataContext.getTimeScales());
     }
 
     /** {@inheritDoc} */
