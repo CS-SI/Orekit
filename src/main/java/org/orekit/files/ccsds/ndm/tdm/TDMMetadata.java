@@ -38,14 +38,8 @@ public class TDMMetadata extends NDMMetadata {
     /** Start epoch of total time span covered by observations block. */
     private AbsoluteDate startTime;
 
-    /** Start time as read in the file. */
-    private String startTimeString;
-
     /** End epoch of total time span covered by observations block. */
     private AbsoluteDate stopTime;
-
-    /** Stop time as read in the file. */
-    private String stopTimeString;
 
     /** Map of participants in the tracking data session (minimum 1 and up to 5).<p>
      *  Participants may include ground stations, spacecraft, and/or quasars.<p>
@@ -136,9 +130,6 @@ public class TDMMetadata extends NDMMetadata {
      *  Note: Angle units are always degrees
      */
     private String angleType;
-
-    /** The reference frame specifier, as it appeared in the file. */
-    private String referenceFrameString;
 
     /** Reference frame in which data are given: used in combination with ANGLE_TYPE=RADEC. */
     private Frame referenceFrame;
