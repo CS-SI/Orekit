@@ -59,7 +59,7 @@ public class NDMHeaderParsingState implements ParsingState {
 
     /** {@inheritDoc} */
     @Override
-    public ParsingState parseEvent(final ParseEvent event, final Deque<ParseEvent> next) {
+    public ParsingState processEvent(final ParseEvent event, final Deque<ParseEvent> next) {
 
         if (formatVersionKey.equals(event.getName())) {
             event.processAsDouble(header::setFormatVersion);

@@ -18,13 +18,11 @@ package org.orekit.files.ccsds.ndm.adm;
 
 import java.io.InputStream;
 
-import org.orekit.bodies.CelestialBodies;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NDMParser;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
-import org.orekit.files.ccsds.utils.CenterName;
 import org.orekit.files.ccsds.utils.KeyValue;
 import org.orekit.files.ccsds.utils.lexical.ParsingState;
 import org.orekit.time.AbsoluteDate;
@@ -33,12 +31,6 @@ import org.orekit.utils.IERSConventions;
 /**
  * Base class for all CCSDS Attitude Data Message parsers.
  *
- * <p> This base class is immutable, and hence thread safe. When parts must be
- * changed, such as the IERS conventions or data context, the various {@code withXxx}
- * methods must be called, which create a new immutable instance with the new parameters.
- * This is a combination of the <a href="https://en.wikipedia.org/wiki/Builder_pattern">builder
- * design pattern</a> and a <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
- * interface</a>.
  * @param <T> type of the parsed file
  * @param <P> type of the parser
  *
@@ -167,24 +159,7 @@ public abstract class ADMParser<T extends ADMFile<?>, P extends ADMParser<T, ?>>
             }
 
             case CENTER_NAME:
-                metaData.setCenterName(keyValue.getValue());
-                final String canonicalValue;
-                if (keyValue.getValue().equals("SOLAR SYSTEM BARYCENTER") || keyValue.getValue().equals("SSB")) {
-                    canonicalValue = "SOLAR_SYSTEM_BARYCENTER";
-                } else if (keyValue.getValue().equals("EARTH MOON BARYCENTER") || keyValue.getValue().equals("EARTH-MOON BARYCENTER") ||
-                        keyValue.getValue().equals("EARTH BARYCENTER") || keyValue.getValue().equals("EMB")) {
-                    canonicalValue = "EARTH_MOON";
-                } else {
-                    canonicalValue = keyValue.getValue();
-                }
-                for (final CenterName c : CenterName.values()) {
-                    if (c.name().equals(canonicalValue)) {
-                        metaData.setHasCreatableBody(true);
-                        final CelestialBodies celestialBodies =
-                                getDataContext().getCelestialBodies();
-                        metaData.setCenterBody(c.getCelestialBody(celestialBodies));
-                    }
-                }
+                metaData.setCenterName(keyValue.getValue(), getDataContext().getCelestialBodies());
                 return true;
 
             case TIME_SYSTEM:

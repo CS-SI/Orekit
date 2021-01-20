@@ -34,21 +34,9 @@ import org.orekit.utils.IERSConventions;
 /**
  * Class for CCSDS Tracking Data Message parsers.
  *
- * <p> This base class is immutable, and hence thread safe. When parts must be
- * changed, such as reference date for Mission Elapsed Time or Mission Relative
- * Time time systems, or the gravitational coefficient or the IERS conventions,
- * the various {@code withXxx} methods must be called, which create a new
- * immutable instance with the new parameters. This is a combination of the <a
- * href="https://en.wikipedia.org/wiki/Builder_pattern">builder design
- * pattern</a> and a <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
- * interface</a>.
- *
  * <p> This class allow the handling of both "keyvalue" and "xml" TDM file formats.
  * Format can be inferred if file names ends respectively with ".txt" or ".xml".
  * Otherwise it must be explicitely set using {@link #withFileFormat(TDMFileFormat)}
- *
- * <p>ParseInfo subclass regroups common parsing functions; and specific handlers were added
- * for both file formats.
  *
  * <p>References:<p>
  *  - <a href="https://public.ccsds.org/Pubs/503x0b1c1.pdf">CCSDS 503.0-B-1 recommended standard</a> ("Tracking Data Message", Blue Book, Issue 1, November 2007).<p>
@@ -66,26 +54,18 @@ public class TDMParser extends MessageParser<TDMFile, TDMParser> {
     private final AbsoluteDate missionReferenceDate;
 
     /** Metadata for current observation block. */
-    private TDMMetadata currentMetadata;
+    private TDMMetadata metadata;
+
+    /** Parsing context valid for current metadata. */
+    private ParsingContext context;
 
     /** Current Observation Block being parsed. */
-    private ObservationsBlock currentObservationsBlock;
+    private ObservationsBlock observationsBlock;
 
     /** TDMFile object being filled. */
-    private TDMFile tdmFile;
+    private TDMFile file;
 
     /** Simple constructor.
-     * <p>
-     * This class is immutable, and hence thread safe. When parts
-     * must be changed, such as IERS conventions, EOP style or data context,
-     * the various {@code withXxx} methods must be called,
-     * which create a new immutable instance with the new parameters. This
-     * is a combination of the
-     * <a href="https://en.wikipedia.org/wiki/Builder_pattern">builder design
-     * pattern</a> and a
-     * <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
-     * interface</a>.
-     * </p>
      * <p>
      * The initial date for Mission Elapsed Time and Mission Relative Time time systems is not set here.
      * If such time systems are used, it must be initialized before parsing by calling {@link
@@ -96,18 +76,34 @@ public class TDMParser extends MessageParser<TDMFile, TDMParser> {
      * parse some reference frames or UT1 time scale, it must be initialized before
      * parsing by calling {@link #withConventions(IERSConventions)}.
      * </p>
-     * <p>
-     * The TDM file format to use is not set here. It may be automatically inferred while parsing
-     * if the name of the file to parse ends with ".txt" or ".xml".
-     * Otherwise it must be initialized before parsing by calling {@link #withFileFormat(TDMFileFormat)}
-     * </p>
      *
      * <p>This method uses the {@link DataContext#getDefault() default data context}. See
      * {@link #withDataContext(DataContext)}.
      */
     @DefaultDataContext
     public TDMParser() {
-        this(null, true, DataContext.getDefault(), AbsoluteDate.FUTURE_INFINITY);
+        this(DataContext.getDefault());
+    }
+
+    /** Constructor with data context.
+     * <p>
+     * The initial date for Mission Elapsed Time and Mission Relative Time time systems is not set here.
+     * If such time systems are used, it must be initialized before parsing by calling {@link
+     * #withMissionReferenceDate(AbsoluteDate)}.
+     * </p>
+     * <p>
+     * The IERS conventions to use is not set here. If it is needed in order to
+     * parse some reference frames or UT1 time scale, it must be initialized before
+     * parsing by calling {@link #withConventions(IERSConventions)}.
+     * </p>
+     *
+     * @param dataContext used by the parser.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}. See
+     * {@link #withDataContext(DataContext)}.
+     */
+    public TDMParser(final DataContext dataContext) {
+        this(null, true, dataContext, AbsoluteDate.FUTURE_INFINITY);
     }
 
     /** Complete constructor.
@@ -147,7 +143,6 @@ public class TDMParser extends MessageParser<TDMFile, TDMParser> {
         return new TDMParser(newConventions, newSimpleEOP, newDataContext, newMissionReferenceDate);
     }
 
-
     /** Set initial date.
      * @param newMissionReferenceDate mission reference date to use while parsing
      * @return a new instance, with mission reference date replaced
@@ -168,58 +163,67 @@ public class TDMParser extends MessageParser<TDMFile, TDMParser> {
     /** {@inheritDoc} */
     @Override
     public void reset() {
-        tdmFile                  = new TDMFile();
-        currentMetadata          = null;
-        currentObservationsBlock = null;
+        file              = new TDMFile();
+        metadata          = null;
+        context           = null;
+        observationsBlock = null;
         reset(new NDMHeaderParsingState(getDataContext(), getFormatVersionKey(),
-                                        tdmFile.getHeader(), this::parseStructureEvent));
+                                        file.getHeader(), this::processStructureEvent));
     }
 
     /** {@inheritDoc} */
     @Override
     public TDMFile build() {
-        tdmFile.checkTimeSystems();
-        return tdmFile;
+        file.checkTimeSystems();
+        return file;
     }
 
-    /** Parse one structure event.
+    /** Process one structure event.
      * @param event event to process
      * @param next queue for pending events waiting processing after this one, may be updated
      * @return next state to use for parsing upcoming events
      */
-    private ParsingState parseStructureEvent(final ParseEvent event, final Deque<ParseEvent> next) {
+    private ParsingState processStructureEvent(final ParseEvent event, final Deque<ParseEvent> next) {
         switch (event.getName()) {
             case "tdm":
                 // ignored
-                return this::parseStructureEvent;
+                return this::processStructureEvent;
             case "header":
                 return new NDMHeaderParsingState(getDataContext(), getFormatVersionKey(),
-                                                 tdmFile.getHeader(), this::parseStructureEvent);
+                                                 file.getHeader(), this::processStructureEvent);
             case "body":
                 // ignored
-                return this::parseStructureEvent;
+                return this::processStructureEvent;
             case "segment":
                 // ignored
-                return this::parseStructureEvent;
+                return this::processStructureEvent;
             case "META" : case "metadata" :
                 if (event.getType() == EventType.START) {
                     // next parse events will be handled as metadata
-                    currentMetadata = new TDMMetadata();
-                    return this::parseMetadataEvent;
+                    metadata = new TDMMetadata();
+                    context  = new ParsingContext(this::getConventions,
+                                                  this::isSimpleEOP,
+                                                  this::getDataContext,
+                                                  this::getMissionReferenceDate,
+                                                  metadata::getTimeSystem);
+                    return this::processMetadataEvent;
                 } else if (event.getType() == EventType.END) {
                     // nothing to do here, we expect a DATA_START next
-                    return this::parseStructureEvent;
+                    return this::processStructureEvent;
                 }
                 break;
             case "DATA" : case "data" :
                 if (event.getType() == EventType.START) {
                     // next parse events will be handled as data
-                    currentObservationsBlock = new ObservationsBlock();
-                    return this::parseDataEvent;
+                    observationsBlock = new ObservationsBlock();
+                    return this::processDataEvent;
                 } else if (event.getType() == EventType.END) {
-                    tdmFile.addSegment(new NDMSegment<>(currentMetadata, currentObservationsBlock));
+                    file.addSegment(new NDMSegment<>(metadata, observationsBlock));
+                    metadata          = null;
+                    context           = null;
+                    observationsBlock = null;
                     // we expect a META_START next
-                    return this::parseStructureEvent;
+                    return this::processStructureEvent;
                 }
                 break;
             default :
@@ -228,51 +232,39 @@ public class TDMParser extends MessageParser<TDMFile, TDMParser> {
         throw event.generateException();
     }
 
-    /** Parse one metadata event.
+    /** Process one metadata event.
      * @param event event to process
      * @param next queue for pending events waiting processing after this one, may be updated
      * @return next state to use for parsing upcoming events
      */
-    private ParsingState parseMetadataEvent(final ParseEvent event, final Deque<ParseEvent> next) {
+    private ParsingState processMetadataEvent(final ParseEvent event, final Deque<ParseEvent> next) {
         try {
             final TDMMetadataKey key = TDMMetadataKey.valueOf(event.getName());
-            key.parse(event,
-                      new ParsingContext(this::getConventions,
-                                         this::isSimpleEOP,
-                                         this::getDataContext,
-                                         this::getMissionReferenceDate,
-                                         currentMetadata::getTimeSystem),
-                      currentMetadata);
-            return this::parseMetadataEvent;
+            key.parse(event, context, metadata);
+            return this::processMetadataEvent;
         } catch (IllegalArgumentException iae) {
             // event has not been recognized, it is most probably the end of the metadata section
             // we push the event back into next queue and let the structure parser handle it
             next.offerLast(event);
-            return this::parseStructureEvent;
+            return this::processStructureEvent;
         }
     }
 
-    /** Parse one data event.
+    /** Process one data event.
      * @param event event to process
      * @param next queue for pending events waiting processing after this one, may be updated
      * @return next state to use for parsing upcoming events
      */
-    private ParsingState parseDataEvent(final ParseEvent event, final Deque<ParseEvent> next) {
+    private ParsingState processDataEvent(final ParseEvent event, final Deque<ParseEvent> next) {
         try {
             final TDMDataKey key = TDMDataKey.valueOf(event.getName());
-            key.parse(event,
-                      new ParsingContext(this::getConventions,
-                                         this::isSimpleEOP,
-                                         this::getDataContext,
-                                         this::getMissionReferenceDate,
-                                         currentMetadata::getTimeSystem),
-                      currentObservationsBlock);
-            return this::parseDataEvent;
+            key.process(event, context, observationsBlock);
+            return this::processDataEvent;
         } catch (IllegalArgumentException iae) {
             // event has not been recognized, it is most probably the end of the data section
             // we push the event back into next queue and let the structure parser handle it
             next.offerLast(event);
-            return this::parseStructureEvent;
+            return this::processStructureEvent;
         }
     }
 

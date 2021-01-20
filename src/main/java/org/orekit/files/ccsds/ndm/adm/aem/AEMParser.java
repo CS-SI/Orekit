@@ -68,18 +68,6 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
     /**
      * Simple constructor.
      * <p>
-     * This class is immutable, and hence thread safe. When parts
-     * must be changed, such as reference date for Mission Elapsed Time or
-     * Mission Relative Time time systems, or the gravitational coefficient or
-     * the IERS conventions, the various {@code withXxx} methods must be called,
-     * which create a new immutable instance with the new parameters. This
-     * is a combination of the
-     * <a href="https://en.wikipedia.org/wiki/Builder_pattern">builder design
-     * pattern</a> and a
-     * <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
-     * interface</a>.
-     * </p>
-     * <p>
      * The initial date for Mission Elapsed Time and Mission Relative Time time systems is not set here.
      * If such time systems are used, it must be initialized before parsing by calling {@link
      * #withMissionReferenceDate(AbsoluteDate)}.
@@ -109,18 +97,6 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
 
     /**
      * Constructor with data context.
-     * <p>
-     * This class is immutable, and hence thread safe. When parts
-     * must be changed, such as reference date for Mission Elapsed Time or
-     * Mission Relative Time time systems, or the gravitational coefficient or
-     * the IERS conventions, the various {@code withXxx} methods must be called,
-     * which create a new immutable instance with the new parameters. This
-     * is a combination of the
-     * <a href="https://en.wikipedia.org/wiki/Builder_pattern">builder design
-     * pattern</a> and a
-     * <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
-     * interface</a>.
-     * </p>
      * <p>
      * The initial date for Mission Elapsed Time and Mission Relative Time time systems is not set here.
      * If such time systems are used, it must be initialized before parsing by calling {@link

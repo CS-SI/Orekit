@@ -21,7 +21,7 @@ import java.util.Deque;
 import org.orekit.files.ccsds.ndm.NDMParser;
 
 /**
- * Interface for parsing parts of CCSDS NDM files.
+ * Interface for processing parsing events for CCSDS NDM files.
  * <p>
  * This interface is intended for use as the state in
  * state design pattern, the {@link NDMParser parser}
@@ -34,7 +34,7 @@ import org.orekit.files.ccsds.ndm.NDMParser;
  */
 public interface ParsingState {
 
-    /** Parse one event.
+    /** Process one event.
      * <p>
      * The state may either:
      *   <ul>
@@ -57,6 +57,6 @@ public interface ParsingState {
      * @param next queue for pending events waiting processing after this one, may be updated
      * @return next state to use for parsing upcoming events
      */
-    ParsingState parseEvent(ParseEvent event, Deque<ParseEvent> next);
+    ParsingState processEvent(ParseEvent event, Deque<ParseEvent> next);
 
 }

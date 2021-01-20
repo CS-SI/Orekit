@@ -516,97 +516,13 @@ public enum Keyword {
     // Attitude Data Messages (ADM) specific keywords
     // -------------------------------------------
 
-    /** CCSDS APM format version. */
-    CCSDS_APM_VERS,
     /** CCSDS AEM format version. */
     CCSDS_AEM_VERS,
-    /** Name of the reference frame specifying one frame of the transformation. */
-    Q_FRAME_A,
-    /** Name of the reference frame specifying the second portion of the transformation. */
-    Q_FRAME_B,
-    /** Rotation direction of the attitude quaternion. */
-    Q_DIR,
-    /** e1 * sin(φ/2)   φ = rotation angle. */
-    Q1,
-    /** e2 * sin(φ/2)   φ = rotation angle. */
-    Q2,
-    /** e3 * sin(φ/2)   φ = rotation angle. */
-    Q3,
-    /** cos(φ/2)   φ = rotation angle. */
-    QC,
-    /** Derivative of Q1. */
-    Q1_DOT,
-    /** Derivative of Q2. */
-    Q2_DOT,
-    /** Derivative of Q3. */
-    Q3_DOT,
-    /** Derivative of QC. */
-    QC_DOT,
-    /**  Name of the reference frame specifying one frame of the transformation. */
-    EULER_FRAME_A,
-    /** Name of the reference frame specifying the second portion of the transformation. */
-    EULER_FRAME_B,
-    /** Rotation direction of the attitude Euler angle. */
-    EULER_DIR,
     /** Rotation order of the EULER_FRAME_A to EULER_FRAME_B or vice versa. */
     EULER_ROT_SEQ,
     /** The value of this keyword expresses the relevant keyword to use that denotes the
      *  frame of reference in which the X_RATE, Y_RATE and Z_RATE are expressed. */
     RATE_FRAME,
-    /** X body rotation angle. */
-    X_ANGLE,
-    /** Y body rotation angle. */
-    Y_ANGLE,
-    /** Z body rotation angle. */
-    Z_ANGLE,
-    /** X body rotation rate. */
-    X_RATE,
-    /** Y body rotation rate. */
-    Y_RATE,
-    /** Z body rotation rate. */
-    Z_RATE,
-    /**  Name of the reference frame specifying one frame of the transformation. */
-    SPIN_FRAME_A,
-    /** Name of the reference frame specifying the second portion of the transformation. */
-    SPIN_FRAME_B,
-    /** Rotation direction of the Spin angles .*/
-    SPIN_DIR,
-    /** Right ascension of spin axis vector. */
-    SPIN_ALPHA,
-    /** Declination of the spin axis vector.*/
-    SPIN_DELTA,
-    /** Phase of the satellite about the spin axis. */
-    SPIN_ANGLE,
-    /** Angular velocity of satellite around spin axis. */
-    SPIN_ANGLE_VEL,
-    /** Nutation angle of spin axis. */
-    NUTATION,
-    /** Body nutation period of the spin axis. */
-    NUTATION_PER,
-    /** Inertial nutation phase. */
-    NUTATION_PHASE,
-    /** Coordinate system for the inertia tensor. */
-    INERTIA_REF_FRAME,
-    /** Moment of Inertia about the 1-axis. */
-    I11,
-    /** Moment of Inertia about the 2-axis. */
-    I22,
-    /** Moment of Inertia about the 3-axis. */
-    I33,
-    /** Inertia Cross Product of the 1 and 2 axes. */
-    I12,
-    /** Inertia Cross Product of the 1 and 3 axes. */
-    I13,
-    /** Inertia Cross Product of the 2 and 3 axes. */
-    I23,
-    /** Epoch of start of maneuver. */
-    MAN_EPOCH_START,
-    /** First component of the torque vector. */
-    MAN_TOR_1,
-    /** Second component of the torque vector. */
-    MAN_TOR_2,
-    /** Third component of the torque vector. */
-    MAN_TOR_3,
     /** Name of the reference frame specifying one frame of the transformation. */
     REF_FRAME_A,
     /** Name of the reference frame specifying the second portion of the transformation. */

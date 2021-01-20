@@ -183,29 +183,29 @@ public enum TDMDataKey {
     /** Pattern for delimiting regular expressions. */
     private static final Pattern SEPARATOR = Pattern.compile("\\s+");
 
-    /** Parsing method. */
-    private final DataEntryParser parser;
+    /** Processing method. */
+    private final DataEntryProcessor processor;
 
     /** Default constructor for observation lines.
      */
     TDMDataKey() {
-        this.parser = this::parseObservationEvent;
+        this.processor = this::processObservationEvent;
     }
 
     /** Simple constructor.
-     * @param parser parsing method
+     * @param processor processing method
      */
-    TDMDataKey(final DataEntryParser parser) {
-        this.parser = parser;
+    TDMDataKey(final DataEntryProcessor processor) {
+        this.processor = processor;
     }
 
-    /** Parse an observation line.
+    /** Process an observation line.
      * @param event parse event
      * @param context parsing context
      * @param observationsBlock observation block to fill
      */
-    private void parseObservationEvent(final ParseEvent event, final ParsingContext context,
-                                       final ObservationsBlock observationsBlock) {
+    private void processObservationEvent(final ParseEvent event, final ParsingContext context,
+                                         final ObservationsBlock observationsBlock) {
 
         if (event.getType() == EventType.ENTRY) {
             // in an XML file, an observation element contains only the value, the epoch has been parsed before
@@ -239,24 +239,24 @@ public enum TDMDataKey {
 
     }
 
-    /** Parse an event.
-     * @param event parse event
+    /** Process one event.
+     * @param event event to process
      * @param context parsing context
      * @param observationsBlock observation block to fill
      */
-    public void parse(final ParseEvent event, final ParsingContext context,
-                      final ObservationsBlock observationsBlock) {
-        parser.parse(event, context, observationsBlock);
+    public void process(final ParseEvent event, final ParsingContext context,
+                        final ObservationsBlock observationsBlock) {
+        processor.process(event, context, observationsBlock);
     }
 
-    /** Interface for parsing one data entry. */
-    interface DataEntryParser {
-        /** Parse one metadata entry.
-         * @param event parse event
+    /** Interface for processing one event. */
+    interface DataEntryProcessor {
+        /** Process one event.
+         * @param event event to process
          * @param context parsing context
          * @param observationsBlock observation block to fill
          */
-        void parse(ParseEvent event, ParsingContext context, ObservationsBlock observationsBlock);
+        void process(ParseEvent event, ParsingContext context, ObservationsBlock observationsBlock);
     }
 
 }

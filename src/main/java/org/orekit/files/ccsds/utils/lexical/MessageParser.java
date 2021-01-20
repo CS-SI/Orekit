@@ -155,7 +155,7 @@ public abstract class MessageParser<T extends NDMFile<?, ?>, P extends MessagePa
         // and we have to switch to the next state
         while (!pending.isEmpty()) {
             final ParseEvent current = pending.pollLast();
-            state = state.parseEvent(current, pending);
+            state = state.processEvent(current, pending);
         }
 
     }

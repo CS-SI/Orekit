@@ -121,7 +121,6 @@ public class AEMParserTest {
         Assert.assertEquals(ephemeridesDataLinesComment, segment0.getMetadata().getComments());
  
         Assert.assertEquals(CcsdsTimeScale.UTC,         segment1.getMetadata().getTimeSystem());
-        Assert.assertEquals(TimeScalesFactory.getUTC(), segment1.getMetadata().getTimeScale());
         Assert.assertEquals("MARS GLOBAL SURVEYOR",     segment1.getMetadata().getObjectName());
         Assert.assertEquals("1996-062A",                segment1.getMetadata().getObjectID());
         Assert.assertEquals("MARS BARYCENTER",          segment1.getMetadata().getCenterName());

@@ -16,26 +16,21 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 
-import org.hipparchus.complex.Quaternion;
-import org.hipparchus.exception.DummyLocalizable;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.ndm.NDMHeaderParsingState;
+import org.orekit.files.ccsds.ndm.ParsingContext;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
-import org.orekit.files.ccsds.ndm.adm.ADMParser;
+import org.orekit.files.ccsds.ndm.adm.ADMMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.ADMSegment;
-import org.orekit.files.ccsds.utils.KeyValue;
+import org.orekit.files.ccsds.utils.lexical.EndOfMessageState;
+import org.orekit.files.ccsds.utils.lexical.EventType;
+import org.orekit.files.ccsds.utils.lexical.MessageParser;
+import org.orekit.files.ccsds.utils.lexical.ParseEvent;
 import org.orekit.files.ccsds.utils.lexical.ParsingState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
@@ -45,21 +40,42 @@ import org.orekit.utils.IERSConventions;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class APMParser extends ADMParser<APMFile, APMParser> {
+public class APMParser extends MessageParser<APMFile, APMParser> {
+
+    /** Key for format version. */
+    private static final String FORMAT_VERSION_KEY = "CCSDS_APM_VERS";
+
+    /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
+    private final AbsoluteDate missionReferenceDate;
+
+    /** APM file being read. */
+    private APMFile file;
+
+    /** APM metadata being read. */
+    private ADMMetadata metadata;
+
+    /** Parsing context valid for current metadata. */
+    private ParsingContext context;
+
+    /** APM quaternion logical block being read. */
+    private APMQuaternion quaternionBlock;
+
+    /** APM Euler angles logical block being read. */
+    private APMEuler eulerBlock;
+
+    /** APM spin-stabilized logical block being read. */
+    private APMSpinStabilized spinStabilizedBlock;
+
+    /** APM spacecraft parameters logical block being read. */
+    private APMSpacecraftParameters spacecraftParametersBlock;
+
+    /** Current maneuver. */
+    private APMManeuver currentManeuver;
+
+    /** All maneuvers. */
+    private List<APMManeuver> maneuvers;
 
     /** Simple constructor.
-     * <p>
-     * This class is immutable, and hence thread safe. When parts
-     * must be changed, such as reference date for Mission Elapsed Time or
-     * Mission Relative Time time systems, or the gravitational coefficient or
-     * the IERS conventions, the various {@code withXxx} methods must be called,
-     * which create a new immutable instance with the new parameters. This
-     * is a combination of the
-     * <a href="https://en.wikipedia.org/wiki/Builder_pattern">builder design
-     * pattern</a> and a
-     * <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
-     * interface</a>.
-     * </p>
      * <p>
      * The initial date for Mission Elapsed Time and Mission Relative Time time systems is not set here.
      * If such time systems are used, it must be initialized before parsing by calling {@link
@@ -76,18 +92,6 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
 
     /** Constructor with data context.
      * <p>
-     * This class is immutable, and hence thread safe. When parts
-     * must be changed, such as reference date for Mission Elapsed Time or
-     * Mission Relative Time time systems, or the gravitational coefficient or
-     * the IERS conventions, the various {@code withXxx} methods must be called,
-     * which create a new immutable instance with the new parameters. This
-     * is a combination of the
-     * <a href="https://en.wikipedia.org/wiki/Builder_pattern">builder design
-     * pattern</a> and a
-     * <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
-     * interface</a>.
-     * </p>
-     * <p>
      * The initial date for Mission Elapsed Time and Mission Relative Time time systems is not set here.
      * If such time systems are used, it must be initialized before parsing by calling {@link
      * #withMissionReferenceDate(AbsoluteDate)}.
@@ -99,427 +103,293 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
      * @see #withDataContext(DataContext)
      */
     public APMParser(final DataContext dataContext) {
-        this(null, true, dataContext, null, AbsoluteDate.FUTURE_INFINITY);
+        this(null, true, dataContext, AbsoluteDate.FUTURE_INFINITY);
     }
 
     /** Complete constructor.
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
-     * @param initialState initial parsing state
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      */
     private APMParser(final IERSConventions conventions, final boolean simpleEOP,
-                      final DataContext dataContext, final ParsingState initialState,
+                      final DataContext dataContext,
                       final AbsoluteDate missionReferenceDate) {
-        super(conventions, simpleEOP, dataContext, initialState, missionReferenceDate);
+        super(FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext);
+        this.missionReferenceDate = missionReferenceDate;
     }
 
     /** {@inheritDoc} */
     @Override
     protected APMParser create(final IERSConventions newConventions,
                                final boolean newSimpleEOP,
+                               final DataContext newDataContext) {
+        return create(newConventions, newSimpleEOP, newDataContext, missionReferenceDate);
+    }
+
+    /** Build a new instance.
+     * @param newConventions IERS conventions to use while parsing
+     * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
+     * @param newDataContext data context used for frames, time scales, and celestial bodies
+     * @param newMissionReferenceDate mission reference date to use while parsing
+     * @return a new instance with changed parameters
+     * @since 11.0
+     */
+    protected APMParser create(final IERSConventions newConventions,
+                               final boolean newSimpleEOP,
                                final DataContext newDataContext,
-                               final ParsingState newInitialState,
                                final AbsoluteDate newMissionReferenceDate) {
-        return new APMParser(newConventions, newSimpleEOP, newDataContext, newInitialState, newMissionReferenceDate);
+        return new APMParser(newConventions, newSimpleEOP, newDataContext, newMissionReferenceDate);
+    }
+
+    /** Set initial date.
+     * @param newMissionReferenceDate mission reference date to use while parsing
+     * @return a new instance, with mission reference date replaced
+     * @see #getMissionReferenceDate()
+     */
+    public APMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
+        return create(getConventions(), isSimpleEOP(), getDataContext(),  newMissionReferenceDate);
+    }
+
+    /**
+     * Get reference date for Mission Elapsed Time and Mission Relative Time time systems.
+     * @return the reference date
+     */
+    public AbsoluteDate getMissionReferenceDate() {
+        return missionReferenceDate;
     }
 
     /** {@inheritDoc} */
     @Override
-    public APMFile oldParse(final InputStream stream, final String fileName) {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
+    public void reset() {
+        file                      = new APMFile();
+        metadata                  = null;
+        context                   = null;
+        quaternionBlock           = null;
+        eulerBlock                = null;
+        spinStabilizedBlock       = null;
+        spacecraftParametersBlock = null;
+        currentManeuver           = null;
+        maneuvers                 = new ArrayList<>();
+        reset(new NDMHeaderParsingState(getDataContext(), getFormatVersionKey(),
+                                        file.getHeader(), this::processStructureEvent));
+    }
 
-            // initialize internal data structures
-            final ParseInfo pi = new ParseInfo(getConventions(), isSimpleEOP(), getDataContext());
-            pi.fileName = fileName;
+    /** {@inheritDoc} */
+    @Override
+    public APMFile build() {
+        finalizeSegment();
+        return file;
+    }
 
-            // set the additional data that has been configured prior the parsing by the user.
-            pi.file.setMissionReferenceDate(getMissionReferenceDate());
-            pi.file.setConventions(getConventions());
-            pi.file.setDataContext(getDataContext());
-
-            pi.parsingHeader = true;
-            for (pi.line = reader.readLine(); pi.line != null; pi.line = reader.readLine()) {
-                ++pi.lineNumber;
-                if (pi.line.trim().length() == 0) {
-                    // Blank line
-                    continue;
-                }
-                pi.entry = new KeyValue(pi.line, pi.lineNumber, pi.fileName);
-                if (pi.entry.getKeyword() == null) {
-                    // Unexpected keyword. An exception is thrown.
-                    throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD,
-                                              pi.lineNumber, pi.fileName, pi.line);
-                }
-
-                switch (pi.entry.getKeyword()) {
-
-                    case CCSDS_APM_VERS:
-                        pi.file.getHeader().setFormatVersion(pi.entry.getDoubleValue());
-                        break;
-
-                    case Q_FRAME_A:
-                        pi.data.setQuaternionFrameAString(pi.entry.getValue());
-                        break;
-
-                    case Q_FRAME_B:
-                        pi.data.setQuaternionFrameBString(pi.entry.getValue());
-                        break;
-
-                    case Q_DIR:
-                        pi.data.setAttitudeQuaternionDirection(pi.entry.getValue());
-                        break;
-
-                    case QC:
-                        pi.q0 = pi.entry.getDoubleValue();
-                        break;
-
-                    case Q1:
-                        pi.q1 = pi.entry.getDoubleValue();
-                        break;
-
-                    case Q2:
-                        pi.q2 = pi.entry.getDoubleValue();
-                        break;
-
-                    case Q3:
-                        pi.q3 = pi.entry.getDoubleValue();
-                        break;
-
-                    case MAN_EPOCH_START:
-                        if (pi.maneuver != null) {
-                            pi.data.addManeuver(pi.maneuver);
-                        }
-                        pi.maneuver = new APMManeuver();
-                        pi.maneuver.setEpochStart(parseDate(pi.entry.getValue(), pi.metadata.getTimeSystem(),
-                                                            pi.lineNumber, pi.fileName, pi.line));
-                        if (!pi.commentTmp.isEmpty()) {
-                            pi.maneuver.setComments(pi.commentTmp);
-                            pi.commentTmp.clear();
-                        }
-                        break;
-
-                    case MAN_DURATION:
-                        pi.maneuver.setDuration(pi.entry.getDoubleValue());
-                        break;
-
-                    case MAN_REF_FRAME:
-                        pi.maneuver.setRefFrameString(pi.entry.getValue());
-                        break;
-
-                    case MAN_TOR_1:
-                        pi.maneuver.setTorque(new Vector3D(pi.entry.getDoubleValue(),
-                                                           pi.maneuver.getTorque().getY(),
-                                                           pi.maneuver.getTorque().getZ()));
-                        break;
-
-                    case MAN_TOR_2:
-                        pi.maneuver.setTorque(new Vector3D(pi.maneuver.getTorque().getX(),
-                                                           pi.entry.getDoubleValue(),
-                                                           pi.maneuver.getTorque().getZ()));
-                        break;
-
-                    case MAN_TOR_3:
-                        pi.maneuver.setTorque(new Vector3D(pi.maneuver.getTorque().getX(),
-                                                           pi.maneuver.getTorque().getY(),
-                                                           pi.entry.getDoubleValue()));
-                        break;
-
-                    default:
-                        final boolean parsed;
-                        if (pi.parsingHeader) {
-                            parsed = parseHeaderEntry(pi.entry, pi.file);
-                            if (pi.file.getHeader().getOriginator() != null) {
-                                // this was the end of the header part
-                                pi.parsingHeader   = false;
-                                pi.parsingMetaData = true;
-                            }
-                        } else if (pi.parsingMetaData) {
-                            parsed = parseMetaDataEntry(pi.entry, pi.metadata);
-                            if (pi.metadata.getTimeSystem() != null) {
-                                // this was the end of the metadata part
-                                pi.parsingMetaData = false;
-                            }
-                        } else {
-                            parsed = parseGeneralStateDataEntry(pi);
-                        }
-                        if (!parsed) {
-                            throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD,
-                                                      pi.lineNumber, pi.fileName, pi.line);
-                        }
-
-                }
-
+    /** Finalize a metadata/data segment.
+     */
+    private void finalizeSegment() {
+        if (metadata != null) {
+            final APMData data = new APMData(quaternionBlock, eulerBlock,
+                                             spinStabilizedBlock, spacecraftParametersBlock);
+            for (final APMManeuver maneuver : maneuvers) {
+                data.addManeuver(maneuver);
             }
+            file.addSegment(new ADMSegment<>(metadata, data));
+        }
+        metadata                  = null;
+        context                   = null;
+        quaternionBlock           = null;
+        eulerBlock                = null;
+        spinStabilizedBlock       = null;
+        spacecraftParametersBlock = null;
+        currentManeuver           = null;
+        maneuvers                 = new ArrayList<>();
+    }
 
-            pi.data.setQuaternion(new Quaternion(pi.q0, pi.q1, pi.q2, pi.q3));
-            if (pi.maneuver != null) {
-                pi.data.addManeuver(pi.maneuver);
-            }
-            pi.file.addSegment(new ADMSegment<>(pi.metadata, pi.data));
-            return pi.file;
+    /** Process one structure event.
+     * @param event event to process
+     * @param next queue for pending events waiting processing after this one, may be updated
+     * @return next state to use for parsing upcoming events
+     */
+    private ParsingState processStructureEvent(final ParseEvent event, final Deque<ParseEvent> next) {
+        switch (event.getName()) {
+            case "apm":
+                // ignored
+                return this::processStructureEvent;
+            case "header":
+                return new NDMHeaderParsingState(getDataContext(), getFormatVersionKey(),
+                                                 file.getHeader(), this::processStructureEvent);
+            case "body":
+                // ignored
+                return this::processStructureEvent;
+            case "segment":
+                // ignored
+                return this::processStructureEvent;
+            case "metadata" :
+                if (event.getType() == EventType.START) {
+                    // next parse events will be handled as metadata
+                    metadata = new ADMMetadata();
+                    context  = new ParsingContext(this::getConventions,
+                                                  this::isSimpleEOP,
+                                                  this::getDataContext,
+                                                  this::getMissionReferenceDate,
+                                                  metadata::getTimeSystem);
+                    return this::processMetadataEvent;
+                } else if (event.getType() == EventType.END) {
+                    // nothing to do here, we expect a data next
+                    return this::processStructureEvent;
+                }
+                break;
+            case "data" :
+                if (event.getType() == EventType.START) {
+                    // next parse events will be handled as quaternion logical block
+                    quaternionBlock = new APMQuaternion();
+                    return this::processQuaternionEvent;
+                } else if (event.getType() == EventType.END) {
+                    finalizeSegment();
+                    // there is only one segment in APM file
+                    // any further data should be considered as an error
+                    return new EndOfMessageState();
+                }
+                break;
+            default :
+                // nothing to do here, errors are handled below
+        }
+        throw event.generateException();
+    }
 
-        } catch (IOException ioe) {
-            throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
+    /** Process one metadata event.
+     * @param event event to process
+     * @param next queue for pending events waiting processing after this one, may be updated
+     * @return next state to use for parsing upcoming events
+     */
+    private ParsingState processMetadataEvent(final ParseEvent event, final Deque<ParseEvent> next) {
+        try {
+            final ADMMetadataKey key = ADMMetadataKey.valueOf(event.getName());
+            key.process(event, context, metadata);
+            return this::processMetadataEvent;
+        } catch (IllegalArgumentException iae) {
+            // event has not been recognized, it is most probably the end of the metadata section
+            // we push the event back into next queue and let the structure parser handle it
+            next.offerLast(event);
+            return this::processStructureEvent;
         }
     }
 
-    /**
-     * Parse a general state data key = value entry.
-     * @param pi parser information
-     * @return true if the keyword was a meta-data keyword and has been parsed
+    /** Process one quaternion data event.
+     * @param event event to process
+     * @param next queue for pending events waiting processing after this one, may be updated
+     * @return next state to use for parsing upcoming events
      */
-    private boolean parseGeneralStateDataEntry(final ParseInfo pi) {
-        switch (pi.entry.getKeyword()) {
-
-            case COMMENT:
-                pi.commentTmp.add(pi.entry.getValue());
-                return true;
-
-            case EPOCH:
-                pi.data.setEpochComment(pi.commentTmp);
-                pi.commentTmp.clear();
-                pi.data.setEpoch(parseDate(pi.entry.getValue(), pi.metadata.getTimeSystem(),
-                                        pi.lineNumber, pi.fileName, pi.line));
-                return true;
-
-            case QC_DOT:
-                pi.data.setQuaternionDot(new Quaternion(pi.entry.getDoubleValue(),
-                                                        pi.data.getQuaternionDot().getQ1(),
-                                                        pi.data.getQuaternionDot().getQ2(),
-                                                        pi.data.getQuaternionDot().getQ3()));
-                return true;
-
-            case Q1_DOT:
-                pi.data.setQuaternionDot(new Quaternion(pi.data.getQuaternionDot().getQ0(),
-                                                        pi.entry.getDoubleValue(),
-                                                        pi.data.getQuaternionDot().getQ2(),
-                                                        pi.data.getQuaternionDot().getQ3()));
-                return true;
-
-            case Q2_DOT:
-                pi.data.setQuaternionDot(new Quaternion(pi.data.getQuaternionDot().getQ0(),
-                                                        pi.data.getQuaternionDot().getQ1(),
-                                                        pi.entry.getDoubleValue(),
-                                                        pi.data.getQuaternionDot().getQ3()));
-                return true;
-
-            case Q3_DOT:
-                pi.data.setQuaternionDot(new Quaternion(pi.data.getQuaternionDot().getQ0(),
-                                                        pi.data.getQuaternionDot().getQ1(),
-                                                        pi.data.getQuaternionDot().getQ2(),
-                                                        pi.entry.getDoubleValue()));
-                return true;
-
-            case EULER_FRAME_A:
-                pi.data.setEulerComment(pi.commentTmp);
-                pi.commentTmp.clear();
-                pi.data.setEulerFrameAString(pi.entry.getValue());
-                return true;
-
-            case EULER_FRAME_B:
-                pi.data.setEulerFrameBString(pi.entry.getValue());
-                return true;
-
-            case EULER_DIR:
-                pi.data.setEulerDirection(pi.entry.getValue());
-                return true;
-
-            case EULER_ROT_SEQ:
-                pi.data.setEulerRotSeq(pi.entry.getValue());
-                return true;
-
-            case RATE_FRAME:
-                pi.data.setRateFrameString(pi.entry.getValue());
-                return true;
-
-            case X_ANGLE:
-                pi.data.setRotationAngles(new Vector3D(toRadians(pi.entry),
-                                                       pi.data.getRotationAngles().getY(),
-                                                       pi.data.getRotationAngles().getZ()));
-                return true;
-
-            case Y_ANGLE:
-                pi.data.setRotationAngles(new Vector3D(pi.data.getRotationAngles().getX(),
-                                                       toRadians(pi.entry),
-                                                       pi.data.getRotationAngles().getZ()));
-                return true;
-
-            case Z_ANGLE:
-                pi.data.setRotationAngles(new Vector3D(pi.data.getRotationAngles().getX(),
-                                                       pi.data.getRotationAngles().getY(),
-                                                       toRadians(pi.entry)));
-                return true;
-
-            case X_RATE:
-                pi.data.setRotationRates(new Vector3D(toRadians(pi.entry),
-                                                      pi.data.getRotationRates().getY(),
-                                                      pi.data.getRotationRates().getZ()));
-                return true;
-
-            case Y_RATE:
-                pi.data.setRotationRates(new Vector3D(pi.data.getRotationRates().getX(),
-                                                      toRadians(pi.entry),
-                                                      pi.data.getRotationRates().getZ()));
-                return true;
-
-            case Z_RATE:
-                pi.data.setRotationRates(new Vector3D(pi.data.getRotationRates().getX(),
-                                                      pi.data.getRotationRates().getY(),
-                                                      toRadians(pi.entry)));
-                return true;
-
-            case SPIN_FRAME_A:
-                pi.data.setSpinComment(pi.commentTmp);
-                pi.commentTmp.clear();
-                pi.data.setSpinFrameAString(pi.entry.getValue());
-                return true;
-
-            case SPIN_FRAME_B:
-                pi.data.setSpinFrameBString(pi.entry.getValue());
-                return true;
-
-            case SPIN_DIR:
-                pi.data.setSpinDirection(pi.entry.getValue());
-                return true;
-
-            case SPIN_ALPHA:
-                pi.data.setSpinAlpha(toRadians(pi.entry));
-                return true;
-
-            case SPIN_DELTA:
-                pi.data.setSpinDelta(toRadians(pi.entry));
-                return true;
-
-            case SPIN_ANGLE:
-                pi.data.setSpinAngle(toRadians(pi.entry));
-                return true;
-
-            case SPIN_ANGLE_VEL:
-                pi.data.setSpinAngleVel(toRadians(pi.entry));
-                return true;
-
-            case NUTATION:
-                pi.data.setNutation(toRadians(pi.entry));
-                return true;
-
-            case NUTATION_PER:
-                pi.data.setNutationPeriod(pi.entry.getDoubleValue());
-                return true;
-
-            case NUTATION_PHASE:
-                pi.data.setNutationPhase(toRadians(pi.entry));
-                return true;
-
-            case INERTIA_REF_FRAME:
-                pi.data.setSpacecraftComment(pi.commentTmp);
-                pi.commentTmp.clear();
-                pi.data.setInertiaRefFrameString(pi.entry.getValue());
-                return true;
-
-            case I11:
-                pi.data.setI11(pi.entry.getDoubleValue());
-                return true;
-
-            case I22:
-                pi.data.setI22(pi.entry.getDoubleValue());
-                return true;
-
-            case I33:
-                pi.data.setI33(pi.entry.getDoubleValue());
-                return true;
-
-            case I12:
-                pi.data.setI12(pi.entry.getDoubleValue());
-                return true;
-
-            case I13:
-                pi.data.setI13(pi.entry.getDoubleValue());
-                return true;
-
-            case I23:
-                pi.data.setI23(pi.entry.getDoubleValue());
-                return true;
-
-            default:
-                return false;
-
+    private ParsingState processQuaternionEvent(final ParseEvent event, final Deque<ParseEvent> next) {
+        try {
+            final APMQuaternionKey key = APMQuaternionKey.valueOf(event.getName());
+            if (key.process(event, context, quaternionBlock)) {
+                // the event was processed properly
+                return this::processQuaternionEvent;
+            } else {
+                // the event was not processed, we need to pass it to next block processor
+                next.offerLast(event);
+                return this::processEulerEvent;
+            }
+        } catch (IllegalArgumentException iae) {
+            // event has not been recognized, it is most probably the end of the data section
+            // we push the event back into next queue and let the structure parser handle it
+            next.offerLast(event);
+            return this::processEulerEvent;
         }
-
     }
 
-    /**
-     * Convert a {@link KeyValue} in degrees to a real value in randians.
-     * @param keyValue key value
-     * @return the value in radians
+    /** Process one Euler angles data event.
+     * @param event event to process
+     * @param next queue for pending events waiting processing after this one, may be updated
+     * @return next state to use for parsing upcoming events
      */
-    private double toRadians(final KeyValue keyValue) {
-        return FastMath.toRadians(keyValue.getDoubleValue());
+    private ParsingState processEulerEvent(final ParseEvent event, final Deque<ParseEvent> next) {
+        try {
+            final APMEulerKey key = APMEulerKey.valueOf(event.getName());
+            if (key.process(event, context, eulerBlock)) {
+                // the event was processed properly
+                return this::processEulerEvent;
+            } else {
+                // the event was not processed, we need to pass it to next block processor
+                next.offerLast(event);
+                return this::processSpinStabilizedEvent;
+            }
+        } catch (IllegalArgumentException iae) {
+            // event has not been recognized, it is most probably the end of the data section
+            // we push the event back into next queue and let the structure parser handle it
+            next.offerLast(event);
+            return this::processSpinStabilizedEvent;
+        }
     }
 
-    /** Private class used to store APM parsing info. */
-    private static class ParseInfo {
+    /** Process one spin-stabilized data event.
+     * @param event event to process
+     * @param next queue for pending events waiting processing after this one, may be updated
+     * @return next state to use for parsing upcoming events
+     */
+    private ParsingState processSpinStabilizedEvent(final ParseEvent event, final Deque<ParseEvent> next) {
+        try {
+            final APMSpinStabilizedKey key = APMSpinStabilizedKey.valueOf(event.getName());
+            if (key.process(event, context, spinStabilizedBlock)) {
+                // the event was processed properly
+                return this::processSpinStabilizedEvent;
+            } else {
+                // the event was not processed, we need to pass it to next block processor
+                next.offerLast(event);
+                return this::processSpacecraftParametersEvent;
+            }
+        } catch (IllegalArgumentException iae) {
+            // event has not been recognized, it is most probably the end of the data section
+            // we push the event back into next queue and let the structure parser handle it
+            next.offerLast(event);
+            return this::processSpacecraftParametersEvent;
+        }
+    }
 
-        /** APM file being read. */
-        private APMFile file;
+    /** Process one spacecraft parameters data event.
+     * @param event event to process
+     * @param next queue for pending events waiting processing after this one, may be updated
+     * @return next state to use for parsing upcoming events
+     */
+    private ParsingState processSpacecraftParametersEvent(final ParseEvent event, final Deque<ParseEvent> next) {
+        try {
+            final APMSpacecraftParametersKey key = APMSpacecraftParametersKey.valueOf(event.getName());
+            if (key.process(event, context, spacecraftParametersBlock)) {
+                // the event was processed properly
+                return this::processSpacecraftParametersEvent;
+            } else {
+                // the event was not processed, we need to pass it to next block processor
+                next.offerLast(event);
+                return this::processManeuverEvent;
+            }
+        } catch (IllegalArgumentException iae) {
+            // event has not been recognized, it is most probably the end of the data section
+            // we push the event back into next queue and let the structure parser handle it
+            next.offerLast(event);
+            return this::processManeuverEvent;
+        }
+    }
 
-        /** APM metadata being read. */
-        private ADMMetadata metadata;
-
-        /** APM data being read. */
-        private APMData data;
-
-        /** Name of the file. */
-        private String fileName;
-
-        /** Current line number. */
-        private int lineNumber;
-
-        /** Current line. */
-        private String line;
-
-        /** Key value of the line being read. */
-        private KeyValue entry;
-
-        /** Stored comments. */
-        private List<String> commentTmp;
-
-        /** Scalar coordinate of the quaternion. */
-        private double q0;
-
-        /** First component of the quaternion vector. */
-        private double q1;
-
-        /** Second component of the quaternion vector.. */
-        private double q2;
-
-        /** Third component of the quaternion vector.. */
-        private double q3;
-
-        /** Current maneuver. */
-        private APMManeuver maneuver;
-
-        /** Boolean indicating if the parser is currently parsing a header block. */
-        private boolean parsingHeader;
-
-        /** Boolean indicating if the parser is currently parsing a meta-data block. */
-        private boolean parsingMetaData;
-
-        /** Create a new {@link ParseInfo} object.
-         * @param conventions IERS conventions to use
-         * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-         * @param dataContext data context to use
-         */
-        ParseInfo(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext) {
-            file            = new APMFile();
-            metadata        = new ADMMetadata(conventions, simpleEOP, dataContext);
-            data            = new APMData();
-            lineNumber      = 0;
-            commentTmp      = new ArrayList<>();
-            maneuver        = null;
-            parsingHeader   = false;
-            parsingMetaData = false;
+    /** Process one maneuver data event.
+     * @param event event to process
+     * @param next queue for pending events waiting processing after this one, may be updated
+     * @return next state to use for parsing upcoming events
+     */
+    private ParsingState processManeuverEvent(final ParseEvent event, final Deque<ParseEvent> next) {
+        try {
+            final APMManeuverKey key = APMManeuverKey.valueOf(event.getName());
+            if (key.process(event, context, currentManeuver)) {
+                // the event was processed properly
+                return this::processManeuverEvent;
+            } else {
+                // the event was not processed, we need to pass it to next block processor
+                next.offerLast(event);
+                return this::processStructureEvent;
+            }
+        } catch (IllegalArgumentException iae) {
+            // event has not been recognized, it is most probably the end of the data section
+            // we push the event back into next queue and let the structure parser handle it
+            next.offerLast(event);
+            return this::processStructureEvent;
         }
     }
 

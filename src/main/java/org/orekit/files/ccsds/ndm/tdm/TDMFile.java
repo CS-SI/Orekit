@@ -37,7 +37,8 @@ import org.orekit.files.ccsds.utils.CcsdsTimeScale;
  */
 public class TDMFile extends NDMFile<NDMHeader, NDMSegment<TDMMetadata, ObservationsBlock>> {
 
-    /** Simple constructor. */
+    /** Simple constructor.
+     */
     public TDMFile() {
         super(new NDMHeader());
     }

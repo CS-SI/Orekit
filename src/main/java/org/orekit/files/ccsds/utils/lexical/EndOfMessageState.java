@@ -35,7 +35,7 @@ public class EndOfMessageState implements ParsingState {
      * </p>
      */
     @Override
-    public ParsingState parseEvent(final ParseEvent event, final Deque<ParseEvent> next) {
+    public ParsingState processEvent(final ParseEvent event, final Deque<ParseEvent> next) {
         throw new OrekitException(OrekitMessages.UNEXPECTED_DATA_AT_LINE_IN_FILE,
                                   event.getLineNumber(), event.getFileName());
     }

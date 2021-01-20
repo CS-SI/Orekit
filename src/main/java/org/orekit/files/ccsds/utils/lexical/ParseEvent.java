@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.ParsingContext;
@@ -219,6 +220,15 @@ public class ParseEvent {
     public void processAsDouble(final DoubleConsumer consumer) {
         if (type == EventType.ENTRY) {
             consumer.accept(getContentAsDouble());
+        }
+    }
+
+    /** Process the content as an angle (i.e. converting from degrees to radians upon reading).
+     * @param consumer consumer of the angle in radians
+     */
+    public void processAsAngle(final DoubleConsumer consumer) {
+        if (type == EventType.ENTRY) {
+            consumer.accept(FastMath.toRadians(getContentAsDouble()));
         }
     }
 

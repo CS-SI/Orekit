@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.files.ccsds.ndm.adm.LocalSpacecraftBodyFrame;
 import org.orekit.time.AbsoluteDate;
 
 /**
@@ -30,11 +31,14 @@ import org.orekit.time.AbsoluteDate;
  */
 public class APMManeuver {
 
+    /** Maneuvers data comment, each string in the list corresponds to one line of comment. */
+    private final List<String> comments;
+
     /** Epoch of start of maneuver . */
     private AbsoluteDate epochStart;
 
     /** Coordinate system for the torque vector, for absolute frames. */
-    private String refFrame;
+    private LocalSpacecraftBodyFrame refFrame;
 
     /** Duration (value is 0 for impulsive maneuver). */
     private double duration;
@@ -42,15 +46,28 @@ public class APMManeuver {
     /** Torque vector (N.m). */
     private Vector3D torque;
 
-    /** Maneuvers data comment, each string in the list corresponds to one line of comment. */
-    private List<String> comments;
-
     /**
      * Simple constructor.
      */
     public APMManeuver() {
-        this.torque  = Vector3D.ZERO;
-        this.comments = Collections.emptyList();
+        this.torque   = Vector3D.ZERO;
+        this.comments = new ArrayList<>();
+    }
+
+    /**
+     * Get the maneuvers data comment, each string in the list corresponds to one line of comment.
+     * @return maneuvers data comment, each string in the list corresponds to one line of comment
+     */
+    public List<String> getComments() {
+        return Collections.unmodifiableList(comments);
+    }
+
+    /**
+     * Add a comment.
+     * @param comment comment to add
+     */
+    public void addComment(final String comment) {
+        comments.add(comment);
     }
 
     /**
@@ -73,16 +90,16 @@ public class APMManeuver {
      * Get Coordinate system for the torque vector, for absolute frames.
      * @return coordinate system for the torque vector, for absolute frames
      */
-    public String getRefFrameString() {
+    public LocalSpacecraftBodyFrame getRefFrame() {
         return refFrame;
     }
 
     /**
      * Set Coordinate system for the torque vector, for absolute frames.
-     * @param frame coordinate system for the torque vector, for absolute frames
+     * @param refFrame coordinate system for the torque vector, for absolute frames
      */
-    public void setRefFrameString(final String frame) {
-        this.refFrame = frame;
+    public void setRefFrame(final LocalSpacecraftBodyFrame refFrame) {
+        this.refFrame = refFrame;
     }
 
     /**
@@ -115,22 +132,6 @@ public class APMManeuver {
      */
     public void setTorque(final Vector3D vector) {
         this.torque = vector;
-    }
-
-    /**
-     * Get the maneuvers data comment, each string in the list corresponds to one line of comment.
-     * @return maneuvers data comment, each string in the list corresponds to one line of comment
-     */
-    public List<String> getComments() {
-        return Collections.unmodifiableList(comments);
-    }
-
-    /**
-     * Set the maneuvers data comment, each string in the list corresponds to one line of comment.
-     * @param comments maneuvers data comment, each string in the list corresponds to one line of comment
-     */
-    public void setComments(final List<String> comments) {
-        this.comments = new ArrayList<>(comments);
     }
 
 }

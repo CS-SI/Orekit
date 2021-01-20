@@ -105,8 +105,8 @@ public class ObservationsBlock implements NDMData {
         this.addObservation(new Observation(keyword, epoch, measurement));
     }
 
-    /** Get the observations data lines comment.
-     * @return the comment
+    /** Get the observations data lines comments.
+     * @return the comments
      */
     public List<String> getComments() {
         return comments;

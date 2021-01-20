@@ -55,17 +55,6 @@ public class OCMParser extends ODMParser<OCMFile, OCMParser> {
 
     /** Simple constructor.
      * <p>
-     * This class is immutable, and hence thread safe. When parts
-     * must be changed, such as the gravitational coefficient or
-     * the IERS conventions, the various {@code withXxx} methods must be called,
-     * which create a new immutable instance with the new parameters. This
-     * is a combination of the
-     * <a href="https://en.wikipedia.org/wiki/Builder_pattern">builder design
-     * pattern</a> and a
-     * <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
-     * interface</a>.
-     * </p>
-     * <p>
      * The gravitational coefficient is not set here. If it is needed in order
      * to parse Cartesian orbits where the value is not set in the CCSDS file, it must
      * be initialized before parsing by calling {@link #withMu(double)}.
@@ -85,17 +74,6 @@ public class OCMParser extends ODMParser<OCMFile, OCMParser> {
     }
 
     /** Simple constructor.
-     * <p>
-     * This class is immutable, and hence thread safe. When parts
-     * must be changed, such as the gravitational coefficient or
-     * the IERS conventions, the various {@code withXxx} methods must be called,
-     * which create a new immutable instance with the new parameters. This
-     * is a combination of the
-     * <a href="https://en.wikipedia.org/wiki/Builder_pattern">builder design
-     * pattern</a> and a
-     * <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
-     * interface</a>.
-     * </p>
      * <p>
      * The gravitational coefficient is not set here. If it is needed in order
      * to parse Cartesian orbits where the value is not set in the CCSDS file, it must

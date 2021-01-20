@@ -158,33 +158,33 @@ public enum TDMMetadataKey {
     /** Applied correction entry. */
     CORRECTIONS_APPLIED((event, context, metadata) -> event.processAsNormalizedString(metadata::setCorrectionsApplied));
 
-    /** Parsing method. */
-    private final MetadataEntryParser parser;
+    /** Processing method. */
+    private final MetadataEntryProcessor processor;
 
     /** Simple constructor.
-     * @param parser parsing method
+     * @param processor processing method
      */
-    TDMMetadataKey(final MetadataEntryParser parser) {
-        this.parser = parser;
+    TDMMetadataKey(final MetadataEntryProcessor processor) {
+        this.processor = processor;
     }
 
-    /** Parse an event.
-     * @param event event to parse
+    /** Process an event.
+     * @param event event to process
      * @param context parsing context
      * @param metadata metadata to fill
      */
     public void parse(final ParseEvent event, final ParsingContext context, final TDMMetadata metadata) {
-        parser.parse(event, context, metadata);
+        processor.process(event, context, metadata);
     }
 
-    /** Interface for parsing one metadata entry. */
-    interface MetadataEntryParser {
-        /** Parse one metadata entry.
-         * @param event parse event
+    /** Interface for processing one event. */
+    interface MetadataEntryProcessor {
+        /** Process one event.
+         * @param event event to process
          * @param context parsing context
          * @param metadata metadata to fill
          */
-        void parse(ParseEvent event, ParsingContext context, TDMMetadata metadata);
+        void process(ParseEvent event, ParsingContext context, TDMMetadata metadata);
     }
 
 }
