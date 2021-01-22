@@ -36,7 +36,7 @@ import org.orekit.files.ccsds.ndm.odm.OCommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.OStateParser;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.KeyValue;
-import org.orekit.files.ccsds.utils.lexical.ParsingState;
+import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -118,7 +118,7 @@ public class OPMParser extends OStateParser<OPMFile, OPMParser> {
      * @param mu gravitational coefficient
      */
     private OPMParser(final IERSConventions conventions, final boolean simpleEOP,
-                      final DataContext dataContext, final ParsingState initialState,
+                      final DataContext dataContext, final ProcessingState initialState,
                       final AbsoluteDate missionReferenceDate, final double mu) {
         super(conventions, simpleEOP, dataContext, initialState, missionReferenceDate, mu);
     }
@@ -128,7 +128,7 @@ public class OPMParser extends OStateParser<OPMFile, OPMParser> {
     protected OPMParser create(final IERSConventions newConventions,
                                final boolean newSimpleEOP,
                                final DataContext newDataContext,
-                               final ParsingState newInitialState,
+                               final ProcessingState newInitialState,
                                final AbsoluteDate newMissionReferenceDate,
                                final double newMu) {
         return new OPMParser(newConventions, newSimpleEOP, newDataContext, newInitialState,

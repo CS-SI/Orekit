@@ -17,7 +17,8 @@
 package org.orekit.files.ccsds.ndm.adm;
 
 import org.orekit.files.ccsds.ndm.ParsingContext;
-import org.orekit.files.ccsds.utils.lexical.ParseEvent;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.files.ccsds.utils.lexical.ParseToken;
 
 
 /** Keys for {@link ADMMetadata ADM metadata} entries.
@@ -27,21 +28,23 @@ import org.orekit.files.ccsds.utils.lexical.ParseEvent;
 public enum ADMMetadataKey {
 
     /** Comment entry. */
-    COMMENT((event, context, metadata) -> event.processAsFreeTextString(metadata::addComment)),
+    COMMENT((token, context, metadata) -> token.processAsFreeTextString(metadata::addComment)),
 
     /** Object name entry. */
-    OBJECT_NAME((event, context, metadata) -> event.processAsNormalizedString(metadata::setObjectName)),
+    OBJECT_NAME((token, context, metadata) -> token.processAsNormalizedString(metadata::setObjectName)),
 
     /** Object ID entry. */
-    OBJECT_ID((event, context, metadata) -> event.processAsNormalizedString(metadata::setObjectID)),
+    OBJECT_ID((token, context, metadata) -> token.processAsNormalizedString(metadata::setObjectID)),
 
     /** Center name entry. */
-    CENTER_NAME((event, context, metadata) -> {
-        metadata.setCenterName(event.getNormalizedContent(), context.getDataContext().getCelestialBodies());
+    CENTER_NAME((token, context, metadata) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            metadata.setCenterName(token.getNormalizedContent(), context.getDataContext().getCelestialBodies());
+        }
     }),
 
     /** Time system entry. */
-    TIME_SYSTEM((event, context, metadata) -> event.processAsTimeScale(metadata::setTimeSystem));
+    TIME_SYSTEM((token, context, metadata) -> token.processAsTimeScale(metadata::setTimeSystem));
 
     /** Processing method. */
     private final MetadataEntryProcessor processor;
@@ -53,23 +56,23 @@ public enum ADMMetadataKey {
         this.processor = processor;
     }
 
-    /** Process one event.
-     * @param event event to process
+    /** Process one token.
+     * @param token token to process
      * @param context parsing context
      * @param metadata metadata to fill
      */
-    public void process(final ParseEvent event, final ParsingContext context, final ADMMetadata metadata) {
-        processor.process(event, context, metadata);
+    public void process(final ParseToken token, final ParsingContext context, final ADMMetadata metadata) {
+        processor.process(token, context, metadata);
     }
 
-    /** Interface for processing one event. */
+    /** Interface for processing one token. */
     interface MetadataEntryProcessor {
-        /** Process one event.
-         * @param event event to process
+        /** Process one token.
+         * @param token token to process
          * @param context parsing context
          * @param metadata metadata to fill
          */
-        void process(ParseEvent event, ParsingContext context, ADMMetadata metadata);
+        void process(ParseToken token, ParsingContext context, ADMMetadata metadata);
     }
 
 }

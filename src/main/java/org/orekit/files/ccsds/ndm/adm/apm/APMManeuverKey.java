@@ -19,8 +19,8 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.files.ccsds.ndm.ParsingContext;
 import org.orekit.files.ccsds.ndm.adm.LocalSpacecraftBodyFrame;
-import org.orekit.files.ccsds.utils.lexical.EventType;
-import org.orekit.files.ccsds.utils.lexical.ParseEvent;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.files.ccsds.utils.lexical.ParseToken;
 
 /** Keys for {@link APMManeuver APM maneuver} entries.
  * @author Bryan Cazabonne
@@ -30,14 +30,14 @@ import org.orekit.files.ccsds.utils.lexical.ParseEvent;
 public enum APMManeuverKey {
 
     /** Block wrapping element in XML files. */
-    maneuverParameters((event, context, data) -> true),
+    maneuverParameters((token, context, data) -> true),
 
     /** Comment entry. */
-    COMMENT((event, context, maneuver) -> {
-        if (event.getType() == EventType.ENTRY) {
+    COMMENT((token, context, maneuver) -> {
+        if (token.getType() == TokenType.ENTRY) {
             if (maneuver.getEpochStart() == null) {
                 // we are still at block start, we accept comments
-                event.processAsFreeTextString(maneuver::addComment);
+                token.processAsFreeTextString(maneuver::addComment);
                 return false;
             } else {
                 // we have already processed some content in the block
@@ -49,53 +49,53 @@ public enum APMManeuverKey {
     }),
 
     /** Epoch start entry. */
-    MAN_EPOCH_START((event, context, maneuver) -> {
-        event.processAsDate(maneuver::setEpochStart, context);
+    MAN_EPOCH_START((token, context, maneuver) -> {
+        token.processAsDate(maneuver::setEpochStart, context);
         return true;
     }),
 
     /** Duration entry. */
-    MAN_DURATION((event, context, maneuver) -> {
-        event.processAsDouble(maneuver::setDuration);
+    MAN_DURATION((token, context, maneuver) -> {
+        token.processAsDouble(maneuver::setDuration);
         return true;
     }),
 
     /** Reference frame entry. */
-    MAN_REF_FRAME((event, context, maneuver) -> {
-        final String[] fields = event.getNormalizedContent().split(" ");
+    MAN_REF_FRAME((token, context, maneuver) -> {
+        final String[] fields = token.getNormalizedContent().split(" ");
         if (fields.length != 2) {
-            throw event.generateException();
+            throw token.generateException();
         }
         try {
             final LocalSpacecraftBodyFrame.Type type = LocalSpacecraftBodyFrame.Type.valueOf(fields[0]);
             maneuver.setRefFrame(new LocalSpacecraftBodyFrame(type, fields[1]));
             return true;
         } catch (IllegalArgumentException iae) {
-            throw event.generateException();
+            throw token.generateException();
         }
     }),
 
     /** First torque vector component entry. */
-    MAN_TOR_1((event, context, maneuver) -> {
-        maneuver.setTorque(new Vector3D(event.getContentAsDouble(),
+    MAN_TOR_1((token, context, maneuver) -> {
+        maneuver.setTorque(new Vector3D(token.getContentAsDouble(),
                                         maneuver.getTorque().getY(),
                                         maneuver.getTorque().getZ()));
         return true;
     }),
 
     /** Second torque vector component entry. */
-    MAN_TOR_2((event, context, maneuver) -> {
+    MAN_TOR_2((token, context, maneuver) -> {
         maneuver.setTorque(new Vector3D(maneuver.getTorque().getX(),
-                                        event.getContentAsDouble(),
+                                        token.getContentAsDouble(),
                                         maneuver.getTorque().getZ()));
         return true;
     }),
 
     /** Third torque vector component entry. */
-    MAN_TOR_3((event, context, maneuver) -> {
+    MAN_TOR_3((token, context, maneuver) -> {
         maneuver.setTorque(new Vector3D(maneuver.getTorque().getX(),
                                         maneuver.getTorque().getY(),
-                                        event.getContentAsDouble()));
+                                        token.getContentAsDouble()));
         return true;
     });
 
@@ -109,25 +109,25 @@ public enum APMManeuverKey {
         this.processor = processor;
     }
 
-    /** Process one event.
-     * @param event event to process
+    /** Process one token.
+     * @param token token to process
      * @param context parsing context
      * @param maneuver maneuver to fill
-     * @return true of event was accepted
+     * @return true of token was accepted
      */
-    public boolean process(final ParseEvent event, final ParsingContext context, final APMManeuver maneuver) {
-        return processor.process(event, context, maneuver);
+    public boolean process(final ParseToken token, final ParsingContext context, final APMManeuver maneuver) {
+        return processor.process(token, context, maneuver);
     }
 
-    /** Interface for processing one event. */
+    /** Interface for processing one token. */
     interface ManeuverEntryProcessor {
-        /** Process one event.
-         * @param event event to process
+        /** Process one token.
+         * @param token token to process
          * @param context parsing context
          * @param maneuver maneuver to fill
-         * @return true of event was accepted
+         * @return true of token was accepted
          */
-        boolean process(ParseEvent event, ParsingContext context, APMManeuver maneuver);
+        boolean process(ParseToken token, ParsingContext context, APMManeuver maneuver);
     }
 
 }

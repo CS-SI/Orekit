@@ -33,7 +33,7 @@ import org.orekit.files.ccsds.ndm.NDMSegment;
 import org.orekit.files.ccsds.ndm.odm.ODMParser;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.KeyValue;
-import org.orekit.files.ccsds.utils.lexical.ParsingState;
+import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -99,7 +99,7 @@ public class OCMParser extends ODMParser<OCMFile, OCMParser> {
      * @param mu gravitational coefficient
      */
     private OCMParser(final IERSConventions conventions, final boolean simpleEOP,
-                      final DataContext dataContext, final ParsingState initialState,
+                      final DataContext dataContext, final ProcessingState initialState,
                       final double mu) {
         super(conventions, simpleEOP, dataContext, initialState);
         this.mu = mu;
@@ -119,7 +119,7 @@ public class OCMParser extends ODMParser<OCMFile, OCMParser> {
     protected OCMParser create(final IERSConventions newConventions,
                                final boolean newSimpleEOP,
                                final DataContext newDataContext,
-                               final ParsingState newInitialState) {
+                               final ProcessingState newInitialState) {
         return create(newConventions, newSimpleEOP, newDataContext, newInitialState, mu);
     }
 
@@ -134,7 +134,7 @@ public class OCMParser extends ODMParser<OCMFile, OCMParser> {
     protected OCMParser create(final IERSConventions newConventions,
                                final boolean newSimpleEOP,
                                final DataContext newDataContext,
-                               final ParsingState newInitialState,
+                               final ProcessingState newInitialState,
                                final double newMu) {
         return new OCMParser(newConventions, newSimpleEOP, newDataContext, newInitialState, newMu);
     }

@@ -17,8 +17,8 @@
 package org.orekit.files.ccsds.ndm.adm.apm;
 
 import org.orekit.files.ccsds.ndm.ParsingContext;
-import org.orekit.files.ccsds.utils.lexical.EventType;
-import org.orekit.files.ccsds.utils.lexical.ParseEvent;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.files.ccsds.utils.lexical.ParseToken;
 
 /** Keys for {@link APMSpinStabilized APM spin-stabilized} entries.
  * @author Bryan Cazabonne
@@ -27,14 +27,14 @@ import org.orekit.files.ccsds.utils.lexical.ParseEvent;
 public enum APMSpinStabilizedKey {
 
     /** Block wrapping element in XML files. */
-    eulerElementsSpin((event, context, data) -> true),
+    eulerElementsSpin((token, context, data) -> true),
 
     /** Comment entry. */
-    COMMENT((event, context, data) -> {
-        if (event.getType() == EventType.ENTRY) {
+    COMMENT((token, context, data) -> {
+        if (token.getType() == TokenType.ENTRY) {
             if (data.getSpinFrameAString() == null) {
                 // we are still at block start, we accept comments
-                event.processAsFreeTextString(data::addComment);
+                token.processAsFreeTextString(data::addComment);
                 return false;
             } else {
                 // we have already processed some content in the block
@@ -46,62 +46,62 @@ public enum APMSpinStabilizedKey {
     }),
 
     /** First reference frame entry. */
-    SPIN_FRAME_A((event, context, data) -> {
-        event.processAsNormalizedString(data::setSpinFrameAString);
+    SPIN_FRAME_A((token, context, data) -> {
+        token.processAsNormalizedString(data::setSpinFrameAString);
         return true;
     }),
 
     /** Second reference frame entry. */
-    SPIN_FRAME_B((event, context, data) -> {
-        event.processAsNormalizedString(data::setSpinFrameBString);
+    SPIN_FRAME_B((token, context, data) -> {
+        token.processAsNormalizedString(data::setSpinFrameBString);
         return true;
     }),
 
     /** Rotation direction entry. */
-    SPIN_DIR((event, context, data) -> {
-        event.processAsNormalizedString(data::setSpinDirection);
+    SPIN_DIR((token, context, data) -> {
+        token.processAsNormalizedString(data::setSpinDirection);
         return true;
     }),
 
     /** Spin right ascension entry. */
-    SPIN_ALPHA((event, context, data) -> {
-        event.processAsAngle(data::setSpinAlpha);
+    SPIN_ALPHA((token, context, data) -> {
+        token.processAsAngle(data::setSpinAlpha);
         return true;
     }),
 
     /** Spin declination entry. */
-    SPIN_DELTA((event, context, data) -> {
-        event.processAsAngle(data::setSpinDelta);
+    SPIN_DELTA((token, context, data) -> {
+        token.processAsAngle(data::setSpinDelta);
         return true;
     }),
 
     /** Spin phase entry. */
-    SPIN_ANGLE((event, context, data) -> {
-        event.processAsAngle(data::setSpinAngle);
+    SPIN_ANGLE((token, context, data) -> {
+        token.processAsAngle(data::setSpinAngle);
         return true;
     }),
 
     /** Spin angular velocity entry. */
-    SPIN_ANGLE_VEL((event, context, data) -> {
-        event.processAsAngle(data::setSpinAngleVel);
+    SPIN_ANGLE_VEL((token, context, data) -> {
+        token.processAsAngle(data::setSpinAngleVel);
         return true;
     }),
 
     /** Nutation angle entry. */
-    NUTATION((event, context, data) -> {
-        event.processAsAngle(data::setNutation);
+    NUTATION((token, context, data) -> {
+        token.processAsAngle(data::setNutation);
         return true;
     }),
 
     /** Nutation period entry. */
-    NUTATION_PER((event, context, data) -> {
-        event.processAsAngle(data::setNutationPeriod);
+    NUTATION_PER((token, context, data) -> {
+        token.processAsAngle(data::setNutationPeriod);
         return true;
     }),
 
     /** Nutation phase entry. */
-    NUTATION_PHASE((event, context, data) -> {
-        event.processAsAngle(data::setNutationPhase);
+    NUTATION_PHASE((token, context, data) -> {
+        token.processAsAngle(data::setNutationPhase);
         return true;
     });
 
@@ -115,25 +115,25 @@ public enum APMSpinStabilizedKey {
         this.parser = processor;
     }
 
-    /** Process one event.
-     * @param event event to process
+    /** Process one token.
+     * @param token token to process
      * @param context parsing context
      * @param data data to fill
-     * @return true of event was accepted
+     * @return true of token was accepted
      */
-    public boolean process(final ParseEvent event, final ParsingContext context, final APMSpinStabilized data) {
-        return parser.process(event, context, data);
+    public boolean process(final ParseToken token, final ParsingContext context, final APMSpinStabilized data) {
+        return parser.process(token, context, data);
     }
 
-    /** Interface for processing one event. */
+    /** Interface for processing one token. */
     interface SpinEntryProcessor {
-        /** Process one event.
-         * @param event event to process
+        /** Process one token.
+         * @param token token to process
          * @param context parsing context
          * @param data data to fill
-         * @return true of event was accepted
+         * @return true of token was accepted
          */
-        boolean process(ParseEvent event, ParsingContext context, APMSpinStabilized data);
+        boolean process(ParseToken token, ParsingContext context, APMSpinStabilized data);
     }
 
 }

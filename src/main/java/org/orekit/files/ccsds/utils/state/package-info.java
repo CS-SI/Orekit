@@ -16,20 +16,19 @@
  */
 /**
  *
- * This package contains utilities for CCSDS messages lexical analysis.
- *
+ * This package contains classes related to the processing
+ * of parse tokens using the state design pattern.
  * <p>
- * The various implementations of the {@link
- * org.orekit.files.ccsds.utils.lexical.LexicalAnalyzer LexicalAnalyzer}
- * interface are able to generate {@link org.orekit.files.ccsds.utils.lexical.ParseToken
- * parse tokens} from files in different formats ({@link
- * org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer Key-Value Notation} and
- * {@link org.orekit.files.ccsds.utils.lexical.XMLLexicalAnalyzer XML}). They will
- * feed {@link org.orekit.files.ccsds.utils.lexical.MessageParser message parsers}
- * with these {@link org.orekit.files.ccsds.utils.lexical.ParseToken
- * parse tokens}.
+ * The base abstract class {@link org.orekit.files.ccsds.utils.state.AbstractMessageParser
+ * AbstractMessageParser} implements the {@link
+ * org.orekit.files.ccsds.utils.lexical.MessageParser MessageParser} interface using
+ * the state design pattern, where each {@link
+ * org.orekit.files.ccsds.utils.state.ProcessingState processing state} is devoted
+ * to analyze one section or sub-section of a CCSDS message (like header, metadata,
+ * data or even smaller parts like logical blocks inside data).
  * </p>
+ *
  * @author Luc Maisonobe
  * @since 11.0
  */
-package org.orekit.files.ccsds.utils.lexical;
+package org.orekit.files.ccsds.utils.state;

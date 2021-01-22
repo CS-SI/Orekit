@@ -16,31 +16,31 @@
  */
 package org.orekit.files.ccsds.utils.lexical;
 
-/** Enumerate for events occurring during CCSDS file parsing.
+/** Enumerate for tokens occurring during CCSDS file parsing.
  * <p>
- * Parse events correspond to:
+ * Parse tokens correspond to:
  * <ul>
  *   <li>bloc start</li>
  *   <li>entry content</li>
  *   <li>bloc end</li>
  * </ul>
  * </p>
- * @see ParrseEvent
+ * @see ParrseToken
  * @author Luc Maisonobe
  * @since 11.0
  */
-public enum EventType {
+public enum TokenType {
 
-    /** Block or entry start event. */
+    /** Block or entry start token. */
     START,
 
-    /** Entry content event. */
+    /** Entry content token. */
     ENTRY,
 
-    /** Block or entry end event. */
+    /** Block or entry end token. */
     END,
 
-    /** Raw line event. */
+    /** Raw line token. */
     RAW_LINE;
 
 }

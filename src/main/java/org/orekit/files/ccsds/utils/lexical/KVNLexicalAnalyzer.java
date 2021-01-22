@@ -108,9 +108,10 @@ public class KVNLexicalAnalyzer implements LexicalAnalyzer {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends NDMFile<?, ?>, P extends MessageParser<T, ?>>
-        T accept(final MessageParser<T, P> messageParser) {
-        messageParser.reset();
+    public <T extends NDMFile<?, ?>> T accept(final MessageParser<T> messageParser) {
+
+        messageParser.reset(FileFormat.KVN);
+
         try (InputStreamReader isr = new InputStreamReader(stream, StandardCharsets.UTF_8);
              BufferedReader reader = new BufferedReader(isr)) {
 
@@ -124,7 +125,7 @@ public class KVNLexicalAnalyzer implements LexicalAnalyzer {
                 final Matcher nonComment = NON_COMMENT_ENTRY.matcher(line);
                 if (nonComment.matches()) {
                     // regular key=value line
-                    messageParser.process(new ParseEvent(EventType.ENTRY,
+                    messageParser.process(new ParseToken(TokenType.ENTRY,
                                                          nonComment.group(1), nonComment.group(2),
                                                          nonComment.groupCount() > 2 ? nonComment.group(3) : null,
                                                          lineNumber, fileName));
@@ -132,26 +133,26 @@ public class KVNLexicalAnalyzer implements LexicalAnalyzer {
                     final Matcher comment = COMMENT_ENTRY.matcher(line);
                     if (comment.matches()) {
                         // comment line
-                        messageParser.process(new ParseEvent(EventType.ENTRY,
+                        messageParser.process(new ParseToken(TokenType.ENTRY,
                                                              comment.group(1), comment.group(2), null,
                                                              lineNumber, fileName));
                     } else {
                         final Matcher start = START_ENTRY.matcher(line);
                         if (start.matches()) {
                             // block start
-                            messageParser.process(new ParseEvent(EventType.START,
+                            messageParser.process(new ParseToken(TokenType.START,
                                                                  start.group(1), null, null,
                                                                  lineNumber, fileName));
                         } else {
                             final Matcher stop = STOP_ENTRY.matcher(line);
                             if (stop.matches()) {
                                 // block end
-                                messageParser.process(new ParseEvent(EventType.END,
+                                messageParser.process(new ParseToken(TokenType.END,
                                                                      stop.group(1), null, null,
                                                                      lineNumber, fileName));
                             } else {
                                 // raw data line
-                                messageParser.process(new ParseEvent(EventType.RAW_LINE,
+                                messageParser.process(new ParseToken(TokenType.RAW_LINE,
                                                                      null, line, null,
                                                                      lineNumber, fileName));
                             }

@@ -14,22 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.orekit.files.ccsds.utils.state;
+
+import java.util.Deque;
+
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.utils.lexical.ParseToken;
+
 /**
+ * Special {@link ProcessingState} used at end of message, to generate an error if spurious data is found.
  *
- * This package contains utilities for CCSDS messages lexical analysis.
- *
- * <p>
- * The various implementations of the {@link
- * org.orekit.files.ccsds.utils.lexical.LexicalAnalyzer LexicalAnalyzer}
- * interface are able to generate {@link org.orekit.files.ccsds.utils.lexical.ParseToken
- * parse tokens} from files in different formats ({@link
- * org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer Key-Value Notation} and
- * {@link org.orekit.files.ccsds.utils.lexical.XMLLexicalAnalyzer XML}). They will
- * feed {@link org.orekit.files.ccsds.utils.lexical.MessageParser message parsers}
- * with these {@link org.orekit.files.ccsds.utils.lexical.ParseToken
- * parse tokens}.
- * </p>
  * @author Luc Maisonobe
  * @since 11.0
  */
-package org.orekit.files.ccsds.utils.lexical;
+public class EndOfMessageState implements ProcessingState {
+
+    /** {@inheritDoc}
+     * <p>
+     * This method always generate an error, as no data is expected in this state.
+     * </p>
+     */
+    @Override
+    public ProcessingState processToken(final ParseToken token, final Deque<ParseToken> next) {
+        throw new OrekitException(OrekitMessages.UNEXPECTED_DATA_AT_LINE_IN_FILE,
+                                  token.getLineNumber(), token.getFileName());
+    }
+
+}

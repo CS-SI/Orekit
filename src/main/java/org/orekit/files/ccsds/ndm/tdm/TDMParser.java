@@ -20,13 +20,14 @@ import java.util.Deque;
 
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
-import org.orekit.files.ccsds.ndm.NDMHeaderParsingState;
+import org.orekit.files.ccsds.ndm.NDMHeaderProcessingState;
 import org.orekit.files.ccsds.ndm.NDMSegment;
 import org.orekit.files.ccsds.ndm.ParsingContext;
-import org.orekit.files.ccsds.utils.lexical.EventType;
-import org.orekit.files.ccsds.utils.lexical.MessageParser;
-import org.orekit.files.ccsds.utils.lexical.ParseEvent;
-import org.orekit.files.ccsds.utils.lexical.ParsingState;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.files.ccsds.utils.lexical.FileFormat;
+import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.state.AbstractMessageParser;
+import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -45,7 +46,7 @@ import org.orekit.utils.IERSConventions;
  * @author Maxime Journot
  * @since 9.0
  */
-public class TDMParser extends MessageParser<TDMFile, TDMParser> {
+public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
 
     /** Key for format version. */
     private static final String FORMAT_VERSION_KEY = "CCSDS_TDM_VERS";
@@ -162,13 +163,15 @@ public class TDMParser extends MessageParser<TDMFile, TDMParser> {
 
     /** {@inheritDoc} */
     @Override
-    public void reset() {
+    public void reset(final FileFormat fileFormat) {
         file              = new TDMFile();
         metadata          = null;
         context           = null;
         observationsBlock = null;
-        reset(new NDMHeaderParsingState(getDataContext(), getFormatVersionKey(),
-                                        file.getHeader(), this::processStructureEvent));
+        reset(fileFormat,
+              fileFormat == FileFormat.XML ?
+                            this::processXMLStructureToken :
+                            this::processKVNStructureToken);
     }
 
     /** {@inheritDoc} */
@@ -178,93 +181,144 @@ public class TDMParser extends MessageParser<TDMFile, TDMParser> {
         return file;
     }
 
-    /** Process one structure event.
-     * @param event event to process
-     * @param next queue for pending events waiting processing after this one, may be updated
-     * @return next state to use for parsing upcoming events
+    /** Start parsing of the metadata section.
+     * @return state for processing metadata section
      */
-    private ParsingState processStructureEvent(final ParseEvent event, final Deque<ParseEvent> next) {
-        switch (event.getName()) {
+    private ProcessingState startMetadata() {
+        metadata = new TDMMetadata();
+        context  = new ParsingContext(this::getConventions,
+                                      this::isSimpleEOP,
+                                      this::getDataContext,
+                                      this::getMissionReferenceDate,
+                                      metadata::getTimeSystem);
+        return this::processMetadataToken;
+    }
+
+    /** Start parsing of the data section.
+     * @return state for processing data section
+     */
+    private ProcessingState startData() {
+        observationsBlock = new ObservationsBlock();
+        return this::processDataToken;
+    }
+
+    /** Stop parsing of the data section.
+     */
+    private void stopData() {
+        file.addSegment(new NDMSegment<>(metadata, observationsBlock));
+        metadata          = null;
+        context           = null;
+        observationsBlock = null;
+    }
+
+    /** Process one structure token.
+     * @param token token to process
+     * @param next queue for pending tokens waiting processing after this one, may be updated
+     * @return next state to use for parsing upcoming tokens
+     */
+    private ProcessingState processXMLStructureToken(final ParseToken token, final Deque<ParseToken> next) {
+        switch (token.getName()) {
             case "tdm":
-                // ignored
-                return this::processStructureEvent;
-            case "header":
-                return new NDMHeaderParsingState(getDataContext(), getFormatVersionKey(),
-                                                 file.getHeader(), this::processStructureEvent);
             case "body":
-                // ignored
-                return this::processStructureEvent;
             case "segment":
                 // ignored
-                return this::processStructureEvent;
-            case "META" : case "metadata" :
-                if (event.getType() == EventType.START) {
-                    // next parse events will be handled as metadata
-                    metadata = new TDMMetadata();
-                    context  = new ParsingContext(this::getConventions,
-                                                  this::isSimpleEOP,
-                                                  this::getDataContext,
-                                                  this::getMissionReferenceDate,
-                                                  metadata::getTimeSystem);
-                    return this::processMetadataEvent;
-                } else if (event.getType() == EventType.END) {
-                    // nothing to do here, we expect a DATA_START next
-                    return this::processStructureEvent;
+                return this::processXMLStructureToken;
+            case "header":
+                return new NDMHeaderProcessingState(getDataContext(), getFormatVersionKey(),
+                                                 file.getHeader(), this::processXMLStructureToken);
+            case "metadata" :
+                if (token.getType() == TokenType.START) {
+                    // next parse tokens will be handled as metadata
+                    return startMetadata();
+                } else if (token.getType() == TokenType.END) {
+                    // nothing to do here, we expect a <data> next
+                    return this::processXMLStructureToken;
                 }
                 break;
-            case "DATA" : case "data" :
-                if (event.getType() == EventType.START) {
-                    // next parse events will be handled as data
-                    observationsBlock = new ObservationsBlock();
-                    return this::processDataEvent;
-                } else if (event.getType() == EventType.END) {
-                    file.addSegment(new NDMSegment<>(metadata, observationsBlock));
-                    metadata          = null;
-                    context           = null;
-                    observationsBlock = null;
-                    // we expect a META_START next
-                    return this::processStructureEvent;
+            case "data" :
+                if (token.getType() == TokenType.START) {
+                    // next parse tokens will be handled as data
+                    return startData();
+                } else if (token.getType() == TokenType.END) {
+                    stopData();
+                    // we expect a <metadata> next
+                    return this::processXMLStructureToken;
                 }
                 break;
             default :
                 // nothing to do here, errors are handled below
         }
-        throw event.generateException();
+        throw token.generateException();
     }
 
-    /** Process one metadata event.
-     * @param event event to process
-     * @param next queue for pending events waiting processing after this one, may be updated
-     * @return next state to use for parsing upcoming events
+    /** Process one structure token.
+     * @param token token to process
+     * @param next queue for pending tokens waiting processing after this one, may be updated
+     * @return next state to use for parsing upcoming tokens
      */
-    private ParsingState processMetadataEvent(final ParseEvent event, final Deque<ParseEvent> next) {
+    private ProcessingState processKVNStructureToken(final ParseToken token, final Deque<ParseToken> next) {
+        switch (token.getName()) {
+            case FORMAT_VERSION_KEY :
+                token.processAsDouble(file.getHeader()::setFormatVersion);
+                return this::processKVNStructureToken;
+            case "META" :
+                if (token.getType() == TokenType.START) {
+                    // next parse tokens will be handled as metadata
+                    return startMetadata();
+                } else if (token.getType() == TokenType.END) {
+                    // nothing to do here, we expect a DATA_START next
+                    return this::processKVNStructureToken;
+                }
+                break;
+            case "DATA" :
+                if (token.getType() == TokenType.START) {
+                    // next parse tokens will be handled as data
+                    return startData();
+                } else if (token.getType() == TokenType.END) {
+                    stopData();
+                    // we expect a META_START next
+                    return this::processKVNStructureToken;
+                }
+                break;
+            default :
+                // nothing to do here, errors are handled below
+        }
+        throw token.generateException();
+    }
+
+    /** Process one metadata token.
+     * @param token token to process
+     * @param next queue for pending tokens waiting processing after this one, may be updated
+     * @return next state to use for parsing upcoming tokens
+     */
+    private ProcessingState processMetadataToken(final ParseToken token, final Deque<ParseToken> next) {
         try {
-            final TDMMetadataKey key = TDMMetadataKey.valueOf(event.getName());
-            key.parse(event, context, metadata);
-            return this::processMetadataEvent;
+            final TDMMetadataKey key = TDMMetadataKey.valueOf(token.getName());
+            key.parse(token, context, metadata);
+            return this::processMetadataToken;
         } catch (IllegalArgumentException iae) {
-            // event has not been recognized, it is most probably the end of the metadata section
-            // we push the event back into next queue and let the structure parser handle it
-            next.offerLast(event);
-            return this::processStructureEvent;
+            // token has not been recognized, it is most probably the end of the metadata section
+            // we push the token back into next queue and let the structure parser handle it
+            next.offerLast(token);
+            return getFileFormat() == FileFormat.XML ? this::processXMLStructureToken : this::processKVNStructureToken;
         }
     }
 
-    /** Process one data event.
-     * @param event event to process
-     * @param next queue for pending events waiting processing after this one, may be updated
-     * @return next state to use for parsing upcoming events
+    /** Process one data token.
+     * @param token token to process
+     * @param next queue for pending tokens waiting processing after this one, may be updated
+     * @return next state to use for parsing upcoming tokens
      */
-    private ParsingState processDataEvent(final ParseEvent event, final Deque<ParseEvent> next) {
+    private ProcessingState processDataToken(final ParseToken token, final Deque<ParseToken> next) {
         try {
-            final TDMDataKey key = TDMDataKey.valueOf(event.getName());
-            key.process(event, context, observationsBlock);
-            return this::processDataEvent;
+            final TDMDataKey key = TDMDataKey.valueOf(token.getName());
+            key.process(token, context, observationsBlock);
+            return this::processDataToken;
         } catch (IllegalArgumentException iae) {
-            // event has not been recognized, it is most probably the end of the data section
-            // we push the event back into next queue and let the structure parser handle it
-            next.offerLast(event);
-            return this::processStructureEvent;
+            // token has not been recognized, it is most probably the end of the data section
+            // we push the token back into next queue and let the structure parser handle it
+            next.offerLast(token);
+            return getFileFormat() == FileFormat.XML ? this::processXMLStructureToken : this::processKVNStructureToken;
         }
     }
 

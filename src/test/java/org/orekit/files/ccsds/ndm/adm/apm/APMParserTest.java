@@ -407,10 +407,10 @@ public class APMParserTest {
             new KVNLexicalAnalyzer(getClass().getResourceAsStream("/ccsds/adm/aem/AEMExample.txt"), "AEMExample.txt").
             accept(new APMParser());
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
-            Assert.assertEquals(1, oe.getParts()[0]);
-            Assert.assertEquals("AEMExample.txt", oe.getParts()[1]);
-            Assert.assertEquals("CCSDS_AEM_VERS = 1.0", oe.getParts()[2]);
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
+            Assert.assertEquals("CCSDS_AEM_VERS", oe.getParts()[0]);
+            Assert.assertEquals(1, oe.getParts()[1]);
+            Assert.assertEquals("AEMExample.txt", oe.getParts()[2]);
         }
     }
 

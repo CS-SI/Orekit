@@ -16,28 +16,16 @@
  */
 package org.orekit.files.ccsds.utils.lexical;
 
-import java.util.Deque;
-
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-
-/**
- * Special {@link ParsingState} used at end of message, to generate an error if spurious data is found.
- *
+/** Enumerate for file format.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class EndOfMessageState implements ParsingState {
+public enum FileFormat {
 
-    /** {@inheritDoc}
-     * <p>
-     * This method always generate an error, as no data is expected in this state.
-     * </p>
-     */
-    @Override
-    public ParsingState processEvent(final ParseEvent event, final Deque<ParseEvent> next) {
-        throw new OrekitException(OrekitMessages.UNEXPECTED_DATA_AT_LINE_IN_FILE,
-                                  event.getLineNumber(), event.getFileName());
-    }
+    /** Key-Value Notation format. */
+    KVN,
+
+    /** XML format. */
+    XML;
 
 }

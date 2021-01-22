@@ -24,7 +24,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NDMParser;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.KeyValue;
-import org.orekit.files.ccsds.utils.lexical.ParsingState;
+import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -50,7 +50,7 @@ public abstract class ADMParser<T extends ADMFile<?>, P extends ADMParser<T, ?>>
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      */
     protected ADMParser(final IERSConventions conventions, final boolean simpleEOP,
-                        final DataContext dataContext, final ParsingState initialState,
+                        final DataContext dataContext, final ProcessingState initialState,
                         final AbsoluteDate missionReferenceDate) {
         super(conventions, simpleEOP, dataContext, initialState);
         this.missionReferenceDate = missionReferenceDate;
@@ -61,7 +61,7 @@ public abstract class ADMParser<T extends ADMFile<?>, P extends ADMParser<T, ?>>
     protected P create(final IERSConventions newConventions,
                        final boolean newSimpleEOP,
                        final DataContext newDataContext,
-                       final ParsingState newInitialState) {
+                       final ProcessingState newInitialState) {
         return create(newConventions, newSimpleEOP, newDataContext, newInitialState, missionReferenceDate);
     }
 
@@ -77,7 +77,7 @@ public abstract class ADMParser<T extends ADMFile<?>, P extends ADMParser<T, ?>>
     protected abstract P create(IERSConventions newConventions,
                                 boolean newSimpleEOP,
                                 DataContext newDataContext,
-                                ParsingState newInitialState,
+                                ProcessingState newInitialState,
                                 AbsoluteDate newMissionReferenceDate);
 
     /**

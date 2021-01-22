@@ -27,7 +27,7 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
-import org.orekit.files.ccsds.utils.lexical.ParsingState;
+import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -64,12 +64,12 @@ public abstract class NDMParser<T extends NDMFile<?, ?>, P extends NDMParser<T, 
     /** Initial parsing state.
      * @since 11.0
      */
-    private final ParsingState initialState;
+    private final ProcessingState initialState;
 
     /** Current parsing state.
      * @since 11.0
      */
-    private ParsingState state;
+    private ProcessingState state;
 
     /** Complete constructor.
      * @param conventions IERS Conventions
@@ -79,7 +79,7 @@ public abstract class NDMParser<T extends NDMFile<?, ?>, P extends NDMParser<T, 
      * @since 10.1
      */
     protected NDMParser(final IERSConventions conventions, final boolean simpleEOP,
-                        final DataContext dataContext, final ParsingState initialState) {
+                        final DataContext dataContext, final ProcessingState initialState) {
         this.conventions  = conventions;
         this.simpleEOP    = simpleEOP;
         this.dataContext  = dataContext;
@@ -146,7 +146,7 @@ public abstract class NDMParser<T extends NDMFile<?, ?>, P extends NDMParser<T, 
      * @return the initial parsing state.
      * @since 11.0
      */
-    public ParsingState getInitialState() {
+    public ProcessingState getInitialState() {
         return initialState;
     }
 
@@ -157,7 +157,7 @@ public abstract class NDMParser<T extends NDMFile<?, ?>, P extends NDMParser<T, 
      * @return a new instance with the initial parsing state replaced.
      * @since 11.0
      */
-    public P withInitialState(final ParsingState newInitialState) {
+    public P withInitialState(final ProcessingState newInitialState) {
         return create(getConventions(), isSimpleEOP(), getDataContext(), newInitialState);
     }
 
@@ -172,7 +172,7 @@ public abstract class NDMParser<T extends NDMFile<?, ?>, P extends NDMParser<T, 
     protected abstract P create(IERSConventions newConventions,
                                 boolean newSimpleEOP,
                                 DataContext newDataContext,
-                                ParsingState newInitialState);
+                                ProcessingState newInitialState);
 
     /** Parse a CCSDS frame.
      * @param frameName name of the frame, as the value of a CCSDS key=value line
@@ -255,7 +255,7 @@ public abstract class NDMParser<T extends NDMFile<?, ?>, P extends NDMParser<T, 
      * @param state new parsing state
      * @since 11.0
      */
-    public void setState(final ParsingState state) {
+    public void setState(final ProcessingState state) {
         this.state = state;
     }
 

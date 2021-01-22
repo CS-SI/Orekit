@@ -86,8 +86,7 @@ public class XMLLexicalAnalyzer implements LexicalAnalyzer {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends NDMFile<?, ?>, P extends MessageParser<T, ?>>
-        T accept(final MessageParser<T, P> messageParser) {
+    public <T extends NDMFile<?, ?>> T accept(final MessageParser<T> messageParser) {
         try {
             // Create the handler
             final DefaultHandler handler = new XMLHandler(messageParser);
@@ -99,7 +98,7 @@ public class XMLLexicalAnalyzer implements LexicalAnalyzer {
             final SAXParser saxParser = factory.newSAXParser();
 
             // Read the xml file
-            messageParser.reset();
+            messageParser.reset(FileFormat.XML);
             saxParser.parse(stream, handler);
 
             // Get the content of the file
@@ -124,10 +123,10 @@ public class XMLLexicalAnalyzer implements LexicalAnalyzer {
     private class XMLHandler extends DefaultHandler {
 
         /** CCSDS Message parser to use. */
-        private final MessageParser<?, ?> messageParser;
+        private final MessageParser<?> messageParser;
 
-        /** Flag for starting stage. */
-        private boolean starting;
+        /** Flag for special processing of first element. */
+        private boolean first;
 
         /** Locator used to get current line number. */
         private Locator locator;
@@ -147,9 +146,9 @@ public class XMLLexicalAnalyzer implements LexicalAnalyzer {
         /** Simple constructor.
          * @param messageParser CCSDS Message parser to use
          */
-        XMLHandler(final MessageParser<?, ?> messageParser) {
+        XMLHandler(final MessageParser<?> messageParser) {
             this.messageParser = messageParser;
-            this.starting      = true;
+            this.first         = true;
         }
 
         /** {@inheritDoc} */
@@ -177,25 +176,25 @@ public class XMLLexicalAnalyzer implements LexicalAnalyzer {
         @Override
         public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) {
 
-            if (starting) {
+            // process start tag
+            messageParser.process(new ParseToken(TokenType.START,
+                                                 qName, null, null,
+                                                 locator.getLineNumber(), fileName));
+
+            if (first) {
                 // this is the first element in the file, it must contains the format file version
                 if (messageParser.getFormatVersionKey().equals(attributes.getValue(ID))) {
-                    // generate a parse event for the file format version
-                    messageParser.process(new ParseEvent(EventType.ENTRY,
+                    // generate a parse token for the file format version
+                    messageParser.process(new ParseToken(TokenType.ENTRY,
                                                          messageParser.getFormatVersionKey(),
                                                          attributes.getValue(VERSION),
                                                          null,
                                                          locator.getLineNumber(), fileName));
-                    starting = false;
+                    first = false;
                 } else {
                     throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, fileName);
                 }
             }
-
-            // process start tag
-            messageParser.process(new ParseEvent(EventType.START,
-                                                 qName, null, null,
-                                                 locator.getLineNumber(), fileName));
 
             currentElementName = qName;
             currentUnits       = attributes.getValue(UNITS);
@@ -212,13 +211,13 @@ public class XMLLexicalAnalyzer implements LexicalAnalyzer {
                 // we have found in succession a start tag, some content, and an end tag
                 // we are sure we have found a leaf element, so we can now process its content
                 // which was delayed until now
-                messageParser.process(new ParseEvent(EventType.ENTRY,
+                messageParser.process(new ParseToken(TokenType.ENTRY,
                                                      currentElementName, currentContent, currentUnits,
                                                      currentLineNumber, fileName));
             }
 
             // process end tag
-            messageParser.process(new ParseEvent(EventType.END,
+            messageParser.process(new ParseToken(TokenType.END,
                                                  qName, null, null,
                                                  locator.getLineNumber(), fileName));
 

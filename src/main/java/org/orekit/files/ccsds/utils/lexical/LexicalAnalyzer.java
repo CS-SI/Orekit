@@ -19,6 +19,17 @@ package org.orekit.files.ccsds.utils.lexical;
 import org.orekit.files.ccsds.ndm.NDMFile;
 
 /** Interface for CCSDS messages lexical analysis.
+ * <p>
+ * Lexical analyzer implementations split raw streams
+ * of characters into tokens and feed them to
+ * {@link MessageParser message parsers}. Each
+ * lexical analyzer knows about a basic character
+ * stream format ({@link KVNLexicalAnalyzer Key-Value
+ * Notation} or {@link XMLLexicalAnalyzer XML}) but
+ * knows nothing about the CCSDS messages themselves.
+ * The {@link MessageParser message parsers} know about
+ * CCSDS messages.
+ * </p>
  * @author Luc Maisonobe
  * @since 11.0
  */
@@ -27,9 +38,8 @@ public interface LexicalAnalyzer {
     /** Parse a CCSDS Message file.
      * @param messageParser CCSDS Message parser to use
      * @param <T> type of the file
-     * @param <P> type of the parser
      * @return parsed fileO
      */
-    <T extends NDMFile<?, ?>, P extends MessageParser<T, ?>> T accept(MessageParser<T, P> messageParser);
+    <T extends NDMFile<?, ?>> T accept(MessageParser<T> messageParser);
 
 }

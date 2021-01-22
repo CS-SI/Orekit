@@ -22,16 +22,17 @@ import java.util.List;
 
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
-import org.orekit.files.ccsds.ndm.NDMHeaderParsingState;
+import org.orekit.files.ccsds.ndm.NDMHeaderProcessingState;
 import org.orekit.files.ccsds.ndm.ParsingContext;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.ADMSegment;
-import org.orekit.files.ccsds.utils.lexical.EndOfMessageState;
-import org.orekit.files.ccsds.utils.lexical.EventType;
-import org.orekit.files.ccsds.utils.lexical.MessageParser;
-import org.orekit.files.ccsds.utils.lexical.ParseEvent;
-import org.orekit.files.ccsds.utils.lexical.ParsingState;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.files.ccsds.utils.lexical.FileFormat;
+import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.state.AbstractMessageParser;
+import org.orekit.files.ccsds.utils.state.EndOfMessageState;
+import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -40,7 +41,7 @@ import org.orekit.utils.IERSConventions;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class APMParser extends MessageParser<APMFile, APMParser> {
+public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
 
     /** Key for format version. */
     private static final String FORMAT_VERSION_KEY = "CCSDS_APM_VERS";
@@ -161,7 +162,7 @@ public class APMParser extends MessageParser<APMFile, APMParser> {
 
     /** {@inheritDoc} */
     @Override
-    public void reset() {
+    public void reset(final FileFormat fileFormat) {
         file                      = new APMFile();
         metadata                  = null;
         context                   = null;
@@ -171,8 +172,14 @@ public class APMParser extends MessageParser<APMFile, APMParser> {
         spacecraftParametersBlock = null;
         currentManeuver           = null;
         maneuvers                 = new ArrayList<>();
-        reset(new NDMHeaderParsingState(getDataContext(), getFormatVersionKey(),
-                                        file.getHeader(), this::processStructureEvent));
+        final ProcessingState initialState =
+                        getFileFormat() == FileFormat.XML ?
+                                           this::processXMLStructureToken :
+                                           new NDMHeaderProcessingState(getDataContext(),
+                                                                        getFormatVersionKey(),
+                                                                        file.getHeader(),
+                                                                        this::processMetadataToken);
+        reset(fileFormat, initialState);
     }
 
     /** {@inheritDoc} */
@@ -203,46 +210,39 @@ public class APMParser extends MessageParser<APMFile, APMParser> {
         maneuvers                 = new ArrayList<>();
     }
 
-    /** Process one structure event.
-     * @param event event to process
-     * @param next queue for pending events waiting processing after this one, may be updated
-     * @return next state to use for parsing upcoming events
+    /** Process one structure token.
+     * @param token token to process
+     * @param next queue for pending tokens waiting processing after this one, may be updated
+     * @return next state to use for parsing upcoming tokens
      */
-    private ParsingState processStructureEvent(final ParseEvent event, final Deque<ParseEvent> next) {
-        switch (event.getName()) {
+    private ProcessingState processXMLStructureToken(final ParseToken token, final Deque<ParseToken> next) {
+        switch (token.getName()) {
             case "apm":
-                // ignored
-                return this::processStructureEvent;
-            case "header":
-                return new NDMHeaderParsingState(getDataContext(), getFormatVersionKey(),
-                                                 file.getHeader(), this::processStructureEvent);
             case "body":
-                // ignored
-                return this::processStructureEvent;
             case "segment":
                 // ignored
-                return this::processStructureEvent;
+                return this::processXMLStructureToken;
+            case "header":
+                if (token.getType() == TokenType.START) {
+                    return new NDMHeaderProcessingState(getDataContext(), getFormatVersionKey(),
+                                                        file.getHeader(), this::processXMLStructureToken);
+                }
+                break;
             case "metadata" :
-                if (event.getType() == EventType.START) {
-                    // next parse events will be handled as metadata
-                    metadata = new ADMMetadata();
-                    context  = new ParsingContext(this::getConventions,
-                                                  this::isSimpleEOP,
-                                                  this::getDataContext,
-                                                  this::getMissionReferenceDate,
-                                                  metadata::getTimeSystem);
-                    return this::processMetadataEvent;
-                } else if (event.getType() == EventType.END) {
+                if (token.getType() == TokenType.START) {
+                    // next parse tokens will be handled as metadata
+                    return this::processMetadataToken;
+                } else if (token.getType() == TokenType.END) {
                     // nothing to do here, we expect a data next
-                    return this::processStructureEvent;
+                    return this::processXMLStructureToken;
                 }
                 break;
             case "data" :
-                if (event.getType() == EventType.START) {
-                    // next parse events will be handled as quaternion logical block
+                if (token.getType() == TokenType.START) {
+                    // next parse tokens will be handled as quaternion logical block
                     quaternionBlock = new APMQuaternion();
-                    return this::processQuaternionEvent;
-                } else if (event.getType() == EventType.END) {
+                    return this::processQuaternionToken;
+                } else if (token.getType() == TokenType.END) {
                     finalizeSegment();
                     // there is only one segment in APM file
                     // any further data should be considered as an error
@@ -252,145 +252,145 @@ public class APMParser extends MessageParser<APMFile, APMParser> {
             default :
                 // nothing to do here, errors are handled below
         }
-        throw event.generateException();
+        throw token.generateException();
     }
 
-    /** Process one metadata event.
-     * @param event event to process
-     * @param next queue for pending events waiting processing after this one, may be updated
-     * @return next state to use for parsing upcoming events
+    /** Process one metadata token.
+     * @param token token to process
+     * @param next queue for pending tokens waiting processing after this one, may be updated
+     * @return next state to use for parsing upcoming tokens
      */
-    private ParsingState processMetadataEvent(final ParseEvent event, final Deque<ParseEvent> next) {
+    private ProcessingState processMetadataToken(final ParseToken token, final Deque<ParseToken> next) {
+        if (metadata == null) {
+            metadata = new ADMMetadata();
+            context  = new ParsingContext(this::getConventions,
+                                          this::isSimpleEOP,
+                                          this::getDataContext,
+                                          this::getMissionReferenceDate,
+                                          metadata::getTimeSystem);
+        }
         try {
-            final ADMMetadataKey key = ADMMetadataKey.valueOf(event.getName());
-            key.process(event, context, metadata);
-            return this::processMetadataEvent;
+            final ADMMetadataKey key = ADMMetadataKey.valueOf(token.getName());
+            key.process(token, context, metadata);
+            return this::processMetadataToken;
         } catch (IllegalArgumentException iae) {
-            // event has not been recognized, it is most probably the end of the metadata section
-            // we push the event back into next queue and let the structure parser handle it
-            next.offerLast(event);
-            return this::processStructureEvent;
+            // token has not been recognized, it is most probably the end of the metadata section
+            // we push the token back into next queue and let the structure parser handle it
+            next.offerLast(token);
+            return getFileFormat() == FileFormat.XML ?
+                                      this::processXMLStructureToken :
+                                      this::processQuaternionToken;
         }
     }
 
-    /** Process one quaternion data event.
-     * @param event event to process
-     * @param next queue for pending events waiting processing after this one, may be updated
-     * @return next state to use for parsing upcoming events
+    /** Process one quaternion data token.
+     * @param token token to process
+     * @param next queue for pending tokens waiting processing after this one, may be updated
+     * @return next state to use for parsing upcoming tokens
      */
-    private ParsingState processQuaternionEvent(final ParseEvent event, final Deque<ParseEvent> next) {
+    private ProcessingState processQuaternionToken(final ParseToken token, final Deque<ParseToken> next) {
         try {
-            final APMQuaternionKey key = APMQuaternionKey.valueOf(event.getName());
-            if (key.process(event, context, quaternionBlock)) {
-                // the event was processed properly
-                return this::processQuaternionEvent;
-            } else {
-                // the event was not processed, we need to pass it to next block processor
-                next.offerLast(event);
-                return this::processEulerEvent;
+            final APMQuaternionKey key = APMQuaternionKey.valueOf(token.getName());
+            if (key.process(token, context, quaternionBlock)) {
+                // the token was processed properly
+                return this::processQuaternionToken;
             }
         } catch (IllegalArgumentException iae) {
-            // event has not been recognized, it is most probably the end of the data section
-            // we push the event back into next queue and let the structure parser handle it
-            next.offerLast(event);
-            return this::processEulerEvent;
+            // ignored, delegate to next state below
         }
+        // the token was not processed, we need to pass it to next block processor
+        next.offerLast(token);
+        return getFileFormat() == FileFormat.XML ?
+                                  this::processXMLStructureToken :
+                                  this::processEulerToken;
     }
 
-    /** Process one Euler angles data event.
-     * @param event event to process
-     * @param next queue for pending events waiting processing after this one, may be updated
-     * @return next state to use for parsing upcoming events
+    /** Process one Euler angles data token.
+     * @param token token to process
+     * @param next queue for pending tokens waiting processing after this one, may be updated
+     * @return next state to use for parsing upcoming tokens
      */
-    private ParsingState processEulerEvent(final ParseEvent event, final Deque<ParseEvent> next) {
+    private ProcessingState processEulerToken(final ParseToken token, final Deque<ParseToken> next) {
         try {
-            final APMEulerKey key = APMEulerKey.valueOf(event.getName());
-            if (key.process(event, context, eulerBlock)) {
-                // the event was processed properly
-                return this::processEulerEvent;
-            } else {
-                // the event was not processed, we need to pass it to next block processor
-                next.offerLast(event);
-                return this::processSpinStabilizedEvent;
+            final APMEulerKey key = APMEulerKey.valueOf(token.getName());
+            if (key.process(token, context, eulerBlock)) {
+                // the token was processed properly
+                return this::processEulerToken;
             }
         } catch (IllegalArgumentException iae) {
-            // event has not been recognized, it is most probably the end of the data section
-            // we push the event back into next queue and let the structure parser handle it
-            next.offerLast(event);
-            return this::processSpinStabilizedEvent;
+            // ignored, delegate to next state below
         }
+        // the token was not processed, we need to pass it to next block processor
+        next.offerLast(token);
+        return getFileFormat() == FileFormat.XML ?
+                                  this::processXMLStructureToken :
+                                  this::processSpinStabilizedToken;
     }
 
-    /** Process one spin-stabilized data event.
-     * @param event event to process
-     * @param next queue for pending events waiting processing after this one, may be updated
-     * @return next state to use for parsing upcoming events
+    /** Process one spin-stabilized data token.
+     * @param token token to process
+     * @param next queue for pending tokens waiting processing after this one, may be updated
+     * @return next state to use for parsing upcoming tokens
      */
-    private ParsingState processSpinStabilizedEvent(final ParseEvent event, final Deque<ParseEvent> next) {
+    private ProcessingState processSpinStabilizedToken(final ParseToken token, final Deque<ParseToken> next) {
         try {
-            final APMSpinStabilizedKey key = APMSpinStabilizedKey.valueOf(event.getName());
-            if (key.process(event, context, spinStabilizedBlock)) {
-                // the event was processed properly
-                return this::processSpinStabilizedEvent;
-            } else {
-                // the event was not processed, we need to pass it to next block processor
-                next.offerLast(event);
-                return this::processSpacecraftParametersEvent;
+            final APMSpinStabilizedKey key = APMSpinStabilizedKey.valueOf(token.getName());
+            if (key.process(token, context, spinStabilizedBlock)) {
+                // the token was processed properly
+                return this::processSpinStabilizedToken;
             }
         } catch (IllegalArgumentException iae) {
-            // event has not been recognized, it is most probably the end of the data section
-            // we push the event back into next queue and let the structure parser handle it
-            next.offerLast(event);
-            return this::processSpacecraftParametersEvent;
+            // ignored, delegate to next state below
         }
+        // the token was not processed, we need to pass it to next block processor
+        next.offerLast(token);
+        return getFileFormat() == FileFormat.XML ?
+                                  this::processXMLStructureToken :
+                                  this::processSpacecraftParametersToken;
     }
 
-    /** Process one spacecraft parameters data event.
-     * @param event event to process
-     * @param next queue for pending events waiting processing after this one, may be updated
-     * @return next state to use for parsing upcoming events
+    /** Process one spacecraft parameters data token.
+     * @param token token to process
+     * @param next queue for pending tokens waiting processing after this one, may be updated
+     * @return next state to use for parsing upcoming tokens
      */
-    private ParsingState processSpacecraftParametersEvent(final ParseEvent event, final Deque<ParseEvent> next) {
+    private ProcessingState processSpacecraftParametersToken(final ParseToken token, final Deque<ParseToken> next) {
         try {
-            final APMSpacecraftParametersKey key = APMSpacecraftParametersKey.valueOf(event.getName());
-            if (key.process(event, context, spacecraftParametersBlock)) {
-                // the event was processed properly
-                return this::processSpacecraftParametersEvent;
-            } else {
-                // the event was not processed, we need to pass it to next block processor
-                next.offerLast(event);
-                return this::processManeuverEvent;
+            final APMSpacecraftParametersKey key = APMSpacecraftParametersKey.valueOf(token.getName());
+            if (key.process(token, context, spacecraftParametersBlock)) {
+                // the token was processed properly
+                return this::processSpacecraftParametersToken;
             }
         } catch (IllegalArgumentException iae) {
-            // event has not been recognized, it is most probably the end of the data section
-            // we push the event back into next queue and let the structure parser handle it
-            next.offerLast(event);
-            return this::processManeuverEvent;
+            // ignored, delegate to next state below
         }
+        // the token was not processed, we need to pass it to next block processor
+        next.offerLast(token);
+        return getFileFormat() == FileFormat.XML ?
+                                  this::processXMLStructureToken :
+                                  this::processManeuverToken;
     }
 
-    /** Process one maneuver data event.
-     * @param event event to process
-     * @param next queue for pending events waiting processing after this one, may be updated
-     * @return next state to use for parsing upcoming events
+    /** Process one maneuver data token.
+     * @param token token to process
+     * @param next queue for pending tokens waiting processing after this one, may be updated
+     * @return next state to use for parsing upcoming tokens
      */
-    private ParsingState processManeuverEvent(final ParseEvent event, final Deque<ParseEvent> next) {
+    private ProcessingState processManeuverToken(final ParseToken token, final Deque<ParseToken> next) {
         try {
-            final APMManeuverKey key = APMManeuverKey.valueOf(event.getName());
-            if (key.process(event, context, currentManeuver)) {
-                // the event was processed properly
-                return this::processManeuverEvent;
-            } else {
-                // the event was not processed, we need to pass it to next block processor
-                next.offerLast(event);
-                return this::processStructureEvent;
+            final APMManeuverKey key = APMManeuverKey.valueOf(token.getName());
+            if (key.process(token, context, currentManeuver)) {
+                // the token was processed properly
+                return this::processManeuverToken;
             }
         } catch (IllegalArgumentException iae) {
-            // event has not been recognized, it is most probably the end of the data section
-            // we push the event back into next queue and let the structure parser handle it
-            next.offerLast(event);
-            return this::processStructureEvent;
+            // ignored, delegate to next state below
         }
+        // the token was not processed, we need to pass it to next block processor
+        next.offerLast(token);
+        return getFileFormat() == FileFormat.XML ?
+                                  this::processXMLStructureToken :
+                                  new EndOfMessageState();
     }
 
 }

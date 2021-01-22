@@ -19,16 +19,16 @@ package org.orekit.files.ccsds.ndm;
 import java.util.Deque;
 
 import org.orekit.data.DataContext;
-import org.orekit.files.ccsds.utils.lexical.EventType;
-import org.orekit.files.ccsds.utils.lexical.ParseEvent;
-import org.orekit.files.ccsds.utils.lexical.ParsingState;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.time.AbsoluteDate;
 
-/** {@link ParsingState} for {@link NDMHeader NDM header}.
+/** {@link ProcessingState} for {@link NDMHeader NDM header}.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class NDMHeaderParsingState implements ParsingState {
+public class NDMHeaderProcessingState implements ProcessingState {
 
     /** Data context used for getting frames, time scales, and celestial bodies. */
     private final DataContext dataContext;
@@ -40,17 +40,18 @@ public class NDMHeaderParsingState implements ParsingState {
     private final NDMHeader header;
 
     /** Next state to use. */
-    private final ParsingState nextState;
+    private final ProcessingState nextState;
 
     /** Simple constructor.
      * @param dataContext data context used for getting frames, time scales, and celestial bodies
      * @param formatVersionKey key for format version
      * @param header header to fill
-     * @param nextState state to use when this state cannot parse an event by itself
+     * @param nextState state to use when this state cannot parse an token by itself
      */
-    public NDMHeaderParsingState(final DataContext dataContext,
-                                 final String formatVersionKey, final NDMHeader header,
-                                 final ParsingState nextState) {
+    public NDMHeaderProcessingState(final DataContext dataContext,
+                                    final String formatVersionKey,
+                                    final NDMHeader header,
+                                    final ProcessingState nextState) {
         this.dataContext      = dataContext;
         this.nextState        = nextState;
         this.formatVersionKey = formatVersionKey;
@@ -59,33 +60,39 @@ public class NDMHeaderParsingState implements ParsingState {
 
     /** {@inheritDoc} */
     @Override
-    public ParsingState processEvent(final ParseEvent event, final Deque<ParseEvent> next) {
+    public ProcessingState processToken(final ParseToken token, final Deque<ParseToken> next) {
 
-        if (formatVersionKey.equals(event.getName())) {
-            event.processAsDouble(header::setFormatVersion);
+        if (formatVersionKey.equals(token.getName())) {
+            token.processAsDouble(header::setFormatVersion);
             return this;
         }
 
-        switch (event.getName()) {
+        switch (token.getName()) {
 
             case "COMMENT" :
-                event.processAsFreeTextString(header::addComment);
+                if (header.getCreationDate() != null) {
+                    // we have already processed some content in the block
+                    // the comment belongs to the next block
+                    next.offerLast(token);
+                    return nextState;
+                }
+                token.processAsFreeTextString(header::addComment);
                 return this;
 
             case "CREATION_DATE" :
-                if (event.getType() == EventType.ENTRY) {
-                    header.setCreationDate(new AbsoluteDate(event.getContent(),
+                if (token.getType() == TokenType.ENTRY) {
+                    header.setCreationDate(new AbsoluteDate(token.getContent(),
                                                             dataContext.getTimeScales().getUTC()));
                 }
                 return this;
 
             case "ORIGINATOR" :
-                event.processAsNormalizedString(header::setOriginator);
+                token.processAsNormalizedString(header::setOriginator);
                 return this;
 
             default :
-                // we were not able to parse the event, we push it back in the queue
-                next.offerLast(event);
+                // we were not able to parse the token, we push it back in the queue
+                next.offerLast(token);
                 return nextState;
 
         }

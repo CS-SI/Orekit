@@ -36,7 +36,7 @@ import org.orekit.files.ccsds.Keyword;
 import org.orekit.files.ccsds.ndm.adm.ADMParser;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.KeyValue;
-import org.orekit.files.ccsds.utils.lexical.ParsingState;
+import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.files.general.AttitudeEphemerisFileParser;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -135,7 +135,7 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
      * @param interpolationDegree default interpolation degree
      */
     private AEMParser(final IERSConventions conventions, final boolean simpleEOP,
-                      final DataContext dataContext, final ParsingState initialState,
+                      final DataContext dataContext, final ProcessingState initialState,
                       final AbsoluteDate missionReferenceDate, final int interpolationDegree) {
         super(conventions, simpleEOP, dataContext, initialState, missionReferenceDate);
         this.interpolationDegree = interpolationDegree;
@@ -146,7 +146,7 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
     protected AEMParser create(final IERSConventions newConventions,
                                final boolean newSimpleEOP,
                                final DataContext newDataContext,
-                               final ParsingState newInitialState,
+                               final ProcessingState newInitialState,
                                final AbsoluteDate newMissionReferenceDate) {
         return create(newConventions, newSimpleEOP, newDataContext, newInitialState,
                       newMissionReferenceDate, interpolationDegree);
@@ -165,7 +165,7 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
     protected AEMParser create(final IERSConventions newConventions,
                                final boolean newSimpleEOP,
                                final DataContext newDataContext,
-                               final ParsingState newInitialState,
+                               final ProcessingState newInitialState,
                                final AbsoluteDate newMissionReferenceDate,
                                final int newInterpolationdegree) {
         return new AEMParser(newConventions, newSimpleEOP, newDataContext, newInitialState,

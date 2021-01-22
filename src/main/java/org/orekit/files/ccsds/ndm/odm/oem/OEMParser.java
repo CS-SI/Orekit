@@ -38,7 +38,7 @@ import org.orekit.files.ccsds.Keyword;
 import org.orekit.files.ccsds.ndm.odm.OCommonParser;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.KeyValue;
-import org.orekit.files.ccsds.utils.lexical.ParsingState;
+import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.files.general.EphemerisFileParser;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
@@ -146,7 +146,7 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
      * @param interpolationDegree interpolation degree
      */
     private OEMParser(final IERSConventions conventions, final boolean simpleEOP,
-                      final DataContext dataContext, final ParsingState initialState,
+                      final DataContext dataContext, final ProcessingState initialState,
                       final AbsoluteDate missionReferenceDate, final double mu,
                       final int interpolationDegree) {
         super(conventions, simpleEOP, dataContext, initialState, missionReferenceDate, mu);
@@ -158,7 +158,7 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
     protected OEMParser create(final IERSConventions newConventions,
                                final boolean newSimpleEOP,
                                final DataContext newDataContext,
-                               final ParsingState newInitialState,
+                               final ProcessingState newInitialState,
                                final AbsoluteDate newMissionReferenceDate,
                                final double newMu) {
         return create(newConventions, newSimpleEOP, newDataContext, newInitialState,
@@ -178,7 +178,7 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
     protected OEMParser create(final IERSConventions newConventions,
                                final boolean newSimpleEOP,
                                final DataContext newDataContext,
-                               final ParsingState newInitialState,
+                               final ProcessingState newInitialState,
                                final AbsoluteDate newMissionReferenceDate,
                                final double newMu,
                                final int newInterpolationDegree) {

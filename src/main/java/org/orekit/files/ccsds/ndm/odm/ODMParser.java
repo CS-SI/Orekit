@@ -25,7 +25,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.Keyword;
 import org.orekit.files.ccsds.ndm.NDMParser;
 import org.orekit.files.ccsds.utils.KeyValue;
-import org.orekit.files.ccsds.utils.lexical.ParsingState;
+import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -53,7 +53,7 @@ public abstract class ODMParser<T extends ODMFile<?>, P extends ODMParser<T, ?>>
      * @since 10.1
      */
     protected ODMParser(final IERSConventions conventions, final boolean simpleEOP,
-                        final DataContext dataContext, final ParsingState initialState) {
+                        final DataContext dataContext, final ProcessingState initialState) {
         super(conventions, simpleEOP, dataContext, initialState);
         this.expected    = new HashSet<>();
     }

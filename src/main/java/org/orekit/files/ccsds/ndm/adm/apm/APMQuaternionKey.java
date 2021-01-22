@@ -17,8 +17,8 @@
 package org.orekit.files.ccsds.ndm.adm.apm;
 
 import org.orekit.files.ccsds.ndm.ParsingContext;
-import org.orekit.files.ccsds.utils.lexical.EventType;
-import org.orekit.files.ccsds.utils.lexical.ParseEvent;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.files.ccsds.utils.lexical.ParseToken;
 
 /** Keys for {@link APMQuaternion APM quaternion} entries.
  * @author Bryan Cazabonne
@@ -27,20 +27,20 @@ import org.orekit.files.ccsds.utils.lexical.ParseEvent;
 public enum APMQuaternionKey {
 
     /** Block wrapping element in XML files. */
-    quaternionState((event, context, data) -> true),
+    quaternionState((token, context, data) -> true),
 
     /** Quaternion wrapping element in XML files. */
-    quaternion((event, context, data) -> true),
+    quaternion((token, context, data) -> true),
 
     /** Quaternion wrapping element in XML files. */
-    quaternionRate((event, context, data) -> true),
+    quaternionRate((token, context, data) -> true),
 
     /** Comment entry. */
-    COMMENT((event, context, data) -> {
-        if (event.getType() == EventType.ENTRY) {
+    COMMENT((token, context, data) -> {
+        if (token.getType() == TokenType.ENTRY) {
             if (data.getEpoch() == null) {
                 // we are still at block start, we accept comments
-                event.processAsFreeTextString(data::addComment);
+                token.processAsFreeTextString(data::addComment);
                 return false;
             } else {
                 // we have already processed some content in the block
@@ -51,74 +51,74 @@ public enum APMQuaternionKey {
     }),
 
     /** Epoch entry. */
-    EPOCH((event, context, data) -> {
-        event.processAsDate(data::setEpoch, context);
+    EPOCH((token, context, data) -> {
+        token.processAsDate(data::setEpoch, context);
         return true;
     }),
 
     /** First reference frame entry. */
-    Q_FRAME_A((event, context, data) -> {
-        event.processAsNormalizedString(data::setQuaternionFrameAString);
+    Q_FRAME_A((token, context, data) -> {
+        token.processAsNormalizedString(data::setQuaternionFrameAString);
         return true;
     }),
 
     /** Second reference frame entry. */
-    Q_FRAME_B((event, context, data) -> {
-        event.processAsNormalizedString(data::setQuaternionFrameBString);
+    Q_FRAME_B((token, context, data) -> {
+        token.processAsNormalizedString(data::setQuaternionFrameBString);
         return true;
     }),
 
     /** Rotation direction entry. */
-    Q_DIR((event, context, data) -> {
-        event.processAsNormalizedString(data::setAttitudeQuaternionDirection);
+    Q_DIR((token, context, data) -> {
+        token.processAsNormalizedString(data::setAttitudeQuaternionDirection);
         return true;
     }),
 
     /** Scalar part of the quaternion entry. */
-    QC((event, context, data) -> {
-        event.processAsDouble(data::setQ0);
+    QC((token, context, data) -> {
+        token.processAsDouble(data::setQ0);
         return true;
     }),
 
     /** First component of the vector part of the quaternion entry. */
-    Q1((event, context, data) -> {
-        event.processAsDouble(data::setQ1);
+    Q1((token, context, data) -> {
+        token.processAsDouble(data::setQ1);
         return true;
     }),
 
     /** Second component of the vector part of the quaternion entry. */
-    Q2((event, context, data) -> {
-        event.processAsDouble(data::setQ2);
+    Q2((token, context, data) -> {
+        token.processAsDouble(data::setQ2);
         return true;
     }),
 
     /** Third component of the vector part of the quaternion entry. */
-    Q3((event, context, data) -> {
-        event.processAsDouble(data::setQ3);
+    Q3((token, context, data) -> {
+        token.processAsDouble(data::setQ3);
         return true;
     }),
 
     /** Scalar part of the quaternion derivative entry. */
-    QC_DOT((event, context, data) -> {
-        event.processAsDouble(data::setQ0Dot);
+    QC_DOT((token, context, data) -> {
+        token.processAsDouble(data::setQ0Dot);
         return true;
     }),
 
     /** First component of the vector part of the quaternion derivative entry. */
-    Q1_DOT((event, context, data) -> {
-        event.processAsDouble(data::setQ1Dot);
+    Q1_DOT((token, context, data) -> {
+        token.processAsDouble(data::setQ1Dot);
         return true;
     }),
 
     /** Second component of the vector part of the quaternion derivative entry. */
-    Q2_DOT((event, context, data) -> {
-        event.processAsDouble(data::setQ2Dot);
+    Q2_DOT((token, context, data) -> {
+        token.processAsDouble(data::setQ2Dot);
         return true;
     }),
 
     /** Third component of the vector part of the quaternion derivative entry. */
-    Q3_DOT((event, context, data) -> {
-        event.processAsDouble(data::setQ3Dot);
+    Q3_DOT((token, context, data) -> {
+        token.processAsDouble(data::setQ3Dot);
         return true;
     });
 
@@ -132,25 +132,25 @@ public enum APMQuaternionKey {
         this.processor = processor;
     }
 
-    /** Process one event.
-     * @param event event to process
+    /** Process one token.
+     * @param token token to process
      * @param context parsing context
      * @param data data to fill
-     * @return true of event was accepted
+     * @return true of token was accepted
      */
-    public boolean process(final ParseEvent event, final ParsingContext context, final APMQuaternion data) {
-        return processor.process(event, context, data);
+    public boolean process(final ParseToken token, final ParsingContext context, final APMQuaternion data) {
+        return processor.process(token, context, data);
     }
 
-    /** Interface for processing one event. */
+    /** Interface for processing one token. */
     interface QuaternionEntryProcessor {
-        /** Process one event.
-         * @param event event to process
+        /** Process one token.
+         * @param token token to process
          * @param context parsing context
          * @param data data to fill
-         * @return true of event was accepted
+         * @return true of token was accepted
          */
-        boolean process(ParseEvent event, ParsingContext context, APMQuaternion data);
+        boolean process(ParseToken token, ParsingContext context, APMQuaternion data);
     }
 
 }

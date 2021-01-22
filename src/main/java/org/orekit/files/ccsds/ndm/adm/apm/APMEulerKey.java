@@ -18,8 +18,8 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.files.ccsds.ndm.ParsingContext;
-import org.orekit.files.ccsds.utils.lexical.EventType;
-import org.orekit.files.ccsds.utils.lexical.ParseEvent;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.files.ccsds.utils.lexical.ParseToken;
 
 /** Keys for {@link APMData APM Euler angles} entries.
  * @author Bryan Cazabonne
@@ -28,59 +28,59 @@ import org.orekit.files.ccsds.utils.lexical.ParseEvent;
 public enum APMEulerKey {
 
     /** Block wrapping element in XML files. */
-    eulerElementsThree((event, context, data) -> true),
+    eulerElementsThree((token, context, data) -> true),
 
     /** Rotation angles wrapping element in XML files. */
-    rotationAngles((event, context, data) -> {
-        data.setInRotationAngles(event.getType() == EventType.START);
+    rotationAngles((token, context, data) -> {
+        data.setInRotationAngles(token.getType() == TokenType.START);
         return true;
     }),
 
     /** Rotation rates wrapping element in XML files. */
-    rotationRates((event, context, data) -> true),
+    rotationRates((token, context, data) -> true),
 
     /** First rotation angle or first rotation rate. */
-    rotation1((event, context, data) -> {
-        if (event.getType() == EventType.ENTRY) {
+    rotation1((token, context, data) -> {
+        if (token.getType() == TokenType.ENTRY) {
             if (data.inRotationAngles()) {
-                data.setRotationAngle(0, FastMath.toRadians(event.getContentAsDouble()));
+                data.setRotationAngle(0, FastMath.toRadians(token.getContentAsDouble()));
             } else {
-                data.setRotationRate(0, FastMath.toRadians(event.getContentAsDouble()));
+                data.setRotationRate(0, FastMath.toRadians(token.getContentAsDouble()));
             }
         }
         return true;
     }),
 
     /** Second rotation angle or second rotation rate. */
-    rotation2((event, context, data) -> {
-        if (event.getType() == EventType.ENTRY) {
+    rotation2((token, context, data) -> {
+        if (token.getType() == TokenType.ENTRY) {
             if (data.inRotationAngles()) {
-                data.setRotationAngle(1, FastMath.toRadians(event.getContentAsDouble()));
+                data.setRotationAngle(1, FastMath.toRadians(token.getContentAsDouble()));
             } else {
-                data.setRotationRate(1, FastMath.toRadians(event.getContentAsDouble()));
+                data.setRotationRate(1, FastMath.toRadians(token.getContentAsDouble()));
             }
         }
         return true;
     }),
 
     /** Third rotation angle or third rotation rate. */
-    rotation3((event, context, data) -> {
-        if (event.getType() == EventType.ENTRY) {
+    rotation3((token, context, data) -> {
+        if (token.getType() == TokenType.ENTRY) {
             if (data.inRotationAngles()) {
-                data.setRotationAngle(2, FastMath.toRadians(event.getContentAsDouble()));
+                data.setRotationAngle(2, FastMath.toRadians(token.getContentAsDouble()));
             } else {
-                data.setRotationRate(2, FastMath.toRadians(event.getContentAsDouble()));
+                data.setRotationRate(2, FastMath.toRadians(token.getContentAsDouble()));
             }
         }
         return true;
     }),
 
     /** Comment entry. */
-    COMMENT((event, context, data) -> {
-        if (event.getType() == EventType.ENTRY) {
+    COMMENT((token, context, data) -> {
+        if (token.getType() == TokenType.ENTRY) {
             if (data.getEulerFrameAString() == null) {
                 // we are still at block start, we accept comments
-                event.processAsFreeTextString(data::addComment);
+                token.processAsFreeTextString(data::addComment);
                 return false;
             } else {
                 // we have already processed some content in the block
@@ -92,79 +92,79 @@ public enum APMEulerKey {
     }),
 
     /** First reference frame entry. */
-    EULER_FRAME_A((event, context, data) -> {
-        event.processAsNormalizedString(data::setEulerFrameAString);
+    EULER_FRAME_A((token, context, data) -> {
+        token.processAsNormalizedString(data::setEulerFrameAString);
         return true;
     }),
 
     /** Second reference frame entry. */
-    EULER_FRAME_B((event, context, data) -> {
-        event.processAsNormalizedString(data::setEulerFrameBString);
+    EULER_FRAME_B((token, context, data) -> {
+        token.processAsNormalizedString(data::setEulerFrameBString);
         return true;
     }),
 
     /** Rotation direction entry. */
-    EULER_DIR((event, context, data) -> {
-        event.processAsNormalizedString(data::setEulerDirection);
+    EULER_DIR((token, context, data) -> {
+        token.processAsNormalizedString(data::setEulerDirection);
         return true;
     }),
 
     /** Rotation sequence entry. */
-    EULER_ROT_SEQ((event, context, data) -> {
-        event.processAsNormalizedString(data::setEulerRotSeq);
+    EULER_ROT_SEQ((token, context, data) -> {
+        token.processAsNormalizedString(data::setEulerRotSeq);
         return true;
     }),
 
     /** Reference frame for rate entry. */
-    RATE_FRAME((event, context, data) -> {
-        event.processAsNormalizedString(data::setRateFrameString);
+    RATE_FRAME((token, context, data) -> {
+        token.processAsNormalizedString(data::setRateFrameString);
         return true;
     }),
 
     /** X body rotation angle entry. */
-    X_ANGLE((event, context, data) -> {
-        if (event.getType() == EventType.ENTRY) {
-            data.setRotationAngle(0, FastMath.toRadians(event.getContentAsDouble()));
+    X_ANGLE((token, context, data) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            data.setRotationAngle(0, FastMath.toRadians(token.getContentAsDouble()));
         }
         return true;
     }),
 
     /** Y body rotation angle entry. */
-    Y_ANGLE((event, context, data) -> {
-        if (event.getType() == EventType.ENTRY) {
-            data.setRotationAngle(1, FastMath.toRadians(event.getContentAsDouble()));
+    Y_ANGLE((token, context, data) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            data.setRotationAngle(1, FastMath.toRadians(token.getContentAsDouble()));
         }
         return true;
     }),
 
     /** Z body rotation angle entry. */
-    Z_ANGLE((event, context, data) -> {
-        if (event.getType() == EventType.ENTRY) {
-            data.setRotationAngle(2, FastMath.toRadians(event.getContentAsDouble()));
+    Z_ANGLE((token, context, data) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            data.setRotationAngle(2, FastMath.toRadians(token.getContentAsDouble()));
         }
         return true;
     }),
 
     /** X body rotation rate entry. */
-    X_RATE((event, context, data) -> {
-        if (event.getType() == EventType.ENTRY) {
-            data.setRotationRate(0, FastMath.toRadians(event.getContentAsDouble()));
+    X_RATE((token, context, data) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            data.setRotationRate(0, FastMath.toRadians(token.getContentAsDouble()));
         }
         return true;
     }),
 
     /** Y body rotation rate entry. */
-    Y_RATE((event, context, data) -> {
-        if (event.getType() == EventType.ENTRY) {
-            data.setRotationRate(1, FastMath.toRadians(event.getContentAsDouble()));
+    Y_RATE((token, context, data) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            data.setRotationRate(1, FastMath.toRadians(token.getContentAsDouble()));
         }
         return true;
     }),
 
     /** Z body rotation rate entry. */
-    Z_RATE((event, context, data) -> {
-        if (event.getType() == EventType.ENTRY) {
-            data.setRotationRate(2, FastMath.toRadians(event.getContentAsDouble()));
+    Z_RATE((token, context, data) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            data.setRotationRate(2, FastMath.toRadians(token.getContentAsDouble()));
         }
         return true;
     });
@@ -179,25 +179,25 @@ public enum APMEulerKey {
         this.processor = processor;
     }
 
-    /** Process one event.
-     * @param event event to process
+    /** Process one token.
+     * @param token token to process
      * @param context parsing context
      * @param data data to fill
-     * @return true of event was accepted
+     * @return true of token was accepted
      */
-    public boolean process(final ParseEvent event, final ParsingContext context, final APMEuler data) {
-        return processor.process(event, context, data);
+    public boolean process(final ParseToken token, final ParsingContext context, final APMEuler data) {
+        return processor.process(token, context, data);
     }
 
-    /** Interface for processing one event. */
+    /** Interface for processing one token. */
     interface EulerEntryProcessor {
-        /** Process one event.
-         * @param event event to process
+        /** Process one token.
+         * @param token token to process
          * @param context parsing context
          * @param data data to fill
-         * @return true of event was accepted
+         * @return true of token was accepted
          */
-        boolean process(ParseEvent event, ParsingContext context, APMEuler data);
+        boolean process(ParseToken token, ParsingContext context, APMEuler data);
     }
 
 }

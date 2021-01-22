@@ -23,7 +23,7 @@ import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.Keyword;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.KeyValue;
-import org.orekit.files.ccsds.utils.lexical.ParsingState;
+import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -44,7 +44,7 @@ public abstract class OStateParser<T extends ODMFile<?>, P extends ODMParser<T, 
      * @param mu gravitational coefficient
      */
     protected OStateParser(final IERSConventions conventions, final boolean simpleEOP,
-                           final DataContext dataContext, final ParsingState initialState,
+                           final DataContext dataContext, final ProcessingState initialState,
                            final AbsoluteDate missionReferenceDate, final double mu) {
         super(conventions, simpleEOP, dataContext, initialState, missionReferenceDate, mu);
     }

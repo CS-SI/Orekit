@@ -19,8 +19,8 @@ package org.orekit.files.ccsds.ndm.tdm;
 import java.util.regex.Pattern;
 
 import org.orekit.files.ccsds.ndm.ParsingContext;
-import org.orekit.files.ccsds.utils.lexical.EventType;
-import org.orekit.files.ccsds.utils.lexical.ParseEvent;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.time.AbsoluteDate;
 
 
@@ -31,13 +31,13 @@ import org.orekit.time.AbsoluteDate;
 public enum TDMDataKey {
 
     /** Observation wrapper. */
-    observation((event, context, observationsBlock) -> observationsBlock.addObservationEpoch(null)),
+    observation((token, context, observationsBlock) -> observationsBlock.addObservationEpoch(null)),
 
     /** Comment entry. */
-    COMMENT((event, context, observationsBlock) -> event.processAsFreeTextString(observationsBlock::addComment)),
+    COMMENT((token, context, observationsBlock) -> token.processAsFreeTextString(observationsBlock::addComment)),
 
     /** Epoch entry. */
-    EPOCH((event, context, observationsBlock) -> event.processAsDate(observationsBlock::addObservationEpoch, context)),
+    EPOCH((token, context, observationsBlock) -> token.processAsDate(observationsBlock::addObservationEpoch, context)),
 
     // Signal related keywords.
     /** Data: Carrier power [dBW].<p>
@@ -189,7 +189,7 @@ public enum TDMDataKey {
     /** Default constructor for observation lines.
      */
     TDMDataKey() {
-        this.processor = this::processObservationEvent;
+        this.processor = this::processObservationToken;
     }
 
     /** Simple constructor.
@@ -200,27 +200,27 @@ public enum TDMDataKey {
     }
 
     /** Process an observation line.
-     * @param event parse event
+     * @param token parse token
      * @param context parsing context
      * @param observationsBlock observation block to fill
      */
-    private void processObservationEvent(final ParseEvent event, final ParsingContext context,
+    private void processObservationToken(final ParseToken token, final ParsingContext context,
                                          final ObservationsBlock observationsBlock) {
 
-        if (event.getType() == EventType.ENTRY) {
+        if (token.getType() == TokenType.ENTRY) {
             // in an XML file, an observation element contains only the value, the epoch has been parsed before
             // in a KVN file, an observation line should contains both epoch and value
 
             if (observationsBlock.hasObservationEpoch()) {
                 // we are parsing an XML file with epoch already parsed
                 // parse the measurement
-                observationsBlock.addObservationValue(event.getName(), event.getContentAsDouble());
+                observationsBlock.addObservationValue(token.getName(), token.getContentAsDouble());
             } else {
 
                 // we are parsing a KVN file and need to parse both epoch and measurement
-                final String[] fields = SEPARATOR.split(event.getContent());
+                final String[] fields = SEPARATOR.split(token.getContent());
                 if (fields.length != 2) {
-                    throw event.generateException();
+                    throw token.generateException();
                 }
                 // parse the epoch
                 final AbsoluteDate epoch = context.getTimeScale().parseDate(fields[0],
@@ -230,33 +230,33 @@ public enum TDMDataKey {
 
                 // parse the measurement
                 try {
-                    observationsBlock.addObservationValue(event.getName(), Double.parseDouble(fields[1]));
+                    observationsBlock.addObservationValue(token.getName(), Double.parseDouble(fields[1]));
                 } catch (NumberFormatException nfe) {
-                    throw event.generateException();
+                    throw token.generateException();
                 }
             }
         }
 
     }
 
-    /** Process one event.
-     * @param event event to process
+    /** Process one token.
+     * @param token token to process
      * @param context parsing context
      * @param observationsBlock observation block to fill
      */
-    public void process(final ParseEvent event, final ParsingContext context,
+    public void process(final ParseToken token, final ParsingContext context,
                         final ObservationsBlock observationsBlock) {
-        processor.process(event, context, observationsBlock);
+        processor.process(token, context, observationsBlock);
     }
 
-    /** Interface for processing one event. */
+    /** Interface for processing one token. */
     interface DataEntryProcessor {
-        /** Process one event.
-         * @param event event to process
+        /** Process one token.
+         * @param token token to process
          * @param context parsing context
          * @param observationsBlock observation block to fill
          */
-        void process(ParseEvent event, ParsingContext context, ObservationsBlock observationsBlock);
+        void process(ParseToken token, ParsingContext context, ObservationsBlock observationsBlock);
     }
 
 }

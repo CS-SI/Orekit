@@ -30,9 +30,9 @@ import org.orekit.files.ccsds.utils.CenterName;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
-/** Event occurring during CCSDS file parsing.
+/** Token occurring during CCSDS file parsing.
  * <p>
- * Parse events correspond to:
+ * Parse tokens correspond to:
  * <ul>
  *   <li>bloc or entry start</li>
  *   <li>entry content</li>
@@ -44,7 +44,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class ParseEvent {
+public class ParseToken {
 
     /** Pattern for dash. */
     private static final Pattern DASH = Pattern.compile("-");
@@ -55,8 +55,8 @@ public class ParseEvent {
     /** Regular expression for splitting comma-separated lists. */
     private final String COMMA_SEPARATORS = "\\p{Space}*,\\p{Space}*";
 
-    /** Type of the event. */
-    private EventType type;
+    /** Type of the token. */
+    private TokenType type;
 
     /** Name of the entry. */
     private final String name;
@@ -74,14 +74,14 @@ public class ParseEvent {
     private final String fileName;
 
     /** Simple constructor.
-     * @param type type of the event
+     * @param type type of the token
      * @param name name of the block or entry
      * @param content entry content
      * @param units units of the entry (may be null)
      * @param lineNumber number of the line in the CCSDS data message
      * @param fileName name of the file
      */
-    protected ParseEvent(final EventType type, final String name, final String content, final String units,
+    protected ParseToken(final TokenType type, final String name, final String content, final String units,
                          final int lineNumber, final String fileName) {
         this.type       = type;
         this.name       = name;
@@ -91,10 +91,10 @@ public class ParseEvent {
         this.fileName   = fileName;
     }
 
-    /** Get the type of the event.
-     * @return type of the event
+    /** Get the type of the token.
+     * @return type of the token
      */
-    public EventType getType() {
+    public TokenType getType() {
         return type;
     }
 
@@ -171,7 +171,7 @@ public class ParseEvent {
      * @see #processAsNormalizedString(StringConsumer)
      */
     public void processAsFreeTextString(final StringConsumer consumer) {
-        if (type == EventType.ENTRY) {
+        if (type == TokenType.ENTRY) {
             consumer.accept(content);
         }
     }
@@ -181,7 +181,7 @@ public class ParseEvent {
      * @see #processAsFreeTextString(StringConsumer)
      */
     public void processAsNormalizedString(final StringConsumer consumer) {
-        if (type == EventType.ENTRY) {
+        if (type == TokenType.ENTRY) {
             consumer.accept(getNormalizedContent());
         }
     }
@@ -191,7 +191,7 @@ public class ParseEvent {
      * @param index index
      */
     public void processAsIndexedNormalizedString(final IndexedStringConsumer consumer, final int index) {
-        if (type == EventType.ENTRY) {
+        if (type == TokenType.ENTRY) {
             consumer.accept(index, getNormalizedContent());
         }
     }
@@ -200,7 +200,7 @@ public class ParseEvent {
      * @param consumer consumer of the normalized strings list
      */
     public void processAsNormalizedStringList(final StringListConsumer consumer) {
-        if (type == EventType.ENTRY) {
+        if (type == TokenType.ENTRY) {
             consumer.accept(Arrays.asList(getNormalizedContent().split(COMMA_SEPARATORS)));
         }
     }
@@ -209,7 +209,7 @@ public class ParseEvent {
      * @param consumer consumer of the integer
      */
     public void processAsInteger(final IntConsumer consumer) {
-        if (type == EventType.ENTRY) {
+        if (type == TokenType.ENTRY) {
             consumer.accept(getContentAsInt());
         }
     }
@@ -218,7 +218,7 @@ public class ParseEvent {
      * @param consumer consumer of the double
      */
     public void processAsDouble(final DoubleConsumer consumer) {
-        if (type == EventType.ENTRY) {
+        if (type == TokenType.ENTRY) {
             consumer.accept(getContentAsDouble());
         }
     }
@@ -227,7 +227,7 @@ public class ParseEvent {
      * @param consumer consumer of the angle in radians
      */
     public void processAsAngle(final DoubleConsumer consumer) {
-        if (type == EventType.ENTRY) {
+        if (type == TokenType.ENTRY) {
             consumer.accept(FastMath.toRadians(getContentAsDouble()));
         }
     }
@@ -237,7 +237,7 @@ public class ParseEvent {
      * @param index index
      */
     public void processAsIndexedDouble(final IndexedDoubleConsumer consumer, final int index) {
-        if (type == EventType.ENTRY) {
+        if (type == TokenType.ENTRY) {
             consumer.accept(index, getContentAsDouble());
         }
     }
@@ -247,14 +247,15 @@ public class ParseEvent {
      * @param context parsing context
      */
     public void processAsDate(final DateConsumer consumer, final ParsingContext context) {
-        if (type == EventType.ENTRY) {
+        if (type == TokenType.ENTRY) {
             if (context.getTimeScale() == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_TIME_SYSTEM_NOT_READ_YET,
                                           getLineNumber(), getFileName());
             }
             consumer.accept(context.getTimeScale().parseDate(content,
                                                              context.getConventions(),
-                                                             context.getMissionReferenceDate()));
+                                                             context.getMissionReferenceDate(),
+                                                             context.getDataContext().getTimeScales()));
         }
     }
 
@@ -262,7 +263,7 @@ public class ParseEvent {
      * @param consumer consumer of the time scale
      */
     public void processAsTimeScale(final TimeScaleConsumer consumer) {
-        if (type == EventType.ENTRY) {
+        if (type == TokenType.ENTRY) {
             consumer.accept(CcsdsTimeScale.parse(content));
         }
     }
@@ -272,7 +273,7 @@ public class ParseEvent {
      * @param context parsing context
      */
     public void processAsFrame(final FrameConsumer consumer, final ParsingContext context) {
-        if (type == EventType.ENTRY) {
+        if (type == TokenType.ENTRY) {
             final CCSDSFrame frame = CCSDSFrame.valueOf(DASH.matcher(content).replaceAll(""));
             consumer.accept(frame.getFrame(context.getConventions(),
                                            context.isSimpleEOP(),
@@ -286,7 +287,7 @@ public class ParseEvent {
      * they are silently ignored
      */
     public void processAsCenter(final CenterConsumer consumer, final boolean complainIfUnknown) {
-        if (type == EventType.ENTRY) {
+        if (type == TokenType.ENTRY) {
             String canonicalValue = getNormalizedContent();
             if (canonicalValue.equals("SOLAR SYSTEM BARYCENTER") || canonicalValue.equals("SSB")) {
                 canonicalValue = "SOLAR_SYSTEM_BARYCENTER";

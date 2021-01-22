@@ -23,7 +23,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.CenterName;
 import org.orekit.files.ccsds.utils.KeyValue;
-import org.orekit.files.ccsds.utils.lexical.ParsingState;
+import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -56,7 +56,7 @@ public abstract class OCommonParser<T extends ODMFile<?>, P extends ODMParser<T,
      * @param mu gravitational coefficient
      */
     protected OCommonParser(final IERSConventions conventions, final boolean simpleEOP,
-                            final DataContext dataContext, final ParsingState initialState,
+                            final DataContext dataContext, final ProcessingState initialState,
                             final AbsoluteDate missionReferenceDate, final double mu) {
         super(conventions, simpleEOP, dataContext, initialState);
         this.missionReferenceDate = missionReferenceDate;
@@ -98,7 +98,7 @@ public abstract class OCommonParser<T extends ODMFile<?>, P extends ODMParser<T,
     protected P create(final IERSConventions newConventions,
                                       final boolean newSimpleEOP,
                                       final DataContext newDataContext,
-                                      final ParsingState newInitialState) {
+                                      final ProcessingState newInitialState) {
         return create(newConventions, newSimpleEOP, newDataContext, newInitialState,
                       missionReferenceDate, muSet);
     }
@@ -115,7 +115,7 @@ public abstract class OCommonParser<T extends ODMFile<?>, P extends ODMParser<T,
     protected abstract P create(IERSConventions newConventions,
                                boolean newSimpleEOP,
                                DataContext newDataContext,
-                               ParsingState newInitialState,
+                               ProcessingState newInitialState,
                                AbsoluteDate newMissionReferenceDate,
                                double newMu);
 

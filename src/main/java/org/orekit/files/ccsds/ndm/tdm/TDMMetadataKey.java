@@ -17,7 +17,7 @@
 package org.orekit.files.ccsds.ndm.tdm;
 
 import org.orekit.files.ccsds.ndm.ParsingContext;
-import org.orekit.files.ccsds.utils.lexical.ParseEvent;
+import org.orekit.files.ccsds.utils.lexical.ParseToken;
 
 
 /** Keys for {@link TDMMetadata TDM metadata} entries.
@@ -27,136 +27,136 @@ import org.orekit.files.ccsds.utils.lexical.ParseEvent;
 public enum TDMMetadataKey {
 
     /** Comment entry. */
-    COMMENT((event, context, metadata) -> event.processAsFreeTextString(metadata::addComment)),
+    COMMENT((token, context, metadata) -> token.processAsFreeTextString(metadata::addComment)),
 
     /** Time system entry. */
-    TIME_SYSTEM((event, context, metadata) -> event.processAsTimeScale(metadata::setTimeSystem)),
+    TIME_SYSTEM((token, context, metadata) -> token.processAsTimeScale(metadata::setTimeSystem)),
 
     /** Start time entry. */
-    START_TIME((event, context, metadata) -> event.processAsDate(metadata::setStartTime, context)),
+    START_TIME((token, context, metadata) -> token.processAsDate(metadata::setStartTime, context)),
 
     /** Stop time entry. */
-    STOP_TIME((event, context, metadata) -> event.processAsDate(metadata::setStopTime, context)),
+    STOP_TIME((token, context, metadata) -> token.processAsDate(metadata::setStopTime, context)),
 
     /** First participant entry. */
-    PARTICIPANT_1((event, context, metadata) -> event.processAsIndexedNormalizedString(metadata::addParticipant, 1)),
+    PARTICIPANT_1((token, context, metadata) -> token.processAsIndexedNormalizedString(metadata::addParticipant, 1)),
 
     /** Second participant entry. */
-    PARTICIPANT_2((event, context, metadata) -> event.processAsIndexedNormalizedString(metadata::addParticipant, 2)),
+    PARTICIPANT_2((token, context, metadata) -> token.processAsIndexedNormalizedString(metadata::addParticipant, 2)),
 
     /** Third participant entry. */
-    PARTICIPANT_3((event, context, metadata) -> event.processAsIndexedNormalizedString(metadata::addParticipant, 3)),
+    PARTICIPANT_3((token, context, metadata) -> token.processAsIndexedNormalizedString(metadata::addParticipant, 3)),
 
     /** Fourth participant entry. */
-    PARTICIPANT_4((event, context, metadata) -> event.processAsIndexedNormalizedString(metadata::addParticipant, 4)),
+    PARTICIPANT_4((token, context, metadata) -> token.processAsIndexedNormalizedString(metadata::addParticipant, 4)),
 
     /** Fifth participant entry. */
-    PARTICIPANT_5((event, context, metadata) -> event.processAsIndexedNormalizedString(metadata::addParticipant, 5)),
+    PARTICIPANT_5((token, context, metadata) -> token.processAsIndexedNormalizedString(metadata::addParticipant, 5)),
 
     /** Mode entry. */
-    MODE((event, context, metadata) -> event.processAsNormalizedString(metadata::setMode)),
+    MODE((token, context, metadata) -> token.processAsNormalizedString(metadata::setMode)),
 
     /** Path entry. */
-    PATH((event, context, metadata) -> event.processAsNormalizedString(metadata::setPath)),
+    PATH((token, context, metadata) -> token.processAsNormalizedString(metadata::setPath)),
 
     /** Path 1 entry. */
-    PATH_1((event, context, metadata) -> event.processAsNormalizedString(metadata::setPath1)),
+    PATH_1((token, context, metadata) -> token.processAsNormalizedString(metadata::setPath1)),
 
     /** Path 2 entry. */
-    PATH_2((event, context, metadata) -> event.processAsNormalizedString(metadata::setPath2)),
+    PATH_2((token, context, metadata) -> token.processAsNormalizedString(metadata::setPath2)),
 
     /** Transmit band entry. */
-    TRANSMIT_BAND((event, context, metadata) -> event.processAsNormalizedString(metadata::setTransmitBand)),
+    TRANSMIT_BAND((token, context, metadata) -> token.processAsNormalizedString(metadata::setTransmitBand)),
 
     /** Receive band entry. */
-    RECEIVE_BAND((event, context, metadata) -> event.processAsNormalizedString(metadata::setReceiveBand)),
+    RECEIVE_BAND((token, context, metadata) -> token.processAsNormalizedString(metadata::setReceiveBand)),
 
     /** Turnaround numerator entry. */
-    TURNAROUND_NUMERATOR((event, context, metadata) -> event.processAsInteger(metadata::setTurnaroundNumerator)),
+    TURNAROUND_NUMERATOR((token, context, metadata) -> token.processAsInteger(metadata::setTurnaroundNumerator)),
 
     /** turnaround denominator entry. */
-    TURNAROUND_DENOMINATOR((event, context, metadata) -> event.processAsInteger(metadata::setTurnaroundDenominator)),
+    TURNAROUND_DENOMINATOR((token, context, metadata) -> token.processAsInteger(metadata::setTurnaroundDenominator)),
 
     /** Timetag referene entry. */
-    TIMETAG_REF((event, context, metadata) -> event.processAsNormalizedString(metadata::setTimetagRef)),
+    TIMETAG_REF((token, context, metadata) -> token.processAsNormalizedString(metadata::setTimetagRef)),
 
     /** Integration interval entry. */
-    INTEGRATION_INTERVAL((event, context, metadata) -> event.processAsDouble(metadata::setIntegrationInterval)),
+    INTEGRATION_INTERVAL((token, context, metadata) -> token.processAsDouble(metadata::setIntegrationInterval)),
 
     /** Integration reference entry. */
-    INTEGRATION_REF((event, context, metadata) -> event.processAsNormalizedString(metadata::setIntegrationRef)),
+    INTEGRATION_REF((token, context, metadata) -> token.processAsNormalizedString(metadata::setIntegrationRef)),
 
     /** Frequency offset entry. */
-    FREQ_OFFSET((event, context, metadata) -> event.processAsDouble(metadata::setFreqOffset)),
+    FREQ_OFFSET((token, context, metadata) -> token.processAsDouble(metadata::setFreqOffset)),
 
     /** Range mode entry. */
-    RANGE_MODE((event, context, metadata) -> event.processAsNormalizedString(metadata::setRangeMode)),
+    RANGE_MODE((token, context, metadata) -> token.processAsNormalizedString(metadata::setRangeMode)),
 
     /** Range modulus entry. */
-    RANGE_MODULUS((event, context, metadata) -> event.processAsDouble(metadata::setRangeModulus)),
+    RANGE_MODULUS((token, context, metadata) -> token.processAsDouble(metadata::setRangeModulus)),
 
     /** Range units entry. */
-    RANGE_UNITS((event, context, metadata) -> event.processAsNormalizedString(metadata::setRangeUnits)),
+    RANGE_UNITS((token, context, metadata) -> token.processAsNormalizedString(metadata::setRangeUnits)),
 
     /** Angle type entry. */
-    ANGLE_TYPE((event, context, metadata) -> event.processAsNormalizedString(metadata::setAngleType)),
+    ANGLE_TYPE((token, context, metadata) -> token.processAsNormalizedString(metadata::setAngleType)),
 
     /** reference frame entry. */
-    REFERENCE_FRAME((event, context, metadata) -> event.processAsFrame(metadata::setReferenceFrame, context)),
+    REFERENCE_FRAME((token, context, metadata) -> token.processAsFrame(metadata::setReferenceFrame, context)),
 
     /** First transmit delay entry. */
-    TRANSMIT_DELAY_1((event, context, metadata) -> event.processAsIndexedDouble(metadata::addTransmitDelay, 1)),
+    TRANSMIT_DELAY_1((token, context, metadata) -> token.processAsIndexedDouble(metadata::addTransmitDelay, 1)),
 
     /** Second transmit delay entry. */
-    TRANSMIT_DELAY_2((event, context, metadata) -> event.processAsIndexedDouble(metadata::addTransmitDelay, 2)),
+    TRANSMIT_DELAY_2((token, context, metadata) -> token.processAsIndexedDouble(metadata::addTransmitDelay, 2)),
 
     /** Third transmit delay entry. */
-    TRANSMIT_DELAY_3((event, context, metadata) -> event.processAsIndexedDouble(metadata::addTransmitDelay, 3)),
+    TRANSMIT_DELAY_3((token, context, metadata) -> token.processAsIndexedDouble(metadata::addTransmitDelay, 3)),
 
     /** Fourth transmit delay entry. */
-    TRANSMIT_DELAY_4((event, context, metadata) -> event.processAsIndexedDouble(metadata::addTransmitDelay, 4)),
+    TRANSMIT_DELAY_4((token, context, metadata) -> token.processAsIndexedDouble(metadata::addTransmitDelay, 4)),
 
     /** Fifth transmit delay entry. */
-    TRANSMIT_DELAY_5((event, context, metadata) -> event.processAsIndexedDouble(metadata::addTransmitDelay, 5)),
+    TRANSMIT_DELAY_5((token, context, metadata) -> token.processAsIndexedDouble(metadata::addTransmitDelay, 5)),
 
     /** First receive delay entry. */
-    RECEIVE_DELAY_1((event, context, metadata) -> event.processAsIndexedDouble(metadata::addReceiveDelay, 1)),
+    RECEIVE_DELAY_1((token, context, metadata) -> token.processAsIndexedDouble(metadata::addReceiveDelay, 1)),
 
     /** Second receive delay entry. */
-    RECEIVE_DELAY_2((event, context, metadata) -> event.processAsIndexedDouble(metadata::addReceiveDelay, 2)),
+    RECEIVE_DELAY_2((token, context, metadata) -> token.processAsIndexedDouble(metadata::addReceiveDelay, 2)),
 
     /** Third receive delay entry. */
-    RECEIVE_DELAY_3((event, context, metadata) -> event.processAsIndexedDouble(metadata::addReceiveDelay, 3)),
+    RECEIVE_DELAY_3((token, context, metadata) -> token.processAsIndexedDouble(metadata::addReceiveDelay, 3)),
 
     /** Fourth receive delay entry. */
-    RECEIVE_DELAY_4((event, context, metadata) -> event.processAsIndexedDouble(metadata::addReceiveDelay, 4)),
+    RECEIVE_DELAY_4((token, context, metadata) -> token.processAsIndexedDouble(metadata::addReceiveDelay, 4)),
 
     /** Fifth receive delay entry. */
-    RECEIVE_DELAY_5((event, context, metadata) -> event.processAsIndexedDouble(metadata::addReceiveDelay, 5)),
+    RECEIVE_DELAY_5((token, context, metadata) -> token.processAsIndexedDouble(metadata::addReceiveDelay, 5)),
 
     /** data quality entry. */
-    DATA_QUALITY((event, context, metadata) -> event.processAsNormalizedString(metadata::setDataQuality)),
+    DATA_QUALITY((token, context, metadata) -> token.processAsNormalizedString(metadata::setDataQuality)),
 
     /** Angle 1 correction entry. */
-    CORRECTION_ANGLE_1((event, context, metadata) -> event.processAsDouble(metadata::setCorrectionAngle1)),
+    CORRECTION_ANGLE_1((token, context, metadata) -> token.processAsDouble(metadata::setCorrectionAngle1)),
 
     /** Angle 2 correction entry. */
-    CORRECTION_ANGLE_2((event, context, metadata) -> event.processAsDouble(metadata::setCorrectionAngle2)),
+    CORRECTION_ANGLE_2((token, context, metadata) -> token.processAsDouble(metadata::setCorrectionAngle2)),
 
     /** Doppler correction entry. */
-    CORRECTION_DOPPLER((event, context, metadata) -> event.processAsDouble(metadata::setCorrectionDoppler)),
+    CORRECTION_DOPPLER((token, context, metadata) -> token.processAsDouble(metadata::setCorrectionDoppler)),
 
     /** Range correction entry. */
-    CORRECTION_RANGE((event, context, metadata) -> event.processAsDouble(metadata::setCorrectionRange)),
+    CORRECTION_RANGE((token, context, metadata) -> token.processAsDouble(metadata::setCorrectionRange)),
 
     /** Recive correction entry. */
-    CORRECTION_RECEIVE((event, context, metadata) -> event.processAsDouble(metadata::setCorrectionReceive)),
+    CORRECTION_RECEIVE((token, context, metadata) -> token.processAsDouble(metadata::setCorrectionReceive)),
 
     /** Transmit correction entry. */
-    CORRECTION_TRANSMIT((event, context, metadata) -> event.processAsDouble(metadata::setCorrectionTransmit)),
+    CORRECTION_TRANSMIT((token, context, metadata) -> token.processAsDouble(metadata::setCorrectionTransmit)),
 
     /** Applied correction entry. */
-    CORRECTIONS_APPLIED((event, context, metadata) -> event.processAsNormalizedString(metadata::setCorrectionsApplied));
+    CORRECTIONS_APPLIED((token, context, metadata) -> token.processAsNormalizedString(metadata::setCorrectionsApplied));
 
     /** Processing method. */
     private final MetadataEntryProcessor processor;
@@ -168,23 +168,23 @@ public enum TDMMetadataKey {
         this.processor = processor;
     }
 
-    /** Process an event.
-     * @param event event to process
+    /** Process an token.
+     * @param token token to process
      * @param context parsing context
      * @param metadata metadata to fill
      */
-    public void parse(final ParseEvent event, final ParsingContext context, final TDMMetadata metadata) {
-        processor.process(event, context, metadata);
+    public void parse(final ParseToken token, final ParsingContext context, final TDMMetadata metadata) {
+        processor.process(token, context, metadata);
     }
 
-    /** Interface for processing one event. */
+    /** Interface for processing one token. */
     interface MetadataEntryProcessor {
-        /** Process one event.
-         * @param event event to process
+        /** Process one token.
+         * @param token token to process
          * @param context parsing context
          * @param metadata metadata to fill
          */
-        void process(ParseEvent event, ParsingContext context, TDMMetadata metadata);
+        void process(ParseToken token, ParsingContext context, TDMMetadata metadata);
     }
 
 }

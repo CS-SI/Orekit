@@ -17,8 +17,8 @@
 package org.orekit.files.ccsds.ndm.adm.apm;
 
 import org.orekit.files.ccsds.ndm.ParsingContext;
-import org.orekit.files.ccsds.utils.lexical.EventType;
-import org.orekit.files.ccsds.utils.lexical.ParseEvent;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.files.ccsds.utils.lexical.ParseToken;
 
 /** Keys for {@link APMSpacecraftParameters APM spacecraft parameters} entries.
  * @author Bryan Cazabonne
@@ -27,14 +27,14 @@ import org.orekit.files.ccsds.utils.lexical.ParseEvent;
 public enum APMSpacecraftParametersKey {
 
     /** Block wrapping element in XML files. */
-    spacecraftParameters((event, context, data) -> true),
+    spacecraftParameters((token, context, data) -> true),
 
     /** Comment entry. */
-    COMMENT((event, context, data) -> {
-        if (event.getType() == EventType.ENTRY) {
+    COMMENT((token, context, data) -> {
+        if (token.getType() == TokenType.ENTRY) {
             if (data.getInertiaRefFrameString() == null) {
                 // we are still at block start, we accept comments
-                event.processAsFreeTextString(data::addComment);
+                token.processAsFreeTextString(data::addComment);
                 return false;
             } else {
                 // we have already processed some content in the block
@@ -46,44 +46,44 @@ public enum APMSpacecraftParametersKey {
     }),
 
     /** Inertia reference frame entry. */
-    INERTIA_REF_FRAME((event, context, data) -> {
-        event.processAsNormalizedString(data::setInertiaRefFrameString);
+    INERTIA_REF_FRAME((token, context, data) -> {
+        token.processAsNormalizedString(data::setInertiaRefFrameString);
         return true;
     }),
 
     /** 1-axis moment of inertia entry. */
-    I11((event, context, data) -> {
-        event.processAsDouble(data::setI11);
+    I11((token, context, data) -> {
+        token.processAsDouble(data::setI11);
         return true;
     }),
 
     /** 2-axis moment of inertia entry. */
-    I22((event, context, data) -> {
-        event.processAsDouble(data::setI22);
+    I22((token, context, data) -> {
+        token.processAsDouble(data::setI22);
         return true;
     }),
 
     /** 3-axis moment of inertia entry. */
-    I33((event, context, data) -> {
-        event.processAsDouble(data::setI33);
+    I33((token, context, data) -> {
+        token.processAsDouble(data::setI33);
         return true;
     }),
 
     /** 1-axis / 2-axis inertia cross product entry. */
-    I12((event, context, data) -> {
-        event.processAsDouble(data::setI12);
+    I12((token, context, data) -> {
+        token.processAsDouble(data::setI12);
         return true;
     }),
 
     /** 1-axis / 3-axis inertia cross product entry. */
-    I13((event, context, data) -> {
-        event.processAsDouble(data::setI13);
+    I13((token, context, data) -> {
+        token.processAsDouble(data::setI13);
         return true;
     }),
 
     /** 2-axis / 3-axis inertia cross product entry. */
-    I23((event, context, data) -> {
-        event.processAsDouble(data::setI23);
+    I23((token, context, data) -> {
+        token.processAsDouble(data::setI23);
         return true;
     });
 
@@ -97,25 +97,25 @@ public enum APMSpacecraftParametersKey {
         this.processor = processor;
     }
 
-    /** Process one event.
-     * @param event event to process
+    /** Process one token.
+     * @param token token to process
      * @param context parsing context
      * @param data data to fill
-     * @return true of event was accepted
+     * @return true of token was accepted
      */
-    public boolean process(final ParseEvent event, final ParsingContext context, final APMSpacecraftParameters data) {
-        return processor.process(event, context, data);
+    public boolean process(final ParseToken token, final ParsingContext context, final APMSpacecraftParameters data) {
+        return processor.process(token, context, data);
     }
 
-    /** Interface for processing one event. */
+    /** Interface for processing one token. */
     interface SpacecraftEntryProcessor {
-        /** Process one event.
-         * @param event event to process
+        /** Process one token.
+         * @param token token to process
          * @param context parsing context
          * @param data data to fill
-         * @return true of event was accepted
+         * @return true of token was accepted
          */
-        boolean process(ParseEvent event, ParsingContext context, APMSpacecraftParameters data);
+        boolean process(ParseToken token, ParsingContext context, APMSpacecraftParameters data);
     }
 
 }
