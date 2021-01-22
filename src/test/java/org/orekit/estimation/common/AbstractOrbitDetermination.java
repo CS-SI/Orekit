@@ -1068,7 +1068,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
         if (parser.containsKey(ParameterKey.ATTITUDE_MODE)) {
             mode = AttitudeMode.valueOf(parser.getString(ParameterKey.ATTITUDE_MODE));
         } else {
-            mode = AttitudeMode.NADIR_POINTING_WITH_YAW_COMPENSATION;
+            mode = AttitudeMode.DEFAULT_LAW;
         }
         setAttitudeProvider(propagatorBuilder, mode.getProvider(orbit.getFrame(), body));
 
