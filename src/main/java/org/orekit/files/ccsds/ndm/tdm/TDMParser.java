@@ -171,7 +171,8 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
         reset(fileFormat,
               fileFormat == FileFormat.XML ?
                             this::processXMLStructureToken :
-                            this::processKVNStructureToken);
+                            new NDMHeaderProcessingState(getDataContext(), FORMAT_VERSION_KEY,
+                                                         file.getHeader(), this::processKVNStructureToken));
     }
 
     /** {@inheritDoc} */
@@ -223,6 +224,9 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
             case "segment":
                 // ignored
                 return this::processXMLStructureToken;
+            case FORMAT_VERSION_KEY :
+                token.processAsDouble(file.getHeader()::setFormatVersion);
+                return this::processXMLStructureToken;
             case "header":
                 return new NDMHeaderProcessingState(getDataContext(), getFormatVersionKey(),
                                                  file.getHeader(), this::processXMLStructureToken);
@@ -258,9 +262,6 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
      */
     private ProcessingState processKVNStructureToken(final ParseToken token, final Deque<ParseToken> next) {
         switch (token.getName()) {
-            case FORMAT_VERSION_KEY :
-                token.processAsDouble(file.getHeader()::setFormatVersion);
-                return this::processKVNStructureToken;
             case "META" :
                 if (token.getType() == TokenType.START) {
                     // next parse tokens will be handled as metadata
