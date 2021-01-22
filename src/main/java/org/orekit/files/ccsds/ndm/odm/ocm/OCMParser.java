@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.regex.Pattern;
 
 import org.hipparchus.exception.DummyLocalizable;
 import org.orekit.annotation.DefaultDataContext;
@@ -43,6 +44,9 @@ import org.orekit.utils.IERSConventions;
  * @since 11.0
  */
 public class OCMParser extends ODMParser<OCMFile, OCMParser> {
+
+    /** Pattern for splitting strings at blanks. */
+    private static Pattern SPLIT_AT_BLANKS = Pattern.compile("\\s+");
 
     /** Mandatory keywords. */
     private static final Keyword[] MANDATORY_KEYWORDS = {
@@ -629,7 +633,7 @@ public class OCMParser extends ODMParser<OCMFile, OCMParser> {
             protected boolean parseEntry(final OCMParser parser, final ParseInfo pi) {
                 if (pi.entry.getKeyword() == null) {
                     // this is an orbital state line
-                    final String[] elements = pi.entry.getLine().trim().split("\\s+");
+                    final String[] elements = SPLIT_AT_BLANKS.split(pi.entry.getLine().trim());
                     final AbsoluteDate date;
                     if (elements.length > 0) {
                         if (elements[0].indexOf('T') > 0) {

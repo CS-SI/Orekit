@@ -52,8 +52,8 @@ public class ParseToken {
     /** Pattern for spaces. */
     private static final Pattern SPACE = Pattern.compile("\\p{Space}+");
 
-    /** Regular expression for splitting comma-separated lists. */
-    private final String COMMA_SEPARATORS = "\\p{Space}*,\\p{Space}*";
+    /** Pattern for splitting comma-separated lists. */
+    private static final Pattern SPLIT_AT_COMMAS = Pattern.compile("\\p{Space}*,\\p{Space}*");
 
     /** Type of the token. */
     private TokenType type;
@@ -201,7 +201,7 @@ public class ParseToken {
      */
     public void processAsNormalizedStringList(final StringListConsumer consumer) {
         if (type == TokenType.ENTRY) {
-            consumer.accept(Arrays.asList(getNormalizedContent().split(COMMA_SEPARATORS)));
+            consumer.accept(Arrays.asList(SPLIT_AT_COMMAS.split(getNormalizedContent())));
         }
     }
 

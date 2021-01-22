@@ -106,13 +106,13 @@ public enum APMSpinStabilizedKey {
     });
 
     /** Processing method. */
-    private final SpinEntryProcessor parser;
+    private final SpinEntryProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method
      */
     APMSpinStabilizedKey(final SpinEntryProcessor processor) {
-        this.parser = processor;
+        this.processor = processor;
     }
 
     /** Process one token.
@@ -122,7 +122,7 @@ public enum APMSpinStabilizedKey {
      * @return true of token was accepted
      */
     public boolean process(final ParseToken token, final ParsingContext context, final APMSpinStabilized data) {
-        return parser.process(token, context, data);
+        return processor.process(token, context, data);
     }
 
     /** Interface for processing one token. */

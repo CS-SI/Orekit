@@ -29,7 +29,7 @@ import org.orekit.time.AbsoluteDate;
 public class OCMMetadata extends ODMMetadata {
 
     /** Default interpolation method for EOP and Space Weather data. */
-    private final String DEFAULT_INTERPOLATION_METHOD = "LINEAR";
+    private static final String DEFAULT_INTERPOLATION_METHOD = "LINEAR";
 
     /** Classification for this message. */
     private String classification;

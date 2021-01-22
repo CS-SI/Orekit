@@ -56,8 +56,8 @@ public class KeyValue {
     private static final Pattern USER_DEFINED_KEYWORDS =
             Pattern.compile("USER_DEFINED_[A-Z][A-Z_]*");
 
-    /** Regular expression for splitting comma-separated lists. */
-    private final String COMMA_SEPARATORS = "\\s*,\\s*";
+    /** Pattern for splitting comma-separated lists. */
+    private static final Pattern SPLIT_AT_COMMAS = Pattern.compile("\\p{Space}*,\\p{Space}*");
 
     /** Line from which pair is extracted. */
     private final String line;
@@ -210,7 +210,7 @@ public class KeyValue {
      * @since 10.1
      */
     public List<String> getListValue() {
-        return Arrays.asList(value.split(COMMA_SEPARATORS));
+        return Arrays.asList(SPLIT_AT_COMMAS.split(value));
     }
 
     /** Generate a parse exception for this key value pair.
