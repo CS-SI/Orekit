@@ -31,7 +31,7 @@ import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.lexical.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.state.AbstractMessageParser;
-import org.orekit.files.ccsds.utils.state.EndOfMessageState;
+import org.orekit.files.ccsds.utils.state.ErrorState;
 import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
@@ -163,7 +163,8 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        file                      = new APMFile();
+        file                      = new APMFile(getConventions(), getDataContext(),
+                                                getMissionReferenceDate());
         metadata                  = null;
         context                   = null;
         quaternionBlock           = null;
@@ -246,7 +247,7 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
                     finalizeSegment();
                     // there is only one segment in APM file
                     // any further data should be considered as an error
-                    return new EndOfMessageState();
+                    return new ErrorState();
                 }
                 break;
             default :
@@ -271,16 +272,18 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
         }
         try {
             final ADMMetadataKey key = ADMMetadataKey.valueOf(token.getName());
-            key.process(token, context, metadata);
-            return this::processMetadataToken;
+            if (key.process(token, context, metadata)) {
+                // the token was processed properly
+                return this::processMetadataToken;
+            }
         } catch (IllegalArgumentException iae) {
-            // token has not been recognized, it is most probably the end of the metadata section
-            // we push the token back into next queue and let the structure parser handle it
-            next.offerLast(token);
-            return getFileFormat() == FileFormat.XML ?
-                                      this::processXMLStructureToken :
-                                      this::processQuaternionToken;
+            // ignored, delegate to next state below
         }
+        // the token has not been recognized, we need to pass it to next block processor
+        next.offerLast(token);
+        return getFileFormat() == FileFormat.XML ?
+                                  this::processXMLStructureToken :
+                                  this::processQuaternionToken;
     }
 
     /** Process one quaternion data token.
@@ -289,6 +292,9 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
      * @return next state to use for parsing upcoming tokens
      */
     private ProcessingState processQuaternionToken(final ParseToken token, final Deque<ParseToken> next) {
+        if (quaternionBlock == null) {
+            quaternionBlock = new APMQuaternion();
+        }
         try {
             final APMQuaternionKey key = APMQuaternionKey.valueOf(token.getName());
             if (key.process(token, context, quaternionBlock)) {
@@ -311,6 +317,9 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
      * @return next state to use for parsing upcoming tokens
      */
     private ProcessingState processEulerToken(final ParseToken token, final Deque<ParseToken> next) {
+        if (eulerBlock == null) {
+            eulerBlock = new APMEuler();
+        }
         try {
             final APMEulerKey key = APMEulerKey.valueOf(token.getName());
             if (key.process(token, context, eulerBlock)) {
@@ -333,6 +342,17 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
      * @return next state to use for parsing upcoming tokens
      */
     private ProcessingState processSpinStabilizedToken(final ParseToken token, final Deque<ParseToken> next) {
+        if (spinStabilizedBlock == null) {
+            spinStabilizedBlock = new APMSpinStabilized();
+            if (eulerBlock.getEulerDirection() == null) {
+                // the Euler angles logical block was missing,
+                // we may have store the comments in it, so we need to recover them
+                for (final String comment : eulerBlock.getComments()) {
+                    spinStabilizedBlock.addComment(comment);
+                }
+                eulerBlock = null;
+            }
+        }
         try {
             final APMSpinStabilizedKey key = APMSpinStabilizedKey.valueOf(token.getName());
             if (key.process(token, context, spinStabilizedBlock)) {
@@ -355,6 +375,17 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
      * @return next state to use for parsing upcoming tokens
      */
     private ProcessingState processSpacecraftParametersToken(final ParseToken token, final Deque<ParseToken> next) {
+        if (spacecraftParametersBlock == null) {
+            spacecraftParametersBlock = new APMSpacecraftParameters();
+            if (spinStabilizedBlock.getSpinDirection() == null) {
+                // the spin-stabilized logical block was missing,
+                // we may have store the comments in it, so we need to recover them
+                for (final String comment : spinStabilizedBlock.getComments()) {
+                    spacecraftParametersBlock.addComment(comment);
+                }
+                spinStabilizedBlock = null;
+            }
+        }
         try {
             final APMSpacecraftParametersKey key = APMSpacecraftParametersKey.valueOf(token.getName());
             if (key.process(token, context, spacecraftParametersBlock)) {
@@ -377,10 +408,26 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
      * @return next state to use for parsing upcoming tokens
      */
     private ProcessingState processManeuverToken(final ParseToken token, final Deque<ParseToken> next) {
+        if (currentManeuver == null) {
+            currentManeuver = new APMManeuver();
+            if (spacecraftParametersBlock.getInertiaRefFrameString() == null) {
+                // the spacecraft parameters logical block was missing,
+                // we may have store the comments in it, so we need to recover them
+                for (final String comment : spacecraftParametersBlock.getComments()) {
+                    currentManeuver.addComment(comment);
+                }
+                spacecraftParametersBlock = null;
+            }
+        }
         try {
             final APMManeuverKey key = APMManeuverKey.valueOf(token.getName());
             if (key.process(token, context, currentManeuver)) {
                 // the token was processed properly
+                if (!currentManeuver.getTorque().isNaN()) {
+                    // current maneuver is completed
+                    maneuvers.add(currentManeuver);
+                    currentManeuver = null;
+                }
                 return this::processManeuverToken;
             }
         } catch (IllegalArgumentException iae) {
@@ -390,7 +437,7 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
         next.offerLast(token);
         return getFileFormat() == FileFormat.XML ?
                                   this::processXMLStructureToken :
-                                  new EndOfMessageState();
+                                  new ErrorState();
     }
 
 }

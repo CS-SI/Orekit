@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.files.ccsds.ndm.adm.LocalSpacecraftBodyFrame;
 import org.orekit.time.AbsoluteDate;
 
 /**
@@ -38,7 +37,7 @@ public class APMManeuver {
     private AbsoluteDate epochStart;
 
     /** Coordinate system for the torque vector, for absolute frames. */
-    private LocalSpacecraftBodyFrame refFrame;
+    private String refFrameString;
 
     /** Duration (value is 0 for impulsive maneuver). */
     private double duration;
@@ -50,7 +49,7 @@ public class APMManeuver {
      * Simple constructor.
      */
     public APMManeuver() {
-        this.torque   = Vector3D.ZERO;
+        this.torque   = Vector3D.NaN;
         this.comments = new ArrayList<>();
     }
 
@@ -90,16 +89,16 @@ public class APMManeuver {
      * Get Coordinate system for the torque vector, for absolute frames.
      * @return coordinate system for the torque vector, for absolute frames
      */
-    public LocalSpacecraftBodyFrame getRefFrame() {
-        return refFrame;
+    public String getRefFrameString() {
+        return refFrameString;
     }
 
     /**
      * Set Coordinate system for the torque vector, for absolute frames.
-     * @param refFrame coordinate system for the torque vector, for absolute frames
+     * @param refFrameString coordinate system for the torque vector, for absolute frames
      */
-    public void setRefFrame(final LocalSpacecraftBodyFrame refFrame) {
-        this.refFrame = refFrame;
+    public void setRefFrameString(final String refFrameString) {
+        this.refFrameString = refFrameString;
     }
 
     /**

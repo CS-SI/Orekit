@@ -17,12 +17,14 @@
 
 package org.orekit.files.ccsds.ndm.odm;
 
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NDMSegment;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.utils.IERSConventions;
 
 /** This class gathers the general state data present in both OPM and OMM files.
  * @param <M> type of the metadata
@@ -36,8 +38,11 @@ public abstract class OStateFile<M extends OCommonMetadata, D extends OStateData
     private double mu;
 
     /** Create a new OPM file object.
+     * @param conventions IERS conventions
+     * @param dataContext used for creating frames, time scales, etc.
      */
-    protected OStateFile() {
+    protected OStateFile(final IERSConventions conventions, final DataContext dataContext) {
+        super(conventions, dataContext);
         mu = Double.NaN;
     }
 

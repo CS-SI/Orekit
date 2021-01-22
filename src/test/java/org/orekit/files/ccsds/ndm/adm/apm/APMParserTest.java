@@ -31,7 +31,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NDMSegment;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
-import org.orekit.files.ccsds.ndm.adm.LocalSpacecraftBodyFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer;
 import org.orekit.time.AbsoluteDate;
@@ -222,10 +221,7 @@ public class APMParserTest {
         Assert.assertTrue(segment.getData().hasManeuvers());
         Assert.assertEquals(1, segment.getData().getNbManeuvers());
         Assert.assertEquals(1, segment.getData().getManeuvers().size());
-        Assert.assertEquals(LocalSpacecraftBodyFrame.Type.INSTRUMENT,
-                            segment.getData().getManeuver(0).getRefFrame().getType());
-        Assert.assertEquals("A",
-                            segment.getData().getManeuver(0).getRefFrame().getLabel());
+        Assert.assertEquals("INSTRUMENT A", segment.getData().getManeuver(0).getRefFrameString());
         Assert.assertEquals(new AbsoluteDate(2004, 2, 14, 14, 29, 0.5098,
                                              TimeScalesFactory.getUTC()),
                             segment.getData().getManeuver(0).getEpochStart());
@@ -389,28 +385,13 @@ public class APMParserTest {
     }
 
     @Test
-    public void testMissingIERSInitialization() throws URISyntaxException {
-        final String name = getClass().getResource("/ccsds/adm/apm/APMExample2.txt").toURI().getPath();
-        APMParser parser = new APMParser();
-        try {
-            // we explicitly forget to call parser.setConventions here
-            new KVNLexicalAnalyzer(name).accept(parser);
-            parser.getConventions();
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS, oe.getSpecifier());
-        }
-    }
-
-    @Test
     public void testWrongADMType() {
         try {
             new KVNLexicalAnalyzer(getClass().getResourceAsStream("/ccsds/adm/aem/AEMExample.txt"), "AEMExample.txt").
             accept(new APMParser());
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
-            Assert.assertEquals("CCSDS_AEM_VERS", oe.getParts()[0]);
-            Assert.assertEquals(1, oe.getParts()[1]);
-            Assert.assertEquals("AEMExample.txt", oe.getParts()[2]);
+            Assert.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
+            Assert.assertEquals("AEMExample.txt", oe.getParts()[0]);
         }
     }
 
@@ -421,10 +402,10 @@ public class APMParserTest {
             new KVNLexicalAnalyzer(getClass().getResourceAsStream("/ccsds/adm/apm/APM-number-format-error.txt"),
                          "APM-number-format-error.txt").accept(parser);
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
-            Assert.assertEquals(20, oe.getParts()[0]);
-            Assert.assertEquals("APM-number-format-error.txt", oe.getParts()[1]);
-            Assert.assertEquals("Q1             = this-is-not-a-number", oe.getParts()[2]);
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
+            Assert.assertEquals("Q1", oe.getParts()[0]);
+            Assert.assertEquals(20, oe.getParts()[1]);
+            Assert.assertEquals("APM-number-format-error.txt", oe.getParts()[2]);
         }
     }
 
@@ -452,32 +433,6 @@ public class APMParserTest {
             Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
             Assert.assertEquals(11, ((Integer) oe.getParts()[0]).intValue());
             Assert.assertTrue(((String) oe.getParts()[2]).startsWith("WRONG_KEYWORD"));
-        }
-    }
-
-    @Test
-    public void testWrongFrameType() throws URISyntaxException {
-        final String name = getClass().getResource("/ccsds/adm/apm/APM-wrong-frame-type.txt").toURI().getPath();
-        try {
-            new KVNLexicalAnalyzer(name).accept(new APMParser().withConventions(IERSConventions.IERS_2010));
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
-            Assert.assertEquals("EULER_FRAME_A", oe.getParts()[0]);
-            Assert.assertEquals(20, ((Integer) oe.getParts()[1]).intValue());
-        }
-    }
-
-    @Test
-    public void testWrongFrameLabel() throws URISyntaxException {
-        final String name = getClass().getResource("/ccsds/adm/apm/APM-wrong-frame-label.txt").toURI().getPath();
-        try {
-            new KVNLexicalAnalyzer(name).accept(new APMParser().withConventions(IERSConventions.IERS_2010));
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
-            Assert.assertEquals("EULER_FRAME_A", oe.getParts()[0]);
-            Assert.assertEquals(20, ((Integer) oe.getParts()[1]).intValue());
         }
     }
 

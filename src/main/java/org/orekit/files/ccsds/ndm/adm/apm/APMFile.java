@@ -16,9 +16,12 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
+import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.adm.ADMFile;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
 import org.orekit.files.ccsds.ndm.adm.ADMSegment;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.IERSConventions;
 
 /**
  * This class stores all the information of the Attitude Parameter Message (APM) File parsed
@@ -27,4 +30,16 @@ import org.orekit.files.ccsds.ndm.adm.ADMSegment;
  * @since 10.2
  */
 public class APMFile extends ADMFile<ADMSegment<ADMMetadata, APMData>> {
+
+    /** Simple constructor.
+     * @param conventions IERS conventions
+     * @param dataContext used for creating frames, time scales, etc.
+     * @param missionReferenceDate reference date for Mission Elapsed Time and Mission Relative Time time systems.
+     */
+    public APMFile(final IERSConventions conventions, final DataContext dataContext,
+                   final AbsoluteDate missionReferenceDate) {
+        super(conventions, dataContext, missionReferenceDate);
+    }
+
+
 }

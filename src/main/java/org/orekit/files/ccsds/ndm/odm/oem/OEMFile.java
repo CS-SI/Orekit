@@ -22,11 +22,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.odm.ODMFile;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.general.EphemerisFile;
+import org.orekit.utils.IERSConventions;
 
 /** This class stores all the information of the OEM File parsed by OEMParser.
  * <p>
@@ -39,6 +41,14 @@ import org.orekit.files.general.EphemerisFile;
  * @since 6.1
  */
 public class OEMFile extends ODMFile<OEMSegment> implements EphemerisFile {
+
+    /** Simple constructor.
+     * @param conventions IERS conventions
+     * @param dataContext used for creating frames, time scales, etc.
+     */
+    public OEMFile(final IERSConventions conventions, final DataContext dataContext) {
+        super(conventions, dataContext);
+    }
 
     /** {@inheritDoc} */
     @Override

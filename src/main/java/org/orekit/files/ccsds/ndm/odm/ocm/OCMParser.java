@@ -592,12 +592,10 @@ public class OCMParser extends ODMParser<OCMFile, OCMParser> {
          * @param dataContext data context to use
          */
         ParseInfo(final IERSConventions conventions, final DataContext dataContext) {
-            file                  = new OCMFile();
-            file.setConventions(conventions);
-            file.setDataContext(dataContext);
-            metadata              = new OCMMetadata();
-            data                  = new OCMData();
-            lineNumber            = 0;
+            file       = new OCMFile(conventions, dataContext);
+            metadata   = new OCMMetadata();
+            data       = new OCMData();
+            lineNumber = 0;
         }
 
     }

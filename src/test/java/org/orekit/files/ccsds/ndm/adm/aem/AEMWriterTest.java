@@ -39,8 +39,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
@@ -168,7 +170,7 @@ public class AEMWriterTest {
     public void testMultisatelliteFile() throws IOException {
         final String id1 = "ID1";
         final String id2 = "ID2";
-        AEMFile file = new StandInEphemerisFile();
+        AEMFile file = new StandInEphemerisFile(IERSConventions.IERS_2010, DataContext.getDefault(), null);
         file.getSatellites().put(id1, new AEMSatelliteEphemeris(id1, new ArrayList<>()));
         file.getSatellites().put(id2, new AEMSatelliteEphemeris(id2, new ArrayList<>()));
 
@@ -288,7 +290,14 @@ public class AEMWriterTest {
     private class StandInEphemerisFile extends AEMFile {
         private final Map<String, AEMSatelliteEphemeris> satEphem;
 
-        public StandInEphemerisFile() {
+        /** Simple constructor.
+         * @param conventions IERS conventions
+         * @param dataContext used for creating frames, time scales, etc.
+         * @param missionReferenceDate reference date for Mission Elapsed Time and Mission Relative Time time systems.
+         */
+        public StandInEphemerisFile(final IERSConventions conventions, final DataContext dataContext,
+                                    final AbsoluteDate missionReferenceDate) {
+            super(conventions, dataContext, missionReferenceDate);
             this.satEphem = new HashMap<String, AEMSatelliteEphemeris>();
         }
 

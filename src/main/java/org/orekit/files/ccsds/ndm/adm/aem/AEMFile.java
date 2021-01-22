@@ -21,11 +21,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.adm.ADMFile;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.general.AttitudeEphemerisFile;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.IERSConventions;
 
 /**
  * This class stores all the information of the Attitude Ephemeris Message (AEM) File parsed
@@ -35,6 +38,16 @@ import org.orekit.files.general.AttitudeEphemerisFile;
  * @since 10.2
  */
 public class AEMFile extends ADMFile<AEMSegment> implements AttitudeEphemerisFile {
+
+    /** Simple constructor.
+     * @param conventions IERS conventions
+     * @param dataContext used for creating frames, time scales, etc.
+     * @param missionReferenceDate reference date for Mission Elapsed Time and Mission Relative Time time systems.
+     */
+    public AEMFile(final IERSConventions conventions, final DataContext dataContext,
+                   final AbsoluteDate missionReferenceDate) {
+        super(conventions, dataContext, missionReferenceDate);
+    }
 
     /** {@inheritDoc} */
     @Override

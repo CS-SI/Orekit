@@ -367,9 +367,7 @@ public class OPMParser extends OStateParser<OPMFile, OPMParser> {
          * @param dataContext data context to use
          */
         protected ParseInfo(final IERSConventions conventions, final DataContext dataContext) {
-            file            = new OPMFile();
-            file.setConventions(conventions);
-            file.setDataContext(dataContext);
+            file            = new OPMFile(conventions, dataContext);
             metadata        = new OCommonMetadata();
             data            = new OPMData();
             parsingHeader   = false;

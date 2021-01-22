@@ -18,6 +18,7 @@
 package org.orekit.files.ccsds.ndm.odm.omm;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.odm.OCommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.OStateFile;
 import org.orekit.orbits.CartesianOrbit;
@@ -25,6 +26,7 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
+import org.orekit.utils.IERSConventions;
 
 /**
  * This class gathers the informations present in the Orbital Mean-Elements Message (OMM),
@@ -34,6 +36,14 @@ import org.orekit.propagation.analytical.tle.TLE;
  * @since 6.1
  */
 public class OMMFile extends OStateFile<OMMMetadata, OMMData> {
+
+    /** Simple constructor.
+     * @param conventions IERS conventions
+     * @param dataContext used for creating frames, time scales, etc.
+     */
+    public OMMFile(final IERSConventions conventions, final DataContext dataContext) {
+        super(conventions, dataContext);
+    }
 
     /** {@inheritDoc} */
     @Override

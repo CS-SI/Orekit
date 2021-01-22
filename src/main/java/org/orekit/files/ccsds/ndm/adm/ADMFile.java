@@ -16,9 +16,11 @@
  */
 package org.orekit.files.ccsds.ndm.adm;
 
+import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.NDMFile;
 import org.orekit.files.ccsds.ndm.NDMHeader;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.IERSConventions;
 
 /**
  * This class stores all the information of the Attitude Parameter Message (APM) File parsed
@@ -32,9 +34,15 @@ public class ADMFile<S extends ADMSegment<?, ?>> extends NDMFile<NDMHeader, S> {
     /** Initial Date for MET or MRT time systems. */
     private AbsoluteDate missionReferenceDate;
 
-    /** Simple constructor. */
-    public ADMFile() {
-        super(new NDMHeader());
+    /** Simple constructor.
+     * @param conventions IERS conventions
+     * @param dataContext used for creating frames, time scales, etc.
+     * @param missionReferenceDate reference date for Mission Elapsed Time and Mission Relative Time time systems.
+     */
+    public ADMFile(final IERSConventions conventions, final DataContext dataContext,
+                   final AbsoluteDate missionReferenceDate) {
+        super(new NDMHeader(), conventions, dataContext);
+        this.missionReferenceDate = missionReferenceDate;
     }
 
     /**
@@ -43,14 +51,6 @@ public class ADMFile<S extends ADMSegment<?, ?>> extends NDMFile<NDMHeader, S> {
      */
     public AbsoluteDate getMissionReferenceDate() {
         return missionReferenceDate;
-    }
-
-    /**
-     * Set reference date for Mission Elapsed Time and Mission Relative Time time systems.
-     * @param missionReferenceDate reference date for Mission Elapsed Time and Mission Relative Time time systems.
-     */
-    public void setMissionReferenceDate(final AbsoluteDate missionReferenceDate) {
-        this.missionReferenceDate = missionReferenceDate;
     }
 
 }

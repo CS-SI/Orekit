@@ -21,14 +21,15 @@ import java.util.Deque;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
 
 /**
- * Special {@link ProcessingState} used at end of message, to generate an error if spurious data is found.
+ * Special {@link ProcessingState} that always generate an error message.
  *
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class EndOfMessageState implements ProcessingState {
+public class ErrorState implements ProcessingState {
 
     /** {@inheritDoc}
      * <p>
@@ -37,8 +38,13 @@ public class EndOfMessageState implements ProcessingState {
      */
     @Override
     public ProcessingState processToken(final ParseToken token, final Deque<ParseToken> next) {
-        throw new OrekitException(OrekitMessages.UNEXPECTED_DATA_AT_LINE_IN_FILE,
-                                  token.getLineNumber(), token.getFileName());
+        if (token.getType() == TokenType.RAW_LINE) {
+            throw new OrekitException(OrekitMessages.UNEXPECTED_DATA_AT_LINE_IN_FILE,
+                                      token.getLineNumber(), token.getFileName());
+        } else {
+            throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD,
+                                      token.getLineNumber(), token.getFileName(), token.getName());
+        }
     }
 
 }

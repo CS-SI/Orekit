@@ -18,8 +18,8 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.files.ccsds.ndm.ParsingContext;
-import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
 
 /** Keys for {@link APMData APM Euler angles} entries.
  * @author Bryan Cazabonne
@@ -81,7 +81,7 @@ public enum APMEulerKey {
             if (data.getEulerFrameAString() == null) {
                 // we are still at block start, we accept comments
                 token.processAsFreeTextString(data::addComment);
-                return false;
+                return true;
             } else {
                 // we have already processed some content in the block
                 // the comment belongs to the next block

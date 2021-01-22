@@ -17,12 +17,14 @@
 
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
+import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.NDMSegment;
 import org.orekit.files.ccsds.ndm.odm.ODMFile;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.utils.IERSConventions;
 
 /** This class gathers the informations present in the Orbit Comprehensive Message (OCM), and contains
  * methods to generate {@link CartesianOrbit}, {@link KeplerianOrbit}, {@link SpacecraftState}
@@ -31,6 +33,14 @@ import org.orekit.propagation.SpacecraftState;
  * @since 11.0
  */
 public class OCMFile extends ODMFile<NDMSegment<OCMMetadata, OCMData>> {
+
+    /** Simple constructor.
+     * @param conventions IERS conventions
+     * @param dataContext used for creating frames, time scales, etc.
+     */
+    public OCMFile(final IERSConventions conventions, final DataContext dataContext) {
+        super(conventions, dataContext);
+    }
 
     /** Get the metadata from the single {@link #getSegments() segment}.
      * @return metadata from the single {@link #getSegments() segment}

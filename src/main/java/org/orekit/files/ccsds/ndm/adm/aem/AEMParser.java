@@ -246,14 +246,10 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
         try {
 
             // initialize internal data structures
-            final ParseInfo pi = new ParseInfo();
+            final ParseInfo pi = new ParseInfo(getConventions(), getDataContext(),
+                                               getMissionReferenceDate());
             pi.fileName = fileName;
             final AEMFile file = pi.file;
-
-            // set the additional data that has been configured prior the parsing by the user.
-            pi.file.setMissionReferenceDate(getMissionReferenceDate());
-            pi.file.setConventions(getConventions());
-            pi.file.setDataContext(getDataContext());
 
             pi.parsingHeader = true;
             for (pi.line = reader.readLine(); pi.line != null; pi.line = reader.readLine()) {
@@ -513,10 +509,15 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
         /** Boolean indicating if the parser is currently parsing a data block. */
         private boolean parsingData;
 
-        /** Create a new {@link ParseInfo} object. */
-        protected ParseInfo() {
+        /** Create a new {@link ParseInfo} object.
+         * @param conventions IERS conventions
+         * @param dataContext used for creating frames, time scales, etc.
+         * @param missionReferenceDate reference date for Mission Elapsed Time and Mission Relative Time time systems.
+         */
+        protected ParseInfo(final IERSConventions conventions, final DataContext dataContext,
+                            final AbsoluteDate missionReferenceDate) {
             lineNumber      = 0;
-            file            = new AEMFile();
+            file            = new AEMFile(conventions, dataContext, missionReferenceDate);
             parsingHeader   = false;
             parsingMetaData = false;
             parsingData     = false;

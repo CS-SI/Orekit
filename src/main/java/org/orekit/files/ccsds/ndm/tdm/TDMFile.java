@@ -17,12 +17,14 @@
 
 package org.orekit.files.ccsds.ndm.tdm;
 
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NDMFile;
 import org.orekit.files.ccsds.ndm.NDMHeader;
 import org.orekit.files.ccsds.ndm.NDMSegment;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
+import org.orekit.utils.IERSConventions;
 
 /** This class stores all the information of the CCSDS Tracking Data Message file parsed by TDMParser or TDMXMLParser. <p>
  * It contains the header and a list of Observations Blocks each containing
@@ -38,9 +40,11 @@ import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 public class TDMFile extends NDMFile<NDMHeader, NDMSegment<TDMMetadata, ObservationsBlock>> {
 
     /** Simple constructor.
+     * @param conventions IERS conventions
+     * @param dataContext used for creating frames, time scales, etc.
      */
-    public TDMFile() {
-        super(new NDMHeader());
+    public TDMFile(final IERSConventions conventions, final DataContext dataContext) {
+        super(new NDMHeader(), conventions, dataContext);
     }
 
     /** Check that, according to the CCSDS standard, every ObservationsBlock has the same time system.

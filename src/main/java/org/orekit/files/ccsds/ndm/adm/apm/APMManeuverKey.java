@@ -18,7 +18,6 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.files.ccsds.ndm.ParsingContext;
-import org.orekit.files.ccsds.ndm.adm.LocalSpacecraftBodyFrame;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 
@@ -38,7 +37,7 @@ public enum APMManeuverKey {
             if (maneuver.getEpochStart() == null) {
                 // we are still at block start, we accept comments
                 token.processAsFreeTextString(maneuver::addComment);
-                return false;
+                return true;
             } else {
                 // we have already processed some content in the block
                 // the comment belongs to the next block
@@ -62,17 +61,8 @@ public enum APMManeuverKey {
 
     /** Reference frame entry. */
     MAN_REF_FRAME((token, context, maneuver) -> {
-        final String[] fields = token.getNormalizedContent().split(" ");
-        if (fields.length != 2) {
-            throw token.generateException();
-        }
-        try {
-            final LocalSpacecraftBodyFrame.Type type = LocalSpacecraftBodyFrame.Type.valueOf(fields[0]);
-            maneuver.setRefFrame(new LocalSpacecraftBodyFrame(type, fields[1]));
-            return true;
-        } catch (IllegalArgumentException iae) {
-            throw token.generateException();
-        }
+        token.processAsNormalizedString(maneuver::setRefFrameString);
+        return true;
     }),
 
     /** First torque vector component entry. */

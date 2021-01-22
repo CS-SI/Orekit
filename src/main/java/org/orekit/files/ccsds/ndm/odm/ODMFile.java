@@ -17,8 +17,10 @@
 
 package org.orekit.files.ccsds.ndm.odm;
 
+import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.NDMFile;
 import org.orekit.files.ccsds.ndm.NDMSegment;
+import org.orekit.utils.IERSConventions;
 
 /**
  * BAse class for ODMFile (Orbit Data Message) files.
@@ -29,9 +31,11 @@ import org.orekit.files.ccsds.ndm.NDMSegment;
 public abstract class ODMFile<S extends NDMSegment<?, ?>> extends NDMFile<ODMHeader, S> {
 
     /** Simple constructor.
+     * @param conventions IERS conventions
+     * @param dataContext used for creating frames, time scales, etc.
      */
-    protected ODMFile() {
-        super(new ODMHeader());
+    protected ODMFile(final IERSConventions conventions, final DataContext dataContext) {
+        super(new ODMHeader(), conventions, dataContext);
     }
 
 }

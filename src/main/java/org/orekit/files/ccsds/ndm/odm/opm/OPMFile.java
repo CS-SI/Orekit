@@ -20,11 +20,13 @@ package org.orekit.files.ccsds.ndm.odm.opm;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.odm.OCommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.OStateFile;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 /** This class gathers the informations present in the Orbital Parameter Message (OPM), and contains
@@ -33,6 +35,14 @@ import org.orekit.utils.PVCoordinates;
  * @since 6.1
  */
 public class OPMFile extends OStateFile<OCommonMetadata, OPMData> {
+
+    /** Simple constructor.
+     * @param conventions IERS conventions
+     * @param dataContext used for creating frames, time scales, etc.
+     */
+    public OPMFile(final IERSConventions conventions, final DataContext dataContext) {
+        super(conventions, dataContext);
+    }
 
     /** Get position vector.
      * @return the position vector

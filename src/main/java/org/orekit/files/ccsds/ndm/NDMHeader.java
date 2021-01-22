@@ -48,8 +48,8 @@ public class NDMHeader {
      * Constructor.
      */
     public NDMHeader() {
-        // Initialise an empty comments list
-        comments = new ArrayList<>();
+        formatVersion = Double.NaN;
+        comments      = new ArrayList<>();
     }
 
     /**

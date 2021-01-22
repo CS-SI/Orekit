@@ -19,6 +19,8 @@ package org.orekit.files.ccsds.ndm;
 import java.util.Deque;
 
 import org.orekit.data.DataContext;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.state.ProcessingState;
@@ -62,9 +64,15 @@ public class NDMHeaderProcessingState implements ProcessingState {
     @Override
     public ProcessingState processToken(final ParseToken token, final Deque<ParseToken> next) {
 
-        if (formatVersionKey.equals(token.getName())) {
-            token.processAsDouble(header::setFormatVersion);
-            return this;
+        if (Double.isNaN(header.getFormatVersion())) {
+            // the first thing we expect is the format version
+            // (however, in XML files it is set before entering header)
+            if (formatVersionKey.equals(token.getName()) && token.getType() == TokenType.ENTRY) {
+                header.setFormatVersion(token.getContentAsDouble());
+                return this;
+            } else {
+                throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, token.getFileName());
+            }
         }
 
         switch (token.getName()) {

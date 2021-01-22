@@ -38,25 +38,29 @@ import org.orekit.utils.IERSConventions;
  */
 public abstract class NDMFile<H extends NDMHeader, S extends NDMSegment<?, ?>> {
 
-    /** Data context. */
-    private DataContext dataContext;
-
-    /** IERS conventions used. */
-    private IERSConventions conventions;
-
     /** Header. */
-    private H header;
+    private final H header;
 
     /** segments list. */
-    private List<S> segments;
+    private final List<S> segments;
+
+    /** IERS conventions used. */
+    private final IERSConventions conventions;
+
+    /** Data context. */
+    private final DataContext dataContext;
 
     /**
      * Constructor.
      * @param header file header
+     * @param conventions IERS conventions
+     * @param dataContext used for creating frames, time scales, etc.
      */
-    protected NDMFile(final H header) {
-        this.header   = header;
-        this.segments = new ArrayList<>();
+    protected NDMFile(final H header, final IERSConventions conventions, final DataContext dataContext) {
+        this.header      = header;
+        this.segments    = new ArrayList<>();
+        this.conventions = conventions;
+        this.dataContext = dataContext;
     }
 
     /**
@@ -88,7 +92,7 @@ public abstract class NDMFile<H extends NDMHeader, S extends NDMSegment<?, ?>> {
 
     /**
      * Get IERS conventions.
-     * @return conventions IERS conventions
+     * @return IERS conventions
      */
     public IERSConventions getConventions() {
         if (conventions != null) {
@@ -99,27 +103,11 @@ public abstract class NDMFile<H extends NDMHeader, S extends NDMSegment<?, ?>> {
     }
 
     /**
-     * Set IERS conventions.
-     * @param conventions IERS conventions to be set
-     */
-    public void setConventions(final IERSConventions conventions) {
-        this.conventions = conventions;
-    }
-
-    /**
      * Get the data context.
      * @return the data context used for creating frames, time scales, etc.
      */
     public DataContext getDataContext() {
         return dataContext;
-    }
-
-    /**
-     * Set the data context.
-     * @param dataContext used for creating frames, time scales, etc.
-     */
-    public void setDataContext(final DataContext dataContext) {
-        this.dataContext = dataContext;
     }
 
 }

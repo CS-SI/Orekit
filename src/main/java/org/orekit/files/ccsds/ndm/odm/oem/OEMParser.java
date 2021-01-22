@@ -554,9 +554,7 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
          * @param dataContext data context to use
          */
         protected ParseInfo(final IERSConventions conventions, final DataContext dataContext) {
-            file            = new OEMFile();
-            file.setConventions(conventions);
-            file.setDataContext(dataContext);
+            file            = new OEMFile(conventions, dataContext);
             metadata        = null;
             data            = null;
             parsingHeader   = false;

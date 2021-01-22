@@ -35,7 +35,7 @@ public enum APMSpinStabilizedKey {
             if (data.getSpinFrameAString() == null) {
                 // we are still at block start, we accept comments
                 token.processAsFreeTextString(data::addComment);
-                return false;
+                return true;
             } else {
                 // we have already processed some content in the block
                 // the comment belongs to the next block
@@ -95,7 +95,7 @@ public enum APMSpinStabilizedKey {
 
     /** Nutation period entry. */
     NUTATION_PER((token, context, data) -> {
-        token.processAsAngle(data::setNutationPeriod);
+        token.processAsDouble(data::setNutationPeriod);
         return true;
     }),
 

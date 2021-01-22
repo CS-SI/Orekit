@@ -28,23 +28,45 @@ import org.orekit.files.ccsds.utils.lexical.ParseToken;
 public enum ADMMetadataKey {
 
     /** Comment entry. */
-    COMMENT((token, context, metadata) -> token.processAsFreeTextString(metadata::addComment)),
+    COMMENT((token, context, metadata) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            if (metadata.getObjectName() == null) {
+                // we are still at block start, we accept comments
+                token.processAsFreeTextString(metadata::addComment);
+                return true;
+            } else {
+                // we have already processed some content in the block
+                // the comment belongs to the next block
+                return false;
+            }
+        } return true;
+    }),
 
     /** Object name entry. */
-    OBJECT_NAME((token, context, metadata) -> token.processAsNormalizedString(metadata::setObjectName)),
+    OBJECT_NAME((token, context, metadata) -> {
+        token.processAsNormalizedString(metadata::setObjectName);
+        return true;
+    }),
 
     /** Object ID entry. */
-    OBJECT_ID((token, context, metadata) -> token.processAsNormalizedString(metadata::setObjectID)),
+    OBJECT_ID((token, context, metadata) -> {
+        token.processAsNormalizedString(metadata::setObjectID);
+        return true;
+    }),
 
     /** Center name entry. */
     CENTER_NAME((token, context, metadata) -> {
         if (token.getType() == TokenType.ENTRY) {
             metadata.setCenterName(token.getNormalizedContent(), context.getDataContext().getCelestialBodies());
         }
+        return true;
     }),
 
     /** Time system entry. */
-    TIME_SYSTEM((token, context, metadata) -> token.processAsTimeScale(metadata::setTimeSystem));
+    TIME_SYSTEM((token, context, metadata) -> {
+        token.processAsTimeScale(metadata::setTimeSystem);
+        return true;
+    });
 
     /** Processing method. */
     private final MetadataEntryProcessor processor;
@@ -60,9 +82,10 @@ public enum ADMMetadataKey {
      * @param token token to process
      * @param context parsing context
      * @param metadata metadata to fill
+     * @return true of token was accepted
      */
-    public void process(final ParseToken token, final ParsingContext context, final ADMMetadata metadata) {
-        processor.process(token, context, metadata);
+    public boolean process(final ParseToken token, final ParsingContext context, final ADMMetadata metadata) {
+        return processor.process(token, context, metadata);
     }
 
     /** Interface for processing one token. */
@@ -71,8 +94,9 @@ public enum ADMMetadataKey {
          * @param token token to process
          * @param context parsing context
          * @param metadata metadata to fill
+         * @return true of token was accepted
          */
-        void process(ParseToken token, ParsingContext context, ADMMetadata metadata);
+        boolean process(ParseToken token, ParsingContext context, ADMMetadata metadata);
     }
 
 }
