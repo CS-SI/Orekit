@@ -315,8 +315,8 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-       public void mapOrbitToArray(final Orbit orbit, final PositionAngle type,
-                                   final double[] stateVector, final double[] stateVectorDot) {
+        public void mapOrbitToArray(final Orbit orbit, final PositionAngle type,
+                                    final double[] stateVector, final double[] stateVectorDot) {
 
             final EquinoctialOrbit equinoctialOrbit =
                 (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
