@@ -36,7 +36,6 @@ import org.orekit.files.ccsds.Keyword;
 import org.orekit.files.ccsds.ndm.adm.ADMParser;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.KeyValue;
-import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.files.general.AttitudeEphemerisFileParser;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -122,7 +121,7 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
      * @see #withDataContext(DataContext)
      */
     public AEMParser(final DataContext dataContext) {
-        this(null, true, dataContext, null, AbsoluteDate.FUTURE_INFINITY, 1);
+        this(null, true, dataContext, AbsoluteDate.FUTURE_INFINITY, 1);
     }
 
     /**
@@ -130,14 +129,13 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
-     * @param initialState initial parsing state
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @param interpolationDegree default interpolation degree
      */
     private AEMParser(final IERSConventions conventions, final boolean simpleEOP,
-                      final DataContext dataContext, final ProcessingState initialState,
+                      final DataContext dataContext,
                       final AbsoluteDate missionReferenceDate, final int interpolationDegree) {
-        super(conventions, simpleEOP, dataContext, initialState, missionReferenceDate);
+        super(conventions, simpleEOP, dataContext, missionReferenceDate);
         this.interpolationDegree = interpolationDegree;
     }
 
@@ -146,9 +144,8 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
     protected AEMParser create(final IERSConventions newConventions,
                                final boolean newSimpleEOP,
                                final DataContext newDataContext,
-                               final ProcessingState newInitialState,
                                final AbsoluteDate newMissionReferenceDate) {
-        return create(newConventions, newSimpleEOP, newDataContext, newInitialState,
+        return create(newConventions, newSimpleEOP, newDataContext,
                       newMissionReferenceDate, interpolationDegree);
     }
 
@@ -156,7 +153,6 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
      * @param newConventions IERS conventions to use while parsing
      * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param newDataContext data context used for frames, time scales, and celestial bodies
-     * @param newInitialState initial parsing state
      * @param newMissionReferenceDate mission reference date to use while parsing
      * @param newInterpolationdegree default interpolation degree
      * @return a new instance with changed parameters
@@ -165,10 +161,9 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
     protected AEMParser create(final IERSConventions newConventions,
                                final boolean newSimpleEOP,
                                final DataContext newDataContext,
-                               final ProcessingState newInitialState,
                                final AbsoluteDate newMissionReferenceDate,
                                final int newInterpolationdegree) {
-        return new AEMParser(newConventions, newSimpleEOP, newDataContext, newInitialState,
+        return new AEMParser(newConventions, newSimpleEOP, newDataContext,
                              newMissionReferenceDate, newInterpolationdegree);
     }
 
@@ -184,7 +179,7 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
      * @since 10.3
      */
     public AEMParser withInterpolationDegree(final int newInterpolationDegree) {
-        return new AEMParser(getConventions(), isSimpleEOP(), getDataContext(), getInitialState(),
+        return new AEMParser(getConventions(), isSimpleEOP(), getDataContext(),
                              getMissionReferenceDate(), newInterpolationDegree);
     }
 
@@ -231,7 +226,7 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
 
     /** {@inheritDoc} */
     @Override
-    public AEMFile oldParse(final InputStream stream, final String fileName) {
+    public AEMFile parse(final InputStream stream, final String fileName) {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
             return parse(reader, fileName);
         } catch (IOException ioe) {

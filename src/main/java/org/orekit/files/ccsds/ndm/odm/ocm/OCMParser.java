@@ -34,7 +34,6 @@ import org.orekit.files.ccsds.ndm.NDMSegment;
 import org.orekit.files.ccsds.ndm.odm.ODMParser;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.KeyValue;
-import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -92,20 +91,18 @@ public class OCMParser extends ODMParser<OCMFile, OCMParser> {
      * @see #withDataContext(DataContext)
      */
     public OCMParser(final DataContext dataContext) {
-        this(null, true, dataContext, null, Double.NaN);
+        this(null, true, dataContext, Double.NaN);
     }
 
     /** Complete constructor.
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames and time scales
-     * @param initialState initial parsing state
      * @param mu gravitational coefficient
      */
     private OCMParser(final IERSConventions conventions, final boolean simpleEOP,
-                      final DataContext dataContext, final ProcessingState initialState,
-                      final double mu) {
-        super(conventions, simpleEOP, dataContext, initialState);
+                      final DataContext dataContext, final double mu) {
+        super(conventions, simpleEOP, dataContext);
         this.mu = mu;
     }
 
@@ -115,36 +112,33 @@ public class OCMParser extends ODMParser<OCMFile, OCMParser> {
      * @see #getMu()
      */
     public OCMParser withMu(final double newMu) {
-        return create(getConventions(), isSimpleEOP(), getDataContext(), getInitialState(), newMu);
+        return create(getConventions(), isSimpleEOP(), getDataContext(), newMu);
     }
 
     /** {@inheritDoc} */
     @Override
     protected OCMParser create(final IERSConventions newConventions,
                                final boolean newSimpleEOP,
-                               final DataContext newDataContext,
-                               final ProcessingState newInitialState) {
-        return create(newConventions, newSimpleEOP, newDataContext, newInitialState, mu);
+                               final DataContext newDataContext) {
+        return create(newConventions, newSimpleEOP, newDataContext, mu);
     }
 
     /** Build a new instance.
      * @param newConventions IERS conventions to use while parsing
      * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param newDataContext data context used for frames, time scales, and celestial bodies
-     * @param newInitialState initial parsing state
      * @param newMu gravitational coefficient to use while parsing
      * @return a new instance with changed parameters
      */
     protected OCMParser create(final IERSConventions newConventions,
                                final boolean newSimpleEOP,
                                final DataContext newDataContext,
-                               final ProcessingState newInitialState,
                                final double newMu) {
-        return new OCMParser(newConventions, newSimpleEOP, newDataContext, newInitialState, newMu);
+        return new OCMParser(newConventions, newSimpleEOP, newDataContext, newMu);
     }
 
     /** {@inheritDoc} */
-    public OCMFile oldParse(final InputStream stream, final String fileName) {
+    public OCMFile parse(final InputStream stream, final String fileName) {
 
         // declare the mandatory keywords as expected
         for (final Keyword keyword : MANDATORY_KEYWORDS) {

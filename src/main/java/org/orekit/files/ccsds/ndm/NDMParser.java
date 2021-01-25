@@ -27,7 +27,6 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
-import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -61,30 +60,17 @@ public abstract class NDMParser<T extends NDMFile<?, ?>, P extends NDMParser<T, 
     /** Data context used for obtain frames and time scales. */
     private final DataContext dataContext;
 
-    /** Initial parsing state.
-     * @since 11.0
-     */
-    private final ProcessingState initialState;
-
-    /** Current parsing state.
-     * @since 11.0
-     */
-    private ProcessingState state;
-
     /** Complete constructor.
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames and time scales.
-     * @param initialState initial parsing state
      * @since 10.1
      */
     protected NDMParser(final IERSConventions conventions, final boolean simpleEOP,
-                        final DataContext dataContext, final ProcessingState initialState) {
+                        final DataContext dataContext) {
         this.conventions  = conventions;
         this.simpleEOP    = simpleEOP;
         this.dataContext  = dataContext;
-        this.initialState = initialState;
-        this.state        = null;
     }
 
     /** Set IERS conventions.
@@ -93,7 +79,7 @@ public abstract class NDMParser<T extends NDMFile<?, ?>, P extends NDMParser<T, 
      * @see #getConventions()
      */
     public P withConventions(final IERSConventions newConventions) {
-        return create(newConventions, simpleEOP, dataContext, state);
+        return create(newConventions, simpleEOP, dataContext);
     }
 
     /** Get IERS conventions.
@@ -110,7 +96,7 @@ public abstract class NDMParser<T extends NDMFile<?, ?>, P extends NDMParser<T, 
      * @see #isSimpleEOP()
      */
     public P withSimpleEOP(final boolean newSimpleEOP) {
-        return create(conventions, newSimpleEOP, dataContext, state);
+        return create(conventions, newSimpleEOP, dataContext);
     }
 
     /** Get EOP interpolation method.
@@ -137,42 +123,19 @@ public abstract class NDMParser<T extends NDMFile<?, ?>, P extends NDMParser<T, 
      * @return a new instance with the data context replaced.
      */
     public P withDataContext(final DataContext newDataContext) {
-        return create(getConventions(), isSimpleEOP(), newDataContext, state);
-    }
-
-    /**
-     * Get the initial parsing state.
-     *
-     * @return the initial parsing state.
-     * @since 11.0
-     */
-    public ProcessingState getInitialState() {
-        return initialState;
-    }
-
-    /**
-     * Set the initial parsing state.
-     *
-     * @param newInitialState initial parsing state.
-     * @return a new instance with the initial parsing state replaced.
-     * @since 11.0
-     */
-    public P withInitialState(final ProcessingState newInitialState) {
-        return create(getConventions(), isSimpleEOP(), getDataContext(), newInitialState);
+        return create(getConventions(), isSimpleEOP(), newDataContext);
     }
 
     /** Build a new instance.
      * @param newConventions IERS conventions to use while parsing
      * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param newDataContext data context used for frames, time scales, and celestial bodies
-     * @param newInitialState initial parsing state
      * @return a new instance with changed parameters
      * @since 11.0
      */
     protected abstract P create(IERSConventions newConventions,
                                 boolean newSimpleEOP,
-                                DataContext newDataContext,
-                                ProcessingState newInitialState);
+                                DataContext newDataContext);
 
     /** Parse a CCSDS frame.
      * @param frameName name of the frame, as the value of a CCSDS key=value line
@@ -210,7 +173,7 @@ public abstract class NDMParser<T extends NDMFile<?, ?>, P extends NDMParser<T, 
      */
     public T parse(final String fileName) {
         try (InputStream stream = new FileInputStream(fileName)) {
-            return oldParse(stream, fileName);
+            return parse(stream, fileName);
         } catch (IOException e) {
             throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, fileName);
         }
@@ -221,7 +184,7 @@ public abstract class NDMParser<T extends NDMFile<?, ?>, P extends NDMParser<T, 
      * @return parsed orbit
      */
     public T parse(final InputStream stream) {
-        return oldParse(stream, "<unknown>");
+        return parse(stream, "<unknown>");
     }
 
     /** Parse a CCSDS Orbit Data Message.
@@ -229,34 +192,6 @@ public abstract class NDMParser<T extends NDMFile<?, ?>, P extends NDMParser<T, 
      * @param fileName name of the file containing the message (for error messages)
      * @return parsed orbit
      */
-    public T parse(final InputStream stream, final String fileName) {
-        // TODO: remove oldParse and insert newParse here
-        return (state == null) ? oldParse(stream, fileName) : newParse(stream, fileName);
-    }
-
-    /** Parse a CCSDS Orbit Data Message.
-     * @param stream stream containing message
-     * @param fileName name of the file containing the message (for error messages)
-     * @return parsed orbit
-     */
-    public abstract T oldParse(InputStream stream, String fileName);
-
-    /** Parse a CCSDS Orbit Data Message.
-     * @param stream stream containing message
-     * @param fileName name of the file containing the message (for error messages)
-     * @return parsed orbit
-     */
-    private T newParse(final InputStream stream, final String fileName) {
-        // TODO
-        return null;
-    }
-
-    /** Set the current state.
-     * @param state new parsing state
-     * @since 11.0
-     */
-    public void setState(final ProcessingState state) {
-        this.state = state;
-    }
+    public abstract T parse(InputStream stream, String fileName);
 
 }

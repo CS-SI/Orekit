@@ -38,7 +38,6 @@ import org.orekit.files.ccsds.Keyword;
 import org.orekit.files.ccsds.ndm.odm.OCommonParser;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.KeyValue;
-import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.files.general.EphemerisFileParser;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
@@ -133,23 +132,22 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
      * @since 10.1
      */
     public OEMParser(final DataContext dataContext) {
-        this(null, true, dataContext, null, AbsoluteDate.FUTURE_INFINITY, Double.NaN, 1);
+        this(null, true, dataContext, AbsoluteDate.FUTURE_INFINITY, Double.NaN, 1);
     }
 
     /** Complete constructor.
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
-     * @param initialState initial parsing state
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @param mu gravitational coefficient
      * @param interpolationDegree interpolation degree
      */
     private OEMParser(final IERSConventions conventions, final boolean simpleEOP,
-                      final DataContext dataContext, final ProcessingState initialState,
+                      final DataContext dataContext,
                       final AbsoluteDate missionReferenceDate, final double mu,
                       final int interpolationDegree) {
-        super(conventions, simpleEOP, dataContext, initialState, missionReferenceDate, mu);
+        super(conventions, simpleEOP, dataContext, missionReferenceDate, mu);
         this.interpolationDegree = interpolationDegree;
     }
 
@@ -158,10 +156,9 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
     protected OEMParser create(final IERSConventions newConventions,
                                final boolean newSimpleEOP,
                                final DataContext newDataContext,
-                               final ProcessingState newInitialState,
                                final AbsoluteDate newMissionReferenceDate,
                                final double newMu) {
-        return create(newConventions, newSimpleEOP, newDataContext, newInitialState,
+        return create(newConventions, newSimpleEOP, newDataContext,
                       newMissionReferenceDate, newMu, interpolationDegree);
     }
 
@@ -169,7 +166,6 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
      * @param newConventions IERS conventions to use while parsing
      * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param newDataContext data context used for frames, time scales, and celestial bodies
-     * @param newInitialState initial parsing state
      * @param newMissionReferenceDate mission reference date to use while parsing
      * @param newMu gravitational coefficient to use while parsing
      * @param newInterpolationDegree interpolation degree
@@ -178,11 +174,10 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
     protected OEMParser create(final IERSConventions newConventions,
                                final boolean newSimpleEOP,
                                final DataContext newDataContext,
-                               final ProcessingState newInitialState,
                                final AbsoluteDate newMissionReferenceDate,
                                final double newMu,
                                final int newInterpolationDegree) {
-        return new OEMParser(newConventions, newSimpleEOP, newDataContext, newInitialState,
+        return new OEMParser(newConventions, newSimpleEOP, newDataContext,
                              newMissionReferenceDate, newMu, newInterpolationDegree);
     }
 
@@ -198,7 +193,7 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
      * @since 11.0
      */
     public OEMParser withInterpolationDegree(final int newInterpolationDegree) {
-        return new OEMParser(getConventions(), isSimpleEOP(), getDataContext(), getInitialState(),
+        return new OEMParser(getConventions(), isSimpleEOP(), getDataContext(),
                              getMissionReferenceDate(), getMuSet(), newInterpolationDegree);
     }
 
@@ -316,7 +311,7 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
 
     /** {@inheritDoc} */
     @Override
-    public OEMFile oldParse(final InputStream stream, final String fileName) {
+    public OEMFile parse(final InputStream stream, final String fileName) {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
             return parse(reader, fileName);
         } catch (IOException ioe) {

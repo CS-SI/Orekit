@@ -35,7 +35,6 @@ import org.orekit.files.ccsds.ndm.NDMSegment;
 import org.orekit.files.ccsds.ndm.odm.OCommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.OStateParser;
 import org.orekit.files.ccsds.utils.KeyValue;
-import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -116,21 +115,20 @@ public class OMMParser extends OStateParser<OMMFile, OMMParser> {
      * @since 10.1
      */
     public OMMParser(final DataContext dataContext) {
-        this(null, true, dataContext, null, AbsoluteDate.FUTURE_INFINITY, Double.NaN);
+        this(null, true, dataContext, AbsoluteDate.FUTURE_INFINITY, Double.NaN);
     }
 
     /** Complete constructor.
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
-     * @param initialState initial parsing state
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @param mu gravitational coefficient
      */
     private OMMParser(final IERSConventions conventions, final boolean simpleEOP,
-                      final DataContext dataContext, final ProcessingState initialState,
+                      final DataContext dataContext,
                       final AbsoluteDate missionReferenceDate, final double mu) {
-        super(conventions, simpleEOP, dataContext, initialState, missionReferenceDate, mu);
+        super(conventions, simpleEOP, dataContext, missionReferenceDate, mu);
     }
 
     /** {@inheritDoc} */
@@ -138,11 +136,9 @@ public class OMMParser extends OStateParser<OMMFile, OMMParser> {
     protected OMMParser create(final IERSConventions newConventions,
                                final boolean newSimpleEOP,
                                final DataContext newDataContext,
-                               final ProcessingState newInitialState,
                                final AbsoluteDate newMissionReferenceDate,
                                final double newMu) {
-        return new OMMParser(newConventions, newSimpleEOP, newDataContext, newInitialState,
-                             newMissionReferenceDate, newMu);
+        return new OMMParser(newConventions, newSimpleEOP, newDataContext, newMissionReferenceDate, newMu);
     }
 
     /** {@inheritDoc} */
@@ -159,7 +155,7 @@ public class OMMParser extends OStateParser<OMMFile, OMMParser> {
 
     /** {@inheritDoc} */
     @Override
-    public OMMFile oldParse(final InputStream stream, final String fileName) {
+    public OMMFile parse(final InputStream stream, final String fileName) {
 
         // declare the mandatory keywords as expected
         for (final Keyword keyword : MANDATORY_KEYWORDS) {

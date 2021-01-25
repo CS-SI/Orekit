@@ -25,7 +25,6 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.Keyword;
 import org.orekit.files.ccsds.ndm.NDMParser;
 import org.orekit.files.ccsds.utils.KeyValue;
-import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -49,12 +48,11 @@ public abstract class ODMParser<T extends ODMFile<?>, P extends ODMParser<T, ?>>
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames and time scales
-     * @param initialState initial parsing state
      * @since 10.1
      */
     protected ODMParser(final IERSConventions conventions, final boolean simpleEOP,
-                        final DataContext dataContext, final ProcessingState initialState) {
-        super(conventions, simpleEOP, dataContext, initialState);
+                        final DataContext dataContext) {
+        super(conventions, simpleEOP, dataContext);
         this.expected    = new HashSet<>();
     }
 
