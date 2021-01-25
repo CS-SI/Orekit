@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.orekit.files.ccsds.ndm.NDMData;
+import org.orekit.files.ccsds.section.Data;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
@@ -28,7 +28,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * The Attitude Ephemerides data blocks class contain list of attitude data points.
  * @author Bryan Cazabonne
  */
-public class AEMData implements NDMData {
+public class AEMData implements Data {
 
     /** List of data lines. */
     private final List<TimeStampedAngularCoordinates> attitudeDataLines;

@@ -29,8 +29,8 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.NDMSegment;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
+import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer;
 import org.orekit.time.AbsoluteDate;
@@ -76,7 +76,7 @@ public class APMParserTest {
                             file.getHeader().getCreationDate());
         Assert.assertEquals("GSFC", file.getHeader().getOriginator());
 
-        NDMSegment<ADMMetadata, APMData> segment = file.getSegments().get(0);
+        Segment<ADMMetadata, APMData> segment = file.getSegments().get(0);
 
         // Check Metadata Block
         Assert.assertEquals("TRMM",       segment.getMetadata().getObjectName());
@@ -135,7 +135,7 @@ public class APMParserTest {
                             file.getHeader().getCreationDate());
         Assert.assertEquals("JPL", file.getHeader().getOriginator());
 
-        NDMSegment<ADMMetadata, APMData> segment = file.getSegments().get(0);
+        Segment<ADMMetadata, APMData> segment = file.getSegments().get(0);
 
         // Check Metadata Block
         Assert.assertEquals("MARS SPIRIT", segment.getMetadata().getObjectName());
@@ -251,7 +251,7 @@ public class APMParserTest {
                             file.getHeader().getCreationDate());
         Assert.assertEquals("GSFC", file.getHeader().getOriginator());
 
-        NDMSegment<ADMMetadata, APMData> segment = file.getSegments().get(0);
+        Segment<ADMMetadata, APMData> segment = file.getSegments().get(0);
 
         // Check Metadata Block
         Assert.assertEquals("TRMM",       segment.getMetadata().getObjectName());
@@ -325,7 +325,7 @@ public class APMParserTest {
                             file.getHeader().getCreationDate());
         Assert.assertEquals("GSFC", file.getHeader().getOriginator());
 
-        NDMSegment<ADMMetadata, APMData> segment = file.getSegments().get(0);
+        Segment<ADMMetadata, APMData> segment = file.getSegments().get(0);
 
         // Check Metadata Block
         Assert.assertEquals("TRMM",       segment.getMetadata().getObjectName());

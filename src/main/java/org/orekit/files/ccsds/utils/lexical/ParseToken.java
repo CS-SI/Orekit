@@ -23,10 +23,10 @@ import java.util.regex.Pattern;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.ParsingContext;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.CenterName;
+import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 

@@ -22,7 +22,7 @@ import java.util.List;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.NDMSegment;
+import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -37,7 +37,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * ephemerides of two different blocks are not suited for interpolation.
  * @author sports
  */
-public class OEMSegment extends NDMSegment<OEMMetadata, OEMData> implements EphemerisFile.EphemerisSegment {
+public class OEMSegment extends Segment<OEMMetadata, OEMData> implements EphemerisFile.EphemerisSegment {
 
     /** IERS conventions to use. */
     private final IERSConventions conventions;

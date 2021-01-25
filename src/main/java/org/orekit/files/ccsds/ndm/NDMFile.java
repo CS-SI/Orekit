@@ -23,6 +23,10 @@ import java.util.List;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.section.Data;
+import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.section.Metadata;
+import org.orekit.files.ccsds.section.Segment;
 import org.orekit.utils.IERSConventions;
 
 /**
@@ -36,7 +40,7 @@ import org.orekit.utils.IERSConventions;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public abstract class NDMFile<H extends NDMHeader, S extends NDMSegment<?, ?>> {
+public abstract class NDMFile<H extends Header, S extends Segment<?, ?>> {
 
     /** Header. */
     private final H header;
@@ -82,7 +86,7 @@ public abstract class NDMFile<H extends NDMHeader, S extends NDMSegment<?, ?>> {
     }
 
     /**
-     * Add a ({@link NDMMetadata metadata}, {@link NDMData data}) pair to the segments.
+     * Add a ({@link Metadata metadata}, {@link Data data}) pair to the segments.
      * @param segment segment to add
      * @since 11.0
      */

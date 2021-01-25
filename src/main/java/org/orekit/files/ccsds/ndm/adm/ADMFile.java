@@ -18,7 +18,7 @@ package org.orekit.files.ccsds.ndm.adm;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.NDMFile;
-import org.orekit.files.ccsds.ndm.NDMHeader;
+import org.orekit.files.ccsds.section.Header;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -29,7 +29,7 @@ import org.orekit.utils.IERSConventions;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class ADMFile<S extends ADMSegment<?, ?>> extends NDMFile<NDMHeader, S> {
+public class ADMFile<S extends ADMSegment<?, ?>> extends NDMFile<Header, S> {
 
     /** Initial Date for MET or MRT time systems. */
     private AbsoluteDate missionReferenceDate;
@@ -41,7 +41,7 @@ public class ADMFile<S extends ADMSegment<?, ?>> extends NDMFile<NDMHeader, S> {
      */
     public ADMFile(final IERSConventions conventions, final DataContext dataContext,
                    final AbsoluteDate missionReferenceDate) {
-        super(new NDMHeader(), conventions, dataContext);
+        super(new Header(), conventions, dataContext);
         this.missionReferenceDate = missionReferenceDate;
     }
 

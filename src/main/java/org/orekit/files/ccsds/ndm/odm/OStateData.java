@@ -27,7 +27,7 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.NDMData;
+import org.orekit.files.ccsds.section.Data;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.PositionAngle;
@@ -38,7 +38,7 @@ import org.orekit.time.AbsoluteDate;
  * @author sports
  * @since 6.1
  */
-public abstract class OStateData implements NDMData {
+public abstract class OStateData implements Data {
 
     /** Epoch of state vector and optional Keplerian elements. */
     private AbsoluteDate epoch;

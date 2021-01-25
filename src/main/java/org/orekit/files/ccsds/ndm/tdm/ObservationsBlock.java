@@ -20,7 +20,7 @@ package org.orekit.files.ccsds.ndm.tdm;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.orekit.files.ccsds.ndm.NDMData;
+import org.orekit.files.ccsds.section.Data;
 import org.orekit.time.AbsoluteDate;
 
 /** The Observations Block class contain metadata and the list of observation data lines.<p>
@@ -33,7 +33,7 @@ import org.orekit.time.AbsoluteDate;
  *  - a measurement, the value of the observation.
  * @author Maxime Journot
  */
-public class ObservationsBlock implements NDMData {
+public class ObservationsBlock implements Data {
 
     /** Current observation epoch. */
     private AbsoluteDate currentObservationEpoch;

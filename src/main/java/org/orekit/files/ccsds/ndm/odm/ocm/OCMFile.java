@@ -18,8 +18,8 @@
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import org.orekit.data.DataContext;
-import org.orekit.files.ccsds.ndm.NDMSegment;
 import org.orekit.files.ccsds.ndm.odm.ODMFile;
+import org.orekit.files.ccsds.section.Segment;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.propagation.Propagator;
@@ -32,7 +32,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OCMFile extends ODMFile<NDMSegment<OCMMetadata, OCMData>> {
+public class OCMFile extends ODMFile<Segment<OCMMetadata, OCMData>> {
 
     /** Simple constructor.
      * @param conventions IERS conventions

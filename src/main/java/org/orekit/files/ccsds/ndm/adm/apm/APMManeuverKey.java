@@ -17,8 +17,8 @@
 package org.orekit.files.ccsds.ndm.adm.apm;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.files.ccsds.ndm.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 
 /** Keys for {@link APMManeuver APM maneuver} entries.

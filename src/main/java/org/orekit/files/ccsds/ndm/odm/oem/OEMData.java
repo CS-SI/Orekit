@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.orekit.files.ccsds.ndm.NDMData;
+import org.orekit.files.ccsds.section.Data;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -29,7 +29,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * The Ephemerides data blocks class contain list of orbital data points.
  * @author sports
  */
-public class OEMData implements NDMData {
+public class OEMData implements Data {
 
     /** Ephemerides Data Lines comments. The list contains a string for each
      * line of comment. */

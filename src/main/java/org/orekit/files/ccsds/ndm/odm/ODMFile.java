@@ -19,7 +19,7 @@ package org.orekit.files.ccsds.ndm.odm;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.NDMFile;
-import org.orekit.files.ccsds.ndm.NDMSegment;
+import org.orekit.files.ccsds.section.Segment;
 import org.orekit.utils.IERSConventions;
 
 /**
@@ -28,7 +28,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public abstract class ODMFile<S extends NDMSegment<?, ?>> extends NDMFile<ODMHeader, S> {
+public abstract class ODMFile<S extends Segment<?, ?>> extends NDMFile<ODMHeader, S> {
 
     /** Simple constructor.
      * @param conventions IERS conventions

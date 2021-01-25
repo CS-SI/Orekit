@@ -17,7 +17,7 @@
 package org.orekit.files.ccsds.ndm.adm.apm;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.files.ccsds.ndm.ParsingContext;
+import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 

@@ -20,14 +20,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.orekit.files.ccsds.ndm.NDMData;
+import org.orekit.files.ccsds.section.Data;
 
 /**
  * Container for Attitude Parameter Message data.
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class APMData implements NDMData {
+public class APMData implements Data {
 
     /** Quaternion block. */
     private final APMQuaternion quaternionBlock;

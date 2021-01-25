@@ -31,9 +31,9 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.Keyword;
-import org.orekit.files.ccsds.ndm.NDMSegment;
 import org.orekit.files.ccsds.ndm.odm.OCommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.OStateParser;
+import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.utils.KeyValue;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
@@ -271,7 +271,7 @@ public class OMMParser extends OStateParser<OMMFile, OMMParser> {
             // check all mandatory keywords have been found
             checkExpected(fileName);
 
-            pi.file.addSegment(new NDMSegment<>(pi.metadata, pi.data));
+            pi.file.addSegment(new Segment<>(pi.metadata, pi.data));
             pi.file.setMu(getSelectedMu());
 
             return pi.file;

@@ -21,14 +21,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.orekit.files.ccsds.ndm.NDMData;
+import org.orekit.files.ccsds.section.Data;
 
 /**
  * Data container for Orbit Comprehensive Messages.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OCMData implements NDMData {
+public class OCMData implements Data {
 
     /** Orbital state histories. */
     private final List<OrbitalStateHistory> orbitalStateHistories;

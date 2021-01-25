@@ -14,34 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.ccsds.ndm.odm;
-
-import org.orekit.files.ccsds.section.Header;
-
 /**
- * Header for Orbit Data Message files.
+ *
+ * This package contains class managing the sections in CCSDS Messages.
+ *
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class ODMHeader extends Header {
-
-    /** ID that uniquely identifies a message from a given originator. */
-    private String messageId;
-
-    /**
-     * Get the ID that uniquely identifies a message from a given originator.
-     * @return ID that uniquely identifies a message from a given originator
-     */
-    public String getMessageId() {
-        return messageId;
-    }
-
-    /**
-     * Set the ID that uniquely identifies a message from a given originator.
-     * @param messageId ID that uniquely identifies a message from a given originator
-     */
-    public void setMessageId(final String messageId) {
-        this.messageId = messageId;
-    }
-
-}
+package org.orekit.files.ccsds.section;

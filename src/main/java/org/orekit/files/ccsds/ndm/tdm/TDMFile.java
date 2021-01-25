@@ -21,8 +21,8 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NDMFile;
-import org.orekit.files.ccsds.ndm.NDMHeader;
-import org.orekit.files.ccsds.ndm.NDMSegment;
+import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.utils.IERSConventions;
 
@@ -37,21 +37,21 @@ import org.orekit.utils.IERSConventions;
  * @author Maxime Journot
  * @since 9.0
  */
-public class TDMFile extends NDMFile<NDMHeader, NDMSegment<TDMMetadata, ObservationsBlock>> {
+public class TDMFile extends NDMFile<Header, Segment<TDMMetadata, ObservationsBlock>> {
 
     /** Simple constructor.
      * @param conventions IERS conventions
      * @param dataContext used for creating frames, time scales, etc.
      */
     public TDMFile(final IERSConventions conventions, final DataContext dataContext) {
-        super(new NDMHeader(), conventions, dataContext);
+        super(new Header(), conventions, dataContext);
     }
 
     /** Check that, according to the CCSDS standard, every ObservationsBlock has the same time system.
      */
     public void checkTimeSystems() {
         CcsdsTimeScale referenceTimeSystem = null;
-        for (final NDMSegment<TDMMetadata, ObservationsBlock> segment : getSegments()) {
+        for (final Segment<TDMMetadata, ObservationsBlock> segment : getSegments()) {
             final CcsdsTimeScale timeSystem = segment.getMetadata().getTimeSystem();
             if (referenceTimeSystem == null) {
                 referenceTimeSystem = timeSystem;

@@ -21,13 +21,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.orekit.files.ccsds.ndm.NDMMetadata;
+import org.orekit.files.ccsds.section.Metadata;
 
 /** This class gathers the meta-data present in the Orbital Data Message (ODM).
  * @author sports
  * @since 6.1
  */
-public class ODMMetadata extends NDMMetadata {
+public class ODMMetadata extends Metadata {
 
     /** Spacecraft name for which the orbit state is provided. */
     private String objectName;

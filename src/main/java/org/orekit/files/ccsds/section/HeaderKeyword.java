@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.ccsds.ndm;
+package org.orekit.files.ccsds.section;
 
 import org.orekit.files.ccsds.utils.DataType;
 import org.orekit.files.ccsds.utils.Keyword;
 
-/** Keywords allowed in ADM/ODM/TDM header.
+/** Keywords allowed in {@link Header}.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public enum NDMHeaderKeyword implements Keyword {
+public enum HeaderKeyword implements Keyword {
 
     /** Header comment. */
     COMMENT(false, DataType.FREE_TEXT),
@@ -44,7 +44,7 @@ public enum NDMHeaderKeyword implements Keyword {
      * @param mandatory mandatory flag
      * @param dataType data type
      */
-    NDMHeaderKeyword(final boolean mandatory, final DataType dataType) {
+    HeaderKeyword(final boolean mandatory, final DataType dataType) {
         this.mandatory = mandatory;
         this.dataType  = dataType;
     }

@@ -16,8 +16,8 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
-import org.orekit.files.ccsds.ndm.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 
 /** Keys for {@link APMSpacecraftParameters APM spacecraft parameters} entries.

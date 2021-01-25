@@ -20,7 +20,7 @@ package org.orekit.files.ccsds.ndm.odm;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.NDMSegment;
+import org.orekit.files.ccsds.section.Segment;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.propagation.SpacecraftState;
@@ -32,7 +32,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public abstract class OStateFile<M extends OCommonMetadata, D extends OStateData> extends ODMFile<NDMSegment<M, D>> {
+public abstract class OStateFile<M extends OCommonMetadata, D extends OStateData> extends ODMFile<Segment<M, D>> {
 
     /** Gravitational coefficient to use for building Cartesian/Keplerian orbits. */
     private double mu;

@@ -19,9 +19,9 @@ package org.orekit.files.ccsds.ndm.tdm;
 import java.util.Deque;
 
 import org.orekit.data.DataContext;
-import org.orekit.files.ccsds.ndm.NDMHeaderProcessingState;
-import org.orekit.files.ccsds.ndm.NDMSegment;
-import org.orekit.files.ccsds.ndm.ParsingContext;
+import org.orekit.files.ccsds.section.HeaderProcessingState;
+import org.orekit.files.ccsds.section.Segment;
+import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
@@ -98,8 +98,8 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
         reset(fileFormat,
               fileFormat == FileFormat.XML ?
                             this::processXMLStructureToken :
-                            new NDMHeaderProcessingState(getDataContext(), getFormatVersionKey(),
-                                                         file.getHeader(), this::processKVNStructureToken));
+                            new HeaderProcessingState(getDataContext(), getFormatVersionKey(),
+                                                      file.getHeader(), this::processKVNStructureToken));
     }
 
     /** {@inheritDoc} */
@@ -133,7 +133,7 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
     /** Stop parsing of the data section.
      */
     private void stopData() {
-        file.addSegment(new NDMSegment<>(metadata, observationsBlock));
+        file.addSegment(new Segment<>(metadata, observationsBlock));
         metadata          = null;
         context           = null;
         observationsBlock = null;
@@ -155,8 +155,8 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
                 token.processAsDouble(file.getHeader()::setFormatVersion);
                 return this::processXMLStructureToken;
             case "header":
-                return new NDMHeaderProcessingState(getDataContext(), getFormatVersionKey(),
-                                                    file.getHeader(), this::processXMLStructureToken);
+                return new HeaderProcessingState(getDataContext(), getFormatVersionKey(),
+                                                 file.getHeader(), this::processXMLStructureToken);
             case "metadata" :
                 if (token.getType() == TokenType.START) {
                     // next parse tokens will be handled as metadata

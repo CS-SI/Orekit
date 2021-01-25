@@ -18,14 +18,14 @@ package org.orekit.files.ccsds.ndm.adm;
 
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
-import org.orekit.files.ccsds.ndm.NDMMetadata;
+import org.orekit.files.ccsds.section.Metadata;
 import org.orekit.files.ccsds.utils.CenterName;
 
 /** This class gathers the meta-data present in the Attitude Data Message (ADM).
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class ADMMetadata extends NDMMetadata {
+public class ADMMetadata extends Metadata {
 
     /** Spacecraft name for which the attitude data are provided. */
     private String objectName;

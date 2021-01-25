@@ -16,8 +16,8 @@
  */
 package org.orekit.files.ccsds.ndm.adm;
 
-import org.orekit.files.ccsds.ndm.NDMData;
-import org.orekit.files.ccsds.ndm.NDMSegment;
+import org.orekit.files.ccsds.section.Data;
+import org.orekit.files.ccsds.section.Segment;
 
 /**
  * This class stores the metadata and data for one attitude segment.
@@ -26,7 +26,7 @@ import org.orekit.files.ccsds.ndm.NDMSegment;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class ADMSegment<M extends ADMMetadata, D extends NDMData> extends NDMSegment<M, D> {
+public class ADMSegment<M extends ADMMetadata, D extends Data> extends Segment<M, D> {
 
     /** Simple constructor.
      * @param metadata segment metadata

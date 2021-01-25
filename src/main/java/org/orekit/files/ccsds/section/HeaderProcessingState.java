@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.ccsds.ndm;
+package org.orekit.files.ccsds.section;
 
 import java.util.Deque;
 
@@ -22,15 +22,15 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.state.ProcessingState;
+import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.time.AbsoluteDate;
 
-/** {@link ProcessingState} for {@link NDMHeader NDM header}.
+/** {@link ProcessingState} for {@link Header NDM header}.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class NDMHeaderProcessingState implements ProcessingState {
+public class HeaderProcessingState implements ProcessingState {
 
     /** Data context used for getting frames, time scales, and celestial bodies. */
     private final DataContext dataContext;
@@ -39,7 +39,7 @@ public class NDMHeaderProcessingState implements ProcessingState {
     private final String formatVersionKey;
 
     /** Header. */
-    private final NDMHeader header;
+    private final Header header;
 
     /** Next state to use. */
     private final ProcessingState nextState;
@@ -50,10 +50,10 @@ public class NDMHeaderProcessingState implements ProcessingState {
      * @param header header to fill
      * @param nextState state to use when this state cannot parse an token by itself
      */
-    public NDMHeaderProcessingState(final DataContext dataContext,
-                                    final String formatVersionKey,
-                                    final NDMHeader header,
-                                    final ProcessingState nextState) {
+    public HeaderProcessingState(final DataContext dataContext,
+                                 final String formatVersionKey,
+                                 final Header header,
+                                 final ProcessingState nextState) {
         this.dataContext      = dataContext;
         this.nextState        = nextState;
         this.formatVersionKey = formatVersionKey;

@@ -21,11 +21,11 @@ import java.util.Deque;
 import java.util.List;
 
 import org.orekit.data.DataContext;
-import org.orekit.files.ccsds.ndm.NDMHeaderProcessingState;
-import org.orekit.files.ccsds.ndm.ParsingContext;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.ADMSegment;
+import org.orekit.files.ccsds.section.HeaderProcessingState;
+import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
@@ -112,10 +112,10 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
         final ProcessingState initialState =
                         getFileFormat() == FileFormat.XML ?
                                            this::processXMLStructureToken :
-                                           new NDMHeaderProcessingState(getDataContext(),
-                                                                        getFormatVersionKey(),
-                                                                        file.getHeader(),
-                                                                        this::processMetadataToken);
+                                           new HeaderProcessingState(getDataContext(),
+                                                                     getFormatVersionKey(),
+                                                                     file.getHeader(),
+                                                                     this::processMetadataToken);
         reset(fileFormat, initialState);
     }
 
@@ -161,8 +161,8 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
                 return this::processXMLStructureToken;
             case "header":
                 if (token.getType() == TokenType.START) {
-                    return new NDMHeaderProcessingState(getDataContext(), getFormatVersionKey(),
-                                                        file.getHeader(), this::processXMLStructureToken);
+                    return new HeaderProcessingState(getDataContext(), getFormatVersionKey(),
+                                                     file.getHeader(), this::processXMLStructureToken);
                 }
                 break;
             case "metadata" :

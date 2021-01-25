@@ -14,43 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.ccsds.ndm;
 
-/**
- * NDM segments are ({@link NDMMetadata}, {@link NDMData}) pairs.
+package org.orekit.files.ccsds.section;
+
+/** This marker interface represents segment data.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class NDMSegment<M extends NDMMetadata, D extends NDMData> {
-
-    /** Metadata. */
-    private final M metadata;
-
-    /** Data. */
-    private final D data;
-
-    /**
-     * Constructor.
-     * @param metadata segment metadata
-     * @param data segment data
-     */
-    public NDMSegment(final M metadata, final D data) {
-        this.metadata = metadata;
-        this.data     = data;
-    }
-
-    /** Get the segment metadata.
-     * @return segment metadata
-     */
-    public M getMetadata() {
-        return metadata;
-    }
-
-    /** Get the segment data.
-     * @return segment data
-     */
-    public D getData() {
-        return data;
-    }
-
+public interface Data {
 }
+
+
+

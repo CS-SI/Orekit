@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.ccsds.ndm;
+package org.orekit.files.ccsds.section;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,14 +23,11 @@ import java.util.List;
 import org.orekit.time.AbsoluteDate;
 
 /**
- * The NDMFile (Navigation Data Message) class represents the navigation
- * messages used by the CCSDS format, (i.e. the Attitude Data Message (ADM),
- * the Orbit Data Message (ODM) and the Tracking Data Message (TDM)).
- * It contains the information of the message's header.
+ * Header of a CCSDS Navigation Data Message.
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class NDMHeader {
+public class Header {
 
     /** CCSDS Format version. */
     private double formatVersion;
@@ -47,7 +44,7 @@ public class NDMHeader {
     /**
      * Constructor.
      */
-    public NDMHeader() {
+    public Header() {
         formatVersion = Double.NaN;
         comments      = new ArrayList<>();
     }

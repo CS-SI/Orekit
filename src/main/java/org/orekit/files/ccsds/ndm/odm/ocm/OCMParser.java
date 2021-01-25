@@ -30,8 +30,8 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.Keyword;
-import org.orekit.files.ccsds.ndm.NDMSegment;
 import org.orekit.files.ccsds.ndm.odm.ODMParser;
+import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.KeyValue;
 import org.orekit.time.AbsoluteDate;
@@ -331,7 +331,7 @@ public class OCMParser extends ODMParser<OCMFile, OCMParser> {
             // check all mandatory keywords have been found
             checkExpected(fileName);
 
-            pi.file.addSegment(new NDMSegment<>(pi.metadata, pi.data));
+            pi.file.addSegment(new Segment<>(pi.metadata, pi.data));
 
             return pi.file;
 

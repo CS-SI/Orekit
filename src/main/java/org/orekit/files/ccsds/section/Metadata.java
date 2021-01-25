@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.orekit.files.ccsds.ndm;
+package org.orekit.files.ccsds.section;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,7 +31,7 @@ import org.orekit.files.ccsds.utils.CcsdsTimeScale;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class NDMMetadata {
+public class Metadata {
 
     /** Pattern for international designator. */
     private static final Pattern INTERNATIONAL_DESIGNATOR = Pattern.compile("(\\p{Digit}{4})-(\\p{Digit}{3})(\\p{Upper}{1,3})");
@@ -44,7 +44,7 @@ public class NDMMetadata {
 
     /** Create a new meta-data.
      */
-    public NDMMetadata() {
+    public Metadata() {
         this.comments = new ArrayList<>();
     }
 

@@ -20,7 +20,7 @@ package org.orekit.files.ccsds.ndm.tdm;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.orekit.files.ccsds.ndm.NDMMetadata;
+import org.orekit.files.ccsds.section.Metadata;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
@@ -31,7 +31,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Maxime Journot
  * @since 9.0
  */
-public class TDMMetadata extends NDMMetadata {
+public class TDMMetadata extends Metadata {
 
     /** Start epoch of total time span covered by observations block. */
     private AbsoluteDate startTime;
