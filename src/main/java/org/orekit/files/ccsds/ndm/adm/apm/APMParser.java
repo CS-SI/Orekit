@@ -20,16 +20,15 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.NDMHeaderProcessingState;
 import org.orekit.files.ccsds.ndm.ParsingContext;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.ADMSegment;
-import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.lexical.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.state.AbstractMessageParser;
 import org.orekit.files.ccsds.utils.state.ErrorState;
 import org.orekit.files.ccsds.utils.state.ProcessingState;
@@ -76,80 +75,18 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
     /** All maneuvers. */
     private List<APMManeuver> maneuvers;
 
-    /** Simple constructor.
-     * <p>
-     * The initial date for Mission Elapsed Time and Mission Relative Time time systems is not set here.
-     * If such time systems are used, it must be initialized before parsing by calling {@link
-     * #withMissionReferenceDate(AbsoluteDate)}.
-     * </p>
-     *
-     * <p>This method uses the {@link DataContext#getDefault() default data context}. See
-     * {@link #withDataContext(DataContext)}.
-     */
-    @DefaultDataContext
-    public APMParser() {
-        this(DataContext.getDefault());
-    }
-
-    /** Constructor with data context.
-     * <p>
-     * The initial date for Mission Elapsed Time and Mission Relative Time time systems is not set here.
-     * If such time systems are used, it must be initialized before parsing by calling {@link
-     * #withMissionReferenceDate(AbsoluteDate)}.
-     * </p>
-     *
-     * @param dataContext used by the parser.
-     *
-     * @see #APMParser()
-     * @see #withDataContext(DataContext)
-     */
-    public APMParser(final DataContext dataContext) {
-        this(null, true, dataContext, AbsoluteDate.FUTURE_INFINITY);
-    }
-
     /** Complete constructor.
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * (may be null if time system is absolute)
      */
-    private APMParser(final IERSConventions conventions, final boolean simpleEOP,
-                      final DataContext dataContext,
-                      final AbsoluteDate missionReferenceDate) {
+    public APMParser(final IERSConventions conventions, final boolean simpleEOP,
+                     final DataContext dataContext,
+                     final AbsoluteDate missionReferenceDate) {
         super(FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext);
         this.missionReferenceDate = missionReferenceDate;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected APMParser create(final IERSConventions newConventions,
-                               final boolean newSimpleEOP,
-                               final DataContext newDataContext) {
-        return create(newConventions, newSimpleEOP, newDataContext, missionReferenceDate);
-    }
-
-    /** Build a new instance.
-     * @param newConventions IERS conventions to use while parsing
-     * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param newDataContext data context used for frames, time scales, and celestial bodies
-     * @param newMissionReferenceDate mission reference date to use while parsing
-     * @return a new instance with changed parameters
-     * @since 11.0
-     */
-    protected APMParser create(final IERSConventions newConventions,
-                               final boolean newSimpleEOP,
-                               final DataContext newDataContext,
-                               final AbsoluteDate newMissionReferenceDate) {
-        return new APMParser(newConventions, newSimpleEOP, newDataContext, newMissionReferenceDate);
-    }
-
-    /** Set initial date.
-     * @param newMissionReferenceDate mission reference date to use while parsing
-     * @return a new instance, with mission reference date replaced
-     * @see #getMissionReferenceDate()
-     */
-    public APMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
-        return create(getConventions(), isSimpleEOP(), getDataContext(),  newMissionReferenceDate);
     }
 
     /**
@@ -163,8 +100,7 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        file                      = new APMFile(getConventions(), getDataContext(),
-                                                getMissionReferenceDate());
+        file                      = new APMFile(getConventions(), getDataContext(), getMissionReferenceDate());
         metadata                  = null;
         context                   = null;
         quaternionBlock           = null;
