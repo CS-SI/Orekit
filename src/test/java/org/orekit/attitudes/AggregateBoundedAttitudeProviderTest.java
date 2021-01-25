@@ -62,7 +62,7 @@ public class AggregateBoundedAttitudeProviderTest {
         final AEMParser parser = new AEMParser().
                         withConventions(IERSConventions.IERS_2010).
                         withSimpleEOP(true);
-        final AEMFile file = parser.oldParse(inEntry, "AEMExample10.txt");
+        final AEMFile file = parser.parse(inEntry, "AEMExample10.txt");
 
         final AEMSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
         final BoundedAttitudeProvider provider = ephemeris.getAttitudeProvider();
@@ -95,7 +95,7 @@ public class AggregateBoundedAttitudeProviderTest {
         final AEMParser parser = new AEMParser().
                         withConventions(IERSConventions.IERS_2010).
                         withSimpleEOP(true);
-        final AEMFile file = parser.oldParse(inEntry, "AEMExample10.txt");
+        final AEMFile file = parser.parse(inEntry, "AEMExample10.txt");
 
         final AEMSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
         final BoundedAttitudeProvider provider = ephemeris.getAttitudeProvider();
@@ -124,7 +124,7 @@ public class AggregateBoundedAttitudeProviderTest {
         final AEMParser parser = new AEMParser().
                         withConventions(IERSConventions.IERS_2010).
                         withSimpleEOP(true);
-        final AEMFile file = parser.oldParse(inEntry, "AEMExample10.txt");
+        final AEMFile file = parser.parse(inEntry, "AEMExample10.txt");
 
         final AEMSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
         final BoundedAttitudeProvider provider = ephemeris.getAttitudeProvider();
@@ -157,7 +157,7 @@ public class AggregateBoundedAttitudeProviderTest {
         final AEMParser parser = new AEMParser().
                                  withConventions(IERSConventions.IERS_2010).
                                  withSimpleEOP(true);
-        final AEMFile file = parser.oldParse(inEntry, "AEMExample10.txt");
+        final AEMFile file = parser.parse(inEntry, "AEMExample10.txt");
 
         final AEMSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
         final BoundedAttitudeProvider provider = ephemeris.getAttitudeProvider();

@@ -16,15 +16,12 @@
  */
 package org.orekit.files.ccsds.ndm.adm;
 
-import java.io.InputStream;
-
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NDMParser;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.KeyValue;
-import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -46,13 +43,12 @@ public abstract class ADMParser<T extends ADMFile<?>, P extends ADMParser<T, ?>>
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames and time scales
-     * @param initialState initial parsing state
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      */
     protected ADMParser(final IERSConventions conventions, final boolean simpleEOP,
-                        final DataContext dataContext, final ProcessingState initialState,
+                        final DataContext dataContext,
                         final AbsoluteDate missionReferenceDate) {
-        super(conventions, simpleEOP, dataContext, initialState);
+        super(conventions, simpleEOP, dataContext);
         this.missionReferenceDate = missionReferenceDate;
     }
 
@@ -60,16 +56,14 @@ public abstract class ADMParser<T extends ADMFile<?>, P extends ADMParser<T, ?>>
     @Override
     protected P create(final IERSConventions newConventions,
                        final boolean newSimpleEOP,
-                       final DataContext newDataContext,
-                       final ProcessingState newInitialState) {
-        return create(newConventions, newSimpleEOP, newDataContext, newInitialState, missionReferenceDate);
+                       final DataContext newDataContext) {
+        return create(newConventions, newSimpleEOP, newDataContext, missionReferenceDate);
     }
 
     /** Build a new instance.
      * @param newConventions IERS conventions to use while parsing
      * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param newDataContext data context used for frames, time scales, and celestial bodies
-     * @param newInitialState initial parsing state
      * @param newMissionReferenceDate mission reference date to use while parsing
      * @return a new instance with changed parameters
      * @since 11.0
@@ -77,7 +71,6 @@ public abstract class ADMParser<T extends ADMFile<?>, P extends ADMParser<T, ?>>
     protected abstract P create(IERSConventions newConventions,
                                 boolean newSimpleEOP,
                                 DataContext newDataContext,
-                                ProcessingState newInitialState,
                                 AbsoluteDate newMissionReferenceDate);
 
     /**
@@ -87,7 +80,7 @@ public abstract class ADMParser<T extends ADMFile<?>, P extends ADMParser<T, ?>>
      * @see #getMissionReferenceDate()
      */
     public P withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
-        return create(getConventions(), isSimpleEOP(), getDataContext(), getInitialState(),
+        return create(getConventions(), isSimpleEOP(), getDataContext(),
                       newMissionReferenceDate);
     }
 
@@ -99,14 +92,6 @@ public abstract class ADMParser<T extends ADMFile<?>, P extends ADMParser<T, ?>>
     public AbsoluteDate getMissionReferenceDate() {
         return missionReferenceDate;
     }
-
-    /**
-     * Parse a CCSDS Attitude Data Message.
-     * @param stream stream containing message
-     * @param fileName name of the file containing the message (for error messages)
-     * @return parsed ADM file
-     */
-    public abstract T oldParse(InputStream stream, String fileName);
 
     /**
      * Parse an entry from the header.

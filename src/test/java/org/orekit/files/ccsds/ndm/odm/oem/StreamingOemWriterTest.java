@@ -213,7 +213,7 @@ public class StreamingOemWriterTest {
             OEMParser parser = new OEMParser()
                     .withMu(CelestialBodyFactory.getEarth().getGM())
                     .withConventions(IERSConventions.IERS_2010);
-            OEMFile oemFile = parser.oldParse(inEntry, "OEMExample1.txt");
+            OEMFile oemFile = parser.parse(inEntry, "OEMExample1.txt");
 
             OEMSatelliteEphemeris satellite = oemFile.getSatellites().values().iterator().next();
             OEMSegment ephemerisBlock = satellite.getSegments().get(0);
@@ -321,7 +321,7 @@ public class StreamingOemWriterTest {
         String exampleFile = "/ccsds/odm/oem/OEMExample4.txt";
         InputStream inEntry = getClass().getResourceAsStream(exampleFile);
         OEMParser parser = new OEMParser();
-        OEMFile oemFile = parser.oldParse(inEntry, "OEMExample4.txt");
+        OEMFile oemFile = parser.parse(inEntry, "OEMExample4.txt");
 
         OEMSegment block = oemFile.getSegments().get(0);
         Frame frame = block.getFrame();

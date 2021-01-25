@@ -76,30 +76,12 @@ public abstract class AbstractMessageParser<T extends NDMFile<?, ?>, P extends A
         return formatVersionKey;
     }
 
-    /** Set IERS conventions.
-     * @param newConventions IERS conventions to use while parsing
-     * @return a new instance, with IERS conventions replaced
-     * @see #getConventions()
-     */
-    public P withConventions(final IERSConventions newConventions) {
-        return create(newConventions, simpleEOP, dataContext);
-    }
-
     /** Get IERS conventions.
      * @return IERS conventions to use while parsing
      * @see #withConventions(IERSConventions)
      */
     public IERSConventions getConventions() {
         return conventions;
-    }
-
-    /** Set EOP interpolation method.
-     * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @return a new instance, with EOP interpolation method replaced
-     * @see #isSimpleEOP()
-     */
-    public P withSimpleEOP(final boolean newSimpleEOP) {
-        return create(conventions, newSimpleEOP, dataContext);
     }
 
     /** Get EOP interpolation method.
@@ -116,24 +98,6 @@ public abstract class AbstractMessageParser<T extends NDMFile<?, ?>, P extends A
     public DataContext getDataContext() {
         return dataContext;
     }
-
-    /** Set the data context.
-     * @param newDataContext used for frames, time scales, and celestial bodies.
-     * @return a new instance with the data context replaced.
-     */
-    public P withDataContext(final DataContext newDataContext) {
-        return create(getConventions(), isSimpleEOP(), newDataContext);
-    }
-
-    /** Build a new instance.
-     * @param newConventions IERS conventions to use while parsing
-     * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param newDataContext data context used for frames, time scales, and celestial bodies
-     * @return a new instance with changed parameters
-     */
-    protected abstract P create(IERSConventions newConventions,
-                                boolean newSimpleEOP,
-                                DataContext newDataContext);
 
     /** Reset parser to initial state before parsing.
      * @param fileFormat format of the file ready to be parsed

@@ -23,7 +23,6 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.CenterName;
 import org.orekit.files.ccsds.utils.KeyValue;
-import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -51,14 +50,13 @@ public abstract class OCommonParser<T extends ODMFile<?>, P extends ODMParser<T,
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames and time scales
-     * @param initialState initial parsing state
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @param mu gravitational coefficient
      */
     protected OCommonParser(final IERSConventions conventions, final boolean simpleEOP,
-                            final DataContext dataContext, final ProcessingState initialState,
+                            final DataContext dataContext,
                             final AbsoluteDate missionReferenceDate, final double mu) {
-        super(conventions, simpleEOP, dataContext, initialState);
+        super(conventions, simpleEOP, dataContext);
         this.missionReferenceDate = missionReferenceDate;
         this.muSet                = mu;
         this.muParsed             = Double.NaN;
@@ -71,7 +69,7 @@ public abstract class OCommonParser<T extends ODMFile<?>, P extends ODMParser<T,
      * @see #getMissionReferenceDate()
      */
     public P withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
-        return create(getConventions(), isSimpleEOP(), getDataContext(), getInitialState(),
+        return create(getConventions(), isSimpleEOP(), getDataContext(),
                       newMissionReferenceDate, muSet);
     }
 
@@ -89,17 +87,15 @@ public abstract class OCommonParser<T extends ODMFile<?>, P extends ODMParser<T,
      * @see #getMu()
      */
     public P withMu(final double newMu) {
-        return create(getConventions(), isSimpleEOP(), getDataContext(), getInitialState(),
-                      missionReferenceDate, newMu);
+        return create(getConventions(), isSimpleEOP(), getDataContext(), missionReferenceDate, newMu);
     }
 
     /** {@inheritDoc} */
     @Override
     protected P create(final IERSConventions newConventions,
                                       final boolean newSimpleEOP,
-                                      final DataContext newDataContext,
-                                      final ProcessingState newInitialState) {
-        return create(newConventions, newSimpleEOP, newDataContext, newInitialState,
+                                      final DataContext newDataContext) {
+        return create(newConventions, newSimpleEOP, newDataContext,
                       missionReferenceDate, muSet);
     }
 
@@ -107,7 +103,6 @@ public abstract class OCommonParser<T extends ODMFile<?>, P extends ODMParser<T,
      * @param newConventions IERS conventions to use while parsing
      * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param newDataContext data context used for frames, time scales, and celestial bodies
-     * @param newInitialState initial parsing state
      * @param newMissionReferenceDate mission reference date to use while parsing
      * @param newMu gravitational coefficient to use while parsing
      * @return a new instance with changed parameters
@@ -115,7 +110,6 @@ public abstract class OCommonParser<T extends ODMFile<?>, P extends ODMParser<T,
     protected abstract P create(IERSConventions newConventions,
                                boolean newSimpleEOP,
                                DataContext newDataContext,
-                               ProcessingState newInitialState,
                                AbsoluteDate newMissionReferenceDate,
                                double newMu);
 

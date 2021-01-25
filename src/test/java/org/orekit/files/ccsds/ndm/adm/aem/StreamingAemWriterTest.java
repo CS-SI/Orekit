@@ -75,7 +75,7 @@ public class StreamingAemWriterTest {
             // Reference AEM file
             InputStream inEntry = getClass().getResourceAsStream(ex);
             AEMParser parser = new AEMParser().withConventions(IERSConventions.IERS_2010);
-            AEMFile aemFile = parser.oldParse(inEntry, "AEMExample.txt");
+            AEMFile aemFile = parser.parse(inEntry, "AEMExample.txt");
 
             // Satellite attitude ephemeris as read from the reference file
             AEMSegment ephemerisBlock = aemFile.getSegments().get(0);
@@ -178,7 +178,7 @@ public class StreamingAemWriterTest {
         String exampleFile = "/ccsds/adm/aem/AEMExample7.txt";
         InputStream inEntry = getClass().getResourceAsStream(exampleFile);
         AEMParser parser = new AEMParser();
-        AEMFile aemFile = parser.oldParse(inEntry, "AEMExample7.txt");
+        AEMFile aemFile = parser.parse(inEntry, "AEMExample7.txt");
 
         AEMSegment block = aemFile.getSegments().get(0);
 

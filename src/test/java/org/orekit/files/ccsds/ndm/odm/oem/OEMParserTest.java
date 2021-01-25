@@ -71,7 +71,7 @@ public class OEMParserTest {
         final String ex = "/ccsds/odm/oem/OEMExample1.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getMars().getGM());
-        final OEMFile file = parser.oldParse(inEntry, "OEMExample1.txt");
+        final OEMFile file = parser.parse(inEntry, "OEMExample1.txt");
         Assert.assertEquals(CcsdsTimeScale.UTC, file.getSegments().get(0).getMetadata().getTimeSystem());
         Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getSegments().get(0).getMetadata().getObjectName());
         Assert.assertEquals("1996-062A", file.getSegments().get(0).getMetadata().getObjectID());
@@ -329,7 +329,7 @@ public class OEMParserTest {
     @Test
     public void testWrongODMType() {
         try {
-            new OEMParser().oldParse(getClass().getResourceAsStream("/ccsds/odm/opm/OPMExample1.txt"), "OPMExample1.txt");
+            new OEMParser().parse(getClass().getResourceAsStream("/ccsds/odm/opm/OPMExample1.txt"), "OPMExample1.txt");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
             Assert.assertEquals(1, oe.getParts()[0]);
@@ -342,7 +342,7 @@ public class OEMParserTest {
     public void testEphemerisNumberFormatErrorType() {
         try {
             new OEMParser().withMu(CelestialBodyFactory.getMars().getGM()).
-            oldParse(getClass().getResourceAsStream("/ccsds/odm/oem/OEM-ephemeris-number-format-error.txt"),
+            parse(getClass().getResourceAsStream("/ccsds/odm/oem/OEM-ephemeris-number-format-error.txt"),
                                                  "OEM-ephemeris-number-format-error.txt");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
@@ -356,7 +356,7 @@ public class OEMParserTest {
     public void testCovarianceNumberFormatErrorType() {
         try {
             new OEMParser().withMu(CelestialBodyFactory.getMars().getGM()).
-            oldParse(getClass().getResourceAsStream("/ccsds/odm/oem/OEM-covariance-number-format-error.txt"),
+            parse(getClass().getResourceAsStream("/ccsds/odm/oem/OEM-covariance-number-format-error.txt"),
                                                  "OEM-covariance-number-format-error.txt");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
@@ -399,7 +399,7 @@ public class OEMParserTest {
         InputStream in = getClass().getResourceAsStream(file);
 
         //action
-        OEMFile actual = new OEMParser().oldParse(in, file);
+        OEMFile actual = new OEMParser().parse(in, file);
 
         //verify
         Assert.assertEquals(
