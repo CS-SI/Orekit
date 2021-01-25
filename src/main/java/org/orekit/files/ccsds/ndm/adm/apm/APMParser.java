@@ -24,11 +24,12 @@ import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.ADMSegment;
+import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
+import org.orekit.files.ccsds.section.XMLStructureProcessingState;
 import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
-import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.state.AbstractMessageParser;
 import org.orekit.files.ccsds.utils.state.ErrorState;
 import org.orekit.files.ccsds.utils.state.ProcessingState;
@@ -41,6 +42,9 @@ import org.orekit.utils.IERSConventions;
  * @since 10.2
  */
 public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
+
+    /** Root element for XML files. */
+    private static final String ROOT = "apm";
 
     /** Key for format version. */
     private static final String FORMAT_VERSION_KEY = "CCSDS_APM_VERS";
@@ -99,6 +103,12 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
 
     /** {@inheritDoc} */
     @Override
+    public Header getHeader() {
+        return file.getHeader();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void reset(final FileFormat fileFormat) {
         file                      = new APMFile(getConventions(), getDataContext(), getMissionReferenceDate());
         metadata                  = null;
@@ -111,7 +121,7 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
         maneuvers                 = new ArrayList<>();
         final ProcessingState initialState =
                         getFileFormat() == FileFormat.XML ?
-                                           this::processXMLStructureToken :
+                                           new XMLStructureProcessingState(ROOT, this) :
                                            new HeaderProcessingState(getDataContext(),
                                                                      getFormatVersionKey(),
                                                                      file.getHeader(),
@@ -121,14 +131,32 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
 
     /** {@inheritDoc} */
     @Override
-    public APMFile build() {
-        finalizeSegment();
-        return file;
+    public ProcessingState startMetadata() {
+        metadata = new ADMMetadata();
+        context  = new ParsingContext(this::getConventions,
+                                      this::isSimpleEOP,
+                                      this::getDataContext,
+                                      this::getMissionReferenceDate,
+                                      metadata::getTimeSystem);
+        return this::processMetadataToken;
     }
 
-    /** Finalize a metadata/data segment.
-     */
-    private void finalizeSegment() {
+    /** {@inheritDoc} */
+    @Override
+    public void stopMetadata() {
+        // nothing to do
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ProcessingState startData() {
+        quaternionBlock = new APMQuaternion();
+        return this::processQuaternionToken;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void stopData() {
         if (metadata != null) {
             final APMData data = new APMData(quaternionBlock, eulerBlock,
                                              spinStabilizedBlock, spacecraftParametersBlock);
@@ -147,49 +175,13 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
         maneuvers                 = new ArrayList<>();
     }
 
-    /** Process one structure token.
-     * @param token token to process
-     * @param next queue for pending tokens waiting processing after this one, may be updated
-     * @return next state to use for parsing upcoming tokens
-     */
-    private ProcessingState processXMLStructureToken(final ParseToken token, final Deque<ParseToken> next) {
-        switch (token.getName()) {
-            case "apm":
-            case "body":
-            case "segment":
-                // ignored
-                return this::processXMLStructureToken;
-            case "header":
-                if (token.getType() == TokenType.START) {
-                    return new HeaderProcessingState(getDataContext(), getFormatVersionKey(),
-                                                     file.getHeader(), this::processXMLStructureToken);
-                }
-                break;
-            case "metadata" :
-                if (token.getType() == TokenType.START) {
-                    // next parse tokens will be handled as metadata
-                    return this::processMetadataToken;
-                } else if (token.getType() == TokenType.END) {
-                    // nothing to do here, we expect a data next
-                    return this::processXMLStructureToken;
-                }
-                break;
-            case "data" :
-                if (token.getType() == TokenType.START) {
-                    // next parse tokens will be handled as quaternion logical block
-                    quaternionBlock = new APMQuaternion();
-                    return this::processQuaternionToken;
-                } else if (token.getType() == TokenType.END) {
-                    finalizeSegment();
-                    // there is only one segment in APM file
-                    // any further data should be considered as an error
-                    return new ErrorState();
-                }
-                break;
-            default :
-                // nothing to do here, errors are handled below
-        }
-        throw token.generateException();
+    /** {@inheritDoc} */
+    @Override
+    public APMFile build() {
+        // APM KVN file lack a DATA_STOP keyword, hence we can't call stopData()
+        // automatically before the end of the file
+        stopData();
+        return file;
     }
 
     /** Process one metadata token.
@@ -199,12 +191,9 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
      */
     private ProcessingState processMetadataToken(final ParseToken token, final Deque<ParseToken> next) {
         if (metadata == null) {
-            metadata = new ADMMetadata();
-            context  = new ParsingContext(this::getConventions,
-                                          this::isSimpleEOP,
-                                          this::getDataContext,
-                                          this::getMissionReferenceDate,
-                                          metadata::getTimeSystem);
+            // APM KVN file lack a META_START keyword, hence we can't call startMetadata()
+            // automatically before the first metadata token arrives
+            startMetadata();
         }
         try {
             final ADMMetadataKey key = ADMMetadataKey.valueOf(token.getName());
@@ -218,7 +207,7 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
         // the token has not been recognized, we need to pass it to next block processor
         next.offerLast(token);
         return getFileFormat() == FileFormat.XML ?
-                                  this::processXMLStructureToken :
+                                  new XMLStructureProcessingState(FORMAT_VERSION_KEY, null) :
                                   this::processQuaternionToken;
     }
 
@@ -229,7 +218,9 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
      */
     private ProcessingState processQuaternionToken(final ParseToken token, final Deque<ParseToken> next) {
         if (quaternionBlock == null) {
-            quaternionBlock = new APMQuaternion();
+            // APM KVN file lack a DATA_START keyword, hence we can't call startData()
+            // automatically before the first data token arrives
+            startData();
         }
         try {
             final APMQuaternionKey key = APMQuaternionKey.valueOf(token.getName());
@@ -243,7 +234,7 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
         // the token was not processed, we need to pass it to next block processor
         next.offerLast(token);
         return getFileFormat() == FileFormat.XML ?
-                                  this::processXMLStructureToken :
+                                  new XMLStructureProcessingState(ROOT, this) :
                                   this::processEulerToken;
     }
 
@@ -268,7 +259,7 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
         // the token was not processed, we need to pass it to next block processor
         next.offerLast(token);
         return getFileFormat() == FileFormat.XML ?
-                                  this::processXMLStructureToken :
+                                  new XMLStructureProcessingState(ROOT, this) :
                                   this::processSpinStabilizedToken;
     }
 
@@ -282,7 +273,7 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
             spinStabilizedBlock = new APMSpinStabilized();
             if (eulerBlock.getEulerDirection() == null) {
                 // the Euler angles logical block was missing,
-                // we may have store the comments in it, so we need to recover them
+                // we may have stored the comments in it, so we need to recover them
                 for (final String comment : eulerBlock.getComments()) {
                     spinStabilizedBlock.addComment(comment);
                 }
@@ -301,7 +292,7 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
         // the token was not processed, we need to pass it to next block processor
         next.offerLast(token);
         return getFileFormat() == FileFormat.XML ?
-                                  this::processXMLStructureToken :
+                                  new XMLStructureProcessingState(ROOT, this) :
                                   this::processSpacecraftParametersToken;
     }
 
@@ -315,7 +306,7 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
             spacecraftParametersBlock = new APMSpacecraftParameters();
             if (spinStabilizedBlock.getSpinDirection() == null) {
                 // the spin-stabilized logical block was missing,
-                // we may have store the comments in it, so we need to recover them
+                // we may have stored the comments in it, so we need to recover them
                 for (final String comment : spinStabilizedBlock.getComments()) {
                     spacecraftParametersBlock.addComment(comment);
                 }
@@ -334,7 +325,7 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
         // the token was not processed, we need to pass it to next block processor
         next.offerLast(token);
         return getFileFormat() == FileFormat.XML ?
-                                  this::processXMLStructureToken :
+                                  new XMLStructureProcessingState(ROOT, this) :
                                   this::processManeuverToken;
     }
 
@@ -348,7 +339,7 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
             currentManeuver = new APMManeuver();
             if (spacecraftParametersBlock.getInertiaRefFrameString() == null) {
                 // the spacecraft parameters logical block was missing,
-                // we may have store the comments in it, so we need to recover them
+                // we may have stored the comments in it, so we need to recover them
                 for (final String comment : spacecraftParametersBlock.getComments()) {
                     currentManeuver.addComment(comment);
                 }
@@ -372,7 +363,7 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
         // the token was not processed, we need to pass it to next block processor
         next.offerLast(token);
         return getFileFormat() == FileFormat.XML ?
-                                  this::processXMLStructureToken :
+                                  new XMLStructureProcessingState(ROOT, this) :
                                   new ErrorState();
     }
 

@@ -21,6 +21,7 @@ import java.util.Deque;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.NDMFile;
+import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.lexical.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.MessageParser;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
@@ -114,6 +115,29 @@ public abstract class AbstractMessageParser<T extends NDMFile<?, ?>, P extends A
     protected FileFormat getFileFormat() {
         return format;
     }
+
+    /** Get file header to fill.
+     * @return file header to fill
+     */
+    public abstract Header getHeader();
+
+    /** Start metadata parsing.
+     * @return processing state for metadata
+     */
+    public abstract ProcessingState startMetadata();
+
+    /** Stop metadata parsing.
+     */
+    public abstract void stopMetadata();
+
+    /** Start date parsing.
+     * @return processing state for data
+     */
+    public abstract ProcessingState startData();
+
+    /** Stop data parsing.
+     */
+    public abstract void stopData();
 
     /** {@inheritDoc} */
     @Override

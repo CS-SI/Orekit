@@ -66,7 +66,7 @@ public class HeaderProcessingState implements ProcessingState {
 
         if (Double.isNaN(header.getFormatVersion())) {
             // the first thing we expect is the format version
-            // (however, in XML files it is set before entering header)
+            // (however, in XML files it was already set before entering header)
             if (formatVersionKey.equals(token.getName()) && token.getType() == TokenType.ENTRY) {
                 header.setFormatVersion(token.getContentAsDouble());
                 return this;

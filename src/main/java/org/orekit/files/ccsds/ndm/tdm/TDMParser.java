@@ -19,12 +19,14 @@ package org.orekit.files.ccsds.ndm.tdm;
 import java.util.Deque;
 
 import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
+import org.orekit.files.ccsds.section.KVNStructureProcessingState;
 import org.orekit.files.ccsds.section.Segment;
+import org.orekit.files.ccsds.section.XMLStructureProcessingState;
 import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
-import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.state.AbstractMessageParser;
 import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.time.AbsoluteDate;
@@ -46,6 +48,9 @@ import org.orekit.utils.IERSConventions;
  * @since 9.0
  */
 public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
+
+    /** Root element for XML files. */
+    private static final String ROOT = "tdm";
 
     /** Key for format version. */
     private static final String FORMAT_VERSION_KEY = "CCSDS_TDM_VERS";
@@ -90,6 +95,12 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
 
     /** {@inheritDoc} */
     @Override
+    public Header getHeader() {
+        return file.getHeader();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void reset(final FileFormat fileFormat) {
         file              = new TDMFile(getConventions(), getDataContext());
         metadata          = null;
@@ -97,9 +108,9 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
         observationsBlock = null;
         reset(fileFormat,
               fileFormat == FileFormat.XML ?
-                            this::processXMLStructureToken :
+                            new XMLStructureProcessingState(ROOT, this) :
                             new HeaderProcessingState(getDataContext(), getFormatVersionKey(),
-                                                      file.getHeader(), this::processKVNStructureToken));
+                                                      file.getHeader(), new KVNStructureProcessingState(this)));
     }
 
     /** {@inheritDoc} */
@@ -109,10 +120,9 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
         return file;
     }
 
-    /** Start parsing of the metadata section.
-     * @return state for processing metadata section
-     */
-    private ProcessingState startMetadata() {
+    /** {@inheritDoc} */
+    @Override
+    public ProcessingState startMetadata() {
         metadata = new TDMMetadata();
         context  = new ParsingContext(this::getConventions,
                                       this::isSimpleEOP,
@@ -122,96 +132,26 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
         return this::processMetadataToken;
     }
 
-    /** Start parsing of the data section.
-     * @return state for processing data section
-     */
-    private ProcessingState startData() {
+    /** {@inheritDoc} */
+    @Override
+    public void stopMetadata() {
+        // nothing to do
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ProcessingState startData() {
         observationsBlock = new ObservationsBlock();
         return this::processDataToken;
     }
 
-    /** Stop parsing of the data section.
-     */
-    private void stopData() {
+    /** {@inheritDoc} */
+    @Override
+    public void stopData() {
         file.addSegment(new Segment<>(metadata, observationsBlock));
         metadata          = null;
         context           = null;
         observationsBlock = null;
-    }
-
-    /** Process one structure token.
-     * @param token token to process
-     * @param next queue for pending tokens waiting processing after this one, may be updated
-     * @return next state to use for parsing upcoming tokens
-     */
-    private ProcessingState processXMLStructureToken(final ParseToken token, final Deque<ParseToken> next) {
-        switch (token.getName()) {
-            case "tdm":
-            case "body":
-            case "segment":
-                // ignored
-                return this::processXMLStructureToken;
-            case FORMAT_VERSION_KEY :
-                token.processAsDouble(file.getHeader()::setFormatVersion);
-                return this::processXMLStructureToken;
-            case "header":
-                return new HeaderProcessingState(getDataContext(), getFormatVersionKey(),
-                                                 file.getHeader(), this::processXMLStructureToken);
-            case "metadata" :
-                if (token.getType() == TokenType.START) {
-                    // next parse tokens will be handled as metadata
-                    return startMetadata();
-                } else if (token.getType() == TokenType.END) {
-                    // nothing to do here, we expect a <data> next
-                    return this::processXMLStructureToken;
-                }
-                break;
-            case "data" :
-                if (token.getType() == TokenType.START) {
-                    // next parse tokens will be handled as data
-                    return startData();
-                } else if (token.getType() == TokenType.END) {
-                    stopData();
-                    // we expect a <metadata> next
-                    return this::processXMLStructureToken;
-                }
-                break;
-            default :
-                // nothing to do here, errors are handled below
-        }
-        throw token.generateException();
-    }
-
-    /** Process one structure token.
-     * @param token token to process
-     * @param next queue for pending tokens waiting processing after this one, may be updated
-     * @return next state to use for parsing upcoming tokens
-     */
-    private ProcessingState processKVNStructureToken(final ParseToken token, final Deque<ParseToken> next) {
-        switch (token.getName()) {
-            case "META" :
-                if (token.getType() == TokenType.START) {
-                    // next parse tokens will be handled as metadata
-                    return startMetadata();
-                } else if (token.getType() == TokenType.END) {
-                    // nothing to do here, we expect a DATA_START next
-                    return this::processKVNStructureToken;
-                }
-                break;
-            case "DATA" :
-                if (token.getType() == TokenType.START) {
-                    // next parse tokens will be handled as data
-                    return startData();
-                } else if (token.getType() == TokenType.END) {
-                    stopData();
-                    // we expect a META_START next
-                    return this::processKVNStructureToken;
-                }
-                break;
-            default :
-                // nothing to do here, errors are handled below
-        }
-        throw token.generateException();
     }
 
     /** Process one metadata token.
@@ -228,7 +168,9 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
             // token has not been recognized, it is most probably the end of the metadata section
             // we push the token back into next queue and let the structure parser handle it
             next.offerLast(token);
-            return getFileFormat() == FileFormat.XML ? this::processXMLStructureToken : this::processKVNStructureToken;
+            return getFileFormat() == FileFormat.XML ?
+                                      new XMLStructureProcessingState(ROOT, this) :
+                                      new KVNStructureProcessingState(this);
         }
     }
 
@@ -246,7 +188,9 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
             // token has not been recognized, it is most probably the end of the data section
             // we push the token back into next queue and let the structure parser handle it
             next.offerLast(token);
-            return getFileFormat() == FileFormat.XML ? this::processXMLStructureToken : this::processKVNStructureToken;
+            return getFileFormat() == FileFormat.XML ?
+                                      new XMLStructureProcessingState(ROOT, this) :
+                                      new KVNStructureProcessingState(this);
         }
     }
 
