@@ -46,7 +46,7 @@ import org.orekit.utils.IERSConventions;
 public class OCMParser extends ODMParser<OCMFile, OCMParser> {
 
     /** Pattern for splitting strings at blanks. */
-    private static Pattern SPLIT_AT_BLANKS = Pattern.compile("\\s+");
+    private static final Pattern SPLIT_AT_BLANKS = Pattern.compile("\\s+");
 
     /** Mandatory keywords. */
     private static final Keyword[] MANDATORY_KEYWORDS = {
