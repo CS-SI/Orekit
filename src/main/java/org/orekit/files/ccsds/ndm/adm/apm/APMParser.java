@@ -110,7 +110,8 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        file                      = new APMFile(getConventions(), getDataContext(), getMissionReferenceDate());
+        file                      = new APMFile(getConventions(), isSimpleEOP(),
+                                                getDataContext(), getMissionReferenceDate());
         metadata                  = null;
         context                   = null;
         quaternionBlock           = null;

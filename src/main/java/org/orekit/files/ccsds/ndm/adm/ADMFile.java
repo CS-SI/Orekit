@@ -31,18 +31,31 @@ import org.orekit.utils.IERSConventions;
  */
 public class ADMFile<S extends ADMSegment<?, ?>> extends NDMFile<Header, S> {
 
+    /** Indicator for simple or accurate EOP interpolation. */
+    private final  boolean simpleEOP;
+
     /** Initial Date for MET or MRT time systems. */
     private AbsoluteDate missionReferenceDate;
 
     /** Simple constructor.
      * @param conventions IERS conventions
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used for creating frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time and Mission Relative Time time systems.
      */
-    public ADMFile(final IERSConventions conventions, final DataContext dataContext,
-                   final AbsoluteDate missionReferenceDate) {
+    public ADMFile(final IERSConventions conventions, final boolean simpleEOP,
+                   final DataContext dataContext, final AbsoluteDate missionReferenceDate) {
         super(new Header(), conventions, dataContext);
+        this.simpleEOP            = simpleEOP;
         this.missionReferenceDate = missionReferenceDate;
+    }
+
+    /** Get EOP interpolation method.
+     * @return true if tidal effects are ignored when interpolating EOP
+     * @see #withSimpleEOP(boolean)
+     */
+    public boolean isSimpleEOP() {
+        return simpleEOP;
     }
 
     /**

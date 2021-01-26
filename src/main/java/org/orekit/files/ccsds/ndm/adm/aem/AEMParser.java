@@ -16,113 +16,52 @@
  */
 package org.orekit.files.ccsds.ndm.adm.aem;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.regex.Pattern;
+import java.util.Deque;
 
-import org.hipparchus.exception.DummyLocalizable;
-import org.hipparchus.geometry.euclidean.threed.RotationOrder;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.Keyword;
-import org.orekit.files.ccsds.ndm.adm.ADMParser;
-import org.orekit.files.ccsds.utils.CCSDSFrame;
-import org.orekit.files.ccsds.utils.KeyValue;
-import org.orekit.files.general.AttitudeEphemerisFileParser;
-import org.orekit.frames.Frame;
+import org.orekit.files.ccsds.ndm.adm.ADMMetadataKey;
+import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.section.KVNStructureProcessingState;
+import org.orekit.files.ccsds.section.XMLStructureProcessingState;
+import org.orekit.files.ccsds.utils.ParsingContext;
+import org.orekit.files.ccsds.utils.lexical.FileFormat;
+import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.files.ccsds.utils.state.AbstractMessageParser;
+import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.TimeStampedAngularCoordinates;
 
 /**
  * A parser for the CCSDS AEM (Attitude Ephemeris Message).
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class AEMParser extends ADMParser<AEMFile, AEMParser> implements AttitudeEphemerisFileParser {
+public class AEMParser extends AbstractMessageParser<AEMFile, AEMParser> {
 
-    /** Pattern for dash. */
-    private static final Pattern DASH = Pattern.compile("-");
+    /** Root element for XML files. */
+    private static final String ROOT = "aem";
 
-    /** Maximum number of elements in an attitude data line. */
-    private static final int MAX_SIZE = 8;
+    /** Key for format version. */
+    private static final String FORMAT_VERSION_KEY = "CCSDS_AEM_VERS";
+
+    /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
+    private final AbsoluteDate missionReferenceDate;
+
+    /** AEM file being read. */
+    private AEMFile file;
+
+    /** Metadata for current observation block. */
+    private AEMMetadata metadata;
+
+    /** Parsing context valid for current metadata. */
+    private ParsingContext context;
+
+    /** Current Ephemerides block being parsed. */
+    private AEMData currentEphemeridesBlock;
 
     /** Default interpolation degree. */
     private int interpolationDegree;
-
-    /** Local Spacecraft Body Reference Frame A. */
-    private Frame localScBodyReferenceFrameA;
-
-    /** Local Spacecraft Body Reference Frame B. */
-    private Frame localScBodyReferenceFrameB;
-
-    /**
-     * Simple constructor.
-     * <p>
-     * The initial date for Mission Elapsed Time and Mission Relative Time time systems is not set here.
-     * If such time systems are used, it must be initialized before parsing by calling {@link
-     * #withMissionReferenceDate(AbsoluteDate)}.
-     * </p>
-     * <p>
-     * The IERS conventions to use is not set here. If it is needed in order to
-     * parse some reference frames or UT1 time scale, it must be initialized before
-     * parsing by calling {@link #withConventions(IERSConventions)}.
-     * </p>
-     * <p>
-     * The international designator parameters (launch year, launch number and
-     * launch piece) are not set here. If they are needed, they must be initialized before
-     * parsing by calling {@link #withInternationalDesignator(int, int, String)}
-     * </p>
-     * <p>
-     * The default interpolation degree is not set here. It is set to one by default. If another value
-     * is needed it must be initialized before parsing by calling {@link #withInterpolationDegree(int)}
-     * </p>
-     *
-     * <p>This method uses the {@link DataContext#getDefault() default data context}. See
-     * {@link #withDataContext(DataContext)}.
-     */
-    @DefaultDataContext
-    public AEMParser() {
-        this(DataContext.getDefault());
-    }
-
-    /**
-     * Constructor with data context.
-     * <p>
-     * The initial date for Mission Elapsed Time and Mission Relative Time time systems is not set here.
-     * If such time systems are used, it must be initialized before parsing by calling {@link
-     * #withMissionReferenceDate(AbsoluteDate)}.
-     * </p>
-     * <p>
-     * The IERS conventions to use is not set here. If it is needed in order to
-     * parse some reference frames or UT1 time scale, it must be initialized before
-     * parsing by calling {@link #withConventions(IERSConventions)}.
-     * </p>
-     * <p>
-     * The international designator parameters (launch year, launch number and
-     * launch piece) are not set here. If they are needed, they must be initialized before
-     * parsing by calling {@link #withInternationalDesignator(int, int, String)}
-     * </p>
-     * <p>
-     * The default interpolation degree is not set here. It is set to one by default. If another value
-     * is needed it must be initialized before parsing by calling {@link #withInterpolationDegree(int)}
-     * </p>
-     *
-     * @param dataContext used by the parser.
-     * @see #AEMParser()
-     * @see #withDataContext(DataContext)
-     */
-    public AEMParser(final DataContext dataContext) {
-        this(null, true, dataContext, AbsoluteDate.FUTURE_INFINITY, 1);
-    }
 
     /**
      * Complete constructor.
@@ -130,89 +69,23 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * (may be null if time system is absolute)
      * @param interpolationDegree default interpolation degree
      */
-    private AEMParser(final IERSConventions conventions, final boolean simpleEOP,
-                      final DataContext dataContext,
-                      final AbsoluteDate missionReferenceDate, final int interpolationDegree) {
-        super(conventions, simpleEOP, dataContext, missionReferenceDate);
-        this.interpolationDegree = interpolationDegree;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected AEMParser create(final IERSConventions newConventions,
-                               final boolean newSimpleEOP,
-                               final DataContext newDataContext,
-                               final AbsoluteDate newMissionReferenceDate) {
-        return create(newConventions, newSimpleEOP, newDataContext,
-                      newMissionReferenceDate, interpolationDegree);
-    }
-
-    /** Build a new instance.
-     * @param newConventions IERS conventions to use while parsing
-     * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param newDataContext data context used for frames, time scales, and celestial bodies
-     * @param newMissionReferenceDate mission reference date to use while parsing
-     * @param newInterpolationdegree default interpolation degree
-     * @return a new instance with changed parameters
-     * @since 11.0
-     */
-    protected AEMParser create(final IERSConventions newConventions,
-                               final boolean newSimpleEOP,
-                               final DataContext newDataContext,
-                               final AbsoluteDate newMissionReferenceDate,
-                               final int newInterpolationdegree) {
-        return new AEMParser(newConventions, newSimpleEOP, newDataContext,
-                             newMissionReferenceDate, newInterpolationdegree);
-    }
-
-    /** Set default interpolation degree.
-     * <p>
-     * This method may be used to set a default interpolation degree which will be used
-     * when no interpolation degree is parsed in the meta-data of the file. Upon instantiation
-     * with {@link #AEMParser(DataContext)} the default interpolation degree is one.
-     * </p>
-     * @param newInterpolationDegree default interpolation degree to use while parsing
-     * @return a new instance, with interpolation degree data replaced
-     * @see #getInterpolationDegree()
-     * @since 10.3
-     */
-    public AEMParser withInterpolationDegree(final int newInterpolationDegree) {
-        return new AEMParser(getConventions(), isSimpleEOP(), getDataContext(),
-                             getMissionReferenceDate(), newInterpolationDegree);
+    public AEMParser(final IERSConventions conventions, final boolean simpleEOP,
+                     final DataContext dataContext,
+                     final AbsoluteDate missionReferenceDate, final int interpolationDegree) {
+        super(FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext);
+        this.interpolationDegree  = interpolationDegree;
+        this.missionReferenceDate = missionReferenceDate;
     }
 
     /**
-     * Set the local spacecraft body reference frame A.
-     * <p>
-     * This frame corresponds to {@link Keyword#REF_FRAME_A} key in AEM file.
-     * This method may be used to set a reference frame "A" which will be used
-     * if the frame parsed in the file does not correspond to a default frame available
-     * in {@link CCSDSFrame} (e.g. SC_BODY_1, ACTUATOR_1, etc.).
-     * According to CCSDS ADM documentation, it is the responsibility of the end user
-     * to have an understanding of the location of these frames for their particular object.
-     * </p>
-     * @param frame the frame to set
+     * Get reference date for Mission Elapsed Time and Mission Relative Time time systems.
+     * @return the reference date
      */
-    public void setLocalScBodyReferenceFrameA(final Frame frame) {
-        this.localScBodyReferenceFrameA = frame;
-    }
-
-    /**
-     * Set the local spacecraft body reference frame B.
-     * <p>
-     * This frame corresponds to {@link Keyword#REF_FRAME_B} key in AEM file.
-     * This method may be used to set a reference frame "B" which will be used
-     * if the frame parsed in the file does not correspond to a default frame available
-     * in {@link CCSDSFrame} (e.g. SC_BODY_1, ACTUATOR_1, etc.).
-     * According to CCSDS ADM documentation, it is the responsibility of the end user
-     * to have an understanding of the location of these frames for their particular object.
-     * </p>
-     * @param frame the frame to set
-     */
-    public void setLocalScBodyReferenceFrameB(final Frame frame) {
-        this.localScBodyReferenceFrameB = frame;
+    public AbsoluteDate getMissionReferenceDate() {
+        return missionReferenceDate;
     }
 
     /** Get default interpolation degree.
@@ -226,393 +99,112 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> implements Attitude
 
     /** {@inheritDoc} */
     @Override
-    public AEMFile parse(final InputStream stream, final String fileName) {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
-            return parse(reader, fileName);
-        } catch (IOException ioe) {
-            throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
-        }
+    public Header getHeader() {
+        return file.getHeader();
     }
 
     /** {@inheritDoc} */
     @Override
-    public AEMFile parse(final BufferedReader reader, final String fileName) {
+    public void reset(final FileFormat fileFormat) {
+        file     = new AEMFile(getConventions(), isSimpleEOP(), getDataContext(), missionReferenceDate);
+        metadata = null;
+        context  = null;
+        final ProcessingState initialState =
+                        getFileFormat() == FileFormat.XML ?
+                                           new XMLStructureProcessingState(ROOT, this) :
+                                           new KVNStructureProcessingState(this);
+        reset(fileFormat, initialState);
+    }
 
+    /** {@inheritDoc} */
+    @Override
+    public ProcessingState startMetadata() {
+        metadata = new AEMMetadata();
+        context  = new ParsingContext(this::getConventions,
+                                      this::isSimpleEOP,
+                                      this::getDataContext,
+                                      this::getMissionReferenceDate,
+                                      metadata::getTimeSystem);
+        return this::processMetadataToken;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void stopMetadata() {
+        // nothing to do
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ProcessingState startData() {
+        currentEphemeridesBlock = new AEMData();
+        return this::processDataToken;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void stopData() {
+        if (metadata != null) {
+            if ("A2B".equals(metadata.getAttitudeDirection())) {
+                // TODO
+            }
+            file.addSegment(new AEMSegment(metadata, currentEphemeridesBlock,
+                                           getConventions(), getDataContext()));
+        }
+        metadata = null;
+        context  = null;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AEMFile build() {
+        file.checkTimeSystems();
+        return file;
+    }
+
+    /** Process one metadata token.
+     * @param token token to process
+     * @param next queue for pending tokens waiting processing after this one, may be updated
+     * @return next state to use for parsing upcoming tokens
+     */
+    private ProcessingState processMetadataToken(final ParseToken token, final Deque<ParseToken> next) {
         try {
-
-            // initialize internal data structures
-            final ParseInfo pi = new ParseInfo(getConventions(), getDataContext(),
-                                               getMissionReferenceDate());
-            pi.fileName = fileName;
-            final AEMFile file = pi.file;
-
-            pi.parsingHeader = true;
-            for (pi.line = reader.readLine(); pi.line != null; pi.line = reader.readLine()) {
-                ++pi.lineNumber;
-                if (pi.line.trim().length() == 0) {
-                    continue;
-                }
-                pi.entry = new KeyValue(pi.line, pi.lineNumber, pi.fileName);
-                if (pi.entry.getKeyword() == null) {
-                    if (pi.parsingData) {
-                        parseEphemeridesDataLine(pi.line, pi);
-                        continue;
-                    } else {
-                        throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD,
-                                                  pi.lineNumber, pi.fileName, pi.line);
-                    }
-                }
-                switch (pi.entry.getKeyword()) {
-                    case CCSDS_AEM_VERS:
-                        file.getHeader().setFormatVersion(pi.entry.getDoubleValue());
-                        break;
-
-                    case META_START:
-                        // Indicate the start of meta-data parsing for this block
-                        pi.currentMetadata = new AEMMetadata();
-                        pi.parsingHeader   = false;
-                        pi.parsingMetaData = true;
-                        pi.parsingData     = false;
-                        pi.currentMetadata.setInterpolationDegree(getInterpolationDegree());
-                        break;
-
-                    case REF_FRAME_A:
-                        pi.currentMetadata.setRefFrameAString(pi.entry.getValue());
-                        break;
-
-                    case REF_FRAME_B:
-                        pi.currentMetadata.setRefFrameBString(pi.entry.getValue());
-                        break;
-
-                    case ATTITUDE_DIR:
-                        pi.currentMetadata.setAttitudeDirection(pi.entry.getValue());
-                        break;
-
-                    case START_TIME:
-                        pi.currentMetadata.setStartTime(parseDate(pi.entry.getValue(),
-                                                                  pi.currentMetadata.getTimeSystem(),
-                                                                  pi.lineNumber, pi.fileName, pi.line));
-                        break;
-
-                    case USEABLE_START_TIME:
-                        pi.currentMetadata.setUseableStartTime(parseDate(pi.entry.getValue(),
-                                                                         pi.currentMetadata.getTimeSystem(),
-                                                                         pi.lineNumber, pi.fileName, pi.line));
-                        break;
-
-                    case USEABLE_STOP_TIME:
-                        pi.currentMetadata.setUseableStopTime(parseDate(pi.entry.getValue(),
-                                                                        pi.currentMetadata.getTimeSystem(),
-                                                                        pi.lineNumber, pi.fileName, pi.line));
-                        break;
-
-                    case STOP_TIME:
-                        pi.currentMetadata.setStopTime(parseDate(pi.entry.getValue(),
-                                                                 pi.currentMetadata.getTimeSystem(),
-                                                                 pi.lineNumber, pi.fileName, pi.line));
-                        break;
-
-                    case ATTITUDE_TYPE:
-                        pi.currentMetadata.setAttitudeType(pi.entry.getValue());
-                        break;
-
-                    case QUATERNION_TYPE:
-                        final boolean isFirst = (pi.entry.getValue().equals("FIRST")) ? true : false;
-                        pi.currentMetadata.setIsFirst(isFirst);
-                        break;
-
-                    case EULER_ROT_SEQ:
-                        pi.currentMetadata.setEulerRotSeq(pi.entry.getValue());
-                        pi.currentMetadata.setRotationOrder(AEMRotationOrder.getRotationOrder(pi.entry.getValue()));
-                        break;
-
-                    case RATE_FRAME:
-                        pi.currentMetadata.setRateFrameString(pi.entry.getValue());
-                        break;
-
-                    case INTERPOLATION_METHOD:
-                        pi.currentMetadata.setInterpolationMethod(pi.entry.getValue());
-                        break;
-
-                    case INTERPOLATION_DEGREE:
-                        pi.currentMetadata.setInterpolationDegree(Integer.parseInt(pi.entry.getValue()));
-                        break;
-
-                    case META_STOP:
-                        // Set attitude reference frame
-                        parseReferenceFrame(pi);
-                        pi.parsingMetaData = false;
-                        break;
-
-                    case DATA_START:
-                        pi.currentEphemeridesBlock = new AEMData();
-                        pi.parsingData             = true;
-                        break;
-
-                    case DATA_STOP:
-                        file.addSegment(new AEMSegment(pi.currentMetadata, pi.currentEphemeridesBlock,
-                                                       getConventions(), getDataContext()));
-                        pi.currentMetadata         = null;
-                        pi.currentEphemeridesBlock = null;
-                        pi.parsingData             = false;
-                        break;
-
-                    default:
-                        final boolean parsed;
-                        if (pi.parsingHeader) {
-                            parsed = parseHeaderEntry(pi.entry, pi.file);
-                        } else if (pi.parsingMetaData) {
-                            parsed = parseMetaDataEntry(pi.entry, pi.currentMetadata);
-                        } else if (pi.parsingData && pi.entry.getKeyword() == Keyword.COMMENT) {
-                            pi.currentEphemeridesBlock.addComment(pi.entry.getValue());
-                            parsed = true;
-                        } else {
-                            parsed = false;
-                        }
-                        if (!parsed) {
-                            throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD,
-                                                      pi.lineNumber, pi.fileName, pi.line);
-                        }
-                }
-
+            final ADMMetadataKey generalKey = ADMMetadataKey.valueOf(token.getName());
+            generalKey.process(token, context, metadata);
+            return this::processMetadataToken;
+        } catch (IllegalArgumentException iaeG) {
+            try {
+                final AEMMetadataKey specificKey = AEMMetadataKey.valueOf(token.getName());
+                specificKey.process(token, context, metadata);
+                return this::processMetadataToken;
+            } catch (IllegalArgumentException iaeS) {
+                // token has not been recognized, it is most probably the end of the metadata section
+                // we push the token back into next queue and let the structure parser handle it
+                next.offerLast(token);
+                return getFileFormat() == FileFormat.XML ?
+                                          new XMLStructureProcessingState(ROOT, this) :
+                                          new KVNStructureProcessingState(this);
             }
-
-            file.checkTimeSystems();
-            return file;
-
-        } catch (IOException ioe) {
-            throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
         }
-
     }
 
-    /**
-     * Parse an attitude ephemeris data line and add its content
-     * to the attitude ephemerides block.
-     * @param line data line to parse
-     * @param pi the parser info
-     * @exception IOException if an error occurs while reading from the stream
+    /** Process one data token.
+     * @param token token to process
+     * @param next queue for pending tokens waiting processing after this one, may be updated
+     * @return next state to use for parsing upcoming tokens
      */
-    private void parseEphemeridesDataLine(final String line, final ParseInfo pi) throws IOException {
-        try (Scanner sc = new Scanner(line)) {
-            final AbsoluteDate date = parseDate(sc.next(), pi.currentMetadata.getTimeSystem(),
-                                                pi.lineNumber, pi.fileName, pi.line);
-            // Create an array with the maximum possible size
-            final double[] attitudeData = new double[MAX_SIZE];
-            int index = 0;
-            while (sc.hasNext()) {
-                attitudeData[index++] = Double.parseDouble(sc.next());
-            }
-            final AEMAttitudeType attType = AEMAttitudeType.getAttitudeType(pi.currentMetadata.getAttitudeType());
-            final RotationOrder rotationOrder = pi.currentMetadata.getRotationOrder();
-
-            final TimeStampedAngularCoordinates epDataLine = attType.getAngularCoordinates(date, attitudeData,
-                                                                                           pi.currentMetadata.isFirst(),
-                                                                                           rotationOrder);
-            pi.currentEphemeridesBlock.addData(epDataLine);
-            pi.currentEphemeridesBlock.updateAngularDerivativesFilter(attType.getAngularDerivativesFilter());
-        } catch (NumberFormatException nfe) {
-            throw new OrekitException(nfe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                      pi.lineNumber, pi.fileName, line);
+    private ProcessingState processDataToken(final ParseToken token, final Deque<ParseToken> next) {
+        if (token.getType() == TokenType.RAW_LINE) {
+            // TODO
+            return this::processDataToken;
+        } else {
+            // not a raw line, it is most probably the end of the data section
+            // we push the token back into next queue and let the structure parser handle it
+            next.offerLast(token);
+            return getFileFormat() == FileFormat.XML ?
+                                      new XMLStructureProcessingState(ROOT, this) :
+                                      new KVNStructureProcessingState(this);
         }
-    }
-
-    /**
-     * Parse the reference attitude frame.
-     * @param pi the parser info
-     */
-    private void parseReferenceFrame(final ParseInfo pi) {
-
-        // Reference frame A
-        final String frameAString = DASH.matcher(j2000Check(pi.currentMetadata.getRefFrameAString())).replaceAll("");
-        final Frame frameA = isDefinedFrame(frameAString) ?
-                                    CCSDSFrame.valueOf(frameAString).getFrame(getConventions(), isSimpleEOP(), getDataContext()) :
-                                        localScBodyReferenceFrameA;
-
-        // Reference frame B
-        final String frameBString = DASH.matcher(j2000Check(pi.currentMetadata.getRefFrameBString())).replaceAll("");
-        final Frame frameB = isDefinedFrame(frameBString) ?
-                                    CCSDSFrame.valueOf(frameBString).getFrame(getConventions(), isSimpleEOP(), getDataContext()) :
-                                        localScBodyReferenceFrameB;
-
-        // Set the attitude reference frame
-        final String direction = pi.currentMetadata.getAttitudeDirection();
-        pi.currentMetadata.setReferenceFrame("A2B".equals(direction) ? frameA : frameB);
-
-    }
-
-    /**
-     * Check if frame name is "J2000".
-     * <p>
-     * If yes, the name is changed to "EME2000" in order to match
-     * predefined CCSDS frame names.
-     * </p>
-     * @param frameName frame name
-     * @return the nex name
-     */
-    private static String j2000Check(final String frameName) {
-        return "J2000".equals(frameName) ? "EME2000" : frameName;
-    }
-
-    /**
-     * Verify if the given frame is defined in predefined CCSDS frames.
-     * @param frameName frame name
-     * @return true is the frame is known
-     */
-    private static boolean isDefinedFrame(final String frameName) {
-        // Loop on CCSDS frames
-        for (CCSDSFrame ccsdsFrame : CCSDSFrame.values()) {
-            // CCSDS frame name is defined in enumerate
-            if (ccsdsFrame.name().equals(frameName)) {
-                return true;
-            }
-        }
-        // No match found
-        return false;
-    }
-
-    /** Private class used to store AEM parsing info. */
-    private static class ParseInfo {
-
-        /** Metadata for current observation block. */
-        private AEMMetadata currentMetadata;
-
-        /** Current Ephemerides block being parsed. */
-        private AEMData currentEphemeridesBlock;
-
-        /** Name of the file. */
-        private String fileName;
-
-        /** Current line number. */
-        private int lineNumber;
-
-        /** Current line. */
-        private String line;
-
-        /** AEM file being read. */
-        private AEMFile file;
-
-        /** Key value of the line being read. */
-        private KeyValue entry;
-
-        /** Boolean indicating if the parser is currently parsing a header block. */
-        private boolean parsingHeader;
-
-        /** Boolean indicating if the parser is currently parsing a meta-data block. */
-        private boolean parsingMetaData;
-
-        /** Boolean indicating if the parser is currently parsing a data block. */
-        private boolean parsingData;
-
-        /** Create a new {@link ParseInfo} object.
-         * @param conventions IERS conventions
-         * @param dataContext used for creating frames, time scales, etc.
-         * @param missionReferenceDate reference date for Mission Elapsed Time and Mission Relative Time time systems.
-         */
-        protected ParseInfo(final IERSConventions conventions, final DataContext dataContext,
-                            final AbsoluteDate missionReferenceDate) {
-            lineNumber      = 0;
-            file            = new AEMFile(conventions, dataContext, missionReferenceDate);
-            parsingHeader   = false;
-            parsingMetaData = false;
-            parsingData     = false;
-        }
-    }
-
-    /** Util class to convert the Euler rotation sequence to {@link RotationOrder}. */
-    public enum AEMRotationOrder {
-
-        /** This ordered set of rotations is around X, then around Y, then around Z. */
-        XYZ("123", RotationOrder.XYZ),
-
-        /** This ordered set of rotations is around X, then around Z, then around Y. */
-        XZY("132", RotationOrder.XZY),
-
-        /** This ordered set of rotations is around Y, then around X, then around Z. */
-        YXZ("213", RotationOrder.YXZ),
-
-        /** This ordered set of rotations is around Y, then around Z, then around X. */
-        YZX("231", RotationOrder.YZX),
-
-        /** This ordered set of rotations is around Z, then around X, then around Y. */
-        ZXY("312", RotationOrder.ZXY),
-
-        /** This ordered set of rotations is around Z, then around Y, then around X. */
-        ZYX("321", RotationOrder.ZYX),
-
-        /** This ordered set of rotations is around X, then around Y, then around X. */
-        XYX("121", RotationOrder.XYX),
-
-        /** This ordered set of rotations is around X, then around Z, then around X. */
-        XZX("131", RotationOrder.XZX),
-
-        /** This ordered set of rotations is around Y, then around X, then around Y. */
-        YXY("212", RotationOrder.YXY),
-
-        /** This ordered set of rotations is around Y, then around Z, then around Y. */
-        YZY("232", RotationOrder.YZY),
-
-        /** This ordered set of rotations is around Z, then around X, then around Z. */
-        ZXZ("313", RotationOrder.ZXZ),
-
-        /** This ordered set of rotations is around Z, then around Y, then around Z. */
-        ZYZ("323", RotationOrder.ZYZ);
-
-        /** Codes map. */
-        private static final Map<String, RotationOrder> CODES_MAP = new HashMap<String, RotationOrder>();
-        static {
-            for (final AEMRotationOrder type : values()) {
-                CODES_MAP.put(type.getName(), type.getRotationOrder());
-            }
-        }
-
-        /** Rotation order. */
-        private final RotationOrder order;
-
-        /** Name. */
-        private final String name;
-
-        /**
-         * Constructor.
-         * @param name name of the rotation
-         * @param order rotation order
-         */
-        AEMRotationOrder(final String name,
-                         final RotationOrder order) {
-            this.name  = name;
-            this.order = order;
-        }
-
-        /**
-         * Get the name of the AEM rotation order.
-         * @return name
-         */
-        private String getName() {
-            return name;
-        }
-
-        /**
-         * Get the rotation order.
-         * @return rotation order
-         */
-        private RotationOrder getRotationOrder() {
-            return order;
-        }
-
-        /**
-         * Get the rotation order for the given name.
-         * @param orderName name of the rotation order (e.g. "123")
-         * @return the corresponding rotation order
-         */
-        public static RotationOrder getRotationOrder(final String orderName) {
-            final RotationOrder type = CODES_MAP.get(orderName);
-            if (type == null) {
-                // Invalid rotation sequence
-                throw new OrekitException(OrekitMessages.CCSDS_AEM_INVALID_ROTATION_SEQUENCE, orderName);
-            }
-            return type;
-        }
-
     }
 
 }

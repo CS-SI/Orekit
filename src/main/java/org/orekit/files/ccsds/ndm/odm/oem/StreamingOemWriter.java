@@ -362,7 +362,8 @@ public class StreamingOemWriter {
      */
     public static String guessFrame(final Frame frame) {
         // define some constant strings to make checkstyle happy
-        final String tod = "TOD";
+        final String gtod = "GTOD";
+        final String tod  = "TOD";
         final String itrf = "ITRF";
         // Try to determine the CCSDS name from Annex A by examining the Orekit name.
         final String name = frame.getName();
@@ -378,8 +379,8 @@ public class StreamingOemWriter {
         } else if ((CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER + INERTIAL_FRAME_SUFFIX)
                 .equals(name)) {
             return "ICRF";
-        } else if (name.contains("GTOD")) {
-            return "TDR";
+        } else if (name.contains(gtod)) {
+            return gtod;
         } else if (name.contains(tod)) { // check after GTOD
             return tod;
         } else if (name.contains("Equinox") && name.contains(itrf)) {

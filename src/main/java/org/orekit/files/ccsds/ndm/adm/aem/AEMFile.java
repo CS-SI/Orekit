@@ -41,12 +41,13 @@ public class AEMFile extends ADMFile<AEMSegment> implements AttitudeEphemerisFil
 
     /** Simple constructor.
      * @param conventions IERS conventions
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used for creating frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time and Mission Relative Time time systems.
      */
-    public AEMFile(final IERSConventions conventions, final DataContext dataContext,
-                   final AbsoluteDate missionReferenceDate) {
-        super(conventions, dataContext, missionReferenceDate);
+    public AEMFile(final IERSConventions conventions, final boolean simpleEOP,
+                   final DataContext dataContext, final AbsoluteDate missionReferenceDate) {
+        super(conventions, simpleEOP, dataContext, missionReferenceDate);
     }
 
     /** {@inheritDoc} */

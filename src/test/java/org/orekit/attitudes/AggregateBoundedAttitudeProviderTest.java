@@ -28,11 +28,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMFile;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMParser;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMSatelliteEphemeris;
+import org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -59,10 +61,8 @@ public class AggregateBoundedAttitudeProviderTest {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser().
-                        withConventions(IERSConventions.IERS_2010).
-                        withSimpleEOP(true);
-        final AEMFile file = parser.parse(inEntry, "AEMExample10.txt");
+        final AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1);
+        final AEMFile file = new KVNLexicalAnalyzer(inEntry, "AEMExample10.txt").accept(parser);
 
         final AEMSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
         final BoundedAttitudeProvider provider = ephemeris.getAttitudeProvider();
@@ -92,10 +92,8 @@ public class AggregateBoundedAttitudeProviderTest {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser().
-                        withConventions(IERSConventions.IERS_2010).
-                        withSimpleEOP(true);
-        final AEMFile file = parser.parse(inEntry, "AEMExample10.txt");
+        final AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1);
+        final AEMFile file = new KVNLexicalAnalyzer(inEntry, "AEMExample10.txt").accept(parser);
 
         final AEMSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
         final BoundedAttitudeProvider provider = ephemeris.getAttitudeProvider();
@@ -121,10 +119,8 @@ public class AggregateBoundedAttitudeProviderTest {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser().
-                        withConventions(IERSConventions.IERS_2010).
-                        withSimpleEOP(true);
-        final AEMFile file = parser.parse(inEntry, "AEMExample10.txt");
+        final AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1);
+        final AEMFile file = new KVNLexicalAnalyzer(inEntry, "AEMExample10.txt").accept(parser);
 
         final AEMSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
         final BoundedAttitudeProvider provider = ephemeris.getAttitudeProvider();
@@ -154,10 +150,8 @@ public class AggregateBoundedAttitudeProviderTest {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser().
-                                 withConventions(IERSConventions.IERS_2010).
-                                 withSimpleEOP(true);
-        final AEMFile file = parser.parse(inEntry, "AEMExample10.txt");
+        final AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1);
+        final AEMFile file = new KVNLexicalAnalyzer(inEntry, "AEMExample10.txt").accept(parser);
 
         final AEMSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
         final BoundedAttitudeProvider provider = ephemeris.getAttitudeProvider();

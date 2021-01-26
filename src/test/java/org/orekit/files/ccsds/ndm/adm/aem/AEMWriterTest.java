@@ -81,7 +81,8 @@ public class AEMWriterTest {
     public void testWriteAEM1() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser().withConventions(IERSConventions.IERS_2010);
+        final AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
+                                               null, 1);
         final AEMFile aemFile = parser.parse(inEntry, "AEMExample.txt");
 
         String originator = aemFile.getHeader().getOriginator();
@@ -99,7 +100,8 @@ public class AEMWriterTest {
     public void testUnfoundSpaceId() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser().withConventions(IERSConventions.IERS_2010);
+        final AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
+                                               null, 1);
         final AEMFile aemFile = parser.parse(inEntry, "OEMExample.txt");
 
         String badObjectId = "12345";
@@ -118,7 +120,8 @@ public class AEMWriterTest {
     public void testNullFile() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser().withConventions(IERSConventions.IERS_2010);
+        final AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
+                                               null, 1);
         final AEMFile aemFile = parser.parse(inEntry, "AEMExample.txt");
         String originator = aemFile.getHeader().getOriginator();
         String objectName = aemFile.getSegments().get(0).getMetadata().getObjectName();
@@ -154,7 +157,8 @@ public class AEMWriterTest {
     public void testUnisatelliteFileWithDefault() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser().withConventions(IERSConventions.IERS_2010);
+        final AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
+                                               null, 1);
         final AEMFile aemFile = parser.parse(inEntry, "AEMExample.txt");
 
         String tempAEMFilePath = tempFolder.newFile("TestOEMUnisatelliteWithDefault.oem").toString();
@@ -194,7 +198,8 @@ public class AEMWriterTest {
     public void testIssue723() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample2.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser().withConventions(IERSConventions.IERS_2010);
+        final AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
+                                               null, 1);
         final AEMFile aemFile = parser.parse(inEntry, "AEMExample2.txt");
 
         String tempAEMFilePath = tempFolder.newFile("TestAEMIssue723.aem").toString();
@@ -215,7 +220,8 @@ public class AEMWriterTest {
         // setup
         String exampleFile = "/ccsds/adm/aem/AEMExample7.txt";
         InputStream inEntry = getClass().getResourceAsStream(exampleFile);
-        AEMParser parser = new AEMParser().withConventions(IERSConventions.IERS_2010);
+        AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
+                                         null, 1);
         AEMFile aemFile = parser.parse(inEntry, "AEMExample7.txt");
         StringBuilder buffer = new StringBuilder();
 

@@ -25,6 +25,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.Attitude;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -109,6 +110,14 @@ public class APMParserTest {
         Assert.assertEquals(0.0,     segment.getData().getQuaternionBlock().getQuaternionDot().getQ1(), QUATERNION_PRECISION);
         Assert.assertEquals(0.0,     segment.getData().getQuaternionBlock().getQuaternionDot().getQ2(), QUATERNION_PRECISION);
         Assert.assertEquals(0.0,     segment.getData().getQuaternionBlock().getQuaternionDot().getQ3(), QUATERNION_PRECISION);
+
+        Attitude attitude = file.getAttitude();
+        Assert.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, 15.1172, TimeScalesFactory.getUTC()),
+                            attitude.getDate());
+        Assert.assertEquals("ITRF-97/CIO/2010-based ITRF simple EOP", attitude.getReferenceFrame().getName());
+        Assert.assertEquals(2 * FastMath.atan(FastMath.sqrt(0.00005 * 0.00005 + 0.87543 * 0.87543 + 0.40949 * 0.40949) / 0.25678),
+                            attitude.getRotation().getAngle(), 1.0e-15);
+        Assert.assertEquals(0, attitude.getSpin().getNorm(), 1.0e-15);
 
     }
 

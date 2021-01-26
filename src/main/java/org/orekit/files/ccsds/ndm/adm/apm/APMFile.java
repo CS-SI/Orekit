@@ -16,6 +16,7 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
+import org.orekit.attitudes.Attitude;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.adm.ADMFile;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
@@ -33,13 +34,28 @@ public class APMFile extends ADMFile<ADMSegment<ADMMetadata, APMData>> {
 
     /** Simple constructor.
      * @param conventions IERS conventions
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used for creating frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time and Mission Relative Time time systems.
      */
-    public APMFile(final IERSConventions conventions, final DataContext dataContext,
-                   final AbsoluteDate missionReferenceDate) {
-        super(conventions, dataContext, missionReferenceDate);
+    public APMFile(final IERSConventions conventions, final boolean simpleEOP,
+                   final DataContext dataContext, final AbsoluteDate missionReferenceDate) {
+        super(conventions, simpleEOP, dataContext, missionReferenceDate);
     }
 
+    /** Get the attitude.
+     * <p>
+     * The attitude is extracted from the file mandatory
+     * {@link APMQuaternion quaternion logical block}.
+     * </p>
+     * @return attitude
+     */
+    public Attitude getAttitude() {
+        return getSegments().
+               get(0).
+               getData().
+               getQuaternionBlock().
+               getAttitude(getConventions(), isSimpleEOP(), getDataContext());
+    }
 
 }

@@ -31,7 +31,6 @@ import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.errors.OrekitException;
 import org.orekit.files.ccsds.Keyword;
-import org.orekit.files.ccsds.ndm.adm.aem.AEMParser.AEMRotationOrder;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;

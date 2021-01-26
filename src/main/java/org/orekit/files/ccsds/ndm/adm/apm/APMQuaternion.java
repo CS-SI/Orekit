@@ -19,9 +19,16 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.complex.Quaternion;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.orekit.attitudes.Attitude;
+import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndPoints;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.IERSConventions;
+import org.orekit.utils.TimeStampedAngularCoordinates;
 
 /**
  * Container for Attitude Parameter Message quaternion logical block.
@@ -209,6 +216,26 @@ public class APMQuaternion {
      */
     public void setQ3Dot(final double q3Dot) {
         this.q3Dot = q3Dot;
+    }
+
+    /** Get the attitude.
+     * @param conventions IERS conventions
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
+     * @param dataContext used for creating frames, time scales, etc.
+     * @return attitude
+     */
+    public Attitude getAttitude(final IERSConventions conventions, final boolean simpleEOP,
+                                final DataContext dataContext) {
+        final Frame reference =
+                        endPoints.getExternalFrame().getFrame(conventions, simpleEOP, dataContext);
+        final FieldRotation<UnivariateDerivative1> raw =
+                        new FieldRotation<>(new UnivariateDerivative1(q0, q0Dot),
+                                            new UnivariateDerivative1(q1, q1Dot),
+                                            new UnivariateDerivative1(q2, q2Dot),
+                                            new UnivariateDerivative1(q3, q3Dot),
+                                            true);
+        final FieldRotation<UnivariateDerivative1> rot = endPoints.isExternal2Local() ? raw : raw.revert();
+        return new Attitude(reference, new TimeStampedAngularCoordinates(epoch, rot));
     }
 
 }

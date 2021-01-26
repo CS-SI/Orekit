@@ -93,6 +93,11 @@ public class StreamingOemWriterTest {
                     // CCSDS allows both J2000 and EME2000 names
                     // Orekit chose to use EME2000 when guessing name from frame instance
                     MatcherAssert.assertThat(actual, CoreMatchers.is(CCSDSFrame.EME2000.name()));
+                } else  if (ccsdsFrame == CCSDSFrame.TDR) {
+                    // CCSDS allows both GTOD (in ADM section A3) and
+                    // TDR (in ODM table 5-3 and section A2) names
+                    // Orekit chose to use GTOD when guessing name from frame instance
+                    MatcherAssert.assertThat(actual, CoreMatchers.is(CCSDSFrame.GTOD.name()));
                 } else {
                     MatcherAssert.assertThat(actual, CoreMatchers.is(ccsdsFrame.name()));
                 }
@@ -111,7 +116,7 @@ public class StreamingOemWriterTest {
         MatcherAssert.assertThat(StreamingOemWriter.guessFrame(FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                  CoreMatchers.is("ITRF2014"));
         MatcherAssert.assertThat(StreamingOemWriter.guessFrame(FramesFactory.getGTOD(true)),
-                                 CoreMatchers.is("TDR"));
+                                 CoreMatchers.is("GTOD"));
         MatcherAssert.assertThat(StreamingOemWriter.guessFrame(FramesFactory.getTEME()),
                                  CoreMatchers.is("TEME"));
         MatcherAssert.assertThat(StreamingOemWriter.guessFrame(FramesFactory.getTOD(true)),
