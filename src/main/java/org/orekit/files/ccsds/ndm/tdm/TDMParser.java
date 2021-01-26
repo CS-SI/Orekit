@@ -162,7 +162,7 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
     private ProcessingState processMetadataToken(final ParseToken token, final Deque<ParseToken> next) {
         try {
             final TDMMetadataKey key = TDMMetadataKey.valueOf(token.getName());
-            key.parse(token, context, metadata);
+            key.process(token, context, metadata);
             return this::processMetadataToken;
         } catch (IllegalArgumentException iae) {
             // token has not been recognized, it is most probably the end of the metadata section

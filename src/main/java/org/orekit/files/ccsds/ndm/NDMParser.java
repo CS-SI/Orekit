@@ -19,13 +19,11 @@ package org.orekit.files.ccsds.ndm;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.regex.Pattern;
 
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
@@ -47,9 +45,6 @@ import org.orekit.utils.IERSConventions;
  * @since 6.1
  */
 public abstract class NDMParser<T extends NDMFile<?, ?>, P extends NDMParser<T, ?>> {
-
-    /** Pattern for dash. */
-    private static final Pattern DASH = Pattern.compile("-");
 
     /** IERS Conventions. */
     private final  IERSConventions conventions;
@@ -136,14 +131,6 @@ public abstract class NDMParser<T extends NDMFile<?, ?>, P extends NDMParser<T, 
     protected abstract P create(IERSConventions newConventions,
                                 boolean newSimpleEOP,
                                 DataContext newDataContext);
-
-    /** Parse a CCSDS frame.
-     * @param frameName name of the frame, as the value of a CCSDS key=value line
-     * @return CCSDS frame corresponding to the name
-     */
-    protected CCSDSFrame parseCCSDSFrame(final String frameName) {
-        return CCSDSFrame.valueOf(DASH.matcher(frameName).replaceAll(""));
-    }
 
     /** Parse a date.
      * @param date date to parse, as the value of a CCSDS key=value line

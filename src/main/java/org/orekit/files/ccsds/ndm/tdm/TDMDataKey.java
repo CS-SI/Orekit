@@ -220,7 +220,7 @@ public enum TDMDataKey {
                 // we are parsing a KVN file and need to parse both epoch and measurement
                 final String[] fields = SEPARATOR.split(token.getContent());
                 if (fields.length != 2) {
-                    throw token.generateException();
+                    throw token.generateException(null);
                 }
                 // parse the epoch
                 final AbsoluteDate epoch = context.getTimeScale().parseDate(fields[0],
@@ -232,7 +232,7 @@ public enum TDMDataKey {
                 try {
                     observationsBlock.addObservationValue(token.getName(), Double.parseDouble(fields[1]));
                 } catch (NumberFormatException nfe) {
-                    throw token.generateException();
+                    throw token.generateException(nfe);
                 }
             }
         }

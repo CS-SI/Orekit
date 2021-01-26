@@ -328,8 +328,8 @@ CCSDS_UNKNOWN_SPACECRAFT_MASS = nessuna massa associata al veicolo spaziale nel 
 # no IERS conventions have been set before parsing
 CCSDS_UNKNOWN_CONVENTIONS = le convenzioni IERS non sono state inizializzate prima della lettura
 
-# frame {0} is not valid in this ODM file context
-CCSDS_INVALID_FRAME = il sistema di riferimento {0} non è valido in questo contesto del file ODM
+# frame {0} is not valid in this CCSDS file context
+CCSDS_INVALID_FRAME = il sistema di riferimento {0} non è valido in questo contesto del file CCSDS
 
 # inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
 CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = sistemi temporali incoerenti nei blocchi di effemeridi: {0} ≠ {1}

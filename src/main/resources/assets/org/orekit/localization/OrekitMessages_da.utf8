@@ -328,8 +328,8 @@ CCSDS_UNKNOWN_SPACECRAFT_MASS = ingen rumfartøjsmasse er associeret med denne O
 # no IERS conventions have been set before parsing
 CCSDS_UNKNOWN_CONVENTIONS = ingen IERS-konventioner er angivet før indlæsningen
 
-# frame {0} is not valid in this ODM file context
-CCSDS_INVALID_FRAME = ramme {0} er ikke gyldig i denne ODM fils kontekst
+# frame {0} is not valid in this CCSDS file context
+CCSDS_INVALID_FRAME = ramme {0} er ikke gyldig i denne CCSDS fils kontekst
 
 # inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
 CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = modstridende tidssystemer i efemerideblokkene: {0} ≠ {1}

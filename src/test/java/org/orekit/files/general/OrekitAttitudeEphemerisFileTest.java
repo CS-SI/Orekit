@@ -42,6 +42,7 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMParser;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMWriter;
+import org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer;
 import org.orekit.files.general.AttitudeEphemerisFile.AttitudeEphemerisSegment;
 import org.orekit.files.general.OrekitAttitudeEphemerisFile.OrekitSatelliteAttitudeEphemeris;
 import org.orekit.frames.Frame;
@@ -52,6 +53,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
 public class OrekitAttitudeEphemerisFileTest {
@@ -142,7 +144,9 @@ public class OrekitAttitudeEphemerisFileTest {
             new AEMWriter().write(writer, ephemerisFile);
         }
 
-        AttitudeEphemerisFile ephemerisFromFile = new AEMParser().parse(tempAemFile);
+        AttitudeEphemerisFile ephemerisFromFile =
+                        new KVNLexicalAnalyzer(tempAemFile).
+                        accept(new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1));
         Files.delete(Paths.get(tempAemFile));
         
         segment = ephemerisFromFile.getSatellites().get(satId).getSegments().get(0);

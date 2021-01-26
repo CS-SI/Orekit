@@ -173,7 +173,7 @@ public enum TDMMetadataKey {
      * @param context parsing context
      * @param metadata metadata to fill
      */
-    public void parse(final ParseToken token, final ParsingContext context, final TDMMetadata metadata) {
+    public void process(final ParseToken token, final ParsingContext context, final TDMMetadata metadata) {
         processor.process(token, context, metadata);
     }
 

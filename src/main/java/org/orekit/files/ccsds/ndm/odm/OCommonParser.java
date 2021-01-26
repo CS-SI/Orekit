@@ -20,6 +20,7 @@ import org.orekit.bodies.CelestialBodies;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.CenterName;
 import org.orekit.files.ccsds.utils.KeyValue;
@@ -173,7 +174,7 @@ public abstract class OCommonParser<T extends ODMFile<?>, P extends ODMParser<T,
 
                 case REF_FRAME:
                     metaData.setFrameString(keyValue.getValue());
-                    metaData.setRefFrame(parseCCSDSFrame(keyValue.getValue())
+                    metaData.setRefFrame(CCSDSFrame.parse(keyValue.getValue())
                                          .getFrame(getConventions(), isSimpleEOP(), getDataContext()));
                     return true;
 

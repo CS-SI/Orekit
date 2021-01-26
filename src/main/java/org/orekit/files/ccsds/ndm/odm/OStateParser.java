@@ -147,7 +147,7 @@ public abstract class OStateParser<T extends ODMFile<?>, P extends ODMParser<T, 
             case COV_REF_FRAME:
                 data.setCovarianceComment(comment);
                 comment.clear();
-                final CCSDSFrame covFrame = parseCCSDSFrame(keyValue.getValue());
+                final CCSDSFrame covFrame = CCSDSFrame.parse(keyValue.getValue());
                 if (covFrame.isLof()) {
                     data.setCovRefLofType(covFrame.getLofType());
                 } else {

@@ -32,6 +32,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.Keyword;
 import org.orekit.files.ccsds.ndm.odm.ODMParser;
 import org.orekit.files.ccsds.section.Segment;
+import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.KeyValue;
 import org.orekit.time.AbsoluteDate;
@@ -676,7 +677,7 @@ public class OCMParser extends ODMParser<OCMFile, OCMParser> {
                             pi.orbitalStateHistory.setCenterName(pi.entry.getValue());
                             break;
                         case ORB_REF_FRAME :
-                            pi.orbitalStateHistory.setOrbRefFrame(parser.parseCCSDSFrame(pi.entry.getValue()));
+                            pi.orbitalStateHistory.setOrbRefFrame(CCSDSFrame.parse(pi.entry.getValue()));
                             break;
                         case ORB_FRAME_EPOCH :
                             pi.orbitalStateHistory.setOrbFrameEpoch(parser.parseDate(pi.entry.getValue(),

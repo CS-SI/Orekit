@@ -130,7 +130,7 @@ public class ParseToken {
         try {
             return Double.parseDouble(content);
         } catch (NumberFormatException nfe) {
-            throw generateException();
+            throw generateException(nfe);
         }
     }
 
@@ -141,7 +141,7 @@ public class ParseToken {
         try {
             return Integer.parseInt(content);
         } catch (NumberFormatException nfe) {
-            throw generateException();
+            throw generateException(nfe);
         }
     }
 
@@ -299,17 +299,18 @@ public class ParseToken {
                 consumer.accept(CenterName.valueOf(canonicalValue));
             } catch (IllegalArgumentException iae) {
                 if (complainIfUnknown) {
-                    throw generateException();
+                    throw generateException(iae);
                 }
             }
         }
     }
 
     /** Generate a parse exception for this entry.
+     * @param cause underlying cause exception (may be null)
      * @return exception for this entry
      */
-    public OrekitException generateException() {
-        return new OrekitException(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE,
+    public OrekitException generateException(final Exception cause) {
+        return new OrekitException(cause, OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE,
                                    getName(), getLineNumber(), getFileName());
     }
 

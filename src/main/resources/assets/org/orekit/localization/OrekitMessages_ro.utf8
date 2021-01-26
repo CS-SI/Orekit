@@ -328,8 +328,8 @@ CCSDS_UNKNOWN_SPACECRAFT_MASS = nu există masa pentru vehiculul spațial din ac
 # no IERS conventions have been set before parsing
 CCSDS_UNKNOWN_CONVENTIONS = convențiile IERS nu au fost inițializate înainte de citire
 
-# frame {0} is not valid in this ODM file context
-CCSDS_INVALID_FRAME = sistemul de referință {0} nu este valid în contextul acestui fișier ODM
+# frame {0} is not valid in this CCSDS file context
+CCSDS_INVALID_FRAME = sistemul de referință {0} nu este valid în contextul acestui fișier CCSDS
 
 # inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
 CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = sisteme de timp incoerente in blocurile de efemeride : {0} ≠ {1}

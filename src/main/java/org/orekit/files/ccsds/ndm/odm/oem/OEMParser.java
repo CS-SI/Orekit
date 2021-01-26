@@ -441,7 +441,7 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
 
                     case COV_REF_FRAME :
                         checkNoMatrix(pi);
-                        final CCSDSFrame frame = parseCCSDSFrame(pi.entry.getValue());
+                        final CCSDSFrame frame = CCSDSFrame.parse(pi.entry.getValue());
                         if (frame.isLof()) {
                             pi.covRefLofType = frame.getLofType();
                             pi.covRefFrame   = null;

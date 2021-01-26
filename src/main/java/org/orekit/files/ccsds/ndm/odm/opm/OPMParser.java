@@ -224,7 +224,7 @@ public class OPMParser extends OStateParser<OPMFile, OPMParser> {
                         break;
 
                     case MAN_REF_FRAME:
-                        final CCSDSFrame manFrame = parseCCSDSFrame(pi.entry.getValue());
+                        final CCSDSFrame manFrame = CCSDSFrame.parse(pi.entry.getValue());
                         if (manFrame.isLof()) {
                             pi.maneuver.setRefLofType(manFrame.getLofType());
                         } else {

@@ -96,7 +96,7 @@ public class XMLStructureProcessingState implements ProcessingState {
             default :
                 // nothing to do here, errors are handled below
         }
-        throw token.generateException();
+        throw token.generateException(null);
     }
 
 }

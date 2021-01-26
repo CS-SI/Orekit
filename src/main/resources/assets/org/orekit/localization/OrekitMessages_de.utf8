@@ -328,8 +328,8 @@ CCSDS_UNKNOWN_SPACECRAFT_MASS = keine Satellitenmasse definiert in dieser ODM Da
 # no IERS conventions have been set before parsing
 CCSDS_UNKNOWN_CONVENTIONS = es wurden keine IERS Richtlinien eingestellt vor dem Parsen
 
-# frame {0} is not valid in this ODM file context
-CCSDS_INVALID_FRAME = Koordinatennetz {0} ist nicht gültig im Kontext dieser ODM Datei
+# frame {0} is not valid in this CCSDS file context
+CCSDS_INVALID_FRAME = Koordinatennetz {0} ist nicht gültig im Kontext dieser CCSDS Datei
 
 # inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
 CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = inkonsistente Zeitreferenz im Ephemeris-Block: {0} ≠ {1}
