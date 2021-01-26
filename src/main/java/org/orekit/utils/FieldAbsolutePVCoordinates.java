@@ -19,8 +19,7 @@ package org.orekit.utils;
 import java.util.stream.Stream;
 
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
+import org.hipparchus.analysis.differentiation.FieldDerivative;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.errors.OrekitException;
@@ -196,9 +195,10 @@ public class FieldAbsolutePVCoordinates<T extends RealFieldElement<T>> extends T
      * @param frame the frame in which the parameters are defined
      * @param date date of the built coordinates
      * @param p vector with time-derivatives embedded within the coordinates
+     * @param <U> type of the derivative
      */
-    public FieldAbsolutePVCoordinates(final Frame frame, final FieldAbsoluteDate<T> date,
-            final FieldVector3D<FieldDerivativeStructure<T>> p) {
+    public <U extends FieldDerivative<T, U>> FieldAbsolutePVCoordinates(final Frame frame, final FieldAbsoluteDate<T> date,
+                                                                        final FieldVector3D<U> p) {
         super(date, p);
         this.frame = frame;
     }

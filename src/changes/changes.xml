@@ -21,8 +21,13 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="749">
+      	Allow building PVCoordinates and AngularCoordinates (as well as their Field,
+        Absolute and TimeStamped variations) to be build from UnivariateDerivative1
+        and UnivariateDerivative2 in addition to DerivativeStructure.
+      </action>
       <action dev="bryan" type="fix" issue="736">
-      	Fixed NullPointerException in DSSTTesseral Hansen object.
+        Fixed NullPointerException in DSSTTesseral Hansen object.
       </action>
       <action dev="bryan" type="update" issue="601">
       	Changed getPVInPZ90() method to private.

@@ -20,6 +20,7 @@ import java.util.Collection;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.FieldDerivative;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -157,10 +158,11 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
      * </p>
      * @param date coordinates date
      * @param r rotation with time-derivatives embedded within the coordinates
+     * @param <U> type of the derivative
      * @since 9.2
      */
-    public TimeStampedFieldAngularCoordinates(final FieldAbsoluteDate<T> date,
-                                              final FieldRotation<FieldDerivativeStructure<T>> r) {
+    public <U extends FieldDerivative<T, U>> TimeStampedFieldAngularCoordinates(final FieldAbsoluteDate<T> date,
+                                                                                final FieldRotation<U> r) {
         super(r);
         this.date = date;
     }
