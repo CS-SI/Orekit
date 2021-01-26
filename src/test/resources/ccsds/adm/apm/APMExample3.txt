@@ -17,7 +17,7 @@ COMMENT          Accuracy of this attitude is 0.02 deg RSS.
 EPOCH          = 2003-09-30T14:28:15.1172
 Q_FRAME_A      = SC_BODY_1
 Q_FRAME_B      = ITRF-97
-Q_DIR          = A2B
+Q_DIR          = B2A
 
 Q1             = 0.00005
 Q2             = 0.87543
@@ -25,9 +25,9 @@ Q3             = 0.40949
 QC             = 0.25678
 
 COMMENT           SPIN Parameters
-SPIN_FRAME_A      = SC_BODY_1
-SPIN_FRAME_B      = ITRF-97
-SPIN_DIR          = A2B
+SPIN_FRAME_A      = ITRF-97
+SPIN_FRAME_B      = SC_BODY_1
+SPIN_DIR          = B2A
 SPIN_ALPHA        = 24.8
 SPIN_DELTA        = 33.7
 SPIN_ANGLE        = 42.5

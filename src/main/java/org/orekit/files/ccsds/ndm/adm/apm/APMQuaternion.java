@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.complex.Quaternion;
+import org.orekit.files.ccsds.ndm.adm.AttitudeEndPoints;
 import org.orekit.time.AbsoluteDate;
 
 /**
@@ -35,14 +36,8 @@ public class APMQuaternion {
     /** Epoch of the data. */
     private AbsoluteDate epoch;
 
-    /** Reference frame specifying one frame of the transformation. */
-    private String qFrameA;
-
-    /** Reference frame specifying the second portion of the transformation. */
-    private String qFrameB;
-
-    /** Rotation direction of the attitude quaternion. */
-    private String qDir;
+    /** Attitude end points. */
+    private AttitudeEndPoints endPoints;
 
     /** Quaternion, scalar component. */
     private double q0;
@@ -71,7 +66,8 @@ public class APMQuaternion {
     /** Simple constructor.
      */
     public APMQuaternion() {
-        this.comments      = new ArrayList<>();
+        this.comments  = new ArrayList<>();
+        this.endPoints = new AttitudeEndPoints();
     }
 
     /** Get the comments.
@@ -105,43 +101,19 @@ public class APMQuaternion {
     }
 
     /**
-     * Get the reference frame specifying one frame of the transformation.
-     * @return the reference frame A
-     */
-    public String getQuaternionFrameAString() {
-        return qFrameA;
-    }
-
-    /**
      * Set the reference frame specifying one frame of the transformation.
      * @param frameA the frame to be set
      */
-    public void setQuaternionFrameAString(final String frameA) {
-        this.qFrameA = frameA;
-    }
-
-    /**
-     * Get the reference frame specifying the second portion of the transformation.
-     * @return the reference frame B
-     */
-    public String getQuaternionFrameBString() {
-        return qFrameB;
+    public void setQuaternionFrameA(final String frameA) {
+        endPoints.setFrameA(frameA);
     }
 
     /**
      * Set the reference frame specifying the second portion of the transformation.
      * @param frameB the frame to be set
      */
-    public void setQuaternionFrameBString(final String frameB) {
-        this.qFrameB = frameB;
-    }
-
-    /**
-     * Get the rotation direction of the attitude quaternion.
-     * @return the rotation direction of the attitude quaternion
-     */
-    public String getAttitudeQuaternionDirection() {
-        return qDir;
+    public void setQuaternionFrameB(final String frameB) {
+        endPoints.setFrameB(frameB);
     }
 
     /**
@@ -149,7 +121,14 @@ public class APMQuaternion {
      * @param direction rotation direction to be set
      */
     public void setAttitudeQuaternionDirection(final String direction) {
-        this.qDir = direction;
+        endPoints.setDirection(direction);
+    }
+
+    /** Get the attitude end points.
+     * @return attitude end points
+     */
+    public AttitudeEndPoints getEndPoints() {
+        return endPoints;
     }
 
     /**

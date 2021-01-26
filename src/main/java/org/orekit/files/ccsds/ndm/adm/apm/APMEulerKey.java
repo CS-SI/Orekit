@@ -78,7 +78,8 @@ public enum APMEulerKey {
     /** Comment entry. */
     COMMENT((token, context, data) -> {
         if (token.getType() == TokenType.ENTRY) {
-            if (data.getEulerFrameAString() == null) {
+            if (data.getEndPoints().getExternalFrame() == null ||
+                data.getEndPoints().getLocalFrame()    == null) {
                 // we are still at block start, we accept comments
                 token.processAsFreeTextString(data::addComment);
                 return true;
@@ -93,13 +94,13 @@ public enum APMEulerKey {
 
     /** First reference frame entry. */
     EULER_FRAME_A((token, context, data) -> {
-        token.processAsNormalizedString(data::setEulerFrameAString);
+        token.processAsNormalizedString(data::setEulerFrameA);
         return true;
     }),
 
     /** Second reference frame entry. */
     EULER_FRAME_B((token, context, data) -> {
-        token.processAsNormalizedString(data::setEulerFrameBString);
+        token.processAsNormalizedString(data::setEulerFrameB);
         return true;
     }),
 

@@ -16,6 +16,8 @@
  */
 package org.orekit.files.ccsds.utils;
 
+import java.util.regex.Pattern;
+
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -82,6 +84,24 @@ public enum CCSDSFrame {
                 throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
             }
             return dataContext.getFrames().getITRFEquinox(conventions, simpleEOP);
+        }
+
+    },
+
+    /** Greenwich True Of Date.
+     * @since 11.0
+     */
+    GTOD(null) {
+
+        /** {@inheritDoc} */
+        @Override
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
+            if (conventions == null) {
+                throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
+            }
+            return dataContext.getFrames().getGTOD(conventions, simpleEOP);
         }
 
     },
@@ -264,15 +284,28 @@ public enum CCSDSFrame {
 
     },
 
+    /** Local vertical, Local Horizontal.
+     * @since 11.0
+     */
+    LVLH(LOFType.LVLH),
+
     /** Radial, Transverse (along-track) and Normal. */
     RTN(LOFType.QSW),
 
     /** Another name for Radial, Transverse (along-track) and Normal. */
     RSW(LOFType.QSW),
 
+    /** Another name for Radial, Transverse (along-track) and Normal.
+     * @since 11.0
+     */
+    QSW(LOFType.QSW),
+
     /** TNW : x-axis along the velocity vector, W along the orbital angular momentum vector and
     N completes the right handed system. */
     TNW(LOFType.TNW);
+
+    /** Pattern for dash. */
+    private static final Pattern DASH = Pattern.compile("-");
 
     /** Type of Local Orbital Frame (may be null). */
     private final LOFType lofType;
@@ -333,6 +366,14 @@ public enum CCSDSFrame {
                           final boolean simpleEOP,
                           final DataContext dataContext) {
         throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, toString());
+    }
+
+    /** Parse a CCSDS frame.
+     * @param frameName name of the frame, as the value of a CCSDS key=value line
+     * @return CCSDS frame corresponding to the name
+     */
+    public static CCSDSFrame parse(final String frameName) {
+        return CCSDSFrame.valueOf(DASH.matcher(frameName).replaceAll(""));
     }
 
 }

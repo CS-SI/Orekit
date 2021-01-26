@@ -14,7 +14,8 @@ COMMENT          Attitude state quaternion
 COMMENT          Accuracy of this attitude is 0.02 deg RSS.
 
 EPOCH          = 2003-09-30T14:28:15.1172
-Q_FRAME_A      = SC_BODY_1 Q_FRAME_B      = ITRF-97
+Q_FRAME_A      = SC_BODY_1
+Q_FRAME_B      = ITRF-97
 Q_DIR          = A2B
 
 Q1             = this-is-not-a-number

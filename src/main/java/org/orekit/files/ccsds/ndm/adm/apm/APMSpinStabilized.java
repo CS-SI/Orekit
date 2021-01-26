@@ -19,6 +19,8 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.orekit.files.ccsds.ndm.adm.AttitudeEndPoints;
+
 /**
  * Container for Attitude Parameter Message data lines.
  * @author Bryan Cazabonne
@@ -29,14 +31,8 @@ public class APMSpinStabilized {
     /** Comments. The list contains a string for each line of comment. */
     private List<String> comments;
 
-    /** Name of the reference frame specifying one frame of the transformation. */
-    private String spinFrameA;
-
-    /** Name of the reference frame specifying the second portion of the transformation. */
-    private String spinFrameB;
-
-    /** Rotation direction of the Spin angles. */
-    private String spinDir;
+    /** Attitude end points. */
+    private AttitudeEndPoints endPoints;
 
     /** Right ascension of spin axis vector (rad). */
     private double spinAlpha;
@@ -62,7 +58,8 @@ public class APMSpinStabilized {
     /** Simple constructor.
      */
     public APMSpinStabilized() {
-        this.comments = new ArrayList<>();
+        this.comments  = new ArrayList<>();
+        this.endPoints = new AttitudeEndPoints();
     }
 
     /** Get the comments.
@@ -80,51 +77,34 @@ public class APMSpinStabilized {
     }
 
     /**
-     * Get the reference frame specifying one frame of the transformation (spin).
-     * @return reference frame
-     */
-    public String getSpinFrameAString() {
-        return spinFrameA;
-    }
-
-    /**
      * Set the reference frame specifying one frame of the transformation (spin).
      * @param frame frame to be set
      */
-    public void setSpinFrameAString(final String frame) {
-        this.spinFrameA = frame;
-    }
-
-    /**
-     * Get the reference frame specifying the second portion of the transformation (spin).
-     * @return reference frame
-     */
-    public String getSpinFrameBString() {
-        return spinFrameB;
+    public void setSpinFrameA(final String frame) {
+        endPoints.setFrameA(frame);
     }
 
     /**
      * Set the reference frame specifying the second portion of the transformation (spin).
      * @param frame frame to be set
      */
-    public void setSpinFrameBString(final String frame) {
-        this.spinFrameB = frame;
+    public void setSpinFrameB(final String frame) {
+        endPoints.setFrameB(frame);
     }
 
     /**
-     * Get the rotation direction of the Spin angles.
-     * @return the rotation direction
-     */
-    public String getSpinDirection() {
-        return spinDir;
-    }
-
-    /**
-     * Set the rotation direction of the Spin angles.
+     * Set the rotation direction of the attitude.
      * @param direction rotation direction to be set
      */
     public void setSpinDirection(final String direction) {
-        this.spinDir = direction;
+        endPoints.setDirection(direction);
+    }
+
+    /** Get the attitude end points.
+     * @return attitude end points
+     */
+    public AttitudeEndPoints getEndPoints() {
+        return endPoints;
     }
 
     /**

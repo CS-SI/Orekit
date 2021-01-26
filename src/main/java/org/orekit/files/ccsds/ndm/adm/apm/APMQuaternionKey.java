@@ -58,13 +58,13 @@ public enum APMQuaternionKey {
 
     /** First reference frame entry. */
     Q_FRAME_A((token, context, data) -> {
-        token.processAsNormalizedString(data::setQuaternionFrameAString);
+        token.processAsNormalizedString(data::setQuaternionFrameA);
         return true;
     }),
 
     /** Second reference frame entry. */
     Q_FRAME_B((token, context, data) -> {
-        token.processAsNormalizedString(data::setQuaternionFrameBString);
+        token.processAsNormalizedString(data::setQuaternionFrameB);
         return true;
     }),
 

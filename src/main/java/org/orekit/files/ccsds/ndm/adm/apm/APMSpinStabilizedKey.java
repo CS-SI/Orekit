@@ -32,7 +32,8 @@ public enum APMSpinStabilizedKey {
     /** Comment entry. */
     COMMENT((token, context, data) -> {
         if (token.getType() == TokenType.ENTRY) {
-            if (data.getSpinFrameAString() == null) {
+            if (data.getEndPoints().getExternalFrame() == null ||
+                data.getEndPoints().getLocalFrame()    == null) {
                 // we are still at block start, we accept comments
                 token.processAsFreeTextString(data::addComment);
                 return true;
@@ -47,13 +48,13 @@ public enum APMSpinStabilizedKey {
 
     /** First reference frame entry. */
     SPIN_FRAME_A((token, context, data) -> {
-        token.processAsNormalizedString(data::setSpinFrameAString);
+        token.processAsNormalizedString(data::setSpinFrameA);
         return true;
     }),
 
     /** Second reference frame entry. */
     SPIN_FRAME_B((token, context, data) -> {
-        token.processAsNormalizedString(data::setSpinFrameBString);
+        token.processAsNormalizedString(data::setSpinFrameB);
         return true;
     }),
 

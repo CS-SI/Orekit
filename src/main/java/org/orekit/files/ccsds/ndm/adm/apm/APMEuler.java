@@ -19,6 +19,8 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.orekit.files.ccsds.ndm.adm.AttitudeEndPoints;
+
 /**
  * Container for {@link APMEuler Euler rotations} entries.
  * @author Bryan Cazabonne
@@ -29,14 +31,8 @@ public class APMEuler {
     /** Comments. The list contains a string for each line of comment. */
     private List<String> comments;
 
-    /** Name of the reference frame specifying one frame of the transformation. */
-    private String eulerFrameA;
-
-    /** Name of the reference frame specifying the second portion of the transformation. */
-    private String eulerFrameB;
-
-    /** Rotation direction of the attitude Euler angles. */
-    private String eulerDir;
+    /** Attitude end points. */
+    private AttitudeEndPoints endPoints;
 
     /**
      * Rotation order of the {@link #eulerFrameA} to {@link #eulerFrameB} or vice versa.
@@ -60,6 +56,7 @@ public class APMEuler {
      */
     public APMEuler() {
         this.comments         = new ArrayList<>();
+        this.endPoints        = new AttitudeEndPoints();
         this.rotationAngles   = new double[3];
         this.rotationRates    = new double[3];
         this.inRotationAngles = false;
@@ -80,43 +77,19 @@ public class APMEuler {
     }
 
     /**
-     * Get the reference frame specifying one frame of the transformation.
-     * @return reference frame A
-     */
-    public String getEulerFrameAString() {
-        return eulerFrameA;
-    }
-
-    /**
      * Set the reference frame specifying one frame of the transformation.
      * @param frame the frame to be set
      */
-    public void setEulerFrameAString(final String frame) {
-        this.eulerFrameA = frame;
-    }
-
-    /**
-     * Get the reference frame specifying the second portion of the transformation.
-     * @return reference frame B
-     */
-    public String getEulerFrameBString() {
-        return eulerFrameB;
+    public void setEulerFrameA(final String frame) {
+        endPoints.setFrameA(frame);
     }
 
     /**
      * Set the reference frame specifying the second portion of the transformation.
      * @param frame the frame to be set
      */
-    public void setEulerFrameBString(final String frame) {
-        this.eulerFrameB = frame;
-    }
-
-    /**
-     * Get the rotation direction of the attitude Euler angles (A2B or B2A).
-     * @return the rotation direction
-     */
-    public String getEulerDirection() {
-        return eulerDir;
+    public void setEulerFrameB(final String frame) {
+        endPoints.setFrameB(frame);
     }
 
     /**
@@ -124,7 +97,14 @@ public class APMEuler {
      * @param direction direction to be set
      */
     public void setEulerDirection(final String direction) {
-        this.eulerDir = direction;
+        endPoints.setDirection(direction);
+    }
+
+    /** Get the attitude end points.
+     * @return attitude end points
+     */
+    public AttitudeEndPoints getEndPoints() {
+        return endPoints;
     }
 
     /**

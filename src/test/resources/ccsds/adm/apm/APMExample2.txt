@@ -27,8 +27,8 @@ Q3              = 0.39158
 QC              = 0.47832
 
 COMMENT           Attitude specified as Euler elements
-EULER_FRAME_A   = INSTRUMENT_A
-EULER_FRAME_B   = ITRF-97
+EULER_FRAME_A   = ITRF-97
+EULER_FRAME_B   = INSTRUMENT_A
 EULER_DIR       = A2B
 EULER_ROT_SEQ   = 312
 RATE_FRAME      = EULER_FRAME_A

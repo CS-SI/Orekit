@@ -271,7 +271,8 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
     private ProcessingState processSpinStabilizedToken(final ParseToken token, final Deque<ParseToken> next) {
         if (spinStabilizedBlock == null) {
             spinStabilizedBlock = new APMSpinStabilized();
-            if (eulerBlock.getEulerDirection() == null) {
+            if (eulerBlock.getEndPoints().getExternalFrame() == null ||
+                eulerBlock.getEndPoints().getLocalFrame() == null) {
                 // the Euler angles logical block was missing,
                 // we may have stored the comments in it, so we need to recover them
                 for (final String comment : eulerBlock.getComments()) {
@@ -304,7 +305,8 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
     private ProcessingState processSpacecraftParametersToken(final ParseToken token, final Deque<ParseToken> next) {
         if (spacecraftParametersBlock == null) {
             spacecraftParametersBlock = new APMSpacecraftParameters();
-            if (spinStabilizedBlock.getSpinDirection() == null) {
+            if (spinStabilizedBlock.getEndPoints().getExternalFrame() == null ||
+                spinStabilizedBlock.getEndPoints().getLocalFrame()    == null) {
                 // the spin-stabilized logical block was missing,
                 // we may have stored the comments in it, so we need to recover them
                 for (final String comment : spinStabilizedBlock.getComments()) {
