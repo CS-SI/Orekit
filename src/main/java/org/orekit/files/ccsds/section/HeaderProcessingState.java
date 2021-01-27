@@ -16,14 +16,12 @@
  */
 package org.orekit.files.ccsds.section;
 
-import java.util.Deque;
-
-import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.files.ccsds.utils.state.AbstractMessageParser;
+import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.time.AbsoluteDate;
 
 /** {@link ProcessingState} for {@link Header NDM header}.
@@ -32,44 +30,28 @@ import org.orekit.time.AbsoluteDate;
  */
 public class HeaderProcessingState implements ProcessingState {
 
-    /** Data context used for getting frames, time scales, and celestial bodies. */
-    private final DataContext dataContext;
-
-    /** Key for format version. */
-    private final String formatVersionKey;
-
-    /** Header. */
-    private final Header header;
-
-    /** Next state to use. */
-    private final ProcessingState nextState;
+    /** Parser for the complete message. */
+    private final AbstractMessageParser<?, ?> parser;
 
     /** Simple constructor.
-     * @param dataContext data context used for getting frames, time scales, and celestial bodies
-     * @param formatVersionKey key for format version
-     * @param header header to fill
-     * @param nextState state to use when this state cannot parse an token by itself
+     * @param parser parser for the complete message
      */
-    public HeaderProcessingState(final DataContext dataContext,
-                                 final String formatVersionKey,
-                                 final Header header,
-                                 final ProcessingState nextState) {
-        this.dataContext      = dataContext;
-        this.nextState        = nextState;
-        this.formatVersionKey = formatVersionKey;
-        this.header           = header;
+    public HeaderProcessingState(final AbstractMessageParser<?, ?> parser) {
+        this.parser = parser;
     }
 
     /** {@inheritDoc} */
     @Override
-    public ProcessingState processToken(final ParseToken token, final Deque<ParseToken> next) {
+    public boolean processToken(final ParseToken token) {
 
-        if (Double.isNaN(header.getFormatVersion())) {
+        parser.inHeader();
+
+        if (Double.isNaN(parser.getHeader().getFormatVersion())) {
             // the first thing we expect is the format version
             // (however, in XML files it was already set before entering header)
-            if (formatVersionKey.equals(token.getName()) && token.getType() == TokenType.ENTRY) {
-                header.setFormatVersion(token.getContentAsDouble());
-                return this;
+            if (parser.getFormatVersionKey().equals(token.getName()) && token.getType() == TokenType.ENTRY) {
+                parser.getHeader().setFormatVersion(token.getContentAsDouble());
+                return true;
             } else {
                 throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, token.getFileName());
             }
@@ -78,30 +60,28 @@ public class HeaderProcessingState implements ProcessingState {
         switch (token.getName()) {
 
             case "COMMENT" :
-                if (header.getCreationDate() != null) {
+                if (parser.getHeader().getCreationDate() != null) {
                     // we have already processed some content in the block
                     // the comment belongs to the next block
-                    next.offerLast(token);
-                    return nextState;
+                    return false;
                 }
-                token.processAsFreeTextString(header::addComment);
-                return this;
+                token.processAsFreeTextString(parser.getHeader()::addComment);
+                return true;
 
             case "CREATION_DATE" :
                 if (token.getType() == TokenType.ENTRY) {
-                    header.setCreationDate(new AbsoluteDate(token.getContent(),
-                                                            dataContext.getTimeScales().getUTC()));
+                    parser.getHeader().setCreationDate(new AbsoluteDate(token.getContent(),
+                                                                        parser.getDataContext().getTimeScales().getUTC()));
                 }
-                return this;
+                return true;
 
             case "ORIGINATOR" :
-                token.processAsNormalizedString(header::setOriginator);
-                return this;
+                token.processAsNormalizedString(parser.getHeader()::setOriginator);
+                return true;
 
             default :
-                // we were not able to parse the token, we push it back in the queue
-                next.offerLast(token);
-                return nextState;
+                // we were not able to parse the token, delegate to fallback state
+                return false;
 
         }
 

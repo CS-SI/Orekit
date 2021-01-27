@@ -17,7 +17,6 @@
 package org.orekit.files.ccsds.ndm.adm.apm;
 
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
 
 import org.orekit.data.DataContext;
@@ -26,6 +25,7 @@ import org.orekit.files.ccsds.ndm.adm.ADMMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.ADMSegment;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
+import org.orekit.files.ccsds.section.KVNStructureProcessingState;
 import org.orekit.files.ccsds.section.XMLStructureProcessingState;
 import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.FileFormat;
@@ -79,6 +79,9 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
     /** All maneuvers. */
     private List<APMManeuver> maneuvers;
 
+    /** Processor for global message structure. */
+    private ProcessingState structureProcessor;
+
     /** Complete constructor.
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
@@ -120,44 +123,73 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
         spacecraftParametersBlock = null;
         currentManeuver           = null;
         maneuvers                 = new ArrayList<>();
-        final ProcessingState initialState =
-                        getFileFormat() == FileFormat.XML ?
-                                           new XMLStructureProcessingState(ROOT, this) :
-                                           new HeaderProcessingState(getDataContext(),
-                                                                     getFormatVersionKey(),
-                                                                     file.getHeader(),
-                                                                     this::processMetadataToken);
-        reset(fileFormat, initialState);
+        if (getFileFormat() == FileFormat.XML) {
+            structureProcessor = new XMLStructureProcessingState(ROOT, this);
+            reset(fileFormat, structureProcessor);
+        } else {
+            structureProcessor = new KVNStructureProcessingState(this);
+            reset(fileFormat, new HeaderProcessingState(this));
+        }
     }
 
     /** {@inheritDoc} */
     @Override
-    public ProcessingState startMetadata() {
-        metadata = new ADMMetadata();
-        context  = new ParsingContext(this::getConventions,
-                                      this::isSimpleEOP,
-                                      this::getDataContext,
-                                      this::getMissionReferenceDate,
-                                      metadata::getTimeSystem);
-        return this::processMetadataToken;
+    public void prepareHeader() {
+        setFallback(new HeaderProcessingState(this));
     }
 
     /** {@inheritDoc} */
     @Override
-    public void stopMetadata() {
+    public void inHeader() {
+        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processMetadataToken);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void finalizeHeader() {
         // nothing to do
     }
 
     /** {@inheritDoc} */
     @Override
-    public ProcessingState startData() {
-        quaternionBlock = new APMQuaternion();
-        return this::processQuaternionToken;
+    public void prepareMetadata() {
+        metadata  = new ADMMetadata();
+        context   = new ParsingContext(this::getConventions,
+                                       this::isSimpleEOP,
+                                       this::getDataContext,
+                                       this::getMissionReferenceDate,
+                                       metadata::getTimeSystem);
+        setFallback(this::processMetadataToken);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void stopData() {
+    public void inMetadata() {
+        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processQuaternionToken);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void finalizeMetadata() {
+        // nothing to do
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void prepareData() {
+        quaternionBlock = new APMQuaternion();
+        setFallback(this::processQuaternionToken);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void inData() {
+        // nothing to do
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void finalizeData() {
         if (metadata != null) {
             final APMData data = new APMData(quaternionBlock, eulerBlock,
                                              spinStabilizedBlock, spacecraftParametersBlock);
@@ -173,7 +205,6 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
         spinStabilizedBlock       = null;
         spacecraftParametersBlock = null;
         currentManeuver           = null;
-        maneuvers                 = new ArrayList<>();
     }
 
     /** {@inheritDoc} */
@@ -181,95 +212,86 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
     public APMFile build() {
         // APM KVN file lack a DATA_STOP keyword, hence we can't call stopData()
         // automatically before the end of the file
-        stopData();
+        finalizeData();
         return file;
     }
 
     /** Process one metadata token.
      * @param token token to process
-     * @param next queue for pending tokens waiting processing after this one, may be updated
-     * @return next state to use for parsing upcoming tokens
+     * @return true if token was processed, false otherwise
      */
-    private ProcessingState processMetadataToken(final ParseToken token, final Deque<ParseToken> next) {
+    private boolean processMetadataToken(final ParseToken token) {
         if (metadata == null) {
-            // APM KVN file lack a META_START keyword, hence we can't call startMetadata()
+            // APM KVN file lack a META_START keyword, hence we can't call prepareMetadata()
             // automatically before the first metadata token arrives
-            startMetadata();
+            prepareMetadata();
         }
         try {
+            inMetadata();
             final ADMMetadataKey key = ADMMetadataKey.valueOf(token.getName());
             if (key.process(token, context, metadata)) {
                 // the token was processed properly
-                return this::processMetadataToken;
+                return true;
             }
         } catch (IllegalArgumentException iae) {
             // ignored, delegate to next state below
         }
-        // the token has not been recognized, we need to pass it to next block processor
-        next.offerLast(token);
-        return getFileFormat() == FileFormat.XML ?
-                                  new XMLStructureProcessingState(FORMAT_VERSION_KEY, null) :
-                                  this::processQuaternionToken;
+        // the token has not been recognized
+        return false;
     }
 
     /** Process one quaternion data token.
      * @param token token to process
-     * @param next queue for pending tokens waiting processing after this one, may be updated
-     * @return next state to use for parsing upcoming tokens
+     * @return true if token was processed, false otherwise
      */
-    private ProcessingState processQuaternionToken(final ParseToken token, final Deque<ParseToken> next) {
+    private boolean processQuaternionToken(final ParseToken token) {
         if (quaternionBlock == null) {
             // APM KVN file lack a DATA_START keyword, hence we can't call startData()
             // automatically before the first data token arrives
-            startData();
+            prepareData();
         }
         try {
+            inData();
+            setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processEulerToken);
             final APMQuaternionKey key = APMQuaternionKey.valueOf(token.getName());
             if (key.process(token, context, quaternionBlock)) {
                 // the token was processed properly
-                return this::processQuaternionToken;
+                return true;
             }
         } catch (IllegalArgumentException iae) {
             // ignored, delegate to next state below
         }
-        // the token was not processed, we need to pass it to next block processor
-        next.offerLast(token);
-        return getFileFormat() == FileFormat.XML ?
-                                  new XMLStructureProcessingState(ROOT, this) :
-                                  this::processEulerToken;
+        // the token was not processed
+        return false;
     }
 
     /** Process one Euler angles data token.
      * @param token token to process
-     * @param next queue for pending tokens waiting processing after this one, may be updated
-     * @return next state to use for parsing upcoming tokens
+     * @return true if token was processed, false otherwise
      */
-    private ProcessingState processEulerToken(final ParseToken token, final Deque<ParseToken> next) {
+    private boolean processEulerToken(final ParseToken token) {
         if (eulerBlock == null) {
             eulerBlock = new APMEuler();
         }
         try {
+            setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processSpinStabilizedToken);
             final APMEulerKey key = APMEulerKey.valueOf(token.getName());
             if (key.process(token, context, eulerBlock)) {
                 // the token was processed properly
-                return this::processEulerToken;
+                return true;
             }
         } catch (IllegalArgumentException iae) {
             // ignored, delegate to next state below
         }
-        // the token was not processed, we need to pass it to next block processor
-        next.offerLast(token);
-        return getFileFormat() == FileFormat.XML ?
-                                  new XMLStructureProcessingState(ROOT, this) :
-                                  this::processSpinStabilizedToken;
+        // the token was not processed
+        return false;
     }
 
     /** Process one spin-stabilized data token.
      * @param token token to process
-     * @param next queue for pending tokens waiting processing after this one, may be updated
-     * @return next state to use for parsing upcoming tokens
+     * @return true if token was processed, false otherwise
      */
-    private ProcessingState processSpinStabilizedToken(final ParseToken token, final Deque<ParseToken> next) {
+    private boolean processSpinStabilizedToken(final ParseToken token) {
         if (spinStabilizedBlock == null) {
             spinStabilizedBlock = new APMSpinStabilized();
             if (eulerBlock.getEndPoints().getExternalFrame() == null ||
@@ -283,27 +305,24 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
             }
         }
         try {
+            setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processSpacecraftParametersToken);
             final APMSpinStabilizedKey key = APMSpinStabilizedKey.valueOf(token.getName());
             if (key.process(token, context, spinStabilizedBlock)) {
                 // the token was processed properly
-                return this::processSpinStabilizedToken;
+                return true;
             }
         } catch (IllegalArgumentException iae) {
             // ignored, delegate to next state below
         }
-        // the token was not processed, we need to pass it to next block processor
-        next.offerLast(token);
-        return getFileFormat() == FileFormat.XML ?
-                                  new XMLStructureProcessingState(ROOT, this) :
-                                  this::processSpacecraftParametersToken;
+        // the token was not processed
+        return false;
     }
 
     /** Process one spacecraft parameters data token.
      * @param token token to process
-     * @param next queue for pending tokens waiting processing after this one, may be updated
-     * @return next state to use for parsing upcoming tokens
+     * @return true if token was processed, false otherwise
      */
-    private ProcessingState processSpacecraftParametersToken(final ParseToken token, final Deque<ParseToken> next) {
+    private boolean processSpacecraftParametersToken(final ParseToken token) {
         if (spacecraftParametersBlock == null) {
             spacecraftParametersBlock = new APMSpacecraftParameters();
             if (spinStabilizedBlock.getEndPoints().getExternalFrame() == null ||
@@ -317,27 +336,24 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
             }
         }
         try {
+            setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processManeuverToken);
             final APMSpacecraftParametersKey key = APMSpacecraftParametersKey.valueOf(token.getName());
             if (key.process(token, context, spacecraftParametersBlock)) {
                 // the token was processed properly
-                return this::processSpacecraftParametersToken;
+                return true;
             }
         } catch (IllegalArgumentException iae) {
             // ignored, delegate to next state below
         }
-        // the token was not processed, we need to pass it to next block processor
-        next.offerLast(token);
-        return getFileFormat() == FileFormat.XML ?
-                                  new XMLStructureProcessingState(ROOT, this) :
-                                  this::processManeuverToken;
+        // the token was not processed
+        return false;
     }
 
     /** Process one maneuver data token.
      * @param token token to process
-     * @param next queue for pending tokens waiting processing after this one, may be updated
-     * @return next state to use for parsing upcoming tokens
+     * @return true if token was processed, false otherwise
      */
-    private ProcessingState processManeuverToken(final ParseToken token, final Deque<ParseToken> next) {
+    private boolean processManeuverToken(final ParseToken token) {
         if (currentManeuver == null) {
             currentManeuver = new APMManeuver();
             if (spacecraftParametersBlock.getInertiaRefFrameString() == null) {
@@ -350,6 +366,7 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
             }
         }
         try {
+            setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : new ErrorState());
             final APMManeuverKey key = APMManeuverKey.valueOf(token.getName());
             if (key.process(token, context, currentManeuver)) {
                 // the token was processed properly
@@ -358,16 +375,13 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
                     maneuvers.add(currentManeuver);
                     currentManeuver = null;
                 }
-                return this::processManeuverToken;
+                return true;
             }
         } catch (IllegalArgumentException iae) {
             // ignored, delegate to next state below
         }
-        // the token was not processed, we need to pass it to next block processor
-        next.offerLast(token);
-        return getFileFormat() == FileFormat.XML ?
-                                  new XMLStructureProcessingState(ROOT, this) :
-                                  new ErrorState();
+        // the token was not processed
+        return false;
     }
 
 }

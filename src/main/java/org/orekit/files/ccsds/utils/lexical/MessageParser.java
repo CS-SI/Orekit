@@ -36,9 +36,9 @@ public interface MessageParser<T extends NDMFile<?, ?>> {
     void reset(FileFormat fileFormat);
 
     /** Process a parse token.
-     * @param parseToken token to process
+     * @param token token to process
      */
-    void process(ParseToken parseToken);
+    void process(ParseToken token);
 
     /** Build the file from parsed entries.
      * @return parsed file

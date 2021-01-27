@@ -16,10 +16,8 @@
  */
 package org.orekit.files.ccsds.utils.state;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-
 import org.orekit.data.DataContext;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.files.ccsds.ndm.NDMFile;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.lexical.FileFormat;
@@ -36,6 +34,9 @@ import org.orekit.utils.IERSConventions;
 public abstract class AbstractMessageParser<T extends NDMFile<?, ?>, P extends AbstractMessageParser<T, ?>>
     implements MessageParser<T> {
 
+    /** Safety limit for loop over processing states. */
+    private final int MAX_LOOP = 100;
+
     /** Key for format version. */
     private final String formatVersionKey;
 
@@ -51,8 +52,11 @@ public abstract class AbstractMessageParser<T extends NDMFile<?, ?>, P extends A
     /** Format of the file ready to be parsed. */
     private FileFormat format;
 
+    /** Fallback processing state. */
+    private ProcessingState fallback;
+
     /** Current processing state. */
-    private ProcessingState state;
+    private ProcessingState current;
 
     /** Complete constructor.
      * @param formatVersionKey key for format version
@@ -68,7 +72,7 @@ public abstract class AbstractMessageParser<T extends NDMFile<?, ?>, P extends A
         this.conventions      = conventions;
         this.simpleEOP        = simpleEOP;
         this.dataContext      = dataContext;
-        this.state            = null;
+        this.current            = null;
     }
 
     /** {@inheritDoc} */
@@ -104,9 +108,11 @@ public abstract class AbstractMessageParser<T extends NDMFile<?, ?>, P extends A
      * @param fileFormat format of the file ready to be parsed
      * @param initialState initial processing state
      */
-    protected void reset(final FileFormat fileFormat, final ProcessingState initialState) {
-        format = fileFormat;
-        state  = initialState;
+    protected void reset(final FileFormat fileFormat,
+                         final ProcessingState initialState) {
+        format  = fileFormat;
+        current = initialState;
+        setFallback(new ErrorState());
     }
 
     /** Get the file format.
@@ -121,41 +127,67 @@ public abstract class AbstractMessageParser<T extends NDMFile<?, ?>, P extends A
      */
     public abstract Header getHeader();
 
-    /** Start metadata parsing.
-     * @return processing state for metadata
+    /** Prepare header for parsing.
      */
-    public abstract ProcessingState startMetadata();
+    public abstract void prepareHeader();
 
-    /** Stop metadata parsing.
+    /** Acknowledge header parsing has started.
      */
-    public abstract void stopMetadata();
+    public abstract void inHeader();
 
-    /** Start date parsing.
-     * @return processing state for data
+    /** Finalize header after parsing.
      */
-    public abstract ProcessingState startData();
+    public abstract void finalizeHeader();
 
-    /** Stop data parsing.
+    /** Prepare metadata for parsing.
      */
-    public abstract void stopData();
+    public abstract void prepareMetadata();
+
+    /** Acknowledge metada parsing has started.
+     */
+    public abstract void inMetadata();
+
+    /** Finalize metadata after parsing.
+     */
+    public abstract void finalizeMetadata();
+
+    /** Prepare data for parsing.
+     */
+    public abstract void prepareData();
+
+    /** Acknowledge data parsing has started.
+     */
+    public abstract void inData();
+
+    /** Finalize data after parsing.
+     */
+    public abstract void finalizeData();
+
+    /** Set fallback processing state.
+     * @param fallback processing state
+     */
+    public void setFallback(final ProcessingState fallback) {
+        this.fallback = fallback;
+    }
 
     /** {@inheritDoc} */
     @Override
-    public void process(final ParseToken parseToken) {
+    public void process(final ParseToken token) {
 
-        // prepare a LIFO queue so states can use it to delegate parsing to other states
-        final Deque<ParseToken> pending = new ArrayDeque<>();
-        pending.offerLast(parseToken);
-
-        // process the pending tokens
-        // we use a loop as some parse tokens may not be processed by the state
-        // that is active at loop start and will be pushed back in the pending queue,
-        // or some states may generate additional tokens, for example for message
-        // formats that use raw data lines that must be split into fields
-        while (!pending.isEmpty()) {
-            final ParseToken current = pending.pollLast();
-            state = state.processToken(current, pending);
+        // loop over the various states until one really processes the token
+        for (int i = 0; i < MAX_LOOP; ++i) {
+            if (current.processToken(token)) {
+                return;
+            }
+            if (fallback == current) {
+                // we can't process the token at all
+                throw token.generateException(null);
+            }
+            current = fallback;
         }
+
+        // this should never happen
+        throw new OrekitInternalError(null);
 
     }
 

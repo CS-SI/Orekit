@@ -16,8 +16,6 @@
  */
 package org.orekit.files.ccsds.section;
 
-import java.util.Deque;
-
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.utils.lexical.FileFormat;
@@ -49,18 +47,18 @@ public class XMLStructureProcessingState implements ProcessingState {
 
     /** {@inheritDoc} */
     @Override
-    public ProcessingState processToken(final ParseToken token, final Deque<ParseToken> next) {
+    public boolean processToken(final ParseToken token) {
 
         if (root.equals(token.getName())) {
             // ignored
-            return this;
+            return true;
         }
 
         if (Double.isNaN(parser.getHeader().getFormatVersion())) {
             // the first thing we expect (after the ignored start tag for root element) is the format version
             if (parser.getFormatVersionKey().equals(token.getName()) && token.getType() == TokenType.ENTRY) {
                 parser.getHeader().setFormatVersion(token.getContentAsDouble());
-                return this;
+                return true;
             } else {
                 throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, token.getFileName());
             }
@@ -70,33 +68,38 @@ public class XMLStructureProcessingState implements ProcessingState {
             case "body":
             case "segment":
                 // ignored
-                return this;
+                return true;
             case "header":
-                return new HeaderProcessingState(parser.getDataContext(), parser.getFormatVersionKey(),
-                                                 parser.getHeader(), this);
+                if (token.getType() == TokenType.START) {
+                    parser.prepareHeader();
+                    return true;
+                } else if (token.getType() == TokenType.END) {
+                    parser.finalizeHeader();
+                    return true;
+                }
+                break;
             case "metadata" :
                 if (token.getType() == TokenType.START) {
-                    // next parse tokens will be handled as metadata
-                    return parser.startMetadata();
+                    parser.prepareMetadata();
+                    return true;
                 } else if (token.getType() == TokenType.END) {
-                    // nothing to do here, we expect a <data> next
-                    return this;
+                    parser.finalizeMetadata();
+                    return true;
                 }
                 break;
             case "data" :
                 if (token.getType() == TokenType.START) {
-                    // next parse tokens will be handled as data
-                    return parser.startData();
+                    parser.prepareData();
+                    return true;
                 } else if (token.getType() == TokenType.END) {
-                    parser.stopData();
-                    // we expect a <metadata> next
-                    return this;
+                    parser.finalizeData();
+                    return true;
                 }
                 break;
             default :
-                // nothing to do here, errors are handled below
+                // ignored, we delegate handling this token to fallback state
         }
-        throw token.generateException(null);
+        return false;
     }
 
 }

@@ -16,8 +16,6 @@
  */
 package org.orekit.files.ccsds.utils.state;
 
-import java.util.Deque;
-
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
@@ -37,7 +35,7 @@ public class ErrorState implements ProcessingState {
      * </p>
      */
     @Override
-    public ProcessingState processToken(final ParseToken token, final Deque<ParseToken> next) {
+    public boolean processToken(final ParseToken token) {
         if (token.getType() == TokenType.RAW_LINE) {
             throw new OrekitException(OrekitMessages.UNEXPECTED_DATA_AT_LINE_IN_FILE,
                                       token.getLineNumber(), token.getFileName());

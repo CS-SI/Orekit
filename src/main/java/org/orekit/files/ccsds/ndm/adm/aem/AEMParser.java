@@ -16,11 +16,10 @@
  */
 package org.orekit.files.ccsds.ndm.adm.aem;
 
-import java.util.Deque;
-
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadataKey;
 import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.section.HeaderProcessingState;
 import org.orekit.files.ccsds.section.KVNStructureProcessingState;
 import org.orekit.files.ccsds.section.XMLStructureProcessingState;
 import org.orekit.files.ccsds.utils.ParsingContext;
@@ -28,6 +27,7 @@ import org.orekit.files.ccsds.utils.lexical.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.state.AbstractMessageParser;
+import org.orekit.files.ccsds.utils.state.ErrorState;
 import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
@@ -62,6 +62,9 @@ public class AEMParser extends AbstractMessageParser<AEMFile, AEMParser> {
 
     /** Default interpolation degree. */
     private int interpolationDegree;
+
+    /** Processor for global message structure. */
+    private ProcessingState structureProcessor;
 
     /**
      * Complete constructor.
@@ -109,41 +112,73 @@ public class AEMParser extends AbstractMessageParser<AEMFile, AEMParser> {
         file     = new AEMFile(getConventions(), isSimpleEOP(), getDataContext(), missionReferenceDate);
         metadata = null;
         context  = null;
-        final ProcessingState initialState =
-                        getFileFormat() == FileFormat.XML ?
-                                           new XMLStructureProcessingState(ROOT, this) :
-                                           new KVNStructureProcessingState(this);
-        reset(fileFormat, initialState);
+        if (getFileFormat() == FileFormat.XML) {
+            structureProcessor = new XMLStructureProcessingState(ROOT, this);
+            reset(fileFormat, structureProcessor);
+        } else {
+            structureProcessor = new KVNStructureProcessingState(this);
+            reset(fileFormat, new HeaderProcessingState(this));
+        }
     }
 
     /** {@inheritDoc} */
     @Override
-    public ProcessingState startMetadata() {
-        metadata = new AEMMetadata();
-        context  = new ParsingContext(this::getConventions,
-                                      this::isSimpleEOP,
-                                      this::getDataContext,
-                                      this::getMissionReferenceDate,
-                                      metadata::getTimeSystem);
-        return this::processMetadataToken;
+    public void prepareHeader() {
+        setFallback(new HeaderProcessingState(this));
     }
 
     /** {@inheritDoc} */
     @Override
-    public void stopMetadata() {
+    public void inHeader() {
+        setFallback(structureProcessor);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void finalizeHeader() {
         // nothing to do
     }
 
     /** {@inheritDoc} */
     @Override
-    public ProcessingState startData() {
-        currentEphemeridesBlock = new AEMData();
-        return this::processDataToken;
+    public void prepareMetadata() {
+        metadata  = new AEMMetadata();
+        context   = new ParsingContext(this::getConventions,
+                                       this::isSimpleEOP,
+                                       this::getDataContext,
+                                       this::getMissionReferenceDate,
+                                       metadata::getTimeSystem);
+        setFallback(this::processMetadataToken);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void stopData() {
+    public void inMetadata() {
+        setFallback(structureProcessor);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void finalizeMetadata() {
+        // nothing to do
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void prepareData() {
+        currentEphemeridesBlock = new AEMData();
+        setFallback(this::processDataToken);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void inData() {
+        setFallback(structureProcessor);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void finalizeData() {
         if (metadata != null) {
             if ("A2B".equals(metadata.getAttitudeDirection())) {
                 // TODO
@@ -164,46 +199,42 @@ public class AEMParser extends AbstractMessageParser<AEMFile, AEMParser> {
 
     /** Process one metadata token.
      * @param token token to process
-     * @param next queue for pending tokens waiting processing after this one, may be updated
-     * @return next state to use for parsing upcoming tokens
+     * @return true if token was processed, false otherwise
      */
-    private ProcessingState processMetadataToken(final ParseToken token, final Deque<ParseToken> next) {
+    private boolean processMetadataToken(final ParseToken token) {
         try {
+            inMetadata();
             final ADMMetadataKey generalKey = ADMMetadataKey.valueOf(token.getName());
             generalKey.process(token, context, metadata);
-            return this::processMetadataToken;
+            return true;
         } catch (IllegalArgumentException iaeG) {
             try {
                 final AEMMetadataKey specificKey = AEMMetadataKey.valueOf(token.getName());
                 specificKey.process(token, context, metadata);
-                return this::processMetadataToken;
+                return true;
             } catch (IllegalArgumentException iaeS) {
                 // token has not been recognized, it is most probably the end of the metadata section
                 // we push the token back into next queue and let the structure parser handle it
-                next.offerLast(token);
-                return getFileFormat() == FileFormat.XML ?
-                                          new XMLStructureProcessingState(ROOT, this) :
-                                          new KVNStructureProcessingState(this);
+                setFallback(new ErrorState());
+                return structureProcessor;
             }
         }
     }
 
     /** Process one data token.
      * @param token token to process
-     * @param next queue for pending tokens waiting processing after this one, may be updated
-     * @return next state to use for parsing upcoming tokens
+     * @return true if token was processed, false otherwise
      */
-    private ProcessingState processDataToken(final ParseToken token, final Deque<ParseToken> next) {
+    private boolean processDataToken(final ParseToken token) {
         if (token.getType() == TokenType.RAW_LINE) {
             // TODO
-            return this::processDataToken;
+            inData();
+            return true;
         } else {
             // not a raw line, it is most probably the end of the data section
             // we push the token back into next queue and let the structure parser handle it
-            next.offerLast(token);
-            return getFileFormat() == FileFormat.XML ?
-                                      new XMLStructureProcessingState(ROOT, this) :
-                                      new KVNStructureProcessingState(this);
+            setFallback(new ErrorState());
+            return structureProcessor;
         }
     }
 

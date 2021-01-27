@@ -16,8 +16,6 @@
  */
 package org.orekit.files.ccsds.section;
 
-import java.util.Deque;
-
 import org.orekit.files.ccsds.utils.lexical.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
@@ -42,31 +40,33 @@ public class KVNStructureProcessingState implements ProcessingState {
 
     /** {@inheritDoc} */
     @Override
-    public ProcessingState processToken(final ParseToken token, final Deque<ParseToken> next) {
+    public boolean processToken(final ParseToken token) {
+
         switch (token.getName()) {
             case "META" :
                 if (token.getType() == TokenType.START) {
-                    // next parse tokens will be handled as metadata
-                    return parser.startMetadata();
+                    parser.prepareMetadata();
+                    return true;
                 } else if (token.getType() == TokenType.END) {
-                    // nothing to do here, we expect a DATA_START next
-                    return this;
+                    parser.finalizeMetadata();
+                    return true;
                 }
                 break;
             case "DATA" :
                 if (token.getType() == TokenType.START) {
-                    // next parse tokens will be handled as data
-                    return parser.startData();
+                    parser.prepareData();
+                    return true;
                 } else if (token.getType() == TokenType.END) {
-                    parser.stopData();
-                    // we expect a META_START next
-                    return this;
+                    parser.finalizeData();
+                    return true;
                 }
                 break;
             default :
-                // nothing to do here, errors are handled below
+                // ignored, we delegate handling this token to fallback state
         }
-        throw token.generateException(null);
+
+        return false;
+
     }
 
 }

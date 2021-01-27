@@ -16,7 +16,6 @@
  */
 package org.orekit.files.ccsds.ndm.tdm;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -79,7 +78,7 @@ public class TDMParserTest {
     }
 
     @Test
-    public void testParseTdmKeyValueExample2() throws IOException {
+    public void testParseTdmKeyValueExample2() {
         // Example 2 of [1]
         // See Figure D-2: TDM Example: One-Way Data w/Frequency Offset
         // Data lines number was cut down to 7
@@ -92,7 +91,7 @@ public class TDMParserTest {
     }
 
     @Test
-    public void testParseTdmKeyValueExample4() throws IOException {
+    public void testParseTdmKeyValueExample4() {
 
         // Example 4 of [1]
         // See Figure D-4: TDM Example: Two-Way Ranging Data Only
@@ -106,7 +105,7 @@ public class TDMParserTest {
     }
 
     @Test
-    public void testParseTdmKeyValueExample6() throws IOException {
+    public void testParseTdmKeyValueExample6() {
 
         // Example 6 of [1]
         // See Figure D-6: TDM Example: Four-Way Data
@@ -120,7 +119,7 @@ public class TDMParserTest {
     }
 
     @Test
-    public void testParseTdmKeyValueExample8() throws IOException {
+    public void testParseTdmKeyValueExample8() {
 
         // Example 8 of [1]
         // See Figure D-8: TDM Example: Angles, Range, Doppler Combined in Single TDM
@@ -134,7 +133,7 @@ public class TDMParserTest {
     }
 
     @Test
-    public void testParseTdmKeyValueExample15() throws IOException {
+    public void testParseTdmKeyValueExample15() {
 
         // Example 15 of [1]
         // See Figure D-15: TDM Example: Clock Bias/Drift Only
@@ -147,7 +146,7 @@ public class TDMParserTest {
     }
 
     @Test
-    public void testParseTdmKeyValueExampleAllKeywords() throws IOException {
+    public void testParseTdmKeyValueExampleAllKeywords() {
 
         // Testing all TDM keywords
         final String name = "/ccsds/tdm/kvn/TDMExampleAllKeywords.txt";
@@ -159,7 +158,7 @@ public class TDMParserTest {
     }
 
     @Test
-    public void testParseTdmXmlExample2() throws IOException {
+    public void testParseTdmXmlExample2() {
 
         // Example 2 of [1]
         // See Figure D-2: TDM Example: One-Way Data w/Frequency Offset
@@ -173,7 +172,7 @@ public class TDMParserTest {
     }
 
     @Test
-    public void testParseTdmXmlExample4() throws IOException {
+    public void testParseTdmXmlExample4() {
 
         // Example 4 of [1]
         // See Figure D-4: TDM Example: Two-Way Ranging Data Only
@@ -187,7 +186,7 @@ public class TDMParserTest {
     }
 
     @Test
-    public void testParseTdmXmlExample6() throws IOException {
+    public void testParseTdmXmlExample6() {
 
         // Example 6 of [1]
         // See Figure D-6: TDM Example: Four-Way Data
@@ -201,7 +200,7 @@ public class TDMParserTest {
     }
 
     @Test
-    public void testParseTdmXmlExample8() throws IOException {
+    public void testParseTdmXmlExample8() {
 
         // Example 8 of [1]
         // See Figure D-8: TDM Example: Angles, Range, Doppler Combined in Single TDM
@@ -215,7 +214,7 @@ public class TDMParserTest {
     }
 
     @Test
-    public void testParseTdmXmlExample15() throws IOException {
+    public void testParseTdmXmlExample15() {
 
         // Example 15 of [1]
         // See Figure D-15: TDM Example: Clock Bias/Drift Only
@@ -228,7 +227,7 @@ public class TDMParserTest {
     }
 
     @Test
-    public void testParseTdmXmlExampleAllKeywords() throws IOException {
+    public void testParseTdmXmlExampleAllKeywords() {
 
         // Testing all TDM keywords
         final String name = "/ccsds/tdm/xml/TDMExampleAllKeywords.xml";
@@ -348,8 +347,7 @@ public class TDMParserTest {
     }
 
     @Test
-    public void testWrongDataKeywordKeyValue()
-                    throws URISyntaxException {
+    public void testWrongDataKeywordKeyValue() throws URISyntaxException {
         // Unknown CCSDS keyword was read in data part
         final String name = "/ccsds/tdm/kvn/TDM-data-wrong-keyword.txt";
         final LexicalAnalyzer lexicalAnalyzer = new KVNLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
@@ -366,8 +364,7 @@ public class TDMParserTest {
     }
 
     @Test
-    public void testWrongDataKeywordXml()
-                    throws URISyntaxException {
+    public void testWrongDataKeywordXml() throws URISyntaxException {
         // Unknown CCSDS keyword was read in data part
         final String name = "/ccsds/tdm/xml/TDM-data-wrong-keyword.xml";
         final LexicalAnalyzer lexicalAnalyzer = new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
@@ -384,8 +381,7 @@ public class TDMParserTest {
     }
 
     @Test
-    public void testWrongMetaDataKeywordKeyValue()
-                    throws URISyntaxException {
+    public void testWrongMetaDataKeywordKeyValue() throws URISyntaxException {
         // Unknown CCSDS keyword was read in data part
         final String name = "/ccsds/tdm/kvn/TDM-metadata-wrong-keyword.txt";
         final LexicalAnalyzer lexicalAnalyzer = new KVNLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
@@ -402,8 +398,7 @@ public class TDMParserTest {
     }
 
     @Test
-    public void testWrongMetaDataKeywordXml()
-                    throws URISyntaxException {
+    public void testWrongMetaDataKeywordXml() throws URISyntaxException {
         // Unknown CCSDS keyword was read in data part
         final String name = "/ccsds/tdm/xml/TDM-metadata-wrong-keyword.xml";
         final LexicalAnalyzer lexicalAnalyzer = new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
@@ -1030,4 +1025,5 @@ public class TDMParserTest {
         dataComment.add("Meteorological Related Keywords");
         Assert.assertEquals(dataComment, file.getSegments().get(0).getData().getComments());
     }
+
 }

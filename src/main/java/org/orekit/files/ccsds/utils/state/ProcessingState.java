@@ -16,9 +16,6 @@
  */
 package org.orekit.files.ccsds.utils.state;
 
-import java.util.Deque;
-
-import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.lexical.MessageParser;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 
@@ -37,28 +34,9 @@ import org.orekit.files.ccsds.utils.lexical.ParseToken;
 public interface ProcessingState {
 
     /** Process one token.
-     * <p>
-     * The state may either:
-     *   <ul>
-     *     <li>process the token and ignore the next tokens queue</li>
-     *     <li>process the token and insert new tokens in the queue to replace it
-     *     (for example when a {@link TokenType#RAW_LINE raw line} is split into fields
-     *     that will be parsed later on)</li>
-     *     <li>push the token back into the queue if unable to process it</li>
-     *   </ul>
-     * </p>
-     * <p>
-     * The state must always return a non-null state that ill become the active state to use
-     * after itself. In most cases when the current token was successfully parsed, it will
-     * return itself as processing states are mainly set up for complete sections and therefore
-     * will process several entries in rows. If the state was not able to process the token
-     * and have pushed it back into the {@code next} queue then it should return another state that
-     * is expected to be able to parse it, otherwise an infinite loop would occur.
-     * </p>
      * @param token token to process
-     * @param next queue for pending tokens waiting processing after this one, may be updated
-     * @return next state to use for processing upcoming tokens
+     * @return true if token was processed, false otherwise
      */
-    ProcessingState processToken(ParseToken token, Deque<ParseToken> next);
+    boolean processToken(ParseToken token);
 
 }

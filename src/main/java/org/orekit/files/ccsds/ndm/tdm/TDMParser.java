@@ -16,8 +16,6 @@
  */
 package org.orekit.files.ccsds.ndm.tdm;
 
-import java.util.Deque;
-
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
@@ -70,6 +68,9 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
     /** TDMFile object being filled. */
     private TDMFile file;
 
+    /** Processor for global message structure. */
+    private ProcessingState structureProcessor;
+
     /** Complete constructor.
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
@@ -102,15 +103,17 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        file              = new TDMFile(getConventions(), getDataContext());
-        metadata          = null;
-        context           = null;
-        observationsBlock = null;
-        reset(fileFormat,
-              fileFormat == FileFormat.XML ?
-                            new XMLStructureProcessingState(ROOT, this) :
-                            new HeaderProcessingState(getDataContext(), getFormatVersionKey(),
-                                                      file.getHeader(), new KVNStructureProcessingState(this)));
+        file               = new TDMFile(getConventions(), getDataContext());
+        metadata           = null;
+        context            = null;
+        observationsBlock  = null;
+        if (fileFormat == FileFormat.XML) {
+            structureProcessor = new XMLStructureProcessingState(ROOT, this);
+            reset(fileFormat, structureProcessor);
+        } else {
+            structureProcessor = new KVNStructureProcessingState(this);
+            reset(fileFormat, new HeaderProcessingState(this));
+        }
     }
 
     /** {@inheritDoc} */
@@ -122,32 +125,62 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
 
     /** {@inheritDoc} */
     @Override
-    public ProcessingState startMetadata() {
-        metadata = new TDMMetadata();
-        context  = new ParsingContext(this::getConventions,
-                                      this::isSimpleEOP,
-                                      this::getDataContext,
-                                      this::getMissionReferenceDate,
-                                      metadata::getTimeSystem);
-        return this::processMetadataToken;
+    public void prepareHeader() {
+        setFallback(new HeaderProcessingState(this));
     }
 
     /** {@inheritDoc} */
     @Override
-    public void stopMetadata() {
+    public void inHeader() {
+        setFallback(structureProcessor);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void finalizeHeader() {
         // nothing to do
     }
 
     /** {@inheritDoc} */
     @Override
-    public ProcessingState startData() {
-        observationsBlock = new ObservationsBlock();
-        return this::processDataToken;
+    public void prepareMetadata() {
+        metadata  = new TDMMetadata();
+        context   = new ParsingContext(this::getConventions,
+                                       this::isSimpleEOP,
+                                       this::getDataContext,
+                                       this::getMissionReferenceDate,
+                                       metadata::getTimeSystem);
+        setFallback(this::processMetadataToken);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void stopData() {
+    public void inMetadata() {
+        setFallback(structureProcessor);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void finalizeMetadata() {
+        // nothing to do
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void prepareData() {
+        observationsBlock = new ObservationsBlock();
+        setFallback(this::processDataToken);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void inData() {
+        setFallback(structureProcessor);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void finalizeData() {
         file.addSegment(new Segment<>(metadata, observationsBlock));
         metadata          = null;
         context           = null;
@@ -156,41 +189,33 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
 
     /** Process one metadata token.
      * @param token token to process
-     * @param next queue for pending tokens waiting processing after this one, may be updated
-     * @return next state to use for parsing upcoming tokens
+     * @return true if token was processed, false otherwise
      */
-    private ProcessingState processMetadataToken(final ParseToken token, final Deque<ParseToken> next) {
+    private boolean processMetadataToken(final ParseToken token) {
         try {
+            inMetadata();
             final TDMMetadataKey key = TDMMetadataKey.valueOf(token.getName());
             key.process(token, context, metadata);
-            return this::processMetadataToken;
+            return true;
         } catch (IllegalArgumentException iae) {
-            // token has not been recognized, it is most probably the end of the metadata section
-            // we push the token back into next queue and let the structure parser handle it
-            next.offerLast(token);
-            return getFileFormat() == FileFormat.XML ?
-                                      new XMLStructureProcessingState(ROOT, this) :
-                                      new KVNStructureProcessingState(this);
+            // token has not been recognized
+            return false;
         }
     }
 
     /** Process one data token.
      * @param token token to process
-     * @param next queue for pending tokens waiting processing after this one, may be updated
-     * @return next state to use for parsing upcoming tokens
+     * @return true if token was processed, false otherwise
      */
-    private ProcessingState processDataToken(final ParseToken token, final Deque<ParseToken> next) {
+    private boolean processDataToken(final ParseToken token) {
         try {
+            inData();
             final TDMDataKey key = TDMDataKey.valueOf(token.getName());
             key.process(token, context, observationsBlock);
-            return this::processDataToken;
+            return true;
         } catch (IllegalArgumentException iae) {
-            // token has not been recognized, it is most probably the end of the data section
-            // we push the token back into next queue and let the structure parser handle it
-            next.offerLast(token);
-            return getFileFormat() == FileFormat.XML ?
-                                      new XMLStructureProcessingState(ROOT, this) :
-                                      new KVNStructureProcessingState(this);
+            // token has not been recognized
+            return false;
         }
     }
 
