@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndPoints;
 
 /**
@@ -34,11 +35,8 @@ public class APMEuler {
     /** Attitude end points. */
     private AttitudeEndPoints endPoints;
 
-    /**
-     * Rotation order of the {@link #eulerFrameA} to {@link #eulerFrameB} or vice versa.
-     * (e.g., 312, where X=1, Y=2, Z=3)
-     */
-    private String eulerRotSeq;
+    /** Rotation order of the Euler angles. */
+    private RotationOrder eulerRotSeq;
 
     /** Frame of reference in which the {@link #rotationAngles} are expressed. */
     private String rateFrame;
@@ -76,30 +74,6 @@ public class APMEuler {
         comments.add(comment);
     }
 
-    /**
-     * Set the reference frame specifying one frame of the transformation.
-     * @param frame the frame to be set
-     */
-    public void setEulerFrameA(final String frame) {
-        endPoints.setFrameA(frame);
-    }
-
-    /**
-     * Set the reference frame specifying the second portion of the transformation.
-     * @param frame the frame to be set
-     */
-    public void setEulerFrameB(final String frame) {
-        endPoints.setFrameB(frame);
-    }
-
-    /**
-     * Set the rotation direction of the attitude Euler angles (A2B or B2A).
-     * @param direction direction to be set
-     */
-    public void setEulerDirection(final String direction) {
-        endPoints.setDirection(direction);
-    }
-
     /** Get the attitude end points.
      * @return attitude end points
      */
@@ -108,18 +82,18 @@ public class APMEuler {
     }
 
     /**
-     * Get the rotation order of Euler angles (X=1, Y=2, Z=3).
+     * Get the rotation order of Euler angles.
      * @return rotation order
      */
-    public String getEulerRotSeq() {
+    public RotationOrder getEulerRotSeq() {
         return eulerRotSeq;
     }
 
     /**
-     * Set the rotation order for Euler angles (X=1, Y=2, Z=3).
-     * @param eulerRotSeq order to be setS
+     * Set the rotation order for Euler angles.
+     * @param eulerRotSeq order to be set
      */
-    public void setEulerRotSeq(final String eulerRotSeq) {
+    public void setEulerRotSeq(final RotationOrder eulerRotSeq) {
         this.eulerRotSeq = eulerRotSeq;
     }
 

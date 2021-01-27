@@ -18,6 +18,7 @@ package org.orekit.files.ccsds.ndm.adm.aem;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadataKey;
+import org.orekit.files.ccsds.ndm.adm.ADMParser;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
 import org.orekit.files.ccsds.section.KVNStructureProcessingState;
@@ -26,8 +27,6 @@ import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.files.ccsds.utils.state.AbstractMessageParser;
-import org.orekit.files.ccsds.utils.state.ErrorState;
 import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
@@ -37,16 +36,13 @@ import org.orekit.utils.IERSConventions;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class AEMParser extends AbstractMessageParser<AEMFile, AEMParser> {
+public class AEMParser extends ADMParser<AEMFile, AEMParser> {
 
     /** Root element for XML files. */
     private static final String ROOT = "aem";
 
     /** Key for format version. */
     private static final String FORMAT_VERSION_KEY = "CCSDS_AEM_VERS";
-
-    /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
-    private final AbsoluteDate missionReferenceDate;
 
     /** AEM file being read. */
     private AEMFile file;
@@ -78,17 +74,8 @@ public class AEMParser extends AbstractMessageParser<AEMFile, AEMParser> {
     public AEMParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate, final int interpolationDegree) {
-        super(FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext);
+        super(FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate);
         this.interpolationDegree  = interpolationDegree;
-        this.missionReferenceDate = missionReferenceDate;
-    }
-
-    /**
-     * Get reference date for Mission Elapsed Time and Mission Relative Time time systems.
-     * @return the reference date
-     */
-    public AbsoluteDate getMissionReferenceDate() {
-        return missionReferenceDate;
     }
 
     /** Get default interpolation degree.
@@ -109,7 +96,8 @@ public class AEMParser extends AbstractMessageParser<AEMFile, AEMParser> {
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        file     = new AEMFile(getConventions(), isSimpleEOP(), getDataContext(), missionReferenceDate);
+        file     = new AEMFile(getConventions(), isSimpleEOP(),
+                               getDataContext(), getMissionReferenceDate());
         metadata = null;
         context  = null;
         if (getFileFormat() == FileFormat.XML) {
@@ -154,7 +142,7 @@ public class AEMParser extends AbstractMessageParser<AEMFile, AEMParser> {
     /** {@inheritDoc} */
     @Override
     public void inMetadata() {
-        setFallback(structureProcessor);
+        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processDataToken);
     }
 
     /** {@inheritDoc} */
@@ -167,7 +155,7 @@ public class AEMParser extends AbstractMessageParser<AEMFile, AEMParser> {
     @Override
     public void prepareData() {
         currentEphemeridesBlock = new AEMData();
-        setFallback(this::processDataToken);
+        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processMetadataToken);
     }
 
     /** {@inheritDoc} */
@@ -213,10 +201,8 @@ public class AEMParser extends AbstractMessageParser<AEMFile, AEMParser> {
                 specificKey.process(token, context, metadata);
                 return true;
             } catch (IllegalArgumentException iaeS) {
-                // token has not been recognized, it is most probably the end of the metadata section
-                // we push the token back into next queue and let the structure parser handle it
-                setFallback(new ErrorState());
-                return structureProcessor;
+                // token has not been recognized
+                return false;
             }
         }
     }
@@ -232,9 +218,7 @@ public class AEMParser extends AbstractMessageParser<AEMFile, AEMParser> {
             return true;
         } else {
             // not a raw line, it is most probably the end of the data section
-            // we push the token back into next queue and let the structure parser handle it
-            setFallback(new ErrorState());
-            return structureProcessor;
+            return false;
         }
     }
 

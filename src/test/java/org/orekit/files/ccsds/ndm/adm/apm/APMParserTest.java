@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 
+import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
@@ -197,8 +198,8 @@ public class APMParserTest {
         Assert.assertEquals(CCSDSBodyFrame.BaseEquipment.INSTRUMENT,  segment.getData().getEulerBlock().getEndPoints().getLocalFrame().getBaseEquipment());
         Assert.assertEquals("A",  segment.getData().getEulerBlock().getEndPoints().getLocalFrame().getLabel());
         Assert.assertTrue(segment.getData().getEulerBlock().getEndPoints().isExternal2Local());
-        Assert.assertEquals("EULER FRAME A", segment.getData().getEulerBlock().getRateFrameString());
-        Assert.assertEquals("312",           segment.getData().getEulerBlock().getEulerRotSeq());
+        Assert.assertEquals("EULER FRAME A",   segment.getData().getEulerBlock().getRateFrameString());
+        Assert.assertEquals(RotationOrder.ZXY, segment.getData().getEulerBlock().getEulerRotSeq());
 
         Assert.assertEquals(FastMath.toRadians(139.7527), segment.getData().getEulerBlock().getRotationAngles()[0], ANGLE_PRECISION);
         Assert.assertEquals(FastMath.toRadians(25.0658),  segment.getData().getEulerBlock().getRotationAngles()[1], ANGLE_PRECISION);
@@ -440,6 +441,20 @@ public class APMParserTest {
             Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
             Assert.assertEquals(11, ((Integer) oe.getParts()[0]).intValue());
             Assert.assertTrue(((String) oe.getParts()[2]).startsWith("WRONG_KEYWORD"));
+        }
+    }
+
+    @Test
+    public void testWrongEulerSequence() throws URISyntaxException {
+        final String name = getClass().getResource("/ccsds/adm/apm/APM-wrong-Euler-sequence.txt").toURI().getPath();
+        try {
+            new KVNLexicalAnalyzer(name).accept(new APMParser(IERSConventions.IERS_2010, true,
+                                                              DataContext.getDefault(), AbsoluteDate.J2000_EPOCH));
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
+            Assert.assertEquals("EULER_ROT_SEQ", oe.getParts()[0]);
+            Assert.assertEquals(33, ((Integer) oe.getParts()[1]).intValue());
         }
     }
 

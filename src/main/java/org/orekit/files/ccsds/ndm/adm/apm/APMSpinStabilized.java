@@ -76,30 +76,6 @@ public class APMSpinStabilized {
         comments.add(comment);
     }
 
-    /**
-     * Set the reference frame specifying one frame of the transformation (spin).
-     * @param frame frame to be set
-     */
-    public void setSpinFrameA(final String frame) {
-        endPoints.setFrameA(frame);
-    }
-
-    /**
-     * Set the reference frame specifying the second portion of the transformation (spin).
-     * @param frame frame to be set
-     */
-    public void setSpinFrameB(final String frame) {
-        endPoints.setFrameB(frame);
-    }
-
-    /**
-     * Set the rotation direction of the attitude.
-     * @param direction rotation direction to be set
-     */
-    public void setSpinDirection(final String direction) {
-        endPoints.setDirection(direction);
-    }
-
     /** Get the attitude end points.
      * @return attitude end points
      */

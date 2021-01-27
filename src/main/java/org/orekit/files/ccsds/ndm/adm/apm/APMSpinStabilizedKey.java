@@ -48,19 +48,19 @@ public enum APMSpinStabilizedKey {
 
     /** First reference frame entry. */
     SPIN_FRAME_A((token, context, data) -> {
-        token.processAsNormalizedString(data::setSpinFrameA);
+        token.processAsNormalizedString(data.getEndPoints()::setFrameA);
         return true;
     }),
 
     /** Second reference frame entry. */
     SPIN_FRAME_B((token, context, data) -> {
-        token.processAsNormalizedString(data::setSpinFrameB);
+        token.processAsNormalizedString(data.getEndPoints()::setFrameB);
         return true;
     }),
 
     /** Rotation direction entry. */
     SPIN_DIR((token, context, data) -> {
-        token.processAsNormalizedString(data::setSpinDirection);
+        token.processAsNormalizedString(data.getEndPoints()::setDirection);
         return true;
     }),
 

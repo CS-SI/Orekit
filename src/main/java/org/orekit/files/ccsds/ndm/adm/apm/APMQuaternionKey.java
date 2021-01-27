@@ -58,19 +58,19 @@ public enum APMQuaternionKey {
 
     /** First reference frame entry. */
     Q_FRAME_A((token, context, data) -> {
-        token.processAsNormalizedString(data::setQuaternionFrameA);
+        token.processAsNormalizedString(data.getEndPoints()::setFrameA);
         return true;
     }),
 
     /** Second reference frame entry. */
     Q_FRAME_B((token, context, data) -> {
-        token.processAsNormalizedString(data::setQuaternionFrameB);
+        token.processAsNormalizedString(data.getEndPoints()::setFrameB);
         return true;
     }),
 
     /** Rotation direction entry. */
     Q_DIR((token, context, data) -> {
-        token.processAsNormalizedString(data::setAttitudeQuaternionDirection);
+        token.processAsNormalizedString(data.getEndPoints()::setDirection);
         return true;
     }),
 

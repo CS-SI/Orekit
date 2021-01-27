@@ -107,30 +107,6 @@ public class APMQuaternion {
         this.epoch = epoch;
     }
 
-    /**
-     * Set the reference frame specifying one frame of the transformation.
-     * @param frameA the frame to be set
-     */
-    public void setQuaternionFrameA(final String frameA) {
-        endPoints.setFrameA(frameA);
-    }
-
-    /**
-     * Set the reference frame specifying the second portion of the transformation.
-     * @param frameB the frame to be set
-     */
-    public void setQuaternionFrameB(final String frameB) {
-        endPoints.setFrameB(frameB);
-    }
-
-    /**
-     * Set the rotation direction of the attitude quaternion.
-     * @param direction rotation direction to be set
-     */
-    public void setAttitudeQuaternionDirection(final String direction) {
-        endPoints.setDirection(direction);
-    }
-
     /** Get the attitude end points.
      * @return attitude end points
      */

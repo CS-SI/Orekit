@@ -17,6 +17,7 @@
 package org.orekit.files.ccsds.ndm.adm.apm;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.files.ccsds.ndm.adm.ADMParser;
 import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
@@ -94,25 +95,25 @@ public enum APMEulerKey {
 
     /** First reference frame entry. */
     EULER_FRAME_A((token, context, data) -> {
-        token.processAsNormalizedString(data::setEulerFrameA);
+        token.processAsNormalizedString(data.getEndPoints()::setFrameA);
         return true;
     }),
 
     /** Second reference frame entry. */
     EULER_FRAME_B((token, context, data) -> {
-        token.processAsNormalizedString(data::setEulerFrameB);
+        token.processAsNormalizedString(data.getEndPoints()::setFrameB);
         return true;
     }),
 
     /** Rotation direction entry. */
     EULER_DIR((token, context, data) -> {
-        token.processAsNormalizedString(data::setEulerDirection);
+        token.processAsNormalizedString(data.getEndPoints()::setDirection);
         return true;
     }),
 
     /** Rotation sequence entry. */
     EULER_ROT_SEQ((token, context, data) -> {
-        token.processAsNormalizedString(data::setEulerRotSeq);
+        ADMParser.processRotationOrder(token, data::setEulerRotSeq);
         return true;
     }),
 

@@ -22,6 +22,7 @@ import java.util.List;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadataKey;
+import org.orekit.files.ccsds.ndm.adm.ADMParser;
 import org.orekit.files.ccsds.ndm.adm.ADMSegment;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
@@ -30,7 +31,6 @@ import org.orekit.files.ccsds.section.XMLStructureProcessingState;
 import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
-import org.orekit.files.ccsds.utils.state.AbstractMessageParser;
 import org.orekit.files.ccsds.utils.state.ErrorState;
 import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.time.AbsoluteDate;
@@ -41,16 +41,13 @@ import org.orekit.utils.IERSConventions;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
+public class APMParser extends ADMParser<APMFile, APMParser> {
 
     /** Root element for XML files. */
     private static final String ROOT = "apm";
 
     /** Key for format version. */
     private static final String FORMAT_VERSION_KEY = "CCSDS_APM_VERS";
-
-    /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
-    private final AbsoluteDate missionReferenceDate;
 
     /** APM file being read. */
     private APMFile file;
@@ -92,16 +89,7 @@ public class APMParser extends AbstractMessageParser<APMFile, APMParser> {
     public APMParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate) {
-        super(FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext);
-        this.missionReferenceDate = missionReferenceDate;
-    }
-
-    /**
-     * Get reference date for Mission Elapsed Time and Mission Relative Time time systems.
-     * @return the reference date
-     */
-    public AbsoluteDate getMissionReferenceDate() {
-        return missionReferenceDate;
+        super(FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate);
     }
 
     /** {@inheritDoc} */
