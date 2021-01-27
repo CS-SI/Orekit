@@ -25,15 +25,18 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.Keyword;
 import org.orekit.files.ccsds.ndm.adm.aem.StreamingAemWriter.SegmentWriter;
+import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.files.general.AttitudeEphemerisFile.SatelliteAttitudeEphemeris;
 import org.orekit.files.general.AttitudeEphemerisFile.AttitudeEphemerisSegment;
 import org.orekit.files.general.AttitudeEphemerisFileWriter;
 import org.orekit.time.TimeScale;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
 /**
@@ -42,6 +45,12 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * @since 10.2
  */
 public class AEMWriter implements AttitudeEphemerisFileWriter {
+
+    /** IERS Conventions. */
+    private final  IERSConventions conventions;
+
+    /** Data context used for obtain frames and time scales. */
+    private final DataContext dataContext;
 
     /** Originator name, usually the organization and/or country. **/
     private final String originator;
@@ -60,7 +69,8 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
      * including {@link StreamingAemWriter#DEFAULT_ATTITUDE_FORMAT Default formatting}.
      */
     public AEMWriter() {
-        this(StreamingAemWriter.DEFAULT_ORIGINATOR, null, null,
+        this(IERSConventions.IERS_2010, DataContext.getDefault(),
+             StreamingAemWriter.DEFAULT_ORIGINATOR, null, null,
              StreamingAemWriter.DEFAULT_ATTITUDE_FORMAT);
     }
 
@@ -70,13 +80,16 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
      * and using {@link StreamingAemWriter#DEFAULT_ATTITUDE_FORMAT default formatting}
      * for attitude ephemeris data output.
      *
+     * @param conventions IERS Conventions
+     * @param dataContext used to retrieve frames, time scales, etc.
      * @param originator the originator field string
      * @param spaceObjectId the spacecraft ID
      * @param spaceObjectName the space object common name
      */
-    public AEMWriter(final String originator, final String spaceObjectId,
+    public AEMWriter(final IERSConventions conventions, final DataContext dataContext,
+                     final String originator, final String spaceObjectId,
                      final String spaceObjectName) {
-        this(originator, spaceObjectId, spaceObjectName,
+        this(conventions, dataContext, originator, spaceObjectId, spaceObjectName,
              StreamingAemWriter.DEFAULT_ATTITUDE_FORMAT);
     }
 
@@ -85,6 +98,8 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
      * parameters to successfully fill in all required fields that aren't part
      * of a standard object and user-defined attitude ephemeris data output format.
      *
+     * @param conventions IERS Conventions
+     * @param dataContext used to retrieve frames, time scales, etc.
      * @param originator the originator field string
      * @param spaceObjectId the spacecraft ID
      * @param spaceObjectName the space object common name
@@ -92,12 +107,15 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
      *                       attitude ephemeris data output
      * @since 10.3
      */
-    public AEMWriter(final String originator, final String spaceObjectId,
+    public AEMWriter(final IERSConventions conventions, final DataContext dataContext,
+                     final String originator, final String spaceObjectId,
                      final String spaceObjectName, final String attitudeFormat) {
-        this.originator          = originator;
-        this.spaceObjectId       = spaceObjectId;
-        this.spaceObjectName     = spaceObjectName;
-        this.attitudeFormat      = attitudeFormat;
+        this.conventions     = conventions;
+        this.dataContext     = dataContext;
+        this.originator      = originator;
+        this.spaceObjectId   = spaceObjectId;
+        this.spaceObjectName = spaceObjectName;
+        this.attitudeFormat  = attitudeFormat;
     }
 
     /** {@inheritDoc} */
@@ -137,11 +155,9 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
         final AttitudeEphemerisSegment firstSegment = segments.get(0);
 
         final String objectName = this.spaceObjectName == null ? idToProcess : this.spaceObjectName;
-        // Only one time scale per AEM file, see Section 4.2.5.4.2
-        final TimeScale timeScale = firstSegment.getTimeScale();
         // Metadata that is constant for the whole AEM file
         final Map<Keyword, String> metadata = new LinkedHashMap<>();
-        metadata.put(Keyword.TIME_SYSTEM, firstSegment.getTimeScaleString());
+        metadata.put(Keyword.TIME_SYSTEM, CcsdsTimeScale.UTC.name());
 
         // TODO: ORIGINATOR belongs to header, not metadata
         metadata.put(Keyword.ORIGINATOR,  this.originator);
@@ -167,7 +183,7 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
 
         // Writer for AEM files
         final StreamingAemWriter aemWriter =
-                        new StreamingAemWriter(writer, timeScale, metadata, attitudeFormat);
+                        new StreamingAemWriter(writer, conventions, dataContext, metadata, attitudeFormat);
         aemWriter.writeHeader();
 
         // Loop on segments

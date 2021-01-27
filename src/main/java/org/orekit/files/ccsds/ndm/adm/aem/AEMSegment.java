@@ -18,13 +18,11 @@ package org.orekit.files.ccsds.ndm.adm.aem;
 
 import java.util.List;
 
-import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.adm.ADMSegment;
 import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScale;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
@@ -39,19 +37,25 @@ public class AEMSegment extends ADMSegment<AEMMetadata, AEMData> implements Atti
     /** IERS conventions to use. */
     private final IERSConventions conventions;
 
+    /** Indicator for simple or accurate EOP interpolation. */
+    private final  boolean simpleEOP;
+
     /** Data context. */
     private final DataContext dataContext;
 
     /** Simple constructor.
      * @param metadata segment metadata
      * @param data segment data
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param conventions IERS conventions to use
      * @param dataContext data context to use
      */
     public AEMSegment(final AEMMetadata metadata, final AEMData data,
-                      final IERSConventions conventions, final DataContext dataContext) {
+                      final IERSConventions conventions, final boolean simpleEOP,
+                      final DataContext dataContext) {
         super(metadata, data);
         this.conventions = conventions;
+        this.simpleEOP   = simpleEOP;
         this.dataContext = dataContext;
     }
 
@@ -63,62 +67,8 @@ public class AEMSegment extends ADMSegment<AEMMetadata, AEMData> implements Atti
 
     /** {@inheritDoc} */
     @Override
-    public String getCenterName() {
-        return getMetadata().getCenterName();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public String getRefFrameAString() {
-        return getMetadata().getRefFrameAString();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public String getRefFrameBString() {
-        return getMetadata().getRefFrameBString();
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public Frame getReferenceFrame() {
-        return getMetadata().getReferenceFrame();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public String getAttitudeDirection() {
-        return getMetadata().getAttitudeDirection();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public String getAttitudeType() {
-        return getMetadata().getAttitudeType();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean isFirst() {
-        return getMetadata().isFirst();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public RotationOrder getRotationOrder() {
-        return getMetadata().getRotationOrder();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public String getTimeScaleString() {
-        return getMetadata().getTimeSystem().toString();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public TimeScale getTimeScale() {
-        return getMetadata().getTimeSystem().getTimeScale(conventions, dataContext.getTimeScales());
+        return getMetadata().getEndPoints().getExternalFrame().getFrame(conventions, simpleEOP, dataContext);
     }
 
     /** {@inheritDoc} */

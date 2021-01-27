@@ -168,11 +168,8 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> {
     @Override
     public void finalizeData() {
         if (metadata != null) {
-            if ("A2B".equals(metadata.getAttitudeDirection())) {
-                // TODO
-            }
             file.addSegment(new AEMSegment(metadata, currentEphemeridesBlock,
-                                           getConventions(), getDataContext()));
+                                           getConventions(), isSimpleEOP(), getDataContext()));
         }
         metadata = null;
         context  = null;

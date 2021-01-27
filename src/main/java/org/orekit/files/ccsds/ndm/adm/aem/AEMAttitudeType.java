@@ -88,7 +88,7 @@ public enum AEMAttitudeType {
     },
 
     /** Quaternion and derivatives. */
-    QUATERNION_DERIVATIVE("QUATERNION DERIVATIVE") {
+    QUATERNION_DERIVATIVE("QUATERNION/DERIVATIVE") {
 
         @Override
         public double[] getAttitudeData(final TimeStampedAngularCoordinates coordinates,
@@ -152,7 +152,7 @@ public enum AEMAttitudeType {
     },
 
     /** Quaternion and rotation rate. */
-    QUATERNION_RATE("QUATERNION RATE") {
+    QUATERNION_RATE("QUATERNION/RATE") {
 
         @Override
         public double[] getAttitudeData(final TimeStampedAngularCoordinates coordinates,
@@ -257,7 +257,7 @@ public enum AEMAttitudeType {
     },
 
     /** Euler angles and rotation rate. */
-    EULER_ANGLE_RATE("EULER ANGLE RATE") {
+    EULER_ANGLE_RATE("EULER ANGLE/RATE") {
 
         @Override
         public double[] getAttitudeData(final TimeStampedAngularCoordinates coordinates,
@@ -341,7 +341,7 @@ public enum AEMAttitudeType {
     },
 
     /** Spin and nutation. */
-    SPIN_NUTATION("SPIN NUTATION") {
+    SPIN_NUTATION("SPIN/NUTATION") {
 
         @Override
         public double[] getAttitudeData(final TimeStampedAngularCoordinates coordinates,

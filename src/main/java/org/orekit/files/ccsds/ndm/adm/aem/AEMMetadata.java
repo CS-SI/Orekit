@@ -18,7 +18,7 @@ package org.orekit.files.ccsds.ndm.adm.aem;
 
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
-import org.orekit.frames.Frame;
+import org.orekit.files.ccsds.ndm.adm.AttitudeEndPoints;
 import org.orekit.time.AbsoluteDate;
 
 /** This class gathers the meta-data present in the Attitude Data Message (ADM).
@@ -27,17 +27,8 @@ import org.orekit.time.AbsoluteDate;
  */
 public class AEMMetadata extends ADMMetadata {
 
-    /** The reference frame A specifier, as it appeared in the file. */
-    private String refFrameAString;
-
-    /** The reference frame B specifier, as it appeared in the file. */
-    private String refFrameBString;
-
-    /** The reference frame from which attitude is defined. */
-    private Frame refFrame;
-
-    /** Rotation direction of the attitude. */
-    private String attitudeDir;
+    /** Attitude end points. */
+    private AttitudeEndPoints endPoints;
 
     /** Start of total time span covered by attitude data. */
     private AbsoluteDate startTime;
@@ -52,16 +43,13 @@ public class AEMMetadata extends ADMMetadata {
     private AbsoluteDate useableStopTime;
 
     /** The format of the data lines in the message. */
-    private String attitudeType;
+    private AEMAttitudeType attitudeType;
 
     /** The placement of the scalar portion of the quaternion (QC) in the attitude data. */
     private boolean isFirst;
 
-    /**
-     * The rotation sequence of the Euler angles.
-     * (e.g., 312, where X=1, Y=2, Z=3)
-     */
-    private String eulerRotSeq;
+    /** The rotation sequence of the Euler angles. */
+    private RotationOrder eulerRotSeq;
 
     /** The rate frame specifier, as it appeared in the file. */
     private String rateFrameString;
@@ -75,56 +63,11 @@ public class AEMMetadata extends ADMMetadata {
     /** The rotation order. */
     private RotationOrder rotationOrder;
 
-    /**
-     * Get the reference frame A specifier as it appeared in the file.
-     *
-     * @return the frame name as it appeared in the file (A).
+    /** Get the attitude end points.
+     * @return attitude end points
      */
-    public String getRefFrameAString() {
-        return refFrameAString;
-    }
-
-    /**
-     * Set the reference frame A name.
-     * @param frame specifier as it appeared in the file.
-     */
-    public void setRefFrameAString(final String frame) {
-        this.refFrameAString = frame;
-    }
-
-    /**
-     * Get the reference frame B specifier as it appeared in the file.
-     *
-     * @return the frame name as it appeared in the file (B).
-     */
-    public String getRefFrameBString() {
-        return this.refFrameBString;
-    }
-
-    /**
-     * Set the reference frame B name.
-     * @param frame specifier as it appeared in the file.
-     */
-    public void setRefFrameBString(final String frame) {
-        this.refFrameBString = frame;
-    }
-
-    /**
-     * Get the reference frame from which attitude is defined.
-     * @param frame reference frame
-     */
-    public void setReferenceFrame(final Frame frame) {
-        this.refFrame = frame;
-
-    }
-
-    /**
-     * Get the reference frame from which attitude is defined.
-     *
-     * @return the reference frame from which attitude is defined
-     */
-    public Frame getReferenceFrame() {
-        return refFrame;
+    public AttitudeEndPoints getEndPoints() {
+        return endPoints;
     }
 
     /**
@@ -144,28 +87,11 @@ public class AEMMetadata extends ADMMetadata {
     }
 
     /**
-     * Get the rotation direction of the attitude.
-     *
-     * @return the rotation direction of the attitude
-     */
-    public String getAttitudeDirection() {
-        return attitudeDir;
-    }
-
-    /**
-     * Set the rotation direction of the attitude.
-     * @param direction rotation direction to be set
-     */
-    public void setAttitudeDirection(final String direction) {
-        this.attitudeDir = direction;
-    }
-
-    /**
      * Get the format of the data lines in the message.
      *
      * @return the format of the data lines in the message
      */
-    public String getAttitudeType() {
+    public AEMAttitudeType getAttitudeType() {
         return attitudeType;
     }
 
@@ -173,7 +99,7 @@ public class AEMMetadata extends ADMMetadata {
      * Set the format of the data lines in the message.
      * @param type format to be set
      */
-    public void setAttitudeType(final String type) {
+    public void setAttitudeType(final AEMAttitudeType type) {
         this.attitudeType = type;
     }
 
@@ -195,18 +121,18 @@ public class AEMMetadata extends ADMMetadata {
     }
 
     /**
-     * Get the rotation sequence of the Euler angles (e.g., 312, where X=1, Y=2, Z=3).
-     * @return the rotation sequence of the Euler angles
+     * Get the rotation order of Euler angles.
+     * @return rotation order
      */
-    public String getEulerRotSeq() {
+    public RotationOrder getEulerRotSeq() {
         return eulerRotSeq;
     }
 
     /**
-     * Set the rotation sequence of the Euler angles (e.g., 312, where X=1, Y=2, Z=3).
-     * @param eulerRotSeq rotation sequence to be set
+     * Set the rotation order for Euler angles.
+     * @param eulerRotSeq order to be set
      */
-    public void setEulerRotSeq(final String eulerRotSeq) {
+    public void setEulerRotSeq(final RotationOrder eulerRotSeq) {
         this.eulerRotSeq = eulerRotSeq;
     }
 

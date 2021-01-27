@@ -29,14 +29,17 @@ import java.util.Map;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.files.ccsds.Keyword;
+import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
 /**
@@ -220,6 +223,9 @@ public class StreamingAemWriter {
     /** Default value for {@link Keyword#ORIGINATOR}. */
     public static final String DEFAULT_ORIGINATOR = "OREKIT";
 
+    /** Default value for {@link Keyword#TIME_SYSTEM}. */
+    public static final String DEFAULT_TIME_SYSTEM = "UTC";
+
     /**
      * Default format used for attitude ephemeris data output: 5 digits
      * after the decimal point and leading space for positive values.
@@ -256,14 +262,14 @@ public class StreamingAemWriter {
      *
      * @param writer    The output stream for the AEM file. Most methods will append data
      *                  to this {@code writer}.
-     * @param timeScale for all times in the AEM except {@link Keyword#CREATION_DATE}. See
-     *                  Section 4.2.5.4.2 and Annex A.
+     * @param conventions IERS Conventions
+     * @param dataContext used to retrieve frames, time scales, etc.
      * @param metadata  for the satellite.
      */
     public StreamingAemWriter(final Appendable writer,
-                              final TimeScale timeScale,
+                              final IERSConventions conventions, final DataContext dataContext,
                               final Map<Keyword, String> metadata) {
-        this(writer, timeScale, metadata, DEFAULT_ATTITUDE_FORMAT);
+        this(writer, conventions, dataContext, metadata, DEFAULT_ATTITUDE_FORMAT);
     }
 
     /**
@@ -273,19 +279,18 @@ public class StreamingAemWriter {
      *
      * @param writer    The output stream for the AEM file. Most methods will append data
      *                  to this {@code writer}.
-     * @param timeScale for all times in the AEM except {@link Keyword#CREATION_DATE}. See
-     *                  Section 4.2.5.4.2 and Annex A.
+     * @param conventions IERS Conventions
+     * @param dataContext used to retrieve frames, time scales, etc.
      * @param metadata  for the satellite.
      * @param attitudeFormat format parameters for attitude ephemeris data output.
      * @since 10.3
      */
     public StreamingAemWriter(final Appendable writer,
-                              final TimeScale timeScale,
+                              final IERSConventions conventions, final DataContext dataContext,
                               final Map<Keyword, String> metadata,
                               final String attitudeFormat) {
-        this.writer    = writer;
-        this.timeScale = timeScale;
-        this.metadata  = new LinkedHashMap<>(metadata);
+        this.writer   = writer;
+        this.metadata = new LinkedHashMap<>(metadata);
 
         // Set default metadata
         this.metadata.putIfAbsent(Keyword.CCSDS_AEM_VERS, CCSDS_AEM_VERS);
@@ -294,7 +299,9 @@ public class StreamingAemWriter {
         this.metadata.putIfAbsent(Keyword.CREATION_DATE,
                 ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT));
         this.metadata.putIfAbsent(Keyword.ORIGINATOR, DEFAULT_ORIGINATOR);
-        this.metadata.putIfAbsent(Keyword.TIME_SYSTEM, timeScale.getName());
+        this.metadata.putIfAbsent(Keyword.TIME_SYSTEM, DEFAULT_TIME_SYSTEM);
+        this.timeScale      = CcsdsTimeScale.parse(metadata.get(Keyword.TIME_SYSTEM)).getTimeScale(conventions,
+                                                                                                   dataContext.getTimeScales());
         this.attitudeFormat = attitudeFormat;
     }
 
@@ -508,7 +515,9 @@ public class StreamingAemWriter {
 
                 // Rotation order
                 final String eulerRotSeq = this.metadata.get(Keyword.EULER_ROT_SEQ);
-                final RotationOrder order = (eulerRotSeq == null) ? null : AEMRotationOrder.getRotationOrder(eulerRotSeq);
+                final RotationOrder order = (eulerRotSeq == null) ?
+                                            null :
+                                            RotationOrder.valueOf(eulerRotSeq.replace('1', 'X').replace('2', 'Y').replace('3', 'Z'));
 
                 // Write attitude ephemeris data
                 writeAttitudeEphemerisLine(currentState.getAttitude().getOrientation(), isFirst,
