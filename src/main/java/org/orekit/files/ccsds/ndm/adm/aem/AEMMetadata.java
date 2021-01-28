@@ -63,6 +63,12 @@ public class AEMMetadata extends ADMMetadata {
     /** The rotation order. */
     private RotationOrder rotationOrder;
 
+    /** Simple constructor.
+     */
+    public AEMMetadata() {
+        endPoints = new AttitudeEndPoints();
+    }
+
     /** Get the attitude end points.
      * @return attitude end points
      */
@@ -83,6 +89,7 @@ public class AEMMetadata extends ADMMetadata {
      * @param frame specifier as it appeared in the file.
      */
     public void setRateFrameString(final String frame) {
+        refuseFurtherComments();
         this.rateFrameString = frame;
     }
 
@@ -100,6 +107,7 @@ public class AEMMetadata extends ADMMetadata {
      * @param type format to be set
      */
     public void setAttitudeType(final AEMAttitudeType type) {
+        refuseFurtherComments();
         this.attitudeType = type;
     }
 
@@ -117,6 +125,7 @@ public class AEMMetadata extends ADMMetadata {
      * @param isFirst true if QC is the first element in the attitude data
      */
     public void setIsFirst(final boolean isFirst) {
+        refuseFurtherComments();
         this.isFirst = isFirst;
     }
 
@@ -133,6 +142,7 @@ public class AEMMetadata extends ADMMetadata {
      * @param eulerRotSeq order to be set
      */
     public void setEulerRotSeq(final RotationOrder eulerRotSeq) {
+        refuseFurtherComments();
         this.eulerRotSeq = eulerRotSeq;
     }
 
@@ -149,6 +159,7 @@ public class AEMMetadata extends ADMMetadata {
      * @param startTime the time to be set
      */
     public void setStartTime(final AbsoluteDate startTime) {
+        refuseFurtherComments();
         this.startTime = startTime;
     }
 
@@ -165,6 +176,7 @@ public class AEMMetadata extends ADMMetadata {
      * @param stopTime the time to be set
      */
     public void setStopTime(final AbsoluteDate stopTime) {
+        refuseFurtherComments();
         this.stopTime = stopTime;
     }
 
@@ -181,6 +193,7 @@ public class AEMMetadata extends ADMMetadata {
      * @param useableStartTime the time to be set
      */
     public void setUseableStartTime(final AbsoluteDate useableStartTime) {
+        refuseFurtherComments();
         this.useableStartTime = useableStartTime;
     }
 
@@ -197,6 +210,7 @@ public class AEMMetadata extends ADMMetadata {
      * @param useableStopTime the time to be set
      */
     public void setUseableStopTime(final AbsoluteDate useableStopTime) {
+        refuseFurtherComments();
         this.useableStopTime = useableStopTime;
     }
 
@@ -244,6 +258,7 @@ public class AEMMetadata extends ADMMetadata {
      * @param interpolationMethod the interpolation method to be set
      */
     public void setInterpolationMethod(final String interpolationMethod) {
+        refuseFurtherComments();
         this.interpolationMethod = interpolationMethod;
     }
 
@@ -260,6 +275,7 @@ public class AEMMetadata extends ADMMetadata {
      * @param interpolationDegree the interpolation degree to be set
      */
     public void setInterpolationDegree(final int interpolationDegree) {
+        refuseFurtherComments();
         this.interpolationDegree = interpolationDegree;
     }
 
@@ -288,6 +304,7 @@ public class AEMMetadata extends ADMMetadata {
      * @param order the rotation order to be set
      */
     public void setRotationOrder(final RotationOrder order) {
+        refuseFurtherComments();
         this.rotationOrder = order;
     }
 

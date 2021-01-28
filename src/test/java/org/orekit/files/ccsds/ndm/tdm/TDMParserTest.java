@@ -1017,12 +1017,7 @@ public class TDMParserTest {
 
         // Comment
         final List<String> dataComment = new ArrayList<String>();
-        dataComment.add("Signal related Keywords");
-        dataComment.add("VLBI/Delta-DOR Related Keywords");
-        dataComment.add("Angle Related Keywords");
-        dataComment.add("Time Related Keywords");
-        dataComment.add("Media Related Keywords");
-        dataComment.add("Meteorological Related Keywords");
+        dataComment.add("Data Related Keywords");
         Assert.assertEquals(dataComment, file.getSegments().get(0).getData().getComments());
     }
 

@@ -19,8 +19,6 @@ package org.orekit.files.ccsds.ndm.adm.aem;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -74,7 +72,7 @@ public enum AEMAttitudeType {
                                                    data[quaternionIndex[1]],
                                                    data[quaternionIndex[2]],
                                                    data[quaternionIndex[3]],
-                                                   false);
+                                                   true);
 
             // Return
             return new TimeStampedAngularCoordinates(date, rotation, Vector3D.ZERO, Vector3D.ZERO);
@@ -97,28 +95,19 @@ public enum AEMAttitudeType {
             final double[] data = new double[8];
 
             final FieldRotation<UnivariateDerivative1> fieldRotation = coordinates.toUnivariateDerivative1Rotation();
-            // Quaternion components
-            final double q0    = fieldRotation.getQ0().getValue();
-            final double q1    = fieldRotation.getQ1().getValue();
-            final double q2    = fieldRotation.getQ2().getValue();
-            final double q3    = fieldRotation.getQ3().getValue();
-            final double q0Dot = fieldRotation.getQ0().getFirstDerivative();
-            final double q1Dot = fieldRotation.getQ1().getFirstDerivative();
-            final double q2Dot = fieldRotation.getQ2().getFirstDerivative();
-            final double q3Dot = fieldRotation.getQ3().getFirstDerivative();
 
             // Data index
             final int[] quaternionIndex = isFirst ? new int[] {0, 1, 2, 3, 4, 5, 6, 7} : new int[] {3, 0, 1, 2, 7, 4, 5, 6};
 
             // Fill the array
-            data[quaternionIndex[0]] = q0;
-            data[quaternionIndex[1]] = q1;
-            data[quaternionIndex[2]] = q2;
-            data[quaternionIndex[3]] = q3;
-            data[quaternionIndex[4]] = q0Dot;
-            data[quaternionIndex[5]] = q1Dot;
-            data[quaternionIndex[6]] = q2Dot;
-            data[quaternionIndex[7]] = q3Dot;
+            data[quaternionIndex[0]] = fieldRotation.getQ0().getValue();
+            data[quaternionIndex[1]] = fieldRotation.getQ1().getValue();
+            data[quaternionIndex[2]] = fieldRotation.getQ2().getValue();
+            data[quaternionIndex[3]] = fieldRotation.getQ3().getValue();
+            data[quaternionIndex[4]] = fieldRotation.getQ0().getFirstDerivative();
+            data[quaternionIndex[5]] = fieldRotation.getQ1().getFirstDerivative();
+            data[quaternionIndex[6]] = fieldRotation.getQ2().getFirstDerivative();
+            data[quaternionIndex[7]] = fieldRotation.getQ3().getFirstDerivative();
 
             // Return
             return data;
@@ -130,18 +119,13 @@ public enum AEMAttitudeType {
             // Data index
             final int[] quaternionIndex = isFirst ? new int[] {0, 1, 2, 3, 4, 5, 6, 7} : new int[] {3, 0, 1, 2, 7, 4, 5, 6};
 
-            // Quaternion components
-            final DSFactory factory = new DSFactory(1, 1);
-            final DerivativeStructure q0DS = factory.build(data[quaternionIndex[0]], data[quaternionIndex[4]]);
-            final DerivativeStructure q1DS = factory.build(data[quaternionIndex[1]], data[quaternionIndex[5]]);
-            final DerivativeStructure q2DS = factory.build(data[quaternionIndex[2]], data[quaternionIndex[6]]);
-            final DerivativeStructure q3DS = factory.build(data[quaternionIndex[3]], data[quaternionIndex[7]]);
-
-            // Rotation
-            final FieldRotation<DerivativeStructure> fieldRotation = new FieldRotation<>(q0DS, q1DS, q2DS, q3DS, false);
-
-            // Return
-            return new TimeStampedAngularCoordinates(date, fieldRotation);
+            // Build coordintes
+            return new TimeStampedAngularCoordinates(date,
+                                                     new FieldRotation<>(new UnivariateDerivative1(data[quaternionIndex[0]], data[quaternionIndex[4]]),
+                                                                         new UnivariateDerivative1(data[quaternionIndex[1]], data[quaternionIndex[5]]),
+                                                                         new UnivariateDerivative1(data[quaternionIndex[2]], data[quaternionIndex[6]]),
+                                                                         new UnivariateDerivative1(data[quaternionIndex[3]], data[quaternionIndex[7]]),
+                                                                         true));
         }
 
         @Override
@@ -296,7 +280,7 @@ public enum AEMAttitudeType {
 
             // Build the needed objects
             final Rotation rotation     = new Rotation(order, RotationConvention.FRAME_TRANSFORM,
-                                                   alpha1, alpha2, alpha3);
+                                                       alpha1, alpha2, alpha3);
             final Vector3D rotationRate = new Vector3D(xRate, yRate, zRate);
             // Return
             return new TimeStampedAngularCoordinates(date, rotation, rotationRate, Vector3D.ZERO);
@@ -403,7 +387,7 @@ public enum AEMAttitudeType {
      * @param name given name
      * @return attitude type
      */
-    public static AEMAttitudeType getAttitudeType(final String name) {
+    public static AEMAttitudeType parseAttitudeType(final String name) {
         final AEMAttitudeType type = CODES_MAP.get(name);
         if (type == null) {
             // An exception is thrown if the attitude type is null

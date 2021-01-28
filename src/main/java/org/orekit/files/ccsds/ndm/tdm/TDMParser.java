@@ -20,6 +20,7 @@ import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
 import org.orekit.files.ccsds.section.KVNStructureProcessingState;
+import org.orekit.files.ccsds.section.MetadataKey;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.section.XMLStructureProcessingState;
 import org.orekit.files.ccsds.utils.ParsingContext;
@@ -194,9 +195,16 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
     private boolean processMetadataToken(final ParseToken token) {
         try {
             inMetadata();
-            final TDMMetadataKey key = TDMMetadataKey.valueOf(token.getName());
-            key.process(token, context, metadata);
-            return true;
+            try {
+                return MetadataKey.
+                           valueOf(token.getName()).
+                           process(token, context, metadata);
+            } catch (IllegalArgumentException iae) {
+                TDMMetadataKey.
+                    valueOf(token.getName()).
+                    process(token, context, metadata);
+                return true;
+            }
         } catch (IllegalArgumentException iae) {
             // token has not been recognized
             return false;
@@ -210,8 +218,9 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
     private boolean processDataToken(final ParseToken token) {
         try {
             inData();
-            final TDMDataKey key = TDMDataKey.valueOf(token.getName());
-            key.process(token, context, observationsBlock);
+            TDMDataKey.
+                valueOf(token.getName()).
+                process(token, context, observationsBlock);
             return true;
         } catch (IllegalArgumentException iae) {
             // token has not been recognized

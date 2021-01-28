@@ -165,10 +165,10 @@ public class OCMMetadata extends ODMMetadata {
 
         // set up the few fields that have default values as per CCSDS standard
         setTimeSystem(CcsdsTimeScale.UTC);
-        catalogName         = "CSPOC";
+        catalogName      = "CSPOC";
         clockSecPerSISec = 1.0;
-        interpMethodEOP     = DEFAULT_INTERPOLATION_METHOD;
-        interpMethodSW      = DEFAULT_INTERPOLATION_METHOD;
+        interpMethodEOP  = DEFAULT_INTERPOLATION_METHOD;
+        interpMethodSW   = DEFAULT_INTERPOLATION_METHOD;
 
     }
 
@@ -183,6 +183,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param classification message classification
      */
     void setClassification(final String classification) {
+        refuseFurtherComments();
         this.classification = classification;
     }
 
@@ -197,6 +198,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param alternateNames alternate names
      */
     public void setAlternateNames(final List<String> alternateNames) {
+        refuseFurtherComments();
         this.alternateNames = alternateNames;
     }
 
@@ -211,6 +213,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param objectDesignator unique satellite identification designator for the object
      */
     void setObjectDesignator(final String objectDesignator) {
+        refuseFurtherComments();
         this.objectDesignator = objectDesignator;
     }
 
@@ -225,6 +228,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param originatorPOC programmatic Point Of Contact at originator
      */
     void setOriginatorPOC(final String originatorPOC) {
+        refuseFurtherComments();
         this.originatorPOC = originatorPOC;
     }
 
@@ -239,6 +243,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param originatorPosition position of Programmatic Point Of Contact at originator
      */
     void setOriginatorPosition(final String originatorPosition) {
+        refuseFurtherComments();
         this.originatorPosition = originatorPosition;
     }
 
@@ -253,6 +258,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param originatorPhone phone number of Programmatic Point Of Contact at originator
      */
     void setOriginatorPhone(final String originatorPhone) {
+        refuseFurtherComments();
         this.originatorPhone = originatorPhone;
     }
 
@@ -267,6 +273,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param originatorAddress address of Programmatic Point Of Contact at originator
      */
     void setOriginatorAddress(final String originatorAddress) {
+        refuseFurtherComments();
         this.originatorAddress = originatorAddress;
     }
 
@@ -281,6 +288,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param techOrg creating agency or operator
      */
     void setTechOrg(final String techOrg) {
+        refuseFurtherComments();
         this.techOrg = techOrg;
     }
 
@@ -295,6 +303,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param techPOC Technical Point Of Contact at originator
      */
     void setTechPOC(final String techPOC) {
+        refuseFurtherComments();
         this.techPOC = techPOC;
     }
 
@@ -309,6 +318,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param techPosition position of Technical Point Of Contact at originator
      */
     void setTechPosition(final String techPosition) {
+        refuseFurtherComments();
         this.techPosition = techPosition;
     }
 
@@ -323,6 +333,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param techPhone phone number of Technical Point Of Contact at originator
      */
     void setTechPhone(final String techPhone) {
+        refuseFurtherComments();
         this.techPhone = techPhone;
     }
 
@@ -337,6 +348,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param techAddress address of Technical Point Of Contact at originator
      */
     void setTechAddress(final String techAddress) {
+        refuseFurtherComments();
         this.techAddress = techAddress;
     }
 
@@ -351,6 +363,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param previousMessageID unique ID identifying previous message from a given originator
      */
     void setPreviousMessageID(final String previousMessageID) {
+        refuseFurtherComments();
         this.previousMessageID = previousMessageID;
     }
 
@@ -365,6 +378,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param previousMessageEpoch creation date of previous message from a given originator
      */
     void setPreviousMessageEpoch(final AbsoluteDate previousMessageEpoch) {
+        refuseFurtherComments();
         this.previousMessageEpoch = previousMessageEpoch;
     }
 
@@ -379,6 +393,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param nextMessageID unique ID identifying next message from a given originator
      */
     void setNextMessageID(final String nextMessageID) {
+        refuseFurtherComments();
         this.nextMessageID = nextMessageID;
     }
 
@@ -393,6 +408,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param nextMessageEpoch creation date of next message from a given originator
      */
     void setNextMessageEpoch(final AbsoluteDate nextMessageEpoch) {
+        refuseFurtherComments();
         this.nextMessageEpoch = nextMessageEpoch;
     }
 
@@ -407,6 +423,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param attMessageLink names of Attitude Data Messages link to this Orbit Data Message
      */
     void setAttMessageLink(final List<String> attMessageLink) {
+        refuseFurtherComments();
         this.attMessageLink = attMessageLink;
     }
 
@@ -421,6 +438,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param cdmMessageLink names of Conjunction Data Messages link to this Orbit Data Message
      */
     void setCdmMessageLink(final List<String> cdmMessageLink) {
+        refuseFurtherComments();
         this.cdmMessageLink = cdmMessageLink;
     }
 
@@ -435,6 +453,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param prmMessageLink names of Pointing Request Messages link to this Orbit Data Message
      */
     void setPrmMessageLink(final List<String> prmMessageLink) {
+        refuseFurtherComments();
         this.prmMessageLink = prmMessageLink;
     }
 
@@ -449,6 +468,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param rdmMessageLink names of Reentry Data Messages link to this Orbit Data Message
      */
     void setRdmMessageLink(final List<String> rdmMessageLink) {
+        refuseFurtherComments();
         this.rdmMessageLink = rdmMessageLink;
     }
 
@@ -463,6 +483,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param internationalDesignator international designator for the object
      */
     void setInternationalDesignator(final String internationalDesignator) {
+        refuseFurtherComments();
         this.internationalDesignator = internationalDesignator;
     }
 
@@ -477,6 +498,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param operator operator of the space object
      */
     void setOperator(final String operator) {
+        refuseFurtherComments();
         this.operator = operator;
     }
 
@@ -491,6 +513,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param owner owner of the space object
      */
     void setOwner(final String owner) {
+        refuseFurtherComments();
         this.owner = owner;
     }
 
@@ -505,6 +528,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param constellation name of the constellation this space object belongs to
      */
     void setConstellation(final String constellation) {
+        refuseFurtherComments();
         this.constellation = constellation;
     }
 
@@ -519,6 +543,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param country name of the country where the space object owner is based
      */
     void setCountry(final String country) {
+        refuseFurtherComments();
         this.country = country;
     }
 
@@ -533,6 +558,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param catalogName specification of satellite catalog source
      */
     void setCatalogName(final String catalogName) {
+        refuseFurtherComments();
         this.catalogName = catalogName;
     }
 
@@ -547,6 +573,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param objectType type of object
      */
     void setObjectType(final ObjectType objectType) {
+        refuseFurtherComments();
         this.objectType = objectType;
     }
 
@@ -561,6 +588,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param opsStatus operational status
      */
     void setOpsStatus(final OpsStatus opsStatus) {
+        refuseFurtherComments();
         this.opsStatus = opsStatus;
     }
 
@@ -575,6 +603,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param orbitCategory orbit category
      */
     void setOrbitCategory(final OrbitCategory orbitCategory) {
+        refuseFurtherComments();
         this.orbitCategory = orbitCategory;
     }
 
@@ -589,6 +618,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param ocmDataElements list of elements of information data blocks included in this message
      */
     void setOcmDataElements(final List<String> ocmDataElements) {
+        refuseFurtherComments();
         this.ocmDataElements = ocmDataElements;
     }
 
@@ -603,6 +633,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param epochT0 epoch to which <em>all</em> relative times are referenced in data blocks
      */
     void setEpochT0(final AbsoluteDate epochT0) {
+        refuseFurtherComments();
         this.epochT0 = epochT0;
     }
 
@@ -617,6 +648,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param sclkEpoch epoch corresponding to t=0 for the spacecraft clock
      */
     void setSclkEpoch(final AbsoluteDate sclkEpoch) {
+        refuseFurtherComments();
         this.sclkEpoch = sclkEpoch;
     }
 
@@ -631,6 +663,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param secClockPerSISec number of clock seconds occurring during one SI second
      */
     void setClockSecPerSISec(final double secClockPerSISec) {
+        refuseFurtherComments();
         this.clockSecPerSISec = secClockPerSISec;
     }
 
@@ -645,6 +678,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param startTime time of the earliest data contained in the OCM
      */
     void setStartTime(final AbsoluteDate startTime) {
+        refuseFurtherComments();
         this.startTime = startTime;
     }
 
@@ -659,6 +693,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param stopTime time of the latest data contained in the OCM
      */
     void setStopTime(final AbsoluteDate stopTime) {
+        refuseFurtherComments();
         this.stopTime = stopTime;
     }
 
@@ -673,6 +708,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param timeSpan span of time in seconds that the OCM covers
      */
     void setTimeSpan(final double timeSpan) {
+        refuseFurtherComments();
         this.timeSpan = timeSpan;
     }
 
@@ -687,6 +723,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param taimutcT0 difference (TAI – UTC) in seconds at epoch {@link #getEpochT0()}
      */
     void setTaimutcT0(final double taimutcT0) {
+        refuseFurtherComments();
         this.taimutcT0 = taimutcT0;
     }
 
@@ -701,6 +738,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param ut1mutcT0 difference (UT1 – UTC) in seconds at epoch {@link #getEpochT0()}
      */
     void setUt1mutcT0(final double ut1mutcT0) {
+        refuseFurtherComments();
         this.ut1mutcT0 = ut1mutcT0;
     }
 
@@ -715,6 +753,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param eopSource source and version of Earth Orientation Parameters
      */
     void setEopSource(final String eopSource) {
+        refuseFurtherComments();
         this.eopSource = eopSource;
     }
 
@@ -729,6 +768,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param interpMethodEOP interpolation method for Earth Orientation Parameters
      */
     void setInterpMethodEOP(final String interpMethodEOP) {
+        refuseFurtherComments();
         this.interpMethodEOP = interpMethodEOP;
     }
 
@@ -743,6 +783,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param interpMethodSW interpolation method for Space Weather data
      */
     void setInterpMethodSW(final String interpMethodSW) {
+        refuseFurtherComments();
         this.interpMethodSW = interpMethodSW;
     }
 
@@ -757,6 +798,7 @@ public class OCMMetadata extends ODMMetadata {
      * @param celestialSource source and version of celestial body (e.g. Sun/Earth/Planetary)
      */
     void setCelestialSource(final String celestialSource) {
+        refuseFurtherComments();
         this.celestialSource = celestialSource;
     }
 

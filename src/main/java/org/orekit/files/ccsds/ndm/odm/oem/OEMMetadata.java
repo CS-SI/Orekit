@@ -59,6 +59,7 @@ public class OEMMetadata extends OCommonMetadata {
      * @param startTime the time to be set
      */
     public void setStartTime(final AbsoluteDate startTime) {
+        refuseFurtherComments();
         this.startTime = startTime;
     }
 
@@ -75,6 +76,7 @@ public class OEMMetadata extends OCommonMetadata {
      * @param stopTime the time to be set
      */
     public void setStopTime(final AbsoluteDate stopTime) {
+        refuseFurtherComments();
         this.stopTime = stopTime;
     }
 
@@ -91,6 +93,7 @@ public class OEMMetadata extends OCommonMetadata {
      * @param useableStartTime the time to be set
      */
     public void setUseableStartTime(final AbsoluteDate useableStartTime) {
+        refuseFurtherComments();
         this.useableStartTime = useableStartTime;
     }
 
@@ -107,6 +110,7 @@ public class OEMMetadata extends OCommonMetadata {
      * @param useableStopTime the time to be set
      */
     public void setUseableStopTime(final AbsoluteDate useableStopTime) {
+        refuseFurtherComments();
         this.useableStopTime = useableStopTime;
     }
 
@@ -151,6 +155,7 @@ public class OEMMetadata extends OCommonMetadata {
      * @param interpolationMethod the interpolation method to be set
      */
     public void setInterpolationMethod(final String interpolationMethod) {
+        refuseFurtherComments();
         this.interpolationMethod = interpolationMethod;
     }
 
@@ -165,6 +170,7 @@ public class OEMMetadata extends OCommonMetadata {
      * @param interpolationDegree the interpolation degree to be set
      */
     public void setInterpolationDegree(final int interpolationDegree) {
+        refuseFurtherComments();
         this.interpolationDegree = interpolationDegree;
     }
 

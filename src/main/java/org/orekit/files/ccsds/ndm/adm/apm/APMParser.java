@@ -26,7 +26,6 @@ import org.orekit.files.ccsds.ndm.adm.ADMParser;
 import org.orekit.files.ccsds.ndm.adm.ADMSegment;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
-import org.orekit.files.ccsds.section.KVNStructureProcessingState;
 import org.orekit.files.ccsds.section.XMLStructureProcessingState;
 import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.FileFormat;
@@ -115,7 +114,7 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
             structureProcessor = new XMLStructureProcessingState(ROOT, this);
             reset(fileFormat, structureProcessor);
         } else {
-            structureProcessor = new KVNStructureProcessingState(this);
+            structureProcessor = new ErrorState(); // should never be called
             reset(fileFormat, new HeaderProcessingState(this));
         }
     }

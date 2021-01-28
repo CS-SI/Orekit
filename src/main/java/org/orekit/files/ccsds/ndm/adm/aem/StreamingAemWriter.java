@@ -32,6 +32,7 @@ import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.files.ccsds.Keyword;
+import org.orekit.files.ccsds.section.HeaderKeyword;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -220,10 +221,10 @@ public class StreamingAemWriter {
     /** Version number implemented. **/
     public static final String CCSDS_AEM_VERS = "1.0";
 
-    /** Default value for {@link Keyword#ORIGINATOR}. */
+    /** Default value for {@link HeaderKeyword#ORIGINATOR}. */
     public static final String DEFAULT_ORIGINATOR = "OREKIT";
 
-    /** Default value for {@link Keyword#TIME_SYSTEM}. */
+    /** Default value for {@link #TIME_SYSTEM}. */
     public static final String DEFAULT_TIME_SYSTEM = "UTC";
 
     /**
@@ -458,7 +459,7 @@ public class StreamingAemWriter {
             final String epoch = dateToString(attitude.getDate().getComponents(timeScale));
             writer.append(epoch).append(" ");
             // Attitude data in degrees
-            final AEMAttitudeType type = AEMAttitudeType.getAttitudeType(attitudeName);
+            final AEMAttitudeType type = AEMAttitudeType.parseAttitudeType(attitudeName);
             final double[]        data = type.getAttitudeData(attitude, isFirst, rotationOrder);
             final int             size = data.length;
             for (int index = 0; index < size; index++) {

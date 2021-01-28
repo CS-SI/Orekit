@@ -17,10 +17,6 @@
 
 package org.orekit.files.ccsds.ndm.odm;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.orekit.files.ccsds.section.Metadata;
 
 /** This class gathers the meta-data present in the Orbital Data Message (ODM).
@@ -31,15 +27,6 @@ public class ODMMetadata extends Metadata {
 
     /** Spacecraft name for which the orbit state is provided. */
     private String objectName;
-
-    /** Metadata comments. The list contains a string for each line of comment. */
-    private List<String> comments;
-
-    /** Create a new meta-data.
-     */
-    public ODMMetadata() {
-        comments = new ArrayList<>();
-    }
 
     /** Get the spacecraft name for which the orbit state is provided.
      * @return the spacecraft name
@@ -52,21 +39,8 @@ public class ODMMetadata extends Metadata {
      * @param objectName the spacecraft name to be set
      */
     public void setObjectName(final String objectName) {
+        refuseFurtherComments();
         this.objectName = objectName;
-    }
-
-    /** Get the meta-data comments.
-     * @return meta-data comments
-     */
-    public List<String> getComments() {
-        return Collections.unmodifiableList(comments);
-    }
-
-    /** Add a meta-data comment.
-     * @param comment comment to add
-     */
-    public void addComment(final String comment) {
-        comments.add(comment);
     }
 
 }

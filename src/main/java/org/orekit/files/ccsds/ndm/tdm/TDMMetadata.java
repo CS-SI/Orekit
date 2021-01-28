@@ -204,6 +204,7 @@ public class TDMMetadata extends Metadata {
      * @param startTime the startTime to set
      */
     public void setStartTime(final AbsoluteDate startTime) {
+        refuseFurtherComments();
         this.startTime = startTime;
     }
 
@@ -218,6 +219,7 @@ public class TDMMetadata extends Metadata {
      * @param stopTime the stopTime to set
      */
     public void setStopTime(final AbsoluteDate stopTime) {
+        refuseFurtherComments();
         this.stopTime = stopTime;
     }
 
@@ -232,6 +234,7 @@ public class TDMMetadata extends Metadata {
      * @param participants the participants to set
      */
     public void setParticipants(final Map<Integer, String> participants) {
+        refuseFurtherComments();
         this.participants = new TreeMap<Integer, String>();
         this.participants.putAll(participants);
     }
@@ -241,6 +244,7 @@ public class TDMMetadata extends Metadata {
      * @param participant the name of the participant to add
      */
     public void addParticipant(final int participantNumber, final String participant) {
+        refuseFurtherComments();
         this.participants.put(participantNumber, participant);
     }
 
@@ -255,6 +259,7 @@ public class TDMMetadata extends Metadata {
      * @param mode the mode to set
      */
     public void setMode(final String mode) {
+        refuseFurtherComments();
         this.mode = mode;
     }
 
@@ -269,6 +274,7 @@ public class TDMMetadata extends Metadata {
      * @param path the path to set
      */
     public void setPath(final String path) {
+        refuseFurtherComments();
         this.path = path;
     }
 
@@ -283,6 +289,7 @@ public class TDMMetadata extends Metadata {
      * @param path1 the path1 to set
      */
     public void setPath1(final String path1) {
+        refuseFurtherComments();
         this.path1 = path1;
     }
 
@@ -297,6 +304,7 @@ public class TDMMetadata extends Metadata {
      * @param path2 the path2 to set
      */
     public void setPath2(final String path2) {
+        refuseFurtherComments();
         this.path2 = path2;
     }
 
@@ -311,6 +319,7 @@ public class TDMMetadata extends Metadata {
      * @param transmitBand the transmitBand to set
      */
     public void setTransmitBand(final String transmitBand) {
+        refuseFurtherComments();
         this.transmitBand = transmitBand;
     }
 
@@ -325,6 +334,7 @@ public class TDMMetadata extends Metadata {
      * @param receiveBand the receiveBand to set
      */
     public void setReceiveBand(final String receiveBand) {
+        refuseFurtherComments();
         this.receiveBand = receiveBand;
     }
 
@@ -339,6 +349,7 @@ public class TDMMetadata extends Metadata {
      * @param turnaroundNumerator the turnaroundNumerator to set
      */
     public void setTurnaroundNumerator(final int turnaroundNumerator) {
+        refuseFurtherComments();
         this.turnaroundNumerator = turnaroundNumerator;
     }
 
@@ -353,6 +364,7 @@ public class TDMMetadata extends Metadata {
      * @param turnaroundDenominator the turnaroundDenominator to set
      */
     public void setTurnaroundDenominator(final int turnaroundDenominator) {
+        refuseFurtherComments();
         this.turnaroundDenominator = turnaroundDenominator;
     }
 
@@ -367,6 +379,7 @@ public class TDMMetadata extends Metadata {
      * @param timetagRef the timetagRef to set
      */
     public void setTimetagRef(final String timetagRef) {
+        refuseFurtherComments();
         this.timetagRef = timetagRef;
     }
 
@@ -381,6 +394,7 @@ public class TDMMetadata extends Metadata {
      * @param integrationInterval the integrationInterval to set
      */
     public void setIntegrationInterval(final double integrationInterval) {
+        refuseFurtherComments();
         this.integrationInterval = integrationInterval;
     }
 
@@ -395,6 +409,7 @@ public class TDMMetadata extends Metadata {
      * @param integrationRef the integrationRef to set
      */
     public void setIntegrationRef(final String integrationRef) {
+        refuseFurtherComments();
         this.integrationRef = integrationRef;
     }
 
@@ -409,6 +424,7 @@ public class TDMMetadata extends Metadata {
      * @param freqOffset the freqOffset to set
      */
     public void setFreqOffset(final double freqOffset) {
+        refuseFurtherComments();
         this.freqOffset = freqOffset;
     }
 
@@ -423,6 +439,7 @@ public class TDMMetadata extends Metadata {
      * @param rangeMode the rangeMode to set
      */
     public void setRangeMode(final String rangeMode) {
+        refuseFurtherComments();
         this.rangeMode = rangeMode;
     }
 
@@ -437,6 +454,7 @@ public class TDMMetadata extends Metadata {
      * @param rangeModulus the rangeModulus to set
      */
     public void setRangeModulus(final double rangeModulus) {
+        refuseFurtherComments();
         this.rangeModulus = rangeModulus;
     }
 
@@ -451,6 +469,7 @@ public class TDMMetadata extends Metadata {
      * @param rangeUnits the rangeUnits to set
      */
     public void setRangeUnits(final String rangeUnits) {
+        refuseFurtherComments();
         this.rangeUnits = rangeUnits;
     }
 
@@ -465,6 +484,7 @@ public class TDMMetadata extends Metadata {
      * @param angleType the angleType to set
      */
     public void setAngleType(final String angleType) {
+        refuseFurtherComments();
         this.angleType = angleType;
     }
 
@@ -479,6 +499,7 @@ public class TDMMetadata extends Metadata {
      * @param refFrame the reference frame to be set
      */
     public void setReferenceFrame(final Frame refFrame) {
+        refuseFurtherComments();
         this.referenceFrame = refFrame;
     }
 
@@ -493,6 +514,7 @@ public class TDMMetadata extends Metadata {
      * @param transmitDelays the transmitDelays to set
      */
     public void setTransmitDelays(final Map<Integer, Double> transmitDelays) {
+        refuseFurtherComments();
         this.transmitDelays = new TreeMap<Integer, Double>();
         this.transmitDelays.putAll(transmitDelays);
     }
@@ -502,6 +524,7 @@ public class TDMMetadata extends Metadata {
      *  @param transmitDelay the transmit delay value to add
      */
     public void addTransmitDelay(final int participantNumber, final double transmitDelay) {
+        refuseFurtherComments();
         this.transmitDelays.put(participantNumber, transmitDelay);
     }
 
@@ -516,6 +539,7 @@ public class TDMMetadata extends Metadata {
      * @param receiveDelays the receiveDelays to set
      */
     public void setReceiveDelays(final Map<Integer, Double> receiveDelays) {
+        refuseFurtherComments();
         this.receiveDelays = new TreeMap<Integer, Double>();
         this.receiveDelays.putAll(receiveDelays);
     }
@@ -525,6 +549,7 @@ public class TDMMetadata extends Metadata {
      * @param receiveDelay the receive delay value to add
      */
     public void addReceiveDelay(final int participantNumber, final double receiveDelay) {
+        refuseFurtherComments();
         this.receiveDelays.put(participantNumber, receiveDelay);
     }
     /** Getter for the dataQuality.
@@ -538,6 +563,7 @@ public class TDMMetadata extends Metadata {
      * @param dataQuality the dataQuality to set
      */
     public void setDataQuality(final String dataQuality) {
+        refuseFurtherComments();
         this.dataQuality = dataQuality;
     }
 
@@ -552,6 +578,7 @@ public class TDMMetadata extends Metadata {
      * @param correctionAngle1 the correctionAngle1 to set
      */
     public void setCorrectionAngle1(final double correctionAngle1) {
+        refuseFurtherComments();
         this.correctionAngle1 = correctionAngle1;
     }
 
@@ -566,6 +593,7 @@ public class TDMMetadata extends Metadata {
      * @param correctionAngle2 the correctionAngle2 to set
      */
     public void setCorrectionAngle2(final double correctionAngle2) {
+        refuseFurtherComments();
         this.correctionAngle2 = correctionAngle2;
     }
 
@@ -580,6 +608,7 @@ public class TDMMetadata extends Metadata {
      * @param correctionDoppler the correctionDoppler to set
      */
     public void setCorrectionDoppler(final double correctionDoppler) {
+        refuseFurtherComments();
         this.correctionDoppler = correctionDoppler;
     }
 
@@ -594,6 +623,7 @@ public class TDMMetadata extends Metadata {
      * @param correctionRange the correctionRange to set
      */
     public void setCorrectionRange(final double correctionRange) {
+        refuseFurtherComments();
         this.correctionRange = correctionRange;
     }
 
@@ -608,6 +638,7 @@ public class TDMMetadata extends Metadata {
      * @param correctionReceive the correctionReceive to set
      */
     public void setCorrectionReceive(final double correctionReceive) {
+        refuseFurtherComments();
         this.correctionReceive = correctionReceive;
     }
 
@@ -622,6 +653,7 @@ public class TDMMetadata extends Metadata {
      * @param correctionTransmit the correctionTransmit to set
      */
     public void setCorrectionTransmit(final double correctionTransmit) {
+        refuseFurtherComments();
         this.correctionTransmit = correctionTransmit;
     }
 
@@ -636,6 +668,7 @@ public class TDMMetadata extends Metadata {
      * @param correctionsApplied the correctionApplied to set
      */
     public void setCorrectionsApplied(final String correctionsApplied) {
+        refuseFurtherComments();
         this.correctionsApplied = correctionsApplied;
     }
 

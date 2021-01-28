@@ -47,7 +47,7 @@ public class AEMAttitudeTypeTest {
     @Test
     public void testSpin() {
         // Initialize the attitude type
-        final AEMAttitudeType spin = AEMAttitudeType.getAttitudeType("SPIN");
+        final AEMAttitudeType spin = AEMAttitudeType.parseAttitudeType("SPIN");
         // Test exception on the first method
         try {
             spin.getAngularCoordinates(null, null, false, null);
@@ -78,7 +78,7 @@ public class AEMAttitudeTypeTest {
     @Test
     public void testSpinNutation() {
         // Initialize the attitude type
-        final AEMAttitudeType spinNutation = AEMAttitudeType.getAttitudeType("SPIN/NUTATION");
+        final AEMAttitudeType spinNutation = AEMAttitudeType.parseAttitudeType("SPIN/NUTATION");
         // Test exception on the first method
         try {
             spinNutation.getAngularCoordinates(null, null, false, null);
@@ -105,7 +105,7 @@ public class AEMAttitudeTypeTest {
     @Test
     public void testQuaternion() {
         // Initialize the attitude type
-        final AEMAttitudeType quaternion = AEMAttitudeType.getAttitudeType("QUATERNION");
+        final AEMAttitudeType quaternion = AEMAttitudeType.parseAttitudeType("QUATERNION");
 
         // Test computation of angular coordinates from attitude data
         final double[] attitudeData = new double[] {
@@ -131,7 +131,7 @@ public class AEMAttitudeTypeTest {
     @Test
     public void testQuaternionDerivates() {
         // Initialize the attitude type
-        final AEMAttitudeType quaternion = AEMAttitudeType.getAttitudeType("QUATERNION/DERIVATIVE");
+        final AEMAttitudeType quaternion = AEMAttitudeType.parseAttitudeType("QUATERNION/DERIVATIVE");
 
         // Test computation of angular coordinates from attitude data
         final double[] attitudeData = new double[] {
@@ -157,7 +157,7 @@ public class AEMAttitudeTypeTest {
     @Test
     public void testQuaternionRate() {
         // Initialize the attitude type
-        final AEMAttitudeType quaternionRate = AEMAttitudeType.getAttitudeType("QUATERNION/RATE");
+        final AEMAttitudeType quaternionRate = AEMAttitudeType.parseAttitudeType("QUATERNION/RATE");
 
         // Test computation of angular coordinates from attitude data
         final double[] attitudeData = new double[] {
@@ -186,7 +186,7 @@ public class AEMAttitudeTypeTest {
     @Test
     public void testEulerAngle() {
         // Initialize the attitude type
-        final AEMAttitudeType eulerAngle = AEMAttitudeType.getAttitudeType("EULER ANGLE");
+        final AEMAttitudeType eulerAngle = AEMAttitudeType.parseAttitudeType("EULER ANGLE");
 
         // Test computation of angular coordinates from attitude data
         final double[] attitudeData = new double[] {
@@ -213,7 +213,7 @@ public class AEMAttitudeTypeTest {
     @Test
     public void testEulerAngleRate() {
         // Initialize the attitude type
-        final AEMAttitudeType eulerAngleRate = AEMAttitudeType.getAttitudeType("EULER ANGLE/RATE");
+        final AEMAttitudeType eulerAngleRate = AEMAttitudeType.parseAttitudeType("EULER ANGLE/RATE");
 
         // Test computation of angular coordinates from attitude data
         final double[] attitudeData = new double[] {
@@ -243,7 +243,7 @@ public class AEMAttitudeTypeTest {
     @Test
     public void testInvalidAttitudeType() {
         try {
-            AEMAttitudeType.getAttitudeType("TAG");
+            AEMAttitudeType.parseAttitudeType("TAG");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_AEM_NULL_ATTITUDE_TYPE, oe.getSpecifier());
         }

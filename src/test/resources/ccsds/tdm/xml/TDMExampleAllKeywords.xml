@@ -57,7 +57,7 @@
         <CORRECTIONS_APPLIED>YES</CORRECTIONS_APPLIED>
       </metadata>
       <data>
-        <COMMENT>Signal related Keywords</COMMENT>
+        <COMMENT>Data Related Keywords</COMMENT>
         <observation>
           <EPOCH>2017-06-14T10:53:01.000</EPOCH>
           <CARRIER_POWER>1.0</CARRIER_POWER>
@@ -147,7 +147,6 @@
           <TRANSMIT_FREQ_RATE_5>22.0</TRANSMIT_FREQ_RATE_5>
         </observation>
         
-        <COMMENT>VLBI/Delta-DOR Related Keywords</COMMENT>
         <observation>
           <EPOCH>2017-06-14T10:53:23.000</EPOCH>
           <DOR>23.0</DOR>
@@ -157,7 +156,6 @@
           <VLBI_DELAY>24.0</VLBI_DELAY>
         </observation>
         
-        <COMMENT>Angle Related Keywords</COMMENT>
         <observation>
           <EPOCH>2017-06-14T10:53:25.000</EPOCH>
           <ANGLE_1>25.0</ANGLE_1>
@@ -167,7 +165,6 @@
           <ANGLE_2>26.0</ANGLE_2>
         </observation>
         
-        <COMMENT>Time Related Keywords</COMMENT>
         <observation>
           <EPOCH>2017-06-14T10:53:27.000</EPOCH>
           <CLOCK_BIAS>27.0</CLOCK_BIAS>
@@ -177,7 +174,6 @@
           <CLOCK_DRIFT>28.0</CLOCK_DRIFT>
         </observation>
         
-        <COMMENT>Media Related Keywords</COMMENT>
         <observation>
           <EPOCH>2017-06-14T10:53:29.000</EPOCH>
           <STEC>29.0</STEC>
@@ -191,7 +187,6 @@
           <TROPO_WET>31.0</TROPO_WET>
         </observation>
         
-        <COMMENT>Meteorological Related Keywords</COMMENT>
         <observation>
           <EPOCH>2017-06-14T10:53:32.000</EPOCH>
           <PRESSURE>32.0</PRESSURE>

@@ -72,6 +72,7 @@ public class OCommonMetadata extends ODMMetadata {
      * @param objectID the spacecraft ID to be set
      */
     public void setObjectID(final String objectID) {
+        refuseFurtherComments();
         this.objectID = objectID;
     }
 
@@ -107,6 +108,7 @@ public class OCommonMetadata extends ODMMetadata {
      * @param centerName the origin of reference frame to be set
      */
     public void setCenterName(final String centerName) {
+        refuseFurtherComments();
         this.centerName = centerName;
     }
 
@@ -121,6 +123,7 @@ public class OCommonMetadata extends ODMMetadata {
      * @param centerBody the {@link CelestialBody} to be set
      */
     public void setCenterBody(final CelestialBody centerBody) {
+        refuseFurtherComments();
         this.centerBody = centerBody;
     }
 
@@ -138,6 +141,7 @@ public class OCommonMetadata extends ODMMetadata {
      * @param hasCreatableBody the boolean to be set.
      */
     public void setHasCreatableBody(final boolean hasCreatableBody) {
+        refuseFurtherComments();
         this.hasCreatableBody = hasCreatableBody;
     }
 
@@ -187,6 +191,7 @@ public class OCommonMetadata extends ODMMetadata {
      * @param refFrame the reference frame to be set
      */
     public void setRefFrame(final Frame refFrame) {
+        refuseFurtherComments();
         this.refFrame = refFrame;
     }
 
@@ -206,6 +211,7 @@ public class OCommonMetadata extends ODMMetadata {
      * @param frame specifier as it appeared in the file.
      */
     public void setFrameString(final String frame) {
+        refuseFurtherComments();
         this.refFrameString = frame;
     }
 
@@ -222,6 +228,7 @@ public class OCommonMetadata extends ODMMetadata {
      * @param frameEpochString the epoch of reference frame to be set
      */
     void setFrameEpochString(final String frameEpochString) {
+        refuseFurtherComments();
         this.frameEpochString = frameEpochString;
     }
 
@@ -238,6 +245,7 @@ public class OCommonMetadata extends ODMMetadata {
      * @param frameEpoch the epoch of reference frame to be set
      */
     public void setFrameEpoch(final AbsoluteDate frameEpoch) {
+        refuseFurtherComments();
         this.frameEpoch = frameEpoch;
     }
 

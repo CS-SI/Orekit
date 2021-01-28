@@ -42,10 +42,14 @@ public class Metadata {
     /** Time System: used for metadata, orbit state and covariance data. */
     private CcsdsTimeScale timeSystem;
 
+    /** Indicator for accepting comments. */
+    private boolean acceptComments;
+
     /** Create a new meta-data.
      */
     public Metadata() {
-        this.comments = new ArrayList<>();
+        comments       = new ArrayList<>();
+        acceptComments = true;
     }
 
     /** Get the Time System that: for OPM, is used for metadata, state vector,
@@ -65,6 +69,7 @@ public class Metadata {
      * @param timeSystem the time system to be set
      */
     public void setTimeSystem(final CcsdsTimeScale timeSystem) {
+        refuseFurtherComments();
         this.timeSystem = timeSystem;
     }
 
@@ -75,12 +80,28 @@ public class Metadata {
         return Collections.unmodifiableList(comments);
     }
 
+    /** Set flag to refuse further comments.
+     */
+    protected void refuseFurtherComments() {
+        acceptComments = false;
+    }
+
     /**
      * Add metadata comment.
+     * <p>
+     * Comments are accepted only at start. Once
+     * other metadata have been stored, comments are refused.
+     * </p>
      * @param comment metadata comment line
+     * @return true if comment was accepted
      */
-    public void addComment(final String comment) {
-        this.comments.add(comment);
+    public boolean addComment(final String comment) {
+        if (acceptComments) {
+            comments.add(comment);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /** Get the launch year.

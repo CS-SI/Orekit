@@ -57,6 +57,7 @@ public class ADMMetadata extends Metadata {
      * @param objectName the spacecraft name to be set
      */
     public void setObjectName(final String objectName) {
+        refuseFurtherComments();
         this.objectName = objectName;
     }
 
@@ -73,6 +74,7 @@ public class ADMMetadata extends Metadata {
      * @param objectID the spacecraft ID to be set
      */
     public void setObjectID(final String objectID) {
+        refuseFurtherComments();
         this.objectID = objectID;
     }
 
@@ -109,6 +111,8 @@ public class ADMMetadata extends Metadata {
      * @param celestialBodies factory for celestial bodies
      */
     public void setCenterName(final String name, final CelestialBodies celestialBodies) {
+
+        refuseFurtherComments();
 
         // store the name itself
         this.centerName = name;
@@ -151,6 +155,7 @@ public class ADMMetadata extends Metadata {
      * @param centerBody the {@link CelestialBody} to be set
      */
     public void setCenterBody(final CelestialBody centerBody) {
+        refuseFurtherComments();
         this.centerBody = centerBody;
     }
 

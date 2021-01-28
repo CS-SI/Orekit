@@ -67,6 +67,8 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
     /**
      * Standard default constructor that creates a writer with default configurations
      * including {@link StreamingAemWriter#DEFAULT_ATTITUDE_FORMAT Default formatting}.
+     * @param header file header
+     * @param metadata metadata for the ephemeris
      */
     public AEMWriter() {
         this(IERSConventions.IERS_2010, DataContext.getDefault(),

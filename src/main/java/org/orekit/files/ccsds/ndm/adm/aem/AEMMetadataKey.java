@@ -56,7 +56,7 @@ public enum AEMMetadataKey {
     /** Format of the data line entry. */
     ATTITUDE_TYPE((token, context, metadata) -> {
         if (token.getType() == TokenType.ENTRY) {
-            metadata.setAttitudeType(AEMAttitudeType.getAttitudeType(token.getNormalizedContent().replace(' ', '_')));
+            metadata.setAttitudeType(AEMAttitudeType.parseAttitudeType(token.getNormalizedContent().replace(' ', '_')));
         }
     }),
 

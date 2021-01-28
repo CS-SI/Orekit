@@ -36,6 +36,7 @@ public class OMMMetadata extends OCommonMetadata {
      * @param meanElementTheory the mean element theory to be set
      */
     void setMeanElementTheory(final String meanElementTheory) {
+        refuseFurtherComments();
         this.meanElementTheory = meanElementTheory;
     }
 
