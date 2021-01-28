@@ -34,7 +34,14 @@ public enum TDMDataKey {
     observation((token, context, observationsBlock) -> observationsBlock.addObservationEpoch(null)),
 
     /** Comment entry. */
-    COMMENT((token, context, observationsBlock) -> token.processAsFreeTextString(observationsBlock::addComment)),
+    COMMENT((token, context, observationsBlock) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            if (observationsBlock.addComment(token.getContent())) {
+                return;
+            }
+            throw token.generateException(null);
+        }
+    }),
 
     /** Epoch entry. */
     EPOCH((token, context, observationsBlock) -> token.processAsDate(observationsBlock::addObservationEpoch, context)),

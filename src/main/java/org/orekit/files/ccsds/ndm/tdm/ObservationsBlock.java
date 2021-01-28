@@ -44,16 +44,27 @@ public class ObservationsBlock implements Data {
     /** Observations Data Lines comments. The list contains a string for each line of comment. */
     private List<String> comments;
 
+    /** Indicator for accepting comments. */
+    private boolean acceptComments;
+
     /** ObservationsBlock constructor. */
     public ObservationsBlock() {
-        observations = new ArrayList<>();
-        comments     = new ArrayList<>();
+        observations   = new ArrayList<>();
+        comments       = new ArrayList<>();
+        acceptComments = true;
+    }
+
+    /** Set flag to refuse further comments.
+     */
+    protected void refuseFurtherComments() {
+        acceptComments = false;
     }
 
     /** Add the epoch of current observation.
      * @param epoch current observation epoch
      */
     void addObservationEpoch(final AbsoluteDate epoch) {
+        refuseFurtherComments();
         currentObservationEpoch = epoch;
     }
 
@@ -84,6 +95,7 @@ public class ObservationsBlock implements Data {
      * @param observations the list of Observations Data Lines to set
      */
     public void setObservations(final List<Observation> observations) {
+        refuseFurtherComments();
         this.observations = new ArrayList<>(observations);
     }
 
@@ -91,6 +103,7 @@ public class ObservationsBlock implements Data {
      * @param observation the observation to add to the list
      */
     public void addObservation(final Observation observation) {
+        refuseFurtherComments();
         this.observations.add(observation);
     }
 
@@ -113,10 +126,20 @@ public class ObservationsBlock implements Data {
     }
 
     /** Add an observations data lines comment.
-     * @param comment comment line to add
+     * <p>
+     * Comments are accepted only at start. Once
+     * other data have been stored, comments are refused.
+     * </p>
+     * @param comment data comment line
+     * @return true if comment was accepted
      */
-    public void addComment(final String comment) {
-        comments.add(comment);
+    public boolean addComment(final String comment) {
+        if (acceptComments) {
+            comments.add(comment);
+            return true;
+        } else {
+            return false;
+        }
     }
 
 }
