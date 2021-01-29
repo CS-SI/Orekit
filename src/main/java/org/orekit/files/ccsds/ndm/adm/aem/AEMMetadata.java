@@ -60,13 +60,12 @@ public class AEMMetadata extends ADMMetadata {
     /** The interpolation degree. */
     private int interpolationDegree;
 
-    /** The rotation order. */
-    private RotationOrder rotationOrder;
-
     /** Simple constructor.
+     * @param defaultInterpolationDegree default interpolation degree
      */
-    public AEMMetadata() {
-        endPoints = new AttitudeEndPoints();
+    public AEMMetadata(final int defaultInterpolationDegree) {
+        endPoints           = new AttitudeEndPoints();
+        interpolationDegree = defaultInterpolationDegree;
     }
 
     /** Get the attitude end points.
@@ -287,25 +286,6 @@ public class AEMMetadata extends ADMMetadata {
     public int getInterpolationSamples() {
         // From the standard it is not entirely clear how to interpret the degree.
         return getInterpolationDegree() + 1;
-    }
-
-    /**
-     * Get which derivatives of angular data are available in this attitude ephemeris segment.
-     *
-     * @return a value indicating if the file contains rotation and/or rotation rate
-     *         and/or acceleration data.
-     */
-    public RotationOrder getRotationOrder() {
-        return rotationOrder;
-    }
-
-    /**
-     * Set the rotation order for Euler angles.
-     * @param order the rotation order to be set
-     */
-    public void setRotationOrder(final RotationOrder order) {
-        refuseFurtherComments();
-        this.rotationOrder = order;
     }
 
 }

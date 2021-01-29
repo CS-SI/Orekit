@@ -32,6 +32,9 @@ import org.orekit.utils.IERSConventions;
  */
 public class APMFile extends ADMFile<Segment<ADMMetadata, APMData>> {
 
+    /** Key for format version. */
+    public static final String FORMAT_VERSION_KEY = "CCSDS_APM_VERS";
+
     /** Simple constructor.
      * @param conventions IERS conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP

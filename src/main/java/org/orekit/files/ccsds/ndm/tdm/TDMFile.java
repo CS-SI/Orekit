@@ -39,6 +39,9 @@ import org.orekit.utils.IERSConventions;
  */
 public class TDMFile extends NDMFile<Header, Segment<TDMMetadata, ObservationsBlock>> {
 
+    /** Key for format version. */
+    public static final String FORMAT_VERSION_KEY = "CCSDS_TDM_VERS";
+
     /** Simple constructor.
      * @param conventions IERS conventions
      * @param dataContext used for creating frames, time scales, etc.

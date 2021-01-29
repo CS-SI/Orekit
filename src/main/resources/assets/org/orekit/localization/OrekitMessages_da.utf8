@@ -600,14 +600,11 @@ EXCEPTIONAL_DATA_CONTEXT = <MISSING TRANSLATION>
 # inconsistent time systems in the attitude blocks: {0} ≠ {1}
 CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = <MISSING TRANSLATION>
 
-# invalid attitude type {0}
-CCSDS_AEM_NULL_ATTITUDE_TYPE = <MISSING TRANSLATION>
-
 # attitude type {0} in CCSDS AEM files is not implemented in Orekit
 CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED = <MISSING TRANSLATION>
 
-# the rotation sequence of the Euler angles {0} is invalid
-CCSDS_AEM_INVALID_ROTATION_SEQUENCE = <MISSING TRANSLATION>
+# invalid rotation sequence {0} at line {1} of file {2}
+CCSDS_INVALID_ROTATION_SEQUENCE = <MISSING TRANSLATION>
 
 # observations {0}, {1} and {2} must have different dates
 NON_DIFFERENT_DATES_FOR_OBSERVATIONS = <MISSING TRANSLATION>

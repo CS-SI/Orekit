@@ -16,8 +16,7 @@
  */
 package org.orekit.files.ccsds.ndm.adm.aem;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -28,6 +27,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.TimeStampedAngularCoordinates;
@@ -39,8 +39,9 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
 public enum AEMAttitudeType {
 
     /** Quaternion. */
-    QUATERNION("QUATERNION") {
+    QUATERNION {
 
+        /** {@inheritDoc} */
         @Override
         public double[] getAttitudeData(final TimeStampedAngularCoordinates coordinates,
                                         final boolean isFirst, final RotationOrder order) {
@@ -61,23 +62,30 @@ public enum AEMAttitudeType {
             return data;
         }
 
+        /** {@inheritDoc} */
         @Override
-        public TimeStampedAngularCoordinates getAngularCoordinates(final AbsoluteDate date, final double[] data,
-                                                                   final boolean isFirst, final RotationOrder order) {
-            // Data index
-            final int[] quaternionIndex = isFirst ? new int[] {0, 1, 2, 3} : new int[] {3, 0, 1, 2};
+        public TimeStampedAngularCoordinates parse(final AEMMetadata metadata, final ParsingContext context, final String[] fields) {
 
             // Build the needed objects
-            final Rotation rotation = new Rotation(data[quaternionIndex[0]],
-                                                   data[quaternionIndex[1]],
-                                                   data[quaternionIndex[2]],
-                                                   data[quaternionIndex[3]],
+            final AbsoluteDate date = parseDate(context, fields[0]);
+            final Rotation rotation = metadata.isFirst() ?
+                                      new Rotation(Double.parseDouble(fields[1]),
+                                                   Double.parseDouble(fields[2]),
+                                                   Double.parseDouble(fields[3]),
+                                                   Double.parseDouble(fields[4]),
+                                                   true) :
+                                      new Rotation(Double.parseDouble(fields[4]),
+                                                   Double.parseDouble(fields[1]),
+                                                   Double.parseDouble(fields[2]),
+                                                   Double.parseDouble(fields[3]),
                                                    true);
 
             // Return
             return new TimeStampedAngularCoordinates(date, rotation, Vector3D.ZERO, Vector3D.ZERO);
+
         }
 
+        /** {@inheritDoc} */
         @Override
         public AngularDerivativesFilter getAngularDerivativesFilter() {
             return AngularDerivativesFilter.USE_R;
@@ -86,8 +94,9 @@ public enum AEMAttitudeType {
     },
 
     /** Quaternion and derivatives. */
-    QUATERNION_DERIVATIVE("QUATERNION/DERIVATIVE") {
+    QUATERNION_DERIVATIVE {
 
+        /** {@inheritDoc} */
         @Override
         public double[] getAttitudeData(final TimeStampedAngularCoordinates coordinates,
                                         final boolean isFirst, final RotationOrder order) {
@@ -113,21 +122,30 @@ public enum AEMAttitudeType {
             return data;
         }
 
+        /** {@inheritDoc} */
         @Override
-        public TimeStampedAngularCoordinates getAngularCoordinates(final AbsoluteDate date, final double[] data,
-                                                                   final boolean isFirst, final RotationOrder order) {
-            // Data index
-            final int[] quaternionIndex = isFirst ? new int[] {0, 1, 2, 3, 4, 5, 6, 7} : new int[] {3, 0, 1, 2, 7, 4, 5, 6};
+        public TimeStampedAngularCoordinates parse(final AEMMetadata metadata, final ParsingContext context, final String[] fields) {
 
-            // Build coordintes
-            return new TimeStampedAngularCoordinates(date,
-                                                     new FieldRotation<>(new UnivariateDerivative1(data[quaternionIndex[0]], data[quaternionIndex[4]]),
-                                                                         new UnivariateDerivative1(data[quaternionIndex[1]], data[quaternionIndex[5]]),
-                                                                         new UnivariateDerivative1(data[quaternionIndex[2]], data[quaternionIndex[6]]),
-                                                                         new UnivariateDerivative1(data[quaternionIndex[3]], data[quaternionIndex[7]]),
-                                                                         true));
+            // Build the needed objects
+            final AbsoluteDate date = parseDate(context, fields[0]);
+            final FieldRotation<UnivariateDerivative1> rotation =
+                            metadata.isFirst() ?
+                            new FieldRotation<>(new UnivariateDerivative1(Double.parseDouble(fields[1]), Double.parseDouble(fields[5])),
+                                                new UnivariateDerivative1(Double.parseDouble(fields[2]), Double.parseDouble(fields[6])),
+                                                new UnivariateDerivative1(Double.parseDouble(fields[3]), Double.parseDouble(fields[7])),
+                                                new UnivariateDerivative1(Double.parseDouble(fields[4]), Double.parseDouble(fields[8])),
+                                                true) :
+                            new FieldRotation<>(new UnivariateDerivative1(Double.parseDouble(fields[4]), Double.parseDouble(fields[8])),
+                                                new UnivariateDerivative1(Double.parseDouble(fields[1]), Double.parseDouble(fields[5])),
+                                                new UnivariateDerivative1(Double.parseDouble(fields[2]), Double.parseDouble(fields[6])),
+                                                new UnivariateDerivative1(Double.parseDouble(fields[3]), Double.parseDouble(fields[7])),
+                                                true);
+
+            return new TimeStampedAngularCoordinates(date, rotation);
+
         }
 
+        /** {@inheritDoc} */
         @Override
         public AngularDerivativesFilter getAngularDerivativesFilter() {
             return AngularDerivativesFilter.USE_RR;
@@ -136,8 +154,9 @@ public enum AEMAttitudeType {
     },
 
     /** Quaternion and rotation rate. */
-    QUATERNION_RATE("QUATERNION/RATE") {
+    QUATERNION_RATE {
 
+        /** {@inheritDoc} */
         @Override
         public double[] getAttitudeData(final TimeStampedAngularCoordinates coordinates,
                                         final boolean isFirst, final RotationOrder order) {
@@ -164,31 +183,32 @@ public enum AEMAttitudeType {
             return data;
         }
 
+        /** {@inheritDoc} */
         @Override
-        public TimeStampedAngularCoordinates getAngularCoordinates(final AbsoluteDate date, final double[] data,
-                                                                   final boolean isFirst, final RotationOrder order) {
-            // Data index
-            final int[] quaternionIndex = isFirst ? new int[] {0, 1, 2, 3} : new int[] {3, 0, 1, 2};
-
-            // Quaternion components
-            final double q0    = data[quaternionIndex[0]];
-            final double q1    = data[quaternionIndex[1]];
-            final double q2    = data[quaternionIndex[2]];
-            final double q3    = data[quaternionIndex[3]];
-
-            // Rotation rate in radians
-            final double xRate = FastMath.toRadians(data[4]);
-            final double yRate = FastMath.toRadians(data[5]);
-            final double zRate = FastMath.toRadians(data[6]);
-
+        public TimeStampedAngularCoordinates parse(final AEMMetadata metadata, final ParsingContext context,
+                                                   final String[] fields) {
             // Build the needed objects
-            final Rotation rotation     = new Rotation(q0, q1, q2, q3, false);
-            final Vector3D rotationRate = new Vector3D(xRate, yRate, zRate);
+            final AbsoluteDate date = parseDate(context, fields[0]);
+            final Rotation rotation = metadata.isFirst() ?
+                                      new Rotation(Double.parseDouble(fields[1]),
+                                                   Double.parseDouble(fields[2]),
+                                                   Double.parseDouble(fields[3]),
+                                                   Double.parseDouble(fields[4]),
+                                                   true) :
+                                      new Rotation(Double.parseDouble(fields[4]),
+                                                   Double.parseDouble(fields[1]),
+                                                   Double.parseDouble(fields[2]),
+                                                   Double.parseDouble(fields[3]),
+                                                   true);
+            final Vector3D rotationRate = new Vector3D(FastMath.toRadians(Double.parseDouble(fields[5])),
+                                                       FastMath.toRadians(Double.parseDouble(fields[6])),
+                                                       FastMath.toRadians(Double.parseDouble(fields[7])));
 
             // Return
             return new TimeStampedAngularCoordinates(date, rotation, rotationRate, Vector3D.ZERO);
         }
 
+        /** {@inheritDoc} */
         @Override
         public AngularDerivativesFilter getAngularDerivativesFilter() {
             return AngularDerivativesFilter.USE_RR;
@@ -197,8 +217,9 @@ public enum AEMAttitudeType {
     },
 
     /** Euler angles. */
-    EULER_ANGLE("EULER ANGLE") {
+    EULER_ANGLE {
 
+        /** {@inheritDoc} */
         @Override
         public double[] getAttitudeData(final TimeStampedAngularCoordinates coordinates,
                                         final boolean isFirst, final RotationOrder order) {
@@ -218,21 +239,23 @@ public enum AEMAttitudeType {
             return data;
         }
 
+        /** {@inheritDoc} */
         @Override
-        public TimeStampedAngularCoordinates getAngularCoordinates(final AbsoluteDate date, final double[] data,
-                                                                   final boolean isFirst, final RotationOrder order) {
-            // Euler angles. They are given in degrees in CCSDS AEM files
-            final double alpha1 = FastMath.toRadians(data[0]);
-            final double alpha2 = FastMath.toRadians(data[1]);
-            final double alpha3 = FastMath.toRadians(data[2]);
+        public TimeStampedAngularCoordinates parse(final AEMMetadata metadata, final ParsingContext context,
+                                                   final String[] fields) {
 
             // Build the needed objects
-            final Rotation rotation = new Rotation(order, RotationConvention.FRAME_TRANSFORM,
-                                                   alpha1, alpha2, alpha3);
+            final AbsoluteDate date = parseDate(context, fields[0]);
+            final Rotation rotation = new Rotation(metadata.getEulerRotSeq(),
+                                                   RotationConvention.FRAME_TRANSFORM,
+                                                   FastMath.toRadians(Double.parseDouble(fields[1])),
+                                                   FastMath.toRadians(Double.parseDouble(fields[2])),
+                                                   FastMath.toRadians(Double.parseDouble(fields[3])));
             // Return
             return new TimeStampedAngularCoordinates(date, rotation, Vector3D.ZERO, Vector3D.ZERO);
         }
 
+        /** {@inheritDoc} */
         @Override
         public AngularDerivativesFilter getAngularDerivativesFilter() {
             return AngularDerivativesFilter.USE_R;
@@ -241,8 +264,9 @@ public enum AEMAttitudeType {
     },
 
     /** Euler angles and rotation rate. */
-    EULER_ANGLE_RATE("EULER ANGLE/RATE") {
+    EULER_ANGLE_RATE {
 
+        /** {@inheritDoc} */
         @Override
         public double[] getAttitudeData(final TimeStampedAngularCoordinates coordinates,
                                         final boolean isFirst, final RotationOrder order) {
@@ -266,26 +290,26 @@ public enum AEMAttitudeType {
             return data;
         }
 
+        /** {@inheritDoc} */
         @Override
-        public TimeStampedAngularCoordinates getAngularCoordinates(final AbsoluteDate date, final double[] data,
-                                                                   final boolean isFirst, final RotationOrder order) {
-            // Euler angles
-            final double alpha1 = FastMath.toRadians(data[0]);
-            final double alpha2 = FastMath.toRadians(data[1]);
-            final double alpha3 = FastMath.toRadians(data[2]);
-            // Rotation rate
-            final double xRate = FastMath.toRadians(data[3]);
-            final double yRate = FastMath.toRadians(data[4]);
-            final double zRate = FastMath.toRadians(data[5]);
+        public TimeStampedAngularCoordinates parse(final AEMMetadata metadata, final ParsingContext context,
+                                                   final String[] fields) {
 
             // Build the needed objects
-            final Rotation rotation     = new Rotation(order, RotationConvention.FRAME_TRANSFORM,
-                                                       alpha1, alpha2, alpha3);
-            final Vector3D rotationRate = new Vector3D(xRate, yRate, zRate);
+            final AbsoluteDate date = parseDate(context, fields[0]);
+            final Rotation rotation = new Rotation(metadata.getEulerRotSeq(),
+                                                   RotationConvention.FRAME_TRANSFORM,
+                                                   FastMath.toRadians(Double.parseDouble(fields[1])),
+                                                   FastMath.toRadians(Double.parseDouble(fields[2])),
+                                                   FastMath.toRadians(Double.parseDouble(fields[3])));
+            final Vector3D rotationRate = new Vector3D(FastMath.toRadians(Double.parseDouble(fields[4])),
+                                                       FastMath.toRadians(Double.parseDouble(fields[5])),
+                                                       FastMath.toRadians(Double.parseDouble(fields[6])));
             // Return
             return new TimeStampedAngularCoordinates(date, rotation, rotationRate, Vector3D.ZERO);
         }
 
+        /** {@inheritDoc} */
         @Override
         public AngularDerivativesFilter getAngularDerivativesFilter() {
             return AngularDerivativesFilter.USE_RR;
@@ -294,106 +318,82 @@ public enum AEMAttitudeType {
     },
 
     /** Spin. */
-    SPIN("SPIN") {
+    SPIN {
 
+        /** {@inheritDoc} */
         @Override
         public double[] getAttitudeData(final TimeStampedAngularCoordinates coordinates,
                                         final boolean isFirst, final RotationOrder order) {
             // Attitude parameters in the Specified Reference Frame for a Spin Stabilized Satellite
             // are optional in CCSDS AEM format. Support for this attitude type is not implemented
             // yet in Orekit.
-            throw new OrekitException(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, getName());
+            throw new OrekitException(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, name());
         }
 
+        /** {@inheritDoc} */
         @Override
-        public TimeStampedAngularCoordinates getAngularCoordinates(final AbsoluteDate date, final double[] data,
-                                                                   final boolean isFirst, final RotationOrder order) {
+        public TimeStampedAngularCoordinates parse(final AEMMetadata metadata, final ParsingContext context,
+                                                   final String[] fields) {
             // Attitude parameters in the Specified Reference Frame for a Spin Stabilized Satellite
             // are optional in CCSDS AEM format. Support for this attitude type is not implemented
             // yet in Orekit.
-            throw new OrekitException(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, getName());
+            throw new OrekitException(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, name());
         }
 
+        /** {@inheritDoc} */
         @Override
         public AngularDerivativesFilter getAngularDerivativesFilter() {
             // Attitude parameters in the Specified Reference Frame for a Spin Stabilized Satellite
             // are optional in CCSDS AEM format. Support for this attitude type is not implemented
             // yet in Orekit.
-            throw new OrekitException(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, getName());
+            throw new OrekitException(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, name());
         }
 
     },
 
     /** Spin and nutation. */
-    SPIN_NUTATION("SPIN/NUTATION") {
+    SPIN_NUTATION {
 
+        /** {@inheritDoc} */
         @Override
         public double[] getAttitudeData(final TimeStampedAngularCoordinates coordinates,
                                         final boolean isFirst, final RotationOrder order) {
             // Attitude parameters in the Specified Reference Frame for a Spin Stabilized Satellite
             // are optional in CCSDS AEM format. Support for this attitude type is not implemented
             // yet in Orekit.
-            throw new OrekitException(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, getName());
+            throw new OrekitException(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, name());
         }
 
+        /** {@inheritDoc} */
         @Override
-        public TimeStampedAngularCoordinates getAngularCoordinates(final AbsoluteDate date, final double[] data,
-                                                                   final boolean isFirst, final RotationOrder order) {
+        public TimeStampedAngularCoordinates parse(final AEMMetadata metadata, final ParsingContext context,
+                                                   final String[] fields) {
             // Attitude parameters in the Specified Reference Frame for a Spin Stabilized Satellite
             // are optional in CCSDS AEM format. Support for this attitude type is not implemented
             // yet in Orekit.
-            throw new OrekitException(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, getName());
+            throw new OrekitException(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, name());
         }
 
+        /** {@inheritDoc} */
         @Override
         public AngularDerivativesFilter getAngularDerivativesFilter() {
             // Attitude parameters in the Specified Reference Frame for a Spin Stabilized Satellite
             // are optional in CCSDS AEM format. Support for this attitude type is not implemented
             // yet in Orekit.
-            throw new OrekitException(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, getName());
+            throw new OrekitException(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, name());
         }
 
     };
 
-    /** Codes map. */
-    private static final Map<String, AEMAttitudeType> CODES_MAP = new HashMap<String, AEMAttitudeType>();
-    static {
-        for (final AEMAttitudeType type : values()) {
-            CODES_MAP.put(type.getName(), type);
-        }
-    }
+    /** Pattern for normalizing attitude types. */
+    private static final Pattern TYPE_SEPARATORS = Pattern.compile("[ _/]+");
 
-    /** Name of the attitude type. */
-    private final String name;
-
-    /**
-     * Constructor.
-     * @param name name of the attitude type
+    /** Parse an attitude type.
+     * @param type unnormalized type name
+     * @return parsed type
      */
-    AEMAttitudeType(final String name) {
-        this.name = name;
-    }
-
-    /**
-     * Get the name of the attitude type.
-     * @return name
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Get the attitude type corresponding to the given name.
-     * @param name given name
-     * @return attitude type
-     */
-    public static AEMAttitudeType parseAttitudeType(final String name) {
-        final AEMAttitudeType type = CODES_MAP.get(name);
-        if (type == null) {
-            // An exception is thrown if the attitude type is null
-            throw new OrekitException(OrekitMessages.CCSDS_AEM_NULL_ATTITUDE_TYPE, name);
-        }
-        return type;
+    public static AEMAttitudeType parseType(final String type) {
+        return AEMAttitudeType.valueOf(TYPE_SEPARATORS.matcher(type).replaceAll("_"));
     }
 
     /**
@@ -416,19 +416,29 @@ public enum AEMAttitudeType {
      * Note that, according to the CCSDS ADM documentation, angles values
      * must be given in degrees.
      * </p>
-     * @param date coordinates date
-     * @param attitudeData attitude data
-     * @param isFirst true if QC is the first element in the attitude data
-     * @param order rotation order of the Euler angles
+     * @param metadata metadata used to interprete the data fields
+     * @param context parsing context
+     * @param fields raw data fields
      * @return the angular coordinates
      */
-    public abstract TimeStampedAngularCoordinates getAngularCoordinates(AbsoluteDate date, double[] attitudeData,
-                                                                        boolean isFirst, RotationOrder order);
+    public abstract TimeStampedAngularCoordinates parse(AEMMetadata metadata, ParsingContext context, String[] fields);
 
     /**
      * Get the angular derivative filter corresponding to the attitude data.
      * @return the angular derivative filter corresponding to the attitude data
      */
     public abstract AngularDerivativesFilter getAngularDerivativesFilter();
+
+    /** Parse a date.
+     * @param context parsing context
+     * @param date date field
+     * @return parsed date
+     */
+    private static AbsoluteDate parseDate(final ParsingContext context, final String date) {
+        return context.getTimeScale().parseDate(date,
+                                                context.getConventions(),
+                                                context.getMissionReferenceDate(),
+                                                context.getDataContext().getTimeScales());
+    }
 
 }

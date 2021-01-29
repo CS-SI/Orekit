@@ -21,20 +21,19 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.Keyword;
 import org.orekit.files.ccsds.ndm.adm.aem.StreamingAemWriter.SegmentWriter;
-import org.orekit.files.ccsds.utils.CcsdsTimeScale;
+import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.files.general.AttitudeEphemerisFile.AttitudeEphemerisSegment;
 import org.orekit.files.general.AttitudeEphemerisFile.SatelliteAttitudeEphemeris;
 import org.orekit.files.general.AttitudeEphemerisFileWriter;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
@@ -48,17 +47,20 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
     /** IERS Conventions. */
     private final  IERSConventions conventions;
 
+    /** Indicator for simple or accurate EOP interpolation. */
+    private final  boolean simpleEOP;
+
     /** Data context used for obtain frames and time scales. */
     private final DataContext dataContext;
 
-    /** Originator name, usually the organization and/or country. **/
-    private final String originator;
+    /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
+    private final AbsoluteDate missionReferenceDate;
 
-    /** Space object ID, usually an official international designator such as "1998-067A". */
-    private final String spaceObjectId;
+    /** File header. */
+    private final Header header;
 
-    /** Space object name, usually a common name for an object like "ISS". **/
-    private final String spaceObjectName;
+    /** Metadata for the ephemeris. */
+    private final AEMMetadata metadata;
 
     /** Format for attitude ephemeris data output. */
     private final String attitudeFormat;
@@ -66,13 +68,20 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
     /**
      * Standard default constructor that creates a writer with default configurations
      * including {@link StreamingAemWriter#DEFAULT_ATTITUDE_FORMAT Default formatting}.
+     * @param conventions IERS Conventions
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
+     * @param dataContext used to retrieve frames, time scales, etc.
+     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * (may be null if time system is absolute)
      * @param header file header
      * @param metadata metadata for the ephemeris
+     * @since 11.0
      */
-    public AEMWriter() {
-        this(IERSConventions.IERS_2010, DataContext.getDefault(),
-             StreamingAemWriter.DEFAULT_ORIGINATOR, null, null,
-             StreamingAemWriter.DEFAULT_ATTITUDE_FORMAT);
+    public AEMWriter(final IERSConventions conventions, final boolean simpleEOP,
+                     final DataContext dataContext, final AbsoluteDate missionReferenceDate,
+                     final Header header, final AEMMetadata metadata) {
+        this(conventions, simpleEOP, dataContext, missionReferenceDate,
+             header, metadata, StreamingAemWriter.DEFAULT_ATTITUDE_FORMAT);
     }
 
     /**
@@ -82,41 +91,26 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
      * for attitude ephemeris data output.
      *
      * @param conventions IERS Conventions
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
-     * @param originator the originator field string
-     * @param spaceObjectId the spacecraft ID
-     * @param spaceObjectName the space object common name
-     */
-    public AEMWriter(final IERSConventions conventions, final DataContext dataContext,
-                     final String originator, final String spaceObjectId,
-                     final String spaceObjectName) {
-        this(conventions, dataContext, originator, spaceObjectId, spaceObjectName,
-             StreamingAemWriter.DEFAULT_ATTITUDE_FORMAT);
-    }
-
-    /**
-     * Constructor used to create a new AEM writer configured with the necessary
-     * parameters to successfully fill in all required fields that aren't part
-     * of a standard object and user-defined attitude ephemeris data output format.
-     *
-     * @param conventions IERS Conventions
-     * @param dataContext used to retrieve frames, time scales, etc.
-     * @param originator the originator field string
-     * @param spaceObjectId the spacecraft ID
-     * @param spaceObjectName the space object common name
+     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * (may be null if time system is absolute)
+     * @param header file header
+     * @param metadata metadata for the ephemeris
      * @param attitudeFormat {@link java.util.Formatter format parameters} for
      *                       attitude ephemeris data output
-     * @since 10.3
+     * @since 11.0
      */
-    public AEMWriter(final IERSConventions conventions, final DataContext dataContext,
-                     final String originator, final String spaceObjectId,
-                     final String spaceObjectName, final String attitudeFormat) {
-        this.conventions     = conventions;
-        this.dataContext     = dataContext;
-        this.originator      = originator;
-        this.spaceObjectId   = spaceObjectId;
-        this.spaceObjectName = spaceObjectName;
-        this.attitudeFormat  = attitudeFormat;
+    public AEMWriter(final IERSConventions conventions, final boolean simpleEOP,
+                     final DataContext dataContext, final AbsoluteDate missionReferenceDate,
+                     final Header header, final AEMMetadata metadata, final String attitudeFormat) {
+        this.conventions          = conventions;
+        this.simpleEOP            = simpleEOP;
+        this.dataContext          = dataContext;
+        this.missionReferenceDate = missionReferenceDate;
+        this.header               = header;
+        this.metadata             = metadata;
+        this.attitudeFormat       = attitudeFormat;
     }
 
     /** {@inheritDoc} */
@@ -133,11 +127,12 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
         }
 
         final String idToProcess;
-        if (spaceObjectId != null) {
-            if (ephemerisFile.getSatellites().containsKey(spaceObjectId)) {
-                idToProcess = spaceObjectId;
+        if (metadata.getObjectID() != null) {
+            if (ephemerisFile.getSatellites().containsKey(metadata.getObjectID())) {
+                idToProcess = metadata.getObjectID();
             } else {
-                throw new OrekitIllegalArgumentException(OrekitMessages.VALUE_NOT_FOUND, spaceObjectId, "ephemerisFile");
+                throw new OrekitIllegalArgumentException(OrekitMessages.VALUE_NOT_FOUND,
+                                                         metadata.getObjectID(), "ephemerisFile");
             }
         } else if (ephemerisFile.getSatellites().keySet().size() == 1) {
             idToProcess = ephemerisFile.getSatellites().keySet().iterator().next();
@@ -155,20 +150,9 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
         // First segment
         final AttitudeEphemerisSegment firstSegment = segments.get(0);
 
-        final String objectName = this.spaceObjectName == null ? idToProcess : this.spaceObjectName;
-        // Metadata that is constant for the whole AEM file
-        final Map<Keyword, String> metadata = new LinkedHashMap<>();
-        metadata.put(Keyword.TIME_SYSTEM, CcsdsTimeScale.UTC.name());
-
-        // TODO: ORIGINATOR belongs to header, not metadata
-        metadata.put(Keyword.ORIGINATOR,  this.originator);
-        // Only one object in an AEM file, see Section 2.3.1
-        metadata.put(Keyword.OBJECT_NAME,   objectName);
-        metadata.put(Keyword.OBJECT_ID,     idToProcess);
-
         // Header comments. If header comments are presents, they are assembled together in a single line
         if (ephemerisFile instanceof AEMFile) {
-            // Cast to OEMFile
+            // Cast to AEMFile
             final AEMFile aemFile = (AEMFile) ephemerisFile;
             if (!aemFile.getHeader().getComments().isEmpty()) {
                 // Loop on comments
@@ -184,7 +168,7 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
 
         // Writer for AEM files
         final StreamingAemWriter aemWriter =
-                        new StreamingAemWriter(writer, conventions, dataContext, metadata, attitudeFormat);
+                        new StreamingAemWriter(writer, conventions, dataContext, header, metadata, attitudeFormat);
         aemWriter.writeHeader();
 
         // Loop on segments

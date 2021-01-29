@@ -410,7 +410,7 @@ UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS = impossibile calcolare l''orbita media a
 OUT_OF_RANGE_DERIVATION_ORDER = l''ordine di derivazione {0} è al di fuori dell''intervallo
 
 # orbit type {0} not allowed here, allowed types: {1}
-ORBIT_TYPE_NOT_ALLOWED = <MISSING TRANSLATION>
+ORBIT_TYPE_NOT_ALLOWED = tipo di orbita {0} non autorizzato in questo contesto, tipi autorizzati: {1}
 
 # non pseudo-inertial frame {0} is not suitable as reference for inertial forces
 NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_AS_REFERENCE_FOR_INERTIAL_FORCES = <MISSING TRANSLATION>
@@ -429,7 +429,6 @@ UNDEFINED_ABSOLUTE_PVCOORDINATES = <MISSING TRANSLATION>
 
 # an inertial force model has to be used when propagating in non-inertial frame {0}
 INERTIAL_FORCE_MODEL_MISSING = <MISSING TRANSLATION>
-ORBIT_TYPE_NOT_ALLOWED = tipo di orbita {0} non autorizzato in questo contesto, tipi autorizzati: {1}
 
 # no SEM almanac file found
 NO_SEM_ALMANAC_AVAILABLE = nessun file d''almanacco SEM trovato
@@ -601,14 +600,11 @@ EXCEPTIONAL_DATA_CONTEXT = <MISSING TRANSLATION>
 # inconsistent time systems in the attitude blocks: {0} ≠ {1}
 CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = <MISSING TRANSLATION>
 
-# invalid attitude type {0}
-CCSDS_AEM_NULL_ATTITUDE_TYPE = <MISSING TRANSLATION>
-
 # attitude type {0} in CCSDS AEM files is not implemented in Orekit
 CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED = <MISSING TRANSLATION>
 
-# the rotation sequence of the Euler angles {0} is invalid
-CCSDS_AEM_INVALID_ROTATION_SEQUENCE = <MISSING TRANSLATION>
+# invalid rotation sequence {0} at line {1} of file {2}
+CCSDS_INVALID_ROTATION_SEQUENCE = <MISSING TRANSLATION>
 
 # observations {0}, {1} and {2} must have different dates
 NON_DIFFERENT_DATES_FOR_OBSERVATIONS = <MISSING TRANSLATION>

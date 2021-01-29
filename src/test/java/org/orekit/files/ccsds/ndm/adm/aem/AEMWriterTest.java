@@ -92,7 +92,7 @@ public class AEMWriterTest {
         AEMWriter writer = new AEMWriter(originator, objectID, objectName);
         writer.write(tempAEMFilePath, aemFile);
 
-        final AEMFile generatedOemFile = parser.parse(tempAEMFilePath);
+        final AEMFile generatedOemFile = parser.parseType(tempAEMFilePath);
         compareAemFiles(aemFile, generatedOemFile);
     }
 
@@ -165,7 +165,7 @@ public class AEMWriterTest {
         AEMWriter writer = new AEMWriter();
         writer.write(tempAEMFilePath, aemFile);
 
-        final AEMFile generatedAemFile = parser.parse(tempAEMFilePath);
+        final AEMFile generatedAemFile = parser.parseType(tempAEMFilePath);
         assertEquals(aemFile.getSegments().get(0).getMetadata().getObjectID(),
                      generatedAemFile.getSegments().get(0).getMetadata().getObjectID());
     }
@@ -206,7 +206,7 @@ public class AEMWriterTest {
         AEMWriter writer = new AEMWriter();
         writer.write(tempAEMFilePath, aemFile);
 
-        final AEMFile generatedAemFile = parser.parse(tempAEMFilePath);
+        final AEMFile generatedAemFile = parser.parseType(tempAEMFilePath);
         assertEquals(aemFile.getHeader().getComments().get(0), generatedAemFile.getHeader().getComments().get(0));
     }
 

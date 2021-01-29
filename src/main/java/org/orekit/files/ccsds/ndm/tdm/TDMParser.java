@@ -51,9 +51,6 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
     /** Root element for XML files. */
     private static final String ROOT = "tdm";
 
-    /** Key for format version. */
-    private static final String FORMAT_VERSION_KEY = "CCSDS_TDM_VERS";
-
     /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
     private final AbsoluteDate missionReferenceDate;
 
@@ -83,7 +80,7 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
                      final boolean simpleEOP,
                      final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate) {
-        super(FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext);
+        super(TDMFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext);
         this.missionReferenceDate = missionReferenceDate;
     }
 
@@ -195,7 +192,8 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
     private boolean processMetadataToken(final ParseToken token) {
         inMetadata();
         try {
-            return MetadataKey.valueOf(token.getName()).process(token, context, metadata);
+            return token.getName() != null &&
+                   MetadataKey.valueOf(token.getName()).process(token, context, metadata);
         } catch (IllegalArgumentException iaeM) {
             try {
                 return TDMMetadataKey.valueOf(token.getName()).process(token, context, metadata);
@@ -213,7 +211,8 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
     private boolean processDataToken(final ParseToken token) {
         try {
             inData();
-            return TDMDataKey.valueOf(token.getName()).process(token, context, observationsBlock);
+            return token.getName() != null &&
+                   TDMDataKey.valueOf(token.getName()).process(token, context, observationsBlock);
         } catch (IllegalArgumentException iae) {
             // token has not been recognized
             return false;

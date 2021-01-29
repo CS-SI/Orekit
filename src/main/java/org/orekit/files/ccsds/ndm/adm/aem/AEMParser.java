@@ -16,7 +16,11 @@
  */
 package org.orekit.files.ccsds.ndm.adm.aem;
 
+import java.util.regex.Pattern;
+
 import org.orekit.data.DataContext;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.ADMParser;
 import org.orekit.files.ccsds.section.Header;
@@ -42,8 +46,8 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> {
     /** Root element for XML files. */
     private static final String ROOT = "aem";
 
-    /** Key for format version. */
-    private static final String FORMAT_VERSION_KEY = "CCSDS_AEM_VERS";
+    /** Pattern for splitting strings at blanks. */
+    private static final Pattern SPLIT_AT_BLANKS = Pattern.compile("\\s+");
 
     /** AEM file being read. */
     private AEMFile file;
@@ -55,10 +59,10 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> {
     private ParsingContext context;
 
     /** Current Ephemerides block being parsed. */
-    private AEMData currentEphemeridesBlock;
+    private AEMData currentBlock;
 
     /** Default interpolation degree. */
-    private int interpolationDegree;
+    private int defaultInterpolationDegree;
 
     /** Processor for global message structure. */
     private ProcessingState structureProcessor;
@@ -70,22 +74,13 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> {
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * (may be null if time system is absolute)
-     * @param interpolationDegree default interpolation degree
+     * @param defaultInterpolationDegree default interpolation degree
      */
     public AEMParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext,
-                     final AbsoluteDate missionReferenceDate, final int interpolationDegree) {
-        super(FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate);
-        this.interpolationDegree  = interpolationDegree;
-    }
-
-    /** Get default interpolation degree.
-     * @return interpolationDegree default interpolation degree to use while parsing
-     * @see #withInterpolationDegree(int)
-     * @since 10.3
-     */
-    public int getInterpolationDegree() {
-        return interpolationDegree;
+                     final AbsoluteDate missionReferenceDate, final int defaultInterpolationDegree) {
+        super(AEMFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate);
+        this.defaultInterpolationDegree  = defaultInterpolationDegree;
     }
 
     /** {@inheritDoc} */
@@ -131,7 +126,7 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> {
     /** {@inheritDoc} */
     @Override
     public void prepareMetadata() {
-        metadata  = new AEMMetadata();
+        metadata  = new AEMMetadata(defaultInterpolationDegree);
         context   = new ParsingContext(this::getConventions,
                                        this::isSimpleEOP,
                                        this::getDataContext,
@@ -155,7 +150,7 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> {
     /** {@inheritDoc} */
     @Override
     public void prepareData() {
-        currentEphemeridesBlock = new AEMData();
+        currentBlock = new AEMData();
         setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processMetadataToken);
     }
 
@@ -169,7 +164,7 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> {
     @Override
     public void finalizeData() {
         if (metadata != null) {
-            file.addSegment(new AEMSegment(metadata, currentEphemeridesBlock,
+            file.addSegment(new AEMSegment(metadata, currentBlock,
                                            getConventions(), isSimpleEOP(), getDataContext()));
         }
         metadata = null;
@@ -190,7 +185,8 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> {
     private boolean processMetadataToken(final ParseToken token) {
         inMetadata();
         try {
-            return MetadataKey.valueOf(token.getName()).process(token, context, metadata);
+            return token.getName() != null &&
+                   MetadataKey.valueOf(token.getName()).process(token, context, metadata);
         } catch (IllegalArgumentException iaeM) {
             try {
                 return ADMMetadataKey.valueOf(token.getName()).process(token, context, metadata);
@@ -211,9 +207,20 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> {
      */
     private boolean processDataToken(final ParseToken token) {
         inData();
-        if (token.getType() == TokenType.RAW_LINE) {
-            // TODO
-            return true;
+        if ("COMMENT".equals(token.getName())) {
+            return token.getType() == TokenType.ENTRY ? currentBlock.addComment(token.getContent()) : true;
+        } else if (token.getType() == TokenType.RAW_LINE) {
+            try {
+                if (metadata.getAttitudeType() == null) {
+                    throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
+                                              AEMMetadataKey.ATTITUDE_TYPE.name(), token.getFileName());
+                }
+                return currentBlock.addData(metadata.getAttitudeType().parse(metadata, context,
+                                                                             SPLIT_AT_BLANKS.split(token.getContent())));
+            } catch (NumberFormatException nfe) {
+                throw new OrekitException(nfe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                          token.getLineNumber(), token.getFileName(), token.getContent());
+            }
         } else {
             // not a raw line, it is most probably the end of the data section
             return false;

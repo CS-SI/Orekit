@@ -18,6 +18,8 @@ package org.orekit.files.ccsds.ndm.adm;
 
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.data.DataContext;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NDMFile;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
@@ -75,7 +77,9 @@ public abstract class ADMParser<T extends NDMFile<?, ?>, P extends AbstractMessa
                                                       replace('2', 'Y').
                                                       replace('3', 'Z')));
             } catch (IllegalArgumentException iae) {
-                throw sequence.generateException(iae);
+                throw new OrekitException(OrekitMessages.CCSDS_INVALID_ROTATION_SEQUENCE,
+                                          sequence.getNormalizedContent(),
+                                          sequence.getLineNumber(), sequence.getFileName());
             }
         }
         return true;

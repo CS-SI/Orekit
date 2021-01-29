@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Data;
-import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
 /**
@@ -34,9 +33,6 @@ public class AEMData extends CommentsContainer implements Data {
     /** List of data lines. */
     private final List<TimeStampedAngularCoordinates> attitudeDataLines;
 
-    /** Enumerate for selecting which derivatives to use in {@link #attitudeDataLines}. */
-    private AngularDerivativesFilter angularDerivativesFilter;
-
     /**
      * Constructor.
      */
@@ -46,10 +42,12 @@ public class AEMData extends CommentsContainer implements Data {
 
     /** Add a data point.
      * @param data data point to add
+     * @return always return {@code true}
      */
-    public void addData(final TimeStampedAngularCoordinates data) {
+    public boolean addData(final TimeStampedAngularCoordinates data) {
         refuseFurtherComments();
         attitudeDataLines.add(data);
+        return true;
     }
 
     /** Get an unmodifiable view of the data points.
@@ -57,21 +55,6 @@ public class AEMData extends CommentsContainer implements Data {
      */
     public List<TimeStampedAngularCoordinates> getAngularCoordinates() {
         return Collections.unmodifiableList(attitudeDataLines);
-    }
-
-    /** Get the derivatives available in the block.
-     * @return derivatives available in the block
-     */
-    public AngularDerivativesFilter getAvailableDerivatives() {
-        return angularDerivativesFilter;
-    }
-
-    /** Update the {@link #getAvailableDerivatives() available derivatives}.
-     * @param pointAngularDerivativesFilter enumerate for selecting which derivatives to use in attitude data.
-     */
-    void updateAngularDerivativesFilter(final AngularDerivativesFilter pointAngularDerivativesFilter) {
-        refuseFurtherComments();
-        this.angularDerivativesFilter = pointAngularDerivativesFilter;
     }
 
 }

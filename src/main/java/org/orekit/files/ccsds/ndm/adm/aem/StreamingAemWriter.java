@@ -21,7 +21,6 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -32,6 +31,7 @@ import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.files.ccsds.Keyword;
+import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderKeyword;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.propagation.SpacecraftState;
@@ -219,19 +219,19 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
 public class StreamingAemWriter {
 
     /** Version number implemented. **/
-    public static final String CCSDS_AEM_VERS = "1.0";
+    public static final double CCSDS_AEM_VERS = 1.0;
 
     /** Default value for {@link HeaderKeyword#ORIGINATOR}. */
     public static final String DEFAULT_ORIGINATOR = "OREKIT";
 
     /** Default value for {@link #TIME_SYSTEM}. */
-    public static final String DEFAULT_TIME_SYSTEM = "UTC";
+    public static final CcsdsTimeScale DEFAULT_TIME_SYSTEM = CcsdsTimeScale.UTC;
 
     /**
-     * Default format used for attitude ephemeris data output: 5 digits
+     * Default format used for attitude ephemeris data output: 9 digits
      * after the decimal point and leading space for positive values.
      */
-    public static final String DEFAULT_ATTITUDE_FORMAT = "% .5f";
+    public static final String DEFAULT_ATTITUDE_FORMAT = "% .9f";
 
     /** New line separator for output file. See 5.4.5. */
     private static final String NEW_LINE = "\n";
@@ -242,14 +242,23 @@ public class StreamingAemWriter {
      */
     private static final Locale STANDARDIZED_LOCALE = Locale.US;
 
+    /** String format used for all comment lines. **/
+    private static final String COMMENT_FORMAT = "COMMENT %s%n";
+
     /** String format used for all key/value pair lines. **/
     private static final String KV_FORMAT = "%s = %s%n";
 
     /** Output stream. */
     private final Appendable writer;
 
+    /** Data context used for obtain frames and time scales. */
+    private final DataContext dataContext;
+
+    /** File header. */
+    private final Header header;
+
     /** Metadata for this AEM file. */
-    private final Map<Keyword, String> metadata;
+    private final AEMMetadata metadata;
 
     /** Time scale for all dates except {@link Keyword#CREATION_DATE}. */
     private final TimeScale timeScale;
@@ -265,12 +274,13 @@ public class StreamingAemWriter {
      *                  to this {@code writer}.
      * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.
+     * @param header file header
      * @param metadata  for the satellite.
      */
     public StreamingAemWriter(final Appendable writer,
                               final IERSConventions conventions, final DataContext dataContext,
-                              final Map<Keyword, String> metadata) {
-        this(writer, conventions, dataContext, metadata, DEFAULT_ATTITUDE_FORMAT);
+                              final Header header, final AEMMetadata metadata) {
+        this(writer, conventions, dataContext, header, metadata, DEFAULT_ATTITUDE_FORMAT);
     }
 
     /**
@@ -282,27 +292,39 @@ public class StreamingAemWriter {
      *                  to this {@code writer}.
      * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.
+     * @param header file header
      * @param metadata  for the satellite.
      * @param attitudeFormat format parameters for attitude ephemeris data output.
      * @since 10.3
      */
     public StreamingAemWriter(final Appendable writer,
                               final IERSConventions conventions, final DataContext dataContext,
-                              final Map<Keyword, String> metadata,
-                              final String attitudeFormat) {
-        this.writer   = writer;
-        this.metadata = new LinkedHashMap<>(metadata);
+                              final Header header, final AEMMetadata metadata, final String attitudeFormat) {
+
+        this.writer      = writer;
+        this.dataContext = dataContext;
+        this.header      = header;
+        this.metadata    = metadata;
 
         // Set default metadata
-        this.metadata.putIfAbsent(Keyword.CCSDS_AEM_VERS, CCSDS_AEM_VERS);
+        if (Double.isNaN(header.getFormatVersion())) {
+            header.setFormatVersion(CCSDS_AEM_VERS);
+        }
 
         // creation date is informational only
-        this.metadata.putIfAbsent(Keyword.CREATION_DATE,
-                ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT));
-        this.metadata.putIfAbsent(Keyword.ORIGINATOR, DEFAULT_ORIGINATOR);
-        this.metadata.putIfAbsent(Keyword.TIME_SYSTEM, DEFAULT_TIME_SYSTEM);
-        this.timeScale      = CcsdsTimeScale.parse(metadata.get(Keyword.TIME_SYSTEM)).getTimeScale(conventions,
-                                                                                                   dataContext.getTimeScales());
+        if (header.getCreationDate() == null) {
+            final ZonedDateTime zdt = ZonedDateTime.now(ZoneOffset.UTC);
+            header.setCreationDate(new AbsoluteDate(zdt.getYear(), zdt.getMonthValue(), zdt.getDayOfMonth(),
+                                                    zdt.getHour(), zdt.getMinute(), zdt.getSecond(),
+                                                    dataContext.getTimeScales().getUTC()));
+        }
+        if (header.getOriginator() == null) {
+            header.setOriginator(DEFAULT_ORIGINATOR);
+        }
+        if (metadata.getTimeSystem() == null) {
+            metadata.setTimeSystem(DEFAULT_TIME_SYSTEM);
+        }
+        this.timeScale      = metadata.getTimeSystem().getTimeScale(conventions, dataContext.getTimeScales());
         this.attitudeFormat = attitudeFormat;
     }
 
@@ -312,8 +334,17 @@ public class StreamingAemWriter {
      * @param value the value to write
      * @throws IOException if an I/O error occurs.
      */
-    private void writeKeyValue(final Keyword key, final String value) throws IOException {
-        writer.append(String.format(STANDARDIZED_LOCALE, KV_FORMAT, key.toString(), value));
+    private void writeKeyValue(final String key, final String value) throws IOException {
+        writer.append(String.format(STANDARDIZED_LOCALE, KV_FORMAT, key, value));
+    }
+
+    /**
+     * Convert a double value to string, without internationalizetion issues.
+     * @param value the value to convert
+     * @return converted string
+     */
+    private String toString(final double value) throws IOException {
+        return String.format(STANDARDIZED_LOCALE, "%f", value);
     }
 
     /**
@@ -321,13 +352,14 @@ public class StreamingAemWriter {
      * @throws IOException if the stream cannot write to stream
      */
     public void writeHeader() throws IOException {
-        writeKeyValue(Keyword.CCSDS_AEM_VERS, this.metadata.get(Keyword.CCSDS_AEM_VERS));
-        final String comment = this.metadata.get(Keyword.COMMENT);
-        if (comment != null) {
-            writeKeyValue(Keyword.COMMENT, comment);
+        writeKeyValue(AEMFile.FORMAT_VERSION_KEY, toString(header.getFormatVersion()));
+        for (String comment : header.getComments()) {
+            writer.append(String.format(COMMENT_FORMAT, comment));
         }
-        writeKeyValue(Keyword.CREATION_DATE, this.metadata.get(Keyword.CREATION_DATE));
-        writeKeyValue(Keyword.ORIGINATOR, this.metadata.get(Keyword.ORIGINATOR));
+        writeKeyValue(HeaderKeyword.CREATION_DATE.name(),
+                      header.getCreationDate().toString(dataContext.getTimeScales().getUTC()));
+        writeKeyValue(HeaderKeyword.ORIGINATOR.name(),
+                      header.getOriginator());
         writer.append(NEW_LINE);
     }
 

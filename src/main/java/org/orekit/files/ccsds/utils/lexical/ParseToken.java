@@ -18,6 +18,7 @@ package org.orekit.files.ccsds.utils.lexical;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 import org.hipparchus.util.FastMath;
@@ -114,13 +115,14 @@ public class ParseToken {
 
     /** Get the normalized content of the entry.
      * <p>
-     * Normalized strings have '_' characters replaced by spaces,
-     * and multiple spaces collapsed as one space only.
+     * Normalized strings are all uppercase,
+     * have '_' characters replaced by spaces,
+     * and have multiple spaces collapsed as one space only.
      * </p>
      * @return entry normalized content
      */
     public String getNormalizedContent() {
-        return SPACE.matcher(content.replace('_', ' ')).replaceAll(" ");
+        return SPACE.matcher(content.replace('_', ' ')).replaceAll(" ").toUpperCase(Locale.US);
     }
 
     /** Get the content of the entry as a double.
@@ -186,6 +188,18 @@ public class ParseToken {
     public boolean processAsNormalizedString(final StringConsumer consumer) {
         if (type == TokenType.ENTRY) {
             consumer.accept(getNormalizedContent());
+        }
+        return true;
+    }
+
+    /** Process the content as an indexed free text string.
+     * @param consumer consumer of the indexed free test string
+     * @param index index
+     * @return always returns {@code true}
+     */
+    public boolean processAsIndexedFreeTextString(final IndexedStringConsumer consumer, final int index) {
+        if (type == TokenType.ENTRY) {
+            consumer.accept(index, getContent());
         }
         return true;
     }

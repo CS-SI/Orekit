@@ -42,6 +42,9 @@ import org.orekit.utils.IERSConventions;
  */
 public class OEMFile extends ODMFile<OEMSegment> implements EphemerisFile {
 
+    /** Key for format version. */
+    public static final String FORMAT_VERSION_KEY = "CCSDS_OEM_VERS";
+
     /** Simple constructor.
      * @param conventions IERS conventions
      * @param dataContext used for creating frames, time scales, etc.

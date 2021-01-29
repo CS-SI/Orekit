@@ -56,7 +56,12 @@ public enum AEMMetadataKey {
     /** Format of the data line entry. */
     ATTITUDE_TYPE((token, context, metadata) -> {
         if (token.getType() == TokenType.ENTRY) {
-            metadata.setAttitudeType(AEMAttitudeType.parseAttitudeType(token.getNormalizedContent().replace(' ', '_')));
+            try {
+                metadata.setAttitudeType(AEMAttitudeType.parseType(token.getContent()));
+                return true;
+            } catch (IllegalArgumentException iae) {
+                return false;
+            }
         }
         return true;
     }),

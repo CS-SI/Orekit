@@ -33,19 +33,19 @@ public enum TDMMetadataKey {
     STOP_TIME((token, context, metadata) -> token.processAsDate(metadata::setStopTime, context)),
 
     /** First participant entry. */
-    PARTICIPANT_1((token, context, metadata) -> token.processAsIndexedNormalizedString(metadata::addParticipant, 1)),
+    PARTICIPANT_1((token, context, metadata) -> token.processAsIndexedFreeTextString(metadata::addParticipant, 1)),
 
     /** Second participant entry. */
-    PARTICIPANT_2((token, context, metadata) -> token.processAsIndexedNormalizedString(metadata::addParticipant, 2)),
+    PARTICIPANT_2((token, context, metadata) -> token.processAsIndexedFreeTextString(metadata::addParticipant, 2)),
 
     /** Third participant entry. */
-    PARTICIPANT_3((token, context, metadata) -> token.processAsIndexedNormalizedString(metadata::addParticipant, 3)),
+    PARTICIPANT_3((token, context, metadata) -> token.processAsIndexedFreeTextString(metadata::addParticipant, 3)),
 
     /** Fourth participant entry. */
-    PARTICIPANT_4((token, context, metadata) -> token.processAsIndexedNormalizedString(metadata::addParticipant, 4)),
+    PARTICIPANT_4((token, context, metadata) -> token.processAsIndexedFreeTextString(metadata::addParticipant, 4)),
 
     /** Fifth participant entry. */
-    PARTICIPANT_5((token, context, metadata) -> token.processAsIndexedNormalizedString(metadata::addParticipant, 5)),
+    PARTICIPANT_5((token, context, metadata) -> token.processAsIndexedFreeTextString(metadata::addParticipant, 5)),
 
     /** Mode entry. */
     MODE((token, context, metadata) -> token.processAsNormalizedString(metadata::setMode)),

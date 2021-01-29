@@ -39,6 +39,9 @@ import org.orekit.utils.IERSConventions;
  */
 public class AEMFile extends ADMFile<AEMSegment> implements AttitudeEphemerisFile {
 
+    /** Key for format version. */
+    public static final String FORMAT_VERSION_KEY = "CCSDS_AEM_VERS";
+
     /** Simple constructor.
      * @param conventions IERS conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP

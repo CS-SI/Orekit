@@ -37,6 +37,9 @@ import org.orekit.utils.IERSConventions;
  */
 public class OMMFile extends OStateFile<OMMMetadata, OMMData> {
 
+    /** Key for format version. */
+    public static final String FORMAT_VERSION_KEY = "CCSDS_OMM_VERS";
+
     /** Simple constructor.
      * @param conventions IERS conventions
      * @param dataContext used for creating frames, time scales, etc.

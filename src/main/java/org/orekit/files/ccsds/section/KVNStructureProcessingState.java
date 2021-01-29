@@ -42,27 +42,29 @@ public class KVNStructureProcessingState implements ProcessingState {
     @Override
     public boolean processToken(final ParseToken token) {
 
-        switch (token.getName()) {
-            case "META" :
-                if (token.getType() == TokenType.START) {
-                    parser.prepareMetadata();
-                    return true;
-                } else if (token.getType() == TokenType.END) {
-                    parser.finalizeMetadata();
-                    return true;
-                }
-                break;
-            case "DATA" :
-                if (token.getType() == TokenType.START) {
-                    parser.prepareData();
-                    return true;
-                } else if (token.getType() == TokenType.END) {
-                    parser.finalizeData();
-                    return true;
-                }
-                break;
-            default :
-                // ignored, we delegate handling this token to fallback state
+        if (token.getName() != null) {
+            switch (token.getName()) {
+                case "META" :
+                    if (token.getType() == TokenType.START) {
+                        parser.prepareMetadata();
+                        return true;
+                    } else if (token.getType() == TokenType.END) {
+                        parser.finalizeMetadata();
+                        return true;
+                    }
+                    break;
+                case "DATA" :
+                    if (token.getType() == TokenType.START) {
+                        parser.prepareData();
+                        return true;
+                    } else if (token.getType() == TokenType.END) {
+                        parser.finalizeData();
+                        return true;
+                    }
+                    break;
+                default :
+                    // ignored, we delegate handling this token to fallback state
+            }
         }
 
         return false;

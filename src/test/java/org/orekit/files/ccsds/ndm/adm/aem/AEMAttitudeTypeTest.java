@@ -23,10 +23,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.time.AbsoluteDate;
+import org.orekit.files.ccsds.utils.CcsdsTimeScale;
+import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.utils.AngularDerivativesFilter;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
 public class AEMAttitudeTypeTest {
@@ -34,10 +37,20 @@ public class AEMAttitudeTypeTest {
     private static final double QUATERNION_PRECISION = 1.0e-5;
     private static final double ANGLE_PRECISION = 1.0e-3;
 
+    AEMMetadata metadata;
+    ParsingContext context;
+
     @Before
     public void setUp()
         throws Exception {
         Utils.setDataRoot("regular-data");
+        metadata = new AEMMetadata(4);
+        context  =  new ParsingContext(() -> IERSConventions.IERS_2010,
+                                       () -> true,
+                                       () -> DataContext.getDefault(),
+                                       () -> null,
+                                       metadata::getTimeSystem);
+        metadata.setTimeSystem(CcsdsTimeScale.TAI);
     }
 
     /**
@@ -47,27 +60,27 @@ public class AEMAttitudeTypeTest {
     @Test
     public void testSpin() {
         // Initialize the attitude type
-        final AEMAttitudeType spin = AEMAttitudeType.parseAttitudeType("SPIN");
+        final AEMAttitudeType spin = AEMAttitudeType.parseType("SPIN");
         // Test exception on the first method
         try {
-            spin.getAngularCoordinates(null, null, false, null);
+            spin.parse(null, null, new String[6]);
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
-            Assert.assertEquals(AEMAttitudeType.SPIN.getName(), oe.getParts()[0]);
+            Assert.assertEquals(AEMAttitudeType.SPIN.name(), oe.getParts()[0]);
         }
         // Test exception on the second method
         try {
             spin.getAttitudeData(null,false, null);
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
-            Assert.assertEquals(AEMAttitudeType.SPIN.getName(), oe.getParts()[0]);
+            Assert.assertEquals(AEMAttitudeType.SPIN.name(), oe.getParts()[0]);
         }
         // Test exception on the third method
         try {
             spin.getAngularDerivativesFilter();
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
-            Assert.assertEquals(AEMAttitudeType.SPIN.getName(), oe.getParts()[0]);
+            Assert.assertEquals(AEMAttitudeType.SPIN.name(), oe.getParts()[0]);
         }
     }
 
@@ -78,41 +91,41 @@ public class AEMAttitudeTypeTest {
     @Test
     public void testSpinNutation() {
         // Initialize the attitude type
-        final AEMAttitudeType spinNutation = AEMAttitudeType.parseAttitudeType("SPIN/NUTATION");
+        final AEMAttitudeType spinNutation = AEMAttitudeType.parseType("SPIN/NUTATION");
         // Test exception on the first method
         try {
-            spinNutation.getAngularCoordinates(null, null, false, null);
+            spinNutation.parse(null, null, new String[6]);
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
-            Assert.assertEquals(AEMAttitudeType.SPIN_NUTATION.getName(), oe.getParts()[0]);
+            Assert.assertEquals(AEMAttitudeType.SPIN_NUTATION.name(), oe.getParts()[0]);
         }
         // Test exception on the second method
         try {
             spinNutation.getAttitudeData(null,false, null);
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
-            Assert.assertEquals(AEMAttitudeType.SPIN_NUTATION.getName(), oe.getParts()[0]);
+            Assert.assertEquals(AEMAttitudeType.SPIN_NUTATION.name(), oe.getParts()[0]);
         }
         // Test exception on the third method
         try {
             spinNutation.getAngularDerivativesFilter();
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
-            Assert.assertEquals(AEMAttitudeType.SPIN_NUTATION.getName(), oe.getParts()[0]);
+            Assert.assertEquals(AEMAttitudeType.SPIN_NUTATION.name(), oe.getParts()[0]);
         }
     }
 
     @Test
     public void testQuaternion() {
         // Initialize the attitude type
-        final AEMAttitudeType quaternion = AEMAttitudeType.parseAttitudeType("QUATERNION");
+        final AEMAttitudeType quaternion = AEMAttitudeType.parseType("QUATERNION");
 
         // Test computation of angular coordinates from attitude data
-        final double[] attitudeData = new double[] {
-            0.68427, 0.56748, 0.03146, 0.45689
+        final String[] attitudeData = new String[] {
+            "2021-01-29T21:24:37", "0.68427", "0.56748", "0.03146", "0.45689"
         };
-        final TimeStampedAngularCoordinates tsac = quaternion.getAngularCoordinates(AbsoluteDate.J2000_EPOCH,
-                                                                                    attitudeData, true, null);
+        metadata.setIsFirst(true);
+        final TimeStampedAngularCoordinates tsac = quaternion.parse(metadata, context, attitudeData);
         Assert.assertEquals(0.68427, tsac.getRotation().getQ0(), QUATERNION_PRECISION);
         Assert.assertEquals(0.56748, tsac.getRotation().getQ1(), QUATERNION_PRECISION);
         Assert.assertEquals(0.03146, tsac.getRotation().getQ2(), QUATERNION_PRECISION);
@@ -120,8 +133,8 @@ public class AEMAttitudeTypeTest {
 
         // Test computation of attitude data from angular coordinates
         final double[] attitudeDataBis = quaternion.getAttitudeData(tsac, true, null);
-        for (int i = 0; i < attitudeData.length; i++) {
-            Assert.assertEquals(attitudeData[i], attitudeDataBis[i], QUATERNION_PRECISION);
+        for (int i = 0; i < attitudeDataBis.length; i++) {
+            Assert.assertEquals(Double.parseDouble(attitudeData[i + 1]), attitudeDataBis[i], QUATERNION_PRECISION);
         }
 
         // Verify angular derivative filter
@@ -131,14 +144,14 @@ public class AEMAttitudeTypeTest {
     @Test
     public void testQuaternionDerivates() {
         // Initialize the attitude type
-        final AEMAttitudeType quaternion = AEMAttitudeType.parseAttitudeType("QUATERNION/DERIVATIVE");
+        final AEMAttitudeType quaternion = AEMAttitudeType.parseType("QUATERNION/DERIVATIVE");
 
         // Test computation of angular coordinates from attitude data
-        final double[] attitudeData = new double[] {
-            0.68427, 0.56748, 0.03146, 0.45689, 0.0, 0.0, 0.0, 0.0
+        final String[] attitudeData = new String[] {
+            "2021-01-29T21:24:37", "0.68427", "0.56748", "0.03146", "0.45689", "0.0", "0.0", "0.0", "0.0"
         };
-        final TimeStampedAngularCoordinates tsac = quaternion.getAngularCoordinates(AbsoluteDate.J2000_EPOCH,
-                                                                                    attitudeData, true, null);
+        metadata.setIsFirst(true);
+        final TimeStampedAngularCoordinates tsac = quaternion.parse(metadata, context, attitudeData);
         Assert.assertEquals(0.68427,    tsac.getRotation().getQ0(),    QUATERNION_PRECISION);
         Assert.assertEquals(0.56748,    tsac.getRotation().getQ1(),    QUATERNION_PRECISION);
         Assert.assertEquals(0.03146,    tsac.getRotation().getQ2(),    QUATERNION_PRECISION);
@@ -146,8 +159,8 @@ public class AEMAttitudeTypeTest {
 
         // Test computation of attitude data from angular coordinates
         final double[] attitudeDataBis = quaternion.getAttitudeData(tsac, true, null);
-        for (int i = 0; i < attitudeData.length; i++) {
-            Assert.assertEquals(attitudeData[i], attitudeDataBis[i], QUATERNION_PRECISION);
+        for (int i = 0; i < attitudeDataBis.length; i++) {
+            Assert.assertEquals(Double.parseDouble(attitudeData[i + 1]), attitudeDataBis[i], QUATERNION_PRECISION);
         }
 
         // Verify angular derivative filter
@@ -157,14 +170,14 @@ public class AEMAttitudeTypeTest {
     @Test
     public void testQuaternionRate() {
         // Initialize the attitude type
-        final AEMAttitudeType quaternionRate = AEMAttitudeType.parseAttitudeType("QUATERNION/RATE");
+        final AEMAttitudeType quaternionRate = AEMAttitudeType.parseType("QUATERNION/RATE");
 
         // Test computation of angular coordinates from attitude data
-        final double[] attitudeData = new double[] {
-            0.68427, 0.56748, 0.03146, 0.45689, 43.1, 12.8, 37.9
+        final String[] attitudeData = new String[] {
+            "2021-01-29T21:24:37", "0.56748", "0.03146", "0.45689", "0.68427", "43.1", "12.8", "37.9"
         };
-        final TimeStampedAngularCoordinates tsac = quaternionRate.getAngularCoordinates(AbsoluteDate.J2000_EPOCH,
-                                                                                        attitudeData, true, null);
+        metadata.setIsFirst(false);
+        final TimeStampedAngularCoordinates tsac = quaternionRate.parse(metadata, context, attitudeData);
         Assert.assertEquals(0.68427,  tsac.getRotation().getQ0(),    QUATERNION_PRECISION);
         Assert.assertEquals(0.56748,  tsac.getRotation().getQ1(),    QUATERNION_PRECISION);
         Assert.assertEquals(0.03146,  tsac.getRotation().getQ2(),    QUATERNION_PRECISION);
@@ -174,9 +187,9 @@ public class AEMAttitudeTypeTest {
         Assert.assertEquals(FastMath.toRadians(37.9), tsac.getRotationRate().getZ(), ANGLE_PRECISION);
 
         // Test computation of attitude data from angular coordinates
-        final double[] attitudeDataBis = quaternionRate.getAttitudeData(tsac, true, null);
-        for (int i = 0; i < attitudeData.length; i++) {
-            Assert.assertEquals(attitudeData[i], attitudeDataBis[i], QUATERNION_PRECISION);
+        final double[] attitudeDataBis = quaternionRate.getAttitudeData(tsac, false, null);
+        for (int i = 0; i < attitudeDataBis.length; i++) {
+            Assert.assertEquals(Double.parseDouble(attitudeData[i + 1]), attitudeDataBis[i], QUATERNION_PRECISION);
         }
 
         // Verify angular derivative filter
@@ -186,15 +199,14 @@ public class AEMAttitudeTypeTest {
     @Test
     public void testEulerAngle() {
         // Initialize the attitude type
-        final AEMAttitudeType eulerAngle = AEMAttitudeType.parseAttitudeType("EULER ANGLE");
+        final AEMAttitudeType eulerAngle = AEMAttitudeType.parseType("EULER ANGLE");
 
         // Test computation of angular coordinates from attitude data
-        final double[] attitudeData = new double[] {
-            43.1, 12.8, 37.9
+        final String[] attitudeData = new String[] {
+            "2021-01-29T21:24:37", "43.1", "12.8", "37.9"
         };
-        final TimeStampedAngularCoordinates tsac = eulerAngle.getAngularCoordinates(AbsoluteDate.J2000_EPOCH,
-                                                                                    attitudeData, true,
-                                                                                    RotationOrder.XYZ);
+        metadata.setEulerRotSeq(RotationOrder.XYZ);
+        final TimeStampedAngularCoordinates tsac = eulerAngle.parse(metadata, context, attitudeData);
         final double[] angles = tsac.getRotation().getAngles(RotationOrder.XYZ, RotationConvention.FRAME_TRANSFORM);
         Assert.assertEquals(43.1, FastMath.toDegrees(angles[0]), ANGLE_PRECISION);
         Assert.assertEquals(12.8, FastMath.toDegrees(angles[1]), ANGLE_PRECISION);
@@ -202,8 +214,8 @@ public class AEMAttitudeTypeTest {
 
         // Test computation of attitude data from angular coordinates
         final double[] attitudeDataBis = eulerAngle.getAttitudeData(tsac, true, RotationOrder.XYZ);
-        for (int i = 0; i < attitudeData.length; i++) {
-            Assert.assertEquals(attitudeData[i], attitudeDataBis[i], ANGLE_PRECISION);
+        for (int i = 0; i < attitudeDataBis.length; i++) {
+            Assert.assertEquals(Double.parseDouble(attitudeData[i + 1]), attitudeDataBis[i], ANGLE_PRECISION);
         }
 
         // Verify angular derivative filter
@@ -213,16 +225,15 @@ public class AEMAttitudeTypeTest {
     @Test
     public void testEulerAngleRate() {
         // Initialize the attitude type
-        final AEMAttitudeType eulerAngleRate = AEMAttitudeType.parseAttitudeType("EULER ANGLE/RATE");
+        final AEMAttitudeType eulerAngleRate = AEMAttitudeType.parseType("EULER ANGLE/RATE");
 
         // Test computation of angular coordinates from attitude data
-        final double[] attitudeData = new double[] {
-            43.1, 12.8, 37.9, 1.452, 0.475, 1.112
+        final String[] attitudeData = new String[] {
+            "2021-01-29T21:24:37", "43.1", "12.8", "37.9", "1.452", "0.475", "1.112"
         };
-        final TimeStampedAngularCoordinates tsac = eulerAngleRate.getAngularCoordinates(AbsoluteDate.J2000_EPOCH,
-                                                                                        attitudeData, true,
-                                                                                        RotationOrder.XYZ);
-        final double[] angles = tsac.getRotation().getAngles(RotationOrder.XYZ, RotationConvention.FRAME_TRANSFORM);
+        metadata.setEulerRotSeq(RotationOrder.ZXZ);
+        final TimeStampedAngularCoordinates tsac = eulerAngleRate.parse(metadata, context, attitudeData);
+        final double[] angles = tsac.getRotation().getAngles(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM);
         Assert.assertEquals(43.1,  FastMath.toDegrees(angles[0]), ANGLE_PRECISION);
         Assert.assertEquals(12.8,  FastMath.toDegrees(angles[1]), ANGLE_PRECISION);
         Assert.assertEquals(37.9,  FastMath.toDegrees(angles[2]), ANGLE_PRECISION);
@@ -231,22 +242,18 @@ public class AEMAttitudeTypeTest {
         Assert.assertEquals(1.112, FastMath.toDegrees(tsac.getRotationRate().getZ()), ANGLE_PRECISION);
 
         // Test computation of attitude data from angular coordinates
-        final double[] attitudeDataBis = eulerAngleRate.getAttitudeData(tsac, true, RotationOrder.XYZ);
-        for (int i = 0; i < attitudeData.length; i++) {
-            Assert.assertEquals(attitudeData[i], attitudeDataBis[i], ANGLE_PRECISION);
+        final double[] attitudeDataBis = eulerAngleRate.getAttitudeData(tsac, true, RotationOrder.ZXZ);
+        for (int i = 0; i < attitudeDataBis.length; i++) {
+            Assert.assertEquals(Double.parseDouble(attitudeData[i + 1]), attitudeDataBis[i], ANGLE_PRECISION);
         }
 
         // Verify angular derivative filter
         Assert.assertEquals(AngularDerivativesFilter.USE_RR, eulerAngleRate.getAngularDerivativesFilter());
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testInvalidAttitudeType() {
-        try {
-            AEMAttitudeType.parseAttitudeType("TAG");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_AEM_NULL_ATTITUDE_TYPE, oe.getSpecifier());
-        }
+        AEMAttitudeType.parseType("TAG");
     }
 
 }

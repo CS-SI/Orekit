@@ -452,9 +452,10 @@ public class APMParserTest {
                                                               DataContext.getDefault(), AbsoluteDate.J2000_EPOCH));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
-            Assert.assertEquals("EULER_ROT_SEQ", oe.getParts()[0]);
+            Assert.assertEquals(OrekitMessages.CCSDS_INVALID_ROTATION_SEQUENCE, oe.getSpecifier());
+            Assert.assertEquals("331", oe.getParts()[0]);
             Assert.assertEquals(33, ((Integer) oe.getParts()[1]).intValue());
+            Assert.assertEquals(name, oe.getParts()[2]);
         }
     }
 

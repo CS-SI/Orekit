@@ -36,6 +36,9 @@ import org.orekit.utils.PVCoordinates;
  */
 public class OPMFile extends OStateFile<OCommonMetadata, OPMData> {
 
+    /** Key for format version. */
+    public static final String FORMAT_VERSION_KEY = "CCSDS_OPM_VERS";
+
     /** Simple constructor.
      * @param conventions IERS conventions
      * @param dataContext used for creating frames, time scales, etc.

@@ -98,7 +98,7 @@ public class AEMSegment extends Segment<AEMMetadata, AEMData> implements Attitud
     /** {@inheritDoc} */
     @Override
     public AngularDerivativesFilter getAvailableDerivatives() {
-        return getData().getAvailableDerivatives();
+        return getMetadata().getAttitudeType().getAngularDerivativesFilter();
     }
 
 }

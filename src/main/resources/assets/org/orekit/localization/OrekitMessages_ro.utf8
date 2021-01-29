@@ -600,14 +600,11 @@ EXCEPTIONAL_DATA_CONTEXT = a fost detectată o utilizare a ExceptionalDataContex
 # inconsistent time systems in the attitude blocks: {0} ≠ {1}
 CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = sisteme de timp inconsistente în blocurile de atitudine: {0} ≠ {1}
 
-# invalid attitude type {0}
-CCSDS_AEM_NULL_ATTITUDE_TYPE = tip de atitudine nevalid {0}
-
 # attitude type {0} in CCSDS AEM files is not implemented in Orekit
 CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED = tipul de atitudine {0} din fișierele CCSDS AEM nu este implementat în Orekit
 
-# the rotation sequence of the Euler angles {0} is invalid
-CCSDS_AEM_INVALID_ROTATION_SEQUENCE = secvența de rotație a unghiurilor Euler {0} este nevalidă
+# invalid rotation sequence {0} at line {1} of file {2}
+CCSDS_INVALID_ROTATION_SEQUENCE = <MISSING TRANSLATION>
 
 # observations {0}, {1} and {2} must have different dates
 NON_DIFFERENT_DATES_FOR_OBSERVATIONS = observațiile {0}, {1} și {2} trebuie să aibă date diferite

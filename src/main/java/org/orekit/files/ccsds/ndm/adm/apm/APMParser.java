@@ -47,9 +47,6 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
     /** Root element for XML files. */
     private static final String ROOT = "apm";
 
-    /** Key for format version. */
-    private static final String FORMAT_VERSION_KEY = "CCSDS_APM_VERS";
-
     /** APM file being read. */
     private APMFile file;
 
@@ -90,7 +87,7 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
     public APMParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate) {
-        super(FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate);
+        super(APMFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate);
     }
 
     /** {@inheritDoc} */
@@ -217,7 +214,8 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
         }
         inMetadata();
         try {
-            return MetadataKey.valueOf(token.getName()).process(token, context, metadata);
+            return token.getName() != null &&
+                   MetadataKey.valueOf(token.getName()).process(token, context, metadata);
         } catch (IllegalArgumentException iaeM) {
             try {
                 return ADMMetadataKey.valueOf(token.getName()).process(token, context, metadata);
@@ -241,7 +239,8 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
         inData();
         setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processEulerToken);
         try {
-            return APMQuaternionKey.valueOf(token.getName()).process(token, context, quaternionBlock);
+            return token.getName() != null &&
+                   APMQuaternionKey.valueOf(token.getName()).process(token, context, quaternionBlock);
         } catch (IllegalArgumentException iae) {
             // token has not been recognized
             return false;
@@ -258,7 +257,8 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
         }
         setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processSpinStabilizedToken);
         try {
-            return APMEulerKey.valueOf(token.getName()).process(token, context, eulerBlock);
+            return token.getName() != null &&
+                   APMEulerKey.valueOf(token.getName()).process(token, context, eulerBlock);
         } catch (IllegalArgumentException iae) {
             // token has not been recognized
             return false;
@@ -279,7 +279,8 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
         }
         setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processSpacecraftParametersToken);
         try {
-            return APMSpinStabilizedKey.valueOf(token.getName()).process(token, context, spinStabilizedBlock);
+            return token.getName() != null &&
+                   APMSpinStabilizedKey.valueOf(token.getName()).process(token, context, spinStabilizedBlock);
         } catch (IllegalArgumentException iae) {
             // token has not been recognized
             return false;
@@ -300,7 +301,8 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
         }
         setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processManeuverToken);
         try {
-            return APMSpacecraftParametersKey.valueOf(token.getName()).process(token, context, spacecraftParametersBlock);
+            return token.getName() != null &&
+                   APMSpacecraftParametersKey.valueOf(token.getName()).process(token, context, spacecraftParametersBlock);
         } catch (IllegalArgumentException iae) {
             // token has not been recognized
             return false;
@@ -321,7 +323,8 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
         }
         setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : new ErrorState());
         try {
-            if (APMManeuverKey.valueOf(token.getName()).process(token, context, currentManeuver)) {
+            if (token.getName() != null &&
+                APMManeuverKey.valueOf(token.getName()).process(token, context, currentManeuver)) {
                 // the token was processed properly
                 if (currentManeuver.completed()) {
                     // current maneuver is completed
