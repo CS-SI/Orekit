@@ -356,10 +356,10 @@ public class TDMParserTest {
                                                  DataContext.getDefault(), null));
             Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
-            Assert.assertEquals("WRONG_KEYWORD", oe.getParts()[0]);
-            Assert.assertEquals(26, oe.getParts()[1]);
-            Assert.assertEquals("%s","/ccsds/tdm/kvn/TDM-data-wrong-keyword.txt", oe.getParts()[2]);
+            Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
+            Assert.assertEquals(26, oe.getParts()[0]);
+            Assert.assertEquals("%s","/ccsds/tdm/kvn/TDM-data-wrong-keyword.txt", oe.getParts()[1]);
+            Assert.assertEquals("WRONG_KEYWORD", oe.getParts()[2]);
         }
     }
 
@@ -373,10 +373,10 @@ public class TDMParserTest {
                                                  DataContext.getDefault(), null));
             Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
-            Assert.assertEquals("WRONG_KEYWORD", oe.getParts()[0]);
-            Assert.assertEquals(47, oe.getParts()[1]);
-            Assert.assertEquals(name, oe.getParts()[2]);
+            Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
+            Assert.assertEquals(47, oe.getParts()[0]);
+            Assert.assertEquals(name, oe.getParts()[1]);
+            Assert.assertEquals("WRONG_KEYWORD", oe.getParts()[2]);
         }
     }
 
@@ -390,10 +390,10 @@ public class TDMParserTest {
                                                  DataContext.getDefault(), null));
             Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
-            Assert.assertEquals("WRONG_KEYWORD", oe.getParts()[0]);
-            Assert.assertEquals(16, oe.getParts()[1]);
-            Assert.assertEquals("/ccsds/tdm/kvn/TDM-metadata-wrong-keyword.txt", oe.getParts()[2]);
+            Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
+            Assert.assertEquals(16, oe.getParts()[0]);
+            Assert.assertEquals("/ccsds/tdm/kvn/TDM-metadata-wrong-keyword.txt", oe.getParts()[1]);
+            Assert.assertEquals("WRONG_KEYWORD", oe.getParts()[2]);
         }
     }
 
@@ -407,10 +407,10 @@ public class TDMParserTest {
                                                  DataContext.getDefault(), null));
             Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
-            Assert.assertEquals("WRONG_KEYWORD", oe.getParts()[0]);
-            Assert.assertEquals(23, oe.getParts()[1]);
-            Assert.assertEquals("/ccsds/tdm/xml/TDM-metadata-wrong-keyword.xml", oe.getParts()[2]);
+            Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
+            Assert.assertEquals(23, oe.getParts()[0]);
+            Assert.assertEquals("/ccsds/tdm/xml/TDM-metadata-wrong-keyword.xml", oe.getParts()[1]);
+            Assert.assertEquals("WRONG_KEYWORD", oe.getParts()[2]);
         }
     }
 

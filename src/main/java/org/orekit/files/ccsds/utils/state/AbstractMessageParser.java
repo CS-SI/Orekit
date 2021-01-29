@@ -179,11 +179,8 @@ public abstract class AbstractMessageParser<T extends NDMFile<?, ?>, P extends A
             if (current.processToken(token)) {
                 return;
             }
-            if (fallback == current) {
-                // we can't process the token at all
-                throw token.generateException(null);
-            }
-            current = fallback;
+            current  = fallback;
+            fallback = new ErrorState();
         }
 
         // this should never happen
