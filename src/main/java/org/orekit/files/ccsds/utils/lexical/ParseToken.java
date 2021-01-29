@@ -168,85 +168,114 @@ public class ParseToken {
 
     /** Process the content as a free-text string.
      * @param consumer consumer of the free-text string
+     * @return always returns {@code true}
      * @see #processAsNormalizedString(StringConsumer)
      */
-    public void processAsFreeTextString(final StringConsumer consumer) {
+    public boolean processAsFreeTextString(final StringConsumer consumer) {
         if (type == TokenType.ENTRY) {
             consumer.accept(content);
         }
+        return true;
     }
 
     /** Process the content as a normalized string.
      * @param consumer consumer of the normalized string
+     * @return always returns {@code true}
      * @see #processAsFreeTextString(StringConsumer)
      */
-    public void processAsNormalizedString(final StringConsumer consumer) {
+    public boolean processAsNormalizedString(final StringConsumer consumer) {
         if (type == TokenType.ENTRY) {
             consumer.accept(getNormalizedContent());
         }
+        return true;
     }
 
     /** Process the content as an indexed normalized string.
      * @param consumer consumer of the indexed normalized string
      * @param index index
+     * @return always returns {@code true}
      */
-    public void processAsIndexedNormalizedString(final IndexedStringConsumer consumer, final int index) {
+    public boolean processAsIndexedNormalizedString(final IndexedStringConsumer consumer, final int index) {
         if (type == TokenType.ENTRY) {
             consumer.accept(index, getNormalizedContent());
         }
+        return true;
     }
 
     /** Process the content as a list of normalized strings.
      * @param consumer consumer of the normalized strings list
+     * @return always returns {@code true}
      */
-    public void processAsNormalizedStringList(final StringListConsumer consumer) {
+    public boolean processAsNormalizedStringList(final StringListConsumer consumer) {
         if (type == TokenType.ENTRY) {
             consumer.accept(Arrays.asList(SPLIT_AT_COMMAS.split(getNormalizedContent())));
         }
+        return true;
     }
 
     /** Process the content as an integer.
      * @param consumer consumer of the integer
+     * @return always returns {@code true}
      */
-    public void processAsInteger(final IntConsumer consumer) {
+    public boolean processAsInteger(final IntConsumer consumer) {
         if (type == TokenType.ENTRY) {
             consumer.accept(getContentAsInt());
         }
+        return true;
     }
 
     /** Process the content as a double.
      * @param consumer consumer of the double
+     * @return always returns {@code true}
      */
-    public void processAsDouble(final DoubleConsumer consumer) {
+    public boolean processAsDouble(final DoubleConsumer consumer) {
         if (type == TokenType.ENTRY) {
             consumer.accept(getContentAsDouble());
         }
-    }
-
-    /** Process the content as an angle (i.e. converting from degrees to radians upon reading).
-     * @param consumer consumer of the angle in radians
-     */
-    public void processAsAngle(final DoubleConsumer consumer) {
-        if (type == TokenType.ENTRY) {
-            consumer.accept(FastMath.toRadians(getContentAsDouble()));
-        }
+        return true;
     }
 
     /** Process the content as an indexed double.
      * @param consumer consumer of the indexed double
      * @param index index
+     * @return always returns {@code true}
      */
-    public void processAsIndexedDouble(final IndexedDoubleConsumer consumer, final int index) {
+    public boolean processAsIndexedDouble(final IndexedDoubleConsumer consumer, final int index) {
         if (type == TokenType.ENTRY) {
             consumer.accept(index, getContentAsDouble());
         }
+        return true;
+    }
+
+    /** Process the content as an angle (i.e. converting from degrees to radians upon reading).
+     * @param consumer consumer of the angle in radians
+     * @return always returns {@code true}
+     */
+    public boolean processAsAngle(final DoubleConsumer consumer) {
+        if (type == TokenType.ENTRY) {
+            consumer.accept(FastMath.toRadians(getContentAsDouble()));
+        }
+        return true;
+    }
+
+    /** Process the content as an indexed angle.
+     * @param consumer consumer of the indexed angle
+     * @param index index
+     * @return always returns {@code true}
+     */
+    public boolean processAsIndexedAngle(final IndexedDoubleConsumer consumer, final int index) {
+        if (type == TokenType.ENTRY) {
+            consumer.accept(index, FastMath.toRadians(getContentAsDouble()));
+        }
+        return true;
     }
 
     /** Process the content as a date.
      * @param consumer consumer of the date
      * @param context parsing context
+     * @return always returns {@code true} (or throws an exception)
      */
-    public void processAsDate(final DateConsumer consumer, final ParsingContext context) {
+    public boolean processAsDate(final DateConsumer consumer, final ParsingContext context) {
         if (type == TokenType.ENTRY) {
             if (context.getTimeScale() == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_TIME_SYSTEM_NOT_READ_YET,
@@ -257,36 +286,46 @@ public class ParseToken {
                                                              context.getMissionReferenceDate(),
                                                              context.getDataContext().getTimeScales()));
         }
+        return true;
     }
 
     /** Process the content as a time scale.
      * @param consumer consumer of the time scale
+     * @return always returns {@code true} (or throws an exception)
      */
-    public void processAsTimeScale(final TimeScaleConsumer consumer) {
+    public boolean processAsTimeScale(final TimeScaleConsumer consumer) {
         if (type == TokenType.ENTRY) {
             consumer.accept(CcsdsTimeScale.parse(content));
         }
+        return true;
     }
 
     /** Process the content as a frame.
      * @param consumer consumer of the frame
      * @param context parsing context
+     * @return always returns {@code true}
      */
-    public void processAsFrame(final FrameConsumer consumer, final ParsingContext context) {
+    public boolean processAsFrame(final FrameConsumer consumer, final ParsingContext context) {
         if (type == TokenType.ENTRY) {
-            final CCSDSFrame frame = CCSDSFrame.valueOf(DASH.matcher(content).replaceAll(""));
-            consumer.accept(frame.getFrame(context.getConventions(),
-                                           context.isSimpleEOP(),
-                                           context.getDataContext()));
+            try {
+                final CCSDSFrame frame = CCSDSFrame.valueOf(DASH.matcher(content).replaceAll(""));
+                consumer.accept(frame.getFrame(context.getConventions(),
+                                               context.isSimpleEOP(),
+                                               context.getDataContext()));
+            } catch (IllegalArgumentException iae) {
+                throw generateException(iae);
+            }
         }
+        return true;
     }
 
     /** Process the content as a body center.
      * @param consumer consumer of the body center
      * @param complainIfUnknown if true, unknown centers generate an exception, otherwise
      * they are silently ignored
+     * @return always returns {@code true}
      */
-    public void processAsCenter(final CenterConsumer consumer, final boolean complainIfUnknown) {
+    public boolean processAsCenter(final CenterConsumer consumer, final boolean complainIfUnknown) {
         if (type == TokenType.ENTRY) {
             String canonicalValue = getNormalizedContent();
             if (canonicalValue.equals("SOLAR SYSTEM BARYCENTER") || canonicalValue.equals("SSB")) {
@@ -303,6 +342,7 @@ public class ParseToken {
                 }
             }
         }
+        return true;
     }
 
     /** Generate a parse exception for this entry.

@@ -16,9 +16,9 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
-import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
 
 /** Keys for {@link APMQuaternion APM quaternion} entries.
  * @author Bryan Cazabonne
@@ -36,84 +36,44 @@ public enum APMQuaternionKey {
     quaternionRate((token, context, data) -> true),
 
     /** Comment entry. */
-    COMMENT((token, context, data) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            return data.addComment(token.getContent());
-        }
-        return true;
-    }),
+    COMMENT((token, context, data) ->
+            token.getType() == TokenType.ENTRY ? data.addComment(token.getContent()) : true),
 
     /** Epoch entry. */
-    EPOCH((token, context, data) -> {
-        token.processAsDate(data::setEpoch, context);
-        return true;
-    }),
+    EPOCH((token, context, data) -> token.processAsDate(data::setEpoch, context)),
 
     /** First reference frame entry. */
-    Q_FRAME_A((token, context, data) -> {
-        token.processAsNormalizedString(data.getEndPoints()::setFrameA);
-        return true;
-    }),
+    Q_FRAME_A((token, context, data) -> token.processAsNormalizedString(data.getEndPoints()::setFrameA)),
 
     /** Second reference frame entry. */
-    Q_FRAME_B((token, context, data) -> {
-        token.processAsNormalizedString(data.getEndPoints()::setFrameB);
-        return true;
-    }),
+    Q_FRAME_B((token, context, data) -> token.processAsNormalizedString(data.getEndPoints()::setFrameB)),
 
     /** Rotation direction entry. */
-    Q_DIR((token, context, data) -> {
-        token.processAsNormalizedString(data.getEndPoints()::setDirection);
-        return true;
-    }),
+    Q_DIR((token, context, data) -> token.processAsNormalizedString(data.getEndPoints()::setDirection)),
 
     /** Scalar part of the quaternion entry. */
-    QC((token, context, data) -> {
-        token.processAsDouble(data::setQ0);
-        return true;
-    }),
+    QC((token, context, data) -> token.processAsIndexedDouble(data::setQ, 0)),
 
     /** First component of the vector part of the quaternion entry. */
-    Q1((token, context, data) -> {
-        token.processAsDouble(data::setQ1);
-        return true;
-    }),
+    Q1((token, context, data) -> token.processAsIndexedDouble(data::setQ, 1)),
 
     /** Second component of the vector part of the quaternion entry. */
-    Q2((token, context, data) -> {
-        token.processAsDouble(data::setQ2);
-        return true;
-    }),
+    Q2((token, context, data) -> token.processAsIndexedDouble(data::setQ, 2)),
 
     /** Third component of the vector part of the quaternion entry. */
-    Q3((token, context, data) -> {
-        token.processAsDouble(data::setQ3);
-        return true;
-    }),
+    Q3((token, context, data) -> token.processAsIndexedDouble(data::setQ, 3)),
 
     /** Scalar part of the quaternion derivative entry. */
-    QC_DOT((token, context, data) -> {
-        token.processAsDouble(data::setQ0Dot);
-        return true;
-    }),
+    QC_DOT((token, context, data) -> token.processAsIndexedDouble(data::setQDot, 0)),
 
     /** First component of the vector part of the quaternion derivative entry. */
-    Q1_DOT((token, context, data) -> {
-        token.processAsDouble(data::setQ1Dot);
-        return true;
-    }),
+    Q1_DOT((token, context, data) -> token.processAsIndexedDouble(data::setQDot, 1)),
 
     /** Second component of the vector part of the quaternion derivative entry. */
-    Q2_DOT((token, context, data) -> {
-        token.processAsDouble(data::setQ2Dot);
-        return true;
-    }),
+    Q2_DOT((token, context, data) -> token.processAsIndexedDouble(data::setQDot, 2)),
 
     /** Third component of the vector part of the quaternion derivative entry. */
-    Q3_DOT((token, context, data) -> {
-        token.processAsDouble(data::setQ3Dot);
-        return true;
-    });
+    Q3_DOT((token, context, data) -> token.processAsIndexedDouble(data::setQDot, 3));
 
     /** Processing method. */
     private final QuaternionEntryProcessor processor;

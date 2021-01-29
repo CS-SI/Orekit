@@ -97,7 +97,6 @@ public class APMSpinStabilized extends CommentsContainer {
         this.spinDelta = spinDelta;
     }
 
-
     /**
      * Get the phase of the satellite about the spin axis (rad).
      * @return the phase of the satellite about the spin axis

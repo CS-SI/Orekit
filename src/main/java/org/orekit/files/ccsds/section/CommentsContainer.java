@@ -51,6 +51,16 @@ public class CommentsContainer {
         return Collections.unmodifiableList(comments);
     }
 
+    /** Check if container is still accepting comments.
+     * <p>
+     * A container that still accept comments does not contain any other data.
+     * </p>
+     * @return true if container is still accepting comments
+     */
+    public boolean acceptComments() {
+        return acceptComments;
+    }
+
     /** Set flag to refuse further comments.
      */
     protected void refuseFurtherComments() {

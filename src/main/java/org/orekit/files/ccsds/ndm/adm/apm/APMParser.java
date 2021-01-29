@@ -24,8 +24,10 @@ import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.ADMParser;
 import org.orekit.files.ccsds.ndm.adm.ADMSegment;
+import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
+import org.orekit.files.ccsds.section.MetadataKey;
 import org.orekit.files.ccsds.section.XMLStructureProcessingState;
 import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.FileFormat;
@@ -213,18 +215,17 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
             // automatically before the first metadata token arrives
             prepareMetadata();
         }
+        inMetadata();
         try {
-            inMetadata();
-            final ADMMetadataKey key = ADMMetadataKey.valueOf(token.getName());
-            if (key.process(token, context, metadata)) {
-                // the token was processed properly
-                return true;
+            return MetadataKey.valueOf(token.getName()).process(token, context, metadata);
+        } catch (IllegalArgumentException iaeM) {
+            try {
+                return ADMMetadataKey.valueOf(token.getName()).process(token, context, metadata);
+            } catch (IllegalArgumentException iaeD) {
+                // token has not been recognized
+                return false;
             }
-        } catch (IllegalArgumentException iae) {
-            // ignored, delegate to next state below
         }
-        // the token has not been recognized
-        return false;
     }
 
     /** Process one quaternion data token.
@@ -237,19 +238,14 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
             // automatically before the first data token arrives
             prepareData();
         }
+        inData();
+        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processEulerToken);
         try {
-            inData();
-            setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processEulerToken);
-            final APMQuaternionKey key = APMQuaternionKey.valueOf(token.getName());
-            if (key.process(token, context, quaternionBlock)) {
-                // the token was processed properly
-                return true;
-            }
+            return APMQuaternionKey.valueOf(token.getName()).process(token, context, quaternionBlock);
         } catch (IllegalArgumentException iae) {
-            // ignored, delegate to next state below
+            // token has not been recognized
+            return false;
         }
-        // the token was not processed
-        return false;
     }
 
     /** Process one Euler angles data token.
@@ -260,18 +256,13 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
         if (eulerBlock == null) {
             eulerBlock = new APMEuler();
         }
+        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processSpinStabilizedToken);
         try {
-            setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processSpinStabilizedToken);
-            final APMEulerKey key = APMEulerKey.valueOf(token.getName());
-            if (key.process(token, context, eulerBlock)) {
-                // the token was processed properly
-                return true;
-            }
+            return APMEulerKey.valueOf(token.getName()).process(token, context, eulerBlock);
         } catch (IllegalArgumentException iae) {
-            // ignored, delegate to next state below
+            // token has not been recognized
+            return false;
         }
-        // the token was not processed
-        return false;
     }
 
     /** Process one spin-stabilized data token.
@@ -281,28 +272,18 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
     private boolean processSpinStabilizedToken(final ParseToken token) {
         if (spinStabilizedBlock == null) {
             spinStabilizedBlock = new APMSpinStabilized();
-            if (eulerBlock.getEndPoints().getExternalFrame() == null ||
-                eulerBlock.getEndPoints().getLocalFrame() == null) {
-                // the Euler angles logical block was missing,
-                // we may have stored the comments in it, so we need to recover them
-                for (final String comment : eulerBlock.getComments()) {
-                    spinStabilizedBlock.addComment(comment);
-                }
+            if (moveCommentsIfEmpty(eulerBlock, spinStabilizedBlock)) {
+                // get rid of the empty logical block
                 eulerBlock = null;
             }
         }
+        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processSpacecraftParametersToken);
         try {
-            setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processSpacecraftParametersToken);
-            final APMSpinStabilizedKey key = APMSpinStabilizedKey.valueOf(token.getName());
-            if (key.process(token, context, spinStabilizedBlock)) {
-                // the token was processed properly
-                return true;
-            }
+            return APMSpinStabilizedKey.valueOf(token.getName()).process(token, context, spinStabilizedBlock);
         } catch (IllegalArgumentException iae) {
-            // ignored, delegate to next state below
+            // token has not been recognized
+            return false;
         }
-        // the token was not processed
-        return false;
     }
 
     /** Process one spacecraft parameters data token.
@@ -312,28 +293,18 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
     private boolean processSpacecraftParametersToken(final ParseToken token) {
         if (spacecraftParametersBlock == null) {
             spacecraftParametersBlock = new APMSpacecraftParameters();
-            if (spinStabilizedBlock.getEndPoints().getExternalFrame() == null ||
-                spinStabilizedBlock.getEndPoints().getLocalFrame()    == null) {
-                // the spin-stabilized logical block was missing,
-                // we may have stored the comments in it, so we need to recover them
-                for (final String comment : spinStabilizedBlock.getComments()) {
-                    spacecraftParametersBlock.addComment(comment);
-                }
+            if (moveCommentsIfEmpty(spinStabilizedBlock, spacecraftParametersBlock)) {
+                // get rid of the empty logical block
                 spinStabilizedBlock = null;
             }
         }
+        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processManeuverToken);
         try {
-            setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processManeuverToken);
-            final APMSpacecraftParametersKey key = APMSpacecraftParametersKey.valueOf(token.getName());
-            if (key.process(token, context, spacecraftParametersBlock)) {
-                // the token was processed properly
-                return true;
-            }
+            return APMSpacecraftParametersKey.valueOf(token.getName()).process(token, context, spacecraftParametersBlock);
         } catch (IllegalArgumentException iae) {
-            // ignored, delegate to next state below
+            // token has not been recognized
+            return false;
         }
-        // the token was not processed
-        return false;
     }
 
     /** Process one maneuver data token.
@@ -343,21 +314,16 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
     private boolean processManeuverToken(final ParseToken token) {
         if (currentManeuver == null) {
             currentManeuver = new APMManeuver();
-            if (spacecraftParametersBlock.getInertiaRefFrameString() == null) {
-                // the spacecraft parameters logical block was missing,
-                // we may have stored the comments in it, so we need to recover them
-                for (final String comment : spacecraftParametersBlock.getComments()) {
-                    currentManeuver.addComment(comment);
-                }
+            if (moveCommentsIfEmpty(spacecraftParametersBlock, currentManeuver)) {
+                // get rid of the empty logical block
                 spacecraftParametersBlock = null;
             }
         }
+        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : new ErrorState());
         try {
-            setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : new ErrorState());
-            final APMManeuverKey key = APMManeuverKey.valueOf(token.getName());
-            if (key.process(token, context, currentManeuver)) {
+            if (APMManeuverKey.valueOf(token.getName()).process(token, context, currentManeuver)) {
                 // the token was processed properly
-                if (!currentManeuver.getTorque().isNaN()) {
+                if (currentManeuver.completed()) {
                     // current maneuver is completed
                     maneuvers.add(currentManeuver);
                     currentManeuver = null;
@@ -369,6 +335,23 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
         }
         // the token was not processed
         return false;
+    }
+
+    /** Move comments from one empty logical block to another logical block.
+     * @param origin origin block
+     * @param destination destination block
+     * @return true if origin block was empty
+     */
+    private boolean moveCommentsIfEmpty(final CommentsContainer origin, final CommentsContainer destination) {
+        if (origin.acceptComments()) {
+            // origin block is empty, move the existing comments
+            for (final String comment : origin.getComments()) {
+                destination.addComment(comment);
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 
 }

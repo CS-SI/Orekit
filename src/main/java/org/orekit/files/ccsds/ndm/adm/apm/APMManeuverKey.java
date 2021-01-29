@@ -16,10 +16,9 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
 
 /** Keys for {@link APMManeuver APM maneuver} entries.
  * @author Bryan Cazabonne
@@ -32,54 +31,26 @@ public enum APMManeuverKey {
     maneuverParameters((token, context, data) -> true),
 
     /** Comment entry. */
-    COMMENT((token, context, data) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            return data.addComment(token.getContent());
-        }
-        return true;
-    }),
+    COMMENT((token, context, data) ->
+            token.getType() == TokenType.ENTRY ? data.addComment(token.getContent()) : true),
 
     /** Epoch start entry. */
-    MAN_EPOCH_START((token, context, data) -> {
-        token.processAsDate(data::setEpochStart, context);
-        return true;
-    }),
+    MAN_EPOCH_START((token, context, data) -> token.processAsDate(data::setEpochStart, context)),
 
     /** Duration entry. */
-    MAN_DURATION((token, context, data) -> {
-        token.processAsDouble(data::setDuration);
-        return true;
-    }),
+    MAN_DURATION((token, context, data) -> token.processAsDouble(data::setDuration)),
 
     /** Reference frame entry. */
-    MAN_REF_FRAME((token, context, data) -> {
-        token.processAsNormalizedString(data::setRefFrameString);
-        return true;
-    }),
+    MAN_REF_FRAME((token, context, data) -> token.processAsNormalizedString(data::setRefFrameString)),
 
     /** First torque vector component entry. */
-    MAN_TOR_1((token, context, data) -> {
-        data.setTorque(new Vector3D(token.getContentAsDouble(),
-                                        data.getTorque().getY(),
-                                        data.getTorque().getZ()));
-        return true;
-    }),
+    MAN_TOR_1((token, context, data) -> token.processAsIndexedDouble(data::setTorque, 0)),
 
     /** Second torque vector component entry. */
-    MAN_TOR_2((token, context, data) -> {
-        data.setTorque(new Vector3D(data.getTorque().getX(),
-                                        token.getContentAsDouble(),
-                                        data.getTorque().getZ()));
-        return true;
-    }),
+    MAN_TOR_2((token, context, data) -> token.processAsIndexedDouble(data::setTorque, 1)),
 
     /** Third torque vector component entry. */
-    MAN_TOR_3((token, context, data) -> {
-        data.setTorque(new Vector3D(data.getTorque().getX(),
-                                        data.getTorque().getY(),
-                                        token.getContentAsDouble()));
-        return true;
-    });
+    MAN_TOR_3((token, context, data) -> token.processAsIndexedDouble(data::setTorque, 2));
 
     /** Processing method. */
     private final ManeuverEntryProcessor processor;

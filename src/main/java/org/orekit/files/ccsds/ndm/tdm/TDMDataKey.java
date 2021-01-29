@@ -34,14 +34,8 @@ public enum TDMDataKey {
     observation((token, context, observationsBlock) -> observationsBlock.addObservationEpoch(null)),
 
     /** Comment entry. */
-    COMMENT((token, context, observationsBlock) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            if (observationsBlock.addComment(token.getContent())) {
-                return;
-            }
-            throw token.generateException(null);
-        }
-    }),
+    COMMENT((token, context, data) ->
+            token.getType() == TokenType.ENTRY ? data.addComment(token.getContent()) : true),
 
     /** Epoch entry. */
     EPOCH((token, context, observationsBlock) -> token.processAsDate(observationsBlock::addObservationEpoch, context)),
@@ -210,9 +204,10 @@ public enum TDMDataKey {
      * @param token parse token
      * @param context parsing context
      * @param observationsBlock observation block to fill
+     * @return true if token was accepted
      */
-    private void processObservationToken(final ParseToken token, final ParsingContext context,
-                                         final ObservationsBlock observationsBlock) {
+    private boolean processObservationToken(final ParseToken token, final ParsingContext context,
+                                            final ObservationsBlock observationsBlock) {
 
         if (token.getType() == TokenType.ENTRY) {
             // in an XML file, an observation element contains only the value, the epoch has been parsed before
@@ -244,16 +239,19 @@ public enum TDMDataKey {
             }
         }
 
+        return true;
+
     }
 
     /** Process one token.
      * @param token token to process
      * @param context parsing context
      * @param observationsBlock observation block to fill
+     * @return true if token was accepted
      */
-    public void process(final ParseToken token, final ParsingContext context,
+    public boolean process(final ParseToken token, final ParsingContext context,
                         final ObservationsBlock observationsBlock) {
-        processor.process(token, context, observationsBlock);
+        return processor.process(token, context, observationsBlock);
     }
 
     /** Interface for processing one token. */
@@ -262,8 +260,9 @@ public enum TDMDataKey {
          * @param token token to process
          * @param context parsing context
          * @param observationsBlock observation block to fill
+         * @return true if token was accepted
          */
-        void process(ParseToken token, ParsingContext context, ObservationsBlock observationsBlock);
+        boolean process(ParseToken token, ParsingContext context, ObservationsBlock observationsBlock);
     }
 
 }

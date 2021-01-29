@@ -22,6 +22,7 @@ import org.orekit.files.ccsds.ndm.adm.ADMParser;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
 import org.orekit.files.ccsds.section.KVNStructureProcessingState;
+import org.orekit.files.ccsds.section.MetadataKey;
 import org.orekit.files.ccsds.section.XMLStructureProcessingState;
 import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.FileFormat;
@@ -187,19 +188,19 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> {
      * @return true if token was processed, false otherwise
      */
     private boolean processMetadataToken(final ParseToken token) {
+        inMetadata();
         try {
-            inMetadata();
-            final ADMMetadataKey generalKey = ADMMetadataKey.valueOf(token.getName());
-            generalKey.process(token, context, metadata);
-            return true;
-        } catch (IllegalArgumentException iaeG) {
+            return MetadataKey.valueOf(token.getName()).process(token, context, metadata);
+        } catch (IllegalArgumentException iaeM) {
             try {
-                final AEMMetadataKey specificKey = AEMMetadataKey.valueOf(token.getName());
-                specificKey.process(token, context, metadata);
-                return true;
-            } catch (IllegalArgumentException iaeS) {
-                // token has not been recognized
-                return false;
+                return ADMMetadataKey.valueOf(token.getName()).process(token, context, metadata);
+            } catch (IllegalArgumentException iaeD) {
+                try {
+                    return AEMMetadataKey.valueOf(token.getName()).process(token, context, metadata);
+                } catch (IllegalArgumentException iaeE) {
+                    // token has not been recognized
+                    return false;
+                }
             }
         }
     }
@@ -209,9 +210,9 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> {
      * @return true if token was processed, false otherwise
      */
     private boolean processDataToken(final ParseToken token) {
+        inData();
         if (token.getType() == TokenType.RAW_LINE) {
             // TODO
-            inData();
             return true;
         } else {
             // not a raw line, it is most probably the end of the data section

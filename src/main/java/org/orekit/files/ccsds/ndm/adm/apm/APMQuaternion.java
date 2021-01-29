@@ -41,34 +41,18 @@ public class APMQuaternion extends CommentsContainer {
     /** Attitude end points. */
     private AttitudeEndPoints endPoints;
 
-    /** Quaternion, scalar component. */
-    private double q0;
+    /** Quaternion. */
+    private double[] q;
 
-    /** Quaternion, first component of the vector part. */
-    private double q1;
-
-    /** Quaternion, second component of the vector part. */
-    private double q2;
-
-    /** Quaternion, third component of the vector part. */
-    private double q3;
-
-    /** Quaternion derivative, scalar component. */
-    private double q0Dot;
-
-    /** Quaternion derivative, first component of the vector part. */
-    private double q1Dot;
-
-    /** Quaternion derivative, second component of the vector part. */
-    private double q2Dot;
-
-    /** Quaternion derivative, third component of the vector part. */
-    private double q3Dot;
+    /** Quaternion derivative. */
+    private double[] qDot;
 
     /** Simple constructor.
      */
     public APMQuaternion() {
-        this.endPoints = new AttitudeEndPoints();
+        endPoints = new AttitudeEndPoints();
+        q         = new double[4];
+        qDot      = new double[4];
     }
 
     /**
@@ -100,43 +84,17 @@ public class APMQuaternion extends CommentsContainer {
      * @return quaternion
      */
     public Quaternion getQuaternion() {
-        return new Quaternion(q0, q1, q2, q3);
+        return new Quaternion(q[0], q[1], q[2], q[3]);
     }
 
     /**
-     * Set the quaternion scalar component.
-     * @param q0 quaternion scalar component
+     * Set quaternion component.
+     * @param index component index (0 is scalar part)
+     * @param value quaternion component
      */
-    public void setQ0(final double q0) {
+    public void setQ(final int index, final double value) {
         refuseFurtherComments();
-        this.q0 = q0;
-    }
-
-    /**
-     * Set the quaternion first component of the vector part.
-     * @param q1 quaternion first component of the vector part
-     */
-    public void setQ1(final double q1) {
-        refuseFurtherComments();
-        this.q1 = q1;
-    }
-
-    /**
-     * Set the quaternion second component of the vector part.
-     * @param q2 quaternion second component of the vector part
-     */
-    public void setQ2(final double q2) {
-        refuseFurtherComments();
-        this.q2 = q2;
-    }
-
-    /**
-     * Set the quaternion third component of the vector part.
-     * @param q3 quaternion third component of the vector part
-     */
-    public void setQ3(final double q3) {
-        refuseFurtherComments();
-        this.q3 = q3;
+        this.q[index] = value;
     }
 
     /**
@@ -144,43 +102,17 @@ public class APMQuaternion extends CommentsContainer {
      * @return quaternion derivative
      */
     public Quaternion getQuaternionDot() {
-        return new Quaternion(q0Dot, q1Dot, q2Dot, q3Dot);
+        return new Quaternion(qDot[0], qDot[1], qDot[2], qDot[3]);
     }
 
     /**
-     * Set the quaternion derivative scalar component.
-     * @param q0Dot quaternion derivative scalar component
+     * Set quaternion derivative component.
+     * @param index component index (0 is scalar part)
+     * @param derivative quaternion derivative component
      */
-    public void setQ0Dot(final double q0Dot) {
+    public void setQDot(final int index, final double derivative) {
         refuseFurtherComments();
-        this.q0Dot = q0Dot;
-    }
-
-    /**
-     * Set the quaternion derivative first component of the vector part.
-     * @param q1Dot quaternion derivative first component of the vector part
-     */
-    public void setQ1Dot(final double q1Dot) {
-        refuseFurtherComments();
-        this.q1Dot = q1Dot;
-    }
-
-    /**
-     * Set the quaternion derivative second component of the vector part.
-     * @param q2Dot quaternion derivative second component of the vector part
-     */
-    public void setQ2Dot(final double q2Dot) {
-        refuseFurtherComments();
-        this.q2Dot = q2Dot;
-    }
-
-    /**
-     * Set the quaternion derivative third component of the vector part.
-     * @param q3Dot quaternion derivative third component of the vector part
-     */
-    public void setQ3Dot(final double q3Dot) {
-        refuseFurtherComments();
-        this.q3Dot = q3Dot;
+        this.qDot[index] = derivative;
     }
 
     /** Get the attitude.
@@ -194,10 +126,10 @@ public class APMQuaternion extends CommentsContainer {
         final Frame reference =
                         endPoints.getExternalFrame().getFrame(conventions, simpleEOP, dataContext);
         final FieldRotation<UnivariateDerivative1> raw =
-                        new FieldRotation<>(new UnivariateDerivative1(q0, q0Dot),
-                                            new UnivariateDerivative1(q1, q1Dot),
-                                            new UnivariateDerivative1(q2, q2Dot),
-                                            new UnivariateDerivative1(q3, q3Dot),
+                        new FieldRotation<>(new UnivariateDerivative1(q[0], qDot[0]),
+                                            new UnivariateDerivative1(q[1], qDot[1]),
+                                            new UnivariateDerivative1(q[2], qDot[2]),
+                                            new UnivariateDerivative1(q[3], qDot[3]),
                                             true);
         final FieldRotation<UnivariateDerivative1> rot = endPoints.isExternal2Local() ? raw : raw.revert();
         return new Attitude(reference, new TimeStampedAngularCoordinates(epoch, rot));

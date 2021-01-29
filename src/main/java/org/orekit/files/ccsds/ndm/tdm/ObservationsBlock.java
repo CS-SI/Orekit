@@ -49,10 +49,12 @@ public class ObservationsBlock extends CommentsContainer implements Data {
 
     /** Add the epoch of current observation.
      * @param epoch current observation epoch
+     * @return alwaus return {@code true}
      */
-    void addObservationEpoch(final AbsoluteDate epoch) {
+    boolean addObservationEpoch(final AbsoluteDate epoch) {
         refuseFurtherComments();
         currentObservationEpoch = epoch;
+        return true;
     }
 
     /** Check if observation epoch has been set.

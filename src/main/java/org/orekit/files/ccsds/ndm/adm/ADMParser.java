@@ -64,9 +64,10 @@ public abstract class ADMParser<T extends NDMFile<?, ?>, P extends AbstractMessa
     /** Process a CCSDS Euler angles sequence as a {@link RotationOrder}.
      * @param sequence Euler angles sequence token
      * @param consumer consumer of the rotation order
+     * @return always return {@code true}
      */
-    public static void processRotationOrder(final ParseToken sequence,
-                                            final RotationOrderConsumer consumer) {
+    public static boolean processRotationOrder(final ParseToken sequence,
+                                               final RotationOrderConsumer consumer) {
         if (sequence.getType() == TokenType.ENTRY) {
             try {
                 consumer.accept(RotationOrder.valueOf(sequence.getNormalizedContent().
@@ -77,6 +78,7 @@ public abstract class ADMParser<T extends NDMFile<?, ?>, P extends AbstractMessa
                 throw sequence.generateException(iae);
             }
         }
+        return true;
     }
 
     /** Interface representing instance methods that consume otation order values. */

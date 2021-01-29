@@ -77,90 +77,41 @@ public enum APMEulerKey {
     }),
 
     /** Comment entry. */
-    COMMENT((token, context, data) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            return data.addComment(token.getContent());
-        }
-        return true;
-    }),
+    COMMENT((token, context, data) ->
+            token.getType() == TokenType.ENTRY ? data.addComment(token.getContent()) : true),
 
     /** First reference frame entry. */
-    EULER_FRAME_A((token, context, data) -> {
-        token.processAsNormalizedString(data.getEndPoints()::setFrameA);
-        return true;
-    }),
+    EULER_FRAME_A((token, context, data) -> token.processAsNormalizedString(data.getEndPoints()::setFrameA)),
 
     /** Second reference frame entry. */
-    EULER_FRAME_B((token, context, data) -> {
-        token.processAsNormalizedString(data.getEndPoints()::setFrameB);
-        return true;
-    }),
+    EULER_FRAME_B((token, context, data) -> token.processAsNormalizedString(data.getEndPoints()::setFrameB)),
 
     /** Rotation direction entry. */
-    EULER_DIR((token, context, data) -> {
-        token.processAsNormalizedString(data.getEndPoints()::setDirection);
-        return true;
-    }),
+    EULER_DIR((token, context, data) -> token.processAsNormalizedString(data.getEndPoints()::setDirection)),
 
     /** Rotation sequence entry. */
-    EULER_ROT_SEQ((token, context, data) -> {
-        ADMParser.processRotationOrder(token, data::setEulerRotSeq);
-        return true;
-    }),
+    EULER_ROT_SEQ((token, context, data) -> ADMParser.processRotationOrder(token, data::setEulerRotSeq)),
 
     /** Reference frame for rate entry. */
-    RATE_FRAME((token, context, data) -> {
-        token.processAsNormalizedString(data::setRateFrameString);
-        return true;
-    }),
+    RATE_FRAME((token, context, data) -> token.processAsNormalizedString(data::setRateFrameString)),
 
     /** X body rotation angle entry. */
-    X_ANGLE((token, context, data) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            data.setRotationAngle(0, FastMath.toRadians(token.getContentAsDouble()));
-        }
-        return true;
-    }),
+    X_ANGLE((token, context, data) -> token.processAsIndexedAngle(data::setRotationAngle, 0)),
 
     /** Y body rotation angle entry. */
-    Y_ANGLE((token, context, data) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            data.setRotationAngle(1, FastMath.toRadians(token.getContentAsDouble()));
-        }
-        return true;
-    }),
+    Y_ANGLE((token, context, data) -> token.processAsIndexedAngle(data::setRotationAngle, 1)),
 
     /** Z body rotation angle entry. */
-    Z_ANGLE((token, context, data) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            data.setRotationAngle(2, FastMath.toRadians(token.getContentAsDouble()));
-        }
-        return true;
-    }),
+    Z_ANGLE((token, context, data) -> token.processAsIndexedAngle(data::setRotationAngle, 2)),
 
     /** X body rotation rate entry. */
-    X_RATE((token, context, data) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            data.setRotationRate(0, FastMath.toRadians(token.getContentAsDouble()));
-        }
-        return true;
-    }),
+    X_RATE((token, context, data) -> token.processAsIndexedAngle(data::setRotationRate, 0)),
 
     /** Y body rotation rate entry. */
-    Y_RATE((token, context, data) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            data.setRotationRate(1, FastMath.toRadians(token.getContentAsDouble()));
-        }
-        return true;
-    }),
+    Y_RATE((token, context, data) -> token.processAsIndexedAngle(data::setRotationRate, 1)),
 
     /** Z body rotation rate entry. */
-    Z_RATE((token, context, data) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            data.setRotationRate(2, FastMath.toRadians(token.getContentAsDouble()));
-        }
-        return true;
-    });
+    Z_RATE((token, context, data) -> token.processAsIndexedAngle(data::setRotationRate, 2));
 
     /** Processing method. */
     private final EulerEntryProcessor processor;

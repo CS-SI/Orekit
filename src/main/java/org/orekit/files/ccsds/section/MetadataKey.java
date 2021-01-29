@@ -28,17 +28,11 @@ import org.orekit.files.ccsds.utils.lexical.TokenType;
 public enum MetadataKey {
 
     /** Comment entry. */
-    COMMENT((token, context, metadata) -> {
-        return (token.getType() == TokenType.ENTRY) ?
-               metadata.addComment(token.getContent()) :
-               true;
-    }),
+    COMMENT((token, context, metadata) ->
+             token.getType() == TokenType.ENTRY ? metadata.addComment(token.getContent()) : true),
 
     /** Time system entry. */
-    TIME_SYSTEM((token, context, metadata) -> {
-        token.processAsTimeScale(metadata::setTimeSystem);
-        return true;
-    });
+    TIME_SYSTEM((token, context, metadata) -> token.processAsTimeScale(metadata::setTimeSystem));
 
     /** Processing method. */
     private final MetadataEntryProcessor processor;

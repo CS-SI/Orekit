@@ -16,9 +16,9 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
-import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
 
 /** Keys for {@link APMSpinStabilized APM spin-stabilized} entries.
  * @author Bryan Cazabonne
@@ -30,72 +30,38 @@ public enum APMSpinStabilizedKey {
     eulerElementsSpin((token, context, data) -> true),
 
     /** Comment entry. */
-    COMMENT((token, context, data) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            return data.addComment(token.getContent());
-        }
-        return true;
-    }),
+    COMMENT((token, context, data) ->
+            token.getType() == TokenType.ENTRY ? data.addComment(token.getContent()) : true),
 
     /** First reference frame entry. */
-    SPIN_FRAME_A((token, context, data) -> {
-        token.processAsNormalizedString(data.getEndPoints()::setFrameA);
-        return true;
-    }),
+    SPIN_FRAME_A((token, context, data) -> token.processAsNormalizedString(data.getEndPoints()::setFrameA)),
 
     /** Second reference frame entry. */
-    SPIN_FRAME_B((token, context, data) -> {
-        token.processAsNormalizedString(data.getEndPoints()::setFrameB);
-        return true;
-    }),
+    SPIN_FRAME_B((token, context, data) -> token.processAsNormalizedString(data.getEndPoints()::setFrameB)),
 
     /** Rotation direction entry. */
-    SPIN_DIR((token, context, data) -> {
-        token.processAsNormalizedString(data.getEndPoints()::setDirection);
-        return true;
-    }),
+    SPIN_DIR((token, context, data) -> token.processAsNormalizedString(data.getEndPoints()::setDirection)),
 
     /** Spin right ascension entry. */
-    SPIN_ALPHA((token, context, data) -> {
-        token.processAsAngle(data::setSpinAlpha);
-        return true;
-    }),
+    SPIN_ALPHA((token, context, data) -> token.processAsAngle(data::setSpinAlpha)),
 
     /** Spin declination entry. */
-    SPIN_DELTA((token, context, data) -> {
-        token.processAsAngle(data::setSpinDelta);
-        return true;
-    }),
+    SPIN_DELTA((token, context, data) -> token.processAsAngle(data::setSpinDelta)),
 
     /** Spin phase entry. */
-    SPIN_ANGLE((token, context, data) -> {
-        token.processAsAngle(data::setSpinAngle);
-        return true;
-    }),
+    SPIN_ANGLE((token, context, data) -> token.processAsAngle(data::setSpinAngle)),
 
     /** Spin angular velocity entry. */
-    SPIN_ANGLE_VEL((token, context, data) -> {
-        token.processAsAngle(data::setSpinAngleVel);
-        return true;
-    }),
+    SPIN_ANGLE_VEL((token, context, data) -> token.processAsAngle(data::setSpinAngleVel)),
 
     /** Nutation angle entry. */
-    NUTATION((token, context, data) -> {
-        token.processAsAngle(data::setNutation);
-        return true;
-    }),
+    NUTATION((token, context, data) -> token.processAsAngle(data::setNutation)),
 
     /** Nutation period entry. */
-    NUTATION_PER((token, context, data) -> {
-        token.processAsDouble(data::setNutationPeriod);
-        return true;
-    }),
+    NUTATION_PER((token, context, data) -> token.processAsDouble(data::setNutationPeriod)),
 
     /** Nutation phase entry. */
-    NUTATION_PHASE((token, context, data) -> {
-        token.processAsAngle(data::setNutationPhase);
-        return true;
-    });
+    NUTATION_PHASE((token, context, data) -> token.processAsAngle(data::setNutationPhase));
 
     /** Processing method. */
     private final SpinEntryProcessor processor;

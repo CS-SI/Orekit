@@ -58,6 +58,7 @@ public enum AEMMetadataKey {
         if (token.getType() == TokenType.ENTRY) {
             metadata.setAttitudeType(AEMAttitudeType.parseAttitudeType(token.getNormalizedContent().replace(' ', '_')));
         }
+        return true;
     }),
 
     /** Placement of the scalar component in quaternion entry. */
@@ -65,6 +66,7 @@ public enum AEMMetadataKey {
         if (token.getType() == TokenType.ENTRY) {
             metadata.setIsFirst("FIRST".equals(token.getNormalizedContent()));
         }
+        return true;
     }),
 
     /** Rotation order entry for Euler angles. */
@@ -93,9 +95,10 @@ public enum AEMMetadataKey {
      * @param token token to process
      * @param context parsing context
      * @param metadata metadata to fill
+     * @return true of token was accepted
      */
-    public void process(final ParseToken token, final ParsingContext context, final AEMMetadata metadata) {
-        processor.process(token, context, metadata);
+    public boolean process(final ParseToken token, final ParsingContext context, final AEMMetadata metadata) {
+        return processor.process(token, context, metadata);
     }
 
     /** Interface for processing one token. */
@@ -104,8 +107,9 @@ public enum AEMMetadataKey {
          * @param token token to process
          * @param context parsing context
          * @param metadata metadata to fill
+         * @return true of token was accepted
          */
-        void process(ParseToken token, ParsingContext context, AEMMetadata metadata);
+        boolean process(ParseToken token, ParsingContext context, AEMMetadata metadata);
     }
 
 }

@@ -16,9 +16,9 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
-import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
 
 /** Keys for {@link APMSpacecraftParameters APM spacecraft parameters} entries.
  * @author Bryan Cazabonne
@@ -30,54 +30,29 @@ public enum APMSpacecraftParametersKey {
     spacecraftParameters((token, context, data) -> true),
 
     /** Comment entry. */
-    COMMENT((token, context, data) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            return data.addComment(token.getContent());
-        }
-        return true;
-    }),
+    COMMENT((token, context, data) ->
+            token.getType() == TokenType.ENTRY ? data.addComment(token.getContent()) : true),
 
     /** Inertia reference frame entry. */
-    INERTIA_REF_FRAME((token, context, data) -> {
-        token.processAsNormalizedString(data::setInertiaRefFrameString);
-        return true;
-    }),
+    INERTIA_REF_FRAME((token, context, data) -> token.processAsNormalizedString(data::setInertiaRefFrameString)),
 
     /** 1-axis moment of inertia entry. */
-    I11((token, context, data) -> {
-        token.processAsDouble(data::setI11);
-        return true;
-    }),
+    I11((token, context, data) -> token.processAsDouble(data::setI11)),
 
     /** 2-axis moment of inertia entry. */
-    I22((token, context, data) -> {
-        token.processAsDouble(data::setI22);
-        return true;
-    }),
+    I22((token, context, data) -> token.processAsDouble(data::setI22)),
 
     /** 3-axis moment of inertia entry. */
-    I33((token, context, data) -> {
-        token.processAsDouble(data::setI33);
-        return true;
-    }),
+    I33((token, context, data) -> token.processAsDouble(data::setI33)),
 
     /** 1-axis / 2-axis inertia cross product entry. */
-    I12((token, context, data) -> {
-        token.processAsDouble(data::setI12);
-        return true;
-    }),
+    I12((token, context, data) -> token.processAsDouble(data::setI12)),
 
     /** 1-axis / 3-axis inertia cross product entry. */
-    I13((token, context, data) -> {
-        token.processAsDouble(data::setI13);
-        return true;
-    }),
+    I13((token, context, data) -> token.processAsDouble(data::setI13)),
 
     /** 2-axis / 3-axis inertia cross product entry. */
-    I23((token, context, data) -> {
-        token.processAsDouble(data::setI23);
-        return true;
-    });
+    I23((token, context, data) -> token.processAsDouble(data::setI23));
 
     /** Processing method. */
     private final SpacecraftEntryProcessor processor;

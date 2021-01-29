@@ -27,44 +27,17 @@ import org.orekit.files.ccsds.utils.lexical.ParseToken;
  */
 public enum ADMMetadataKey {
 
-    /** Comment entry. */
-    COMMENT((token, context, metadata) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            if (metadata.getObjectName() == null) {
-                // we are still at block start, we accept comments
-                token.processAsFreeTextString(metadata::addComment);
-                return true;
-            } else {
-                // we have already processed some content in the block
-                // the comment belongs to the next block
-                return false;
-            }
-        } return true;
-    }),
-
     /** Object name entry. */
-    OBJECT_NAME((token, context, metadata) -> {
-        token.processAsNormalizedString(metadata::setObjectName);
-        return true;
-    }),
+    OBJECT_NAME((token, context, metadata) -> token.processAsNormalizedString(metadata::setObjectName)),
 
     /** Object ID entry. */
-    OBJECT_ID((token, context, metadata) -> {
-        token.processAsNormalizedString(metadata::setObjectID);
-        return true;
-    }),
+    OBJECT_ID((token, context, metadata) -> token.processAsNormalizedString(metadata::setObjectID)),
 
     /** Center name entry. */
     CENTER_NAME((token, context, metadata) -> {
         if (token.getType() == TokenType.ENTRY) {
             metadata.setCenterName(token.getNormalizedContent(), context.getDataContext().getCelestialBodies());
         }
-        return true;
-    }),
-
-    /** Time system entry. */
-    TIME_SYSTEM((token, context, metadata) -> {
-        token.processAsTimeScale(metadata::setTimeSystem);
         return true;
     });
 

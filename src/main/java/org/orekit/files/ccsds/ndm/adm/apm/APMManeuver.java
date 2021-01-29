@@ -16,6 +16,8 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
+import java.util.Arrays;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.time.AbsoluteDate;
@@ -37,13 +39,14 @@ public class APMManeuver extends CommentsContainer {
     private double duration;
 
     /** Torque vector (N.m). */
-    private Vector3D torque;
+    private double[] torque;
 
     /**
      * Simple constructor.
      */
     public APMManeuver() {
-        this.torque   = Vector3D.NaN;
+        torque = new double[3];
+        Arrays.fill(torque, Double.NaN);
     }
 
     /**
@@ -97,21 +100,30 @@ public class APMManeuver extends CommentsContainer {
         this.duration = duration;
     }
 
+    /** Check if maneuver has been completed.
+     * @return true if torque has been completed
+     */
+    public boolean completed() {
+        return !(epochStart     == null ||
+                 refFrameString == null ||
+                 Double.isNaN(duration + torque[0] + torque[1] + torque[2]));
+    }
     /**
      * Get the torque vector (N.m).
      * @return torque vector
      */
     public Vector3D getTorque() {
-        return torque;
+        return new Vector3D(torque);
     }
 
     /**
      * Set the torque vector (N.m).
-     * @param vector torque vector
+     * @param index vector component index (counting from 0)
+     * @param value component value
      */
-    public void setTorque(final Vector3D vector) {
+    public void setTorque(final int index, final double value) {
         refuseFurtherComments();
-        this.torque = vector;
+        this.torque[index] = value;
     }
 
 }

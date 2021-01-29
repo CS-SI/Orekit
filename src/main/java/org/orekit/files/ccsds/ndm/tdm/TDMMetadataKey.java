@@ -26,12 +26,6 @@ import org.orekit.files.ccsds.utils.lexical.ParseToken;
  */
 public enum TDMMetadataKey {
 
-    /** Comment entry. */
-    COMMENT((token, context, metadata) -> token.processAsFreeTextString(metadata::addComment)),
-
-    /** Time system entry. */
-    TIME_SYSTEM((token, context, metadata) -> token.processAsTimeScale(metadata::setTimeSystem)),
-
     /** Start time entry. */
     START_TIME((token, context, metadata) -> token.processAsDate(metadata::setStartTime, context)),
 
@@ -172,9 +166,10 @@ public enum TDMMetadataKey {
      * @param token token to process
      * @param context parsing context
      * @param metadata metadata to fill
+     * @return true if token was accepted
      */
-    public void process(final ParseToken token, final ParsingContext context, final TDMMetadata metadata) {
-        processor.process(token, context, metadata);
+    public boolean process(final ParseToken token, final ParsingContext context, final TDMMetadata metadata) {
+        return processor.process(token, context, metadata);
     }
 
     /** Interface for processing one token. */
@@ -183,8 +178,9 @@ public enum TDMMetadataKey {
          * @param token token to process
          * @param context parsing context
          * @param metadata metadata to fill
+     * @return true if token was accepted
          */
-        void process(ParseToken token, ParsingContext context, TDMMetadata metadata);
+        boolean process(ParseToken token, ParsingContext context, TDMMetadata metadata);
     }
 
 }

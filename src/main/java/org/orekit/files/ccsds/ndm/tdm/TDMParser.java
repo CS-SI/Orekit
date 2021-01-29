@@ -193,21 +193,16 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
      * @return true if token was processed, false otherwise
      */
     private boolean processMetadataToken(final ParseToken token) {
+        inMetadata();
         try {
-            inMetadata();
+            return MetadataKey.valueOf(token.getName()).process(token, context, metadata);
+        } catch (IllegalArgumentException iaeM) {
             try {
-                return MetadataKey.
-                           valueOf(token.getName()).
-                           process(token, context, metadata);
-            } catch (IllegalArgumentException iae) {
-                TDMMetadataKey.
-                    valueOf(token.getName()).
-                    process(token, context, metadata);
-                return true;
+                return TDMMetadataKey.valueOf(token.getName()).process(token, context, metadata);
+            } catch (IllegalArgumentException iaeT) {
+                // token has not been recognized
+                return false;
             }
-        } catch (IllegalArgumentException iae) {
-            // token has not been recognized
-            return false;
         }
     }
 
@@ -218,10 +213,7 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
     private boolean processDataToken(final ParseToken token) {
         try {
             inData();
-            TDMDataKey.
-                valueOf(token.getName()).
-                process(token, context, observationsBlock);
-            return true;
+            return TDMDataKey.valueOf(token.getName()).process(token, context, observationsBlock);
         } catch (IllegalArgumentException iae) {
             // token has not been recognized
             return false;
