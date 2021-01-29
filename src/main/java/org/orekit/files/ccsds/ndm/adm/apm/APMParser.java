@@ -23,11 +23,11 @@ import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.ADMParser;
-import org.orekit.files.ccsds.ndm.adm.ADMSegment;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
 import org.orekit.files.ccsds.section.MetadataKey;
+import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.section.XMLStructureProcessingState;
 import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.FileFormat;
@@ -185,7 +185,7 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
             for (final APMManeuver maneuver : maneuvers) {
                 data.addManeuver(maneuver);
             }
-            file.addSegment(new ADMSegment<>(metadata, data));
+            file.addSegment(new Segment<>(metadata, data));
         }
         metadata                  = null;
         context                   = null;

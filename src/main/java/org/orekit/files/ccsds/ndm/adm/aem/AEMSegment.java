@@ -19,7 +19,7 @@ package org.orekit.files.ccsds.ndm.adm.aem;
 import java.util.List;
 
 import org.orekit.data.DataContext;
-import org.orekit.files.ccsds.ndm.adm.ADMSegment;
+import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -32,7 +32,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class AEMSegment extends ADMSegment<AEMMetadata, AEMData> implements AttitudeEphemerisFile.AttitudeEphemerisSegment {
+public class AEMSegment extends Segment<AEMMetadata, AEMData> implements AttitudeEphemerisFile.AttitudeEphemerisSegment {
 
     /** IERS conventions to use. */
     private final IERSConventions conventions;

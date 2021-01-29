@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm.adm;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.NDMFile;
 import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.section.Segment;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -29,7 +30,7 @@ import org.orekit.utils.IERSConventions;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class ADMFile<S extends ADMSegment<?, ?>> extends NDMFile<Header, S> {
+public class ADMFile<S extends Segment<?, ?>> extends NDMFile<Header, S> {
 
     /** Indicator for simple or accurate EOP interpolation. */
     private final  boolean simpleEOP;

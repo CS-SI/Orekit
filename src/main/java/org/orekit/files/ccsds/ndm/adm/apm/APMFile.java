@@ -20,7 +20,7 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.adm.ADMFile;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
-import org.orekit.files.ccsds.ndm.adm.ADMSegment;
+import org.orekit.files.ccsds.section.Segment;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -30,7 +30,7 @@ import org.orekit.utils.IERSConventions;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class APMFile extends ADMFile<ADMSegment<ADMMetadata, APMData>> {
+public class APMFile extends ADMFile<Segment<ADMMetadata, APMData>> {
 
     /** Simple constructor.
      * @param conventions IERS conventions
