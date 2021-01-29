@@ -16,21 +16,16 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndPoints;
+import org.orekit.files.ccsds.section.CommentsContainer;
 
 /**
  * Container for {@link APMEuler Euler rotations} entries.
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class APMEuler {
-
-    /** Comments. The list contains a string for each line of comment. */
-    private List<String> comments;
+public class APMEuler extends CommentsContainer {
 
     /** Attitude end points. */
     private AttitudeEndPoints endPoints;
@@ -53,25 +48,10 @@ public class APMEuler {
     /** Simple constructor.
      */
     public APMEuler() {
-        this.comments         = new ArrayList<>();
         this.endPoints        = new AttitudeEndPoints();
         this.rotationAngles   = new double[3];
         this.rotationRates    = new double[3];
         this.inRotationAngles = false;
-    }
-
-    /** Get the comments.
-     * @return the comments
-     */
-    public List<String> getComments() {
-        return comments;
-    }
-
-    /** Add comment.
-     * @param comment comment to add
-     */
-    public void addComment(final String comment) {
-        comments.add(comment);
     }
 
     /** Get the attitude end points.
@@ -94,6 +74,7 @@ public class APMEuler {
      * @param eulerRotSeq order to be set
      */
     public void setEulerRotSeq(final RotationOrder eulerRotSeq) {
+        refuseFurtherComments();
         this.eulerRotSeq = eulerRotSeq;
     }
 
@@ -110,6 +91,7 @@ public class APMEuler {
      * @param frame frame to be set
      */
     public void setRateFrameString(final String frame) {
+        refuseFurtherComments();
         this.rateFrame = frame;
     }
 
@@ -127,6 +109,7 @@ public class APMEuler {
      * @param angle angle to set
      */
     public void setRotationAngle(final int index, final double angle) {
+        refuseFurtherComments();
         rotationAngles[index] = angle;
     }
 
@@ -144,6 +127,7 @@ public class APMEuler {
      * @param rate angle rate to set
      */
     public void setRotationRate(final int index, final double rate) {
+        refuseFurtherComments();
         rotationRates[index] = rate;
     }
 
@@ -158,6 +142,7 @@ public class APMEuler {
      * @param inRotationAngles if true, we are in the rotationAngles part of XML files
      */
     void setInRotationAngles(final boolean inRotationAngles) {
+        refuseFurtherComments();
         this.inRotationAngles = inRotationAngles;
     }
 

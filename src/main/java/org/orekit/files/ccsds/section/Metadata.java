@@ -17,9 +17,6 @@
 
 package org.orekit.files.ccsds.section;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,25 +28,19 @@ import org.orekit.files.ccsds.utils.CcsdsTimeScale;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class Metadata {
+public class Metadata extends CommentsContainer {
 
     /** Pattern for international designator. */
     private static final Pattern INTERNATIONAL_DESIGNATOR = Pattern.compile("(\\p{Digit}{4})-(\\p{Digit}{3})(\\p{Upper}{1,3})");
 
-    /** Metadata comments. The list contains a string for each line of comment. */
-    private final List<String> comments;
-
     /** Time System: used for metadata, orbit state and covariance data. */
     private CcsdsTimeScale timeSystem;
 
-    /** Indicator for accepting comments. */
-    private boolean acceptComments;
-
-    /** Create a new meta-data.
+    /** Simple constructor.
+     * @param defaultTimeSystem default time system (may be null)
      */
-    public Metadata() {
-        comments       = new ArrayList<>();
-        acceptComments = true;
+    protected Metadata(final CcsdsTimeScale defaultTimeSystem) {
+        this.timeSystem = defaultTimeSystem;
     }
 
     /** Get the Time System that: for OPM, is used for metadata, state vector,
@@ -71,37 +62,6 @@ public class Metadata {
     public void setTimeSystem(final CcsdsTimeScale timeSystem) {
         refuseFurtherComments();
         this.timeSystem = timeSystem;
-    }
-
-    /** Get the metadata comment.
-     * @return metadata comment
-     */
-    public List<String> getComments() {
-        return Collections.unmodifiableList(comments);
-    }
-
-    /** Set flag to refuse further comments.
-     */
-    protected void refuseFurtherComments() {
-        acceptComments = false;
-    }
-
-    /**
-     * Add metadata comment.
-     * <p>
-     * Comments are accepted only at start. Once
-     * other metadata have been stored, comments are refused.
-     * </p>
-     * @param comment metadata comment line
-     * @return true if comment was accepted
-     */
-    public boolean addComment(final String comment) {
-        if (acceptComments) {
-            comments.add(comment);
-            return true;
-        } else {
-            return false;
-        }
     }
 
     /** Get the launch year.
@@ -141,6 +101,3 @@ public class Metadata {
     }
 
 }
-
-
-

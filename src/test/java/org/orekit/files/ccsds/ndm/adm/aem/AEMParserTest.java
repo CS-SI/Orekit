@@ -216,7 +216,7 @@ public class AEMParserTest {
         final Segment<AEMMetadata, AEMData> segment0 = file.getSegments().get(0);
         final List<String> dataComment = new ArrayList<String>();
         dataComment.add("Spin KF ground solution, SPINKF rates");
-        Assert.assertEquals(dataComment, segment0.getData().getAttitudeDataLinesComment());
+        Assert.assertEquals(dataComment, segment0.getData().getComments());
     }
 
     @Test

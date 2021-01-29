@@ -288,11 +288,8 @@ public class OEMParserTest {
 
     }
 
-
-
     @Test
-    public void testParseOEM2()
-            throws URISyntaxException {
+    public void testParseOEM2() throws URISyntaxException {
 
         final String name = getClass().getResource("/ccsds/odm/oem/OEMExample2.txt").toURI().getPath();
         final AbsoluteDate missionReferenceDate = new AbsoluteDate("1996-12-17T00:00:00.000", TimeScalesFactory.getUTC());

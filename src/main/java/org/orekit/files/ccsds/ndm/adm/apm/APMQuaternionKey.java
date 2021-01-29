@@ -38,16 +38,9 @@ public enum APMQuaternionKey {
     /** Comment entry. */
     COMMENT((token, context, data) -> {
         if (token.getType() == TokenType.ENTRY) {
-            if (data.getEpoch() == null) {
-                // we are still at block start, we accept comments
-                token.processAsFreeTextString(data::addComment);
-                return true;
-            } else {
-                // we have already processed some content in the block
-                // the comment belongs to the next block
-                return false;
-            }
-        } return true;
+            return data.addComment(token.getContent());
+        }
+        return true;
     }),
 
     /** Epoch entry. */

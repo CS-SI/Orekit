@@ -44,6 +44,12 @@ public class ADMMetadata extends Metadata {
      * corresponding gravitational coefficient. */
     private boolean hasCreatableBody;
 
+    /** Simple constructor.
+     */
+    public ADMMetadata() {
+        super(null);
+    }
+
     /**
      * Get the spacecraft name for which the attitude data are provided.
      * @return the spacecraft name

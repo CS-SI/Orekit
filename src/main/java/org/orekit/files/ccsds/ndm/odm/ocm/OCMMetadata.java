@@ -164,7 +164,7 @@ public class OCMMetadata extends ODMMetadata {
     OCMMetadata() {
 
         // set up the few fields that have default values as per CCSDS standard
-        setTimeSystem(CcsdsTimeScale.UTC);
+        super(CcsdsTimeScale.UTC);
         catalogName      = "CSPOC";
         clockSecPerSISec = 1.0;
         interpMethodEOP  = DEFAULT_INTERPOLATION_METHOD;

@@ -16,11 +16,8 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.time.AbsoluteDate;
 
 /**
@@ -28,10 +25,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class APMManeuver {
-
-    /** Maneuvers data comment, each string in the list corresponds to one line of comment. */
-    private final List<String> comments;
+public class APMManeuver extends CommentsContainer {
 
     /** Epoch of start of maneuver . */
     private AbsoluteDate epochStart;
@@ -50,23 +44,6 @@ public class APMManeuver {
      */
     public APMManeuver() {
         this.torque   = Vector3D.NaN;
-        this.comments = new ArrayList<>();
-    }
-
-    /**
-     * Get the maneuvers data comment, each string in the list corresponds to one line of comment.
-     * @return maneuvers data comment, each string in the list corresponds to one line of comment
-     */
-    public List<String> getComments() {
-        return Collections.unmodifiableList(comments);
-    }
-
-    /**
-     * Add a comment.
-     * @param comment comment to add
-     */
-    public void addComment(final String comment) {
-        comments.add(comment);
     }
 
     /**
@@ -82,6 +59,7 @@ public class APMManeuver {
      * @param epochStart epoch start
      */
     public void setEpochStart(final AbsoluteDate epochStart) {
+        refuseFurtherComments();
         this.epochStart = epochStart;
     }
 
@@ -98,6 +76,7 @@ public class APMManeuver {
      * @param refFrameString coordinate system for the torque vector, for absolute frames
      */
     public void setRefFrameString(final String refFrameString) {
+        refuseFurtherComments();
         this.refFrameString = refFrameString;
     }
 
@@ -114,6 +93,7 @@ public class APMManeuver {
      * @param duration duration (value is 0 for impulsive maneuver)
      */
     public void setDuration(final double duration) {
+        refuseFurtherComments();
         this.duration = duration;
     }
 
@@ -130,6 +110,7 @@ public class APMManeuver {
      * @param vector torque vector
      */
     public void setTorque(final Vector3D vector) {
+        refuseFurtherComments();
         this.torque = vector;
     }
 

@@ -20,6 +20,7 @@ package org.orekit.files.ccsds.ndm.tdm;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Data;
 import org.orekit.time.AbsoluteDate;
 
@@ -33,7 +34,7 @@ import org.orekit.time.AbsoluteDate;
  *  - a measurement, the value of the observation.
  * @author Maxime Journot
  */
-public class ObservationsBlock implements Data {
+public class ObservationsBlock extends CommentsContainer implements Data {
 
     /** Current observation epoch. */
     private AbsoluteDate currentObservationEpoch;
@@ -41,23 +42,9 @@ public class ObservationsBlock implements Data {
     /** List of observations data lines. */
     private List<Observation> observations;
 
-    /** Observations Data Lines comments. The list contains a string for each line of comment. */
-    private List<String> comments;
-
-    /** Indicator for accepting comments. */
-    private boolean acceptComments;
-
     /** ObservationsBlock constructor. */
     public ObservationsBlock() {
-        observations   = new ArrayList<>();
-        comments       = new ArrayList<>();
-        acceptComments = true;
-    }
-
-    /** Set flag to refuse further comments.
-     */
-    protected void refuseFurtherComments() {
-        acceptComments = false;
+        observations = new ArrayList<>();
     }
 
     /** Add the epoch of current observation.
@@ -116,30 +103,6 @@ public class ObservationsBlock implements Data {
                                final AbsoluteDate epoch,
                                final double measurement) {
         this.addObservation(new Observation(keyword, epoch, measurement));
-    }
-
-    /** Get the observations data lines comments.
-     * @return the comments
-     */
-    public List<String> getComments() {
-        return comments;
-    }
-
-    /** Add an observations data lines comment.
-     * <p>
-     * Comments are accepted only at start. Once
-     * other data have been stored, comments are refused.
-     * </p>
-     * @param comment data comment line
-     * @return true if comment was accepted
-     */
-    public boolean addComment(final String comment) {
-        if (acceptComments) {
-            comments.add(comment);
-            return true;
-        } else {
-            return false;
-        }
     }
 
 }

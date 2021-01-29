@@ -16,18 +16,14 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.orekit.files.ccsds.section.CommentsContainer;
 
 /**
  * Container for Attitude Parameter Message data.
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class APMSpacecraftParameters {
-
-    /** Comments. The list contains a string for each line of comment. */
-    private List<String> comments;
+public class APMSpacecraftParameters extends CommentsContainer {
 
     /** Coordinate system for the inertia tensor. */
     private String inertiaRefFrame;
@@ -50,26 +46,6 @@ public class APMSpacecraftParameters {
     /** Inertia Cross Product of the 2 and 3 axes (kg.m²). */
     private double i23;
 
-    /** Simple constructor.
-     */
-    public APMSpacecraftParameters() {
-        this.comments = new ArrayList<>();
-    }
-
-    /** Get the comments.
-     * @return the comments
-     */
-    public List<String> getComments() {
-        return comments;
-    }
-
-    /** Add comment.
-     * @param comment comment to add
-     */
-    public void addComment(final String comment) {
-        comments.add(comment);
-    }
-
     /**
      * Get the coordinate system for the inertia tensor.
      * @return the coordinate system for the inertia tensor
@@ -83,6 +59,7 @@ public class APMSpacecraftParameters {
      * @param frame frame to be set
      */
     public void setInertiaRefFrameString(final String frame) {
+        refuseFurtherComments();
         this.inertiaRefFrame = frame;
     }
 
@@ -99,6 +76,7 @@ public class APMSpacecraftParameters {
      * @param i11 moment of Inertia about the 1-axis
      */
     public void setI11(final double i11) {
+        refuseFurtherComments();
         this.i11 = i11;
     }
 
@@ -115,6 +93,7 @@ public class APMSpacecraftParameters {
      * @param i22 moment of Inertia about the 2-axis
      */
     public void setI22(final double i22) {
+        refuseFurtherComments();
         this.i22 = i22;
     }
 
@@ -131,6 +110,7 @@ public class APMSpacecraftParameters {
      * @param i33 moment of Inertia about the 3-axis
      */
     public void setI33(final double i33) {
+        refuseFurtherComments();
         this.i33 = i33;
     }
 
@@ -147,6 +127,7 @@ public class APMSpacecraftParameters {
      * @param i12 moment of Inertia about the 1 and 2 axes
      */
     public void setI12(final double i12) {
+        refuseFurtherComments();
         this.i12 = i12;
     }
 
@@ -163,6 +144,7 @@ public class APMSpacecraftParameters {
      * @param i13 moment of Inertia about the 1 and 3 axes
      */
     public void setI13(final double i13) {
+        refuseFurtherComments();
         this.i13 = i13;
     }
 
@@ -179,6 +161,7 @@ public class APMSpacecraftParameters {
      * @param i23 moment of Inertia about the 2 and 3 axes
      */
     public void setI23(final double i23) {
+        refuseFurtherComments();
         this.i23 = i23;
     }
 

@@ -61,6 +61,12 @@ public class OCommonMetadata extends ODMMetadata {
      * reference frame. */
     private AbsoluteDate frameEpoch;
 
+    /** Simple constructor.
+     */
+    public OCommonMetadata() {
+        super(null);
+    }
+
     /** Get the spacecraft ID for which the orbit state is provided.
      * @return the spacecraft ID
      */

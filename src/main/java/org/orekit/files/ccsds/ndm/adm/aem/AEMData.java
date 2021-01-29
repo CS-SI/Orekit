@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Data;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.TimeStampedAngularCoordinates;
@@ -28,13 +29,10 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * The Attitude Ephemerides data blocks class contain list of attitude data points.
  * @author Bryan Cazabonne
  */
-public class AEMData implements Data {
+public class AEMData extends CommentsContainer implements Data {
 
     /** List of data lines. */
     private final List<TimeStampedAngularCoordinates> attitudeDataLines;
-
-    /** Data Lines comments. The list contains a string for each line of comment. */
-    private final List<String> attitudeDataLinesComment;
 
     /** Enumerate for selecting which derivatives to use in {@link #attitudeDataLines}. */
     private AngularDerivativesFilter angularDerivativesFilter;
@@ -43,14 +41,14 @@ public class AEMData implements Data {
      * Constructor.
      */
     public AEMData() {
-        attitudeDataLines        = new ArrayList<>();
-        attitudeDataLinesComment = new ArrayList<>();
+        attitudeDataLines = new ArrayList<>();
     }
 
     /** Add a data point.
      * @param data data point to add
      */
     public void addData(final TimeStampedAngularCoordinates data) {
+        refuseFurtherComments();
         attitudeDataLines.add(data);
     }
 
@@ -72,21 +70,8 @@ public class AEMData implements Data {
      * @param pointAngularDerivativesFilter enumerate for selecting which derivatives to use in attitude data.
      */
     void updateAngularDerivativesFilter(final AngularDerivativesFilter pointAngularDerivativesFilter) {
+        refuseFurtherComments();
         this.angularDerivativesFilter = pointAngularDerivativesFilter;
-    }
-
-    /** Get the attitude data lines comment.
-     * @return the comment
-     */
-    public List<String> getAttitudeDataLinesComment() {
-        return attitudeDataLinesComment;
-    }
-
-    /** Add an attitude data line comment.
-     * @param comment comment line to add
-     */
-    public void addComment(final String comment) {
-        this.attitudeDataLinesComment.add(comment);
     }
 
 }

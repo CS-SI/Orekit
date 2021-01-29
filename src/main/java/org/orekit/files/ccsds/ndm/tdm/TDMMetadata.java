@@ -188,6 +188,7 @@ public class TDMMetadata extends Metadata {
     /** Create a new TDM meta-data.
      */
     public TDMMetadata() {
+        super(null);
         participants   = new TreeMap<>();
         transmitDelays = new TreeMap<>();
         receiveDelays  = new TreeMap<>();

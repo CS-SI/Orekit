@@ -32,15 +32,7 @@ public enum APMSpacecraftParametersKey {
     /** Comment entry. */
     COMMENT((token, context, data) -> {
         if (token.getType() == TokenType.ENTRY) {
-            if (data.getInertiaRefFrameString() == null) {
-                // we are still at block start, we accept comments
-                token.processAsFreeTextString(data::addComment);
-                return true;
-            } else {
-                // we have already processed some content in the block
-                // the comment belongs to the next block
-                return false;
-            }
+            return data.addComment(token.getContent());
         }
         return true;
     }),

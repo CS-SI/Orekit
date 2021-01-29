@@ -16,20 +16,15 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndPoints;
+import org.orekit.files.ccsds.section.CommentsContainer;
 
 /**
  * Container for Attitude Parameter Message data lines.
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class APMSpinStabilized {
-
-    /** Comments. The list contains a string for each line of comment. */
-    private List<String> comments;
+public class APMSpinStabilized extends CommentsContainer {
 
     /** Attitude end points. */
     private AttitudeEndPoints endPoints;
@@ -58,22 +53,7 @@ public class APMSpinStabilized {
     /** Simple constructor.
      */
     public APMSpinStabilized() {
-        this.comments  = new ArrayList<>();
         this.endPoints = new AttitudeEndPoints();
-    }
-
-    /** Get the comments.
-     * @return the comments
-     */
-    public List<String> getComments() {
-        return comments;
-    }
-
-    /** Add comment.
-     * @param comment comment to add
-     */
-    public void addComment(final String comment) {
-        comments.add(comment);
     }
 
     /** Get the attitude end points.
@@ -96,6 +76,7 @@ public class APMSpinStabilized {
      * @param spinAlpha value to be set
      */
     public void setSpinAlpha(final double spinAlpha) {
+        refuseFurtherComments();
         this.spinAlpha = spinAlpha;
     }
 
@@ -112,6 +93,7 @@ public class APMSpinStabilized {
      * @param spinDelta value to be set
      */
     public void setSpinDelta(final double spinDelta) {
+        refuseFurtherComments();
         this.spinDelta = spinDelta;
     }
 
@@ -129,6 +111,7 @@ public class APMSpinStabilized {
      * @param spinAngle value to be set
      */
     public void setSpinAngle(final double spinAngle) {
+        refuseFurtherComments();
         this.spinAngle = spinAngle;
     }
 
@@ -145,6 +128,7 @@ public class APMSpinStabilized {
      * @param spinAngleVel value to be set
      */
     public void setSpinAngleVel(final double spinAngleVel) {
+        refuseFurtherComments();
         this.spinAngleVel = spinAngleVel;
     }
 
@@ -161,6 +145,7 @@ public class APMSpinStabilized {
      * @param nutation the nutation angle to be set
      */
     public void setNutation(final double nutation) {
+        refuseFurtherComments();
         this.nutation = nutation;
     }
 
@@ -177,6 +162,7 @@ public class APMSpinStabilized {
      * @param period the nutation period to be set
      */
     public void setNutationPeriod(final double period) {
+        refuseFurtherComments();
         this.nutationPer = period;
     }
 
@@ -193,6 +179,7 @@ public class APMSpinStabilized {
      * @param nutationPhase the nutation phase to be set
      */
     public void setNutationPhase(final double nutationPhase) {
+        refuseFurtherComments();
         this.nutationPhase = nutationPhase;
     }
 

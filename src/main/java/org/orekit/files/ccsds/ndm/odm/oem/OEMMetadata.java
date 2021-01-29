@@ -46,6 +46,13 @@ public class OEMMetadata extends OCommonMetadata {
     /** The interpolation degree. */
     private int interpolationDegree;
 
+    /** Simple constructor.
+     * @param defaultInterpolationDegree default interpolation degree
+     */
+    public OEMMetadata(final int defaultInterpolationDegree) {
+        this.interpolationDegree = defaultInterpolationDegree;
+    }
+
     /** Get start of total time span covered by ephemerides data and
      * covariance data.
      * @return the start time

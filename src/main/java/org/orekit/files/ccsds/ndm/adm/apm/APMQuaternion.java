@@ -16,15 +16,13 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.complex.Quaternion;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.orekit.attitudes.Attitude;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndPoints;
+import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
@@ -35,10 +33,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class APMQuaternion {
-
-    /** Comments. The list contains a string for each line of comment. */
-    private List<String> comments;
+public class APMQuaternion extends CommentsContainer {
 
     /** Epoch of the data. */
     private AbsoluteDate epoch;
@@ -73,22 +68,7 @@ public class APMQuaternion {
     /** Simple constructor.
      */
     public APMQuaternion() {
-        this.comments  = new ArrayList<>();
         this.endPoints = new AttitudeEndPoints();
-    }
-
-    /** Get the comments.
-     * @return the comments
-     */
-    public List<String> getComments() {
-        return comments;
-    }
-
-    /** Add comment.
-     * @param comment comment to add
-     */
-    public void addComment(final String comment) {
-        comments.add(comment);
     }
 
     /**
@@ -104,6 +84,7 @@ public class APMQuaternion {
      * @param epoch the epoch to be set
      */
     public void setEpoch(final AbsoluteDate epoch) {
+        refuseFurtherComments();
         this.epoch = epoch;
     }
 
@@ -127,6 +108,7 @@ public class APMQuaternion {
      * @param q0 quaternion scalar component
      */
     public void setQ0(final double q0) {
+        refuseFurtherComments();
         this.q0 = q0;
     }
 
@@ -135,6 +117,7 @@ public class APMQuaternion {
      * @param q1 quaternion first component of the vector part
      */
     public void setQ1(final double q1) {
+        refuseFurtherComments();
         this.q1 = q1;
     }
 
@@ -143,6 +126,7 @@ public class APMQuaternion {
      * @param q2 quaternion second component of the vector part
      */
     public void setQ2(final double q2) {
+        refuseFurtherComments();
         this.q2 = q2;
     }
 
@@ -151,6 +135,7 @@ public class APMQuaternion {
      * @param q3 quaternion third component of the vector part
      */
     public void setQ3(final double q3) {
+        refuseFurtherComments();
         this.q3 = q3;
     }
 
@@ -167,6 +152,7 @@ public class APMQuaternion {
      * @param q0Dot quaternion derivative scalar component
      */
     public void setQ0Dot(final double q0Dot) {
+        refuseFurtherComments();
         this.q0Dot = q0Dot;
     }
 
@@ -175,6 +161,7 @@ public class APMQuaternion {
      * @param q1Dot quaternion derivative first component of the vector part
      */
     public void setQ1Dot(final double q1Dot) {
+        refuseFurtherComments();
         this.q1Dot = q1Dot;
     }
 
@@ -183,6 +170,7 @@ public class APMQuaternion {
      * @param q2Dot quaternion derivative second component of the vector part
      */
     public void setQ2Dot(final double q2Dot) {
+        refuseFurtherComments();
         this.q2Dot = q2Dot;
     }
 
@@ -191,6 +179,7 @@ public class APMQuaternion {
      * @param q3Dot quaternion derivative third component of the vector part
      */
     public void setQ3Dot(final double q3Dot) {
+        refuseFurtherComments();
         this.q3Dot = q3Dot;
     }
 

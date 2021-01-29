@@ -383,12 +383,11 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
                                                               getConventions(), getDataContext(), getSelectedMu()));
                         }
                         // Indicate the start of meta-data parsing for this block
-                        pi.metadata          = new OEMMetadata();
+                        pi.metadata          = new OEMMetadata(getInterpolationDegree());
                         pi.parsingHeader     = false;
                         pi.parsingMetaData   = true;
                         pi.parsingData       = false;
                         pi.parsingCovariance = false;
-                        pi.metadata.setInterpolationDegree(getInterpolationDegree());
                         break;
 
                     case START_TIME:

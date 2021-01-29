@@ -32,59 +32,51 @@ public enum APMManeuverKey {
     maneuverParameters((token, context, data) -> true),
 
     /** Comment entry. */
-    COMMENT((token, context, maneuver) -> {
+    COMMENT((token, context, data) -> {
         if (token.getType() == TokenType.ENTRY) {
-            if (maneuver.getEpochStart() == null) {
-                // we are still at block start, we accept comments
-                token.processAsFreeTextString(maneuver::addComment);
-                return true;
-            } else {
-                // we have already processed some content in the block
-                // the comment belongs to the next block
-                return false;
-            }
+            return data.addComment(token.getContent());
         }
         return true;
     }),
 
     /** Epoch start entry. */
-    MAN_EPOCH_START((token, context, maneuver) -> {
-        token.processAsDate(maneuver::setEpochStart, context);
+    MAN_EPOCH_START((token, context, data) -> {
+        token.processAsDate(data::setEpochStart, context);
         return true;
     }),
 
     /** Duration entry. */
-    MAN_DURATION((token, context, maneuver) -> {
-        token.processAsDouble(maneuver::setDuration);
+    MAN_DURATION((token, context, data) -> {
+        token.processAsDouble(data::setDuration);
         return true;
     }),
 
     /** Reference frame entry. */
-    MAN_REF_FRAME((token, context, maneuver) -> {
-        token.processAsNormalizedString(maneuver::setRefFrameString);
+    MAN_REF_FRAME((token, context, data) -> {
+        token.processAsNormalizedString(data::setRefFrameString);
         return true;
     }),
 
     /** First torque vector component entry. */
-    MAN_TOR_1((token, context, maneuver) -> {
-        maneuver.setTorque(new Vector3D(token.getContentAsDouble(),
-                                        maneuver.getTorque().getY(),
-                                        maneuver.getTorque().getZ()));
+    MAN_TOR_1((token, context, data) -> {
+        data.setTorque(new Vector3D(token.getContentAsDouble(),
+                                        data.getTorque().getY(),
+                                        data.getTorque().getZ()));
         return true;
     }),
 
     /** Second torque vector component entry. */
-    MAN_TOR_2((token, context, maneuver) -> {
-        maneuver.setTorque(new Vector3D(maneuver.getTorque().getX(),
+    MAN_TOR_2((token, context, data) -> {
+        data.setTorque(new Vector3D(data.getTorque().getX(),
                                         token.getContentAsDouble(),
-                                        maneuver.getTorque().getZ()));
+                                        data.getTorque().getZ()));
         return true;
     }),
 
     /** Third torque vector component entry. */
-    MAN_TOR_3((token, context, maneuver) -> {
-        maneuver.setTorque(new Vector3D(maneuver.getTorque().getX(),
-                                        maneuver.getTorque().getY(),
+    MAN_TOR_3((token, context, data) -> {
+        data.setTorque(new Vector3D(data.getTorque().getX(),
+                                        data.getTorque().getY(),
                                         token.getContentAsDouble()));
         return true;
     });
@@ -102,11 +94,11 @@ public enum APMManeuverKey {
     /** Process one token.
      * @param token token to process
      * @param context parsing context
-     * @param maneuver maneuver to fill
+     * @param data data to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final APMManeuver maneuver) {
-        return processor.process(token, context, maneuver);
+    public boolean process(final ParseToken token, final ParsingContext context, final APMManeuver data) {
+        return processor.process(token, context, data);
     }
 
     /** Interface for processing one token. */
@@ -114,10 +106,10 @@ public enum APMManeuverKey {
         /** Process one token.
          * @param token token to process
          * @param context parsing context
-         * @param maneuver maneuver to fill
+         * @param data data to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, APMManeuver maneuver);
+        boolean process(ParseToken token, ParsingContext context, APMManeuver data);
     }
 
 }
