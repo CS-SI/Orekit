@@ -101,14 +101,14 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> {
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new KVNStructureProcessingState(this);
-            reset(fileFormat, new HeaderProcessingState(this));
+            reset(fileFormat, new HeaderProcessingState(getDataContext(), this));
         }
     }
 
     /** {@inheritDoc} */
     @Override
     public void prepareHeader() {
-        setFallback(new HeaderProcessingState(this));
+        setFallback(new HeaderProcessingState(getDataContext(), this));
     }
 
     /** {@inheritDoc} */
@@ -216,7 +216,8 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> {
                                               AEMMetadataKey.ATTITUDE_TYPE.name(), token.getFileName());
                 }
                 return currentBlock.addData(metadata.getAttitudeType().parse(metadata, context,
-                                                                             SPLIT_AT_BLANKS.split(token.getContent())));
+                                                                             SPLIT_AT_BLANKS.split(token.getContent()),
+                                                                             token.getFileName()));
             } catch (NumberFormatException nfe) {
                 throw new OrekitException(nfe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                           token.getLineNumber(), token.getFileName(), token.getContent());

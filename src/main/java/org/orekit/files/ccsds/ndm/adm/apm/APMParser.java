@@ -114,14 +114,14 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new ErrorState(); // should never be called
-            reset(fileFormat, new HeaderProcessingState(this));
+            reset(fileFormat, new HeaderProcessingState(getDataContext(), this));
         }
     }
 
     /** {@inheritDoc} */
     @Override
     public void prepareHeader() {
-        setFallback(new HeaderProcessingState(this));
+        setFallback(new HeaderProcessingState(getDataContext(), this));
     }
 
     /** {@inheritDoc} */

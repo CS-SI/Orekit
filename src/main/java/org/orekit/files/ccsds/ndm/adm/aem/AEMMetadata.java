@@ -51,8 +51,8 @@ public class AEMMetadata extends ADMMetadata {
     /** The rotation sequence of the Euler angles. */
     private RotationOrder eulerRotSeq;
 
-    /** The rate frame specifier, as it appeared in the file. */
-    private String rateFrameString;
+    /** The rate frame specifier. */
+    private Boolean localRates;
 
     /** The interpolation method to be used. */
     private String interpolationMethod;
@@ -76,20 +76,21 @@ public class AEMMetadata extends ADMMetadata {
     }
 
     /**
-     * Get the rate frame specifier as it appeared in the file.
-     * @return the rate frame name.
+     * Check if angular rates are in the spacecraft body local frame.
+     * @return true if angular rates are in the spacecraft body local frame,
+     * or null if {@link #setLocalRates(boolean)} has not been called
      */
-    public String getRateFrameString() {
-        return rateFrameString;
+    public Boolean localRates() {
+        return localRates;
     }
 
     /**
-     * Set the rate frame name.
-     * @param frame specifier as it appeared in the file.
+     * Set angular rate frames definition.
+     * @param localRates if true, angular rates are in the spacecraft body local frame
      */
-    public void setRateFrameString(final String frame) {
+    public void setLocalRates(final boolean localRates) {
         refuseFurtherComments();
-        this.rateFrameString = frame;
+        this.localRates = localRates;
     }
 
     /**

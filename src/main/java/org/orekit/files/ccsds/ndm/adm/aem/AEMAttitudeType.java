@@ -39,12 +39,12 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
 public enum AEMAttitudeType {
 
     /** Quaternion. */
-    QUATERNION {
+    QUATERNION("QUATERNION") {
 
         /** {@inheritDoc} */
         @Override
         public double[] getAttitudeData(final TimeStampedAngularCoordinates coordinates,
-                                        final boolean isFirst, final RotationOrder order) {
+                                        final boolean isFirst, final boolean localRates, final RotationOrder order) {
             // Initialize the array of attitude data
             final double[] data = new double[4];
 
@@ -64,7 +64,8 @@ public enum AEMAttitudeType {
 
         /** {@inheritDoc} */
         @Override
-        public TimeStampedAngularCoordinates parse(final AEMMetadata metadata, final ParsingContext context, final String[] fields) {
+        public TimeStampedAngularCoordinates parse(final AEMMetadata metadata, final ParsingContext context,
+                                                   final String[] fields, final String fileName) {
 
             // Build the needed objects
             final AbsoluteDate date = parseDate(context, fields[0]);
@@ -94,12 +95,12 @@ public enum AEMAttitudeType {
     },
 
     /** Quaternion and derivatives. */
-    QUATERNION_DERIVATIVE {
+    QUATERNION_DERIVATIVE("QUATERNION/DERIVATIVE") {
 
         /** {@inheritDoc} */
         @Override
         public double[] getAttitudeData(final TimeStampedAngularCoordinates coordinates,
-                                        final boolean isFirst, final RotationOrder order) {
+                                        final boolean isFirst, final boolean localRates, final RotationOrder order) {
             // Initialize the array of attitude data
             final double[] data = new double[8];
 
@@ -124,7 +125,8 @@ public enum AEMAttitudeType {
 
         /** {@inheritDoc} */
         @Override
-        public TimeStampedAngularCoordinates parse(final AEMMetadata metadata, final ParsingContext context, final String[] fields) {
+        public TimeStampedAngularCoordinates parse(final AEMMetadata metadata, final ParsingContext context,
+                                                   final String[] fields, final String fileName) {
 
             // Build the needed objects
             final AbsoluteDate date = parseDate(context, fields[0]);
@@ -154,12 +156,12 @@ public enum AEMAttitudeType {
     },
 
     /** Quaternion and rotation rate. */
-    QUATERNION_RATE {
+    QUATERNION_RATE("QUATERNION/RATE") {
 
         /** {@inheritDoc} */
         @Override
         public double[] getAttitudeData(final TimeStampedAngularCoordinates coordinates,
-                                        final boolean isFirst, final RotationOrder order) {
+                                        final boolean isFirst, final boolean localRates, final RotationOrder order) {
             // Initialize the array of attitude data
             final double[] data = new double[7];
 
@@ -168,7 +170,8 @@ public enum AEMAttitudeType {
 
             // Attitude
             final Rotation rotation     = coordinates.getRotation();
-            final Vector3D rotationRate = coordinates.getRotationRate();
+            final Vector3D rawRate      = coordinates.getRotationRate();
+            final Vector3D rotationRate = localRates ? rawRate : rotation.applyInverseTo(rawRate);
 
             // Fill the array
             data[quaternionIndex[0]] = rotation.getQ0();
@@ -186,7 +189,7 @@ public enum AEMAttitudeType {
         /** {@inheritDoc} */
         @Override
         public TimeStampedAngularCoordinates parse(final AEMMetadata metadata, final ParsingContext context,
-                                                   final String[] fields) {
+                                                   final String[] fields, final String fileName) {
             // Build the needed objects
             final AbsoluteDate date = parseDate(context, fields[0]);
             final Rotation rotation = metadata.isFirst() ?
@@ -200,9 +203,10 @@ public enum AEMAttitudeType {
                                                    Double.parseDouble(fields[2]),
                                                    Double.parseDouble(fields[3]),
                                                    true);
-            final Vector3D rotationRate = new Vector3D(FastMath.toRadians(Double.parseDouble(fields[5])),
-                                                       FastMath.toRadians(Double.parseDouble(fields[6])),
-                                                       FastMath.toRadians(Double.parseDouble(fields[7])));
+            final Vector3D rotationRate = localRate(new Vector3D(FastMath.toRadians(Double.parseDouble(fields[5])),
+                                                                 FastMath.toRadians(Double.parseDouble(fields[6])),
+                                                                 FastMath.toRadians(Double.parseDouble(fields[7]))),
+                                                    rotation, metadata, fileName);
 
             // Return
             return new TimeStampedAngularCoordinates(date, rotation, rotationRate, Vector3D.ZERO);
@@ -217,12 +221,12 @@ public enum AEMAttitudeType {
     },
 
     /** Euler angles. */
-    EULER_ANGLE {
+    EULER_ANGLE("EULER ANGLE") {
 
         /** {@inheritDoc} */
         @Override
         public double[] getAttitudeData(final TimeStampedAngularCoordinates coordinates,
-                                        final boolean isFirst, final RotationOrder order) {
+                                        final boolean isFirst, final boolean localRates, final RotationOrder order) {
             // Initialize the array of attitude data
             final double[] data = new double[3];
 
@@ -242,7 +246,7 @@ public enum AEMAttitudeType {
         /** {@inheritDoc} */
         @Override
         public TimeStampedAngularCoordinates parse(final AEMMetadata metadata, final ParsingContext context,
-                                                   final String[] fields) {
+                                                   final String[] fields, final String fileName) {
 
             // Build the needed objects
             final AbsoluteDate date = parseDate(context, fields[0]);
@@ -264,18 +268,19 @@ public enum AEMAttitudeType {
     },
 
     /** Euler angles and rotation rate. */
-    EULER_ANGLE_RATE {
+    EULER_ANGLE_RATE("EULER ANGLE/RATE") {
 
         /** {@inheritDoc} */
         @Override
         public double[] getAttitudeData(final TimeStampedAngularCoordinates coordinates,
-                                        final boolean isFirst, final RotationOrder order) {
+                                        final boolean isFirst, final boolean localRates, final RotationOrder order) {
             // Initialize the array of attitude data
             final double[] data = new double[6];
 
             // Attitude
             final Rotation rotation     = coordinates.getRotation();
-            final Vector3D rotationRate = coordinates.getRotationRate();
+            final Vector3D rawRate      = coordinates.getRotationRate();
+            final Vector3D rotationRate = localRates ? rawRate : rotation.applyInverseTo(rawRate);
             final double[] angles       = rotation.getAngles(order, RotationConvention.FRAME_TRANSFORM);
 
             // Fill the array
@@ -293,7 +298,7 @@ public enum AEMAttitudeType {
         /** {@inheritDoc} */
         @Override
         public TimeStampedAngularCoordinates parse(final AEMMetadata metadata, final ParsingContext context,
-                                                   final String[] fields) {
+                                                   final String[] fields, final String fileName) {
 
             // Build the needed objects
             final AbsoluteDate date = parseDate(context, fields[0]);
@@ -302,9 +307,10 @@ public enum AEMAttitudeType {
                                                    FastMath.toRadians(Double.parseDouble(fields[1])),
                                                    FastMath.toRadians(Double.parseDouble(fields[2])),
                                                    FastMath.toRadians(Double.parseDouble(fields[3])));
-            final Vector3D rotationRate = new Vector3D(FastMath.toRadians(Double.parseDouble(fields[4])),
-                                                       FastMath.toRadians(Double.parseDouble(fields[5])),
-                                                       FastMath.toRadians(Double.parseDouble(fields[6])));
+            final Vector3D rotationRate = localRate(new Vector3D(FastMath.toRadians(Double.parseDouble(fields[4])),
+                                                                 FastMath.toRadians(Double.parseDouble(fields[5])),
+                                                                 FastMath.toRadians(Double.parseDouble(fields[6]))),
+                                                    rotation, metadata, fileName);
             // Return
             return new TimeStampedAngularCoordinates(date, rotation, rotationRate, Vector3D.ZERO);
         }
@@ -318,12 +324,12 @@ public enum AEMAttitudeType {
     },
 
     /** Spin. */
-    SPIN {
+    SPIN("SPIN") {
 
         /** {@inheritDoc} */
         @Override
         public double[] getAttitudeData(final TimeStampedAngularCoordinates coordinates,
-                                        final boolean isFirst, final RotationOrder order) {
+                                        final boolean isFirst, final boolean localRates, final RotationOrder order) {
             // Attitude parameters in the Specified Reference Frame for a Spin Stabilized Satellite
             // are optional in CCSDS AEM format. Support for this attitude type is not implemented
             // yet in Orekit.
@@ -333,7 +339,7 @@ public enum AEMAttitudeType {
         /** {@inheritDoc} */
         @Override
         public TimeStampedAngularCoordinates parse(final AEMMetadata metadata, final ParsingContext context,
-                                                   final String[] fields) {
+                                                   final String[] fields, final String fileName) {
             // Attitude parameters in the Specified Reference Frame for a Spin Stabilized Satellite
             // are optional in CCSDS AEM format. Support for this attitude type is not implemented
             // yet in Orekit.
@@ -352,12 +358,12 @@ public enum AEMAttitudeType {
     },
 
     /** Spin and nutation. */
-    SPIN_NUTATION {
+    SPIN_NUTATION("SPIN/NUTATION") {
 
         /** {@inheritDoc} */
         @Override
         public double[] getAttitudeData(final TimeStampedAngularCoordinates coordinates,
-                                        final boolean isFirst, final RotationOrder order) {
+                                        final boolean isFirst, final boolean localRates, final RotationOrder order) {
             // Attitude parameters in the Specified Reference Frame for a Spin Stabilized Satellite
             // are optional in CCSDS AEM format. Support for this attitude type is not implemented
             // yet in Orekit.
@@ -367,7 +373,7 @@ public enum AEMAttitudeType {
         /** {@inheritDoc} */
         @Override
         public TimeStampedAngularCoordinates parse(final AEMMetadata metadata, final ParsingContext context,
-                                                   final String[] fields) {
+                                                   final String[] fields, final String fileName) {
             // Attitude parameters in the Specified Reference Frame for a Spin Stabilized Satellite
             // are optional in CCSDS AEM format. Support for this attitude type is not implemented
             // yet in Orekit.
@@ -388,6 +394,22 @@ public enum AEMAttitudeType {
     /** Pattern for normalizing attitude types. */
     private static final Pattern TYPE_SEPARATORS = Pattern.compile("[ _/]+");
 
+    /** CCSDS name of the attitude type. */
+    private final String ccsdsName;
+
+    /** Private constructor.
+     * @param ccsdsName CCSDS name of the attitude type
+     */
+    AEMAttitudeType(final String ccsdsName) {
+        this.ccsdsName = ccsdsName;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String toString() {
+        return ccsdsName;
+    }
+
     /** Parse an attitude type.
      * @param type unnormalized type name
      * @return parsed type
@@ -404,11 +426,12 @@ public enum AEMAttitudeType {
      * </p>
      * @param attitude angular coordinates
      * @param isFirst true if QC is the first element in the attitude data
+     * @param localRates true if rotation rates are in local frame
      * @param order rotation order of the Euler angles
      * @return the attitude data (see 4-4)
      */
     public abstract double[] getAttitudeData(TimeStampedAngularCoordinates attitude, boolean isFirst,
-                                             RotationOrder order);
+                                             boolean localRates, RotationOrder order);
 
     /**
      * Get the angular coordinates corresponding to the attitude data.
@@ -419,15 +442,36 @@ public enum AEMAttitudeType {
      * @param metadata metadata used to interprete the data fields
      * @param context parsing context
      * @param fields raw data fields
+     * @param fileName name of the file
      * @return the angular coordinates
      */
-    public abstract TimeStampedAngularCoordinates parse(AEMMetadata metadata, ParsingContext context, String[] fields);
+    public abstract TimeStampedAngularCoordinates parse(AEMMetadata metadata, ParsingContext context,
+                                                        String[] fields, String fileName);
 
     /**
      * Get the angular derivative filter corresponding to the attitude data.
      * @return the angular derivative filter corresponding to the attitude data
      */
     public abstract AngularDerivativesFilter getAngularDerivativesFilter();
+
+    /** Convert a rotation rate to spacecraft body local frame.
+     * @param rate rotation rate read from the data line
+     * @param rotation corresponding rotation
+     * @param metadata segment metadata
+     * @return rotation rate in spacecraft body local frame
+     * @param fileName name of the file
+     */
+    private static Vector3D localRate(final Vector3D rate, final Rotation rotation,
+                                      final AEMMetadata metadata, final String fileName) {
+
+        if (metadata.localRates() == null) {
+            throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
+                                      AEMMetadataKey.RATE_FRAME.name(), fileName);
+        }
+
+        return metadata.localRates() ? rate : rotation.applyTo(rate);
+
+    }
 
     /** Parse a date.
      * @param context parsing context

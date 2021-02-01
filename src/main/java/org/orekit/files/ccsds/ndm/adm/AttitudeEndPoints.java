@@ -72,11 +72,19 @@ public class AttitudeEndPoints {
         setFrame(name);
     }
 
+    /** Check if a suffix corresponds to local frame.
+     * @param suffix suffix to check
+     * @return true if suffix corresponds to local frame
+     */
+    public boolean isLocalSuffix(final char suffix) {
+        return frameAIsExternal ^ (suffix == 'A');
+    }
+
     /** Set attitude direction.
      * @param direction attitude direction (from A to B or from B to A)
      */
     public void setDirection(final String direction) {
-        external2Local = frameAIsExternal ^ "B2A".equals(direction);
+        external2Local = isLocalSuffix(direction.charAt(direction.length() - 1));
     }
 
     /** Check if attitude is from external frame to local frame.

@@ -78,7 +78,14 @@ public enum AEMMetadataKey {
     EULER_ROT_SEQ((token, context, metadata) -> ADMParser.processRotationOrder(token, metadata::setEulerRotSeq)),
 
     /** Reference frame for Euler rates. */
-    RATE_FRAME((token, context, metadata) -> token.processAsNormalizedString(metadata::setRateFrameString)),
+    RATE_FRAME((token, context, metadata) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            final String content = token.getNormalizedContent();
+            final char   suffix  = content.charAt(content.length() - 1);
+            metadata.setLocalRates(metadata.getEndPoints().isLocalSuffix(suffix));
+        }
+        return true;
+    }),
 
     /** Interpolation method in ephemeris. */
     INTERPOLATION_METHOD((token, context, metadata) -> token.processAsNormalizedString(metadata::setInterpolationMethod)),
@@ -86,6 +93,7 @@ public enum AEMMetadataKey {
     /** Interpolation degree in ephemeris. */
     INTERPOLATION_DEGREE((token, context, metadata) -> token.processAsInteger(metadata::setInterpolationDegree));
 
+    /** Constant
     /** Processing method. */
     private final MetadataEntryProcessor processor;
 
