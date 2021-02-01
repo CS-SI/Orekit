@@ -136,7 +136,7 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
     /** {@inheritDoc} */
     @Override
     public void finalizeHeader() {
-        // nothing to do
+        file.getHeader().checkMandatoryEntries();
     }
 
     /** {@inheritDoc} */
@@ -160,7 +160,7 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
     /** {@inheritDoc} */
     @Override
     public void finalizeMetadata() {
-        // nothing to do
+        metadata.checkMandatoryEntries();
     }
 
     /** {@inheritDoc} */

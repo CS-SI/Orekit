@@ -85,7 +85,8 @@ public enum OrekitMessages implements Localizable {
     UNABLE_TO_PARSE_ELEMENT_IN_FILE("unable to parse element {0} at line {1}, file {2}"),
     UNABLE_TO_FIND_FILE("unable to find file {0}"),
     SPACECRAFT_MASS_BECOMES_NEGATIVE("spacecraft mass becomes negative: {0} kg"),
-    POSITIVE_FLOW_RATE("positive flow rate (q: {0})"), NO_GRAVITY_FIELD_DATA_LOADED("no gravity field data loaded"),
+    POSITIVE_FLOW_RATE("positive flow rate (q: {0})"),
+    NO_GRAVITY_FIELD_DATA_LOADED("no gravity field data loaded"),
     GRAVITY_FIELD_NORMALIZATION_UNDERFLOW("gravity field normalization underflow for degree {0} and order {1}"),
     NO_OCEAN_TIDE_DATA_LOADED("no ocean tide data loaded"),
     OCEAN_TIDE_DATA_DEGREE_ORDER_LIMITS("ocean tide data file {0} limited to degree {1} and order {2}"),
@@ -111,10 +112,13 @@ public enum OrekitMessages implements Localizable {
     NOT_POSITIVE_SPACECRAFT_MASS("spacecraft mass is not positive: {0} kg"),
     TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL("too large eccentricity for propagation model: e = {0}"),
     NO_SOLAR_ACTIVITY_AT_DATE("no solar activity available at {0}, data available only in range [{1}, {2}]"),
-    NON_EXISTENT_MONTH("non-existent month {0}"), NON_EXISTENT_YEAR_MONTH_DAY("non-existent date {0}-{1}-{2}"),
-    NON_EXISTENT_WEEK_DATE("non-existent week date {0}-W{1}-{2}"), NON_EXISTENT_DATE("non-existent date {0}"),
+    NON_EXISTENT_MONTH("non-existent month {0}"),
+    NON_EXISTENT_YEAR_MONTH_DAY("non-existent date {0}-{1}-{2}"),
+    NON_EXISTENT_WEEK_DATE("non-existent week date {0}-W{1}-{2}"),
+    NON_EXISTENT_DATE("non-existent date {0}"),
     NON_EXISTENT_DAY_NUMBER_IN_YEAR("no day number {0} in year {1}"),
-    NON_EXISTENT_HMS_TIME("non-existent time {0}:{1}:{2}"), NON_EXISTENT_TIME("non-existent time {0}"),
+    NON_EXISTENT_HMS_TIME("non-existent time {0}:{1}:{2}"),
+    NON_EXISTENT_TIME("non-existent time {0}"),
     OUT_OF_RANGE_SECONDS_NUMBER("out of range seconds number: {0}"),
     OUT_OF_RANGE_SECONDS_NUMBER_DETAIL("out of range seconds number: {0} is not in [{1}, {2})"),
     ANGLE_TYPE_NOT_SUPPORTED("angle type not supported, supported angles: {0}, {1} and {2}"),
@@ -144,7 +148,8 @@ public enum OrekitMessages implements Localizable {
             "unexpected two elevation values: {0} and {1}, for one azimuth: {2}"),
     UNSUPPORTED_PARAMETER_NAME("unsupported parameter name {0}, supported names: {1}"),
     TOO_SMALL_SCALE_FOR_PARAMETER("scale factor for parameter {0} is too small: {1}"),
-    UNKNOWN_ADDITIONAL_STATE("unknown additional state \"{0}\""), UNKNOWN_MONTH("unknown month \"{0}\""),
+    UNKNOWN_ADDITIONAL_STATE("unknown additional state \"{0}\""),
+    UNKNOWN_MONTH("unknown month \"{0}\""),
     SINGULAR_JACOBIAN_FOR_ORBIT_TYPE("Jacobian matrix for type {0} is singular with current orbit"),
     STATE_JACOBIAN_NOT_INITIALIZED("state Jacobian has not been initialized yet"),
     STATE_JACOBIAN_NOT_6X6("state Jacobian is a {0}x{1} matrix, it should be a 6x6 matrix"),
@@ -241,7 +246,8 @@ public enum OrekitMessages implements Localizable {
     NO_PROPAGATOR_CONFIGURED("no propagator configured"),
     DIMENSION_INCONSISTENT_WITH_PARAMETERS("dimension {0} is inconsistent with parameters list: {1}"),
     NOT_A_SUPPORTED_UNIX_COMPRESSED_FILE("file {0} is not a supported Unix-compressed file"),
-    UNEXPECTED_END_OF_FILE("unexpected end of file {0}"), CORRUPTED_FILE("file {0} is corrupted"),
+    UNEXPECTED_END_OF_FILE("unexpected end of file {0}"),
+    CORRUPTED_FILE("file {0} is corrupted"),
     VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_LOADED("Vienna coefficients ah or aw or zh or zw could not be loaded from {0}"),
     VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_AVAILABLE_FOR_DATE(
             "Vienna coefficients ah or aw or zh or zw not available for date {0}"),
@@ -285,7 +291,8 @@ public enum OrekitMessages implements Localizable {
     UNEXPECTED_FORMAT_FOR_ILRS_FILE("Unexpected file format. Must be {0} but is {1}"),
     CRD_UNEXPECTED_END_OF_FILE("Unexpected end of CRD file (after line {0})"),
     INVALID_RANGE_INDICATOR_IN_CRD_FILE("Invalid range indicator {0} in CRD file header"),
-    NOT_VALID_INTERNATIONAL_DESIGNATOR("{0} is not a valid international designator");
+    NOT_VALID_INTERNATIONAL_DESIGNATOR("{0} is not a valid international designator"),
+    UNINITIALIZED_VALUE_FOR_KEY("value for key {0} has not been initialized");
 
     // CHECKSTYLE: resume JavadocVariable check
 

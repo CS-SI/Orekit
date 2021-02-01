@@ -20,6 +20,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+
 /** Container for comments in various CCSDS messages.
  * <p>
  * CCSDS files accept comments only at the beginning of sections.
@@ -29,7 +32,7 @@ import java.util.List;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class CommentsContainer {
+public class CommentsContainer implements Section {
 
     /** Metadata comments. The list contains a string for each line of comment. */
     private final List<String> comments;
@@ -42,6 +45,32 @@ public class CommentsContainer {
     public CommentsContainer() {
         comments       = new ArrayList<>();
         acceptComments = true;
+    }
+
+    /** Complain if a field is NaN.
+     * @param field field to check
+     * @param key key associated with the field
+     */
+    protected void checkNotNaN(final double field, final Enum<?> key) {
+        if (Double.isNaN(field)) {
+            throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, key.name());
+        }
+    }
+
+    /** Complain if a field is null.
+     * @param field field to check
+     * @param key key associated with the field
+     */
+    protected void checkNotNull(final Object field, final Enum<?> key) {
+        if (field == null) {
+            throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, key.name());
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void checkMandatoryEntries() {
+        // nothing to do here
     }
 
     /** Get the comments.

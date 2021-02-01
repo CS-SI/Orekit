@@ -133,7 +133,7 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
     /** {@inheritDoc} */
     @Override
     public void finalizeHeader() {
-        // nothing to do
+        file.getHeader().checkMandatoryEntries();
     }
 
     /** {@inheritDoc} */
@@ -157,7 +157,7 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
     /** {@inheritDoc} */
     @Override
     public void finalizeMetadata() {
-        // nothing to do
+        metadata.checkMandatoryEntries();
     }
 
     /** {@inheritDoc} */
@@ -182,6 +182,7 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
             for (final APMManeuver maneuver : maneuvers) {
                 data.addManeuver(maneuver);
             }
+            data.checkMandatoryEntries();
             file.addSegment(new Segment<>(metadata, data));
         }
         metadata                  = null;

@@ -16,7 +16,11 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
+import java.util.Arrays;
+
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndPoints;
 import org.orekit.files.ccsds.section.CommentsContainer;
 
@@ -33,7 +37,7 @@ public class APMEuler extends CommentsContainer {
     /** Rotation order of the Euler angles. */
     private RotationOrder eulerRotSeq;
 
-    /** Frame of reference in which the {@link #rotationAngles} are expressed. */
+    /** Frame of reference in which the {@link #rotationAngles} derivatives are expressed. */
     private String rateFrame;
 
     /** Euler angles [rad]. */
@@ -52,6 +56,27 @@ public class APMEuler extends CommentsContainer {
         this.rotationAngles   = new double[3];
         this.rotationRates    = new double[3];
         this.inRotationAngles = false;
+        Arrays.fill(rotationAngles, Double.NaN);
+        Arrays.fill(rotationRates,  Double.NaN);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void checkMandatoryEntries() {
+        super.checkMandatoryEntries();
+        endPoints.checkMandatoryEntries();
+        checkNotNull(eulerRotSeq, APMEulerKey.EULER_ROT_SEQ);
+        if (Double.isNaN(rotationAngles[0] + rotationAngles[1] + rotationAngles[2])) {
+            throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, "{X|Y|Z}_ANGLE");
+        }
+        if (Double.isNaN(rotationRates[0] + rotationRates[1] + rotationRates[2])) {
+            // if at least one is NaN, all must be NaN (i.e. not initialized)
+            for (final double rr : rotationRates) {
+                if (!Double.isNaN(rr)) {
+                    throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, "{X|Y|Z}_RATE");
+                }
+            }
+        }
     }
 
     /** Get the attitude end points.

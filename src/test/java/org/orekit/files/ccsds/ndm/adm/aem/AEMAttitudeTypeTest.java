@@ -20,6 +20,7 @@ import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,6 +53,12 @@ public class AEMAttitudeTypeTest {
                                        () -> null,
                                        metadata::getTimeSystem);
         metadata.setTimeSystem(CcsdsTimeScale.TAI);
+    }
+
+    @After
+    public void tearDown() {
+        metadata = null;
+        context  = null;
     }
 
     /**

@@ -17,31 +17,23 @@
 package org.orekit.files.ccsds.ndm.adm.aem;
 
 import java.io.IOException;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Locale;
 import java.util.Map;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
-import org.hipparchus.geometry.euclidean.threed.RotationOrder;
-import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
-import org.orekit.files.ccsds.Keyword;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.ndm.adm.ADMMetadataKey;
 import org.orekit.files.ccsds.section.Header;
-import org.orekit.files.ccsds.section.HeaderKeyword;
+import org.orekit.files.ccsds.section.HeaderKey;
+import org.orekit.files.ccsds.section.MetadataKey;
+import org.orekit.files.ccsds.utils.CCSDSBodyFrame;
+import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateTimeComponents;
-import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
-import org.orekit.utils.IERSConventions;
-import org.orekit.utils.TimeStampedAngularCoordinates;
 
 /**
  * A writer for AEM files.
@@ -53,477 +45,224 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * <p> The AEM metadata used by this writer is described in the following table. Many
  * metadata items are optional or have default values so they do not need to be specified.
  * At a minimum the user must supply those values that are required and for which no
- * default exits: {@link Keyword#OBJECT_NAME}, and {@link Keyword#OBJECT_ID}. The usage
- * column in the table indicates where the metadata item is used, either in the AEM header
+ * default exits: {@link ADMMetadataKey#OBJECT_NAME}, and {@link ADMMetadataKey#OBJECT_ID}.
+ * The usage column in the table indicates where the metadata item is used, either in the AEM header
  * or in the metadata section at the start of an AEM attitude segment.
+ * </p>
  *
- * <p> The AEM metadata for the whole AEM file is set in the {@link
- * #StreamingAemWriter(Appendable, TimeScale, Map) constructor}.
+ * <p> The AEM header for the whole AEM file is set when calling {@link #writeHeader(Header)},
+ * the entries are defined in table 4-2 of the ADM standard.
  *
  * <table>
  * <caption>AEM metadata</caption>
  *     <thead>
  *         <tr>
- *             <th>Keyword
- *             <th>Usage
- *             <th>Obligatory
- *             <th>Default
- *             <th>Reference
+ *             <th>Keyword</th>
+ *             <th>Mandatory</th>
+ *             <th>Default in Orekit</th>
+ *         </tr>
  *    </thead>
  *    <tbody>
  *        <tr>
- *            <td>{@link Keyword#CCSDS_AEM_VERS}
- *            <td>Header
- *            <td>Yes
- *            <td>{@link #CCSDS_AEM_VERS}
- *            <td>Table 4-2
+ *            <td>{@link AEMFile#FORMAT_VERSION_KEY CCSDS_AEM_VERS}</td>
+ *            <td>Yes</td>
+ *            <td>{@link #CCSDS_AEM_VERS}</td>
+ *        </tr>
  *        <tr>
- *            <td>{@link Keyword#COMMENT}
- *            <td>Header
- *            <td>No
- *            <td>
- *            <td>Table 4-2
+ *            <td>{@link HeaderKey#COMMENT}</td>
+ *            <td>No</td>
+ *            <td>empty</td>
+ *        </tr>
  *        <tr>
- *            <td>{@link Keyword#CREATION_DATE}
- *            <td>Header
- *            <td>Yes
- *            <td>{@link Date#Date() Now}
- *            <td>Table 4-2
+ *            <td>{@link HeaderKey#CREATION_DATE}</td>
+ *            <td>Yes</td>
+ *            <td>{@link Date#Date() Now}</td>
+ *        </tr>
  *        <tr>
- *            <td>{@link Keyword#ORIGINATOR}
- *            <td>Header
- *            <td>Yes
- *            <td>{@link #DEFAULT_ORIGINATOR}
- *            <td>Table 4-2
+ *            <td>{@link HeaderKey#ORIGINATOR}</td>
+ *            <td>Yes</td>
+ *            <td>{@link #DEFAULT_ORIGINATOR}</td>
+ *        </tr>
+ *    </tbody>
+ *    </table>
+ * </p>
+ *
+ * <p> The AEM metadata for the whole AEM file is set when calling {@link #newSegment(AEMMetadata)},
+ * the entries are defined in tables 4-3, 4-4 and annex A of the ADM standard.
+ *
+ * <table>
+ * <caption>AEM metadata</caption>
+ *     <thead>
+ *         <tr>
+ *             <th>Keyword</th>
+ *             <th>Mandatory</th>
+ *             <th>Default in Orekit</th>
+ *         </tr>
+ *    </thead>
+ *    <tbody>
  *        <tr>
- *            <td>{@link Keyword#OBJECT_NAME}
- *            <td>Segment
- *            <td>Yes
- *            <td>
- *            <td>Table 4-3
+ *            <td>{@link MetadataKey#COMMENT}</td>
+ *            <td>No</td>
+ *            <td>empty</td>
+ *        </tr>
  *        <tr>
- *            <td>{@link Keyword#OBJECT_ID}
- *            <td>Segment
- *            <td>Yes
- *            <td>
- *            <td>Table 4-3
+ *            <td>{@link ADMMetadataKey#OBJECT_NAME}</td>
+ *            <td>Yes</td>
+ *            <td></td>
+ *        </tr>
  *        <tr>
- *            <td>{@link Keyword#CENTER_NAME}
- *            <td>Segment
- *            <td>No
- *            <td>
- *            <td>Table 4-3
+ *            <td>{@link ADMMetadataKey#OBJECT_ID}</td>
+ *            <td>Yes</td>
+ *            <td></td>
+ *        </tr>
  *        <tr>
- *            <td>{@link Keyword#REF_FRAME_A}
- *            <td>Segment
- *            <td>Yes
- *            <td>
- *            <td>Table 4-3
+ *            <td>{@link ADMMetadataKey#CENTER_NAME}</td>
+ *            <td>No</td>
+ *            <td></td>
+ *        </tr>
  *        <tr>
- *            <td>{@link Keyword#REF_FRAME_B}
- *            <td>Segment
- *            <td>Yes
- *            <td>
- *            <td>Table 4-3
+ *            <td>{@link AEMMetadataKey#REF_FRAME_A}</td>
+ *            <td>Yes</td>
+ *            <td>in Orekit, always the {@link CCSDSFrame external frame}</td>
+ *        </tr>
  *        <tr>
- *            <td>{@link Keyword#ATTITUDE_DIR}
- *            <td>Segment
- *            <td>Yes
- *            <td>
- *            <td>Table 4-3
+ *            <td>{@link AEMMetadataKey#REF_FRAME_B}</td>
+ *            <td>Yes</td>
+ *            <td>in Orekit, always the {@link CCSDSBodyFrame spacecraft local body frame}</td>
+ *        </tr>
  *        <tr>
- *            <td>{@link Keyword#TIME_SYSTEM}
- *            <td>Segment
- *            <td>Yes
- *            <td>
- *            <td>Table 4-3, Annex A
+ *            <td>{@link AEMMetadataKey#ATTITUDE_DIR}</td>
+ *            <td>Yes</td>
+ *            <td>in Orekit, always {@code A2B} as attitudes are from external frame to local frame</td>
+ *        </tr>
  *        <tr>
- *            <td>{@link Keyword#START_TIME}
- *            <td>Segment
- *            <td>Yes
- *            <td>
- *            <td>Table 4-3
+ *            <td>{@link MetadataKey#TIME_SYSTEM}</td>
+ *            <td>Yes</td>
+ *            <td></td>
+ *        </tr>
  *        <tr>
- *            <td>{@link Keyword#USEABLE_START_TIME}
- *            <td>Segment
- *            <td>No
- *            <td>
- *            <td>Table 4-3
+ *            <td>{@link AEMMetadataKey#START_TIME}</td>
+ *            <td>Yes</td>
+ *            <td>default to propagation start time (for forward propagation)</td>
+ *        </tr>
  *        <tr>
- *            <td>{@link Keyword#STOP_TIME}
- *            <td>Segment
- *            <td>Yes
- *            <td>
- *            <td>Table 4-3
+ *            <td>{@link AEMMetadataKey#USEABLE_START_TIME}</td>
+ *            <td>No</td>
+ *            <td></td>
+ *        </tr>
  *        <tr>
- *            <td>{@link Keyword#USEABLE_STOP_TIME}
- *            <td>Segment
- *            <td>No
- *            <td>
- *            <td>Table 4-3
+ *            <td>{@link AEMMetadataKey#USEABLE_STOP_TIME}</td>
+ *            <td>No</td>
+ *            <td></td>
+ *        </tr>
  *        <tr>
- *            <td>{@link Keyword#ATTITUDE_TYPE}
- *            <td>Segment
- *            <td>Yes
- *            <td>
- *            <td>Table 4-3, 4-4
+ *            <td>{@link AEMMetadataKey#STOP_TIME}</td>
+ *            <td>Yes</td>
+ *            <td>default to propagation target time (for forward propagation)</td>
+ *        </tr>
  *        <tr>
- *            <td>{@link Keyword#QUATERNION_TYPE}
- *            <td>Segment
- *            <td>No
- *            <td>
- *            <td>Table 4-3, 4-4
+ *            <td>{@link AEMMetadataKey#ATTITUDE_TYPE}</td>
+ *            <td>Yes</td>
+ *            <td>{@link AEMAttitudeType#QUATERNION_RATE QUATERNION/RATE}</td>
+ *        </tr>
  *        <tr>
- *            <td>{@link Keyword#EULER_ROT_SEQ}
- *            <td>Segment
- *            <td>No
- *            <td>
- *            <td>Table 4-3
+ *            <td>{@link AEMMetadataKey#QUATERNION_TYPE}</td>
+ *            <td>No</td>
+ *            <td>{@code FIRST}</td>
+ *        </tr>
  *        <tr>
- *            <td>{@link Keyword#RATE_FRAME}
- *            <td>Segment
- *            <td>No
- *            <td>
- *            <td>Table 4-3
+ *            <td>{@link AEMMetadataKey#EULER_ROT_SEQ}</td>
+ *            <td>No</td>
+ *            <td></td>
+ *        </tr>
  *        <tr>
- *            <td>{@link Keyword#INTERPOLATION_METHOD}
- *            <td>Segment
- *            <td>No
- *            <td>
- *            <td>Table 4-3
+ *            <td>{@link AEMMetadataKey#RATE_FRAME}</td>
+ *            <td>No</td>
+ *            <td>{@code REF_FRAME_B}</td>
+ *        </tr>
  *        <tr>
- *            <td>{@link Keyword#INTERPOLATION_DEGREE}
- *            <td>Segment
- *            <td>No
- *            <td>
- *            <td>Table 4-3
+ *            <td>{@link AEMMetadataKey#INTERPOLATION_METHOD}</td>
+ *            <td>No</td>
+ *            <td></td>
+ *        </tr>
+ *        <tr>
+ *            <td>{@link AEMMetadataKey#INTERPOLATION_DEGREE}</td>
+ *            <td>No</td>
+ *            <td>always set in {@link AEMMetadata}</td>
+ *        </tr>
  *    </tbody>
  *</table>
  *
- * <p> The {@link Keyword#TIME_SYSTEM} must be constant for the whole file and is used
- * to interpret all dates except {@link Keyword#CREATION_DATE}. The guessing algorithm
- * is not guaranteed to work so it is recommended to provide values for {@link
- * Keyword#CENTER_NAME} and {@link Keyword#TIME_SYSTEM} to avoid any bugs associated with
- * incorrect guesses.
+ * <p> The {@link MetadataKey#TIME_SYSTEM} must be constant for the whole file and is used
+ * to interpret all dates except {@link HeaderKey#CREATION_DATE} which is always in {@link
+ * CcsdsTimeScale#UTC UTC}. The guessing algorithm is not guaranteed to work so it is recommended
+ * to provide values for {@link ADMMetadataKey#CENTER_NAME} and {@link MetadataKey#TIME_SYSTEM}
+ * to avoid any bugs associated with incorrect guesses.
  *
- * <p> Standardized values for {@link Keyword#TIME_SYSTEM} are GMST, GPS, MET, MRT, SCLK,
+ * <p> Standardized values for {@link MetadataKey#TIME_SYSTEM} are GMST, GPS, MET, MRT, SCLK,
  * TAI, TCB, TDB, TT, UT1, and UTC. Standardized values for reference frames
  * are EME2000, GTOD, ICRF, ITRF2000, ITRF-93, ITRF-97, LVLH, RTN, QSW, TOD, TNW, NTW and RSW.
  * Additionally ITRF followed by a four digit year may be used.
  *
  * @author Bryan Cazabonne
+ * @author Luc Maisonobe
  * @see <a href="https://public.ccsds.org/Pubs/504x0b1c1.pdf">CCSDS 504.0-B-1 Attitude Data Messages</a>
  * @see AEMWriter
  * @since 10.2
  */
 public class StreamingAemWriter {
 
-    /** Version number implemented. **/
-    public static final double CCSDS_AEM_VERS = 1.0;
-
-    /** Default value for {@link HeaderKeyword#ORIGINATOR}. */
-    public static final String DEFAULT_ORIGINATOR = "OREKIT";
-
-    /** Default value for {@link #TIME_SYSTEM}. */
-    public static final CcsdsTimeScale DEFAULT_TIME_SYSTEM = CcsdsTimeScale.UTC;
-
-    /**
-     * Default format used for attitude ephemeris data output: 9 digits
-     * after the decimal point and leading space for positive values.
-     */
-    public static final String DEFAULT_ATTITUDE_FORMAT = "% .9f";
-
-    /** New line separator for output file. See 5.4.5. */
-    private static final String NEW_LINE = "\n";
-
-    /**
-     * Standardized locale to use, to ensure files can be exchanged without
-     * internationalization issues.
-     */
-    private static final Locale STANDARDIZED_LOCALE = Locale.US;
-
-    /** String format used for all comment lines. **/
-    private static final String COMMENT_FORMAT = "COMMENT %s%n";
-
-    /** String format used for all key/value pair lines. **/
-    private static final String KV_FORMAT = "%s = %s%n";
-
     /** Output stream. */
-    private final Appendable writer;
+    private final Appendable appendable;
 
-    /** Data context used for obtain frames and time scales. */
-    private final DataContext dataContext;
-
-    /** File header. */
-    private final Header header;
-
-    /** Metadata for this AEM file. */
-    private final AEMMetadata metadata;
-
-    /** Time scale for all dates except {@link Keyword#CREATION_DATE}. */
-    private final TimeScale timeScale;
-
-    /** Format for attitude ephemeris data output. */
-    private final String attitudeFormat;
-
-    /**
-     * Create an AEM writer that streams data to the given output stream.
-     * {@link #DEFAULT_ATTITUDE_FORMAT Default formatting} will be used for attitude ephemeris data.
-     *
-     * @param writer    The output stream for the AEM file. Most methods will append data
-     *                  to this {@code writer}.
-     * @param conventions IERS Conventions
-     * @param dataContext used to retrieve frames, time scales, etc.
-     * @param header file header
-     * @param metadata  for the satellite.
-     */
-    public StreamingAemWriter(final Appendable writer,
-                              final IERSConventions conventions, final DataContext dataContext,
-                              final Header header, final AEMMetadata metadata) {
-        this(writer, conventions, dataContext, header, metadata, DEFAULT_ATTITUDE_FORMAT);
-    }
+    /** Writer for the AEM message format. */
+    private final AEMWriter aemWriter;
 
     /**
      * Create an AEM writer than streams data to the given output stream as
      * {@link #StreamingAemWriter(Appendable, TimeScale, Map)} with
      * {@link java.util.Formatter format parameters} for attitude ephemeris data.
      *
-     * @param writer    The output stream for the AEM file. Most methods will append data
-     *                  to this {@code writer}.
-     * @param conventions IERS Conventions
-     * @param dataContext used to retrieve frames, time scales, etc.
-     * @param header file header
-     * @param metadata  for the satellite.
-     * @param attitudeFormat format parameters for attitude ephemeris data output.
+     * @param appendable    The output stream for the AEM file. Most methods will append data
+     *                  to this {@code appendable}.
+     * @param aemWriter writer for the AEM message format
      * @since 10.3
      */
-    public StreamingAemWriter(final Appendable writer,
-                              final IERSConventions conventions, final DataContext dataContext,
-                              final Header header, final AEMMetadata metadata, final String attitudeFormat) {
-
-        this.writer      = writer;
-        this.dataContext = dataContext;
-        this.header      = header;
-        this.metadata    = metadata;
-
-        // Set default metadata
-        if (Double.isNaN(header.getFormatVersion())) {
-            header.setFormatVersion(CCSDS_AEM_VERS);
-        }
-
-        // creation date is informational only
-        if (header.getCreationDate() == null) {
-            final ZonedDateTime zdt = ZonedDateTime.now(ZoneOffset.UTC);
-            header.setCreationDate(new AbsoluteDate(zdt.getYear(), zdt.getMonthValue(), zdt.getDayOfMonth(),
-                                                    zdt.getHour(), zdt.getMinute(), zdt.getSecond(),
-                                                    dataContext.getTimeScales().getUTC()));
-        }
-        if (header.getOriginator() == null) {
-            header.setOriginator(DEFAULT_ORIGINATOR);
-        }
-        if (metadata.getTimeSystem() == null) {
-            metadata.setTimeSystem(DEFAULT_TIME_SYSTEM);
-        }
-        this.timeScale      = metadata.getTimeSystem().getTimeScale(conventions, dataContext.getTimeScales());
-        this.attitudeFormat = attitudeFormat;
-    }
-
-    /**
-     * Write a single key and value to the stream using Key Value Notation (KVN).
-     * @param key   the keyword to write
-     * @param value the value to write
-     * @throws IOException if an I/O error occurs.
-     */
-    private void writeKeyValue(final String key, final String value) throws IOException {
-        writer.append(String.format(STANDARDIZED_LOCALE, KV_FORMAT, key, value));
-    }
-
-    /**
-     * Convert a double value to string, without internationalizetion issues.
-     * @param value the value to convert
-     * @return converted string
-     */
-    private String toString(final double value) throws IOException {
-        return String.format(STANDARDIZED_LOCALE, "%f", value);
-    }
-
-    /**
-     * Writes the standard AEM header for the file.
-     * @throws IOException if the stream cannot write to stream
-     */
-    public void writeHeader() throws IOException {
-        writeKeyValue(AEMFile.FORMAT_VERSION_KEY, toString(header.getFormatVersion()));
-        for (String comment : header.getComments()) {
-            writer.append(String.format(COMMENT_FORMAT, comment));
-        }
-        writeKeyValue(HeaderKeyword.CREATION_DATE.name(),
-                      header.getCreationDate().toString(dataContext.getTimeScales().getUTC()));
-        writeKeyValue(HeaderKeyword.ORIGINATOR.name(),
-                      header.getOriginator());
-        writer.append(NEW_LINE);
+    public StreamingAemWriter(final Appendable appendable, final AEMWriter aemWriter) {
+        this.appendable = appendable;
+        this.aemWriter  = aemWriter;
     }
 
     /**
      * Create a writer for a new AEM attitude ephemeris segment.
      * <p> The returned writer can only write a single attitude ephemeris segment in an AEM.
      * This method must be called to create a writer for each attitude ephemeris segment.
-     * @param segmentMetadata the metadata to use for the segment. Overrides for this
-     *                        segment any other source of meta data values. See {@link
-     *                        #StreamingAemWriter} for a description of which metadata are
-     *                        required and how they are determined.
-     * @return a new AEM segment, ready for writing.
+     * @return a new AEM segment writer, ready for use.
      */
-    public SegmentWriter newSegment(final Map<Keyword, String> segmentMetadata) {
-        final Map<Keyword, String> meta = new LinkedHashMap<>(this.metadata);
-        meta.putAll(segmentMetadata);
-        return new SegmentWriter(meta);
-    }
-
-    /**
-     * Convert a date to a string with more precision.
-     *
-     * @param components to convert to a String.
-     * @return the String form of {@code date} with at least 9 digits of precision.
-     */
-    static String dateToString(final DateTimeComponents components) {
-        final TimeComponents time = components.getTime();
-        final int hour = time.getHour();
-        final int minute = time.getMinute();
-        final double second = time.getSecond();
-        // Decimal formatting classes could be static final if they were thread safe.
-        final DecimalFormatSymbols locale = new DecimalFormatSymbols(STANDARDIZED_LOCALE);
-        final DecimalFormat twoDigits = new DecimalFormat("00", locale);
-        final DecimalFormat precise = new DecimalFormat("00.0########", locale);
-        return components.getDate().toString() + "T" + twoDigits.format(hour) + ":" +
-                twoDigits.format(minute) + ":" + precise.format(second);
+    public SegmentWriter newSegment() {
+        return new SegmentWriter();
     }
 
     /** A writer for a segment of an AEM. */
     public class SegmentWriter implements OrekitFixedStepHandler {
 
-        /** Metadata for this AEM Segment. */
-        private final Map<Keyword, String> metadata;
-
-        /**
-         * Create a new segment writer.
-         * @param metadata to use when writing this segment.
-         */
-        private SegmentWriter(final Map<Keyword, String> metadata) {
-            this.metadata = metadata;
-        }
-
-        /**
-         * Write the ephemeris segment metadata.
-         *
-         * <p> See {@link StreamingAemWriter} for a description of how the metadata is
-         * set.
-         *
-         * @throws IOException if the output stream throws one while writing.
-         */
-        public void writeMetadata() throws IOException {
-            // Start metadata
-            writer.append("META_START").append(NEW_LINE);
-
-            // Table 4.3
-            writeKeyValue(Keyword.OBJECT_NAME,  this.metadata.get(Keyword.OBJECT_NAME));
-            writeKeyValue(Keyword.OBJECT_ID,    this.metadata.get(Keyword.OBJECT_ID));
-            writeKeyValue(Keyword.CENTER_NAME,  this.metadata.get(Keyword.CENTER_NAME));
-            writeKeyValue(Keyword.REF_FRAME_A,  this.metadata.get(Keyword.REF_FRAME_A));
-            writeKeyValue(Keyword.REF_FRAME_B,  this.metadata.get(Keyword.REF_FRAME_B));
-            writeKeyValue(Keyword.ATTITUDE_DIR, this.metadata.get(Keyword.ATTITUDE_DIR));
-            writeKeyValue(Keyword.TIME_SYSTEM,  this.metadata.get(Keyword.TIME_SYSTEM));
-            writeKeyValue(Keyword.START_TIME,   this.metadata.get(Keyword.START_TIME));
-
-            // Optional values: USEABLE_START_TIME & USEABLE_STOP_TIME
-            final String usableStartTime = this.metadata.get(Keyword.USEABLE_START_TIME);
-            if (usableStartTime != null) {
-                writeKeyValue(Keyword.USEABLE_START_TIME, usableStartTime);
-            }
-            final String usableStopTime = this.metadata.get(Keyword.USEABLE_STOP_TIME);
-            if (usableStopTime != null) {
-                writeKeyValue(Keyword.USEABLE_STOP_TIME, usableStopTime);
-            }
-
-            // Table 4.3
-            writeKeyValue(Keyword.STOP_TIME,     this.metadata.get(Keyword.STOP_TIME));
-            writeKeyValue(Keyword.ATTITUDE_TYPE, this.metadata.get(Keyword.ATTITUDE_TYPE));
-
-            // Optional values: QUATERNION_ TYPE; EULER_ROT_SEQ; RATE_FRAME; INTERPOLATION_METHOD and INTERPOLATION_DEGREE
-            final String quaternionType = this.metadata.get(Keyword.QUATERNION_TYPE);
-            if (quaternionType != null) {
-                writeKeyValue(Keyword.QUATERNION_TYPE, quaternionType);
-            }
-            final String eulerRotSeq = this.metadata.get(Keyword.EULER_ROT_SEQ);
-            if (eulerRotSeq != null) {
-                writeKeyValue(Keyword.EULER_ROT_SEQ, eulerRotSeq);
-            }
-            final String rateFrame = this.metadata.get(Keyword.RATE_FRAME);
-            if (rateFrame != null) {
-                writeKeyValue(Keyword.RATE_FRAME, rateFrame);
-            }
-            final String interpolationMethod = this.metadata.get(Keyword.INTERPOLATION_METHOD);
-            if (interpolationMethod != null) {
-                writeKeyValue(Keyword.INTERPOLATION_METHOD, interpolationMethod);
-            }
-            final String interpolationDegree = this.metadata.get(Keyword.INTERPOLATION_DEGREE);
-            if (interpolationDegree != null) {
-                writeKeyValue(Keyword.INTERPOLATION_DEGREE, interpolationDegree);
-            }
-
-            // Stop metadata
-            writer.append("META_STOP").append(NEW_LINE).append(NEW_LINE);
-        }
-
-        /**
-         * Write a single attitude ephemeris line according to section 4.2.4 and Table 4-4.
-         * @param attitude the attitude information for a given date.
-         * @param isFirst true if QC is the first element in the attitude data
-         * @param attitudeName name of the attitude type
-         * @param rotationOrder rotation order
-         * @throws IOException if the output stream throws one while writing.
-         */
-        public void writeAttitudeEphemerisLine(final TimeStampedAngularCoordinates attitude,
-                                               final boolean isFirst,
-                                               final String attitudeName,
-                                               final RotationOrder rotationOrder)
-            throws IOException {
-            // Epoch
-            final String epoch = dateToString(attitude.getDate().getComponents(timeScale));
-            writer.append(epoch).append(" ");
-            // Attitude data in degrees
-            final AEMAttitudeType type = AEMAttitudeType.parseAttitudeType(attitudeName);
-            final double[]        data = type.getAttitudeData(attitude, isFirst, rotationOrder);
-            final int             size = data.length;
-            for (int index = 0; index < size; index++) {
-                writer.append(String.format(STANDARDIZED_LOCALE, attitudeFormat, data[index]));
-                final String space = (index == size - 1) ? "" : " ";
-                writer.append(space);
-            }
-            // end the line
-            writer.append(NEW_LINE);
-        }
-
         /**
          * {@inheritDoc}
          *
-         * <p> Sets the {@link Keyword#START_TIME} and {@link Keyword#STOP_TIME} in this
+         * <p> Sets the {@link AEMMetadataKey#START_TIME} and {@link AEMMetadataKey#STOP_TIME} in this
          * segment's metadata if not already set by the user. Then calls {@link
          * #writeMetadata()} to start the segment.
          */
         @Override
-        public void init(final SpacecraftState s0,
-                         final AbsoluteDate t,
-                         final double step) {
+        public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {
             try {
-                final String start = dateToString(s0.getDate().getComponents(timeScale));
-                final String stop = dateToString(t.getComponents(timeScale));
-                this.metadata.putIfAbsent(Keyword.START_TIME, start);
-                this.metadata.putIfAbsent(Keyword.STOP_TIME, stop);
-                this.writeMetadata();
-                this.startAttitudeBlock();
+                if (t.isBefore(s0)) {
+                    throw new OrekitException(OrekitMessages.NON_CHRONOLOGICALLY_SORTED_ENTRIES, s0.getDate(), t);
+                }
+                aemWriter.writeMetadata(appendable, s0.getDate(), t);
+                aemWriter.startAttitudeBlock(appendable);
             } catch (IOException e) {
-                throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE,
-                                          e.getLocalizedMessage());
+                throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE, e.getLocalizedMessage());
             }
         }
 
@@ -531,55 +270,13 @@ public class StreamingAemWriter {
         @Override
         public void handleStep(final SpacecraftState currentState, final boolean isLast) {
             try {
-
-                // Quaternion type
-                final String quaternionType = this.metadata.get(Keyword.QUATERNION_TYPE);
-                // If the QUATERNION_TYPE keyword is not present in the file, this means that
-                // the attitude data are not given using quaternion. Therefore, the computation
-                // of the attitude data will not be sensitive to this parameter. A default value
-                // can be set
-                boolean isFirst = false;
-                if (quaternionType != null) {
-                    isFirst = (quaternionType.equals("FIRST")) ? true : false;
-                }
-
-                // Attitude type
-                final String attitudeType = this.metadata.get(Keyword.ATTITUDE_TYPE);
-
-                // Rotation order
-                final String eulerRotSeq = this.metadata.get(Keyword.EULER_ROT_SEQ);
-                final RotationOrder order = (eulerRotSeq == null) ?
-                                            null :
-                                            RotationOrder.valueOf(eulerRotSeq.replace('1', 'X').replace('2', 'Y').replace('3', 'Z'));
-
-                // Write attitude ephemeris data
-                writeAttitudeEphemerisLine(currentState.getAttitude().getOrientation(), isFirst,
-                                           attitudeType, order);
-
+                aemWriter.writeAttitudeEphemerisLine(appendable, currentState.getAttitude().getOrientation());
                 if (isLast) {
-                    endAttitudeBlock();
+                    aemWriter.endAttitudeBlock(appendable);
                 }
             } catch (IOException e) {
-                throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE,
-                        e.getLocalizedMessage());
+                throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE, e.getLocalizedMessage());
             }
-
-        }
-
-        /**
-         * Start of an attitude block.
-         * @throws IOException if the output stream throws one while writing.
-         */
-        void startAttitudeBlock() throws IOException {
-            writer.append("DATA_START").append(NEW_LINE);
-        }
-
-        /**
-         * End of an attitude block.
-         * @throws IOException if the output stream throws one while writing.
-         */
-        void endAttitudeBlock() throws IOException {
-            writer.append("DATA_STOP").append(NEW_LINE);
         }
 
     }

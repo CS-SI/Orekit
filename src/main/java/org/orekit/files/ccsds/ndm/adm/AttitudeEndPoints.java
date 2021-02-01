@@ -17,6 +17,9 @@
 package org.orekit.files.ccsds.ndm.adm;
 
 import org.orekit.attitudes.Attitude;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.ndm.adm.aem.AEMMetadataKey;
 import org.orekit.files.ccsds.utils.CCSDSBodyFrame;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 
@@ -42,7 +45,28 @@ public class AttitudeEndPoints {
     private boolean frameAIsExternal;
 
     /** Indicator for attitude direction in CCSDS ADM file. */
-    private boolean external2Local;
+    private Boolean external2Local;
+
+    /** Complain if a field is null.
+     * @param field field to check
+     * @param key key associated with the field
+     */
+    private void checkNotNull(final Object field, final Enum<?> key) {
+        if (field == null) {
+            throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, key.name());
+        }
+    }
+
+    /** Check is all mandatory entries have been initialized.
+     * <p>
+     * This method should throw an exception if some mandatory entry is missing
+     * </p>
+     */
+    public void checkMandatoryEntries() {
+        checkNotNull(externalFrame, isLocalSuffix('B') ? AEMMetadataKey.REF_FRAME_A : AEMMetadataKey.REF_FRAME_B);
+        checkNotNull(localFrame,    isLocalSuffix('A') ? AEMMetadataKey.REF_FRAME_A : AEMMetadataKey.REF_FRAME_B);
+        checkNotNull(isExternal2Local(), AEMMetadataKey.ATTITUDE_DIR);
+    }
 
     /** Get the external frame.
      * @return external frame suitable for reference for Orekit {@link Attitude}
@@ -59,14 +83,14 @@ public class AttitudeEndPoints {
     }
 
     /** Set reference frame A.
-     * @param name name of reference frame A
+     * @param name name of reference frame A, as a normalized string
      */
     public void setFrameA(final String name) {
         frameAIsExternal = setFrame(name);
     }
 
     /** Set reference frame B.
-     * @param name name of reference frame B
+     * @param name name of reference frame B, as a normalized string
      */
     public void setFrameB(final String name) {
         setFrame(name);
@@ -74,7 +98,7 @@ public class AttitudeEndPoints {
 
     /** Check if a suffix corresponds to local frame.
      * @param suffix suffix to check
-     * @return true if suffix corresponds to local frame
+     * @return true if suffix corresponds to local frame, null if direction not set
      */
     public boolean isLocalSuffix(final char suffix) {
         return frameAIsExternal ^ (suffix == 'A');

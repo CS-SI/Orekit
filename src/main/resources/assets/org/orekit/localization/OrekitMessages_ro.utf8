@@ -638,3 +638,6 @@ CRD_UNEXPECTED_END_OF_FILE = Sfârșit neașteptat al fișierului CRD (după lin
 
 # {0} is not a valid international designator
 NOT_VALID_INTERNATIONAL_DESIGNATOR = <MISSING TRANSLATION>
+
+# value for key {0} has not been initialized
+UNINITIALIZED_VALUE_FOR_KEY = <MISSING TRANSLATION>

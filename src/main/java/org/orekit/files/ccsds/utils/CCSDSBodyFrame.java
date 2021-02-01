@@ -82,6 +82,18 @@ public class CCSDSBodyFrame {
         return label;
     }
 
+    /** {@inheritDoc}
+     * <p>
+     * The CCSDS composite name combines the {@link #getgetBaseEquipment base equipment}
+     * and the {@link #getLabel()}
+     * </p>
+     * @return CCSDS composite name, as a normalized string
+     */
+    @Override
+    public String toString() {
+        return getBaseEquipment().name().replace('_', ' ') + " " + getLabel();
+    }
+
     /** Build an instance from a normalized descriptor.
      * <p>
      * Normalized strings have '_' characters replaced by spaces,

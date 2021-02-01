@@ -46,7 +46,7 @@ public class AEMMetadata extends ADMMetadata {
     private AEMAttitudeType attitudeType;
 
     /** The placement of the scalar portion of the quaternion (QC) in the attitude data. */
-    private boolean isFirst;
+    private Boolean isFirst;
 
     /** The rotation sequence of the Euler angles. */
     private RotationOrder eulerRotSeq;
@@ -66,6 +66,28 @@ public class AEMMetadata extends ADMMetadata {
     public AEMMetadata(final int defaultInterpolationDegree) {
         endPoints           = new AttitudeEndPoints();
         interpolationDegree = defaultInterpolationDegree;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void checkMandatoryEntries() {
+        super.checkMandatoryEntries();
+        endPoints.checkMandatoryEntries();
+        checkNotNull(startTime,    AEMMetadataKey.START_TIME);
+        checkNotNull(stopTime,     AEMMetadataKey.STOP_TIME);
+        checkNotNull(attitudeType, AEMMetadataKey.ATTITUDE_TYPE);
+        if (attitudeType == AEMAttitudeType.QUATERNION ||
+            attitudeType == AEMAttitudeType.QUATERNION_DERIVATIVE) {
+            checkNotNull(isFirst, AEMMetadataKey.QUATERNION_TYPE);
+        }
+        if (attitudeType == AEMAttitudeType.EULER_ANGLE ||
+            attitudeType == AEMAttitudeType.EULER_ANGLE_RATE) {
+            checkNotNull(eulerRotSeq, AEMMetadataKey.EULER_ROT_SEQ);
+        }
+        if (attitudeType == AEMAttitudeType.QUATERNION_RATE ||
+            attitudeType == AEMAttitudeType.EULER_ANGLE_RATE) {
+            checkNotNull(localRates, AEMMetadataKey.RATE_FRAME);
+        }
     }
 
     /** Get the attitude end points.
@@ -114,9 +136,10 @@ public class AEMMetadata extends ADMMetadata {
     /**
      * Get the flag for the placement of the quaternion QC in the attitude data.
      *
-     * @return true if QC is the first element in the attitude data
+     * @return true if QC is the first element in the attitude data,
+     * null if not initialized
      */
-    public boolean isFirst() {
+    public Boolean isFirst() {
         return isFirst;
     }
 

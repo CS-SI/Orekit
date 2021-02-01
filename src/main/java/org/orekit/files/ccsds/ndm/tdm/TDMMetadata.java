@@ -20,6 +20,8 @@ package org.orekit.files.ccsds.ndm.tdm;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.section.Metadata;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -192,6 +194,15 @@ public class TDMMetadata extends Metadata {
         participants   = new TreeMap<>();
         transmitDelays = new TreeMap<>();
         receiveDelays  = new TreeMap<>();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void checkMandatoryEntries() {
+        super.checkMandatoryEntries();
+        if (participants.isEmpty()) {
+            throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, TDMMetadataKey.PARTICIPANT_1);
+        }
     }
 
     /** Getter for the startTime.

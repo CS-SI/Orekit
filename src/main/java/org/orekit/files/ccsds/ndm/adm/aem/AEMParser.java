@@ -120,7 +120,7 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> {
     /** {@inheritDoc} */
     @Override
     public void finalizeHeader() {
-        // nothing to do
+        file.getHeader().checkMandatoryEntries();
     }
 
     /** {@inheritDoc} */
@@ -144,7 +144,7 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> {
     /** {@inheritDoc} */
     @Override
     public void finalizeMetadata() {
-        // nothing to do
+        metadata.checkMandatoryEntries();
     }
 
     /** {@inheritDoc} */
@@ -164,6 +164,7 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> {
     @Override
     public void finalizeData() {
         if (metadata != null) {
+            currentBlock.checkMandatoryEntries();
             file.addSegment(new AEMSegment(metadata, currentBlock,
                                            getConventions(), isSimpleEOP(), getDataContext()));
         }

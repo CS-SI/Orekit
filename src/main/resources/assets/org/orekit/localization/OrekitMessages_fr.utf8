@@ -638,3 +638,6 @@ CRD_UNEXPECTED_END_OF_FILE = Fin de fichier CRD inattendue (après la ligne {0})
 
 # {0} is not a valid international designator
 NOT_VALID_INTERNATIONAL_DESIGNATOR = {0} n''est pas un numéro d''immatriculation international valide
+
+# value for key {0} has not been initialized
+UNINITIALIZED_VALUE_FOR_KEY = valeur non initialisée pour la clef {0}

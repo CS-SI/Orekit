@@ -43,6 +43,13 @@ public class Metadata extends CommentsContainer {
         this.timeSystem = defaultTimeSystem;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void checkMandatoryEntries() {
+        super.checkMandatoryEntries();
+        checkNotNull(timeSystem, MetadataKey.TIME_SYSTEM);
+    }
+
     /** Get the Time System that: for OPM, is used for metadata, state vector,
      * maneuver and covariance data, for OMM, is used for metadata, orbit state
      * and covariance data, for OEM, is used for metadata, ephemeris and

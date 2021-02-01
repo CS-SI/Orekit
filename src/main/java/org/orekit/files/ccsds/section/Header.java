@@ -16,10 +16,6 @@
  */
 package org.orekit.files.ccsds.section;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.orekit.time.AbsoluteDate;
 
 /**
@@ -27,13 +23,10 @@ import org.orekit.time.AbsoluteDate;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class Header {
+public class Header extends CommentsContainer {
 
     /** CCSDS Format version. */
     private double formatVersion;
-
-    /** Header comments. The list contains a string for each line of comment. */
-    private List<String> comments;
 
     /** File creation date and time in UTC. */
     private AbsoluteDate creationDate;
@@ -46,7 +39,14 @@ public class Header {
      */
     public Header() {
         formatVersion = Double.NaN;
-        comments      = new ArrayList<>();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void checkMandatoryEntries() {
+        super.checkMandatoryEntries();
+        checkNotNull(creationDate, HeaderKey.CREATION_DATE);
+        checkNotNull(originator,   HeaderKey.ORIGINATOR);
     }
 
     /**
@@ -66,22 +66,6 @@ public class Header {
     }
 
     /**
-     * Get the header comments.
-     * @return header comments
-     */
-    public List<String> getComments() {
-        return Collections.unmodifiableList(comments);
-    }
-
-    /**
-     * Add header comment.
-     * @param comment comment line
-     */
-    public void addComment(final String comment) {
-        this.comments.add(comment);
-    }
-
-    /**
      * Get the file creation date and time in UTC.
      * @return the file creation date and time in UTC.
      */
@@ -94,6 +78,7 @@ public class Header {
      * @param creationDate the creation date to be set
      */
     public void setCreationDate(final AbsoluteDate creationDate) {
+        refuseFurtherComments();
         this.creationDate = creationDate;
     }
 
@@ -110,6 +95,7 @@ public class Header {
      * @param originator the originator to be set
      */
     public void setOriginator(final String originator) {
+        refuseFurtherComments();
         this.originator = originator;
     }
 

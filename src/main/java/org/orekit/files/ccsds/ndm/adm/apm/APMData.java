@@ -21,13 +21,14 @@ import java.util.Collections;
 import java.util.List;
 
 import org.orekit.files.ccsds.section.Data;
+import org.orekit.files.ccsds.section.Section;
 
 /**
  * Container for Attitude Parameter Message data.
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class APMData implements Data {
+public class APMData implements Data, Section {
 
     /** Quaternion block. */
     private final APMQuaternion quaternionBlock;
@@ -59,6 +60,24 @@ public class APMData implements Data {
         this.spinStabilizedBlock  = spinStabilizedBlock;
         this.spacecraftParameters = spacecraftParameters;
         this.maneuvers            = new ArrayList<>();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void checkMandatoryEntries() {
+        quaternionBlock.checkMandatoryEntries();
+        if (eulerBlock != null) {
+            eulerBlock.checkMandatoryEntries();
+        }
+        if (spinStabilizedBlock != null) {
+            spinStabilizedBlock.checkMandatoryEntries();
+        }
+        if (spacecraftParameters != null) {
+            spacecraftParameters.checkMandatoryEntries();
+        }
+        for (final APMManeuver maneuver : maneuvers) {
+            maneuver.checkMandatoryEntries();
+        }
     }
 
     /** Get the quaternion logical block.

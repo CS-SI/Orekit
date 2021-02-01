@@ -16,6 +16,8 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndPoints;
 import org.orekit.files.ccsds.section.CommentsContainer;
 
@@ -54,6 +56,30 @@ public class APMSpinStabilized extends CommentsContainer {
      */
     public APMSpinStabilized() {
         this.endPoints = new AttitudeEndPoints();
+        spinAlpha      = Double.NaN;
+        spinDelta      = Double.NaN;
+        spinAngle      = Double.NaN;
+        spinAngleVel   = Double.NaN;
+        nutation       = Double.NaN;
+        nutationPer    = Double.NaN;
+        nutationPhase  = Double.NaN;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void checkMandatoryEntries() {
+        super.checkMandatoryEntries();
+        endPoints.checkMandatoryEntries();
+        checkNotNaN(spinAlpha,    APMSpinStabilizedKey.SPIN_ALPHA);
+        checkNotNaN(spinDelta,    APMSpinStabilizedKey.SPIN_DELTA);
+        checkNotNaN(spinAngle,    APMSpinStabilizedKey.SPIN_ANGLE);
+        checkNotNaN(spinAngleVel, APMSpinStabilizedKey.SPIN_ANGLE_VEL);
+        if (Double.isNaN(nutation + nutationPer + nutationPhase)) {
+            // if at least one is NaN, all must be NaN (i.e. not initialized)
+            if (!(Double.isNaN(nutation) && Double.isNaN(nutationPer) && Double.isNaN(nutationPhase))) {
+                throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, "NUTATION*");
+            }
+        }
     }
 
     /** Get the attitude end points.

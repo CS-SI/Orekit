@@ -50,6 +50,14 @@ public class ADMMetadata extends Metadata {
         super(null);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void checkMandatoryEntries() {
+        super.checkMandatoryEntries();
+        checkNotNull(objectName, ADMMetadataKey.OBJECT_NAME);
+        checkNotNull(objectID,   ADMMetadataKey.OBJECT_ID);
+    }
+
     /**
      * Get the spacecraft name for which the attitude data are provided.
      * @return the spacecraft name

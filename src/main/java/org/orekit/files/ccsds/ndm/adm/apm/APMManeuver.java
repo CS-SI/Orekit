@@ -45,8 +45,21 @@ public class APMManeuver extends CommentsContainer {
      * Simple constructor.
      */
     public APMManeuver() {
-        torque = new double[3];
+        duration = Double.NaN;
+        torque   = new double[3];
         Arrays.fill(torque, Double.NaN);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void checkMandatoryEntries() {
+        super.checkMandatoryEntries();
+        checkNotNull(epochStart,     APMManeuverKey.MAN_EPOCH_START);
+        checkNotNaN(duration,        APMManeuverKey.MAN_DURATION);
+        checkNotNull(refFrameString, APMManeuverKey.MAN_REF_FRAME);
+        checkNotNaN(torque[0],       APMManeuverKey.MAN_TOR_1);
+        checkNotNaN(torque[1],       APMManeuverKey.MAN_TOR_2);
+        checkNotNaN(torque[2],       APMManeuverKey.MAN_TOR_3);
     }
 
     /**
@@ -108,6 +121,7 @@ public class APMManeuver extends CommentsContainer {
                  refFrameString == null ||
                  Double.isNaN(duration + torque[0] + torque[1] + torque[2]));
     }
+
     /**
      * Get the torque vector (N.m).
      * @return torque vector

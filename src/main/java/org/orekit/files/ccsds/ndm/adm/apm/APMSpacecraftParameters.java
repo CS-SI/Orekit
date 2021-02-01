@@ -46,6 +46,31 @@ public class APMSpacecraftParameters extends CommentsContainer {
     /** Inertia Cross Product of the 2 and 3 axes (kg.m²). */
     private double i23;
 
+    /** Simple constructor.
+     */
+    public APMSpacecraftParameters() {
+        inertiaRefFrame = null;
+        i11             = Double.NaN;
+        i22             = Double.NaN;
+        i33             = Double.NaN;
+        i12             = Double.NaN;
+        i13             = Double.NaN;
+        i23             = Double.NaN;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void checkMandatoryEntries() {
+        super.checkMandatoryEntries();
+        checkNotNull(inertiaRefFrame, APMSpacecraftParametersKey.INERTIA_REF_FRAME);
+        checkNotNaN(i11,              APMSpacecraftParametersKey.I11);
+        checkNotNaN(i22,              APMSpacecraftParametersKey.I22);
+        checkNotNaN(i33,              APMSpacecraftParametersKey.I33);
+        checkNotNaN(i12,              APMSpacecraftParametersKey.I12);
+        checkNotNaN(i13,              APMSpacecraftParametersKey.I13);
+        checkNotNaN(i23,              APMSpacecraftParametersKey.I23);
+    }
+
     /**
      * Get the coordinate system for the inertia tensor.
      * @return the coordinate system for the inertia tensor

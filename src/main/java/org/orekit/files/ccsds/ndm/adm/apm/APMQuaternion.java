@@ -21,6 +21,8 @@ import org.hipparchus.complex.Quaternion;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.orekit.attitudes.Attitude;
 import org.orekit.data.DataContext;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndPoints;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.frames.Frame;
@@ -53,6 +55,24 @@ public class APMQuaternion extends CommentsContainer {
         endPoints = new AttitudeEndPoints();
         q         = new double[4];
         qDot      = new double[4];
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void checkMandatoryEntries() {
+        super.checkMandatoryEntries();
+        endPoints.checkMandatoryEntries();
+        if (Double.isNaN(q[0] + q[1] + q[2] + q[3])) {
+            throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, "Q{C|1|2|3}");
+        }
+        if (Double.isNaN(qDot[0] + qDot[1] + qDot[2] + qDot[3])) {
+            // if at least one is NaN, all must be NaN (i.e. not initialized)
+            for (final double qD : qDot) {
+                if (!Double.isNaN(qD)) {
+                    throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, "Q{C|1|2|3}_DOT");
+                }
+            }
+        }
     }
 
     /**

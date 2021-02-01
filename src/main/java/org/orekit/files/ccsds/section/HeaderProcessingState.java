@@ -16,13 +16,15 @@
  */
 package org.orekit.files.ccsds.section;
 
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.utils.CcsdsTimeScale;
+import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.state.AbstractMessageParser;
 import org.orekit.files.ccsds.utils.state.ProcessingState;
-import org.orekit.time.AbsoluteDate;
 
 /** {@link ProcessingState} for {@link Header NDM header}.
  * @author Luc Maisonobe
@@ -30,14 +32,19 @@ import org.orekit.time.AbsoluteDate;
  */
 public class HeaderProcessingState implements ProcessingState {
 
+    /** Parsing context for header. */
+    private final ParsingContext context;
+
     /** Parser for the complete message. */
     private final AbstractMessageParser<?, ?> parser;
 
     /** Simple constructor.
+     * @param dataContext used to retrieve frames, time scales, etc.
      * @param parser parser for the complete message
      */
-    public HeaderProcessingState(final AbstractMessageParser<?, ?> parser) {
-        this.parser = parser;
+    public HeaderProcessingState(final DataContext dataContext, final AbstractMessageParser<?, ?> parser) {
+        this.context = new ParsingContext(() -> null, () -> true, () -> dataContext, () -> null, () -> CcsdsTimeScale.UTC);
+        this.parser  = parser;
     }
 
     /** {@inheritDoc} */
@@ -57,32 +64,12 @@ public class HeaderProcessingState implements ProcessingState {
             }
         }
 
-        switch (token.getName()) {
-
-            case "COMMENT" :
-                if (parser.getHeader().getCreationDate() != null) {
-                    // we have already processed some content in the block
-                    // the comment belongs to the next block
-                    return false;
-                }
-                token.processAsFreeTextString(parser.getHeader()::addComment);
-                return true;
-
-            case "CREATION_DATE" :
-                if (token.getType() == TokenType.ENTRY) {
-                    parser.getHeader().setCreationDate(new AbsoluteDate(token.getContent(),
-                                                                        parser.getDataContext().getTimeScales().getUTC()));
-                }
-                return true;
-
-            case "ORIGINATOR" :
-                token.processAsNormalizedString(parser.getHeader()::setOriginator);
-                return true;
-
-            default :
-                // we were not able to parse the token, delegate to fallback state
-                return false;
-
+        try {
+            return token.getName() != null &&
+                   HeaderKey.valueOf(token.getName()).process(token, context, parser.getHeader());
+        } catch (IllegalArgumentException iae) {
+            // token has not been recognized
+            return false;
         }
 
     }
