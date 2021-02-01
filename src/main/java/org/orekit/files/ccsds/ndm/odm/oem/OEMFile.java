@@ -78,7 +78,7 @@ public class OEMFile extends ODMFile<OEMSegment> implements EphemerisFile {
             if (referenceTimeSystem == null) {
                 referenceTimeSystem = timeSystem;
             } else if (!referenceTimeSystem.equals(timeSystem)) {
-                throw new OrekitException(OrekitMessages.CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS,
+                throw new OrekitException(OrekitMessages.CCSDS_INCONSISTENT_TIME_SYSTEMS,
                                           referenceTimeSystem, timeSystem);
             }
         }

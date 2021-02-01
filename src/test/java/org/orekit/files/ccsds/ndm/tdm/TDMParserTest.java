@@ -325,7 +325,7 @@ public class TDMParserTest {
                                                                                                              DataContext.getDefault(), null));
             Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_TDM_INCONSISTENT_TIME_SYSTEMS, oe.getSpecifier());
+            Assert.assertEquals(OrekitMessages.CCSDS_INCONSISTENT_TIME_SYSTEMS, oe.getSpecifier());
             Assert.assertEquals(CcsdsTimeScale.UTC, oe.getParts()[0]);
             Assert.assertEquals(CcsdsTimeScale.TCG, oe.getParts()[1]);
         }
@@ -340,7 +340,7 @@ public class TDMParserTest {
                                                                                                              DataContext.getDefault(), null));
             Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_TDM_INCONSISTENT_TIME_SYSTEMS, oe.getSpecifier());
+            Assert.assertEquals(OrekitMessages.CCSDS_INCONSISTENT_TIME_SYSTEMS, oe.getSpecifier());
             Assert.assertEquals(CcsdsTimeScale.UTC, oe.getParts()[0]);
             Assert.assertEquals(CcsdsTimeScale.TCG, oe.getParts()[1]);
         }

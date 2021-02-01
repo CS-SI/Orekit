@@ -59,7 +59,7 @@ public class TDMFile extends NDMFile<Header, Segment<TDMMetadata, ObservationsBl
             if (referenceTimeSystem == null) {
                 referenceTimeSystem = timeSystem;
             } else if (!referenceTimeSystem.equals(timeSystem)) {
-                throw new OrekitException(OrekitMessages.CCSDS_TDM_INCONSISTENT_TIME_SYSTEMS,
+                throw new OrekitException(OrekitMessages.CCSDS_INCONSISTENT_TIME_SYSTEMS,
                                           referenceTimeSystem, timeSystem);
             }
         }

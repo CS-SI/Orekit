@@ -110,7 +110,7 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new KVNStructureProcessingState(this);
-            reset(fileFormat, new HeaderProcessingState(this));
+            reset(fileFormat, new HeaderProcessingState(getDataContext(), this));
         }
     }
 
@@ -124,7 +124,7 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
     /** {@inheritDoc} */
     @Override
     public void prepareHeader() {
-        setFallback(new HeaderProcessingState(this));
+        setFallback(new HeaderProcessingState(getDataContext(), this));
     }
 
     /** {@inheritDoc} */

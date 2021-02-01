@@ -331,11 +331,8 @@ CCSDS_UNKNOWN_CONVENTIONS = ingen IERS-konventioner er angivet før indlæsninge
 # frame {0} is not valid in this CCSDS file context
 CCSDS_INVALID_FRAME = ramme {0} er ikke gyldig i denne CCSDS fils kontekst
 
-# inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
-CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = modstridende tidssystemer i efemerideblokkene: {0} ≠ {1}
-
-# Inconsistent time systems in the observations blocks: {0} ≠ {1}
-CCSDS_TDM_INCONSISTENT_TIME_SYSTEMS = Ikke konsistente tidssystemer i observationsblokkene: {0} ≠ {1}
+# inconsistent time systems: {0} ≠ {1}
+CCSDS_INCONSISTENT_TIME_SYSTEMS = Ikke konsistente tidssystemer: {0} ≠ {1}
 
 # No CCSDS TDM keyword was found at line {0} of file {1}:\n{2}
 CCSDS_TDM_KEYWORD_NOT_FOUND = Intet CCSDS TDM nøgleord blev fundet i linje {0} af fil {1}:\n{2}

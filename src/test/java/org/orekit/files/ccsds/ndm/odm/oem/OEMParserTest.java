@@ -383,7 +383,7 @@ public class OEMParserTest {
             withMu(CelestialBodyFactory.getMars().getGM()).
             parse(getClass().getResourceAsStream("/ccsds/odm/oem/OEM-inconsistent-time-systems.txt"));
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS, oe.getSpecifier());
+            Assert.assertEquals(OrekitMessages.CCSDS_INCONSISTENT_TIME_SYSTEMS, oe.getSpecifier());
             Assert.assertEquals(CcsdsTimeScale.UTC, oe.getParts()[0]);
             Assert.assertEquals(CcsdsTimeScale.TCG, oe.getParts()[1]);
         }

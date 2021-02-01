@@ -331,11 +331,8 @@ CCSDS_UNKNOWN_CONVENTIONS = le convenzioni IERS non sono state inizializzate pri
 # frame {0} is not valid in this CCSDS file context
 CCSDS_INVALID_FRAME = il sistema di riferimento {0} non è valido in questo contesto del file CCSDS
 
-# inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
-CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = sistemi temporali incoerenti nei blocchi di effemeridi: {0} ≠ {1}
-
-# Inconsistent time systems in the observations blocks: {0} ≠ {1}
-CCSDS_TDM_INCONSISTENT_TIME_SYSTEMS = sistemi temporali incoerenti nei blocchi d''osservazione: {0} ≠ {1}
+# inconsistent time systems: {0} ≠ {1}
+CCSDS_INCONSISTENT_TIME_SYSTEMS = sistemi temporali incoerenti: {0} ≠ {1}
 
 # No CCSDS TDM keyword was found at line {0} of file {1}:\n{2}
 CCSDS_TDM_KEYWORD_NOT_FOUND = nessuna parola chiave CCSDS TDM trovata alla linea {0} del file {1}:\n{2}
