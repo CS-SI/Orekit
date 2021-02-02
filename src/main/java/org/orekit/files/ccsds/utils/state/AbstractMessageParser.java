@@ -35,7 +35,7 @@ public abstract class AbstractMessageParser<T extends NDMFile<?, ?>, P extends A
     implements MessageParser<T> {
 
     /** Safety limit for loop over processing states. */
-    private final int MAX_LOOP = 100;
+    private static final int MAX_LOOP = 100;
 
     /** Key for format version. */
     private final String formatVersionKey;

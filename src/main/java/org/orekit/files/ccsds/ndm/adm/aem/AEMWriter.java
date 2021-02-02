@@ -615,7 +615,7 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
         writeKeyValue(appendable, AEMMetadataKey.ATTITUDE_TYPE.name(), attitudeType.toString(), true);
         if (attitudeType == AEMAttitudeType.QUATERNION ||
             attitudeType == AEMAttitudeType.QUATERNION_DERIVATIVE ||
-            attitudeType == AEMAttitudeType.QUATERNION_DERIVATIVE) {
+            attitudeType == AEMAttitudeType.QUATERNION_RATE) {
             writeKeyValue(appendable, AEMMetadataKey.QUATERNION_TYPE.name(), metadata.isFirst() ? FIRST : LAST, false);
         }
 
