@@ -16,6 +16,10 @@
  */
 package org.orekit.files.ccsds.ndm.adm.aem;
 
+import java.util.Locale;
+
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -30,6 +34,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.ParsingContext;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
@@ -301,6 +306,89 @@ public class AEMAttitudeTypeTest {
 
         // Verify angular derivative filter
         Assert.assertEquals(AngularDerivativesFilter.USE_RR, eulerAngleRate.getAngularDerivativesFilter());
+    }
+
+    @Test
+    public void testSymmetryQuaternion() {
+        doTestSymmetry(AEMAttitudeType.QUATERNION, 0.1, 0.2, 0.3, -0.7, 0.02, -0.05, 0.1, -0.04,
+                       2.0e-16, Double.NaN);
+    }
+
+    @Test
+    public void testSymmetryQuaternionDerivative() {
+        doTestSymmetry(AEMAttitudeType.QUATERNION_DERIVATIVE, 0.1, 0.2, 0.3, -0.7, 0.02, -0.05, 0.1, -0.04,
+                       2.0e-16, 8.0e-17);
+    }
+
+    @Test
+    public void testSymmetryQuaternionRate() {
+        doTestSymmetry(AEMAttitudeType.QUATERNION_RATE, 0.1, 0.2, 0.3, -0.7, 0.02, -0.05, 0.1, -0.04,
+                       2.0e-16, 9.0e-17);
+    }
+
+    @Test
+    public void testSymmetryEulerAngle() {
+        doTestSymmetry(AEMAttitudeType.EULER_ANGLE, 0.1, 0.2, 0.3, -0.7, 0.02, -0.05, 0.1, -0.04,
+                       2.0e-15, Double.NaN);
+    }
+
+    @Test
+    public void testSymmetryEulerAngleRate() {
+        doTestSymmetry(AEMAttitudeType.EULER_ANGLE_RATE, 0.1, 0.2, 0.3, -0.7, 0.02, -0.05, 0.1, -0.04,
+                       2.0e-15, 3.0e-16);
+    }
+
+    private void doTestSymmetry(AEMAttitudeType type,
+                                double q0, double q1, double q2, double q3,
+                                double q0Dot, double q1Dot, double q2Dot, double q3Dot,
+                                double tolAngle, double tolRate) {
+        TimeStampedAngularCoordinates tac =
+                        new TimeStampedAngularCoordinates(AbsoluteDate.GLONASS_EPOCH,
+                                                          new FieldRotation<>(new UnivariateDerivative1(q0, q0Dot),
+                                                                              new UnivariateDerivative1(q1, q1Dot),
+                                                                              new UnivariateDerivative1(q2, q2Dot),
+                                                                              new UnivariateDerivative1(q3, q3Dot),
+                                                                              true));
+        for (RotationOrder order : RotationOrder.values()) {
+            checkSymmetry(type, tac, true,  true,  order, true,  tolAngle, tolRate);
+            checkSymmetry(type, tac, true,  true,  order, false, tolAngle, tolRate);
+            checkSymmetry(type, tac, true,  false, order, true,  tolAngle, tolRate);
+            checkSymmetry(type, tac, true,  false, order, false, tolAngle, tolRate);
+            checkSymmetry(type, tac, false, true,  order, true,  tolAngle, tolRate);
+            checkSymmetry(type, tac, false, true,  order, false, tolAngle, tolRate);
+            checkSymmetry(type, tac, false, false, order, true,  tolAngle, tolRate);
+            checkSymmetry(type, tac, false, false, order, false, tolAngle, tolRate);
+        }
+    }
+
+    private void checkSymmetry(AEMAttitudeType type, TimeStampedAngularCoordinates tac,
+                               boolean localRates, boolean isFirst, RotationOrder order, boolean ext2Local,
+                               double tolAngle, double tolRate) {
+        ParsingContext context = new ParsingContext(() -> IERSConventions.IERS_2010,
+                                                    () -> true,
+                                                    () -> DataContext.getDefault(),
+                                                    () -> null,
+                                                    () -> CcsdsTimeScale.UTC);
+        AEMMetadata metadata = new AEMMetadata(3);
+        metadata.setLocalRates(localRates);
+        metadata.setIsFirst(isFirst);
+        metadata.setEulerRotSeq(order);
+        metadata.getEndPoints().setExternal2Local(ext2Local);
+        double[] dData = type.getAttitudeData(tac, metadata);
+        String[] sData = new String[1 + dData.length];
+        sData[0] = tac.getDate().toString(context.
+                                          getTimeScale().
+                                          getTimeScale(context.getConventions(),
+                                                       context.getDataContext().getTimeScales()));
+        for (int i = 0; i < dData.length; ++i) {
+            sData[i + 1] = String.format(Locale.US, "%21.15e", dData[i]);
+        }
+        TimeStampedAngularCoordinates rebuilt = type.parse(metadata, context, sData, "");
+        TimeStampedAngularCoordinates diff = tac.addOffset(rebuilt.revert());
+        Assert.assertEquals(0.0, diff.getRotation().getAngle(),    tolAngle);
+        if (type.getAngularDerivativesFilter() != AngularDerivativesFilter.USE_R) {
+            Assert.assertEquals(0.0, diff.getRotationRate().getNorm(), tolRate);
+        }
     }
 
     @Test(expected = IllegalArgumentException.class)
