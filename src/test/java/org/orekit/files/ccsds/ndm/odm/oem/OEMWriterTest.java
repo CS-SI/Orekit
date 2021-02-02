@@ -42,6 +42,7 @@ import org.junit.rules.TemporaryFolder;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.odm.oem.OEMWriter.InterpolationMethod;
 import org.orekit.files.general.EphemerisFile;
@@ -201,8 +202,8 @@ public class OEMWriterTest {
         try {
             writer1.write(tempOEMFilePath, ephemerisFile);
             fail("Should have thrown OrekitIllegalArgumentException due to multiple satellites");
-        } catch (OrekitIllegalArgumentException e) {
-            assertEquals(OrekitMessages.EPHEMERIS_FILE_NO_MULTI_SUPPORT, e.getSpecifier());
+        } catch (OrekitInternalError o) {
+            // expected
         }
 
         tempOEMFilePath = tempFolder.newFile("TestOEMMultisatellite-2.oem").toString();

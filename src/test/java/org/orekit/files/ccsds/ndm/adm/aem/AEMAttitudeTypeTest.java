@@ -53,6 +53,7 @@ public class AEMAttitudeTypeTest {
                                        () -> null,
                                        metadata::getTimeSystem);
         metadata.setTimeSystem(CcsdsTimeScale.TAI);
+        metadata.getEndPoints().setExternal2Local(true);
     }
 
     @After
@@ -78,7 +79,7 @@ public class AEMAttitudeTypeTest {
         }
         // Test exception on the second method
         try {
-            spin.getAttitudeData(null,false, true, null);
+            spin.getAttitudeData(null, new AEMMetadata(1));
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
             Assert.assertEquals(AEMAttitudeType.SPIN.name(), oe.getParts()[0]);
@@ -109,7 +110,7 @@ public class AEMAttitudeTypeTest {
         }
         // Test exception on the second method
         try {
-            spinNutation.getAttitudeData(null,false, true, null);
+            spinNutation.getAttitudeData(null, new AEMMetadata(1));
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
             Assert.assertEquals(AEMAttitudeType.SPIN_NUTATION.name(), oe.getParts()[0]);
@@ -140,7 +141,11 @@ public class AEMAttitudeTypeTest {
         Assert.assertEquals(0.45689, tsac.getRotation().getQ3(), QUATERNION_PRECISION);
 
         // Test computation of attitude data from angular coordinates
-        final double[] attitudeDataBis = quaternion.getAttitudeData(tsac, true, true, null);
+        AEMMetadata metadata = new AEMMetadata(3);
+        metadata.setIsFirst(true);
+        metadata.setLocalRates(true);
+        metadata.getEndPoints().setExternal2Local(true);
+        final double[] attitudeDataBis = quaternion.getAttitudeData(tsac, metadata);
         for (int i = 0; i < attitudeDataBis.length; i++) {
             Assert.assertEquals(Double.parseDouble(attitudeData[i + 1]), attitudeDataBis[i], QUATERNION_PRECISION);
         }
@@ -166,7 +171,11 @@ public class AEMAttitudeTypeTest {
         Assert.assertEquals(0.45689,    tsac.getRotation().getQ3(),    QUATERNION_PRECISION);
 
         // Test computation of attitude data from angular coordinates
-        final double[] attitudeDataBis = quaternion.getAttitudeData(tsac, true, true, null);
+        AEMMetadata metadata = new AEMMetadata(3);
+        metadata.setIsFirst(true);
+        metadata.setLocalRates(true);
+        metadata.getEndPoints().setExternal2Local(true);
+        final double[] attitudeDataBis = quaternion.getAttitudeData(tsac, metadata);
         for (int i = 0; i < attitudeDataBis.length; i++) {
             Assert.assertEquals(Double.parseDouble(attitudeData[i + 1]), attitudeDataBis[i], QUATERNION_PRECISION);
         }
@@ -197,7 +206,11 @@ public class AEMAttitudeTypeTest {
         Assert.assertEquals(FastMath.toRadians(37.9), rebuiltRate.getZ(), ANGLE_PRECISION);
 
         // Test computation of attitude data from angular coordinates
-        final double[] attitudeDataBis = quaternionRate.getAttitudeData(tsac, false, false, null);
+        AEMMetadata metadata = new AEMMetadata(3);
+        metadata.setIsFirst(false);
+        metadata.setLocalRates(false);
+        metadata.getEndPoints().setExternal2Local(true);
+        final double[] attitudeDataBis = quaternionRate.getAttitudeData(tsac, metadata);
         for (int i = 0; i < attitudeDataBis.length; i++) {
             Assert.assertEquals(Double.parseDouble(attitudeData[i + 1]), attitudeDataBis[i], QUATERNION_PRECISION);
         }
@@ -223,7 +236,11 @@ public class AEMAttitudeTypeTest {
         Assert.assertEquals(37.9, FastMath.toDegrees(angles[2]), ANGLE_PRECISION);
 
         // Test computation of attitude data from angular coordinates
-        final double[] attitudeDataBis = eulerAngle.getAttitudeData(tsac, true, true, RotationOrder.XYZ);
+        AEMMetadata metadata = new AEMMetadata(3);
+        metadata.setLocalRates(true);
+        metadata.setEulerRotSeq(RotationOrder.XYZ);
+        metadata.getEndPoints().setExternal2Local(true);
+        final double[] attitudeDataBis = eulerAngle.getAttitudeData(tsac, metadata);
         for (int i = 0; i < attitudeDataBis.length; i++) {
             Assert.assertEquals(Double.parseDouble(attitudeData[i + 1]), attitudeDataBis[i], ANGLE_PRECISION);
         }
@@ -273,7 +290,11 @@ public class AEMAttitudeTypeTest {
         Assert.assertEquals(1.112, FastMath.toDegrees(tsac.getRotationRate().getZ()), ANGLE_PRECISION);
 
         // Test computation of attitude data from angular coordinates
-        final double[] attitudeDataBis = eulerAngleRate.getAttitudeData(tsac, true, true, RotationOrder.ZXZ);
+        AEMMetadata metadata = new AEMMetadata(3);
+        metadata.setLocalRates(true);
+        metadata.setEulerRotSeq(RotationOrder.ZXZ);
+        metadata.getEndPoints().setExternal2Local(true);
+        final double[] attitudeDataBis = eulerAngleRate.getAttitudeData(tsac, metadata);
         for (int i = 0; i < attitudeDataBis.length; i++) {
             Assert.assertEquals(Double.parseDouble(attitudeData[i + 1]), attitudeDataBis[i], ANGLE_PRECISION);
         }

@@ -77,6 +77,12 @@ public class OrekitAttitudeEphemerisFile implements AttitudeEphemerisFile {
      */
     public static class OrekitSatelliteAttitudeEphemeris implements SatelliteAttitudeEphemeris {
 
+        /** Default interpolation sample size if it is not specified. **/
+        public static final String DEFAULT_INTERPOLATION_METHOD = "LINEAR";
+
+        /** Default interpolation sample size if it is not specified. **/
+        public static final int DEFAULT_INTERPOLATION_SIZE = 2;
+
         /** ID of the space object encapsulated here. **/
         private final String id;
 

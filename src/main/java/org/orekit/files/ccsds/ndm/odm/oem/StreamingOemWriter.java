@@ -23,7 +23,6 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -43,7 +42,6 @@ import org.orekit.frames.FactoryManagedFrame;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.Predefined;
-import org.orekit.frames.VersionedITRF;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -352,50 +350,6 @@ public class StreamingOemWriter {
     }
 
     /**
-     * Guesses names from Table 5-3 and Annex A.
-     *
-     * <p> The goal of this method is to perform the opposite mapping of {@link
-     * CCSDSFrame}.
-     *
-     * @param frame a reference frame for ephemeris output.
-     * @return the string to use in the OEM file to identify {@code frame}.
-     */
-    public static String guessFrame(final Frame frame) {
-        // define some constant strings to make checkstyle happy
-        final String gtod = "GTOD";
-        final String tod  = "TOD";
-        final String itrf = "ITRF";
-        // Try to determine the CCSDS name from Annex A by examining the Orekit name.
-        final String name = frame.getName();
-        if (Arrays.stream(CCSDSFrame.values())
-                .map(CCSDSFrame::name)
-                .anyMatch(name::equals)) {
-            // should handle J2000, GCRF, TEME, and some frames created by OEMParser.
-            return name;
-        } else if (frame instanceof CcsdsModifiedFrame) {
-            return ((CcsdsModifiedFrame) frame).getRefFrame();
-        } else if ((CelestialBodyFactory.MARS + INERTIAL_FRAME_SUFFIX).equals(name)) {
-            return "MCI";
-        } else if ((CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER + INERTIAL_FRAME_SUFFIX)
-                .equals(name)) {
-            return "ICRF";
-        } else if (name.contains(gtod)) {
-            return gtod;
-        } else if (name.contains(tod)) { // check after GTOD
-            return tod;
-        } else if (name.contains("Equinox") && name.contains(itrf)) {
-            return "GRC";
-        } else if (frame instanceof VersionedITRF) {
-            return ((VersionedITRF) frame).getITRFVersion().getName().replace("-", "");
-        } else if (name.contains("CIO") && name.contains(itrf)) {
-            return "ITRF2014";
-        } else {
-            // don't know how to map it to a CCSDS reference frame
-            return name;
-        }
-    }
-
-    /**
      * Guess the name of the center of the reference frame.
      *
      * @param frame a reference frame for ephemeris output.
@@ -465,7 +419,7 @@ public class StreamingOemWriter {
         final Map<Keyword, String> meta = new LinkedHashMap<>(this.metadata);
         meta.putAll(segmentMetadata);
         if (!meta.containsKey(Keyword.REF_FRAME)) {
-            meta.put(Keyword.REF_FRAME, guessFrame(frame));
+            meta.put(Keyword.REF_FRAME, CCSDSFrame.guessFrame(frame));
         }
         if (!meta.containsKey(Keyword.CENTER_NAME)) {
             meta.put(Keyword.CENTER_NAME, guessCenter(frame));
@@ -582,7 +536,7 @@ public class StreamingOemWriter {
                 writeKeyValue(Keyword.EPOCH, epoch);
 
                 if (covarianceMatrix.getFrame() != null ) {
-                    writeKeyValue(Keyword.COV_REF_FRAME, guessFrame(covarianceMatrix.getFrame()));
+                    writeKeyValue(Keyword.COV_REF_FRAME, CCSDSFrame.guessFrame(covarianceMatrix.getFrame()));
                 } else if (covarianceMatrix.getLofType() != null) {
                     if (covarianceMatrix.getLofType() == LOFType.QSW) {
                         writeKeyValue(Keyword.COV_REF_FRAME, "RTN");

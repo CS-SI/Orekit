@@ -460,9 +460,6 @@ NULL_ARGUMENT = argumentul {0} nu poate fi nul
 # value {0} not found in {1}
 VALUE_NOT_FOUND = valoarea {0} nu a fost găsită în {1}
 
-# Ephemeris file format does not support multiple space objects
-EPHEMERIS_FILE_NO_MULTI_SUPPORT = Formatul fișierului de efemeride nu permite obiectele spațiale multiple
-
 # Klobuchar coefficients α or β could not be loaded from {0}
 KLOBUCHAR_ALPHA_BETA_NOT_LOADED = Coeficienții Klobuchar α sau β nu pot fi încărcați din {0}
 

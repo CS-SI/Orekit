@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.Keyword;
 import org.orekit.files.ccsds.ndm.odm.oem.StreamingOemWriter.SegmentWriter;
@@ -153,10 +154,11 @@ public class OEMWriter implements EphemerisFileWriter {
             } else {
                 throw new OrekitIllegalArgumentException(OrekitMessages.VALUE_NOT_FOUND, spaceObjectId, "ephemerisFile");
             }
-        } else if (ephemerisFile.getSatellites().keySet().size() == 1) {
-            idToProcess = ephemerisFile.getSatellites().keySet().iterator().next();
+        } else if (ephemerisFile.getSatellites().size() == 1) {
+            idToProcess = ephemerisFile.getSatellites().entrySet().iterator().next().getKey();
         } else {
-            throw new OrekitIllegalArgumentException(OrekitMessages.EPHEMERIS_FILE_NO_MULTI_SUPPORT);
+            // TODO: remove
+            throw new OrekitInternalError(null);
         }
 
         // Get satellite and ephemeris segments to output.

@@ -224,7 +224,6 @@ public enum OrekitMessages implements Localizable {
                     "Creating an aggregate attitude provider requires at least one constituent attitude provider, but none were provided."),
     NULL_ARGUMENT("argument {0} cannot be null"),
     VALUE_NOT_FOUND("value {0} not found in {1}"),
-    EPHEMERIS_FILE_NO_MULTI_SUPPORT("Ephemeris file format does not support multiple space objects"),
     KLOBUCHAR_ALPHA_BETA_NOT_LOADED("Klobuchar coefficients α or β could not be loaded from {0}"),
     KLOBUCHAR_ALPHA_BETA_NOT_AVAILABLE_FOR_DATE("Klobuchar coefficients α or β not available for date {0}"),
     NO_KLOBUCHAR_ALPHA_BETA_IN_FILE("file {0} does not contain Klobuchar coefficients α or β"),

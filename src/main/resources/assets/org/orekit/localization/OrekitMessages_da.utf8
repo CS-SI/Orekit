@@ -460,9 +460,6 @@ NULL_ARGUMENT = argument {0} kan ikke være null
 # value {0} not found in {1}
 VALUE_NOT_FOUND = værdi {0} blev ikke fundet i {1}
 
-# Ephemeris file format does not support multiple space objects
-EPHEMERIS_FILE_NO_MULTI_SUPPORT = Eferemide-filformat understøtter ikke multiple rumobjekter
-
 # Klobuchar coefficients α or β could not be loaded from {0}
 KLOBUCHAR_ALPHA_BETA_NOT_LOADED = Klobuchar koefficienterne α eller β kunne ikke indlæses fra {0}
 

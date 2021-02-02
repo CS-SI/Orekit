@@ -16,15 +16,18 @@
  */
 package org.orekit.files.ccsds.utils;
 
+import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import org.orekit.annotation.DefaultDataContext;
+import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.frames.LOFType;
+import org.orekit.frames.VersionedITRF;
 import org.orekit.utils.IERSConventions;
 
 /** Frames used in CCSDS Orbit Data Messages.
@@ -374,6 +377,52 @@ public enum CCSDSFrame {
      */
     public static CCSDSFrame parse(final String frameName) {
         return CCSDSFrame.valueOf(DASH.matcher(frameName).replaceAll(""));
+    }
+
+    /**
+     * Guesses names from ODM Table 5-3 and Annex A.
+     *
+     * <p> The goal of this method is to perform the opposite mapping of {@link
+     * #getFrame(IERSConventions, boolean, DataContext)}.
+     *
+     * @param frame a reference frame for message output.
+     * @return the string to use in the OEM file to identify {@code frame}.
+     */
+    public static String guessFrame(final Frame frame) {
+        // define some constant strings to make checkstyle happy
+        /** Suffix of the name of the inertial frame attached to a planet. */
+        final String inertialFrameSuffix = "/inertial";
+        final String gtod = "GTOD";
+        final String tod  = "TOD";
+        final String itrf = "ITRF";
+        // Try to determine the CCSDS name from Annex A by examining the Orekit name.
+        final String name = frame.getName();
+        if (Arrays.stream(CCSDSFrame.values())
+                .map(CCSDSFrame::name)
+                .anyMatch(name::equals)) {
+            // should handle J2000, GCRF, TEME, and some frames created by OEMParser.
+            return name;
+        } else if (frame instanceof CcsdsModifiedFrame) {
+            return ((CcsdsModifiedFrame) frame).getRefFrame();
+        } else if ((CelestialBodyFactory.MARS + inertialFrameSuffix).equals(name)) {
+            return "MCI";
+        } else if ((CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER + inertialFrameSuffix)
+                .equals(name)) {
+            return "ICRF";
+        } else if (name.contains(gtod)) {
+            return gtod;
+        } else if (name.contains(tod)) { // check after GTOD
+            return tod;
+        } else if (name.contains("Equinox") && name.contains(itrf)) {
+            return "GRC";
+        } else if (frame instanceof VersionedITRF) {
+            return ((VersionedITRF) frame).getITRFVersion().getName().replace("-", "");
+        } else if (name.contains("CIO") && name.contains(itrf)) {
+            return "ITRF2014";
+        } else {
+            // don't know how to map it to a CCSDS reference frame
+            return name;
+        }
     }
 
 }

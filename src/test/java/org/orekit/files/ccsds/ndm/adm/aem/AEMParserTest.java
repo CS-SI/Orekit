@@ -326,9 +326,8 @@ public class AEMParserTest {
                                    "AEM-missing-attitude-type.txt").
             accept(new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1));
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_MISSING_KEYWORD, oe.getSpecifier());
+            Assert.assertEquals(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, oe.getSpecifier());
             Assert.assertEquals(AEMMetadataKey.ATTITUDE_TYPE.name(), oe.getParts()[0]);
-            Assert.assertEquals("AEM-missing-attitude-type.txt", oe.getParts()[1]);
         }
     }
 

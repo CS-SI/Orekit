@@ -35,7 +35,6 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.odm.oem.StreamingOemWriter;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.frames.Frame;
@@ -87,7 +86,7 @@ public class OPMParserTest {
         Assert.assertEquals("EARTH", file.getMetadata().getCenterName());
         Assert.assertTrue(file.getMetadata().getHasCreatableBody());
         Assert.assertEquals(CelestialBodyFactory.getEarth(), file.getMetadata().getCenterBody());
-        Assert.assertEquals(CCSDSFrame.ITRF2000.toString(), StreamingOemWriter.guessFrame(file.getMetadata().getFrame()));
+        Assert.assertEquals(CCSDSFrame.ITRF2000.toString(), CCSDSFrame.guessFrame(file.getMetadata().getFrame()));
         Assert.assertEquals(CcsdsTimeScale.UTC, file.getMetadata().getTimeSystem());
         Assert.assertFalse(file.getData().hasCovarianceMatrix());
 

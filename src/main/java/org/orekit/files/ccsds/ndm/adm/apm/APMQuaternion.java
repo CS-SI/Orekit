@@ -143,8 +143,7 @@ public class APMQuaternion extends CommentsContainer {
      */
     public Attitude getAttitude(final IERSConventions conventions, final boolean simpleEOP,
                                 final DataContext dataContext) {
-        final Frame reference =
-                        endPoints.getExternalFrame().getFrame(conventions, simpleEOP, dataContext);
+        final Frame reference = endPoints.getExternalFrame().getFrame(conventions, simpleEOP, dataContext);
         final FieldRotation<UnivariateDerivative1> raw =
                         new FieldRotation<>(new UnivariateDerivative1(q[0], qDot[0]),
                                             new UnivariateDerivative1(q[1], qDot[1]),

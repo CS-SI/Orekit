@@ -460,9 +460,6 @@ NULL_ARGUMENT = argument {0} cannot be null
 # value {0} not found in {1}
 VALUE_NOT_FOUND = value {0} not found in {1}
 
-# Ephemeris file format does not support multiple space objects
-EPHEMERIS_FILE_NO_MULTI_SUPPORT = Ephemeris file format does not support multiple space objects
-
 # Klobuchar coefficients α or β could not be loaded from {0}
 KLOBUCHAR_ALPHA_BETA_NOT_LOADED = Klobuchar coefficients α or β could not be loaded from {0}
 

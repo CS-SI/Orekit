@@ -40,8 +40,11 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.ndm.adm.aem.AEMAttitudeType;
+import org.orekit.files.ccsds.ndm.adm.aem.AEMMetadata;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMParser;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMWriter;
+import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer;
 import org.orekit.files.general.AttitudeEphemerisFile.AttitudeEphemerisSegment;
 import org.orekit.files.general.OrekitAttitudeEphemerisFile.OrekitSatelliteAttitudeEphemeris;
@@ -53,6 +56,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
+import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
@@ -107,7 +111,10 @@ public class OrekitAttitudeEphemerisFileTest {
 
         OrekitAttitudeEphemerisFile ephemerisFile = new OrekitAttitudeEphemerisFile();
         OrekitSatelliteAttitudeEphemeris satellite = ephemerisFile.addSatellite(satId);
-        satellite.addNewSegment(states);
+        satellite.addNewSegment(states,
+                                OrekitSatelliteAttitudeEphemeris.DEFAULT_INTERPOLATION_METHOD,
+                                OrekitSatelliteAttitudeEphemeris.DEFAULT_INTERPOLATION_SIZE,
+                                AngularDerivativesFilter.USE_RR);
 
         // Test of all getters for OrekitSatelliteAttitudeEphemeris
         assertEquals(satId, satellite.getId());
@@ -118,18 +125,9 @@ public class OrekitAttitudeEphemerisFileTest {
         AttitudeEphemerisSegment segment = satellite.getSegments().get(0);
         assertEquals(OrekitSatelliteAttitudeEphemeris.DEFAULT_INTERPOLATION_METHOD, segment.getInterpolationMethod());
         assertEquals(OrekitSatelliteAttitudeEphemeris.DEFAULT_INTERPOLATION_SIZE, segment.getInterpolationSamples());
-        assertEquals(OrekitSatelliteAttitudeEphemeris.DEFAULT_ATTITUDE_TYPE, segment.getAttitudeType());
-        assertEquals(OrekitSatelliteAttitudeEphemeris.DEFAULT_IS_FIRST, segment.isFirst());
-        assertEquals(OrekitSatelliteAttitudeEphemeris.DEFAULT_ROTATION_ORDER, segment.getRotationOrder());
-        assertEquals(OrekitSatelliteAttitudeEphemeris.DEFAULT_REF_FRAME_A, segment.getRefFrameAString());
-        assertEquals(OrekitSatelliteAttitudeEphemeris.DEFAULT_REF_FRAME_B, segment.getRefFrameBString());
-        assertEquals(OrekitSatelliteAttitudeEphemeris.DEFAULT_ATTITUDE_DIR, segment.getAttitudeDirection());
-        assertEquals(DataContext.getDefault().getCelestialBodies().getEarth().getName(), segment.getCenterName());
-        assertEquals(DataContext.getDefault().getTimeScales().getUTC().getName(), segment.getTimeScaleString());
-        assertEquals(DataContext.getDefault().getTimeScales().getUTC(), segment.getTimeScale());
         assertEquals(0.0, states.get(0).getDate().durationFrom(segment.getStart()), 1.0e-15);
         assertEquals(0.0, states.get(states.size() - 1).getDate().durationFrom(segment.getStop()), 1.0e-15);
-        Assert.assertEquals(AngularDerivativesFilter.USE_R, segment.getAvailableDerivatives());
+        Assert.assertEquals(AngularDerivativesFilter.USE_RR, segment.getAvailableDerivatives());
 
         // Verify attitude
         final Attitude attitude = segment.getAttitudeProvider().getAttitude(initialOrbit, date, frame);
@@ -141,7 +139,8 @@ public class OrekitAttitudeEphemerisFileTest {
 
         String tempAemFile = Files.createTempFile("OrekitAttitudeEphemerisFileTest", ".aem").toString();
         try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(tempAemFile), StandardCharsets.UTF_8)) {
-            new AEMWriter().write(writer, ephemerisFile);
+            new AEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null, dummyMetadata()).
+            write(writer, ephemerisFile);
         }
 
         AttitudeEphemerisFile ephemerisFromFile =
@@ -153,7 +152,6 @@ public class OrekitAttitudeEphemerisFileTest {
         assertEquals(states.get(0).getDate(), segment.getStart());
         assertEquals(states.get(states.size() - 1).getDate(), segment.getStop());
         assertEquals(states.size(), segment.getAngularCoordinates().size());
-        assertEquals(body.getName().toUpperCase(), segment.getCenterName());
         for (int i = 0; i < states.size(); i++) {
             TimeStampedAngularCoordinates expected = states.get(i).getAttitude().getOrientation();
             TimeStampedAngularCoordinates actual = segment.getAngularCoordinates().get(i);
@@ -178,7 +176,10 @@ public class OrekitAttitudeEphemerisFileTest {
 
         // Try to add a new segment
         try {
-            satellite.addNewSegment(states);
+            satellite.addNewSegment(states,
+                                    OrekitSatelliteAttitudeEphemeris.DEFAULT_INTERPOLATION_METHOD,
+                                    OrekitSatelliteAttitudeEphemeris.DEFAULT_INTERPOLATION_SIZE,
+                                    AngularDerivativesFilter.USE_RR);
         } catch (OrekitIllegalArgumentException oiae) {
             Assert.assertEquals(OrekitMessages.NULL_ARGUMENT, oiae.getSpecifier());
         }
@@ -215,10 +216,25 @@ public class OrekitAttitudeEphemerisFileTest {
 
         // Try to add a new segment
         try {
-            satellite.addNewSegment(states, "LINEAR", 1);
+            satellite.addNewSegment(states, "LINEAR", 1, AngularDerivativesFilter.USE_R);
         } catch (OrekitIllegalArgumentException oiae) {
             Assert.assertEquals(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION, oiae.getSpecifier());
         }
+    }
+
+    private AEMMetadata dummyMetadata() {
+        AEMMetadata metadata = new AEMMetadata(4);
+        metadata.setTimeSystem(CcsdsTimeScale.TT);
+        metadata.setObjectID("SATELLITE1");
+        metadata.setObjectName("transgalactic");
+        metadata.getEndPoints().setFrameA("GCRF");
+        metadata.getEndPoints().setFrameB("GYRO 1");
+        metadata.getEndPoints().setDirection("A2B");
+        metadata.setStartTime(AbsoluteDate.J2000_EPOCH.shiftedBy(80 * Constants.JULIAN_CENTURY));
+        metadata.setStopTime(metadata.getStartTime().shiftedBy(Constants.JULIAN_YEAR));
+        metadata.setAttitudeType(AEMAttitudeType.QUATERNION_DERIVATIVE);
+        metadata.setIsFirst(true);
+        return metadata;
     }
 
 }

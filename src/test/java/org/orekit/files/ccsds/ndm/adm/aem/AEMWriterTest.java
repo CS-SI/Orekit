@@ -30,24 +30,27 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.junit.After;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
-import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer;
+import org.orekit.files.general.AttitudeEphemerisFile;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -69,7 +72,7 @@ public class AEMWriterTest {
 
     @Test
     public void testAEMWriter() {
-        assertNotNull(new AEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null, null));
+        assertNotNull(new AEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null, dummyMetadata()));
     }
 
     @Test
@@ -115,7 +118,7 @@ public class AEMWriterTest {
                                                null, 1);
         final AEMFile aemFile = new KVNLexicalAnalyzer(inEntry, "OEMExample.txt").accept(parser);
 
-        AEMMetadata metadata = new AEMMetadata(1);
+        AEMMetadata metadata = dummyMetadata();
         metadata.setObjectID("12345");
         String tempOEMFilePath = tempFolder.newFile("TestAEMUnfoundSpaceId.aem").toString();
         AEMWriter writer = new AEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null, metadata);
@@ -149,7 +152,12 @@ public class AEMWriterTest {
     @Test
     public void testNullEphemeris() throws IOException {
         File tempAEMFile = tempFolder.newFile("TestNullEphemeris.aem");
-        AEMWriter writer = new AEMWriter("NASA/JPL", "1996-062A", "MARS GLOBAL SURVEYOR");
+        Header header = new Header();
+        header.setOriginator("NASA/JPL");
+        AEMMetadata metadata = dummyMetadata();
+        metadata.setObjectID("1996-062A");
+        metadata.setObjectName("MARS GLOBAL SURVEYOR");
+        AEMWriter writer = new AEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(), header, metadata);
         writer.write(tempAEMFile.toString(), null);
         assertTrue(tempAEMFile.exists());
         try (FileInputStream   fis = new FileInputStream(tempAEMFile);
@@ -167,56 +175,75 @@ public class AEMWriterTest {
     public void testUnisatelliteFileWithDefault() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                               null, 1);
-        final AEMFile aemFile = new KVNLexicalAnalyzer(inEntry, "AEMExample.txt").accept(parser);
+        final AEMFile aemFile = new KVNLexicalAnalyzer(inEntry, "AEMExample.txt").
+                                accept(new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1));
 
         String tempAEMFilePath = tempFolder.newFile("TestOEMUnisatelliteWithDefault.oem").toString();
-        AEMWriter writer = new AEMWriter();
+        AEMWriter writer = new AEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
+                                         null, aemFile.getSegments().get(0).getMetadata());
         writer.write(tempAEMFilePath, aemFile);
 
-        final AEMFile generatedAemFile = parser.parseType(tempAEMFilePath);
+        final AEMFile generatedAemFile = new KVNLexicalAnalyzer(tempAEMFilePath).
+                                         accept(new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1));
         assertEquals(aemFile.getSegments().get(0).getMetadata().getObjectID(),
                      generatedAemFile.getSegments().get(0).getMetadata().getObjectID());
     }
 
     @Test
     public void testMultisatelliteFile() throws IOException {
-        final String id1 = "ID1";
-        final String id2 = "ID2";
-        AEMFile file = new StandInEphemerisFile(IERSConventions.IERS_2010, DataContext.getDefault(), null);
-        file.getSatellites().put(id1, new AEMSatelliteEphemeris(id1, new ArrayList<>()));
-        file.getSatellites().put(id2, new AEMSatelliteEphemeris(id2, new ArrayList<>()));
 
-        String tempAEMFilePath = tempFolder.newFile("TestAEMMultisatellite-1.aem").toString();
+        final DataContext context = DataContext.getDefault();
+        final String id1 = "1999-012A";
+        final String id2 = "1999-012B";
+        StandAloneEphemerisFile file = new StandAloneEphemerisFile(IERSConventions.IERS_2010, true, context);
+        file.generate(id1, id1 + "-name", AEMAttitudeType.QUATERNION_RATE,
+                      context.getFrames().getEME2000(),
+                      new TimeStampedAngularCoordinates(AbsoluteDate.GALILEO_EPOCH,
+                                                        Rotation.IDENTITY,
+                                                        new Vector3D(0.000, 0.010, 0.000),
+                                                        new Vector3D(0.000, 0.000, 0.001)),
+                      900.0, 60.0);
+        file.generate(id2, id2 + "-name", AEMAttitudeType.QUATERNION_RATE,
+                      context.getFrames().getEME2000(),
+                      new TimeStampedAngularCoordinates(AbsoluteDate.GALILEO_EPOCH,
+                                                        Rotation.IDENTITY,
+                                                        new Vector3D(0.000, -0.010, 0.000),
+                                                        new Vector3D(0.000, 0.000, 0.003)),
+                      600.0, 10.0);
 
-        AEMWriter writer1 = new AEMWriter();
+       File written = tempFolder.newFile("TestAEMMultisatellite.aem");
 
-        try {
-            writer1.write(tempAEMFilePath, file);
-            fail("Should have thrown OrekitIllegalArgumentException due to multiple satellites");
-        } catch (OrekitIllegalArgumentException e) {
-            assertEquals(OrekitMessages.EPHEMERIS_FILE_NO_MULTI_SUPPORT, e.getSpecifier());
+        AEMMetadata metadata = dummyMetadata();
+        metadata.setObjectID(id2);
+        AEMWriter writer = new AEMWriter(IERSConventions.IERS_2010, context, null, metadata);
+        writer.write(written.getAbsolutePath(), file);
+
+        int count = 0;
+        try (FileInputStream   fis = new FileInputStream(written);
+             InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+             BufferedReader    br  = new BufferedReader(isr)) {
+            for (String line = br.readLine(); line != null; line = br.readLine()) {
+                ++count;
+            }
         }
+        assertEquals(79, count);
 
-        tempAEMFilePath = tempFolder.newFile("TestAEMMultisatellite-2.aem").toString();
-        AEMWriter writer2 = new AEMWriter(null, id1, null);
-        writer2.write(tempAEMFilePath, file);
     }
 
     @Test
     public void testIssue723() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample2.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                               null, 1);
-        final AEMFile aemFile = new KVNLexicalAnalyzer(inEntry, "AEMExample2.txt").accept(parser);
+        final AEMFile aemFile = new KVNLexicalAnalyzer(inEntry, "AEMExample2.txt").
+                                accept(new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1));
 
         String tempAEMFilePath = tempFolder.newFile("TestAEMIssue723.aem").toString();
-        AEMWriter writer = new AEMWriter();
+        AEMWriter writer = new AEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
+                                         aemFile.getHeader(), aemFile.getSegments().get(0).getMetadata());
         writer.write(tempAEMFilePath, aemFile);
 
-        final AEMFile generatedAemFile = parser.parseType(tempAEMFilePath);
+        final AEMFile generatedAemFile = new KVNLexicalAnalyzer(tempAEMFilePath).
+                                         accept(new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1));
         assertEquals(aemFile.getHeader().getComments().get(0), generatedAemFile.getHeader().getComments().get(0));
     }
 
@@ -235,31 +262,29 @@ public class AEMWriterTest {
         AEMFile aemFile = new KVNLexicalAnalyzer(inEntry, "AEMExample7.txt").accept(parser);
         StringBuilder buffer = new StringBuilder();
 
-        AEMWriter writer = new AEMWriter(aemFile.getHeader().getOriginator(),
-                                         aemFile.getSegments().get(0).getMetadata().getObjectID(),
-                                         aemFile.getSegments().get(0).getMetadata().getObjectName(),
-                                         "%.2f");
+        AEMWriter writer = new AEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
+                                         null, aemFile.getSegments().get(0).getMetadata(),
+                                         "some-name", "%.2f");
 
         writer.write(buffer, aemFile);
 
         String[] lines = buffer.toString().split("\n");
 
-        assertEquals(lines[21], "2002-12-18T12:00:00.331 0.57 0.03 0.46 0.68");
-        assertEquals(lines[22], "2002-12-18T12:01:00.331 0.42 -0.46 0.24 0.75");
-        assertEquals(lines[23], "2002-12-18T12:02:00.331 -0.85 0.27 -0.07 0.46");
+        assertEquals(lines[23], "2002-12-18T12:00:00.331000000 0.57 0.03 0.46 0.68");
+        assertEquals(lines[24], "2002-12-18T12:01:00.331000000 0.42 -0.46 0.24 0.75");
+        assertEquals(lines[25], "2002-12-18T12:02:00.331000000 -0.85 0.27 -0.07 0.46");
 
         // Default format
-        writer = new AEMWriter(aemFile.getHeader().getOriginator(),
-                               aemFile.getSegments().get(0).getMetadata().getObjectID(),
-                               aemFile.getSegments().get(0).getMetadata().getObjectName());
+        writer = new AEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
+                               null, aemFile.getSegments().get(0).getMetadata());
         buffer = new StringBuilder();
         writer.write(buffer, aemFile);
 
         String[] lines2 = buffer.toString().split("\n");
 
-        assertEquals(lines2[21], "2002-12-18T12:00:00.331  0.56748  0.03146  0.45689  0.68427");
-        assertEquals(lines2[22], "2002-12-18T12:01:00.331  0.42319 -0.45697  0.23784  0.74533");
-        assertEquals(lines2[23], "2002-12-18T12:02:00.331 -0.84532  0.26974 -0.06532  0.45652");
+        assertEquals(lines2[23], "2002-12-18T12:00:00.331000000  0.567480798  0.031460044  0.456890643  0.684270962");
+        assertEquals(lines2[24], "2002-12-18T12:01:00.331000000  0.423190840 -0.456970907  0.237840472  0.745331479");
+        assertEquals(lines2[25], "2002-12-18T12:02:00.331000000 -0.845318824  0.269739625 -0.065319909  0.456519365");
     }
 
     private static void compareAemAttitudeBlocks(AEMSegment segment1, AEMSegment segment2) {
@@ -303,18 +328,59 @@ public class AEMWriterTest {
         }
     }
 
-    private class StandInEphemerisFile extends AEMFile {
+    private class StandAloneEphemerisFile implements AttitudeEphemerisFile {
         private final Map<String, AEMSatelliteEphemeris> satEphem;
+
+        private final IERSConventions conventions;
+        private final boolean         simpleEOP;
+        private final DataContext     dataContext;
 
         /** Simple constructor.
          * @param conventions IERS conventions
+         * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
          * @param dataContext used for creating frames, time scales, etc.
-         * @param missionReferenceDate reference date for Mission Elapsed Time and Mission Relative Time time systems.
          */
-        public StandInEphemerisFile(final IERSConventions conventions, final DataContext dataContext,
-                                    final AbsoluteDate missionReferenceDate) {
-            super(conventions, dataContext, missionReferenceDate);
-            this.satEphem = new HashMap<String, AEMSatelliteEphemeris>();
+        public StandAloneEphemerisFile(final IERSConventions conventions, final boolean simpleEOP,
+                                       final DataContext dataContext) {
+            this.conventions = conventions;
+            this.simpleEOP   = simpleEOP;
+            this.dataContext = dataContext;
+            this.satEphem    = new HashMap<String, AEMSatelliteEphemeris>();
+        }
+
+        private void generate(final String objectID, final String objectName,
+                              final AEMAttitudeType type, final Frame referenceFrame,
+                              final TimeStampedAngularCoordinates ac0,
+                              final double duration, final double step) {
+
+            AEMMetadata metadata = dummyMetadata();
+            metadata.addComment("metadata for " + objectName);
+            metadata.setObjectID(objectID);
+            metadata.setObjectName(objectName);
+            metadata.getEndPoints().setExternalFrame(CCSDSFrame.parse(CCSDSFrame.guessFrame(referenceFrame)));
+            metadata.setAttitudeType(type);
+            metadata.setStartTime(ac0.getDate());
+            metadata.setStopTime(ac0.getDate().shiftedBy(duration));
+            metadata.setUseableStartTime(metadata.getStartTime().shiftedBy(step));
+            metadata.setUseableStartTime(metadata.getStopTime().shiftedBy(-step));
+
+            AEMData data = new AEMData();
+            data.addComment("generated data for " + objectName);
+            data.addComment("duration was set to " + duration + " s");
+            data.addComment("step was set to " + step + " s");
+            for (double dt = 0; dt < duration; dt += step) {
+                data.addData(ac0.shiftedBy(dt));
+            }
+
+            if (!satEphem.containsKey(objectID)) {
+                satEphem.put(objectID, new AEMSatelliteEphemeris(objectID, Collections.emptyList()));
+            }
+
+            List<AttitudeEphemerisFile.AttitudeEphemerisSegment> segments =
+                            new ArrayList<>(satEphem.get(objectID).getSegments());
+            segments.add(new AEMSegment(metadata, data, conventions, simpleEOP, dataContext));
+            satEphem.put(objectID, new AEMSatelliteEphemeris(objectID, segments));
+
         }
 
         @Override
@@ -322,6 +388,21 @@ public class AEMWriterTest {
             return satEphem;
         }
 
+    }
+
+    private AEMMetadata dummyMetadata() {
+        AEMMetadata metadata = new AEMMetadata(4);
+        metadata.setTimeSystem(CcsdsTimeScale.TT);
+        metadata.setObjectID("9999-999ZZZ");
+        metadata.setObjectName("transgalactic");
+        metadata.getEndPoints().setFrameA("GCRF");
+        metadata.getEndPoints().setFrameB("GYRO 1");
+        metadata.getEndPoints().setDirection("A2B");
+        metadata.setStartTime(AbsoluteDate.J2000_EPOCH.shiftedBy(80 * Constants.JULIAN_CENTURY));
+        metadata.setStopTime(metadata.getStartTime().shiftedBy(Constants.JULIAN_YEAR));
+        metadata.setAttitudeType(AEMAttitudeType.QUATERNION_DERIVATIVE);
+        metadata.setIsFirst(true);
+        return metadata;
     }
 
 }

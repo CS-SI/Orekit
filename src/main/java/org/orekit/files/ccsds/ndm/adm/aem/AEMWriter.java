@@ -23,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -36,11 +37,13 @@ import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderKey;
 import org.orekit.files.ccsds.section.MetadataKey;
+import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.files.general.AttitudeEphemerisFile.AttitudeEphemerisSegment;
 import org.orekit.files.general.AttitudeEphemerisFile.SatelliteAttitudeEphemeris;
 import org.orekit.files.general.AttitudeEphemerisFileWriter;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
@@ -51,6 +54,174 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
 
 /**
  * A writer for Attitude Ephemeris Messsage (AEM) files.
+ *
+ * <h2> Metadata </h2>
+ *
+ * <p> The AEM header and metadata used by this writer are described in the following tables.
+ * Many metadata items are optional or have default values so they do not need to be specified.
+ * At a minimum the user must supply those values that are required and for which no
+ * default exits: {@link ADMMetadataKey#OBJECT_NAME}, {@link ADMMetadataKey#OBJECT_ID},
+ * {@link AEMMetadataKey#START_TIME} and {@link AEMMetadataKey#STOP_TIME}.
+ * The usage column in the table indicates where the metadata item is used, either in the AEM header
+ * or in the metadata section at the start of an AEM attitude segment.
+ * </p>
+ *
+ * <p> The AEM header for the whole AEM file is set when calling {@link #writeHeader(Header)},
+ * the entries are defined in table 4-2 of the ADM standard.
+ *
+ * <table>
+ * <caption>AEM metadata</caption>
+ *     <thead>
+ *         <tr>
+ *             <th>Keyword</th>
+ *             <th>Mandatory</th>
+ *             <th>Default in Orekit</th>
+ *         </tr>
+ *    </thead>
+ *    <tbody>
+ *        <tr>
+ *            <td>{@link AEMFile#FORMAT_VERSION_KEY CCSDS_AEM_VERS}</td>
+ *            <td>Yes</td>
+ *            <td>{@link #CCSDS_AEM_VERS}</td>
+ *        </tr>
+ *        <tr>
+ *            <td>{@link HeaderKey#COMMENT}</td>
+ *            <td>No</td>
+ *            <td>empty</td>
+ *        </tr>
+ *        <tr>
+ *            <td>{@link HeaderKey#CREATION_DATE}</td>
+ *            <td>Yes</td>
+ *            <td>{@link Date#Date() Now}</td>
+ *        </tr>
+ *        <tr>
+ *            <td>{@link HeaderKey#ORIGINATOR}</td>
+ *            <td>Yes</td>
+ *            <td>{@link #DEFAULT_ORIGINATOR}</td>
+ *        </tr>
+ *    </tbody>
+ *    </table>
+ * </p>
+ *
+ * <p> The AEM metadata for the whole AEM file is set when calling {@link #newSegment(AEMMetadata)},
+ * the entries are defined in tables 4-3, 4-4 and annex A of the ADM standard.
+ *
+ * <table>
+ * <caption>AEM metadata</caption>
+ *     <thead>
+ *         <tr>
+ *             <th>Keyword</th>
+ *             <th>Mandatory</th>
+ *             <th>Default in Orekit</th>
+ *         </tr>
+ *    </thead>
+ *    <tbody>
+ *        <tr>
+ *            <td>{@link MetadataKey#COMMENT}</td>
+ *            <td>No</td>
+ *            <td>empty</td>
+ *        </tr>
+ *        <tr>
+ *            <td>{@link ADMMetadataKey#OBJECT_NAME}</td>
+ *            <td>Yes</td>
+ *            <td></td>
+ *        </tr>
+ *        <tr>
+ *            <td>{@link ADMMetadataKey#OBJECT_ID}</td>
+ *            <td>Yes</td>
+ *            <td></td>
+ *        </tr>
+ *        <tr>
+ *            <td>{@link ADMMetadataKey#CENTER_NAME}</td>
+ *            <td>No</td>
+ *            <td></td>
+ *        </tr>
+ *        <tr>
+ *            <td>{@link AEMMetadataKey#REF_FRAME_A}</td>
+ *            <td>Yes</td>
+ *            <td>Orekit will always use the {@link AttitudeEndPoints#getExternalFrame()
+ *                external frame} for frame A</td>
+ *        </tr>
+ *        <tr>
+ *            <td>{@link AEMMetadataKey#REF_FRAME_B}</td>
+ *            <td>Yes</td>
+ *            <td>Orekit will always use the {@link AttitudeEndPoints#getLocalFrame()
+ *                local spacecraft body frame} for frame B</td>
+ *        </tr>
+ *        <tr>
+ *            <td>{@link AEMMetadataKey#ATTITUDE_DIR}</td>
+ *            <td>Yes</td>
+ *            <td></td>
+ *        </tr>
+ *        <tr>
+ *            <td>{@link MetadataKey#TIME_SYSTEM}</td>
+ *            <td>Yes</td>
+ *            <td></td>
+ *        </tr>
+ *        <tr>
+ *            <td>{@link AEMMetadataKey#START_TIME}</td>
+ *            <td>Yes</td>
+ *            <td>default to propagation start time (for forward propagation)</td>
+ *        </tr>
+ *        <tr>
+ *            <td>{@link AEMMetadataKey#USEABLE_START_TIME}</td>
+ *            <td>No</td>
+ *            <td></td>
+ *        </tr>
+ *        <tr>
+ *            <td>{@link AEMMetadataKey#USEABLE_STOP_TIME}</td>
+ *            <td>No</td>
+ *            <td></td>
+ *        </tr>
+ *        <tr>
+ *            <td>{@link AEMMetadataKey#STOP_TIME}</td>
+ *            <td>Yes</td>
+ *            <td>default to propagation target time (for forward propagation)</td>
+ *        </tr>
+ *        <tr>
+ *            <td>{@link AEMMetadataKey#ATTITUDE_TYPE}</td>
+ *            <td>Yes</td>
+ *            <td>{@link AEMAttitudeType#QUATERNION_RATE QUATERNION/RATE}</td>
+ *        </tr>
+ *        <tr>
+ *            <td>{@link AEMMetadataKey#QUATERNION_TYPE}</td>
+ *            <td>No</td>
+ *            <td>{@code FIRST}</td>
+ *        </tr>
+ *        <tr>
+ *            <td>{@link AEMMetadataKey#EULER_ROT_SEQ}</td>
+ *            <td>No</td>
+ *            <td></td>
+ *        </tr>
+ *        <tr>
+ *            <td>{@link AEMMetadataKey#RATE_FRAME}</td>
+ *            <td>No</td>
+ *            <td>{@code REF_FRAME_B}</td>
+ *        </tr>
+ *        <tr>
+ *            <td>{@link AEMMetadataKey#INTERPOLATION_METHOD}</td>
+ *            <td>No</td>
+ *            <td></td>
+ *        </tr>
+ *        <tr>
+ *            <td>{@link AEMMetadataKey#INTERPOLATION_DEGREE}</td>
+ *            <td>No</td>
+ *            <td>always set in {@link AEMMetadata}</td>
+ *        </tr>
+ *    </tbody>
+ *</table>
+ *
+ * <p> The {@link MetadataKey#TIME_SYSTEM} must be constant for the whole file and is used
+ * to interpret all dates except {@link HeaderKey#CREATION_DATE} which is always in {@link
+ * CcsdsTimeScale#UTC UTC}. The guessing algorithm is not guaranteed to work so it is recommended
+ * to provide values for {@link ADMMetadataKey#CENTER_NAME} and {@link MetadataKey#TIME_SYSTEM}
+ * to avoid any bugs associated with incorrect guesses.
+ *
+ * <p> Standardized values for {@link MetadataKey#TIME_SYSTEM} are GMST, GPS, MET, MRT, SCLK,
+ * TAI, TCB, TDB, TT, UT1, and UTC. Standardized values for reference frames
+ * are EME2000, GTOD, ICRF, ITRF2000, ITRF-93, ITRF-97, LVLH, RTN, QSW, TOD, TNW, NTW and RSW.
+ * Additionally ITRF followed by a four digit year may be used.
+ *
  * @author Bryan Cazabonne
  * @since 10.2
  */
@@ -156,7 +327,7 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
      * </>
      * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.
-     * @param header file header
+     * @param header file header (may be null)
      * @param template template for metadata
      * @since 11.0
      */
@@ -176,13 +347,14 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
      * </p>
      * <p>
      * The writer is built from the complete header and partial metadata. The template
-     * metadata is used to initialize and independent internal copy, that will be updated
+     * metadata is used to initialize and independent local copy, that will be updated
      * as new segments are written (with at least the segment start and stop will change,
-     * but some other parts may change too). The {@code template} object itself is not changed.
+     * but some other parts may change too). The {@code template} argument itself is not
+     * changed.
      * </>
      * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.
-     * @param header file header
+     * @param header file header (may be null)
      * @param template template for metadata
      * @param fileName file name for error messages
      * @param attitudeFormat {@link java.util.Formatter format parameters} for
@@ -202,7 +374,31 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
 
     }
 
-    /** {@inheritDoc} */
+    /** Get the local copy of the template metadata.
+     * <p>
+     * The content of this copy should generally be updated before
+     * {@link #writeMetadata(Appendable) writeMetadata} is called,
+     * at least in order to update {@link AEMMetadata#setStartTime(AbsoluteDate)
+     * start time} and {@link AEMMetadata#setStopTime(AbsoluteDate) stop time}
+     * for the upcoming {@link #writeAttitudeEphemerisLine(Appendable, TimeStampedAngularCoordinates)
+     * ephemeris data lines}.
+     * </p>
+     * @return local copy of the template metadata
+     */
+    public AEMMetadata getMetadata() {
+        return metadata;
+    }
+
+    /** {@inheritDoc}
+     * <p>
+     * As {@link AttitudeEphemerisFile.SatelliteAttitudeEphemeris} does not have all the entries
+     * from {@link AEMMetadata}, the only values that will be extracted from the
+     * {@code ephemerisFile} will be the start time, stop time, reference frame, interpolation
+     * method and interpolation degree. The missing values (like object name, local spacecraft
+     * body frame, attitude type...) will be inherited from the template  metadata set at writer
+     * {@link #AEMWriter(IERSConventions, DataContext, Header, AEMMetadata, String, String) construction}.
+     * </p>
+     */
     @Override
     public void write(final Appendable appendable, final AttitudeEphemerisFile ephemerisFile)
         throws IOException {
@@ -232,11 +428,19 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
 
         // Loop on segments
         for (final AttitudeEphemerisSegment segment : segments) {
+
+            // override template metadata with segment values
+            metadata.setStartTime(segment.getStart());
+            metadata.setStopTime(segment.getStop());
+            final Frame      segmentFrame = segment.getReferenceFrame();
+            final CCSDSFrame ccsdsFrame   = CCSDSFrame.parse(CCSDSFrame.guessFrame(segmentFrame));
+            metadata.getEndPoints().setExternalFrame(ccsdsFrame);
             metadata.setInterpolationMethod(segment.getInterpolationMethod());
             metadata.setInterpolationDegree(segment.getInterpolationSamples() - 1);
-            writeMetadata(appendable, segment.getStart(), segment.getStop());
-            startAttitudeBlock(appendable);
+            writeMetadata(appendable);
+
             // Loop on attitude data
+            startAttitudeBlock(appendable);
             for (final TimeStampedAngularCoordinates coordinates : segment.getAngularCoordinates()) {
                 writeAttitudeEphemerisLine(appendable, coordinates);
             }
@@ -248,16 +452,16 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
     /**
      * Write the passed in {@link AEMFile} to a file at the output path specified.
      * @param outputFilePath a file path that the corresponding file will be written to
-     * @param aemFile a populated aem file to serialize into the buffer
+     * @param ephemerisFile a populated ephemeris file to serialize into the buffer
      * @throws IOException if any file writing operations fail or if the underlying
      *         format doesn't support a configuration in the EphemerisFile
      *         (for example having multiple satellites in one file, having
      *         the origin at an unspecified celestial body, etc.)
      */
-    public void write(final String outputFilePath, final AEMFile aemFile)
+    public void write(final String outputFilePath, final AttitudeEphemerisFile ephemerisFile)
         throws IOException {
         try (BufferedWriter appendable = Files.newBufferedWriter(Paths.get(outputFilePath), StandardCharsets.UTF_8)) {
-            write(appendable, aemFile);
+            write(appendable, ephemerisFile);
         }
     }
 
@@ -273,10 +477,13 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
     private void writeKeyValue(final Appendable appendable, final String key,
                                final String value, final boolean mandatory)
         throws IOException {
-        if (value == null && mandatory) {
-            throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, key, fileName);
+        if (value == null) {
+            if (mandatory) {
+                throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, key, fileName);
+            }
+        } else {
+            appendable.append(String.format(STANDARDIZED_LOCALE, KV_FORMAT, key, value));
         }
-        appendable.append(String.format(STANDARDIZED_LOCALE, KV_FORMAT, key, value));
     }
 
     /**
@@ -308,15 +515,6 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
         }
     }
 
-    /**
-     * Convert a double value to string, without internationalizetion issues.
-     * @param value the value to convert
-     * @return converted string
-     */
-    private String toString(final double value) throws IOException {
-        return String.format(STANDARDIZED_LOCALE, "%f", value);
-    }
-
     /** Writes the standard AEM header for the file.
      * @param appendable    The output stream for the AEM file. Most methods will append data
      *                  to this {@code appendable}.
@@ -325,9 +523,10 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
     public void writeHeader(final Appendable appendable) throws IOException {
 
         // Use built-in default if mandatory version not present
-        writeKeyValue(appendable, AEMFile.FORMAT_VERSION_KEY, toString(header == null || Double.isNaN(header.getFormatVersion()) ?
-                   CCSDS_AEM_VERS : header.getFormatVersion()),
-                      true);
+        final double dVersion = header == null || Double.isNaN(header.getFormatVersion()) ?
+                                CCSDS_AEM_VERS : header.getFormatVersion();
+        final String sVersion = String.format(STANDARDIZED_LOCALE, "%.1f", dVersion);
+        writeKeyValue(appendable, AEMFile.FORMAT_VERSION_KEY, sVersion, true);
 
         // comments are optional
         if (header != null) {
@@ -340,7 +539,7 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
             writeKeyValue(appendable, HeaderKey.CREATION_DATE.name(),
                           String.format(STANDARDIZED_LOCALE, DATE_FORMAT,
                                         zdt.getYear(), zdt.getMonthValue(), zdt.getDayOfMonth(),
-                                        zdt.getHour(), zdt.getMinute(), zdt.getSecond()),
+                                        zdt.getHour(), zdt.getMinute(), (double) zdt.getSecond()),
                           true);
         } else {
             final DateTimeComponents creationDate =
@@ -368,11 +567,9 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
     /** Write an ephemeris segment metadata.
      * @param appendable    The output stream for the AEM file. Most methods will append data
      *                  to this {@code appendable}.
-     * @param start start date to use, if not already present in {@code metadata}
-     * @param stop stop date to use, if not already present in {@code metadata}
      * @throws IOException if the output stream throws one while writing.
      */
-    public void writeMetadata(final Appendable appendable, final AbsoluteDate start, final AbsoluteDate stop)
+    public void writeMetadata(final Appendable appendable)
         throws IOException {
 
         // Start metadata
@@ -394,7 +591,8 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
                       endPoints.getLocalFrame() == null ? null : endPoints.getLocalFrame().toString(),
                       true);
         writeKeyValue(appendable, AEMMetadataKey.ATTITUDE_DIR.name(),
-                      EXTERNAL_TO_LOCAL, true);
+                      endPoints.isExternal2Local() ? EXTERNAL_TO_LOCAL : LOCAL_TO_EXTERNAL,
+                      true);
 
         // time
         final CcsdsTimeScale cts = metadata.getTimeSystem();
@@ -403,18 +601,14 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
                                       MetadataKey.TIME_SYSTEM.name(), fileName);
         }
         writeKeyValue(appendable, MetadataKey.TIME_SYSTEM.name(), cts.name(), true);
-        writeKeyValue(appendable, AEMMetadataKey.START_TIME.name(), dateToString(metadata.getStartTime() == null ? start : metadata.getStartTime()),
-                      true);
+        writeKeyValue(appendable, AEMMetadataKey.START_TIME.name(), dateToString(metadata.getStartTime()), true);
         if (metadata.getUseableStartTime() != null) {
-            writeKeyValue(appendable, AEMMetadataKey.USEABLE_START_TIME.name(), dateToString(metadata.getUseableStartTime()),
-                          false);
+            writeKeyValue(appendable, AEMMetadataKey.USEABLE_START_TIME.name(), dateToString(metadata.getUseableStartTime()), false);
         }
         if (metadata.getUseableStopTime() != null) {
-            writeKeyValue(appendable, AEMMetadataKey.USEABLE_STOP_TIME.name(), dateToString(metadata.getUseableStopTime()),
-                          false);
+            writeKeyValue(appendable, AEMMetadataKey.USEABLE_STOP_TIME.name(), dateToString(metadata.getUseableStopTime()), false);
         }
-        writeKeyValue(appendable, AEMMetadataKey.STOP_TIME.name(), dateToString(metadata.getStopTime() == null ? stop : metadata.getStopTime()),
-                      true);
+        writeKeyValue(appendable, AEMMetadataKey.STOP_TIME.name(), dateToString(metadata.getStopTime()), true);
 
         // types
         final AEMAttitudeType attitudeType = metadata.getAttitudeType();
@@ -472,10 +666,7 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
         appendable.append(dateToString(attitude.getDate()));
 
         // Attitude data in degrees
-        final double[] data = metadata.getAttitudeType().getAttitudeData(attitude,
-                                                                         metadata.isFirst(),
-                                                                         metadata.localRates(),
-                                                                         metadata.getEulerRotSeq());
+        final double[] data = metadata.getAttitudeType().getAttitudeData(attitude, metadata);
         final int      size = data.length;
         for (int index = 0; index < size; index++) {
             appendable.append(' ').append(String.format(STANDARDIZED_LOCALE, attitudeFormat, data[index]));
@@ -526,13 +717,13 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
         copy.setObjectName(original.getObjectName());
         copy.setObjectID(original.getObjectID());
         if (original.getCenterName() != null) {
-            copy.setCenterName(original.getObjectName(), dataContext.getCelestialBodies());
+            copy.setCenterName(original.getCenterName(), dataContext.getCelestialBodies());
         }
 
         // copy frames
-        copy.getEndPoints().setFrameA(original.getEndPoints().getExternalFrame().name());
-        copy.getEndPoints().setFrameB(original.getEndPoints().getLocalFrame().toString());
-        copy.getEndPoints().setDirection(original.getEndPoints().isExternal2Local() ? EXTERNAL_TO_LOCAL : LOCAL_TO_EXTERNAL);
+        copy.getEndPoints().setExternalFrame(original.getEndPoints().getExternalFrame());
+        copy.getEndPoints().setLocalFrame(original.getEndPoints().getLocalFrame());
+        copy.getEndPoints().setExternal2Local(original.getEndPoints().isExternal2Local());
         copy.getEndPoints().setFrameA(original.getEndPoints().getExternalFrame().name());
 
         // copy time system only (ignore times themselves)

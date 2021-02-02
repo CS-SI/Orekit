@@ -26,9 +26,25 @@ import org.orekit.files.ccsds.utils.CCSDSFrame;
 /**
  * Container for a pair of frames acting as attitude end points.
  * <p>
- * One of the frame is an {@link CCSDSFrame external frame} suitable for
- * reference for Orekit {@link Attitude}, the other one is a {@link
- * CCSDSBodyFrame local spaceraft body frame}.
+ * There are two different perspectives implemented by this class.
+ * </p>
+ * <p>
+ * In the Orekit perspective, one of the frame is an {@link CCSDSFrame external
+ * frame} suitable for reference for Orekit {@link Attitude}, the other one
+ * is a {@link CCSDSBodyFrame local spaceraft body frame}. The suitable
+ * setters to be used in this perspective are {@link #setExternalFrame(CCSDSFrame)},
+ * {@link #setLocalFrame(CCSDSBodyFrame)} and {@link #setExternal2Local(boolean)}.
+ * </p>
+ * <p>
+ * In the CCSDS perspective, the frames are simply labeled as 'A' and 'B', there
+ * are no conditions on which frame is which and on the direction of the attitude.
+ * The suitable setters to be used in this perspective are {@link #setFrameA(String)},
+ * {@link #setFrameB(String)} and {@link #setDirection(String)}.
+ * </p>
+ * <p>
+ * When populating an instance, it is recommended to use only one perspective
+ * and therefore to use consistent setters. Mixing setters from the two different
+ * perspectives may lead to inconsistent results.
  * </p>
  * @author Luc Maisonobe
  * @since 11.0
@@ -68,11 +84,25 @@ public class AttitudeEndPoints {
         checkNotNull(isExternal2Local(), AEMMetadataKey.ATTITUDE_DIR);
     }
 
+    /** Set the external frame.
+     * @param externalFrame external frame suitable for reference for Orekit {@link Attitude}
+     */
+    public void setExternalFrame(final CCSDSFrame externalFrame) {
+        this.externalFrame = externalFrame;
+    }
+
     /** Get the external frame.
      * @return external frame suitable for reference for Orekit {@link Attitude}
      */
     public CCSDSFrame getExternalFrame() {
         return externalFrame;
+    }
+
+    /** Set the local spacecraft body frame.
+     * @param localFrame local spacecraft body frame
+     */
+    public void setLocalFrame(final CCSDSBodyFrame localFrame) {
+        this.localFrame = localFrame;
     }
 
     /** Get the local spacecraft body frame.
@@ -108,7 +138,14 @@ public class AttitudeEndPoints {
      * @param direction attitude direction (from A to B or from B to A)
      */
     public void setDirection(final String direction) {
-        external2Local = isLocalSuffix(direction.charAt(direction.length() - 1));
+        setExternal2Local(isLocalSuffix(direction.charAt(direction.length() - 1)));
+    }
+
+    /** Set if attitude is from external frame to local frame.
+     * @param external2Local if true, attitude is from external frame to local frame
+     */
+    public void setExternal2Local(final boolean external2Local) {
+        this.external2Local = external2Local;
     }
 
     /** Check if attitude is from external frame to local frame.
@@ -124,10 +161,10 @@ public class AttitudeEndPoints {
      */
     private boolean setFrame(final String name) {
         try {
-            externalFrame = CCSDSFrame.parse(name);
+            setExternalFrame(CCSDSFrame.parse(name));
             return true;
         } catch (IllegalArgumentException iaeE) {
-            localFrame    = CCSDSBodyFrame.parse(name);
+            setLocalFrame(CCSDSBodyFrame.parse(name));
             return false;
         }
     }

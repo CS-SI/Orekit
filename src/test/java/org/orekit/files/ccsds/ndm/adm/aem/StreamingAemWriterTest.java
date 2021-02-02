@@ -16,16 +16,11 @@
  */
 package org.orekit.files.ccsds.ndm.adm.aem;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.BufferedReader;
-import java.io.IOException;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -36,13 +31,16 @@ import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.data.DataContext;
-import org.orekit.files.ccsds.Keyword;
+import org.orekit.files.ccsds.ndm.adm.AttitudeEndPoints;
+import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.utils.CCSDSBodyFrame;
+import org.orekit.files.ccsds.utils.CCSDSFrame;
+import org.orekit.files.ccsds.utils.CcsdsTimeScale;
+import org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedAngularCoordinates;
@@ -66,58 +64,60 @@ public class StreamingAemWriterTest {
     @Test
     public void testWriteAemStepHandler() throws Exception {
 
-        // Time scale
-        TimeScale utc = TimeScalesFactory.getUTC();
         // Create a list of files
-        List<String> files =
-                Arrays.asList("/ccsds/adm/aem/AEMExample7.txt");
+        List<String> files = Arrays.asList("/ccsds/adm/aem/AEMExample7.txt");
         for (String ex : files) {
 
             // Reference AEM file
             InputStream inEntry = getClass().getResourceAsStream(ex);
-            AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                             null, 1);
-            AEMFile aemFile = parser.parse(inEntry, "AEMExample.txt");
+            AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1);
+            AEMFile aemFile  = new KVNLexicalAnalyzer(inEntry, "AEMExample.txt").accept(parser);
 
             // Satellite attitude ephemeris as read from the reference file
             AEMSegment ephemerisBlock = aemFile.getSegments().get(0);
 
             // Meta data are extracted from the reference file
-            String originator   = aemFile.getHeader().getOriginator();
-            String objectName   = ephemerisBlock.getMetadata().getObjectName();
-            String objectID     = ephemerisBlock.getMetadata().getObjectID();
-            String headerCmt    = aemFile.getHeader().getComments().get(0);
-            String attitudeDir  = ephemerisBlock.getAttitudeDirection();
-            String refFrameA    = ephemerisBlock.getRefFrameAString();
-            String refFrameB    = ephemerisBlock.getRefFrameBString();
-            String attitudeType = ephemerisBlock.getAttitudeType();
-            String isFirst      = "LAST";
+            String            originator   = aemFile.getHeader().getOriginator();
+            String            objectName   = ephemerisBlock.getMetadata().getObjectName();
+            String            objectID     = ephemerisBlock.getMetadata().getObjectID();
+            String            headerCmt    = aemFile.getHeader().getComments().get(0);
+            AttitudeEndPoints ep           = ephemerisBlock.getMetadata().getEndPoints();
+            boolean           attitudeDir  = ep.isExternal2Local();
+            CCSDSFrame        refFrameA    = ep.getExternalFrame();
+            CCSDSBodyFrame    refFrameB    = ep.getLocalFrame();
+            AEMAttitudeType   attitudeType = ephemerisBlock.getMetadata().getAttitudeType();
+            boolean           isFirst      = ephemerisBlock.getMetadata().isFirst();
 
-            // Initialize the map of Meta data
+            // Initialize the header and metadata
             // Here, we use only one data segment.
-            Map<Keyword, String> metadata = new LinkedHashMap<>();
-            metadata.put(Keyword.ORIGINATOR,  originator);
-            metadata.put(Keyword.OBJECT_NAME, "will be overwritten");
-            metadata.put(Keyword.OBJECT_ID,   objectID);
-            metadata.put(Keyword.COMMENT,     headerCmt);
-            Map<Keyword, String> segmentData = new LinkedHashMap<>();
-            segmentData.put(Keyword.OBJECT_NAME,     objectName);
-            segmentData.put(Keyword.ATTITUDE_DIR,    attitudeDir);
-            segmentData.put(Keyword.QUATERNION_TYPE, isFirst);
-            segmentData.put(Keyword.ATTITUDE_TYPE,   attitudeType);
-            segmentData.put(Keyword.REF_FRAME_A,     refFrameA);
-            segmentData.put(Keyword.REF_FRAME_B,     refFrameB.replace(' ', '_'));
+            Header header = new Header();
+            header.setOriginator(originator);
+            header.addComment(headerCmt);
+
+            AEMMetadata metadata = new AEMMetadata(1);
+            metadata.setTimeSystem(CcsdsTimeScale.UTC);
+            metadata.setObjectID(objectID);
+            metadata.setObjectName("will be overwritten");
+            metadata.setAttitudeType(attitudeType);
+            metadata.setIsFirst(isFirst);
+            metadata.getEndPoints().setExternalFrame(refFrameA);
+            metadata.getEndPoints().setLocalFrame(refFrameB);
+            metadata.getEndPoints().setExternal2Local(attitudeDir);
+            metadata.setStartTime(AbsoluteDate.PAST_INFINITY);  // will be overwritten at propagation start
+            metadata.setStopTime(AbsoluteDate.FUTURE_INFINITY); // will be overwritten at propagation start
+            final AEMWriter aemWriter = new AEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(), header, metadata);
+
+            StringBuilder buffer = new StringBuilder();
+            StreamingAemWriter writer = new StreamingAemWriter(buffer, aemWriter);
+            aemWriter.getMetadata().setObjectName(objectName);
 
             // Initialize a Keplerian propagator with an Inertial attitude provider
             // It is expected that all attitude data lines will have the same value
-            StringBuilder buffer = new StringBuilder();
-            StreamingAemWriter writer = new StreamingAemWriter(buffer, utc, metadata);
-            writer.writeHeader();
-            StreamingAemWriter.SegmentWriter segment = writer.newSegment(segmentData);
-            
-            KeplerianPropagator propagator = createPropagator(ephemerisBlock.getStart(),
-                                                              new InertialProvider(ephemerisBlock.getAngularCoordinates().get(0).getRotation(),
-                                                                                   FramesFactory.getEME2000()));
+            StreamingAemWriter.SegmentWriter segment = writer.newSegment();
+            KeplerianPropagator propagator =
+                            createPropagator(ephemerisBlock.getStart(),
+                                             new InertialProvider(ephemerisBlock.getAngularCoordinates().get(0).getRotation(),
+                                                                  FramesFactory.getEME2000()));
 
             // We propagate 60 seconds after the start date with a step equals to 10.0 seconds
             // It is expected to have an attitude data block containing 7 data lines
@@ -126,9 +126,8 @@ public class StreamingAemWriterTest {
             propagator.propagate(ephemerisBlock.getStart().shiftedBy(60.0));
 
             // Generated AEM file
-            BufferedReader reader =
-                    new BufferedReader(new StringReader(buffer.toString()));
-            AEMFile generatedAemFile = parser.parse(reader, "buffer");
+            final InputStream is = new ByteArrayInputStream(buffer.toString().getBytes(StandardCharsets.UTF_8));
+            AEMFile generatedAemFile = new KVNLexicalAnalyzer(is, "buffer"). accept(parser);
 
             // There is only one attitude ephemeris block
             Assert.assertEquals(1, generatedAemFile.getSegments().size());
@@ -167,57 +166,6 @@ public class StreamingAemWriterTest {
         CartesianOrbit p = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
 
         return new KeplerianPropagator(p, attitudeProv);
-    }
-
-    /**
-     * Check writing an AEM with format parameters for attitude.
-     *
-     * @throws IOException on error
-     */
-    @Test
-    public void testWriteAemFormat() throws IOException {
-        // setup
-        String exampleFile = "/ccsds/adm/aem/AEMExample7.txt";
-        InputStream inEntry = getClass().getResourceAsStream(exampleFile);
-        AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                         null, 1);
-        AEMFile aemFile = parser.parse(inEntry, "AEMExample7.txt");
-
-        AEMSegment block = aemFile.getSegments().get(0);
-
-        TimeScale utc = TimeScalesFactory.getUTC();
-        Map<Keyword, String> metadata = new LinkedHashMap<>();
-        Map<Keyword, String> segmentData = new LinkedHashMap<>();
-
-        StringBuilder buffer = new StringBuilder();
-        StreamingAemWriter writer = new StreamingAemWriter(buffer, utc, metadata, "%.2f");
-        StreamingAemWriter.SegmentWriter segment = writer.newSegment(segmentData);
-
-        for (TimeStampedAngularCoordinates coordinate : block.getAngularCoordinates()) {
-            segment.writeAttitudeEphemerisLine(coordinate, block.isFirst(), block.getAttitudeType(), block.getRotationOrder());
-        }
-
-        String expected = "2002-12-18T12:00:00.331 0.57 0.03 0.46 0.68\n" +
-                          "2002-12-18T12:01:00.331 0.42 -0.46 0.24 0.75\n" +
-                          "2002-12-18T12:02:00.331 -0.85 0.27 -0.07 0.46\n";
-
-        assertEquals(buffer.toString(), expected);
-
-        buffer = new StringBuilder();
-        // Default format
-        writer = new StreamingAemWriter(buffer, utc, metadata);
-        segment = writer.newSegment(segmentData);
-
-        for (TimeStampedAngularCoordinates coordinate : block.getAngularCoordinates()) {
-            segment.writeAttitudeEphemerisLine(coordinate, block.isFirst(), block.getAttitudeType(), block.getRotationOrder());
-        }
-
-        expected = "2002-12-18T12:00:00.331  0.56748  0.03146  0.45689  0.68427\n" +
-                   "2002-12-18T12:01:00.331  0.42319 -0.45697  0.23784  0.74533\n" +
-                   "2002-12-18T12:02:00.331 -0.84532  0.26974 -0.06532  0.45652\n";
-
-        assertEquals(buffer.toString(), expected);
-
     }
 
 }
