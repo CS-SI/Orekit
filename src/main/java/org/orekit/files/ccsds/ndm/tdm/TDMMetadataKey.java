@@ -153,12 +153,12 @@ public enum TDMMetadataKey {
     CORRECTIONS_APPLIED((token, context, metadata) -> token.processAsNormalizedString(metadata::setCorrectionsApplied));
 
     /** Processing method. */
-    private final MetadataEntryProcessor processor;
+    private final TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method
      */
-    TDMMetadataKey(final MetadataEntryProcessor processor) {
+    TDMMetadataKey(final TokenProcessor processor) {
         this.processor = processor;
     }
 
@@ -173,7 +173,7 @@ public enum TDMMetadataKey {
     }
 
     /** Interface for processing one token. */
-    interface MetadataEntryProcessor {
+    interface TokenProcessor {
         /** Process one token.
          * @param token token to process
          * @param context parsing context

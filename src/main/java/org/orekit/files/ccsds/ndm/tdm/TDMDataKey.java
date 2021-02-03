@@ -185,7 +185,7 @@ public enum TDMDataKey {
     private static final Pattern SEPARATOR = Pattern.compile("\\s+");
 
     /** Processing method. */
-    private final DataEntryProcessor processor;
+    private final TokenbProcessor processor;
 
     /** Default constructor for observation lines.
      */
@@ -196,7 +196,7 @@ public enum TDMDataKey {
     /** Simple constructor.
      * @param processor processing method
      */
-    TDMDataKey(final DataEntryProcessor processor) {
+    TDMDataKey(final TokenbProcessor processor) {
         this.processor = processor;
     }
 
@@ -255,7 +255,7 @@ public enum TDMDataKey {
     }
 
     /** Interface for processing one token. */
-    interface DataEntryProcessor {
+    interface TokenbProcessor {
         /** Process one token.
          * @param token token to process
          * @param context parsing context

@@ -93,14 +93,13 @@ public enum AEMMetadataKey {
     /** Interpolation degree in ephemeris. */
     INTERPOLATION_DEGREE((token, context, metadata) -> token.processAsInteger(metadata::setInterpolationDegree));
 
-    /** Constant
     /** Processing method. */
-    private final MetadataEntryProcessor processor;
+    private final TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method
      */
-    AEMMetadataKey(final MetadataEntryProcessor processor) {
+    AEMMetadataKey(final TokenProcessor processor) {
         this.processor = processor;
     }
 
@@ -115,7 +114,7 @@ public enum AEMMetadataKey {
     }
 
     /** Interface for processing one token. */
-    interface MetadataEntryProcessor {
+    interface TokenProcessor {
         /** Process one token.
          * @param token token to process
          * @param context parsing context

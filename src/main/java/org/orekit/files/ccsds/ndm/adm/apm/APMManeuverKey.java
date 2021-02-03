@@ -53,12 +53,12 @@ public enum APMManeuverKey {
     MAN_TOR_3((token, context, data) -> token.processAsIndexedDouble(data::setTorque, 2));
 
     /** Processing method. */
-    private final ManeuverEntryProcessor processor;
+    private final TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method
      */
-    APMManeuverKey(final ManeuverEntryProcessor processor) {
+    APMManeuverKey(final TokenProcessor processor) {
         this.processor = processor;
     }
 
@@ -73,7 +73,7 @@ public enum APMManeuverKey {
     }
 
     /** Interface for processing one token. */
-    interface ManeuverEntryProcessor {
+    interface TokenProcessor {
         /** Process one token.
          * @param token token to process
          * @param context parsing context

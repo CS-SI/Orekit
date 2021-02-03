@@ -55,12 +55,12 @@ public enum APMSpacecraftParametersKey {
     I23((token, context, data) -> token.processAsDouble(data::setI23));
 
     /** Processing method. */
-    private final SpacecraftEntryProcessor processor;
+    private final TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method
      */
-    APMSpacecraftParametersKey(final SpacecraftEntryProcessor processor) {
+    APMSpacecraftParametersKey(final TokenProcessor processor) {
         this.processor = processor;
     }
 
@@ -75,7 +75,7 @@ public enum APMSpacecraftParametersKey {
     }
 
     /** Interface for processing one token. */
-    interface SpacecraftEntryProcessor {
+    interface TokenProcessor {
         /** Process one token.
          * @param token token to process
          * @param context parsing context

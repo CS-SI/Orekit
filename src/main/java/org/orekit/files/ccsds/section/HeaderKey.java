@@ -37,12 +37,12 @@ public enum HeaderKey {
     ORIGINATOR((token, context, header) -> token.processAsNormalizedString(header::setOriginator));
 
     /** Processing method. */
-    private final HeaderEntryProcessor processor;
+    private final TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method
      */
-    HeaderKey(final HeaderEntryProcessor processor) {
+    HeaderKey(final TokenProcessor processor) {
         this.processor = processor;
     }
 
@@ -57,7 +57,7 @@ public enum HeaderKey {
     }
 
     /** Interface for processing one token. */
-    interface HeaderEntryProcessor {
+    interface TokenProcessor {
         /** Process one token.
          * @param token token to process
          * @param context parsing context

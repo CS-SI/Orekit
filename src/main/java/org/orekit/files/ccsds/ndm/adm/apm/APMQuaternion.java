@@ -16,6 +16,8 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
+import java.util.Arrays;
+
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.complex.Quaternion;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -55,6 +57,8 @@ public class APMQuaternion extends CommentsContainer {
         endPoints = new AttitudeEndPoints();
         q         = new double[4];
         qDot      = new double[4];
+        Arrays.fill(q,    Double.NaN);
+        Arrays.fill(qDot, Double.NaN);
     }
 
     /** {@inheritDoc} */

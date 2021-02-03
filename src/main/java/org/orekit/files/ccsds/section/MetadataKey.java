@@ -35,12 +35,12 @@ public enum MetadataKey {
     TIME_SYSTEM((token, context, metadata) -> token.processAsTimeScale(metadata::setTimeSystem));
 
     /** Processing method. */
-    private final MetadataEntryProcessor processor;
+    private final TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method
      */
-    MetadataKey(final MetadataEntryProcessor processor) {
+    MetadataKey(final TokenProcessor processor) {
         this.processor = processor;
     }
 
@@ -55,7 +55,7 @@ public enum MetadataKey {
     }
 
     /** Interface for processing one token. */
-    interface MetadataEntryProcessor {
+    interface TokenProcessor {
         /** Process one token.
          * @param token token to process
          * @param context parsing context

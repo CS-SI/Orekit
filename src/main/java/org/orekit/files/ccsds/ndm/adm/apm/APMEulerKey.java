@@ -114,12 +114,12 @@ public enum APMEulerKey {
     Z_RATE((token, context, data) -> token.processAsIndexedAngle(data::setRotationRate, 2));
 
     /** Processing method. */
-    private final EulerEntryProcessor processor;
+    private final TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method
      */
-    APMEulerKey(final EulerEntryProcessor processor) {
+    APMEulerKey(final TokenProcessor processor) {
         this.processor = processor;
     }
 
@@ -134,7 +134,7 @@ public enum APMEulerKey {
     }
 
     /** Interface for processing one token. */
-    interface EulerEntryProcessor {
+    interface TokenProcessor {
         /** Process one token.
          * @param token token to process
          * @param context parsing context

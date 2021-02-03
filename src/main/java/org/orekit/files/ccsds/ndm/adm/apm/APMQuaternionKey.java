@@ -76,12 +76,12 @@ public enum APMQuaternionKey {
     Q3_DOT((token, context, data) -> token.processAsIndexedDouble(data::setQDot, 3));
 
     /** Processing method. */
-    private final QuaternionEntryProcessor processor;
+    private final TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method
      */
-    APMQuaternionKey(final QuaternionEntryProcessor processor) {
+    APMQuaternionKey(final TokenProcessor processor) {
         this.processor = processor;
     }
 
@@ -96,7 +96,7 @@ public enum APMQuaternionKey {
     }
 
     /** Interface for processing one token. */
-    interface QuaternionEntryProcessor {
+    interface TokenProcessor {
         /** Process one token.
          * @param token token to process
          * @param context parsing context

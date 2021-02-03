@@ -64,12 +64,12 @@ public enum APMSpinStabilizedKey {
     NUTATION_PHASE((token, context, data) -> token.processAsAngle(data::setNutationPhase));
 
     /** Processing method. */
-    private final SpinEntryProcessor processor;
+    private final TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method
      */
-    APMSpinStabilizedKey(final SpinEntryProcessor processor) {
+    APMSpinStabilizedKey(final TokenProcessor processor) {
         this.processor = processor;
     }
 
@@ -84,7 +84,7 @@ public enum APMSpinStabilizedKey {
     }
 
     /** Interface for processing one token. */
-    interface SpinEntryProcessor {
+    interface TokenProcessor {
         /** Process one token.
          * @param token token to process
          * @param context parsing context
