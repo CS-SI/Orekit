@@ -24,6 +24,7 @@ import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.CenterName;
 import org.orekit.files.ccsds.utils.KeyValue;
+import org.orekit.files.ccsds.utils.state.AbstractMessageParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -33,10 +34,13 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public abstract class OCommonParser<T extends ODMFile<?>, P extends ODMParser<T, ?>> extends ODMParser<T, P> {
+public abstract class OCommonParser<T extends ODMFile<?>, P extends OCommonParser<T, ?>> extends AbstractMessageParser<T, P> {
+
+    /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
+    private final AbsoluteDate missionReferenceDate;
 
     /** Gravitational coefficient set by the user in the parser. */
-    private double muSet;
+    private final double muSet;
 
     /** Gravitational coefficient parsed in the ODM File. */
     private double muParsed;
@@ -44,34 +48,23 @@ public abstract class OCommonParser<T extends ODMFile<?>, P extends ODMParser<T,
     /** Gravitational coefficient created from the knowledge of the central body. */
     private double muCreated;
 
-    /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
-    private AbsoluteDate missionReferenceDate;
-
     /** Complete constructor.
+     * @param formatVersionKey key for format version
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames and time scales
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @param mu gravitational coefficient
      */
-    protected OCommonParser(final IERSConventions conventions, final boolean simpleEOP,
+    protected OCommonParser(final String formatVersionKey,
+                            final IERSConventions conventions, final boolean simpleEOP,
                             final DataContext dataContext,
                             final AbsoluteDate missionReferenceDate, final double mu) {
-        super(conventions, simpleEOP, dataContext);
+        super(formatVersionKey, conventions, simpleEOP, dataContext);
         this.missionReferenceDate = missionReferenceDate;
         this.muSet                = mu;
         this.muParsed             = Double.NaN;
         this.muCreated            = Double.NaN;
-    }
-
-    /** Set initial date.
-     * @param newMissionReferenceDate mission reference date to use while parsing
-     * @return a new instance, with mission reference date replaced
-     * @see #getMissionReferenceDate()
-     */
-    public P withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
-        return create(getConventions(), isSimpleEOP(), getDataContext(),
-                      newMissionReferenceDate, muSet);
     }
 
     /**
@@ -82,51 +75,11 @@ public abstract class OCommonParser<T extends ODMFile<?>, P extends ODMParser<T,
         return missionReferenceDate;
     }
 
-    /** Set gravitational coefficient.
-     * @param newMu gravitational coefficient to use while parsing
-     * @return a new instance, with gravitational coefficient value replaced
-     * @see #getMu()
-     */
-    public P withMu(final double newMu) {
-        return create(getConventions(), isSimpleEOP(), getDataContext(), missionReferenceDate, newMu);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected P create(final IERSConventions newConventions,
-                                      final boolean newSimpleEOP,
-                                      final DataContext newDataContext) {
-        return create(newConventions, newSimpleEOP, newDataContext,
-                      missionReferenceDate, muSet);
-    }
-
-    /** Build a new instance.
-     * @param newConventions IERS conventions to use while parsing
-     * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param newDataContext data context used for frames, time scales, and celestial bodies
-     * @param newMissionReferenceDate mission reference date to use while parsing
-     * @param newMu gravitational coefficient to use while parsing
-     * @return a new instance with changed parameters
-     */
-    protected abstract P create(IERSConventions newConventions,
-                               boolean newSimpleEOP,
-                               DataContext newDataContext,
-                               AbsoluteDate newMissionReferenceDate,
-                               double newMu);
-
     /** Get the gravitational coefficient set at construction or by calling {@link #withMu()}.
      * @return gravitational coefficient set at construction or by calling {@link #withMu()}
      */
     protected double getMuSet() {
         return muSet;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected AbsoluteDate parseDate(final String date, final CcsdsTimeScale timeSystem,
-                                     final int lineNumber, final String fileName, final String line) {
-        return timeSystem.parseDate(date, getConventions(), missionReferenceDate,
-                                    getDataContext().getTimeScales());
     }
 
    /** Parse a meta-data key = value entry.

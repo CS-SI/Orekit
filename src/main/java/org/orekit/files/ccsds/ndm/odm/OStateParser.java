@@ -32,7 +32,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public abstract class OStateParser<T extends ODMFile<?>, P extends ODMParser<T, ?>> extends OCommonParser<T, P> {
+public abstract class OStateParser<T extends ODMFile<?>, P extends OStateParser<T, ?>> extends OCommonParser<T, P> {
 
     /** Complete constructor.
      * @param conventions IERS Conventions

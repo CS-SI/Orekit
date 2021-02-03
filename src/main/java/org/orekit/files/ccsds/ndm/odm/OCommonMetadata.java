@@ -23,6 +23,8 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.utils.CcsdsModifiedFrame;
+import org.orekit.files.ccsds.utils.CenterName;
+import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
@@ -50,9 +52,6 @@ public class OCommonMetadata extends ODMMetadata {
      * and Keplerian elements data (and for the covariance reference frame if none is given). */
     private Frame refFrame;
 
-    /** The reference frame specifier, as it appeared in the file. */
-    private String refFrameString;
-
     /** Epoch of reference frame, if not intrinsic to the definition of the
      * reference frame. */
     private String frameEpochString;
@@ -65,6 +64,32 @@ public class OCommonMetadata extends ODMMetadata {
      */
     public OCommonMetadata() {
         super(null);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void checkMandatoryEntries() {
+        super.checkMandatoryEntries();
+        checkNotNull(objectID,   OCommonMetadataKey.OBJECT_ID);
+        checkNotNull(centerName, OCommonMetadataKey.CENTER_NAME);
+        checkNotNull(refFrame,   OCommonMetadataKey.REF_FRAME);
+    }
+
+    /** Finalize the metadata date.
+     * <p>
+     * ODM standard enforces {@code TIME_SYSTEM} to appear *after*
+     * {@code REF_FRAME_EPOCH} so we have to wait until parsing end
+     * to finalize date
+     * <p>
+     * @param context
+     */
+    public void finalizeMetadata(final ParsingContext context) {
+        if (frameEpochString != null) {
+            frameEpoch = context.getTimeScale().parseDate(frameEpochString,
+                                                          context.getConventions(),
+                                                          context.getMissionReferenceDate(),
+                                                          context.getDataContext().getTimeScales());
+        }
     }
 
     /** Get the spacecraft ID for which the orbit state is provided.
@@ -111,11 +136,39 @@ public class OCommonMetadata extends ODMMetadata {
     }
 
     /** Set the origin of reference frame.
-     * @param centerName the origin of reference frame to be set
+     * @param name the origin of reference frame to be set
+     * @param celestialBodies factory for celestial bodies
      */
-    public void setCenterName(final String centerName) {
+    public void setCenterName(final String name, final CelestialBodies celestialBodies) {
+
         refuseFurtherComments();
-        this.centerName = centerName;
+
+        // store the name itself
+        this.centerName = name;
+
+        // change the name to a canonical one in some cases
+        final String canonicalValue;
+        if ("SOLAR SYSTEM BARYCENTER".equals(centerName) || "SSB".equals(centerName)) {
+            canonicalValue = "SOLAR_SYSTEM_BARYCENTER";
+        } else if ("EARTH MOON BARYCENTER".equals(centerName) || "EARTH-MOON BARYCENTER".equals(centerName) ||
+                   "EARTH BARYCENTER".equals(centerName) || "EMB".equals(centerName)) {
+            canonicalValue = "EARTH_MOON";
+        } else {
+            canonicalValue = centerName;
+        }
+
+        final CenterName c;
+        try {
+            c = CenterName.valueOf(canonicalValue);
+        } catch (IllegalArgumentException iae) {
+            hasCreatableBody = false;
+            centerBody       = null;
+            return;
+        }
+
+        hasCreatableBody = true;
+        centerBody       = c.getCelestialBody(celestialBodies);
+
     }
 
     /** Get the {@link CelestialBody} corresponding to the center name.
@@ -199,26 +252,6 @@ public class OCommonMetadata extends ODMMetadata {
     public void setRefFrame(final Frame refFrame) {
         refuseFurtherComments();
         this.refFrame = refFrame;
-    }
-
-    /**
-     * Get the reference frame specifier as it appeared in the file.
-     *
-     * @return the frame name as it appeared in the file.
-     * @see #getFrame()
-     */
-    public String getFrameString() {
-        return this.refFrameString;
-    }
-
-    /**
-     * Set the reference frame name.
-     *
-     * @param frame specifier as it appeared in the file.
-     */
-    public void setFrameString(final String frame) {
-        refuseFurtherComments();
-        this.refFrameString = frame;
     }
 
     /** Get epoch of reference frame, if not intrinsic to the definition of the

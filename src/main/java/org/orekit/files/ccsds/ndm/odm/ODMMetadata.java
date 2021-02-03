@@ -36,6 +36,13 @@ public class ODMMetadata extends Metadata {
         super(defaultTimeSystem);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void checkMandatoryEntries() {
+        super.checkMandatoryEntries();
+        checkNotNull(objectName, ODMMetadataKey.OBJECT_NAME);
+    }
+
     /** Get the spacecraft name for which the orbit state is provided.
      * @return the spacecraft name
      */
