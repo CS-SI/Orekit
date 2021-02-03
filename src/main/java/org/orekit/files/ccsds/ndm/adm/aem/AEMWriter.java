@@ -433,7 +433,7 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
             metadata.setStartTime(segment.getStart());
             metadata.setStopTime(segment.getStop());
             final Frame      segmentFrame = segment.getReferenceFrame();
-            final CCSDSFrame ccsdsFrame   = CCSDSFrame.parse(CCSDSFrame.guessFrame(segmentFrame));
+            final CCSDSFrame ccsdsFrame   = CCSDSFrame.map(segmentFrame);
             metadata.getEndPoints().setExternalFrame(ccsdsFrame);
             metadata.setInterpolationMethod(segment.getInterpolationMethod());
             metadata.setInterpolationDegree(segment.getInterpolationSamples() - 1);

@@ -419,7 +419,7 @@ public class StreamingOemWriter {
         final Map<Keyword, String> meta = new LinkedHashMap<>(this.metadata);
         meta.putAll(segmentMetadata);
         if (!meta.containsKey(Keyword.REF_FRAME)) {
-            meta.put(Keyword.REF_FRAME, CCSDSFrame.guessFrame(frame));
+            meta.put(Keyword.REF_FRAME, CCSDSFrame.map(frame).name());
         }
         if (!meta.containsKey(Keyword.CENTER_NAME)) {
             meta.put(Keyword.CENTER_NAME, guessCenter(frame));
@@ -536,7 +536,7 @@ public class StreamingOemWriter {
                 writeKeyValue(Keyword.EPOCH, epoch);
 
                 if (covarianceMatrix.getFrame() != null ) {
-                    writeKeyValue(Keyword.COV_REF_FRAME, CCSDSFrame.guessFrame(covarianceMatrix.getFrame()));
+                    writeKeyValue(Keyword.COV_REF_FRAME, CCSDSFrame.map(covarianceMatrix.getFrame()).name());
                 } else if (covarianceMatrix.getLofType() != null) {
                     if (covarianceMatrix.getLofType() == LOFType.QSW) {
                         writeKeyValue(Keyword.COV_REF_FRAME, "RTN");

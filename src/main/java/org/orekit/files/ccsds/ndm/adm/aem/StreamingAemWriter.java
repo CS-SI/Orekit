@@ -106,7 +106,7 @@ public class StreamingAemWriter {
                 metadata.setUseableStopTime(null);
                 metadata.setStopTime(t);
                 final Frame      stateFrame = s0.getAttitude().getReferenceFrame();
-                final CCSDSFrame ccsdsFrame = CCSDSFrame.parse(CCSDSFrame.guessFrame(stateFrame));
+                final CCSDSFrame ccsdsFrame = CCSDSFrame.map(stateFrame);
                 metadata.getEndPoints().setExternalFrame(ccsdsFrame);
                 aemWriter.writeMetadata(appendable);
                 aemWriter.startAttitudeBlock(appendable);

@@ -16,13 +16,13 @@
  */
 package org.orekit.files.ccsds.utils;
 
-import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.ITRFVersion;
@@ -133,8 +133,7 @@ public enum CCSDSFrame {
             if (conventions == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
             }
-            return dataContext.getFrames()
-                    .getITRF(ITRFVersion.ITRF_2014, conventions, simpleEOP);
+            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_2014, conventions, simpleEOP);
         }
 
     },
@@ -150,8 +149,7 @@ public enum CCSDSFrame {
             if (conventions == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
             }
-            return dataContext.getFrames()
-                    .getITRF(ITRFVersion.ITRF_2008, conventions, simpleEOP);
+            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_2008, conventions, simpleEOP);
         }
 
     },
@@ -167,8 +165,7 @@ public enum CCSDSFrame {
             if (conventions == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
             }
-            return dataContext.getFrames()
-                    .getITRF(ITRFVersion.ITRF_2005, conventions, simpleEOP);
+            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_2005, conventions, simpleEOP);
         }
 
     },
@@ -184,25 +181,7 @@ public enum CCSDSFrame {
             if (conventions == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
             }
-            return dataContext.getFrames()
-                    .getITRF(ITRFVersion.ITRF_2000, conventions, simpleEOP);
-        }
-
-    },
-
-    /** International Terrestrial Reference Frame 1993. */
-    ITRF93(null) {
-
-        /** {@inheritDoc} */
-        @Override
-        public Frame getFrame(final IERSConventions conventions,
-                              final boolean simpleEOP,
-                              final DataContext dataContext) {
-            if (conventions == null) {
-                throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
-            }
-            return dataContext.getFrames()
-                    .getITRF(ITRFVersion.ITRF_93, conventions, simpleEOP);
+            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_2000, conventions, simpleEOP);
         }
 
     },
@@ -218,8 +197,135 @@ public enum CCSDSFrame {
             if (conventions == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
             }
-            return dataContext.getFrames()
-                    .getITRF(ITRFVersion.ITRF_97, conventions, simpleEOP);
+            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_97, conventions, simpleEOP);
+        }
+
+    },
+
+    /** International Terrestrial Reference Frame 1996. */
+    ITRF96(null) {
+
+        /** {@inheritDoc} */
+        @Override
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
+            if (conventions == null) {
+                throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
+            }
+            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_96, conventions, simpleEOP);
+        }
+
+    },
+
+    /** International Terrestrial Reference Frame 1994. */
+    ITRF94(null) {
+
+        /** {@inheritDoc} */
+        @Override
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
+            if (conventions == null) {
+                throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
+            }
+            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_94, conventions, simpleEOP);
+        }
+
+    },
+
+    /** International Terrestrial Reference Frame 1993. */
+    ITRF93(null) {
+
+        /** {@inheritDoc} */
+        @Override
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
+            if (conventions == null) {
+                throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
+            }
+            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_93, conventions, simpleEOP);
+        }
+
+    },
+
+    /** International Terrestrial Reference Frame 1992. */
+    ITRF92(null) {
+
+        /** {@inheritDoc} */
+        @Override
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
+            if (conventions == null) {
+                throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
+            }
+            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_92, conventions, simpleEOP);
+        }
+
+    },
+
+    /** International Terrestrial Reference Frame 1991. */
+    ITRF91(null) {
+
+        /** {@inheritDoc} */
+        @Override
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
+            if (conventions == null) {
+                throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
+            }
+            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_91, conventions, simpleEOP);
+        }
+
+    },
+
+    /** International Terrestrial Reference Frame 1990. */
+    ITRF90(null) {
+
+        /** {@inheritDoc} */
+        @Override
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
+            if (conventions == null) {
+                throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
+            }
+            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_90, conventions, simpleEOP);
+        }
+
+    },
+
+    /** International Terrestrial Reference Frame 1989. */
+    ITRF89(null) {
+
+        /** {@inheritDoc} */
+        @Override
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
+            if (conventions == null) {
+                throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
+            }
+            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_89, conventions, simpleEOP);
+        }
+
+    },
+
+    /** International Terrestrial Reference Frame 1988. */
+    ITRF88(null) {
+
+        /** {@inheritDoc} */
+        @Override
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
+            if (conventions == null) {
+                throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
+            }
+            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_88, conventions, simpleEOP);
         }
 
     },
@@ -232,8 +338,7 @@ public enum CCSDSFrame {
         public Frame getFrame(final IERSConventions conventions,
                               final boolean simpleEOP,
                               final DataContext dataContext) {
-            return dataContext.getCelestialBodies().getMars()
-                    .getInertiallyOrientedFrame();
+            return dataContext.getCelestialBodies().getMars().getInertiallyOrientedFrame();
         }
 
     },
@@ -380,6 +485,53 @@ public enum CCSDSFrame {
     }
 
     /**
+     * Map an Orekit frame to a CCSDS frame.
+     *
+     * <p> The goal of this method is to perform the opposite mapping of {@link
+     * #getFrame(IERSConventions, boolean, DataContext)}.
+     *
+     * @param frame a reference frame for message output.
+     * @return the CCSDSFrame corresponding to the Orekit frame
+     */
+    public static CCSDSFrame map(final Frame frame) {
+        // define some constant strings to make checkstyle happy
+        /** Suffix of the name of the inertial frame attached to a planet. */
+        final String inertialFrameSuffix = "/inertial";
+        final String itrf                = "ITRF";
+        // Try to determine the CCSDS name from Annex A by examining the Orekit name.
+        final String name = frame.getName();
+        try {
+            // should handle J2000, GCRF, TEME, and some frames created by OEMParser.
+            return CCSDSFrame.valueOf(name);
+        } catch (IllegalArgumentException iae) {
+            if (frame instanceof CcsdsModifiedFrame) {
+                return ((CcsdsModifiedFrame) frame).getRefFrame();
+            } else if ((CelestialBodyFactory.MARS + inertialFrameSuffix).equals(name)) {
+                return MCI;
+            } else if ((CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER + inertialFrameSuffix).equals(name)) {
+                return ICRF;
+            } else if (name.contains("GTOD")) {
+                return GTOD;
+            } else if (name.contains("TOD")) { // check after GTOD
+                return TOD;
+            } else if (name.contains("Equinox") && name.contains(itrf)) {
+                return GRC;
+            } else if (frame instanceof VersionedITRF) {
+                try {
+                    final ITRFVersion itrfVersion = ((VersionedITRF) frame).getITRFVersion();
+                    return CCSDSFrame.valueOf(itrfVersion.name().replace("_", ""));
+                } catch (IllegalArgumentException iae2) {
+                    // this should never happen
+                    throw new OrekitInternalError(iae2);
+                }
+            } else if (name.contains("CIO") && name.contains(itrf)) {
+                return ITRF2014;
+            }
+            throw new OrekitException(iae, OrekitMessages.CCSDS_INVALID_FRAME, name);
+        }
+    }
+
+    /**
      * Guesses names from ODM Table 5-3 and Annex A.
      *
      * <p> The goal of this method is to perform the opposite mapping of {@link
@@ -389,39 +541,11 @@ public enum CCSDSFrame {
      * @return the string to use in the OEM file to identify {@code frame}.
      */
     public static String guessFrame(final Frame frame) {
-        // define some constant strings to make checkstyle happy
-        /** Suffix of the name of the inertial frame attached to a planet. */
-        final String inertialFrameSuffix = "/inertial";
-        final String gtod = "GTOD";
-        final String tod  = "TOD";
-        final String itrf = "ITRF";
-        // Try to determine the CCSDS name from Annex A by examining the Orekit name.
-        final String name = frame.getName();
-        if (Arrays.stream(CCSDSFrame.values())
-                .map(CCSDSFrame::name)
-                .anyMatch(name::equals)) {
-            // should handle J2000, GCRF, TEME, and some frames created by OEMParser.
-            return name;
-        } else if (frame instanceof CcsdsModifiedFrame) {
-            return ((CcsdsModifiedFrame) frame).getRefFrame();
-        } else if ((CelestialBodyFactory.MARS + inertialFrameSuffix).equals(name)) {
-            return "MCI";
-        } else if ((CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER + inertialFrameSuffix)
-                .equals(name)) {
-            return "ICRF";
-        } else if (name.contains(gtod)) {
-            return gtod;
-        } else if (name.contains(tod)) { // check after GTOD
-            return tod;
-        } else if (name.contains("Equinox") && name.contains(itrf)) {
-            return "GRC";
-        } else if (frame instanceof VersionedITRF) {
-            return ((VersionedITRF) frame).getITRFVersion().getName().replace("-", "");
-        } else if (name.contains("CIO") && name.contains(itrf)) {
-            return "ITRF2014";
-        } else {
-            // don't know how to map it to a CCSDS reference frame
-            return name;
+        try {
+            return map(frame).name();
+        } catch (OrekitException oe) {
+            // we were unable to find a match
+            return frame.getName();
         }
     }
 

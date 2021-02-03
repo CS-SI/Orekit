@@ -30,6 +30,7 @@ import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer;
 import org.orekit.files.ccsds.utils.lexical.LexicalAnalyzer;
@@ -969,6 +970,7 @@ public class TDMParserTest {
         Assert.assertEquals("RU", metadata.getRangeUnits());
         Assert.assertEquals("RADEC", metadata.getAngleType());
         Assert.assertEquals("EME2000", metadata.getReferenceFrame().getName());
+        Assert.assertEquals(CCSDSFrame.EME2000, metadata.getReferenceCCSDSFrame());
         Assert.assertEquals(true,FramesFactory.getEME2000().equals(metadata.getReferenceFrame()));
         Assert.assertEquals(0.000077, metadata.getTransmitDelays().get(1), 0.0);
         Assert.assertEquals(0.000077, metadata.getTransmitDelays().get(2), 0.0);

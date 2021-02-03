@@ -136,6 +136,13 @@ public class ParseToken {
         }
     }
 
+    /** Get the content of the entry as an angle.
+     * @return content as an angle
+     */
+    public double getContentAsAngle() {
+        return FastMath.toRadians(getContentAsDouble());
+    }
+
     /** Get the content of the entry as an integer.
      * @return content as an integer
      */
@@ -251,12 +258,26 @@ public class ParseToken {
 
     /** Process the content as an indexed double.
      * @param consumer consumer of the indexed double
-     * @param index index
+     * @param i index
      * @return always returns {@code true}
      */
-    public boolean processAsIndexedDouble(final IndexedDoubleConsumer consumer, final int index) {
+    public boolean processAsIndexedDouble(final IndexedDoubleConsumer consumer, final int i) {
         if (type == TokenType.ENTRY) {
-            consumer.accept(index, getContentAsDouble());
+            consumer.accept(i, getContentAsDouble());
+        }
+        return true;
+    }
+
+    /** Process the content as a doubly-indexed double.
+     * @param consumer consumer of the doubly-indexed double
+     * @param i first index
+     * @param j second index
+     * @return always returns {@code true}
+     */
+    public boolean processAsDoublyIndexedDouble(final DoublyIndexedDoubleConsumer consumer,
+                                                final int i, final int j) {
+        if (type == TokenType.ENTRY) {
+            consumer.accept(i, j, getContentAsDouble());
         }
         return true;
     }
@@ -267,7 +288,7 @@ public class ParseToken {
      */
     public boolean processAsAngle(final DoubleConsumer consumer) {
         if (type == TokenType.ENTRY) {
-            consumer.accept(FastMath.toRadians(getContentAsDouble()));
+            consumer.accept(getContentAsAngle());
         }
         return true;
     }
@@ -325,7 +346,8 @@ public class ParseToken {
                 final CCSDSFrame frame = CCSDSFrame.valueOf(DASH.matcher(content).replaceAll(""));
                 consumer.accept(frame.getFrame(context.getConventions(),
                                                context.isSimpleEOP(),
-                                               context.getDataContext()));
+                                               context.getDataContext()),
+                                frame);
             } catch (IllegalArgumentException iae) {
                 throw generateException(iae);
             }
@@ -411,11 +433,21 @@ public class ParseToken {
 
     /** Interface representing instance methods that consume indexed double values. */
     public interface IndexedDoubleConsumer {
-        /** Consume an indexed string.
-         * @param index index
+        /** Consume an indexed double.
+         * @param i index
          * @param value value to consume
          */
-        void accept(int index, double value);
+        void accept(int i, double value);
+    }
+
+    /** Interface representing instance methods that consume doubly-indexed double values. */
+    public interface DoublyIndexedDoubleConsumer {
+        /** Consume a doubly indexed double.
+         * @param i first index
+         * @param j second index
+         * @param value value to consume
+         */
+        void accept(int i, int j, double value);
     }
 
     /** Interface representing instance methods that consume date values. */
@@ -437,9 +469,10 @@ public class ParseToken {
     /** Interface representing instance methods that consume frame values. */
     public interface FrameConsumer {
         /** Consume a frame.
-         * @param value value to consume
+         * @param frame Orekit frame
+         * @param ccsdsFrame CCSDS frame
          */
-        void accept(Frame value);
+        void accept(Frame frame, CCSDSFrame ccsdsFrame);
     }
 
     /** Interface representing instance methods that consume center values. */

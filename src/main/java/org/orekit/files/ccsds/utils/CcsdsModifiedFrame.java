@@ -36,8 +36,8 @@ public class CcsdsModifiedFrame extends Frame {
     /** Serializable UID. */
     private static final long serialVersionUID = 20170619L;
 
-    /** Value of the REF_FRAME keyword in the ODM file used to create this frame. */
-    private final String refFrame;
+    /** Reference frame used to create this frame. */
+    private final CCSDSFrame refFrame;
 
     /** Value of the CENTER_NAME keyword in the ODM file used to create this frame. */
     private final String centerName;
@@ -46,14 +46,13 @@ public class CcsdsModifiedFrame extends Frame {
      * Create a CCSDS reference frame by changing the origin of an existing frame.
      *
      * @param frame      the existing frame that specifies the orientation.
-     * @param refFrame   the value of the {@code REF_FRAME} key word used to create {@code
-     *                   frame}.
+     * @param refFrame   the reference frame used to create this frame.
      * @param body       the new origin.
      * @param centerName the value of the {@code CENTER_NAME} key word used to create
      *                   {@code body}.
      */
     public CcsdsModifiedFrame(final Frame frame,
-                              final String refFrame,
+                              final CCSDSFrame refFrame,
                               final CelestialBody body,
                               final String centerName) {
         super(
@@ -61,17 +60,16 @@ public class CcsdsModifiedFrame extends Frame {
                 new OriginTransformProvider(body, frame),
                 body.getName() + "/" + frame.getName(),
                 frame.isPseudoInertial());
-        this.refFrame = refFrame;
+        this.refFrame   = refFrame;
         this.centerName = centerName;
     }
 
     /**
-     * Get the name of the CCSDS reference frame.
+     * Get the CCSDS reference frame.
      *
-     * @return the value of the {@code REF_FRAME} keyword used to specify the orientation
-     * of this frame.
+     * @return the reference frame used to create this frame.
      */
-    public String getRefFrame() {
+    public CCSDSFrame getRefFrame() {
         return refFrame;
     }
 

@@ -23,6 +23,7 @@ import java.util.TreeMap;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.section.Metadata;
+import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
@@ -133,6 +134,9 @@ public class TDMMetadata extends Metadata {
 
     /** Reference frame in which data are given: used in combination with ANGLE_TYPE=RADEC. */
     private Frame referenceFrame;
+
+    /** Reference frame in which data are given: used in combination with ANGLE_TYPE=RADEC. */
+    private CCSDSFrame referenceCCSDSFrame;
 
     /** Transmit delays map.<p>
      *  Specifies a fixed interval of time, in seconds, for the signal to travel from the transmitting
@@ -507,12 +511,21 @@ public class TDMMetadata extends Metadata {
         return referenceFrame;
     }
 
+    /** Get the the value of {@code REFERENCE_FRAME} as an Orekit {@link Frame}.
+     * @return The reference frame specified by the {@code REFERENCE_FRAME} keyword.
+     */
+    public CCSDSFrame getReferenceCCSDSFrame() {
+        return referenceCCSDSFrame;
+    }
+
     /** Set the reference frame in which data are given: used for RADEC tracking data.
      * @param refFrame the reference frame to be set
+     * @param refCCSDSFrame the reference frame to be set
      */
-    public void setReferenceFrame(final Frame refFrame) {
+    public void setReferenceFrame(final Frame refFrame, final CCSDSFrame refCCSDSFrame) {
         refuseFurtherComments();
-        this.referenceFrame = refFrame;
+        this.referenceFrame      = refFrame;
+        this.referenceCCSDSFrame = refCCSDSFrame;
     }
 
     /** Getter for the transmitDelays.

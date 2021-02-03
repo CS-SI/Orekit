@@ -357,7 +357,7 @@ public class AEMWriterTest {
             metadata.addComment("metadata for " + objectName);
             metadata.setObjectID(objectID);
             metadata.setObjectName(objectName);
-            metadata.getEndPoints().setExternalFrame(CCSDSFrame.parse(CCSDSFrame.guessFrame(referenceFrame)));
+            metadata.getEndPoints().setExternalFrame(CCSDSFrame.map(referenceFrame));
             metadata.setAttitudeType(type);
             metadata.setStartTime(ac0.getDate());
             metadata.setStopTime(ac0.getDate().shiftedBy(duration));

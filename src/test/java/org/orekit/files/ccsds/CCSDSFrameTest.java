@@ -64,87 +64,111 @@ public class CCSDSFrameTest {
     }
 
     /**
-     * Check guessing the CCSDS frame name for some frames.
+     * Check mapping frames to CCSDS frames.
      */
     @Test
-    public void testGuessFrame() {
+    public void testMap() {
         // action + verify
         // check all non-LOF frames created by OEMParser
         for (CCSDSFrame ccsdsFrame : CCSDSFrame.values()) {
             if (!ccsdsFrame.isLof()) {
                 Frame frame = ccsdsFrame.getFrame(IERSConventions.IERS_2010, true);
-                String actual = CCSDSFrame.guessFrame(frame);
+                CCSDSFrame actual = CCSDSFrame.map(frame);
                 if (ccsdsFrame == CCSDSFrame.J2000) {
                     // CCSDS allows both J2000 and EME2000 names
                     // Orekit chose to use EME2000 when guessing name from frame instance
-                    MatcherAssert.assertThat(actual, CoreMatchers.is(CCSDSFrame.EME2000.name()));
+                    MatcherAssert.assertThat(actual, CoreMatchers.is(CCSDSFrame.EME2000));
                 } else  if (ccsdsFrame == CCSDSFrame.TDR) {
                     // CCSDS allows both GTOD (in ADM section A3) and
                     // TDR (in ODM table 5-3 and section A2) names
                     // Orekit chose to use GTOD when guessing name from frame instance
-                    MatcherAssert.assertThat(actual, CoreMatchers.is(CCSDSFrame.GTOD.name()));
+                    MatcherAssert.assertThat(actual, CoreMatchers.is(CCSDSFrame.GTOD));
                 } else {
-                    MatcherAssert.assertThat(actual, CoreMatchers.is(ccsdsFrame.name()));
+                    MatcherAssert.assertThat(actual, CoreMatchers.is(ccsdsFrame));
                 }
             }
         }
 
         // check common Orekit frames from FramesFactory
-        MatcherAssert.assertThat(CCSDSFrame.guessFrame(FramesFactory.getGCRF()),
-                                 CoreMatchers.is("GCRF"));
-        MatcherAssert.assertThat(CCSDSFrame.guessFrame(FramesFactory.getEME2000()),
-                                 CoreMatchers.is("EME2000"));
-        MatcherAssert.assertThat(CCSDSFrame.guessFrame(FramesFactory.getITRFEquinox(IERSConventions.IERS_2010, true)),
-                                 CoreMatchers.is("GRC"));
-        MatcherAssert.assertThat(CCSDSFrame.guessFrame(FramesFactory.getICRF()),
-                                 CoreMatchers.is("ICRF"));
-        MatcherAssert.assertThat(CCSDSFrame.guessFrame(FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
-                                 CoreMatchers.is("ITRF2014"));
-        MatcherAssert.assertThat(CCSDSFrame.guessFrame(FramesFactory.getGTOD(true)),
-                                 CoreMatchers.is("GTOD"));
-        MatcherAssert.assertThat(CCSDSFrame.guessFrame(FramesFactory.getTEME()),
-                                 CoreMatchers.is("TEME"));
-        MatcherAssert.assertThat(CCSDSFrame.guessFrame(FramesFactory.getTOD(true)),
-                                 CoreMatchers.is("TOD"));
+        MatcherAssert.assertThat(CCSDSFrame.map(FramesFactory.getGCRF()),
+                                 CoreMatchers.is(CCSDSFrame.GCRF));
+        MatcherAssert.assertThat(CCSDSFrame.map(FramesFactory.getEME2000()),
+                                 CoreMatchers.is(CCSDSFrame.EME2000));
+        MatcherAssert.assertThat(CCSDSFrame.map(FramesFactory.getITRFEquinox(IERSConventions.IERS_2010, true)),
+                                 CoreMatchers.is(CCSDSFrame.GRC));
+        MatcherAssert.assertThat(CCSDSFrame.map(FramesFactory.getICRF()),
+                                 CoreMatchers.is(CCSDSFrame.ICRF));
+        MatcherAssert.assertThat(CCSDSFrame.map(FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
+                                 CoreMatchers.is(CCSDSFrame.ITRF2014));
+        MatcherAssert.assertThat(CCSDSFrame.map(FramesFactory.getGTOD(true)),
+                                 CoreMatchers.is(CCSDSFrame.GTOD));
+        MatcherAssert.assertThat(CCSDSFrame.map(FramesFactory.getTEME()),
+                                 CoreMatchers.is(CCSDSFrame.TEME));
+        MatcherAssert.assertThat(CCSDSFrame.map(FramesFactory.getTOD(true)),
+                                 CoreMatchers.is(CCSDSFrame.TOD));
 
         // check that guessed name loses the IERS conventions and simpleEOP flag
         for (ITRFVersion version : ITRFVersion.values()) {
             final String name = version.getName().replaceAll("-", "");
             for (final IERSConventions conventions : IERSConventions.values()) {
-                MatcherAssert.assertThat(CCSDSFrame.guessFrame(FramesFactory.getITRF(version, conventions, true)),
+                MatcherAssert.assertThat(CCSDSFrame.map(FramesFactory.getITRF(version, conventions, true)).name(),
                                          CoreMatchers.is(name));
-                MatcherAssert.assertThat(CCSDSFrame.guessFrame(FramesFactory.getITRF(version, conventions, false)),
+                MatcherAssert.assertThat(CCSDSFrame.map(FramesFactory.getITRF(version, conventions, false)).name(),
                                          CoreMatchers.is(name));
             }
         }
 
         // check other names in Annex A
         MatcherAssert.assertThat(
-                CCSDSFrame.guessFrame(CelestialBodyFactory.getMars().getInertiallyOrientedFrame()),
-                CoreMatchers.is("MCI"));
-        MatcherAssert.assertThat(CCSDSFrame.guessFrame(CelestialBodyFactory.getSolarSystemBarycenter().
+                CCSDSFrame.map(CelestialBodyFactory.getMars().getInertiallyOrientedFrame()),
+                CoreMatchers.is(CCSDSFrame.MCI));
+        MatcherAssert.assertThat(CCSDSFrame.map(CelestialBodyFactory.getSolarSystemBarycenter().
                                  getInertiallyOrientedFrame()),
-                                 CoreMatchers.is("ICRF"));
+                                 CoreMatchers.is(CCSDSFrame.ICRF));
         // check some special CCSDS frames
-        CcsdsModifiedFrame frame = new CcsdsModifiedFrame(FramesFactory.getEME2000(), "EME2000",
+        CcsdsModifiedFrame frame = new CcsdsModifiedFrame(FramesFactory.getEME2000(),
+                                                          CCSDSFrame.EME2000,
                                                           CelestialBodyFactory.getMars(), "MARS");
-        MatcherAssert.assertThat(CCSDSFrame.guessFrame(frame), CoreMatchers.is("EME2000"));
+        MatcherAssert.assertThat(CCSDSFrame.map(frame), CoreMatchers.is(CCSDSFrame.EME2000));
         Vector3D v = frame.getTransformProvider().getTransform(AbsoluteDate.J2000_EPOCH).getTranslation();
         FieldVector3D<Decimal64> v64 = frame.getTransformProvider().getTransform(FieldAbsoluteDate.getJ2000Epoch(Decimal64Field.getInstance())).getTranslation();
         Assert.assertEquals(0.0, FieldVector3D.distance(v64, v).getReal(), 1.0e-10);
 
         // check unknown frame
-        Frame topo = new TopocentricFrame(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                               Constants.WGS84_EARTH_FLATTENING,
-                                                               FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
-                                          new GeodeticPoint(1.2, 2.3, 45.6),
-                                          "dummy");
-        MatcherAssert.assertThat(CCSDSFrame.guessFrame(topo), CoreMatchers.is("dummy"));
+        try {
+            Frame topo = new TopocentricFrame(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                   Constants.WGS84_EARTH_FLATTENING,
+                                                                   FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
+                                              new GeodeticPoint(1.2, 2.3, 45.6),
+                            "dummy");
+            CCSDSFrame.map(topo);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_INVALID_FRAME, oe.getSpecifier());
+            Assert.assertEquals("dummy", oe.getParts()[0]);
+        }
 
         // check a fake ICRF
         Frame fakeICRF = new Frame(FramesFactory.getGCRF(), Transform.IDENTITY,
                                    CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER + "/inertial");
-        MatcherAssert.assertThat(CCSDSFrame.guessFrame(fakeICRF), CoreMatchers.is("ICRF"));
+        MatcherAssert.assertThat(CCSDSFrame.map(fakeICRF), CoreMatchers.is(CCSDSFrame.ICRF));
+    }
+
+    /**
+     * Check guessing names.
+     */
+    @Test
+    public void testGuessFrame() {
+
+        Frame itrf89 = FramesFactory.getITRF(ITRFVersion.ITRF_89, IERSConventions.IERS_1996, true);
+        Assert.assertEquals("ITRF89", CCSDSFrame.guessFrame(itrf89));
+
+        Frame topo = new TopocentricFrame(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                               Constants.WGS84_EARTH_FLATTENING,
+                                                               FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
+                                          new GeodeticPoint(1.2, 2.3, 45.6),
+                        "dummy");
+        Assert.assertEquals("dummy", CCSDSFrame.guessFrame(topo));
     }
 
     @Before
