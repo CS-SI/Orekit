@@ -114,7 +114,7 @@ public class APMManeuver extends CommentsContainer {
     }
 
     /** Check if maneuver has been completed.
-     * @return true if torque has been completed
+     * @return true if maneuver has been completed
      */
     public boolean completed() {
         return !(epochStart     == null ||

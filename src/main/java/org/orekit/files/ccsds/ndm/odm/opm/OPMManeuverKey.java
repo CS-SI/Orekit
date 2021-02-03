@@ -14,43 +14,56 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.ccsds.ndm.adm.apm;
+package org.orekit.files.ccsds.ndm.odm.opm;
 
+import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
-import org.orekit.files.ccsds.utils.lexical.TokenType;
 
-/** Keys for {@link APMManeuver APM maneuver} entries.
- * @author Bryan Cazabonne
+
+/** Keys for {@link OPMManeuver OPM maneuver} entries.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public enum APMManeuverKey {
-
-    /** Block wrapping element in XML files. */
-    maneuverParameters((token, context, data) -> true),
+public enum OPMManeuverKey {
 
     /** Comment entry. */
     COMMENT((token, context, data) ->
             token.getType() == TokenType.ENTRY ? data.addComment(token.getContent()) : true),
 
-    /** Epoch start entry. */
-    MAN_EPOCH_START((token, context, data) -> token.processAsDate(data::setEpochStart, context)),
+    /** Epoch of ignition. */
+    MAN_EPOCH_IGNITION((token, context, data) -> token.processAsDate(data::setEpochIgnition, context)),
 
-    /** Duration entry. */
+    /** Coordinate system for velocity increment vector. */
+    MAN_REF_FRAME((token, context, data) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            final CCSDSFrame manFrame = CCSDSFrame.parse(token.getContent());
+            if (manFrame.isLof()) {
+                data.setRefLofType(manFrame.getLofType());
+            } else {
+                data.setRefFrame(manFrame.getFrame(context.getConventions(),
+                                                   context.isSimpleEOP(),
+                                                   context.getDataContext()));
+            }
+        }
+        return true;
+    }),
+
+    /** Maneuver duration (0 for impulsive maneuvers). */
     MAN_DURATION((token, context, data) -> token.processAsDouble(1.0, data::setDuration)),
 
-    /** Reference frame entry. */
-    MAN_REF_FRAME((token, context, data) -> token.processAsNormalizedString(data::setRefFrameString)),
+    /** Mass change during maneuver (value is &lt; 0). */
+    MAN_DELTA_MASS((token, context, data) -> token.processAsDouble(1.0, data::setDeltaMass)),
 
-    /** First torque vector component entry. */
-    MAN_TOR_1((token, context, data) -> token.processAsIndexedDouble(0, 1.0, data::setTorque)),
+    /** First component of the velocity increment. */
+    MAN_DV_1((token, context, data) -> token.processAsIndexedDouble(0, 1.0e3, data::setDV)),
 
-    /** Second torque vector component entry. */
-    MAN_TOR_2((token, context, data) -> token.processAsIndexedDouble(1, 1.0, data::setTorque)),
+    /** Second component of the velocity increment. */
+    MAN_DV_2((token, context, data) -> token.processAsIndexedDouble(1, 1.0e3, data::setDV)),
 
-    /** Third torque vector component entry. */
-    MAN_TOR_3((token, context, data) -> token.processAsIndexedDouble(2, 1.0, data::setTorque));
+    /** Third component of the velocity increment. */
+    MAN_DV_3((token, context, data) -> token.processAsIndexedDouble(2, 1.0e3, data::setDV));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -58,7 +71,7 @@ public enum APMManeuverKey {
     /** Simple constructor.
      * @param processor processing method
      */
-    APMManeuverKey(final TokenProcessor processor) {
+    OPMManeuverKey(final TokenProcessor processor) {
         this.processor = processor;
     }
 
@@ -68,7 +81,7 @@ public enum APMManeuverKey {
      * @param data data to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final APMManeuver data) {
+    public boolean process(final ParseToken token, final ParsingContext context, final OPMManeuver data) {
         return processor.process(token, context, data);
     }
 
@@ -80,7 +93,7 @@ public enum APMManeuverKey {
          * @param data data to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, APMManeuver data);
+        boolean process(ParseToken token, ParsingContext context, OPMManeuver data);
     }
 
 }

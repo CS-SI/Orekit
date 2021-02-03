@@ -96,22 +96,22 @@ public enum APMEulerKey {
     RATE_FRAME((token, context, data) -> token.processAsNormalizedString(data::setRateFrameString)),
 
     /** X body rotation angle entry. */
-    X_ANGLE((token, context, data) -> token.processAsIndexedAngle(data::setRotationAngle, 0)),
+    X_ANGLE((token, context, data) -> token.processAsIndexedAngle(0, data::setRotationAngle)),
 
     /** Y body rotation angle entry. */
-    Y_ANGLE((token, context, data) -> token.processAsIndexedAngle(data::setRotationAngle, 1)),
+    Y_ANGLE((token, context, data) -> token.processAsIndexedAngle(1, data::setRotationAngle)),
 
     /** Z body rotation angle entry. */
-    Z_ANGLE((token, context, data) -> token.processAsIndexedAngle(data::setRotationAngle, 2)),
+    Z_ANGLE((token, context, data) -> token.processAsIndexedAngle(2, data::setRotationAngle)),
 
     /** X body rotation rate entry. */
-    X_RATE((token, context, data) -> token.processAsIndexedAngle(data::setRotationRate, 0)),
+    X_RATE((token, context, data) -> token.processAsIndexedAngle(0, data::setRotationRate)),
 
     /** Y body rotation rate entry. */
-    Y_RATE((token, context, data) -> token.processAsIndexedAngle(data::setRotationRate, 1)),
+    Y_RATE((token, context, data) -> token.processAsIndexedAngle(1, data::setRotationRate)),
 
     /** Z body rotation rate entry. */
-    Z_RATE((token, context, data) -> token.processAsIndexedAngle(data::setRotationRate, 2));
+    Z_RATE((token, context, data) -> token.processAsIndexedAngle(2, data::setRotationRate));
 
     /** Processing method. */
     private final TokenProcessor processor;

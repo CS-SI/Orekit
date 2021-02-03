@@ -18,16 +18,39 @@ package org.orekit.files.ccsds.ndm.odm;
 
 import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
 
 
-/** Keys for {@link ODMMetadata ODM metadata} entries.
+/** Keys for {@link ODMStateVector ODM state vector data} entries.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public enum ODMMetadataKey {
+public enum ODMStateVectorKey {
 
-    /** Object name entry. */
-    OBJECT_NAME((token, context, metadata) -> token.processAsNormalizedString(metadata::setObjectName));
+    /** Comment entry. */
+    COMMENT((token, context, data) ->
+            token.getType() == TokenType.ENTRY ? data.addComment(token.getContent()) : true),
+
+    /** Epoch of state vector and optional Keplerian elements. */
+    EPOCH((token, context, data) -> token.processAsDate(data::setEpoch, context)),
+
+    /** Position vector X-component. */
+    X((token, context, data) -> token.processAsIndexedDouble(0, 1.0e3, data::setP)),
+
+    /** Position vector Y-component. */
+    Y((token, context, data) -> token.processAsIndexedDouble(1, 1.0e3, data::setP)),
+
+    /** Position vector Z-component. */
+    Z((token, context, data) -> token.processAsIndexedDouble(2, 1.0e3, data::setP)),
+
+    /** Velocity vector X-component. */
+    X_DOT((token, context, data) -> token.processAsIndexedDouble(0, 1.0e3, data::setV)),
+
+    /** Velocity vector Y-component. */
+    Y_DOT((token, context, data) -> token.processAsIndexedDouble(1, 1.0e3, data::setV)),
+
+    /** Velocity vector Z-component. */
+    Z_DOT((token, context, data) -> token.processAsIndexedDouble(2, 1.0e3, data::setV));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -35,18 +58,18 @@ public enum ODMMetadataKey {
     /** Simple constructor.
      * @param processor processing method
      */
-    ODMMetadataKey(final TokenProcessor processor) {
+    ODMStateVectorKey(final TokenProcessor processor) {
         this.processor = processor;
     }
 
     /** Process one token.
      * @param token token to process
      * @param context parsing context
-     * @param metadata metadata to fill
+     * @param data data to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final ODMMetadata metadata) {
-        return processor.process(token, context, metadata);
+    public boolean process(final ParseToken token, final ParsingContext context, final ODMStateVector data) {
+        return processor.process(token, context, data);
     }
 
     /** Interface for processing one token. */
@@ -54,10 +77,10 @@ public enum ODMMetadataKey {
         /** Process one token.
          * @param token token to process
          * @param context parsing context
-         * @param metadata metadata to fill
+         * @param data data to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, ODMMetadata metadata);
+        boolean process(ParseToken token, ParsingContext context, ODMStateVector data);
     }
 
 }

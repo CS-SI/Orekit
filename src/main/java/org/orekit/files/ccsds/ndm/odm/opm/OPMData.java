@@ -14,112 +14,167 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.orekit.files.ccsds.ndm.odm.opm;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.files.ccsds.ndm.odm.OStateData;
-import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.propagation.SpacecraftState;
-import org.orekit.utils.PVCoordinates;
+import org.orekit.files.ccsds.ndm.odm.ODMCovariance;
+import org.orekit.files.ccsds.ndm.odm.ODMKeplerianElements;
+import org.orekit.files.ccsds.ndm.odm.ODMSpacecraftParameters;
+import org.orekit.files.ccsds.ndm.odm.ODMStateVector;
+import org.orekit.files.ccsds.ndm.odm.ODMUserDefined;
+import org.orekit.files.ccsds.section.Data;
+import org.orekit.files.ccsds.section.Section;
 
-/** This class gathers the informations present in the Orbital Parameter Message (OPM), and contains
- * methods to generate {@link CartesianOrbit}, {@link KeplerianOrbit} or {@link SpacecraftState}.
- * @author sports
- * @since 6.1
+/**
+ * Container for Orbit Parameter Message data.
+ * @author Luc Maisonobe
+ * @since 11.0
  */
-public class OPMData extends OStateData {
+public class OPMData implements Data, Section {
 
-    /** Position vector (m). */
-    private Vector3D position;
+    /** State vector block. */
+    private final  ODMStateVector stateVectorBlock;
 
-    /** Velocity vector (m/s). */
-    private Vector3D velocity;
+    /** Keplerian elements block. */
+    private final ODMKeplerianElements keplerianElementsBlock;
+
+    /** Spacecraft parameters block. */
+    private final ODMSpacecraftParameters spacecraftParameters;
+
+    /** Covariance matrix logical block being read. */
+    private final ODMCovariance covarianceBlock;
 
     /** Maneuvers. */
-    private List<OPMManeuver> maneuvers;
+    private final List<OPMManeuver> maneuverBlocks;
 
-    /** Create an empty data set.
+    /** User defined parameters. */
+    private final ODMUserDefined userDefinedBlock;
+
+    /** Mass. */
+    private final double mass;
+
+    /** Simple constructor.
+     * @param stateVectorBlock state vector logical block
+     * @param keplerianElementsBlock Keplerian elements logicial block (may be null)
+     * @param spacecraftParameters spacecraft parameters logical block (may be null)
+     * @param covarianceBlock covariance matrix logical block (may be null)
+     * @param maneuverBlocks maneuvers block list
+     * @param userDefinedBlock user-defined logical block
+     * @param mass mass (always defined, event if there is no {@code spacecraftParameters} block
      */
-    OPMData() {
-        maneuvers = new ArrayList<>();
+    public OPMData(final ODMStateVector stateVectorBlock,
+                   final ODMKeplerianElements keplerianElementsBlock,
+                   final ODMSpacecraftParameters spacecraftParameters,
+                   final ODMCovariance covarianceBlock,
+                   final List<OPMManeuver> maneuverBlocks,
+                   final ODMUserDefined userDefinedBlock,
+                   final double mass) {
+        this.stateVectorBlock       = stateVectorBlock;
+        this.keplerianElementsBlock = keplerianElementsBlock;
+        this.spacecraftParameters   = spacecraftParameters;
+        this.covarianceBlock        = covarianceBlock;
+        this.maneuverBlocks         = maneuverBlocks;
+        this.userDefinedBlock       = userDefinedBlock;
+        this.mass                   = mass;
     }
 
-    /** Get position vector.
-     * @return the position vector
-     */
-    public Vector3D getPosition() {
-        return position;
+    /** {@inheritDoc} */
+    @Override
+    public void checkMandatoryEntries() {
+        stateVectorBlock.checkMandatoryEntries();
+        if (keplerianElementsBlock != null) {
+            keplerianElementsBlock.checkMandatoryEntries();
+        }
+        if (spacecraftParameters != null) {
+            spacecraftParameters.checkMandatoryEntries();
+        }
+        if (covarianceBlock != null) {
+            covarianceBlock.checkMandatoryEntries();
+        }
+        for (final OPMManeuver maneuver : maneuverBlocks) {
+            maneuver.checkMandatoryEntries();
+        }
+        if (userDefinedBlock != null) {
+            userDefinedBlock.checkMandatoryEntries();
+        }
     }
 
-    /** Set position vector.
-     * @param position the position vector to be set
+    /** Get the state vector logical block.
+     * @return state vector block
      */
-    void setPosition(final Vector3D position) {
-        this.position = position;
+    public ODMStateVector getStateVectorBlock() {
+        return stateVectorBlock;
     }
 
-    /** Get velocity vector.
-     * @return the velocity vector
+    /** Get the Keplerian elements logical block.
+     * @return Keplerian elements block (may be null)
      */
-    public Vector3D getVelocity() {
-        return velocity;
+    public ODMKeplerianElements getKeplerianElementsBlock() {
+        return keplerianElementsBlock;
     }
 
-    /** Set velocity vector.
-     * @param velocity the velocity vector to be set
+    /** Get the spacecraft parameters logical block.
+     * @return spacecraft parameters block (may be null)
      */
-    void setVelocity(final Vector3D velocity) {
-        this.velocity = velocity;
+    public ODMSpacecraftParameters getSpacecraftParametersBlock() {
+        return spacecraftParameters;
     }
 
-    /** Get the number of maneuvers present in the OPM.
+    /** Get the covariance matrix logical block.
+     * @return covariance matrix block (may be null)
+     */
+    public ODMCovariance getCovarianceBlock() {
+        return covarianceBlock;
+    }
+
+    /** Get the mass.
+     * @return mass
+     */
+    public double getMass() {
+        return mass;
+    }
+
+    /**
+     * Get the number of maneuvers present in the APM.
      * @return the number of maneuvers
      */
     public int getNbManeuvers() {
-        return maneuvers.size();
+        return maneuverBlocks.size();
     }
 
-    /** Get a list of all maneuvers.
+    /**
+     * Get a list of all maneuvers.
      * @return unmodifiable list of all maneuvers.
      */
     public List<OPMManeuver> getManeuvers() {
-        return Collections.unmodifiableList(maneuvers);
+        return Collections.unmodifiableList(maneuverBlocks);
     }
 
-    /** Get a maneuver.
+    /**
+     * Get a maneuver.
      * @param index maneuver index, counting from 0
      * @return maneuver
      */
     public OPMManeuver getManeuver(final int index) {
-        return maneuvers.get(index);
+        return maneuverBlocks.get(index);
     }
 
-    /** Add a maneuver.
-     * @param maneuver maneuver to be set
+    /**
+     * Get boolean testing whether the APM contains at least one maneuver.
+     * @return true if APM contains at least one maneuver
+     *         false otherwise
      */
-    void addManeuver(final OPMManeuver maneuver) {
-        maneuvers.add(maneuver);
+    public boolean hasManeuvers() {
+        return !maneuverBlocks.isEmpty();
     }
 
-    /** Get boolean testing whether the OPM contains at least one maneuver.
-     * @return true if OPM contains at least one maneuver
-     *         false otherwise */
-    public boolean hasManeuver() {
-        return !maneuvers.isEmpty();
-    }
-
-    /** Get the position/velocity coordinates contained in the OPM.
-     * @return the position/velocity coordinates contained in the OPM
+    /** Get the user defined parameters logical block.
+     * @return user defined parameters block (may be null)
      */
-    public PVCoordinates getPVCoordinates() {
-        return new PVCoordinates(getPosition(), getVelocity());
+    public ODMUserDefined getUserDefinedBlock() {
+        return userDefinedBlock;
     }
 
 }
-

@@ -16,97 +16,87 @@
  */
 package org.orekit.files.ccsds.ndm.odm.opm;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hipparchus.exception.DummyLocalizable;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.Keyword;
 import org.orekit.files.ccsds.ndm.odm.OCommonMetadata;
-import org.orekit.files.ccsds.ndm.odm.OStateParser;
+import org.orekit.files.ccsds.ndm.odm.OCommonMetadataKey;
+import org.orekit.files.ccsds.ndm.odm.OCommonParser;
+import org.orekit.files.ccsds.ndm.odm.ODMCovariance;
+import org.orekit.files.ccsds.ndm.odm.ODMCovarianceKey;
+import org.orekit.files.ccsds.ndm.odm.ODMHeader;
+import org.orekit.files.ccsds.ndm.odm.ODMKplerianElementsKey;
+import org.orekit.files.ccsds.ndm.odm.ODMKeplerianElements;
+import org.orekit.files.ccsds.ndm.odm.ODMMetadataKey;
+import org.orekit.files.ccsds.ndm.odm.ODMSpacecraftParameters;
+import org.orekit.files.ccsds.ndm.odm.ODMSpacecraftParametersKey;
+import org.orekit.files.ccsds.ndm.odm.ODMStateVector;
+import org.orekit.files.ccsds.ndm.odm.ODMStateVectorKey;
+import org.orekit.files.ccsds.ndm.odm.ODMUserDefined;
+import org.orekit.files.ccsds.section.CommentsContainer;
+import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.section.HeaderProcessingState;
+import org.orekit.files.ccsds.section.MetadataKey;
 import org.orekit.files.ccsds.section.Segment;
-import org.orekit.files.ccsds.utils.CCSDSFrame;
-import org.orekit.files.ccsds.utils.KeyValue;
+import org.orekit.files.ccsds.section.XMLStructureProcessingState;
+import org.orekit.files.ccsds.utils.ParsingContext;
+import org.orekit.files.ccsds.utils.lexical.FileFormat;
+import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.files.ccsds.utils.state.ErrorState;
+import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
 /** A parser for the CCSDS OPM (Orbit Parameter Message).
  * @author sports
+ * @author Luc Maisonobe
  * @since 6.1
  */
-public class OPMParser extends OStateParser<OPMFile, OPMParser> {
+public class OPMParser extends OCommonParser<OPMFile, OPMParser> {
 
-    /** Mandatory keywords.
-     * @since 10.1
-     */
-    private static final Keyword[] MANDATORY_KEYWORDS = {
-        Keyword.CCSDS_OPM_VERS, Keyword.CREATION_DATE, Keyword.ORIGINATOR,
-        Keyword.OBJECT_NAME, Keyword.OBJECT_ID, Keyword.CENTER_NAME,
-        Keyword.REF_FRAME, Keyword.TIME_SYSTEM, Keyword.EPOCH,
-        Keyword.X, Keyword.Y, Keyword.Z,
-        Keyword.X_DOT, Keyword.Y_DOT, Keyword.Z_DOT
-    };
+    /** Root element for XML files. */
+    private static final String ROOT = "opm";
 
-    /** Simple constructor.
-     * <p>
-     * The initial date for Mission Elapsed Time and Mission Relative Time time systems is not set here.
-     * If such time systems are used, it must be initialized before parsing by calling {@link
-     * #withMissionReferenceDate(AbsoluteDate)}.
-     * </p>
-     * <p>
-     * The gravitational coefficient is not set here. If it is needed in order
-     * to parse Cartesian orbits where the value is not set in the CCSDS file, it must
-     * be initialized before parsing by calling {@link #withMu(double)}.
-     * </p>
-     * <p>
-     * The IERS conventions to use is not set here. If it is needed in order to
-     * parse some reference frames or UT1 time scale, it must be initialized before
-     * parsing by calling {@link #withConventions(IERSConventions)}.
-     * </p>
-     *
-     * <p>This method uses the {@link DataContext#getDefault() default data context}. See
-     * {@link #withDataContext(DataContext)}.
-     */
-    @DefaultDataContext
-    public OPMParser() {
-        this(DataContext.getDefault());
-    }
+    /** Default mass to use if there are no spacecraft parameters block logical block in the file. */
+    private final double defaultMass;
 
-    /** Constructor with data context.
-     * <p>
-     * The initial date for Mission Elapsed Time and Mission Relative Time time systems is not set here.
-     * If such time systems are used, it must be initialized before parsing by calling {@link
-     * #withMissionReferenceDate(AbsoluteDate)}.
-     * </p>
-     * <p>
-     * The gravitational coefficient is not set here. If it is needed in order
-     * to parse Cartesian orbits where the value is not set in the CCSDS file, it must
-     * be initialized before parsing by calling {@link #withMu(double)}.
-     * </p>
-     * <p>
-     * The IERS conventions to use is not set here. If it is needed in order to
-     * parse some reference frames or UT1 time scale, it must be initialized before
-     * parsing by calling {@link #withConventions(IERSConventions)}.
-     * </p>
-     *
-     * @param dataContext used by the parser.
-     *
-     * @see #OPMParser()
-     * @see #withDataContext(DataContext)
-     * @since 10.1
-     */
-    public OPMParser(final DataContext dataContext) {
-        this(null, true, dataContext, AbsoluteDate.FUTURE_INFINITY, Double.NaN);
-    }
+    /** File header. */
+    private ODMHeader header;
+
+    /** File segments. */
+    private List<Segment<OCommonMetadata, OPMData>> segments;
+
+    /** OPM metadata being read. */
+    private OCommonMetadata metadata;
+
+    /** Parsing context valid for current metadata. */
+    private ParsingContext context;
+
+    /** State vector logical block being read. */
+    private ODMStateVector stateVectorBlock;
+
+    /** Keplerian elements logical block being read. */
+    private ODMKeplerianElements keplerianElementsBlock;
+
+    /** Spacecraft parameters logical block being read. */
+    private ODMSpacecraftParameters spacecraftParametersBlock;
+
+    /** Covariance matrix logical block being read. */
+    private ODMCovariance covarianceBlock;
+
+    /** Current maneuver. */
+    private OPMManeuver currentManeuver;
+
+    /** All maneuvers. */
+    private List<OPMManeuver> maneuverBlocks;
+
+    /** User defined parameters. */
+    private ODMUserDefined userDefinedBlock;
+
+    /** Processor for global message structure. */
+    private ProcessingState structureProcessor;
 
     /** Complete constructor.
      * @param conventions IERS Conventions
@@ -114,265 +104,318 @@ public class OPMParser extends OStateParser<OPMFile, OPMParser> {
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @param mu gravitational coefficient
+     * @param defaultMass default mass to use if there are no spacecraft parameters block logical block in the file
      */
-    private OPMParser(final IERSConventions conventions, final boolean simpleEOP,
-                      final DataContext dataContext,
-                      final AbsoluteDate missionReferenceDate, final double mu) {
-        super(conventions, simpleEOP, dataContext, missionReferenceDate, mu);
+    public OPMParser(final IERSConventions conventions, final boolean simpleEOP,
+                     final DataContext dataContext,
+                     final AbsoluteDate missionReferenceDate, final double mu,
+                     final double defaultMass) {
+        super(OPMFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate, mu);
+        this.defaultMass = defaultMass;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected OPMParser create(final IERSConventions newConventions,
-                               final boolean newSimpleEOP,
-                               final DataContext newDataContext,
-                               final AbsoluteDate newMissionReferenceDate,
-                               final double newMu) {
-        return new OPMParser(newConventions, newSimpleEOP, newDataContext,
-                             newMissionReferenceDate, newMu);
+    public Header getHeader() {
+        return header;
     }
 
     /** {@inheritDoc} */
     @Override
-    public OPMFile parse(final InputStream stream, final String fileName) {
-
-        // declare the mandatory keywords as expected
-        for (final Keyword keyword : MANDATORY_KEYWORDS) {
-            declareExpected(keyword);
-        }
-
-        try (InputStreamReader isr = new InputStreamReader(stream, StandardCharsets.UTF_8);
-             BufferedReader reader = new BufferedReader(isr)) {
-
-            // initialize internal data structures
-            final ParseInfo pi = new ParseInfo(getConventions(), getDataContext());
-            pi.fileName = fileName;
-            pi.parsingHeader = true;
-
-            for (pi.line = reader.readLine(); pi.line != null; pi.line = reader.readLine()) {
-                ++pi.lineNumber;
-                if (pi.line.trim().length() == 0) {
-                    continue;
-                }
-                pi.entry = new KeyValue(pi.line, pi.lineNumber, pi.fileName);
-                if (pi.entry.getKeyword() == null) {
-                    throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD,
-                                              pi.lineNumber, pi.fileName, pi.line);
-                }
-
-                declareFound(pi.entry.getKeyword());
-
-                switch (pi.entry.getKeyword()) {
-
-                    case COMMENT:
-                        if (pi.file.getHeader().getCreationDate() == null) {
-                            pi.file.getHeader().addComment(pi.entry.getValue());
-                        } else if (pi.metadata.getObjectName() == null) {
-                            pi.metadata.addComment(pi.entry.getValue());
-                        } else {
-                            pi.commentTmp.add(pi.entry.getValue());
-                        }
-                        break;
-
-                    case CCSDS_OPM_VERS:
-                        pi.file.getHeader().setFormatVersion(pi.entry.getDoubleValue());
-                        break;
-
-                    case X:
-                        pi.x = pi.entry.getDoubleValue() * 1000;
-                        break;
-
-                    case Y:
-                        pi.y = pi.entry.getDoubleValue() * 1000;
-                        break;
-
-                    case Z:
-                        pi.z = pi.entry.getDoubleValue() * 1000;
-                        break;
-
-                    case X_DOT:
-                        pi.x_dot = pi.entry.getDoubleValue() * 1000;
-                        break;
-
-                    case Y_DOT:
-                        pi.y_dot = pi.entry.getDoubleValue() * 1000;
-                        break;
-
-                    case Z_DOT:
-                        pi.z_dot = pi.entry.getDoubleValue() * 1000;
-                        break;
-
-                    case MAN_EPOCH_IGNITION:
-                        if (pi.maneuver != null) {
-                            pi.data.addManeuver(pi.maneuver);
-                        }
-                        pi.maneuver = new OPMManeuver();
-                        pi.maneuver.setEpochIgnition(parseDate(pi.entry.getValue(), pi.metadata.getTimeSystem(),
-                                                               pi.lineNumber, pi.fileName, pi.line));
-                        if (!pi.commentTmp.isEmpty()) {
-                            pi.maneuver.setComments(pi.commentTmp);
-                            pi.commentTmp.clear();
-                        }
-                        break;
-
-                    case MAN_DURATION:
-                        pi.maneuver.setDuration(pi.entry.getDoubleValue());
-                        break;
-
-                    case MAN_DELTA_MASS:
-                        pi.maneuver.setDeltaMass(pi.entry.getDoubleValue());
-                        break;
-
-                    case MAN_REF_FRAME:
-                        final CCSDSFrame manFrame = CCSDSFrame.parse(pi.entry.getValue());
-                        if (manFrame.isLof()) {
-                            pi.maneuver.setRefLofType(manFrame.getLofType());
-                        } else {
-                            pi.maneuver.setRefFrame(manFrame.getFrame(
-                                    getConventions(),
-                                    isSimpleEOP(),
-                                    getDataContext()));
-                        }
-                        break;
-
-                    case MAN_DV_1:
-                        pi.maneuver.setdV(new Vector3D(pi.entry.getDoubleValue() * 1000,
-                                                       pi.maneuver.getDV().getY(),
-                                                       pi.maneuver.getDV().getZ()));
-                        break;
-
-                    case MAN_DV_2:
-                        pi.maneuver.setdV(new Vector3D(pi.maneuver.getDV().getX(),
-                                                       pi.entry.getDoubleValue() * 1000,
-                                                       pi.maneuver.getDV().getZ()));
-                        break;
-
-                    case MAN_DV_3:
-                        pi.maneuver.setdV(new Vector3D(pi.maneuver.getDV().getX(),
-                                                       pi.maneuver.getDV().getY(),
-                                                       pi.entry.getDoubleValue() * 1000));
-                        break;
-
-                    default:
-                        boolean parsed = false;;
-                        if (pi.parsingHeader) {
-                            parsed = parseHeaderEntry(pi.entry, pi.file);
-                            if (!parsed) {
-                                pi.parsingHeader   = false;
-                                pi.parsingMetaData = true;
-                            }
-                        }
-                        if (pi.parsingMetaData) {
-                            parsed = parseMetaDataEntry(pi.entry, pi.metadata,
-                                                        pi.lineNumber, pi.fileName, pi.line);
-                            if (!parsed) {
-                                pi.parsingMetaData = false;
-                                pi.parsingData     = true;
-                            }
-                        }
-                        if (pi.parsingData) {
-                            parsed = parseGeneralStateDataEntry(pi.entry, pi.metadata, pi.data, pi.commentTmp,
-                                                                pi.lineNumber, pi.fileName, pi.line);
-                        }
-                        if (!parsed) {
-                            throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD,
-                                                      pi.lineNumber, pi.fileName, pi.line);
-                        }
-                }
-
-            }
-
-            // check all mandatory keywords have been found
-            checkExpected(fileName);
-
-            pi.data.setPosition(new Vector3D(pi.x, pi.y, pi.z));
-            pi.data.setVelocity(new Vector3D(pi.x_dot, pi.y_dot, pi.z_dot));
-            if (pi.maneuver != null) {
-                pi.data.addManeuver(pi.maneuver);
-            }
-            pi.file.addSegment(new Segment<>(pi.metadata, pi.data));
-
-            pi.file.setMu(getSelectedMu());
-
-            return pi.file;
-        } catch (IOException ioe) {
-            throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
+    public void reset(final FileFormat fileFormat) {
+        header                    = new ODMHeader();
+        segments                  = new ArrayList<>();
+        metadata                  = null;
+        context                   = null;
+        stateVectorBlock          = null;
+        keplerianElementsBlock    = null;
+        spacecraftParametersBlock = null;
+        covarianceBlock           = null;
+        currentManeuver           = null;
+        maneuverBlocks            = new ArrayList<>();
+        userDefinedBlock          = null;
+        if (getFileFormat() == FileFormat.XML) {
+            structureProcessor = new XMLStructureProcessingState(ROOT, this);
+            reset(fileFormat, structureProcessor);
+        } else {
+            structureProcessor = new ErrorState(); // should never be called
+            reset(fileFormat, new HeaderProcessingState(getDataContext(), this));
         }
     }
 
-    /** Private class used to store OPM parsing info.
-     * @author sports
+    /** {@inheritDoc} */
+    @Override
+    public void prepareHeader() {
+        setFallback(new HeaderProcessingState(getDataContext(), this));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void inHeader() {
+        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processMetadataToken);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void finalizeHeader() {
+        header.checkMandatoryEntries();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void prepareMetadata() {
+        metadata  = new OCommonMetadata();
+        context   = new ParsingContext(this::getConventions,
+                                       this::isSimpleEOP,
+                                       this::getDataContext,
+                                       this::getMissionReferenceDate,
+                                       metadata::getTimeSystem);
+        setFallback(this::processMetadataToken);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void inMetadata() {
+        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processStateVectorToken);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void finalizeMetadata() {
+        metadata.finalizeMetadata(context);
+        metadata.checkMandatoryEntries();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void prepareData() {
+        stateVectorBlock = new ODMStateVector();
+        setFallback(this::processStateVectorToken);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void inData() {
+        // nothing to do
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void finalizeData() {
+        if (metadata != null) {
+            if (userDefinedBlock != null && userDefinedBlock.getParameters().isEmpty()) {
+                userDefinedBlock = null;
+            }
+            final double  mass = spacecraftParametersBlock == null ?
+                                 defaultMass : spacecraftParametersBlock.getMass();
+            final OPMData data = new OPMData(stateVectorBlock, keplerianElementsBlock,
+                                             spacecraftParametersBlock, covarianceBlock,
+                                             maneuverBlocks, userDefinedBlock,
+                                             mass);
+            data.checkMandatoryEntries();
+            segments.add(new Segment<>(metadata, data));
+        }
+        metadata                  = null;
+        context                   = null;
+        stateVectorBlock          = null;
+        keplerianElementsBlock    = null;
+        spacecraftParametersBlock = null;
+        covarianceBlock           = null;
+        currentManeuver           = null;
+        maneuverBlocks            = null;
+        userDefinedBlock          = null;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public OPMFile build() {
+        // OPM KVN file lack a DATA_STOP keyword, hence we can't call stopData()
+        // automatically before the end of the file
+        finalizeData();
+        return new OPMFile(header, segments, getConventions(), getDataContext(), getSelectedMu());
+    }
+
+    /** Process one metadata token.
+     * @param token token to process
+     * @return true if token was processed, false otherwise
      */
-    private static class ParseInfo {
-
-        /** OPM file being read. */
-        private OPMFile file;
-
-        /** OPM metadata being read. */
-        private OCommonMetadata metadata;
-
-        /** OPM data being read. */
-        private OPMData data;
-
-        /** Boolean indicating if the parser is currently parsing a header block. */
-        private boolean parsingHeader;
-
-        /** Boolean indicating if the parser is currently parsing a meta-data block. */
-        private boolean parsingMetaData;
-
-        /** Boolean indicating if the parser is currently parsing a data block. */
-        private boolean parsingData;
-
-        /** Name of the file. */
-        private String fileName;
-
-        /** Current line number. */
-        private int lineNumber;
-
-        /** Current line. */
-        private String line;
-
-        /** Key value of the line being read. */
-        private KeyValue entry;
-
-        /** Stored comments. */
-        private List<String> commentTmp;
-
-        /** First component of position vector. */
-        private double x;
-
-        /** Second component of position vector. */
-        private double y;
-
-        /** Third component of position vector. */
-        private double z;
-
-        /** First component of velocity vector. */
-        private double x_dot;
-
-        /** Second component of velocity vector. */
-        private double y_dot;
-
-        /** Third component of velocity vector. */
-        private double z_dot;
-
-        /** Current maneuver. */
-        private OPMManeuver maneuver;
-
-        /** Create a new {@link ParseInfo} object.
-         * @param conventions IERS conventions to use
-         * @param dataContext data context to use
-         */
-        protected ParseInfo(final IERSConventions conventions, final DataContext dataContext) {
-            file            = new OPMFile(conventions, dataContext);
-            metadata        = new OCommonMetadata();
-            data            = new OPMData();
-            parsingHeader   = false;
-            parsingMetaData = false;
-            parsingData     = false;
-            lineNumber      = 0;
-            commentTmp      = new ArrayList<>();
-            maneuver        = null;
+    private boolean processMetadataToken(final ParseToken token) {
+        if (metadata == null) {
+            // OPM KVN file lack a META_START keyword, hence we can't call prepareMetadata()
+            // automatically before the first metadata token arrives
+            prepareMetadata();
+        }
+        inMetadata();
+        try {
+            return token.getName() != null &&
+                   MetadataKey.valueOf(token.getName()).process(token, context, metadata);
+        } catch (IllegalArgumentException iaeM) {
+            try {
+                return ODMMetadataKey.valueOf(token.getName()).process(token, context, metadata);
+            } catch (IllegalArgumentException iaeD) {
+                try {
+                    return OCommonMetadataKey.valueOf(token.getName()).process(token, context, metadata);
+                } catch (IllegalArgumentException iaeC) {
+                    // token has not been recognized
+                    return false;
+                }
+            }
         }
     }
+
+    /** Process one state vector data token.
+     * @param token token to process
+     * @return true if token was processed, false otherwise
+     */
+    private boolean processStateVectorToken(final ParseToken token) {
+        if (stateVectorBlock == null) {
+            // OPM KVN file lack a DATA_START keyword, hence we can't call startData()
+            // automatically before the first data token arrives
+            prepareData();
+        }
+        inData();
+        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processKeplerianElementsToken);
+        try {
+            return token.getName() != null &&
+                   ODMStateVectorKey.valueOf(token.getName()).process(token, context, stateVectorBlock);
+        } catch (IllegalArgumentException iae) {
+            // token has not been recognized
+            return false;
+        }
+    }
+
+    /** Process one Keplerian elements data token.
+     * @param token token to process
+     * @return true if token was processed, false otherwise
+     */
+    private boolean processKeplerianElementsToken(final ParseToken token) {
+        if (keplerianElementsBlock == null) {
+            keplerianElementsBlock = new ODMKeplerianElements();
+        }
+        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processSpacecraftParametersToken);
+        try {
+            return token.getName() != null &&
+                   ODMKplerianElementsKey.valueOf(token.getName()).process(token, context, keplerianElementsBlock);
+        } catch (IllegalArgumentException iae) {
+            // token has not been recognized
+            return false;
+        }
+    }
+
+    /** Process one spacecraft parameters data token.
+     * @param token token to process
+     * @return true if token was processed, false otherwise
+     */
+    private boolean processSpacecraftParametersToken(final ParseToken token) {
+        if (spacecraftParametersBlock == null) {
+            spacecraftParametersBlock = new ODMSpacecraftParameters();
+            if (moveCommentsIfEmpty(keplerianElementsBlock, spacecraftParametersBlock)) {
+                // get rid of the empty logical block
+                keplerianElementsBlock = null;
+            }
+        }
+        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processCovarianceToken);
+        try {
+            return token.getName() != null &&
+                   ODMSpacecraftParametersKey.valueOf(token.getName()).process(token, context, spacecraftParametersBlock);
+        } catch (IllegalArgumentException iae) {
+            // token has not been recognized
+            return false;
+        }
+    }
+
+    /** Process one covariance matrix data token.
+     * @param token token to process
+     * @return true if token was processed, false otherwise
+     */
+    private boolean processCovarianceToken(final ParseToken token) {
+        if (covarianceBlock == null) {
+            covarianceBlock = new ODMCovariance(metadata.getFrame());
+            if (moveCommentsIfEmpty(spacecraftParametersBlock, covarianceBlock)) {
+                // get rid of the empty logical block
+                spacecraftParametersBlock = null;
+            }
+        }
+        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processManeuverToken);
+        try {
+            return token.getName() != null &&
+                   ODMCovarianceKey.valueOf(token.getName()).process(token, context, covarianceBlock);
+        } catch (IllegalArgumentException iae) {
+            // token has not been recognized
+            return false;
+        }
+    }
+
+    /** Process one maneuver data token.
+     * @param token token to process
+     * @return true if token was processed, false otherwise
+     */
+    private boolean processManeuverToken(final ParseToken token) {
+        if (currentManeuver == null) {
+            currentManeuver = new OPMManeuver();
+            if (covarianceBlock != null && moveCommentsIfEmpty(covarianceBlock, currentManeuver)) {
+                // get rid of the empty logical block
+                covarianceBlock = null;
+            }
+        }
+        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processUserDefinedToken);
+        try {
+            if (token.getName() != null &&
+                OPMManeuverKey.valueOf(token.getName()).process(token, context, currentManeuver)) {
+                // the token was processed properly
+                if (currentManeuver.completed()) {
+                    // current maneuver is completed
+                    maneuverBlocks.add(currentManeuver);
+                    currentManeuver = null;
+                }
+                return true;
+            }
+        } catch (IllegalArgumentException iae) {
+            // ignored, delegate to next state below
+        }
+        // the token was not processed
+        return false;
+    }
+
+    /** Process one maneuver data token.
+     * @param token token to process
+     * @return true if token was processed, false otherwise
+     */
+    private boolean processUserDefinedToken(final ParseToken token) {
+        if (userDefinedBlock == null) {
+            userDefinedBlock = new ODMUserDefined();
+            if (moveCommentsIfEmpty(currentManeuver, userDefinedBlock)) {
+                // get rid of the empty logical block
+                currentManeuver = null;
+            }
+        }
+        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : new ErrorState());
+        if (token.getType() == TokenType.ENTRY &&
+            token.getName().startsWith(ODMUserDefined.USER_DEFINED_PREFIX)) {
+            userDefinedBlock.addEntry(token.getName().substring(ODMUserDefined.USER_DEFINED_PREFIX.length()),
+                                      token.getContent());
+            return true;
+        } else {
+            // the token was not processed
+            return false;
+        }
+    }
+
+    /** Move comments from one empty logical block to another logical block.
+     * @param origin origin block
+     * @param destination destination block
+     * @return true if origin block was empty
+     */
+    private boolean moveCommentsIfEmpty(final CommentsContainer origin, final CommentsContainer destination) {
+        if (origin.acceptComments()) {
+            // origin block is empty, move the existing comments
+            for (final String comment : origin.getComments()) {
+                destination.addComment(comment);
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 }

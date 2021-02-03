@@ -16,6 +16,9 @@
  */
 package org.orekit.files.ccsds.ndm.tdm;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
@@ -63,8 +66,11 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
     /** Current Observation Block being parsed. */
     private ObservationsBlock observationsBlock;
 
-    /** TDMFile object being filled. */
-    private TDMFile file;
+    /** File header. */
+    private Header header;
+
+    /** File segments. */
+    private List<Segment<TDMMetadata, ObservationsBlock>> segments;
 
     /** Processor for global message structure. */
     private ProcessingState structureProcessor;
@@ -95,13 +101,14 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
     /** {@inheritDoc} */
     @Override
     public Header getHeader() {
-        return file.getHeader();
+        return header;
     }
 
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        file               = new TDMFile(getConventions(), getDataContext());
+        header             = new Header();
+        segments           = new ArrayList<>();
         metadata           = null;
         context            = null;
         observationsBlock  = null;
@@ -117,6 +124,7 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
     /** {@inheritDoc} */
     @Override
     public TDMFile build() {
+        final TDMFile file = new TDMFile(header, segments, getConventions(), getDataContext());
         file.checkTimeSystems();
         return file;
     }
@@ -136,7 +144,7 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
     /** {@inheritDoc} */
     @Override
     public void finalizeHeader() {
-        file.getHeader().checkMandatoryEntries();
+        header.checkMandatoryEntries();
     }
 
     /** {@inheritDoc} */
@@ -179,7 +187,7 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
     /** {@inheritDoc} */
     @Override
     public void finalizeData() {
-        file.addSegment(new Segment<>(metadata, observationsBlock));
+        segments.add(new Segment<>(metadata, observationsBlock));
         metadata          = null;
         context           = null;
         observationsBlock = null;

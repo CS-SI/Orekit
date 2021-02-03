@@ -47,8 +47,11 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
     /** Root element for XML files. */
     private static final String ROOT = "apm";
 
-    /** APM file being read. */
-    private APMFile file;
+    /** File header. */
+    private Header header;
+
+    /** File segments. */
+    private List<Segment<ADMMetadata, APMData>> segments;
 
     /** APM metadata being read. */
     private ADMMetadata metadata;
@@ -93,14 +96,14 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
     /** {@inheritDoc} */
     @Override
     public Header getHeader() {
-        return file.getHeader();
+        return header;
     }
 
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        file                      = new APMFile(getConventions(), isSimpleEOP(),
-                                                getDataContext(), getMissionReferenceDate());
+        header                    = new Header();
+        segments                  = new ArrayList<>();
         metadata                  = null;
         context                   = null;
         quaternionBlock           = null;
@@ -133,7 +136,7 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
     /** {@inheritDoc} */
     @Override
     public void finalizeHeader() {
-        file.getHeader().checkMandatoryEntries();
+        header.checkMandatoryEntries();
     }
 
     /** {@inheritDoc} */
@@ -183,7 +186,7 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
                 data.addManeuver(maneuver);
             }
             data.checkMandatoryEntries();
-            file.addSegment(new Segment<>(metadata, data));
+            segments.add(new Segment<>(metadata, data));
         }
         metadata                  = null;
         context                   = null;
@@ -200,6 +203,9 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
         // APM KVN file lack a DATA_STOP keyword, hence we can't call stopData()
         // automatically before the end of the file
         finalizeData();
+        final APMFile file = new APMFile(header, segments,
+                                         getConventions(), isSimpleEOP(),
+                                         getDataContext(), getMissionReferenceDate());
         return file;
     }
 

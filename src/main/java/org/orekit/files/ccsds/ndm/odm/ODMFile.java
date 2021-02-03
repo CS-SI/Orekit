@@ -17,6 +17,8 @@
 
 package org.orekit.files.ccsds.ndm.odm;
 
+import java.util.List;
+
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.NDMFile;
 import org.orekit.files.ccsds.section.Segment;
@@ -31,11 +33,14 @@ import org.orekit.utils.IERSConventions;
 public abstract class ODMFile<S extends Segment<?, ?>> extends NDMFile<ODMHeader, S> {
 
     /** Simple constructor.
+     * @param header file header
+     * @param segments file segments
      * @param conventions IERS conventions
      * @param dataContext used for creating frames, time scales, etc.
      */
-    protected ODMFile(final IERSConventions conventions, final DataContext dataContext) {
-        super(new ODMHeader(), conventions, dataContext);
+    protected ODMFile(final ODMHeader header, final List<S> segments,
+                      final IERSConventions conventions, final DataContext dataContext) {
+        super(header, segments, conventions, dataContext);
     }
 
 }

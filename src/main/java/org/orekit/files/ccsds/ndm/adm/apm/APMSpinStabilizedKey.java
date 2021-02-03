@@ -58,7 +58,7 @@ public enum APMSpinStabilizedKey {
     NUTATION((token, context, data) -> token.processAsAngle(data::setNutation)),
 
     /** Nutation period entry. */
-    NUTATION_PER((token, context, data) -> token.processAsDouble(data::setNutationPeriod)),
+    NUTATION_PER((token, context, data) -> token.processAsDouble(1.0, data::setNutationPeriod)),
 
     /** Nutation phase entry. */
     NUTATION_PHASE((token, context, data) -> token.processAsAngle(data::setNutationPhase));

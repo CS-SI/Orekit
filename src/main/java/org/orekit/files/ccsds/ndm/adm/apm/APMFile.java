@@ -16,10 +16,13 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
+import java.util.List;
+
 import org.orekit.attitudes.Attitude;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.adm.ADMFile;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
+import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
@@ -36,14 +39,17 @@ public class APMFile extends ADMFile<Segment<ADMMetadata, APMData>> {
     public static final String FORMAT_VERSION_KEY = "CCSDS_APM_VERS";
 
     /** Simple constructor.
+     * @param header file header
+     * @param segments file segments
      * @param conventions IERS conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used for creating frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time and Mission Relative Time time systems.
      */
-    public APMFile(final IERSConventions conventions, final boolean simpleEOP,
+    public APMFile(final Header header, final List<Segment<ADMMetadata, APMData>> segments,
+                   final IERSConventions conventions, final boolean simpleEOP,
                    final DataContext dataContext, final AbsoluteDate missionReferenceDate) {
-        super(conventions, simpleEOP, dataContext, missionReferenceDate);
+        super(header, segments, conventions, simpleEOP, dataContext, missionReferenceDate);
     }
 
     /** Get the attitude.

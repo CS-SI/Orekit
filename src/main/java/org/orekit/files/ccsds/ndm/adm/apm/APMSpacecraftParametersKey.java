@@ -37,22 +37,22 @@ public enum APMSpacecraftParametersKey {
     INERTIA_REF_FRAME((token, context, data) -> token.processAsNormalizedString(data::setInertiaRefFrameString)),
 
     /** 1-axis moment of inertia entry. */
-    I11((token, context, data) -> token.processAsDouble(data::setI11)),
+    I11((token, context, data) -> token.processAsDouble(1.0, data::setI11)),
 
     /** 2-axis moment of inertia entry. */
-    I22((token, context, data) -> token.processAsDouble(data::setI22)),
+    I22((token, context, data) -> token.processAsDouble(1.0, data::setI22)),
 
     /** 3-axis moment of inertia entry. */
-    I33((token, context, data) -> token.processAsDouble(data::setI33)),
+    I33((token, context, data) -> token.processAsDouble(1.0, data::setI33)),
 
     /** 1-axis / 2-axis inertia cross product entry. */
-    I12((token, context, data) -> token.processAsDouble(data::setI12)),
+    I12((token, context, data) -> token.processAsDouble(1.0, data::setI12)),
 
     /** 1-axis / 3-axis inertia cross product entry. */
-    I13((token, context, data) -> token.processAsDouble(data::setI13)),
+    I13((token, context, data) -> token.processAsDouble(1.0, data::setI13)),
 
     /** 2-axis / 3-axis inertia cross product entry. */
-    I23((token, context, data) -> token.processAsDouble(data::setI23));
+    I23((token, context, data) -> token.processAsDouble(1.0, data::setI23));
 
     /** Processing method. */
     private final TokenProcessor processor;

@@ -33,19 +33,19 @@ public enum TDMMetadataKey {
     STOP_TIME((token, context, metadata) -> token.processAsDate(metadata::setStopTime, context)),
 
     /** First participant entry. */
-    PARTICIPANT_1((token, context, metadata) -> token.processAsIndexedFreeTextString(metadata::addParticipant, 1)),
+    PARTICIPANT_1((token, context, metadata) -> token.processAsIndexedFreeTextString(1, metadata::addParticipant)),
 
     /** Second participant entry. */
-    PARTICIPANT_2((token, context, metadata) -> token.processAsIndexedFreeTextString(metadata::addParticipant, 2)),
+    PARTICIPANT_2((token, context, metadata) -> token.processAsIndexedFreeTextString(2, metadata::addParticipant)),
 
     /** Third participant entry. */
-    PARTICIPANT_3((token, context, metadata) -> token.processAsIndexedFreeTextString(metadata::addParticipant, 3)),
+    PARTICIPANT_3((token, context, metadata) -> token.processAsIndexedFreeTextString(3, metadata::addParticipant)),
 
     /** Fourth participant entry. */
-    PARTICIPANT_4((token, context, metadata) -> token.processAsIndexedFreeTextString(metadata::addParticipant, 4)),
+    PARTICIPANT_4((token, context, metadata) -> token.processAsIndexedFreeTextString(4, metadata::addParticipant)),
 
     /** Fifth participant entry. */
-    PARTICIPANT_5((token, context, metadata) -> token.processAsIndexedFreeTextString(metadata::addParticipant, 5)),
+    PARTICIPANT_5((token, context, metadata) -> token.processAsIndexedFreeTextString(5, metadata::addParticipant)),
 
     /** Mode entry. */
     MODE((token, context, metadata) -> token.processAsNormalizedString(metadata::setMode)),
@@ -75,19 +75,19 @@ public enum TDMMetadataKey {
     TIMETAG_REF((token, context, metadata) -> token.processAsNormalizedString(metadata::setTimetagRef)),
 
     /** Integration interval entry. */
-    INTEGRATION_INTERVAL((token, context, metadata) -> token.processAsDouble(metadata::setIntegrationInterval)),
+    INTEGRATION_INTERVAL((token, context, metadata) -> token.processAsDouble(1.0, metadata::setIntegrationInterval)),
 
     /** Integration reference entry. */
     INTEGRATION_REF((token, context, metadata) -> token.processAsNormalizedString(metadata::setIntegrationRef)),
 
     /** Frequency offset entry. */
-    FREQ_OFFSET((token, context, metadata) -> token.processAsDouble(metadata::setFreqOffset)),
+    FREQ_OFFSET((token, context, metadata) -> token.processAsDouble(1.0, metadata::setFreqOffset)),
 
     /** Range mode entry. */
     RANGE_MODE((token, context, metadata) -> token.processAsNormalizedString(metadata::setRangeMode)),
 
     /** Range modulus entry. */
-    RANGE_MODULUS((token, context, metadata) -> token.processAsDouble(metadata::setRangeModulus)),
+    RANGE_MODULUS((token, context, metadata) -> token.processAsDouble(1.0, metadata::setRangeModulus)),
 
     /** Range units entry. */
     RANGE_UNITS((token, context, metadata) -> token.processAsNormalizedString(metadata::setRangeUnits)),
@@ -99,55 +99,55 @@ public enum TDMMetadataKey {
     REFERENCE_FRAME((token, context, metadata) -> token.processAsFrame(metadata::setReferenceFrame, context)),
 
     /** First transmit delay entry. */
-    TRANSMIT_DELAY_1((token, context, metadata) -> token.processAsIndexedDouble(metadata::addTransmitDelay, 1)),
+    TRANSMIT_DELAY_1((token, context, metadata) -> token.processAsIndexedDouble(1, 1.0, metadata::addTransmitDelay)),
 
     /** Second transmit delay entry. */
-    TRANSMIT_DELAY_2((token, context, metadata) -> token.processAsIndexedDouble(metadata::addTransmitDelay, 2)),
+    TRANSMIT_DELAY_2((token, context, metadata) -> token.processAsIndexedDouble(2, 1.0, metadata::addTransmitDelay)),
 
     /** Third transmit delay entry. */
-    TRANSMIT_DELAY_3((token, context, metadata) -> token.processAsIndexedDouble(metadata::addTransmitDelay, 3)),
+    TRANSMIT_DELAY_3((token, context, metadata) -> token.processAsIndexedDouble(3, 1.0, metadata::addTransmitDelay)),
 
     /** Fourth transmit delay entry. */
-    TRANSMIT_DELAY_4((token, context, metadata) -> token.processAsIndexedDouble(metadata::addTransmitDelay, 4)),
+    TRANSMIT_DELAY_4((token, context, metadata) -> token.processAsIndexedDouble(4, 1.0, metadata::addTransmitDelay)),
 
     /** Fifth transmit delay entry. */
-    TRANSMIT_DELAY_5((token, context, metadata) -> token.processAsIndexedDouble(metadata::addTransmitDelay, 5)),
+    TRANSMIT_DELAY_5((token, context, metadata) -> token.processAsIndexedDouble(5, 1.0, metadata::addTransmitDelay)),
 
     /** First receive delay entry. */
-    RECEIVE_DELAY_1((token, context, metadata) -> token.processAsIndexedDouble(metadata::addReceiveDelay, 1)),
+    RECEIVE_DELAY_1((token, context, metadata) -> token.processAsIndexedDouble(1, 1.0, metadata::addReceiveDelay)),
 
     /** Second receive delay entry. */
-    RECEIVE_DELAY_2((token, context, metadata) -> token.processAsIndexedDouble(metadata::addReceiveDelay, 2)),
+    RECEIVE_DELAY_2((token, context, metadata) -> token.processAsIndexedDouble(2, 1.0, metadata::addReceiveDelay)),
 
     /** Third receive delay entry. */
-    RECEIVE_DELAY_3((token, context, metadata) -> token.processAsIndexedDouble(metadata::addReceiveDelay, 3)),
+    RECEIVE_DELAY_3((token, context, metadata) -> token.processAsIndexedDouble(3, 1.0, metadata::addReceiveDelay)),
 
     /** Fourth receive delay entry. */
-    RECEIVE_DELAY_4((token, context, metadata) -> token.processAsIndexedDouble(metadata::addReceiveDelay, 4)),
+    RECEIVE_DELAY_4((token, context, metadata) -> token.processAsIndexedDouble(4, 1.0, metadata::addReceiveDelay)),
 
     /** Fifth receive delay entry. */
-    RECEIVE_DELAY_5((token, context, metadata) -> token.processAsIndexedDouble(metadata::addReceiveDelay, 5)),
+    RECEIVE_DELAY_5((token, context, metadata) -> token.processAsIndexedDouble(5, 1.0, metadata::addReceiveDelay)),
 
     /** data quality entry. */
     DATA_QUALITY((token, context, metadata) -> token.processAsNormalizedString(metadata::setDataQuality)),
 
     /** Angle 1 correction entry. */
-    CORRECTION_ANGLE_1((token, context, metadata) -> token.processAsDouble(metadata::setCorrectionAngle1)),
+    CORRECTION_ANGLE_1((token, context, metadata) -> token.processAsDouble(1.0, metadata::setCorrectionAngle1)),
 
     /** Angle 2 correction entry. */
-    CORRECTION_ANGLE_2((token, context, metadata) -> token.processAsDouble(metadata::setCorrectionAngle2)),
+    CORRECTION_ANGLE_2((token, context, metadata) -> token.processAsDouble(1.0, metadata::setCorrectionAngle2)),
 
     /** Doppler correction entry. */
-    CORRECTION_DOPPLER((token, context, metadata) -> token.processAsDouble(metadata::setCorrectionDoppler)),
+    CORRECTION_DOPPLER((token, context, metadata) -> token.processAsDouble(1.0, metadata::setCorrectionDoppler)),
 
     /** Range correction entry. */
-    CORRECTION_RANGE((token, context, metadata) -> token.processAsDouble(metadata::setCorrectionRange)),
+    CORRECTION_RANGE((token, context, metadata) -> token.processAsDouble(1.0, metadata::setCorrectionRange)),
 
     /** Recive correction entry. */
-    CORRECTION_RECEIVE((token, context, metadata) -> token.processAsDouble(metadata::setCorrectionReceive)),
+    CORRECTION_RECEIVE((token, context, metadata) -> token.processAsDouble(1.0, metadata::setCorrectionReceive)),
 
     /** Transmit correction entry. */
-    CORRECTION_TRANSMIT((token, context, metadata) -> token.processAsDouble(metadata::setCorrectionTransmit)),
+    CORRECTION_TRANSMIT((token, context, metadata) -> token.processAsDouble(1.0, metadata::setCorrectionTransmit)),
 
     /** Applied correction entry. */
     CORRECTIONS_APPLIED((token, context, metadata) -> token.processAsNormalizedString(metadata::setCorrectionsApplied));

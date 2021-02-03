@@ -45,12 +45,12 @@ public enum OCommonMetadataKey {
     REF_FRAME_EPOCH((token, context, metadata) -> token.processAsFreeTextString(metadata::setFrameEpochString));
 
     /** Processing method. */
-    private final MetadataEntryProcessor processor;
+    private final TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method
      */
-    OCommonMetadataKey(final MetadataEntryProcessor processor) {
+    OCommonMetadataKey(final TokenProcessor processor) {
         this.processor = processor;
     }
 
@@ -65,7 +65,7 @@ public enum OCommonMetadataKey {
     }
 
     /** Interface for processing one token. */
-    interface MetadataEntryProcessor {
+    interface TokenProcessor {
         /** Process one token.
          * @param token token to process
          * @param context parsing context

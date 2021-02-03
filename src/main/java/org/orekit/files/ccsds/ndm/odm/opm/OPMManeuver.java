@@ -17,11 +17,12 @@
 
 package org.orekit.files.ccsds.ndm.odm.opm;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.Arrays;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
 import org.orekit.time.AbsoluteDate;
@@ -30,7 +31,7 @@ import org.orekit.time.AbsoluteDate;
  * @author sports
  * @since 6.1
  */
-public class OPMManeuver {
+public class OPMManeuver extends CommentsContainer {
 
     /** Epoch ignition. */
     private AbsoluteDate epochIgnition;
@@ -48,16 +49,31 @@ public class OPMManeuver {
     private double deltaMass;
 
     /** Velocity increment. */
-    private Vector3D dV;
-
-    /** Maneuvers data comment, each string in the list corresponds to one line of comment. */
-    private List<String> comments;
+    private double[] dV;
 
     /** Simple constructor.
      */
     public OPMManeuver() {
-        this.dV       = Vector3D.ZERO;
-        this.comments = new ArrayList<>();
+        duration  = Double.NaN;
+        deltaMass = Double.NaN;
+        dV        = new double[3];
+        Arrays.fill(dV, Double.NaN);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void checkMandatoryEntries() {
+        super.checkMandatoryEntries();
+        checkNotNull(epochIgnition, OPMManeuverKey.MAN_EPOCH_IGNITION);
+        if (refLofType == null && refFrame == null) {
+            throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY,
+                                      OPMManeuverKey.MAN_REF_FRAME.name());
+        }
+        checkNotNaN(duration,  OPMManeuverKey.MAN_DURATION);
+        checkNotNaN(deltaMass, OPMManeuverKey.MAN_DELTA_MASS);
+        checkNotNaN(dV[0],     OPMManeuverKey.MAN_DV_1);
+        checkNotNaN(dV[1],     OPMManeuverKey.MAN_DV_2);
+        checkNotNaN(dV[2],     OPMManeuverKey.MAN_DV_3);
     }
 
     /** Get epoch ignition.
@@ -136,30 +152,24 @@ public class OPMManeuver {
      * @return velocity increment
      */
     public Vector3D getDV() {
-        return dV;
+        return new Vector3D(dV);
     }
 
-    /** Set velocity increment.
-     * @param dV velocity increment
+    /** Set velocity increment component.
+     * @param i component index
+     * @param dVi velocity increment component
      */
-    public void setdV(final Vector3D dV) {
-        this.dV = dV;
+    public void setDV(final int i, final double dVi) {
+        dV[i] = dVi;
     }
 
-    /**
-     * Get the maneuvers data comment, each string in the list corresponds to one line of comment.
-     * @return maneuvers data comment, each string in the list corresponds to one line of comment
+    /** Check if maneuver has been completed.
+     * @return true if maneuver has been completed
      */
-    public List<String> getComments() {
-        return Collections.unmodifiableList(comments);
-    }
-
-    /**
-     * Set the maneuvers data comment, each string in the list corresponds to one line of comment.
-     * @param comments maneuvers data comment, each string in the list corresponds to one line of comment
-     */
-    public void setComments(final List<String> comments) {
-        this.comments = new ArrayList<>(comments);
+    public boolean completed() {
+        return !(epochIgnition == null ||
+                 (refLofType == null && refFrame == null) ||
+                 Double.isNaN(duration + deltaMass + dV[0] + dV[1] + dV[2]));
     }
 
 }

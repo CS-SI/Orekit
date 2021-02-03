@@ -18,16 +18,33 @@ package org.orekit.files.ccsds.ndm.odm;
 
 import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
 
 
-/** Keys for {@link ODMMetadata ODM metadata} entries.
+/** Keys for {@link ODMSpacecraftParameters ODM spacecraft parameters} entries.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public enum ODMMetadataKey {
+public enum ODMSpacecraftParametersKey {
 
-    /** Object name entry. */
-    OBJECT_NAME((token, context, metadata) -> token.processAsNormalizedString(metadata::setObjectName));
+    /** Comment entry. */
+    COMMENT((token, context, data) ->
+            token.getType() == TokenType.ENTRY ? data.addComment(token.getContent()) : true),
+
+    /** Spacecraft mass. */
+    MASS((token, context, data) -> token.processAsDouble(1.0, data::setMass)),
+
+    /** Solar radiation pressure area. */
+    SOLAR_RAD_AREA((token, context, data) -> token.processAsDouble(1.0, data::setSolarRadArea)),
+
+    /** Solar radiation pressure coefficient. */
+    SOLAR_RAD_COEFF((token, context, data) -> token.processAsDouble(1.0, data::setSolarRadCoeff)),
+
+    /** Drag area. */
+    DRAG_AREA((token, context, data) -> token.processAsDouble(1.0, data::setDragArea)),
+
+    /** Drag coefficient. */
+    DRAG_COEFF((token, context, data) -> token.processAsDouble(1.0, data::setDragCoeff));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -35,18 +52,18 @@ public enum ODMMetadataKey {
     /** Simple constructor.
      * @param processor processing method
      */
-    ODMMetadataKey(final TokenProcessor processor) {
+    ODMSpacecraftParametersKey(final TokenProcessor processor) {
         this.processor = processor;
     }
 
     /** Process one token.
      * @param token token to process
      * @param context parsing context
-     * @param metadata metadata to fill
+     * @param data data to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final ODMMetadata metadata) {
-        return processor.process(token, context, metadata);
+    public boolean process(final ParseToken token, final ParsingContext context, final ODMSpacecraftParameters data) {
+        return processor.process(token, context, data);
     }
 
     /** Interface for processing one token. */
@@ -54,10 +71,10 @@ public enum ODMMetadataKey {
         /** Process one token.
          * @param token token to process
          * @param context parsing context
-         * @param metadata metadata to fill
+         * @param data data to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, ODMMetadata metadata);
+        boolean process(ParseToken token, ParsingContext context, ODMSpacecraftParameters data);
     }
 
 }

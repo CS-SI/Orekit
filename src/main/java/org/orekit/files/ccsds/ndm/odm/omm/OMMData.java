@@ -21,7 +21,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.orekit.files.ccsds.ndm.odm.OStateData;
+import org.orekit.files.ccsds.section.Data;
+import org.orekit.files.ccsds.section.Section;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.propagation.SpacecraftState;
@@ -33,7 +34,7 @@ import org.orekit.propagation.analytical.tle.TLE;
  * @author sports
  * @since 6.1
  */
-public class OMMData extends OStateData  {
+public class OMMData implements Data, Section {
 
     /** Mean motion (the Keplerian Mean motion in revolutions per day). To be used instead of semi-major
      * axis if MEAN_ELEMENT_THEORY = SGP/SGP4. */

@@ -14,43 +14,59 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.ccsds.ndm.adm.apm;
+package org.orekit.files.ccsds.ndm.odm;
 
 import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.orbits.PositionAngle;
 
-/** Keys for {@link APMManeuver APM maneuver} entries.
- * @author Bryan Cazabonne
+
+/** Keys for {@link ODMKeplerianElements Keplerian elements} entries.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public enum APMManeuverKey {
-
-    /** Block wrapping element in XML files. */
-    maneuverParameters((token, context, data) -> true),
+public enum ODMKplerianElementsKey {
 
     /** Comment entry. */
     COMMENT((token, context, data) ->
             token.getType() == TokenType.ENTRY ? data.addComment(token.getContent()) : true),
 
-    /** Epoch start entry. */
-    MAN_EPOCH_START((token, context, data) -> token.processAsDate(data::setEpochStart, context)),
+    /** Orbit semi-major axis. */
+    SEMI_MAJOR_AXIS((token, context, data) -> token.processAsDouble(1.0e3, data::setA)),
 
-    /** Duration entry. */
-    MAN_DURATION((token, context, data) -> token.processAsDouble(1.0, data::setDuration)),
+    /** Orbit eccentricity. */
+    ECCENTRICITY((token, context, data) -> token.processAsDouble(1.0, data::setE)),
 
-    /** Reference frame entry. */
-    MAN_REF_FRAME((token, context, data) -> token.processAsNormalizedString(data::setRefFrameString)),
+    /** Orbit inclination. */
+    INCLINATION((token, context, data) -> token.processAsAngle(data::setI)),
 
-    /** First torque vector component entry. */
-    MAN_TOR_1((token, context, data) -> token.processAsIndexedDouble(0, 1.0, data::setTorque)),
+    /** Orbit right ascension of ascending node. */
+    RA_OF_ASC_NODE((token, context, data) -> token.processAsAngle(data::setRaan)),
 
-    /** Second torque vector component entry. */
-    MAN_TOR_2((token, context, data) -> token.processAsIndexedDouble(1, 1.0, data::setTorque)),
+    /** Orbit argument of pericenter. */
+    ARG_OF_PERICENTER((token, context, data) -> token.processAsAngle(data::setPa)),
 
-    /** Third torque vector component entry. */
-    MAN_TOR_3((token, context, data) -> token.processAsIndexedDouble(2, 1.0, data::setTorque));
+    /** Orbit true anomaly. */
+    TRUE_ANOMALY((token, context, data) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            data.setAnomaly(token.getContentAsAngle());
+            data.setAnomalyType(PositionAngle.TRUE);
+        }
+        return true;
+    }),
+
+    /** Orbit mean anomaly. */
+    MEAN_ANOMALY((token, context, data) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            data.setAnomaly(token.getContentAsAngle());
+            data.setAnomalyType(PositionAngle.MEAN);
+        }
+        return true;
+    }),
+
+    /** Gravitational coefficient. */
+    GM((token, context, data) -> token.processAsDouble(1.0e9, data::setMu));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -58,7 +74,7 @@ public enum APMManeuverKey {
     /** Simple constructor.
      * @param processor processing method
      */
-    APMManeuverKey(final TokenProcessor processor) {
+    ODMKplerianElementsKey(final TokenProcessor processor) {
         this.processor = processor;
     }
 
@@ -68,7 +84,7 @@ public enum APMManeuverKey {
      * @param data data to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final APMManeuver data) {
+    public boolean process(final ParseToken token, final ParsingContext context, final ODMKeplerianElements data) {
         return processor.process(token, context, data);
     }
 
@@ -80,7 +96,7 @@ public enum APMManeuverKey {
          * @param data data to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, APMManeuver data);
+        boolean process(ParseToken token, ParsingContext context, ODMKeplerianElements data);
     }
 
 }

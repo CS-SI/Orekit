@@ -58,7 +58,6 @@ public class APMQuaternion extends CommentsContainer {
         q         = new double[4];
         qDot      = new double[4];
         Arrays.fill(q,    Double.NaN);
-        Arrays.fill(qDot, Double.NaN);
     }
 
     /** {@inheritDoc} */
@@ -68,14 +67,6 @@ public class APMQuaternion extends CommentsContainer {
         endPoints.checkMandatoryEntries();
         if (Double.isNaN(q[0] + q[1] + q[2] + q[3])) {
             throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, "Q{C|1|2|3}");
-        }
-        if (Double.isNaN(qDot[0] + qDot[1] + qDot[2] + qDot[3])) {
-            // if at least one is NaN, all must be NaN (i.e. not initialized)
-            for (final double qD : qDot) {
-                if (!Double.isNaN(qD)) {
-                    throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, "Q{C|1|2|3}_DOT");
-                }
-            }
         }
     }
 

@@ -16,14 +16,9 @@
  */
 package org.orekit.files.ccsds.ndm.odm;
 
-import org.orekit.bodies.CelestialBodies;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.utils.CCSDSFrame;
-import org.orekit.files.ccsds.utils.CcsdsTimeScale;
-import org.orekit.files.ccsds.utils.CenterName;
-import org.orekit.files.ccsds.utils.KeyValue;
 import org.orekit.files.ccsds.utils.state.AbstractMessageParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
@@ -75,82 +70,11 @@ public abstract class OCommonParser<T extends ODMFile<?>, P extends OCommonParse
         return missionReferenceDate;
     }
 
-    /** Get the gravitational coefficient set at construction or by calling {@link #withMu()}.
-     * @return gravitational coefficient set at construction or by calling {@link #withMu()}
+    /** Get the gravitational coefficient set at construction.
+     * @return gravitational coefficient set at construction
      */
     protected double getMuSet() {
         return muSet;
-    }
-
-   /** Parse a meta-data key = value entry.
-     * @param keyValue key = value pair
-     * @param metaData instance to update with parsed entry
-     * @param lineNumber number of line being parsed
-     * @param fileName name of the parsed file
-     * @param line full parsed line
-     * @return true if the keyword was a meta-data keyword and has been parsed
-     */
-    protected boolean parseMetaDataEntry(final KeyValue keyValue, final OCommonMetadata metaData,
-                                         final int lineNumber, final String fileName, final String line) {
-        if (super.parseMetaDataEntry(keyValue, metaData, lineNumber, fileName, line)) {
-            return true;
-        } else {
-            switch (keyValue.getKeyword()) {
-
-                case OBJECT_ID: {
-                    metaData.setObjectID(keyValue.getValue());
-                    return true;
-                }
-
-                case CENTER_NAME:
-                    metaData.setCenterName(keyValue.getValue());
-                    final String canonicalValue;
-                    if (keyValue.getValue().equals("SOLAR SYSTEM BARYCENTER") || keyValue.getValue().equals("SSB")) {
-                        canonicalValue = "SOLAR_SYSTEM_BARYCENTER";
-                    } else if (keyValue.getValue().equals("EARTH MOON BARYCENTER") || keyValue.getValue().equals("EARTH-MOON BARYCENTER") ||
-                                    keyValue.getValue().equals("EARTH BARYCENTER") || keyValue.getValue().equals("EMB")) {
-                        canonicalValue = "EARTH_MOON";
-                    } else {
-                        canonicalValue = keyValue.getValue();
-                    }
-                    final CenterName c;
-                    try {
-                        c = CenterName.valueOf(canonicalValue);
-                        metaData.setHasCreatableBody(true);
-                        final CelestialBodies celestialBodies = getDataContext().getCelestialBodies();
-                        metaData.setCenterBody(c.getCelestialBody(celestialBodies));
-                        setMuCreated(c.getCelestialBody(celestialBodies).getGM());
-                    } catch (IllegalArgumentException n) {
-                        // intentionally ignored, as there is no limit to acceptable center names
-                    }
-                    return true;
-
-                case REF_FRAME:
-                    metaData.setFrameString(keyValue.getValue());
-                    metaData.setRefFrame(CCSDSFrame.parse(keyValue.getValue())
-                                         .getFrame(getConventions(), isSimpleEOP(), getDataContext()));
-                    return true;
-
-                case REF_FRAME_EPOCH:
-                    // for OPM, OEM and OMM, REF_FRAME_EPOCH appears in metadata *before* TIME_SYSTEM
-                    // so we can only store the string value here, it will be converted later on
-                    metaData.setFrameEpochString(keyValue.getValue());
-                    return true;
-
-                case TIME_SYSTEM:
-                    final CcsdsTimeScale timeSystem = CcsdsTimeScale.parse(keyValue.getValue());
-                    metaData.setTimeSystem(timeSystem);
-                    if (metaData.getFrameEpochString() != null) {
-                        // convert ref frame epoch to a proper data now that we know the time system
-                        metaData.setFrameEpoch(parseDate(metaData.getFrameEpochString(), timeSystem,
-                                                         lineNumber, fileName, line));
-                    }
-                    return true;
-
-                default:
-                    return false;
-            }
-        }
     }
 
     /**

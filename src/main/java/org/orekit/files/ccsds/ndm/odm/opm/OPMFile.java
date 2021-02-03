@@ -19,46 +19,65 @@ package org.orekit.files.ccsds.ndm.odm.opm;
 
 import java.util.List;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.odm.OCommonMetadata;
-import org.orekit.files.ccsds.ndm.odm.OStateFile;
+import org.orekit.files.ccsds.ndm.odm.ODMFile;
+import org.orekit.files.ccsds.ndm.odm.ODMHeader;
+import org.orekit.files.ccsds.ndm.odm.ODMKeplerianElements;
+import org.orekit.files.ccsds.ndm.odm.ODMStateVector;
+import org.orekit.files.ccsds.section.Segment;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeStamped;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-/** This class gathers the informations present in the Orbital Parameter Message (OPM), and contains
- * methods to generate {@link CartesianOrbit}, {@link KeplerianOrbit} or {@link SpacecraftState}.
+/** This class gathers the informations present in the Orbital Parameter Message (OPM).
  * @author sports
  * @since 6.1
  */
-public class OPMFile extends OStateFile<OCommonMetadata, OPMData> {
+public class OPMFile extends ODMFile<Segment<OCommonMetadata, OPMData>> implements TimeStamped {
 
     /** Key for format version. */
     public static final String FORMAT_VERSION_KEY = "CCSDS_OPM_VERS";
 
+    /** Gravitational coefficient to use for building Cartesian/Keplerian orbits. */
+    private final double mu;
+
     /** Simple constructor.
+     * @param header file header
+     * @param segments file segments
      * @param conventions IERS conventions
      * @param dataContext used for creating frames, time scales, etc.
+     * @param mu gravitational coefficient to use for building Cartesian/Keplerian orbits
      */
-    public OPMFile(final IERSConventions conventions, final DataContext dataContext) {
-        super(conventions, dataContext);
+    public OPMFile(final ODMHeader header, final List<Segment<OCommonMetadata, OPMData>> segments,
+                   final IERSConventions conventions, final DataContext dataContext,
+                   final double mu) {
+        super(header, segments, conventions, dataContext);
+        this.mu = mu;
     }
 
-    /** Get position vector.
-     * @return the position vector
+    /** Get the file metadata.
+     * @return file metadata
      */
-    public Vector3D getPosition() {
-        return getData().getPosition();
+    public OCommonMetadata getMetadata() {
+        return getSegments().get(0).getMetadata();
     }
 
-    /** Get velocity vector.
-     * @return the velocity vector
+    /** Get the file data.
+     * @return file data
      */
-    public Vector3D getVelocity() {
-        return getData().getVelocity();
+    public OPMData getData() {
+        return getSegments().get(0).getData();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AbsoluteDate getDate() {
+        return getData().getStateVectorBlock().getEpoch();
     }
 
     /** Get the number of maneuvers present in the OPM.
@@ -83,41 +102,58 @@ public class OPMFile extends OStateFile<OCommonMetadata, OPMData> {
         return getData().getManeuver(index);
     }
 
-    /** Get boolean testing whether the OPM contains at least one maneuver.
-     * @return true if OPM contains at least one maneuver
-     *         false otherwise */
-    public boolean hasManeuver() {
-        return getData().hasManeuver();
+    /** check whether the OPM contains at least one maneuver.
+     * @return true if OPM contains at least one maneuver false otherwise
+     */
+    public boolean hasManeuvers() {
+        return getData().hasManeuvers();
     }
 
     /** Get the position/velocity coordinates contained in the OPM.
      * @return the position/velocity coordinates contained in the OPM
      */
     public PVCoordinates getPVCoordinates() {
-        return new PVCoordinates(getPosition(), getVelocity());
+        final ODMStateVector stateVector = getData().getStateVectorBlock();
+        return new PVCoordinates(stateVector.getPosition(), stateVector.getVelocity());
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /** Generate a Cartesian orbit.
+     * @return generated orbit
+     */
     public CartesianOrbit generateCartesianOrbit() {
         return new CartesianOrbit(getPVCoordinates(), getMetadata().getFrame(),
-                                  getData().getEpoch(), getMu());
+                                  getData().getStateVectorBlock().getEpoch(),
+                                  mu);
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /** Generate a keplerian orbit.
+     * @return generated orbit
+     */
     public KeplerianOrbit generateKeplerianOrbit() {
-        final OPMData data = getData();
-        if (data.hasKeplerianElements()) {
-            return new KeplerianOrbit(data.getA(), data.getE(), data.getI(),
-                                      data.getPa(), data.getRaan(),
-                                      data.getAnomaly(), data.getAnomalyType(),
-                                      getMetadata().getFrame(),
-                                      data.getEpoch(), getMu());
+        final OCommonMetadata metadata = getMetadata();
+        final OPMData         data     = getData();
+        final ODMKeplerianElements keplerianElements = data.getKeplerianElementsBlock();
+        if (keplerianElements != null) {
+            return new KeplerianOrbit(keplerianElements.getA(), keplerianElements.getE(),
+                                      keplerianElements.getI(), keplerianElements.getPa(),
+                                      keplerianElements.getRaan(),
+                                      keplerianElements.getAnomaly(), keplerianElements.getAnomalyType(),
+                                      metadata.getFrame(),
+                                      data.getStateVectorBlock().getEpoch(),
+                                      mu);
         } else {
-            return new KeplerianOrbit(getPVCoordinates(), getMetadata().getFrame(),
-                                      getData().getEpoch(), getMu());
+            return new KeplerianOrbit(getPVCoordinates(), metadata.getFrame(),
+                                      getData().getStateVectorBlock().getEpoch(),
+                                      mu);
         }
+    }
+
+    /** Generate spacecraft state from the {@link CartesianOrbit} generated by generateCartesianOrbit.
+     *  Raises an exception if OPM doesn't contain spacecraft mass information.
+     * @return the spacecraft state of the OPM
+     */
+    public SpacecraftState generateSpacecraftState() {
+        return new SpacecraftState(generateCartesianOrbit(), getData().getMass());
     }
 
 }

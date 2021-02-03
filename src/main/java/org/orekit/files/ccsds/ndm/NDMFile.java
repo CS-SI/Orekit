@@ -16,16 +16,13 @@
  */
 package org.orekit.files.ccsds.ndm;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.section.Data;
 import org.orekit.files.ccsds.section.Header;
-import org.orekit.files.ccsds.section.Metadata;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.utils.IERSConventions;
 
@@ -57,12 +54,14 @@ public abstract class NDMFile<H extends Header, S extends Segment<?, ?>> {
     /**
      * Constructor.
      * @param header file header
+     * @param segments file segments
      * @param conventions IERS conventions
      * @param dataContext used for creating frames, time scales, etc.
      */
-    protected NDMFile(final H header, final IERSConventions conventions, final DataContext dataContext) {
+    protected NDMFile(final H header, final List<S> segments,
+                      final IERSConventions conventions, final DataContext dataContext) {
         this.header      = header;
-        this.segments    = new ArrayList<>();
+        this.segments    = segments;
         this.conventions = conventions;
         this.dataContext = dataContext;
     }
@@ -83,15 +82,6 @@ public abstract class NDMFile<H extends Header, S extends Segment<?, ?>> {
      */
     public List<S> getSegments() {
         return Collections.unmodifiableList(segments);
-    }
-
-    /**
-     * Add a ({@link Metadata metadata}, {@link Data data}) pair to the segments.
-     * @param segment segment to add
-     * @since 11.0
-     */
-    public void addSegment(final S segment) {
-        segments.add(segment);
     }
 
     /**

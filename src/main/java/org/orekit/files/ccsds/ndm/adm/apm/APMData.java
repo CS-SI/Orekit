@@ -43,7 +43,7 @@ public class APMData implements Data, Section {
     private final APMSpacecraftParameters spacecraftParameters;
 
     /** Maneuvers. */
-    private List<APMManeuver> maneuvers;
+    private final List<APMManeuver> maneuvers;
 
     /** Simple constructor.
      * @param quaternionBlock quaternion logical block

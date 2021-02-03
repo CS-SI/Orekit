@@ -17,6 +17,8 @@
 
 package org.orekit.files.ccsds.ndm.tdm;
 
+import java.util.List;
+
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -43,11 +45,14 @@ public class TDMFile extends NDMFile<Header, Segment<TDMMetadata, ObservationsBl
     public static final String FORMAT_VERSION_KEY = "CCSDS_TDM_VERS";
 
     /** Simple constructor.
+     * @param header file header
+     * @param segments file segments
      * @param conventions IERS conventions
      * @param dataContext used for creating frames, time scales, etc.
      */
-    public TDMFile(final IERSConventions conventions, final DataContext dataContext) {
-        super(new Header(), conventions, dataContext);
+    public TDMFile(final Header header, final List<Segment<TDMMetadata, ObservationsBlock>> segments,
+                   final IERSConventions conventions, final DataContext dataContext) {
+        super(header, segments, conventions, dataContext);
     }
 
     /** Check that, according to the CCSDS standard, every ObservationsBlock has the same time system.

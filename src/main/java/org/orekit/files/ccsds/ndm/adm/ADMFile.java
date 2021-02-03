@@ -16,6 +16,8 @@
  */
 package org.orekit.files.ccsds.ndm.adm;
 
+import java.util.List;
+
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.NDMFile;
 import org.orekit.files.ccsds.section.Header;
@@ -39,14 +41,17 @@ public class ADMFile<S extends Segment<?, ?>> extends NDMFile<Header, S> {
     private AbsoluteDate missionReferenceDate;
 
     /** Simple constructor.
+     * @param header file header
+     * @param segments file segments
      * @param conventions IERS conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used for creating frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time and Mission Relative Time time systems.
      */
-    public ADMFile(final IERSConventions conventions, final boolean simpleEOP,
+    public ADMFile(final Header header, final List<S> segments,
+                   final IERSConventions conventions, final boolean simpleEOP,
                    final DataContext dataContext, final AbsoluteDate missionReferenceDate) {
-        super(new Header(), conventions, dataContext);
+        super(header, segments, conventions, dataContext);
         this.simpleEOP            = simpleEOP;
         this.missionReferenceDate = missionReferenceDate;
     }

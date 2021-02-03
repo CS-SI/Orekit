@@ -200,11 +200,11 @@ public class ParseToken {
     }
 
     /** Process the content as an indexed free text string.
-     * @param consumer consumer of the indexed free test string
      * @param index index
+     * @param consumer consumer of the indexed free test string
      * @return always returns {@code true}
      */
-    public boolean processAsIndexedFreeTextString(final IndexedStringConsumer consumer, final int index) {
+    public boolean processAsIndexedFreeTextString(final int index, final IndexedStringConsumer consumer) {
         if (type == TokenType.ENTRY) {
             consumer.accept(index, getContent());
         }
@@ -212,11 +212,11 @@ public class ParseToken {
     }
 
     /** Process the content as an indexed normalized string.
-     * @param consumer consumer of the indexed normalized string
      * @param index index
+     * @param consumer consumer of the indexed normalized string
      * @return always returns {@code true}
      */
-    public boolean processAsIndexedNormalizedString(final IndexedStringConsumer consumer, final int index) {
+    public boolean processAsIndexedNormalizedString(final int index, final IndexedStringConsumer consumer) {
         if (type == TokenType.ENTRY) {
             consumer.accept(index, getNormalizedContent());
         }
@@ -246,38 +246,42 @@ public class ParseToken {
     }
 
     /** Process the content as a double.
+     * @param scalingFactor scaling factor to apply
      * @param consumer consumer of the double
      * @return always returns {@code true}
      */
-    public boolean processAsDouble(final DoubleConsumer consumer) {
+    public boolean processAsDouble(final double scalingFactor, final DoubleConsumer consumer) {
         if (type == TokenType.ENTRY) {
-            consumer.accept(getContentAsDouble());
+            consumer.accept(scalingFactor * getContentAsDouble());
         }
         return true;
     }
 
     /** Process the content as an indexed double.
-     * @param consumer consumer of the indexed double
      * @param i index
+     * @param scalingFactor scaling factor to apply
+     * @param consumer consumer of the indexed double
      * @return always returns {@code true}
      */
-    public boolean processAsIndexedDouble(final IndexedDoubleConsumer consumer, final int i) {
+    public boolean processAsIndexedDouble(final int i, final double scalingFactor,
+                                          final IndexedDoubleConsumer consumer) {
         if (type == TokenType.ENTRY) {
-            consumer.accept(i, getContentAsDouble());
+            consumer.accept(i, scalingFactor * getContentAsDouble());
         }
         return true;
     }
 
     /** Process the content as a doubly-indexed double.
-     * @param consumer consumer of the doubly-indexed double
      * @param i first index
      * @param j second index
+     * @param scalingFactor scaling factor to apply
+     * @param consumer consumer of the doubly-indexed double
      * @return always returns {@code true}
      */
-    public boolean processAsDoublyIndexedDouble(final DoublyIndexedDoubleConsumer consumer,
-                                                final int i, final int j) {
+    public boolean processAsDoublyIndexedDouble(final int i, final int j, final double scalingFactor,
+                                                final DoublyIndexedDoubleConsumer consumer) {
         if (type == TokenType.ENTRY) {
-            consumer.accept(i, j, getContentAsDouble());
+            consumer.accept(i, j, scalingFactor * getContentAsDouble());
         }
         return true;
     }
@@ -294,11 +298,11 @@ public class ParseToken {
     }
 
     /** Process the content as an indexed angle.
-     * @param consumer consumer of the indexed angle
      * @param index index
+     * @param consumer consumer of the indexed angle
      * @return always returns {@code true}
      */
-    public boolean processAsIndexedAngle(final IndexedDoubleConsumer consumer, final int index) {
+    public boolean processAsIndexedAngle(final int index, final IndexedDoubleConsumer consumer) {
         if (type == TokenType.ENTRY) {
             consumer.accept(index, FastMath.toRadians(getContentAsDouble()));
         }

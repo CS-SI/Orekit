@@ -16,6 +16,8 @@
  */
 package org.orekit.files.ccsds.ndm.adm.aem;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.orekit.data.DataContext;
@@ -49,8 +51,11 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> {
     /** Pattern for splitting strings at blanks. */
     private static final Pattern SPLIT_AT_BLANKS = Pattern.compile("\\s+");
 
-    /** AEM file being read. */
-    private AEMFile file;
+    /** File header. */
+    private Header header;
+
+    /** File segments. */
+    private List<AEMSegment> segments;
 
     /** Metadata for current observation block. */
     private AEMMetadata metadata;
@@ -86,14 +91,14 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> {
     /** {@inheritDoc} */
     @Override
     public Header getHeader() {
-        return file.getHeader();
+        return header;
     }
 
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        file     = new AEMFile(getConventions(), isSimpleEOP(),
-                               getDataContext(), getMissionReferenceDate());
+        header   = new Header();
+        segments = new ArrayList<>();
         metadata = null;
         context  = null;
         if (getFileFormat() == FileFormat.XML) {
@@ -120,7 +125,7 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> {
     /** {@inheritDoc} */
     @Override
     public void finalizeHeader() {
-        file.getHeader().checkMandatoryEntries();
+        header.checkMandatoryEntries();
     }
 
     /** {@inheritDoc} */
@@ -165,8 +170,8 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> {
     public void finalizeData() {
         if (metadata != null) {
             currentBlock.checkMandatoryEntries();
-            file.addSegment(new AEMSegment(metadata, currentBlock,
-                                           getConventions(), isSimpleEOP(), getDataContext()));
+            segments.add(new AEMSegment(metadata, currentBlock,
+                                        getConventions(), isSimpleEOP(), getDataContext()));
         }
         metadata = null;
         context  = null;
@@ -175,6 +180,9 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> {
     /** {@inheritDoc} */
     @Override
     public AEMFile build() {
+        final AEMFile file = new AEMFile(header, segments,
+                                         getConventions(), isSimpleEOP(),
+                                         getDataContext(), getMissionReferenceDate());
         file.checkTimeSystems();
         return file;
     }

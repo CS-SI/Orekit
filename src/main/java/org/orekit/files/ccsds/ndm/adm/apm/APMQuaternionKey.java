@@ -52,28 +52,28 @@ public enum APMQuaternionKey {
     Q_DIR((token, context, data) -> token.processAsNormalizedString(data.getEndPoints()::setDirection)),
 
     /** Scalar part of the quaternion entry. */
-    QC((token, context, data) -> token.processAsIndexedDouble(data::setQ, 0)),
+    QC((token, context, data) -> token.processAsIndexedDouble(0, 1.0, data::setQ)),
 
     /** First component of the vector part of the quaternion entry. */
-    Q1((token, context, data) -> token.processAsIndexedDouble(data::setQ, 1)),
+    Q1((token, context, data) -> token.processAsIndexedDouble(1, 1.0, data::setQ)),
 
     /** Second component of the vector part of the quaternion entry. */
-    Q2((token, context, data) -> token.processAsIndexedDouble(data::setQ, 2)),
+    Q2((token, context, data) -> token.processAsIndexedDouble(2, 1.0, data::setQ)),
 
     /** Third component of the vector part of the quaternion entry. */
-    Q3((token, context, data) -> token.processAsIndexedDouble(data::setQ, 3)),
+    Q3((token, context, data) -> token.processAsIndexedDouble(3, 1.0, data::setQ)),
 
     /** Scalar part of the quaternion derivative entry. */
-    QC_DOT((token, context, data) -> token.processAsIndexedDouble(data::setQDot, 0)),
+    QC_DOT((token, context, data) -> token.processAsIndexedDouble(0, 1.0, data::setQDot)),
 
     /** First component of the vector part of the quaternion derivative entry. */
-    Q1_DOT((token, context, data) -> token.processAsIndexedDouble(data::setQDot, 1)),
+    Q1_DOT((token, context, data) -> token.processAsIndexedDouble(1, 1.0, data::setQDot)),
 
     /** Second component of the vector part of the quaternion derivative entry. */
-    Q2_DOT((token, context, data) -> token.processAsIndexedDouble(data::setQDot, 2)),
+    Q2_DOT((token, context, data) -> token.processAsIndexedDouble(2, 1.0, data::setQDot)),
 
     /** Third component of the vector part of the quaternion derivative entry. */
-    Q3_DOT((token, context, data) -> token.processAsIndexedDouble(data::setQDot, 3));
+    Q3_DOT((token, context, data) -> token.processAsIndexedDouble(3, 1.0, data::setQDot));
 
     /** Processing method. */
     private final TokenProcessor processor;

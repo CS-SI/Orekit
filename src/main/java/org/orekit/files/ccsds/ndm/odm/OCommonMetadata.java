@@ -22,6 +22,7 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsModifiedFrame;
 import org.orekit.files.ccsds.utils.CenterName;
 import org.orekit.files.ccsds.utils.ParsingContext;
@@ -50,7 +51,11 @@ public class OCommonMetadata extends ODMMetadata {
 
     /** Reference frame in which data are given: used for state vector
      * and Keplerian elements data (and for the covariance reference frame if none is given). */
-    private Frame refFrame;
+    private Frame referenceFrame;
+
+    /** Reference frame in which data are given: used for state vector
+     * and Keplerian elements data (and for the covariance reference frame if none is given). */
+    private CCSDSFrame referenceCCSDSFrame;
 
     /** Epoch of reference frame, if not intrinsic to the definition of the
      * reference frame. */
@@ -72,16 +77,16 @@ public class OCommonMetadata extends ODMMetadata {
         super.checkMandatoryEntries();
         checkNotNull(objectID,   OCommonMetadataKey.OBJECT_ID);
         checkNotNull(centerName, OCommonMetadataKey.CENTER_NAME);
-        checkNotNull(refFrame,   OCommonMetadataKey.REF_FRAME);
+        checkNotNull(referenceFrame,   OCommonMetadataKey.REF_FRAME);
     }
 
-    /** Finalize the metadata date.
+    /** Finalize the metadata.
      * <p>
      * ODM standard enforces {@code TIME_SYSTEM} to appear *after*
-     * {@code REF_FRAME_EPOCH} so we have to wait until parsing end
-     * to finalize date
+     * {@code REF_FRAME_EPOCH}, despite it is needed to interpret it.
+     * We have to wait until parsing end to finalize this date.
      * <p>
-     * @param context
+     * @param context parsing context
      */
     public void finalizeMetadata(final ParsingContext context) {
         if (frameEpochString != null) {
@@ -211,26 +216,22 @@ public class OCommonMetadata extends ODMMetadata {
      * @return the reference frame
      */
     public Frame getFrame() {
-        final Frame frame = this.getRefFrame();
-        final CelestialBody body = this.getCenterBody();
-        if (body == null) {
-            throw new OrekitException(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY,
-                    this.getCenterName());
+        if (centerBody == null) {
+            throw new OrekitException(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, centerName);
         }
         // Just return frame if we don't need to shift the center based on CENTER_NAME
-        // MCI and ICRF are the only non-earth centered frames specified in Annex A.
-        final String frameString = this.getFrameString();
-        final boolean isMci = "MCI".equals(frameString);
-        final boolean isIcrf = "ICRF".equals(frameString);
+        // MCI and ICRF are the only non-Earth centered frames specified in Annex A.
+        final boolean isMci  = referenceCCSDSFrame == CCSDSFrame.MCI;
+        final boolean isIcrf = referenceCCSDSFrame == CCSDSFrame.ICRF;
         final boolean isSolarSystemBarycenter =
-                CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER.equals(body.getName());
-        if ((!(isMci || isIcrf) && CelestialBodyFactory.EARTH.equals(body.getName())) ||
-                (isMci && CelestialBodyFactory.MARS.equals(body.getName())) ||
-                (isIcrf && isSolarSystemBarycenter)) {
-            return frame;
+                CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER.equals(centerBody.getName());
+        if ((!(isMci || isIcrf) && CelestialBodyFactory.EARTH.equals(centerBody.getName())) ||
+            (isMci && CelestialBodyFactory.MARS.equals(centerBody.getName())) ||
+            (isIcrf && isSolarSystemBarycenter)) {
+            return referenceFrame;
         }
         // else, translate frame to specified center.
-        return new CcsdsModifiedFrame(frame, frameString, body, this.getCenterName());
+        return new CcsdsModifiedFrame(referenceFrame, referenceCCSDSFrame, centerBody, centerName);
     }
 
     /**
@@ -242,16 +243,30 @@ public class OCommonMetadata extends ODMMetadata {
      * @see #getFrame()
      */
     public Frame getRefFrame() {
-        return refFrame;
+        return referenceFrame;
+    }
+
+    /**
+     * Get the the value of {@code REF_FRAME} as an Orekit {@link Frame}. The {@code
+     * CENTER_NAME} key word has not been applied yet, so the returned frame may not
+     * correspond to the reference frame of the data in the file.
+     *
+     * @return The reference frame specified by the {@code REF_FRAME} keyword.
+     * @see #getFrame()
+     */
+    public CCSDSFrame getRefCCSDSFrame() {
+        return referenceCCSDSFrame;
     }
 
     /** Set the reference frame in which data are given: used for state vector
      * and Keplerian elements data (and for the covariance reference frame if none is given).
-     * @param refFrame the reference frame to be set
+     * @param frame the reference frame to be set
+     * @param ccsdsFrame the reference frame to be set
      */
-    public void setRefFrame(final Frame refFrame) {
+    public void setRefFrame(final Frame frame, final CCSDSFrame ccsdsFrame) {
         refuseFurtherComments();
-        this.refFrame = refFrame;
+        this.referenceFrame      = frame;
+        this.referenceCCSDSFrame = ccsdsFrame;
     }
 
     /** Get epoch of reference frame, if not intrinsic to the definition of the
@@ -289,6 +304,3 @@ public class OCommonMetadata extends ODMMetadata {
     }
 
 }
-
-
-

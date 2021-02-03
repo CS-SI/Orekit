@@ -25,6 +25,7 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.adm.ADMFile;
+import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.time.AbsoluteDate;
@@ -43,14 +44,17 @@ public class AEMFile extends ADMFile<AEMSegment> implements AttitudeEphemerisFil
     public static final String FORMAT_VERSION_KEY = "CCSDS_AEM_VERS";
 
     /** Simple constructor.
+     * @param header file header
+     * @param segments file segments
      * @param conventions IERS conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used for creating frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time and Mission Relative Time time systems.
      */
-    public AEMFile(final IERSConventions conventions, final boolean simpleEOP,
+    public AEMFile(final Header header, final List<AEMSegment> segments,
+                   final IERSConventions conventions, final boolean simpleEOP,
                    final DataContext dataContext, final AbsoluteDate missionReferenceDate) {
-        super(conventions, simpleEOP, dataContext, missionReferenceDate);
+        super(header, segments, conventions, simpleEOP, dataContext, missionReferenceDate);
     }
 
     /** {@inheritDoc} */
