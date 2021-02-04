@@ -200,7 +200,7 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
     /** {@inheritDoc} */
     @Override
     public APMFile build() {
-        // APM KVN file lack a DATA_STOP keyword, hence we can't call stopData()
+        // APM KVN file lack a DATA_STOP keyword, hence we can't call finalizeData()
         // automatically before the end of the file
         finalizeData();
         final APMFile file = new APMFile(header, segments,
@@ -239,7 +239,10 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
      */
     private boolean processQuaternionToken(final ParseToken token) {
         if (quaternionBlock == null) {
-            // APM KVN file lack a DATA_START keyword, hence we can't call startData()
+            // APM KVN file lack a META_STOP keyword, hence we can't call finalizeMetadata()
+            // automatically before the first data token arrives
+            finalizeMetadata();
+            // APM KVN file lack a DATA_START keyword, hence we can't call prepareData()
             // automatically before the first data token arrives
             prepareData();
         }

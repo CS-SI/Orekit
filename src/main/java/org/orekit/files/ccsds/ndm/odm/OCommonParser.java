@@ -81,7 +81,7 @@ public abstract class OCommonParser<T extends ODMFile<?>, P extends OCommonParse
      * Set the gravitational coefficient parsed in the ODM File.
      * @param muParsed the coefficient to be set
      */
-    void setMuParsed(final double muParsed) {
+    protected void setMuParsed(final double muParsed) {
         this.muParsed = muParsed;
     }
 
@@ -89,7 +89,7 @@ public abstract class OCommonParser<T extends ODMFile<?>, P extends OCommonParse
      * Set the gravitational coefficient created from the knowledge of the central body.
      * @param muCreated the coefficient to be set
      */
-    void setMuCreated(final double muCreated) {
+    protected void setMuCreated(final double muCreated) {
         this.muCreated = muCreated;
     }
 

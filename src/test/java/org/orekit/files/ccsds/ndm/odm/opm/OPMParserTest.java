@@ -88,7 +88,7 @@ public class OPMParserTest {
         Assert.assertEquals(999, file.getMetadata().getLaunchNumber());
         Assert.assertEquals("A", file.getMetadata().getLaunchPiece());
         Assert.assertEquals("EARTH", file.getMetadata().getCenterName());
-        Assert.assertTrue(file.getMetadata().getHasCreatableBody());
+        Assert.assertNotNull(file.getMetadata().getCenterBody());
         Assert.assertEquals(CelestialBodyFactory.getEarth(), file.getMetadata().getCenterBody());
         Assert.assertEquals(CCSDSFrame.ITRF2000, CCSDSFrame.map(file.getMetadata().getFrame()));
         Assert.assertEquals(CcsdsTimeScale.UTC, file.getMetadata().getTimeSystem());
@@ -154,7 +154,7 @@ public class OPMParserTest {
         Assert.assertEquals("EUTELSAT W4", file.getMetadata().getObjectName());
         Assert.assertEquals("2000-028A", file.getMetadata().getObjectID());
         Assert.assertEquals("EARTH", file.getMetadata().getCenterName());
-        Assert.assertTrue(file.getMetadata().getHasCreatableBody());
+        Assert.assertNotNull(file.getMetadata().getCenterBody());
         Assert.assertEquals(CelestialBodyFactory.getEarth(), file.getMetadata().getCenterBody());
         Assert.assertEquals(FramesFactory.getTOD(IERSConventions.IERS_2010, true),
                             file.getMetadata().getFrame());
@@ -270,7 +270,7 @@ public class OPMParserTest {
         Assert.assertEquals("EUTELSAT W4", file.getMetadata().getObjectName());
         Assert.assertEquals("2000-028A", file.getMetadata().getObjectID());
         Assert.assertEquals("EARTH", file.getMetadata().getCenterName());
-        Assert.assertTrue(file.getMetadata().getHasCreatableBody());
+        Assert.assertNotNull(file.getMetadata().getCenterBody());
         Assert.assertEquals(CelestialBodyFactory.getEarth(), file.getMetadata().getCenterBody());
         Assert.assertEquals(FramesFactory.getGCRF(), file.getMetadata().getFrame());
         Assert.assertEquals(CcsdsTimeScale.GPS, file.getMetadata().getTimeSystem());
@@ -369,39 +369,12 @@ public class OPMParserTest {
     }
 
     @Test
-    public void testMissingIERSInitialization() throws URISyntaxException {
-        final String name = getClass().getResource("/ccsds/odm/opm/OPMExample3.txt").toURI().getPath();
-        OPMParser parser = new OPMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                         null, Constants.EIGEN5C_EARTH_MU, 1000.0);
-        try {
-            // we explicitly forget to call parser.setConventions here
-            new KVNLexicalAnalyzer(name).accept(parser);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS, oe.getSpecifier());
-        }
-    }
-
-    @Test
-    public void testMissingMu() throws URISyntaxException {
-        final String name = getClass().getResource("/ccsds/odm/opm/OPMExample1.txt").toURI().getPath();
-        OPMParser parser = new OPMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                    null, Double.NaN, 1000.0);
-        try {
-            new KVNLexicalAnalyzer(name).accept(parser);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_UNKNOWN_GM, oe.getSpecifier());
-        }
-    }
-
-    @Test
     public void testParseOPM3() throws URISyntaxException {
         // simple test for OPM file, contains all mandatory information plus
         // Spacecraft parameters and the position/velocity Covariance Matrix.
         final String name = getClass().getResource("/ccsds/odm/opm/OPMExample3.txt").toURI().getPath();
         OPMParser parser = new OPMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                         null, Constants.EIGEN5C_EARTH_MU, 1000.0);
+                                         null, Double.NaN, 1000.0);
         final OPMFile file = new KVNLexicalAnalyzer(name).accept(parser);
         Assert.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
                                              TimeScalesFactory.getUTC()),
@@ -498,11 +471,11 @@ public class OPMParserTest {
     public void testParseOPM4() {
         //
         final String ex = "/ccsds/odm/opm/OPMExample4.txt";
-        OPMParser parser = new OPMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
+        OPMParser parser = new OPMParser(IERSConventions.IERS_2010, false, DataContext.getDefault(),
                                          new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU, 1000.0);
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final OPMFile file = new KVNLexicalAnalyzer(inEntry, "OPMExample4.txt").accept(parser);
-        Assert.assertEquals("TOD", file.getMetadata().getFrame().toString());
+        Assert.assertEquals("TOD/2010 accurate EOP", file.getMetadata().getFrame().toString());
         Assert.assertEquals("2000-028A", file.getMetadata().getObjectID());
         Assert.assertEquals(new AbsoluteDate(2006, 6, 3, TimeScalesFactory.getUTC()), file.getDate());
         Assert.assertEquals(  6655994.2, file.getPVCoordinates().getPosition().getX(), 1.0e-10);
@@ -519,7 +492,7 @@ public class OPMParserTest {
         // Spacecraft parameters and the position/velocity Covariance Matrix.
         final String name = getClass().getResource("/ccsds/odm/opm/OPMExample6.txt").toURI().getPath();
         OPMParser parser = new OPMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                         new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU, 1000.0);
+                                         new AbsoluteDate(), Double.NaN, 1000.0);
         final OPMFile file = new KVNLexicalAnalyzer(name).accept(parser);
         Assert.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
                                              TimeScalesFactory.getGMST(IERSConventions.IERS_2010, false)),
@@ -585,7 +558,7 @@ public class OPMParserTest {
 
         // Check User defined Parameters Block
         HashMap<String, String> userDefinedParameters = new HashMap<String, String>();
-        userDefinedParameters.put("USER_DEFINED_EARTH_MODEL", "WGS-84");
+        userDefinedParameters.put("EARTH_MODEL", "WGS-84");
         Assert.assertEquals(userDefinedParameters, file.getData().getUserDefinedBlock().getParameters());
 
     }
@@ -666,10 +639,8 @@ public class OPMParserTest {
             accept(new OPMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null,
                                 Constants.EIGEN5C_EARTH_MU, 1000.0));
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
-            Assert.assertEquals(1, oe.getParts()[0]);
-            Assert.assertEquals("OMMExample1.txt", oe.getParts()[1]);
-            Assert.assertEquals("CCSDS_OMM_VERS  = 3.0", oe.getParts()[2]);
+            Assert.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
+            Assert.assertEquals("OMMExample1.txt", oe.getParts()[0]);
         }
     }
 
@@ -682,10 +653,10 @@ public class OPMParserTest {
                                    "OPM-number-format-error.txt").
             accept(parser);
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
-            Assert.assertEquals(17, oe.getParts()[0]);
-            Assert.assertEquals("OPM-number-format-error.txt", oe.getParts()[1]);
-            Assert.assertEquals("SEMI_MAJOR_AXIS = this-is-not-a-number [km]", oe.getParts()[2]);
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
+            Assert.assertEquals("SEMI_MAJOR_AXIS", oe.getParts()[0]);
+            Assert.assertEquals(17, oe.getParts()[1]);
+            Assert.assertEquals("OPM-number-format-error.txt", oe.getParts()[2]);
         }
     }
 

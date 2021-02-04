@@ -17,6 +17,8 @@
 
 package org.orekit.files.ccsds.ndm.odm;
 
+import java.util.function.Supplier;
+
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.errors.OrekitException;
@@ -37,6 +39,9 @@ public class ODMCovariance extends CommentsContainer implements Data {
         "X", "Y", "Z", "X_DOT", "Y_DOT", "Z_DOT"
     };
 
+    /** Supplier for default reference frame. */
+    private final Supplier<Frame> defaultRefFrameSupplier;
+
     /** Coordinate system for covariance matrix, for Local Orbital Frames. */
     private LOFType covRefLofType;
 
@@ -48,10 +53,11 @@ public class ODMCovariance extends CommentsContainer implements Data {
     private RealMatrix covarianceMatrix;
 
     /** Create an empty data set.
-     * @param refFrame reference frame from metadata
+     * @param defaultRefFrameSupplier supplier for default reference frame
+     * if no frame is specified in the CCSDS message
      */
-    public ODMCovariance(final Frame refFrame) {
-        covRefFrame      = refFrame;
+    public ODMCovariance(final Supplier<Frame> defaultRefFrameSupplier) {
+        this.defaultRefFrameSupplier = defaultRefFrameSupplier;
         covarianceMatrix = MatrixUtils.createRealMatrix(6, 6);
         for (int i = 0; i < covarianceMatrix.getRowDimension(); ++i) {
             for (int j = 0; j <= i; ++j) {
@@ -106,6 +112,11 @@ public class ODMCovariance extends CommentsContainer implements Data {
      * @return the coordinate system for covariance matrix
      */
     public Frame getCovRefFrame() {
+        if (covRefFrame == null) {
+            // if both covRefFrame and covRefFrame are null
+            // we use the default provider (that should correspond to the frame from metadata)
+            return covRefLofType == null ? defaultRefFrameSupplier.get() : null;
+        }
         return covRefFrame;
     }
 

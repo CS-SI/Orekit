@@ -44,11 +44,6 @@ public class OCommonMetadata extends ODMMetadata {
     /** Celestial body corresponding to the center name. */
     private CelestialBody centerBody;
 
-    /** Tests whether the body corresponding to the center name can be
-     * created through {@link CelestialBodies} in order to obtain the
-     * corresponding gravitational coefficient. */
-    private boolean hasCreatableBody;
-
     /** Reference frame in which data are given: used for state vector
      * and Keplerian elements data (and for the covariance reference frame if none is given). */
     private Frame referenceFrame;
@@ -166,13 +161,11 @@ public class OCommonMetadata extends ODMMetadata {
         try {
             c = CenterName.valueOf(canonicalValue);
         } catch (IllegalArgumentException iae) {
-            hasCreatableBody = false;
-            centerBody       = null;
+            centerBody = null;
             return;
         }
 
-        hasCreatableBody = true;
-        centerBody       = c.getCelestialBody(celestialBodies);
+        centerBody = c.getCelestialBody(celestialBodies);
 
     }
 
@@ -181,32 +174,6 @@ public class OCommonMetadata extends ODMMetadata {
      */
     public CelestialBody getCenterBody() {
         return centerBody;
-    }
-
-    /** Set the {@link CelestialBody} corresponding to the center name.
-     * @param centerBody the {@link CelestialBody} to be set
-     */
-    public void setCenterBody(final CelestialBody centerBody) {
-        refuseFurtherComments();
-        this.centerBody = centerBody;
-    }
-
-    /** Get boolean testing whether the body corresponding to the centerName
-     * attribute can be created through the {@link CelestialBodies}.
-     * @return true if {@link CelestialBody} can be created from centerName
-     *         false otherwise
-     */
-    public boolean getHasCreatableBody() {
-        return hasCreatableBody;
-    }
-
-    /** Set boolean testing whether the body corresponding to the centerName
-     * attribute can be created through the {@link CelestialBodies}.
-     * @param hasCreatableBody the boolean to be set.
-     */
-    public void setHasCreatableBody(final boolean hasCreatableBody) {
-        refuseFurtherComments();
-        this.hasCreatableBody = hasCreatableBody;
     }
 
     /**

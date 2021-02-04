@@ -26,8 +26,9 @@ import org.orekit.files.ccsds.ndm.odm.OCommonParser;
 import org.orekit.files.ccsds.ndm.odm.ODMCovariance;
 import org.orekit.files.ccsds.ndm.odm.ODMCovarianceKey;
 import org.orekit.files.ccsds.ndm.odm.ODMHeader;
-import org.orekit.files.ccsds.ndm.odm.ODMKplerianElementsKey;
+import org.orekit.files.ccsds.ndm.odm.ODMHeaderProcessingState;
 import org.orekit.files.ccsds.ndm.odm.ODMKeplerianElements;
+import org.orekit.files.ccsds.ndm.odm.ODMKplerianElementsKey;
 import org.orekit.files.ccsds.ndm.odm.ODMMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.ODMSpacecraftParameters;
 import org.orekit.files.ccsds.ndm.odm.ODMSpacecraftParametersKey;
@@ -36,7 +37,6 @@ import org.orekit.files.ccsds.ndm.odm.ODMStateVectorKey;
 import org.orekit.files.ccsds.ndm.odm.ODMUserDefined;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Header;
-import org.orekit.files.ccsds.section.HeaderProcessingState;
 import org.orekit.files.ccsds.section.MetadataKey;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.section.XMLStructureProcessingState;
@@ -139,14 +139,14 @@ public class OPMParser extends OCommonParser<OPMFile, OPMParser> {
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new ErrorState(); // should never be called
-            reset(fileFormat, new HeaderProcessingState(getDataContext(), this));
+            reset(fileFormat, new ODMHeaderProcessingState(getDataContext(), this, header));
         }
     }
 
     /** {@inheritDoc} */
     @Override
     public void prepareHeader() {
-        setFallback(new HeaderProcessingState(getDataContext(), this));
+        setFallback(new ODMHeaderProcessingState(getDataContext(), this, header));
     }
 
     /** {@inheritDoc} */
@@ -184,6 +184,9 @@ public class OPMParser extends OCommonParser<OPMFile, OPMParser> {
     public void finalizeMetadata() {
         metadata.finalizeMetadata(context);
         metadata.checkMandatoryEntries();
+        if (metadata.getCenterBody() != null) {
+            setMuCreated(metadata.getCenterBody().getGM());
+        }
     }
 
     /** {@inheritDoc} */
@@ -205,6 +208,9 @@ public class OPMParser extends OCommonParser<OPMFile, OPMParser> {
         if (metadata != null) {
             if (userDefinedBlock != null && userDefinedBlock.getParameters().isEmpty()) {
                 userDefinedBlock = null;
+            }
+            if (keplerianElementsBlock != null) {
+                setMuParsed(keplerianElementsBlock.getMu());
             }
             final double  mass = spacecraftParametersBlock == null ?
                                  defaultMass : spacecraftParametersBlock.getMass();
@@ -229,7 +235,7 @@ public class OPMParser extends OCommonParser<OPMFile, OPMParser> {
     /** {@inheritDoc} */
     @Override
     public OPMFile build() {
-        // OPM KVN file lack a DATA_STOP keyword, hence we can't call stopData()
+        // OPM KVN file lack a DATA_STOP keyword, hence we can't call finalizeData()
         // automatically before the end of the file
         finalizeData();
         return new OPMFile(header, segments, getConventions(), getDataContext(), getSelectedMu());
@@ -269,7 +275,10 @@ public class OPMParser extends OCommonParser<OPMFile, OPMParser> {
      */
     private boolean processStateVectorToken(final ParseToken token) {
         if (stateVectorBlock == null) {
-            // OPM KVN file lack a DATA_START keyword, hence we can't call startData()
+            // OPM KVN file lack a META_STOP keyword, hence we can't call finalizeMetadata()
+            // automatically before the first data token arrives
+            finalizeMetadata();
+            // OPM KVN file lack a DATA_START keyword, hence we can't call prepareData()
             // automatically before the first data token arrives
             prepareData();
         }
@@ -330,7 +339,9 @@ public class OPMParser extends OCommonParser<OPMFile, OPMParser> {
      */
     private boolean processCovarianceToken(final ParseToken token) {
         if (covarianceBlock == null) {
-            covarianceBlock = new ODMCovariance(metadata.getFrame());
+            // save the current metadata for later retrieval of reference frame
+            final OCommonMetadata savedMetadata = metadata;
+            covarianceBlock = new ODMCovariance(() -> savedMetadata.getFrame());
             if (moveCommentsIfEmpty(spacecraftParametersBlock, covarianceBlock)) {
                 // get rid of the empty logical block
                 spacecraftParametersBlock = null;
