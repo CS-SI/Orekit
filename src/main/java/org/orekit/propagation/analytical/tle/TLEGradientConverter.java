@@ -22,7 +22,6 @@ import java.util.List;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
-import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.data.DataContext;
@@ -233,7 +232,7 @@ class TLEGradientConverter extends AbstractGradientConverter {
      */
     public static Gradient computeA(final Gradient meanMotion) {
         // Compute semi-major axis from TLE with the 3rd Kepler's law.
-        return FastMath.pow(meanMotion.multiply(meanMotion).reciprocal().multiply(TLEPropagator.getMU()), 1. / 3);
+        return meanMotion.multiply(meanMotion).reciprocal().multiply(TLEPropagator.getMU()).cbrt();
     }
 
 }
