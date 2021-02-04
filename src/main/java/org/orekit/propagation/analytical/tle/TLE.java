@@ -794,7 +794,7 @@ public class TLE implements TimeStamped, Serializable {
      * and generates a usable TLE version of a state.
      * New TLE epoch is state epoch.
      *
-     *<p>This method uses the {@link DataContext#getDefault() default data context}.
+     *<p>This method uses the {@link DataContext#getDefault() default data context}. And a default 1e-10 epsilon for convergence thresholds.
      *
      * @param state Spacecraft State to convert into TLE
      * @param templateTLE first guess used to get identification and estimate new TLE
@@ -802,6 +802,25 @@ public class TLE implements TimeStamped, Serializable {
      */
     @DefaultDataContext
     public static TLE stateToTLE(final SpacecraftState state, final TLE templateTLE) {
+        return stateToTLE(state, templateTLE, 1e-10);
+    }
+
+
+    /**
+     * Convert Spacecraft State into TLE.
+     * This converter uses Newton method to reverse SGP4 and SDP4 propagation algorithm
+     * and generates a usable TLE version of a state.
+     * New TLE epoch is state epoch.
+     *
+     *<p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param state Spacecraft State to convert into TLE
+     * @param templateTLE first guess used to get identification and estimate new TLE
+     * @param epsilon used to compute threshold for convergence check
+     * @return TLE matching with Spacecraft State and template identification
+     */
+    @DefaultDataContext
+    public static TLE stateToTLE(final SpacecraftState state, final TLE templateTLE, final double epsilon) {
 
         // get keplerian parameters from state
         final Orbit orbit = state.getOrbit();
@@ -820,7 +839,6 @@ public class TLE implements TimeStamped, Serializable {
         final Gradient zero = current.getE().getField().getZero();
 
         // threshold for each parameter
-        final double epsilon             = 1.0e-10;
         final double thresholdMeanMotion = epsilon * (1 + keplerianOrbit.getKeplerianMeanMotion());
         final double thresholdE          = epsilon * (1 + state.getE());
         final double thresholdI          = epsilon * (1 + state.getI());
@@ -849,12 +867,12 @@ public class TLE implements TimeStamped, Serializable {
                                                                                      .add(keplerianOrbit.getMeanAnomaly()), zero);
 
             // check convergence
-            if ((FastMath.abs(deltaMeanMotion.getValue()) < thresholdMeanMotion) &&
-                (FastMath.abs(deltaE.getValue())          < thresholdE) &&
-                (FastMath.abs(deltaI.getValue())          < thresholdI) &&
-                (FastMath.abs(deltaPA.getValue())         < thresholdAngles) &&
-                (FastMath.abs(deltaRAAN.getValue())       < thresholdAngles) &&
-                (FastMath.abs(deltaMeanMotion.getValue()) < thresholdAngles)) {
+            if ((FastMath.abs(deltaMeanMotion.getValue())  < thresholdMeanMotion) &&
+                (FastMath.abs(deltaE.getValue())           < thresholdE) &&
+                (FastMath.abs(deltaI.getValue())           < thresholdI) &&
+                (FastMath.abs(deltaPA.getValue())          < thresholdAngles) &&
+                (FastMath.abs(deltaRAAN.getValue())        < thresholdAngles) &&
+                (FastMath.abs(deltaMeanAnomaly.getValue()) < thresholdAngles)) {
 
                 return current.toTLE();
             }
@@ -941,7 +959,7 @@ public class TLE implements TimeStamped, Serializable {
         final double bStar = templateTLE.getBStar();
 
         // Mean Motion derivatives
-        final Gradient gMeanMotionFirstDerivative = Gradient.constant(6, templateTLE.getMeanMotionFirstDerivative());
+        final Gradient gMeanMotionFirstDerivative  = Gradient.constant(6, templateTLE.getMeanMotionFirstDerivative());
         final Gradient gMeanMotionSecondDerivative = Gradient.constant(6, templateTLE.getMeanMotionSecondDerivative());
 
         final FieldTLE<Gradient> newTLE = new FieldTLE<Gradient>(satelliteNumber, classification, launchYear, launchNumber, launchPiece, ephemerisType,
