@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm.odm;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.ndm.NDMFile;
 import org.orekit.files.ccsds.utils.state.AbstractMessageParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
@@ -29,7 +30,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public abstract class OCommonParser<T extends ODMFile<?>, P extends OCommonParser<T, ?>> extends AbstractMessageParser<T, P> {
+public abstract class OCommonParser<T extends NDMFile<?, ?>, P extends OCommonParser<T, ?>> extends AbstractMessageParser<T, P> {
 
     /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
     private final AbsoluteDate missionReferenceDate;

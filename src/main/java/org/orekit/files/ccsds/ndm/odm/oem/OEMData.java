@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Data;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -29,11 +30,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * The Ephemerides data blocks class contain list of orbital data points.
  * @author sports
  */
-public class OEMData implements Data {
-
-    /** Ephemerides Data Lines comments. The list contains a string for each
-     * line of comment. */
-    private List<String> ephemeridesDataLinesComment;
+public class OEMData extends CommentsContainer implements Data {
 
     /** List of ephemerides data lines. */
     private List<TimeStampedPVCoordinates> ephemeridesDataLines;
@@ -54,13 +51,15 @@ public class OEMData implements Data {
     /** Add a data point.
      * @param data data point to add
      * @param hasAcceleration true if the current data point has acceleration data.
+     * @return always return {@code true}
      */
-    public void addData(final TimeStampedPVCoordinates data, final boolean hasAcceleration) {
+    public boolean addData(final TimeStampedPVCoordinates data, final boolean hasAcceleration) {
         ephemeridesDataLines.add(data);
         if (!hasAcceleration) {
             // as soon as one point misses acceleration we consider it is not available at all
             cartesianDerivativesFilter = CartesianDerivativesFilter.USE_PV;
         }
+        return true;
     }
 
     /** Add a covariance matrix.
@@ -96,20 +95,6 @@ public class OEMData implements Data {
      */
     public List<CovarianceMatrix> getCovarianceMatrices() {
         return Collections.unmodifiableList(covarianceMatrices);
-    }
-
-    /** Get the ephemerides data lines comment.
-     * @return the comment
-     */
-    public List<String> getEphemeridesDataLinesComment() {
-        return ephemeridesDataLinesComment;
-    }
-
-    /** Set the ephemerides data lines comment.
-     * @param ephemeridesDataLinesComment the comment to be set
-     */
-    public void setEphemeridesDataLinesComment(final List<String> ephemeridesDataLinesComment) {
-        this.ephemeridesDataLinesComment = new ArrayList<>(ephemeridesDataLinesComment);
     }
 
 }

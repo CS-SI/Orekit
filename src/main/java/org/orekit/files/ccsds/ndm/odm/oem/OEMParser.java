@@ -16,31 +16,32 @@
  */
 package org.orekit.files.ccsds.ndm.odm.oem;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
-import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
-import org.hipparchus.linear.RealMatrix;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.Keyword;
 import org.orekit.files.ccsds.ndm.odm.OCommonParser;
-import org.orekit.files.ccsds.utils.CCSDSFrame;
-import org.orekit.files.ccsds.utils.KeyValue;
+import org.orekit.files.ccsds.ndm.odm.ODMHeader;
+import org.orekit.files.ccsds.ndm.odm.ODMMetadataKey;
+import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.section.HeaderProcessingState;
+import org.orekit.files.ccsds.section.KVNStructureProcessingState;
+import org.orekit.files.ccsds.section.MetadataKey;
+import org.orekit.files.ccsds.section.XMLStructureProcessingState;
+import org.orekit.files.ccsds.utils.ParsingContext;
+import org.orekit.files.ccsds.utils.lexical.FileFormat;
+import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.files.general.EphemerisFileParser;
-import org.orekit.frames.Frame;
-import org.orekit.frames.LOFType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -52,510 +53,264 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements EphemerisFileParser {
 
-    /** Mandatory keywords.
-     * @since 11.0
-     */
-    private static final Keyword[] MANDATORY_KEYWORDS = {
-        Keyword.CCSDS_OEM_VERS, Keyword.CREATION_DATE, Keyword.ORIGINATOR,
-        Keyword.OBJECT_NAME, Keyword.OBJECT_ID, Keyword.CENTER_NAME,
-        Keyword.REF_FRAME, Keyword.TIME_SYSTEM,
-        Keyword.START_TIME, Keyword.STOP_TIME, Keyword.META_START, Keyword.META_STOP
-    };
+    /** Root element for XML files. */
+    private static final String ROOT = "oem";
+
+    /** Pattern for splitting strings at blanks. */
+    private static final Pattern SPLIT_AT_BLANKS = Pattern.compile("\\s+");
+
+    /** File header. */
+    private ODMHeader header;
+
+    /** File segments. */
+    private List<OEMSegment> segments;
+
+    /** Metadata for current observation block. */
+    private OEMMetadata metadata;
+
+    /** Parsing context valid for current metadata. */
+    private ParsingContext context;
+
+    /** Current Ephemerides block being parsed. */
+    private OEMData currentBlock;
+
+    /** Current covariance matrix being parsed. */
+    private CovarianceMatrix currentCovariance;
 
     /** Default interpolation degree. */
-    private int interpolationDegree;
+    private int defaultInterpolationDegree;
 
-    /** Simple constructor.
-     * <p>
-     * The initial date for Mission Elapsed Time and Mission Relative Time time systems is not set here.
-     * If such time systems are used, it must be initialized before parsing by calling {@link
-     * #withMissionReferenceDate(AbsoluteDate)}.
-     * </p>
-     * <p>
-     * The gravitational coefficient is not set here. If it is needed in order
-     * to parse Cartesian orbits where the value is not set in the CCSDS file, it must
-     * be initialized before parsing by calling {@link #withMu(double)}.
-     * </p>
-     * <p>
-     * The IERS conventions to use is not set here. If it is needed in order to
-     * parse some reference frames or UT1 time scale, it must be initialized before
-     * parsing by calling {@link #withConventions(IERSConventions)}.
-     * </p>
-     * <p>
-     * The international designator parameters (launch year, launch number and
-     * launch piece) are not set here. If they are needed, they must be initialized before
-     * parsing by calling {@link #withInternationalDesignator(int, int, String)}
-     * </p>
-     * <p>
-     * The default interpolation degree is not set here. It is set to one by default. If another value
-     * is needed it must be initialized before parsing by calling {@link #withInterpolationDegree(int)}
-     * </p>
-     *
-     * <p>This method uses the {@link DataContext#getDefault() default data context}. See
-     * {@link #withDataContext(DataContext)}.
-     */
-    @DefaultDataContext
-    public OEMParser() {
-        this(DataContext.getDefault());
-    }
+    /** Processor for global message structure. */
+    private ProcessingState structureProcessor;
 
-    /** Constructor with data context.
-     * <p>
-     * The initial date for Mission Elapsed Time and Mission Relative Time time systems is not set here.
-     * If such time systems are used, it must be initialized before parsing by calling {@link
-     * #withMissionReferenceDate(AbsoluteDate)}.
-     * </p>
-     * <p>
-     * The gravitational coefficient is not set here. If it is needed in order
-     * to parse Cartesian orbits where the value is not set in the CCSDS file, it must
-     * be initialized before parsing by calling {@link #withMu(double)}.
-     * </p>
-     * <p>
-     * The IERS conventions to use is not set here. If it is needed in order to
-     * parse some reference frames or UT1 time scale, it must be initialized before
-     * parsing by calling {@link #withConventions(IERSConventions)}.
-     * </p>
-     * <p>
-     * The international designator parameters (launch year, launch number and
-     * launch piece) are not set here. If they are needed, they must be initialized before
-     * parsing by calling {@link #withInternationalDesignator(int, int, String)}
-     * </p>
-     * <p>
-     * The default interpolation degree is not set here. It is set to one by default. If another value
-     * is needed it must be initialized before parsing by calling {@link #withInterpolationDegree(int)}
-     * </p>
-     *
-     * @param dataContext used by the parser.
-     *
-     * @see #OEMParser()
-     * @see #withDataContext(DataContext)
-     * @since 10.1
-     */
-    public OEMParser(final DataContext dataContext) {
-        this(null, true, dataContext, AbsoluteDate.FUTURE_INFINITY, Double.NaN, 1);
-    }
-
-    /** Complete constructor.
+    /**
+     * Complete constructor.
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * (may be null if time system is absolute)
      * @param mu gravitational coefficient
-     * @param interpolationDegree interpolation degree
+     * @param defaultInterpolationDegree default interpolation degree
      */
-    private OEMParser(final IERSConventions conventions, final boolean simpleEOP,
-                      final DataContext dataContext,
-                      final AbsoluteDate missionReferenceDate, final double mu,
-                      final int interpolationDegree) {
-        super(conventions, simpleEOP, dataContext, missionReferenceDate, mu);
-        this.interpolationDegree = interpolationDegree;
+    public OEMParser(final IERSConventions conventions, final boolean simpleEOP,
+                     final DataContext dataContext,
+                     final AbsoluteDate missionReferenceDate, final double mu,
+                     final int defaultInterpolationDegree) {
+        super(OEMFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
+              missionReferenceDate, mu);
+        this.defaultInterpolationDegree  = defaultInterpolationDegree;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected OEMParser create(final IERSConventions newConventions,
-                               final boolean newSimpleEOP,
-                               final DataContext newDataContext,
-                               final AbsoluteDate newMissionReferenceDate,
-                               final double newMu) {
-        return create(newConventions, newSimpleEOP, newDataContext,
-                      newMissionReferenceDate, newMu, interpolationDegree);
+    public Header getHeader() {
+        return header;
     }
 
-    /** Build a new instance.
-     * @param newConventions IERS conventions to use while parsing
-     * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param newDataContext data context used for frames, time scales, and celestial bodies
-     * @param newMissionReferenceDate mission reference date to use while parsing
-     * @param newMu gravitational coefficient to use while parsing
-     * @param newInterpolationDegree interpolation degree
-     * @return a new instance with changed parameters
-     */
-    protected OEMParser create(final IERSConventions newConventions,
-                               final boolean newSimpleEOP,
-                               final DataContext newDataContext,
-                               final AbsoluteDate newMissionReferenceDate,
-                               final double newMu,
-                               final int newInterpolationDegree) {
-        return new OEMParser(newConventions, newSimpleEOP, newDataContext,
-                             newMissionReferenceDate, newMu, newInterpolationDegree);
-    }
-
-    /** Set default interpolation degree.
-     * <p>
-     * This method may be used to set a default interpolation degree which will be used
-     * when no interpolation degree is parsed in the meta-data of the file. Upon instantiation
-     * with {@link #OEMParser(DataContext)} the default interpolation degree is one.
-     * </p>
-     * @param newInterpolationDegree default interpolation degree to use while parsing
-     * @return a new instance, with interpolation degree data replaced
-     * @see #getInterpolationDegree()
-     * @since 11.0
-     */
-    public OEMParser withInterpolationDegree(final int newInterpolationDegree) {
-        return new OEMParser(getConventions(), isSimpleEOP(), getDataContext(),
-                             getMissionReferenceDate(), getMuSet(), newInterpolationDegree);
-    }
-
-    /** Get default interpolation degree.
-     * @return interpolationDegree default interpolation degree to use while parsing
-     * @see #withInterpolationDegree(int)
-     * @since 11.0
-     */
-    public int getInterpolationDegree() {
-        return interpolationDegree;
-    }
-
-    /**
-     * Parse an ephemeris data line and add its content to the ephemerides block.
-     *
-     * @param line data line to parse
-     * @param pi the parser info
-     * @exception IOException if an error occurs while reading from the stream
-     */
-    private void parseEphemeridesDataLine(final String line,  final ParseInfo pi) throws IOException {
-
-        try (Scanner sc = new Scanner(line)) {
-            final AbsoluteDate date = parseDate(sc.next(), pi.metadata.getTimeSystem(),
-                                                pi.lineNumber, pi.fileName, pi.line);
-            final Vector3D position = new Vector3D(Double.parseDouble(sc.next()) * 1000,
-                                                   Double.parseDouble(sc.next()) * 1000,
-                                                   Double.parseDouble(sc.next()) * 1000);
-            final Vector3D velocity = new Vector3D(Double.parseDouble(sc.next()) * 1000,
-                                                   Double.parseDouble(sc.next()) * 1000,
-                                                   Double.parseDouble(sc.next()) * 1000);
-            Vector3D acceleration = Vector3D.NaN;
-            boolean hasAcceleration = false;
-            if (sc.hasNext()) {
-                acceleration = new Vector3D(Double.parseDouble(sc.next()) * 1000,
-                                            Double.parseDouble(sc.next()) * 1000,
-                                            Double.parseDouble(sc.next()) * 1000);
-                hasAcceleration = true;
-            }
-            final TimeStampedPVCoordinates epDataLine;
-            if (hasAcceleration) {
-                epDataLine = new TimeStampedPVCoordinates(date, position, velocity, acceleration);
-            } else {
-                epDataLine = new TimeStampedPVCoordinates(date, position, velocity);
-            }
-            pi.data.addData(epDataLine, hasAcceleration);
-        } catch (NumberFormatException nfe) {
-            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                      pi.lineNumber, pi.fileName, line);
+    /** {@inheritDoc} */
+    @Override
+    public void reset(final FileFormat fileFormat) {
+        header   = new ODMHeader();
+        segments = new ArrayList<>();
+        metadata = null;
+        context  = null;
+        if (getFileFormat() == FileFormat.XML) {
+            structureProcessor = new XMLStructureProcessingState(ROOT, this);
+            reset(fileFormat, structureProcessor);
+        } else {
+            structureProcessor = new KVNStructureProcessingState(this);
+            reset(fileFormat, new HeaderProcessingState(getDataContext(), this));
         }
     }
 
-    /**
-     * Parse a covariance data line.
-     *
-     * @param line covariance line to parse
-     * @param pi the parser info
-     * @throws IOException if an error occurs while reading from the stream
-     */
-    private void parseCovarianceDataLine(final String line, final ParseInfo pi)
-        throws IOException {
+    /** {@inheritDoc} */
+    @Override
+    public void prepareHeader() {
+        setFallback(new HeaderProcessingState(getDataContext(), this));
+    }
 
-        int row = 0;
-        if (pi.lastMatrix == null) {
-            // create uninitialized matrix
-            pi.lastMatrix = MatrixUtils.createRealMatrix(6, 6);
-            for (int i = 0; i < pi.lastMatrix.getRowDimension(); ++i) {
-                pi.lastMatrix.setEntry(i, 0, Double.NaN);
+    /** {@inheritDoc} */
+    @Override
+    public void inHeader() {
+        setFallback(structureProcessor);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void finalizeHeader() {
+        header.checkMandatoryEntries();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void prepareMetadata() {
+        metadata  = new OEMMetadata(defaultInterpolationDegree);
+        context   = new ParsingContext(this::getConventions,
+                                       this::isSimpleEOP,
+                                       this::getDataContext,
+                                       this::getMissionReferenceDate,
+                                       metadata::getTimeSystem);
+        setFallback(this::processMetadataToken);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void inMetadata() {
+        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processDataToken);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void finalizeMetadata() {
+        metadata.checkMandatoryEntries();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void prepareData() {
+        currentBlock = new OEMData();
+        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processMetadataToken);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void inData() {
+        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processCovarianceToken);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void finalizeData() {
+        if (metadata != null) {
+            currentBlock.checkMandatoryEntries();
+            segments.add(new OEMSegment(metadata, currentBlock,
+                                        getConventions(), getDataContext(), getSelectedMu()));
+        }
+        metadata          = null;
+        currentBlock      = null;
+        currentCovariance = null;
+        context           = null;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public OEMFile build() {
+        final OEMFile file = new OEMFile(header, segments, getConventions(), getDataContext());
+        file.checkTimeSystems();
+        return file;
+    }
+
+    /** Process one metadata token.
+     * @param token token to process
+     * @return true if token was processed, false otherwise
+     */
+    private boolean processMetadataToken(final ParseToken token) {
+        inMetadata();
+        try {
+            return token.getName() != null &&
+                   MetadataKey.valueOf(token.getName()).process(token, context, metadata);
+        } catch (IllegalArgumentException iaeM) {
+            try {
+                return ODMMetadataKey.valueOf(token.getName()).process(token, context, metadata);
+            } catch (IllegalArgumentException iaeD) {
+                try {
+                    return OEMMetadataKey.valueOf(token.getName()).process(token, context, metadata);
+                } catch (IllegalArgumentException iaeE) {
+                    // token has not been recognized
+                    return false;
+                }
+            }
+        }
+    }
+
+    /** Process one data token.
+     * @param token token to process
+     * @return true if token was processed, false otherwise
+     */
+    private boolean processDataToken(final ParseToken token) {
+        inData();
+        if ("COMMENT".equals(token.getName())) {
+            return token.getType() == TokenType.ENTRY ? currentBlock.addComment(token.getContent()) : true;
+        } else if (token.getType() == TokenType.RAW_LINE) {
+            try {
+                final String[] fields = SPLIT_AT_BLANKS.split(token.getContent());
+                if (fields.length != 7 || fields.length != 10) {
+                    throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                              token.getLineNumber(), token.getFileName(), token.getContent());
+                }
+                final boolean hasAcceleration = fields.length == 10;
+                final AbsoluteDate epoch = context.getTimeScale().parseDate(fields[0],
+                                                                            context.getConventions(),
+                                                                            context.getMissionReferenceDate(),
+                                                                            context.getDataContext().getTimeScales());
+                final Vector3D position = new Vector3D(Double.parseDouble(fields[1]) * 1000,
+                                                       Double.parseDouble(fields[2]) * 1000,
+                                                       Double.parseDouble(fields[3]) * 1000);
+                final Vector3D velocity = new Vector3D(Double.parseDouble(fields[4]) * 1000,
+                                                       Double.parseDouble(fields[5]) * 1000,
+                                                       Double.parseDouble(fields[6]) * 1000);
+                final Vector3D acceleration = hasAcceleration ?
+                                              Vector3D.ZERO :
+                                              new Vector3D(Double.parseDouble(fields[7]) * 1000,
+                                                           Double.parseDouble(fields[8]) * 1000,
+                                                           Double.parseDouble(fields[9]) * 1000);
+                return currentBlock.addData(new TimeStampedPVCoordinates(epoch, position, velocity, acceleration),
+                                            hasAcceleration);
+            } catch (NumberFormatException nfe) {
+                throw new OrekitException(nfe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                          token.getLineNumber(), token.getFileName(), token.getContent());
             }
         } else {
-            // find the row to parse
-            while (!Double.isNaN(pi.lastMatrix.getEntry(row, 0))) {
-                ++row;
-            }
+            // not a raw line, it is most probably the end of the data section
+            return false;
         }
-
-        try (Scanner sc = new Scanner(line)) {
-            for (int j = 0; j < row + 1; j++) {
-                final double c =  Double.parseDouble(sc.next());
-                pi.lastMatrix.setEntry(row, j, c);
-                pi.lastMatrix.setEntry(j, row, c);
-            }
-            if (sc.hasNext()) {
-                // too many fields in the line
-                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                          pi.lineNumber, pi.fileName, line);
-            }
-        } catch (NoSuchElementException | NumberFormatException nfe) {
-            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                      pi.lineNumber, pi.fileName, line);
-        }
-
-        if (row == pi.lastMatrix.getRowDimension() - 1) {
-            // this was the last row
-            pi.data.addCovarianceMatrix(new CovarianceMatrix(pi.covEpoch,
-                                                             pi.covRefLofType,
-                                                             pi.covRefFrame,
-                                                             pi.lastMatrix));
-            pi.covEpoch      = null;
-            pi.covRefLofType = null;
-            pi.covRefFrame   = null;
-            pi.lastMatrix    = null;
-        }
-
     }
 
-    /** Check no matrix is being filled up.
-     * @param pi the parser info
+    /** Process one covariance token.
+     * @param token token to process
+     * @return true if token was processed, false otherwise
      */
-    private void checkNoMatrix(final ParseInfo pi) {
-        if (pi.lastMatrix != null) {
-            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                      pi.lineNumber, pi.fileName, pi.line);
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public OEMFile parse(final InputStream stream, final String fileName) {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
-            return parse(reader, fileName);
-        } catch (IOException ioe) {
-            throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public OEMFile parse(final BufferedReader reader, final String fileName) {
-
-        // declare the mandatory keywords as expected
-        for (final Keyword keyword : MANDATORY_KEYWORDS) {
-            declareExpected(keyword);
-        }
-
-        try {
-
-            // initialize internal data structures
-            final ParseInfo pi = new ParseInfo(getConventions(), getDataContext());
-            pi.fileName      = fileName;
-            pi.parsingHeader = true;
-
-            for (pi.line = reader.readLine(); pi.line != null; pi.line = reader.readLine()) {
-                ++pi.lineNumber;
-                if (pi.line.trim().length() == 0) {
-                    continue;
-                }
-                pi.entry = new KeyValue(pi.line, pi.lineNumber, pi.fileName);
-                if (pi.entry.getKeyword() == null) {
-                    if (pi.parsingData) {
-                        if (!pi.commentTmp.isEmpty()) {
-                            pi.data.setEphemeridesDataLinesComment(pi.commentTmp);
-                            pi.commentTmp.clear();
-                        }
-                        parseEphemeridesDataLine(pi.line, pi);
-                        continue;
-                    } else if (pi.parsingCovariance) {
-                        parseCovarianceDataLine(pi.line, pi);
-                        continue;
-                    } else {
-                        throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD,
-                                                  pi.lineNumber, pi.fileName, pi.line);
-                    }
-                }
-
-                declareFound(pi.entry.getKeyword());
-
-                switch (pi.entry.getKeyword()) {
-
-                    case COMMENT:
-                        if (pi.file.getHeader().getCreationDate() == null) {
-                            pi.file.getHeader().addComment(pi.entry.getValue());
-                        } else if (pi.metadata != null && pi.metadata.getObjectName() == null) {
-                            pi.metadata.addComment(pi.entry.getValue());
-                        } else {
-                            pi.commentTmp.add(pi.entry.getValue());
-                        }
-                        break;
-
-                    case CCSDS_OEM_VERS:
-                        pi.file.getHeader().setFormatVersion(pi.entry.getDoubleValue());
-                        break;
-
-                    case META_START:
-                        if (pi.metadata != null) {
-                            // this is a new segment, we have to wrap up the previous one
-                            pi.file.addSegment(new OEMSegment(pi.metadata, pi.data,
-                                                              getConventions(), getDataContext(), getSelectedMu()));
-                        }
-                        // Indicate the start of meta-data parsing for this block
-                        pi.metadata          = new OEMMetadata(getInterpolationDegree());
-                        pi.parsingHeader     = false;
-                        pi.parsingMetaData   = true;
-                        pi.parsingData       = false;
-                        pi.parsingCovariance = false;
-                        break;
-
-                    case START_TIME:
-                        pi.metadata.setStartTime(parseDate(pi.entry.getValue(),
-                                                           pi.metadata.getTimeSystem(),
-                                                           pi.lineNumber, pi.fileName, pi.line));
-                        break;
-
-                    case USEABLE_START_TIME:
-                        pi.metadata.setUseableStartTime(parseDate(pi.entry.getValue(),
-                                                                  pi.metadata.getTimeSystem(),
-                                                                  pi.lineNumber, pi.fileName, pi.line));
-                        break;
-
-                    case USEABLE_STOP_TIME:
-                        pi.metadata.setUseableStopTime(parseDate(pi.entry.getValue(), pi.metadata.getTimeSystem(),
-                                                                 pi.lineNumber, pi.fileName, pi.line));
-                        break;
-
-                    case STOP_TIME:
-                        pi.metadata.setStopTime(parseDate(pi.entry.getValue(), pi.metadata.getTimeSystem(),
-                                                          pi.lineNumber, pi.fileName, pi.line));
-                        break;
-
-                    case INTERPOLATION:
-                        pi.metadata.setInterpolationMethod(pi.entry.getValue());
-                        break;
-
-                    case INTERPOLATION_DEGREE:
-                        pi.metadata.setInterpolationDegree(Integer.parseInt(pi.entry.getValue()));
-                        break;
-
-                    case META_STOP:
-                        pi.parsingMetaData = false;
-                        pi.data            = new OEMData();
-                        pi.parsingData     = true;
-                        break;
-
-                    case COVARIANCE_START:
-                        pi.parsingData       = false;
-                        pi.parsingCovariance = true;
-                        pi.lastMatrix        = null;
-                        break;
-
-                    case EPOCH :
-                        checkNoMatrix(pi);
-                        pi.covEpoch = parseDate(pi.entry.getValue(), pi.metadata.getTimeSystem(),
-                                                pi.lineNumber, pi.fileName, pi.line);
-                        break;
-
-                    case COV_REF_FRAME :
-                        checkNoMatrix(pi);
-                        final CCSDSFrame frame = CCSDSFrame.parse(pi.entry.getValue());
-                        if (frame.isLof()) {
-                            pi.covRefLofType = frame.getLofType();
-                            pi.covRefFrame   = null;
-                        } else {
-                            pi.covRefLofType = null;
-                            pi.covRefFrame   = frame.getFrame(getConventions(), isSimpleEOP(), getDataContext());
-                        }
-                        break;
-
-                    case COVARIANCE_STOP:
-                        checkNoMatrix(pi);
-                        pi.parsingCovariance = false;
-                        break;
-
-                    default:
-                        final boolean parsed;
-                        if (pi.parsingHeader) {
-                            parsed = parseHeaderEntry(pi.entry, pi.file);
-                        } else if (pi.parsingMetaData) {
-                            parsed = parseMetaDataEntry(pi.entry, pi.metadata,
-                                                        pi.lineNumber, pi.fileName, pi.line);
-                        } else if (pi.entry.getKeyword() == Keyword.COMMENT) {
-                            pi.commentTmp.add(pi.entry.getValue());
-                            parsed = true;
-                        } else {
-                            parsed = false;
-                        }
-                        if (!parsed) {
-                            throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD,
-                                                      pi.lineNumber, pi.fileName, pi.line);
-                        }
-                }
+    private boolean processCovarianceToken(final ParseToken token) {
+        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processMetadataToken);
+        if ("COVARIANCE".equals(token.getName())) {
+            if (token.getType() == TokenType.ENTRY) {
+                currentCovariance = new CovarianceMatrix(getMissionReferenceDate(), null, null, null);
             }
-
-            // check all mandatory keywords have been found
-            checkExpected(fileName);
-
-            // wrap up last segment
-            pi.file.addSegment(new OEMSegment(pi.metadata, pi.data,
-                                              getConventions(), getDataContext(), getSelectedMu()));
-
-            pi.file.checkTimeSystems();
-            return pi.file;
-
-        } catch (IOException ioe) {
-            throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
-        }
-    }
-
-    /** Private class used to store OEM parsing info.
-     * @author sports
-     */
-    private static class ParseInfo {
-
-        /** OEM file being read. */
-        private OEMFile file;
-
-        /** OEM metadata being read. */
-        private OEMMetadata metadata;
-
-        /** OEM data being read. */
-        private OEMData data;
-
-        /** Boolean indicating if the parser is currently parsing a header block. */
-        private boolean parsingHeader;
-
-        /** Boolean indicating if the parser is currently parsing a meta-data block. */
-        private boolean parsingMetaData;
-
-        /** Boolean indicating if the parser is currently parsing a data block. */
-        private boolean parsingData;
-
-        /** Boolean indicating if the parser is currently parsing a covariance block. */
-        private boolean parsingCovariance;
-
-        /** Name of the file. */
-        private String fileName;
-
-        /** Current line number. */
-        private int lineNumber;
-
-        /** Current line. */
-        private String line;
-
-        /** Key value of the line being read. */
-        private KeyValue entry;
-
-        /** Stored epoch. */
-        private AbsoluteDate covEpoch;
-
-        /** Covariance reference type of Local Orbital Frame. */
-        private LOFType covRefLofType;
-
-        /** Covariance reference frame. */
-        private Frame covRefFrame;
-
-        /** Stored matrix. */
-        private RealMatrix lastMatrix;
-
-        /** Stored comments. */
-        private List<String> commentTmp;
-
-        /** Create a new {@link ParseInfo} object.
-         * @param conventions IERS conventions to use
-         * @param dataContext data context to use
-         */
-        protected ParseInfo(final IERSConventions conventions, final DataContext dataContext) {
-            file            = new OEMFile(conventions, dataContext);
-            metadata        = null;
-            data            = null;
-            parsingHeader   = false;
-            parsingMetaData = false;
-            parsingData     = false;
-            lineNumber      = 0;
-            commentTmp      = new ArrayList<>();
+        } else if ("COVARIANCE_STOP".equals(token.getName())) {
+            return token.getType() == TokenType.ENTRY ? currentBlock.addComment(token.getContent()) : true;
+        } else if (token.getType() == TokenType.RAW_LINE) {
+            try {
+                final String[] fields = SPLIT_AT_BLANKS.split(token.getContent());
+                if (fields.length != 7 || fields.length != 10) {
+                    throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                              token.getLineNumber(), token.getFileName(), token.getContent());
+                }
+                final boolean hasAcceleration = fields.length == 10;
+                final AbsoluteDate epoch = context.getTimeScale().parseDate(fields[0],
+                                                                            context.getConventions(),
+                                                                            context.getMissionReferenceDate(),
+                                                                            context.getDataContext().getTimeScales());
+                final Vector3D position = new Vector3D(Double.parseDouble(fields[1]) * 1000,
+                                                       Double.parseDouble(fields[2]) * 1000,
+                                                       Double.parseDouble(fields[3]) * 1000);
+                final Vector3D velocity = new Vector3D(Double.parseDouble(fields[4]) * 1000,
+                                                       Double.parseDouble(fields[5]) * 1000,
+                                                       Double.parseDouble(fields[6]) * 1000);
+                final Vector3D acceleration = hasAcceleration ?
+                                              Vector3D.ZERO :
+                                              new Vector3D(Double.parseDouble(fields[7]) * 1000,
+                                                           Double.parseDouble(fields[8]) * 1000,
+                                                           Double.parseDouble(fields[9]) * 1000);
+                return currentBlock.addData(new TimeStampedPVCoordinates(epoch, position, velocity, acceleration),
+                                            hasAcceleration);
+            } catch (NumberFormatException nfe) {
+                throw new OrekitException(nfe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                          token.getLineNumber(), token.getFileName(), token.getContent());
+            }
+        } else {
+            // not a raw line, it is most probably the end of the data section
+            return false;
         }
     }
 

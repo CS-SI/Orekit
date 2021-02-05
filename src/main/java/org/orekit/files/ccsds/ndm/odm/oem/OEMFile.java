@@ -25,7 +25,8 @@ import java.util.Map;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.odm.ODMFile;
+import org.orekit.files.ccsds.ndm.NDMFile;
+import org.orekit.files.ccsds.ndm.odm.ODMHeader;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.utils.IERSConventions;
@@ -40,17 +41,20 @@ import org.orekit.utils.IERSConventions;
  * @author Evan Ward
  * @since 6.1
  */
-public class OEMFile extends ODMFile<OEMSegment> implements EphemerisFile {
+public class OEMFile extends NDMFile<ODMHeader, OEMSegment> implements EphemerisFile {
 
     /** Key for format version. */
     public static final String FORMAT_VERSION_KEY = "CCSDS_OEM_VERS";
 
     /** Simple constructor.
+     * @param header file header
+     * @param segments file segments
      * @param conventions IERS conventions
      * @param dataContext used for creating frames, time scales, etc.
      */
-    public OEMFile(final IERSConventions conventions, final DataContext dataContext) {
-        super(conventions, dataContext);
+    public OEMFile(final ODMHeader header, final List<OEMSegment> segments,
+                   final IERSConventions conventions, final DataContext dataContext) {
+        super(header, segments, conventions, dataContext);
     }
 
     /** {@inheritDoc} */

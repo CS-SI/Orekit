@@ -56,7 +56,8 @@ public class OEMSegment extends Segment<OEMMetadata, OEMData> implements Ephemer
      * @param mu gravitational coefficient to use for building Cartesian/Keplerian orbits
      */
     public OEMSegment(final OEMMetadata metadata, final OEMData data,
-                      final IERSConventions conventions, final DataContext dataContext, final double mu) {
+                      final IERSConventions conventions, final DataContext dataContext,
+                      final double mu) {
         super(metadata, data);
         this.conventions = conventions;
         this.dataContext = dataContext;

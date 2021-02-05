@@ -28,17 +28,17 @@ import org.orekit.time.AbsoluteDate;
 public class CovarianceMatrix {
 
     /** Covariance matrix. */
-    private RealMatrix matrix;
+    private final RealMatrix matrix;
 
     /** Epoch relative to the covariance matrix. */
-    private AbsoluteDate epoch;
+    private final AbsoluteDate epoch;
 
     /** Coordinate system for covariance matrix, for Local Orbital Frames. */
-    private LOFType lofType;
+    private final LOFType lofType;
 
     /** Coordinate system for covariance matrix, for absolute frames.
      * If not given it is set equal to refFrame. */
-    private Frame frame;
+    private final Frame frame;
 
     /** Covariance Matrix constructor.
      * @param epoch the epoch
