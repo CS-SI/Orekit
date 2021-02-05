@@ -86,7 +86,7 @@ public class OPMManeuver extends CommentsContainer {
     /** Set epoch ignition.
      * @param epochIgnition epoch ignition
      */
-    void setEpochIgnition(final AbsoluteDate epochIgnition) {
+    public void setEpochIgnition(final AbsoluteDate epochIgnition) {
         this.epochIgnition = epochIgnition;
     }
 

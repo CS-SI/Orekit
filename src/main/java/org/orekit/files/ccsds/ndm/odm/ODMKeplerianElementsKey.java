@@ -16,6 +16,7 @@
  */
 package org.orekit.files.ccsds.ndm.odm;
 
+import org.hipparchus.util.FastMath;
 import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
@@ -26,14 +27,21 @@ import org.orekit.orbits.PositionAngle;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public enum ODMKplerianElementsKey {
+public enum ODMKeplerianElementsKey {
 
     /** Comment entry. */
     COMMENT((token, context, data) ->
             token.getType() == TokenType.ENTRY ? data.addComment(token.getContent()) : true),
 
+    /** Epoch of Keplerian elements. */
+    EPOCH((token, context, data) -> token.processAsDate(data::setEpoch, context)),
+
     /** Orbit semi-major axis. */
     SEMI_MAJOR_AXIS((token, context, data) -> token.processAsDouble(1.0e3, data::setA)),
+
+    /** Mean motion. */
+    MEAN_MOTION((token, context, data) ->
+                 token.processAsDouble(FastMath.PI / 43200.0, data::setMeanMotion)),
 
     /** Orbit eccentricity. */
     ECCENTRICITY((token, context, data) -> token.processAsDouble(1.0, data::setE)),
@@ -74,7 +82,7 @@ public enum ODMKplerianElementsKey {
     /** Simple constructor.
      * @param processor processing method
      */
-    ODMKplerianElementsKey(final TokenProcessor processor) {
+    ODMKeplerianElementsKey(final TokenProcessor processor) {
         this.processor = processor;
     }
 

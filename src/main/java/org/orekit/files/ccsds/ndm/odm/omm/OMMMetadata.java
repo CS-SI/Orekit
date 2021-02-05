@@ -21,6 +21,12 @@ import org.orekit.files.ccsds.ndm.odm.OCommonMetadata;
 
 public class OMMMetadata extends OCommonMetadata {
 
+    /** Constant for SGP/SGP4 mean elements theory. */
+    public static final String SGP_SGP4_THEORY = "SGP/SGP4";
+
+    /** Constant for DSST mean elements theory. */
+    public static final String DSST_THEORY = "DSST";
+
     /** Description of the Mean Element Theory. Indicates the proper method to employ
      * to propagate the state. */
     private String meanElementTheory;
@@ -35,7 +41,7 @@ public class OMMMetadata extends OCommonMetadata {
     /** Set the description of the Mean Element Theory.
      * @param meanElementTheory the mean element theory to be set
      */
-    void setMeanElementTheory(final String meanElementTheory) {
+    public void setMeanElementTheory(final String meanElementTheory) {
         refuseFurtherComments();
         this.meanElementTheory = meanElementTheory;
     }

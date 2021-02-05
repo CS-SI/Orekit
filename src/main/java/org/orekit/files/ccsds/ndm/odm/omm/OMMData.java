@@ -17,206 +17,132 @@
 
 package org.orekit.files.ccsds.ndm.odm.omm;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.ndm.odm.ODMCovariance;
+import org.orekit.files.ccsds.ndm.odm.ODMKeplerianElements;
+import org.orekit.files.ccsds.ndm.odm.ODMKeplerianElementsKey;
+import org.orekit.files.ccsds.ndm.odm.ODMSpacecraftParameters;
+import org.orekit.files.ccsds.ndm.odm.ODMUserDefined;
 import org.orekit.files.ccsds.section.Data;
 import org.orekit.files.ccsds.section.Section;
-import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.analytical.tle.TLE;
 
-/** This class gathers the informations present in the Orbital Mean-Elements Message (OMM),
- * and contains methods to generate a {@link CartesianOrbit}, a {@link KeplerianOrbit},
- * a {@link SpacecraftState} and, eventually, a {@link TLE}.
- * @author sports
- * @since 6.1
+/**
+ * Container for Orbit Mean-elements Message data.
+ * @author Luc Maisonobe
+ * @since 11.0
  */
 public class OMMData implements Data, Section {
 
-    /** Mean motion (the Keplerian Mean motion in revolutions per day). To be used instead of semi-major
-     * axis if MEAN_ELEMENT_THEORY = SGP/SGP4. */
-    private double meanMotion;
+    /** Keplerian elements block. */
+    private final ODMKeplerianElements keplerianElementsBlock;
 
-    /** Ephemeris Type, only required if MEAN_ELEMENT_THEORY = SGP/SGP4. Some sources suggest the coding for
-     * the EPHEMERIS_TYPE keyword: 1 = SGP, 2 = SGP4, 3 = SDP4, 4 = SGP8, 5 = SDP8. Default value = 0.
+    /** Spacecraft parameters block. */
+    private final ODMSpacecraftParameters spacecraftParameters;
+
+    /** TLE block. */
+    private final OMMTLE tleBlock;
+
+    /** Covariance matrix logical block being read. */
+    private final ODMCovariance covarianceBlock;
+
+    /** User defined parameters. */
+    private final ODMUserDefined userDefinedBlock;
+
+    /** Mass. */
+    private final double mass;
+
+    /** Simple constructor.
+     * @param keplerianElementsBlock Keplerian elements logical block
+     * @param spacecraftParameters spacecraft parameters logical block (may be null)
+     * @param tleBlock TLE logical block (may be null)
+     * @param covarianceBlock covariance matrix logical block (may be null)
+     * @param userDefinedBlock user-defined logical block
+     * @param mass mass (always defined, even if there is no {@code spacecraftParameters} block
      */
-    private int ephemerisType;
-
-    /** Classification Type, only required if MEAN_ELEMENT_THEORY = SGP/SGP4. Some sources suggest the
-     *  following coding for the CLASSIFICATION_TYPE keyword: U = unclassified, S = secret. Default value = U.
-     */
-    private char classificationType;
-
-    /** NORAD Catalog Number ("Satellite Number"), an integer of up to nine digits. */
-    private Integer noradID;
-
-    /** Element set number for this satellite, only required if MEAN_ELEMENT_THEORY = SGP/SGP4.
-     * Normally incremented sequentially, but may be out of sync if it is generated from a backup source.
-     * Used to distinguish different TLEs, and therefore only meaningful if TLE based data is being exchanged. */
-    private String elementSetNo;
-
-    /** Revolution Number, only required if MEAN_ELEMENT_THEORY = SGP/SGP4. */
-    private int revAtEpoch;
-
-    /** SGP/SGP4 drag-like coefficient (in units 1/[Earth radii]), only required if MEAN_ELEMENT_THEORY = SGP/SGP4. */
-    private Double bStar;
-
-    /** First Time Derivative of the Mean Motion, only required if MEAN_ELEMENT_THEORY = SGP. */
-    private Double meanMotionDot;
-
-    /** Second Time Derivative of Mean Motion, only required if MEAN_ELEMENT_THEORY = SGP. */
-    private Double meanMotionDotDot;
-
-    /** TLE related parameters comments. The list contains a string for each line of comment. */
-    private List<String> dataTleRelatedParametersComment;
-
-    /** Create an empty data set.
-     */
-    OMMData() {
-        dataTleRelatedParametersComment = Collections.emptyList();
+    public OMMData(final ODMKeplerianElements keplerianElementsBlock,
+                   final ODMSpacecraftParameters spacecraftParameters,
+                   final OMMTLE tleBlock,
+                   final ODMCovariance covarianceBlock,
+                   final ODMUserDefined userDefinedBlock,
+                   final double mass) {
+        this.keplerianElementsBlock = keplerianElementsBlock;
+        this.spacecraftParameters   = spacecraftParameters;
+        this.tleBlock               = tleBlock;
+        this.covarianceBlock        = covarianceBlock;
+        this.userDefinedBlock       = userDefinedBlock;
+        this.mass                   = mass;
     }
 
-    /** Get the orbit mean motion.
-     * @return the orbit mean motion
-     */
-    public double getMeanMotion() {
-        return meanMotion;
+    /** {@inheritDoc} */
+    @Override
+    public void checkMandatoryEntries() {
+        keplerianElementsBlock.checkMandatoryEntries();
+        if (spacecraftParameters != null) {
+            spacecraftParameters.checkMandatoryEntries();
+        }
+        if (tleBlock == null) {
+            // semi-major axis was not checked above, we do it now
+            keplerianElementsBlock.checkNotNaN(keplerianElementsBlock.getA(),
+                                               ODMKeplerianElementsKey.SEMI_MAJOR_AXIS);
+        } else {
+            // in OMM with TLE block, only mean motion is allowed, not semi-major axis
+            keplerianElementsBlock.checkNotNaN(keplerianElementsBlock.getMeanMotion(),
+                                               ODMKeplerianElementsKey.MEAN_MOTION);
+            tleBlock.checkMandatoryEntries();
+        }
+        if (covarianceBlock != null) {
+            covarianceBlock.checkMandatoryEntries();
+        }
+        if (userDefinedBlock != null) {
+            userDefinedBlock.checkMandatoryEntries();
+        }
+        if (keplerianElementsBlock == null && tleBlock == null) {
+            throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY,
+                                      ODMKeplerianElementsKey.EPOCH);
+        }
     }
 
-    /** Set the orbit mean motion.
-     * @param motion the mean motion to be set
+    /** Get the Keplerian elements logical block.
+     * @return Keplerian elements block
      */
-    void setMeanMotion(final double motion) {
-        this.meanMotion = motion;
+    public ODMKeplerianElements getKeplerianElementsBlock() {
+        return keplerianElementsBlock;
     }
 
-    /** Get the ephemeris type.
-     * @return the ephemerisType
+    /** Get the spacecraft parameters logical block.
+     * @return spacecraft parameters block (may be null)
      */
-    public int getEphemerisType() {
-        return ephemerisType;
+    public ODMSpacecraftParameters getSpacecraftParametersBlock() {
+        return spacecraftParameters;
     }
 
-    /** Set the ephemeris type.
-     * @param ephemerisType the ephemeris type to be set
+    /** Get the TLE logical block.
+     * @return TLE block
      */
-    void setEphemerisType(final int ephemerisType) {
-        this.ephemerisType = ephemerisType;
+    public OMMTLE getTLEBlock() {
+        return tleBlock;
     }
 
-    /** Get the classification type.
-     * @return the classificationType
+    /** Get the covariance matrix logical block.
+     * @return covariance matrix block (may be null)
      */
-    public char getClassificationType() {
-        return classificationType;
+    public ODMCovariance getCovarianceBlock() {
+        return covarianceBlock;
     }
 
-    /** Set the classification type.
-     * @param classificationType the classification type to be set
+    /** Get the user defined parameters logical block.
+     * @return user defined parameters block (may be null)
      */
-    void setClassificationType(final char classificationType) {
-        this.classificationType = classificationType;
+    public ODMUserDefined getUserDefinedBlock() {
+        return userDefinedBlock;
     }
 
-    /** Get the NORAD Catalog Number ("Satellite Number").
-     * @return the NORAD Catalog Number
+    /** Get the mass.
+     * @return mass
      */
-    public Integer getNoradID() {
-        return noradID;
-    }
-
-    /** Set the NORAD Catalog Number ("Satellite Number").
-     * @param noradID the element set number to be set
-     */
-    void setNoradID(final Integer noradID) {
-        this.noradID = noradID;
-    }
-
-    /** Get the element set number for this satellite.
-     * @return the element set number for this satellite
-     */
-    public String getElementSetNumber() {
-        return elementSetNo;
-    }
-
-    /** Set the element set number for this satellite.
-     * @param elementSetNo the element set number to be set
-     */
-    void setElementSetNo(final String elementSetNo) {
-        this.elementSetNo = elementSetNo;
-    }
-
-    /** Get the revolution rumber.
-     * @return the revolution rumber
-     */
-    public int getRevAtEpoch() {
-        return revAtEpoch;
-    }
-
-    /** Set the revolution rumber.
-     * @param revAtEpoch the Revolution Number to be set
-     */
-    void setRevAtEpoch(final int revAtEpoch) {
-        this.revAtEpoch = revAtEpoch;
-    }
-
-    /** Get the SGP/SGP4 drag-like coefficient.
-     * @return the SGP/SGP4 drag-like coefficient
-     */
-    public double getBStar() {
-        return bStar;
-    }
-
-    /** Set the SGP/SGP4 drag-like coefficient.
-     * @param bStar the SGP/SGP4 drag-like coefficient to be set
-     */
-    void setbStar(final double bStar) {
-        this.bStar = bStar;
-    }
-
-    /** Get the first time derivative of the mean motion.
-     * @return the first time derivative of the mean motion
-     */
-    public double getMeanMotionDot() {
-        return meanMotionDot;
-    }
-
-    /** Set the first time derivative of the mean motion.
-     * @param meanMotionDot the first time derivative of the mean motion to be set
-     */
-    void setMeanMotionDot(final double meanMotionDot) {
-        this.meanMotionDot = meanMotionDot;
-    }
-
-    /** Get the second time derivative of the mean motion.
-     * @return the second time derivative of the mean motion
-     */
-    public double getMeanMotionDotDot() {
-        return meanMotionDotDot;
-    }
-
-    /** Set the second time derivative of the mean motion.
-     * @param meanMotionDotDot the second time derivative of the mean motion to be set
-     */
-    void setMeanMotionDotDot(final double meanMotionDotDot) {
-        this.meanMotionDotDot = meanMotionDotDot;
-    }
-
-    /** Get the comment for TLE related parameters.
-     * @return comment for TLE related parameters
-     */
-    public List<String> getTLERelatedParametersComment() {
-        return Collections.unmodifiableList(dataTleRelatedParametersComment);
-    }
-
-    /** Set the comment for TLE related parameters.
-     * @param comment comment to set
-     */
-    void setTLERelatedParametersComment(final List<String> comment) {
-        dataTleRelatedParametersComment = new ArrayList<>(comment);
+    public double getMass() {
+        return mass;
     }
 
 }

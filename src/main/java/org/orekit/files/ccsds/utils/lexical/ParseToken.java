@@ -154,6 +154,17 @@ public class ParseToken {
         }
     }
 
+    /** Get the content of the entry as a normalized character.
+     * @return content as a normalized character
+     */
+    public char getContentAsNormalizedCharacter() {
+        try {
+            return getNormalizedContent().charAt(0);
+        } catch (NumberFormatException nfe) {
+            throw generateException(nfe);
+        }
+    }
+
     /** Get the units.
      * @return units of the entry (may be null)
      */
@@ -241,6 +252,17 @@ public class ParseToken {
     public boolean processAsInteger(final IntConsumer consumer) {
         if (type == TokenType.ENTRY) {
             consumer.accept(getContentAsInt());
+        }
+        return true;
+    }
+
+    /** Process the content as a normalized character.
+     * @param consumer consumer of the normalized character
+     * @return always returns {@code true}
+     */
+    public boolean processAsNormalizedCharacter(final CharConsumer consumer) {
+        if (type == TokenType.ENTRY) {
+            consumer.accept(getContentAsNormalizedCharacter());
         }
         return true;
     }
@@ -425,6 +447,14 @@ public class ParseToken {
          * @param value value to consume
          */
         void accept(int value);
+    }
+
+    /** Interface representing instance methods that consume character values. */
+    public interface CharConsumer {
+        /** Consume a character.
+         * @param value value to consume
+         */
+        void accept(char value);
     }
 
     /** Interface representing instance methods that consume double values. */

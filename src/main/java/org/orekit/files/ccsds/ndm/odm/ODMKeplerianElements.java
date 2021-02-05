@@ -19,17 +19,29 @@ package org.orekit.files.ccsds.ndm.odm;
 
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Data;
+import org.orekit.frames.Frame;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.time.AbsoluteDate;
 
-/** This class gathers the general state data present in both OPM and OMM files.
- * @param <S> type of the segments
+/** Container for Keplerian elements.
  * @author sports
  * @since 6.1
  */
 public class ODMKeplerianElements extends CommentsContainer implements Data {
 
+    /** Epoch of state vector and optional Keplerian elements. */
+    private AbsoluteDate epoch;
+
     /** Orbit semi-major axis (m). */
     private double a;
+
+    /** Mean motion (the Keplerian Mean motion in rad/s).
+     * <p>
+     * Used in OMM instead of semi-major axis if MEAN_ELEMENT_THEORY = SGP/SGP4.
+     * </p>
+     */
+    private double meanMotion;
 
     /** Orbit eccentricity. */
     private double e;
@@ -55,25 +67,46 @@ public class ODMKeplerianElements extends CommentsContainer implements Data {
     /** Simple constructor.
      */
     public ODMKeplerianElements() {
-        a       = Double.NaN;
-        e       = Double.NaN;
-        i       = Double.NaN;
-        raan    = Double.NaN;
-        pa      = Double.NaN;
-        anomaly = Double.NaN;
-        mu      = Double.NaN;
+        a          = Double.NaN;
+        meanMotion =  Double.NaN;
+        e          = Double.NaN;
+        i          = Double.NaN;
+        raan       = Double.NaN;
+        pa         = Double.NaN;
+        anomaly    = Double.NaN;
+        mu         = Double.NaN;
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>
+     * We check neither semi-major axis nor mean motion here,
+     * they must be checked separately in OPM and OMM parsers
+     * </p>
+     */
     @Override
     public void checkMandatoryEntries() {
         super.checkMandatoryEntries();
-        checkNotNaN(a,       ODMKplerianElementsKey.SEMI_MAJOR_AXIS);
-        checkNotNaN(e,       ODMKplerianElementsKey.ECCENTRICITY);
-        checkNotNaN(i,       ODMKplerianElementsKey.INCLINATION);
-        checkNotNaN(raan,    ODMKplerianElementsKey.RA_OF_ASC_NODE);
-        checkNotNaN(pa,      ODMKplerianElementsKey.ARG_OF_PERICENTER);
-        checkNotNaN(anomaly, ODMKplerianElementsKey.MEAN_ANOMALY);
+        checkNotNull(epoch,  ODMStateVectorKey.EPOCH);
+        checkNotNaN(e,       ODMKeplerianElementsKey.ECCENTRICITY);
+        checkNotNaN(i,       ODMKeplerianElementsKey.INCLINATION);
+        checkNotNaN(raan,    ODMKeplerianElementsKey.RA_OF_ASC_NODE);
+        checkNotNaN(pa,      ODMKeplerianElementsKey.ARG_OF_PERICENTER);
+        checkNotNaN(anomaly, ODMKeplerianElementsKey.MEAN_ANOMALY);
+    }
+
+    /** Get epoch of state vector, Keplerian elements and covariance matrix data.
+     * @return epoch the epoch
+     */
+    public AbsoluteDate getEpoch() {
+        return epoch;
+    }
+
+    /** Set epoch of state vector, Keplerian elements and covariance matrix data.
+     * @param epoch the epoch to be set
+     */
+    public void setEpoch(final AbsoluteDate epoch) {
+        refuseFurtherComments();
+        this.epoch = epoch;
     }
 
     /** Get the orbit semi-major axis.
@@ -86,9 +119,23 @@ public class ODMKeplerianElements extends CommentsContainer implements Data {
     /** Set the orbit semi-major axis.
      * @param a the semi-major axis to be set
      */
-    void setA(final double a) {
+    public void setA(final double a) {
         refuseFurtherComments();
         this.a = a;
+    }
+
+    /** Get the orbit mean motion.
+     * @return the orbit mean motion
+     */
+    public double getMeanMotion() {
+        return meanMotion;
+    }
+
+    /** Set the orbit mean motion.
+     * @param motion the mean motion to be set
+     */
+    public void setMeanMotion(final double motion) {
+        this.meanMotion = motion;
     }
 
     /** Get the orbit eccentricity.
@@ -101,7 +148,7 @@ public class ODMKeplerianElements extends CommentsContainer implements Data {
     /** Set the orbit eccentricity.
      * @param e the eccentricity to be set
      */
-    void setE(final double e) {
+    public void setE(final double e) {
         refuseFurtherComments();
         this.e = e;
     }
@@ -116,7 +163,7 @@ public class ODMKeplerianElements extends CommentsContainer implements Data {
     /**Set the orbit inclination.
      * @param i the inclination to be set
      */
-    void setI(final double i) {
+    public void setI(final double i) {
         refuseFurtherComments();
         this.i = i;
     }
@@ -131,7 +178,7 @@ public class ODMKeplerianElements extends CommentsContainer implements Data {
     /** Set the orbit right ascension of ascending node.
      * @param raan the right ascension of ascending node to be set
      */
-    void setRaan(final double raan) {
+    public void setRaan(final double raan) {
         refuseFurtherComments();
         this.raan = raan;
     }
@@ -146,7 +193,7 @@ public class ODMKeplerianElements extends CommentsContainer implements Data {
     /** Set the orbit argument of pericenter.
      * @param pa the argument of pericenter to be set
      */
-    void setPa(final double pa) {
+    public void setPa(final double pa) {
         refuseFurtherComments();
         this.pa = pa;
     }
@@ -161,7 +208,7 @@ public class ODMKeplerianElements extends CommentsContainer implements Data {
     /** Set the orbit anomaly.
      * @param anomaly the anomaly to be set
      */
-    void setAnomaly(final double anomaly) {
+    public void setAnomaly(final double anomaly) {
         refuseFurtherComments();
         this.anomaly = anomaly;
     }
@@ -176,7 +223,7 @@ public class ODMKeplerianElements extends CommentsContainer implements Data {
     /** Set the type of anomaly.
      * @param anomalyType the type of anomaly to be set
      */
-    void setAnomalyType(final PositionAngle anomalyType) {
+    public void setAnomalyType(final PositionAngle anomalyType) {
         refuseFurtherComments();
         this.anomalyType = anomalyType;
     }
@@ -185,7 +232,7 @@ public class ODMKeplerianElements extends CommentsContainer implements Data {
      * Set the gravitational coefficient.
      * @param mu the coefficient to be set
      */
-    void setMu(final double mu) {
+    public void setMu(final double mu) {
         refuseFurtherComments();
         this.mu = mu;
     }
@@ -196,6 +243,14 @@ public class ODMKeplerianElements extends CommentsContainer implements Data {
      */
     public double getMu() {
         return mu;
+    }
+
+    /** Generate a keplerian orbit.
+     * @param frame inertial frame for orbit
+     * @return generated orbit
+     */
+    public KeplerianOrbit generateKeplerianOrbit(final Frame frame) {
+        return new KeplerianOrbit(a, e, i, pa, raan, anomaly, anomalyType, frame, epoch, mu);
     }
 
 }

@@ -67,7 +67,7 @@ public class ODMSpacecraftParameters extends CommentsContainer implements Data {
     /** Set the spacecraft mass.
      * @param mass the spacecraft mass to be set
      */
-    void setMass(final double mass) {
+    public void setMass(final double mass) {
         refuseFurtherComments();
         this.mass = mass;
     }
@@ -82,7 +82,7 @@ public class ODMSpacecraftParameters extends CommentsContainer implements Data {
     /** Set the solar radiation pressure area.
      * @param solarRadArea the area to be set
      */
-    void setSolarRadArea(final double solarRadArea) {
+    public void setSolarRadArea(final double solarRadArea) {
         refuseFurtherComments();
         this.solarRadArea = solarRadArea;
     }
@@ -97,7 +97,7 @@ public class ODMSpacecraftParameters extends CommentsContainer implements Data {
     /** Get the solar radiation pressure coefficient.
      * @param solarRadCoeff the coefficient to be set
      */
-    void setSolarRadCoeff(final double solarRadCoeff) {
+    public void setSolarRadCoeff(final double solarRadCoeff) {
         refuseFurtherComments();
         this.solarRadCoeff = solarRadCoeff;
     }
@@ -112,7 +112,7 @@ public class ODMSpacecraftParameters extends CommentsContainer implements Data {
     /** Set the drag area.
      * @param dragArea the area to be set
      */
-    void setDragArea(final double dragArea) {
+    public void setDragArea(final double dragArea) {
         refuseFurtherComments();
         this.dragArea = dragArea;
     }
@@ -127,7 +127,7 @@ public class ODMSpacecraftParameters extends CommentsContainer implements Data {
     /** Set the drag coefficient.
      * @param dragCoeff the coefficient to be set
      */
-    void setDragCoeff(final double dragCoeff) {
+    public void setDragCoeff(final double dragCoeff) {
         refuseFurtherComments();
         this.dragCoeff = dragCoeff;
     }

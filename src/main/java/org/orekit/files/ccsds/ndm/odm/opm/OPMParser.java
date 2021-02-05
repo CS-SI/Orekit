@@ -28,7 +28,7 @@ import org.orekit.files.ccsds.ndm.odm.ODMCovarianceKey;
 import org.orekit.files.ccsds.ndm.odm.ODMHeader;
 import org.orekit.files.ccsds.ndm.odm.ODMHeaderProcessingState;
 import org.orekit.files.ccsds.ndm.odm.ODMKeplerianElements;
-import org.orekit.files.ccsds.ndm.odm.ODMKplerianElementsKey;
+import org.orekit.files.ccsds.ndm.odm.ODMKeplerianElementsKey;
 import org.orekit.files.ccsds.ndm.odm.ODMMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.ODMSpacecraftParameters;
 import org.orekit.files.ccsds.ndm.odm.ODMSpacecraftParametersKey;
@@ -210,7 +210,12 @@ public class OPMParser extends OCommonParser<OPMFile, OPMParser> {
                 userDefinedBlock = null;
             }
             if (keplerianElementsBlock != null) {
-                setMuParsed(keplerianElementsBlock.getMu());
+                keplerianElementsBlock.setEpoch(stateVectorBlock.getEpoch());
+                if (Double.isNaN(keplerianElementsBlock.getMu())) {
+                    keplerianElementsBlock.setMu(getSelectedMu());
+                } else {
+                    setMuParsed(keplerianElementsBlock.getMu());
+                }
             }
             final double  mass = spacecraftParametersBlock == null ?
                                  defaultMass : spacecraftParametersBlock.getMass();
@@ -304,7 +309,7 @@ public class OPMParser extends OCommonParser<OPMFile, OPMParser> {
         setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processSpacecraftParametersToken);
         try {
             return token.getName() != null &&
-                   ODMKplerianElementsKey.valueOf(token.getName()).process(token, context, keplerianElementsBlock);
+                   ODMKeplerianElementsKey.valueOf(token.getName()).process(token, context, keplerianElementsBlock);
         } catch (IllegalArgumentException iae) {
             // token has not been recognized
             return false;

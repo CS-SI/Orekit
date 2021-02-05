@@ -72,7 +72,7 @@ public class ODMStateVector extends CommentsContainer {
     /** Set epoch of state vector, Keplerian elements and covariance matrix data.
      * @param epoch the epoch to be set
      */
-    void setEpoch(final AbsoluteDate epoch) {
+    public void setEpoch(final AbsoluteDate epoch) {
         refuseFurtherComments();
         this.epoch = epoch;
     }

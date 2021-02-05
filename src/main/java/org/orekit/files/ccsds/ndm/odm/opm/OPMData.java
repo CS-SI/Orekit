@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.orekit.files.ccsds.ndm.odm.ODMCovariance;
 import org.orekit.files.ccsds.ndm.odm.ODMKeplerianElements;
+import org.orekit.files.ccsds.ndm.odm.ODMKeplerianElementsKey;
 import org.orekit.files.ccsds.ndm.odm.ODMSpacecraftParameters;
 import org.orekit.files.ccsds.ndm.odm.ODMStateVector;
 import org.orekit.files.ccsds.ndm.odm.ODMUserDefined;
@@ -41,7 +42,7 @@ public class OPMData implements Data, Section {
     private final ODMKeplerianElements keplerianElementsBlock;
 
     /** Spacecraft parameters block. */
-    private final ODMSpacecraftParameters spacecraftParameters;
+    private final ODMSpacecraftParameters spacecraftParametersBlock;
 
     /** Covariance matrix logical block being read. */
     private final ODMCovariance covarianceBlock;
@@ -57,27 +58,27 @@ public class OPMData implements Data, Section {
 
     /** Simple constructor.
      * @param stateVectorBlock state vector logical block
-     * @param keplerianElementsBlock Keplerian elements logicial block (may be null)
-     * @param spacecraftParameters spacecraft parameters logical block (may be null)
+     * @param keplerianElementsBlock Keplerian elements logical block (may be null)
+     * @param spacecraftParametersBlock spacecraft parameters logical block (may be null)
      * @param covarianceBlock covariance matrix logical block (may be null)
      * @param maneuverBlocks maneuvers block list
      * @param userDefinedBlock user-defined logical block
-     * @param mass mass (always defined, event if there is no {@code spacecraftParameters} block
+     * @param mass mass (always defined, even if there is no {@code spacecraftParameters} block
      */
     public OPMData(final ODMStateVector stateVectorBlock,
                    final ODMKeplerianElements keplerianElementsBlock,
-                   final ODMSpacecraftParameters spacecraftParameters,
+                   final ODMSpacecraftParameters spacecraftParametersBlock,
                    final ODMCovariance covarianceBlock,
                    final List<OPMManeuver> maneuverBlocks,
                    final ODMUserDefined userDefinedBlock,
                    final double mass) {
-        this.stateVectorBlock       = stateVectorBlock;
-        this.keplerianElementsBlock = keplerianElementsBlock;
-        this.spacecraftParameters   = spacecraftParameters;
-        this.covarianceBlock        = covarianceBlock;
-        this.maneuverBlocks         = maneuverBlocks;
-        this.userDefinedBlock       = userDefinedBlock;
-        this.mass                   = mass;
+        this.stateVectorBlock          = stateVectorBlock;
+        this.keplerianElementsBlock    = keplerianElementsBlock;
+        this.spacecraftParametersBlock = spacecraftParametersBlock;
+        this.covarianceBlock           = covarianceBlock;
+        this.maneuverBlocks            = maneuverBlocks;
+        this.userDefinedBlock          = userDefinedBlock;
+        this.mass                      = mass;
     }
 
     /** {@inheritDoc} */
@@ -86,9 +87,12 @@ public class OPMData implements Data, Section {
         stateVectorBlock.checkMandatoryEntries();
         if (keplerianElementsBlock != null) {
             keplerianElementsBlock.checkMandatoryEntries();
+            // in OPM, only semi-major axis is allowed, not mean motion
+            keplerianElementsBlock.checkNotNaN(keplerianElementsBlock.getA(),
+                                               ODMKeplerianElementsKey.SEMI_MAJOR_AXIS);
         }
-        if (spacecraftParameters != null) {
-            spacecraftParameters.checkMandatoryEntries();
+        if (spacecraftParametersBlock != null) {
+            spacecraftParametersBlock.checkMandatoryEntries();
         }
         if (covarianceBlock != null) {
             covarianceBlock.checkMandatoryEntries();
@@ -119,7 +123,7 @@ public class OPMData implements Data, Section {
      * @return spacecraft parameters block (may be null)
      */
     public ODMSpacecraftParameters getSpacecraftParametersBlock() {
-        return spacecraftParameters;
+        return spacecraftParametersBlock;
     }
 
     /** Get the covariance matrix logical block.

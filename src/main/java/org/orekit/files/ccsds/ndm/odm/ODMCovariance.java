@@ -97,7 +97,7 @@ public class ODMCovariance extends CommentsContainer implements Data {
     /** Set coordinate system for covariance matrix, for Local Orbital Frames.
      * @param covRefLofType the coordinate system to be set
      */
-    void setCovRefLofType(final LOFType covRefLofType) {
+    public void setCovRefLofType(final LOFType covRefLofType) {
         refuseFurtherComments();
         this.covRefLofType = covRefLofType;
         this.covRefFrame   = null;
@@ -123,7 +123,7 @@ public class ODMCovariance extends CommentsContainer implements Data {
     /** Set coordinate system for covariance matrix.
      * @param covRefFrame the coordinate system to be set
      */
-    void setCovRefFrame(final Frame covRefFrame) {
+    public void setCovRefFrame(final Frame covRefFrame) {
         refuseFurtherComments();
         this.covRefLofType = null;
         this.covRefFrame   = covRefFrame;
@@ -144,7 +144,7 @@ public class ODMCovariance extends CommentsContainer implements Data {
      * @param k column index (must be between 0 and 5 (inclusive)
      * @param entry value of the matrix entry
      */
-    void setCovarianceMatrixEntry(final int j, final int k, final double entry) {
+    public void setCovarianceMatrixEntry(final int j, final int k, final double entry) {
         refuseFurtherComments();
         covarianceMatrix.setEntry(j, k, entry);
         covarianceMatrix.setEntry(k, j, entry);

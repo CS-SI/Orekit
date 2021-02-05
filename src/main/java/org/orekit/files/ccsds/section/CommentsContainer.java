@@ -47,11 +47,21 @@ public class CommentsContainer implements Section {
         acceptComments = true;
     }
 
+    /** Complain if a field is negative.
+     * @param field field to check
+     * @param key key associated with the field
+     */
+    public void checkNotNegative(final int field, final Enum<?> key) {
+        if (field < 0) {
+            throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, key.name());
+        }
+    }
+
     /** Complain if a field is NaN.
      * @param field field to check
      * @param key key associated with the field
      */
-    protected void checkNotNaN(final double field, final Enum<?> key) {
+    public void checkNotNaN(final double field, final Enum<?> key) {
         if (Double.isNaN(field)) {
             throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, key.name());
         }
@@ -61,7 +71,7 @@ public class CommentsContainer implements Section {
      * @param field field to check
      * @param key key associated with the field
      */
-    protected void checkNotNull(final Object field, final Enum<?> key) {
+    public void checkNotNull(final Object field, final Enum<?> key) {
         if (field == null) {
             throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, key.name());
         }
