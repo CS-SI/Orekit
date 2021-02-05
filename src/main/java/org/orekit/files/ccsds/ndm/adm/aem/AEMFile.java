@@ -24,11 +24,10 @@ import java.util.Map;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.adm.ADMFile;
+import org.orekit.files.ccsds.ndm.NDMFile;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.general.AttitudeEphemerisFile;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
 /**
@@ -38,7 +37,7 @@ import org.orekit.utils.IERSConventions;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class AEMFile extends ADMFile<AEMSegment> implements AttitudeEphemerisFile {
+public class AEMFile extends NDMFile<Header, AEMSegment> implements AttitudeEphemerisFile {
 
     /** Key for format version. */
     public static final String FORMAT_VERSION_KEY = "CCSDS_AEM_VERS";
@@ -47,14 +46,11 @@ public class AEMFile extends ADMFile<AEMSegment> implements AttitudeEphemerisFil
      * @param header file header
      * @param segments file segments
      * @param conventions IERS conventions
-     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used for creating frames, time scales, etc.
-     * @param missionReferenceDate reference date for Mission Elapsed Time and Mission Relative Time time systems.
      */
     public AEMFile(final Header header, final List<AEMSegment> segments,
-                   final IERSConventions conventions, final boolean simpleEOP,
-                   final DataContext dataContext, final AbsoluteDate missionReferenceDate) {
-        super(header, segments, conventions, simpleEOP, dataContext, missionReferenceDate);
+                   final IERSConventions conventions, final DataContext dataContext) {
+        super(header, segments, conventions, dataContext);
     }
 
     /** {@inheritDoc} */

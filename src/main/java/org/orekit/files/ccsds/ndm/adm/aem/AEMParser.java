@@ -180,9 +180,7 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> {
     /** {@inheritDoc} */
     @Override
     public AEMFile build() {
-        final AEMFile file = new AEMFile(header, segments,
-                                         getConventions(), isSimpleEOP(),
-                                         getDataContext(), getMissionReferenceDate());
+        final AEMFile file = new AEMFile(header, segments, getConventions(), getDataContext());
         file.checkTimeSystems();
         return file;
     }

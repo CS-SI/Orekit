@@ -71,7 +71,6 @@ public class APMParserTest {
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
         Assert.assertEquals(DataContext.getDefault(),  file.getDataContext());
-        Assert.assertEquals("2002-09-30T14:28:15.117", file.getMissionReferenceDate().toString());
 
         // Check Header Block
         Assert.assertEquals(1.0, file.getHeader().getFormatVersion(), 1.0e-10);
@@ -140,7 +139,6 @@ public class APMParserTest {
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
         Assert.assertEquals(DataContext.getDefault(),  file.getDataContext());
-        Assert.assertEquals("2002-09-30T14:28:15.117", file.getMissionReferenceDate().toString());
 
         // Check Header Block
         Assert.assertEquals(1.0, file.getHeader().getFormatVersion(), 1.0e-10);
@@ -258,7 +256,6 @@ public class APMParserTest {
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
         Assert.assertEquals(DataContext.getDefault(),  file.getDataContext());
-        Assert.assertEquals("2002-09-30T14:28:15.117", file.getMissionReferenceDate().toString());
 
         // Check Header Block
         Assert.assertEquals(1.0, file.getHeader().getFormatVersion(), 1.0e-10);
@@ -336,7 +333,6 @@ public class APMParserTest {
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
         Assert.assertEquals(DataContext.getDefault(),  file.getDataContext());
-        Assert.assertEquals("2002-09-30T14:28:15.117", file.getMissionReferenceDate().toString());
 
         // Check Header Block
         Assert.assertEquals(1.0, file.getHeader().getFormatVersion(), 1.0e-10);

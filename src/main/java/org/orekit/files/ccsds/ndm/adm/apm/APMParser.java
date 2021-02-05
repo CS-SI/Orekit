@@ -204,8 +204,7 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
         // automatically before the end of the file
         finalizeData();
         final APMFile file = new APMFile(header, segments,
-                                         getConventions(), isSimpleEOP(),
-                                         getDataContext(), getMissionReferenceDate());
+                                         getConventions(), isSimpleEOP(), getDataContext());
         return file;
     }
 

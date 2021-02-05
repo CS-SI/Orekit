@@ -20,11 +20,10 @@ import java.util.List;
 
 import org.orekit.attitudes.Attitude;
 import org.orekit.data.DataContext;
-import org.orekit.files.ccsds.ndm.adm.ADMFile;
+import org.orekit.files.ccsds.ndm.NDMFile;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
 /**
@@ -33,10 +32,13 @@ import org.orekit.utils.IERSConventions;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class APMFile extends ADMFile<Segment<ADMMetadata, APMData>> {
+public class APMFile extends NDMFile<Header, Segment<ADMMetadata, APMData>> {
 
     /** Key for format version. */
     public static final String FORMAT_VERSION_KEY = "CCSDS_APM_VERS";
+
+    /** Indicator for simple or accurate EOP interpolation. */
+    private final  boolean simpleEOP;
 
     /** Simple constructor.
      * @param header file header
@@ -44,12 +46,12 @@ public class APMFile extends ADMFile<Segment<ADMMetadata, APMData>> {
      * @param conventions IERS conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used for creating frames, time scales, etc.
-     * @param missionReferenceDate reference date for Mission Elapsed Time and Mission Relative Time time systems.
      */
     public APMFile(final Header header, final List<Segment<ADMMetadata, APMData>> segments,
                    final IERSConventions conventions, final boolean simpleEOP,
-                   final DataContext dataContext, final AbsoluteDate missionReferenceDate) {
-        super(header, segments, conventions, simpleEOP, dataContext, missionReferenceDate);
+                   final DataContext dataContext) {
+        super(header, segments, conventions, dataContext);
+        this.simpleEOP = simpleEOP;
     }
 
     /** Get the attitude.
@@ -64,7 +66,7 @@ public class APMFile extends ADMFile<Segment<ADMMetadata, APMData>> {
                get(0).
                getData().
                getQuaternionBlock().
-               getAttitude(getConventions(), isSimpleEOP(), getDataContext());
+               getAttitude(getConventions(), simpleEOP, getDataContext());
     }
 
 }
