@@ -410,7 +410,7 @@ public class APMParserTest {
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
             Assert.assertEquals("Q1", oe.getParts()[0]);
-            Assert.assertEquals(21, oe.getParts()[1]);
+            Assert.assertEquals(22, oe.getParts()[1]);
             Assert.assertEquals("APM-number-format-error.txt", oe.getParts()[2]);
         }
     }
@@ -439,7 +439,7 @@ public class APMParserTest {
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
-            Assert.assertEquals(11, ((Integer) oe.getParts()[0]).intValue());
+            Assert.assertEquals(12, ((Integer) oe.getParts()[0]).intValue());
             Assert.assertTrue(((String) oe.getParts()[2]).startsWith("WRONG_KEYWORD"));
         }
     }
