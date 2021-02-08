@@ -432,6 +432,9 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
 
             // Loop on attitude data
             startAttitudeBlock(generator);
+            if (segment instanceof AEMSegment) {
+                generator.writeComments(((AEMSegment) segment).getData());
+            }
             for (final TimeStampedAngularCoordinates coordinates : segment.getAngularCoordinates()) {
                 writeAttitudeEphemerisLine(generator, coordinates);
             }

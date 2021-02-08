@@ -226,7 +226,7 @@ public class AEMWriterTest {
                 ++count;
             }
         }
-        assertEquals(79, count);
+        assertEquals(82, count);
 
     }
 
