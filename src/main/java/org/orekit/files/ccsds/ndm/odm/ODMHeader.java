@@ -25,6 +25,9 @@ import org.orekit.files.ccsds.section.Header;
  */
 public class ODMHeader extends Header {
 
+    /** Key for message Id. */
+    public static final String MESSAGE_ID = "MESSAGE_ID";
+
     /** ID that uniquely identifies a message from a given originator. */
     private String messageId;
 

@@ -223,7 +223,7 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> {
                                               AEMMetadataKey.ATTITUDE_TYPE.name(), token.getFileName());
                 }
                 return currentBlock.addData(metadata.getAttitudeType().parse(metadata, context,
-                                                                             SPLIT_AT_BLANKS.split(token.getContent()),
+                                                                             SPLIT_AT_BLANKS.split(token.getContent().trim()),
                                                                              token.getFileName()));
             } catch (NumberFormatException nfe) {
                 throw new OrekitException(nfe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,

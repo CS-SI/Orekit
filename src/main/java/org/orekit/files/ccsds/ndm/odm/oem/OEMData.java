@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.orekit.files.ccsds.ndm.odm.ODMCovariance;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Data;
 import org.orekit.utils.CartesianDerivativesFilter;
@@ -39,7 +40,7 @@ public class OEMData extends CommentsContainer implements Data {
     private CartesianDerivativesFilter cartesianDerivativesFilter;
 
     /** List of covariance matrices. */
-    private List<CovarianceMatrix> covarianceMatrices;
+    private List<ODMCovariance> covarianceMatrices;
 
     /** EphemeridesBlock constructor. */
     public OEMData() {
@@ -65,7 +66,7 @@ public class OEMData extends CommentsContainer implements Data {
     /** Add a covariance matrix.
      * @param covarianceMatrix covariance matrix to dd
      */
-    public void addCovarianceMatrix(final CovarianceMatrix covarianceMatrix) {
+    public void addCovarianceMatrix(final ODMCovariance covarianceMatrix) {
         covarianceMatrices.add(covarianceMatrix);
     }
 
@@ -93,7 +94,7 @@ public class OEMData extends CommentsContainer implements Data {
     /** Get an unmodifiable view of Covariance Matrices.
      * @return unmodifiable view of Covariance Matrices
      */
-    public List<CovarianceMatrix> getCovarianceMatrices() {
+    public List<ODMCovariance> getCovarianceMatrices() {
         return Collections.unmodifiableList(covarianceMatrices);
     }
 

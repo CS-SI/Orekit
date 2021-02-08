@@ -17,23 +17,33 @@
 package org.orekit.files.ccsds.ndm.adm.aem;
 
 import java.io.IOException;
-import java.util.Map;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
+import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.frames.Frame;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScale;
 
 /**
  * A writer for AEM files.
  *
  * <p> Each instance corresponds to a single AEM file.
  *
+ * <p> This class can be used as a step handler for a {@link Propagator}.
+ *
+ * <pre>{@code
+ * Propagator propagator = ...; // pre-configured propagator
+ * AEMWriter  aemWriter  = ...; // pre-configured writer with header and metadata
+ *   try (Generator out = ...;) { // set-up output stream
+ *     propagator.setMasterMode(step, new StreamingAemWriter(out, oemWriter).newSegment());
+ *     propagator.propagate(startDate, stopDate);
+ *   }
+ * }</pre>
  * @author Bryan Cazabonne
  * @author Luc Maisonobe
  * @see <a href="https://public.ccsds.org/Pubs/504x0b1c1.pdf">CCSDS 504.0-B-1 Attitude Data Messages</a>
@@ -42,8 +52,8 @@ import org.orekit.time.TimeScale;
  */
 public class StreamingAemWriter {
 
-    /** Output stream. */
-    private final Appendable appendable;
+    /** Generator for AEM output. */
+    private final Generator generator;
 
     /** Writer for the AEM message format. */
     private final AEMWriter aemWriter;
@@ -51,18 +61,13 @@ public class StreamingAemWriter {
     /** Indicator for writing header. */
     private boolean headerWritePending;
 
-    /**
-     * Create an AEM writer than streams data to the given output stream as
-     * {@link #StreamingAemWriter(Appendable, TimeScale, Map)} with
-     * {@link java.util.Formatter format parameters} for attitude ephemeris data.
-     *
-     * @param appendable    The output stream for the AEM file. Most methods will append data
-     *                  to this {@code appendable}.
+    /** Simple constructor.
+     * @param generator generator for AEM output
      * @param aemWriter writer for the AEM message format
      * @since 10.3
      */
-    public StreamingAemWriter(final Appendable appendable, final AEMWriter aemWriter) {
-        this.appendable         = appendable;
+    public StreamingAemWriter(final Generator generator, final AEMWriter aemWriter) {
+        this.generator          = generator;
         this.aemWriter          = aemWriter;
         this.headerWritePending = true;
     }
@@ -84,8 +89,8 @@ public class StreamingAemWriter {
          * {@inheritDoc}
          *
          * <p> Sets the {@link AEMMetadataKey#START_TIME} and {@link AEMMetadataKey#STOP_TIME} in this
-         * segment's metadata if not already set by the user. Then calls {@link
-         * #writeMetadata()} to start the segment.
+         * segment's metadata if not already set by the user. Then calls {@link AEMWriter#writeHeader(Generator)
+         * writeHeader} if it is the first segment) and {@link AEMWriter#writeMetadata()} to start the segment.
          */
         @Override
         public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {
@@ -96,7 +101,7 @@ public class StreamingAemWriter {
 
                 if (headerWritePending) {
                     // we write the header only for the first segment
-                    aemWriter.writeHeader(appendable);
+                    aemWriter.writeHeader(generator);
                     headerWritePending = false;
                 }
 
@@ -108,8 +113,8 @@ public class StreamingAemWriter {
                 final Frame      stateFrame = s0.getAttitude().getReferenceFrame();
                 final CCSDSFrame ccsdsFrame = CCSDSFrame.map(stateFrame);
                 metadata.getEndPoints().setExternalFrame(ccsdsFrame);
-                aemWriter.writeMetadata(appendable);
-                aemWriter.startAttitudeBlock(appendable);
+                aemWriter.writeMetadata(generator);
+                aemWriter.startAttitudeBlock(generator);
             } catch (IOException e) {
                 throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE, e.getLocalizedMessage());
             }
@@ -119,9 +124,9 @@ public class StreamingAemWriter {
         @Override
         public void handleStep(final SpacecraftState currentState, final boolean isLast) {
             try {
-                aemWriter.writeAttitudeEphemerisLine(appendable, currentState.getAttitude().getOrientation());
+                aemWriter.writeAttitudeEphemerisLine(generator, currentState.getAttitude().getOrientation());
                 if (isLast) {
-                    aemWriter.endAttitudeBlock(appendable);
+                    aemWriter.endAttitudeBlock(generator);
                 }
             } catch (IOException e) {
                 throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE, e.getLocalizedMessage());

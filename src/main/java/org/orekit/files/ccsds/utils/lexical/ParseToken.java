@@ -122,7 +122,7 @@ public class ParseToken {
      * @return entry normalized content
      */
     public String getNormalizedContent() {
-        return SPACE.matcher(content.replace('_', ' ')).replaceAll(" ").toUpperCase(Locale.US);
+        return SPACE.matcher(content.replace('_', ' ')).replaceAll(" ").trim().toUpperCase(Locale.US);
     }
 
     /** Get the content of the entry as a double.

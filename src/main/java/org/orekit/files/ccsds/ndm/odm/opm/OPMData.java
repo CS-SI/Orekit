@@ -95,6 +95,7 @@ public class OPMData implements Data, Section {
             spacecraftParametersBlock.checkMandatoryEntries();
         }
         if (covarianceBlock != null) {
+            covarianceBlock.setEpoch(stateVectorBlock.getEpoch());
             covarianceBlock.checkMandatoryEntries();
         }
         for (final OPMManeuver maneuver : maneuverBlocks) {

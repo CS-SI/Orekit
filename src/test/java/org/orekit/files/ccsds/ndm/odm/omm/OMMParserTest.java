@@ -147,7 +147,7 @@ public class OMMParserTest {
         Assert.assertEquals(1.00273272, Constants.JULIAN_DAY * kep.getMeanMotion() / MathUtils.TWO_PI, 1e-10);
         Assert.assertTrue(Double.isNaN(file.getData().getMass()));
         ODMCovariance covariance = file.getData().getCovarianceBlock();
-        Assert.assertEquals(FramesFactory.getTEME(), covariance.getCovRefFrame());
+        Assert.assertEquals(FramesFactory.getTEME(), covariance.getRefFrame());
         Assert.assertEquals(6, covariance.getCovarianceMatrix().getRowDimension());
         Assert.assertEquals(6, covariance.getCovarianceMatrix().getColumnDimension());
         Assert.assertEquals(1995, file.getMetadata().getLaunchYear());
@@ -180,8 +180,8 @@ public class OMMParserTest {
         Assert.assertEquals(0.001, sp.getSolarRadCoeff(), 1e-10);
 
         ODMCovariance covariance = file.getData().getCovarianceBlock();
-        Assert.assertEquals(null, covariance.getCovRefFrame());
-        Assert.assertEquals(LOFType.TNW, covariance.getCovRefLofType());
+        Assert.assertEquals(file.getMetadata().getRefFrame(), covariance.getRefFrame());
+        Assert.assertEquals(LOFType.TNW, covariance.getRefCCSDSFrame().getLofType());
 
         ODMUserDefined ud = file.getData().getUserDefinedBlock();
         HashMap<String, String> userDefinedParameters = new HashMap<String, String>();

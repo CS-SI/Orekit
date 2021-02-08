@@ -96,7 +96,7 @@ public enum TDMMetadataKey {
     ANGLE_TYPE((token, context, metadata) -> token.processAsNormalizedString(metadata::setAngleType)),
 
     /** reference frame entry. */
-    REFERENCE_FRAME((token, context, metadata) -> token.processAsFrame(metadata::setReferenceFrame, context)),
+    REFERENCE_FRAME((token, context, metadata) -> token.processAsFrame(metadata::setReferenceFrame, context, false)),
 
     /** First transmit delay entry. */
     TRANSMIT_DELAY_1((token, context, metadata) -> token.processAsIndexedDouble(1, 1.0, metadata::addTransmitDelay)),

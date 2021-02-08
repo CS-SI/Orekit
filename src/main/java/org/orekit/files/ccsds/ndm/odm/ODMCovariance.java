@@ -102,6 +102,7 @@ public class ODMCovariance extends CommentsContainer implements Data {
      * @param epoch matrix epoch
      */
     public void setEpoch(final AbsoluteDate epoch) {
+        refuseFurtherComments();
         this.epoch = epoch;
     }
 
@@ -112,7 +113,7 @@ public class ODMCovariance extends CommentsContainer implements Data {
      * or inherited from metadate
      */
     public Frame getRefFrame() {
-        return referenceFrame == null ? defaultFrameSupplier.get() : referenceFrame;
+        return useDefaultSuppliers() ? defaultFrameSupplier.get() : referenceFrame;
     }
 
     /**
@@ -122,7 +123,17 @@ public class ODMCovariance extends CommentsContainer implements Data {
      * or inherited from metadate
      */
     public CCSDSFrame getRefCCSDSFrame() {
-        return referenceCCSDSFrame == null ? defaultCCSDSFrameSupplier.get() : referenceCCSDSFrame;
+        return useDefaultSuppliers() ? defaultCCSDSFrameSupplier.get() : referenceCCSDSFrame;
+    }
+
+    /** Check if we should rely on default suppliers for frames.
+     * @return true if we should rely on default frame suppliers
+     */
+    private boolean useDefaultSuppliers() {
+        // we check referenceCCSDSFrame even when we want referenceFrame
+        // because referenceFrame may be null when referenceCCSDSFrame has been
+        // initialized with a LOF-type frame
+        return referenceCCSDSFrame == null;
     }
 
     /** Set the reference frame in which data are given.

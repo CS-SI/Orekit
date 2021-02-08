@@ -44,7 +44,6 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.odm.oem.OEMWriter.InterpolationMethod;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;

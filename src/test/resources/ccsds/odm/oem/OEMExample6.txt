@@ -1,10 +1,10 @@
 CCSDS_OEM_VERS = 2.0
-CREATION_DATE = 2002-11-04T17:22:31
-ORIGINATOR = NASA/JPL
 COMMENT Copy of OEMExample.txt with changes so that interpolation will work. And without
 COMMENT optional keys. And the dates are edited. And the CENTER_NAME was changed from MARS
 COMMENT BARYCENTER to MARS to accommodate the available names of the JPL ephemerides in
 COMMENT use.
+CREATION_DATE = 2002-11-04T17:22:31
+ORIGINATOR = NASA/JPL
 
 META_START
 OBJECT_NAME = MARS GLOBAL SURVEYOR

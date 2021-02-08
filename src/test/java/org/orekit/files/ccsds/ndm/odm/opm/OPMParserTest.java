@@ -386,7 +386,7 @@ public class OPMParserTest {
         // Check Data Covariance matrix Block
         ODMCovariance covariance = file.getData().getCovarianceBlock();
         Assert.assertNotNull(covariance);
-        Assert.assertSame(file.getMetadata().getFrame(), covariance.getCovRefFrame());
+        Assert.assertSame(file.getMetadata().getFrame(), covariance.getRefFrame());
 
         Array2DRowRealMatrix covMatrix = new Array2DRowRealMatrix(6, 6);
         double[] column1 = {
@@ -510,7 +510,7 @@ public class OPMParserTest {
         dataCovMatrixComment.add("covariance comment 1");
         dataCovMatrixComment.add("covariance comment 2");
         Assert.assertEquals(dataCovMatrixComment, covariance.getComments());
-        Assert.assertEquals(covariance.getCovRefFrame(), FramesFactory.getTEME());
+        Assert.assertEquals(covariance.getRefFrame(), FramesFactory.getTEME());
 
         Array2DRowRealMatrix covMatrix = new Array2DRowRealMatrix(6, 6);
         double[] column1 = {

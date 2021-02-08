@@ -37,7 +37,6 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScale;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
@@ -78,28 +77,8 @@ public class EphemerisSegmentPropagatorTest {
             }
 
             @Override
-            public String getFrameCenterString() {
-                return null;
-            }
-
-            @Override
-            public String getFrameString() {
-                return null;
-            }
-
-            @Override
             public Frame getFrame() {
                 return frame;
-            }
-
-            @Override
-            public String getTimeScaleString() {
-                return null;
-            }
-
-            @Override
-            public TimeScale getTimeScale() {
-                return null;
             }
 
             @Override

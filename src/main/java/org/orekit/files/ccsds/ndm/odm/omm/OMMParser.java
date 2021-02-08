@@ -341,7 +341,7 @@ public class OMMParser extends OCommonParser<OMMFile, OMMParser> {
         if (covarianceBlock == null) {
             // save the current metadata for later retrieval of reference frame
             final OCommonMetadata savedMetadata = metadata;
-            covarianceBlock = new ODMCovariance(() -> savedMetadata.getFrame());
+            covarianceBlock = new ODMCovariance(() -> savedMetadata.getFrame(), () -> savedMetadata.getRefCCSDSFrame());
             if (moveCommentsIfEmpty(tleBlock, covarianceBlock)) {
                 // get rid of the empty logical block
                 tleBlock = null;

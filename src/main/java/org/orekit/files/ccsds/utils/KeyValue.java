@@ -210,7 +210,7 @@ public class KeyValue {
      * @since 10.1
      */
     public List<String> getListValue() {
-        return Arrays.asList(SPLIT_AT_COMMAS.split(value));
+        return Arrays.asList(SPLIT_AT_COMMAS.split(value.trim()));
     }
 
     /** Generate a parse exception for this key value pair.

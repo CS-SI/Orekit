@@ -46,6 +46,12 @@ public class OEMFile extends NDMFile<ODMHeader, OEMSegment> implements Ephemeris
     /** Key for format version. */
     public static final String FORMAT_VERSION_KEY = "CCSDS_OEM_VERS";
 
+    /** Key for covariance section in KVN files. */
+    public static final String COVARIANCE_KVN = "COVARIANCE";
+
+    /** Key for covariance section in XML files. */
+    public static final String COVARIANCE_XML = "covarianceMatrix";
+
     /** Gravitational coefficient to use for building Cartesian/Keplerian orbits. */
     private final double mu;
 

@@ -52,8 +52,7 @@ public class ODMHeaderProcessingState extends HeaderProcessingState {
             return true;
         }
 
-        if ((token.getType() == TokenType.ENTRY) &&
-            ("MESSAGE_ID".equals(token.getName()))) {
+        if (token.getType() == TokenType.ENTRY && ODMHeader.MESSAGE_ID.equals(token.getName())) {
             return token.processAsFreeTextString(header::setMessageId);
         }
 

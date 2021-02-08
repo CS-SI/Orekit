@@ -41,7 +41,7 @@ public class OEMMetadata extends OCommonMetadata {
     private AbsoluteDate useableStopTime;
 
     /** The interpolation method to be used. */
-    private String interpolationMethod;
+    private InterpolationMethod interpolationMethod;
 
     /** The interpolation degree. */
     private int interpolationDegree;
@@ -154,14 +154,14 @@ public class OEMMetadata extends OCommonMetadata {
     /** Get the interpolation method to be used.
      * @return the interpolation method
      */
-    public String getInterpolationMethod() {
+    public InterpolationMethod getInterpolationMethod() {
         return interpolationMethod;
     }
 
     /** Set the interpolation method to be used.
      * @param interpolationMethod the interpolation method to be set
      */
-    public void setInterpolationMethod(final String interpolationMethod) {
+    public void setInterpolationMethod(final InterpolationMethod interpolationMethod) {
         refuseFurtherComments();
         this.interpolationMethod = interpolationMethod;
     }

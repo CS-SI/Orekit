@@ -36,6 +36,7 @@ import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.CCSDSBodyFrame;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
+import org.orekit.files.ccsds.utils.generation.KVNGenerator;
 import org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
@@ -108,7 +109,8 @@ public class StreamingAemWriterTest {
             final AEMWriter aemWriter = new AEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(), header, metadata);
 
             StringBuilder buffer = new StringBuilder();
-            StreamingAemWriter writer = new StreamingAemWriter(buffer, aemWriter);
+            StreamingAemWriter writer = new StreamingAemWriter(new KVNGenerator(buffer, AEMWriter.DEFAULT_FILE_NAME),
+                                                               aemWriter);
             aemWriter.getMetadata().setObjectName(objectName);
 
             // Initialize a Keplerian propagator with an Inertial attitude provider

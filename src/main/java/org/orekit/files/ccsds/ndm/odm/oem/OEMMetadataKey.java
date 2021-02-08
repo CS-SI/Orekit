@@ -16,8 +16,11 @@
  */
 package org.orekit.files.ccsds.ndm.odm.oem;
 
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
 
 
 /** Keys for {@link OEMMetadata OEM metadata} entries.
@@ -39,7 +42,17 @@ public enum OEMMetadataKey {
     USEABLE_STOP_TIME((token, context, metadata) -> token.processAsDate(metadata::setUseableStopTime, context)),
 
     /** Interpolation method in ephemeris. */
-    INTERPOLATION_METHOD((token, context, metadata) -> token.processAsNormalizedString(metadata::setInterpolationMethod)),
+    INTERPOLATION((token, context, metadata) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            try {
+                metadata.setInterpolationMethod(InterpolationMethod.valueOf(token.getNormalizedContent()));
+            } catch (IllegalArgumentException iae) {
+                throw new OrekitException(iae, OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE,
+                                          token.getName(), token.getLineNumber(), token.getFileName());
+            }
+        }
+        return true;
+    }),
 
     /** Interpolation degree in ephemeris. */
     INTERPOLATION_DEGREE((token, context, metadata) -> token.processAsInteger(metadata::setInterpolationDegree));

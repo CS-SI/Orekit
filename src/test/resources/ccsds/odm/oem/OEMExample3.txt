@@ -1,7 +1,7 @@
 CCSDS_OEM_VERS = 2.0
+COMMENT Copy of OEMExample.txt with changes so that interpolation will work.
 CREATION_DATE = 1996-11-04T17:22:31
 ORIGINATOR = NASA/JPL
-COMMENT Copy of OEMExample.txt with changes so that interpolation will work.
 
 META_START
 OBJECT_NAME = MARS GLOBAL SURVEYOR

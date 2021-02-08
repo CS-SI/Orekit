@@ -92,6 +92,7 @@ public class OMMData implements Data, Section {
             tleBlock.checkMandatoryEntries();
         }
         if (covarianceBlock != null) {
+            covarianceBlock.setEpoch(keplerianElementsBlock.getEpoch());
             covarianceBlock.checkMandatoryEntries();
         }
         if (userDefinedBlock != null) {

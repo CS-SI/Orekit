@@ -202,7 +202,7 @@ public class OCommonMetadata extends ODMMetadata {
     }
 
     /**
-     * Get the the value of {@code REF_FRAME} as an Orekit {@link Frame}. The {@code
+     * Get the value of {@code REF_FRAME} as an Orekit {@link Frame}. The {@code
      * CENTER_NAME} key word has not been applied yet, so the returned frame may not
      * correspond to the reference frame of the data in the file.
      *
@@ -214,7 +214,7 @@ public class OCommonMetadata extends ODMMetadata {
     }
 
     /**
-     * Get the the value of {@code REF_FRAME} as an Orekit {@link Frame}. The {@code
+     * Get the value of {@code REF_FRAME} as an Orekit {@link Frame}. The {@code
      * CENTER_NAME} key word has not been applied yet, so the returned frame may not
      * correspond to the reference frame of the data in the file.
      *
