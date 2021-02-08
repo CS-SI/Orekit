@@ -64,42 +64,12 @@ public class XMLStructureProcessingState implements ProcessingState {
             }
         }
 
-        switch (token.getName()) {
-            case "body":
-            case "segment":
-                // ignored
-                return true;
-            case "header":
-                if (token.getType() == TokenType.START) {
-                    parser.prepareHeader();
-                    return true;
-                } else if (token.getType() == TokenType.END) {
-                    parser.finalizeHeader();
-                    return true;
-                }
-                break;
-            case "metadata" :
-                if (token.getType() == TokenType.START) {
-                    parser.prepareMetadata();
-                    return true;
-                } else if (token.getType() == TokenType.END) {
-                    parser.finalizeMetadata();
-                    return true;
-                }
-                break;
-            case "data" :
-                if (token.getType() == TokenType.START) {
-                    parser.prepareData();
-                    return true;
-                } else if (token.getType() == TokenType.END) {
-                    parser.finalizeData();
-                    return true;
-                }
-                break;
-            default :
-                // ignored, we delegate handling this token to fallback state
+        try {
+            return XMLStructureKey.valueOf(token.getName()).process(token, parser);
+        } catch (IllegalArgumentException iae) {
+            // ignored, we delegate handling this token to fallback state
+            return false;
         }
-        return false;
     }
 
 }

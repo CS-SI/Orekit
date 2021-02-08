@@ -18,7 +18,6 @@ package org.orekit.files.ccsds.section;
 
 import org.orekit.files.ccsds.utils.lexical.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
-import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.state.AbstractMessageParser;
 import org.orekit.files.ccsds.utils.state.ProcessingState;
 
@@ -41,34 +40,13 @@ public class KVNStructureProcessingState implements ProcessingState {
     /** {@inheritDoc} */
     @Override
     public boolean processToken(final ParseToken token) {
-
-        if (token.getName() != null) {
-            switch (token.getName()) {
-                case "META" :
-                    if (token.getType() == TokenType.START) {
-                        parser.prepareMetadata();
-                        return true;
-                    } else if (token.getType() == TokenType.END) {
-                        parser.finalizeMetadata();
-                        return true;
-                    }
-                    break;
-                case "DATA" :
-                    if (token.getType() == TokenType.START) {
-                        parser.prepareData();
-                        return true;
-                    } else if (token.getType() == TokenType.END) {
-                        parser.finalizeData();
-                        return true;
-                    }
-                    break;
-                default :
-                    // ignored, we delegate handling this token to fallback state
-            }
+        try {
+            return token.getName() != null &&
+                   KVNStructureKey.valueOf(token.getName()).process(token, parser);
+        } catch (IllegalArgumentException iae) {
+            // ignored, we delegate handling this token to fallback state
+            return false;
         }
-
-        return false;
-
     }
 
 }
