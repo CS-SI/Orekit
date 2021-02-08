@@ -23,7 +23,6 @@ import java.util.Locale;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.adm.aem.AEMFile;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.utils.lexical.FileFormat;
 
@@ -82,7 +81,7 @@ public class KVNGenerator implements Generator {
     /** {@inheritDoc} */
     @Override
     public void startMessage(final String messageTypeKey, final double version) throws IOException {
-        writeEntry(AEMFile.FORMAT_VERSION_KEY, String.format(STANDARDIZED_LOCALE, "%.1f", version), true);
+        writeEntry(messageTypeKey, String.format(STANDARDIZED_LOCALE, "%.1f", version), true);
     }
 
     /** {@inheritDoc} */
