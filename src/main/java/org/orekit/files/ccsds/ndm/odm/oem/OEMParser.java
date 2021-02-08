@@ -16,15 +16,11 @@
  */
 package org.orekit.files.ccsds.ndm.odm.oem;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Scanner;
 import java.util.regex.Pattern;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.linear.MatrixUtils;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -41,7 +37,6 @@ import org.orekit.files.ccsds.utils.lexical.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.state.ProcessingState;
-import org.orekit.files.general.EphemerisFileParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -51,7 +46,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author sports
  * @since 6.1
  */
-public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements EphemerisFileParser {
+public class OEMParser extends OCommonParser<OEMFile, OEMParser> {
 
     /** Root element for XML files. */
     private static final String ROOT = "oem";
@@ -184,8 +179,7 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
     public void finalizeData() {
         if (metadata != null) {
             currentBlock.checkMandatoryEntries();
-            segments.add(new OEMSegment(metadata, currentBlock,
-                                        getConventions(), getDataContext(), getSelectedMu()));
+            segments.add(new OEMSegment(metadata, currentBlock));
         }
         metadata          = null;
         currentBlock      = null;
@@ -196,7 +190,7 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
     /** {@inheritDoc} */
     @Override
     public OEMFile build() {
-        final OEMFile file = new OEMFile(header, segments, getConventions(), getDataContext());
+        final OEMFile file = new OEMFile(header, segments, getConventions(), getDataContext(), getSelectedMu());
         file.checkTimeSystems();
         return file;
     }
@@ -262,7 +256,7 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
                                           token.getLineNumber(), token.getFileName(), token.getContent());
             }
         } else {
-            // not a raw line, it is most probably the end of the data section
+            // not a raw line, it is most probably either the end of the data section or a covariance section
             return false;
         }
     }
@@ -274,11 +268,13 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
     private boolean processCovarianceToken(final ParseToken token) {
         setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processMetadataToken);
         if ("COVARIANCE".equals(token.getName())) {
-            if (token.getType() == TokenType.ENTRY) {
+            if (token.getType() == TokenType.START) {
                 currentCovariance = new CovarianceMatrix(getMissionReferenceDate(), null, null, null);
+            } else if (token.getType() == TokenType.END) {
+                currentBlock.addCovarianceMatrix(currentCovariance);
+                currentCovariance = null;
             }
-        } else if ("COVARIANCE_STOP".equals(token.getName())) {
-            return token.getType() == TokenType.ENTRY ? currentBlock.addComment(token.getContent()) : true;
+            return true;
         } else if (token.getType() == TokenType.RAW_LINE) {
             try {
                 final String[] fields = SPLIT_AT_BLANKS.split(token.getContent());
@@ -309,7 +305,7 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
                                           token.getLineNumber(), token.getFileName(), token.getContent());
             }
         } else {
-            // not a raw line, it is most probably the end of the data section
+            // not a raw line, it is most probably either the end of the data section or a new metadata section
             return false;
         }
     }

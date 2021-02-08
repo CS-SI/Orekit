@@ -46,15 +46,21 @@ public class OEMFile extends NDMFile<ODMHeader, OEMSegment> implements Ephemeris
     /** Key for format version. */
     public static final String FORMAT_VERSION_KEY = "CCSDS_OEM_VERS";
 
+    /** Gravitational coefficient to use for building Cartesian/Keplerian orbits. */
+    private final double mu;
+
     /** Simple constructor.
      * @param header file header
      * @param segments file segments
      * @param conventions IERS conventions
      * @param dataContext used for creating frames, time scales, etc.
+     * @param mu gravitational coefficient
      */
     public OEMFile(final ODMHeader header, final List<OEMSegment> segments,
-                   final IERSConventions conventions, final DataContext dataContext) {
+                   final IERSConventions conventions, final DataContext dataContext,
+                   final double mu) {
         super(header, segments, conventions, dataContext);
+        this.mu = mu;
     }
 
     /** {@inheritDoc} */
@@ -68,7 +74,7 @@ public class OEMFile extends NDMFile<ODMHeader, OEMSegment> implements Ephemeris
         }
         final Map<String, OEMSatelliteEphemeris> ret = new HashMap<>();
         for (final Map.Entry<String, List<OEMSegment>> entry : byId.entrySet()) {
-            ret.put(entry.getKey(), new OEMSatelliteEphemeris(entry.getKey(), entry.getValue()));
+            ret.put(entry.getKey(), new OEMSatelliteEphemeris(entry.getKey(), mu, entry.getValue()));
         }
         return ret;
     }

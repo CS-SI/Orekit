@@ -155,30 +155,6 @@ public interface EphemerisFile {
     interface EphemerisSegment {
 
         /**
-         * Get the standard gravitational parameter for the satellite.
-         *
-         * @return the gravitational parameter use in {@link #getPropagator()}, in m³/s².
-         */
-        double getMu();
-
-        /**
-         * Get the name of the center of the coordinate system the ephemeris is provided
-         * in. This may be a natural origin, such as the center of the Earth, another
-         * satellite, etc.
-         *
-         * @return the name of the frame center
-         */
-        String getFrameCenterString();
-
-        /**
-         * Get the defining frame for this ephemeris segment.
-         *
-         * @return the frame identifier, as specified in the ephemeris file, or {@code
-         * null} if the ephemeris file does not specify a frame.
-         */
-        String getFrameString();
-
-        /**
          * Get the reference frame for this ephemeris segment. The defining frame for
          * {@link #getCoordinates()}.
          *
@@ -206,21 +182,6 @@ public interface EphemerisFile {
             }
             return Frame.getRoot();
         }
-
-        /**
-         * Get the time scale for this ephemeris segment.
-         *
-         * @return the time scale identifier, as specified in the ephemeris file, or
-         * {@code null} if the ephemeris file does not specify a time scale.
-         */
-        String getTimeScaleString();
-
-        /**
-         * Get the time scale for this ephemeris segment.
-         *
-         * @return the time scale for this segment. Never {@code null}.
-         */
-        TimeScale getTimeScale();
 
         /**
          * Get the number of samples to use in interpolation.

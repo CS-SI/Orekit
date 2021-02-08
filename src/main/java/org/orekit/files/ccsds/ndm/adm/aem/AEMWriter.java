@@ -338,9 +338,7 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
 
     /**
      * Constructor used to create a new AEM writer configured with the necessary parameters
-     * to successfully fill in all required fields that aren't part of a standard object
-     * and using {@link StreamingAemWriter#DEFAULT_ATTITUDE_FORMAT default formatting}
-     * for attitude ephemeris data output.
+     * to successfully fill in all required fields that aren't part of a standard object.
      * <p>
      * If the mandatory header entries are not present (or if header is null),
      * built-in defaults will be used

@@ -20,8 +20,8 @@ package org.orekit.files.ccsds.ndm.odm.omm;
 import java.util.List;
 
 import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.ndm.NDMFile;
 import org.orekit.files.ccsds.ndm.odm.OCommonMetadata;
-import org.orekit.files.ccsds.ndm.odm.ODMFile;
 import org.orekit.files.ccsds.ndm.odm.ODMHeader;
 import org.orekit.files.ccsds.ndm.odm.ODMKeplerianElements;
 import org.orekit.files.ccsds.section.Segment;
@@ -38,7 +38,7 @@ import org.orekit.utils.IERSConventions;
  * @author sports
  * @since 6.1
  */
-public class OMMFile extends ODMFile<Segment<OMMMetadata, OMMData>> implements TimeStamped {
+public class OMMFile extends NDMFile<ODMHeader, Segment<OMMMetadata, OMMData>> implements TimeStamped {
 
     /** Key for format version. */
     public static final String FORMAT_VERSION_KEY = "CCSDS_OMM_VERS";

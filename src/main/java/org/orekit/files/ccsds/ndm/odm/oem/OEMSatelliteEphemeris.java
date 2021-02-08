@@ -32,6 +32,9 @@ public class OEMSatelliteEphemeris implements EphemerisFile.SatelliteEphemeris {
     /** ID of the satellite. */
     private final String id;
 
+    /** Gravitational coefficient to use for building Cartesian/Keplerian orbits. */
+    private final double mu;
+
     /** The ephemeris data for the satellite. */
     private final List<OEMSegment> blocks;
 
@@ -39,11 +42,13 @@ public class OEMSatelliteEphemeris implements EphemerisFile.SatelliteEphemeris {
      * Create a container for the set of ephemeris blocks in the file that pertain to
      * a single satellite.
      *
-     * @param id     of the satellite.
+     * @param id id of the satellite.
+     * @param mu gravitational coefficient to use for building Cartesian/Keplerian orbits
      * @param blocks containing ephemeris data for the satellite.
      */
-    public OEMSatelliteEphemeris(final String id, final List<OEMSegment> blocks) {
+    public OEMSatelliteEphemeris(final String id, final double mu, final List<OEMSegment> blocks) {
         this.id     = id;
+        this.mu     = mu;
         this.blocks = blocks;
     }
 
@@ -56,7 +61,7 @@ public class OEMSatelliteEphemeris implements EphemerisFile.SatelliteEphemeris {
     /** {@inheritDoc} */
     @Override
     public double getMu() {
-        return blocks.get(0).getMu();
+        return mu;
     }
 
     /** {@inheritDoc} */

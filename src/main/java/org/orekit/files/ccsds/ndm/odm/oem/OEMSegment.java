@@ -19,16 +19,11 @@ package org.orekit.files.ccsds.ndm.odm.oem;
 
 import java.util.List;
 
-import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScale;
 import org.orekit.utils.CartesianDerivativesFilter;
-import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** The Ephemerides Blocks class contain metadata, the list of ephemerides data
@@ -39,29 +34,12 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class OEMSegment extends Segment<OEMMetadata, OEMData> implements EphemerisFile.EphemerisSegment {
 
-    /** IERS conventions to use. */
-    private final IERSConventions conventions;
-
-    /** Data context. */
-    private final DataContext dataContext;
-
-    /** Gravitational coefficient to use for building Cartesian/Keplerian orbits. */
-    private final double mu;
-
     /** Simple constructor.
      * @param metadata segment metadata
      * @param data segment data
-     * @param conventions IERS conventions to use
-     * @param dataContext data context to use
-     * @param mu gravitational coefficient to use for building Cartesian/Keplerian orbits
      */
-    public OEMSegment(final OEMMetadata metadata, final OEMData data,
-                      final IERSConventions conventions, final DataContext dataContext,
-                      final double mu) {
+    public OEMSegment(final OEMMetadata metadata, final OEMData data) {
         super(metadata, data);
-        this.conventions = conventions;
-        this.dataContext = dataContext;
-        this.mu          = mu;
     }
 
     /** {@inheritDoc} */
@@ -83,57 +61,27 @@ public class OEMSegment extends Segment<OEMMetadata, OEMData> implements Ephemer
         return getData().getCovarianceMatrices();
     }
 
-    /** {@inheritDoc}
-     * <p>
-     * This method throws an exception if the gravitational coefficient has not been set properly
-     * </p>
-     */
-    @Override
-    public double getMu() {
-        if (Double.isNaN(mu)) {
-            throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_GM);
-        }
-        return mu;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public String getFrameCenterString() {
-        return getMetadata().getCenterName();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public String getFrameString() {
-        return getMetadata().getFrameString();
-    }
-
     /** {@inheritDoc} */
     @Override
     public Frame getFrame() {
         return getMetadata().getFrame();
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>
+     * This implementation returns {@link #getFrame() defining frame}
+     * if it is {@link Frame#isPseudoInertial() pseudo-inertial}, or
+     * its closest {@link Frame#getParent() ancestor} that is
+     * pseudo-inertial.
+     * </p>
+     */
     @Override
     public Frame getInertialFrame() {
-        final Frame frame = getFrame();
-        if (frame.isPseudoInertial()) {
-            return frame;
+        Frame frame = getFrame();
+        while (!frame.isPseudoInertial()) {
+            frame = frame.getParent();
         }
-        return dataContext.getFrames().getGCRF();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public String getTimeScaleString() {
-        return getMetadata().getTimeSystem().toString();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public TimeScale getTimeScale() {
-        return getMetadata().getTimeSystem().getTimeScale(conventions, dataContext.getTimeScales());
+        return frame;
     }
 
     /** {@inheritDoc} */

@@ -19,17 +19,24 @@ package org.orekit.files.ccsds.ndm.odm.oem;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.Keyword;
 import org.orekit.files.ccsds.ndm.odm.oem.StreamingOemWriter.SegmentWriter;
+import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.section.HeaderKey;
+import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.files.general.EphemerisFile.EphemerisSegment;
 import org.orekit.files.general.EphemerisFileWriter;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
@@ -47,23 +54,86 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class OEMWriter implements EphemerisFileWriter {
 
+    /** Version number implemented. **/
+    public static final double CCSDS_OEM_VERS = 3.0;
+
+    /** Default value for {@link HeaderKey#ORIGINATOR}. */
+    public static final String DEFAULT_ORIGINATOR = "OREKIT";
+
+    /** Default value for {@link #TIME_SYSTEM}. */
+    public static final CcsdsTimeScale DEFAULT_TIME_SYSTEM = CcsdsTimeScale.UTC;
+
+    /** Default file name for error messages. */
+    public static final String DEFAULT_FILE_NAME = "<OEM output>";
+
     /** Default interpolation method if the user specifies none. **/
     public static final InterpolationMethod DEFAULT_INTERPOLATION_METHOD = InterpolationMethod.LAGRANGE;
 
-    /** The interpolation method for ephemeris data. */
-    private final InterpolationMethod interpolationMethod;
-
-    /** Originator name, usually the organization and/or country. **/
-    private final String originator;
+    /**
+     * Default format used for position data output: 3 digits
+     * after the decimal point and leading space for positive values.
+     */
+    public static final String DEFAULT_POSITION_FORMAT = "% .3f";
 
     /**
-     * Space object ID, usually an official international designator such as
-     * "1998-067A".
-     **/
-    private final String spaceObjectId;
+     * Default format used for velocity data output: 6 digits
+     * after the decimal point and leading space for positive values.
+     */
+    public static final String DEFAULT_VELOCITY_FORMAT = "% .6f";
 
-    /** Space object name, usually a common name for an object like "ISS". **/
-    private final String spaceObjectName;
+    /** New line separator for output file. */
+    private static final char NEW_LINE = '\n';
+
+    /**
+     * Standardized locale to use, to ensure files can be exchanged without
+     * internationalization issues.
+     */
+    private static final Locale STANDARDIZED_LOCALE = Locale.US;
+
+    /** String format used for all key/value pair lines. **/
+    private static final String KV_FORMAT = "%s = %s%n";
+
+    /** String format used for dates. **/
+    private static final String DATE_FORMAT = "%04d-%02d-%02dT%02d:%02d:%012.9f";
+
+    /** String format used for all comment lines. **/
+    private static final String COMMENT_FORMAT = "COMMENT %s%n";
+
+    /** Marker for start of metadata section. */
+    private static final String META_START = "META_START";
+
+    /** Marker for stop of metadata section. */
+    private static final String META_STOP = "META_STOP";
+
+    /** Marker for start of data section. */
+    private static final String DATA_START = "DATA_START";
+
+    /** Marker for stop of data section. */
+    private static final String DATA_STOP = "DATA_STOP";
+
+    /** Marker for start of covariance section. */
+    private static final String COVARIANCE_START = "COVARIANCE_START";
+
+    /** Marker for stop of covariance section. */
+    private static final String COVARIANCE_STOP = "COVARIANCE_STOP";
+
+    /** Data context used for obtain frames and time scales. */
+    private final DataContext dataContext;
+
+    /** File name for error messages. */
+    private final String fileName;
+
+    /** Format for attitude ephemeris data output. */
+    private final String attitudeFormat;
+
+    /** File header. */
+    private final Header header;
+
+    /** Current metadata. */
+    private final OEMMetadata metadata;
+
+    /** Time scale for all segments. */
+    private final TimeScale timeScale;
 
     /** Format for position ephemeris data output. */
     private final String positionFormat;
@@ -74,11 +144,16 @@ public class OEMWriter implements EphemerisFileWriter {
     /**
      * Standard default constructor that creates a writer with default
      * configurations.
+     * @param conventions IERS Conventions
+     * @param dataContext used to retrieve frames, time scales, etc.
+     * @param header file header (may be null)
+     * @param template template for metadata
+     * @since 11.0
      */
-    public OEMWriter() {
-        this(DEFAULT_INTERPOLATION_METHOD, StreamingOemWriter.DEFAULT_ORIGINATOR, null, null,
-             StreamingOemWriter.DEFAULT_POSITION_FORMAT,
-             StreamingOemWriter.DEFAULT_VELOCITY_FORMAT);
+    public OEMWriter(final IERSConventions conventions, final DataContext dataContext,
+                     final Header header, final OEMMetadata template) {
+        this(conventions, dataContext, header, template,
+             DEFAULT_FILE_NAME, DEFAULT_POSITION_FORMAT, DEFAULT_VELOCITY_FORMAT);
     }
 
     /**
@@ -105,41 +180,71 @@ public class OEMWriter implements EphemerisFileWriter {
     }
 
     /**
-     * Constructor used to create a new OEM writer configured with the necessary
-     * parameters to successfully fill in all required fields that aren't part
-     * of a standard {@link EphemerisFile} object and user-defined position and
-     * velocity ephemeris data output {@link java.util.Formatter format}.
-     *
-     * @param interpolationMethod
-     *            the interpolation method to specify in the OEM file
-     * @param originator
-     *            the originator field string
-     * @param spaceObjectId
-     *            the spacecraft ID
-     * @param spaceObjectName
-     *            the space object common name
-     * @param positionFormat
-     *            format parameters for position ephemeris data output
-     * @param velocityFormat
-     *            format parameters for velocity ephemeris data output
+     * Constructor used to create a new OEM writer configured with the necessary parameters
+     * to successfully fill in all required fields that aren't part of a standard object.
+     * <p>
+     * If the mandatory header entries are not present (or if header is null),
+     * built-in defaults will be used
+     * </p>
+     * <p>
+     * The writer is built from the complete header and partial metadata. The template
+     * metadata is used to initialize and independent local copy, that will be updated
+     * as new segments are written (with at least the segment start and stop will change,
+     * but some other parts may change too). The {@code template} argument itself is not
+     * changed.
+     * </>
+     * @param conventions IERS Conventions
+     * @param dataContext used to retrieve frames, time scales, etc.
+     * @param header file header (may be null)
+     * @param template template for metadata
+     * @param fileName file name for error messages
+     * @param attitudeFormat {@link java.util.Formatter format parameters} for
+     *                       attitude ephemeris data output
+     * @since 11.0
      */
-    public OEMWriter(final InterpolationMethod interpolationMethod, final String originator,
-                     final String spaceObjectId, final String spaceObjectName,
-                     final String positionFormat, final String velocityFormat) {
-        this.interpolationMethod = interpolationMethod;
-        this.originator = originator;
-        this.spaceObjectId = spaceObjectId;
-        this.spaceObjectName = spaceObjectName;
-        this.positionFormat = positionFormat;
-        this.velocityFormat = velocityFormat;
+    public OEMWriter(final IERSConventions conventions, final DataContext dataContext,
+                     final Header header, final OEMMetadata template,
+                     final String fileName, final String attitudeFormat) {
+
+        this.dataContext    = dataContext;
+        this.header         = header;
+        this.metadata       = copy(template);
+        this.fileName       = fileName;
+        this.attitudeFormat = attitudeFormat;
+        this.timeScale      = metadata.getTimeSystem().getTimeScale(conventions, dataContext.getTimeScales());
+
     }
 
-    /** {@inheritDoc} */
+    /** Get the local copy of the template metadata.
+     * <p>
+     * The content of this copy should generally be updated before
+     * {@link #writeMetadata(Appendable) writeMetadata} is called,
+     * at least in order to update {@link OEMMetadata#setStartTime(AbsoluteDate)
+     * start time} and {@link OEMMetadata#setStopTime(AbsoluteDate) stop time}
+     * for the upcoming {@link #writeOrbitEphemerisLine(Appendable, TimeStampedPVCoordinates)
+     * ephemeris data lines}.
+     * </p>
+     * @return local copy of the template metadata
+     */
+    public OEMMetadata getMetadata() {
+        return metadata;
+    }
+
+    /** {@inheritDoc}
+     * <p>
+     * As {@link EphemerisFile.SatelliteEphemeris} does not have all the entries
+     * from {@link OEMMetadata}, the only values that will be extracted from the
+     * {@code ephemerisFile} will be the start time, stop time, reference frame, interpolation
+     * method and interpolation degree. The missing values (like object name, local spacecraft
+     * body frame...) will be inherited from the template  metadata set at writer
+     * {@link #OEMWriter(IERSConventions, DataContext, Header, OEMMetadata, String, String) construction}.
+     * </p>
+     */
     @Override
-    public void write(final Appendable writer, final EphemerisFile ephemerisFile)
+    public void write(final Appendable appendable, final EphemerisFile ephemerisFile)
             throws IOException {
 
-        if (writer == null) {
+        if (appendable == null) {
             throw new OrekitIllegalArgumentException(OrekitMessages.NULL_ARGUMENT, "writer");
         }
 
