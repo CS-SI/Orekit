@@ -344,7 +344,7 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> {
                                               token.getLineNumber(), token.getFileName(), token.getContent());
                 }
                 for (int j = 0; j < fields.length; ++j) {
-                    currentCovariance.setCovarianceMatrixEntry(currentRow, j, Double.parseDouble(fields[j]));
+                    currentCovariance.setCovarianceMatrixEntry(currentRow, j, 1.0e6 * Double.parseDouble(fields[j]));
                 }
                 if (++currentRow == 6) {
                     // this was the last row

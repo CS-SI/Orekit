@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,11 +42,18 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.ndm.odm.ODMCovariance;
+import org.orekit.files.ccsds.utils.CCSDSFrame;
+import org.orekit.files.ccsds.utils.CcsdsTimeScale;
+import org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer;
 import org.orekit.files.general.EphemerisFile;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -65,40 +73,26 @@ public class OEMWriterTest {
 
     @Test
     public void testOEMWriter() {
-        assertNotNull(new OEMWriter());
-    }
-
-    @Test
-    public void testOEMWriterInterpolationMethodStringStringString() {
-        assertNotNull(new OEMWriter(OEMWriter.DEFAULT_INTERPOLATION_METHOD, null, null, null));
-        assertNotNull(new OEMWriter(InterpolationMethod.HERMITE, "FakeOriginator", null, null));
-        assertNotNull(new OEMWriter(InterpolationMethod.HERMITE, null, "FakeObjectId", null));
-        assertNotNull(new OEMWriter(InterpolationMethod.HERMITE, null, null, "Fake Object Name"));
-        assertNotNull(new OEMWriter(InterpolationMethod.HERMITE, "FakeOriginator", "FakeObjectId", null));
-        assertNotNull(new OEMWriter(InterpolationMethod.HERMITE, "FakeOriginator", null, "Fake Object Name"));
-        assertNotNull(new OEMWriter(InterpolationMethod.HERMITE, null, "FakeObjectId", "Fake Object Name"));
-        assertNotNull(new OEMWriter(InterpolationMethod.HERMITE, "FakeOriginator", "FakeObjectId", "Fake Object Name"));
+        assertNotNull(new OEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null, dummyMetadata()));
     }
 
     @Test
     public void testWriteOEM1() throws IOException {
         final String ex = "/ccsds/odm/oem/OEMExample1.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM())
-                .withConventions(IERSConventions.IERS_2010);
-        final OEMFile oemFile = parser.parse(inEntry, "OEMExample1.txt");
+        final OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
+                                               null, CelestialBodyFactory.getMars().getGM(), 1);
+        final OEMFile oemFile = new KVNLexicalAnalyzer(inEntry, "OEMExample1.txt").accept(parser);
         final EphemerisFile ephemerisFile = (EphemerisFile) oemFile;
 
-        String originator = oemFile.getHeader().getOriginator();
-        String objectName = oemFile.getSegments().get(0).getMetadata().getObjectName();
-        String objectID = oemFile.getSegments().get(0).getMetadata().getObjectID();
-        String interpolationMethodString = oemFile.getSegments().get(0).getMetadata().getInterpolationMethod();
-        InterpolationMethod interpolationMethod = Enum.valueOf(InterpolationMethod.class, interpolationMethodString);
         String tempOEMFilePath = tempFolder.newFile("TestWriteOEM1.oem").toString();
-        OEMWriter writer = new OEMWriter(interpolationMethod, originator, objectID, objectName);
+        OEMWriter writer = new OEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
+                                         oemFile.getHeader(), oemFile.getSegments().get(0).getMetadata());
         writer.write(tempOEMFilePath, ephemerisFile);
 
-        final OEMFile generatedOemFile = parser.parse(tempOEMFilePath);
+        final OEMFile generatedOemFile = new KVNLexicalAnalyzer(tempOEMFilePath).
+                        accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
+                                             null, CelestialBodyFactory.getMars().getGM(), 1));
         compareOemFiles(oemFile, generatedOemFile);
     }
 
@@ -106,22 +100,20 @@ public class OEMWriterTest {
     public void testUnfoundSpaceId() throws IOException {
         final String ex = "/ccsds/odm/oem/OEMExample1.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM())
-                .withConventions(IERSConventions.IERS_2010);
-        final OEMFile oemFile = parser.parse(inEntry, "OEMExample1.txt");
+        final OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
+                                               null, CelestialBodyFactory.getEarth().getGM(), 1);
+        final OEMFile oemFile = new KVNLexicalAnalyzer(inEntry, "OEMExample1.txt").accept(parser);
         final EphemerisFile ephemerisFile = (EphemerisFile) oemFile;
 
-        String badObjectId = "12345";
-        String interpolationMethodString = oemFile.getSegments().get(0).getMetadata().getInterpolationMethod();
-        InterpolationMethod interpolationMethod = Enum.valueOf(InterpolationMethod.class, interpolationMethodString);
         String tempOEMFilePath = tempFolder.newFile("TestOEMUnfoundSpaceId.oem").toString();
-        OEMWriter writer = new OEMWriter(interpolationMethod, null, badObjectId, null);
+        OEMWriter writer = new OEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
+                                         oemFile.getHeader(), dummyMetadata());
         try {
             writer.write(tempOEMFilePath, ephemerisFile);
             fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oiae) {
             assertEquals(OrekitMessages.VALUE_NOT_FOUND, oiae.getSpecifier());
-            assertEquals(badObjectId, oiae.getParts()[0]);
+            assertEquals(dummyMetadata().getObjectID(), oiae.getParts()[0]);
         }
 
     }
@@ -130,16 +122,12 @@ public class OEMWriterTest {
     public void testNullFile() throws IOException {
         final String ex = "/ccsds/odm/oem/OEMExample1.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM())
-                .withConventions(IERSConventions.IERS_2010);
-        final OEMFile oemFile = parser.parse(inEntry, "OEMExample1.txt");
+        final OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
+                                               null, CelestialBodyFactory.getEarth().getGM(), 1);
+        final OEMFile oemFile = new KVNLexicalAnalyzer(inEntry, "OEMExample1.txt").accept(parser);
         final EphemerisFile ephemerisFile = (EphemerisFile) oemFile;
-        String originator = oemFile.getHeader().getOriginator();
-        String objectName = oemFile.getSegments().get(0).getMetadata().getObjectName();
-        String objectID = oemFile.getSegments().get(0).getMetadata().getObjectID();
-        String interpolationMethodString = oemFile.getSegments().get(0).getMetadata().getInterpolationMethod();
-        InterpolationMethod interpolationMethod = Enum.valueOf(InterpolationMethod.class, interpolationMethodString);
-        OEMWriter writer = new OEMWriter(interpolationMethod, originator, objectID, objectName);
+        OEMWriter writer = new OEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
+                                         oemFile.getHeader(), oemFile.getSegments().get(0).getMetadata());
         try {
             writer.write((BufferedWriter) null, ephemerisFile);
             fail("an exception should have been thrown");
@@ -152,8 +140,8 @@ public class OEMWriterTest {
     @Test
     public void testNullEphemeris() throws IOException {
         File tempOEMFile = tempFolder.newFile("TestNullEphemeris.oem");
-        OEMWriter writer = new OEMWriter(InterpolationMethod.HERMITE,
-                                         "NASA/JPL", "1996-062A", "MARS GLOBAL SURVEYOR");
+        OEMWriter writer = new OEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
+                                         null, dummyMetadata());
         writer.write(tempOEMFile.toString(), null);
         assertTrue(tempOEMFile.exists());
         try (FileInputStream   fis = new FileInputStream(tempOEMFile);
@@ -171,63 +159,45 @@ public class OEMWriterTest {
     public void testUnisatelliteFileWithDefault() throws IOException {
         final String ex = "/ccsds/odm/oem/OEMExample1.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM())
-                .withConventions(IERSConventions.IERS_2010);
-        final OEMFile oemFile = parser.parse(inEntry, "OEMExample1.txt");
+        final OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
+                                               null, CelestialBodyFactory.getEarth().getGM(), 1);
+        final OEMFile oemFile = new KVNLexicalAnalyzer(inEntry, "OEMExample1.txt").accept(parser);
         final EphemerisFile ephemerisFile = (EphemerisFile) oemFile;
 
         String tempOEMFilePath = tempFolder.newFile("TestOEMUnisatelliteWithDefault.oem").toString();
-        OEMWriter writer = new OEMWriter();
+        OEMWriter writer = new OEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
+                                         oemFile.getHeader(), oemFile.getSegments().get(0).getMetadata());
         writer.write(tempOEMFilePath, ephemerisFile);
 
-        final OEMFile generatedOemFile = parser.parse(tempOEMFilePath);
+        final OEMFile generatedOemFile = new KVNLexicalAnalyzer(tempOEMFilePath).
+                        accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
+                                             null, CelestialBodyFactory.getEarth().getGM(), 1));
         assertEquals(oemFile.getSegments().get(0).getMetadata().getObjectID(),
                 generatedOemFile.getSegments().get(0).getMetadata().getObjectID());
-    }
-
-    @Test
-    public void testMultisatelliteFile() throws IOException {
-        final String id1 = "ID1";
-        final String id2 = "ID2";
-        StandInEphemerisFile file = new StandInEphemerisFile();
-        file.getSatellites().put(id1, new StandInSatelliteEphemeris(id1));
-        file.getSatellites().put(id2, new StandInSatelliteEphemeris(id2));
-
-        EphemerisFile ephemerisFile = (EphemerisFile) file;
-        String tempOEMFilePath = tempFolder.newFile("TestOEMMultisatellite-1.oem").toString();
-
-        OEMWriter writer1 = new OEMWriter();
-
-        try {
-            writer1.write(tempOEMFilePath, ephemerisFile);
-            fail("Should have thrown OrekitIllegalArgumentException due to multiple satellites");
-        } catch (OrekitInternalError o) {
-            // expected
-        }
-
-        tempOEMFilePath = tempFolder.newFile("TestOEMMultisatellite-2.oem").toString();
-        OEMWriter writer2 = new OEMWriter(OEMWriter.DEFAULT_INTERPOLATION_METHOD, null, id1, null);
-        writer2.write(tempOEMFilePath, ephemerisFile);
     }
 
     @Test
     public void testIssue723() throws IOException {
         final String ex = "/ccsds/odm/oem/OEMExampleWithHeaderComment.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM())
-                .withConventions(IERSConventions.IERS_2010);
-        final OEMFile oemFile = parser.parse(inEntry, "OEMExampleWithHeaderComment.txt");
+        final OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
+                                               null, CelestialBodyFactory.getEarth().getGM(), 1);
+        final OEMFile oemFile = new KVNLexicalAnalyzer(inEntry, "OEMExampleWithHeaderComment.txt").
+                                accept(parser);
 
         String tempOEMFilePath = tempFolder.newFile("TestOEMIssue723.aem").toString();
-        OEMWriter writer = new OEMWriter();
+        OEMWriter writer = new OEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
+                                         oemFile.getHeader(), oemFile.getSegments().get(0).getMetadata());
         writer.write(tempOEMFilePath, oemFile);
 
-        final OEMFile generatedOemFile = parser.parse(tempOEMFilePath);
+        final OEMFile generatedOemFile = new KVNLexicalAnalyzer(tempOEMFilePath).
+                        accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
+                                             null, CelestialBodyFactory.getEarth().getGM(), 1));
         assertEquals(oemFile.getHeader().getComments().get(0), generatedOemFile.getHeader().getComments().get(0));
     }
 
     /**
-     * Check writing an AEM with format parameters for attitude.
+     * Check writing an OEM with format parameters for orbit.
      *
      * @throws IOException on error
      */
@@ -236,37 +206,73 @@ public class OEMWriterTest {
         // setup
         String exampleFile = "/ccsds/odm/oem/OEMExample4.txt";
         InputStream inEntry = getClass().getResourceAsStream(exampleFile);
-        OEMParser parser = new OEMParser().withConventions(IERSConventions.IERS_2010);
-        OEMFile oemFile = parser.parse(inEntry, "OEMExample4.txt");
+        OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
+                                         null, CelestialBodyFactory.getEarth().getGM(), 1);
+        OEMFile oemFile = new KVNLexicalAnalyzer(inEntry, "OEMExample4.txt").
+                          accept(parser);
         StringBuilder buffer = new StringBuilder();
 
-        OEMWriter writer = new OEMWriter(OEMWriter.DEFAULT_INTERPOLATION_METHOD,
-                                         oemFile.getHeader().getOriginator(),
-                                         oemFile.getSegments().get(0).getMetadata().getObjectID(),
-                                         oemFile.getSegments().get(0).getMetadata().getObjectName(),
-                                         "%.2f", "%.3f");
+        OEMWriter writer = new OEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
+                                         oemFile.getHeader(), oemFile.getSegments().get(0).getMetadata(),
+                                         "", "%.2f", "%.3f", "%.4f", "%.6e");
 
         writer.write(buffer, oemFile);
 
         String[] lines = buffer.toString().split("\n");
 
-        assertEquals(lines[16], "2002-12-18T12:00:00.331 2789.62 -280.05 -1746.76 4.734 -2.496 -1.042");
-        assertEquals(lines[17], "2002-12-18T12:01:00.331 2783.42 -308.14 -1877.07 5.186 -2.421 -1.996");
-        assertEquals(lines[18], "2002-12-18T12:02:00.331 2776.03 -336.86 -2008.68 5.637 -2.340 -1.947");
+        assertEquals(lines[19], "2002-12-18T12:00:00.331000000 2789.62 -280.05 -1746.76 4.734 -2.496 -1.042");
+        assertEquals(lines[20], "2002-12-18T12:01:00.331000000 2783.42 -308.14 -1877.07 5.186 -2.421 -1.996");
+        assertEquals(lines[21], "2002-12-18T12:02:00.331000000 2776.03 -336.86 -2008.68 5.637 -2.340 -1.947");
 
         // Default format
-        writer = new OEMWriter(OEMWriter.DEFAULT_INTERPOLATION_METHOD,
-                               oemFile.getHeader().getOriginator(),
-                               oemFile.getSegments().get(0).getMetadata().getObjectID(),
-                               oemFile.getSegments().get(0).getMetadata().getObjectName());
+        
+        writer = new OEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
+                               oemFile.getHeader(), oemFile.getSegments().get(0).getMetadata());
         buffer = new StringBuilder();
         writer.write(buffer, oemFile);
 
         String[] lines2 = buffer.toString().split("\n");
 
-        assertEquals(lines2[16], "2002-12-18T12:00:00.331  2789.619 -280.045 -1746.755  4.73372 -2.49586 -1.04195");
-        assertEquals(lines2[17], "2002-12-18T12:01:00.331  2783.419 -308.143 -1877.071  5.18604 -2.42124 -1.99608");
-        assertEquals(lines2[18], "2002-12-18T12:02:00.331  2776.033 -336.859 -2008.682  5.63678 -2.33951 -1.94687");
+        assertEquals(lines2[19], "2002-12-18T12:00:00.331000000  2789.619000 -280.045000 -1746.755000  4.733720000 -2.495860000 -1.041950000");
+        assertEquals(lines2[20], "2002-12-18T12:01:00.331000000  2783.419000 -308.143000 -1877.071000  5.186040000 -2.421240000 -1.996080000");
+        assertEquals(lines2[21], "2002-12-18T12:02:00.331000000  2776.033000 -336.859000 -2008.682000  5.636780000 -2.339510000 -1.946870000");
+    }
+
+    @Test
+    public void testMultisatelliteFile() throws IOException {
+
+        final DataContext context = DataContext.getDefault();
+        final String id1 = "1999-012A";
+        final String id2 = "1999-012B";
+        StandAloneEphemerisFile file = new StandAloneEphemerisFile();
+        file.generate(id1, id1 + "-name", context.getFrames().getEME2000(),
+                      new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH,
+                                                   new Vector3D(1.0e6, 2.0e6, 3.0e6),
+                                                   new Vector3D(-300, -200, -100)),
+                      900.0, 60.0);
+        file.generate(id2, id2 + "-name", context.getFrames().getEME2000(),
+                      new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH,
+                                                   new Vector3D(3.0e6, 2.0e6, -1.0e6),
+                                                   new Vector3D(-17, -20, 150)),
+                      600.0, 10.0);
+
+       File written = tempFolder.newFile("TestAEMMultisatellite.aem");
+
+        OEMMetadata metadata = dummyMetadata();
+        metadata.setObjectID(id2);
+        OEMWriter writer = new OEMWriter(IERSConventions.IERS_2010, context, null, metadata);
+        writer.write(written.getAbsolutePath(), file);
+
+        int count = 0;
+        try (FileInputStream   fis = new FileInputStream(written);
+             InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+             BufferedReader    br  = new BufferedReader(isr)) {
+            for (String line = br.readLine(); line != null; line = br.readLine()) {
+                ++count;
+            }
+        }
+        assertEquals(79, count);
+
     }
 
     private static void compareOemEphemerisBlocks(OEMSegment block1, OEMSegment block2) {
@@ -287,20 +293,19 @@ public class OEMWriterTest {
         }
         assertEquals(block1.getCovarianceMatrices().size(), block2.getCovarianceMatrices().size());
         for (int j = 0; j < block1.getCovarianceMatrices().size(); j++) {
-        	CovarianceMatrix covMat1 = block1.getCovarianceMatrices().get(j);
-        	CovarianceMatrix covMat2 = block2.getCovarianceMatrices().get(j);
+        	ODMCovariance covMat1 = block1.getCovarianceMatrices().get(j);
+        	ODMCovariance covMat2 = block2.getCovarianceMatrices().get(j);
         	assertEquals(covMat1.getEpoch(), covMat2.getEpoch());
-        	assertEquals(covMat1.getFrame(), covMat2.getFrame());
-        	assertEquals(covMat1.getLofType(), covMat2.getLofType());
-        	assertEquals(covMat1.getMatrix(),covMat2.getMatrix());       	
+        	assertEquals(covMat1.getRefCCSDSFrame(), covMat2.getRefCCSDSFrame());
+        	assertEquals(covMat1.getCovarianceMatrix(),covMat2.getCovarianceMatrix());       	
         }
     }
 
     private static void compareOemEphemerisBlocksMetadata(OEMMetadata meta1, OEMMetadata meta2) {
-        assertEquals(meta1.getObjectID(), meta2.getObjectID());
+        assertEquals(meta1.getObjectID(),   meta2.getObjectID());
         assertEquals(meta1.getObjectName(), meta2.getObjectName());
         assertEquals(meta1.getCenterName(), meta2.getCenterName());
-        assertEquals(meta1.getFrameString(), meta2.getFrameString());
+        assertEquals(meta1.getRefFrame(),   meta2.getRefFrame());
         assertEquals(meta1.getTimeSystem(), meta2.getTimeSystem());
     }
 
@@ -312,53 +317,65 @@ public class OEMWriterTest {
         }
     }
 
-    private class StandInSatelliteEphemeris implements EphemerisFile.SatelliteEphemeris {
-        final String id;
+    private class StandAloneEphemerisFile implements EphemerisFile {
+        private final Map<String, OEMSatelliteEphemeris> satEphem;
 
-        public StandInSatelliteEphemeris(String id) {
-            this.id = id;
+        /** Simple constructor.
+         */
+        public StandAloneEphemerisFile() {
+            this.satEphem    = new HashMap<String, OEMSatelliteEphemeris>();
+        }
+
+        private void generate(final String objectID, final String objectName,
+                              final Frame referenceFrame, final TimeStampedPVCoordinates pv0,
+                              final double duration, final double step) {
+
+            OEMMetadata metadata = dummyMetadata();
+            metadata.addComment("metadata for " + objectName);
+            metadata.setObjectID(objectID);
+            metadata.setObjectName(objectName);
+            metadata.setStartTime(pv0.getDate());
+            metadata.setStopTime(pv0.getDate().shiftedBy(duration));
+            metadata.setUseableStartTime(metadata.getStartTime().shiftedBy(step));
+            metadata.setUseableStartTime(metadata.getStopTime().shiftedBy(-step));
+
+            OEMData data = new OEMData();
+            data.addComment("generated data for " + objectName);
+            data.addComment("duration was set to " + duration + " s");
+            data.addComment("step was set to " + step + " s");
+            for (double dt = 0; dt < duration; dt += step) {
+                data.addData(pv0.shiftedBy(dt), false);
+            }
+
+            if (!satEphem.containsKey(objectID)) {
+                satEphem.put(objectID,
+                             new OEMSatelliteEphemeris(objectID, Constants.EIGEN5C_EARTH_MU, Collections.emptyList()));
+            }
+
+            List<EphemerisFile.EphemerisSegment> segments =
+                            new ArrayList<>(satEphem.get(objectID).getSegments());
+            segments.add(new OEMSegment(metadata, data, Constants.EIGEN5C_EARTH_MU));
+            satEphem.put(objectID, new OEMSatelliteEphemeris(objectID, Constants.EIGEN5C_EARTH_MU, segments));
+
         }
 
         @Override
-        public String getId() {
-            return id;
-        }
-
-        @Override
-        public double getMu() {
-            return 0;
-        }
-
-        @SuppressWarnings({ "rawtypes", "unchecked" })
-        @Override
-        public List<? extends EphemerisFile.EphemerisSegment> getSegments() {
-            return new ArrayList();
-        }
-
-        @Override
-        public AbsoluteDate getStart() {
-            return null;
-        }
-
-        @Override
-        public AbsoluteDate getStop() {
-            return null;
+        public Map<String, OEMSatelliteEphemeris> getSatellites() {
+            return satEphem;
         }
 
     }
 
-    private class StandInEphemerisFile implements EphemerisFile {
-        private final Map<String, StandInSatelliteEphemeris> satEphem;
-
-        public StandInEphemerisFile() {
-            this.satEphem = new HashMap<String, StandInSatelliteEphemeris>();
-        }
-
-        @Override
-        public Map<String, StandInSatelliteEphemeris> getSatellites() {
-            return satEphem;
-        }
-
+    private OEMMetadata dummyMetadata() {
+        OEMMetadata metadata = new OEMMetadata(4);
+        metadata.setTimeSystem(CcsdsTimeScale.TT);
+        metadata.setObjectID("9999-999ZZZ");
+        metadata.setObjectName("transgalactic");
+        metadata.setCenterName("EARTH", CelestialBodyFactory.getCelestialBodies());
+        metadata.setRefFrame(FramesFactory.getEME2000(), CCSDSFrame.EME2000);
+        metadata.setStartTime(AbsoluteDate.J2000_EPOCH.shiftedBy(80 * Constants.JULIAN_CENTURY));
+        metadata.setStopTime(metadata.getStartTime().shiftedBy(Constants.JULIAN_YEAR));
+        return metadata;
     }
 
 }

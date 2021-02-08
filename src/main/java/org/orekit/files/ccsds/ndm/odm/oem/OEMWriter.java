@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.hipparchus.linear.RealMatrix;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -247,6 +248,12 @@ public class OEMWriter implements EphemerisFileWriter {
      */
     public static final String DEFAULT_ACCELERATION_FORMAT = "% .12e";
 
+    /**
+     * Default format used for covariance data output: 7 significant digits
+     * and leading space for positive values.
+     */
+    public static final String DEFAULT_COVARIANCE_FORMAT = "% .7e";
+
     /** New line separator for output file. */
     private static final char NEW_LINE = '\n';
 
@@ -260,7 +267,7 @@ public class OEMWriter implements EphemerisFileWriter {
     private static final String DATE_FORMAT = "%04d-%02d-%02dT%02d:%02d:%012.9f";
 
     /** Conversion factor from meters to kilometers. */
-    private static final double M_TO_KM = 1000.0;
+    private static final double M_TO_KM = 1.0e-3;
 
     /** Data context used for obtain frames and time scales. */
     private final DataContext dataContext;
@@ -286,6 +293,9 @@ public class OEMWriter implements EphemerisFileWriter {
     /** Format for acceleration ephemeris data output. */
     private final String accelerationFormat;
 
+    /** Format for acovariance data output. */
+    private final String covarianceFormat;
+
     /**
      * Standard default constructor that creates a writer with default
      * configurations.
@@ -298,7 +308,8 @@ public class OEMWriter implements EphemerisFileWriter {
     public OEMWriter(final IERSConventions conventions, final DataContext dataContext,
                      final ODMHeader header, final OEMMetadata template) {
         this(conventions, dataContext, header, template,
-             DEFAULT_FILE_NAME, DEFAULT_POSITION_FORMAT, DEFAULT_VELOCITY_FORMAT, DEFAULT_ACCELERATION_FORMAT);
+             DEFAULT_FILE_NAME, DEFAULT_POSITION_FORMAT,
+             DEFAULT_VELOCITY_FORMAT, DEFAULT_ACCELERATION_FORMAT, DEFAULT_COVARIANCE_FORMAT);
     }
 
     /**
@@ -326,12 +337,14 @@ public class OEMWriter implements EphemerisFileWriter {
      *                       velocity ephemeris data output
      * @param accelerationFormat {@link java.util.Formatter format parameters} for
      *                       acceleration ephemeris data output
+     * @param covarianceFormat {@link java.util.Formatter format parameters} for
+     *                       covariance data output
      * @since 11.0
      */
     public OEMWriter(final IERSConventions conventions, final DataContext dataContext,
                      final ODMHeader header, final OEMMetadata template, final String fileName,
                      final String positionFormat, final String velocityFormat,
-                     final String accelerationFormat) {
+                     final String accelerationFormat, final String covarianceFormat) {
 
         this.dataContext        = dataContext;
         this.header             = header;
@@ -341,6 +354,7 @@ public class OEMWriter implements EphemerisFileWriter {
         this.positionFormat     = positionFormat;
         this.velocityFormat     = velocityFormat;
         this.accelerationFormat = accelerationFormat;
+        this.covarianceFormat   = covarianceFormat;
 
     }
 
@@ -406,6 +420,11 @@ public class OEMWriter implements EphemerisFileWriter {
             metadata.setInterpolationDegree(segment.getInterpolationSamples() - 1);
             writeMetadata(generator);
 
+            if (segment instanceof OEMSegment) {
+                // write data comments
+                generator.writeComments(((OEMSegment) segment).getData());
+            }
+
             // Loop on orbit data
             final CartesianDerivativesFilter filter = segment.getAvailableDerivatives();
             if (filter == CartesianDerivativesFilter.USE_P) {
@@ -434,6 +453,22 @@ public class OEMWriter implements EphemerisFileWriter {
                                 generator.writeEntry(ODMCovarianceKey.COV_REF_FRAME.name(),
                                                      covariance.getRefCCSDSFrame().name(),
                                                      false);
+                            }
+                            final RealMatrix m = covariance.getCovarianceMatrix();
+                            for (int i = 0; i < m.getRowDimension(); ++i) {
+
+                                // write triangular matrix entries
+                                for (int j = 0; j <= i; ++j) {
+                                    if (j > 0) {
+                                        generator.writeRawData(' ');
+                                    }
+                                    generator.writeRawData(String.format(STANDARDIZED_LOCALE, covarianceFormat,
+                                                                         m.getEntry(i, j) * M_TO_KM * M_TO_KM));
+                                }
+
+                                // end the line
+                                generator.writeRawData(NEW_LINE);
+
                             }
                             continuation = true;
                         }
@@ -522,6 +557,9 @@ public class OEMWriter implements EphemerisFileWriter {
     void writeMetadata(final Generator generator)
         throws IOException {
 
+        // add an empty line for presentation
+        generator.writeEmptyLine();
+
         // Start metadata
         generator.enterSection(generator.getFormat() == FileFormat.KVN ?
                                KVNStructureKey.META.name() :
@@ -554,15 +592,20 @@ public class OEMWriter implements EphemerisFileWriter {
         generator.writeEntry(OEMMetadataKey.STOP_TIME.name(), dateToString(metadata.getStopTime()), true);
 
         // interpolation
-        generator.writeEntry(OEMMetadataKey.INTERPOLATION.name(),
-                             metadata.getInterpolationMethod().name(),
-                             false);
+        if (metadata.getInterpolationMethod() != null) {
+            generator.writeEntry(OEMMetadataKey.INTERPOLATION.name(),
+                                 metadata.getInterpolationMethod().name(),
+                                 false);
+        }
         generator.writeEntry(OEMMetadataKey.INTERPOLATION_DEGREE.name(),
                              Integer.toString(metadata.getInterpolationDegree()),
                              false);
 
         // Stop metadata
         generator.exitSection();
+
+        // add an empty line for presentation
+        generator.writeEmptyLine();
 
     }
 
@@ -666,7 +709,7 @@ public class OEMWriter implements EphemerisFileWriter {
         // copy frames
         copy.setCenterName(original.getCenterName(), dataContext.getCelestialBodies());
         copy.setFrameEpoch(original.getFrameEpoch());
-        copy.setRefFrame(original.getFrame(), original.getRefCCSDSFrame());
+        copy.setRefFrame(original.getRefFrame(), original.getRefCCSDSFrame());
 
         // copy time system only (ignore times themselves)
         copy.setTimeSystem(original.getTimeSystem());

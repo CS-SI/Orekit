@@ -53,6 +53,14 @@ public class OEMMetadata extends OCommonMetadata {
         this.interpolationDegree = defaultInterpolationDegree;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void checkMandatoryEntries() {
+        super.checkMandatoryEntries();
+        checkNotNull(startTime, OEMMetadataKey.START_TIME);
+        checkNotNull(stopTime,  OEMMetadataKey.STOP_TIME);
+    }
+
     /** Get start of total time span covered by ephemerides data and
      * covariance data.
      * @return the start time

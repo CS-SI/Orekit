@@ -36,7 +36,7 @@ public class OEMSatelliteEphemeris implements EphemerisFile.SatelliteEphemeris {
     private final double mu;
 
     /** The ephemeris data for the satellite. */
-    private final List<OEMSegment> blocks;
+    private final List<? extends EphemerisFile.EphemerisSegment> blocks;
 
     /**
      * Create a container for the set of ephemeris blocks in the file that pertain to
@@ -46,7 +46,7 @@ public class OEMSatelliteEphemeris implements EphemerisFile.SatelliteEphemeris {
      * @param mu gravitational coefficient to use for building Cartesian/Keplerian orbits
      * @param blocks containing ephemeris data for the satellite.
      */
-    public OEMSatelliteEphemeris(final String id, final double mu, final List<OEMSegment> blocks) {
+    public OEMSatelliteEphemeris(final String id, final double mu, final List<? extends EphemerisFile.EphemerisSegment> blocks) {
         this.id     = id;
         this.mu     = mu;
         this.blocks = blocks;
@@ -66,7 +66,7 @@ public class OEMSatelliteEphemeris implements EphemerisFile.SatelliteEphemeris {
 
     /** {@inheritDoc} */
     @Override
-    public List<OEMSegment> getSegments() {
+    public List<EphemerisFile.EphemerisSegment> getSegments() {
         return Collections.unmodifiableList(blocks);
     }
 

@@ -180,7 +180,7 @@ public class OMMParserTest {
         Assert.assertEquals(0.001, sp.getSolarRadCoeff(), 1e-10);
 
         ODMCovariance covariance = file.getData().getCovarianceBlock();
-        Assert.assertEquals(file.getMetadata().getRefFrame(), covariance.getRefFrame());
+        Assert.assertEquals(null, covariance.getRefFrame());
         Assert.assertEquals(LOFType.TNW, covariance.getRefCCSDSFrame().getLofType());
 
         ODMUserDefined ud = file.getData().getUserDefinedBlock();
