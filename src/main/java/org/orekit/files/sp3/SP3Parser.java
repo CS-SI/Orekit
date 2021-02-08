@@ -466,7 +466,6 @@ public class SP3Parser implements EphemerisFileParser {
 
                     // now identify the time system in use
                     final String tsStr = line.substring(9, 12).trim();
-                    pi.file.setTimeScaleString(tsStr);
                     final TimeSystem ts;
                     if (tsStr.equalsIgnoreCase("ccc")) {
                         ts = TimeSystem.GPS;
@@ -475,36 +474,6 @@ public class SP3Parser implements EphemerisFileParser {
                     }
                     pi.file.setTimeSystem(ts);
 
-                    switch (ts) {
-                        case GPS:
-                            pi.timeScale = pi.timeScales.getGPS();
-                            break;
-
-                        case GAL:
-                            pi.timeScale = pi.timeScales.getGST();
-                            break;
-
-                        case GLO:
-                            pi.timeScale = pi.timeScales.getGLONASS();
-                            break;
-
-                        case QZS:
-                            pi.timeScale = pi.timeScales.getQZSS();
-                            break;
-
-                        case TAI:
-                            pi.timeScale = pi.timeScales.getTAI();
-                            break;
-
-                        case UTC:
-                            pi.timeScale = pi.timeScales.getUTC();
-                            break;
-
-                        default:
-                            pi.timeScale = pi.timeScales.getGPS();
-                            break;
-                    }
-                    pi.file.setTimeScale(pi.timeScale);
                 }
 
             }

@@ -29,7 +29,6 @@ import org.orekit.files.general.EphemerisFile;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScale;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -167,12 +166,6 @@ public class SP3File implements EphemerisFile {
     /** Indicates if data contains velocity or not. */
     private CartesianDerivativesFilter filter;
 
-    /** Time scale of dates in the ephemeris file. */
-    private TimeScale timeScale;
-
-    /** Time scale, as specified in the file. */
-    private String timeScaleString;
-
     /** Standard gravitational parameter in m^3 / s^2. */
     private final double mu;
 
@@ -209,24 +202,6 @@ public class SP3File implements EphemerisFile {
      */
     void setFilter(final CartesianDerivativesFilter filter) {
         this.filter = filter;
-    }
-
-    /**
-     * Set the time scale.
-     *
-     * @param timeScale use to parse dates in this file.
-     */
-    void setTimeScale(final TimeScale timeScale) {
-        this.timeScale = timeScale;
-    }
-
-    /**
-     * Set the string used to define the time scale.
-     *
-     * @param timeScaleString the time scale identifier used in the file.
-     */
-    void setTimeScaleString(final String timeScaleString) {
-        this.timeScaleString = timeScaleString;
     }
 
     /** Returns the {@link SP3FileType} associated with this SP3 file.
@@ -527,28 +502,8 @@ public class SP3File implements EphemerisFile {
         }
 
         @Override
-        public String getFrameCenterString() {
-            return SP3_FRAME_CENTER_STRING;
-        }
-
-        @Override
-        public String getFrameString() {
-            return getCoordinateSystem();
-        }
-
-        @Override
         public Frame getFrame() {
-            return frameBuilder.apply(getFrameString());
-        }
-
-        @Override
-        public String getTimeScaleString() {
-            return timeScaleString;
-        }
-
-        @Override
-        public TimeScale getTimeScale() {
-            return timeScale;
+            return frameBuilder.apply(SP3_FRAME_CENTER_STRING);
         }
 
         @Override

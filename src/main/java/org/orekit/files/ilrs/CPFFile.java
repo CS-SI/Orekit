@@ -160,35 +160,8 @@ public class CPFFile implements EphemerisFile {
 
         /** {@inheritDoc} */
         @Override
-        public String getFrameCenterString() {
-            // Unused by CPF files
-            return null;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public String getFrameString() {
-            // Unused by CPF files
-            return null;
-        }
-
-        /** {@inheritDoc} */
-        @Override
         public Frame getFrame() {
             return header.getRefFrame();
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public String getTimeScaleString() {
-            // Unused by CPF files
-            return null;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public TimeScale getTimeScale() {
-            return timeScale;
         }
 
         /** {@inheritDoc} */

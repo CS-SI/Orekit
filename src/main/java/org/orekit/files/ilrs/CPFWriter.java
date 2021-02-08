@@ -48,12 +48,17 @@ public class CPFWriter implements EphemerisFileWriter {
     /** Container for header data. */
     private final CPFHeader header;
 
+    /** Time scale for dates. */
+    private final TimeScale timescale;
+
     /**
      * Constructor.
      * @param header container for header data
+     * @param timescale time scale for dates
      */
-    public CPFWriter(final CPFHeader header) {
-        this.header = header;
+    public CPFWriter(final CPFHeader header, final TimeScale timescale) {
+        this.header    = header;
+        this.timescale = timescale;
     }
 
 
@@ -75,14 +80,10 @@ public class CPFWriter implements EphemerisFileWriter {
         // Get satellite and ephemeris segments to output.
         final EphemerisFile.SatelliteEphemeris satEphem = ephemerisFile.getSatellites().get(header.getIlrsSatelliteId());
         final List<? extends EphemerisSegment> segments = satEphem.getSegments();
-        final EphemerisSegment firstSegment = segments.get(0);
-
-        // Time scale
-        final TimeScale timeScale = firstSegment.getTimeScale();
 
         // Writer
         final StreamingCpfWriter cpfWriter =
-                        new StreamingCpfWriter(writer, timeScale, header);
+                        new StreamingCpfWriter(writer, timescale, header);
         // Write header
         cpfWriter.writeHeader();
 

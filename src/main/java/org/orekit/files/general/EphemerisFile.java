@@ -155,6 +155,13 @@ public interface EphemerisFile {
     interface EphemerisSegment {
 
         /**
+         * Get the standard gravitational parameter for the satellite.
+         *
+         * @return the gravitational parameter use in {@link #getPropagator()}, in m³/s².
+         */
+        double getMu();
+
+        /**
          * Get the reference frame for this ephemeris segment. The defining frame for
          * {@link #getCoordinates()}.
          *

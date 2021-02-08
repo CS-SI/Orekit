@@ -108,11 +108,7 @@ public class CPFParserTest {
         Assert.assertEquals(0.0, lastEpoch.durationFrom(coord.get(coord.size() - 1).getDate()), 1.0e-15);
 
         // Verify Ephemeris
-        Assert.assertNull(ephemeris.getFrameCenterString());
-        Assert.assertNull(ephemeris.getFrameString());
-        Assert.assertNull(ephemeris.getTimeScaleString());
         Assert.assertEquals(ephemeris.getFrame(),     header.getRefFrame());
-        Assert.assertEquals(ephemeris.getTimeScale(), file.getTimeScale());
         Assert.assertEquals(10, ephemeris.getInterpolationSamples());
         Assert.assertEquals(CartesianDerivativesFilter.USE_P, ephemeris.getAvailableDerivatives());
         Assert.assertEquals(Constants.EIGEN5C_EARTH_MU,       ephemeris.getMu(), 1.0e-15);
@@ -197,11 +193,7 @@ public class CPFParserTest {
         Assert.assertEquals(0.0, lastEpoch.durationFrom(coord.get(coord.size() - 1).getDate()), 1.0e-15);
 
         // Verify Ephemeris
-        Assert.assertNull(ephemeris.getFrameCenterString());
-        Assert.assertNull(ephemeris.getFrameString());
-        Assert.assertNull(ephemeris.getTimeScaleString());
         Assert.assertEquals(ephemeris.getFrame(),     header.getRefFrame());
-        Assert.assertEquals(ephemeris.getTimeScale(), file.getTimeScale());
         Assert.assertEquals(10, ephemeris.getInterpolationSamples());
         Assert.assertEquals(CartesianDerivativesFilter.USE_P, ephemeris.getAvailableDerivatives());
         Assert.assertEquals(Constants.EIGEN5C_EARTH_MU,       ephemeris.getMu(), 1.0e-15);
@@ -281,11 +273,7 @@ public class CPFParserTest {
         Assert.assertEquals(0.0, lastEpoch.durationFrom(coord.get(coord.size() - 1).getDate()), 1.0e-15);
 
         // Verify Ephemeris
-        Assert.assertNull(ephemeris.getFrameCenterString());
-        Assert.assertNull(ephemeris.getFrameString());
-        Assert.assertNull(ephemeris.getTimeScaleString());
         Assert.assertEquals(ephemeris.getFrame(),     header.getRefFrame());
-        Assert.assertEquals(ephemeris.getTimeScale(), file.getTimeScale());
         Assert.assertEquals(10, ephemeris.getInterpolationSamples());
         Assert.assertEquals(CartesianDerivativesFilter.USE_P, ephemeris.getAvailableDerivatives());
         Assert.assertEquals(Constants.EIGEN5C_EARTH_MU,       ephemeris.getMu(), 1.0e-15);

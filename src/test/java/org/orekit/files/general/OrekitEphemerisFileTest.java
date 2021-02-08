@@ -36,9 +36,12 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
+import org.orekit.files.ccsds.ndm.odm.oem.OEMMetadata;
 import org.orekit.files.ccsds.ndm.odm.oem.OEMParser;
 import org.orekit.files.ccsds.ndm.odm.oem.OEMWriter;
+import org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer;
 import org.orekit.files.general.EphemerisFile.EphemerisSegment;
 import org.orekit.files.general.OrekitEphemerisFile.OrekitSatelliteEphemeris;
 import org.orekit.frames.Frame;
@@ -128,9 +131,13 @@ public class OrekitEphemerisFileTest {
                      satellite.getSegments().get(0).getMu(), muTolerance);
 
         String tempOemFile = Files.createTempFile("OrekitEphemerisFileTest", ".oem").toString();
-        new OEMWriter().write(tempOemFile, ephemerisFile);
+        OEMMetadata template = new OEMMetadata(2);
+        new OEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null, template).
+        write(tempOemFile, ephemerisFile);
 
-        EphemerisFile ephemerisFromFile = new OEMParser().parse(tempOemFile);
+        OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
+                                         null, Constants.EIGEN5C_EARTH_MU, 2);
+        EphemerisFile ephemerisFromFile = new KVNLexicalAnalyzer(tempOemFile).accept(parser);
         Files.delete(Paths.get(tempOemFile));
         
         EphemerisSegment segment = ephemerisFromFile.getSatellites().get(satId).getSegments().get(0);
@@ -138,7 +145,6 @@ public class OrekitEphemerisFileTest {
         assertEquals(states.get(states.size() - 1).getDate(), segment.getStop());
         assertEquals(states.size(), segment.getCoordinates().size());
         assertEquals(frame, segment.getFrame());
-        assertEquals(body.getName().toUpperCase(), segment.getFrameCenterString());
         assertEquals(body.getGM(), segment.getMu(), muTolerance);
         assertEquals(CartesianDerivativesFilter.USE_PV, segment.getAvailableDerivatives());
         assertEquals("GCRF", segment.getFrame().getName());

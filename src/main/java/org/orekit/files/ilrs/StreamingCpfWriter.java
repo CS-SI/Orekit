@@ -297,8 +297,8 @@ public class StreamingCpfWriter {
 
             /** {@inheritDoc} */
             @Override
-            public void write(final CPFHeader cpfHeader, final Appendable cpfWriter,
-                              final TimeScale utc) throws IOException {
+            public void write(final CPFHeader cpfHeader, final Appendable cpfWriter, final TimeScale timescale)
+                throws IOException {
 
                 // write first keys
                 writeValue(cpfWriter, A2, getIdentifier());
@@ -328,8 +328,8 @@ public class StreamingCpfWriter {
 
             /** {@inheritDoc} */
             @Override
-            public void write(final CPFHeader cpfHeader, final Appendable cpfWriter,
-                              final TimeScale utc) throws IOException {
+            public void write(final CPFHeader cpfHeader, final Appendable cpfWriter, final TimeScale timescale)
+                throws IOException {
 
                 // write identifiers
                 writeValue(cpfWriter, A2, getIdentifier());
@@ -339,7 +339,7 @@ public class StreamingCpfWriter {
 
                 // write starting epoch
                 final AbsoluteDate starting = cpfHeader.getStartEpoch();
-                final DateTimeComponents dtcStart = starting.getComponents(utc);
+                final DateTimeComponents dtcStart = starting.getComponents(timescale);
                 writeValue(cpfWriter, I4, dtcStart.getDate().getYear());
                 writeValue(cpfWriter, I2, dtcStart.getDate().getMonth());
                 writeValue(cpfWriter, I2, dtcStart.getDate().getDay());
@@ -349,7 +349,7 @@ public class StreamingCpfWriter {
 
                 // write ending epoch
                 final AbsoluteDate ending = cpfHeader.getStartEpoch();
-                final DateTimeComponents dtcEnd = ending.getComponents(utc);
+                final DateTimeComponents dtcEnd = ending.getComponents(timescale);
                 writeValue(cpfWriter, I4, dtcEnd.getDate().getYear());
                 writeValue(cpfWriter, I2, dtcEnd.getDate().getMonth());
                 writeValue(cpfWriter, I2, dtcEnd.getDate().getDay());
@@ -385,12 +385,12 @@ public class StreamingCpfWriter {
         /** Write a line.
          * @param cpfHeader container for header data
          * @param cpfWriter writer
-         * @param utc utc time scale for dates
+         * @param timescale time scale for dates
          * @throws IOException
          *             if any buffer writing operations fail or if the underlying
          *             format doesn't support a configuration in the file
          */
-        public abstract void write(CPFHeader cpfHeader, Appendable cpfWriter, TimeScale utc)  throws IOException;
+        public abstract void write(CPFHeader cpfHeader, Appendable cpfWriter, TimeScale timescale)  throws IOException;
 
         /**
          * Get the regular expression for identifying line.

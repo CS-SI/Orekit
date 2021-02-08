@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm.odm.oem;
 
 import java.util.List;
 
+import org.orekit.files.ccsds.ndm.odm.ODMCovariance;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.frames.Frame;
@@ -34,12 +35,23 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class OEMSegment extends Segment<OEMMetadata, OEMData> implements EphemerisFile.EphemerisSegment {
 
+    /** Gravitational parameter use in m³/s². */
+    private final double mu;
+
     /** Simple constructor.
      * @param metadata segment metadata
      * @param data segment data
+     * @param mu gravitational parameter use in m³/s²
      */
-    public OEMSegment(final OEMMetadata metadata, final OEMData data) {
+    public OEMSegment(final OEMMetadata metadata, final OEMData data, final double mu) {
         super(metadata, data);
+        this.mu = mu;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double getMu() {
+        return mu;
     }
 
     /** {@inheritDoc} */
@@ -57,7 +69,7 @@ public class OEMSegment extends Segment<OEMMetadata, OEMData> implements Ephemer
     /** Get an unmodifiable view of Covariance Matrices.
      * @return unmodifiable view of Covariance Matrices
      */
-    public List<CovarianceMatrix> getCovarianceMatrices() {
+    public List<ODMCovariance> getCovarianceMatrices() {
         return getData().getCovarianceMatrices();
     }
 

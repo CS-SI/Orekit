@@ -42,6 +42,7 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ilrs.CPFFile.CPFCoordinate;
 import org.orekit.files.ilrs.CPFFile.CPFEphemeris;
+import org.orekit.time.TimeScalesFactory;
 
 public class CPFWriterTest {
 
@@ -64,7 +65,7 @@ public class CPFWriterTest {
         final CPFFile file = (CPFFile) parser.parse(fileName);
 
         String tempCPFFilePath = tempFolder.newFile("TestWriteCPF.cpf").toString();
-        CPFWriter writer = new CPFWriter(file.getHeader());
+        CPFWriter writer = new CPFWriter(file.getHeader(), TimeScalesFactory.getUTC());
         writer.write(tempCPFFilePath, file);
 
         final CPFFile generatedCpfFile = parser.parse(tempCPFFilePath);
@@ -83,7 +84,7 @@ public class CPFWriterTest {
         final CPFFile file = (CPFFile) parser.parse(fileName);
 
         String tempCPFFilePath = tempFolder.newFile("TestWriteCPF.cpf").toString();
-        CPFWriter writer = new CPFWriter(file.getHeader());
+        CPFWriter writer = new CPFWriter(file.getHeader(), TimeScalesFactory.getUTC());
         writer.write(tempCPFFilePath, file);
 
         final CPFFile generatedCpfFile = parser.parse(tempCPFFilePath);
@@ -102,7 +103,7 @@ public class CPFWriterTest {
         final CPFFile file = (CPFFile) parser.parse(fileName);
 
         String tempCPFFilePath = tempFolder.newFile("TestWriteCPF.cpf").toString();
-        CPFWriter writer = new CPFWriter(file.getHeader());
+        CPFWriter writer = new CPFWriter(file.getHeader(), TimeScalesFactory.getUTC());
         writer.write(tempCPFFilePath, file);
 
         final CPFFile generatedCpfFile = parser.parse(tempCPFFilePath);
@@ -116,7 +117,7 @@ public class CPFWriterTest {
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final CPFParser parser = new CPFParser();
         final CPFFile cpfFile = parser.parse(inEntry);
-        CPFWriter writer = new CPFWriter(cpfFile.getHeader());
+        CPFWriter writer = new CPFWriter(cpfFile.getHeader(), TimeScalesFactory.getUTC());
         try {
             writer.write((BufferedWriter) null, cpfFile);
             fail("an exception should have been thrown");
@@ -129,7 +130,7 @@ public class CPFWriterTest {
     @Test
     public void testNullEphemeris() throws IOException {
         File tempCPFFile = tempFolder.newFile("TestNullEphemeris.cpf");
-        CPFWriter writer = new CPFWriter(null);
+        CPFWriter writer = new CPFWriter(null, TimeScalesFactory.getUTC());
         writer.write(tempCPFFile.toString(), null);
         assertTrue(tempCPFFile.exists());
         try (FileInputStream   fis = new FileInputStream(tempCPFFile);
@@ -154,7 +155,6 @@ public class CPFWriterTest {
         final CPFEphemeris eph1 = file1.getSatellites().get(header1.getIlrsSatelliteId());
         final CPFEphemeris eph2 = file2.getSatellites().get(header2.getIlrsSatelliteId());
         Assert.assertEquals(eph1.getId(), eph2.getId());
-        Assert.assertEquals(eph1.getTimeScale(), eph2.getTimeScale());
         Assert.assertEquals(eph1.getStart(), eph2.getStart());
         Assert.assertEquals(eph1.getStop(), eph2.getStop());
 
