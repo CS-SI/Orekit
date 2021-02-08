@@ -33,12 +33,16 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndPoints;
-import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderKey;
+import org.orekit.files.ccsds.section.KVNStructureKey;
 import org.orekit.files.ccsds.section.MetadataKey;
+import org.orekit.files.ccsds.section.XMLStructureKey;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
+import org.orekit.files.ccsds.utils.generation.Generator;
+import org.orekit.files.ccsds.utils.generation.KVNGenerator;
+import org.orekit.files.ccsds.utils.lexical.FileFormat;
 import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.files.general.AttitudeEphemerisFile.AttitudeEphemerisSegment;
 import org.orekit.files.general.AttitudeEphemerisFile.SatelliteAttitudeEphemeris;
@@ -254,26 +258,8 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
      */
     private static final Locale STANDARDIZED_LOCALE = Locale.US;
 
-    /** String format used for all key/value pair lines. **/
-    private static final String KV_FORMAT = "%s = %s%n";
-
     /** String format used for dates. **/
     private static final String DATE_FORMAT = "%04d-%02d-%02dT%02d:%02d:%012.9f";
-
-    /** String format used for all comment lines. **/
-    private static final String COMMENT_FORMAT = "COMMENT %s%n";
-
-    /** Marker for start of metadata section. */
-    private static final String META_START = "META_START";
-
-    /** Marker for stop of metadata section. */
-    private static final String META_STOP = "META_STOP";
-
-    /** Marker for start of data section. */
-    private static final String DATA_START = "DATA_START";
-
-    /** Marker for stop of data section. */
-    private static final String DATA_STOP = "DATA_STOP";
 
     /** Constant for external frame to local frame attitude. */
     private static final String EXTERNAL_TO_LOCAL = "A2B";
@@ -368,7 +354,13 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
         this.metadata       = copy(template);
         this.fileName       = fileName;
         this.attitudeFormat = attitudeFormat;
-        this.timeScale      = metadata.getTimeSystem().getTimeScale(conventions, dataContext.getTimeScales());
+        final CcsdsTimeScale cts = metadata.getTimeSystem();
+        if (cts == null) {
+            throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
+                                      MetadataKey.TIME_SYSTEM.name(), fileName);
+        }
+
+        this.timeScale = cts.getTimeScale(conventions, dataContext.getTimeScales());
 
     }
 
@@ -422,7 +414,8 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
             return;
         }
 
-        writeHeader(appendable);
+        final Generator generator = new KVNGenerator(appendable, fileName);
+        writeHeader(generator);
 
         // Loop on segments
         for (final AttitudeEphemerisSegment segment : segments) {
@@ -435,14 +428,14 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
             metadata.getEndPoints().setExternalFrame(ccsdsFrame);
             metadata.setInterpolationMethod(segment.getInterpolationMethod());
             metadata.setInterpolationDegree(segment.getInterpolationSamples() - 1);
-            writeMetadata(appendable);
+            writeMetadata(generator);
 
             // Loop on attitude data
-            startAttitudeBlock(appendable);
+            startAttitudeBlock(generator);
             for (final TimeStampedAngularCoordinates coordinates : segment.getAngularCoordinates()) {
-                writeAttitudeEphemerisLine(appendable, coordinates);
+                writeAttitudeEphemerisLine(generator, coordinates);
             }
-            endAttitudeBlock(appendable);
+            endAttitudeBlock(generator);
         }
 
     }
@@ -463,158 +456,102 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
         }
     }
 
-    /**
-     * Write a single key and value to the stream using Key Value Notation (KVN).
-     * @param appendable    The output stream for the AEM file. Most methods will append data
-     *                  to this {@code appendable}.
-     * @param key   the keyword to write
-     * @param value the value to write
-     * @param mandatory if true, null values triggers exception, otherwise they are silently ignored
-     * @throws IOException if an I/O error occurs.
-     */
-    private void writeKeyValue(final Appendable appendable, final String key,
-                               final String value, final boolean mandatory)
-        throws IOException {
-        if (value == null) {
-            if (mandatory) {
-                throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, key, fileName);
-            }
-        } else {
-            appendable.append(String.format(STANDARDIZED_LOCALE, KV_FORMAT, key, value));
-        }
-    }
-
-    /**
-     * convert a date to string value with high precision.
-     * @param date date to write
-     * @return date as a string
-     */
-    private String dateToString(final AbsoluteDate date) {
-        final DateTimeComponents dt = date.getComponents(timeScale);
-        return String.format(STANDARDIZED_LOCALE, DATE_FORMAT,
-                             dt.getDate().getYear(),
-                             dt.getDate().getMonth(),
-                             dt.getDate().getDay(),
-                             dt.getTime().getHour(),
-                             dt.getTime().getMinute(),
-                             dt.getTime().getSecond());
-    }
-
-    /**
-     * Write a comment line using Key Value Notation (KVN).
-     * @param appendable    The output stream for the AEM file. Most methods will append data
-     *                  to this {@code appendable}.
-     * @param comments comments to write
-     * @throws IOException if an I/O error occurs.
-     */
-    private void writeComments(final Appendable appendable, final CommentsContainer comments) throws IOException {
-        for (final String comment : comments.getComments()) {
-            appendable.append(String.format(STANDARDIZED_LOCALE, COMMENT_FORMAT, comment));
-        }
-    }
-
     /** Writes the standard AEM header for the file.
-     * @param appendable    The output stream for the AEM file. Most methods will append data
-     *                  to this {@code appendable}.
+     * @param generator generator to use for producing output
      * @throws IOException if the stream cannot write to stream
      */
-    public void writeHeader(final Appendable appendable) throws IOException {
+    public void writeHeader(final Generator generator) throws IOException {
 
         // Use built-in default if mandatory version not present
-        final double dVersion = header == null || Double.isNaN(header.getFormatVersion()) ?
+        final double version = header == null || Double.isNaN(header.getFormatVersion()) ?
                                 CCSDS_AEM_VERS : header.getFormatVersion();
-        final String sVersion = String.format(STANDARDIZED_LOCALE, "%.1f", dVersion);
-        writeKeyValue(appendable, AEMFile.FORMAT_VERSION_KEY, sVersion, true);
+        generator.startMessage(AEMFile.FORMAT_VERSION_KEY, version);
 
         // comments are optional
         if (header != null) {
-            writeComments(appendable, header);
+            generator.writeComments(header);
         }
 
         // creation date is informational only, but mandatory and always in UTC
         if (header == null || header.getCreationDate() == null) {
             final ZonedDateTime zdt = ZonedDateTime.now(ZoneOffset.UTC);
-            writeKeyValue(appendable, HeaderKey.CREATION_DATE.name(),
-                          String.format(STANDARDIZED_LOCALE, DATE_FORMAT,
-                                        zdt.getYear(), zdt.getMonthValue(), zdt.getDayOfMonth(),
-                                        zdt.getHour(), zdt.getMinute(), (double) zdt.getSecond()),
-                          true);
+            generator.writeEntry(HeaderKey.CREATION_DATE.name(),
+                                 String.format(STANDARDIZED_LOCALE, DATE_FORMAT,
+                                               zdt.getYear(), zdt.getMonthValue(), zdt.getDayOfMonth(),
+                                               zdt.getHour(), zdt.getMinute(), (double) zdt.getSecond()),
+                                 true);
         } else {
             final DateTimeComponents creationDate =
                             header.getCreationDate().getComponents(dataContext.getTimeScales().getUTC());
             final DateComponents dc = creationDate.getDate();
             final TimeComponents tc = creationDate.getTime();
-            writeKeyValue(appendable, HeaderKey.CREATION_DATE.name(),
-                          String.format(STANDARDIZED_LOCALE, DATE_FORMAT,
-                                        dc.getYear(), dc.getMonth(), dc.getDay(),
-                                        tc.getHour(), tc.getMinute(), tc.getSecond()),
-                          true);
+            generator.writeEntry(HeaderKey.CREATION_DATE.name(),
+                                 String.format(STANDARDIZED_LOCALE, DATE_FORMAT,
+                                               dc.getYear(), dc.getMonth(), dc.getDay(),
+                                               tc.getHour(), tc.getMinute(), tc.getSecond()),
+                                 true);
         }
 
 
         // Use built-in default if mandatory originator not present
-        writeKeyValue(appendable, HeaderKey.ORIGINATOR.name(),
-                      (header == null || header.getOriginator() == null) ? DEFAULT_ORIGINATOR : header.getOriginator(),
-                      true);
+        generator.writeEntry(HeaderKey.ORIGINATOR.name(),
+                             (header == null || header.getOriginator() == null) ? DEFAULT_ORIGINATOR : header.getOriginator(),
+                             true);
 
         // add an empty line for presentation
-        appendable.append(NEW_LINE);
+        generator.writeEmptyLine();
 
     }
 
     /** Write an ephemeris segment metadata.
-     * @param appendable    The output stream for the AEM file. Most methods will append data
-     *                  to this {@code appendable}.
+     * @param generator generator to use for producing output
      * @throws IOException if the output stream throws one while writing.
      */
-    public void writeMetadata(final Appendable appendable)
+    public void writeMetadata(final Generator generator)
         throws IOException {
 
         // Start metadata
-        appendable.append(META_START).append(NEW_LINE);
+        generator.enterSection(generator.getFormat() == FileFormat.KVN ?
+                               KVNStructureKey.META.name() :
+                               XMLStructureKey.metadata.name());
 
-        writeComments(appendable, metadata);
+        generator.writeComments(metadata);
 
         // objects
-        writeKeyValue(appendable, ADMMetadataKey.OBJECT_NAME.name(), metadata.getObjectName(), true);
-        writeKeyValue(appendable, ADMMetadataKey.OBJECT_ID.name(), metadata.getObjectID(),   true);
-        writeKeyValue(appendable, ADMMetadataKey.CENTER_NAME.name(), metadata.getCenterName(), false);
+        generator.writeEntry(ADMMetadataKey.OBJECT_NAME.name(), metadata.getObjectName(), true);
+        generator.writeEntry(ADMMetadataKey.OBJECT_ID.name(),   metadata.getObjectID(),   true);
+        generator.writeEntry(ADMMetadataKey.CENTER_NAME.name(), metadata.getCenterName(), false);
 
         // frames
         final AttitudeEndPoints endPoints = metadata.getEndPoints();
-        writeKeyValue(appendable, AEMMetadataKey.REF_FRAME_A.name(),
-                      endPoints.getExternalFrame() == null ? null : endPoints.getExternalFrame().name(),
-                      true);
-        writeKeyValue(appendable, AEMMetadataKey.REF_FRAME_B.name(),
-                      endPoints.getLocalFrame() == null ? null : endPoints.getLocalFrame().toString(),
-                      true);
-        writeKeyValue(appendable, AEMMetadataKey.ATTITUDE_DIR.name(),
-                      endPoints.isExternal2Local() ? EXTERNAL_TO_LOCAL : LOCAL_TO_EXTERNAL,
-                      true);
+        generator.writeEntry(AEMMetadataKey.REF_FRAME_A.name(),
+                             endPoints.getExternalFrame() == null ? null : endPoints.getExternalFrame().name(),
+                             true);
+        generator.writeEntry(AEMMetadataKey.REF_FRAME_B.name(),
+                             endPoints.getLocalFrame() == null ? null : endPoints.getLocalFrame().toString(),
+                             true);
+        generator.writeEntry(AEMMetadataKey.ATTITUDE_DIR.name(),
+                             endPoints.isExternal2Local() ? EXTERNAL_TO_LOCAL : LOCAL_TO_EXTERNAL,
+                             true);
 
         // time
-        final CcsdsTimeScale cts = metadata.getTimeSystem();
-        if (cts == null) {
-            throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
-                                      MetadataKey.TIME_SYSTEM.name(), fileName);
-        }
-        writeKeyValue(appendable, MetadataKey.TIME_SYSTEM.name(), cts.name(), true);
-        writeKeyValue(appendable, AEMMetadataKey.START_TIME.name(), dateToString(metadata.getStartTime()), true);
+        generator.writeEntry(MetadataKey.TIME_SYSTEM.name(), metadata.getTimeSystem().name(), true);
+        generator.writeEntry(AEMMetadataKey.START_TIME.name(), dateToString(metadata.getStartTime()), true);
         if (metadata.getUseableStartTime() != null) {
-            writeKeyValue(appendable, AEMMetadataKey.USEABLE_START_TIME.name(), dateToString(metadata.getUseableStartTime()), false);
+            generator.writeEntry(AEMMetadataKey.USEABLE_START_TIME.name(), dateToString(metadata.getUseableStartTime()), false);
         }
         if (metadata.getUseableStopTime() != null) {
-            writeKeyValue(appendable, AEMMetadataKey.USEABLE_STOP_TIME.name(), dateToString(metadata.getUseableStopTime()), false);
+            generator.writeEntry(AEMMetadataKey.USEABLE_STOP_TIME.name(), dateToString(metadata.getUseableStopTime()), false);
         }
-        writeKeyValue(appendable, AEMMetadataKey.STOP_TIME.name(), dateToString(metadata.getStopTime()), true);
+        generator.writeEntry(AEMMetadataKey.STOP_TIME.name(), dateToString(metadata.getStopTime()), true);
 
         // types
         final AEMAttitudeType attitudeType = metadata.getAttitudeType();
-        writeKeyValue(appendable, AEMMetadataKey.ATTITUDE_TYPE.name(), attitudeType.toString(), true);
+        generator.writeEntry(AEMMetadataKey.ATTITUDE_TYPE.name(), attitudeType.toString(), true);
         if (attitudeType == AEMAttitudeType.QUATERNION ||
             attitudeType == AEMAttitudeType.QUATERNION_DERIVATIVE ||
             attitudeType == AEMAttitudeType.QUATERNION_RATE) {
-            writeKeyValue(appendable, AEMMetadataKey.QUATERNION_TYPE.name(), metadata.isFirst() ? FIRST : LAST, false);
+            generator.writeEntry(AEMMetadataKey.QUATERNION_TYPE.name(), metadata.isFirst() ? FIRST : LAST, false);
         }
 
         if (attitudeType == AEMAttitudeType.EULER_ANGLE ||
@@ -624,8 +561,9 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
                 throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
                                           AEMMetadataKey.EULER_ROT_SEQ.name(), fileName);
             }
-            writeKeyValue(appendable, AEMMetadataKey.EULER_ROT_SEQ.name(), metadata.getEulerRotSeq().name().replace('X', '1').replace('Y', '2').replace('Z', '3'),
-                          false);
+            generator.writeEntry(AEMMetadataKey.EULER_ROT_SEQ.name(),
+                                 metadata.getEulerRotSeq().name().replace('X', '1').replace('Y', '2').replace('Z', '3'),
+                                 false);
         }
 
         if (attitudeType == AEMAttitudeType.QUATERNION_RATE ||
@@ -635,64 +573,65 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
                 throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
                                           AEMMetadataKey.RATE_FRAME.name(), fileName);
             }
-            writeKeyValue(appendable, AEMMetadataKey.RATE_FRAME.name(), metadata.localRates() ? LOCAL_RATES : EXTERNAL_RATES,
-                          false);
+            generator.writeEntry(AEMMetadataKey.RATE_FRAME.name(),
+                                 metadata.localRates() ? LOCAL_RATES : EXTERNAL_RATES,
+                                 false);
         }
 
         // interpolation
-        writeKeyValue(appendable, AEMMetadataKey.INTERPOLATION_METHOD.name(), metadata.getInterpolationMethod(),
-                      false);
-        writeKeyValue(appendable, AEMMetadataKey.INTERPOLATION_DEGREE.name(), Integer.toString(metadata.getInterpolationDegree()),
-                      false);
+        generator.writeEntry(AEMMetadataKey.INTERPOLATION_METHOD.name(),
+                             metadata.getInterpolationMethod(),
+                             false);
+        generator.writeEntry(AEMMetadataKey.INTERPOLATION_DEGREE.name(),
+                             Integer.toString(metadata.getInterpolationDegree()),
+                             false);
 
         // Stop metadata
-        appendable.append(META_STOP).append(NEW_LINE);
+        generator.exitSection();
 
     }
 
     /**
      * Write a single attitude ephemeris line according to section 4.2.4 and Table 4-4.
-     * @param appendable    The output stream for the AEM file. Most methods will append data
-     *                  to this {@code appendable}.
+     * @param generator generator to use for producing output
      * @param attitude the attitude information for a given date.
      * @throws IOException if the output stream throws one while writing.
      */
-    public void writeAttitudeEphemerisLine(final Appendable appendable, final TimeStampedAngularCoordinates attitude)
+    public void writeAttitudeEphemerisLine(final Generator generator, final TimeStampedAngularCoordinates attitude)
         throws IOException {
 
         // Epoch
-        appendable.append(dateToString(attitude.getDate()));
+        generator.writeRawData(dateToString(attitude.getDate()));
 
         // Attitude data in degrees
         final double[] data = metadata.getAttitudeType().getAttitudeData(attitude, metadata);
         final int      size = data.length;
         for (int index = 0; index < size; index++) {
-            appendable.append(' ').append(String.format(STANDARDIZED_LOCALE, attitudeFormat, data[index]));
+            generator.writeRawData(' ');
+            generator.writeRawData(String.format(STANDARDIZED_LOCALE, attitudeFormat, data[index]));
         }
 
         // end the line
-        appendable.append(NEW_LINE);
+        generator.writeRawData(NEW_LINE);
 
     }
 
-    /**
-     * Start of an attitude block.
-     * @param appendable    The output stream for the AEM file. Most methods will append data
-     *                  to this {@code appendable}.
+    /** Start of an attitude block.
+     * @param generator generator to use for producing output
      * @throws IOException if the output stream throws one while writing.
      */
-    void startAttitudeBlock(final Appendable appendable) throws IOException {
-        appendable.append(DATA_START).append(NEW_LINE);
+    void startAttitudeBlock(final Generator generator) throws IOException {
+        generator.enterSection(generator.getFormat() == FileFormat.KVN ?
+                               KVNStructureKey.DATA.name() :
+                               XMLStructureKey.data.name());
     }
 
-    /**
-     * End of an attitude block.
-     * @param appendable    The output stream for the AEM file. Most methods will append data
-     *                  to this {@code appendable}.
+    /** End of an attitude block.
+     * @param generator generator to use for producing output
      * @throws IOException if the output stream throws one while writing.
      */
-    void endAttitudeBlock(final Appendable appendable) throws IOException {
-        appendable.append(DATA_STOP).append(NEW_LINE);
+    void endAttitudeBlock(final Generator generator) throws IOException {
+        generator.exitSection();
     }
 
     /** Copy a metadata object (excluding times), making sure mandatory fields have been initialized.
@@ -747,4 +686,20 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
         return copy;
 
     }
+
+    /** Convert a date to string value with high precision.
+     * @param date date to write
+     * @return date as a string
+     */
+    private String dateToString(final AbsoluteDate date) {
+        final DateTimeComponents dt = date.getComponents(timeScale);
+        return String.format(STANDARDIZED_LOCALE, DATE_FORMAT,
+                             dt.getDate().getYear(),
+                             dt.getDate().getMonth(),
+                             dt.getDate().getDay(),
+                             dt.getTime().getHour(),
+                             dt.getTime().getMinute(),
+                             dt.getTime().getSecond());
+    }
+
 }
