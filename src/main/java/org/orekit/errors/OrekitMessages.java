@@ -291,7 +291,8 @@ public enum OrekitMessages implements Localizable {
     CRD_UNEXPECTED_END_OF_FILE("Unexpected end of CRD file (after line {0})"),
     INVALID_RANGE_INDICATOR_IN_CRD_FILE("Invalid range indicator {0} in CRD file header"),
     NOT_VALID_INTERNATIONAL_DESIGNATOR("{0} is not a valid international designator"),
-    UNINITIALIZED_VALUE_FOR_KEY("value for key {0} has not been initialized");
+    UNINITIALIZED_VALUE_FOR_KEY("value for key {0} has not been initialized"),
+    MISSING_VELOCITY("missing velocity data");
 
     // CHECKSTYLE: resume JavadocVariable check
 
