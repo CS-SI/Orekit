@@ -16,7 +16,6 @@
  */
 package org.orekit.files.ccsds.ndm.odm;
 
-import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
@@ -32,21 +31,12 @@ public enum ODMCovarianceKey {
     COMMENT((token, context, data) ->
             token.getType() == TokenType.ENTRY ? data.addComment(token.getContent()) : true),
 
+    /** Epoch entry (only for OEM files). */
+    EPOCH((token, context, data) -> token.processAsDate(data::setEpoch, context)),
+
     /** Coordinate system for covariance matrix. Its value can either be RSW, RTN (both indicating
     /* "Radial, Transverse, Normal") or TNW. */
-    COV_REF_FRAME((token, context, data) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            final CCSDSFrame covFrame = CCSDSFrame.parse(token.getContent());
-            if (covFrame.isLof()) {
-                data.setCovRefLofType(covFrame.getLofType());
-            } else {
-                data.setCovRefFrame(covFrame.getFrame(context.getConventions(),
-                                                      context.isSimpleEOP(),
-                                                      context.getDataContext()));
-            }
-        }
-        return true;
-    }),
+    COV_REF_FRAME((token, context, data) -> token.processAsFrame(data::setRefFrame, context, true)),
 
     /** Covariance matrix [1, 1] element. */
     CX_X((token, context, data) -> token.processAsDoublyIndexedDouble(0, 0, 1.0e6, data::setCovarianceMatrixEntry)),

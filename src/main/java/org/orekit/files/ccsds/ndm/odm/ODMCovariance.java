@@ -25,10 +25,11 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Data;
+import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.frames.Frame;
-import org.orekit.frames.LOFType;
+import org.orekit.time.AbsoluteDate;
 
-/** Container for covariance matrix}.
+/** Container for covariance matrix.
  * @author sports
  * @since 6.1
  */
@@ -40,24 +41,33 @@ public class ODMCovariance extends CommentsContainer implements Data {
     };
 
     /** Supplier for default reference frame. */
-    private final Supplier<Frame> defaultRefFrameSupplier;
+    private final Supplier<Frame> defaultFrameSupplier;
 
-    /** Coordinate system for covariance matrix, for Local Orbital Frames. */
-    private LOFType covRefLofType;
+    /** Supplier for default CCSDS reference frame. */
+    private final Supplier<CCSDSFrame> defaultCCSDSFrameSupplier;
 
-    /** Coordinate system for covariance matrix, for absolute frames.
-     * If not given it is set equal to refFrame. */
-    private Frame covRefFrame;
+    /** Matrix epoch. */
+    private AbsoluteDate epoch;
+
+    /** Reference frame in which data are given (may be null if referenceCCSDSFrame is a LOF frame). */
+    private Frame referenceFrame;
+
+    /** Reference frame in which data are given. */
+    private CCSDSFrame referenceCCSDSFrame;
 
     /** Position/Velocity covariance matrix. */
     private RealMatrix covarianceMatrix;
 
     /** Create an empty data set.
-     * @param defaultRefFrameSupplier supplier for default reference frame
+     * @param defaultFrameSupplier supplier for default reference frame
+    * if no frame is specified in the CCSDS message
+     * @param defaultCCSDSFrameSupplier supplier for default CCSDS reference frame
      * if no frame is specified in the CCSDS message
      */
-    public ODMCovariance(final Supplier<Frame> defaultRefFrameSupplier) {
-        this.defaultRefFrameSupplier = defaultRefFrameSupplier;
+    public ODMCovariance(final Supplier<Frame> defaultFrameSupplier,
+                         final Supplier<CCSDSFrame> defaultCCSDSFrameSupplier) {
+        this.defaultFrameSupplier      = defaultFrameSupplier;
+        this.defaultCCSDSFrameSupplier = defaultCCSDSFrameSupplier;
         covarianceMatrix = MatrixUtils.createRealMatrix(6, 6);
         for (int i = 0; i < covarianceMatrix.getRowDimension(); ++i) {
             for (int j = 0; j <= i; ++j) {
@@ -70,6 +80,7 @@ public class ODMCovariance extends CommentsContainer implements Data {
     @Override
     public void checkMandatoryEntries() {
         super.checkMandatoryEntries();
+        checkNotNull(epoch, ODMCovarianceKey.EPOCH);
         for (int i = 0; i < covarianceMatrix.getRowDimension(); ++i) {
             for (int j = 0; j <= i; ++j) {
                 if (Double.isNaN(covarianceMatrix.getEntry(i, j))) {
@@ -80,53 +91,48 @@ public class ODMCovariance extends CommentsContainer implements Data {
         }
     }
 
-    /** Get coordinate system for covariance matrix, for Local Orbital Frames.
-     * <p>
-     * The value returned is null if the covariance matrix is given in an
-     * absolute frame rather than a Local Orbital Frame. In this case, the
-     * method {@link #getCovRefFrame()} must be used instead.
-     * </p>
-     * @return the coordinate system for covariance matrix, or null if the
-     * covariance matrix is given in an absolute frame rather than a Local
-     * Orbital Frame
+    /** Get matrix epoch.
+     * @return matrix epoch
      */
-    public LOFType getCovRefLofType() {
-        return covRefLofType;
+    public AbsoluteDate getEpoch() {
+        return epoch;
     }
 
-    /** Set coordinate system for covariance matrix, for Local Orbital Frames.
-     * @param covRefLofType the coordinate system to be set
+    /** Set matrix epoch.
+     * @param epoch matrix epoch
      */
-    public void setCovRefLofType(final LOFType covRefLofType) {
+    public void setEpoch(final AbsoluteDate epoch) {
+        this.epoch = epoch;
+    }
+
+    /**
+     * Get the reference frame as an Orekit {@link Frame}.
+     *
+     * @return The reference frame specified by the {@code COV_REF_FRAME} keyword
+     * or inherited from metadate
+     */
+    public Frame getRefFrame() {
+        return referenceFrame == null ? defaultFrameSupplier.get() : referenceFrame;
+    }
+
+    /**
+     * Get the reference frame as a {@link CCSDSFrame}.
+     *
+     * @return The reference frame specified by the {@code COV_REF_FRAME} keyword
+     * or inherited from metadate
+     */
+    public CCSDSFrame getRefCCSDSFrame() {
+        return referenceCCSDSFrame == null ? defaultCCSDSFrameSupplier.get() : referenceCCSDSFrame;
+    }
+
+    /** Set the reference frame in which data are given.
+     * @param frame the reference frame to be set
+     * @param ccsdsFrame the reference frame to be set
+     */
+    public void setRefFrame(final Frame frame, final CCSDSFrame ccsdsFrame) {
         refuseFurtherComments();
-        this.covRefLofType = covRefLofType;
-        this.covRefFrame   = null;
-    }
-
-    /** Get coordinate system for covariance matrix, for absolute frames.
-     * <p>
-     * The value returned is null if the covariance matrix is given in a
-     * Local Orbital Frame rather than an absolute frame. In this case, the
-     * method {@link #getCovRefLofType()} must be used instead.
-     * </p>
-     * @return the coordinate system for covariance matrix
-     */
-    public Frame getCovRefFrame() {
-        if (covRefFrame == null) {
-            // if both covRefFrame and covRefFrame are null
-            // we use the default provider (that should correspond to the frame from metadata)
-            return covRefLofType == null ? defaultRefFrameSupplier.get() : null;
-        }
-        return covRefFrame;
-    }
-
-    /** Set coordinate system for covariance matrix.
-     * @param covRefFrame the coordinate system to be set
-     */
-    public void setCovRefFrame(final Frame covRefFrame) {
-        refuseFurtherComments();
-        this.covRefLofType = null;
-        this.covRefFrame   = covRefFrame;
+        this.referenceFrame      = frame;
+        this.referenceCCSDSFrame = ccsdsFrame;
     }
 
     /** Get the Position/Velocity covariance matrix.

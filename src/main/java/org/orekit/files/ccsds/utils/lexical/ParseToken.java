@@ -364,15 +364,19 @@ public class ParseToken {
     /** Process the content as a frame.
      * @param consumer consumer of the frame
      * @param context parsing context
+     * @param allowLOF if true, {@link CCSDSFrame#isLof() Local Orbital Frames} are allowed
      * @return always returns {@code true}
      */
-    public boolean processAsFrame(final FrameConsumer consumer, final ParsingContext context) {
+    public boolean processAsFrame(final FrameConsumer consumer,
+                                  final ParsingContext context,
+                                  final boolean allowLOF) {
         if (type == TokenType.ENTRY) {
             try {
                 final CCSDSFrame frame = CCSDSFrame.valueOf(DASH.matcher(content).replaceAll(""));
-                consumer.accept(frame.getFrame(context.getConventions(),
-                                               context.isSimpleEOP(),
-                                               context.getDataContext()),
+                consumer.accept(allowLOF && frame.isLof() ?
+                                null : frame.getFrame(context.getConventions(),
+                                                      context.isSimpleEOP(),
+                                                      context.getDataContext()),
                                 frame);
             } catch (IllegalArgumentException iae) {
                 throw generateException(iae);
