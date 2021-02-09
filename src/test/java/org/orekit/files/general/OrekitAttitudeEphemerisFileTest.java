@@ -43,6 +43,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMAttitudeType;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMMetadata;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMParser;
+import org.orekit.files.ccsds.ndm.adm.aem.AEMSegment;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMWriter;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer;
@@ -122,7 +123,7 @@ public class OrekitAttitudeEphemerisFileTest {
         assertEquals(0.0, states.get(states.size() - 1).getDate().durationFrom(satellite.getStop()), 1.0e-15);
 
         // Test of all getters for OrekitAttitudeEphemerisSegment
-        AttitudeEphemerisSegment segment = satellite.getSegments().get(0);
+        AttitudeEphemerisSegment<TimeStampedAngularCoordinates> segment = satellite.getSegments().get(0);
         assertEquals(OrekitSatelliteAttitudeEphemeris.DEFAULT_INTERPOLATION_METHOD, segment.getInterpolationMethod());
         assertEquals(OrekitSatelliteAttitudeEphemeris.DEFAULT_INTERPOLATION_SIZE, segment.getInterpolationSamples());
         assertEquals(0.0, states.get(0).getDate().durationFrom(segment.getStart()), 1.0e-15);
@@ -143,7 +144,7 @@ public class OrekitAttitudeEphemerisFileTest {
             write(writer, ephemerisFile);
         }
 
-        AttitudeEphemerisFile ephemerisFromFile =
+        AttitudeEphemerisFile<TimeStampedAngularCoordinates, AEMSegment> ephemerisFromFile =
                         new KVNLexicalAnalyzer(tempAemFile).
                         accept(new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1));
         Files.delete(Paths.get(tempAemFile));

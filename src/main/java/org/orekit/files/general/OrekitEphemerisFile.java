@@ -43,7 +43,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @since 9.0
  *
  */
-public class OrekitEphemerisFile implements EphemerisFile {
+public class OrekitEphemerisFile
+    implements EphemerisFile<TimeStampedPVCoordinates, OrekitEphemerisFile.OrekitEphemerisSegment> {
 
     /** Hashmap of satellite ephemeris. **/
     private final Map<String, OrekitSatelliteEphemeris> satellites;
@@ -78,7 +79,8 @@ public class OrekitEphemerisFile implements EphemerisFile {
      * Inner class of {@link OrekitEphemerisFile} that defines the
      * {@link OrekitSatelliteEphemeris} corresponding object for this ephemeris type.
      */
-    public static class OrekitSatelliteEphemeris implements SatelliteEphemeris {
+    public static class OrekitSatelliteEphemeris
+        implements EphemerisFile.SatelliteEphemeris<TimeStampedPVCoordinates, OrekitEphemerisSegment> {
 
         /**
          * Defines the default interpolation sample size if it is not specified
@@ -127,7 +129,7 @@ public class OrekitEphemerisFile implements EphemerisFile {
 
         /** {@inheritDoc} */
         @Override
-        public List<? extends EphemerisSegment> getSegments() {
+        public List<OrekitEphemerisSegment> getSegments() {
             return Collections.unmodifiableList(this.segments);
         }
 
@@ -270,7 +272,8 @@ public class OrekitEphemerisFile implements EphemerisFile {
         }
     }
 
-    public static class OrekitEphemerisSegment implements EphemerisSegment {
+    public static class OrekitEphemerisSegment
+        implements EphemerisFile.EphemerisSegment<TimeStampedPVCoordinates> {
 
         /** Coordinates for this ephemeris segment. **/
         private final List<TimeStampedPVCoordinates> coordinates;

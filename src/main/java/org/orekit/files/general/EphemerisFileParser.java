@@ -19,12 +19,17 @@ package org.orekit.files.general;
 import java.io.BufferedReader;
 import java.io.IOException;
 
+import org.orekit.utils.TimeStampedPVCoordinates;
+
 /**
  * Parse an ephemeris file.
  *
+ * @param <C> type of the Cartesian coordinates
+ * @param <S> type of the segment
  * @author Evan Ward
  */
-public interface EphemerisFileParser {
+public interface EphemerisFileParser<C extends TimeStampedPVCoordinates,
+                                     S extends EphemerisFile.EphemerisSegment<C>> {
 
     /**
      * Parse an ephemeris file from a stream.
@@ -34,7 +39,7 @@ public interface EphemerisFileParser {
      * @return a parsed ephemeris file.
      * @throws IOException     if {@code reader} throws one.
      */
-    EphemerisFile parse(BufferedReader reader, String fileName)
+    EphemerisFile<C, S> parse(BufferedReader reader, String fileName)
             throws IOException;
 
     /**
@@ -54,6 +59,6 @@ public interface EphemerisFileParser {
      * @return parsed ephemeris file.
      * @throws IOException if one is thrown while opening or reading from {@code fileName}
      */
-    EphemerisFile parse(String fileName) throws IOException;
+    EphemerisFile<C, S> parse(String fileName) throws IOException;
 
 }

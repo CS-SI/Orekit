@@ -33,7 +33,6 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFileParser;
-import org.orekit.files.ilrs.CPFFile.CPFCoordinate;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
 import org.orekit.time.AbsoluteDate;
@@ -57,7 +56,8 @@ import org.orekit.utils.IERSConventions;
  * @author Bryan Cazabonne
  * @since 10.3
  */
-public class CPFParser implements EphemerisFileParser {
+public class CPFParser
+    implements EphemerisFileParser<CPFFile.CPFCoordinate, CPFFile.CPFEphemeris> {
 
     /** File format. */
     private static final String FILE_FORMAT = "CPF";
@@ -498,8 +498,7 @@ public class CPFParser implements EphemerisFileParser {
                 final Vector3D position = new Vector3D(x, y, z);
 
                 // CPF coordinate
-                final CPFCoordinate coordinate =
-                                new CPFCoordinate(date, position, leap);
+                final CPFFile.CPFCoordinate coordinate = new CPFFile.CPFCoordinate(date, position, leap);
                 pi.file.addSatelliteCoordinate(coordinate);
 
             }

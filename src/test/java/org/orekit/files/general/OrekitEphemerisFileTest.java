@@ -40,6 +40,7 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.files.ccsds.ndm.odm.oem.OEMMetadata;
 import org.orekit.files.ccsds.ndm.odm.oem.OEMParser;
+import org.orekit.files.ccsds.ndm.odm.oem.OEMSegment;
 import org.orekit.files.ccsds.ndm.odm.oem.OEMWriter;
 import org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer;
 import org.orekit.files.general.EphemerisFile.EphemerisSegment;
@@ -137,10 +138,10 @@ public class OrekitEphemerisFileTest {
 
         OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                          null, Constants.EIGEN5C_EARTH_MU, 2);
-        EphemerisFile ephemerisFromFile = new KVNLexicalAnalyzer(tempOemFile).accept(parser);
+        EphemerisFile<TimeStampedPVCoordinates, OEMSegment> ephemerisFromFile = new KVNLexicalAnalyzer(tempOemFile).accept(parser);
         Files.delete(Paths.get(tempOemFile));
         
-        EphemerisSegment segment = ephemerisFromFile.getSatellites().get(satId).getSegments().get(0);
+        EphemerisSegment<TimeStampedPVCoordinates> segment = ephemerisFromFile.getSatellites().get(satId).getSegments().get(0);
         assertEquals(states.get(0).getDate(), segment.getStart());
         assertEquals(states.get(states.size() - 1).getDate(), segment.getStop());
         assertEquals(states.size(), segment.getCoordinates().size());

@@ -22,7 +22,7 @@ import java.util.List;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFile;
-import org.orekit.files.general.EphemerisFile.EphemerisSegment;
+import org.orekit.files.general.EphemerisFile.SatelliteEphemeris;
 import org.orekit.files.general.EphemerisFileWriter;
 import org.orekit.files.ilrs.StreamingCpfWriter.Segment;
 import org.orekit.time.TimeScale;
@@ -64,7 +64,8 @@ public class CPFWriter implements EphemerisFileWriter {
 
     /** {@inheritDoc} */
     @Override
-    public void write(final Appendable writer, final EphemerisFile ephemerisFile)
+    public <C extends TimeStampedPVCoordinates, S extends EphemerisFile.EphemerisSegment<C>>
+        void write(final Appendable writer, final EphemerisFile<C, S> ephemerisFile)
         throws IOException {
 
         // Verify if writer is not a null object
@@ -78,8 +79,8 @@ public class CPFWriter implements EphemerisFileWriter {
         }
 
         // Get satellite and ephemeris segments to output.
-        final EphemerisFile.SatelliteEphemeris satEphem = ephemerisFile.getSatellites().get(header.getIlrsSatelliteId());
-        final List<? extends EphemerisSegment> segments = satEphem.getSegments();
+        final SatelliteEphemeris<C, S> satEphem = ephemerisFile.getSatellites().get(header.getIlrsSatelliteId());
+        final List<S> segments = satEphem.getSegments();
 
         // Writer
         final StreamingCpfWriter cpfWriter =
@@ -88,9 +89,9 @@ public class CPFWriter implements EphemerisFileWriter {
         cpfWriter.writeHeader();
 
         // Loop on ephemeris segments
-        for (final EphemerisSegment segment : segments) {
+        for (final S segment : segments) {
             final Segment segmentWriter = cpfWriter.newSegment(header.getRefFrame());
-            // Loop on coordiates
+            // Loop on coordinates
             for (final TimeStampedPVCoordinates coordinates : segment.getCoordinates()) {
                 segmentWriter.writeEphemerisLine(coordinates);
             }

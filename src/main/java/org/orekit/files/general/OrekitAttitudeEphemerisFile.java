@@ -39,7 +39,9 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * @since 10.3
  *
  */
-public class OrekitAttitudeEphemerisFile implements AttitudeEphemerisFile {
+public class OrekitAttitudeEphemerisFile
+    implements AttitudeEphemerisFile<TimeStampedAngularCoordinates,
+                                     OrekitAttitudeEphemerisFile.OrekitAttitudeEphemerisSegment> {
 
     /** Hashmap of satellite ephemeris. **/
     private final Map<String, OrekitSatelliteAttitudeEphemeris> satellites;
@@ -75,7 +77,9 @@ public class OrekitAttitudeEphemerisFile implements AttitudeEphemerisFile {
      * {@link OrekitSatelliteAttitudeEphemeris} corresponding object for this ephemeris type.
      *
      */
-    public static class OrekitSatelliteAttitudeEphemeris implements SatelliteAttitudeEphemeris {
+    public static class OrekitSatelliteAttitudeEphemeris
+        implements SatelliteAttitudeEphemeris<TimeStampedAngularCoordinates,
+                                              OrekitAttitudeEphemerisFile.OrekitAttitudeEphemerisSegment> {
 
         /** Default interpolation sample size if it is not specified. **/
         public static final String DEFAULT_INTERPOLATION_METHOD = "LINEAR";
@@ -114,7 +118,7 @@ public class OrekitAttitudeEphemerisFile implements AttitudeEphemerisFile {
 
         /** {@inheritDoc} */
         @Override
-        public List<? extends AttitudeEphemerisSegment> getSegments() {
+        public List<OrekitAttitudeEphemerisSegment> getSegments() {
             return Collections.unmodifiableList(this.segments);
         }
 
@@ -185,7 +189,8 @@ public class OrekitAttitudeEphemerisFile implements AttitudeEphemerisFile {
         }
     }
 
-    public static class OrekitAttitudeEphemerisSegment implements AttitudeEphemerisSegment {
+    public static class OrekitAttitudeEphemerisSegment
+        implements AttitudeEphemerisFile.AttitudeEphemerisSegment<TimeStampedAngularCoordinates> {
 
         /** List of attitude data lines. */
         private List<TimeStampedAngularCoordinates> attitudeDataLines;

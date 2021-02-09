@@ -59,7 +59,7 @@ import org.orekit.utils.IERSConventions;
  * @author Thomas Neidhart
  * @author Luc Maisonobe
  */
-public class SP3Parser implements EphemerisFileParser {
+public class SP3Parser implements EphemerisFileParser<SP3File.SP3Coordinate, SP3File.SP3Ephemeris> {
 
     /** Spaces delimiters. */
     private static final String SPACES = "\\s+";

@@ -37,7 +37,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Thomas Neidhart
  * @author Evan Ward
  */
-public class SP3File implements EphemerisFile {
+public class SP3File
+    implements EphemerisFile<SP3File.SP3Coordinate, SP3File.SP3Ephemeris> {
     /** String representation of the center of ephemeris coordinate system. **/
     public static final String SP3_FRAME_CENTER_STRING = "EARTH";
 
@@ -472,7 +473,9 @@ public class SP3File implements EphemerisFile {
     }
 
     /** An ephemeris for a single satellite in a SP3 file. */
-    public class SP3Ephemeris implements SatelliteEphemeris, EphemerisSegment {
+    public class SP3Ephemeris
+        implements  EphemerisFile.SatelliteEphemeris<SP3Coordinate, SP3Ephemeris>,
+                    EphemerisFile.EphemerisSegment<SP3Coordinate> {
 
         /** Satellite ID. */
         private final String id;

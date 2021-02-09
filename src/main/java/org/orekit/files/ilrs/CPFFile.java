@@ -37,7 +37,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Bryan Cazabonne
  * @since 10.3
  */
-public class CPFFile implements EphemerisFile {
+public class CPFFile implements EphemerisFile<CPFFile.CPFCoordinate, CPFFile.CPFEphemeris> {
 
     /** Gravitational coefficient. */
     private double mu;
@@ -148,7 +148,9 @@ public class CPFFile implements EphemerisFile {
     }
 
     /** An ephemeris entry  for a single satellite contains in a CPF file. */
-    public class CPFEphemeris implements SatelliteEphemeris, EphemerisSegment {
+    public class CPFEphemeris
+        implements EphemerisFile.SatelliteEphemeris<CPFCoordinate, CPFEphemeris>,
+                   EphemerisFile.EphemerisSegment<CPFCoordinate> {
 
         /** Ephemeris Data. */
         private final List<CPFCoordinate> coordinates;
