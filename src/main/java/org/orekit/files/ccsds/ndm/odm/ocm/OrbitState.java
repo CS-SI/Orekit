@@ -21,11 +21,11 @@ import org.orekit.files.ccsds.utils.CCSDSUnit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
-/** Orbital state entry.
+/** Orbit state entry.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OrbitalState implements TimeStamped {
+public class OrbitState implements TimeStamped {
 
     /** Entry date. */
     private final AbsoluteDate date;
@@ -39,7 +39,7 @@ public class OrbitalState implements TimeStamped {
      * @param first index of first field to consider
      * @param units units to use for parsing
      */
-    public OrbitalState(final AbsoluteDate date, final String[] fields, final int first, final CCSDSUnit[] units) {
+    public OrbitState(final AbsoluteDate date, final String[] fields, final int first, final CCSDSUnit[] units) {
         this.date     = date;
         this.elements = new double[units.length];
         for (int i = 0; i < elements.length; ++i) {

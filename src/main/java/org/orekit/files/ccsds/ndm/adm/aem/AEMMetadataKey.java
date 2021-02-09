@@ -69,7 +69,7 @@ public enum AEMMetadataKey {
     /** Placement of the scalar component in quaternion entry. */
     QUATERNION_TYPE((token, context, metadata) -> {
         if (token.getType() == TokenType.ENTRY) {
-            metadata.setIsFirst("FIRST".equals(token.getNormalizedContent()));
+            metadata.setIsFirst("FIRST".equals(token.getContentAsNormalizedString()));
         }
         return true;
     }),
@@ -80,7 +80,7 @@ public enum AEMMetadataKey {
     /** Reference frame for Euler rates. */
     RATE_FRAME((token, context, metadata) -> {
         if (token.getType() == TokenType.ENTRY) {
-            final String content = token.getNormalizedContent();
+            final String content = token.getContentAsNormalizedString();
             final char   suffix  = content.charAt(content.length() - 1);
             metadata.setLocalRates(metadata.getEndPoints().isLocalSuffix(suffix));
         }

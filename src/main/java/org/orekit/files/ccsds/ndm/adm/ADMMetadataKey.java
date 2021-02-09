@@ -36,7 +36,7 @@ public enum ADMMetadataKey {
     /** Center name entry. */
     CENTER_NAME((token, context, metadata) -> {
         if (token.getType() == TokenType.ENTRY) {
-            metadata.setCenterName(token.getNormalizedContent(), context.getDataContext().getCelestialBodies());
+            metadata.setCenterName(token.getContentAsNormalizedString(), context.getDataContext().getCelestialBodies());
         }
         return true;
     });

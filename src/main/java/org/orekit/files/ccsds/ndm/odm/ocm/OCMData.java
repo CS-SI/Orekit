@@ -17,40 +17,138 @@
 
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
+import org.orekit.files.ccsds.ndm.odm.ODMUserDefined;
+import org.orekit.files.ccsds.ndm.odm.opm.OPMManeuver;
 import org.orekit.files.ccsds.section.Data;
+import org.orekit.files.ccsds.section.Section;
 
-/**
- * Data container for Orbit Comprehensive Messages.
+/** Data container for Orbit Comprehensive Messages.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OCMData implements Data {
+public class OCMData implements Data, Section {
 
-    /** Orbital state histories. */
-    private final List<OrbitalStateHistory> orbitalStateHistories;
+    /** Orbit state histories logical blocks. */
+    private final List<OrbitStateHistory> orbitBlocks;
+
+    /** Physical properties logical block. */
+    private final PhysicalProperties physicBlock;
+
+    /** Covariance logical blocks. */
+    private final List<CovarianceHistory> covarianceBlocks;
+
+    /** Maneuvers logical blocks. */
+    private final List<OPMManeuver> maneuverBlocks;
+
+    /** Perturbations logical block. */
+    private final Perturbations perturbationsBlock;
+
+    /** Orbit determination logical block. */
+    private final OrbitDetermination orbitDeterminationBlock;
+
+    /** User defined parameters logical block. */
+    private final ODMUserDefined userDefinedBlock;
 
     /** Simple constructor.
+     * @param orbitBlocks orbital state histories logical blocks (may be empty)
+     * @param physicBlock physical properties logical block (may be null)
+     * @param covarianceBlocks covariance logical blocks (may be empty)
+     * @param maneuverBlocks maneuvers logical blocks (may be empty)
+     * @param perturbationsBlock perturbations logical block (may be null)
+     * @param orbitDeterminationBlock orbit determination logical block (may be null)
+     * @param userDefinedBlock user defined parameters logical block (may be null)
      */
-    public OCMData() {
-        orbitalStateHistories = new ArrayList<>();
+    public OCMData(final List<OrbitStateHistory> orbitBlocks,
+                   final PhysicalProperties      physicBlock,
+                   final List<CovarianceHistory> covarianceBlocks,
+                   final List<OPMManeuver>       maneuverBlocks,
+                   final Perturbations           perturbationsBlock,
+                   final OrbitDetermination      orbitDeterminationBlock,
+                   final ODMUserDefined          userDefinedBlock) {
+        this.orbitBlocks              = orbitBlocks;
+        this.physicBlock              = physicBlock;
+        this.covarianceBlocks         = covarianceBlocks;
+        this.maneuverBlocks           = maneuverBlocks;
+        this.perturbationsBlock       = perturbationsBlock;
+        this.orbitDeterminationBlock  = orbitDeterminationBlock;
+        this.userDefinedBlock         = userDefinedBlock;
     }
 
-    /** Add a new orbital state history.
-     * @param orbitStateHistory history to add
-     */
-    public void add(final OrbitalStateHistory orbitStateHistory) {
-        orbitalStateHistories.add(orbitStateHistory);
+    /** {@inheritDoc} */
+    @Override
+    public void checkMandatoryEntries() {
+        for (final OrbitStateHistory osh : orbitBlocks) {
+            osh.checkMandatoryEntries();
+        }
+        if (physicBlock != null) {
+            physicBlock.checkMandatoryEntries();
+        }
+        for (final CovarianceHistory ch : covarianceBlocks) {
+            ch.checkMandatoryEntries();
+        }
+        for (final OPMManeuver m : maneuverBlocks) {
+            m.checkMandatoryEntries();
+        }
+        if (perturbationsBlock != null) {
+            perturbationsBlock.checkMandatoryEntries();
+        }
+        if (orbitDeterminationBlock != null) {
+            orbitDeterminationBlock.checkMandatoryEntries();
+        }
+        if (userDefinedBlock != null) {
+            userDefinedBlock.checkMandatoryEntries();
+        }
     }
 
-    /** Get the orbital state histories.
-     * @return unmodifiable view of the orbital state histories
+    /** Get orbit state histories logical blocks.
+     * @return orbita state histories logical blocks (may be empty)
      */
-    public List<OrbitalStateHistory> getOrbitalStateHistories() {
-        return Collections.unmodifiableList(orbitalStateHistories);
+    public List<OrbitStateHistory> getOrbitBlocks() {
+        return orbitBlocks;
+    }
+
+    /** Get physical properties logical block.
+     * @return physical properties logical block (may be null)
+     */
+    public PhysicalProperties getPhysicBlock() {
+        return physicBlock;
+    }
+
+    /** Get covariance logical blocks.
+     * @return covariance logical blocks (may be empty)
+     */
+    public List<CovarianceHistory> getCovarianceBlocks() {
+        return covarianceBlocks;
+    }
+
+    /** Get maneuvers logical blocks.
+     * @return maneuvers logical block (may be empty)
+     */
+    public List<OPMManeuver> getManeuverBlocks() {
+        return maneuverBlocks;
+    }
+
+    /** Get perturbations logical block.
+     * @return perturbations logical block (may be null)
+     */
+    public Perturbations getPerturbationsBlock() {
+        return perturbationsBlock;
+    }
+
+    /** Get orbit determination logical block.
+     * @return orbit determination logical block (may be null)
+     */
+    public OrbitDetermination getOrbitDeterminationBlock() {
+        return orbitDeterminationBlock;
+    }
+
+    /** Get user defined parameters logical block.
+     * @return user defined parameters logical block (may be null)
+     */
+    public ODMUserDefined getUserDefinedBlock() {
+        return userDefinedBlock;
     }
 
 }

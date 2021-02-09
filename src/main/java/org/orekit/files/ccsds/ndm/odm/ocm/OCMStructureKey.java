@@ -16,43 +16,31 @@
  */
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
-import org.orekit.files.ccsds.utils.DataType;
-import org.orekit.files.ccsds.utils.Keyword;
-
-/** Keywords specific to ODCM header.
+/** Keywords for OCM data structure.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public enum OCMHeaderKeyword implements Keyword {
+public enum OCMStructureKey {
 
-    /** Format version. */
-    CCSDS_OCM_VERS(true, DataType.REAL);
+    /** Orbit state time history section. */
+    ORB,
 
-    /** Mandatory flag. */
-    private final boolean mandatory;
+    /** Physical properties section. */
+    PHYS,
 
-    /** Data type. */
-    private final DataType dataType;
+    /** Covariance time history section. */
+    COV,
 
-    /** Simple constructor.
-     * @param mandatory mandatory flag
-     * @param dataType data type
-     */
-    OCMHeaderKeyword(final boolean mandatory, final DataType dataType) {
-        this.mandatory = mandatory;
-        this.dataType  = dataType;
-    }
+    /** Maneuvers section. */
+    MAN,
 
-    /**  {@inheritDoc} */
-    @Override
-    public boolean isMandatory() {
-        return mandatory;
-    }
+    /**Perturbations parameters section. */
+    PERT,
 
-    /**  {@inheritDoc} */
-    @Override
-    public DataType getdataType() {
-        return dataType;
-    }
+    /** Orbit determination section. */
+    OD,
+
+    /** User-defined parameters section. */
+    USER;
 
 }

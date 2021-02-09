@@ -40,6 +40,10 @@ public class OCMMetadata extends ODMMetadata {
     /** Unique satellite identification designator for the object. */
     private String objectDesignator;
 
+    /** International designator for the object as assigned by the UN Committee
+     * on Space Research (COSPAR) and the US National Space Science Data Center (NSSDC). */
+    private String internationalDesignator;
+
     /** Programmatic Point Of Contact at originator. */
     private String originatorPOC;
 
@@ -73,21 +77,20 @@ public class OCMMetadata extends ODMMetadata {
     /** Unique ID identifying next message from a given originator. */
     private String nextMessageID;
 
-    /** Names of Attitude Data Messages link to this Orbit Data Message. */
-    private List<String> attMessageLink;
+    /** Unique identifier of Attitude Data Message linkrd to this Orbit Data Message. */
+    private String admMessageLink;
 
-    /** Names of Conjunction Data Messages link to this Orbit Data Message. */
-    private List<String> cdmMessageLink;
+    /** Unique identifier of Conjunction Data Message linkrd to this Orbit Data Message. */
+    private String cdmMessageLink;
 
-    /** Names of Pointing Request Messages link to this Orbit Data Message. */
-    private List<String> prmMessageLink;
+    /** Unique identifier of Pointing Request Message linkrd to this Orbit Data Message. */
+    private String prmMessageLink;
 
-    /** Names of Reentry Data Messages link to this Orbit Data Message. */
-    private List<String> rdmMessageLink;
+    /** Unique identifier of Reentry Data Messages linked to this Orbit Data Message. */
+    private String rdmMessageLink;
 
-    /** International designator for the object as assigned by the UN Committee
-     * on Space Research (COSPAR) and the US National Space Science Data Center (NSSDC). */
-    private String internationalDesignator;
+    /** Specification of satellite catalog source. */
+    private String catalogName;
 
     /** Operator of the space object. */
     private String operator;
@@ -95,14 +98,11 @@ public class OCMMetadata extends ODMMetadata {
     /** Owner of the space object. */
     private String owner;
 
-    /** Name of the constellation this space object belongs to. */
-    private String constellation;
-
     /** Name of the country where the space object owner is based. */
     private String country;
 
-    /** Specification of satellite catalog source. */
-    private String catalogName;
+    /** Name of the constellation this space object belongs to. */
+    private String constellation;
 
     /** Type of object. */
     private ObjectType objectType;
@@ -172,6 +172,13 @@ public class OCMMetadata extends ODMMetadata {
 
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void checkMandatoryEntries() {
+        super.checkMandatoryEntries();
+        checkNotNull(epochT0, OCMMetadataKey.EPOCH_TZERO);
+    }
+
     /** Get the message classification.
      * @return message classification.
      */
@@ -215,6 +222,21 @@ public class OCMMetadata extends ODMMetadata {
     void setObjectDesignator(final String objectDesignator) {
         refuseFurtherComments();
         this.objectDesignator = objectDesignator;
+    }
+
+    /** Get the international designator for the object.
+     * @return international designator for the object
+     */
+    public String getInternationalDesignator() {
+        return internationalDesignator;
+    }
+
+    /** Set the international designator for the object.
+     * @param internationalDesignator international designator for the object
+     */
+    void setInternationalDesignator(final String internationalDesignator) {
+        refuseFurtherComments();
+        this.internationalDesignator = internationalDesignator;
     }
 
     /** Get the programmatic Point Of Contact at originator.
@@ -367,21 +389,6 @@ public class OCMMetadata extends ODMMetadata {
         this.previousMessageID = previousMessageID;
     }
 
-    /** Get the creation date of previous message from a given originator.
-     * @return creation date of previous message from a given originator
-     */
-    public AbsoluteDate getPreviousMessageEpoch() {
-        return previousMessageEpoch;
-    }
-
-    /** Set the creation date of previous message from a given originator.
-     * @param previousMessageEpoch creation date of previous message from a given originator
-     */
-    void setPreviousMessageEpoch(final AbsoluteDate previousMessageEpoch) {
-        refuseFurtherComments();
-        this.previousMessageEpoch = previousMessageEpoch;
-    }
-
     /** Get the unique ID identifying next message from a given originator.
      * @return unique ID identifying next message from a given originator
      */
@@ -397,94 +404,79 @@ public class OCMMetadata extends ODMMetadata {
         this.nextMessageID = nextMessageID;
     }
 
-    /** Get the creation date of next message from a given originator.
-     * @return creation date of next message from a given originator
+    /** Get the Unique identifier of Attitude Data Message linked to this Orbit Data Message.
+     * @return Unique identifier of Attitude Data Message linked to this Orbit Data Message
      */
-    public AbsoluteDate getNextMessageEpoch() {
-        return nextMessageEpoch;
+    public String getAdmMessageLink() {
+        return admMessageLink;
     }
 
-    /** Set the creation date of next message from a given originator.
-     * @param nextMessageEpoch creation date of next message from a given originator
+    /** Set the Unique identifier of Attitude Data Message linked to this Orbit Data Message.
+     * @param admMessageLink Unique identifier of Attitude Data Message linked to this Orbit Data Message
      */
-    void setNextMessageEpoch(final AbsoluteDate nextMessageEpoch) {
+    void setAdmMessageLink(final String admMessageLink) {
         refuseFurtherComments();
-        this.nextMessageEpoch = nextMessageEpoch;
+        this.admMessageLink = admMessageLink;
     }
 
-    /** Get the names of Attitude Data Messages link to this Orbit Data Message.
-     * @return names of Attitude Data Messages link to this Orbit Data Message
+    /** Get the Unique identifier of Conjunction Data Message linked to this Orbit Data Message.
+     * @return Unique identifier of Conjunction Data Message linked to this Orbit Data Message
      */
-    public List<String> getAttMessageLink() {
-        return attMessageLink;
-    }
-
-    /** Set the names of Attitude Data Messages link to this Orbit Data Message.
-     * @param attMessageLink names of Attitude Data Messages link to this Orbit Data Message
-     */
-    void setAttMessageLink(final List<String> attMessageLink) {
-        refuseFurtherComments();
-        this.attMessageLink = attMessageLink;
-    }
-
-    /** Get the names of Conjunction Data Messages link to this Orbit Data Message.
-     * @return names of Conjunction Data Messages link to this Orbit Data Message
-     */
-    public List<String> getCdmMessageLink() {
+    public String getCdmMessageLink() {
         return cdmMessageLink;
     }
 
-    /** Set the names of Conjunction Data Messages link to this Orbit Data Message.
-     * @param cdmMessageLink names of Conjunction Data Messages link to this Orbit Data Message
+    /** Set the Unique identifier of Conjunction Data Message linked to this Orbit Data Message.
+     * @param cdmMessageLink Unique identifier of Conjunction Data Message linked to this Orbit Data Message
      */
-    void setCdmMessageLink(final List<String> cdmMessageLink) {
+    void setCdmMessageLink(final String cdmMessageLink) {
         refuseFurtherComments();
         this.cdmMessageLink = cdmMessageLink;
     }
 
-    /** Get the names of Pointing Request Messages link to this Orbit Data Message.
-     * @return names of Pointing Request Messages link to this Orbit Data Message
+    /** Get the Unique identifier of Pointing Request Message linked to this Orbit Data Message.
+     * @return Unique identifier of Pointing Request Message linked to this Orbit Data Message
      */
-    public List<String> getPrmMessageLink() {
+    public String getPrmMessageLink() {
         return prmMessageLink;
     }
 
-    /** Set the names of Pointing Request Messages link to this Orbit Data Message.
-     * @param prmMessageLink names of Pointing Request Messages link to this Orbit Data Message
+    /** Set the Unique identifier of Pointing Request Message linked to this Orbit Data Message.
+     * @param prmMessageLink Unique identifier of Pointing Request Message linked to this Orbit Data Message
      */
-    void setPrmMessageLink(final List<String> prmMessageLink) {
+    void setPrmMessageLink(final String prmMessageLink) {
         refuseFurtherComments();
         this.prmMessageLink = prmMessageLink;
     }
 
-    /** Get the names of Reentry Data Messages link to this Orbit Data Message.
-     * @return names of Reentry Data Messages link to this Orbit Data Message
+    /** Get the Unique identifier of Reentry Data Message linked to this Orbit Data Message.
+     * @return Unique identifier of Reentry Data Message linked to this Orbit Data Message
      */
-    public List<String> getRdmMessageLink() {
+    public String getRdmMessageLink() {
         return rdmMessageLink;
     }
 
-    /** Set the names of Reentry Data Messages link to this Orbit Data Message.
-     * @param rdmMessageLink names of Reentry Data Messages link to this Orbit Data Message
+    /** Set the Unique identifier of Reentry Data Message linked to this Orbit Data Message.
+     * @param rdmMessageLink Unique identifier of Reentry Data Message linked to this Orbit Data Message
      */
-    void setRdmMessageLink(final List<String> rdmMessageLink) {
+    void setRdmMessageLink(final String rdmMessageLink) {
         refuseFurtherComments();
         this.rdmMessageLink = rdmMessageLink;
     }
 
-    /** Get the international designator for the object.
-     * @return international designator for the object
+    /** Get the specification of satellite catalog source.
+     * @return specification of satellite catalog source
      */
-    public String getInternationalDesignator() {
-        return internationalDesignator;
+    public String getCatalogName() {
+        return catalogName;
     }
 
-    /** Set the international designator for the object.
-     * @param internationalDesignator international designator for the object
+    /** Set the specification of satellite catalog source.
+     * @param catalogName specification of satellite catalog source
      */
-    void setInternationalDesignator(final String internationalDesignator) {
+    void setCatalogName(final String catalogName) {
         refuseFurtherComments();
-        this.internationalDesignator = internationalDesignator;
+        this.catalogName = catalogName;
     }
 
     /** Get the operator of the space object.
@@ -517,21 +509,6 @@ public class OCMMetadata extends ODMMetadata {
         this.owner = owner;
     }
 
-    /** Get the name of the constellation this space object belongs to.
-     * @return name of the constellation this space object belongs to
-     */
-    public String getConstellation() {
-        return constellation;
-    }
-
-    /** Set the name of the constellation this space object belongs to.
-     * @param constellation name of the constellation this space object belongs to
-     */
-    void setConstellation(final String constellation) {
-        refuseFurtherComments();
-        this.constellation = constellation;
-    }
-
     /** Get the name of the country where the space object owner is based.
      * @return name of the country where the space object owner is based
      */
@@ -547,19 +524,19 @@ public class OCMMetadata extends ODMMetadata {
         this.country = country;
     }
 
-    /** Get the specification of satellite catalog source.
-     * @return specification of satellite catalog source
+    /** Get the name of the constellation this space object belongs to.
+     * @return name of the constellation this space object belongs to
      */
-    public String getCatalogName() {
-        return catalogName;
+    public String getConstellation() {
+        return constellation;
     }
 
-    /** Set the specification of satellite catalog source.
-     * @param catalogName specification of satellite catalog source
+    /** Set the name of the constellation this space object belongs to.
+     * @param constellation name of the constellation this space object belongs to
      */
-    void setCatalogName(final String catalogName) {
+    void setConstellation(final String constellation) {
         refuseFurtherComments();
-        this.catalogName = catalogName;
+        this.constellation = constellation;
     }
 
     /** Get the type of object.
@@ -665,6 +642,36 @@ public class OCMMetadata extends ODMMetadata {
     void setClockSecPerSISec(final double secClockPerSISec) {
         refuseFurtherComments();
         this.clockSecPerSISec = secClockPerSISec;
+    }
+
+    /** Get the creation date of previous message from a given originator.
+     * @return creation date of previous message from a given originator
+     */
+    public AbsoluteDate getPreviousMessageEpoch() {
+        return previousMessageEpoch;
+    }
+
+    /** Set the creation date of previous message from a given originator.
+     * @param previousMessageEpoch creation date of previous message from a given originator
+     */
+    void setPreviousMessageEpoch(final AbsoluteDate previousMessageEpoch) {
+        refuseFurtherComments();
+        this.previousMessageEpoch = previousMessageEpoch;
+    }
+
+    /** Get the creation date of next message from a given originator.
+     * @return creation date of next message from a given originator
+     */
+    public AbsoluteDate getNextMessageEpoch() {
+        return nextMessageEpoch;
+    }
+
+    /** Set the creation date of next message from a given originator.
+     * @param nextMessageEpoch creation date of next message from a given originator
+     */
+    void setNextMessageEpoch(final AbsoluteDate nextMessageEpoch) {
+        refuseFurtherComments();
+        this.nextMessageEpoch = nextMessageEpoch;
     }
 
     /** Get the time of the earliest data contained in the OCM.

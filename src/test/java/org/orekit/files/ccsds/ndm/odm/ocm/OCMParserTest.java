@@ -121,7 +121,7 @@ public class OCMParserTest {
 
         // orbit data
         Assert.assertEquals(1, file.getData().getOrbitalStateHistories().size());
-        OrbitalStateHistory history = file.getData().getOrbitalStateHistories().get(0);
+        OrbitStateHistory history = file.getData().getOrbitalStateHistories().get(0);
         Assert.assertEquals("intervening data records omitted between DT=20.0 and DT=500.0", history.getComments().get(0));
         Assert.assertEquals("OSCULATING", history.getOrbAveraging());
         Assert.assertEquals("EARTH", history.getCenterName());
@@ -129,7 +129,7 @@ public class OCMParserTest {
         Assert.assertEquals(ElementsType.CARTPV, history.getOrbType());
         Assert.assertEquals(0.0, history.getOrbEpochT0().durationFrom(t0), 1.0e-15);
         Assert.assertEquals(file.getMetadata().getTimeSystem(), history.getOrbTimeSystem());
-        List<OrbitalState> states = history.getOrbitalStates();
+        List<OrbitState> states = history.getOrbitalStates();
         Assert.assertEquals(4, states.size());
 
         Assert.assertEquals(0.0, states.get(0).getDate().durationFrom(t0), 1.0e-15);

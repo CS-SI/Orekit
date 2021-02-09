@@ -72,13 +72,13 @@ public abstract class ADMParser<T extends NDMFile<?, ?>, P extends AbstractMessa
                                                final RotationOrderConsumer consumer) {
         if (sequence.getType() == TokenType.ENTRY) {
             try {
-                consumer.accept(RotationOrder.valueOf(sequence.getNormalizedContent().
+                consumer.accept(RotationOrder.valueOf(sequence.getContentAsNormalizedString().
                                                       replace('1', 'X').
                                                       replace('2', 'Y').
                                                       replace('3', 'Z')));
             } catch (IllegalArgumentException iae) {
                 throw new OrekitException(OrekitMessages.CCSDS_INVALID_ROTATION_SEQUENCE,
-                                          sequence.getNormalizedContent(),
+                                          sequence.getContentAsNormalizedString(),
                                           sequence.getLineNumber(), sequence.getFileName());
             }
         }

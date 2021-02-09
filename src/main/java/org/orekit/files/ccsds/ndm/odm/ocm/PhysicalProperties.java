@@ -14,27 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
-/** Object type used in CCSDS {@link OCMFile Orbit Comprehensive Messages}.
+import org.orekit.files.ccsds.section.CommentsContainer;
+
+/** Spacecraft physical properties.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public enum ObjectType {
+public class PhysicalProperties extends CommentsContainer {
 
-    /** Payload. */
-    PAYLOAD,
-
-    /** Rocket body. */
-    ROCKET_BODY,
-
-    /** Debris. */
-    DEBRIS,
-
-    /** Unknown. */
-    UNKNOWN,
-
-    /** Other. */
-    OTHER;
+    // TODO
 
 }

@@ -90,7 +90,7 @@ public enum ElementsType {
                   CCSDSUnit.DEG, CCSDSUnit.DEG, CCSDSUnit.DEG),
 
     /** Modified spherical 6-element set (λ, δ, β, A, r, v). */
-    LDMARV(" Modified spherical 6-element set (λ, δ, β, A, r, v)",
+    LDBARV(" Modified spherical 6-element set (λ, δ, β, A, r, v)",
            CCSDSUnit.DEG, CCSDSUnit.DEG, CCSDSUnit.DEG,
            CCSDSUnit.DEG, CCSDSUnit.KM, CCSDSUnit.KM_S),
 

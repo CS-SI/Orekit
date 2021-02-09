@@ -113,6 +113,13 @@ public class ParseToken {
         return content;
     }
 
+    /** Get the content of the entry as a list of free-text strings.
+     * @return content of the entry as a list of free-test strings
+     */
+    public List<String> getContentAsFreeTextStringList() {
+        return Arrays.asList(SPLIT_AT_COMMAS.split(getContent()));
+    }
+
     /** Get the normalized content of the entry.
      * <p>
      * Normalized strings are all uppercase,
@@ -121,8 +128,15 @@ public class ParseToken {
      * </p>
      * @return entry normalized content
      */
-    public String getNormalizedContent() {
+    public String getContentAsNormalizedString() {
         return SPACE.matcher(content.replace('_', ' ')).replaceAll(" ").trim().toUpperCase(Locale.US);
+    }
+
+    /** Get the content of the entry as a list of normalized strings.
+     * @return content of the entry as a list of normalized strings
+     */
+    public List<String> getContentAsNormalizedStringList() {
+        return Arrays.asList(SPLIT_AT_COMMAS.split(getContentAsNormalizedString()));
     }
 
     /** Get the content of the entry as a double.
@@ -159,7 +173,7 @@ public class ParseToken {
      */
     public char getContentAsNormalizedCharacter() {
         try {
-            return getNormalizedContent().charAt(0);
+            return getContentAsNormalizedString().charAt(0);
         } catch (NumberFormatException nfe) {
             throw generateException(nfe);
         }
@@ -198,6 +212,17 @@ public class ParseToken {
         return true;
     }
 
+    /** Process the content as a list of free-text strings.
+     * @param consumer consumer of the free-text strings list
+     * @return always returns {@code true}
+     */
+    public boolean processAsFreeTextStringList(final StringListConsumer consumer) {
+        if (type == TokenType.ENTRY) {
+            consumer.accept(getContentAsFreeTextStringList());
+        }
+        return true;
+    }
+
     /** Process the content as a normalized string.
      * @param consumer consumer of the normalized string
      * @return always returns {@code true}
@@ -205,7 +230,7 @@ public class ParseToken {
      */
     public boolean processAsNormalizedString(final StringConsumer consumer) {
         if (type == TokenType.ENTRY) {
-            consumer.accept(getNormalizedContent());
+            consumer.accept(getContentAsNormalizedString());
         }
         return true;
     }
@@ -229,7 +254,7 @@ public class ParseToken {
      */
     public boolean processAsIndexedNormalizedString(final int index, final IndexedStringConsumer consumer) {
         if (type == TokenType.ENTRY) {
-            consumer.accept(index, getNormalizedContent());
+            consumer.accept(index, getContentAsNormalizedString());
         }
         return true;
     }
@@ -240,7 +265,7 @@ public class ParseToken {
      */
     public boolean processAsNormalizedStringList(final StringListConsumer consumer) {
         if (type == TokenType.ENTRY) {
-            consumer.accept(Arrays.asList(SPLIT_AT_COMMAS.split(getNormalizedContent())));
+            consumer.accept(getContentAsNormalizedStringList());
         }
         return true;
     }
@@ -393,7 +418,7 @@ public class ParseToken {
      */
     public boolean processAsCenter(final CenterConsumer consumer, final boolean complainIfUnknown) {
         if (type == TokenType.ENTRY) {
-            String canonicalValue = getNormalizedContent();
+            String canonicalValue = getContentAsNormalizedString();
             if (canonicalValue.equals("SOLAR SYSTEM BARYCENTER") || canonicalValue.equals("SSB")) {
                 canonicalValue = "SOLAR_SYSTEM_BARYCENTER";
             } else if (canonicalValue.equals("EARTH MOON BARYCENTER") || canonicalValue.equals("EARTH-MOON BARYCENTER") ||
