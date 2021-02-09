@@ -33,7 +33,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * ephemerides of two different blocks are not suited for interpolation.
  * @author sports
  */
-public class OEMSegment extends Segment<OEMMetadata, OEMData> implements EphemerisFile.EphemerisSegment {
+public class OEMSegment extends Segment<OEMMetadata, OEMData>
+    implements EphemerisFile.EphemerisSegment<TimeStampedPVCoordinates> {
 
     /** Gravitational parameter use in m³/s². */
     private final double mu;

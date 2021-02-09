@@ -16,11 +16,7 @@
  */
 package org.orekit.files.ccsds.ndm.adm.aem;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Date;
@@ -44,7 +40,6 @@ import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KVNGenerator;
 import org.orekit.files.ccsds.utils.lexical.FileFormat;
 import org.orekit.files.general.AttitudeEphemerisFile;
-import org.orekit.files.general.AttitudeEphemerisFile.AttitudeEphemerisSegment;
 import org.orekit.files.general.AttitudeEphemerisFile.SatelliteAttitudeEphemeris;
 import org.orekit.files.general.AttitudeEphemerisFileWriter;
 import org.orekit.frames.Frame;
@@ -390,7 +385,8 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
      * </p>
      */
     @Override
-    public void write(final Appendable appendable, final AttitudeEphemerisFile ephemerisFile)
+    public <C extends TimeStampedAngularCoordinates, S extends AttitudeEphemerisFile.AttitudeEphemerisSegment<C>>
+        void write(final Appendable appendable, final AttitudeEphemerisFile<C, S> ephemerisFile)
         throws IOException {
 
         if (appendable == null) {
@@ -401,62 +397,47 @@ public class AEMWriter implements AttitudeEphemerisFileWriter {
             return;
         }
 
-        final SatelliteAttitudeEphemeris satEphem = ephemerisFile.getSatellites().get(metadata.getObjectID());
+        final SatelliteAttitudeEphemeris<C, S> satEphem = ephemerisFile.getSatellites().get(metadata.getObjectID());
         if (satEphem == null) {
             throw new OrekitIllegalArgumentException(OrekitMessages.VALUE_NOT_FOUND,
                                                      metadata.getObjectID(), "ephemerisFile");
         }
 
         // Get attitude ephemeris segments to output.
-        final List<? extends AttitudeEphemerisSegment> segments = satEphem.getSegments();
+        final List<S> segments = satEphem.getSegments();
         if (segments.isEmpty()) {
             // No data -> No output
             return;
         }
 
-        final Generator generator = new KVNGenerator(appendable, fileName);
-        writeHeader(generator);
+        try (Generator generator = new KVNGenerator(appendable, fileName)) {
+            writeHeader(generator);
 
-        // Loop on segments
-        for (final AttitudeEphemerisSegment segment : segments) {
+            // Loop on segments
+            for (final S segment : segments) {
 
-            // override template metadata with segment values
-            metadata.setStartTime(segment.getStart());
-            metadata.setStopTime(segment.getStop());
-            final Frame      segmentFrame = segment.getReferenceFrame();
-            final CCSDSFrame ccsdsFrame   = CCSDSFrame.map(segmentFrame);
-            metadata.getEndPoints().setExternalFrame(ccsdsFrame);
-            metadata.setInterpolationMethod(segment.getInterpolationMethod());
-            metadata.setInterpolationDegree(segment.getInterpolationSamples() - 1);
-            writeMetadata(generator);
+                // override template metadata with segment values
+                metadata.setStartTime(segment.getStart());
+                metadata.setStopTime(segment.getStop());
+                final Frame      segmentFrame = segment.getReferenceFrame();
+                final CCSDSFrame ccsdsFrame   = CCSDSFrame.map(segmentFrame);
+                metadata.getEndPoints().setExternalFrame(ccsdsFrame);
+                metadata.setInterpolationMethod(segment.getInterpolationMethod());
+                metadata.setInterpolationDegree(segment.getInterpolationSamples() - 1);
+                writeMetadata(generator);
 
-            // Loop on attitude data
-            startAttitudeBlock(generator);
-            if (segment instanceof AEMSegment) {
-                generator.writeComments(((AEMSegment) segment).getData());
+                // Loop on attitude data
+                startAttitudeBlock(generator);
+                if (segment instanceof AEMSegment) {
+                    generator.writeComments(((AEMSegment) segment).getData());
+                }
+                for (final TimeStampedAngularCoordinates coordinates : segment.getAngularCoordinates()) {
+                    writeAttitudeEphemerisLine(generator, coordinates);
+                }
+                endAttitudeBlock(generator);
             }
-            for (final TimeStampedAngularCoordinates coordinates : segment.getAngularCoordinates()) {
-                writeAttitudeEphemerisLine(generator, coordinates);
-            }
-            endAttitudeBlock(generator);
         }
 
-    }
-
-    /**
-     * Write the passed in {@link AEMFile} to a file at the output path specified.
-     * @param outputFilePath a file path that the corresponding file will be written to
-     * @param ephemerisFile a populated ephemeris file to serialize into the buffer
-     * @throws IOException if any file writing operations fail or if the underlying
-     *         format doesn't support a configuration in the EphemerisFile
-     *         (for example having multiple satellites in one file, having
-     *         the origin at an unspecified celestial body, etc.)
-     */
-    public void write(final String outputFilePath, final AttitudeEphemerisFile ephemerisFile)
-        throws IOException {
-        try (BufferedWriter appendable = Files.newBufferedWriter(Paths.get(outputFilePath), StandardCharsets.UTF_8)) {
-            write(appendable, ephemerisFile);
-        }
     }
 
     /** Writes the standard AEM header for the file.

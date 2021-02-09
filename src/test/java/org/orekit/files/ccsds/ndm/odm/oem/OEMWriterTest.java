@@ -83,12 +83,11 @@ public class OEMWriterTest {
         final OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                null, CelestialBodyFactory.getMars().getGM(), 1);
         final OEMFile oemFile = new KVNLexicalAnalyzer(inEntry, "OEMExample1.txt").accept(parser);
-        final EphemerisFile ephemerisFile = (EphemerisFile) oemFile;
 
         String tempOEMFilePath = tempFolder.newFile("TestWriteOEM1.oem").toString();
         OEMWriter writer = new OEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
                                          oemFile.getHeader(), oemFile.getSegments().get(0).getMetadata());
-        writer.write(tempOEMFilePath, ephemerisFile);
+        writer.write(tempOEMFilePath, oemFile);
 
         final OEMFile generatedOemFile = new KVNLexicalAnalyzer(tempOEMFilePath).
                         accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
@@ -103,13 +102,12 @@ public class OEMWriterTest {
         final OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                null, CelestialBodyFactory.getEarth().getGM(), 1);
         final OEMFile oemFile = new KVNLexicalAnalyzer(inEntry, "OEMExample1.txt").accept(parser);
-        final EphemerisFile ephemerisFile = (EphemerisFile) oemFile;
 
         String tempOEMFilePath = tempFolder.newFile("TestOEMUnfoundSpaceId.oem").toString();
         OEMWriter writer = new OEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
                                          oemFile.getHeader(), dummyMetadata());
         try {
-            writer.write(tempOEMFilePath, ephemerisFile);
+            writer.write(tempOEMFilePath, oemFile);
             fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oiae) {
             assertEquals(OrekitMessages.VALUE_NOT_FOUND, oiae.getSpecifier());
@@ -125,11 +123,10 @@ public class OEMWriterTest {
         final OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                null, CelestialBodyFactory.getEarth().getGM(), 1);
         final OEMFile oemFile = new KVNLexicalAnalyzer(inEntry, "OEMExample1.txt").accept(parser);
-        final EphemerisFile ephemerisFile = (EphemerisFile) oemFile;
         OEMWriter writer = new OEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
                                          oemFile.getHeader(), oemFile.getSegments().get(0).getMetadata());
         try {
-            writer.write((BufferedWriter) null, ephemerisFile);
+            writer.write((BufferedWriter) null, oemFile);
             fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oiae) {
             assertEquals(OrekitMessages.NULL_ARGUMENT, oiae.getSpecifier());
@@ -162,12 +159,11 @@ public class OEMWriterTest {
         final OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                null, CelestialBodyFactory.getEarth().getGM(), 1);
         final OEMFile oemFile = new KVNLexicalAnalyzer(inEntry, "OEMExample1.txt").accept(parser);
-        final EphemerisFile ephemerisFile = (EphemerisFile) oemFile;
 
         String tempOEMFilePath = tempFolder.newFile("TestOEMUnisatelliteWithDefault.oem").toString();
         OEMWriter writer = new OEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
                                          oemFile.getHeader(), oemFile.getSegments().get(0).getMetadata());
-        writer.write(tempOEMFilePath, ephemerisFile);
+        writer.write(tempOEMFilePath, oemFile);
 
         final OEMFile generatedOemFile = new KVNLexicalAnalyzer(tempOEMFilePath).
                         accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
@@ -317,7 +313,8 @@ public class OEMWriterTest {
         }
     }
 
-    private class StandAloneEphemerisFile implements EphemerisFile {
+    private class StandAloneEphemerisFile
+        implements EphemerisFile<TimeStampedPVCoordinates, OEMSegment> {
         private final Map<String, OEMSatelliteEphemeris> satEphem;
 
         /** Simple constructor.
@@ -352,7 +349,7 @@ public class OEMWriterTest {
                              new OEMSatelliteEphemeris(objectID, Constants.EIGEN5C_EARTH_MU, Collections.emptyList()));
             }
 
-            List<EphemerisFile.EphemerisSegment> segments =
+            List<OEMSegment> segments =
                             new ArrayList<>(satEphem.get(objectID).getSegments());
             segments.add(new OEMSegment(metadata, data, Constants.EIGEN5C_EARTH_MU));
             satEphem.put(objectID, new OEMSatelliteEphemeris(objectID, Constants.EIGEN5C_EARTH_MU, segments));

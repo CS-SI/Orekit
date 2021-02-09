@@ -32,7 +32,8 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class AEMSegment extends Segment<AEMMetadata, AEMData> implements AttitudeEphemerisFile.AttitudeEphemerisSegment {
+public class AEMSegment extends Segment<AEMMetadata, AEMData>
+    implements AttitudeEphemerisFile.AttitudeEphemerisSegment<TimeStampedAngularCoordinates> {
 
     /** IERS conventions to use. */
     private final IERSConventions conventions;
@@ -61,7 +62,7 @@ public class AEMSegment extends Segment<AEMMetadata, AEMData> implements Attitud
 
     /** {@inheritDoc} */
     @Override
-    public List<? extends TimeStampedAngularCoordinates> getAngularCoordinates() {
+    public List<TimeStampedAngularCoordinates> getAngularCoordinates() {
         return getData().getAngularCoordinates();
     }
 

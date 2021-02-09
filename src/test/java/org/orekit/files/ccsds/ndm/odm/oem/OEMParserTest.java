@@ -113,34 +113,22 @@ public class OEMParserTest {
         Assert.assertEquals(Vector3D.ZERO, file.getSegments().get(1).getData().getEphemeridesDataLines().get(1).getAcceleration());
         final Array2DRowRealMatrix covMatrix = new Array2DRowRealMatrix(6, 6);
         final double[] column1 = {
-            3.331349476038534e-04, 4.618927349220216e-04,
-            -3.070007847730449e-04, -3.349365033922630e-07,
-            -2.211832501084875e-07, -3.041346050686871e-07
+             3.3313494e-04,  4.6189273e-04, -3.0700078e-04, -3.3493650e-07, -2.2118325e-07, -3.0413460e-07
         };
         final double[] column2 = {
-            4.618927349220216e-04, 6.782421679971363e-04,
-            -4.221234189514228e-04, -4.686084221046758e-07,
-            -2.864186892102733e-07, -4.989496988610662e-07
+             4.6189273e-04,  6.7824216e-04, -4.2212341e-04, -4.6860842e-07, -2.8641868e-07, -4.9894969e-07
         };
         final double[] column3 = {
-            -3.070007847730449e-04, -4.221234189514228e-04,
-            3.231931992380369e-04, 2.484949578400095e-07,
-            1.798098699846038e-07, 3.540310904497689e-07
+            -3.0700078e-04, -4.2212341e-04, 3.2319319e-04,  2.4849495e-07, 1.7980986e-07,  3.5403109e-07
         };
         final double[] column4 = {
-            -3.349365033922630e-07, -4.686084221046758e-07,
-            2.484949578400095e-07, 4.296022805587290e-10,
-            2.608899201686016e-10, 1.869263192954590e-10
+            -3.3493650e-07, -4.6860842e-07, 2.4849495e-07,  4.29602280e-10, 2.6088992e-10,  1.86926319e-10
         };
         final double[] column5 = {
-            -2.211832501084875e-07, -2.864186892102733e-07,
-            1.798098699846038e-07, 2.608899201686016e-10,
-            1.767514756338532e-10, 1.008862586240695e-10
+            -2.2118325e-07, -2.8641868e-07, 1.7980986e-07,  2.6088992e-10, 1.7675147e-10,  1.0088625e-10
         };
         final double[] column6 = {
-            -3.041346050686871e-07, -4.989496988610662e-07,
-            3.540310904497689e-07, 1.869263192954590e-10,
-            1.008862586240695e-10, 6.224444338635500e-10
+            -3.0413460e-07, -4.9894969e-07, 3.5403109e-07,  1.8692631e-10, 1.0088625e-10,  6.2244443e-10
         };
         covMatrix.setColumn(0, column1);
         covMatrix.setColumn(1, column2);
@@ -150,7 +138,7 @@ public class OEMParserTest {
         covMatrix.setColumn(5, column6);
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 6; j++) {
-                Assert.assertEquals(covMatrix.getEntry(i, j),
+                Assert.assertEquals(covMatrix.getEntry(i, j) * 1.0e6,
                                     file.getSegments().get(2).getData().getCovarianceMatrices().get(0).getCovarianceMatrix().getEntry(i, j),
                                     1e-10);
             }
@@ -188,7 +176,7 @@ public class OEMParserTest {
 
         final OEMSatelliteEphemeris satellite = file.getSatellites().get("1996-062A");
         Assert.assertEquals("1996-062A", satellite.getId());
-        final OEMSegment segment = satellite.getSegments().get(0);
+        final OEMSegment segment = (OEMSegment) satellite.getSegments().get(0);
         Assert.assertEquals(CelestialBodyFactory.getMars().getGM(), segment.getMu(), 1.0);
         Assert.assertEquals("EME2000", segment.getMetadata().getRefCCSDSFrame().name());
         Assert.assertEquals(segment.getMetadata().getCenterName(), "MARS BARYCENTER");

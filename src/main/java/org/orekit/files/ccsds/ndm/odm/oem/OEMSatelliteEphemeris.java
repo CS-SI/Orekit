@@ -22,12 +22,14 @@ import java.util.List;
 
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** OEM ephemeris blocks for a single satellite.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OEMSatelliteEphemeris implements EphemerisFile.SatelliteEphemeris {
+public class OEMSatelliteEphemeris
+    implements EphemerisFile.SatelliteEphemeris<TimeStampedPVCoordinates, OEMSegment> {
 
     /** ID of the satellite. */
     private final String id;
@@ -36,7 +38,7 @@ public class OEMSatelliteEphemeris implements EphemerisFile.SatelliteEphemeris {
     private final double mu;
 
     /** The ephemeris data for the satellite. */
-    private final List<? extends EphemerisFile.EphemerisSegment> blocks;
+    private final List<OEMSegment> blocks;
 
     /**
      * Create a container for the set of ephemeris blocks in the file that pertain to
@@ -46,7 +48,7 @@ public class OEMSatelliteEphemeris implements EphemerisFile.SatelliteEphemeris {
      * @param mu gravitational coefficient to use for building Cartesian/Keplerian orbits
      * @param blocks containing ephemeris data for the satellite.
      */
-    public OEMSatelliteEphemeris(final String id, final double mu, final List<? extends EphemerisFile.EphemerisSegment> blocks) {
+    public OEMSatelliteEphemeris(final String id, final double mu, final List<OEMSegment> blocks) {
         this.id     = id;
         this.mu     = mu;
         this.blocks = blocks;
@@ -66,7 +68,7 @@ public class OEMSatelliteEphemeris implements EphemerisFile.SatelliteEphemeris {
 
     /** {@inheritDoc} */
     @Override
-    public List<EphemerisFile.EphemerisSegment> getSegments() {
+    public List<OEMSegment> getSegments() {
         return Collections.unmodifiableList(blocks);
     }
 

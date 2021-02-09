@@ -21,17 +21,19 @@ import java.util.List;
 
 import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.TimeStampedAngularCoordinates;
 
 /** AEM ephemeris blocks for a single satellite.
  * @author Bryan Cazabonne
  */
-public class AEMSatelliteEphemeris implements AttitudeEphemerisFile.SatelliteAttitudeEphemeris {
+public class AEMSatelliteEphemeris
+    implements AttitudeEphemerisFile.SatelliteAttitudeEphemeris<TimeStampedAngularCoordinates, AEMSegment> {
 
     /** ID of the satellite. */
     private final String id;
 
     /** The attitude ephemeris data for the satellite. */
-    private final List<? extends AttitudeEphemerisFile.AttitudeEphemerisSegment> blocks;
+    private final List<AEMSegment> blocks;
 
     /**
      * Create a container for the set of ephemeris blocks in the file that pertain to
@@ -40,7 +42,7 @@ public class AEMSatelliteEphemeris implements AttitudeEphemerisFile.SatelliteAtt
      * @param blocks containing ephemeris data for the satellite.
      * @since 10.3
      */
-    public AEMSatelliteEphemeris(final String id, final List<? extends AttitudeEphemerisFile.AttitudeEphemerisSegment> blocks) {
+    public AEMSatelliteEphemeris(final String id, final List<AEMSegment> blocks) {
         this.id = id;
         this.blocks = blocks;
     }
@@ -53,7 +55,7 @@ public class AEMSatelliteEphemeris implements AttitudeEphemerisFile.SatelliteAtt
 
     /** {@inheritDoc} */
     @Override
-    public List<AttitudeEphemerisFile.AttitudeEphemerisSegment> getSegments() {
+    public List<AEMSegment> getSegments() {
         return Collections.unmodifiableList(blocks);
     }
 

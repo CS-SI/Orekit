@@ -16,11 +16,7 @@
  */
 package org.orekit.files.ccsds.ndm.odm.oem;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Date;
@@ -51,11 +47,10 @@ import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KVNGenerator;
 import org.orekit.files.ccsds.utils.lexical.FileFormat;
 import org.orekit.files.general.EphemerisFile;
-import org.orekit.files.general.EphemerisFile.EphemerisSegment;
 import org.orekit.files.general.EphemerisFile.SatelliteEphemeris;
+import org.orekit.files.general.EphemerisFileWriter;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.files.general.EphemerisFileWriter;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
@@ -384,7 +379,8 @@ public class OEMWriter implements EphemerisFileWriter {
      * </p>
      */
     @Override
-    public void write(final Appendable appendable, final EphemerisFile ephemerisFile)
+    public <C extends TimeStampedPVCoordinates, S extends EphemerisFile.EphemerisSegment<C>>
+        void write(final Appendable appendable, final EphemerisFile<C, S> ephemerisFile)
         throws IOException {
 
         if (appendable == null) {
@@ -395,108 +391,93 @@ public class OEMWriter implements EphemerisFileWriter {
             return;
         }
 
-        final SatelliteEphemeris satEphem = ephemerisFile.getSatellites().get(metadata.getObjectID());
+        final SatelliteEphemeris<C, S> satEphem = ephemerisFile.getSatellites().get(metadata.getObjectID());
         if (satEphem == null) {
             throw new OrekitIllegalArgumentException(OrekitMessages.VALUE_NOT_FOUND,
                                                      metadata.getObjectID(), "ephemerisFile");
         }
 
         // Get attitude ephemeris segments to output.
-        final List<? extends EphemerisSegment> segments = satEphem.getSegments();
+        final List<S> segments = satEphem.getSegments();
         if (segments.isEmpty()) {
             // No data -> No output
             return;
         }
 
-        final Generator generator = new KVNGenerator(appendable, fileName);
-        writeHeader(generator);
+        try (Generator generator = new KVNGenerator(appendable, fileName)) {
+            writeHeader(generator);
 
-        // Loop on segments
-        for (final EphemerisSegment segment : segments) {
+            // Loop on segments
+            for (final S segment : segments) {
 
-            // override template metadata with segment values
-            metadata.setStartTime(segment.getStart());
-            metadata.setStopTime(segment.getStop());
-            metadata.setInterpolationDegree(segment.getInterpolationSamples() - 1);
-            writeMetadata(generator);
+                // override template metadata with segment values
+                metadata.setStartTime(segment.getStart());
+                metadata.setStopTime(segment.getStop());
+                metadata.setInterpolationDegree(segment.getInterpolationSamples() - 1);
+                writeMetadata(generator);
 
-            if (segment instanceof OEMSegment) {
-                // write data comments
-                generator.writeComments(((OEMSegment) segment).getData());
-            }
+                if (segment instanceof OEMSegment) {
+                    // write data comments
+                    generator.writeComments(((OEMSegment) segment).getData());
+                }
 
-            // Loop on orbit data
-            final CartesianDerivativesFilter filter = segment.getAvailableDerivatives();
-            if (filter == CartesianDerivativesFilter.USE_P) {
-                throw new OrekitException(OrekitMessages.MISSING_VELOCITY);
-            }
-            final boolean useAcceleration = filter.equals(CartesianDerivativesFilter.USE_PVA);
-            for (final TimeStampedPVCoordinates coordinates : segment.getCoordinates()) {
-                writeOrbitEphemerisLine(generator, coordinates, useAcceleration);
-            }
+                // Loop on orbit data
+                final CartesianDerivativesFilter filter = segment.getAvailableDerivatives();
+                if (filter == CartesianDerivativesFilter.USE_P) {
+                    throw new OrekitException(OrekitMessages.MISSING_VELOCITY);
+                }
+                final boolean useAcceleration = filter.equals(CartesianDerivativesFilter.USE_PVA);
+                for (final TimeStampedPVCoordinates coordinates : segment.getCoordinates()) {
+                    writeOrbitEphemerisLine(generator, coordinates, useAcceleration);
+                }
 
-            if (segment instanceof OEMSegment) {
-                // output covariance data
-                final List<ODMCovariance> covariances = ((OEMSegment) segment).getCovarianceMatrices();
-                boolean continuation = false;
-                if (!covariances.isEmpty()) {
-                    if (generator.getFormat() == FileFormat.KVN) {
-                        generator.enterSection(OEMFile.COVARIANCE_KVN);
-                        for (final ODMCovariance covariance : covariances) {
-                            if (continuation) {
-                                generator.writeEmptyLine();
-                            }
-                            generator.writeEntry(ODMCovarianceKey.EPOCH.name(),
-                                                 dateToString(covariance.getEpoch()),
-                                                 true);
-                            if (covariance.getRefCCSDSFrame() != metadata.getRefCCSDSFrame()) {
-                                generator.writeEntry(ODMCovarianceKey.COV_REF_FRAME.name(),
-                                                     covariance.getRefCCSDSFrame().name(),
-                                                     false);
-                            }
-                            final RealMatrix m = covariance.getCovarianceMatrix();
-                            for (int i = 0; i < m.getRowDimension(); ++i) {
-
-                                // write triangular matrix entries
-                                for (int j = 0; j <= i; ++j) {
-                                    if (j > 0) {
-                                        generator.writeRawData(' ');
-                                    }
-                                    generator.writeRawData(String.format(STANDARDIZED_LOCALE, covarianceFormat,
-                                                                         m.getEntry(i, j) * M_TO_KM * M_TO_KM));
+                if (segment instanceof OEMSegment) {
+                    // output covariance data
+                    final List<ODMCovariance> covariances = ((OEMSegment) segment).getCovarianceMatrices();
+                    boolean continuation = false;
+                    if (!covariances.isEmpty()) {
+                        if (generator.getFormat() == FileFormat.KVN) {
+                            generator.enterSection(OEMFile.COVARIANCE_KVN);
+                            for (final ODMCovariance covariance : covariances) {
+                                if (continuation) {
+                                    generator.writeEmptyLine();
                                 }
+                                generator.writeEntry(ODMCovarianceKey.EPOCH.name(),
+                                                     dateToString(covariance.getEpoch()),
+                                                     true);
+                                if (covariance.getRefCCSDSFrame() != metadata.getRefCCSDSFrame()) {
+                                    generator.writeEntry(ODMCovarianceKey.COV_REF_FRAME.name(),
+                                                         covariance.getRefCCSDSFrame().name(),
+                                                         false);
+                                }
+                                final RealMatrix m = covariance.getCovarianceMatrix();
+                                for (int i = 0; i < m.getRowDimension(); ++i) {
 
-                                // end the line
-                                generator.writeRawData(NEW_LINE);
+                                    // write triangular matrix entries
+                                    for (int j = 0; j <= i; ++j) {
+                                        if (j > 0) {
+                                            generator.writeRawData(' ');
+                                        }
+                                        generator.writeRawData(String.format(STANDARDIZED_LOCALE, covarianceFormat,
+                                                                             m.getEntry(i, j) * M_TO_KM * M_TO_KM));
+                                    }
 
+                                    // end the line
+                                    generator.writeRawData(NEW_LINE);
+
+                                }
+                                continuation = true;
                             }
-                            continuation = true;
+                            generator.exitSection();
+                        } else {
+                            // TODO: write covariance in OEM XML files
                         }
-                        generator.exitSection();
-                    } else {
-                        // TODO: write covariance in OEM XML files
                     }
                 }
+
             }
-
         }
 
-    }
-
-    /**
-     * Write the passed in {@link OEMFile} to a file at the output path specified.
-     * @param outputFilePath a file path that the corresponding file will be written to
-     * @param ephemerisFile a populated ephemeris file to serialize into the buffer
-     * @throws IOException if any file writing operations fail or if the underlying
-     *         format doesn't support a configuration in the EphemerisFile
-     *         (for example having multiple satellites in one file, having
-     *         the origin at an unspecified celestial body, etc.)
-     */
-    public void write(final String outputFilePath, final EphemerisFile ephemerisFile)
-        throws IOException {
-        try (BufferedWriter appendable = Files.newBufferedWriter(Paths.get(outputFilePath), StandardCharsets.UTF_8)) {
-            write(appendable, ephemerisFile);
-        }
     }
 
     /** Writes the standard OEM header for the file.
@@ -617,7 +598,8 @@ public class OEMWriter implements EphemerisFileWriter {
      * @throws IOException if the output stream throws one while writing.
      */
     void writeOrbitEphemerisLine(final Generator generator,
-                                 final TimeStampedPVCoordinates coordinates, final boolean useAcceleration)
+                                 final TimeStampedPVCoordinates coordinates,
+                                 final boolean useAcceleration)
         throws IOException {
 
         // Epoch
@@ -737,6 +719,5 @@ public class OEMWriter implements EphemerisFileWriter {
                              dt.getTime().getMinute(),
                              dt.getTime().getSecond());
     }
-
 
 }

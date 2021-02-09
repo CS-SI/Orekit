@@ -38,12 +38,15 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * via this interface. In those cases it is recommended that the parser return a subclass
  * of this interface to provide access to the additional information.
  *
+ * @param <C> type of the angular coordinates
+ * @param <S> type of the segment
  * @author Raphaël Fermé
  * @see SatelliteAttitudeEphemeris
  * @see AttitudeEphemerisSegment
  * @since 10.3
  */
-public interface AttitudeEphemerisFile {
+public interface AttitudeEphemerisFile<C extends TimeStampedAngularCoordinates,
+                                       S extends AttitudeEphemerisFile.AttitudeEphemerisSegment<C>> {
 
     /**
      * Get the loaded ephemeris for each satellite in the file.
@@ -51,20 +54,22 @@ public interface AttitudeEphemerisFile {
      * @return a map from the satellite's ID to the information about that satellite
      * contained in the file.
      */
-    Map<String, ? extends SatelliteAttitudeEphemeris> getSatellites();
+    Map<String, ? extends SatelliteAttitudeEphemeris<C, S>> getSatellites();
 
     /**
      * Contains the information about a single satellite from an {@link AttitudeEphemerisFile}.
      *
      * <p> A satellite ephemeris consists of one or more {@link AttitudeEphemerisSegment}.
      * Segments are typically used to split up an ephemeris at discontinuous events.
-     *
+     * @param <C> type of the angular coordinates
+     * @param <S> type of the segment
      * @author Raphaël Fermé
      * @see AttitudeEphemerisFile
      * @see AttitudeEphemerisSegment
      * @since 10.3
      */
-    interface SatelliteAttitudeEphemeris {
+    interface SatelliteAttitudeEphemeris<C extends TimeStampedAngularCoordinates,
+                                         S extends AttitudeEphemerisSegment<C>> {
 
         /**
          * Get the satellite ID. The satellite ID is unique only within the same ephemeris
@@ -82,7 +87,7 @@ public interface AttitudeEphemerisFile {
          *
          * @return the segments contained in the attitude ephemeris file for this satellite.
          */
-        List<? extends AttitudeEphemerisSegment> getSegments();
+        List<S> getSegments();
 
         /**
          * Get the start date of the ephemeris.
@@ -106,7 +111,7 @@ public interface AttitudeEphemerisFile {
          */
         default BoundedAttitudeProvider getAttitudeProvider() {
             final List<BoundedAttitudeProvider> providers = new ArrayList<>();
-            for (final AttitudeEphemerisSegment attitudeSegment : this.getSegments()) {
+            for (final AttitudeEphemerisSegment<C> attitudeSegment : this.getSegments()) {
                 providers.add(attitudeSegment.getAttitudeProvider());
             }
             return new AggregateBoundedAttitudeProvider(providers);
@@ -119,20 +124,20 @@ public interface AttitudeEphemerisFile {
      *
      * <p> Segments are typically used to split an ephemeris around discontinuous events
      * such as maneuvers.
-     *
+     * @param <C> type of the angular coordinates
      * @author Raphaël Fermé
      * @see AttitudeEphemerisFile
      * @see SatelliteAttitudeEphemeris
      * @since 10.3
      */
-    interface AttitudeEphemerisSegment {
+    interface AttitudeEphemerisSegment<C extends TimeStampedAngularCoordinates> {
 
         /**
          * Get an unmodifiable list of attitude data lines.
          *
          * @return a list of attitude data
          */
-        List<? extends TimeStampedAngularCoordinates> getAngularCoordinates();
+        List<C> getAngularCoordinates();
 
         /**
          * Get the reference frame from which attitude is defined.

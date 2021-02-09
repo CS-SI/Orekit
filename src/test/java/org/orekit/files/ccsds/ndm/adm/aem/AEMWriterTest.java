@@ -328,7 +328,8 @@ public class AEMWriterTest {
         }
     }
 
-    private class StandAloneEphemerisFile implements AttitudeEphemerisFile {
+    private class StandAloneEphemerisFile
+        implements AttitudeEphemerisFile<TimeStampedAngularCoordinates, AEMSegment> {
         private final Map<String, AEMSatelliteEphemeris> satEphem;
 
         private final IERSConventions conventions;
@@ -345,7 +346,7 @@ public class AEMWriterTest {
             this.conventions = conventions;
             this.simpleEOP   = simpleEOP;
             this.dataContext = dataContext;
-            this.satEphem    = new HashMap<String, AEMSatelliteEphemeris>();
+            this.satEphem    = new HashMap<>();
         }
 
         private void generate(final String objectID, final String objectName,
@@ -376,8 +377,7 @@ public class AEMWriterTest {
                 satEphem.put(objectID, new AEMSatelliteEphemeris(objectID, Collections.emptyList()));
             }
 
-            List<AttitudeEphemerisFile.AttitudeEphemerisSegment> segments =
-                            new ArrayList<>(satEphem.get(objectID).getSegments());
+            List<AEMSegment> segments = new ArrayList<>(satEphem.get(objectID).getSegments());
             segments.add(new AEMSegment(metadata, data, conventions, simpleEOP, dataContext));
             satEphem.put(objectID, new AEMSatelliteEphemeris(objectID, segments));
 

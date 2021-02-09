@@ -30,6 +30,7 @@ import org.orekit.files.ccsds.ndm.odm.ODMHeader;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** This class stores all the information of the OEM File parsed by OEMParser.
  * <p>
@@ -41,7 +42,8 @@ import org.orekit.utils.IERSConventions;
  * @author Evan Ward
  * @since 6.1
  */
-public class OEMFile extends NDMFile<ODMHeader, OEMSegment> implements EphemerisFile {
+public class OEMFile extends NDMFile<ODMHeader, OEMSegment>
+    implements EphemerisFile<TimeStampedPVCoordinates, OEMSegment> {
 
     /** Key for format version. */
     public static final String FORMAT_VERSION_KEY = "CCSDS_OEM_VERS";

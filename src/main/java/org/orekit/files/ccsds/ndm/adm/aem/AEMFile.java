@@ -29,6 +29,7 @@ import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.TimeStampedAngularCoordinates;
 
 /**
  * This class stores all the information of the Attitude Ephemeris Message (AEM) File parsed
@@ -37,7 +38,8 @@ import org.orekit.utils.IERSConventions;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class AEMFile extends NDMFile<Header, AEMSegment> implements AttitudeEphemerisFile {
+public class AEMFile extends NDMFile<Header, AEMSegment>
+    implements AttitudeEphemerisFile<TimeStampedAngularCoordinates, AEMSegment> {
 
     /** Key for format version. */
     public static final String FORMAT_VERSION_KEY = "CCSDS_AEM_VERS";

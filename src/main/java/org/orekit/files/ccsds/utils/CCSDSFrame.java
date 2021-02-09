@@ -415,6 +415,12 @@ public enum CCSDSFrame {
     /** Pattern for dash. */
     private static final Pattern DASH = Pattern.compile("-");
 
+    /** Suffix of the name of the inertial frame attached to a planet. */
+    private static final String INERTIAL_FRAME_SUFFIX = "/inertial";
+
+    /** Substring common to all ITRF frames. */
+    private static final String ITRF_SUBSTRING = "ITRF";
+
     /** Type of Local Orbital Frame (may be null). */
     private final LOFType lofType;
 
@@ -490,14 +496,10 @@ public enum CCSDSFrame {
      * <p> The goal of this method is to perform the opposite mapping of {@link
      * #getFrame(IERSConventions, boolean, DataContext)}.
      *
-     * @param frame a reference frame for message output.
+     * @param frame a reference frame.
      * @return the CCSDSFrame corresponding to the Orekit frame
      */
     public static CCSDSFrame map(final Frame frame) {
-        // define some constant strings to make checkstyle happy
-        /** Suffix of the name of the inertial frame attached to a planet. */
-        final String inertialFrameSuffix = "/inertial";
-        final String itrf                = "ITRF";
         // Try to determine the CCSDS name from Annex A by examining the Orekit name.
         final String name = frame.getName();
         try {
@@ -506,15 +508,15 @@ public enum CCSDSFrame {
         } catch (IllegalArgumentException iae) {
             if (frame instanceof CcsdsModifiedFrame) {
                 return ((CcsdsModifiedFrame) frame).getRefFrame();
-            } else if ((CelestialBodyFactory.MARS + inertialFrameSuffix).equals(name)) {
+            } else if ((CelestialBodyFactory.MARS + INERTIAL_FRAME_SUFFIX).equals(name)) {
                 return MCI;
-            } else if ((CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER + inertialFrameSuffix).equals(name)) {
+            } else if ((CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER + INERTIAL_FRAME_SUFFIX).equals(name)) {
                 return ICRF;
             } else if (name.contains("GTOD")) {
                 return GTOD;
             } else if (name.contains("TOD")) { // check after GTOD
                 return TOD;
-            } else if (name.contains("Equinox") && name.contains(itrf)) {
+            } else if (name.contains("Equinox") && name.contains(ITRF_SUBSTRING)) {
                 return GRC;
             } else if (frame instanceof VersionedITRF) {
                 try {
@@ -524,7 +526,7 @@ public enum CCSDSFrame {
                     // this should never happen
                     throw new OrekitInternalError(iae2);
                 }
-            } else if (name.contains("CIO") && name.contains(itrf)) {
+            } else if (name.contains("CIO") && name.contains(ITRF_SUBSTRING)) {
                 return ITRF2014;
             }
             throw new OrekitException(iae, OrekitMessages.CCSDS_INVALID_FRAME, name);
@@ -537,7 +539,7 @@ public enum CCSDSFrame {
      * <p> The goal of this method is to perform the opposite mapping of {@link
      * #getFrame(IERSConventions, boolean, DataContext)}.
      *
-     * @param frame a reference frame for message output.
+     * @param frame a reference frame.
      * @return the string to use in the OEM file to identify {@code frame}.
      */
     public static String guessFrame(final Frame frame) {

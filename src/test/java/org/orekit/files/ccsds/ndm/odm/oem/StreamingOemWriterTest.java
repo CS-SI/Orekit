@@ -18,15 +18,12 @@ package org.orekit.files.ccsds.ndm.odm.oem;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.BufferedReader;
-import java.io.IOException;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
@@ -38,16 +35,20 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.files.ccsds.Keyword;
-import org.orekit.files.ccsds.ndm.odm.oem.StreamingOemWriter.SegmentWriter;
+import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.ndm.odm.ODMHeader;
+import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsModifiedFrame;
+import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.CenterName;
+import org.orekit.files.ccsds.utils.generation.Generator;
+import org.orekit.files.ccsds.utils.generation.KVNGenerator;
+import org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.BoundedPropagator;
-import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -82,21 +83,22 @@ public class StreamingOemWriterTest {
         for (CenterName centerName : centerNames) {
             CelestialBody body = centerName.getCelestialBody();
             String name = centerName.name().replace('_', ' ');
-            MatcherAssert.assertThat(StreamingOemWriter.guessCenter(body.getInertiallyOrientedFrame()),
+            MatcherAssert.assertThat(CenterName.guessCenter(body.getInertiallyOrientedFrame()),
                                      CoreMatchers.is(name));
-            MatcherAssert.assertThat(StreamingOemWriter.guessCenter(body.getBodyOrientedFrame()),
+            MatcherAssert.assertThat(CenterName.guessCenter(body.getBodyOrientedFrame()),
                                      CoreMatchers.is(name));
         }
         // Earth-Moon Barycenter is special
         CelestialBody emb = CenterName.EARTH_MOON.getCelestialBody();
-        MatcherAssert.assertThat(StreamingOemWriter.guessCenter(emb.getInertiallyOrientedFrame()),
+        MatcherAssert.assertThat(CenterName.guessCenter(emb.getInertiallyOrientedFrame()),
                                  CoreMatchers.is("EARTH-MOON BARYCENTER"));
-        MatcherAssert.assertThat(StreamingOemWriter.guessCenter(emb.getBodyOrientedFrame()),
+        MatcherAssert.assertThat(CenterName.guessCenter(emb.getBodyOrientedFrame()),
                                  CoreMatchers.is("EARTH-MOON BARYCENTER"));
         // check some special CCSDS frames
-        CcsdsModifiedFrame frame = new CcsdsModifiedFrame(FramesFactory.getEME2000(), "EME2000",
+        CcsdsModifiedFrame frame = new CcsdsModifiedFrame(FramesFactory.getEME2000(),
+                                                          CCSDSFrame.EME2000,
                                                           CelestialBodyFactory.getMars(), "MARS");
-        MatcherAssert.assertThat(StreamingOemWriter.guessCenter(frame), CoreMatchers.is("MARS"));
+        MatcherAssert.assertThat(CenterName.guessCenter(frame), CoreMatchers.is("MARS"));
 
         // check unknown frame
         Frame topo = new TopocentricFrame(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -104,7 +106,7 @@ public class StreamingOemWriterTest {
                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true)),
                                           new GeodeticPoint(1.2, 2.3, 45.6),
                                           "dummy");
-        MatcherAssert.assertThat(StreamingOemWriter.guessCenter(topo), CoreMatchers.is("UNKNOWN"));
+        MatcherAssert.assertThat(CenterName.guessCenter(topo), CoreMatchers.is("UNKNOWN"));
     }
 
 
@@ -117,19 +119,16 @@ public class StreamingOemWriterTest {
     @Test
     public void testWriteOemStepHandler() throws Exception {
         // setup
-        TimeScale utc = TimeScalesFactory.getUTC();
         List<String> files =
                 Arrays.asList("/ccsds/odm/oem/OEMExample5.txt", "/ccsds/odm/oem/OEMExample4.txt");
         for (String ex : files) {
             InputStream inEntry = getClass().getResourceAsStream(ex);
-            OEMParser parser = new OEMParser()
-                    .withMu(CelestialBodyFactory.getEarth().getGM())
-                    .withConventions(IERSConventions.IERS_2010);
-            OEMFile oemFile = parser.parse(inEntry, "OEMExample1.txt");
+            OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
+                                             null, CelestialBodyFactory.getEarth().getGM(), 1);
+            OEMFile oemFile = new KVNLexicalAnalyzer(inEntry, ex).accept(parser);
 
             OEMSatelliteEphemeris satellite = oemFile.getSatellites().values().iterator().next();
             OEMSegment ephemerisBlock = satellite.getSegments().get(0);
-            Frame frame = ephemerisBlock.getFrame();
             double step = ephemerisBlock.
                           getMetadata().
                           getStopTime().
@@ -140,46 +139,58 @@ public class StreamingOemWriterTest {
             String objectName = block.getMetadata().getObjectName();
             String objectID = block.getMetadata().getObjectID();
 
-            Map<Keyword, String> metadata = new LinkedHashMap<>();
-            metadata.put(Keyword.ORIGINATOR, originator);
-            metadata.put(Keyword.OBJECT_NAME, "will be overwritten");
-            metadata.put(Keyword.OBJECT_ID, objectID);
-            Map<Keyword, String> segmentData = new LinkedHashMap<>();
-            segmentData.put(Keyword.OBJECT_NAME, objectName);
+            ODMHeader header = new ODMHeader();
+            header.setOriginator(originator);
+            OEMMetadata metadata = new OEMMetadata(1);
+            metadata.setObjectName("will be overwritten");
+            metadata.setObjectID(objectID);
+            metadata.setTimeSystem(CcsdsTimeScale.UTC);
+            metadata.setCenterName(ephemerisBlock.getMetadata().getCenterName(), CelestialBodyFactory.getCelestialBodies());
+            metadata.setRefFrame(FramesFactory.getEME2000(), CCSDSFrame.EME2000); // will be overwritten
+            metadata.setStartTime(AbsoluteDate.J2000_EPOCH.shiftedBy(80 * Constants.JULIAN_CENTURY));
+            metadata.setStopTime(metadata.getStartTime().shiftedBy(Constants.JULIAN_YEAR));
+            OEMWriter oemWriter = new OEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
+                                                header, metadata);
 
             // check using the Propagator / StepHandler interface
             StringBuilder buffer = new StringBuilder();
-            StreamingOemWriter writer = new StreamingOemWriter(buffer, utc, metadata);
-            writer.writeHeader();
-            SegmentWriter segment = writer.newSegment(frame, segmentData);
+            StreamingOemWriter writer = new StreamingOemWriter(new KVNGenerator(buffer, "some-name"),
+                                                               oemWriter);
+            oemWriter.getMetadata().setObjectName(objectName);
             BoundedPropagator propagator = satellite.getPropagator();
-            propagator.setMasterMode(step, segment);
+            propagator.setMasterMode(step, writer.newSegment());
             propagator.propagate(propagator.getMinDate(), propagator.getMaxDate());
 
             // verify
-            BufferedReader reader =
-                    new BufferedReader(new StringReader(buffer.toString()));
-            OEMFile generatedOemFile = parser.parse(reader, "buffer");
+            InputStream is = new ByteArrayInputStream(buffer.toString().getBytes(StandardCharsets.UTF_8));
+            OEMFile generatedOemFile = new KVNLexicalAnalyzer(is, "buffer").
+                            accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
+                                                 null, CelestialBodyFactory.getEarth().getGM(), 1));
             compareOemFiles(oemFile, generatedOemFile, POSITION_PRECISION, VELOCITY_PRECISION);
 
             // check calling the methods directly
             buffer = new StringBuilder();
-            writer = new StreamingOemWriter(buffer, utc, metadata);
-            writer.writeHeader();
-            // set start and stop date manually
-            segmentData.put(Keyword.START_TIME,
-                    StreamingOemWriter.dateToString(block.getStart().getComponents(utc)));
-            segmentData.put(Keyword.STOP_TIME,
-                    StreamingOemWriter.dateToString(block.getStop().getComponents(utc)));
-            segment = writer.newSegment(frame, segmentData);
-            segment.writeMetadata();
-            for (TimeStampedPVCoordinates coordinate : block.getCoordinates()) {
-                segment.writeEphemerisLine(coordinate);
+            oemWriter = new OEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
+                                      header, metadata);
+            try (Generator generator = new KVNGenerator(buffer, "another-name")) {
+                oemWriter.writeHeader(generator);
+                oemWriter.getMetadata().setObjectName(objectName);
+                oemWriter.getMetadata().setStartTime(block.getStart());
+                oemWriter.getMetadata().setStopTime(block.getStop());
+                final Frame      stateFrame = satellite.getPropagator().getFrame();
+                final CCSDSFrame ccsdsFrame = CCSDSFrame.map(stateFrame);
+                oemWriter.getMetadata().setRefFrame(stateFrame, ccsdsFrame);
+                oemWriter.writeMetadata(generator);
+                for (TimeStampedPVCoordinates coordinate : block.getCoordinates()) {
+                    oemWriter.writeOrbitEphemerisLine(generator, coordinate, true);
+                }
             }
 
             // verify
-            reader = new BufferedReader(new StringReader(buffer.toString()));
-            generatedOemFile = parser.parse(reader, "buffer");
+            is = new ByteArrayInputStream(buffer.toString().getBytes(StandardCharsets.UTF_8));
+            generatedOemFile = new KVNLexicalAnalyzer(is, "buffer").
+                            accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
+                                                 null, CelestialBodyFactory.getEarth().getGM(), 1));
             compareOemFiles(oemFile, generatedOemFile, POSITION_PRECISION, VELOCITY_PRECISION);
 
         }
@@ -207,10 +218,10 @@ public class StreamingOemWriterTest {
     }
 
     private static void compareOemEphemerisBlocksMetadata(OEMMetadata meta1, OEMMetadata meta2) {
-        assertEquals(meta1.getObjectID(), meta2.getObjectID());
+        assertEquals(meta1.getObjectID(),   meta2.getObjectID());
         assertEquals(meta1.getObjectName(), meta2.getObjectName());
         assertEquals(meta1.getCenterName(), meta2.getCenterName());
-        assertEquals(meta1.getFrameString(), meta2.getFrameString());
+        assertEquals(meta1.getRefFrame(),   meta2.getRefFrame());
         assertEquals(meta1.getTimeSystem(), meta2.getTimeSystem());
     }
 
@@ -220,57 +231,6 @@ public class StreamingOemWriterTest {
         for (int i = 0; i < file1.getSegments().size(); i++) {
             compareOemEphemerisBlocks(file1.getSegments().get(i), file2.getSegments().get(i), p_tol, v_tol);
         }
-    }
-
-    /**
-     * Check writing an OEM with format parameters for position and velocity.
-     *
-     * @throws IOException on error
-     */
-    @Test
-    public void testWriteOemFormat() throws IOException {
-        // setup
-        String exampleFile = "/ccsds/odm/oem/OEMExample4.txt";
-        InputStream inEntry = getClass().getResourceAsStream(exampleFile);
-        OEMParser parser = new OEMParser();
-        OEMFile oemFile = parser.parse(inEntry, "OEMExample4.txt");
-
-        OEMSegment block = oemFile.getSegments().get(0);
-        Frame frame = block.getFrame();
-
-        TimeScale utc = TimeScalesFactory.getUTC();
-        Map<Keyword, String> metadata = new LinkedHashMap<>();
-        Map<Keyword, String> segmentData = new LinkedHashMap<>();
-
-        StringBuilder buffer = new StringBuilder();
-        StreamingOemWriter writer = new StreamingOemWriter(buffer, utc, metadata, "%.2f", "%.3f");
-        SegmentWriter segment = writer.newSegment(frame, segmentData);
-
-        for (TimeStampedPVCoordinates coordinate : block.getCoordinates()) {
-            segment.writeEphemerisLine(coordinate);
-        }
-
-        String expected = "2002-12-18T12:00:00.331 2789.62 -280.05 -1746.76 4.734 -2.496 -1.042\n"
-                        + "2002-12-18T12:01:00.331 2783.42 -308.14 -1877.07 5.186 -2.421 -1.996\n"
-                        + "2002-12-18T12:02:00.331 2776.03 -336.86 -2008.68 5.637 -2.340 -1.947\n";
-
-        assertEquals(buffer.toString(), expected);
-
-        buffer = new StringBuilder();
-        writer = new StreamingOemWriter(buffer, utc, metadata);
-        segment = writer.newSegment(frame, segmentData);
-
-        for (TimeStampedPVCoordinates coordinate : block.getCoordinates()) {
-            segment.writeEphemerisLine(coordinate);
-        }
-
-        expected = "2002-12-18T12:00:00.331  2789.619 -280.045 -1746.755  4.73372 -2.49586 -1.04195\n"
-                 + "2002-12-18T12:01:00.331  2783.419 -308.143 -1877.071  5.18604 -2.42124 -1.99608\n"
-                 + "2002-12-18T12:02:00.331  2776.033 -336.859 -2008.682  5.63678 -2.33951 -1.94687\n";
-;
-
-        assertEquals(buffer.toString(), expected);
-
     }
 
 }

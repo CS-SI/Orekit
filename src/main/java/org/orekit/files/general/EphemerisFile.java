@@ -41,11 +41,14 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * via this interface. In those cases it is recommended that the parser return a subclass
  * of this interface to provide access to the additional information.
  *
+ * @param <C> type of the Cartesian coordinates
+ * @param <S> type of the segment
  * @author Evan Ward
  * @see SatelliteEphemeris
  * @see EphemerisSegment
  */
-public interface EphemerisFile {
+public interface EphemerisFile<C extends TimeStampedPVCoordinates,
+                               S extends EphemerisFile.EphemerisSegment<C>> {
 
     /**
      * Get the loaded ephemeris for each satellite in the file.
@@ -53,7 +56,7 @@ public interface EphemerisFile {
      * @return a map from the satellite's ID to the information about that satellite
      * contained in the file.
      */
-    Map<String, ? extends SatelliteEphemeris> getSatellites();
+    Map<String, ? extends SatelliteEphemeris<C, S>> getSatellites();
 
     /**
      * Contains the information about a single satellite from an {@link EphemerisFile}.
@@ -61,12 +64,14 @@ public interface EphemerisFile {
      * <p> A satellite ephemeris consists of one or more {@link EphemerisSegment}s.
      * Segments are typically used to split up an ephemeris at discontinuous events, such
      * as a maneuver.
-     *
+     * @param <C> type of the Cartesian coordinates
+     * @param <S> type of the segment
      * @author Evan Ward
      * @see EphemerisFile
      * @see EphemerisSegment
      */
-    interface SatelliteEphemeris {
+    interface SatelliteEphemeris<C extends TimeStampedPVCoordinates,
+                                 S extends EphemerisSegment<C>> {
 
         /**
          * Get the satellite ID. The satellite ID is unique only within the same ephemeris
@@ -91,7 +96,7 @@ public interface EphemerisFile {
          *
          * @return the segments contained in the ephemeris file for this satellite.
          */
-        List<? extends EphemerisSegment> getSegments();
+        List<S> getSegments();
 
         /**
          * Get the start date of the ephemeris.
@@ -134,7 +139,7 @@ public interface EphemerisFile {
          */
         default BoundedPropagator getPropagator() {
             final List<BoundedPropagator> propagators = new ArrayList<>();
-            for (final EphemerisSegment segment : this.getSegments()) {
+            for (final EphemerisSegment<C> segment : this.getSegments()) {
                 propagators.add(segment.getPropagator());
             }
             return new AggregateBoundedPropagator(propagators);
@@ -148,11 +153,12 @@ public interface EphemerisFile {
      * <p> Segments are typically used to split an ephemeris around discontinuous events
      * such as maneuvers.
      *
+     * @param <C> type of the Cartesian coordinates
      * @author Evan Ward
      * @see EphemerisFile
      * @see SatelliteEphemeris
      */
-    interface EphemerisSegment {
+    interface EphemerisSegment<C extends TimeStampedPVCoordinates> {
 
         /**
          * Get the standard gravitational parameter for the satellite.
@@ -218,7 +224,7 @@ public interface EphemerisFile {
          * specified in the file. Any position, velocity, or acceleration coordinates that
          * are not specified in the ephemeris file are zero in the returned values.
          */
-        List<? extends TimeStampedPVCoordinates> getCoordinates();
+        List<C> getCoordinates();
 
         /**
          * Get the start date of this ephemeris segment.

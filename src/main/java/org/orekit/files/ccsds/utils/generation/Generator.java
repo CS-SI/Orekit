@@ -81,4 +81,8 @@ public interface Generator extends AutoCloseable {
      */
     void exitSection() throws IOException;
 
+    /** Close the generator.
+     */
+    void close() throws IOException;
+
 }
