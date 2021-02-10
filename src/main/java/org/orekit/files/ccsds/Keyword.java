@@ -16,8 +16,6 @@
  */
 package org.orekit.files.ccsds;
 
-import org.orekit.files.ccsds.ndm.odm.ocm.OrbitCategory;
-
 /** Keywords for CCSDS Navigation Data Messages.<p>
  * Only these should be used.<p>
  *  The enumeration is split in 3 parts:<p>

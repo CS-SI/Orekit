@@ -36,7 +36,6 @@ import org.orekit.files.ccsds.ndm.odm.ODMCovariance;
 import org.orekit.files.ccsds.ndm.odm.ODMCovarianceKey;
 import org.orekit.files.ccsds.ndm.odm.ODMHeader;
 import org.orekit.files.ccsds.ndm.odm.ODMMetadataKey;
-import org.orekit.files.ccsds.ndm.odm.oem.StreamingOemWriter.SegmentWriter;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderKey;
 import org.orekit.files.ccsds.section.KVNStructureKey;
@@ -50,7 +49,6 @@ import org.orekit.files.general.EphemerisFile;
 import org.orekit.files.general.EphemerisFile.SatelliteEphemeris;
 import org.orekit.files.general.EphemerisFileWriter;
 import org.orekit.frames.Frame;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
@@ -69,7 +67,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * <p> The OEM metadata used by this writer is described in the following table. Many
  * metadata items are optional or have default values so they do not need to be specified.
  * At a minimum the user must supply those values that are required and for which no
- * default exits: {@link Keyword#OBJECT_NAME}, and {@link Keyword#OBJECT_ID}. The usage
+ * default exits: {@link ODMMetadataKey#OBJECT_NAME}, and {@link OCommonMetadataKey#OBJECT_ID}. The usage
  * column in the table indicates where the metadata item is used, either in the OEM header
  * or in the metadata section at the start of an OEM ephemeris segment.
  *
@@ -82,112 +80,108 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * <caption>OEM metadata</caption>
  *     <thead>
  *         <tr>
- *             <th>Keyword
- *             <th>Usage
- *             <th>Obligatory
- *             <th>Default
- *             <th>Reference
+ *             <th>Keyword</th>
+ *             <th>Usage</th>
+ *             <th>Obligatory</th>
+ *             <th>Default</th>
+ *             <th>Reference</th>
  *    </thead>
  *    <tbody>
  *        <tr>
- *            <td>{@link Keyword#CCSDS_OEM_VERS}
- *            <td>Header
- *            <td>Yes
- *            <td>{@link #CCSDS_OEM_VERS}
- *            <td>Table 5-2
+ *            <td>{@code CCSDS_OEM_VERS}</td>
+ *            <td>Header</td>
+ *            <td>Yes</td>
+ *            <td>{@link OEMFile#FORMAT_VERSION_KEY}</td>
+ *            <td>Table 5-2</td>
  *        <tr>
- *            <td>{@link Keyword#COMMENT}
- *            <td>Header
- *            <td>No
- *            <td>
- *            <td>Table 5-2
+ *            <td>{@code COMMENT}</td>
+ *            <td>Header</td>
+ *            <td>No</td>
+ *            <td></td>
+ *            <td>Table 5-2</td>
  *        <tr>
- *            <td>{@link Keyword#CREATION_DATE}
- *            <td>Header
- *            <td>Yes
- *            <td>{@link Date#Date() Now}
- *            <td>Table 5.2, 6.5.9
+ *            <td>{@link HeaderKey#CREATION_DATE}</td>
+ *            <td>Header</td>
+ *            <td>Yes</td>
+ *            <td>{@link Date#Date() Now}</td>
+ *            <td>Table 5.2, 6.5.9</td>
  *        <tr>
- *            <td>{@link Keyword#ORIGINATOR}
- *            <td>Header
- *            <td>Yes
- *            <td>{@link #DEFAULT_ORIGINATOR}
- *            <td>Table 5-2
+ *            <td>{@link HeaderKey#ORIGINATOR}</td>
+ *            <td>Header</td>
+ *            <td>Yes</td>
+ *            <td>{@link #DEFAULT_ORIGINATOR}</td>
+ *            <td>Table 5-2</td>
  *        <tr>
- *            <td>{@link Keyword#OBJECT_NAME}
- *            <td>Segment
- *            <td>Yes
- *            <td>
- *            <td>Table 5-3
+ *            <td>{@link ODMMetadataKey#OBJECT_NAME}</td>
+ *            <td>Segment</td>
+ *            <td>Yes</td>
+ *            <td></td>
+ *            <td>Table 5-3</td>
  *        <tr>
- *            <td>{@link Keyword#OBJECT_ID}
- *            <td>Segment
- *            <td>Yes
- *            <td>
- *            <td>Table 5-3
+ *            <td>{@link OCommonMetadataKey#OBJECT_ID}</td>
+ *            <td>Segment</td>
+ *            <td>Yes</td>
+ *            <td></td>
+ *            <td>Table 5-3</td>
  *        <tr>
- *            <td>{@link Keyword#CENTER_NAME}
- *            <td>Segment
- *            <td>Yes
- *            <td>Guessed from the {@link #newSegment(Frame, Map) segment}'s {@code frame}
- *            <td>Table 5-3
+ *            <td>{@link OCommonMetadataKey#CENTER_NAME}</td>
+ *            <td>Segment</td>
+ *            <td>Yes</td>
+ *            <td>Guessed from the {@link #newSegment(Frame, Map) segment}'s {@code frame}</td>
+ *            <td>Table 5-3</td>
  *        <tr>
- *            <td>{@link Keyword#REF_FRAME}
- *            <td>Segment
- *            <td>Yes
- *            <td>Guessed from the {@link #newSegment(Frame, Map) segment}'s {@code frame}
- *            <td>Table 5-3, Annex A
+ *            <td>{@link OCommonMetadataKey#REF_FRAME}</td>
+ *            <td>Segment</td>
+ *            <td>Yes</td>
+ *            <td>Guessed from the {@link #newSegment(Frame, Map) segment}'s {@code frame}</td>
+ *            <td>Table 5-3, Annex A</td>
  *        <tr>
- *            <td>{@link Keyword#REF_FRAME_EPOCH}
- *            <td>Segment
- *            <td>No
- *            <td>
- *            <td>Table 5-3, 6.5.9
+ *            <td>{@link OCommonMetadataKey#REF_FRAME_EPOCH}</td>
+ *            <td>Segment</td>
+ *            <td>No</td>
+ *            <td></td>
+ *            <td>Table 5-3, 6.5.9</td>
  *        <tr>
- *            <td>{@link Keyword#TIME_SYSTEM}
- *            <td>Segment
- *            <td>Yes
- *            <td>Guessed from {@code timeScale} set in the
- *                {@link #StreamingOemWriter(Appendable, TimeScale, Map) constructor}.
- *            <td>Table 5-3, Annex A
+ *            <td>{@link MetadataKey#TIME_SYSTEM}</td>
+ *            <td>Segment</td>
+ *            <td>Yes</td>
+ *            <td></td>
  *        <tr>
- *            <td>{@link Keyword#START_TIME}
- *            <td>Segment
- *            <td>Yes
- *            <td>Date of initial state in {@link SegmentWriter#init(SpacecraftState,
- *                AbsoluteDate, double) Segment.init(...)}
- *            <td>Table 5-3, 6.5.9
+ *            <td>{@link OEMMetadataKey#START_TIME}</td>
+ *            <td>Segment</td>
+ *            <td>Yes</td>
+ *            <td></td>
+ *            <td>Table 5-3, 6.5.9</td>
  *        <tr>
- *            <td>{@link Keyword#USEABLE_START_TIME}
- *            <td>Segment
- *            <td>No
- *            <td>
- *            <td>Table 5-3, 6.5.9
+ *            <td>{@link OEMMetadataKey#USEABLE_START_TIME}</td>
+ *            <td>Segment</td>
+ *            <td>No</td>
+ *            <td></td>
+ *            <td>Table 5-3, 6.5.9</td>
  *        <tr>
- *            <td>{@link Keyword#STOP_TIME}
- *            <td>Segment
- *            <td>Yes
- *            <td>Target date in {@link SegmentWriter#init(SpacecraftState,
- *                AbsoluteDate, double) Segment.init(...)}
- *            <td>Table 5-3, 6.5.9
+ *            <td>{@link OEMMetadataKey#STOP_TIME}</td>
+ *            <td>Segment</td>
+ *            <td>Yes</td>
+ *            <td></td>
+ *            <td>Table 5-3, 6.5.9</td>
  *        <tr>
- *            <td>{@link Keyword#USEABLE_STOP_TIME}
- *            <td>Segment
- *            <td>No
- *            <td>
- *            <td>Table 5-3, 6.5.9
+ *            <td>{@link OEMMetadataKey#USEABLE_STOP_TIME}</td>
+ *            <td>Segment</td>
+ *            <td>No</td>
+ *            <td></td>
+ *            <td>Table 5-3, 6.5.9</td>
  *        <tr>
- *            <td>{@link Keyword#INTERPOLATION}
- *            <td>Segment
- *            <td>Noupday
- *            <td>
- *            <td>Table 5-3
+ *            <td>{@link OEMMetadataKey#INTERPOLATION}</td>
+ *            <td>Segment</td>
+ *            <td>No</td>
+ *            <td></td>
+ *            <td>Table 5-3</td>
  *        <tr>
- *            <td>{@link Keyword#INTERPOLATION_DEGREE}
- *            <td>Segment
- *            <td>No
- *            <td>
- *            <td>Table 5-3
+ *            <td>{@link OEMMetadataKey#INTERPOLATION_DEGREE}</td>
+ *            <td>Segment</td>
+ *            <td>No</td>
+ *            <td></td>
+ *            <td>Table 5-3</td>
  *    </tbody>
  *</table>
  *

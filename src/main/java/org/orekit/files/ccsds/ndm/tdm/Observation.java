@@ -17,7 +17,6 @@
 
 package org.orekit.files.ccsds.ndm.tdm;
 
-import org.orekit.files.ccsds.Keyword;
 import org.orekit.time.AbsoluteDate;
 
 
@@ -27,7 +26,6 @@ import org.orekit.time.AbsoluteDate;
  *  - a keyword, the type of the observation;<p>
  *  - a timetag, the epoch of the observation;<p>
  *  - a measurement, the value of the observation.<p>
- * @see Keyword
  * @author Maxime Journot
  */
 public class Observation {
