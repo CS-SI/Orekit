@@ -56,9 +56,18 @@ public class OEMMetadata extends OCommonMetadata {
     /** {@inheritDoc} */
     @Override
     public void checkMandatoryEntries() {
-        super.checkMandatoryEntries();
+        checkMandatoryEntriesExceptDates();
         checkNotNull(startTime, OEMMetadataKey.START_TIME);
         checkNotNull(stopTime,  OEMMetadataKey.STOP_TIME);
+    }
+
+    /** Check is mandatory entries EXCEPT DATES have been initialized.
+     * <p>
+     * This method should throw an exception if some mandatory entry is missing
+     * </p>
+     */
+    void checkMandatoryEntriesExceptDates() {
+        super.checkMandatoryEntries();
     }
 
     /** Get start of total time span covered by ephemerides data and
