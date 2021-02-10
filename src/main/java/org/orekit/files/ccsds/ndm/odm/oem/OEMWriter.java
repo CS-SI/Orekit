@@ -40,6 +40,7 @@ import org.orekit.files.ccsds.section.HeaderKey;
 import org.orekit.files.ccsds.section.KVNStructureKey;
 import org.orekit.files.ccsds.section.MetadataKey;
 import org.orekit.files.ccsds.section.XMLStructureKey;
+import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KVNGenerator;
@@ -404,6 +405,7 @@ public class OEMWriter implements EphemerisFileWriter {
             for (final S segment : segments) {
 
                 // override template metadata with segment values
+                metadata.setRefFrame(segment.getFrame(), CCSDSFrame.map(segment.getFrame()));
                 metadata.setStartTime(segment.getStart());
                 metadata.setStopTime(segment.getStop());
                 metadata.setInterpolationDegree(segment.getInterpolationSamples() - 1);
@@ -664,7 +666,7 @@ public class OEMWriter implements EphemerisFileWriter {
      */
     private OEMMetadata copy(final OEMMetadata original) {
 
-        original.checkMandatoryEntries();
+        original.checkMandatoryEntriesExceptDates();
 
         // allocate new instance
         final OEMMetadata copy = new OEMMetadata(original.getInterpolationDegree());

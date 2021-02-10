@@ -42,6 +42,8 @@ import org.orekit.files.ccsds.ndm.odm.oem.OEMMetadata;
 import org.orekit.files.ccsds.ndm.odm.oem.OEMParser;
 import org.orekit.files.ccsds.ndm.odm.oem.OEMSegment;
 import org.orekit.files.ccsds.ndm.odm.oem.OEMWriter;
+import org.orekit.files.ccsds.utils.CCSDSFrame;
+import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer;
 import org.orekit.files.general.EphemerisFile.EphemerisSegment;
 import org.orekit.files.general.OrekitEphemerisFile.OrekitSatelliteEphemeris;
@@ -133,11 +135,16 @@ public class OrekitEphemerisFileTest {
 
         String tempOemFile = Files.createTempFile("OrekitEphemerisFileTest", ".oem").toString();
         OEMMetadata template = new OEMMetadata(2);
+        template.setTimeSystem(CcsdsTimeScale.UTC);
+        template.setObjectID(satId);
+        template.setObjectName(satId);
+        template.setCenterName("EARTH", CelestialBodyFactory.getCelestialBodies());
+        template.setRefFrame(FramesFactory.getEME2000(), CCSDSFrame.EME2000);
         new OEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null, template).
         write(tempOemFile, ephemerisFile);
 
         OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                         null, Constants.EIGEN5C_EARTH_MU, 2);
+                                         null, body.getGM(), 2);
         EphemerisFile<TimeStampedPVCoordinates, OEMSegment> ephemerisFromFile = new KVNLexicalAnalyzer(tempOemFile).accept(parser);
         Files.delete(Paths.get(tempOemFile));
         
