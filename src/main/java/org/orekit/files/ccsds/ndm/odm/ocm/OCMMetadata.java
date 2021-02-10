@@ -175,7 +175,10 @@ public class OCMMetadata extends ODMMetadata {
     /** {@inheritDoc} */
     @Override
     public void checkMandatoryEntries() {
-        super.checkMandatoryEntries();
+        // we don't call super.checkMandatoryEntries() because
+        // all of the parameters considered mandatory at ODM level
+        // for OPM, OMM and OEM are in fact optional in OCM
+        // only EPOCH_TZERO, which is specific to OCM, is mandatory
         checkNotNull(epochT0, OCMMetadataKey.EPOCH_TZERO);
     }
 

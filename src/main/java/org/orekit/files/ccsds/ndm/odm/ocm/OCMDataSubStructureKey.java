@@ -14,38 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.ccsds.section;
+package org.orekit.files.ccsds.ndm.odm.ocm;
 
-import org.orekit.files.ccsds.utils.lexical.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.files.ccsds.utils.state.AbstractMessageParser;
 
-/** Keys for {@link FileFormat#KVN} format structure.
+/** Keywords for OCM data sub-structure.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public enum KVNStructureKey {
+public enum OCMDataSubStructureKey {
 
-    /** Metadata structure. */
-    META((token, parser) -> {
-        if (token.getType() == TokenType.START) {
-            return parser.prepareMetadata();
-        } else if (token.getType() == TokenType.END) {
-            return parser.finalizeMetadata();
-        }
-        return false;
-    }),
+    /** Orbit state time history section. */
+    ORB((token, parser) -> parser.manageOrbitStateSection(token.getType() == TokenType.START)),
 
-    /** Data structure. */
-    DATA((token, parser) -> {
-        if (token.getType() == TokenType.START) {
-            return parser.prepareData();
-        } else if (token.getType() == TokenType.END) {
-            return parser.finalizeData();
-        }
-        return false;
-    });
+    /** Physical properties section. */
+    PHYS((token, parser) -> parser.managePhysicalPropertiesSection(token.getType() == TokenType.START)),
+
+    /** Covariance time history section. */
+    COV((token, parser) -> parser.manageCovarianceHistorySection(token.getType() == TokenType.START)),
+
+    /** Maneuvers section. */
+    MAN((token, parser) -> parser.manageManeuversSection(token.getType() == TokenType.START)),
+
+    /** Perturbations parameters section. */
+    PERT((token, parser) -> parser.managePerturbationParametersSection(token.getType() == TokenType.START)),
+
+    /** Orbit determination section. */
+    OD((token, parser) -> parser.manageOrbitDeterminationSection(token.getType() == TokenType.START)),
+
+    /** User-defined parameters section. */
+    USER((token, parser) -> parser.manageUserDefinedParametersSection(token.getType() == TokenType.START));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -53,16 +52,16 @@ public enum KVNStructureKey {
     /** Simple constructor.
      * @param processor processing method
      */
-    KVNStructureKey(final TokenProcessor processor) {
+    OCMDataSubStructureKey(final TokenProcessor processor) {
         this.processor = processor;
     }
 
-    /** Process an token.
+    /** Process one token.
      * @param token token to process
-         * @param parser file parser
+     * @param parser OCM file parser
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final AbstractMessageParser<?, ?> parser) {
+    public boolean process(final ParseToken token, final OCMParser parser) {
         return processor.process(token, parser);
     }
 
@@ -70,10 +69,10 @@ public enum KVNStructureKey {
     interface TokenProcessor {
         /** Process one token.
          * @param token token to process
-         * @param parser file parser
+         * @param parser OCM file parser
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, AbstractMessageParser<?, ?> parser);
+        boolean process(ParseToken token, OCMParser parser);
     }
 
 }

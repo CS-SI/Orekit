@@ -36,13 +36,13 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class OEMSegment extends Segment<OEMMetadata, OEMData>
     implements EphemerisFile.EphemerisSegment<TimeStampedPVCoordinates> {
 
-    /** Gravitational parameter use in m³/s². */
+    /** Gravitational parameter in m³/s². */
     private final double mu;
 
     /** Simple constructor.
      * @param metadata segment metadata
      * @param data segment data
-     * @param mu gravitational parameter use in m³/s²
+     * @param mu gravitational parameter in m³/s²
      */
     public OEMSegment(final OEMMetadata metadata, final OEMData data, final double mu) {
         super(metadata, data);

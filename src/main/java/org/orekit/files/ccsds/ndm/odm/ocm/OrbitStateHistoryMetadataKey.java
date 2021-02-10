@@ -16,8 +16,11 @@
  */
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -34,6 +37,10 @@ import org.orekit.files.ccsds.utils.lexical.TokenType;
  */
 public enum OrbitStateHistoryMetadataKey {
 
+    /** Comment entry. */
+    COMMENT((token, context, metadata) ->
+            token.getType() == TokenType.ENTRY ? metadata.addComment(token.getContent()) : true),
+
     /** Orbit identification number. */
     ORB_ID((token, context, metadata) -> token.processAsFreeTextString(metadata::setOrbID)),
 
@@ -43,19 +50,8 @@ public enum OrbitStateHistoryMetadataKey {
     /** Identification number of next orbit. */
     ORB_NEXT_ID((token, context, metadata) -> token.processAsFreeTextString(metadata::setOrbNextID)),
 
-    /** Basis of this orbit state time history data.
-     * @see OrbitBasis
-     */
-    ORB_BASIS((token, context, metadata) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            try {
-                metadata.setOrbBasis(OrbitBasis.valueOf(token.getContentAsNormalizedString().replace(' ', '_')));
-            } catch (IllegalArgumentException iae) {
-                throw token.generateException(iae);
-            }
-        }
-        return true;
-    }),
+    /** Basis of this orbit state time history data. */
+    ORB_BASIS((token, context, metadata) -> token.processAsFreeTextString(metadata::setOrbBasis)),
 
     /** Identification number of the orbit determination or simulation upon which this orbit is based.*/
     ORB_BASIS_ID((token, context, metadata) -> token.processAsFreeTextString(metadata::setOrbBasisID)),
@@ -108,24 +104,7 @@ public enum OrbitStateHistoryMetadataKey {
     /** SI units for each elements of the orbit state.
      * @see CCSDSUnit
      */
-    ORB_UNITS((token, context, metadata) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            try {
-                final List<String> fields = token.getContentAsNormalizedStringList();
-                final CCSDSUnit[] orbUnits = new CCSDSUnit[fields.size()];
-                for (int i = 0; i < fields.size(); ++i) {
-                    orbUnits[i] = CCSDSUnit.valueOf(fields.get(i).
-                                                    replace("\\*", "").
-                                                    replace('/', '_').
-                                                    toUpperCase(Locale.US));
-                }
-                metadata.setOrbUnits(orbUnits);
-            } catch (IllegalArgumentException iae) {
-                throw token.generateException(iae);
-            }
-        }
-        return true;
-    });
+    ORB_UNITS(new UnitsProcessor());
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -156,6 +135,34 @@ public enum OrbitStateHistoryMetadataKey {
          * @return true of token was accepted
          */
         boolean process(ParseToken token, ParsingContext context, OrbitStateHistoryMetadata metadata);
+    }
+
+    /** dedicated processor for units. */
+    private static class UnitsProcessor implements TokenProcessor {
+
+        /** Pattern for splitting units lines. */
+        private static final Pattern UNITS_FINDER = Pattern.compile("((?:\\p{Alnum}|\\*|/)+)\\p{Space}*(?:,\\p{Space}*)?");
+
+        public boolean process(final ParseToken token, final ParsingContext context,
+                               final OrbitStateHistoryMetadata metadata) {
+
+            final String line = token.getContent();
+            if (line.charAt(0) != '[' || line.charAt(line.length() - 1) != ']') {
+                throw token.generateException(null);
+            }
+            final List<CCSDSUnit> orbUnits = new ArrayList<>();
+            final Matcher matcher = UNITS_FINDER.matcher(line.substring(1, line.length() - 1).trim());
+            while (!matcher.hitEnd()) {
+                if (matcher.find()) {
+                    final String u = matcher.group(1).replace("*", "").replace('/', '_').toUpperCase(Locale.US);
+                    orbUnits.add(CCSDSUnit.valueOf(u));
+                } else {
+                    throw token.generateException(null);
+                }
+            }
+            metadata.setOrbUnits(orbUnits);
+            return true;
+        }
     }
 
 }

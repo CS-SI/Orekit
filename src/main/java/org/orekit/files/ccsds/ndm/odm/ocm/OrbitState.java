@@ -17,15 +17,22 @@
 
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
+import java.util.List;
+
 import org.orekit.files.ccsds.utils.CCSDSUnit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.CartesianDerivativesFilter;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Orbit state entry.
  * @author Luc Maisonobe
  * @since 11.0
  */
 public class OrbitState implements TimeStamped {
+
+    /** Type of the elements. */
+    private final ElementsType type;
 
     /** Entry date. */
     private final AbsoluteDate date;
@@ -34,16 +41,19 @@ public class OrbitState implements TimeStamped {
     private final double[] elements;
 
     /** Simple constructor.
+     * @param type type of the elements
      * @param date entry date
      * @param fields orbital elements
      * @param first index of first field to consider
      * @param units units to use for parsing
      */
-    public OrbitState(final AbsoluteDate date, final String[] fields, final int first, final CCSDSUnit[] units) {
+    public OrbitState(final ElementsType type, final AbsoluteDate date,
+                      final String[] fields, final int first, final List<CCSDSUnit> units) {
+        this.type     = type;
         this.date     = date;
-        this.elements = new double[units.length];
+        this.elements = new double[units.size()];
         for (int i = 0; i < elements.length; ++i) {
-            elements[i] = units[i].toSI(Double.parseDouble(fields[first + i]));
+            elements[i] = units.get(i).toSI(Double.parseDouble(fields[first + i]));
         }
     }
 
@@ -58,6 +68,33 @@ public class OrbitState implements TimeStamped {
      */
     public double[] getElements() {
         return elements.clone();
+    }
+
+    /** Get the type of the elements.
+     * @return type of the elements
+     */
+    public ElementsType getType() {
+        return type;
+    }
+
+    /** Get which derivatives of position are available in this state.
+     * @return a value indicating if the file contains velocity and/or acceleration
+      */
+    public CartesianDerivativesFilter getAvailableDerivatives() {
+        return type ==  ElementsType.CARTP ?
+                        CartesianDerivativesFilter.USE_P :
+                        (type == ElementsType.CARTPVA ?
+                         CartesianDerivativesFilter.USE_PVA :
+                         CartesianDerivativesFilter.USE_PV);
+    }
+
+    /** Convert to Cartesian coordinates.
+     * @param mu gravitational parameter in m³/s²
+     * @return Cartesian coordinates
+     */
+    public TimeStampedPVCoordinates toCartesian(final double mu) {
+        // TODO
+        return null;
     }
 
 }

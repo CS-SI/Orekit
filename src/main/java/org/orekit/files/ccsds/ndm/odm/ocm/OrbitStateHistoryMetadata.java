@@ -17,6 +17,8 @@
 
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
+import java.util.List;
+
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.data.DataContext;
@@ -44,7 +46,7 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
     private String orbNextID;
 
     /** Basis of this orbit state time history data. */
-    private OrbitBasis orbBasis;
+    private String orbBasis;
 
     /** Identification number of the orbit determination or simulation upon which this orbit is based. */
     private String orbBasisID;
@@ -85,21 +87,25 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
     private ElementsType orbType;
 
     /** Units of orbit element set. */
-    private CCSDSUnit[] orbUnits;
+    private List<CCSDSUnit> orbUnits;
 
     /** Simple constructor.
      * @param epochT0 T0 epoch from file metadata
      * @param dataContext data context
      */
     OrbitStateHistoryMetadata(final AbsoluteDate epochT0, final DataContext dataContext) {
-        setOrbBasis(OrbitBasis.PREDICTED);
-        setInterpolationMethod(InterpolationMethod.HERMITE);
-        setInterpolationDegree(3);
-        setOrbAveraging("OSCULATING");
-        setCenterName("EARTH", dataContext.getCelestialBodies());
-        setOrbRefFrame(dataContext.getFrames().getICRF(), CCSDSFrame.ICRF);
-        setOrbFrameEpoch(epochT0);
-        setOrbType(ElementsType.CARTPV);
+        // we don't call the setXxx() methods in order to avoid
+        // calling refuseFurtherComments as a side effect
+        orbBasis            = "PREDICTED";
+        interpolationMethod = InterpolationMethod.HERMITE;
+        interpolationDegree = 3;
+        orbAveraging        = "OSCULATING";
+        centerName          = "EARTH";
+        centerBody          = dataContext.getCelestialBodies().getEarth();
+        orbRefFrame         = dataContext.getFrames().getICRF();
+        orbRefCCSDSFrame    = CCSDSFrame.ICRF;
+        orbFrameEpoch       = epochT0;
+        orbType             = ElementsType.CARTPV;
     }
 
     /** {@inheritDoc} */
@@ -157,14 +163,14 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
     /** Get basis of this orbit state time history data.
      * @return basis of this orbit state time history data
      */
-    public OrbitBasis getOrbBasis() {
+    public String getOrbBasis() {
         return orbBasis;
     }
 
     /** Set basis of this orbit state time history data.
      * @param orbBasis basis of this orbit state time history data
      */
-    void setOrbBasis(final OrbitBasis orbBasis) {
+    void setOrbBasis(final String orbBasis) {
         refuseFurtherComments();
         this.orbBasis = orbBasis;
     }
@@ -252,7 +258,7 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
         refuseFurtherComments();
 
         // store the name itself
-        this.centerName = name;
+        centerName = name;
 
         // change the name to a canonical one in some cases
         final String canonicalValue;
@@ -368,16 +374,16 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
     /** Get orbit element set units.
      * @return orbit element set units
      */
-    public CCSDSUnit[] getOrbUnits() {
-        return orbUnits.clone();
+    public List<CCSDSUnit> getOrbUnits() {
+        return orbUnits;
     }
 
     /** Set orbit element set units.
      * @param orbUnits orbit element set units
      */
-    void setOrbUnits(final CCSDSUnit[] orbUnits) {
+    void setOrbUnits(final List<CCSDSUnit> orbUnits) {
         refuseFurtherComments();
-        this.orbUnits = orbUnits.clone();
+        this.orbUnits = orbUnits;
     }
 
 }

@@ -128,40 +128,49 @@ public abstract class AbstractMessageParser<T extends NDMFile<?, ?>, P extends A
     public abstract Header getHeader();
 
     /** Prepare header for parsing.
+     * @return true if parser was able to perform the action
      */
-    public abstract void prepareHeader();
+    public abstract boolean prepareHeader();
 
     /** Acknowledge header parsing has started.
+     * @return true if parser was able to perform the action
      */
-    public abstract void inHeader();
+    public abstract boolean inHeader();
 
     /** Finalize header after parsing.
+     * @return true if parser was able to perform the action
      */
-    public abstract void finalizeHeader();
+    public abstract boolean finalizeHeader();
 
     /** Prepare metadata for parsing.
+     * @return true if parser was able to perform the action
      */
-    public abstract void prepareMetadata();
+    public abstract boolean prepareMetadata();
 
     /** Acknowledge metada parsing has started.
+     * @return true if parser was able to perform the action
      */
-    public abstract void inMetadata();
+    public abstract boolean inMetadata();
 
     /** Finalize metadata after parsing.
+     * @return true if parser was able to perform the action
      */
-    public abstract void finalizeMetadata();
+    public abstract boolean finalizeMetadata();
 
     /** Prepare data for parsing.
+     * @return true if parser was able to perform the action
      */
-    public abstract void prepareData();
+    public abstract boolean prepareData();
 
     /** Acknowledge data parsing has started.
+     * @return true if parser was able to perform the action
      */
-    public abstract void inData();
+    public abstract boolean inData();
 
     /** Finalize data after parsing.
+     * @return true if parser was able to perform the action
      */
-    public abstract void finalizeData();
+    public abstract boolean finalizeData();
 
     /** Set fallback processing state.
      * @param fallback processing state

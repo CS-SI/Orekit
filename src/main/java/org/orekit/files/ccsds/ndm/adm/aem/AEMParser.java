@@ -112,25 +112,31 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> {
 
     /** {@inheritDoc} */
     @Override
-    public void prepareHeader() {
+    public boolean prepareHeader() {
         setFallback(new HeaderProcessingState(getDataContext(), this));
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void inHeader() {
+    public boolean inHeader() {
         setFallback(structureProcessor);
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void finalizeHeader() {
+    public boolean finalizeHeader() {
         header.checkMandatoryEntries();
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void prepareMetadata() {
+    public boolean prepareMetadata() {
+        if (metadata != null) {
+            return false;
+        }
         metadata  = new AEMMetadata(defaultInterpolationDegree);
         context   = new ParsingContext(this::getConventions,
                                        this::isSimpleEOP,
@@ -138,36 +144,41 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> {
                                        this::getMissionReferenceDate,
                                        metadata::getTimeSystem);
         setFallback(this::processMetadataToken);
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void inMetadata() {
+    public boolean inMetadata() {
         setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processDataToken);
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void finalizeMetadata() {
+    public boolean finalizeMetadata() {
         metadata.checkMandatoryEntries();
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void prepareData() {
+    public boolean prepareData() {
         currentBlock = new AEMData();
         setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processMetadataToken);
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void inData() {
+    public boolean inData() {
         setFallback(structureProcessor);
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void finalizeData() {
+    public boolean finalizeData() {
         if (metadata != null) {
             currentBlock.checkMandatoryEntries();
             segments.add(new AEMSegment(metadata, currentBlock,
@@ -175,6 +186,7 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> {
         }
         metadata = null;
         context  = null;
+        return true;
     }
 
     /** {@inheritDoc} */

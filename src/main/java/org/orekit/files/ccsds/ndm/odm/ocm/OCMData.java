@@ -79,17 +79,23 @@ public class OCMData implements Data, Section {
     /** {@inheritDoc} */
     @Override
     public void checkMandatoryEntries() {
-        for (final OrbitStateHistory osh : orbitBlocks) {
-            osh.checkMandatoryEntries();
+        if (orbitBlocks != null) {
+            for (final OrbitStateHistory osh : orbitBlocks) {
+                osh.checkMandatoryEntries();
+            }
         }
         if (physicBlock != null) {
             physicBlock.checkMandatoryEntries();
         }
-        for (final CovarianceHistory ch : covarianceBlocks) {
-            ch.checkMandatoryEntries();
+        if (covarianceBlocks != null) {
+            for (final CovarianceHistory ch : covarianceBlocks) {
+                ch.checkMandatoryEntries();
+            }
         }
-        for (final OPMManeuver m : maneuverBlocks) {
-            m.checkMandatoryEntries();
+        if (maneuverBlocks != null) {
+            for (final OPMManeuver m : maneuverBlocks) {
+                m.checkMandatoryEntries();
+            }
         }
         if (perturbationsBlock != null) {
             perturbationsBlock.checkMandatoryEntries();

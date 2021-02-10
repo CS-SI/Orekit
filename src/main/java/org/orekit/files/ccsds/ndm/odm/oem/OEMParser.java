@@ -135,25 +135,28 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> {
 
     /** {@inheritDoc} */
     @Override
-    public void prepareHeader() {
+    public boolean prepareHeader() {
         setFallback(new HeaderProcessingState(getDataContext(), this));
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void inHeader() {
+    public boolean inHeader() {
         setFallback(structureProcessor);
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void finalizeHeader() {
+    public boolean finalizeHeader() {
         header.checkMandatoryEntries();
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void prepareMetadata() {
+    public boolean prepareMetadata() {
         if (currentBlock != null) {
             // we have started a new segment, we need to finalize the previous one
             finalizeData();
@@ -165,38 +168,43 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> {
                                       this::getMissionReferenceDate,
                                       metadata::getTimeSystem);
         setFallback(this::processMetadataToken);
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void inMetadata() {
+    public boolean inMetadata() {
         setFallback(structureProcessor);
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void finalizeMetadata() {
+    public boolean finalizeMetadata() {
         metadata.finalizeMetadata(context);
         metadata.checkMandatoryEntries();
         setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processDataToken);
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void prepareData() {
+    public boolean prepareData() {
         currentBlock = new OEMData();
         setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processMetadataToken);
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void inData() {
+    public boolean inData() {
         setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processCovarianceToken);
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void finalizeData() {
+    public boolean finalizeData() {
         if (metadata != null) {
             currentBlock.checkMandatoryEntries();
             segments.add(new OEMSegment(metadata, currentBlock, getSelectedMu()));
@@ -207,6 +215,7 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> {
         inCovariance      = false;
         currentCovariance = null;
         currentRow        = -1;
+        return true;
     }
 
     /** {@inheritDoc} */

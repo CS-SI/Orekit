@@ -123,25 +123,31 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
 
     /** {@inheritDoc} */
     @Override
-    public void prepareHeader() {
+    public boolean prepareHeader() {
         setFallback(new HeaderProcessingState(getDataContext(), this));
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void inHeader() {
+    public boolean inHeader() {
         setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processMetadataToken);
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void finalizeHeader() {
+    public boolean finalizeHeader() {
         header.checkMandatoryEntries();
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void prepareMetadata() {
+    public boolean prepareMetadata() {
+        if (metadata != null) {
+            return false;
+        }
         metadata  = new ADMMetadata();
         context   = new ParsingContext(this::getConventions,
                                        this::isSimpleEOP,
@@ -149,36 +155,40 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
                                        this::getMissionReferenceDate,
                                        metadata::getTimeSystem);
         setFallback(this::processMetadataToken);
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void inMetadata() {
+    public boolean inMetadata() {
         setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processQuaternionToken);
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void finalizeMetadata() {
+    public boolean finalizeMetadata() {
         metadata.checkMandatoryEntries();
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void prepareData() {
+    public boolean prepareData() {
         quaternionBlock = new APMQuaternion();
         setFallback(this::processQuaternionToken);
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void inData() {
-        // nothing to do
+    public boolean inData() {
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void finalizeData() {
+    public boolean finalizeData() {
         if (metadata != null) {
             final APMData data = new APMData(quaternionBlock, eulerBlock,
                                              spinStabilizedBlock, spacecraftParametersBlock);
@@ -195,6 +205,7 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
         spinStabilizedBlock       = null;
         spacecraftParametersBlock = null;
         currentManeuver           = null;
+        return true;
     }
 
     /** {@inheritDoc} */

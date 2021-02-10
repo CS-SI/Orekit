@@ -84,7 +84,7 @@ public interface EphemerisFile<C extends TimeStampedPVCoordinates,
         /**
          * Get the standard gravitational parameter for the satellite.
          *
-         * @return the gravitational parameter use in {@link #getPropagator()}, in m³/s².
+         * @return the gravitational parameter used in {@link #getPropagator()}, in m³/s².
          */
         double getMu();
 
@@ -163,7 +163,7 @@ public interface EphemerisFile<C extends TimeStampedPVCoordinates,
         /**
          * Get the standard gravitational parameter for the satellite.
          *
-         * @return the gravitational parameter use in {@link #getPropagator()}, in m³/s².
+         * @return the gravitational parameter used in {@link #getPropagator()}, in m³/s².
          */
         double getMu();
 

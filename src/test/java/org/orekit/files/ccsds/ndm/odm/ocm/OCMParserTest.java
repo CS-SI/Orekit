@@ -24,10 +24,11 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.Keyword;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
+import org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -45,7 +46,10 @@ public class OCMParserTest {
         final String realName = getClass().getResource("/ccsds/odm/ocm/OCMExample1.txt").toURI().getPath();
         final String wrongName = realName + "xxxxx";
         try {
-            new OCMParser().parse(wrongName);
+            new KVNLexicalAnalyzer(wrongName).accept(new OCMParser(IERSConventions.IERS_2010,
+                                                                   true,
+                                                                   DataContext.getDefault(),
+                                                                   Constants.EIGEN5C_EARTH_MU));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
@@ -57,24 +61,31 @@ public class OCMParserTest {
     public void testMissingT0() throws URISyntaxException {
         final String name = getClass().getResource("/ccsds/odm/ocm/OCM-missing-t0.txt").toURI().getPath();
         try {
-            new OCMParser().parse(name);
+            new KVNLexicalAnalyzer(name).accept(new OCMParser(IERSConventions.IERS_2010,
+                                                              true,
+                                                              DataContext.getDefault(),
+                                                              Constants.EIGEN5C_EARTH_MU));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_MISSING_KEYWORD, oe.getSpecifier());
-            Assert.assertEquals(Keyword.EPOCH_TZERO, oe.getParts()[0]);
+            Assert.assertEquals(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, oe.getSpecifier());
+            Assert.assertEquals(OCMMetadataKey.EPOCH_TZERO.name(), oe.getParts()[0]);
         }
     }
 
     @Test
-    public void testWrongDate() throws URISyntaxException {
-        final String name = getClass().getResource("/ccsds/odm/ocm/OCM-wrong-date.txt").toURI().getPath();
+    public void testWrongTimeSpan() throws URISyntaxException {
+        final String name = getClass().getResource("/ccsds/odm/ocm/OCM-wrong-time-span.txt").toURI().getPath();
         try {
-            new OCMParser().parse(name);
+            new KVNLexicalAnalyzer(name).accept(new OCMParser(IERSConventions.IERS_2010,
+                                                              true,
+                                                              DataContext.getDefault(),
+                                                              Constants.EIGEN5C_EARTH_MU));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
-            Assert.assertEquals(11, ((Integer) oe.getParts()[0]).intValue());
-            Assert.assertEquals("START_TIME                = WRONG=123", oe.getParts()[2]);
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
+            Assert.assertEquals("TIME_SPAN", oe.getParts()[0]);
+            Assert.assertEquals(11, ((Integer) oe.getParts()[1]).intValue());
+            Assert.assertTrue(((String) oe.getParts()[2]).endsWith("OCM-wrong-time-span.txt"));
         }
     }
 
@@ -82,22 +93,27 @@ public class OCMParserTest {
     public void testSpuriousMetaDataSection() throws URISyntaxException {
         final String name = getClass().getResource("/ccsds/odm/ocm/OCM-spurious-metadata-section.txt").toURI().getPath();
         try {
-            new OCMParser().parse(name);
+            new KVNLexicalAnalyzer(name).accept(new OCMParser(IERSConventions.IERS_2010,
+                                                              true,
+                                                              DataContext.getDefault(),
+                                                              Constants.EIGEN5C_EARTH_MU));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
             Assert.assertEquals(13, ((Integer) oe.getParts()[0]).intValue());
-            Assert.assertEquals("META_START", oe.getParts()[2]);
+            Assert.assertEquals("META", oe.getParts()[2]);
         }
     }
 
     @Test
     public void testParseOCM1() {
         final String   ex  = "/ccsds/odm/ocm/OCMExample1.txt";
-        final OCMFile file = new OCMParser().
-                             withConventions(IERSConventions.IERS_2010).
-                             parse(getClass().getResourceAsStream(ex),
-                                                   ex.substring(ex.lastIndexOf('/') + 1));
+        final OCMFile file = new KVNLexicalAnalyzer(getClass().getResourceAsStream(ex),
+                                                    ex.substring(ex.lastIndexOf('/') + 1)).
+                        accept(new OCMParser(IERSConventions.IERS_2010,
+                                             true,
+                                             DataContext.getDefault(),
+                                             Constants.EIGEN5C_EARTH_MU));
 
         // check the default values that are not set in this simple file
         Assert.assertEquals("CSPOC",              file.getMetadata().getCatalogName());
@@ -113,22 +129,22 @@ public class OCMParserTest {
         // OCM is the only message for which OBJECT_NAME is not mandatory, it is not present in this minimal file
         Assert.assertNull(file.getMetadata().getObjectName());
 
-        Assert.assertEquals("JPL", file.getHeader().getOriginator());
+        Assert.assertEquals("JAXA", file.getHeader().getOriginator());
 
         final AbsoluteDate t0 = new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172, TimeScalesFactory.getUTC());
         Assert.assertEquals(t0, file.getMetadata().getEpochT0());
         Assert.assertEquals(TimeScalesFactory.getUTC(), file.getMetadata().getTimeSystem().getTimeScale(null));
 
         // orbit data
-        Assert.assertEquals(1, file.getData().getOrbitalStateHistories().size());
-        OrbitStateHistory history = file.getData().getOrbitalStateHistories().get(0);
-        Assert.assertEquals("intervening data records omitted between DT=20.0 and DT=500.0", history.getComments().get(0));
-        Assert.assertEquals("OSCULATING", history.getOrbAveraging());
-        Assert.assertEquals("EARTH", history.getCenterName());
-        Assert.assertEquals(CCSDSFrame.ITRF2000, history.getOrbRefFrame());
-        Assert.assertEquals(ElementsType.CARTPV, history.getOrbType());
-        Assert.assertEquals(0.0, history.getOrbEpochT0().durationFrom(t0), 1.0e-15);
-        Assert.assertEquals(file.getMetadata().getTimeSystem(), history.getOrbTimeSystem());
+        Assert.assertEquals(1, file.getData().getOrbitBlocks().size());
+        OrbitStateHistory history = file.getData().getOrbitBlocks().get(0);
+        Assert.assertEquals("intervening data records omitted between DT=20.0 and DT=500.0",
+                            history.getMetadata().getComments().get(0));
+        Assert.assertEquals("OSCULATING", history.getMetadata().getOrbAveraging());
+        Assert.assertEquals("EARTH", history.getMetadata().getCenterName());
+        Assert.assertEquals(CCSDSFrame.ITRF2000, history.getMetadata().getOrbRefCCSDSFrame());
+        Assert.assertEquals(ElementsType.CARTPV, history.getMetadata().getOrbType());
+        Assert.assertEquals(0.0, file.getMetadata().getEpochT0().durationFrom(t0), 1.0e-15);
         List<OrbitState> states = history.getOrbitalStates();
         Assert.assertEquals(4, states.size());
 
@@ -175,8 +191,12 @@ public class OCMParserTest {
     @Test
     public void testParseOCM2() {
         final String   ex  = "/ccsds/odm/ocm/OCMExample2.txt";
-        final OCMFile file = new OCMParser().parse(getClass().getResourceAsStream(ex),
-                                                   ex.substring(ex.lastIndexOf('/') + 1));
+        final OCMFile file = new KVNLexicalAnalyzer(getClass().getResourceAsStream(ex),
+                                                   ex.substring(ex.lastIndexOf('/') + 1)).
+                        accept(new OCMParser(IERSConventions.IERS_2010,
+                                             true,
+                                             DataContext.getDefault(),
+                                             Constants.EIGEN5C_EARTH_MU));
 
         // Check Header Block;
         Assert.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
@@ -214,10 +234,12 @@ public class OCMParserTest {
     @Test
     public void testParseOCM3() {
         final String   ex  = "/ccsds/odm/ocm/OCMExample3.txt";
-        final OCMFile file = new OCMParser().
-                             withConventions(IERSConventions.IERS_2010).
-                             parse(getClass().getResourceAsStream(ex),
-                                                   ex.substring(ex.lastIndexOf('/') + 1));
+        final OCMFile file = new KVNLexicalAnalyzer(getClass().getResourceAsStream(ex),
+                                                    ex.substring(ex.lastIndexOf('/') + 1)).
+                        accept(new OCMParser(IERSConventions.IERS_2010,
+                                             true,
+                                             DataContext.getDefault(),
+                                             Constants.EIGEN5C_EARTH_MU));
 
         // Check Header Block;
         Assert.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
@@ -244,9 +266,12 @@ public class OCMParserTest {
     @Test
     public void testParseOCM4() {
         final String   ex  = "/ccsds/odm/ocm/OCMExample4.txt";
-        final OCMFile file = new OCMParser().
-                        withConventions(IERSConventions.IERS_2010).
-                        parse(getClass().getResourceAsStream(ex), ex.substring(ex.lastIndexOf('/') + 1));
+        final OCMFile file = new KVNLexicalAnalyzer(getClass().getResourceAsStream(ex),
+                                                    ex.substring(ex.lastIndexOf('/') + 1)).
+                        accept(new OCMParser(IERSConventions.IERS_2010,
+                                             true,
+                                             DataContext.getDefault(),
+                                             Constants.EIGEN5C_EARTH_MU));
 
         // Check Header Block;
         Assert.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
@@ -280,17 +305,10 @@ public class OCMParserTest {
         Assert.assertEquals("MAX@EXAMPLE.ORG",                     file.getMetadata().getTechAddress());
         Assert.assertEquals("ABC-12 33",                           file.getMetadata().getPreviousMessageID());
         Assert.assertEquals("ABC-12 35",                           file.getMetadata().getNextMessageID());
-        Assert.assertEquals(1,                                     file.getMetadata().getAttMessageLink().size());
-        Assert.assertEquals("ADM-MSG-35132.TXT",                   file.getMetadata().getAttMessageLink().get(0));
-        Assert.assertEquals(2,                                     file.getMetadata().getCdmMessageLink().size());
-        Assert.assertEquals("CDM-MSG-35132.TXT",                   file.getMetadata().getCdmMessageLink().get(0));
-        Assert.assertEquals("CDM-MSG-35133.TXT",                   file.getMetadata().getCdmMessageLink().get(1));
-        Assert.assertEquals(2,                                     file.getMetadata().getPrmMessageLink().size());
-        Assert.assertEquals("PRM-MSG-35132.TXT",                   file.getMetadata().getPrmMessageLink().get(0));
-        Assert.assertEquals("PRM-MSG-35133.TXT",                   file.getMetadata().getPrmMessageLink().get(1));
-        Assert.assertEquals(2,                                     file.getMetadata().getRdmMessageLink().size());
-        Assert.assertEquals("RDM-MSG-35132.TXT",                   file.getMetadata().getRdmMessageLink().get(0));
-        Assert.assertEquals("RDM-MSG-35133.TXT",                   file.getMetadata().getRdmMessageLink().get(1));
+        Assert.assertEquals("ADM-MSG-35132.TXT",                   file.getMetadata().getAdmMessageLink());
+        Assert.assertEquals("CDM-MSG-35132.TXT",                   file.getMetadata().getCdmMessageLink());
+        Assert.assertEquals("PRM-MSG-35132.TXT",                   file.getMetadata().getPrmMessageLink());
+        Assert.assertEquals("RDM-MSG-35132.TXT",                   file.getMetadata().getRdmMessageLink());
         Assert.assertEquals("COMSPOC",                             file.getMetadata().getCatalogName());
         Assert.assertEquals("INTELSAT",                            file.getMetadata().getOperator());
         Assert.assertEquals("SIRIUS",                              file.getMetadata().getOwner());

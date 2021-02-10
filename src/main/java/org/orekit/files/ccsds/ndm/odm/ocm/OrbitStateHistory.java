@@ -19,9 +19,13 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.general.EphemerisFile;
+import org.orekit.frames.Frame;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Orbit state history.
@@ -37,14 +41,20 @@ public class OrbitStateHistory extends CommentsContainer
     /** Orbital states. */
     private final List<OrbitState> states;
 
+    /** Gravitational parameter in m³/s². */
+    private final double mu;
+
     /** Simple constructor.
      * @param metadata metadata
      * @param states orbital states
+     * @param mu gravitational parameter in m³/s²
      */
     OrbitStateHistory(final OrbitStateHistoryMetadata metadata,
-                      final List<OrbitState> states) {
+                      final List<OrbitState> states,
+                      final double mu) {
         this.metadata = metadata;
         this.states   = states;
+        this.mu       = mu;
     }
 
     /** Get metadata.
@@ -59,6 +69,48 @@ public class OrbitStateHistory extends CommentsContainer
      */
     public List<OrbitState> getOrbitalStates() {
         return Collections.unmodifiableList(states);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double getMu() {
+        return mu;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Frame getFrame() {
+        return metadata.getOrbRefFrame();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int getInterpolationSamples() {
+        return metadata.getInterpolationDegree() + 1;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public CartesianDerivativesFilter getAvailableDerivatives() {
+        return states.get(0).getAvailableDerivatives();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AbsoluteDate getStart() {
+        return states.get(0).getDate();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AbsoluteDate getStop() {
+        return states.get(states.size() - 1).getDate();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<TimeStampedPVCoordinates> getCoordinates() {
+        return states.stream().map(os -> os.toCartesian(mu)).collect(Collectors.toList());
     }
 
 }

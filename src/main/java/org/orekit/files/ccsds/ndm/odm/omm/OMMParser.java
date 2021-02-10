@@ -135,25 +135,31 @@ public class OMMParser extends OCommonParser<OMMFile, OMMParser> {
 
     /** {@inheritDoc} */
     @Override
-    public void prepareHeader() {
+    public boolean prepareHeader() {
         setFallback(new ODMHeaderProcessingState(getDataContext(), this, header));
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void inHeader() {
+    public boolean inHeader() {
         setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processMetadataToken);
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void finalizeHeader() {
+    public boolean finalizeHeader() {
         header.checkMandatoryEntries();
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void prepareMetadata() {
+    public boolean prepareMetadata() {
+        if (metadata != null) {
+            return false;
+        }
         metadata  = new OMMMetadata();
         context   = new ParsingContext(this::getConventions,
                                        this::isSimpleEOP,
@@ -161,40 +167,44 @@ public class OMMParser extends OCommonParser<OMMFile, OMMParser> {
                                        this::getMissionReferenceDate,
                                        metadata::getTimeSystem);
         setFallback(this::processMetadataToken);
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void inMetadata() {
+    public boolean inMetadata() {
         setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processKeplerianElementsToken);
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void finalizeMetadata() {
+    public boolean finalizeMetadata() {
         metadata.finalizeMetadata(context);
         metadata.checkMandatoryEntries();
         if (metadata.getCenterBody() != null) {
             setMuCreated(metadata.getCenterBody().getGM());
         }
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void prepareData() {
+    public boolean prepareData() {
         keplerianElementsBlock = new ODMKeplerianElements();
         setFallback(this::processKeplerianElementsToken);
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void inData() {
-        // nothing to do
+    public boolean inData() {
+        return true;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void finalizeData() {
+    public boolean finalizeData() {
         if (metadata != null) {
             if (userDefinedBlock != null && userDefinedBlock.getParameters().isEmpty()) {
                 userDefinedBlock = null;
@@ -222,6 +232,7 @@ public class OMMParser extends OCommonParser<OMMFile, OMMParser> {
         tleBlock                  = null;
         covarianceBlock           = null;
         userDefinedBlock          = null;
+        return true;
     }
 
     /** {@inheritDoc} */

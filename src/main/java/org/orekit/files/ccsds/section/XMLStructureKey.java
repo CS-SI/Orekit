@@ -36,31 +36,31 @@ public enum XMLStructureKey {
     /** Header structure. */
     header((token, parser) -> {
         if (token.getType() == TokenType.START) {
-            parser.prepareHeader();
+            return parser.prepareHeader();
         } else if (token.getType() == TokenType.END) {
-            parser.finalizeHeader();
+            return parser.finalizeHeader();
         }
-        return true;
+        return false;
     }),
 
     /** XML metadata structure. */
     metadata((token, parser) -> {
         if (token.getType() == TokenType.START) {
-            parser.prepareMetadata();
+            return parser.prepareMetadata();
         } else if (token.getType() == TokenType.END) {
-            parser.finalizeMetadata();
+            return parser.finalizeMetadata();
         }
-        return true;
+        return false;
     }),
 
     /** XML data structure. */
     data((token, parser) -> {
         if (token.getType() == TokenType.START) {
-            parser.prepareData();
+            return parser.prepareData();
         } else if (token.getType() == TokenType.END) {
-            parser.finalizeData();
+            return parser.finalizeData();
         }
-        return true;
+        return false;
     });
 
     /** Processing method. */
