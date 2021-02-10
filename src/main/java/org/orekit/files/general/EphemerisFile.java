@@ -263,7 +263,7 @@ public interface EphemerisFile<C extends TimeStampedPVCoordinates,
          * @return a propagator for this ephemeris segment.
          */
         default BoundedPropagator getPropagator() {
-            return new EphemerisSegmentPropagator(this);
+            return new EphemerisSegmentPropagator<>(this);
         }
 
     }

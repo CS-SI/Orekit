@@ -166,7 +166,8 @@ public class OrekitEphemerisFileTest {
         final GeodeticPoint point = new GeodeticPoint(latitude, longitude, altitude);
         final TopocentricFrame topo = new TopocentricFrame(parentShape, point, "testPoint1");
         final ElevationDetector elevationDetector = new ElevationDetector(topo);
-        final EphemerisSegmentPropagator ephemerisSegmentPropagator = new EphemerisSegmentPropagator(segment);
+        final EphemerisSegmentPropagator<TimeStampedPVCoordinates> ephemerisSegmentPropagator =
+                        new EphemerisSegmentPropagator<>(segment);
         final EventsLogger lookupLogger = new EventsLogger();
         ephemerisSegmentPropagator.addEventDetector(lookupLogger.monitorDetector(elevationDetector));
 

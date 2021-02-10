@@ -251,7 +251,7 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
      */
     public static TimeStampedPVCoordinates interpolate(final AbsoluteDate date,
                                                        final CartesianDerivativesFilter filter,
-                                                       final Collection<TimeStampedPVCoordinates> sample) {
+                                                       final Collection<? extends TimeStampedPVCoordinates> sample) {
         return interpolate(date, filter, sample.stream());
     }
 
@@ -277,7 +277,7 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
      */
     public static TimeStampedPVCoordinates interpolate(final AbsoluteDate date,
                                                        final CartesianDerivativesFilter filter,
-                                                       final Stream<TimeStampedPVCoordinates> sample) {
+                                                       final Stream<? extends TimeStampedPVCoordinates> sample) {
 
         // set up an interpolator taking derivatives into account
         final HermiteInterpolator interpolator = new HermiteInterpolator();

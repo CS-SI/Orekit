@@ -70,7 +70,7 @@ public class EphemerisSegmentPropagatorTest {
                 new TimeStampedPVCoordinates(start, new Vector3D(6778137, 0, 0), new Vector3D(0, 7.5e3, 0)),
                 new TimeStampedPVCoordinates(start.shiftedBy(30), new Vector3D(6778137 + 1, 0, 0), new Vector3D(0, 7.5e3, 0)),
                 new TimeStampedPVCoordinates(end, new Vector3D(6778137 + 3, 0, 0), new Vector3D(0, 7.5e3, 0)));
-        EphemerisSegment ephemeris = new EphemerisSegment() {
+        EphemerisSegment<TimeStampedPVCoordinates> ephemeris = new EphemerisSegment<TimeStampedPVCoordinates>() {
             @Override
             public double getMu() {
                 return Constants.EGM96_EARTH_MU;
