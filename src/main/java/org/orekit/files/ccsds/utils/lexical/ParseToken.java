@@ -200,29 +200,6 @@ public class ParseToken {
         return fileName;
     }
 
-    /** Process the content as a free-text string.
-     * @param consumer consumer of the free-text string
-     * @return always returns {@code true}
-     * @see #processAsNormalizedString(StringConsumer)
-     */
-    public boolean processAsFreeTextString(final StringConsumer consumer) {
-        if (type == TokenType.ENTRY) {
-            consumer.accept(content);
-        }
-        return true;
-    }
-
-    /** Process the content as a list of free-text strings.
-     * @param consumer consumer of the free-text strings list
-     * @return always returns {@code true}
-     */
-    public boolean processAsFreeTextStringList(final StringListConsumer consumer) {
-        if (type == TokenType.ENTRY) {
-            consumer.accept(getContentAsFreeTextStringList());
-        }
-        return true;
-    }
-
     /** Process the content as a normalized string.
      * @param consumer consumer of the normalized string
      * @return always returns {@code true}

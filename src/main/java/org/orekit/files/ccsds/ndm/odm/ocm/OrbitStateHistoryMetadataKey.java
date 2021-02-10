@@ -42,19 +42,19 @@ public enum OrbitStateHistoryMetadataKey {
             token.getType() == TokenType.ENTRY ? metadata.addComment(token.getContent()) : true),
 
     /** Orbit identification number. */
-    ORB_ID((token, context, metadata) -> token.processAsFreeTextString(metadata::setOrbID)),
+    ORB_ID((token, context, metadata) -> token.processAsNormalizedString(metadata::setOrbID)),
 
     /** Identification number of previous orbit. */
-    ORB_PREV_ID((token, context, metadata) -> token.processAsFreeTextString(metadata::setOrbPrevID)),
+    ORB_PREV_ID((token, context, metadata) -> token.processAsNormalizedString(metadata::setOrbPrevID)),
 
     /** Identification number of next orbit. */
-    ORB_NEXT_ID((token, context, metadata) -> token.processAsFreeTextString(metadata::setOrbNextID)),
+    ORB_NEXT_ID((token, context, metadata) -> token.processAsNormalizedString(metadata::setOrbNextID)),
 
     /** Basis of this orbit state time history data. */
-    ORB_BASIS((token, context, metadata) -> token.processAsFreeTextString(metadata::setOrbBasis)),
+    ORB_BASIS((token, context, metadata) -> token.processAsNormalizedString(metadata::setOrbBasis)),
 
     /** Identification number of the orbit determination or simulation upon which this orbit is based.*/
-    ORB_BASIS_ID((token, context, metadata) -> token.processAsFreeTextString(metadata::setOrbBasisID)),
+    ORB_BASIS_ID((token, context, metadata) -> token.processAsNormalizedString(metadata::setOrbBasisID)),
 
     /** Interpolation method to be used. */
     INTERPOLATION((token, context, metadata) -> {
@@ -73,7 +73,7 @@ public enum OrbitStateHistoryMetadataKey {
     INTERPOLATION_DEGREE((token, context, metadata) -> token.processAsInteger(metadata::setInterpolationDegree)),
 
     /** Type of averaging (Osculating, mean Brouwer, other...). */
-    ORB_AVERAGING((token, context, metadata) -> token.processAsFreeTextString(metadata::setOrbAveraging)),
+    ORB_AVERAGING((token, context, metadata) -> token.processAsNormalizedString(metadata::setOrbAveraging)),
 
     /** Origin of the reference frame of the orbit. */
     CENTER_NAME((token, context, metadata) -> {

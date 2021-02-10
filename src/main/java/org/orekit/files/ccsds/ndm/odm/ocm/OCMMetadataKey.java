@@ -29,77 +29,77 @@ import org.orekit.utils.Constants;
 public enum OCMMetadataKey {
 
     /** Classification of this message. */
-    CLASSIFICATION((token, context, metadata) -> token.processAsFreeTextString(metadata::setClassification)),
+    CLASSIFICATION((token, context, metadata) -> token.processAsNormalizedString(metadata::setClassification)),
 
     /** Alternate names fir this space object. */
-    ALTERNATE_NAMES((token, context, metadata) -> token.processAsFreeTextStringList(metadata::setAlternateNames)),
+    ALTERNATE_NAMES((token, context, metadata) -> token.processAsNormalizedStringList(metadata::setAlternateNames)),
 
     /** Unique satellite identification designator for the object. */
-    OBJECT_DESIGNATOR((token, context, metadata) -> token.processAsFreeTextString(metadata::setObjectDesignator)),
+    OBJECT_DESIGNATOR((token, context, metadata) -> token.processAsNormalizedString(metadata::setObjectDesignator)),
 
     /** International designator for the object as assigned by the UN Committee
      * on Space Research (COSPAR) and the US National Space Science Data Center (NSSDC). */
-    INTERNATIONAL_DESIGNATOR((token, context, metadata) -> token.processAsFreeTextString(metadata::setInternationalDesignator)),
+    INTERNATIONAL_DESIGNATOR((token, context, metadata) -> token.processAsNormalizedString(metadata::setInternationalDesignator)),
 
     /** Programmatic Point Of Contact at originator. */
-    ORIGINATOR_POC((token, context, metadata) -> token.processAsFreeTextString(metadata::setOriginatorPOC)),
+    ORIGINATOR_POC((token, context, metadata) -> token.processAsNormalizedString(metadata::setOriginatorPOC)),
 
     /** Position of Programmatic Point Of Contact at originator. */
-    ORIGINATOR_POSITION((token, context, metadata) -> token.processAsFreeTextString(metadata::setOriginatorPosition)),
+    ORIGINATOR_POSITION((token, context, metadata) -> token.processAsNormalizedString(metadata::setOriginatorPosition)),
 
     /** Phone number of Programmatic Point Of Contact at originator. */
-    ORIGINATOR_PHONE((token, context, metadata) -> token.processAsFreeTextString(metadata::setOriginatorPhone)),
+    ORIGINATOR_PHONE((token, context, metadata) -> token.processAsNormalizedString(metadata::setOriginatorPhone)),
 
     /** Address of Programmatic Point Of Contact at originator. */
-    ORIGINATOR_ADDRESS((token, context, metadata) -> token.processAsFreeTextString(metadata::setOriginatorAddress)),
+    ORIGINATOR_ADDRESS((token, context, metadata) -> token.processAsNormalizedString(metadata::setOriginatorAddress)),
 
     /** Creating agency or operator. */
-    TECH_ORG((token, context, metadata) -> token.processAsFreeTextString(metadata::setTechOrg)),
+    TECH_ORG((token, context, metadata) -> token.processAsNormalizedString(metadata::setTechOrg)),
 
     /** Technical Point Of Contact at originator. */
-    TECH_POC((token, context, metadata) -> token.processAsFreeTextString(metadata::setTechPOC)),
+    TECH_POC((token, context, metadata) -> token.processAsNormalizedString(metadata::setTechPOC)),
 
     /** Position of Technical Point Of Contact at originator. */
-    TECH_POSITION((token, context, metadata) -> token.processAsFreeTextString(metadata::setTechPosition)),
+    TECH_POSITION((token, context, metadata) -> token.processAsNormalizedString(metadata::setTechPosition)),
 
     /** Phone number of Technical Point Of Contact at originator. */
-    TECH_PHONE((token, context, metadata) -> token.processAsFreeTextString(metadata::setTechPhone)),
+    TECH_PHONE((token, context, metadata) -> token.processAsNormalizedString(metadata::setTechPhone)),
 
     /** Address of Technical Point Of Contact at originator. */
-    TECH_ADDRESS((token, context, metadata) -> token.processAsFreeTextString(metadata::setTechAddress)),
+    TECH_ADDRESS((token, context, metadata) -> token.processAsNormalizedString(metadata::setTechAddress)),
 
     /** Unique ID identifying previous message from a given originator. */
-    PREVIOUS_MESSAGE_ID((token, context, metadata) -> token.processAsFreeTextString(metadata::setPreviousMessageID)),
+    PREVIOUS_MESSAGE_ID((token, context, metadata) -> token.processAsNormalizedString(metadata::setPreviousMessageID)),
 
     /** Unique ID identifying next message from a given originator. */
-    NEXT_MESSAGE_ID((token, context, metadata) -> token.processAsFreeTextString(metadata::setNextMessageID)),
+    NEXT_MESSAGE_ID((token, context, metadata) -> token.processAsNormalizedString(metadata::setNextMessageID)),
 
     /** Unique identifier of Attitude Data Message linked to this Orbit Data Message. */
-    ADM_MESSAGE_LINK((token, context, metadata) -> token.processAsFreeTextString(metadata::setAdmMessageLink)),
+    ADM_MESSAGE_LINK((token, context, metadata) -> token.processAsNormalizedString(metadata::setAdmMessageLink)),
 
     /** Unique identifier of Conjunction Data Message linked to this Orbit Data Message. */
-    CDM_MESSAGE_LINK((token, context, metadata) -> token.processAsFreeTextString(metadata::setCdmMessageLink)),
+    CDM_MESSAGE_LINK((token, context, metadata) -> token.processAsNormalizedString(metadata::setCdmMessageLink)),
 
     /** Unique identifier of Pointing Request Message linked to this Orbit Data Message. */
-    PRM_MESSAGE_LINK((token, context, metadata) -> token.processAsFreeTextString(metadata::setPrmMessageLink)),
+    PRM_MESSAGE_LINK((token, context, metadata) -> token.processAsNormalizedString(metadata::setPrmMessageLink)),
 
     /** Unique identifier of Reentry Data Message linked to this Orbit Data Message. */
-    RDM_MESSAGE_LINK((token, context, metadata) -> token.processAsFreeTextString(metadata::setRdmMessageLink)),
+    RDM_MESSAGE_LINK((token, context, metadata) -> token.processAsNormalizedString(metadata::setRdmMessageLink)),
 
     /** Specification of satellite catalog source. */
-    CATALOG_NAME((token, context, metadata) -> token.processAsFreeTextString(metadata::setCatalogName)),
+    CATALOG_NAME((token, context, metadata) -> token.processAsNormalizedString(metadata::setCatalogName)),
 
     /** Operator of the space object. */
-    OPERATOR((token, context, metadata) -> token.processAsFreeTextString(metadata::setOperator)),
+    OPERATOR((token, context, metadata) -> token.processAsNormalizedString(metadata::setOperator)),
 
     /** Owner of the space object. */
-    OWNER((token, context, metadata) -> token.processAsFreeTextString(metadata::setOwner)),
+    OWNER((token, context, metadata) -> token.processAsNormalizedString(metadata::setOwner)),
 
     /** Name of the country where the space object owner is based. */
-    COUNTRY((token, context, metadata) -> token.processAsFreeTextString(metadata::setCountry)),
+    COUNTRY((token, context, metadata) -> token.processAsNormalizedString(metadata::setCountry)),
 
     /** Name of the constellation this space object belongs to. */
-    CONSTELLATION((token, context, metadata) -> token.processAsFreeTextString(metadata::setConstellation)),
+    CONSTELLATION((token, context, metadata) -> token.processAsNormalizedString(metadata::setConstellation)),
 
     /** Type of object.
      * @see ObjectType
@@ -144,7 +144,7 @@ public enum OCMMetadataKey {
     }),
 
     /** List of elements of information data blocks included in this message. */
-    OCM_DATA_ELEMENTS((token, context, metadata) -> token.processAsFreeTextStringList(metadata::setOcmDataElements)),
+    OCM_DATA_ELEMENTS((token, context, metadata) -> token.processAsNormalizedStringList(metadata::setOcmDataElements)),
 
     /** Default epoch to which <em>all</em> relative times are referenced in data blocks,
      * unless overridden by block-specific {@link #EPOCH_TZERO} values. */
@@ -178,16 +178,16 @@ public enum OCMMetadataKey {
     UT1MUTC_AT_TZERO((token, context, metadata) -> token.processAsDouble(1.0, metadata::setUt1mutcT0)),
 
     /** Source and version of Earth Orientation Parameters. */
-    EOP_SOURCE((token, context, metadata) -> token.processAsFreeTextString(metadata::setEopSource)),
+    EOP_SOURCE((token, context, metadata) -> token.processAsNormalizedString(metadata::setEopSource)),
 
     /** Interpolation method for Earth Orientation Parameters. */
-    INTERP_METHOD_EOP((token, context, metadata) -> token.processAsFreeTextString(metadata::setInterpMethodEOP)),
+    INTERP_METHOD_EOP((token, context, metadata) -> token.processAsNormalizedString(metadata::setInterpMethodEOP)),
 
     /** Interpolation method for space weather data. */
-    INTERP_METHOD_SW((token, context, metadata) -> token.processAsFreeTextString(metadata::setInterpMethodSW)),
+    INTERP_METHOD_SW((token, context, metadata) -> token.processAsNormalizedString(metadata::setInterpMethodSW)),
 
     /** Source and version of celestial body (e.g. Sun/Earth/Planetary). */
-    CELESTIAL_SOURCE((token, context, metadata) -> token.processAsFreeTextString(metadata::setCelestialSource));
+    CELESTIAL_SOURCE((token, context, metadata) -> token.processAsNormalizedString(metadata::setCelestialSource));
 
     /** Processing method. */
     private final TokenProcessor processor;

@@ -53,7 +53,7 @@ public class ODMHeaderProcessingState extends HeaderProcessingState {
         }
 
         if (token.getType() == TokenType.ENTRY && ODMHeader.MESSAGE_ID.equals(token.getName())) {
-            return token.processAsFreeTextString(header::setMessageId);
+            return token.processAsNormalizedString(header::setMessageId);
         }
 
         // this was not an ODM header token

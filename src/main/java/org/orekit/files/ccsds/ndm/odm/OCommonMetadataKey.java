@@ -42,7 +42,7 @@ public enum OCommonMetadataKey {
     REF_FRAME((token, context, metadata) -> token.processAsFrame(metadata::setRefFrame, context, false)),
 
     /** Epoch of reference frame, if not intrinsic to the definition of the reference frame. */
-    REF_FRAME_EPOCH((token, context, metadata) -> token.processAsFreeTextString(metadata::setFrameEpochString));
+    REF_FRAME_EPOCH((token, context, metadata) -> token.processAsNormalizedString(metadata::setFrameEpochString));
 
     /** Processing method. */
     private final TokenProcessor processor;
