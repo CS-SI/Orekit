@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="bryan" type="add" issue="751">
+        Added new method signature in IodGibbs using Position measurement.
+      </action>
       <action dev="luc" type="fix" issue="749">
       	Allow building PVCoordinates and AngularCoordinates (as well as their Field,
         Absolute and TimeStamped variations) to be build from UnivariateDerivative1
