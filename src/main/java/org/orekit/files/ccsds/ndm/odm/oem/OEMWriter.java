@@ -405,7 +405,13 @@ public class OEMWriter implements EphemerisFileWriter {
             for (final S segment : segments) {
 
                 // override template metadata with segment values
-                metadata.setRefFrame(segment.getFrame(), CCSDSFrame.map(segment.getFrame()));
+                if (segment instanceof OEMSegment) {
+                    final OEMSegment oemSegment = (OEMSegment) segment;
+                    metadata.setRefFrame(oemSegment.getMetadata().getRefFrame(),
+                                         oemSegment.getMetadata().getRefCCSDSFrame());
+                } else {
+                    metadata.setRefFrame(segment.getFrame(), CCSDSFrame.map(segment.getFrame()));
+                }
                 metadata.setStartTime(segment.getStart());
                 metadata.setStopTime(segment.getStop());
                 metadata.setInterpolationDegree(segment.getInterpolationSamples() - 1);
