@@ -37,8 +37,8 @@ public enum TokenType {
     /** Entry content token. */
     ENTRY,
 
-    /** Block or entry end token. */
-    END,
+    /** Block or entry stop token. */
+    STOP,
 
     /** Raw line token. */
     RAW_LINE;

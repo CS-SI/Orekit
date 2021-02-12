@@ -28,6 +28,7 @@ import org.hipparchus.exception.DummyLocalizable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NDMFile;
+import org.orekit.files.ccsds.utils.FileFormat;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
@@ -217,7 +218,7 @@ public class XMLLexicalAnalyzer implements LexicalAnalyzer {
             }
 
             // process end tag
-            messageParser.process(new ParseToken(TokenType.END,
+            messageParser.process(new ParseToken(TokenType.STOP,
                                                  qName, null, null,
                                                  locator.getLineNumber(), fileName));
 

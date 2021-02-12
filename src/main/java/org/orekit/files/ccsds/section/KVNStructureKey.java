@@ -16,7 +16,7 @@
  */
 package org.orekit.files.ccsds.section;
 
-import org.orekit.files.ccsds.utils.lexical.FileFormat;
+import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.state.AbstractMessageParser;
@@ -31,7 +31,7 @@ public enum KVNStructureKey {
     META((token, parser) -> {
         if (token.getType() == TokenType.START) {
             return parser.prepareMetadata();
-        } else if (token.getType() == TokenType.END) {
+        } else if (token.getType() == TokenType.STOP) {
             return parser.finalizeMetadata();
         }
         return false;
@@ -41,7 +41,7 @@ public enum KVNStructureKey {
     DATA((token, parser) -> {
         if (token.getType() == TokenType.START) {
             return parser.prepareData();
-        } else if (token.getType() == TokenType.END) {
+        } else if (token.getType() == TokenType.STOP) {
             return parser.finalizeData();
         }
         return false;

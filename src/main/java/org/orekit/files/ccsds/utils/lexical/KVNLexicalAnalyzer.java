@@ -29,6 +29,7 @@ import org.hipparchus.exception.DummyLocalizable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NDMFile;
+import org.orekit.files.ccsds.utils.FileFormat;
 
 /** Lexical analyzer for Key-Value Notation CCSDS messages.
  * @author Luc Maisonobe
@@ -147,7 +148,7 @@ public class KVNLexicalAnalyzer implements LexicalAnalyzer {
                             final Matcher stop = STOP_ENTRY.matcher(line);
                             if (stop.matches()) {
                                 // block end
-                                messageParser.process(new ParseToken(TokenType.END,
+                                messageParser.process(new ParseToken(TokenType.STOP,
                                                                      stop.group(1), null, null,
                                                                      lineNumber, fileName));
                             } else {
