@@ -134,7 +134,7 @@ public class OPMParser extends OCommonParser<OPMFile, OPMParser> {
         currentManeuver           = null;
         maneuverBlocks            = new ArrayList<>();
         userDefinedBlock          = null;
-        if (getFileFormat() == FileFormat.XML) {
+        if (fileFormat == FileFormat.XML) {
             structureProcessor = new XMLStructureProcessingState(ROOT, this);
             reset(fileFormat, structureProcessor);
         } else {

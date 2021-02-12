@@ -25,6 +25,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
+import org.orekit.data.NamedData;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
@@ -43,13 +44,12 @@ public class OCMParserTest {
 
     @Test
     public void testNonExistentFile() throws URISyntaxException {
-        final String realName = getClass().getResource("/ccsds/odm/ocm/OCMExample1.txt").toURI().getPath();
+        final String realName = "/ccsds/odm/ocm/OCMExample1.txt";
         final String wrongName = realName + "xxxxx";
+        final NamedData source = new NamedData(wrongName, () -> getClass().getResourceAsStream(wrongName));
         try {
-            new KVNLexicalAnalyzer(wrongName).accept(new OCMParser(IERSConventions.IERS_2010,
-                                                                   true,
-                                                                   DataContext.getDefault(),
-                                                                   Constants.EIGEN5C_EARTH_MU));
+            new KVNLexicalAnalyzer(source).accept(new OCMParser(IERSConventions.IERS_2010, true,
+                                                                DataContext.getDefault(), Constants.EIGEN5C_EARTH_MU));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
@@ -59,12 +59,11 @@ public class OCMParserTest {
 
     @Test
     public void testMissingT0() throws URISyntaxException {
-        final String name = getClass().getResource("/ccsds/odm/ocm/OCM-missing-t0.txt").toURI().getPath();
+        final String name = "/ccsds/odm/ocm/OCM-missing-t0.txt";
+        final NamedData source = new NamedData(name, () -> getClass().getResourceAsStream(name));
         try {
-            new KVNLexicalAnalyzer(name).accept(new OCMParser(IERSConventions.IERS_2010,
-                                                              true,
-                                                              DataContext.getDefault(),
-                                                              Constants.EIGEN5C_EARTH_MU));
+            new KVNLexicalAnalyzer(source).accept(new OCMParser(IERSConventions.IERS_2010, true,
+                                                                DataContext.getDefault(), Constants.EIGEN5C_EARTH_MU));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, oe.getSpecifier());
@@ -74,12 +73,11 @@ public class OCMParserTest {
 
     @Test
     public void testWrongTimeSpan() throws URISyntaxException {
-        final String name = getClass().getResource("/ccsds/odm/ocm/OCM-wrong-time-span.txt").toURI().getPath();
+        final String name = "/ccsds/odm/ocm/OCM-wrong-time-span.txt";
+        final NamedData source = new NamedData(name, () -> getClass().getResourceAsStream(name));
         try {
-            new KVNLexicalAnalyzer(name).accept(new OCMParser(IERSConventions.IERS_2010,
-                                                              true,
-                                                              DataContext.getDefault(),
-                                                              Constants.EIGEN5C_EARTH_MU));
+            new KVNLexicalAnalyzer(source).accept(new OCMParser(IERSConventions.IERS_2010, true,
+                                                                DataContext.getDefault(), Constants.EIGEN5C_EARTH_MU));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
@@ -91,12 +89,11 @@ public class OCMParserTest {
 
     @Test
     public void testSpuriousMetaDataSection() throws URISyntaxException {
-        final String name = getClass().getResource("/ccsds/odm/ocm/OCM-spurious-metadata-section.txt").toURI().getPath();
+        final String name = "/ccsds/odm/ocm/OCM-spurious-metadata-section.txt";
+        final NamedData source = new NamedData(name, () -> getClass().getResourceAsStream(name));
         try {
-            new KVNLexicalAnalyzer(name).accept(new OCMParser(IERSConventions.IERS_2010,
-                                                              true,
-                                                              DataContext.getDefault(),
-                                                              Constants.EIGEN5C_EARTH_MU));
+            new KVNLexicalAnalyzer(source).accept(new OCMParser(IERSConventions.IERS_2010, true,
+                                                                DataContext.getDefault(), Constants.EIGEN5C_EARTH_MU));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
@@ -107,13 +104,10 @@ public class OCMParserTest {
 
     @Test
     public void testParseOCM1() {
-        final String   ex  = "/ccsds/odm/ocm/OCMExample1.txt";
-        final OCMFile file = new KVNLexicalAnalyzer(getClass().getResourceAsStream(ex),
-                                                    ex.substring(ex.lastIndexOf('/') + 1)).
-                        accept(new OCMParser(IERSConventions.IERS_2010,
-                                             true,
-                                             DataContext.getDefault(),
-                                             Constants.EIGEN5C_EARTH_MU));
+        final String   name  = "/ccsds/odm/ocm/OCMExample1.txt";
+        final NamedData source = new NamedData(name, () -> getClass().getResourceAsStream(name));
+        OCMFile file = new KVNLexicalAnalyzer(source).accept(new OCMParser(IERSConventions.IERS_2010, true,
+                                                             DataContext.getDefault(), Constants.EIGEN5C_EARTH_MU));
 
         // check the default values that are not set in this simple file
         Assert.assertEquals("CSPOC",              file.getMetadata().getCatalogName());
@@ -190,9 +184,9 @@ public class OCMParserTest {
     @Ignore
     @Test
     public void testParseOCM2() {
-        final String   ex  = "/ccsds/odm/ocm/OCMExample2.txt";
-        final OCMFile file = new KVNLexicalAnalyzer(getClass().getResourceAsStream(ex),
-                                                   ex.substring(ex.lastIndexOf('/') + 1)).
+        final String  name = "/ccsds/odm/ocm/OCMExample2.txt";
+        final NamedData source = new NamedData(name, () -> getClass().getResourceAsStream(name));
+        final OCMFile file = new KVNLexicalAnalyzer(source).
                         accept(new OCMParser(IERSConventions.IERS_2010,
                                              true,
                                              DataContext.getDefault(),
@@ -235,9 +229,9 @@ public class OCMParserTest {
     @Ignore
     @Test
     public void testParseOCM3() {
-        final String   ex  = "/ccsds/odm/ocm/OCMExample3.txt";
-        final OCMFile file = new KVNLexicalAnalyzer(getClass().getResourceAsStream(ex),
-                                                    ex.substring(ex.lastIndexOf('/') + 1)).
+        final String   name  = "/ccsds/odm/ocm/OCMExample3.txt";
+        final NamedData source = new NamedData(name, () -> getClass().getResourceAsStream(name));
+        final OCMFile file = new KVNLexicalAnalyzer(source).
                         accept(new OCMParser(IERSConventions.IERS_2010,
                                              true,
                                              DataContext.getDefault(),
@@ -267,9 +261,9 @@ public class OCMParserTest {
 
     @Test
     public void testParseOCM4() {
-        final String   ex  = "/ccsds/odm/ocm/OCMExample4.txt";
-        final OCMFile file = new KVNLexicalAnalyzer(getClass().getResourceAsStream(ex),
-                                                    ex.substring(ex.lastIndexOf('/') + 1)).
+        final String   name  = "/ccsds/odm/ocm/OCMExample4.txt";
+        final NamedData source = new NamedData(name, () -> getClass().getResourceAsStream(name));
+        final OCMFile file = new KVNLexicalAnalyzer(source).
                         accept(new OCMParser(IERSConventions.IERS_2010,
                                              true,
                                              DataContext.getDefault(),

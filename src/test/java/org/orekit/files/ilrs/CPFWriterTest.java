@@ -25,11 +25,9 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.util.List;
 
 import org.junit.Assert;
@@ -38,6 +36,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.orekit.Utils;
+import org.orekit.data.NamedData;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ilrs.CPFFile.CPFCoordinate;
@@ -59,16 +58,14 @@ public class CPFWriterTest {
 
         // Simple test for version 2.0, only contains position entries
         final String ex = "/ilrs/jason3_cpf_180613_16401.cne";
-
-        final CPFParser parser = new CPFParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final CPFFile file = (CPFFile) parser.parse(fileName);
+        final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+        final CPFFile file = new CPFParser().parse(source);
 
         String tempCPFFilePath = tempFolder.newFile("TestWriteCPF.cpf").toString();
         CPFWriter writer = new CPFWriter(file.getHeader(), TimeScalesFactory.getUTC());
         writer.write(tempCPFFilePath, file);
 
-        final CPFFile generatedCpfFile = parser.parse(tempCPFFilePath);
+        final CPFFile generatedCpfFile = new CPFParser().parse(new NamedData(tempCPFFilePath));
         compareCpfFiles(file, generatedCpfFile);
 
     }
@@ -78,16 +75,14 @@ public class CPFWriterTest {
 
         // Simple test for version 2.0, only contains position entries
         final String ex = "/ilrs/lageos1_cpf_180613_16401.hts";
-
-        final CPFParser parser = new CPFParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final CPFFile file = (CPFFile) parser.parse(fileName);
+        final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+        final CPFFile file = new CPFParser().parse(source);
 
         String tempCPFFilePath = tempFolder.newFile("TestWriteCPF.cpf").toString();
         CPFWriter writer = new CPFWriter(file.getHeader(), TimeScalesFactory.getUTC());
         writer.write(tempCPFFilePath, file);
 
-        final CPFFile generatedCpfFile = parser.parse(tempCPFFilePath);
+        final CPFFile generatedCpfFile = new CPFParser().parse(new NamedData(tempCPFFilePath));
         compareCpfFiles(file, generatedCpfFile);
 
     }
@@ -97,27 +92,24 @@ public class CPFWriterTest {
 
         // Simple test for version 1.0, only contains position entries
         final String ex = "/ilrs/galileo212_cpf_180613_6641.esa";
-
-        final CPFParser parser = new CPFParser();
-        final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final CPFFile file = (CPFFile) parser.parse(fileName);
+        final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+        final CPFFile file = new CPFParser().parse(source);
 
         String tempCPFFilePath = tempFolder.newFile("TestWriteCPF.cpf").toString();
         CPFWriter writer = new CPFWriter(file.getHeader(), TimeScalesFactory.getUTC());
         writer.write(tempCPFFilePath, file);
 
-        final CPFFile generatedCpfFile = parser.parse(tempCPFFilePath);
+        final CPFFile generatedCpfFile = new CPFParser().parse(new NamedData(tempCPFFilePath));
         compareCpfFiles(file, generatedCpfFile);
 
     }
 
     @Test
     public void testNullFile() throws IOException {
-        final String ex = "/ilrs/lageos1_cpf_180613_16401.hts";
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final CPFParser parser = new CPFParser();
-        final CPFFile cpfFile = parser.parse(inEntry);
-        CPFWriter writer = new CPFWriter(cpfFile.getHeader(), TimeScalesFactory.getUTC());
+        final String    ex      = "/ilrs/lageos1_cpf_180613_16401.hts";
+        final NamedData source  = new NamedData(ex, () ->  getClass().getResourceAsStream(ex));
+        final CPFFile   cpfFile = new CPFParser().parse(source);
+        final CPFWriter writer  = new CPFWriter(cpfFile.getHeader(), TimeScalesFactory.getUTC());
         try {
             writer.write((BufferedWriter) null, cpfFile);
             fail("an exception should have been thrown");

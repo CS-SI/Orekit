@@ -28,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
+import org.orekit.data.NamedData;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
@@ -59,9 +60,9 @@ public class TDMParserTest {
     @Test
     public void testParseTdmExternalResourceIssue368() {
         // setup
-        String name = "/ccsds/tdm/xml/TDM-external-doctype.xml";
-        LexicalAnalyzer lexicalAnalyzer =
-                        new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final String name = "/ccsds/tdm/xml/TDM-external-doctype.xml";
+        final NamedData source = new NamedData(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        LexicalAnalyzer lexicalAnalyzer = new XMLLexicalAnalyzer(source);
 
         try {
             // action
@@ -84,8 +85,8 @@ public class TDMParserTest {
         // See Figure D-2: TDM Example: One-Way Data w/Frequency Offset
         // Data lines number was cut down to 7
         final String name = "/ccsds/tdm/kvn/TDMExample2.txt";
-        LexicalAnalyzer lexicalAnalyzer =
-                        new KVNLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final NamedData source = new NamedData(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        LexicalAnalyzer lexicalAnalyzer = new KVNLexicalAnalyzer(source);
         final TDMFile file = lexicalAnalyzer.accept(new TDMParser(IERSConventions.IERS_2010, true,
                                                                   DataContext.getDefault(), null));
         validateTDMExample2(file);
@@ -98,8 +99,8 @@ public class TDMParserTest {
         // See Figure D-4: TDM Example: Two-Way Ranging Data Only
         // Data lines number was cut down to 20
         final String name = "/ccsds/tdm/kvn/TDMExample4.txt";
-        LexicalAnalyzer lexicalAnalyzer =
-                        new KVNLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final NamedData source = new NamedData(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        LexicalAnalyzer lexicalAnalyzer = new KVNLexicalAnalyzer(source);
         final TDMFile file = lexicalAnalyzer.accept(new TDMParser(IERSConventions.IERS_2010, true,
                                                                   DataContext.getDefault(), null));
         validateTDMExample4(file);
@@ -112,8 +113,8 @@ public class TDMParserTest {
         // See Figure D-6: TDM Example: Four-Way Data
         // Data lines number was cut down to 16
         final String name = "/ccsds/tdm/kvn/TDMExample6.txt";
-        LexicalAnalyzer lexicalAnalyzer =
-                        new KVNLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final NamedData source = new NamedData(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        LexicalAnalyzer lexicalAnalyzer = new KVNLexicalAnalyzer(source);
         final TDMFile file = lexicalAnalyzer.accept(new TDMParser(IERSConventions.IERS_2010, true,
                                                                   DataContext.getDefault(), null));
         validateTDMExample6(file);
@@ -126,8 +127,8 @@ public class TDMParserTest {
         // See Figure D-8: TDM Example: Angles, Range, Doppler Combined in Single TDM
         // Data lines number was cut down to 18
         final String name = "/ccsds/tdm/kvn/TDMExample8.txt";
-        LexicalAnalyzer lexicalAnalyzer =
-                        new KVNLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final NamedData source = new NamedData(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        LexicalAnalyzer lexicalAnalyzer = new KVNLexicalAnalyzer(source);
         final TDMFile file = lexicalAnalyzer.accept(new TDMParser(IERSConventions.IERS_2010, true,
                                                                   DataContext.getDefault(), null));
         validateTDMExample8(file);
@@ -139,8 +140,8 @@ public class TDMParserTest {
         // Example 15 of [1]
         // See Figure D-15: TDM Example: Clock Bias/Drift Only
         final String name = "/ccsds/tdm/kvn/TDMExample15.txt";
-        LexicalAnalyzer lexicalAnalyzer =
-                        new KVNLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final NamedData source = new NamedData(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        LexicalAnalyzer lexicalAnalyzer = new KVNLexicalAnalyzer(source);
         final TDMFile file = lexicalAnalyzer.accept(new TDMParser(IERSConventions.IERS_2010, true,
                                                                   DataContext.getDefault(), null));
         validateTDMExample15(file);
@@ -151,8 +152,8 @@ public class TDMParserTest {
 
         // Testing all TDM keywords
         final String name = "/ccsds/tdm/kvn/TDMExampleAllKeywords.txt";
-        LexicalAnalyzer lexicalAnalyzer =
-                        new KVNLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final NamedData source = new NamedData(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        LexicalAnalyzer lexicalAnalyzer = new KVNLexicalAnalyzer(source);
         final TDMFile file = lexicalAnalyzer.accept(new TDMParser(IERSConventions.IERS_2010, true,
                                                                   DataContext.getDefault(), null));
         validateTDMExampleAllKeywords(file);
@@ -165,8 +166,8 @@ public class TDMParserTest {
         // See Figure D-2: TDM Example: One-Way Data w/Frequency Offset
         // Data lines number was cut down to 7
         final String name = "/ccsds/tdm/xml/TDMExample2.xml";
-        LexicalAnalyzer lexicalAnalyzer =
-                        new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final NamedData source = new NamedData(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        LexicalAnalyzer lexicalAnalyzer = new XMLLexicalAnalyzer(source);
         final TDMFile file = lexicalAnalyzer.accept(new TDMParser(IERSConventions.IERS_2010, true,
                                                                   DataContext.getDefault(), null));
         validateTDMExample2(file);
@@ -179,8 +180,8 @@ public class TDMParserTest {
         // See Figure D-4: TDM Example: Two-Way Ranging Data Only
         // Data lines number was cut down to 20
         final String name = "/ccsds/tdm/xml/TDMExample4.xml";
-        LexicalAnalyzer lexicalAnalyzer =
-                        new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final NamedData source = new NamedData(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        LexicalAnalyzer lexicalAnalyzer = new XMLLexicalAnalyzer(source);
         final TDMFile file = lexicalAnalyzer.accept(new TDMParser(IERSConventions.IERS_2010, true,
                                                                   DataContext.getDefault(), null));
         validateTDMExample4(file);
@@ -193,8 +194,8 @@ public class TDMParserTest {
         // See Figure D-6: TDM Example: Four-Way Data
         // Data lines number was cut down to 16
         final String name = "/ccsds/tdm/xml/TDMExample6.xml";
-        LexicalAnalyzer lexicalAnalyzer =
-                        new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final NamedData source = new NamedData(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        LexicalAnalyzer lexicalAnalyzer = new XMLLexicalAnalyzer(source);
         final TDMFile file = lexicalAnalyzer.accept(new TDMParser(IERSConventions.IERS_2010, true,
                                                                   DataContext.getDefault(), null));
         validateTDMExample6(file);
@@ -207,8 +208,8 @@ public class TDMParserTest {
         // See Figure D-8: TDM Example: Angles, Range, Doppler Combined in Single TDM
         // Data lines number was cut down to 18
         final String name = "/ccsds/tdm/xml/TDMExample8.xml";
-        LexicalAnalyzer lexicalAnalyzer =
-                        new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final NamedData source = new NamedData(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        LexicalAnalyzer lexicalAnalyzer = new XMLLexicalAnalyzer(source);
         final TDMFile file = lexicalAnalyzer.accept(new TDMParser(IERSConventions.IERS_2010, true,
                                                                   DataContext.getDefault(), null));
         validateTDMExample8(file);
@@ -220,8 +221,8 @@ public class TDMParserTest {
         // Example 15 of [1]
         // See Figure D-15: TDM Example: Clock Bias/Drift Only
         final String name = "/ccsds/tdm/xml/TDMExample15.xml";
-        LexicalAnalyzer lexicalAnalyzer =
-                        new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final NamedData source = new NamedData(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        LexicalAnalyzer lexicalAnalyzer = new XMLLexicalAnalyzer(source);
         final TDMFile file = lexicalAnalyzer.accept(new TDMParser(IERSConventions.IERS_2010, true,
                                                                   DataContext.getDefault(), null));
         validateTDMExample15(file);
@@ -232,8 +233,8 @@ public class TDMParserTest {
 
         // Testing all TDM keywords
         final String name = "/ccsds/tdm/xml/TDMExampleAllKeywords.xml";
-        LexicalAnalyzer lexicalAnalyzer =
-                        new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final NamedData source = new NamedData(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        LexicalAnalyzer lexicalAnalyzer = new XMLLexicalAnalyzer(source);
         final TDMFile file = lexicalAnalyzer.accept(new TDMParser(IERSConventions.IERS_2010, true,
                                                                   DataContext.getDefault(), null));
         validateTDMExampleAllKeywords(file);
@@ -241,17 +242,19 @@ public class TDMParserTest {
 
     @Test
     public void testDataNumberFormatErrorTypeKeyValue() {
+        final String name = "/ccsds/tdm/kvn/TDM-data-number-format-error.txt";
+        final NamedData source = new NamedData(name, () -> TDMParserTest.class.getResourceAsStream(name));
         try {
             // Number format exception in data part
-            final String name = "/ccsds/tdm/kvn/TDM-data-number-format-error.txt";
-            new KVNLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name).accept(new TDMParser(IERSConventions.IERS_2010, true,
-                                                                                                             DataContext.getDefault(), null));
+            LexicalAnalyzer lexicalAnalyzer = new KVNLexicalAnalyzer(source);
+            lexicalAnalyzer.accept(new TDMParser(IERSConventions.IERS_2010, true,
+                                                 DataContext.getDefault(), null));
             Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
             Assert.assertEquals("RECEIVE_FREQ_1", oe.getParts()[0]);
             Assert.assertEquals(26, oe.getParts()[1]);
-            Assert.assertEquals("/ccsds/tdm/kvn/TDM-data-number-format-error.txt", oe.getParts()[2]);
+            Assert.assertEquals(name, oe.getParts()[2]);
         }
     }
 
@@ -260,8 +263,9 @@ public class TDMParserTest {
         try {
             // Number format exception in data part
             final String name = "/ccsds/tdm/xml/TDM-data-number-format-error.xml";
-            new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name).accept(new TDMParser(IERSConventions.IERS_2010, true,
-                                                                                                             DataContext.getDefault(), null));
+            final NamedData source = new NamedData(name, () -> TDMParserTest.class.getResourceAsStream(name));
+            new XMLLexicalAnalyzer(source).accept(new TDMParser(IERSConventions.IERS_2010, true,
+                                                                DataContext.getDefault(), null));
             Assert.fail("An exception should have been thrown");
                     } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
@@ -276,8 +280,9 @@ public class TDMParserTest {
         try {
             // Number format exception in metadata part
             final String name = "/ccsds/tdm/kvn/TDM-metadata-number-format-error.txt";
-            new KVNLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name).accept(new TDMParser(IERSConventions.IERS_2010, true,
-                                                                                                             DataContext.getDefault(), null));
+            final NamedData source = new NamedData(name, () -> TDMParserTest.class.getResourceAsStream(name));
+            new KVNLexicalAnalyzer(source).accept(new TDMParser(IERSConventions.IERS_2010, true,
+                                                                DataContext.getDefault(), null));
             Assert.fail("An Orekit Exception \"UNABLE_TO_PARSE_LINE_IN_FILE\" should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
@@ -292,8 +297,9 @@ public class TDMParserTest {
         try {
             // Number format exception in metadata part
             final String name = "/ccsds/tdm/xml/TDM-metadata-number-format-error.xml";
-            new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name).accept(new TDMParser(IERSConventions.IERS_2010, true,
-                                                                                                             DataContext.getDefault(), null));
+            final NamedData source = new NamedData(name, () -> TDMParserTest.class.getResourceAsStream(name));
+            new XMLLexicalAnalyzer(source).accept(new TDMParser(IERSConventions.IERS_2010, true,
+                                                                DataContext.getDefault(), null));
             Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
@@ -306,10 +312,12 @@ public class TDMParserTest {
     @Test
     public void testNonExistentFile() throws URISyntaxException {
         // Try parsing a file that does not exist
-        final String realName = getClass().getResource("/ccsds/odm/oem/OEMExample2.txt").toURI().getPath();
+        final String realName = "/ccsds/odm/oem/OEMExample2.txt";
         final String wrongName = realName + "xxxxx";
+        final NamedData source = new NamedData(wrongName, () -> TDMParserTest.class.getResourceAsStream(wrongName));
         try {
-            new KVNLexicalAnalyzer(wrongName);
+            new KVNLexicalAnalyzer(source).accept(new TDMParser(IERSConventions.IERS_2010, true,
+                                                                DataContext.getDefault(), null));
             Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
@@ -322,8 +330,9 @@ public class TDMParserTest {
         // Inconsistent time systems between two sets of data
         try {
             final String name = "/ccsds/tdm/kvn/TDM-inconsistent-time-systems.txt";
-            new KVNLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name).accept(new TDMParser(IERSConventions.IERS_2010, true,
-                                                                                                             DataContext.getDefault(), null));
+            final NamedData source = new NamedData(name, () -> TDMParserTest.class.getResourceAsStream(name));
+            new KVNLexicalAnalyzer(source).accept(new TDMParser(IERSConventions.IERS_2010, true,
+                                                                DataContext.getDefault(), null));
             Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_INCONSISTENT_TIME_SYSTEMS, oe.getSpecifier());
@@ -337,8 +346,9 @@ public class TDMParserTest {
         // Inconsistent time systems between two sets of data
         try {
             final String name = "/ccsds/tdm/xml/TDM-inconsistent-time-systems.xml";
-            new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name).accept(new TDMParser(IERSConventions.IERS_2010, true,
-                                                                                                             DataContext.getDefault(), null));
+            final NamedData source = new NamedData(name, () -> TDMParserTest.class.getResourceAsStream(name));
+            new XMLLexicalAnalyzer(source).accept(new TDMParser(IERSConventions.IERS_2010, true,
+                                                                DataContext.getDefault(), null));
             Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_INCONSISTENT_TIME_SYSTEMS, oe.getSpecifier());
@@ -351,7 +361,8 @@ public class TDMParserTest {
     public void testWrongDataKeywordKeyValue() throws URISyntaxException {
         // Unknown CCSDS keyword was read in data part
         final String name = "/ccsds/tdm/kvn/TDM-data-wrong-keyword.txt";
-        final LexicalAnalyzer lexicalAnalyzer = new KVNLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final NamedData source = new NamedData(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final LexicalAnalyzer lexicalAnalyzer = new KVNLexicalAnalyzer(source);
         try {
             lexicalAnalyzer.accept(new TDMParser(IERSConventions.IERS_2010, true,
                                                  DataContext.getDefault(), null));
@@ -368,7 +379,8 @@ public class TDMParserTest {
     public void testWrongDataKeywordXml() throws URISyntaxException {
         // Unknown CCSDS keyword was read in data part
         final String name = "/ccsds/tdm/xml/TDM-data-wrong-keyword.xml";
-        final LexicalAnalyzer lexicalAnalyzer = new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final NamedData source = new NamedData(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final LexicalAnalyzer lexicalAnalyzer = new XMLLexicalAnalyzer(source);
         try {
             lexicalAnalyzer.accept(new TDMParser(IERSConventions.IERS_2010, true,
                                                  DataContext.getDefault(), null));
@@ -385,7 +397,8 @@ public class TDMParserTest {
     public void testWrongMetaDataKeywordKeyValue() throws URISyntaxException {
         // Unknown CCSDS keyword was read in data part
         final String name = "/ccsds/tdm/kvn/TDM-metadata-wrong-keyword.txt";
-        final LexicalAnalyzer lexicalAnalyzer = new KVNLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final NamedData source = new NamedData(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final LexicalAnalyzer lexicalAnalyzer = new KVNLexicalAnalyzer(source);
         try {
             lexicalAnalyzer.accept(new TDMParser(IERSConventions.IERS_2010, true,
                                                  DataContext.getDefault(), null));
@@ -402,7 +415,8 @@ public class TDMParserTest {
     public void testWrongMetaDataKeywordXml() throws URISyntaxException {
         // Unknown CCSDS keyword was read in data part
         final String name = "/ccsds/tdm/xml/TDM-metadata-wrong-keyword.xml";
-        final LexicalAnalyzer lexicalAnalyzer = new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final NamedData source = new NamedData(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final LexicalAnalyzer lexicalAnalyzer = new XMLLexicalAnalyzer(source);
         try {
             lexicalAnalyzer.accept(new TDMParser(IERSConventions.IERS_2010, true,
                                                  DataContext.getDefault(), null));
@@ -419,7 +433,8 @@ public class TDMParserTest {
     public void testWrongTimeSystemKeyValue() {
         // Time system not implemented CCSDS keyword was read in data part
         final String name = "/ccsds/tdm/kvn/TDM-metadata-timesystem-not-implemented.txt";
-        final LexicalAnalyzer lexicalAnalyzer = new KVNLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final NamedData source = new NamedData(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final LexicalAnalyzer lexicalAnalyzer = new KVNLexicalAnalyzer(source);
         try {
             lexicalAnalyzer.accept(new TDMParser(IERSConventions.IERS_2010, true,
                                                  DataContext.getDefault(), null));
@@ -434,7 +449,8 @@ public class TDMParserTest {
     public void testWrongTimeSystemXml() {
         // Time system not implemented CCSDS keyword was read in data part
         final String name = "/ccsds/tdm/xml/TDM-metadata-timesystem-not-implemented.xml";
-        final LexicalAnalyzer lexicalAnalyzer = new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final NamedData source = new NamedData(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final LexicalAnalyzer lexicalAnalyzer = new XMLLexicalAnalyzer(source);
         try {
             lexicalAnalyzer.accept(new TDMParser(IERSConventions.IERS_2010, true,
                                                  DataContext.getDefault(), null));
@@ -449,7 +465,8 @@ public class TDMParserTest {
     public void testMissingTimeSystemXml() {
         // Time system not implemented CCSDS keyword was read in data part
         final String name = "/ccsds/tdm/xml/TDM-missing-timesystem.xml";
-        final LexicalAnalyzer lexicalAnalyzer = new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final NamedData source = new NamedData(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final LexicalAnalyzer lexicalAnalyzer = new XMLLexicalAnalyzer(source);
         try {
             lexicalAnalyzer.accept(new TDMParser(IERSConventions.IERS_2010, true,
                                                  DataContext.getDefault(), null));
@@ -464,7 +481,8 @@ public class TDMParserTest {
     public void testInconsistentDataLineKeyValue() {
         // Inconsistent data line in KeyValue file (3 fields after keyword instead of 2)
         final String name = "/ccsds/tdm/kvn/TDM-data-inconsistent-line.txt";
-        final LexicalAnalyzer lexicalAnalyzer = new KVNLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final NamedData source = new NamedData(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final LexicalAnalyzer lexicalAnalyzer = new KVNLexicalAnalyzer(source);
         try {
             lexicalAnalyzer.accept(new TDMParser(IERSConventions.IERS_2010, true,
                                                  DataContext.getDefault(), null));
@@ -481,7 +499,8 @@ public class TDMParserTest {
     public void testInconsistentDataBlockXml() {
         // Inconsistent data block in XML file
         final String name = "/ccsds/tdm/xml/TDM-data-inconsistent-block.xml";
-        final LexicalAnalyzer lexicalAnalyzer = new XMLLexicalAnalyzer(TDMParserTest.class.getResourceAsStream(name), name);
+        final NamedData source = new NamedData(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final LexicalAnalyzer lexicalAnalyzer = new XMLLexicalAnalyzer(source);
         try {
             lexicalAnalyzer.accept(new TDMParser(IERSConventions.IERS_2010, true,
                                                  DataContext.getDefault(), null));

@@ -16,7 +16,6 @@
  */
 package org.orekit.files.ccsds.ndm.odm.opm;
 
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,6 +32,7 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
+import org.orekit.data.NamedData;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -64,13 +64,12 @@ public class OPMParserTest {
         // simple test for OPM file, contains p/v entries and other mandatory
         // data.
         final String ex = "/ccsds/odm/opm/OPMExample1.txt";
+        final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
 
         final OPMParser parser = new OPMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                null, 398600e9, 1000.0);
 
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-
-        final OPMFile file = new KVNLexicalAnalyzer(inEntry, "OPMExample1.txt").accept(parser);
+        final OPMFile file = new KVNLexicalAnalyzer(source).accept(parser);
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
 
         // Check Header Block;
@@ -131,11 +130,11 @@ public class OPMParserTest {
         // simple test for OPM file, contains all mandatory information plus
         // Keplerian elements, Spacecraft parameters and 2 maneuvers.
         final String ex = "/ccsds/odm/opm/OPMExample2.txt";
+        final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
 
         final OPMParser parser = new OPMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                null, Constants.EIGEN5C_EARTH_MU, 1000.0);
-        final OPMFile file = new KVNLexicalAnalyzer(getClass().getResourceAsStream(ex), "OPMExample2.txt").
-                        accept(parser);
+        final OPMFile file = new KVNLexicalAnalyzer(source).accept(parser);
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
 
         // Check Header Block;
@@ -248,12 +247,11 @@ public class OPMParserTest {
         // simple test for OPM file, contains all mandatory information plus
         // Keplerian elements, Spacecraft parameters and 3 maneuvers.
         final String ex = "/ccsds/odm/opm/OPMExample5.txt";
+        final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
 
         final OPMParser parser = new OPMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                null, Constants.EIGEN5C_EARTH_MU, 1000.0);
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-
-        final OPMFile file = new KVNLexicalAnalyzer(inEntry, "OPMExample2.txt").accept(parser);
+        final OPMFile file = new KVNLexicalAnalyzer(source).accept(parser);
 
         // Check Header Block;
         Assert.assertEquals(2.0, file.getHeader().getFormatVersion(), 1.0e-10);
@@ -372,10 +370,11 @@ public class OPMParserTest {
     public void testParseOPM3() throws URISyntaxException {
         // simple test for OPM file, contains all mandatory information plus
         // Spacecraft parameters and the position/velocity Covariance Matrix.
-        final String name = getClass().getResource("/ccsds/odm/opm/OPMExample3.txt").toURI().getPath();
+        final String name = "/ccsds/odm/opm/OPMExample3.txt";
+        final NamedData source = new NamedData(name, () -> getClass().getResourceAsStream(name));
         OPMParser parser = new OPMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                          null, Double.NaN, 1000.0);
-        final OPMFile file = new KVNLexicalAnalyzer(name).accept(parser);
+        final OPMFile file = new KVNLexicalAnalyzer(source).accept(parser);
         Assert.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
                                              TimeScalesFactory.getUTC()),
                             file.getMetadata().getFrameEpoch());
@@ -437,10 +436,11 @@ public class OPMParserTest {
 
     @Test
     public void testParseOPM3NoDesignator() throws URISyntaxException {
-        final String name = getClass().getResource("/ccsds/odm/opm/OPM-no-designator.txt").toURI().getPath();
+        final String ex = "/ccsds/odm/opm/OPM-no-designator.txt";
+        final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
         OPMParser parser = new OPMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                          null, Constants.EIGEN5C_EARTH_MU, 1000.0);
-        final OPMFile file = new KVNLexicalAnalyzer(name).accept(parser);
+        final OPMFile file = new KVNLexicalAnalyzer(source).accept(parser);
         Assert.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
                                                  TimeScalesFactory.getGMST(IERSConventions.IERS_2010, false)),
                             file.getMetadata().getFrameEpoch());
@@ -471,10 +471,10 @@ public class OPMParserTest {
     public void testParseOPM4() {
         //
         final String ex = "/ccsds/odm/opm/OPMExample4.txt";
+        final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
         OPMParser parser = new OPMParser(IERSConventions.IERS_2010, false, DataContext.getDefault(),
                                          new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU, 1000.0);
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final OPMFile file = new KVNLexicalAnalyzer(inEntry, "OPMExample4.txt").accept(parser);
+        final OPMFile file = new KVNLexicalAnalyzer(source).accept(parser);
         Assert.assertEquals("TOD/2010 accurate EOP", file.getMetadata().getFrame().toString());
         Assert.assertEquals("2000-028A", file.getMetadata().getObjectID());
         Assert.assertEquals(new AbsoluteDate(2006, 6, 3, TimeScalesFactory.getUTC()), file.getDate());
@@ -490,10 +490,11 @@ public class OPMParserTest {
     public void testParseOPM6() throws URISyntaxException {
         // simple test for OPM file, contains all mandatory information plus
         // Spacecraft parameters and the position/velocity Covariance Matrix.
-        final String name = getClass().getResource("/ccsds/odm/opm/OPMExample6.txt").toURI().getPath();
+        final String name = "/ccsds/odm/opm/OPMExample6.txt";
+        final NamedData source = new NamedData(name, () -> getClass().getResourceAsStream(name));
         OPMParser parser = new OPMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                          new AbsoluteDate(), Double.NaN, 1000.0);
-        final OPMFile file = new KVNLexicalAnalyzer(name).accept(parser);
+        final OPMFile file = new KVNLexicalAnalyzer(source).accept(parser);
         Assert.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
                                              TimeScalesFactory.getGMST(IERSConventions.IERS_2010, false)),
                             file.getMetadata().getFrameEpoch());
@@ -569,42 +570,53 @@ public class OPMParserTest {
         final OPMParser parser = new OPMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU, 1000);
 
-        OPMFile file = new KVNLexicalAnalyzer(getClass().getResourceAsStream("/ccsds/odm/opm/OPM-dummy-solar-system-barycenter.txt")).
-                       accept(parser);
-        Assert.assertEquals(CcsdsTimeScale.TDB, file.getMetadata().getTimeSystem());
-        Assert.assertEquals("solar system barycenter", file.getMetadata().getCenterBody().getName());
+        final String name1 = "/ccsds/odm/opm/OPM-dummy-solar-system-barycenter.txt";
+        final NamedData source1 = new NamedData(name1, () -> getClass().getResourceAsStream(name1));
+        OPMFile file1 = new KVNLexicalAnalyzer(source1).accept(parser);
+        Assert.assertEquals(CcsdsTimeScale.TDB, file1.getMetadata().getTimeSystem());
+        Assert.assertEquals("solar system barycenter", file1.getMetadata().getCenterBody().getName());
 
-        file = new KVNLexicalAnalyzer(getClass().getResourceAsStream("/ccsds/odm/opm/OPM-dummy-ssb.txt")).accept(parser);
-        Assert.assertEquals(CcsdsTimeScale.TCB, file.getMetadata().getTimeSystem());
-        Assert.assertEquals("solar system barycenter", file.getMetadata().getCenterBody().getName());
+        final String name2 = "/ccsds/odm/opm/OPM-dummy-ssb.txt";
+        final NamedData source2 = new NamedData(name2, () -> getClass().getResourceAsStream(name2));
+        OPMFile file2 = new KVNLexicalAnalyzer(source2).accept(parser);
+        Assert.assertEquals(CcsdsTimeScale.TCB, file2.getMetadata().getTimeSystem());
+        Assert.assertEquals("solar system barycenter", file2.getMetadata().getCenterBody().getName());
 
-        file = new KVNLexicalAnalyzer(getClass().getResourceAsStream("/ccsds/odm/opm/OPM-dummy-earth-barycenter.txt")).accept(parser);
-        Assert.assertEquals(CcsdsTimeScale.TDB, file.getMetadata().getTimeSystem());
-        Assert.assertEquals("Earth-Moon barycenter", file.getMetadata().getCenterBody().getName());
+        final String name3 = "/ccsds/odm/opm/OPM-dummy-earth-barycenter.txt";
+        final NamedData source3 = new NamedData(name3, () -> getClass().getResourceAsStream(name3));
+        OPMFile file3 = new KVNLexicalAnalyzer(source3).accept(parser);
+        Assert.assertEquals(CcsdsTimeScale.TDB, file3.getMetadata().getTimeSystem());
+        Assert.assertEquals("Earth-Moon barycenter", file3.getMetadata().getCenterBody().getName());
 
-        file = new KVNLexicalAnalyzer(getClass().getResourceAsStream("/ccsds/odm/opm/OPM-dummy-earth-dash-moon-barycenter.txt")).accept(parser);
-        Assert.assertEquals(CcsdsTimeScale.TDB, file.getMetadata().getTimeSystem());
-        Assert.assertEquals("Earth-Moon barycenter", file.getMetadata().getCenterBody().getName());
+        final String name4 = "/ccsds/odm/opm/OPM-dummy-earth-dash-moon-barycenter.txt";
+        final NamedData source4 = new NamedData(name4, () -> getClass().getResourceAsStream(name4));
+        OPMFile file4 = new KVNLexicalAnalyzer(source4).accept(parser);
+        Assert.assertEquals(CcsdsTimeScale.TDB, file4.getMetadata().getTimeSystem());
+        Assert.assertEquals("Earth-Moon barycenter", file4.getMetadata().getCenterBody().getName());
 
-        file = new KVNLexicalAnalyzer(getClass().getResourceAsStream("/ccsds/odm/opm/OPM-dummy-earth-moon-barycenter.txt")).accept(parser);
-        Assert.assertEquals(CcsdsTimeScale.UT1, file.getMetadata().getTimeSystem());
-        Assert.assertEquals("Earth-Moon barycenter", file.getMetadata().getCenterBody().getName());
+        final String name5 = "/ccsds/odm/opm/OPM-dummy-earth-moon-barycenter.txt";
+        final NamedData source5 = new NamedData(name5, () -> getClass().getResourceAsStream(name5));
+        OPMFile file5 = new KVNLexicalAnalyzer(source5).accept(parser);
+        Assert.assertEquals(CcsdsTimeScale.UT1, file5.getMetadata().getTimeSystem());
+        Assert.assertEquals("Earth-Moon barycenter", file5.getMetadata().getCenterBody().getName());
 
-        file = new KVNLexicalAnalyzer(getClass().getResourceAsStream("/ccsds/odm/opm/OPM-dummy-emb.txt")).accept(parser);
-        Assert.assertEquals(CcsdsTimeScale.TT, file.getMetadata().getTimeSystem());
-        Assert.assertEquals("Earth-Moon barycenter", file.getMetadata().getCenterBody().getName());
+        final String name6 = "/ccsds/odm/opm/OPM-dummy-emb.txt";
+        final NamedData source6 = new NamedData(name6, () -> getClass().getResourceAsStream(name6));
+        OPMFile file6 = new KVNLexicalAnalyzer(source6).accept(parser);
+        Assert.assertEquals(CcsdsTimeScale.TT, file6.getMetadata().getTimeSystem());
+        Assert.assertEquals("Earth-Moon barycenter", file6.getMetadata().getCenterBody().getName());
 
     }
 
     @Test
     public void testOrbitFileInterface() {
         final String ex = "/ccsds/odm/opm/OPMExample4.txt";
+        final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
 
         final OPMParser parser = new OPMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU, 1000);
 
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final OPMFile file = new KVNLexicalAnalyzer(inEntry, "OPMExample4.txt").accept(parser);
+        final OPMFile file = new KVNLexicalAnalyzer(source).accept(parser);
 
         final String satId = "2000-028A";
         Assert.assertEquals(satId, file.getMetadata().getObjectID());
@@ -634,29 +646,31 @@ public class OPMParserTest {
 
     @Test
     public void testWrongODMType() {
+        final String name = "/ccsds/odm/omm/OMMExample1.txt";
+        final NamedData source = new NamedData(name, () -> getClass().getResourceAsStream(name));
         try {
-            new KVNLexicalAnalyzer(getClass().getResourceAsStream("/ccsds/odm/omm/OMMExample1.txt"), "OMMExample1.txt").
+            new KVNLexicalAnalyzer(source).
             accept(new OPMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null,
                                 Constants.EIGEN5C_EARTH_MU, 1000.0));
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
-            Assert.assertEquals("OMMExample1.txt", oe.getParts()[0]);
+            Assert.assertEquals(name, oe.getParts()[0]);
         }
     }
 
     @Test
     public void testNumberFormatErrorType() {
+        final String name = "/ccsds/odm/opm/OPM-number-format-error.txt";
+        final NamedData source = new NamedData(name, () -> getClass().getResourceAsStream(name));
         try {
             OPMParser parser = new OPMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                              new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU, 1000.0);
-            new KVNLexicalAnalyzer(getClass().getResourceAsStream("/ccsds/odm/opm/OPM-number-format-error.txt"),
-                                   "OPM-number-format-error.txt").
-            accept(parser);
+            new KVNLexicalAnalyzer(source).accept(parser);
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
             Assert.assertEquals("SEMI_MAJOR_AXIS", oe.getParts()[0]);
             Assert.assertEquals(17, oe.getParts()[1]);
-            Assert.assertEquals("OPM-number-format-error.txt", oe.getParts()[2]);
+            Assert.assertEquals(name, oe.getParts()[2]);
         }
     }
 
@@ -664,8 +678,9 @@ public class OPMParserTest {
     public void testNonExistentFile() throws URISyntaxException {
         final String realName = getClass().getResource("/ccsds/odm/opm/OPMExample1.txt").toURI().getPath();
         final String wrongName = realName + "xxxxx";
+        final NamedData source = new NamedData(wrongName, () -> getClass().getResourceAsStream(wrongName));
         try {
-            new KVNLexicalAnalyzer(wrongName).
+            new KVNLexicalAnalyzer(source).
             accept(new OPMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null,
                                  Constants.EIGEN5C_EARTH_MU, 1000.0));
             Assert.fail("an exception should have been thrown");
@@ -679,9 +694,10 @@ public class OPMParserTest {
     public void testWrongKeyword() throws URISyntaxException {
         // simple test for OMM file, contains p/v entries and other mandatory
         // data.
-        final String name = getClass().getResource("/ccsds/odm/opm/OPM-wrong-keyword.txt").toURI().getPath();
+        final String name = "/ccsds/odm/opm/OPM-wrong-keyword.txt";
+        final NamedData source = new NamedData(name, () -> getClass().getResourceAsStream(name));
         try {
-            new KVNLexicalAnalyzer(name).
+            new KVNLexicalAnalyzer(source).
             accept(new OPMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null,
                                  Constants.EIGEN5C_EARTH_MU, 1000.0));
             Assert.fail("an exception should have been thrown");
@@ -699,10 +715,10 @@ public class OPMParserTest {
         CelestialBody moon = CelestialBodyFactory.getMoon();
 		AbsoluteDate date = new AbsoluteDate(2000, 1, 1, 12, 0, 00, TimeScalesFactory.getUTC());
 		final String ex = "/ccsds/odm/opm/OPM-dummy-moon-EME2000.txt";
-		final InputStream inEntry = getClass().getResourceAsStream(ex);
+        final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
 		final OPMParser parser = new OPMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
 				                               null, CelestialBodyFactory.getEarth().getGM(), 1000.0);
-		final OPMFile file = new KVNLexicalAnalyzer(inEntry).accept(parser);
+		final OPMFile file = new KVNLexicalAnalyzer(source).accept(parser);
         final Frame actualFrame = file.getMetadata().getFrame();
         MatcherAssert.assertThat(moon.getPVCoordinates(date, actualFrame),
                                  OrekitMatchers.pvCloseTo(PVCoordinates.ZERO, 1e-3));     

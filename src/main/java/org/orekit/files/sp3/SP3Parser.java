@@ -21,8 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Scanner;
@@ -33,6 +31,7 @@ import java.util.stream.Stream;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
+import org.orekit.data.NamedData;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFileParser;
@@ -59,7 +58,7 @@ import org.orekit.utils.IERSConventions;
  * @author Thomas Neidhart
  * @author Luc Maisonobe
  */
-public class SP3Parser implements EphemerisFileParser<SP3File.SP3Coordinate, SP3File.SP3Ephemeris> {
+public class SP3Parser implements EphemerisFileParser<SP3File> {
 
     /** Spaces delimiters. */
     private static final String SPACES = "\\s+";
@@ -149,70 +148,48 @@ public class SP3Parser implements EphemerisFileParser<SP3File.SP3Coordinate, SP3
                 .getITRF(IERSConventions.IERS_2010, false);
     }
 
-    /**
-     * Parse a SP3 file from an input stream using the UTF-8 charset.
-     *
-     * <p> This method creates a {@link BufferedReader} from the stream and as such this
-     * method may read more data than necessary from {@code stream} and the additional
-     * data will be lost. The other parse methods do not have this issue.
-     *
-     * @param stream to read the SP3 file from.
-     * @return a parsed SP3 file.
-     * @throws IOException     if {@code stream} throws one.
-     * @see #parse(String)
-     * @see #parse(BufferedReader, String)
-     */
-    public SP3File parse(final InputStream stream) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
-            return parse(reader, stream.toString());
-        }
-    }
-
     @Override
-    public SP3File parse(final String fileName) throws IOException, OrekitException {
-        try (BufferedReader reader = Files.newBufferedReader(Paths.get(fileName),
-                                                             StandardCharsets.UTF_8)) {
-            return parse(reader, fileName);
-        }
-    }
+    public SP3File parse(final NamedData source) throws IOException {
 
-    @Override
-    public SP3File parse(final BufferedReader reader,
-                         final String fileName) throws IOException {
+        try (InputStream       is     = source.getStreamOpener().openStream();
+             InputStreamReader isr    = new InputStreamReader(is, StandardCharsets.UTF_8);
+             BufferedReader    reader = new BufferedReader(isr)) {
 
-        // initialize internal data structures
-        final ParseInfo pi = new ParseInfo();
+            // initialize internal data structures
+            final ParseInfo pi = new ParseInfo();
 
-        int lineNumber = 0;
-        Stream<LineParser> candidateParsers = Stream.of(LineParser.HEADER_VERSION);
-        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-            ++lineNumber;
-            final String l = line;
-            final Optional<LineParser> selected = candidateParsers.filter(p -> p.canHandle(l)).findFirst();
-            if (selected.isPresent()) {
-                try {
-                    selected.get().parse(line, pi);
-                } catch (StringIndexOutOfBoundsException | NumberFormatException e) {
-                    throw new OrekitException(e,
-                                              OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                              lineNumber, fileName, line);
+            int lineNumber = 0;
+            Stream<LineParser> candidateParsers = Stream.of(LineParser.HEADER_VERSION);
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                ++lineNumber;
+                final String l = line;
+                final Optional<LineParser> selected = candidateParsers.filter(p -> p.canHandle(l)).findFirst();
+                if (selected.isPresent()) {
+                    try {
+                        selected.get().parse(line, pi);
+                    } catch (StringIndexOutOfBoundsException | NumberFormatException e) {
+                        throw new OrekitException(e,
+                                                  OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                  lineNumber, source.getName(), line);
+                    }
+                    candidateParsers = selected.get().allowedNext();
+                } else {
+                    throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                              lineNumber, source.getName(), line);
                 }
-                candidateParsers = selected.get().allowedNext();
-            } else {
-                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                          lineNumber, fileName, line);
-            }
-            if (pi.done) {
-                if (pi.nbEpochs != pi.file.getNumberOfEpochs()) {
-                    throw new OrekitException(OrekitMessages.SP3_NUMBER_OF_EPOCH_MISMATCH,
-                                              pi.nbEpochs, fileName, pi.file.getNumberOfEpochs());
+                if (pi.done) {
+                    if (pi.nbEpochs != pi.file.getNumberOfEpochs()) {
+                        throw new OrekitException(OrekitMessages.SP3_NUMBER_OF_EPOCH_MISMATCH,
+                                                  pi.nbEpochs, source.getName(), pi.file.getNumberOfEpochs());
+                    }
+                    return pi.file;
                 }
-                return pi.file;
             }
-        }
 
-        // we never reached the EOF marker
-        throw new OrekitException(OrekitMessages.SP3_UNEXPECTED_END_OF_FILE, lineNumber);
+            // we never reached the EOF marker
+            throw new OrekitException(OrekitMessages.SP3_UNEXPECTED_END_OF_FILE, lineNumber);
+
+        }
 
     }
 

@@ -16,7 +16,6 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 
@@ -29,6 +28,7 @@ import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
+import org.orekit.data.NamedData;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
@@ -63,10 +63,10 @@ public class APMParserTest {
         final APMParser parser = new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                new AbsoluteDate("2002-09-30T14:28:15.117", TimeScalesFactory.getUTC()));
 
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
+        final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
 
         // Generated APM file
-        final APMFile file = new KVNLexicalAnalyzer(inEntry, "APMExample.txt").accept(parser);
+        final APMFile file = new KVNLexicalAnalyzer(source).accept(parser);
 
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
@@ -131,10 +131,10 @@ public class APMParserTest {
         final APMParser parser = new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                new AbsoluteDate("2002-09-30T14:28:15.117", TimeScalesFactory.getUTC()));
 
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
+        final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
 
         // Generated APM file
-        final APMFile file = new KVNLexicalAnalyzer(inEntry, "APMExample2.txt").accept(parser);
+        final APMFile file = new KVNLexicalAnalyzer(source).accept(parser);
 
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
@@ -248,10 +248,10 @@ public class APMParserTest {
         final APMParser parser = new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                new AbsoluteDate("2002-09-30T14:28:15.117", TimeScalesFactory.getUTC()));
 
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
+        final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
 
         // Generated APM file
-        final APMFile file = new KVNLexicalAnalyzer(inEntry, "APMExample3.txt").accept(parser);
+        final APMFile file = new KVNLexicalAnalyzer(source).accept(parser);
 
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
@@ -325,10 +325,10 @@ public class APMParserTest {
         final APMParser parser = new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                new AbsoluteDate("2002-09-30T14:28:15.117", TimeScalesFactory.getUTC()));
 
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
+        final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
 
         // Generated APM file
-        final APMFile file = new KVNLexicalAnalyzer(inEntry, "APMExample4.txt").accept(parser);
+        final APMFile file = new KVNLexicalAnalyzer(source).accept(parser);
 
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
@@ -378,7 +378,9 @@ public class APMParserTest {
     @Test
     public void testNotImplementedTimeSystems() {
         try {
-            new KVNLexicalAnalyzer(getClass().getResourceAsStream("/ccsds/adm/apm/APM-inconsistent-time-systems.txt")).
+            final String name = "/ccsds/adm/apm/APM-inconsistent-time-systems.txt";
+            final NamedData source = new NamedData(name, () -> getClass().getResourceAsStream(name));
+            new KVNLexicalAnalyzer(source).
             accept(new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), AbsoluteDate.J2000_EPOCH));
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED, oe.getSpecifier());
@@ -388,26 +390,29 @@ public class APMParserTest {
 
     @Test
     public void testWrongADMType() {
+        final String name = "/ccsds/adm/aem/AEMExample.txt";
         try {
-            new KVNLexicalAnalyzer(getClass().getResourceAsStream("/ccsds/adm/aem/AEMExample.txt"), "AEMExample.txt").
+            final NamedData source = new NamedData(name, () -> getClass().getResourceAsStream(name));
+            new KVNLexicalAnalyzer(source).
             accept(new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), AbsoluteDate.J2000_EPOCH));
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
-            Assert.assertEquals("AEMExample.txt", oe.getParts()[0]);
+            Assert.assertEquals(name, oe.getParts()[0]);
         }
     }
 
     @Test
     public void testNumberFormatErrorType() {
+        final String name = "/ccsds/adm/apm/APM-number-format-error.txt";
         try {
             APMParser parser = new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), AbsoluteDate.J2000_EPOCH);
-            new KVNLexicalAnalyzer(getClass().getResourceAsStream("/ccsds/adm/apm/APM-number-format-error.txt"),
-                         "APM-number-format-error.txt").accept(parser);
+            final NamedData source = new NamedData(name, () -> getClass().getResourceAsStream(name));
+            new KVNLexicalAnalyzer(source).accept(parser);
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
             Assert.assertEquals("Q1", oe.getParts()[0]);
             Assert.assertEquals(22, oe.getParts()[1]);
-            Assert.assertEquals("APM-number-format-error.txt", oe.getParts()[2]);
+            Assert.assertEquals(name, oe.getParts()[2]);
         }
     }
 
@@ -417,8 +422,10 @@ public class APMParserTest {
         final String realName = getClass().getResource("/ccsds/adm/apm/APMExample.txt").toURI().getPath();
         final String wrongName = realName + "xxxxx";
         try {
-            new KVNLexicalAnalyzer(wrongName).accept(new APMParser(IERSConventions.IERS_2010, true,
-                                                                   DataContext.getDefault(), AbsoluteDate.J2000_EPOCH));
+            final NamedData source = new NamedData(wrongName, () -> getClass().getResourceAsStream(wrongName));
+            new KVNLexicalAnalyzer(source).
+            accept(new APMParser(IERSConventions.IERS_2010, true,
+                                 DataContext.getDefault(), AbsoluteDate.J2000_EPOCH));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
@@ -428,10 +435,12 @@ public class APMParserTest {
 
     @Test
     public void testWrongKeyword() throws URISyntaxException {
-        final String name = getClass().getResource("/ccsds/adm/apm/APM-wrong-keyword.txt").toURI().getPath();
+        final String name = "/ccsds/adm/apm/APM-wrong-keyword.txt";
         try {
-            new KVNLexicalAnalyzer(name).accept(new APMParser(IERSConventions.IERS_2010, true,
-                                                              DataContext.getDefault(), AbsoluteDate.J2000_EPOCH));
+            final NamedData source = new NamedData(name, () -> getClass().getResourceAsStream(name));
+            new KVNLexicalAnalyzer(source).
+            accept(new APMParser(IERSConventions.IERS_2010, true,
+                                 DataContext.getDefault(), AbsoluteDate.J2000_EPOCH));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
@@ -442,10 +451,12 @@ public class APMParserTest {
 
     @Test
     public void testWrongEulerSequence() throws URISyntaxException {
-        final String name = getClass().getResource("/ccsds/adm/apm/APM-wrong-Euler-sequence.txt").toURI().getPath();
+        final String name = "/ccsds/adm/apm/APM-wrong-Euler-sequence.txt";
         try {
-            new KVNLexicalAnalyzer(name).accept(new APMParser(IERSConventions.IERS_2010, true,
-                                                              DataContext.getDefault(), AbsoluteDate.J2000_EPOCH));
+            final NamedData source = new NamedData(name, () -> getClass().getResourceAsStream(name));
+            new KVNLexicalAnalyzer(source).
+            accept(new APMParser(IERSConventions.IERS_2010, true,
+                                 DataContext.getDefault(), AbsoluteDate.J2000_EPOCH));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_INVALID_ROTATION_SEQUENCE, oe.getSpecifier());

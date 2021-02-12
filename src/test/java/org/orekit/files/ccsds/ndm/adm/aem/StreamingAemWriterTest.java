@@ -17,7 +17,6 @@
 package org.orekit.files.ccsds.ndm.adm.aem;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
@@ -31,6 +30,7 @@ import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.data.DataContext;
+import org.orekit.data.NamedData;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndPoints;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.CCSDSBodyFrame;
@@ -67,12 +67,12 @@ public class StreamingAemWriterTest {
 
         // Create a list of files
         List<String> files = Arrays.asList("/ccsds/adm/aem/AEMExample7.txt");
-        for (String ex : files) {
+        for (final String ex : files) {
 
             // Reference AEM file
-            InputStream inEntry = getClass().getResourceAsStream(ex);
+            final NamedData source0 = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
             AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1);
-            AEMFile aemFile  = new KVNLexicalAnalyzer(inEntry, "AEMExample.txt").accept(parser);
+            AEMFile aemFile  = new KVNLexicalAnalyzer(source0).accept(parser);
 
             // Satellite attitude ephemeris as read from the reference file
             AEMSegment ephemerisBlock = aemFile.getSegments().get(0);
@@ -128,8 +128,9 @@ public class StreamingAemWriterTest {
             propagator.propagate(ephemerisBlock.getStart().shiftedBy(60.0));
 
             // Generated AEM file
-            final InputStream is = new ByteArrayInputStream(buffer.toString().getBytes(StandardCharsets.UTF_8));
-            AEMFile generatedAemFile = new KVNLexicalAnalyzer(is, "buffer"). accept(parser);
+            final NamedData source1 = new NamedData("buffer",
+                                                   () -> new ByteArrayInputStream(buffer.toString().getBytes(StandardCharsets.UTF_8)));
+            AEMFile generatedAemFile = new KVNLexicalAnalyzer(source1). accept(parser);
 
             // There is only one attitude ephemeris block
             Assert.assertEquals(1, generatedAemFile.getSegments().size());

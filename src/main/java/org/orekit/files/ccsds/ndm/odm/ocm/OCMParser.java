@@ -16,12 +16,14 @@
  */
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
 import org.orekit.data.DataContext;
+import org.orekit.data.NamedData;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.odm.OCommonParser;
@@ -38,16 +40,21 @@ import org.orekit.files.ccsds.section.XMLStructureProcessingState;
 import org.orekit.files.ccsds.utils.CCSDSUnit;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.ParsingContext;
+import org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer;
+import org.orekit.files.ccsds.utils.lexical.LexicalAnalyzer;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.lexical.XMLLexicalAnalyzer;
 import org.orekit.files.ccsds.utils.state.ProcessingState;
+import org.orekit.files.general.EphemerisFileParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
+import org.xml.sax.SAXException;
 
 /** A parser for the CCSDS OCM (Orbit Comprehensive Message).
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OCMParser extends OCommonParser<OCMFile, OCMParser> {
+public class OCMParser extends OCommonParser<OCMFile, OCMParser> implements EphemerisFileParser<OCMFile> {
 
     /** Root element for XML files. */
     private static final String ROOT = "ocm";
@@ -111,6 +118,48 @@ public class OCMParser extends OCommonParser<OCMFile, OCMParser> {
         super(OCMFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, null, mu);
     }
 
+    /** {@inheritDoc}
+     * <p>
+     * This method is intended to be used only when the parser is used as
+     * an implementation of the generic {@link EphemerisFileParser} interface.
+     * In this case, the file type is not known in advance. This method
+     * first attempts to set up a {@link
+     * org.orekit.files.ccsds.utils.lexical.XMLLexicalAnalyzer XML lexical
+     * analyzer} and pass itself to its {@link
+     * LexicalAnalyzer#accept(org.orekit.files.ccsds.utils.lexical.MessageParser)
+     * accept} method to be fed with {@link ParseToken parse tokens}. If this
+     * fails with a {@code SAXException} (embedded within an {@lonk {@link OrekitException}),
+     * then we consider the file was not really in XML format, so a second attempt using {@link
+     * org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer KVN lexical
+     * analyzer} is made.
+     * </p>
+     * <p>
+     * The previous process is cumbersome when the file format is already known.
+     * The recommended way to parse a file with known format is to rely on
+     * the CCSDS-specific parsing framework as follows (example with a KVN
+     * format, simply change the lexical analyzer for XML format):
+     * <pre>
+     * {@code
+     *   OCMParser parser = new OCMParser(...);
+     * OCMFile   ocm    = new KVNLexicalAnalyzer(source).accept(parser);
+     * }
+     * </pre>
+     * </p>
+     */
+    @Override
+    public OCMFile parse(final NamedData source) throws IOException {
+        try {
+            return new XMLLexicalAnalyzer(source).accept(this);
+        } catch (OrekitException oe) {
+            if (oe.getCause() != null && oe.getCause() instanceof SAXException) {
+                // it was not properly formed XML, try KVN next
+                return new KVNLexicalAnalyzer(source).accept(this);
+            } else {
+                throw oe;
+            }
+        }
+    }
+
     /** {@inheritDoc} */
     @Override
     public Header getHeader() {
@@ -130,7 +179,7 @@ public class OCMParser extends OCommonParser<OCMFile, OCMParser> {
         perturbationsBlock      = null;
         orbitDeterminationBlock = null;
         userDefinedBlock        = null;
-        if (getFileFormat() == FileFormat.XML) {
+        if (fileFormat == FileFormat.XML) {
             structureProcessor = new XMLStructureProcessingState(ROOT, this);
             reset(fileFormat, structureProcessor);
         } else {

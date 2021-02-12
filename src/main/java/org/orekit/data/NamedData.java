@@ -16,8 +16,12 @@
  */
 package org.orekit.data;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /** Container for holding named data that can be {@link DataFilter filtered}.
  * <p>
@@ -35,13 +39,29 @@ public class NamedData {
     /** Supplier for data stream. */
     private final StreamOpener streamOpener;
 
-    /** Simple constructor.
+    /** Complete constructor.
      * @param name data name
      * @param streamOpener opener for the data stream
      */
     public NamedData(final String name, final StreamOpener streamOpener) {
         this.name         = name;
         this.streamOpener = streamOpener;
+    }
+
+    /** Build an instance from file name only.
+     * @param fileName name of the file
+     * @since 11.0
+     */
+    public NamedData(final String fileName) {
+        this(fileName, () -> Files.newInputStream(Paths.get(fileName)));
+    }
+
+    /** Build an instance from a file on the local file system.
+     * @param file file
+     * @since 11.0
+     */
+    public NamedData(final File file) {
+        this(file.getName(), () -> new FileInputStream(file));
     }
 
     /** Get the name of the data.

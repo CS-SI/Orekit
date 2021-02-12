@@ -112,7 +112,7 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
         spacecraftParametersBlock = null;
         currentManeuver           = null;
         maneuvers                 = new ArrayList<>();
-        if (getFileFormat() == FileFormat.XML) {
+        if (fileFormat == FileFormat.XML) {
             structureProcessor = new XMLStructureProcessingState(ROOT, this);
             reset(fileFormat, structureProcessor);
         } else {

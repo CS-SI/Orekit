@@ -16,7 +16,6 @@
  */
 package org.orekit.files.ccsds.utils.lexical;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -25,6 +24,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.hipparchus.exception.DummyLocalizable;
+import org.orekit.data.NamedData;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NDMFile;
@@ -51,38 +51,14 @@ public class XMLLexicalAnalyzer implements LexicalAnalyzer {
     /** Attribute name for units. */
     private static final String UNITS = "units";
 
-    /** Stream containing message. */
-    private final InputStream stream;
-
-    /** Name of the file containing the message (for error messages). */
-    private final String fileName;
+    /** Source providing the data to analyze. */
+    private final NamedData source;
 
     /** Simple constructor.
-     * @param fileName name of the file containing the message (for error messages)
+     * @param source source providing the data to parse
      */
-    public XMLLexicalAnalyzer(final String fileName) {
-        try {
-            this.stream   = new FileInputStream(fileName);
-            this.fileName = fileName;
-        } catch (IOException e) {
-            throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, fileName);
-        }
-    }
-
-    /** Simple constructor.
-     * @param stream stream containing message
-     */
-    public XMLLexicalAnalyzer(final InputStream stream) {
-        this(stream, "<unknown>");
-    }
-
-    /** Simple constructor.
-     * @param stream stream containing message
-     * @param fileName name of the file containing the message (for error messages)
-     */
-    public XMLLexicalAnalyzer(final InputStream stream, final String fileName) {
-        this.stream   = stream;
-        this.fileName = fileName;
+    public XMLLexicalAnalyzer(final NamedData source) {
+        this.source = source;
     }
 
     /** {@inheritDoc} */
@@ -100,7 +76,11 @@ public class XMLLexicalAnalyzer implements LexicalAnalyzer {
 
             // Read the xml file
             messageParser.reset(FileFormat.XML);
-            saxParser.parse(stream, handler);
+            final InputStream is = source.getStreamOpener().openStream();
+            if (is == null) {
+                throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, source.getName());
+            }
+            saxParser.parse(is, handler);
 
             // Get the content of the file
             return messageParser.build();
@@ -180,7 +160,7 @@ public class XMLLexicalAnalyzer implements LexicalAnalyzer {
             // process start tag
             messageParser.process(new ParseToken(TokenType.START,
                                                  qName, null, null,
-                                                 locator.getLineNumber(), fileName));
+                                                 locator.getLineNumber(), source.getName()));
 
             if (first) {
                 // this is the first element in the file, it must contains the format file version
@@ -190,10 +170,10 @@ public class XMLLexicalAnalyzer implements LexicalAnalyzer {
                                                          messageParser.getFormatVersionKey(),
                                                          attributes.getValue(VERSION),
                                                          null,
-                                                         locator.getLineNumber(), fileName));
+                                                         locator.getLineNumber(), source.getName()));
                     first = false;
                 } else {
-                    throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, fileName);
+                    throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, source.getName());
                 }
             }
 
@@ -214,13 +194,13 @@ public class XMLLexicalAnalyzer implements LexicalAnalyzer {
                 // which was delayed until now
                 messageParser.process(new ParseToken(TokenType.ENTRY,
                                                      currentElementName, currentContent, currentUnits,
-                                                     currentLineNumber, fileName));
+                                                     currentLineNumber, source.getName()));
             }
 
             // process end tag
             messageParser.process(new ParseToken(TokenType.STOP,
                                                  qName, null, null,
-                                                 locator.getLineNumber(), fileName));
+                                                 locator.getLineNumber(), source.getName()));
 
             currentElementName = null;
             currentUnits       = null;

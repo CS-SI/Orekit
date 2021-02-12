@@ -21,8 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -30,6 +28,7 @@ import java.util.stream.Stream;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
+import org.orekit.data.NamedData;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFileParser;
@@ -56,8 +55,7 @@ import org.orekit.utils.IERSConventions;
  * @author Bryan Cazabonne
  * @since 10.3
  */
-public class CPFParser
-    implements EphemerisFileParser<CPFFile.CPFCoordinate, CPFFile.CPFEphemeris> {
+public class CPFParser implements EphemerisFileParser<CPFFile> {
 
     /** File format. */
     private static final String FILE_FORMAT = "CPF";
@@ -120,69 +118,45 @@ public class CPFParser
         this.frames              = frames;
     }
 
-    /**
-     * Parse a CPF file from an input stream using the UTF-8 charset.
-     *
-     * <p> This method creates a {@link BufferedReader} from the stream and as such this
-     * method may read more data than necessary from {@code stream} and the additional
-     * data will be lost. The other parse methods do not have this issue.
-     *
-     * @param stream to read the CPF file from.
-     * @return a parsed CPF file.
-     * @throws IOException if {@code stream} throws one.
-     * @see #parse(String)
-     * @see #parse(BufferedReader, String)
-     */
-    public CPFFile parse(final InputStream stream) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
-            return parse(reader, stream.toString());
-        }
-    }
-
     /** {@inheritDoc} */
     @Override
-    public CPFFile parse(final String fileName) throws IOException {
-        try (BufferedReader reader = Files.newBufferedReader(Paths.get(fileName),
-                                                             StandardCharsets.UTF_8)) {
-            return parse(reader, fileName);
-        }
-    }
+    public CPFFile parse(final NamedData source) throws IOException {
 
-    /** {@inheritDoc} */
-    @Override
-    public CPFFile parse(final BufferedReader reader,
-                         final String fileName) throws IOException {
+        try (InputStream       is     = source.getStreamOpener().openStream();
+             InputStreamReader isr    = new InputStreamReader(is, StandardCharsets.UTF_8);
+             BufferedReader    reader = new BufferedReader(isr)) {
 
-        // initialize internal data structures
-        final ParseInfo pi = new ParseInfo();
+            // initialize internal data structures
+            final ParseInfo pi = new ParseInfo();
 
-        int lineNumber = 0;
-        Stream<LineParser> parsers = Stream.of(LineParser.H1);
-        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-            ++lineNumber;
-            final String l = line;
-            final Optional<LineParser> selected = parsers.filter(p -> p.canHandle(l)).findFirst();
-            if (selected.isPresent()) {
-                try {
-                    selected.get().parse(line, pi);
-                } catch (StringIndexOutOfBoundsException | NumberFormatException e) {
-                    throw new OrekitException(e,
-                                              OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                              lineNumber, fileName, line);
+            int lineNumber = 0;
+            Stream<LineParser> parsers = Stream.of(LineParser.H1);
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                ++lineNumber;
+                final String l = line;
+                final Optional<LineParser> selected = parsers.filter(p -> p.canHandle(l)).findFirst();
+                if (selected.isPresent()) {
+                    try {
+                        selected.get().parse(line, pi);
+                    } catch (StringIndexOutOfBoundsException | NumberFormatException e) {
+                        throw new OrekitException(e,
+                                                  OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                  lineNumber, source.getName(), line);
+                    }
+                    parsers = selected.get().allowedNext();
                 }
-                parsers = selected.get().allowedNext();
+                if (pi.done) {
+                    pi.file.setFilter(pi.hasVelocityEntries ?
+                                                             CartesianDerivativesFilter.USE_PV :
+                                                                 CartesianDerivativesFilter.USE_P);
+                    // Return file
+                    return pi.file;
+                }
             }
-            if (pi.done) {
-                pi.file.setFilter(pi.hasVelocityEntries ?
-                                  CartesianDerivativesFilter.USE_PV :
-                                  CartesianDerivativesFilter.USE_P);
-                // Return file
-                return pi.file;
-            }
-        }
 
-        // We never reached the EOF marker
-        throw new OrekitException(OrekitMessages.CPF_UNEXPECTED_END_OF_FILE, lineNumber);
+            // We never reached the EOF marker
+            throw new OrekitException(OrekitMessages.CPF_UNEXPECTED_END_OF_FILE, lineNumber);
+        }
 
     }
 

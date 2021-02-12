@@ -17,7 +17,6 @@
 package org.orekit.files.ccsds.utils.lexical;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -26,6 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.exception.DummyLocalizable;
+import org.orekit.data.NamedData;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NDMFile;
@@ -73,38 +73,14 @@ public class KVNLexicalAnalyzer implements LexicalAnalyzer {
     /** Regular expression matching no-value entry ending a block. */
     private static final Pattern STOP_ENTRY         = Pattern.compile(LINE_START + STOP_KEY + LINE_END);
 
-    /** Stream containing message. */
-    private final InputStream stream;
-
-    /** Name of the file containing the message (for error messages). */
-    private final String fileName;
+    /** Source providing the data to analyze. */
+    private final NamedData source;
 
     /** Simple constructor.
-     * @param fileName name of the file containing the message (for error messages)
+     * @param source source providing the data to parse
      */
-    public KVNLexicalAnalyzer(final String fileName) {
-        try {
-            this.stream   = new FileInputStream(fileName);
-            this.fileName = fileName;
-        } catch (IOException e) {
-            throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, fileName);
-        }
-    }
-
-    /** Simple constructor.
-     * @param stream stream containing message
-     */
-    public KVNLexicalAnalyzer(final InputStream stream) {
-        this(stream, "<unknown>");
-    }
-
-    /** Simple constructor.
-     * @param stream stream containing message
-     * @param fileName name of the file containing the message (for error messages)
-     */
-    public KVNLexicalAnalyzer(final InputStream stream, final String fileName) {
-        this.stream   = stream;
-        this.fileName = fileName;
+    public KVNLexicalAnalyzer(final NamedData source) {
+        this.source = source;
     }
 
     /** {@inheritDoc} */
@@ -113,8 +89,13 @@ public class KVNLexicalAnalyzer implements LexicalAnalyzer {
 
         messageParser.reset(FileFormat.KVN);
 
-        try (InputStreamReader isr = new InputStreamReader(stream, StandardCharsets.UTF_8);
-             BufferedReader reader = new BufferedReader(isr)) {
+        try (InputStream       is     = source.getStreamOpener().openStream();
+             InputStreamReader isr    = (is  == null) ? null : new InputStreamReader(is, StandardCharsets.UTF_8);
+             BufferedReader    reader = (isr == null) ? null : new BufferedReader(isr)) {
+
+            if (reader == null) {
+                throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, source.getName());
+            }
 
             int lineNumber = 0;
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
@@ -129,33 +110,33 @@ public class KVNLexicalAnalyzer implements LexicalAnalyzer {
                     messageParser.process(new ParseToken(TokenType.ENTRY,
                                                          nonComment.group(1), nonComment.group(2),
                                                          nonComment.groupCount() > 2 ? nonComment.group(3) : null,
-                                                         lineNumber, fileName));
+                                                         lineNumber, source.getName()));
                 } else {
                     final Matcher comment = COMMENT_ENTRY.matcher(line);
                     if (comment.matches()) {
                         // comment line
                         messageParser.process(new ParseToken(TokenType.ENTRY,
                                                              comment.group(1), comment.group(2), null,
-                                                             lineNumber, fileName));
+                                                             lineNumber, source.getName()));
                     } else {
                         final Matcher start = START_ENTRY.matcher(line);
                         if (start.matches()) {
                             // block start
                             messageParser.process(new ParseToken(TokenType.START,
                                                                  start.group(1), null, null,
-                                                                 lineNumber, fileName));
+                                                                 lineNumber, source.getName()));
                         } else {
                             final Matcher stop = STOP_ENTRY.matcher(line);
                             if (stop.matches()) {
                                 // block end
                                 messageParser.process(new ParseToken(TokenType.STOP,
                                                                      stop.group(1), null, null,
-                                                                     lineNumber, fileName));
+                                                                     lineNumber, source.getName()));
                             } else {
                                 // raw data line
                                 messageParser.process(new ParseToken(TokenType.RAW_LINE,
                                                                      null, line, null,
-                                                                     lineNumber, fileName));
+                                                                     lineNumber, source.getName()));
                             }
                         }
                     }

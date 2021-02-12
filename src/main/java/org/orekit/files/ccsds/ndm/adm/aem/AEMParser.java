@@ -101,7 +101,7 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> {
         segments = new ArrayList<>();
         metadata = null;
         context  = null;
-        if (getFileFormat() == FileFormat.XML) {
+        if (fileFormat == FileFormat.XML) {
             structureProcessor = new XMLStructureProcessingState(ROOT, this);
             reset(fileFormat, structureProcessor);
         } else {

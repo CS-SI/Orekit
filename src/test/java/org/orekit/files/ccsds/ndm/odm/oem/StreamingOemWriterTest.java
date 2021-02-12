@@ -19,7 +19,6 @@ package org.orekit.files.ccsds.ndm.odm.oem;
 import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,6 +35,7 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
+import org.orekit.data.NamedData;
 import org.orekit.files.ccsds.ndm.odm.ODMHeader;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsModifiedFrame;
@@ -77,8 +77,7 @@ public class StreamingOemWriterTest {
     public void testGuessCenter() {
         // action + verify
         // check all CCSDS common center names
-        List<CenterName> centerNames =
-                new ArrayList<>(Arrays.asList(CenterName.values()));
+        List<CenterName> centerNames = new ArrayList<>(Arrays.asList(CenterName.values()));
         centerNames.remove(CenterName.EARTH_MOON);
         for (CenterName centerName : centerNames) {
             CelestialBody body = centerName.getCelestialBody();
@@ -121,11 +120,11 @@ public class StreamingOemWriterTest {
         // setup
         List<String> files =
                 Arrays.asList("/ccsds/odm/oem/OEMExample5.txt", "/ccsds/odm/oem/OEMExample4.txt");
-        for (String ex : files) {
-            InputStream inEntry = getClass().getResourceAsStream(ex);
+        for (final String ex : files) {
+            final NamedData source0 =  new NamedData(ex, () -> getClass().getResourceAsStream(ex));
             OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                              null, CelestialBodyFactory.getEarth().getGM(), 1);
-            OEMFile oemFile = new KVNLexicalAnalyzer(inEntry, ex).accept(parser);
+            OEMFile oemFile = new KVNLexicalAnalyzer(source0).accept(parser);
 
             OEMSatelliteEphemeris satellite = oemFile.getSatellites().values().iterator().next();
             OEMSegment ephemerisBlock = satellite.getSegments().get(0);
@@ -153,26 +152,26 @@ public class StreamingOemWriterTest {
                                                 header, metadata);
 
             // check using the Propagator / StepHandler interface
-            StringBuilder buffer = new StringBuilder();
-            StreamingOemWriter writer = new StreamingOemWriter(new KVNGenerator(buffer, "some-name"),
-                                                               oemWriter);
+            final StringBuilder buffer1 = new StringBuilder();
+            StreamingOemWriter writer = new StreamingOemWriter(new KVNGenerator(buffer1, "some-name"), oemWriter);
             oemWriter.getMetadata().setObjectName(objectName);
             BoundedPropagator propagator = satellite.getPropagator();
             propagator.setMasterMode(step, writer.newSegment());
             propagator.propagate(propagator.getMinDate(), propagator.getMaxDate());
 
             // verify
-            InputStream is = new ByteArrayInputStream(buffer.toString().getBytes(StandardCharsets.UTF_8));
-            OEMFile generatedOemFile = new KVNLexicalAnalyzer(is, "buffer").
+            final NamedData source1 = new NamedData("buffer",
+                                                    () -> new ByteArrayInputStream(buffer1.toString().getBytes(StandardCharsets.UTF_8)));
+            OEMFile generatedOemFile = new KVNLexicalAnalyzer(source1).
                             accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                  null, CelestialBodyFactory.getEarth().getGM(), 1));
             compareOemFiles(oemFile, generatedOemFile, POSITION_PRECISION, VELOCITY_PRECISION);
 
             // check calling the methods directly
-            buffer = new StringBuilder();
+            final StringBuilder buffer2 = new StringBuilder();
             oemWriter = new OEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
                                       header, metadata);
-            try (Generator generator = new KVNGenerator(buffer, "another-name")) {
+            try (Generator generator = new KVNGenerator(buffer2, "another-name")) {
                 oemWriter.writeHeader(generator);
                 oemWriter.getMetadata().setObjectName(objectName);
                 oemWriter.getMetadata().setStartTime(block.getStart());
@@ -187,8 +186,9 @@ public class StreamingOemWriterTest {
             }
 
             // verify
-            is = new ByteArrayInputStream(buffer.toString().getBytes(StandardCharsets.UTF_8));
-            generatedOemFile = new KVNLexicalAnalyzer(is, "buffer").
+            final NamedData source2 = new NamedData("buffer",
+                                                    () -> new ByteArrayInputStream(buffer2.toString().getBytes(StandardCharsets.UTF_8)));
+            generatedOemFile = new KVNLexicalAnalyzer(source2).
                             accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                  null, CelestialBodyFactory.getEarth().getGM(), 1));
             compareOemFiles(oemFile, generatedOemFile, POSITION_PRECISION, VELOCITY_PRECISION);

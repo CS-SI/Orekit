@@ -108,8 +108,7 @@ public abstract class AbstractMessageParser<T extends NDMFile<?, ?>, P extends A
      * @param fileFormat format of the file ready to be parsed
      * @param initialState initial processing state
      */
-    protected void reset(final FileFormat fileFormat,
-                         final ProcessingState initialState) {
+    protected void reset(final FileFormat fileFormat, final ProcessingState initialState) {
         format  = fileFormat;
         current = initialState;
         setFallback(new ErrorState());
