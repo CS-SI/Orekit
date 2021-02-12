@@ -147,7 +147,7 @@ import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
-import org.orekit.propagation.conversion.ODPropagatorBuilder;
+import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScale;
@@ -164,7 +164,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * @author Luc Maisonobe
  * @author Bryan Cazabonne
  */
-public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> {
+public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPropagatorBuilder> {
 
     /** Suffix for range bias. */
     private final String RANGE_BIAS_SUFFIX = "/range bias";
@@ -1767,7 +1767,7 @@ public abstract class AbstractOrbitDetermination<T extends ODPropagatorBuilder> 
      * @throws NoSuchElementException if input parameters are missing
      */
     private BatchLSEstimator createEstimator(final KeyValueFileParser<ParameterKey> parser,
-                                             final ODPropagatorBuilder propagatorBuilder)
+                                             final OrbitDeterminationPropagatorBuilder propagatorBuilder)
         throws NoSuchElementException {
 
         final boolean optimizerIsLevenbergMarquardt;

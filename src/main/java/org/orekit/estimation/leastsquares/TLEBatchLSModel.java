@@ -28,7 +28,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLEJacobiansMapper;
 import org.orekit.propagation.analytical.tle.TLEPartialDerivativesEquations;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
-import org.orekit.propagation.conversion.ODPropagatorBuilder;
+import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
 import org.orekit.propagation.integration.AbstractJacobiansMapper;
 import org.orekit.utils.ParameterDriversList;
 
@@ -53,7 +53,7 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
      * @param estimatedMeasurementsParameters estimated measurements parameters
      * @param observer observer to be notified at model calls
      */
-    public TLEBatchLSModel(final ODPropagatorBuilder[] propagatorBuilders,
+    public TLEBatchLSModel(final OrbitDeterminationPropagatorBuilder[] propagatorBuilders,
                            final List<ObservedMeasurement<?>> measurements,
                            final ParameterDriversList estimatedMeasurementsParameters,
                            final ModelObserver observer) {

@@ -21,7 +21,7 @@ import java.util.List;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.conversion.ODPropagatorBuilder;
+import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
 import org.orekit.propagation.integration.AbstractJacobiansMapper;
 import org.orekit.propagation.numerical.JacobiansMapper;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -42,7 +42,7 @@ public class KalmanModel extends AbstractKalmanModel {
      * @deprecated since 10.3, replaced by {@link #KalmanModel(List, List, ParameterDriversList, CovarianceMatrixProvider)}
      */
     @Deprecated
-    public KalmanModel(final List<ODPropagatorBuilder> propagatorBuilders,
+    public KalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
                        final List<CovarianceMatrixProvider> covarianceMatricesProviders,
                        final ParameterDriversList estimatedMeasurementParameters) {
         this(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementParameters, null);
@@ -54,7 +54,7 @@ public class KalmanModel extends AbstractKalmanModel {
      * @param estimatedMeasurementParameters measurement parameters to estimate
      * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
      */
-    public KalmanModel(final List<ODPropagatorBuilder> propagatorBuilders,
+    public KalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
                        final List<CovarianceMatrixProvider> covarianceMatricesProviders,
                        final ParameterDriversList estimatedMeasurementParameters,
                        final CovarianceMatrixProvider measurementProcessNoiseMatrix) {

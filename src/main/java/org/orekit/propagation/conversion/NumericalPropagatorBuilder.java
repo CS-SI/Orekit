@@ -44,7 +44,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implements ODPropagatorBuilder {
+public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implements OrbitDeterminationPropagatorBuilder {
 
     /** First order integrator builder for propagation. */
     private final ODEIntegratorBuilder builder;
@@ -231,7 +231,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
     }
 
     /** {@inheritDoc} */
-    public BatchLSModel buildLSModel(final ODPropagatorBuilder[] builders,
+    public BatchLSModel buildLSModel(final OrbitDeterminationPropagatorBuilder[] builders,
                             final List<ObservedMeasurement<?>> measurements,
                             final ParameterDriversList estimatedMeasurementsParameters,
                             final ModelObserver observer) {
@@ -240,7 +240,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
 
     /** {@inheritDoc} */
     @Deprecated
-    public KalmanModel buildKalmanModel(final List<ODPropagatorBuilder> propagatorBuilders,
+    public KalmanModel buildKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
                                         final List<CovarianceMatrixProvider> covarianceMatricesProviders,
                                         final ParameterDriversList estimatedMeasurementsParameters) {
         return new KalmanModel(propagatorBuilders, covarianceMatricesProviders,
@@ -249,7 +249,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
 
     /** {@inheritDoc} */
     @Override
-    public KalmanModel buildKalmanModel(final List<ODPropagatorBuilder> propagatorBuilders,
+    public KalmanModel buildKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
                                         final List<CovarianceMatrixProvider> covarianceMatricesProviders,
                                         final ParameterDriversList estimatedMeasurementsParameters,
                                         final CovarianceMatrixProvider measurementProcessNoiseMatrix) {

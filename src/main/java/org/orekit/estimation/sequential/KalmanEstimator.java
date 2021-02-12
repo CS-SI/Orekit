@@ -30,7 +30,7 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Position;
 import org.orekit.propagation.AbstractPropagator;
-import org.orekit.propagation.conversion.ODPropagatorBuilder;
+import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
@@ -43,7 +43,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 /**
  * Implementation of a Kalman filter to perform orbit determination.
  * <p>
- * The filter uses a {@link ODPropagatorBuilder} to initialize its reference trajectory {@link NumericalPropagator}
+ * The filter uses a {@link OrbitDeterminationPropagatorBuilder} to initialize its reference trajectory {@link NumericalPropagator}
  * or {@link DSSTPropagator} .
  * </p>
  * <p>
@@ -75,7 +75,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 public class KalmanEstimator {
 
     /** Builders for orbit propagators. */
-    private List<ODPropagatorBuilder> propagatorBuilders;
+    private List<OrbitDeterminationPropagatorBuilder> propagatorBuilders;
 
     /** Reference date. */
     private final AbsoluteDate referenceDate;
@@ -99,7 +99,7 @@ public class KalmanEstimator {
      */
     @Deprecated
     KalmanEstimator(final MatrixDecomposer decomposer,
-                    final List<ODPropagatorBuilder> propagatorBuilders,
+                    final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
                     final List<CovarianceMatrixProvider> processNoiseMatricesProviders,
                     final ParameterDriversList estimatedMeasurementParameters) {
         this(decomposer, propagatorBuilders, processNoiseMatricesProviders,
@@ -115,7 +115,7 @@ public class KalmanEstimator {
      * @since 10.3
      */
     KalmanEstimator(final MatrixDecomposer decomposer,
-                    final List<ODPropagatorBuilder> propagatorBuilders,
+                    final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
                     final List<CovarianceMatrixProvider> processNoiseMatricesProviders,
                     final ParameterDriversList estimatedMeasurementParameters,
                     final CovarianceMatrixProvider measurementProcessNoiseMatrix) {

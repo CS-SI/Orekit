@@ -23,7 +23,7 @@ import org.hipparchus.linear.MatrixDecomposer;
 import org.hipparchus.linear.QRDecomposer;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.propagation.conversion.ODPropagatorBuilder;
+import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
 import org.orekit.utils.ParameterDriversList;
 
 /** Builder for a Kalman filter estimator.
@@ -37,7 +37,7 @@ public class KalmanEstimatorBuilder {
     private MatrixDecomposer decomposer;
 
     /** Builders for propagators. */
-    private List<ODPropagatorBuilder> propagatorBuilders;
+    private List<OrbitDeterminationPropagatorBuilder> propagatorBuilders;
 
     /** Estimated measurements parameters. */
     private ParameterDriversList estimatedMeasurementsParameters;
@@ -61,7 +61,7 @@ public class KalmanEstimatorBuilder {
 
     /** Construct a {@link KalmanEstimator} from the data in this builder.
      * <p>
-     * Before this method is called, {@link #addPropagationConfiguration(ODPropagatorBuilder,
+     * Before this method is called, {@link #addPropagationConfiguration(OrbitDeterminationPropagatorBuilder,
      * CovarianceMatrixProvider) addPropagationConfiguration()} must have been called
      * at least once, otherwise configuration is incomplete and an exception will be raised.
      * </p>
@@ -108,7 +108,7 @@ public class KalmanEstimatorBuilder {
      * @see CovarianceMatrixProvider#getProcessNoiseMatrix(org.orekit.propagation.SpacecraftState,
      * org.orekit.propagation.SpacecraftState) getProcessNoiseMatrix(previous, current)
      */
-    public KalmanEstimatorBuilder addPropagationConfiguration(final ODPropagatorBuilder builder,
+    public KalmanEstimatorBuilder addPropagationConfiguration(final OrbitDeterminationPropagatorBuilder builder,
                                                               final CovarianceMatrixProvider provider) {
         propagatorBuilders.add(builder);
         processNoiseMatricesProviders.add(provider);

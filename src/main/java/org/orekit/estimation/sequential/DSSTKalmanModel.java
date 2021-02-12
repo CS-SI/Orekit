@@ -21,7 +21,7 @@ import java.util.List;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.conversion.ODPropagatorBuilder;
+import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
 import org.orekit.propagation.integration.AbstractJacobiansMapper;
 import org.orekit.propagation.semianalytical.dsst.DSSTJacobiansMapper;
 import org.orekit.propagation.semianalytical.dsst.DSSTPartialDerivativesEquations;
@@ -50,7 +50,7 @@ public class DSSTKalmanModel extends AbstractKalmanModel {
      * #DSSTKalmanModel(List, List, ParameterDriversList, CovarianceMatrixProvider, PropagationType, PropagationType)}
      */
     @Deprecated
-    public DSSTKalmanModel(final List<ODPropagatorBuilder> propagatorBuilders,
+    public DSSTKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
                            final List<CovarianceMatrixProvider> covarianceMatricesProviders,
                            final ParameterDriversList estimatedMeasurementParameters,
                            final PropagationType propagationType,
@@ -67,7 +67,7 @@ public class DSSTKalmanModel extends AbstractKalmanModel {
      * @param propagationType type of the orbit used for the propagation (mean or osculating)
      * @param stateType type of the elements used to define the orbital state (mean or osculating)
      */
-    public DSSTKalmanModel(final List<ODPropagatorBuilder> propagatorBuilders,
+    public DSSTKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
                            final List<CovarianceMatrixProvider> covarianceMatricesProviders,
                            final ParameterDriversList estimatedMeasurementParameters,
                            final CovarianceMatrixProvider measurementProcessNoiseMatrix,

@@ -23,7 +23,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.conversion.ODPropagatorBuilder;
+import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
 import org.orekit.propagation.integration.AbstractJacobiansMapper;
 import org.orekit.propagation.numerical.JacobiansMapper;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -44,7 +44,7 @@ public class BatchLSModel extends AbstractBatchLSModel {
      * @param estimatedMeasurementsParameters estimated measurements parameters
      * @param observer observer to be notified at model calls
      */
-    public BatchLSModel(final ODPropagatorBuilder[] propagatorBuilders,
+    public BatchLSModel(final OrbitDeterminationPropagatorBuilder[] propagatorBuilders,
                         final List<ObservedMeasurement<?>> measurements,
                         final ParameterDriversList estimatedMeasurementsParameters,
                         final ModelObserver observer) {

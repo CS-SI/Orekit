@@ -43,7 +43,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.conversion.ODPropagatorBuilder;
+import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
 import org.orekit.propagation.integration.AbstractJacobiansMapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -60,7 +60,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinearProcess<MeasurementDecorator> {
 
     /** Builders for propagators. */
-    private final List<ODPropagatorBuilder> builders;
+    private final List<OrbitDeterminationPropagatorBuilder> builders;
 
     /** Estimated orbital parameters. */
     private final ParameterDriversList allEstimatedOrbitalParameters;
@@ -142,7 +142,7 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
      * @param estimatedMeasurementParameters measurement parameters to estimate
      * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
      */
-    protected AbstractKalmanModel(final List<ODPropagatorBuilder> propagatorBuilders,
+    protected AbstractKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
                                   final List<CovarianceMatrixProvider> covarianceMatricesProviders,
                                   final ParameterDriversList estimatedMeasurementParameters,
                                   final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
@@ -160,7 +160,7 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
      * @param propagationType type of the orbit used for the propagation (mean or osculating), applicable only for DSST
      * @param stateType type of the elements used to define the orbital state (mean or osculating), applicable only for DSST
      */
-    protected AbstractKalmanModel(final List<ODPropagatorBuilder> propagatorBuilders,
+    protected AbstractKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
                                   final List<CovarianceMatrixProvider> covarianceMatricesProviders,
                                   final ParameterDriversList estimatedMeasurementParameters,
                                   final CovarianceMatrixProvider measurementProcessNoiseMatrix,
@@ -1128,7 +1128,7 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
     /** Getter for the propagators.
      * @return the propagators
      */
-    public List<ODPropagatorBuilder> getBuilders() {
+    public List<OrbitDeterminationPropagatorBuilder> getBuilders() {
         return builders;
     }
 

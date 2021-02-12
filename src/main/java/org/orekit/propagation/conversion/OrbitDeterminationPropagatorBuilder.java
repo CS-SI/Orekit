@@ -28,9 +28,9 @@ import org.orekit.utils.ParameterDriversList;
 
 /** Base class for orbit determination model builders.
  * @author Bryan Cazabonne
- * @since 10.0
+ * @since 11.0
  */
-public interface ODPropagatorBuilder extends PropagatorBuilder {
+public interface OrbitDeterminationPropagatorBuilder extends PropagatorBuilder {
 
     /** Build a new batch least squares model.
      * @param builders builders to use for propagation
@@ -39,7 +39,7 @@ public interface ODPropagatorBuilder extends PropagatorBuilder {
      * @param observer observer to be notified at model calls
      * @return a new model for the Batch Least Squares orbit determination
      */
-    AbstractBatchLSModel buildLSModel(ODPropagatorBuilder[] builders,
+    AbstractBatchLSModel buildLSModel(OrbitDeterminationPropagatorBuilder[] builders,
                                       List<ObservedMeasurement<?>> measurements,
                                       ParameterDriversList estimatedMeasurementsParameters,
                                       ModelObserver observer);
@@ -51,7 +51,7 @@ public interface ODPropagatorBuilder extends PropagatorBuilder {
      * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
      * @return a new model for Kalman Filter orbit determination
      */
-    AbstractKalmanModel buildKalmanModel(List<ODPropagatorBuilder> propagatorBuilders,
+    AbstractKalmanModel buildKalmanModel(List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
                                          List<CovarianceMatrixProvider> covarianceMatricesProviders,
                                          ParameterDriversList estimatedMeasurementsParameters,
                                          CovarianceMatrixProvider measurementProcessNoiseMatrix);
