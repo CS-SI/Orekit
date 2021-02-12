@@ -91,6 +91,12 @@ public class TLE implements TimeStamped, Serializable {
     /** Parameter name for B* coefficient. */
     public static final String B_STAR = "BSTAR";
 
+    /** Default value for epsilon. */
+    private static final double EPSILON_DEFAULT = 1.0e-10;
+
+    /** Default value for maxIterations. */
+    private static final int MAX_ITERATIONS_DEFAULT = 100;
+
     /** B* scaling factor.
      * <p>
      * We use a power of 2 to avoid numeric noise introduction
@@ -794,7 +800,9 @@ public class TLE implements TimeStamped, Serializable {
      * and generates a usable TLE version of a state.
      * New TLE epoch is state epoch.
      *
-     *<p>This method uses the {@link DataContext#getDefault() default data context}. And a default 1e-10 epsilon for convergence thresholds.
+     * <p>
+     * This method uses the {@link DataContext#getDefault() default data context},
+     * as well as {@link #EPSILON_DEFAULT} and {@link #MAX_ITERATIONS_DEFAULT} for method convergence.
      *
      * @param state Spacecraft State to convert into TLE
      * @param templateTLE first guess used to get identification and estimate new TLE
@@ -802,9 +810,8 @@ public class TLE implements TimeStamped, Serializable {
      */
     @DefaultDataContext
     public static TLE stateToTLE(final SpacecraftState state, final TLE templateTLE) {
-        return stateToTLE(state, templateTLE, 1e-10);
+        return stateToTLE(state, templateTLE, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
     }
-
 
     /**
      * Convert Spacecraft State into TLE.
@@ -817,10 +824,12 @@ public class TLE implements TimeStamped, Serializable {
      * @param state Spacecraft State to convert into TLE
      * @param templateTLE first guess used to get identification and estimate new TLE
      * @param epsilon used to compute threshold for convergence check
+     * @param maxIterations maximum number of iterations for convergence
      * @return TLE matching with Spacecraft State and template identification
      */
     @DefaultDataContext
-    public static TLE stateToTLE(final SpacecraftState state, final TLE templateTLE, final double epsilon) {
+    public static TLE stateToTLE(final SpacecraftState state, final TLE templateTLE,
+                                 final double epsilon, final int maxIterations) {
 
         // get keplerian parameters from state
         final Orbit orbit = state.getOrbit();
@@ -844,11 +853,10 @@ public class TLE implements TimeStamped, Serializable {
         final double thresholdI          = epsilon * (1 + state.getI());
         final double thresholdAngles     = epsilon * FastMath.PI;
         int k = 0;
-        while (k++ < 100) {
+        while (k++ < maxIterations) {
 
             // recompute the state from the current TLE
             final Gradient[] parameters = new Gradient[1];
-            //parameters[0] = Gradient.constant(FREE_STATE_PARAMETERS, current.getBStar());
             parameters[0] = zero.add(current.getBStar());
             final FieldTLEPropagator<Gradient> propagator = FieldTLEPropagator.selectExtrapolator(current, parameters);
             final FieldSpacecraftState<Gradient> recoveredState = propagator.getInitialState();
