@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,8 @@ package org.orekit.bodies;
 
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.propagation.numerical.cr3bp.CR3BPConstants;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
 
 /**
  * Factory class creating predefined CR3BP system using CR3BPSystem class. For example, Earth-Moon CR3BP
@@ -37,19 +39,23 @@ public class CR3BPFactory {
     }
 
     /** Get the Sun-Jupiter CR3BP singleton bodies pair.
+     * @param date date
+     * @param timeScale time scale
      * @return Sun-Jupiter CR3BP system
      */
     @DefaultDataContext
-    public static CR3BPSystem getSunJupiterCR3BP() {
-        return getSystem(CelestialBodyFactory.getSun(), CelestialBodyFactory.getJupiter(), CR3BPConstants.JUPITER_SEMI_MAJOR_AXIS);
+    public static CR3BPSystem getSunJupiterCR3BP(final AbsoluteDate date, final TimeScale timeScale) {
+        return getSystem(CelestialBodyFactory.getSun(), CelestialBodyFactory.getJupiter(), CR3BPConstants.getJupiterSemiMajorAxis(date, timeScale));
     }
 
     /** Get the Sun-Earth CR3BP singleton bodies pair.
+     * @param date date
+     * @param timeScale time scale
      * @return Sun-Earth CR3BP system
      */
     @DefaultDataContext
-    public static CR3BPSystem getSunEarthCR3BP() {
-        return getSystem(CelestialBodyFactory.getSun(), CelestialBodyFactory.getEarthMoonBarycenter(), CR3BPConstants.EARTH_MOON_BARYCENTER_SEMI_MAJOR_AXIS);
+    public static CR3BPSystem getSunEarthCR3BP(final AbsoluteDate date, final TimeScale timeScale) {
+        return getSystem(CelestialBodyFactory.getSun(), CelestialBodyFactory.getEarthMoonBarycenter(), CR3BPConstants.getEarthMoonBarycenterSemiMajorAxis(date, timeScale));
     }
 
     /** Get the Earth-Moon CR3BP singleton bodies pair.
@@ -57,7 +63,7 @@ public class CR3BPFactory {
      */
     @DefaultDataContext
     public static CR3BPSystem getEarthMoonCR3BP() {
-        return getSystem(CelestialBodyFactory.getEarth(), CelestialBodyFactory.getMoon(), CR3BPConstants.MOON_SEMI_MAJOR_AXIS);
+        return getSystem(CelestialBodyFactory.getEarth(), CelestialBodyFactory.getMoon(), CR3BPConstants.getMoonSemiMajorAxis());
     }
 
     /** Get the corresponding CR3BP System.

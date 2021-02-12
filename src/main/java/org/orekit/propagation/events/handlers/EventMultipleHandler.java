@@ -34,7 +34,7 @@ import org.orekit.time.AbsoluteDate;
  * the same event can lead to non-deterministic behaviour.
  * This handler manages several handlers. The action returned is based on a priority rule
  * (see {@link #eventOccurred}) :
- * {@link Action#STOP stop} > {@link Action#RESET_STATE resetState} > {@link Action#RESET_DERIVATIVES resetDerivatives} > {@link Action#RESET_EVENTS resetRevents} > {@link Action#CONTINUE continue}
+ * {@link Action#STOP stop} &#62; {@link Action#RESET_STATE resetState} &#62; {@link Action#RESET_DERIVATIVES resetDerivatives} &#62; {@link Action#RESET_EVENTS resetRevents} &#62; {@link Action#CONTINUE continue}
  *
  * @author Lara Hué
  *

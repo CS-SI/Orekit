@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.stream.Stream;
 
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
+import org.hipparchus.analysis.differentiation.FieldDerivative;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.annotation.DefaultDataContext;
@@ -577,10 +577,11 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
      * have consistent derivation orders.
      * </p>
      * @param date date of the built coordinates
+     * @param <U> type of the derivative
      * @param p vector with time-derivatives embedded within the coordinates
      */
-    public TimeStampedFieldPVCoordinates(final FieldAbsoluteDate<T> date,
-                                         final FieldVector3D<FieldDerivativeStructure<T>> p) {
+    public <U extends FieldDerivative<T, U>> TimeStampedFieldPVCoordinates(final FieldAbsoluteDate<T> date,
+                                                                           final FieldVector3D<U> p) {
         super(p);
         this.date = date;
     }

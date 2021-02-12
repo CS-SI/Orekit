@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,11 +17,11 @@
 package org.orekit.propagation.semianalytical.dsst;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.Gradient;
@@ -107,12 +107,12 @@ public class DSSTPartialDerivativesEquationsTest {
         pde.computeDerivatives(state, pdot);
 
         //verify
-        assertThat(forceModel.sma.getReal(), is(state.getA()));
-        assertThat(forceModel.ex.getReal(),  is(state.getEquinoctialEx()));
-        assertThat(forceModel.ey.getReal(),  is(state.getEquinoctialEy()));
-        assertThat(forceModel.hx.getReal(),  is(state.getHx()));
-        assertThat(forceModel.hy.getReal(),  is(state.getHy()));
-        assertThat(forceModel.l.getReal(),   is(state.getLv()));
+        MatcherAssert.assertThat(forceModel.sma.getReal(), is(state.getA()));
+        MatcherAssert.assertThat(forceModel.ex.getReal(),  is(state.getEquinoctialEx()));
+        MatcherAssert.assertThat(forceModel.ey.getReal(),  is(state.getEquinoctialEy()));
+        MatcherAssert.assertThat(forceModel.hx.getReal(),  is(state.getHx()));
+        MatcherAssert.assertThat(forceModel.hy.getReal(),  is(state.getHy()));
+        MatcherAssert.assertThat(forceModel.l.getReal(),   is(state.getLv()));
 
     }
 

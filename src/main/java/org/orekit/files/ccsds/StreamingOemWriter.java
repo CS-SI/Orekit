@@ -56,7 +56,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * <p> Each instance corresponds to a single OEM file. A new OEM ephemeris segment is
  * started by calling {@link #newSegment(Frame, Map)}.
  *
- * <h3> Metadata </h3>
+ * <h2> Metadata </h2>
  *
  * <p> The OEM metadata used by this writer is described in the following table. Many
  * metadata items are optional or have default values so they do not need to be specified.
@@ -70,7 +70,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * be overridden for a particular segment using the {@code metadata} argument to {@link
  * #newSegment(Frame, Map)}.
  *
- * <table summary="OEM metada">
+ * <table>
+ * <caption>OEM metadata</caption>
  *     <thead>
  *         <tr>
  *             <th>Keyword
@@ -170,7 +171,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *        <tr>
  *            <td>{@link Keyword#INTERPOLATION}
  *            <td>Segment
- *            <td>No
+ *            <td>Noupday
  *            <td>
  *            <td>Table 5-3
  *        <tr>
@@ -193,7 +194,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * are EME2000, GCRF, GRC, ICRF, ITRF2000, ITRF-93, ITRF-97, MCI, TDR, TEME, and TOD.
  * Additionally ITRF followed by a four digit year may be used.
  *
- * <h3> Examples </h3>
+ * <h2> Examples </h2>
  *
  * <p> This class can be used as a step handler for a {@link Propagator}, or on its own.
  * Either way the object name and ID must be specified. The following example shows its

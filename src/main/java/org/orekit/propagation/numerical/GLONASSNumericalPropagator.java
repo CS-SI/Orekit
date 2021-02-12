@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -598,7 +598,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
      * @param state spacecraft state after integration
      * @return the PV coordinates in the ECEF PZ-90.
      */
-    public PVCoordinates getPVInPZ90(final SpacecraftState state) {
+    private PVCoordinates getPVInPZ90(final SpacecraftState state) {
 
         // Compute time difference between start date and end date
         final double dt = state.getDate().durationFrom(initDate.getDate());

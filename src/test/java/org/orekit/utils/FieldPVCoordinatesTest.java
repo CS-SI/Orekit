@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -257,6 +257,15 @@ public class FieldPVCoordinatesTest {
         Assert.assertEquals(  -1.0, fv.getX().getDerivative(1).getReal(), 1.0e-15);
         Assert.assertEquals(  -0.1, fv.getY().getDerivative(1).getReal(), 1.0e-15);
         Assert.assertEquals( -10.0, fv.getZ().getDerivative(1).getReal(), 1.0e-15);
+
+        FieldPVCoordinates<Decimal64> fpv = new FieldPVCoordinates<>(fv);
+        Assert.assertEquals(   1.0, fpv.getPosition().getX().getReal(), 1.0e-10);
+        Assert.assertEquals(   0.1, fpv.getPosition().getY().getReal(), 1.0e-10);
+        Assert.assertEquals(  10.0, fpv.getPosition().getZ().getReal(), 1.0e-10);
+        Assert.assertEquals(  -1.0, fpv.getVelocity().getX().getReal(), 1.0e-15);
+        Assert.assertEquals(  -0.1, fpv.getVelocity().getY().getReal(), 1.0e-15);
+        Assert.assertEquals( -10.0, fpv.getVelocity().getZ().getReal(), 1.0e-15);
+
     }
 
     @Test
@@ -291,6 +300,18 @@ public class FieldPVCoordinatesTest {
             Assert.assertEquals(p.getY().doubleValue(), fv.getY().taylor(dt).doubleValue(), 1.0e-14);
             Assert.assertEquals(p.getZ().doubleValue(), fv.getZ().taylor(dt).doubleValue(), 1.0e-14);
         }
+
+        FieldPVCoordinates<Decimal64> fpv = new FieldPVCoordinates<>(fv);
+        Assert.assertEquals(   1.0, fpv.getPosition().getX().getReal(), 1.0e-10);
+        Assert.assertEquals(   0.1, fpv.getPosition().getY().getReal(), 1.0e-10);
+        Assert.assertEquals(  10.0, fpv.getPosition().getZ().getReal(), 1.0e-10);
+        Assert.assertEquals(  -1.0, fpv.getVelocity().getX().getReal(), 1.0e-15);
+        Assert.assertEquals(  -0.1, fpv.getVelocity().getY().getReal(), 1.0e-15);
+        Assert.assertEquals( -10.0, fpv.getVelocity().getZ().getReal(), 1.0e-15);
+        Assert.assertEquals(  10.0, fpv.getAcceleration().getX().getReal(), 1.0e-15);
+        Assert.assertEquals(  -1.0, fpv.getAcceleration().getY().getReal(), 1.0e-15);
+        Assert.assertEquals(-100.0, fpv.getAcceleration().getZ().getReal(), 1.0e-15);
+
     }
 
     @Test
@@ -318,6 +339,18 @@ public class FieldPVCoordinatesTest {
             Assert.assertEquals(p.getY().doubleValue(), fv.getY().taylor(dt).doubleValue(), 1.0e-14);
             Assert.assertEquals(p.getZ().doubleValue(), fv.getZ().taylor(dt).doubleValue(), 1.0e-14);
         }
+
+        FieldPVCoordinates<Decimal64> fpv = new FieldPVCoordinates<>(fv);
+        Assert.assertEquals(   1.0, fpv.getPosition().getX().getReal(), 1.0e-10);
+        Assert.assertEquals(   0.1, fpv.getPosition().getY().getReal(), 1.0e-10);
+        Assert.assertEquals(  10.0, fpv.getPosition().getZ().getReal(), 1.0e-10);
+        Assert.assertEquals(  -1.0, fpv.getVelocity().getX().getReal(), 1.0e-15);
+        Assert.assertEquals(  -0.1, fpv.getVelocity().getY().getReal(), 1.0e-15);
+        Assert.assertEquals( -10.0, fpv.getVelocity().getZ().getReal(), 1.0e-15);
+        Assert.assertEquals(  10.0, fpv.getAcceleration().getX().getReal(), 1.0e-15);
+        Assert.assertEquals(  -1.0, fpv.getAcceleration().getY().getReal(), 1.0e-15);
+        Assert.assertEquals(-100.0, fpv.getAcceleration().getZ().getReal(), 1.0e-15);
+
     }
 
     @Test

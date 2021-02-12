@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,10 +17,10 @@
 package org.orekit.propagation.numerical;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
 
 import java.util.stream.Stream;
 
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -94,8 +94,8 @@ public class AbsolutePartialDerivativesEquationsTest {
         pde.computeDerivatives(state, pdot);
 
         //verify
-        assertThat(forceModel.accelerationDerivativesPosition.toVector3D(), is(pv.getPosition()));
-        assertThat(forceModel.accelerationDerivativesVelocity.toVector3D(), is(pv.getVelocity()));
+        MatcherAssert.assertThat(forceModel.accelerationDerivativesPosition.toVector3D(), is(pv.getPosition()));
+        MatcherAssert.assertThat(forceModel.accelerationDerivativesVelocity.toVector3D(), is(pv.getVelocity()));
 
     }
 

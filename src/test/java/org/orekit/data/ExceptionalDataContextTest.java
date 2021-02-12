@@ -16,6 +16,7 @@
  */
 package org.orekit.data;
 
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.OrekitMatchers;
@@ -108,7 +109,7 @@ public class ExceptionalDataContextTest {
         Propagator propagator = new KeplerianPropagator(orbit, attitude);
         SpacecraftState state = propagator.propagate(date.shiftedBy(86400));
         TimeStampedPVCoordinates pv = state.getPVCoordinates(ecef);
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 pv.getPosition().getNorm(),
                 OrekitMatchers.relativelyCloseTo(a, 10));
 
