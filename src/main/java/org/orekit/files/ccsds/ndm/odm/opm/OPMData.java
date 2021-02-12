@@ -26,14 +26,13 @@ import org.orekit.files.ccsds.ndm.odm.ODMSpacecraftParameters;
 import org.orekit.files.ccsds.ndm.odm.ODMStateVector;
 import org.orekit.files.ccsds.ndm.odm.ODMUserDefined;
 import org.orekit.files.ccsds.section.Data;
-import org.orekit.files.ccsds.section.Section;
 
 /**
  * Container for Orbit Parameter Message data.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OPMData implements Data, Section {
+public class OPMData implements Data {
 
     /** State vector block. */
     private final  ODMStateVector stateVectorBlock;

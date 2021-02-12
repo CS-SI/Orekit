@@ -21,7 +21,7 @@ package org.orekit.files.ccsds.section;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public interface Data {
+public interface Data extends Section {
 }
 
 

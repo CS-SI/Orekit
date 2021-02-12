@@ -21,14 +21,13 @@ import java.util.Collections;
 import java.util.List;
 
 import org.orekit.files.ccsds.section.Data;
-import org.orekit.files.ccsds.section.Section;
 
 /**
  * Container for Attitude Parameter Message data.
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class APMData implements Data, Section {
+public class APMData implements Data {
 
     /** Quaternion block. */
     private final APMQuaternion quaternionBlock;

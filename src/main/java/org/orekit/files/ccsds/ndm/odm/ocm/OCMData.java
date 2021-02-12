@@ -22,13 +22,12 @@ import java.util.List;
 import org.orekit.files.ccsds.ndm.odm.ODMUserDefined;
 import org.orekit.files.ccsds.ndm.odm.opm.OPMManeuver;
 import org.orekit.files.ccsds.section.Data;
-import org.orekit.files.ccsds.section.Section;
 
 /** Data container for Orbit Comprehensive Messages.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OCMData implements Data, Section {
+public class OCMData implements Data {
 
     /** Orbit state histories logical blocks. */
     private final List<OrbitStateHistory> orbitBlocks;

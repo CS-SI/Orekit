@@ -25,14 +25,13 @@ import org.orekit.files.ccsds.ndm.odm.ODMKeplerianElementsKey;
 import org.orekit.files.ccsds.ndm.odm.ODMSpacecraftParameters;
 import org.orekit.files.ccsds.ndm.odm.ODMUserDefined;
 import org.orekit.files.ccsds.section.Data;
-import org.orekit.files.ccsds.section.Section;
 
 /**
  * Container for Orbit Mean-elements Message data.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OMMData implements Data, Section {
+public class OMMData implements Data {
 
     /** Keplerian elements block. */
     private final ODMKeplerianElements keplerianElementsBlock;
