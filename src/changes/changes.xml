@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="bryan" type="update" issue="755">
+        Modified IodGooding constructor to be consistent with other IOD methods.
+      </action>
       <action dev="bryan" type="add" issue="753">
         Added new method signature in IodLaplace using AngularRaDec measurement.
       </action>
