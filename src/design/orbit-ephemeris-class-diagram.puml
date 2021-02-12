@@ -33,10 +33,20 @@
 
        package sp3 #CBDBC8 {
           class SP3File
+          class SP3Coordinate
+          note bottom
+            adds clock data
+          end note
+          SP3File --> SP3Coordinate
        }
 
        package ilrs #CBDBC8 {
          class CPFFile
+         class CPFCoordinate
+         note bottom
+            adds leap second data
+          end note
+          CPFFile --> CPFCoordinate
        }
 
       package general #CBDBC8 {
@@ -49,27 +59,36 @@
         }
 
         interface EphemerisFileWriter {
-          +write(EphemerisFile)
+          +write(appendable, ephemerisFile)
+          +write(path, ephemerisFile)
         }
 
-        interface EphemerisFile {
+        interface "EphemerisFile<C,S>" as EphemerisFile {
           +getSatellites()
         }
+        note right
+        C extends TimeStampedPVCoordinates
+        S extends EphemerisSegment
+        end note
 
         interface EphemerisFile.SatelliteEphemeris {
           +getId()
+          +getMu()
           +getStart()
           +getStop()
+          +getSegments()
           +getPropagator()
         }
 
         interface EphemerisFile.EphemerisSegment {
+          +getMu()
           +getFrame()
-          +getStart()
-          +getStop()
+          +getInertialFrame()
           +getInterpolationSamples()
           +getAvailableDerivatives()
           +getCoordinates()
+          +getStart()
+          +getStop()
           +getPropagator()
         }
 
@@ -78,9 +97,9 @@
         EphemerisFile.SatelliteEphemeris <--* EphemerisFile
         EphemerisFile.SatelliteEphemeris o--> EphemerisFile.EphemerisSegment
 
-        OrekitEphemerisFile ..|> EphemerisFile
+        EphemerisFile <|.. OrekitEphemerisFile
         EphemerisFile <-- EphemerisFileWriter
-        EphemerisFile <-- EphemerisFileParser : create
+        EphemerisFileParser --> EphemerisFile : create
 
       }
 
@@ -90,16 +109,33 @@
           class StreamingOemWriter
           class OemFile
           EphemerisFile <|.. OemFile
-          OemWriter --> StreamingOemWriter
+          OemWriter <--o StreamingOemWriter
           EphemerisFileWriter <|.. OemWriter
+        }
+        package ocm #CCCCC7 {
+          class OcmWriter
+          class StreamingOcmWriter
+          class OcmFile
+          EphemerisFile <|.. OcmFile
+          OcmWriter <--o StreamingOcmWriter
+          EphemerisFileWriter <|.. OcmWriter
         }
       }
     }
 
     package propagation #DDEBD8 {
+      interface Propagator
       interface BoundedPropagator
+      Propagator <|.. BoundedPropagator
       BoundedPropagator <-left- EphemerisFile.SatelliteEphemeris
-      BoundedPropagator <-- EphemerisFile.EphemerisSegment
+      BoundedPropagator <-left- EphemerisFile.EphemerisSegment
+
+      package sampling #CBDBC8 {
+        interface OrekitFixedStepHandler
+        Propagator --> OrekitFixedStepHandler
+        OrekitFixedStepHandler <|-- StreamingOemWriter
+        OrekitFixedStepHandler <|-- StreamingOcmWriter
+      }
     }
 
   }

@@ -1,0 +1,112 @@
+' Copyright 2002-2021 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB/CCC9C5
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
+  skinparam ClassFontSize         11
+  skinparam PackageFontSize       12
+  skinparam linetype              ortho
+
+  package org.orekit.files.ccsds #ECEBD8 {
+
+    package utils #DDEBD8 {
+
+      enum FileFormat {
+        +KVN
+        +XML
+      }
+
+      package generation #CBDBC8 {
+        interface Generator {
+          +FileFormat getFileFormat()
+        }
+        class KVNGenerator
+        class XMLGenerator
+      }
+
+      package state #CBDBC8 {
+        abstract class "AbstractMessageParser<T>" as AbstractMessageParser
+        interface ProcessingState {
+          +boolean processToken(ParseToken)
+        }
+        class ErrorState
+      }
+
+      package lexical #CBDBC8 {
+        interface LexicalAnalyzer
+        class KVNLexicalAnalyzer
+        class XMLLexicalAnalyzer
+        interface "MessageParser<T>" as MessageParser {
+          +reset(FileFormat)
+          +process(ParseToken)
+          +T build()
+        }
+        enum TokenType {
+          +START
+          +ENTRY
+          +STOP
+          +RAW_LINE
+        }
+
+        note top
+          T stands for message type
+        end note
+        class ParseToken
+      }
+
+    }
+
+    package ndm #DDEBD8 {
+
+      package odm #CBDBC8 {
+
+        package oem #CCCCC7 {
+          class OEMParser
+          class OEMFile
+        }
+
+      }
+      note bottom
+        only OEM is detailed here, similar constructions
+        exist for messages OPM, OMM, OCM, TDM, APM, and AEM
+      end note
+
+    }
+  }
+
+  TokenType <-- Generator
+  Generator <|.. KVNGenerator
+  Generator <|.. XMLGenerator
+  LexicalAnalyzer <|.. KVNLexicalAnalyzer
+  LexicalAnalyzer <|.. XMLLexicalAnalyzer
+  ParseToken o-right-> "1" TokenType
+  ProcessingState --> ParseToken : "process"
+  FileFormat <-- MessageParser
+  FileFormat <-- Generator
+  MessageParser --> ParseToken : "process"
+  MessageParser <|.. AbstractMessageParser
+  AbstractMessageParser <|-- ErrorState
+  AbstractMessageParser <|-- OEMParser
+  OEMFile <-- OEMParser : "build"
+
+@enduml
