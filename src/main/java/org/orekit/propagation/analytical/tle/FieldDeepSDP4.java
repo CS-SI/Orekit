@@ -48,43 +48,6 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
 
     // CHECKSTYLE: stop JavadocVariable check
 
-    // Internal constants
-    private static final double ZNS      = 1.19459E-5;
-    private static final double ZES      = 0.01675;
-    private static final double ZNL      = 1.5835218E-4;
-    private static final double ZEL      = 0.05490;
-    private static final double THDT     = 4.3752691E-3;
-    private static final double C1SS     =  2.9864797E-6;
-    private static final double C1L      = 4.7968065E-7;
-
-    private static final double ROOT22   = 1.7891679E-6;
-    private static final double ROOT32   = 3.7393792E-7;
-    private static final double ROOT44   = 7.3636953E-9;
-    private static final double ROOT52   = 1.1428639E-7;
-    private static final double ROOT54   = 2.1765803E-9;
-
-    private static final double Q22      =  1.7891679E-6;
-    private static final double Q31      =  2.1460748E-6;
-    private static final double Q33      =  2.2123015E-7;
-
-    private static final double C_FASX2  =  0.99139134268488593;
-    private static final double S_FASX2  =  0.13093206501640101;
-    private static final double C_2FASX4 =  0.87051638752972937;
-    private static final double S_2FASX4 = -0.49213943048915526;
-    private static final double C_3FASX6 =  0.43258117585763334;
-    private static final double S_3FASX6 =  0.90159499016666422;
-
-    private static final double C_G22    =  0.87051638752972937;
-    private static final double S_G22    = -0.49213943048915526;
-    private static final double C_G32    =  0.57972190187001149;
-    private static final double S_G32    =  0.81481440616389245;
-    private static final double C_G44    = -0.22866241528815548;
-    private static final double S_G44    =  0.97350577801807991;
-    private static final double C_G52    =  0.49684831179884198;
-    private static final double S_G52    =  0.86783740128127729;
-    private static final double C_G54    = -0.29695209575316894;
-    private static final double S_G54    = -0.95489237761529999;
-
     /** Integration step (seconds). */
     private static final double SECULAR_INTEGRATION_STEP  = 720.0;
 
@@ -225,9 +188,9 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
                 .offsetFrom(DateTimeComponents.JULIAN_EPOCH)) /
                 Constants.JULIAN_DAY - 2415020;
 
-        double cc = C1SS;
-        double ze = ZES;
-        double zn = ZNS;
+        double cc = TLEConstants.C1SS;
+        double ze = TLEConstants.ZES;
+        double zn = TLEConstants.ZNS;
         T zsinh = sinq;
         T zcosh = cosq;
 
@@ -369,9 +332,9 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
                 zsini = zero.add(zsinil);
                 zcosh = cosq.multiply(zcoshl).add(sinq.multiply(zsinhl));
                 zsinh = sinq.multiply(zcoshl).subtract(cosq.multiply(zsinhl));
-                zn = ZNL;
-                cc = C1L;
-                ze = ZEL;
+                zn = TLEConstants.ZNL;
+                cc = TLEConstants.C1L;
+                ze = TLEConstants.ZEL;
             }
         } // end of solar - lunar - solar terms computation
 
@@ -453,26 +416,26 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
             }
 
             T temp1 = xnq.multiply(xnq).multiply(aqnv).multiply(aqnv).multiply(3);
-            T temp  = temp1.multiply(ROOT22);
+            T temp  = temp1.multiply(TLEConstants.ROOT22);
             d2201   = temp.multiply(f220).multiply(g201);
             d2211   = temp.multiply(f221).multiply(g211);
             temp1   = temp1.multiply(aqnv);
-            temp    = temp1.multiply(ROOT32);
+            temp    = temp1.multiply(TLEConstants.ROOT32);
             d3210   = temp.multiply(f321).multiply(g310);
             d3222   = temp.multiply(f322).multiply(g322);
             temp1   = temp1.multiply(aqnv);
-            temp    = temp1.multiply(2 * ROOT44);
+            temp    = temp1.multiply(2 * TLEConstants.ROOT44);
             d4410   = temp.multiply(f441).multiply(g410);
             d4422   = temp.multiply(f442).multiply(g422);
             temp1   = temp1.multiply(aqnv);
-            temp    = temp1.multiply(ROOT52);
+            temp    = temp1.multiply(TLEConstants.ROOT52);
             d5220   = temp.multiply(f522).multiply(g520);
             d5232   = temp.multiply(f523).multiply(g532);
-            temp    = temp1.multiply(2 * ROOT54);
+            temp    = temp1.multiply(2 * TLEConstants.ROOT54);
             d5421   = temp.multiply(f542).multiply(g521);
             d5433   = temp.multiply(f543).multiply(g533);
             xlamo   = tle.getMeanAnomaly().add(tle.getRaan()).add(tle.getRaan()).subtract(thgr + thgr);
-            bfact   = xmdot.add(xnodot).add(xnodot).subtract(THDT + THDT);
+            bfact   = xmdot.add(xnodot).add(xnodot).subtract(TLEConstants.THDT + TLEConstants.THDT);
             bfact   = bfact.add(ssl).add(ssh).add(ssh);
         } else if ((xnq.getReal() < 0.0052359877) && (xnq.getReal() > 0.0034906585)) {
             // if mean motion is .8 to 1.2 revs/day : (geosynch)
@@ -490,11 +453,11 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
 
             // Synchronous resonance terms initialization
             del1 = xnq.multiply(xnq).multiply(aqnv).multiply(aqnv).multiply(3);
-            del2 = del1.multiply(f220).multiply(g200).multiply(2 * Q22);
-            del3 = del1.multiply(f330).multiply(g300).multiply(aqnv).multiply(3 * Q33);
-            del1 = del1.multiply(f311).multiply(g310).multiply(Q31).multiply(aqnv);
+            del2 = del1.multiply(f220).multiply(g200).multiply(2 * TLEConstants.Q22);
+            del3 = del1.multiply(f330).multiply(g300).multiply(aqnv).multiply(3 * TLEConstants.Q33);
+            del1 = del1.multiply(f311).multiply(g310).multiply(TLEConstants.Q31).multiply(aqnv);
             xlamo = tle.getMeanAnomaly().add(tle.getRaan()).add(tle.getPerigeeArgument()).subtract(thgr);
-            bfact = xmdot.add(omgdot).add(xnodot).subtract(THDT);
+            bfact = xmdot.add(omgdot).add(xnodot).subtract(TLEConstants.THDT);
             bfact = bfact.add(ssl).add(ssg).add(ssh);
         } else {
             // it's neither a high-e 12-hours orbit nor a geosynchronous:
@@ -567,7 +530,7 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
                 atime = atime.add(delt);
             }
             xn = xni;
-            final T temp = xnode.negate().add(thgr).add(t.multiply(THDT));
+            final T temp = xnode.negate().add(thgr).add(t.multiply(TLEConstants.THDT));
             xll = xli.add(temp).add(synchronous ? omgadf.negate() : temp);
         }
     }
@@ -588,8 +551,8 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
             savtsn = t;
 
             // Update solar perturbations for time T
-            T zm = t.multiply(ZNS).add(zmos);
-            T zf = zm.add(FastMath.sin(zm).multiply(2 * ZES));
+            T zm = t.multiply(TLEConstants.ZNS).add(zmos);
+            T zf = zm.add(FastMath.sin(zm).multiply(2 * TLEConstants.ZES));
             FieldSinCos<T> sczf = FastMath.sinCos(zf);
             T sinzf = sczf.sin();
             T f2 = sinzf.multiply(sinzf).multiply(0.5).subtract(0.25);
@@ -601,8 +564,8 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
             final T shs = sh2.multiply(f2).add(sh3.multiply(f3));
 
             // Update lunar perturbations for time T
-            zm = t.multiply(ZNL).add(zmol);
-            zf = zm.add(FastMath.sin(zm).multiply(2 * ZEL));
+            zm = t.multiply(TLEConstants.ZNL).add(zmol);
+            zf = zm.add(FastMath.sin(zm).multiply(2 * TLEConstants.ZEL));
             sczf = FastMath.sinCos(zf);
             sinzf = sczf.sin();
             f2 =  sinzf.multiply(sinzf).multiply(0.5).subtract(0.25);
@@ -665,12 +628,12 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
         if (synchronous)  {
             final T sin_3li = sin_2li.multiply(cos_li).add(cos_2li.multiply(sin_li));
             final T cos_3li = cos_2li.multiply(cos_li).subtract(sin_2li.multiply(sin_li));
-            final T term1a = del1.multiply(sin_li .multiply(C_FASX2) .subtract(cos_li .multiply(S_FASX2 )));
-            final T term2a = del2.multiply(sin_2li.multiply(C_2FASX4).subtract(cos_2li.multiply(S_2FASX4)));
-            final T term3a = del3.multiply(sin_3li.multiply(C_3FASX6).subtract(cos_3li.multiply(S_3FASX6)));
-            final T term1b = del1.multiply(cos_li .multiply(C_FASX2)      .add(sin_li .multiply(S_FASX2 )));
-            final T term2b = del2.multiply(cos_2li.multiply(C_2FASX4)     .add(sin_2li.multiply(S_2FASX4))).multiply(2.0);
-            final T term3b = del3.multiply(cos_3li.multiply(C_3FASX6)     .add(sin_3li.multiply(S_3FASX6))).multiply(3.0);
+            final T term1a = del1.multiply(sin_li .multiply(TLEConstants.C_FASX2) .subtract(cos_li .multiply(TLEConstants.S_FASX2 )));
+            final T term2a = del2.multiply(sin_2li.multiply(TLEConstants.C_2FASX4).subtract(cos_2li.multiply(TLEConstants.S_2FASX4)));
+            final T term3a = del3.multiply(sin_3li.multiply(TLEConstants.C_3FASX6).subtract(cos_3li.multiply(TLEConstants.S_3FASX6)));
+            final T term1b = del1.multiply(cos_li .multiply(TLEConstants.C_FASX2)      .add(sin_li .multiply(TLEConstants.S_FASX2 )));
+            final T term2b = del2.multiply(cos_2li.multiply(TLEConstants.C_2FASX4)     .add(sin_2li.multiply(TLEConstants.S_2FASX4))).multiply(2.0);
+            final T term3b = del3.multiply(cos_3li.multiply(TLEConstants.C_3FASX6)     .add(sin_3li.multiply(TLEConstants.S_3FASX6))).multiply(3.0);
             derivs[0] = term1a.add(term2a).add(term3a);
             derivs[1] = term1b.add(term2b).add(term3b);
         } else {
@@ -693,26 +656,26 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
             final T cos_2li_p_2omi = cos_2li.multiply(cos_2omi).subtract(sin_2omi.multiply(sin_2li));
             final T sin_2omi_p_li  = sin_li .multiply(cos_2omi).add(     sin_2omi.multiply(cos_li ));
             final T cos_2omi_p_li  = cos_li .multiply(cos_2omi).subtract(sin_2omi.multiply(sin_li ));
-            final T term1a = d2201.multiply(sin_2omi_p_li .multiply(C_G22).subtract(cos_2omi_p_li .multiply(S_G22))) .add(
-                             d2211.multiply(sin_li        .multiply(C_G22).subtract(cos_li        .multiply(S_G22)))).add(
-                             d3210.multiply(sin_li_p_omi  .multiply(C_G32).subtract(cos_li_p_omi  .multiply(S_G32)))).add(
-                             d3222.multiply(sin_li_m_omi  .multiply(C_G32).subtract(cos_li_m_omi  .multiply(S_G32)))).add(
-                             d5220.multiply(sin_li_p_omi  .multiply(C_G52).subtract(cos_li_p_omi  .multiply(S_G52)))).add(
-                             d5232.multiply(sin_li_m_omi  .multiply(C_G52).subtract(cos_li_m_omi  .multiply(S_G52))));
-            final T term2a = d4410.multiply(sin_2li_p_2omi.multiply(C_G44).subtract(cos_2li_p_2omi.multiply(S_G44))) .add(
-                             d4422.multiply(sin_2li       .multiply(C_G44).subtract(cos_2li       .multiply(S_G44)))).add(
-                             d5421.multiply(sin_2li_p_omi .multiply(C_G54).subtract(cos_2li_p_omi .multiply(S_G54)))).add(
-                             d5433.multiply(sin_2li_m_omi .multiply(C_G54).subtract(cos_2li_m_omi .multiply(S_G54))));
-            final T term1b = d2201.multiply(cos_2omi_p_li .multiply(C_G22)     .add(sin_2omi_p_li .multiply(S_G22))) .add(
-                             d2211.multiply(cos_li        .multiply(C_G22)     .add(sin_li        .multiply(S_G22)))).add(
-                             d3210.multiply(cos_li_p_omi  .multiply(C_G32)     .add(sin_li_p_omi  .multiply(S_G32)))).add(
-                             d3222.multiply(cos_li_m_omi  .multiply(C_G32)     .add(sin_li_m_omi  .multiply(S_G32)))).add(
-                             d5220.multiply(cos_li_p_omi  .multiply(C_G52)     .add(sin_li_p_omi  .multiply(S_G52)))).add(
-                             d5232.multiply(cos_li_m_omi  .multiply(C_G52)     .add(sin_li_m_omi  .multiply(S_G52))));
-            final T term2b = d4410.multiply(cos_2li_p_2omi.multiply(C_G44)     .add(sin_2li_p_2omi.multiply(S_G44))) .add(
-                             d4422.multiply(cos_2li       .multiply(C_G44)     .add(sin_2li       .multiply(S_G44)))).add(
-                             d5421.multiply(cos_2li_p_omi .multiply(C_G54)     .add(sin_2li_p_omi .multiply(S_G54)))).add(
-                             d5433.multiply(cos_2li_m_omi .multiply(C_G54)     .add(sin_2li_m_omi .multiply(S_G54)))).multiply(2.0);
+            final T term1a = d2201.multiply(sin_2omi_p_li .multiply(TLEConstants.C_G22).subtract(cos_2omi_p_li .multiply(TLEConstants.S_G22))) .add(
+                             d2211.multiply(sin_li        .multiply(TLEConstants.C_G22).subtract(cos_li        .multiply(TLEConstants.S_G22)))).add(
+                             d3210.multiply(sin_li_p_omi  .multiply(TLEConstants.C_G32).subtract(cos_li_p_omi  .multiply(TLEConstants.S_G32)))).add(
+                             d3222.multiply(sin_li_m_omi  .multiply(TLEConstants.C_G32).subtract(cos_li_m_omi  .multiply(TLEConstants.S_G32)))).add(
+                             d5220.multiply(sin_li_p_omi  .multiply(TLEConstants.C_G52).subtract(cos_li_p_omi  .multiply(TLEConstants.S_G52)))).add(
+                             d5232.multiply(sin_li_m_omi  .multiply(TLEConstants.C_G52).subtract(cos_li_m_omi  .multiply(TLEConstants.S_G52))));
+            final T term2a = d4410.multiply(sin_2li_p_2omi.multiply(TLEConstants.C_G44).subtract(cos_2li_p_2omi.multiply(TLEConstants.S_G44))) .add(
+                             d4422.multiply(sin_2li       .multiply(TLEConstants.C_G44).subtract(cos_2li       .multiply(TLEConstants.S_G44)))).add(
+                             d5421.multiply(sin_2li_p_omi .multiply(TLEConstants.C_G54).subtract(cos_2li_p_omi .multiply(TLEConstants.S_G54)))).add(
+                             d5433.multiply(sin_2li_m_omi .multiply(TLEConstants.C_G54).subtract(cos_2li_m_omi .multiply(TLEConstants.S_G54))));
+            final T term1b = d2201.multiply(cos_2omi_p_li .multiply(TLEConstants.C_G22)     .add(sin_2omi_p_li .multiply(TLEConstants.S_G22))) .add(
+                             d2211.multiply(cos_li        .multiply(TLEConstants.C_G22)     .add(sin_li        .multiply(TLEConstants.S_G22)))).add(
+                             d3210.multiply(cos_li_p_omi  .multiply(TLEConstants.C_G32)     .add(sin_li_p_omi  .multiply(TLEConstants.S_G32)))).add(
+                             d3222.multiply(cos_li_m_omi  .multiply(TLEConstants.C_G32)     .add(sin_li_m_omi  .multiply(TLEConstants.S_G32)))).add(
+                             d5220.multiply(cos_li_p_omi  .multiply(TLEConstants.C_G52)     .add(sin_li_p_omi  .multiply(TLEConstants.S_G52)))).add(
+                             d5232.multiply(cos_li_m_omi  .multiply(TLEConstants.C_G52)     .add(sin_li_m_omi  .multiply(TLEConstants.S_G52))));
+            final T term2b = d4410.multiply(cos_2li_p_2omi.multiply(TLEConstants.C_G44)     .add(sin_2li_p_2omi.multiply(TLEConstants.S_G44))) .add(
+                             d4422.multiply(cos_2li       .multiply(TLEConstants.C_G44)     .add(sin_2li       .multiply(TLEConstants.S_G44)))).add(
+                             d5421.multiply(cos_2li_p_omi .multiply(TLEConstants.C_G54)     .add(sin_2li_p_omi .multiply(TLEConstants.S_G54)))).add(
+                             d5433.multiply(cos_2li_m_omi .multiply(TLEConstants.C_G54)     .add(sin_2li_m_omi .multiply(TLEConstants.S_G54)))).multiply(2.0);
 
             derivs[0] = term1a.add(term2a);
             derivs[1] = term1b.add(term2b);
