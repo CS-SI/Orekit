@@ -17,6 +17,7 @@
 package org.orekit.files.ccsds.utils.lexical;
 
 import org.orekit.files.ccsds.ndm.NDMFile;
+import org.orekit.files.ccsds.utils.FileFormat;
 
 /** Parser for CCSDS messages.
  * @param <T> type of the file

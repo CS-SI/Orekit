@@ -20,7 +20,7 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.files.ccsds.ndm.NDMFile;
 import org.orekit.files.ccsds.section.Header;
-import org.orekit.files.ccsds.utils.lexical.FileFormat;
+import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.MessageParser;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.utils.IERSConventions;
@@ -72,7 +72,7 @@ public abstract class AbstractMessageParser<T extends NDMFile<?, ?>, P extends A
         this.conventions      = conventions;
         this.simpleEOP        = simpleEOP;
         this.dataContext      = dataContext;
-        this.current            = null;
+        this.current          = null;
     }
 
     /** {@inheritDoc} */

@@ -19,7 +19,7 @@ package org.orekit.files.ccsds.utils.generation;
 import java.io.IOException;
 
 import org.orekit.files.ccsds.section.CommentsContainer;
-import org.orekit.files.ccsds.utils.lexical.FileFormat;
+import org.orekit.files.ccsds.utils.FileFormat;
 
 /** Generation interface for CCSDS messages.
  * @author Luc Maisonobe

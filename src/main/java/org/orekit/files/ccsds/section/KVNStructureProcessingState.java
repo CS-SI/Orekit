@@ -16,7 +16,7 @@
  */
 package org.orekit.files.ccsds.section;
 
-import org.orekit.files.ccsds.utils.lexical.FileFormat;
+import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.state.AbstractMessageParser;
 import org.orekit.files.ccsds.utils.state.ProcessingState;
