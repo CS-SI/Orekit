@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="bryan" type="add" issue="752">
+        Added new method signature in IodLambert using Position measurement.
+      </action>
       <action dev="bryan" type="add" issue="751">
         Added new method signature in IodGibbs using Position measurement.
       </action>
