@@ -27,78 +27,102 @@
   skinparam PackageFontSize       12
   skinparam linetype              ortho
 
-  package org.orekit.files.ccsds #ECEBD8 {
+  package org.orekit #ECEBD8 {
 
-    package section #DDEBD8 {
-      class Section {
-        checkMandatoryEntries()
+    package data #DDEBD8 {
+      interface DataFilter {
+        NamedData filter(NamedData)
       }
-      class Header {
-       -formatVersion
-       -creationDate
-       -originator
+      class NamedData {
+        +getName()
+        +getStreamOpener()
       }
-      class Metadata {
-        -timeSystem
-      }
-      interface Data
-      note top
-      marker interface
-      end note
-      class Segment
-      Section  <|.. Header
-      Section  <|.. Metadata
-      Section  <|.. Data
-      Metadata <--o Segment
-      Data     <--o Segment
+      DataFilter --> NamedData
     }
 
-    package ndm #DDEBD8 {
+    package files #DDEBD8 {
+      package utils.ccsds #CBDBC8 {
 
-      package odm #CBDBC8 {
-
-        class ODMMetadata
-        Metadata <|-- ODMMetadata
-
-        package oem #CCCCC7 {
-          class OEMData {
-            -ephemeridesDataLines
-            -covarianceMatrices
-          }
-          class OEMMetadata
-          class OEMFile
-          Data <|.. OEMData
-          ODMMetadata <|-- OEMMetadata
+        enum FileFormat {
+          +KVN
+          +XML
         }
 
-        package opm #CCCCC7 {
-          class OPMMetadata
-          class OPMData {
-            - stateVector
-            - keplerianElements
-            - spacecraftParameters
-            - covariance
-            - maneuvers
-            - userDefinedParameters
+        package state #CCCCC7 {
+          abstract class "AbstractMessageParser<T>" as AbstractMessageParser {
+            #reset(fileFormat, initialState)
+            +prepareHeader()
+            +inHeader()
+            +finalizeHeader()
+            +prepareMetadata()
+            +inMetadata()
+            +finalizeMetadata()
+            +prepareData()
+            +inData()
+            +finalizeData()
+            +setFallback(ProcessingState)
           }
+          interface ProcessingState {
+            +boolean processToken(ParseToken)
+          }
+        }
+
+        package lexical #CCCCC7 {
+          class KVNLexicalAnalyzer
+          class XMLLexicalAnalyzer
+          interface LexicalAnalyzer
+          enum TokenType {
+            +START
+            +ENTRY
+            +STOP
+            +RAW_LINE
+          }
+          class ParseToken
+          interface "MessageParser<T>" as MessageParser {
+            +reset(FileFormat)
+            +process(ParseToken)
+            +T build()
+          }
+        }
+
+        package section #CCCCC7 {
+          class HeaderProcessingState
+          class KVNStructureProcessingState
+          class XMLStructureProcessingState
+        }
+
+        package ndm.odm.opm #CCCCC7 {
+          class OPMParser
           class OPMFile
-          ODMMetadata <|-- OPMMetadata
-          Data <|.. OPMData
-         }
+        }
+        note bottom
+          only OPM is shown here,
+          similar constructions exist
+          for other messages types:
+          OEM, OMM, OCM, AEM,
+          APM, TDM...
+        end note
 
       }
-      note bottom
-        only OEM and OPM are detailed here
-        similar constructions exist for messages
-        OMM, OCM, TDM, APM, and AEM
-      end note
-
-      abstract class NDMFile
-      NDMFile <|-- OEMFile
-      NDMFile <|-- OPMFile
-      Header  "1" <--o NDMFile
-      Segment "*" <--o NDMFile
-
     }
   }
+
+  NamedData <-- KVNLexicalAnalyzer
+  NamedData <-- XMLLexicalAnalyzer
+  KVNLexicalAnalyzer ..|> LexicalAnalyzer
+  XMLLexicalAnalyzer ..|> LexicalAnalyzer
+  LexicalAnalyzer --> MessageParser : "accept"
+  TokenType "1" <--o ParseToken
+  ProcessingState --> ParseToken
+  FileFormat <-left- MessageParser
+  ParseToken <-left- MessageParser : "process"
+  MessageParser <|.. AbstractMessageParser
+  ProcessingState <-down-o AbstractMessageParser : "current"
+  ProcessingState <-down-o AbstractMessageParser : "fallback"
+  OPMParser --> OPMFile : "build"
+  ProcessingState <|.. HeaderProcessingState
+  ProcessingState <|.. KVNStructureProcessingState
+  ProcessingState <|.. XMLStructureProcessingState
+  ProcessingState <|.. OPMParser : "multiple section-specific implementations"
+
 @enduml

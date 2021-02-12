@@ -29,84 +29,76 @@
 
   package org.orekit.files.ccsds #ECEBD8 {
 
-    package utils #DDEBD8 {
-
-      enum FileFormat {
-        +KVN
-        +XML
+    package section #DDEBD8 {
+      class Section {
+        checkMandatoryEntries()
       }
-
-      package generation #CBDBC8 {
-        interface Generator {
-          +FileFormat getFileFormat()
-        }
-        class KVNGenerator
-        class XMLGenerator
+      class Header {
+       -formatVersion
+       -creationDate
+       -originator
       }
-
-      package state #CBDBC8 {
-        abstract class "AbstractMessageParser<T>" as AbstractMessageParser
-        interface ProcessingState {
-          +boolean processToken(ParseToken)
-        }
-        class ErrorState
+      class Metadata {
+        -timeSystem
       }
-
-      package lexical #CBDBC8 {
-        interface LexicalAnalyzer
-        class KVNLexicalAnalyzer
-        class XMLLexicalAnalyzer
-        interface "MessageParser<T>" as MessageParser {
-          +reset(FileFormat)
-          +process(ParseToken)
-          +T build()
-        }
-        enum TokenType {
-          +START
-          +ENTRY
-          +STOP
-          +RAW_LINE
-        }
-
-        note top
-          T stands for message type
-        end note
-        class ParseToken
-      }
-
+      interface Data
+      note top
+      marker interface
+      end note
+      class Segment
+      Section  <|.. Header
+      Section  <|.. Metadata
+      Section  <|.. Data
+      Metadata <--o Segment
+      Data     <--o Segment
     }
 
     package ndm #DDEBD8 {
 
       package odm #CBDBC8 {
 
+        class ODMMetadata
+        Metadata <|-- ODMMetadata
+
         package oem #CCCCC7 {
-          class OEMParser
+          class OEMData {
+            -ephemeridesDataLines
+            -covarianceMatrices
+          }
+          class OEMMetadata
           class OEMFile
+          Data <|.. OEMData
+          ODMMetadata <|-- OEMMetadata
         }
+
+        package opm #CCCCC7 {
+          class OPMMetadata
+          class OPMData {
+            - stateVector
+            - keplerianElements
+            - spacecraftParameters
+            - covariance
+            - maneuvers
+            - userDefinedParameters
+          }
+          class OPMFile
+          ODMMetadata <|-- OPMMetadata
+          Data <|.. OPMData
+         }
 
       }
       note bottom
-        only OEM is detailed here, similar constructions
-        exist for messages OPM, OMM, OCM, TDM, APM, and AEM
+        only OEM and OPM are detailed here
+        similar constructions exist for messages
+        OMM, OCM, TDM, APM, and AEM
       end note
+
+      abstract class NDMFile
+      NDMFile <|-- OEMFile
+      NDMFile <|-- OPMFile
+      Header  "1" <--o NDMFile
+      Segment "*" <--o NDMFile
 
     }
   }
-
-  TokenType <-- Generator
-  Generator <|.. KVNGenerator
-  Generator <|.. XMLGenerator
-  LexicalAnalyzer <|.. KVNLexicalAnalyzer
-  LexicalAnalyzer <|.. XMLLexicalAnalyzer
-  ParseToken o-right-> "1" TokenType
-  ProcessingState --> ParseToken : "process"
-  FileFormat <-- MessageParser
-  FileFormat <-- Generator
-  MessageParser --> ParseToken : "process"
-  MessageParser <|.. AbstractMessageParser
-  AbstractMessageParser <|-- ErrorState
-  AbstractMessageParser <|-- OEMParser
-  OEMFile <-- OEMParser : "build"
-
 @enduml

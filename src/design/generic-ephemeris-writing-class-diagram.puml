@@ -29,24 +29,29 @@
 
   package org.orekit #ECEBD8 {
 
+    package data #DDEBD8 {
+      interface DataFilter {
+        NamedData filter(NamedData)
+      }
+      class NamedData {
+        +getName()
+        +getStreamOpener()
+      }
+      DataFilter --> NamedData
+    }
+
     package files #DDEBD8 {
 
        package sp3 #CBDBC8 {
           class SP3File
           class SP3Coordinate
-          note bottom
-            adds clock data
-          end note
           SP3File --> SP3Coordinate
        }
 
        package ilrs #CBDBC8 {
          class CPFFile
          class CPFCoordinate
-         note bottom
-            adds leap second data
-          end note
-          CPFFile --> CPFCoordinate
+         CPFFile --> CPFCoordinate
        }
 
       package general #CBDBC8 {
@@ -54,8 +59,7 @@
         class OrekitEphemerisFile
 
         interface EphemerisFileParser {
-          +EphemerisFile parse(reader, fileName)
-          +EphemerisFile parse(fileName)
+          +EphemerisFile parse(namedData)
         }
 
         interface EphemerisFileWriter {
@@ -66,10 +70,6 @@
         interface "EphemerisFile<C,S>" as EphemerisFile {
           +getSatellites()
         }
-        note right
-        C extends TimeStampedPVCoordinates
-        S extends EphemerisSegment
-        end note
 
         interface EphemerisFile.SatelliteEphemeris {
           +getId()
@@ -97,8 +97,9 @@
         EphemerisFile.SatelliteEphemeris <--* EphemerisFile
         EphemerisFile.SatelliteEphemeris o--> EphemerisFile.EphemerisSegment
 
+        NamedData     <--  EphemerisFileParser
         EphemerisFile <|.. OrekitEphemerisFile
-        EphemerisFile <-- EphemerisFileWriter
+        EphemerisFile <--  EphemerisFileWriter
         EphemerisFileParser --> EphemerisFile : create
 
       }
