@@ -105,11 +105,12 @@ public class IodGoodingTest {
         final Vector3D lineOfSight3 = position3.normalize();
 
         // instantiate the IOD method
-        final IodGooding iod = new IodGooding(frame, mu);
+        final IodGooding iod = new IodGooding(mu);
 
         // the problem is very sensitive, and unless one can provide the exact
         // initial range estimate, the estimate may be far off the truth...
-        final KeplerianOrbit orbit = iod.estimate(stapos1, stapos2, stapos3,
+        final KeplerianOrbit orbit = iod.estimate(frame,
+                                                  stapos1, stapos2, stapos3,
                                                   lineOfSight1, date1,
                                                   lineOfSight2, date2,
                                                   lineOfSight3, date3,
