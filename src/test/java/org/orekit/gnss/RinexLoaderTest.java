@@ -26,7 +26,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.data.NamedData;
+import org.orekit.data.DataSource;
 import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -771,9 +771,9 @@ public class RinexLoaderTest {
     private RinexLoader loadCompressed(final String name) {
         RinexLoader loader = null;
         try {
-            final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+            final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                                 () -> Utils.class.getClassLoader().getResourceAsStream(name));
-            NamedData filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
+            DataSource filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
             loader = new RinexLoader(filtered.getStreamOpener().openStream(), filtered.getName());
         } catch (IOException ioe) {
             Assert.fail(ioe.getLocalizedMessage());

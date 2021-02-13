@@ -28,7 +28,7 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
-import org.orekit.data.NamedData;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.odm.ODMCovariance;
@@ -59,7 +59,7 @@ public class OMMParserTest {
         // simple test for OMM file, contains p/v entries and other mandatory
         // data.
         final String ex = "/ccsds/odm/omm/OMMExample1.txt";
-        final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
         // initialize parser
         final OMMParser parser = new OMMParser(IERSConventions.IERS_2010, true,
@@ -137,7 +137,7 @@ public class OMMParserTest {
         // simple test for OMM file, contains p/v entries and other mandatory
         // data.
         final String name = "/ccsds/odm/omm/OMMExample2.txt";
-        final NamedData source = new NamedData(name, () -> getClass().getResourceAsStream(name));
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final OMMParser parser = new OMMParser(IERSConventions.IERS_1996, true,
                                                DataContext.getDefault(), new AbsoluteDate(),
                                                Constants.EIGEN5C_EARTH_MU, Double.NaN);
@@ -164,7 +164,7 @@ public class OMMParserTest {
         // simple test for OMM file, contains p/v entries and other mandatory
         // data.
         final String name = "/ccsds/odm/omm/OMMExample3.txt";
-        final NamedData source = new NamedData(name, () -> getClass().getResourceAsStream(name));
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final AbsoluteDate missionReferenceDate = new AbsoluteDate();
         final OMMParser parser = new OMMParser(IERSConventions.IERS_1996, true,
                                                DataContext.getDefault(), missionReferenceDate,
@@ -213,7 +213,7 @@ public class OMMParserTest {
         // simple test for OMM file, contains p/v entries and other mandatory
         // data.
         final String name = "/ccsds/odm/omm/OMM-wrong-keyword.txt";
-        final NamedData source = new NamedData(name, () -> getClass().getResourceAsStream(name));
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final OMMParser parser = new OMMParser(IERSConventions.IERS_1996, true,
                                                DataContext.getDefault(), new AbsoluteDate(),
                                                Constants.EIGEN5C_EARTH_MU, 1000.0);
@@ -231,7 +231,7 @@ public class OMMParserTest {
     public void testOrbitFileInterface() {
         // simple test for OMM file, contains p/v entries and other mandatory data.
         final String name = "/ccsds/odm/omm/OMMExample1.txt";
-        final NamedData source = new NamedData(name, () -> getClass().getResourceAsStream(name));
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
 
         // initialize parser
         final OMMParser parser = new OMMParser(IERSConventions.IERS_1996, true,
@@ -248,7 +248,7 @@ public class OMMParserTest {
     @Test
     public void testWrongODMType() {
         final String name = "/ccsds/odm/oem/OEMExample1.txt";
-        final NamedData source = new NamedData(name, () -> getClass().getResourceAsStream(name));
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
             new KVNLexicalAnalyzer(source).
             accept(new OMMParser(IERSConventions.IERS_1996, true,
@@ -263,7 +263,7 @@ public class OMMParserTest {
     @Test
     public void testNumberFormatErrorType() {
         final String name = "/ccsds/odm/omm/OMM-number-format-error.txt";
-        final NamedData source = new NamedData(name, () -> getClass().getResourceAsStream(name));
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
             new KVNLexicalAnalyzer(source).accept(new OMMParser(IERSConventions.IERS_1996, true,
                                                                 DataContext.getDefault(), new AbsoluteDate(),
@@ -280,7 +280,7 @@ public class OMMParserTest {
     public void testNonExistentFile() throws URISyntaxException {
         final String realName = "/ccsds/odm/omm/OMMExample1.txt";
         final String wrongName = realName + "xxxxx";
-        final NamedData source = new NamedData(wrongName, () -> getClass().getResourceAsStream(wrongName));
+        final DataSource source = new DataSource(wrongName, () -> getClass().getResourceAsStream(wrongName));
         try {
             new KVNLexicalAnalyzer(source).
             accept(new OMMParser(IERSConventions.IERS_1996, true,

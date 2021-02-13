@@ -56,7 +56,7 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataFilter;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.data.GzipFilter;
-import org.orekit.data.NamedData;
+import org.orekit.data.DataSource;
 import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -363,7 +363,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
         for (final String fileName : parser.getStringsList(ParameterKey.MEASUREMENTS_FILES, ',')) {
 
             // set up filtering for measurements files
-            NamedData nd = new NamedData(fileName, () -> new FileInputStream(new File(input.getParentFile(), fileName)));
+            DataSource nd = new DataSource(fileName, () -> new FileInputStream(new File(input.getParentFile(), fileName)));
             for (final DataFilter filter : Arrays.asList(new GzipFilter(),
                                                          new UnixCompressFilter(),
                                                          new HatanakaCompressFilter())) {
@@ -542,7 +542,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
         for (final String fileName : parser.getStringsList(ParameterKey.MEASUREMENTS_FILES, ',')) {
 
             // set up filtering for measurements files
-            NamedData nd = new NamedData(fileName,
+            DataSource nd = new DataSource(fileName,
                                          () -> new FileInputStream(new File(input.getParentFile(), fileName)));
             for (final DataFilter filter : Arrays.asList(new GzipFilter(),
                                                          new UnixCompressFilter(),
@@ -1812,7 +1812,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
             final String fileName = parser.getString(key);
 
             // Read the file
-            NamedData nd = new NamedData(fileName, () -> new FileInputStream(new File(input.getParentFile(), fileName)));
+            DataSource nd = new DataSource(fileName, () -> new FileInputStream(new File(input.getParentFile(), fileName)));
             for (final DataFilter filter : Arrays.asList(new GzipFilter(),
                                                          new UnixCompressFilter(),
                                                          new HatanakaCompressFilter())) {
@@ -1832,7 +1832,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
     }
 
     /** Read a measurements file.
-     * @param nd named data containing measurements
+     * @param source data source containing measurements
      * @param stations name to stations data map
      * @param pvData PV measurements data
      * @param satellite satellite reference
@@ -1846,7 +1846,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
      * @return measurements list
      * @exception IOException if measurement file cannot be read
      */
-    private List<ObservedMeasurement<?>> readMeasurements(final NamedData nd,
+    private List<ObservedMeasurement<?>> readMeasurements(final DataSource source,
                                                           final Map<String, StationData> stations,
                                                           final PVData pvData,
                                                           final ObservableSatellite satellite,
@@ -1860,7 +1860,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
         throws IOException {
 
         final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
-        try (InputStream is = nd.getStreamOpener().openStream();
+        try (InputStream is = source.getStreamOpener().openStream();
              InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
              BufferedReader br = new BufferedReader(isr)) {
             int lineNumber = 0;
@@ -1871,13 +1871,13 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
                     final String[] fields = line.split("\\s+");
                     if (fields.length < 2) {
                         throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                  lineNumber, nd.getName(), line);
+                                                  lineNumber, source.getName(), line);
                     }
                     switch (fields[1]) {
                         case "RANGE" :
                             final Range range = new RangeParser().parseFields(fields, stations, pvData, satellite,
                                                                               satRangeBias, weights,
-                                                                              line, lineNumber, nd.getName());
+                                                                              line, lineNumber, source.getName());
                             if (satAntennaRangeModifier != null) {
                                 range.addModifier(satAntennaRangeModifier);
                             }
@@ -1889,7 +1889,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
                         case "RANGE_RATE" :
                             final RangeRate rangeRate = new RangeRateParser().parseFields(fields, stations, pvData, satellite,
                                                                                           satRangeBias, weights,
-                                                                                          line, lineNumber, nd.getName());
+                                                                                          line, lineNumber, source.getName());
                             if (rangeRateOutliersManager != null) {
                                 rangeRate.addModifier(rangeRateOutliersManager);
                             }
@@ -1898,7 +1898,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
                         case "AZ_EL" :
                             final AngularAzEl angular = new AzElParser().parseFields(fields, stations, pvData, satellite,
                                                                                      satRangeBias, weights,
-                                                                                     line, lineNumber, nd.getName());
+                                                                                     line, lineNumber, source.getName());
                             if (azElOutliersManager != null) {
                                 angular.addModifier(azElOutliersManager);
                             }
@@ -1907,7 +1907,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
                         case "PV" :
                             final PV pv = new PVParser().parseFields(fields, stations, pvData, satellite,
                                                                      satRangeBias, weights,
-                                                                     line, lineNumber, nd.getName());
+                                                                     line, lineNumber, source.getName());
                             if (pvOutliersManager != null) {
                                 pv.addModifier(pvOutliersManager);
                             }
@@ -1917,7 +1917,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
                             throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                                                       "unknown measurement type " + fields[1] +
                                                       " at line " + lineNumber +
-                                                      " in file " + nd.getName() +
+                                                      " in file " + source.getName() +
                                                       "\n" + line);
                     }
                 }
@@ -1926,7 +1926,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
 
         if (measurements.isEmpty()) {
             throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
-                                      "not measurements read from file " + nd.getName());
+                                      "not measurements read from file " + source.getName());
         }
 
         return measurements;
@@ -1934,7 +1934,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
     }
 
     /** Read a RINEX measurements file.
-     * @param nd named data containing measurements
+     * @param source data source containing measurements
      * @param satId satellite we are interested in
      * @param stations name to stations data map
      * @param satellite satellite reference
@@ -1947,7 +1947,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
      * @return measurements list
      * @exception IOException if measurement file cannot be read
      */
-    private List<ObservedMeasurement<?>> readRinex(final NamedData nd, final String satId,
+    private List<ObservedMeasurement<?>> readRinex(final DataSource source, final String satId,
                                                    final Map<String, StationData> stations,
                                                    final ObservableSatellite satellite,
                                                    final Bias<Range> satRangeBias,
@@ -1973,7 +1973,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
             default:
                 prnNumber = -1;
         }
-        final RinexLoader loader = new RinexLoader(nd.getStreamOpener().openStream(), nd.getName());
+        final RinexLoader loader = new RinexLoader(source.getStreamOpener().openStream(), source.getName());
         for (final ObservationDataSet observationDataSet : loader.getObservationDataSets()) {
             if (observationDataSet.getSatelliteSystem() == system    &&
                 observationDataSet.getPrnNumber()       == prnNumber) {
@@ -2045,7 +2045,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
     }
 
     /** Read a Consolidated Ranging Data measurements file.
-     * @param nd named data containing measurements
+     * @param source data source containing measurements
      * @param stations name to stations data map
      * @param kvParser input file parser
      * @param satellite observable satellite
@@ -2056,7 +2056,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
      * @return a list of observable measurements
      * @throws IOException if measurement file cannot be read
      */
-    private List<ObservedMeasurement<?>> readCrd(final NamedData nd,
+    private List<ObservedMeasurement<?>> readCrd(final DataSource source,
                                                  final Map<String, StationData> stations,
                                                  final KeyValueFileParser<ParameterKey> kvParser,
                                                  final ObservableSatellite satellite,
@@ -2071,7 +2071,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
 
         // Initialise parser and read file
         final CRDParser parser =  new CRDParser();
-        final CRDFile   file   = parser.parse(nd.getStreamOpener().openStream());
+        final CRDFile   file   = parser.parse(source.getStreamOpener().openStream());
 
         // Loop on data block
         for (final CRDDataBlock block : file.getDataBlocks()) {

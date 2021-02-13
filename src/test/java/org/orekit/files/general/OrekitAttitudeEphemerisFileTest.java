@@ -38,7 +38,7 @@ import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
-import org.orekit.data.NamedData;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMAttitudeType;
@@ -146,7 +146,7 @@ public class OrekitAttitudeEphemerisFileTest {
         }
 
         AttitudeEphemerisFile<TimeStampedAngularCoordinates, AEMSegment> ephemerisFromFile =
-                        new KVNLexicalAnalyzer(new NamedData(tempAemFile)).
+                        new KVNLexicalAnalyzer(new DataSource(tempAemFile)).
                         accept(new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1));
         Files.delete(Paths.get(tempAemFile));
         

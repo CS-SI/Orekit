@@ -28,7 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
-import org.orekit.data.NamedData;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMFile;
@@ -60,7 +60,7 @@ public class AggregateBoundedAttitudeProviderTest {
     public void testAEM() {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
-        final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1);
         final AEMFile file = new KVNLexicalAnalyzer(source).accept(parser);
 
@@ -91,7 +91,7 @@ public class AggregateBoundedAttitudeProviderTest {
     private <T extends RealFieldElement<T>> void doTestFieldAEM(final Field<T> field) {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
-        final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1);
         final AEMFile file = new KVNLexicalAnalyzer(source).accept(parser);
 
@@ -118,7 +118,7 @@ public class AggregateBoundedAttitudeProviderTest {
     public void testOutsideBounds() throws Exception {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
-        final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1);
         final AEMFile file = new KVNLexicalAnalyzer(source).accept(parser);
 
@@ -149,7 +149,7 @@ public class AggregateBoundedAttitudeProviderTest {
     private <T extends RealFieldElement<T>> void doTestFieldOutsideBounds(final Field<T> field) throws Exception {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
-        final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1);
         final AEMFile file = new KVNLexicalAnalyzer(source).accept(parser);
 

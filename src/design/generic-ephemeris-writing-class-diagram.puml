@@ -59,7 +59,7 @@
         class OrekitEphemerisFile
 
         interface EphemerisFileParser {
-          +EphemerisFile parse(namedData)
+          +EphemerisFile parse(dataSource)
         }
 
         interface EphemerisFileWriter {

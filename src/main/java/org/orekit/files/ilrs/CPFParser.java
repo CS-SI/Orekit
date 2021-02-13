@@ -28,7 +28,7 @@ import java.util.stream.Stream;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
-import org.orekit.data.NamedData;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFileParser;
@@ -120,7 +120,7 @@ public class CPFParser implements EphemerisFileParser<CPFFile> {
 
     /** {@inheritDoc} */
     @Override
-    public CPFFile parse(final NamedData source) throws IOException {
+    public CPFFile parse(final DataSource source) throws IOException {
 
         try (InputStream       is     = source.getStreamOpener().openStream();
              InputStreamReader isr    = new InputStreamReader(is, StandardCharsets.UTF_8);

@@ -26,7 +26,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.data.NamedData;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ilrs.CPFFile.CPFCoordinate;
@@ -49,7 +49,7 @@ public class CPFParserTest {
 
         final CPFParser parser = new CPFParser();
         final String fileName = Paths.get(getClass().getResource(ex).toURI()).toString();
-        final CPFFile file = (CPFFile) parser.parse(new NamedData(fileName));
+        final CPFFile file = (CPFFile) parser.parse(new DataSource(fileName));
 
         // Start date
         final AbsoluteDate start = new AbsoluteDate("2018-06-13T00:00:00.000", file.getTimeScale());
@@ -132,7 +132,7 @@ public class CPFParserTest {
 
         // Simple test for version 2.0, only contains position entries
         final String    ex     = "/ilrs/lageos1_cpf_180613_16401.hts";
-        final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final CPFFile   file   = new CPFParser().parse(source);
 
         // Start date
@@ -213,7 +213,7 @@ public class CPFParserTest {
 
         // Simple test for version 1.0, only contains position entries
         final String    ex     = "/ilrs/galileo212_cpf_180613_6641.esa";
-        final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final CPFFile   file   = new CPFParser().parse(source);
 
         // Start date
@@ -291,7 +291,7 @@ public class CPFParserTest {
 
         // Simple test for version 2.0, only contains position entries
         final String    ex     = "/ilrs/cpf_all_fields.csg";
-        final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final CPFFile   file   = new CPFParser().parse(source);
 
         // Verify comments
@@ -327,7 +327,7 @@ public class CPFParserTest {
     public void testInvalifFormat() throws URISyntaxException, IOException {
         try {
             final String ex = "/ilrs/cpf_invalid_format.csg";
-            final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+            final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
             new CPFParser().parse(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -342,7 +342,7 @@ public class CPFParserTest {
     public void testMissingEOF() throws IOException, URISyntaxException {
         try {
             final String ex = "/ilrs/cpf_unexpected_end_of_file.csg";
-            final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+            final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
             new CPFParser().parse(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -357,7 +357,7 @@ public class CPFParserTest {
     public void testCorruptedData() throws IOException, URISyntaxException {
         try {
             final String ex = "/ilrs/cpf_corrupted_data.csg";
-            final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+            final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
             new CPFParser().parse(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {

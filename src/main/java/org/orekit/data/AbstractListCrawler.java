@@ -128,7 +128,7 @@ public abstract class AbstractListCrawler<T> implements DataProvider {
                         } else {
 
                             // apply all registered filters
-                            NamedData data = new NamedData(fileName, () -> getStream(input));
+                            DataSource data = new DataSource(fileName, () -> getStream(input));
                             data = manager.applyAllFilters(data);
 
                             if (supported.matcher(data.getName()).matches()) {

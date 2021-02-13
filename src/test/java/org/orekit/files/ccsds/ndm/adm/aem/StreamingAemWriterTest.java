@@ -30,7 +30,7 @@ import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.data.DataContext;
-import org.orekit.data.NamedData;
+import org.orekit.data.DataSource;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndPoints;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.CCSDSBodyFrame;
@@ -70,7 +70,7 @@ public class StreamingAemWriterTest {
         for (final String ex : files) {
 
             // Reference AEM file
-            final NamedData source0 = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+            final DataSource source0 = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
             AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1);
             AEMFile aemFile  = new KVNLexicalAnalyzer(source0).accept(parser);
 
@@ -128,7 +128,7 @@ public class StreamingAemWriterTest {
             propagator.propagate(ephemerisBlock.getStart().shiftedBy(60.0));
 
             // Generated AEM file
-            final NamedData source1 = new NamedData("buffer",
+            final DataSource source1 = new DataSource("buffer",
                                                    () -> new ByteArrayInputStream(buffer.toString().getBytes(StandardCharsets.UTF_8)));
             AEMFile generatedAemFile = new KVNLexicalAnalyzer(source1). accept(parser);
 

@@ -84,8 +84,8 @@ public class UnixCompressFilterTest {
     @Test
     public void testReadPasteEnd() throws IOException {
         final byte[] array = new byte[] { (byte) 0x1f, (byte) 0x9d, (byte) 0x90, (byte) 0x0a, (byte) 0x00 };
-        NamedData filtered = new UnixCompressFilter().
-                        filter(new NamedData("empty-line.Z", () -> new ByteArrayInputStream(array)));
+        DataSource filtered = new UnixCompressFilter().
+                        filter(new DataSource("empty-line.Z", () -> new ByteArrayInputStream(array)));
         InputStream is = filtered.getStreamOpener().openStream();
         Assert.assertEquals('\n', is.read());
         for (int i = 0; i < 1000; ++i) {
@@ -134,8 +134,8 @@ public class UnixCompressFilterTest {
     @Test
     public void testEOPFile()  throws IOException, OrekitException {
         final String name = "compressed-data/eopc04_08.00.Z";
-        NamedData filtered = new UnixCompressFilter().
-                             filter(new NamedData(name,
+        DataSource filtered = new UnixCompressFilter().
+                             filter(new DataSource(name,
                                                   () -> Utils.class.getClassLoader().getResourceAsStream(name)));
         try (InputStream is = filtered.getStreamOpener().openStream();
              InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
@@ -153,8 +153,8 @@ public class UnixCompressFilterTest {
         for (int i = 0; i < bytes.length; ++i) {
             array[i] = (byte) bytes[i];
         }
-        NamedData filtered = new UnixCompressFilter().
-                        filter(new NamedData(name, () -> new ByteArrayInputStream(array)));
+        DataSource filtered = new UnixCompressFilter().
+                        filter(new DataSource(name, () -> new ByteArrayInputStream(array)));
         InputStream is = filtered.getStreamOpener().openStream();
         List<Integer> output = new ArrayList<>();
         while (true) {

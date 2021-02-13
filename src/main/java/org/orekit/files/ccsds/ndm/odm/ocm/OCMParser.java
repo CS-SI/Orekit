@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.orekit.data.DataContext;
-import org.orekit.data.NamedData;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.odm.OCommonParser;
@@ -147,7 +147,7 @@ public class OCMParser extends OCommonParser<OCMFile, OCMParser> implements Ephe
      * </p>
      */
     @Override
-    public OCMFile parse(final NamedData source) throws IOException {
+    public OCMFile parse(final DataSource source) throws IOException {
         try {
             return new XMLLexicalAnalyzer(source).accept(this);
         } catch (OrekitException oe) {

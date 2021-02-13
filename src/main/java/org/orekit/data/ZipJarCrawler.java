@@ -217,7 +217,7 @@ public class ZipJarCrawler implements DataProvider {
                         }
 
                         // apply all registered filters
-                        NamedData data = new NamedData(entryName, () -> entry);
+                        DataSource data = new DataSource(entryName, () -> entry);
                         data = manager.applyAllFilters(data);
 
                         if (supported.matcher(data.getName()).matches()) {

@@ -33,7 +33,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.data.GzipFilter;
-import org.orekit.data.NamedData;
+import org.orekit.data.DataSource;
 import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -47,9 +47,9 @@ public class HatanakaCompressFilterTest {
     public void testNotFiltered() throws IOException {
         
         final String name = "rinex/aaaa0000.00o";
-        final NamedData raw = new NamedData(name,
+        final DataSource raw = new DataSource(name,
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        final NamedData filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
+        final DataSource filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
         Assert.assertSame(raw, filtered);
     }
 
@@ -95,7 +95,7 @@ public class HatanakaCompressFilterTest {
 
     private void doTestWrong(final String name, final OrekitMessages expectedError)
         throws IOException {
-        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
         try {
             try (InputStream       is  = new HatanakaCompressFilter().filter(raw).getStreamOpener().openStream();
@@ -115,9 +115,9 @@ public class HatanakaCompressFilterTest {
     public void testRinex2MoreThan12Satellites() throws IOException, NoSuchAlgorithmException {
 
         final String name = "rinex/bogi1210.09d.Z";
-        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        NamedData filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
+        DataSource filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
                                              filtered.getName());
@@ -150,9 +150,9 @@ public class HatanakaCompressFilterTest {
     public void testHatanakaRinex2() throws IOException, NoSuchAlgorithmException {
 
         final String name = "rinex/arol0090.01d.Z";
-        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        NamedData filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
+        DataSource filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
                                              filtered.getName());
@@ -210,9 +210,9 @@ public class HatanakaCompressFilterTest {
         
         //Tests Rinex 3 with Hatanaka compression
         final String name = "rinex/GANP00SVK_R_20151890000_01H_10M_MO.crx.gz";
-        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        NamedData filtered = new HatanakaCompressFilter().filter(new GzipFilter().filter(raw));
+        DataSource filtered = new HatanakaCompressFilter().filter(new GzipFilter().filter(raw));
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
                                              filtered.getName());
@@ -269,9 +269,9 @@ public class HatanakaCompressFilterTest {
     public void testClockReset() throws IOException, NoSuchAlgorithmException {
 
         final String name = "rinex/clckReset_U_20190320000_10M_10M_MO.crx";
-        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        NamedData filtered = new HatanakaCompressFilter().filter(raw);
+        DataSource filtered = new HatanakaCompressFilter().filter(raw);
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
                                              filtered.getName());
@@ -300,9 +300,9 @@ public class HatanakaCompressFilterTest {
         //  - epoch lines do contain a clock offset (which is a dummy value manually edited from original IGS file)
         //  - differences are reinitialized every 20 epochs
         final String name = "rinex/ZIMM00CHE_R_20190320000_15M_30S_MO.crx.gz";
-        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        NamedData filtered = new HatanakaCompressFilter().filter(new GzipFilter().filter(raw));
+        DataSource filtered = new HatanakaCompressFilter().filter(new GzipFilter().filter(raw));
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
                                              filtered.getName());
@@ -325,9 +325,9 @@ public class HatanakaCompressFilterTest {
     public void testSplice() throws IOException, NoSuchAlgorithmException {
 
         final String name = "rinex/aber0440.16d.Z";
-        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        NamedData filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
+        DataSource filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
                                              filtered.getName());
@@ -350,9 +350,9 @@ public class HatanakaCompressFilterTest {
     public void testVerySmallValue() throws IOException, NoSuchAlgorithmException {
 
         final String name = "rinex/abmf0440.16d.Z";
-        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        NamedData filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
+        DataSource filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
                                              filtered.getName());
@@ -377,9 +377,9 @@ public class HatanakaCompressFilterTest {
     public void testMultipleOf5Observations() throws IOException, NoSuchAlgorithmException {
 
         final String name = "rinex/arev0440.16d.Z";
-        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        NamedData filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
+        DataSource filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
                                              filtered.getName());
@@ -404,9 +404,9 @@ public class HatanakaCompressFilterTest {
     public void testSingleByteReads() throws IOException, NoSuchAlgorithmException {
 
         final String name = "rinex/arev0440.16d.Z";
-        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        NamedData filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
+        DataSource filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
         try (InputStream is = filtered.getStreamOpener().openStream()) {
             int count = 0;
             while (is.read() >= 0) {
@@ -538,9 +538,9 @@ public class HatanakaCompressFilterTest {
     public void testManyObservations() throws IOException, NoSuchAlgorithmException {
 
         final String name = "rinex/THTG00PYF_R_20160440000_60S_30S_MO.crx.gz";
-        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        NamedData filtered = new HatanakaCompressFilter().filter(new GzipFilter().filter(raw));
+        DataSource filtered = new HatanakaCompressFilter().filter(new GzipFilter().filter(raw));
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
                                              filtered.getName());
@@ -565,9 +565,9 @@ public class HatanakaCompressFilterTest {
     public void testSeptentrioMissingType() throws IOException, NoSuchAlgorithmException {
 
         final String name = "rinex/TLSG00FRA_R_20160440000_30S_30S_MO.crx.gz";
-        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        NamedData filtered = new HatanakaCompressFilter().filter(new GzipFilter().filter(raw));
+        DataSource filtered = new HatanakaCompressFilter().filter(new GzipFilter().filter(raw));
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
                                              filtered.getName());
@@ -592,9 +592,9 @@ public class HatanakaCompressFilterTest {
     public void testSeptentrioPhaseShiftWithS() throws IOException, NoSuchAlgorithmException {
 
         final String name = "rinex/VILL00ESP_R_20160440000_01D_30S_MO.crx.gz";
-        final NamedData raw = new NamedData(name.substring(name.indexOf('/') + 1),
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        NamedData filtered = new HatanakaCompressFilter().filter(new GzipFilter().filter(raw));
+        DataSource filtered = new HatanakaCompressFilter().filter(new GzipFilter().filter(raw));
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
                                              filtered.getName());

@@ -29,7 +29,7 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataFilter;
 import org.orekit.data.GzipFilter;
-import org.orekit.data.NamedData;
+import org.orekit.data.DataSource;
 import org.orekit.data.UnixCompressFilter;
 import org.orekit.gnss.Frequency;
 import org.orekit.gnss.HatanakaCompressFilter;
@@ -52,7 +52,7 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
         final String inputPath = GeometryFreeCycleSlipDetectorTest.class.getClassLoader().getResource("gnss/cycleSlip/seat0440.16d.Z").toURI().getPath();
         final File input  = new File(inputPath);
         String fileName = "seat0440.16d.Z";
-        NamedData nd = new NamedData(fileName,
+        DataSource nd = new DataSource(fileName,
                                      () -> new FileInputStream(new File(input.getParentFile(), fileName)));
         for (final DataFilter filter : Arrays.asList(new GzipFilter(),
                                                      new UnixCompressFilter(),
@@ -126,7 +126,7 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
         final String inputPath = GeometryFreeCycleSlipDetectorTest.class.getClassLoader().getResource("gnss/cycleSlip/WithCycleSlip.16o").toURI().getPath();
         final File input  = new File(inputPath);
         String fileName = "WithCycleSlip.16o";
-        NamedData nd = new NamedData(fileName,
+        DataSource nd = new DataSource(fileName,
                                      () -> new FileInputStream(new File(input.getParentFile(), fileName)));
         for (final DataFilter filter : Arrays.asList(new GzipFilter(),
                                                      new UnixCompressFilter(),
@@ -175,7 +175,7 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
         final String inputPath = GeometryFreeCycleSlipDetectorTest.class.getClassLoader().getResource("gnss/cycleSlip/WithCycleSlip.16o").toURI().getPath();
         final File input  = new File(inputPath);
         String fileName = "WithoutCycleSlip.16o";
-        NamedData nd = new NamedData(fileName,
+        DataSource nd = new DataSource(fileName,
                                      () -> new FileInputStream(new File(input.getParentFile(), fileName)));
         for (final DataFilter filter : Arrays.asList(new GzipFilter(),
                                                      new UnixCompressFilter(),

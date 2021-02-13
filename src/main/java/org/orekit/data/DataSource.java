@@ -23,7 +23,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-/** Container for holding named data that can be {@link DataFilter filtered}.
+/** Container for holding named data source that can be {@link DataFilter filtered}.
  * <p>
  * This class is a simple container without any processing methods.
  * </p>
@@ -31,7 +31,7 @@ import java.nio.file.Paths;
  * @author Luc Maisonobe
  * @since 9.2
  */
-public class NamedData {
+public class DataSource {
 
     /** Name of the data (file name, zip entry name...). */
     private final String name;
@@ -43,7 +43,7 @@ public class NamedData {
      * @param name data name
      * @param streamOpener opener for the data stream
      */
-    public NamedData(final String name, final StreamOpener streamOpener) {
+    public DataSource(final String name, final StreamOpener streamOpener) {
         this.name         = name;
         this.streamOpener = streamOpener;
     }
@@ -52,7 +52,7 @@ public class NamedData {
      * @param fileName name of the file
      * @since 11.0
      */
-    public NamedData(final String fileName) {
+    public DataSource(final String fileName) {
         this(fileName, () -> Files.newInputStream(Paths.get(fileName)));
     }
 
@@ -60,7 +60,7 @@ public class NamedData {
      * @param file file
      * @since 11.0
      */
-    public NamedData(final File file) {
+    public DataSource(final File file) {
         this(file.getName(), () -> new FileInputStream(file));
     }
 

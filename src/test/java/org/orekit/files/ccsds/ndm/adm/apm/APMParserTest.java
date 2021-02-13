@@ -28,7 +28,7 @@ import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
-import org.orekit.data.NamedData;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
@@ -63,7 +63,7 @@ public class APMParserTest {
         final APMParser parser = new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                new AbsoluteDate("2002-09-30T14:28:15.117", TimeScalesFactory.getUTC()));
 
-        final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
         // Generated APM file
         final APMFile file = new KVNLexicalAnalyzer(source).accept(parser);
@@ -131,7 +131,7 @@ public class APMParserTest {
         final APMParser parser = new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                new AbsoluteDate("2002-09-30T14:28:15.117", TimeScalesFactory.getUTC()));
 
-        final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
         // Generated APM file
         final APMFile file = new KVNLexicalAnalyzer(source).accept(parser);
@@ -248,7 +248,7 @@ public class APMParserTest {
         final APMParser parser = new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                new AbsoluteDate("2002-09-30T14:28:15.117", TimeScalesFactory.getUTC()));
 
-        final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
         // Generated APM file
         final APMFile file = new KVNLexicalAnalyzer(source).accept(parser);
@@ -325,7 +325,7 @@ public class APMParserTest {
         final APMParser parser = new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                new AbsoluteDate("2002-09-30T14:28:15.117", TimeScalesFactory.getUTC()));
 
-        final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
         // Generated APM file
         final APMFile file = new KVNLexicalAnalyzer(source).accept(parser);
@@ -379,7 +379,7 @@ public class APMParserTest {
     public void testNotImplementedTimeSystems() {
         try {
             final String name = "/ccsds/adm/apm/APM-inconsistent-time-systems.txt";
-            final NamedData source = new NamedData(name, () -> getClass().getResourceAsStream(name));
+            final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
             new KVNLexicalAnalyzer(source).
             accept(new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), AbsoluteDate.J2000_EPOCH));
         } catch (OrekitException oe) {
@@ -392,7 +392,7 @@ public class APMParserTest {
     public void testWrongADMType() {
         final String name = "/ccsds/adm/aem/AEMExample.txt";
         try {
-            final NamedData source = new NamedData(name, () -> getClass().getResourceAsStream(name));
+            final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
             new KVNLexicalAnalyzer(source).
             accept(new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), AbsoluteDate.J2000_EPOCH));
         } catch (OrekitException oe) {
@@ -406,7 +406,7 @@ public class APMParserTest {
         final String name = "/ccsds/adm/apm/APM-number-format-error.txt";
         try {
             APMParser parser = new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), AbsoluteDate.J2000_EPOCH);
-            final NamedData source = new NamedData(name, () -> getClass().getResourceAsStream(name));
+            final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
             new KVNLexicalAnalyzer(source).accept(parser);
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
@@ -422,7 +422,7 @@ public class APMParserTest {
         final String realName = getClass().getResource("/ccsds/adm/apm/APMExample.txt").toURI().getPath();
         final String wrongName = realName + "xxxxx";
         try {
-            final NamedData source = new NamedData(wrongName, () -> getClass().getResourceAsStream(wrongName));
+            final DataSource source = new DataSource(wrongName, () -> getClass().getResourceAsStream(wrongName));
             new KVNLexicalAnalyzer(source).
             accept(new APMParser(IERSConventions.IERS_2010, true,
                                  DataContext.getDefault(), AbsoluteDate.J2000_EPOCH));
@@ -437,7 +437,7 @@ public class APMParserTest {
     public void testWrongKeyword() throws URISyntaxException {
         final String name = "/ccsds/adm/apm/APM-wrong-keyword.txt";
         try {
-            final NamedData source = new NamedData(name, () -> getClass().getResourceAsStream(name));
+            final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
             new KVNLexicalAnalyzer(source).
             accept(new APMParser(IERSConventions.IERS_2010, true,
                                  DataContext.getDefault(), AbsoluteDate.J2000_EPOCH));
@@ -453,7 +453,7 @@ public class APMParserTest {
     public void testWrongEulerSequence() throws URISyntaxException {
         final String name = "/ccsds/adm/apm/APM-wrong-Euler-sequence.txt";
         try {
-            final NamedData source = new NamedData(name, () -> getClass().getResourceAsStream(name));
+            final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
             new KVNLexicalAnalyzer(source).
             accept(new APMParser(IERSConventions.IERS_2010, true,
                                  DataContext.getDefault(), AbsoluteDate.J2000_EPOCH));

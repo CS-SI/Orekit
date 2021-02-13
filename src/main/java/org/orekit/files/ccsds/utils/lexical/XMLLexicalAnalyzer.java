@@ -24,7 +24,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.hipparchus.exception.DummyLocalizable;
-import org.orekit.data.NamedData;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NDMFile;
@@ -52,12 +52,12 @@ public class XMLLexicalAnalyzer implements LexicalAnalyzer {
     private static final String UNITS = "units";
 
     /** Source providing the data to analyze. */
-    private final NamedData source;
+    private final DataSource source;
 
     /** Simple constructor.
      * @param source source providing the data to parse
      */
-    public XMLLexicalAnalyzer(final NamedData source) {
+    public XMLLexicalAnalyzer(final DataSource source) {
         this.source = source;
     }
 

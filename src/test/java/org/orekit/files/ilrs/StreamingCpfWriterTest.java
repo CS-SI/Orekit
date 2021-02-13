@@ -25,7 +25,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.data.NamedData;
+import org.orekit.data.DataSource;
 import org.orekit.files.ilrs.CPFFile.CPFEphemeris;
 import org.orekit.files.ilrs.StreamingCpfWriter.Segment;
 import org.orekit.frames.Frame;
@@ -58,7 +58,7 @@ public class StreamingCpfWriterTest {
                               "/ilrs/lageos1_cpf_180613_16401.hts",
                               "/ilrs/galileo212_cpf_180613_6641.esa");
         for (final String ex : files) {
-            NamedData source0 = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+            DataSource source0 = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
             CPFFile cpfFile = new CPFParser().parse(source0);
 
             CPFEphemeris satellite =
@@ -78,7 +78,7 @@ public class StreamingCpfWriterTest {
             propagator.propagate(propagator.getMinDate(), propagator.getMaxDate());
 
             final byte[]    bytes1            = buffer.toString().getBytes(StandardCharsets.UTF_8);
-            final NamedData source1           = new NamedData("buffer", () -> new ByteArrayInputStream(bytes1));
+            final DataSource source1           = new DataSource("buffer", () -> new ByteArrayInputStream(bytes1));
             final CPFFile   generatedCpfFile1 = new CPFParser().parse(source1);
             CPFWriterTest.compareCpfFiles(cpfFile, generatedCpfFile1);
 
@@ -94,7 +94,7 @@ public class StreamingCpfWriterTest {
 
             // verify
             final byte[]    bytes2            = buffer.toString().getBytes(StandardCharsets.UTF_8);
-            final NamedData source2           = new NamedData("buffer", () -> new ByteArrayInputStream(bytes2));
+            final DataSource source2           = new DataSource("buffer", () -> new ByteArrayInputStream(bytes2));
             final CPFFile   generatedCpfFile2 = new CPFParser().parse(source2);
             CPFWriterTest.compareCpfFiles(cpfFile, generatedCpfFile2);
 

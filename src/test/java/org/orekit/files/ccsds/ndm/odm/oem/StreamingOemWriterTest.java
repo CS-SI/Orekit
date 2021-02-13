@@ -35,7 +35,7 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
-import org.orekit.data.NamedData;
+import org.orekit.data.DataSource;
 import org.orekit.files.ccsds.ndm.odm.ODMHeader;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsModifiedFrame;
@@ -121,7 +121,7 @@ public class StreamingOemWriterTest {
         List<String> files =
                 Arrays.asList("/ccsds/odm/oem/OEMExample5.txt", "/ccsds/odm/oem/OEMExample4.txt");
         for (final String ex : files) {
-            final NamedData source0 =  new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+            final DataSource source0 =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
             OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                              null, CelestialBodyFactory.getEarth().getGM(), 1);
             OEMFile oemFile = new KVNLexicalAnalyzer(source0).accept(parser);
@@ -160,7 +160,7 @@ public class StreamingOemWriterTest {
             propagator.propagate(propagator.getMinDate(), propagator.getMaxDate());
 
             // verify
-            final NamedData source1 = new NamedData("buffer",
+            final DataSource source1 = new DataSource("buffer",
                                                     () -> new ByteArrayInputStream(buffer1.toString().getBytes(StandardCharsets.UTF_8)));
             OEMFile generatedOemFile = new KVNLexicalAnalyzer(source1).
                             accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
@@ -186,7 +186,7 @@ public class StreamingOemWriterTest {
             }
 
             // verify
-            final NamedData source2 = new NamedData("buffer",
+            final DataSource source2 = new DataSource("buffer",
                                                     () -> new ByteArrayInputStream(buffer2.toString().getBytes(StandardCharsets.UTF_8)));
             generatedOemFile = new KVNLexicalAnalyzer(source2).
                             accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),

@@ -136,7 +136,7 @@ public class ClasspathCrawler implements DataProvider {
                         } else {
 
                             // apply all registered filters
-                            NamedData data = new NamedData(name, () -> classLoader.getResourceAsStream(name));
+                            DataSource data = new DataSource(name, () -> classLoader.getResourceAsStream(name));
                             data = manager.applyAllFilters(data);
 
                             if (supported.matcher(data.getName()).matches()) {

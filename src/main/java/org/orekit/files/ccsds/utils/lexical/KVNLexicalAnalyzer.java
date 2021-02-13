@@ -25,7 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.exception.DummyLocalizable;
-import org.orekit.data.NamedData;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NDMFile;
@@ -74,12 +74,12 @@ public class KVNLexicalAnalyzer implements LexicalAnalyzer {
     private static final Pattern STOP_ENTRY         = Pattern.compile(LINE_START + STOP_KEY + LINE_END);
 
     /** Source providing the data to analyze. */
-    private final NamedData source;
+    private final DataSource source;
 
     /** Simple constructor.
      * @param source source providing the data to parse
      */
-    public KVNLexicalAnalyzer(final NamedData source) {
+    public KVNLexicalAnalyzer(final DataSource source) {
         this.source = source;
     }
 

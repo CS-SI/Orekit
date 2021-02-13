@@ -42,7 +42,7 @@ import org.junit.rules.TemporaryFolder;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
-import org.orekit.data.NamedData;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.odm.ODMCovariance;
@@ -79,7 +79,7 @@ public class OEMWriterTest {
     @Test
     public void testWriteOEM1() throws IOException {
         final String ex = "/ccsds/odm/oem/OEMExample1.txt";
-        final NamedData source =  new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+        final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                null, CelestialBodyFactory.getMars().getGM(), 1);
         final OEMFile oemFile = new KVNLexicalAnalyzer(source).accept(parser);
@@ -89,7 +89,7 @@ public class OEMWriterTest {
                                          oemFile.getHeader(), oemFile.getSegments().get(0).getMetadata());
         writer.write(tempOEMFilePath, oemFile);
 
-        final OEMFile generatedOemFile = new KVNLexicalAnalyzer(new NamedData(tempOEMFilePath)).
+        final OEMFile generatedOemFile = new KVNLexicalAnalyzer(new DataSource(tempOEMFilePath)).
                         accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                              null, CelestialBodyFactory.getMars().getGM(), 1));
         compareOemFiles(oemFile, generatedOemFile);
@@ -98,7 +98,7 @@ public class OEMWriterTest {
     @Test
     public void testUnfoundSpaceId() throws IOException {
         final String ex = "/ccsds/odm/oem/OEMExample1.txt";
-        final NamedData source =  new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+        final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                null, CelestialBodyFactory.getEarth().getGM(), 1);
         final OEMFile oemFile = new KVNLexicalAnalyzer(source).accept(parser);
@@ -119,7 +119,7 @@ public class OEMWriterTest {
     @Test
     public void testNullFile() throws IOException {
         final String ex = "/ccsds/odm/oem/OEMExample1.txt";
-        final NamedData source =  new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+        final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                null, CelestialBodyFactory.getEarth().getGM(), 1);
         final OEMFile oemFile = new KVNLexicalAnalyzer(source).accept(parser);
@@ -155,7 +155,7 @@ public class OEMWriterTest {
     @Test
     public void testUnisatelliteFileWithDefault() throws IOException {
         final String ex = "/ccsds/odm/oem/OEMExample1.txt";
-        final NamedData source =  new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+        final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                null, CelestialBodyFactory.getEarth().getGM(), 1);
         final OEMFile oemFile = new KVNLexicalAnalyzer(source).accept(parser);
@@ -165,7 +165,7 @@ public class OEMWriterTest {
                                          oemFile.getHeader(), oemFile.getSegments().get(0).getMetadata());
         writer.write(tempOEMFilePath, oemFile);
 
-        final OEMFile generatedOemFile = new KVNLexicalAnalyzer(new NamedData(tempOEMFilePath)).
+        final OEMFile generatedOemFile = new KVNLexicalAnalyzer(new DataSource(tempOEMFilePath)).
                         accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                              null, CelestialBodyFactory.getEarth().getGM(), 1));
         assertEquals(oemFile.getSegments().get(0).getMetadata().getObjectID(),
@@ -175,7 +175,7 @@ public class OEMWriterTest {
     @Test
     public void testIssue723() throws IOException {
         final String ex = "/ccsds/odm/oem/OEMExampleWithHeaderComment.txt";
-        final NamedData source =  new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+        final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                null, CelestialBodyFactory.getEarth().getGM(), 1);
         final OEMFile oemFile = new KVNLexicalAnalyzer(source).accept(parser);
@@ -185,7 +185,7 @@ public class OEMWriterTest {
                                          oemFile.getHeader(), oemFile.getSegments().get(0).getMetadata());
         writer.write(tempOEMFilePath, oemFile);
 
-        final OEMFile generatedOemFile = new KVNLexicalAnalyzer(new NamedData(tempOEMFilePath)).
+        final OEMFile generatedOemFile = new KVNLexicalAnalyzer(new DataSource(tempOEMFilePath)).
                         accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                              null, CelestialBodyFactory.getEarth().getGM(), 1));
         assertEquals(oemFile.getHeader().getComments().get(0), generatedOemFile.getHeader().getComments().get(0));
@@ -200,7 +200,7 @@ public class OEMWriterTest {
     public void testWriteOemFormat() throws IOException {
         // setup
         String exampleFile = "/ccsds/odm/oem/OEMExample4.txt";
-        final NamedData source =  new NamedData(exampleFile, () -> getClass().getResourceAsStream(exampleFile));
+        final DataSource source =  new DataSource(exampleFile, () -> getClass().getResourceAsStream(exampleFile));
         OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                          null, CelestialBodyFactory.getEarth().getGM(), 1);
         OEMFile oemFile = new KVNLexicalAnalyzer(source).accept(parser);

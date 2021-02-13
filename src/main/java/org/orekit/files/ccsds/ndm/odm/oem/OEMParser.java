@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.data.DataContext;
-import org.orekit.data.NamedData;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.odm.OCommonMetadata;
@@ -143,7 +143,7 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
      * </p>
      */
     @Override
-    public OEMFile parse(final NamedData source) throws IOException {
+    public OEMFile parse(final DataSource source) throws IOException {
         try {
             return new XMLLexicalAnalyzer(source).accept(this);
         } catch (OrekitException oe) {

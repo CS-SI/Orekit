@@ -36,7 +36,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.orekit.Utils;
-import org.orekit.data.NamedData;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ilrs.CPFFile.CPFCoordinate;
@@ -58,14 +58,14 @@ public class CPFWriterTest {
 
         // Simple test for version 2.0, only contains position entries
         final String ex = "/ilrs/jason3_cpf_180613_16401.cne";
-        final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final CPFFile file = new CPFParser().parse(source);
 
         String tempCPFFilePath = tempFolder.newFile("TestWriteCPF.cpf").toString();
         CPFWriter writer = new CPFWriter(file.getHeader(), TimeScalesFactory.getUTC());
         writer.write(tempCPFFilePath, file);
 
-        final CPFFile generatedCpfFile = new CPFParser().parse(new NamedData(tempCPFFilePath));
+        final CPFFile generatedCpfFile = new CPFParser().parse(new DataSource(tempCPFFilePath));
         compareCpfFiles(file, generatedCpfFile);
 
     }
@@ -75,14 +75,14 @@ public class CPFWriterTest {
 
         // Simple test for version 2.0, only contains position entries
         final String ex = "/ilrs/lageos1_cpf_180613_16401.hts";
-        final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final CPFFile file = new CPFParser().parse(source);
 
         String tempCPFFilePath = tempFolder.newFile("TestWriteCPF.cpf").toString();
         CPFWriter writer = new CPFWriter(file.getHeader(), TimeScalesFactory.getUTC());
         writer.write(tempCPFFilePath, file);
 
-        final CPFFile generatedCpfFile = new CPFParser().parse(new NamedData(tempCPFFilePath));
+        final CPFFile generatedCpfFile = new CPFParser().parse(new DataSource(tempCPFFilePath));
         compareCpfFiles(file, generatedCpfFile);
 
     }
@@ -92,14 +92,14 @@ public class CPFWriterTest {
 
         // Simple test for version 1.0, only contains position entries
         final String ex = "/ilrs/galileo212_cpf_180613_6641.esa";
-        final NamedData source = new NamedData(ex, () -> getClass().getResourceAsStream(ex));
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final CPFFile file = new CPFParser().parse(source);
 
         String tempCPFFilePath = tempFolder.newFile("TestWriteCPF.cpf").toString();
         CPFWriter writer = new CPFWriter(file.getHeader(), TimeScalesFactory.getUTC());
         writer.write(tempCPFFilePath, file);
 
-        final CPFFile generatedCpfFile = new CPFParser().parse(new NamedData(tempCPFFilePath));
+        final CPFFile generatedCpfFile = new CPFParser().parse(new DataSource(tempCPFFilePath));
         compareCpfFiles(file, generatedCpfFile);
 
     }
@@ -107,7 +107,7 @@ public class CPFWriterTest {
     @Test
     public void testNullFile() throws IOException {
         final String    ex      = "/ilrs/lageos1_cpf_180613_16401.hts";
-        final NamedData source  = new NamedData(ex, () ->  getClass().getResourceAsStream(ex));
+        final DataSource source  = new DataSource(ex, () ->  getClass().getResourceAsStream(ex));
         final CPFFile   cpfFile = new CPFParser().parse(source);
         final CPFWriter writer  = new CPFWriter(cpfFile.getHeader(), TimeScalesFactory.getUTC());
         try {
