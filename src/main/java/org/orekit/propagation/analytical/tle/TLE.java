@@ -23,11 +23,6 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.linear.MatrixUtils;
-import org.hipparchus.linear.QRDecomposition;
-import org.hipparchus.linear.RealMatrix;
-import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -36,17 +31,15 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.orbits.FieldKeplerianOrbit;
-import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
@@ -429,7 +422,7 @@ public class TLE implements TimeStamped, Serializable {
      *
      * @return UTC time scale.
      */
-    TimeScale getUtc() {
+    public TimeScale getUtc() {
         return utc;
     }
 
@@ -790,150 +783,112 @@ public class TLE implements TimeStamped, Serializable {
 
     /**
      * Convert Spacecraft State into TLE.
-     * This converter uses Newton method to reverse SGP4 and SDP4 propagation algorithm
+     * This converter uses Fixed Point method to reverse SGP4 and SDP4 propagation algorithm
      * and generates a usable TLE version of a state.
-     * New TLE epoch is state epoch.
-     *
-     *<p>This method uses the {@link DataContext#getDefault() default data context}. And a default 1e-10 epsilon for convergence thresholds.
-     *
-     * @param state Spacecraft State to convert into TLE
-     * @param templateTLE first guess used to get identification and estimate new TLE
-     * @return TLE matching with Spacecraft State and template identification
-     */
-    @DefaultDataContext
-    public static TLE stateToTLE(final SpacecraftState state, final TLE templateTLE) {
-        return stateToTLE(state, templateTLE, 1e-10);
-    }
-
-
-    /**
-     * Convert Spacecraft State into TLE.
-     * This converter uses Newton method to reverse SGP4 and SDP4 propagation algorithm
-     * and generates a usable TLE version of a state.
+     * Equinocital orbital parameters are used in order to get a stiff method.
      * New TLE epoch is state epoch.
      *
      *<p>This method uses the {@link DataContext#getDefault() default data context}.
      *
      * @param state Spacecraft State to convert into TLE
      * @param templateTLE first guess used to get identification and estimate new TLE
-     * @param epsilon used to compute threshold for convergence check
      * @return TLE matching with Spacecraft State and template identification
+     * @throws OrekitException
      */
     @DefaultDataContext
-    public static TLE stateToTLE(final SpacecraftState state, final TLE templateTLE, final double epsilon) {
+    public static TLE stateToTLE(final SpacecraftState state, final TLE templateTLE) {
 
-        // get keplerian parameters from state
+        // Gets equinoctial parameters from state
         final Orbit orbit = state.getOrbit();
+        final EquinoctialOrbit equiOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
+        double sma = equiOrbit.getA();
+        double ex  = equiOrbit.getEquinoctialEx();
+        double ey  = equiOrbit.getEquinoctialEy();
+        double hx  = equiOrbit.getHx();
+        double hy  = equiOrbit.getHy();
+        double lv  = equiOrbit.getLv();
+
+        // Rough initialization of the TLE
         final KeplerianOrbit keplerianOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orbit);
-
-        double meanMotion  = keplerianOrbit.getKeplerianMeanMotion();
-        double e           = keplerianOrbit.getE();
-        double i           = keplerianOrbit.getI();
-        double raan        = keplerianOrbit.getRightAscensionOfAscendingNode();
-        double pa          = keplerianOrbit.getPerigeeArgument();
-        double meanAnomaly = keplerianOrbit.getMeanAnomaly();
-
-        // rough initialization of the TLE
-        FieldTLE<Gradient> current = gradTLE(meanMotion, e, i, raan, pa, meanAnomaly, state.getDate(), templateTLE);
-
-        final Gradient zero = current.getE().getField().getZero();
+        TLE current = newTLE(keplerianOrbit, templateTLE);
 
         // threshold for each parameter
-        final double thresholdMeanMotion = epsilon * (1 + keplerianOrbit.getKeplerianMeanMotion());
-        final double thresholdE          = epsilon * (1 + state.getE());
-        final double thresholdI          = epsilon * (1 + state.getI());
-        final double thresholdAngles     = epsilon * FastMath.PI;
+        final double eps  = 1.0e-10;
+        final double thrA = eps * (1 + sma);
+        final double thrE = eps * (1 + FastMath.hypot(ex, ey));
+        final double thrH = eps * (1 + FastMath.hypot(hx, hy));
+        final double thrV = eps * FastMath.PI;
+
         int k = 0;
         while (k++ < 100) {
 
             // recompute the state from the current TLE
-            final Gradient[] parameters = new Gradient[1];
-            //parameters[0] = Gradient.constant(FREE_STATE_PARAMETERS, current.getBStar());
-            parameters[0] = zero.add(current.getBStar());
-            final FieldTLEPropagator<Gradient> propagator = FieldTLEPropagator.selectExtrapolator(current, parameters);
-            final FieldSpacecraftState<Gradient> recoveredState = propagator.getInitialState();
-            final FieldOrbit<Gradient> recoveredOrbit = recoveredState.getOrbit();
-            final FieldKeplerianOrbit<Gradient> recoveredKeplerianOrbit = (FieldKeplerianOrbit<Gradient>) OrbitType.KEPLERIAN.convertType(recoveredOrbit);
+            final TLEPropagator propagator = TLEPropagator.selectExtrapolator(current);
+            final Orbit recovOrbit = propagator.getInitialState().getOrbit();
+            final EquinoctialOrbit recovEquiOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(recovOrbit);
 
             // adapted parameters residuals
-            final Gradient deltaMeanMotion  = recoveredKeplerianOrbit.getKeplerianMeanMotion().negate().add(keplerianOrbit.getKeplerianMeanMotion());
-            final Gradient deltaE           = recoveredKeplerianOrbit.getE().negate().add(keplerianOrbit.getE());
-            final Gradient deltaI           = recoveredKeplerianOrbit.getI().negate().add(keplerianOrbit.getI());
-            final Gradient deltaRAAN        = MathUtils.normalizeAngle(recoveredKeplerianOrbit.getRightAscensionOfAscendingNode().negate()
-                                                                                     .add(keplerianOrbit.getRightAscensionOfAscendingNode()), zero);
-            final Gradient deltaPA          = MathUtils.normalizeAngle(recoveredKeplerianOrbit.getPerigeeArgument().negate()
-                                                                                     .add(keplerianOrbit.getPerigeeArgument()), zero);
-            final Gradient deltaMeanAnomaly = MathUtils.normalizeAngle(recoveredKeplerianOrbit.getMeanAnomaly().negate()
-                                                                                     .add(keplerianOrbit.getMeanAnomaly()), zero);
+            final double deltaSma = equiOrbit.getA() - recovEquiOrbit.getA();
+            final double deltaEx  = equiOrbit.getEquinoctialEx() - recovEquiOrbit.getEquinoctialEx();
+            final double deltaEy  = equiOrbit.getEquinoctialEy() - recovEquiOrbit.getEquinoctialEy();
+            final double deltaHx  = equiOrbit.getHx() - recovEquiOrbit.getHx();
+            final double deltaHy  = equiOrbit.getHy() - recovEquiOrbit.getHy();
+            final double deltaLv  = MathUtils.normalizeAngle(equiOrbit.getLv() - recovEquiOrbit.getLv(), 0.0);
+
+//            System.out.println("Iteration #" + k);
+//            System.out.println("[" + thrA + "] " + deltaSma + " : " + sma);
+//            System.out.println("[" + thrE + "] " + deltaEx  + " : " + ex);
+//            System.out.println("[" + thrE + "] " + deltaEy  + " : " + ey);
+//            System.out.println("[" + thrH + "] " + deltaHx  + " : " + hx);
+//            System.out.println("[" + thrH + "] " + deltaHy  + " : " + hy);
+//            System.out.println("[" + thrV + "] " + deltaLv  + " : " + lv);
 
             // check convergence
-            if ((FastMath.abs(deltaMeanMotion.getValue())  < thresholdMeanMotion) &&
-                (FastMath.abs(deltaE.getValue())           < thresholdE) &&
-                (FastMath.abs(deltaI.getValue())           < thresholdI) &&
-                (FastMath.abs(deltaPA.getValue())          < thresholdAngles) &&
-                (FastMath.abs(deltaRAAN.getValue())        < thresholdAngles) &&
-                (FastMath.abs(deltaMeanAnomaly.getValue()) < thresholdAngles)) {
+            if ((FastMath.abs(deltaSma) < thrA) &&
+                (FastMath.abs(deltaEx)  < thrE) &&
+                (FastMath.abs(deltaEy)  < thrE) &&
+                (FastMath.abs(deltaHx)  < thrH) &&
+                (FastMath.abs(deltaHy)  < thrH) &&
+                (FastMath.abs(deltaLv)  < thrV)) {
 
-                return current.toTLE();
+                return current;
             }
 
-            // compute differencial correction according to Newton method
-            final double[] vector = new double[6];
-            vector[0] = -deltaMeanMotion.getReal();
-            vector[1] = -deltaE.getReal();
-            vector[2] = -deltaI.getReal();
-            vector[3] = -deltaRAAN.getReal();
-            vector[4] = -deltaPA.getReal();
-            vector[5] = -deltaMeanAnomaly.getReal();
-            final RealVector F = MatrixUtils.createRealVector(vector);
-            final RealMatrix J = MatrixUtils.createRealMatrix(6, 6);
-            J.setRow(0, deltaMeanMotion.getGradient());
-            J.setRow(1, deltaE.getGradient());
-            J.setRow(2, deltaI.getGradient());
-            J.setRow(3, deltaRAAN.getGradient());
-            J.setRow(4, deltaPA.getGradient());
-            J.setRow(5, deltaMeanAnomaly.getGradient());
-            final QRDecomposition decomp = new QRDecomposition(J);
-
-            final RealVector deltaTLE = decomp.getSolver().solve(F);
+            // update state
+            sma += deltaSma;
+            ex  += deltaEx;
+            ey  += deltaEy;
+            hx  += deltaHx;
+            hy  += deltaHy;
+            lv  += deltaLv;
+            final EquinoctialOrbit newEquiOrbit =
+                                    new EquinoctialOrbit(sma, ex, ey, hx, hy, lv, PositionAngle.TRUE,
+                                    orbit.getFrame(), orbit.getDate(), orbit.getMu() );
+            final KeplerianOrbit newKeplOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(newEquiOrbit);
 
             // update TLE
-            meanMotion  += deltaTLE.getEntry(0);
-            e           += deltaTLE.getEntry(1);
-            i           += deltaTLE.getEntry(2);
-            raan        += deltaTLE.getEntry(3);
-            pa          += deltaTLE.getEntry(4);
-            meanAnomaly += deltaTLE.getEntry(5);
-
-            current = gradTLE(meanMotion, e, i, raan, pa, meanAnomaly, state.getDate(), templateTLE);
-
+            current = newTLE(newKeplOrbit, templateTLE);
         }
 
         throw new OrekitException(OrekitMessages.UNABLE_TO_COMPUTE_TLE, k);
     }
 
     /**
-     * Builds a Gradient TLE from a TLE and specified parameters.
-     * Warning! This Gradient TLE should not be used for any propagation!
-     * @param meanMotion Mean Motion (rad/s)
-     * @param e excentricity
-     * @param i inclination (rad)
-     * @param raan right ascension of ascending node (rad)
-     * @param pa perigee argument (rad)
-     * @param meanAnomaly mean anomaly (rad)
+     * Builds a new TLE from Keplerian parameters and a template for TLE data.
+     * @param keplerianOrbit the Keplerian parameters to build the TLE from
      * @param templateTLE TLE used to get object identification
-     * @param epoch epoch of the new TLE
      * @return TLE with template identification and new orbital parameters
      */
-    private static FieldTLE<Gradient> gradTLE(final double meanMotion,
-                                             final double e,
-                                             final double i,
-                                             final double raan,
-                                             final double pa,
-                                             final double meanAnomaly,
-                                             final AbsoluteDate epoch,
-                                             final TLE templateTLE) {
-
+    private static TLE newTLE(final KeplerianOrbit keplerianOrbit, final TLE templateTLE) {
+        // Keplerian parameters
+        final double meanMotion  = keplerianOrbit.getKeplerianMeanMotion();
+        final double e           = keplerianOrbit.getE();
+        final double i           = keplerianOrbit.getI();
+        final double raan        = keplerianOrbit.getRightAscensionOfAscendingNode();
+        final double pa          = keplerianOrbit.getPerigeeArgument();
+        final double meanAnomaly = keplerianOrbit.getMeanAnomaly();
+        // TLE epoch is state epoch
+        final AbsoluteDate epoch = keplerianOrbit.getDate();
         // Identification
         final int satelliteNumber = templateTLE.getSatelliteNumber();
         final char classification = templateTLE.getClassification();
@@ -942,35 +897,19 @@ public class TLE implements TimeStamped, Serializable {
         final String launchPiece = templateTLE.getLaunchPiece();
         final int ephemerisType = templateTLE.getEphemerisType();
         final int elementNumber = templateTLE.getElementNumber();
+        // Updates revolutionNumberAtEpoch
         final int revolutionNumberAtEpoch = templateTLE.getRevolutionNumberAtEpoch();
         final double dt = epoch.durationFrom(templateTLE.getDate());
         final int newRevolutionNumberAtEpoch = (int) ((int) revolutionNumberAtEpoch + FastMath.floor((MathUtils.normalizeAngle(meanAnomaly, FastMath.PI) + dt * meanMotion) / (2 * FastMath.PI)));
-
-        final Gradient gMeanMotion  = Gradient.variable(6, 0, meanMotion);
-        final Gradient ge           = Gradient.variable(6, 1, e);
-        final Gradient gi           = Gradient.variable(6, 2, i);
-        final Gradient graan        = Gradient.variable(6, 3, raan);
-        final Gradient gpa          = Gradient.variable(6, 4, pa);
-        final Gradient gMeanAnomaly = Gradient.variable(6, 5, meanAnomaly);
-        // Epoch
-        final FieldAbsoluteDate<Gradient> gEpoch = new FieldAbsoluteDate<>(gMeanMotion.getField(), epoch);
-
-        //B*
+        // Gets B*
         final double bStar = templateTLE.getBStar();
-
-        // Mean Motion derivatives
-        final Gradient gMeanMotionFirstDerivative  = Gradient.constant(6, templateTLE.getMeanMotionFirstDerivative());
-        final Gradient gMeanMotionSecondDerivative = Gradient.constant(6, templateTLE.getMeanMotionSecondDerivative());
-
-        final FieldTLE<Gradient> newTLE = new FieldTLE<Gradient>(satelliteNumber, classification, launchYear, launchNumber, launchPiece, ephemerisType,
-                       elementNumber, gEpoch, gMeanMotion, gMeanMotionFirstDerivative, gMeanMotionSecondDerivative,
-                       ge, gi, gpa, graan, gMeanAnomaly, newRevolutionNumberAtEpoch, bStar, templateTLE.getUtc());
-
-        for (int k = 0; k < newTLE.getParametersDrivers().length; ++k) {
-            newTLE.getParametersDrivers()[k].setSelected(templateTLE.getParametersDrivers()[k].isSelected());
-        }
-
-        return newTLE;
+        // Gets Mean Motion derivatives
+        final double meanMotionFirstDerivative = templateTLE.getMeanMotionFirstDerivative();
+        final double meanMotionSecondDerivative = templateTLE.getMeanMotionSecondDerivative();
+        // Returns the new TLE
+        return new TLE(satelliteNumber, classification, launchYear, launchNumber, launchPiece, ephemerisType,
+                       elementNumber, epoch, meanMotion, meanMotionFirstDerivative, meanMotionSecondDerivative,
+                       e, i, pa, raan, meanAnomaly, newRevolutionNumberAtEpoch, bStar);
     }
 
     /** Check the lines format validity.
