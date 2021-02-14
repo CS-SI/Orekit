@@ -36,7 +36,6 @@ import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.utils.CCSDSBodyFrame;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
-import org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
@@ -66,7 +65,7 @@ public class APMParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
         // Generated APM file
-        final APMFile file = new KVNLexicalAnalyzer(source).accept(parser);
+        final APMFile file = parser.parseMessage(source);
 
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
@@ -134,7 +133,7 @@ public class APMParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
         // Generated APM file
-        final APMFile file = new KVNLexicalAnalyzer(source).accept(parser);
+        final APMFile file = parser.parseMessage(source);
 
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
@@ -251,7 +250,7 @@ public class APMParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
         // Generated APM file
-        final APMFile file = new KVNLexicalAnalyzer(source).accept(parser);
+        final APMFile file = parser.parseMessage(source);
 
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
@@ -328,7 +327,7 @@ public class APMParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
         // Generated APM file
-        final APMFile file = new KVNLexicalAnalyzer(source).accept(parser);
+        final APMFile file = parser.parseMessage(source);
 
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
@@ -380,8 +379,7 @@ public class APMParserTest {
         try {
             final String name = "/ccsds/adm/apm/APM-inconsistent-time-systems.txt";
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-            new KVNLexicalAnalyzer(source).
-            accept(new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), AbsoluteDate.J2000_EPOCH));
+            new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), AbsoluteDate.J2000_EPOCH).parseMessage(source);
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED, oe.getSpecifier());
             Assert.assertEquals("BCE", oe.getParts()[0]);
@@ -393,8 +391,8 @@ public class APMParserTest {
         final String name = "/ccsds/adm/aem/AEMExample.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-            new KVNLexicalAnalyzer(source).
-            accept(new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), AbsoluteDate.J2000_EPOCH));
+            new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), AbsoluteDate.J2000_EPOCH).
+            parseMessage(source);
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
             Assert.assertEquals(name, oe.getParts()[0]);
@@ -407,7 +405,7 @@ public class APMParserTest {
         try {
             APMParser parser = new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), AbsoluteDate.J2000_EPOCH);
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-            new KVNLexicalAnalyzer(source).accept(parser);
+            parser.parseMessage(source);
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
             Assert.assertEquals("Q1", oe.getParts()[0]);
@@ -423,9 +421,8 @@ public class APMParserTest {
         final String wrongName = realName + "xxxxx";
         try {
             final DataSource source = new DataSource(wrongName, () -> getClass().getResourceAsStream(wrongName));
-            new KVNLexicalAnalyzer(source).
-            accept(new APMParser(IERSConventions.IERS_2010, true,
-                                 DataContext.getDefault(), AbsoluteDate.J2000_EPOCH));
+            new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), AbsoluteDate.J2000_EPOCH).
+            parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
@@ -438,9 +435,8 @@ public class APMParserTest {
         final String name = "/ccsds/adm/apm/APM-wrong-keyword.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-            new KVNLexicalAnalyzer(source).
-            accept(new APMParser(IERSConventions.IERS_2010, true,
-                                 DataContext.getDefault(), AbsoluteDate.J2000_EPOCH));
+            new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), AbsoluteDate.J2000_EPOCH).
+            parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
@@ -454,9 +450,8 @@ public class APMParserTest {
         final String name = "/ccsds/adm/apm/APM-wrong-Euler-sequence.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-            new KVNLexicalAnalyzer(source).
-            accept(new APMParser(IERSConventions.IERS_2010, true,
-                                 DataContext.getDefault(), AbsoluteDate.J2000_EPOCH));
+            new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), AbsoluteDate.J2000_EPOCH).
+            parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_INVALID_ROTATION_SEQUENCE, oe.getSpecifier());

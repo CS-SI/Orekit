@@ -43,7 +43,6 @@ import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.CenterName;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KVNGenerator;
-import org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
@@ -124,7 +123,7 @@ public class StreamingOemWriterTest {
             final DataSource source0 =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
             OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                              null, CelestialBodyFactory.getEarth().getGM(), 1);
-            OEMFile oemFile = new KVNLexicalAnalyzer(source0).accept(parser);
+            OEMFile oemFile = parser.parseMessage(source0);
 
             OEMSatelliteEphemeris satellite = oemFile.getSatellites().values().iterator().next();
             OEMSegment ephemerisBlock = satellite.getSegments().get(0);
@@ -162,9 +161,9 @@ public class StreamingOemWriterTest {
             // verify
             final DataSource source1 = new DataSource("buffer",
                                                     () -> new ByteArrayInputStream(buffer1.toString().getBytes(StandardCharsets.UTF_8)));
-            OEMFile generatedOemFile = new KVNLexicalAnalyzer(source1).
-                            accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                                 null, CelestialBodyFactory.getEarth().getGM(), 1));
+            OEMFile generatedOemFile = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
+                                                     null, CelestialBodyFactory.getEarth().getGM(), 1).
+                                       parseMessage(source1);
             compareOemFiles(oemFile, generatedOemFile, POSITION_PRECISION, VELOCITY_PRECISION);
 
             // check calling the methods directly
@@ -188,9 +187,9 @@ public class StreamingOemWriterTest {
             // verify
             final DataSource source2 = new DataSource("buffer",
                                                     () -> new ByteArrayInputStream(buffer2.toString().getBytes(StandardCharsets.UTF_8)));
-            generatedOemFile = new KVNLexicalAnalyzer(source2).
-                            accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                                 null, CelestialBodyFactory.getEarth().getGM(), 1));
+            generatedOemFile = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
+                                             null, CelestialBodyFactory.getEarth().getGM(), 1).
+                               parseMessage(source2);
             compareOemFiles(oemFile, generatedOemFile, POSITION_PRECISION, VELOCITY_PRECISION);
 
         }

@@ -18,8 +18,11 @@ package org.orekit.files.ccsds.utils.lexical;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.orekit.data.DataSource;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 
 /** Utility class for selecting either {@link XMLLexicalAnalyzer} or {@link KVNLexicalAnalyzer} depending on
  * data first bytes.
@@ -95,8 +98,11 @@ public class LexicalAnalyzerSelector {
      */
     public static LexicalAnalyzer select(final DataSource source) throws IOException {
 
-        final BufferedInputStream bis =
-                        new BufferedInputStream(source.getStreamOpener().openStream(), BUFFER);
+        final InputStream is = source.getStreamOpener().openStream();
+        if (is == null) {
+            throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, source.getName());
+        }
+        final BufferedInputStream bis = new BufferedInputStream(is, BUFFER);
 
         // read the first bytes
         final int size = UCS_4_BE_BOM.length; // UCS-4 with BOM is the longest reference sequence

@@ -37,7 +37,6 @@ import org.orekit.files.ccsds.utils.CCSDSBodyFrame;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.generation.KVNGenerator;
-import org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -72,7 +71,7 @@ public class StreamingAemWriterTest {
             // Reference AEM file
             final DataSource source0 = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
             AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1);
-            AEMFile aemFile  = new KVNLexicalAnalyzer(source0).accept(parser);
+            AEMFile aemFile  = parser.parseMessage(source0);
 
             // Satellite attitude ephemeris as read from the reference file
             AEMSegment ephemerisBlock = aemFile.getSegments().get(0);
@@ -130,7 +129,7 @@ public class StreamingAemWriterTest {
             // Generated AEM file
             final DataSource source1 = new DataSource("buffer",
                                                    () -> new ByteArrayInputStream(buffer.toString().getBytes(StandardCharsets.UTF_8)));
-            AEMFile generatedAemFile = new KVNLexicalAnalyzer(source1). accept(parser);
+            AEMFile generatedAemFile = parser.parseMessage(source1);
 
             // There is only one attitude ephemeris block
             Assert.assertEquals(1, generatedAemFile.getSegments().size());

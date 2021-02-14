@@ -36,3 +36,5 @@ TODO
 TODO
 
 ![parsing](../images/design/ccsds-parsing-class-diagram.png)
+
+![parsing](../images/design/ccsds-writing-class-diagram.png)

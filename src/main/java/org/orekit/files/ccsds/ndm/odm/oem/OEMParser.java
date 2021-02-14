@@ -40,17 +40,13 @@ import org.orekit.files.ccsds.section.MetadataKey;
 import org.orekit.files.ccsds.section.XMLStructureProcessingState;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.ParsingContext;
-import org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer;
-import org.orekit.files.ccsds.utils.lexical.LexicalAnalyzer;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.files.ccsds.utils.lexical.XMLLexicalAnalyzer;
 import org.orekit.files.ccsds.utils.state.ProcessingState;
 import org.orekit.files.general.EphemerisFileParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
-import org.xml.sax.SAXException;
 
 /**
  * A parser for the CCSDS OEM (Orbit Ephemeris Message).
@@ -114,46 +110,10 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
         this.defaultInterpolationDegree  = defaultInterpolationDegree;
     }
 
-    /** {@inheritDoc}
-     * <p>
-     * This method is intended to be used only when the parser is used as
-     * an implementation of the generic {@link EphemerisFileParser} interface.
-     * In this case, the file type is not known in advance. This method
-     * first attempts to set up a {@link
-     * org.orekit.files.ccsds.utils.lexical.XMLLexicalAnalyzer XML lexical
-     * analyzer} and pass itself to its {@link
-     * LexicalAnalyzer#accept(org.orekit.files.ccsds.utils.lexical.MessageParser)
-     * accept} method to be fed with {@link ParseToken parse tokens}. If this
-     * fails with a {@code SAXException} (embedded within an {@lonk {@link OrekitException}),
-     * then we consider the file was not really in XML format, so a second attempt using {@link
-     * org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer KVN lexical
-     * analyzer} is made.
-     * </p>
-     * <p>
-     * The previous process is cumbersome when the file format is already known.
-     * The recommended way to parse a file with known format is to rely on
-     * the CCSDS-specific parsing framework as follows (example with a KVN
-     * format, simply change the lexical analyzer for XML format):
-     * <pre>
-     * {@code
-     *   OEMParser parser = new OEMParser(...);
-     * OEMFile   oem    = new KVNLexicalAnalyzer(source).accept(parser);
-     * }
-     * </pre>
-     * </p>
-     */
+    /** {@inheritDoc} */
     @Override
     public OEMFile parse(final DataSource source) throws IOException {
-        try {
-            return new XMLLexicalAnalyzer(source).accept(this);
-        } catch (OrekitException oe) {
-            if (oe.getCause() != null && oe.getCause() instanceof SAXException) {
-                // it was not properly formed XML, try KVN next
-                return new KVNLexicalAnalyzer(source).accept(this);
-            } else {
-                throw oe;
-            }
-        }
+        return parseMessage(source);
     }
 
     /** {@inheritDoc} */

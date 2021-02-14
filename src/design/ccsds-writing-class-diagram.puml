@@ -61,6 +61,7 @@
           +getProvider()
         }
 
+        interface EphemerisFileWriter
         class OrekitEphemerisFile
 
     }
@@ -86,6 +87,11 @@
 
       package ndm.odm #CBDBC8 {
 
+        package oem #CCCCC7 {
+          class OEMWriter
+          class OEMFile
+        }
+
         package opm #CCCCC7 {
           class OPMWriter
           class OPMFile
@@ -93,24 +99,28 @@
 
       }
       note bottom
-        only OPM is shown here,
+        only OEM and OPM are shown here,
         similar constructions exist
         for other messages types:
-        OEM, OMM, OCM, AEM,
-        APM, TDM...
+        OMM, OCM, AEM, APM, TDM...
       end note
 
     }
 
   }
 
-  KVNGenerator ..|> Generator
-  XMLGenerator ..|> Generator
-  Generator    -->  FileFormat
-  OPMWriter --> OPMFile : "multiple section-specific implementations"
+  Generator <|.. KVNGenerator
+  Generator <|.. XMLGenerator
+  FileFormat <-- Generator
   EphemerisFile *--> EphemerisFile.SatelliteEphemeris
   EphemerisFile.SatelliteEphemeris o--> EphemerisFile.EphemerisSegment
   OrekitEphemerisFile ..|> EphemerisFile
   EphemerisFileWriter --> EphemerisFile
+  EphemerisFileWriter <|.. OEMWriter
+  EphemerisFile       <|.. OEMFile
+  OEMWriter --> OEMFile
+  OEMWriter --> Generator
+  OPMWriter --> OPMFile
+  OPMWriter --> Generator
 
 @enduml

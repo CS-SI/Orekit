@@ -40,7 +40,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class XMLLexicalAnalyzer implements LexicalAnalyzer {
+class XMLLexicalAnalyzer implements LexicalAnalyzer {
 
     /** Attribute name for id. */
     private static final String ID = "id";
@@ -57,7 +57,7 @@ public class XMLLexicalAnalyzer implements LexicalAnalyzer {
     /** Simple constructor.
      * @param source source providing the data to parse
      */
-    public XMLLexicalAnalyzer(final DataSource source) {
+    XMLLexicalAnalyzer(final DataSource source) {
         this.source = source;
     }
 

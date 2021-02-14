@@ -38,19 +38,19 @@
       class DataProvidersManager {
         +addFilter(final DataFilter filter)
         +void clearFilters()
-        +NamedData applyAllFilters(final NamedData original)
+        +DataSource applyAllFilters(final DataSource original)
       }
 
-      class NamedData {
+      class DataSource {
       	+String getName()
-      	+NamedData.StreamOpener getStreamOpener()
+      	+DataSource.StreamOpener getStreamOpener()
       }
 
       interface DataFilter {
-         NamedData filter(NamedData original)
+         DataSource filter(DataSource original)
       }
 
-      interface NamedData.StreamOpener {
+      interface DataSource.StreamOpener {
         +InputStream openStream()
       }
       note right
@@ -58,23 +58,23 @@
       end note
 
       DataProvider "*" -- "1" DataProvidersManager
-      DataProvider --> NamedData : create
+      DataProvider --> DataSource : create
       DataLoader <-left- DataProvider : feeds
       DataProvidersManager "1" o--> "*" DataFilter: applies
-      NamedData <-down- DataFilter : filters
-      NamedData --> NamedData.StreamOpener
+      DataSource <-down- DataFilter : filters
+      DataSource --> DataSource.StreamOpener
       DataFilter <|-- GzipFilter
       DataFilter <|-- UnixFilter
 
-      UnixFilter --> NamedData.StreamOpener : creates
-      GzipFilter --> NamedData.StreamOpener : creates
+      UnixFilter --> DataSource.StreamOpener : creates
+      GzipFilter --> DataSource.StreamOpener : creates
  
     }
 
     package gnss #DDEBD8 {
       class HatanakaCompressFilter
       HatanakaCompressFilter -right-|> DataFilter
-      HatanakaCompressFilter --> NamedData.StreamOpener : creates
+      HatanakaCompressFilter --> DataSource.StreamOpener : creates
    }
 
   }

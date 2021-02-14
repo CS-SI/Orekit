@@ -16,6 +16,11 @@
  */
 package org.orekit.files.ccsds.utils.lexical;
 
+import java.io.IOException;
+
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.orekit.data.DataSource;
+import org.orekit.errors.OrekitException;
 import org.orekit.files.ccsds.ndm.NDMFile;
 import org.orekit.files.ccsds.utils.FileFormat;
 
@@ -25,6 +30,19 @@ import org.orekit.files.ccsds.utils.FileFormat;
  * @since 11.0
  */
 public interface MessageParser<T extends NDMFile<?, ?>> {
+
+    /** Parse a data source.
+     * @param source data source to parse
+     * @return parsed file
+     */
+    default T parseMessage(final DataSource source) {
+        try {
+            return LexicalAnalyzerSelector.select(source).accept(this);
+        } catch (IOException ioe) {
+            throw new OrekitException(ioe, LocalizedCoreFormats.SIMPLE_MESSAGE,
+                                      ioe.getLocalizedMessage());
+        }
+    }
 
     /** Get the key for format version.
      * @return format version key

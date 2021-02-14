@@ -44,7 +44,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
-import org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer;
 import org.orekit.frames.FactoryManagedFrame;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -77,7 +76,7 @@ public class OEMParserTest {
         final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                null, CelestialBodyFactory.getMars().getGM(), 1);
-        final OEMFile file = new KVNLexicalAnalyzer(source).accept(parser);
+        final OEMFile file = parser.parseMessage(source);
         Assert.assertEquals(3, file.getSegments().size());
         Assert.assertEquals(CcsdsTimeScale.UTC, file.getSegments().get(0).getMetadata().getTimeSystem());
         Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getSegments().get(0).getMetadata().getObjectName());
@@ -210,7 +209,7 @@ public class OEMParserTest {
         final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                null, CelestialBodyFactory.getMars().getGM(), 1);
-        final OEMFile file = new KVNLexicalAnalyzer(source).accept(parser);
+        final OEMFile file = parser.parseMessage(source);
         Assert.assertEquals(CcsdsTimeScale.UTC, file.getSegments().get(0).getMetadata().getTimeSystem());
         Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getSegments().get(0).getMetadata().getObjectName());
         Assert.assertEquals("1996-062A", file.getSegments().get(0).getMetadata().getObjectID());
@@ -287,7 +286,7 @@ public class OEMParserTest {
         OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                          missionReferenceDate, CelestialBodyFactory.getMars().getGM(), 1);
 
-        final OEMFile file = new KVNLexicalAnalyzer(source).accept(parser);
+        final OEMFile file = parser.parseMessage(source);
         final List<String> headerComment = new ArrayList<String>();
         headerComment.add("comment");
         Assert.assertEquals(headerComment, file.getHeader().getComments());
@@ -316,9 +315,8 @@ public class OEMParserTest {
         try {
             final String ex = "/ccsds/odm/oem/OEMExample1.txt";
             final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-            new KVNLexicalAnalyzer(source).
-            accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                 null, CelestialBodyFactory.getMars().getGM(), 1));
+            new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, CelestialBodyFactory.getMars().getGM(), 1).
+            parseMessage(source);
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
             Assert.assertEquals("OPMExample1.txt", oe.getParts()[0]);
@@ -330,9 +328,8 @@ public class OEMParserTest {
         final String ex = "/ccsds/odm/oem/OEM-ephemeris-number-format-error.txt";
         try {
             final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-            new KVNLexicalAnalyzer(source).
-            accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                 null, CelestialBodyFactory.getMars().getGM(), 1));
+            new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, CelestialBodyFactory.getMars().getGM(), 1).
+            parseMessage(source);
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
             Assert.assertEquals(44, oe.getParts()[0]);
@@ -346,8 +343,8 @@ public class OEMParserTest {
         final String ex = "/ccsds/odm/oem/OEM-covariance-number-format-error.txt";
         try {
             final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-            new KVNLexicalAnalyzer(source).accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                                                null, CelestialBodyFactory.getMars().getGM(), 1));
+            new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, CelestialBodyFactory.getMars().getGM(), 1).
+            parseMessage(source);
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
             Assert.assertEquals(52, oe.getParts()[0]);
@@ -362,9 +359,8 @@ public class OEMParserTest {
         final String wrongName = realName + "xxxxx";
         final DataSource source =  new DataSource(wrongName, () -> getClass().getResourceAsStream(wrongName));
         try {
-            new KVNLexicalAnalyzer(source).
-            accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                 null, CelestialBodyFactory.getMars().getGM(), 1));
+            new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, CelestialBodyFactory.getMars().getGM(), 1).
+            parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
@@ -377,8 +373,8 @@ public class OEMParserTest {
         try {
             final String ex = "/ccsds/odm/oem/OEM-inconsistent-time-systems.txt";
             final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-            new KVNLexicalAnalyzer(source).accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                                  null, CelestialBodyFactory.getMars().getGM(), 1));
+            new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, CelestialBodyFactory.getMars().getGM(), 1).
+            parseMessage(source);
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_INCONSISTENT_TIME_SYSTEMS, oe.getSpecifier());
             Assert.assertEquals(CcsdsTimeScale.UTC, oe.getParts()[0]);
@@ -393,9 +389,8 @@ public class OEMParserTest {
         final DataSource source =  new DataSource(file, () -> getClass().getResourceAsStream(file));
 
         //action
-        OEMFile actual = new KVNLexicalAnalyzer(source).
-                         accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                              null, CelestialBodyFactory.getMars().getGM(), 1));
+        final OEMFile actual = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, CelestialBodyFactory.getMars().getGM(), 1).
+                               parseMessage(source);
 
         //verify
         Assert.assertEquals(
@@ -411,9 +406,8 @@ public class OEMParserTest {
         final String name = "/ccsds/odm/oem/OEM-wrong-keyword.txt";
         final DataSource source =  new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
-            new KVNLexicalAnalyzer(source).
-            accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                 null, CelestialBodyFactory.getMars().getGM(), 1));
+            new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, CelestialBodyFactory.getMars().getGM(), 1).
+            parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
@@ -430,9 +424,8 @@ public class OEMParserTest {
         final String name = "/ccsds/odm/oem/OEM-keyword-within-ephemeris.txt";
         final DataSource source =  new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
-            new KVNLexicalAnalyzer(source).
-            accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                 null, CelestialBodyFactory.getMars().getGM(), 1));
+            new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, CelestialBodyFactory.getMars().getGM(), 1).
+            parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
@@ -449,9 +442,8 @@ public class OEMParserTest {
         final String name = "/ccsds/odm/oem/OEM-keyword-within-covariance.txt";
         final DataSource source =  new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
-            new KVNLexicalAnalyzer(source).
-            accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                 null, CelestialBodyFactory.getMars().getGM(), 1));
+            new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, CelestialBodyFactory.getMars().getGM(), 1).
+            parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
@@ -466,9 +458,8 @@ public class OEMParserTest {
         final String name = "/ccsds/odm/oem/OEM-too-large-covariance-dimension.txt";
         final DataSource source =  new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
-            new KVNLexicalAnalyzer(source).
-            accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                 null, CelestialBodyFactory.getMars().getGM(), 1));
+            new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, CelestialBodyFactory.getMars().getGM(), 1).
+            parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
@@ -483,9 +474,8 @@ public class OEMParserTest {
         final String name = "/ccsds/odm/oem/OEM-too-small-covariance-dimension.txt";
         final DataSource source =  new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
-            new KVNLexicalAnalyzer(source).
-            accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                 null, CelestialBodyFactory.getMars().getGM(), 1));
+            new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, CelestialBodyFactory.getMars().getGM(), 1).
+            parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
@@ -501,9 +491,8 @@ public class OEMParserTest {
         final String name = "/ccsds/odm/oem/OEM-too-many-covariance-columns.txt";
         final DataSource source =  new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
-            new KVNLexicalAnalyzer(source).
-            accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                 null, CelestialBodyFactory.getMars().getGM(), 1));
+            new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, CelestialBodyFactory.getMars().getGM(), 1).
+            parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
@@ -518,9 +507,8 @@ public class OEMParserTest {
         final String name = "/ccsds/odm/oem/OEM-too-few-covariance-columns.txt";
         final DataSource source =  new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
-            new KVNLexicalAnalyzer(source).
-            accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                 null, CelestialBodyFactory.getMars().getGM(), 1));
+            new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, CelestialBodyFactory.getMars().getGM(), 1).
+            parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
@@ -540,15 +528,13 @@ public class OEMParserTest {
         final String name = "/ccsds/odm/oem/OEMExample8.txt";
         final DataSource source =  new DataSource(name, () -> getClass().getResourceAsStream(name));
 
-        final OEMFile file = new KVNLexicalAnalyzer(source).
-                        accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                             null, CelestialBodyFactory.getMars().getGM(), 1));
-        Assert.assertEquals(1, file.getSegments().get(0).getMetadata().getInterpolationDegree());
-        Assert.assertEquals(7, file.getSegments().get(1).getMetadata().getInterpolationDegree());
+        final OEMFile file1 = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, CelestialBodyFactory.getMars().getGM(), 1).
+                              parseMessage(source);
+        Assert.assertEquals(1, file1.getSegments().get(0).getMetadata().getInterpolationDegree());
+        Assert.assertEquals(7, file1.getSegments().get(1).getMetadata().getInterpolationDegree());
 
-        final OEMFile file2 = new KVNLexicalAnalyzer(source).
-                        accept(new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                             null, CelestialBodyFactory.getMars().getGM(), 5));
+        final OEMFile file2 = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, CelestialBodyFactory.getMars().getGM(), 5).
+                              parseMessage(source);
         Assert.assertEquals(5, file2.getSegments().get(0).getMetadata().getInterpolationDegree());
         Assert.assertEquals(7, file2.getSegments().get(1).getMetadata().getInterpolationDegree());
     }
@@ -582,7 +568,7 @@ public class OEMParserTest {
             DataSource   source = new DataSource("<patched>", () -> new SequenceInputStream(pre, new SequenceInputStream(middle, post)));
 
             // action
-            OEMFile actual = new KVNLexicalAnalyzer(source).accept(parser);
+            OEMFile actual = parser.parseMessage(source);
 
             // verify
             OEMSegment segment = actual.getSegments().get(0);

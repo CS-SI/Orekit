@@ -31,13 +31,13 @@
 
     package data #DDEBD8 {
       interface DataFilter {
-        NamedData filter(NamedData)
+        DataSource filter(DataSource)
       }
-      class NamedData {
+      class DataSource {
         +getName()
         +getStreamOpener()
       }
-      DataFilter --> NamedData
+      DataFilter --> DataSource
     }
 
     package files #DDEBD8 {
@@ -70,7 +70,17 @@
         package lexical #CCCCC7 {
           class KVNLexicalAnalyzer
           class XMLLexicalAnalyzer
-          interface LexicalAnalyzer
+          interface LexicalAnalyzer {
+            +accept(LexicalAnalyzer)
+          }
+          class LexicalAnalyzerSelector {
+            +LexicalAnalyzer select(DataSource)
+          }
+          note left
+            selection is based on
+            data source first bytes
+            (looking for XML declaration)
+         end note
           enum TokenType {
             +START
             +ENTRY
@@ -79,6 +89,7 @@
           }
           class ParseToken
           interface "MessageParser<T>" as MessageParser {
+            +parseMessage(Datasource)
             +reset(FileFormat)
             +process(ParseToken)
             +T build()
@@ -107,15 +118,18 @@
     }
   }
 
-  NamedData <-- KVNLexicalAnalyzer
-  NamedData <-- XMLLexicalAnalyzer
+  DataSource <-- KVNLexicalAnalyzer
+  DataSource <-- XMLLexicalAnalyzer
   KVNLexicalAnalyzer ..|> LexicalAnalyzer
   XMLLexicalAnalyzer ..|> LexicalAnalyzer
-  LexicalAnalyzer --> MessageParser : "accept"
+  LexicalAnalyzer -right-> ParseToken : produces
+  LexicalAnalyzer <-- LexicalAnalyzerSelector : select
+  LexicalAnalyzer <-- MessageParser
+  MessageParser --> LexicalAnalyzerSelector
   TokenType "1" <--o ParseToken
   ProcessingState --> ParseToken
-  FileFormat <-left- MessageParser
-  ParseToken <-left- MessageParser : "process"
+  MessageParser --> FileFormat
+  ParseToken <-- MessageParser : "process"
   MessageParser <|.. AbstractMessageParser
   ProcessingState <-down-o AbstractMessageParser : "current"
   ProcessingState <-down-o AbstractMessageParser : "fallback"

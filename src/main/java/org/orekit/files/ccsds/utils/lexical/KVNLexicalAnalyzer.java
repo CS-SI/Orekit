@@ -35,7 +35,7 @@ import org.orekit.files.ccsds.utils.FileFormat;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class KVNLexicalAnalyzer implements LexicalAnalyzer {
+class KVNLexicalAnalyzer implements LexicalAnalyzer {
 
     /** Regular expression matching blanks at start of line. */
     private static final String LINE_START          = "^\\p{Blank}*";
@@ -79,7 +79,7 @@ public class KVNLexicalAnalyzer implements LexicalAnalyzer {
     /** Simple constructor.
      * @param source source providing the data to parse
      */
-    public KVNLexicalAnalyzer(final DataSource source) {
+    KVNLexicalAnalyzer(final DataSource source) {
         this.source = source;
     }
 

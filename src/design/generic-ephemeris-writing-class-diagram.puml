@@ -31,13 +31,13 @@
 
     package data #DDEBD8 {
       interface DataFilter {
-        NamedData filter(NamedData)
+        DataSource filter(DataSource)
       }
-      class NamedData {
+      class DataSource {
         +getName()
         +getStreamOpener()
       }
-      DataFilter --> NamedData
+      DataFilter --> DataSource
     }
 
     package files #DDEBD8 {
@@ -97,7 +97,7 @@
         EphemerisFile.SatelliteEphemeris <--* EphemerisFile
         EphemerisFile.SatelliteEphemeris o--> EphemerisFile.EphemerisSegment
 
-        NamedData     <--  EphemerisFileParser
+        DataSource     <--  EphemerisFileParser
         EphemerisFile <|.. OrekitEphemerisFile
         EphemerisFile <--  EphemerisFileWriter
         EphemerisFileParser --> EphemerisFile : create

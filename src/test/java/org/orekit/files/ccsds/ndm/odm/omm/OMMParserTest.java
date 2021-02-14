@@ -36,7 +36,6 @@ import org.orekit.files.ccsds.ndm.odm.ODMKeplerianElements;
 import org.orekit.files.ccsds.ndm.odm.ODMSpacecraftParameters;
 import org.orekit.files.ccsds.ndm.odm.ODMUserDefined;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
-import org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.propagation.analytical.tle.TLE;
@@ -65,7 +64,7 @@ public class OMMParserTest {
         final OMMParser parser = new OMMParser(IERSConventions.IERS_2010, true,
                                                DataContext.getDefault(), null, 398600e9, 1000.0);
 
-        final OMMFile file = new KVNLexicalAnalyzer(source).accept(parser);
+        final OMMFile file = parser.parseMessage(source);
 
         // Check Header Block;
         Assert.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
@@ -142,7 +141,7 @@ public class OMMParserTest {
                                                DataContext.getDefault(), new AbsoluteDate(),
                                                Constants.EIGEN5C_EARTH_MU, Double.NaN);
 
-        final OMMFile file = new KVNLexicalAnalyzer(source).accept(parser);
+        final OMMFile file = parser.parseMessage(source);
         Assert.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
         final ODMKeplerianElements kep = file.getData().getKeplerianElementsBlock();
         Assert.assertEquals(1.00273272, Constants.JULIAN_DAY * kep.getMeanMotion() / MathUtils.TWO_PI, 1e-10);
@@ -170,7 +169,7 @@ public class OMMParserTest {
                                                DataContext.getDefault(), missionReferenceDate,
                                                Constants.EIGEN5C_EARTH_MU, 1000.0);
 
-        final OMMFile file = new KVNLexicalAnalyzer(source).accept(parser);
+        final OMMFile file = parser.parseMessage(source);
         final ODMKeplerianElements kep = file.getData().getKeplerianElementsBlock();
         Assert.assertEquals(2.0, file.getHeader().getFormatVersion(), 1.0e-10);
         Assert.assertEquals(missionReferenceDate.shiftedBy(210840), file.getMetadata().getFrameEpoch());
@@ -218,7 +217,7 @@ public class OMMParserTest {
                                                DataContext.getDefault(), new AbsoluteDate(),
                                                Constants.EIGEN5C_EARTH_MU, 1000.0);
         try {
-            new KVNLexicalAnalyzer(source).accept(parser);
+            parser.parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
@@ -238,7 +237,7 @@ public class OMMParserTest {
                                                DataContext.getDefault(), new AbsoluteDate(),
                                                398600e9, 1000.0);
 
-        final OMMFile file = new KVNLexicalAnalyzer(source).accept(parser);
+        final OMMFile file = parser.parseMessage(source);
 
         final String satId = "1995-025A";
         Assert.assertEquals(satId, file.getMetadata().getObjectID());
@@ -250,10 +249,10 @@ public class OMMParserTest {
         final String name = "/ccsds/odm/oem/OEMExample1.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
-            new KVNLexicalAnalyzer(source).
-            accept(new OMMParser(IERSConventions.IERS_1996, true,
-                                 DataContext.getDefault(), new AbsoluteDate(),
-                                 Constants.EIGEN5C_EARTH_MU, 1000.0));
+            new OMMParser(IERSConventions.IERS_1996, true,
+                          DataContext.getDefault(), new AbsoluteDate(),
+                          Constants.EIGEN5C_EARTH_MU, 1000.0).
+            parseMessage(source);
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
             Assert.assertEquals(name, oe.getParts()[0]);
@@ -265,9 +264,9 @@ public class OMMParserTest {
         final String name = "/ccsds/odm/omm/OMM-number-format-error.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
-            new KVNLexicalAnalyzer(source).accept(new OMMParser(IERSConventions.IERS_1996, true,
+            new OMMParser(IERSConventions.IERS_1996, true,
                                                                 DataContext.getDefault(), new AbsoluteDate(),
-                                                                Constants.EIGEN5C_EARTH_MU, 1000.0));
+                                                                Constants.EIGEN5C_EARTH_MU, 1000.0).parseMessage(source);
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
             Assert.assertEquals("ARG_OF_PERICENTER", oe.getParts()[0]);
@@ -282,10 +281,10 @@ public class OMMParserTest {
         final String wrongName = realName + "xxxxx";
         final DataSource source = new DataSource(wrongName, () -> getClass().getResourceAsStream(wrongName));
         try {
-            new KVNLexicalAnalyzer(source).
-            accept(new OMMParser(IERSConventions.IERS_1996, true,
+            new OMMParser(IERSConventions.IERS_1996, true,
                                  DataContext.getDefault(), new AbsoluteDate(),
-                                 Constants.EIGEN5C_EARTH_MU, 1000.0));
+                                 Constants.EIGEN5C_EARTH_MU, 1000.0).
+            parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());

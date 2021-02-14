@@ -47,7 +47,6 @@ import org.orekit.files.ccsds.ndm.adm.aem.AEMParser;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMSegment;
 import org.orekit.files.ccsds.ndm.adm.aem.AEMWriter;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
-import org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer;
 import org.orekit.files.general.AttitudeEphemerisFile.AttitudeEphemerisSegment;
 import org.orekit.files.general.OrekitAttitudeEphemerisFile.OrekitSatelliteAttitudeEphemeris;
 import org.orekit.frames.Frame;
@@ -146,8 +145,8 @@ public class OrekitAttitudeEphemerisFileTest {
         }
 
         AttitudeEphemerisFile<TimeStampedAngularCoordinates, AEMSegment> ephemerisFromFile =
-                        new KVNLexicalAnalyzer(new DataSource(tempAemFile)).
-                        accept(new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1));
+                        new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1).
+                        parseMessage(new DataSource(tempAemFile));
         Files.delete(Paths.get(tempAemFile));
         
         segment = ephemerisFromFile.getSatellites().get(satId).getSegments().get(0);

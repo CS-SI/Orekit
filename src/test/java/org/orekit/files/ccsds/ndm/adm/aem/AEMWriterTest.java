@@ -48,7 +48,6 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
-import org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer;
 import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -80,7 +79,7 @@ public class AEMWriterTest {
         final String ex = "/ccsds/adm/aem/AEMExample.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1);
-        final AEMFile aemFile = new KVNLexicalAnalyzer(source).accept(parser);
+        final AEMFile aemFile = parser.parseMessage(source);
 
         Header header = new Header();
         header.setFormatVersion(aemFile.getHeader().getFormatVersion());
@@ -105,8 +104,8 @@ public class AEMWriterTest {
         AEMWriter writer = new AEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(), header, metadata);
         writer.write(tempAEMFilePath, aemFile);
 
-        final AEMFile generatedOemFile = new KVNLexicalAnalyzer(new DataSource(tempAEMFilePath)).
-                        accept(new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1));
+        final AEMFile generatedOemFile = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1).
+                                         parseMessage(new DataSource(tempAEMFilePath));
         compareAemFiles(aemFile, generatedOemFile);
     }
 
@@ -116,7 +115,7 @@ public class AEMWriterTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                null, 1);
-        final AEMFile aemFile = new KVNLexicalAnalyzer(source).accept(parser);
+        final AEMFile aemFile = parser.parseMessage(source);
 
         AEMMetadata metadata = dummyMetadata();
         metadata.setObjectID("12345");
@@ -137,7 +136,7 @@ public class AEMWriterTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                null, 1);
-        final AEMFile aemFile = new KVNLexicalAnalyzer(source).accept(parser);
+        final AEMFile aemFile = parser.parseMessage(source);
         AEMWriter writer = new AEMWriter(aemFile.getConventions(), aemFile.getDataContext(),
                                          aemFile.getHeader(), aemFile.getSegments().get(0).getMetadata());
         try {
@@ -175,16 +174,15 @@ public class AEMWriterTest {
     public void testUnisatelliteFileWithDefault() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AEMFile aemFile = new KVNLexicalAnalyzer(source).
-                                accept(new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1));
+        final AEMFile aemFile = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1).parseMessage(source);
 
         String tempAEMFilePath = tempFolder.newFile("TestOEMUnisatelliteWithDefault.oem").toString();
         AEMWriter writer = new AEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
                                          null, aemFile.getSegments().get(0).getMetadata());
         writer.write(tempAEMFilePath, aemFile);
 
-        final AEMFile generatedAemFile = new KVNLexicalAnalyzer(new DataSource(tempAEMFilePath)).
-                                         accept(new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1));
+        final AEMFile generatedAemFile = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1).
+                                         parseMessage(new DataSource(tempAEMFilePath));
         assertEquals(aemFile.getSegments().get(0).getMetadata().getObjectID(),
                      generatedAemFile.getSegments().get(0).getMetadata().getObjectID());
     }
@@ -234,16 +232,15 @@ public class AEMWriterTest {
     public void testIssue723() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample2.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AEMFile aemFile = new KVNLexicalAnalyzer(source).
-                                accept(new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1));
+        final AEMFile aemFile = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1).parseMessage(source);
 
         String tempAEMFilePath = tempFolder.newFile("TestAEMIssue723.aem").toString();
         AEMWriter writer = new AEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
                                          aemFile.getHeader(), aemFile.getSegments().get(0).getMetadata());
         writer.write(tempAEMFilePath, aemFile);
 
-        final AEMFile generatedAemFile = new KVNLexicalAnalyzer(new DataSource(tempAEMFilePath)).
-                                         accept(new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1));
+        final AEMFile generatedAemFile = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1).
+                                         parseMessage(new DataSource(tempAEMFilePath));
         assertEquals(aemFile.getHeader().getComments().get(0), generatedAemFile.getHeader().getComments().get(0));
     }
 
@@ -257,9 +254,8 @@ public class AEMWriterTest {
         // setup
         String exampleFile = "/ccsds/adm/aem/AEMExample7.txt";
         final DataSource source = new DataSource(exampleFile, () -> getClass().getResourceAsStream(exampleFile));
-        AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                         null, 1);
-        AEMFile aemFile = new KVNLexicalAnalyzer(source).accept(parser);
+        AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1);
+        AEMFile aemFile = parser.parseMessage(source);
         StringBuilder buffer = new StringBuilder();
 
         AEMWriter writer = new AEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
