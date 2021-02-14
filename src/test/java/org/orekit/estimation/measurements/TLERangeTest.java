@@ -79,11 +79,11 @@ public class TLERangeTest {
         // Run test
         boolean isModifier = false;
         double refErrorsPMedian = 1.1e-09;
-        double refErrorsPMean   = 3.1e-09;
+        double refErrorsPMean   = 3.4e-09;
         double refErrorsPMax    = 2.1e-07;
         double refErrorsVMedian = 3.7e-04;
-        double refErrorsVMean   = 7.7e-04;
-        double refErrorsVMax    = 2.6e-02;
+        double refErrorsVMean   = 7.9e-04;
+        double refErrorsVMax    = 3.6e-02;
         this.genericTestStateDerivatives(isModifier, printResults,
                                          refErrorsPMedian, refErrorsPMean, refErrorsPMax,
                                          refErrorsVMedian, refErrorsVMean, refErrorsVMax);
@@ -106,8 +106,8 @@ public class TLERangeTest {
         double refErrorsPMean   = 3.5e-09;
         double refErrorsPMax    = 2.8e-07;
         double refErrorsVMedian = 3.7e-04;
-        double refErrorsVMean   = 7.7e-04;
-        double refErrorsVMax    = 2.6e-02;
+        double refErrorsVMean   = 7.9e-04;
+        double refErrorsVMax    = 3.6e-02;
         this.genericTestStateDerivatives(isModifier, printResults,
                                          refErrorsPMedian, refErrorsPMean, refErrorsPMax,
                                          refErrorsVMedian, refErrorsVMean, refErrorsVMax);

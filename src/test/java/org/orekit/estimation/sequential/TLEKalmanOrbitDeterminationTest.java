@@ -253,7 +253,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
 
         // Definition of the accuracy for the test
         // Initial TLE error at last measurement date is 3997m
-        final double distanceAccuracy = 280.64;
+        final double distanceAccuracy = 280.65;
         final double velocityAccuracy = 0.046;
 
         // Tests

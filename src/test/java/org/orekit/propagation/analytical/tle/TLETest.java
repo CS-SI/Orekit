@@ -600,7 +600,7 @@ public class TLETest {
         Assert.assertEquals(tle.getElementNumber(),           converted.getElementNumber());
         Assert.assertEquals(tle.getRevolutionNumberAtEpoch(), converted.getRevolutionNumberAtEpoch());
 
-        final double eps = 1.0e-9;
+        final double eps = 1.0e-7;
         Assert.assertEquals(tle.getMeanMotion(), converted.getMeanMotion(), eps * tle.getMeanMotion());
         Assert.assertEquals(tle.getE(), converted.getE(), eps * tle.getE());
         Assert.assertEquals(tle.getI(), converted.getI(), eps * tle.getI());
