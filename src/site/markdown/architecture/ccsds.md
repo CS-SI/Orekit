@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2021 CS GROUP---
+<!--- Copyright 2002-2021 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -39,7 +39,7 @@ more `Segment` objects, depending on the file type (for example `OPMFile` only c
 one segment whereas `OEMFile` may contain several segments).
 
 There are as many sub-packages as there are CCSDS message types, with
-intermediate sub-packages for each officialy published recommendation:
+intermediate sub-packages for each officially published recommendation:
 `org.orekit.files.ccsds.ndm.adm.apm`, `org.orekit.files.ccsds.ndm.adm.aem`,
 `org.orekit.files.ccsds.ndm.odm.opm`, `org.orekit.files.ccsds.ndm.odm.oem`,
 `org.orekit.files.ccsds.ndm.odm.omm`, `org.orekit.files.ccsds.ndm.odm.ocm`,
@@ -186,7 +186,7 @@ is found, then `XMLLexicalAnalyzer` is selected, otherwise `KVNLexicalAnalyzer`
 is selected. Detection works for UCS-4, UTF-16 and UTF-8 encodings, with or
 without a Byte Order Mark, and regardless of endianness. After the first few bytes
 allowing selection have been read, the characters stream is reset to beginning so
-the selected lewical analyzer will see these characters again. Once the lexical
+the selected lexical analyzer will see these characters again. Once the lexical
 analyzer has been created, the message parser registers itself to this analyzer by calling
 its `accept` method, and wait for the lexical analyzer to call it back for processing
 the tokens it will generate from the characters stream. This is akin to the visitor
@@ -204,15 +204,15 @@ The second level of parsing is message parsing is syntax analysis. Its aim is
 to read the stream of `ParseToken` objects and to progressively build the CCSDS message
 from them. Syntax analysis of primitive entries like `EPOCH_TZERO = 1998-12-18T14:28:15.1172`
 in KVN or `<EPOCH_TZERO>1998-12-18T00:00:00.0000</EPOCH_TZERO>` in XML is independent
-of the file format: in both lexical analyzers will generate a `ParseToken` with type set
+of the file format: both lexical analyzers will generate a `ParseToken` with type set
 to `TokenType.ENTRY`, name set to `EPOCH_TZERO` and content set to `1998-12-18T00:00:00.0000`.
-This token will be passed to the message parser for processing and the parse may ignore
-that the token was extract from a KVN or an XML file. This simplifies a lot parsing of both
+This token will be passed to the message parser for processing and the parser may ignore
+that the token was extracted from a KVN or a XML file. This simplifies a lot parsing of both
 formats and avoids code duplication. This is unfortunately not true for higher level structures
 like header, segments, metadata, data or logical blocks. For all these cases, the parser must
-know if the file is in Key-Value Notation or in eXtended Markup Language, so the lexical
-analyzer starts parsing by calling the parser `reset` method with the file format as an
-argument, so the parser knows how to handle the higher level structures.
+know if the file is in Key-Value Notation or in eXtended Markup Language. The lexical
+analyzer therefore starts parsing by calling the parser `reset` method with the file format as
+an argument, so the parser is aware of the format and knows how to handle the higher level structures.
 
 CCSDS messages are complex, with a lot of sub-structures and we want to parse several types
 (APM, AEM, OPM, OEM, OMM, OCM and TDM as of version 11.0). There are hundreds of keys to
@@ -223,11 +223,11 @@ these numerous keys belong to a smaller set of logical blocks that are always pa
 whole (header, metadata, state vector, covariance...). Parsing can be performed with the
 parser switching between a small number of well-known states. When one state is active,
 say metadata parsing, then lookup is limited to the keys allowed in metadata. If an
-unknown token arrives, then the parser assumes we have finished the current section, and
+unknown token arrives, then the parser assumes the current section is finished, and
 it switches into another state, say data parsing, that is the fallback to use after
 metadata. This is an implementation of the State design pattern. Parsers always have
 one current `ProcessingState` that remains active as long as it can process the tokens
-provided to it by the lexical analyzer, and the have a fallback `ProcessingState` to
+provided to it by the lexical analyzer, and they have a fallback `ProcessingState` to
 switch to when a token could not be handled by the current one. The following class
 diagram shows this design:
 
