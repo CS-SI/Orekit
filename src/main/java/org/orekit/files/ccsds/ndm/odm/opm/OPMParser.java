@@ -298,7 +298,6 @@ public class OPMParser extends OCommonParser<OPMFile, OPMParser> {
             // automatically before the first data token arrives
             prepareData();
         }
-        inData();
         setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processKeplerianElementsToken);
         try {
             return token.getName() != null &&

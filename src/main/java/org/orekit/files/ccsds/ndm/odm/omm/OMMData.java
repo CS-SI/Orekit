@@ -76,6 +76,10 @@ public class OMMData implements Data {
     /** {@inheritDoc} */
     @Override
     public void checkMandatoryEntries() {
+        if (keplerianElementsBlock == null) {
+            throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY,
+                                      ODMKeplerianElementsKey.EPOCH);
+        }
         keplerianElementsBlock.checkMandatoryEntries();
         if (spacecraftParameters != null) {
             spacecraftParameters.checkMandatoryEntries();
@@ -96,10 +100,6 @@ public class OMMData implements Data {
         }
         if (userDefinedBlock != null) {
             userDefinedBlock.checkMandatoryEntries();
-        }
-        if (keplerianElementsBlock == null && tleBlock == null) {
-            throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY,
-                                      ODMKeplerianElementsKey.EPOCH);
         }
     }
 

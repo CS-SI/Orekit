@@ -256,7 +256,6 @@ public class APMParser extends ADMParser<APMFile, APMParser> {
             // automatically before the first data token arrives
             prepareData();
         }
-        inData();
         setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processEulerToken);
         try {
             return token.getName() != null &&

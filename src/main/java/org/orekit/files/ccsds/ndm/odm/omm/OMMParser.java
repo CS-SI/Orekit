@@ -290,7 +290,6 @@ public class OMMParser extends OCommonParser<OMMFile, OMMParser> {
             prepareData();
         }
         setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processSpacecraftParametersToken);
-        inData();
         try {
             return token.getName() != null &&
                    ODMKeplerianElementsKey.valueOf(token.getName()).process(token, context, keplerianElementsBlock);
