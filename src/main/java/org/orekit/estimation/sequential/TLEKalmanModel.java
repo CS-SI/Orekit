@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLEJacobiansMapper;
 import org.orekit.propagation.analytical.tle.TLEPartialDerivativesEquations;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
-import org.orekit.propagation.conversion.ODPropagatorBuilder;
+import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
 import org.orekit.propagation.integration.AbstractJacobiansMapper;
 import org.orekit.utils.ParameterDriversList;
 
@@ -47,7 +47,7 @@ public class TLEKalmanModel extends AbstractKalmanModel {
      * @param estimatedMeasurementParameters measurement parameters to estimate
      * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
      */
-    public TLEKalmanModel(final List<ODPropagatorBuilder> propagatorBuilders,
+    public TLEKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
                           final List<CovarianceMatrixProvider> covarianceMatricesProviders,
                           final ParameterDriversList estimatedMeasurementParameters,
                           final CovarianceMatrixProvider measurementProcessNoiseMatrix) {

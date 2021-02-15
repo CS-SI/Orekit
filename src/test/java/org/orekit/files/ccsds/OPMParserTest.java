@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.util.FastMath;
@@ -522,7 +523,7 @@ public class OPMParserTest {
 				.withConventions(IERSConventions.IERS_2010);
 		final OPMFile file = parser.parse(inEntry);
         final Frame actualFrame = file.getMetaData().getFrame();
-        Assert.assertThat(
+        MatcherAssert.assertThat(
         		moon.getPVCoordinates(date, actualFrame),
                 OrekitMatchers.pvCloseTo(PVCoordinates.ZERO, 1e-3));     
     }

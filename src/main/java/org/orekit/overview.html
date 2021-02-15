@@ -1,7 +1,7 @@
 <html>
 OREKIT
 <body>
-<h2>1. Purpose</h2>
+<h1>1. Purpose</h1>
 <p> 
   OREKIT library is a low-level library for space mechanics projects. It is 
 implemented in the JAVA language. 
@@ -25,7 +25,7 @@ implemented in the JAVA language.
       filesystem layout ...)</li>
 </ul>
 
-<h2>2. Features</h2>
+<h1>2. Features</h1>
 <p>
 Orekit can be used for many purposes, from simple geometrical or orbital tools 
 up to complex orbits propagators with several perturbing forces, maneuvers and
@@ -44,7 +44,7 @@ discrete events. Here is a short list of the features offered by the library:</p
     <ul>
       <li>frames hierarchy supporting fixed and time-dependent (or telemetry-dependent) frames</li>
       <li>predefined frames (EME2000/J2000, ICRF, GCRF, all ITRF from 1988 to 2014 and
-          intermediate frames, TOD, MOD, GTOD and TEME frames, Veis, topocentric, tnw and qsw local orbital
+          intermediate frames, TOD, MOD, GTOD and TEME and PZ-90.11 frames, Veis, topocentric, tnw and qsw local orbital
           frames, Moon, Sun, planets, solar system barycenter, Earth-Moon barycenter, ecliptic)</li>
       <li>user extensible (used operationally in real time with a set of about 60 frames on several spacecraft)</li>
       <li>transparent handling of IERS Earth Orientation Parameters (for both new CIO-based frames following
@@ -77,11 +77,14 @@ discrete events. Here is a short list of the features offered by the library:</p
       <li>analytical models for small maneuvers without propagation</li>
       <li>impulse maneuvers for any propagator type</li>
       <li>continuous maneuvers for numerical propagator type</li>
+      <li>configurable low thrust maneuver model based on event detectors</li>
+      <li>propulsion models intended to be used with maneuver class</li>
+      <li>user-friendly interface for maneuver triggers</li>
     </ul>
   </li>
   <li>Propagation
     <ul>
-      <li>analytical propagation models (Kepler, Eckstein-Heschler, SDP4/SGP4 with 2006 corrections)</li>
+      <li>analytical propagation models (Kepler, Eckstein-Heschler, GNSS, SDP4/SGP4 with 2006 corrections)</li>
       <li>numerical propagators
         <ul>
           <li>customizable force models
@@ -94,6 +97,8 @@ discrete events. Here is a short list of the features offered by the library:</p
               <li>radiation pressure with eclipses</li>
               <li>solid tides, with or without solid pole tide</li>
               <li>ocean tides, with or without ocean pole tide</li>
+              <li>Earth's albedo and infrared</li>
+              <li>empirical accelerations to account for the unmodeled forces</li>
               <li>general relativity</li>
               <li>multiple maneuvers</li>
             </ul>
@@ -102,6 +107,7 @@ discrete events. Here is a short list of the features offered by the library:</p
               continuous output, switching functions, G-stop, step normalization ...)</li>
           <li>computation of Jacobians with respect to orbital parameters and selected force models parameters</li>
           <li>serialization mechanism to store complete results on persistent storage for later use</li>
+          <li>CR3BP model</li>
         </ul>
       </li>
       <li>semi-analytical propagation model (DSST) with customizable force models</li>
@@ -112,7 +118,6 @@ discrete events. Here is a short list of the features offered by the library:</p
           <li>integration based</li>
         </ul>
       </li>
-      <li>specialized GPS propagation, using SEM or YUMA files</li>
       <li>Taylor-algebra (or any other real field) version of most of the above propagators,
             with all force models, events detection, orbits types, coordinates types and frames
            allowing allowing high order uncertainties and derivatives computation or very fast
@@ -157,6 +162,7 @@ discrete events. Here is a short list of the features offered by the library:</p
           <li>inter-satellites direct view</li>
           <li>ground at night</li>
           <li>impulse maneuvers occurrence</li>
+          <li>geomagnetic intensity</li>
         </ul>
       </li>
       <li>possibility of slightly shifting events in time (for example to switch from
@@ -186,6 +192,7 @@ discrete events. Here is a short list of the features offered by the library:</p
               GLONASS, GALILEO, BEIDOU (GEO, IGSO, MEO)</li>
         </ul>
       </li>
+      <li>loading of CCSDS Attitude Data Messages (both AEM, and APM types are supported)</li>
     </ul>
   </li>
   <li>Orbit determination
@@ -213,6 +220,7 @@ discrete events. Here is a short list of the features offered by the library:</p
               zenith delay in tropospheric correction)</li>
         </ul>
       </li>
+      <li>can be used with both numerical and DSST orbit propagators</li>
       <li>multi-satellites orbit determination</li>
       <li>ground stations displacements due to solid tides</li>
       <li>ground stations displacements due to ocean loading (based on Onsala Space Observatory files in BLQ format)</li>
@@ -226,15 +234,18 @@ discrete events. Here is a short list of the features offered by the library:</p
           <li>position-velocity</li>
           <li>position</li>
           <li>inter-satellites range (one way and two way)</li>
+          <li>inter-satellites GNSS phase</li>
           <li>GNSS code</li>
-          <li>GNSS phase with integer ambiguity resolution (not complete yet and experimental)</li>
+          <li>GNSS phase with integer ambiguity resolution and wind-up effect</li>
         </ul>
       </li>
       <li>possibility to add custom measurements</li>
+      <li>loading of ILRS CRD laser ranging measurements file</li>
       <li>several predefined modifiers
         <ul>
           <li>tropospheric effects</li>
           <li>ionospheric effects</li>
+          <li>clock relativistic effects</li>
           <li>station offsets</li>
           <li>biases</li>
           <li>delays</li>
@@ -243,6 +254,12 @@ discrete events. Here is a short list of the features offered by the library:</p
         </ul>
       </li>
       <li>possibility to add custom measurement modifiers (even for predefined events)</li>
+      <li>combination of GNSS measurements
+        <ul>
+          <li>dual frequency combination of measurements (Geometry-free, Ionosphere-free, Narrow-lane, Wide-lane and Melbourne-Wübbena)</li>
+          <li>single frequency combination of measurements (Phase minus code and GRAPHIC)</li>
+        </ul>
+      </li>
       <li>possibility to parse CCSDS Tracking Data Message files</li>
       <li>measurements generation
         <ul>
@@ -261,6 +278,8 @@ discrete events. Here is a short list of the features offered by the library:</p
       <li>computation of Dilution Of Precision</li>
       <li>loading of ANTEX antenna models file</li>
       <li>loading of RINEX observation files (version 2 and version 3)</li>
+      <li>support for Hatanaka compact RINEX format</li>
+      <li>loading of SINEX station file</li>
     </ul>
   </li>
   <li>Orbit file handling
@@ -269,16 +288,21 @@ discrete events. Here is a short list of the features offered by the library:</p
       <li>loading of CCSDS Orbit Data Messages (both OPM, OEM, and OMM types are supported)</li>
       <li>loading of SEM and YUMA files for GPS constellation</li>
       <li>exporting of ephemeris in CCSDS OEM file format</li>
+      <li>loading of ILRS CPF orbit files</li>
     </ul>
   </li>
   <li>Earth models
     <ul>
       <li>atmospheric models (DTM2000, Jacchia-Bowman 2008, NRL MSISE 2000, Harris-Priester and
           simple exponential models), and Marshall solar Activity Future Estimation, optionally with lift component</li>
+      <li>support for CSSI space weather data</li>
       <li>tropospheric delay (modified Saastamoinen, Mendes-Pavlis, Vienna 1, Vienna 3, estimated, fixed)</li>
       <li>tropospheric refraction correction angle (Recommendation ITU-R P.834-7 and Saemundssen's formula quoted by Meeus)</li>
       <li>tropospheric model for laser ranging (Marini-Murray)</li>
       <li>Klobuchar ionospheric model (including parsing α and β coefficients from University of Bern Astronomical Institute files)</li>
+      <li>Global Ionospheric Map model</li>
+      <li>NeQuick ionospheric model</li>
+      <li>VTEC estimated ionospheric model</li>
       <li>Global Pression and Temperature models (GPT and GPT2)</li>
       <li>geomagnetic field (WMM, IGRF)</li>
       <li>geoid model from any gravity field</li>
@@ -303,7 +327,7 @@ discrete events. Here is a short list of the features offered by the library:</p
   </li>
 </ul>
 
-<h2>3. Dependency</h2>
+<h1>3. Dependency</h1>
 <p>
 OREKIT has only one dependency: the <a href="https://hipparchus.org/">Hipparchus</a>
 open-source library. This library provides mathematical tools for many purposes: geometry,

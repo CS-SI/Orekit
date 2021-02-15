@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,7 +43,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Thomas Paulet
  * @since 6.0
  */
-public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements ODPropagatorBuilder {
+public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements OrbitDeterminationPropagatorBuilder {
 
     /** Data context used to access frames and time scales. */
     private final DataContext dataContext;
@@ -133,7 +133,7 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
     }
 
     /** {@inheritDoc} */
-    public AbstractBatchLSModel buildLSModel(final ODPropagatorBuilder[] builders,
+    public AbstractBatchLSModel buildLSModel(final OrbitDeterminationPropagatorBuilder[] builders,
                                 final List<ObservedMeasurement<?>> measurements,
                                 final ParameterDriversList estimatedMeasurementsParameters,
                                 final ModelObserver observer) {
@@ -142,7 +142,7 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
 
     @Override
     public AbstractKalmanModel
-        buildKalmanModel(final List<ODPropagatorBuilder> propagatorBuilders,
+        buildKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
                          final List<CovarianceMatrixProvider> covarianceMatricesProviders,
                          final ParameterDriversList estimatedMeasurementsParameters,
                          final CovarianceMatrixProvider measurementProcessNoiseMatrix) {

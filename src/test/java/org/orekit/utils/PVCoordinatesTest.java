@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -128,13 +128,22 @@ public class PVCoordinatesTest {
                         new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                           new Vector3D(-1, -0.1, -10),
                                           new Vector3D(10, -1.0, -100)).toUnivariateDerivative1Vector();
-                Assert.assertEquals(1, fv.getX().getOrder());
-                Assert.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
-                Assert.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
-                Assert.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
-                Assert.assertEquals(  -1.0, fv.getX().getDerivative(1), 1.0e-15);
-                Assert.assertEquals(  -0.1, fv.getY().getDerivative(1), 1.0e-15);
-                Assert.assertEquals( -10.0, fv.getZ().getDerivative(1), 1.0e-15);
+        Assert.assertEquals(1, fv.getX().getOrder());
+        Assert.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
+        Assert.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
+        Assert.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
+        Assert.assertEquals(  -1.0, fv.getX().getDerivative(1), 1.0e-15);
+        Assert.assertEquals(  -0.1, fv.getY().getDerivative(1), 1.0e-15);
+        Assert.assertEquals( -10.0, fv.getZ().getDerivative(1), 1.0e-15);
+
+        PVCoordinates pv = new PVCoordinates(fv);
+        Assert.assertEquals(   1.0, pv.getPosition().getX(), 1.0e-10);
+        Assert.assertEquals(   0.1, pv.getPosition().getY(), 1.0e-10);
+        Assert.assertEquals(  10.0, pv.getPosition().getZ(), 1.0e-10);
+        Assert.assertEquals(  -1.0, pv.getVelocity().getX(), 1.0e-15);
+        Assert.assertEquals(  -0.1, pv.getVelocity().getY(), 1.0e-15);
+        Assert.assertEquals( -10.0, pv.getVelocity().getZ(), 1.0e-15);
+
     }
 
     @Test
@@ -167,6 +176,18 @@ public class PVCoordinatesTest {
             Assert.assertEquals(p.getY(), fv.getY().taylor(dt), 1.0e-14);
             Assert.assertEquals(p.getZ(), fv.getZ().taylor(dt), 1.0e-14);
         }
+
+        PVCoordinates pv = new PVCoordinates(fv);
+        Assert.assertEquals(   1.0, pv.getPosition().getX(), 1.0e-10);
+        Assert.assertEquals(   0.1, pv.getPosition().getY(), 1.0e-10);
+        Assert.assertEquals(  10.0, pv.getPosition().getZ(), 1.0e-10);
+        Assert.assertEquals(  -1.0, pv.getVelocity().getX(), 1.0e-15);
+        Assert.assertEquals(  -0.1, pv.getVelocity().getY(), 1.0e-15);
+        Assert.assertEquals( -10.0, pv.getVelocity().getZ(), 1.0e-15);
+        Assert.assertEquals(  10.0, pv.getAcceleration().getX(), 1.0e-15);
+        Assert.assertEquals(  -1.0, pv.getAcceleration().getY(), 1.0e-15);
+        Assert.assertEquals(-100.0, pv.getAcceleration().getZ(), 1.0e-15);
+        
     }
 
     @Test
@@ -175,25 +196,37 @@ public class PVCoordinatesTest {
                         new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                           new Vector3D(-1, -0.1, -10),
                                           new Vector3D(10, -1.0, -100)).toUnivariateDerivative2Vector();
-                Assert.assertEquals(2, fv.getX().getOrder());
-                Assert.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
-                Assert.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
-                Assert.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
-                Assert.assertEquals(  -1.0, fv.getX().getDerivative(1), 1.0e-15);
-                Assert.assertEquals(  -0.1, fv.getY().getDerivative(1), 1.0e-15);
-                Assert.assertEquals( -10.0, fv.getZ().getDerivative(1), 1.0e-15);
-                Assert.assertEquals(  10.0, fv.getX().getDerivative(2), 1.0e-15);
-                Assert.assertEquals(  -1.0, fv.getY().getDerivative(2), 1.0e-15);
-                Assert.assertEquals(-100.0, fv.getZ().getDerivative(2), 1.0e-15);
+        Assert.assertEquals(2, fv.getX().getOrder());
+        Assert.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
+        Assert.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
+        Assert.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
+        Assert.assertEquals(  -1.0, fv.getX().getDerivative(1), 1.0e-15);
+        Assert.assertEquals(  -0.1, fv.getY().getDerivative(1), 1.0e-15);
+        Assert.assertEquals( -10.0, fv.getZ().getDerivative(1), 1.0e-15);
+        Assert.assertEquals(  10.0, fv.getX().getDerivative(2), 1.0e-15);
+        Assert.assertEquals(  -1.0, fv.getY().getDerivative(2), 1.0e-15);
+        Assert.assertEquals(-100.0, fv.getZ().getDerivative(2), 1.0e-15);
 
-                for (double dt = 0; dt < 10; dt += 0.125) {
-                    Vector3D p = new PVCoordinates(new Vector3D( 1,  0.1,  10),
-                                                   new Vector3D(-1, -0.1, -10),
-                                                   new Vector3D(10, -1.0, -100)).shiftedBy(dt).getPosition();
-                    Assert.assertEquals(p.getX(), fv.getX().taylor(dt), 1.0e-14);
-                    Assert.assertEquals(p.getY(), fv.getY().taylor(dt), 1.0e-14);
-                    Assert.assertEquals(p.getZ(), fv.getZ().taylor(dt), 1.0e-14);
-                }
+        for (double dt = 0; dt < 10; dt += 0.125) {
+            Vector3D p = new PVCoordinates(new Vector3D( 1,  0.1,  10),
+                                           new Vector3D(-1, -0.1, -10),
+                                           new Vector3D(10, -1.0, -100)).shiftedBy(dt).getPosition();
+            Assert.assertEquals(p.getX(), fv.getX().taylor(dt), 1.0e-14);
+            Assert.assertEquals(p.getY(), fv.getY().taylor(dt), 1.0e-14);
+            Assert.assertEquals(p.getZ(), fv.getZ().taylor(dt), 1.0e-14);
+        }
+
+        PVCoordinates pv = new PVCoordinates(fv);
+        Assert.assertEquals(   1.0, pv.getPosition().getX(), 1.0e-10);
+        Assert.assertEquals(   0.1, pv.getPosition().getY(), 1.0e-10);
+        Assert.assertEquals(  10.0, pv.getPosition().getZ(), 1.0e-10);
+        Assert.assertEquals(  -1.0, pv.getVelocity().getX(), 1.0e-15);
+        Assert.assertEquals(  -0.1, pv.getVelocity().getY(), 1.0e-15);
+        Assert.assertEquals( -10.0, pv.getVelocity().getZ(), 1.0e-15);
+        Assert.assertEquals(  10.0, pv.getAcceleration().getX(), 1.0e-15);
+        Assert.assertEquals(  -1.0, pv.getAcceleration().getY(), 1.0e-15);
+        Assert.assertEquals(-100.0, pv.getAcceleration().getZ(), 1.0e-15);
+        
     }
 
     @Test

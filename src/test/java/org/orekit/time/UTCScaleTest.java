@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,6 +30,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well1024a;
 import org.hipparchus.util.Decimal64Field;
@@ -187,7 +188,7 @@ public class UTCScaleTest {
             Assert.assertTrue(leap > (excess - 1));
             Assert.assertEquals(excess, newExcess);
             Assert.assertEquals(leap, newLeap, 0.0);
-            Assert.assertThat("" + offset.getValidityStart(), leap,
+            MatcherAssert.assertThat("" + offset.getValidityStart(), leap,
                     OrekitMatchers.numberCloseTo(end.durationFrom(start), 1e-16, 1));
         }
     }

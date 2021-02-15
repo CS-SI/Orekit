@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,6 +32,7 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
@@ -112,14 +113,15 @@ public class CR3BPRotatingTransformProviderTest {
         final CelestialBody sun = CelestialBodyFactory.getSun();
         final CelestialBody earth = CelestialBodyFactory.getEarth();
 
+        // Time settings
+        final TimeScale timeScale = TimeScalesFactory.getUTC();
+        final AbsoluteDate date = new AbsoluteDate(2000, 01, 01, 0, 0, 00.000,
+                                                   timeScale);
+
         // Set frames
         final Frame sunFrame = sun.getInertiallyOrientedFrame();
-        final CR3BPSystem syst = CR3BPFactory.getSunEarthCR3BP();
+        final CR3BPSystem syst = CR3BPFactory.getSunEarthCR3BP(date, timeScale);
         final Frame baryFrame = syst.getRotatingFrame();
-
-        // Time settings
-        final AbsoluteDate date = new AbsoluteDate(2000, 01, 01, 0, 0, 00.000,
-                                                   TimeScalesFactory.getUTC());
 
         // Compute Earth position in Sun centered frame
         PVCoordinates pvEarth = earth.getPVCoordinates(date, sunFrame);
@@ -146,14 +148,15 @@ public class CR3BPRotatingTransformProviderTest {
         final CelestialBody sun = CelestialBodyFactory.getSun();
         final CelestialBody earth = CelestialBodyFactory.getEarth();
 
+        // Time settings
+        final TimeScale timeScale = TimeScalesFactory.getUTC();
+        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 2000, 01, 01, 0, 0, 00.000,
+                                                                  timeScale);
+
         // Set frames
         final Frame sunFrame = sun.getInertiallyOrientedFrame();
-        final CR3BPSystem syst = CR3BPFactory.getSunEarthCR3BP();
+        final CR3BPSystem syst = CR3BPFactory.getSunEarthCR3BP(date.toAbsoluteDate(), timeScale);
         final Frame baryFrame = syst.getRotatingFrame();
-
-        // Time settings
-        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 2000, 01, 01, 0, 0, 00.000,
-                                                   TimeScalesFactory.getUTC());
 
         // Compute Earth position in Sun centered frame
         FieldPVCoordinates<T> pvEarth = earth.getPVCoordinates(date, sunFrame);
@@ -176,14 +179,15 @@ public class CR3BPRotatingTransformProviderTest {
         final CelestialBody sun = CelestialBodyFactory.getSun();
         final CelestialBody jupiter = CelestialBodyFactory.getJupiter();
 
+        // Time settings
+        final TimeScale timeScale = TimeScalesFactory.getUTC();
+        final AbsoluteDate date = new AbsoluteDate(2000, 01, 01, 0, 0, 00.000,
+                                                   timeScale);
+
         // Set frames
         final Frame sunFrame = sun.getInertiallyOrientedFrame();
-        final CR3BPSystem syst = CR3BPFactory.getSunJupiterCR3BP();
+        final CR3BPSystem syst = CR3BPFactory.getSunJupiterCR3BP(date, timeScale);
         final Frame baryFrame = syst.getRotatingFrame();
-
-        // Time settings
-        final AbsoluteDate date = new AbsoluteDate(2000, 01, 01, 0, 0, 00.000,
-                                                   TimeScalesFactory.getUTC());
 
         // Compute Jupiter position in Sun centered frame
         PVCoordinates pvJupiter = jupiter.getPVCoordinates(date, sunFrame);
@@ -210,14 +214,15 @@ public class CR3BPRotatingTransformProviderTest {
         final CelestialBody sun = CelestialBodyFactory.getSun();
         final CelestialBody jupiter = CelestialBodyFactory.getJupiter();
 
+        // Time settings
+        final TimeScale timeScale = TimeScalesFactory.getUTC();
+        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 2000, 01, 01, 0, 0, 00.000,
+                                                                  timeScale);
+
         // Set frames
         final Frame sunFrame = sun.getInertiallyOrientedFrame();
-        final CR3BPSystem syst = CR3BPFactory.getSunJupiterCR3BP();
+        final CR3BPSystem syst = CR3BPFactory.getSunJupiterCR3BP(date.toAbsoluteDate(), timeScale);
         final Frame baryFrame = syst.getRotatingFrame();
-
-        // Time settings
-        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 2000, 01, 01, 0, 0, 00.000,
-                                                                  TimeScalesFactory.getUTC());
 
         // Compute Jupiter position in Sun centered frame
         FieldPVCoordinates<T> pvJupiter = jupiter.getPVCoordinates(date, sunFrame);
@@ -236,11 +241,12 @@ public class CR3BPRotatingTransformProviderTest {
     @Test
     public void testBaryOrientation() {
 
+        final TimeScale timeScale = TimeScalesFactory.getUTC();
         final AbsoluteDate date0 = new AbsoluteDate(2000, 01, 1, 11, 58, 20.000,
-                                                   TimeScalesFactory.getUTC());
+                                                    timeScale);
         final CelestialBody sun     = CelestialBodyFactory.getSun();
         final CelestialBody earth   = CelestialBodyFactory.getEarth();
-        final CR3BPSystem syst = CR3BPFactory.getSunEarthCR3BP();
+        final CR3BPSystem syst = CR3BPFactory.getSunEarthCR3BP(date0, timeScale);
         final Frame baryFrame = syst.getRotatingFrame();
         for (double dt = -Constants.JULIAN_DAY; dt <= Constants.JULIAN_DAY; dt += 3600.0) {
             final AbsoluteDate date              = date0.shiftedBy(dt);
@@ -258,11 +264,12 @@ public class CR3BPRotatingTransformProviderTest {
 
     private <T extends RealFieldElement<T>> void doTestFieldBaryOrientation(final Field<T> field) {
 
+        final TimeScale timeScale = TimeScalesFactory.getUTC();
         final FieldAbsoluteDate<T> date0 = new FieldAbsoluteDate<>(field, 2000, 01, 1, 11, 58, 20.000,
-                                                                   TimeScalesFactory.getUTC());
+                                                                   timeScale);
         final CelestialBody sun     = CelestialBodyFactory.getSun();
         final CelestialBody earth   = CelestialBodyFactory.getEarth();
-        final CR3BPSystem syst = CR3BPFactory.getSunEarthCR3BP();
+        final CR3BPSystem syst = CR3BPFactory.getSunEarthCR3BP(date0.toAbsoluteDate(), timeScale);
         final Frame baryFrame = syst.getRotatingFrame();
         for (double dt = -Constants.JULIAN_DAY; dt <= Constants.JULIAN_DAY; dt += 3600.0) {
             final FieldAbsoluteDate<T> date              = date0.shiftedBy(dt);

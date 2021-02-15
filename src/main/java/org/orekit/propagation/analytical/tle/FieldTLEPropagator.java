@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -68,7 +68,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Fabien Maussion (java translation)
  * @author Thomas Paulet (field translation)
  * @since 11.0
- * @see TLE
+ * @see FieldTLE
  */
 public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
 
@@ -209,7 +209,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
                             final Frame teme,
                             final T[] parameters) {
         super(initialTLE.getE().getField(), attitudeProvider);
-        setStartDate(initialTLE.getDate());  //requires a FieldTLE class.
+        setStartDate(initialTLE.getDate());
         this.tle  = initialTLE;
         this.teme = teme;
         this.mass = mass;

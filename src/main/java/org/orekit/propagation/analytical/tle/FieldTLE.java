@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -90,6 +90,12 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
 
     /** Parameter name for B* coefficient. */
     public static final String B_STAR = "BSTAR";
+
+    /** Default value for epsilon. */
+    private static final double EPSILON_DEFAULT = 1.0e-10;
+
+    /** Default value for maxIterations. */
+    private static final int MAX_ITERATIONS_DEFAULT = 100;
 
     /** B* scaling factor.
      * <p>
@@ -808,7 +814,9 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
      * and generates a usable TLE version of a state.
      * New TLE epoch is state epoch.
      *
-     *<p>This method uses the {@link DataContext#getDefault() default data context}.
+     * <p>
+     * This method uses the {@link DataContext#getDefault() default data context},
+     * as well as {@link #EPSILON_DEFAULT} and {@link #MAX_ITERATIONS_DEFAULT} for method convergence.
      *
      * @param state Spacecraft State to convert into TLE
      * @param templateTLE first guess used to get identification and estimate new TLE
@@ -817,6 +825,27 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
      */
     @DefaultDataContext
     public static <T extends RealFieldElement<T>> FieldTLE<T> stateToTLE(final FieldSpacecraftState<T> state, final FieldTLE<T> templateTLE) {
+        return stateToTLE(state, templateTLE, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
+    }
+
+    /**
+     * Convert Spacecraft State into TLE.
+     * This converter uses Newton method to reverse SGP4 and SDP4 propagation algorithm
+     * and generates a usable TLE version of a state.
+     * New TLE epoch is state epoch.
+     *
+     *<p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param state Spacecraft State to convert into TLE
+     * @param templateTLE first guess used to get identification and estimate new TLE
+     * @param epsilon used to compute threshold for convergence check
+     * @param maxIterations maximum number of iterations for convergence
+     * @param <T> type of the element
+     * @return TLE matching with Spacecraft State and template identification
+     */
+    @DefaultDataContext
+    public static <T extends RealFieldElement<T>> FieldTLE<T> stateToTLE(final FieldSpacecraftState<T> state, final FieldTLE<T> templateTLE,
+                                                                         final double epsilon, final int maxIterations) {
 
         // get keplerian parameters from state
         final FieldOrbit<T> orbit = state.getOrbit();
@@ -835,17 +864,15 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
         final FieldGradient<T> zero = current.getE().getField().getZero();
 
         // threshold for each parameter
-        final T epsilon             = e.getField().getZero().add(1.0e-10);
-        final T thresholdMeanMotion = keplerianOrbit.getKeplerianMeanMotion().add(1.0).multiply(epsilon);
-        final T thresholdE          = state.getE().add(1.0).multiply(epsilon);
-        final T thresholdI          = state.getI().add(1.0).multiply(epsilon);
-        final T thresholdAngles     = epsilon.multiply(FastMath.PI);
+        final T      thresholdMeanMotion = keplerianOrbit.getKeplerianMeanMotion().add(1.0).multiply(epsilon);
+        final T      thresholdE          = state.getE().add(1.0).multiply(epsilon);
+        final T      thresholdI          = state.getI().add(1.0).multiply(epsilon);
+        final double thresholdAngles     = epsilon * FastMath.PI;
         int k = 0;
-        while (k++ < 100) {
+        while (k++ < maxIterations) {
 
             // recompute the state from the current TLE
             final FieldGradient<T>[] parameters = MathArrays.buildArray(zero.getField(), 1);
-            //parameters[0] = Gradient.constant(FREE_STATE_PARAMETERS, current.getBStar());
             parameters[0] = zero.add(current.getBStar());
             final FieldTLEPropagator<FieldGradient<T>> propagator = FieldTLEPropagator.selectExtrapolator(current, parameters);
             final FieldSpacecraftState<FieldGradient<T>> recoveredState = propagator.getInitialState();
@@ -867,9 +894,9 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
             if ((FastMath.abs(deltaMeanMotion.getValue()).getReal() < thresholdMeanMotion.getReal()) &&
                 (FastMath.abs(deltaE.getValue()).getReal()          < thresholdE.getReal()) &&
                 (FastMath.abs(deltaI.getValue()).getReal()          < thresholdI.getReal()) &&
-                (FastMath.abs(deltaPA.getValue()).getReal()         < thresholdAngles.getReal()) &&
-                (FastMath.abs(deltaRAAN.getValue()).getReal()       < thresholdAngles.getReal()) &&
-                (FastMath.abs(deltaMeanMotion.getValue()).getReal() < thresholdAngles.getReal())) {
+                (FastMath.abs(deltaPA.getValue()).getReal()         < thresholdAngles) &&
+                (FastMath.abs(deltaRAAN.getValue()).getReal()       < thresholdAngles) &&
+                (FastMath.abs(deltaMeanMotion.getValue()).getReal() < thresholdAngles)) {
 
                 return new FieldTLE<T>(current.getSatelliteNumber(), current.getClassification(), current.getLaunchYear(),
                                 current.getLaunchNumber(), current.getLaunchPiece(), current.getEphemerisType(), current.getElementNumber(),

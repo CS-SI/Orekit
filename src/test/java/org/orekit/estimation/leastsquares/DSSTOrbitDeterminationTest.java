@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -191,7 +191,7 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
     @Override
     protected ParameterDriver[] setRelativity(final DSSTPropagatorBuilder propagatorBuilder) {
         throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
-                        "Relativity not implemented in DSST");
+                        "Albedo and infrared not implemented in DSST");
     }
 
     /** {@inheritDoc} */

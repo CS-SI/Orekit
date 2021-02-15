@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -83,6 +83,12 @@ public class TLE implements TimeStamped, Serializable {
 
     /** Parameter name for B* coefficient. */
     public static final String B_STAR = "BSTAR";
+
+    /** Default value for epsilon. */
+    private static final double EPSILON_DEFAULT = 1.0e-10;
+
+    /** Default value for maxIterations. */
+    private static final int MAX_ITERATIONS_DEFAULT = 100;
 
     /** B* scaling factor.
      * <p>
@@ -788,15 +794,37 @@ public class TLE implements TimeStamped, Serializable {
      * Equinocital orbital parameters are used in order to get a stiff method.
      * New TLE epoch is state epoch.
      *
-     *<p>This method uses the {@link DataContext#getDefault() default data context}.
+     * <p>
+     * This method uses the {@link DataContext#getDefault() default data context},
+     * as well as {@link #EPSILON_DEFAULT} and {@link #MAX_ITERATIONS_DEFAULT} for method convergence.
      *
      * @param state Spacecraft State to convert into TLE
      * @param templateTLE first guess used to get identification and estimate new TLE
      * @return TLE matching with Spacecraft State and template identification
-     * @throws OrekitException
      */
     @DefaultDataContext
     public static TLE stateToTLE(final SpacecraftState state, final TLE templateTLE) {
+        return stateToTLE(state, templateTLE, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
+    }
+
+    /**
+     * Convert Spacecraft State into TLE.
+     * This converter uses Newton method to reverse SGP4 and SDP4 propagation algorithm
+     * and generates a usable TLE version of a state.
+     * New TLE epoch is state epoch.
+     *
+     *<p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param state Spacecraft State to convert into TLE
+     * @param templateTLE first guess used to get identification and estimate new TLE
+     * @param epsilon used to compute threshold for convergence check
+     * @param maxIterations maximum number of iterations for convergence
+     * @return TLE matching with Spacecraft State and template identification
+     * @throws OrekitException
+     */
+    @DefaultDataContext
+    public static TLE stateToTLE(final SpacecraftState state, final TLE templateTLE,
+                                 final double epsilon, final int maxIterations) {
 
         // Gets equinoctial parameters from state
         final Orbit orbit = state.getOrbit();
@@ -813,14 +841,13 @@ public class TLE implements TimeStamped, Serializable {
         TLE current = newTLE(keplerianOrbit, templateTLE);
 
         // threshold for each parameter
-        final double eps  = 1.0e-10;
-        final double thrA = eps * (1 + sma);
-        final double thrE = eps * (1 + FastMath.hypot(ex, ey));
-        final double thrH = eps * (1 + FastMath.hypot(hx, hy));
-        final double thrV = eps * FastMath.PI;
+        final double thrA = epsilon * (1 + sma);
+        final double thrE = epsilon * (1 + FastMath.hypot(ex, ey));
+        final double thrH = epsilon * (1 + FastMath.hypot(hx, hy));
+        final double thrV = epsilon * FastMath.PI;
 
         int k = 0;
-        while (k++ < 100) {
+        while (k++ < maxIterations) {
 
             // recompute the state from the current TLE
             final TLEPropagator propagator = TLEPropagator.selectExtrapolator(current);
@@ -834,14 +861,6 @@ public class TLE implements TimeStamped, Serializable {
             final double deltaHx  = equiOrbit.getHx() - recovEquiOrbit.getHx();
             final double deltaHy  = equiOrbit.getHy() - recovEquiOrbit.getHy();
             final double deltaLv  = MathUtils.normalizeAngle(equiOrbit.getLv() - recovEquiOrbit.getLv(), 0.0);
-
-//            System.out.println("Iteration #" + k);
-//            System.out.println("[" + thrA + "] " + deltaSma + " : " + sma);
-//            System.out.println("[" + thrE + "] " + deltaEx  + " : " + ex);
-//            System.out.println("[" + thrE + "] " + deltaEy  + " : " + ey);
-//            System.out.println("[" + thrH + "] " + deltaHx  + " : " + hx);
-//            System.out.println("[" + thrH + "] " + deltaHy  + " : " + hy);
-//            System.out.println("[" + thrV + "] " + deltaLv  + " : " + lv);
 
             // check convergence
             if ((FastMath.abs(deltaSma) < thrA) &&
