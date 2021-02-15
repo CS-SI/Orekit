@@ -1,0 +1,94 @@
+' Copyright 2002-2021 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+ 
+@startuml
+
+  skinparam svek                                true
+  skinparam NoteBackgroundColor                 #F3EFEB
+  skinparam NoteBorderColor                     #691616
+  skinparam NoteFontColor                       #691616
+  skinparam SequenceActorBorderColor            #6A584B
+  skinparam SequenceParticipantBackgroundColor  #F3EFEB/CCC9C5
+  skinparam SequenceParticipantBorderColor      #6A584B
+  skinparam SequenceLifeLineBackgroundColor     #CCC9C5/F3EFEB
+  skinparam SequenceLifeLineBorderColor         #6A584B
+  skinparam SequenceArrowColor                  #6A584B
+  skinparam SequenceBorderColor                 #6A584B
+  skinparam SequenceFontSize                    11
+
+  hide footbox
+
+  box "User application" #F3EDF7
+    participant Main
+  end box
+  participant MessageParser
+  participant DataSource
+  participant LexicalAnalyzerSelector
+  participant BufferedInputStream
+  participant XYZLexicalAnalyzer
+  participant ParseToken
+  participant NDMFile
+
+  activate Main
+    create DataSource
+    Main -> DataSource : new
+    create MessageParser
+    Main -> MessageParser : new
+    Main -> MessageParser : parse(source)
+    activate MessageParser
+      MessageParser -> LexicalAnalyzerSelector : select
+      activate LexicalAnalyzerSelector
+        LexicalAnalyzerSelector -> DataSource : openStream
+        activate DataSource
+          return stream
+        deactivate DataSource
+        create BufferedInputStream
+        LexicalAnalyzerSelector -> BufferedInputStream : new
+        LexicalAnalyzerSelector -> BufferedInputStream : read first 24 bytes
+        activate BufferedInputStream
+          BufferedInputStream --> LexicalAnalyzerSelector : 24 bytes
+        deactivate BufferedInputStream
+        create XYZLexicalAnalyzer
+        LexicalAnalyzerSelector -> XYZLexicalAnalyzer : new
+        LexicalAnalyzerSelector -> BufferedInputStream : reset to stream start
+        activate BufferedInputStream
+        deactivate BufferedInputStream
+        LexicalAnalyzerSelector --> MessageParser : selected lexical analyzer
+      deactivate LexicalAnalyzerSelector
+      MessageParser -> XYZLexicalAnalyzer : accept(parser)
+      activate XYZLexicalAnalyzer
+        XYZLexicalAnalyzer -> MessageParser : reset(fileFormat)
+        activate MessageParser
+        deactivate MessageParser
+        loop until end of message reached
+          XYZLexicalAnalyzer -> BufferedInputStream : read
+          activate BufferedInputStream
+            BufferedInputStream --> XYZLexicalAnalyzer : characters
+          deactivate BufferedInputStream
+          create ParseToken
+          XYZLexicalAnalyzer -> ParseToken : new
+        XYZLexicalAnalyzer -> MessageParser : process(parseToken)
+        activate MessageParser
+        deactivate MessageParser
+        end
+      deactivate XYZLexicalAnalyzer
+      create NDMFile
+      MessageParser -> NDMFile : new
+      MessageParser --> Main : NDMFile
+    deactivate MessageParser
+  deactivate Main
+
+@enduml

@@ -30,7 +30,7 @@
   package org.orekit.files.ccsds #ECEBD8 {
 
     package section #DDEBD8 {
-      class Section {
+      interface Section {
         checkMandatoryEntries()
       }
       class Header {

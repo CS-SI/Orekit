@@ -30,113 +30,94 @@
   package org.orekit #ECEBD8 {
 
     package data #DDEBD8 {
-      interface DataFilter {
-        DataSource filter(DataSource)
-      }
-      class DataSource {
-        +getName()
-        +getStreamOpener()
-      }
-      DataFilter --> DataSource
+      class DataSource
     }
 
-    package files #DDEBD8 {
-      package utils.ccsds #CBDBC8 {
+    package files.utils.ccsds #DDEBD8 {
 
-        enum FileFormat {
-          +KVN
-          +XML
-        }
-
-        package state #CCCCC7 {
-          abstract class "AbstractMessageParser<T>" as AbstractMessageParser {
-            #reset(fileFormat, initialState)
-            +prepareHeader()
-            +inHeader()
-            +finalizeHeader()
-            +prepareMetadata()
-            +inMetadata()
-            +finalizeMetadata()
-            +prepareData()
-            +inData()
-            +finalizeData()
-            +setFallback(ProcessingState)
-          }
-          interface ProcessingState {
-            +boolean processToken(ParseToken)
-          }
-        }
-
-        package lexical #CCCCC7 {
-          class KVNLexicalAnalyzer
-          class XMLLexicalAnalyzer
-          interface LexicalAnalyzer {
-            +accept(LexicalAnalyzer)
-          }
-          class LexicalAnalyzerSelector {
-            +LexicalAnalyzer select(DataSource)
-          }
-          note left
-            selection is based on
-            data source first bytes
-            (looking for XML declaration)
-         end note
-          enum TokenType {
-            +START
-            +ENTRY
-            +STOP
-            +RAW_LINE
-          }
-          class ParseToken
-          interface "MessageParser<T>" as MessageParser {
-            +parseMessage(Datasource)
-            +reset(FileFormat)
-            +process(ParseToken)
-            +T build()
-          }
-        }
-
-        package section #CCCCC7 {
-          class HeaderProcessingState
-          class KVNStructureProcessingState
-          class XMLStructureProcessingState
-        }
-
-        package ndm.odm.opm #CCCCC7 {
-          class OPMParser
-          class OPMFile
-        }
-        note bottom
-          only OPM is shown here,
-          similar constructions exist
-          for other messages types:
-          OEM, OMM, OCM, AEM,
-          APM, TDM...
-        end note
-
+      package section #CBDBC8 {
+        class HeaderProcessingState
+        class KVNStructureProcessingState
+        class XMLStructureProcessingState
       }
+
+      package lexical #CBDBC8 {
+        interface LexicalAnalyzer
+        enum TokenType {
+          +START
+          +ENTRY
+          +STOP
+          +RAW_LINE
+        }
+        class ParseToken {
+          +getName()
+          +getType()
+          +getContent()
+          +processAsDouble(doubleConsumer)
+          +processAsDate(dateConsumer)
+          +processAsFrame(frameConsumer)
+          +processAs...(...Consumer)
+        }
+        interface "MessageParser<T>" as MessageParser {
+          +parseMessage(Datasource)
+          +reset(FileFormat)
+          +process(ParseToken)
+          +T build()
+        }
+      }
+
+      package state #CBDBC8 {
+        abstract class "AbstractMessageParser<T>" as AbstractMessageParser {
+          #reset(fileFormat, initialState)
+          +prepareHeader()
+          +inHeader()
+          +finalizeHeader()
+          +prepareMetadata()
+          +inMetadata()
+          +finalizeMetadata()
+          +prepareData()
+          +inData()
+          +finalizeData()
+          +setFallback(ProcessingState)
+        }
+        interface ProcessingState {
+          +boolean processToken(ParseToken)
+        }
+      }
+
+      enum FileFormat {
+        +KVN
+        +XML
+      }
+
+      package ndm.odm.opm #CBDBC8 {
+        class OPMParser
+        note right
+          uses method references to
+          provide multiple implementations
+          of ProcessingState for different
+          logical blocks
+        end note
+        class OPMFile
+      }
+
     }
   }
 
-  DataSource <-- KVNLexicalAnalyzer
-  DataSource <-- XMLLexicalAnalyzer
-  KVNLexicalAnalyzer ..|> LexicalAnalyzer
-  XMLLexicalAnalyzer ..|> LexicalAnalyzer
-  LexicalAnalyzer -right-> ParseToken : produces
-  LexicalAnalyzer <-- LexicalAnalyzerSelector : select
+  DataSource <-- LexicalAnalyzer
+  LexicalAnalyzer --> ParseToken : produces
   LexicalAnalyzer <-- MessageParser
-  MessageParser --> LexicalAnalyzerSelector
   TokenType "1" <--o ParseToken
-  ProcessingState --> ParseToken
+  ParseToken <-left- ProcessingState
   MessageParser --> FileFormat
   ParseToken <-- MessageParser : "process"
-  MessageParser <|.. AbstractMessageParser
-  ProcessingState <-down-o AbstractMessageParser : "current"
-  ProcessingState <-down-o AbstractMessageParser : "fallback"
+  AbstractMessageParser ..|> MessageParser
+  ProcessingState <--o AbstractMessageParser : "current"
+  ProcessingState <--o AbstractMessageParser : "fallback"
   OPMParser --> OPMFile : "build"
-  ProcessingState <|.. HeaderProcessingState
-  ProcessingState <|.. KVNStructureProcessingState
-  ProcessingState <|.. XMLStructureProcessingState
-  ProcessingState <|.. OPMParser : "multiple section-specific implementations"
+  HeaderProcessingState       ..|> ProcessingState
+  KVNStructureProcessingState ..|> ProcessingState
+  XMLStructureProcessingState ..|> ProcessingState
+  ProcessingState <|.. OPMParser
 
 @enduml
