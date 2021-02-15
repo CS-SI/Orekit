@@ -37,10 +37,15 @@ import org.orekit.utils.IERSConventions;
 
 /**
  * Class for CCSDS Tracking Data Message parsers.
- *
- * <p> This class allow the handling of both "keyvalue" and "xml" TDM file formats.
- * Format can be inferred if file names ends respectively with ".txt" or ".xml".
- * Otherwise it must be explicitely set using {@link #withFileFormat(TDMFileFormat)}
+ * <p>
+ * Note than starting with Orekit 11.0, CCSDS message parsers are
+ * mutable objects that gather the data being parsed, until the
+ * message is complete and the {@link #parseMessage(org.orekit.data.DataSource)
+ * parseMessage} method has returned. This implies that parsers
+ * should <em>not</em> be used in a multi-thread context. The recommended
+ * way to use parsers is to either dedicate one parser for each message
+ * and drop it afterwards, or to use a single-thread loop.
+ * </p>
  *
  * <p>References:<p>
  *  - <a href="https://public.ccsds.org/Pubs/503x0b1c1.pdf">CCSDS 503.0-B-1 recommended standard</a> ("Tracking Data Message", Blue Book, Issue 1, November 2007).<p>

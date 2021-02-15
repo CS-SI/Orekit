@@ -39,7 +39,16 @@ import org.orekit.utils.IERSConventions;
 
 /**
  * A parser for the CCSDS APM (Attitude Parameter Message).
- * @author Bryan Cazabonne
+ * @author Bryan Cazabonne * <p>
+ * Note than starting with Orekit 11.0, CCSDS message parsers are
+ * mutable objects that gather the data being parsed, until the
+ * message is complete and the {@link #parseMessage(org.orekit.data.DataSource)
+ * parseMessage} method has returned. This implies that parsers
+ * should <em>not</em> be used in a multi-thread context. The recommended
+ * way to use parsers is to either dedicate one parser for each message
+ * and drop it afterwards, or to use a single-thread loop.
+ * </p>
+
  * @since 10.2
  */
 public class APMParser extends ADMParser<APMFile, APMParser> {

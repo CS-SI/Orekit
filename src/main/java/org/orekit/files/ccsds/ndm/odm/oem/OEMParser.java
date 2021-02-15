@@ -50,6 +50,15 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * A parser for the CCSDS OEM (Orbit Ephemeris Message).
+ * <p>
+ * Note than starting with Orekit 11.0, CCSDS message parsers are
+ * mutable objects that gather the data being parsed, until the
+ * message is complete and the {@link #parseMessage(org.orekit.data.DataSource)
+ * parseMessage} method has returned. This implies that parsers
+ * should <em>not</em> be used in a multi-thread context. The recommended
+ * way to use parsers is to either dedicate one parser for each message
+ * and drop it afterwards, or to use a single-thread loop.
+ * </p>
  * @author sports
  * @since 6.1
  */
