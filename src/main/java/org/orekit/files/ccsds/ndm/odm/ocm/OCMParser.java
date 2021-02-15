@@ -16,7 +16,6 @@
  */
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -125,7 +124,7 @@ public class OCMParser extends OCommonParser<OCMFile, OCMParser> implements Ephe
 
     /** {@inheritDoc} */
     @Override
-    public OCMFile parse(final DataSource source) throws IOException {
+    public OCMFile parse(final DataSource source) {
         return parseMessage(source);
     }
 

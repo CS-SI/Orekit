@@ -16,7 +16,6 @@
  */
 package org.orekit.files.ccsds.ndm.odm.oem;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -121,7 +120,7 @@ public class OEMParser extends OCommonParser<OEMFile, OEMParser> implements Ephe
 
     /** {@inheritDoc} */
     @Override
-    public OEMFile parse(final DataSource source) throws IOException {
+    public OEMFile parse(final DataSource source) {
         return parseMessage(source);
     }
 

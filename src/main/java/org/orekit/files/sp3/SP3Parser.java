@@ -28,6 +28,7 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
@@ -149,11 +150,15 @@ public class SP3Parser implements EphemerisFileParser<SP3File> {
     }
 
     @Override
-    public SP3File parse(final DataSource source) throws IOException {
+    public SP3File parse(final DataSource source) {
 
         try (InputStream       is     = source.getStreamOpener().openStream();
-             InputStreamReader isr    = new InputStreamReader(is, StandardCharsets.UTF_8);
-             BufferedReader    reader = new BufferedReader(isr)) {
+             InputStreamReader isr    = (is  == null) ? null : new InputStreamReader(is, StandardCharsets.UTF_8);
+             BufferedReader    reader = (isr == null) ? null : new BufferedReader(isr)) {
+
+            if (reader == null) {
+                throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, source.getName());
+            }
 
             // initialize internal data structures
             final ParseInfo pi = new ParseInfo();
@@ -189,6 +194,8 @@ public class SP3Parser implements EphemerisFileParser<SP3File> {
             // we never reached the EOF marker
             throw new OrekitException(OrekitMessages.SP3_UNEXPECTED_END_OF_FILE, lineNumber);
 
+        } catch (IOException ioe) {
+            throw new OrekitException(ioe, LocalizedCoreFormats.SIMPLE_MESSAGE, ioe.getLocalizedMessage());
         }
 
     }

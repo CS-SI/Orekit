@@ -16,8 +16,6 @@
  */
 package org.orekit.files.general;
 
-import java.io.IOException;
-
 import org.orekit.data.DataSource;
 
 /**
@@ -33,9 +31,7 @@ public interface EphemerisFileParser<T extends EphemerisFile<?, ?>> {
      *
      * @param source source providing the data to parse
      * @return a parsed ephemeris file.
-     * @throws IOException if {@code inputStream} throws one.
      */
-    T parse(DataSource source)
-        throws IOException;
+    T parse(DataSource source);
 
 }
