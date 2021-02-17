@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.orekit.data.DataContext;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadataKey;
@@ -35,6 +36,7 @@ import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.state.ProcessingState;
+import org.orekit.files.general.AttitudeEphemerisFileParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -52,7 +54,7 @@ import org.orekit.utils.IERSConventions;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class AEMParser extends ADMParser<AEMFile, AEMParser> {
+public class AEMParser extends ADMParser<AEMFile, AEMParser> implements AttitudeEphemerisFileParser<AEMFile> {
 
     /** Root element for XML files. */
     private static final String ROOT = "aem";
@@ -95,6 +97,12 @@ public class AEMParser extends ADMParser<AEMFile, AEMParser> {
                      final AbsoluteDate missionReferenceDate, final int defaultInterpolationDegree) {
         super(AEMFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate);
         this.defaultInterpolationDegree  = defaultInterpolationDegree;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AEMFile parse(final DataSource source) {
+        return parseMessage(source);
     }
 
     /** {@inheritDoc} */

@@ -176,7 +176,7 @@ public class AEMParserTest {
                                          new AbsoluteDate("1996-12-17T00:00:00.000", TimeScalesFactory.getUTC()),
                                          1);
 
-        final AEMFile file = parser.parseMessage(source);
+        final AEMFile file = parser.parse(source); // using generic API here
         final Segment<AEMMetadata, AEMData> segment0 = file.getSegments().get(0);
         final List<String> headerComment = new ArrayList<String>();
         headerComment.add("comment");
