@@ -62,7 +62,7 @@ public class TDMParserTest {
 
         try {
             // action
-            new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null).
+            new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault()).
             parseMessage(source);
 
             // verify
@@ -82,7 +82,7 @@ public class TDMParserTest {
         // Data lines number was cut down to 7
         final String name = "/ccsds/tdm/kvn/TDMExample2.txt";
         final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
-        final TDMFile file = new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null).
+        final TDMFile file = new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault()).
                              parseMessage(source);
         validateTDMExample2(file);
     }
@@ -95,7 +95,7 @@ public class TDMParserTest {
         // Data lines number was cut down to 20
         final String name = "/ccsds/tdm/kvn/TDMExample4.txt";
         final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
-        final TDMFile file = new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null).
+        final TDMFile file = new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault()).
                              parseMessage(source);
         validateTDMExample4(file);
     }
@@ -108,7 +108,7 @@ public class TDMParserTest {
         // Data lines number was cut down to 16
         final String name = "/ccsds/tdm/kvn/TDMExample6.txt";
         final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
-        final TDMFile file = new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null).
+        final TDMFile file = new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault()).
                              parseMessage(source);
         validateTDMExample6(file);
     }
@@ -121,7 +121,7 @@ public class TDMParserTest {
         // Data lines number was cut down to 18
         final String name = "/ccsds/tdm/kvn/TDMExample8.txt";
         final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
-        final TDMFile file = new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null).
+        final TDMFile file = new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault()).
                              parseMessage(source);
         validateTDMExample8(file);
     }
@@ -133,7 +133,7 @@ public class TDMParserTest {
         // See Figure D-15: TDM Example: Clock Bias/Drift Only
         final String name = "/ccsds/tdm/kvn/TDMExample15.txt";
         final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
-        final TDMFile file = new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null).
+        final TDMFile file = new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault()).
                              parseMessage(source);
         validateTDMExample15(file);
     }
@@ -144,7 +144,7 @@ public class TDMParserTest {
         // Testing all TDM keywords
         final String name = "/ccsds/tdm/kvn/TDMExampleAllKeywords.txt";
         final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
-        final TDMFile file = new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null).
+        final TDMFile file = new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault()).
                              parseMessage(source);
         validateTDMExampleAllKeywords(file);
     }
@@ -157,7 +157,7 @@ public class TDMParserTest {
         // Data lines number was cut down to 7
         final String name = "/ccsds/tdm/xml/TDMExample2.xml";
         final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
-        final TDMFile file = new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null).
+        final TDMFile file = new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault()).
                              parseMessage(source);
         validateTDMExample2(file);
     }
@@ -170,7 +170,7 @@ public class TDMParserTest {
         // Data lines number was cut down to 20
         final String name = "/ccsds/tdm/xml/TDMExample4.xml";
         final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
-        final TDMFile file = new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null).
+        final TDMFile file = new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault()).
                              parseMessage(source);
         validateTDMExample4(file);
     }
@@ -183,7 +183,7 @@ public class TDMParserTest {
         // Data lines number was cut down to 16
         final String name = "/ccsds/tdm/xml/TDMExample6.xml";
         final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
-        final TDMFile file = new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null).
+        final TDMFile file = new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault()).
                              parseMessage(source);
         validateTDMExample6(file);
     }
@@ -196,7 +196,7 @@ public class TDMParserTest {
         // Data lines number was cut down to 18
         final String name = "/ccsds/tdm/xml/TDMExample8.xml";
         final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
-        final TDMFile file = new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null).
+        final TDMFile file = new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault()).
                              parseMessage(source);
         validateTDMExample8(file);
     }
@@ -208,7 +208,7 @@ public class TDMParserTest {
         // See Figure D-15: TDM Example: Clock Bias/Drift Only
         final String name = "/ccsds/tdm/xml/TDMExample15.xml";
         final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
-        final TDMFile file = new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null).
+        final TDMFile file = new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault()).
                              parseMessage(source);
         validateTDMExample15(file);
     }
@@ -219,7 +219,7 @@ public class TDMParserTest {
         // Testing all TDM keywords
         final String name = "/ccsds/tdm/xml/TDMExampleAllKeywords.xml";
         final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
-        final TDMFile file = new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null).
+        final TDMFile file = new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault()).
                              parseMessage(source);
         validateTDMExampleAllKeywords(file);
     }
@@ -230,7 +230,7 @@ public class TDMParserTest {
         final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
         try {
             // Number format exception in data part
-             new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null).parseMessage(source);
+             new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault()).parseMessage(source);
             Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
@@ -246,8 +246,7 @@ public class TDMParserTest {
             // Number format exception in data part
             final String name = "/ccsds/tdm/xml/TDM-data-number-format-error.xml";
             final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
-            new TDMParser(IERSConventions.IERS_2010, true,
-                                                                DataContext.getDefault(), null).parseMessage(source);
+            new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault()).parseMessage(source);
             Assert.fail("An exception should have been thrown");
                     } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
@@ -263,8 +262,7 @@ public class TDMParserTest {
             // Number format exception in metadata part
             final String name = "/ccsds/tdm/kvn/TDM-metadata-number-format-error.txt";
             final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
-            new TDMParser(IERSConventions.IERS_2010, true,
-                                                                DataContext.getDefault(), null).parseMessage(source);
+            new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault()).parseMessage(source);
             Assert.fail("An Orekit Exception \"UNABLE_TO_PARSE_LINE_IN_FILE\" should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
@@ -280,8 +278,7 @@ public class TDMParserTest {
             // Number format exception in metadata part
             final String name = "/ccsds/tdm/xml/TDM-metadata-number-format-error.xml";
             final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
-            new TDMParser(IERSConventions.IERS_2010, true,
-                                                                DataContext.getDefault(), null).parseMessage(source);
+            new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault()).parseMessage(source);
             Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
@@ -298,8 +295,7 @@ public class TDMParserTest {
         final String wrongName = realName + "xxxxx";
         final DataSource source = new DataSource(wrongName, () -> TDMParserTest.class.getResourceAsStream(wrongName));
         try {
-            new TDMParser(IERSConventions.IERS_2010, true,
-                                                                DataContext.getDefault(), null).parseMessage(source);
+            new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault()).parseMessage(source);
             Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
@@ -313,8 +309,7 @@ public class TDMParserTest {
         try {
             final String name = "/ccsds/tdm/kvn/TDM-inconsistent-time-systems.txt";
             final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
-            new TDMParser(IERSConventions.IERS_2010, true,
-                                                                DataContext.getDefault(), null).parseMessage(source);
+            new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault()).parseMessage(source);
             Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_INCONSISTENT_TIME_SYSTEMS, oe.getSpecifier());
@@ -329,8 +324,7 @@ public class TDMParserTest {
         try {
             final String name = "/ccsds/tdm/xml/TDM-inconsistent-time-systems.xml";
             final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
-            new TDMParser(IERSConventions.IERS_2010, true,
-                                                                DataContext.getDefault(), null).parseMessage(source);
+            new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault()).parseMessage(source);
             Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_INCONSISTENT_TIME_SYSTEMS, oe.getSpecifier());
@@ -345,7 +339,7 @@ public class TDMParserTest {
         final String name = "/ccsds/tdm/kvn/TDM-data-wrong-keyword.txt";
         final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
         try {
-            new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null).parseMessage(source);
+            new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault()).parseMessage(source);
             Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
@@ -361,7 +355,7 @@ public class TDMParserTest {
         final String name = "/ccsds/tdm/xml/TDM-data-wrong-keyword.xml";
         final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
         try {
-            new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null).parseMessage(source);
+            new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault()).parseMessage(source);
             Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
@@ -377,7 +371,7 @@ public class TDMParserTest {
         final String name = "/ccsds/tdm/kvn/TDM-metadata-wrong-keyword.txt";
         final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
         try {
-            new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null).parseMessage(source);
+            new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault()).parseMessage(source);
             Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
@@ -393,7 +387,7 @@ public class TDMParserTest {
         final String name = "/ccsds/tdm/xml/TDM-metadata-wrong-keyword.xml";
         final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
         try {
-            new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null).parseMessage(source);
+            new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault()).parseMessage(source);
             Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
@@ -409,7 +403,7 @@ public class TDMParserTest {
         final String name = "/ccsds/tdm/kvn/TDM-metadata-timesystem-not-implemented.txt";
         final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
         try {
-            new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null).parseMessage(source);
+            new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault()).parseMessage(source);
             Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED, oe.getSpecifier());
@@ -423,7 +417,7 @@ public class TDMParserTest {
         final String name = "/ccsds/tdm/xml/TDM-metadata-timesystem-not-implemented.xml";
         final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
         try {
-            new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null).parseMessage(source);
+            new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault()).parseMessage(source);
             Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED, oe.getSpecifier());
@@ -437,7 +431,7 @@ public class TDMParserTest {
         final String name = "/ccsds/tdm/xml/TDM-missing-timesystem.xml";
         final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
         try {
-            new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null).parseMessage(source);
+            new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault()).parseMessage(source);
             Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_TIME_SYSTEM_NOT_READ_YET, oe.getSpecifier());
@@ -451,7 +445,7 @@ public class TDMParserTest {
         final String name = "/ccsds/tdm/kvn/TDM-data-inconsistent-line.txt";
         final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
         try {
-            new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null).parseMessage(source);
+            new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault()).parseMessage(source);
             Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
@@ -467,7 +461,7 @@ public class TDMParserTest {
         final String name = "/ccsds/tdm/xml/TDM-data-inconsistent-block.xml";
         final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
         try {
-            new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null).parseMessage(source);
+            new TDMParser(IERSConventions.IERS_2010, true, DataContext.getDefault()).parseMessage(source);
             Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());

@@ -31,7 +31,6 @@ import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.state.AbstractMessageParser;
 import org.orekit.files.ccsds.utils.state.ProcessingState;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
 
@@ -59,9 +58,6 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
     /** Root element for XML files. */
     private static final String ROOT = "tdm";
 
-    /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
-    private final AbsoluteDate missionReferenceDate;
-
     /** Metadata for current observation block. */
     private TDMMetadata metadata;
 
@@ -84,23 +80,11 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
-     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
-     * (may be null if time system is absolute)
      */
     public TDMParser(final IERSConventions conventions,
                      final boolean simpleEOP,
-                     final DataContext dataContext,
-                     final AbsoluteDate missionReferenceDate) {
+                     final DataContext dataContext) {
         super(TDMFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext);
-        this.missionReferenceDate = missionReferenceDate;
-    }
-
-    /** Get initial date.
-     * @return mission reference date to use while parsing
-     * @see #withMissionReferenceDate(AbsoluteDate)
-     */
-    public AbsoluteDate getMissionReferenceDate() {
-        return missionReferenceDate;
     }
 
     /** {@inheritDoc} */
@@ -162,11 +146,7 @@ public class TDMParser extends AbstractMessageParser<TDMFile, TDMParser> {
             return false;
         }
         metadata  = new TDMMetadata();
-        context   = new ParsingContext(this::getConventions,
-                                       this::isSimpleEOP,
-                                       this::getDataContext,
-                                       this::getMissionReferenceDate,
-                                       metadata::getTimeSystem);
+        context   = new ParsingContext(this::getConventions, this::isSimpleEOP, this::getDataContext, () -> null, metadata::getTimeSystem);
         setFallback(this::processMetadataToken);
         return true;
     }
