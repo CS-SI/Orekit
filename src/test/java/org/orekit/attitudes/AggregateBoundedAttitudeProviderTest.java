@@ -31,9 +31,9 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.adm.aem.AEMFile;
-import org.orekit.files.ccsds.ndm.adm.aem.AEMParser;
-import org.orekit.files.ccsds.ndm.adm.aem.AEMSatelliteEphemeris;
+import org.orekit.files.ccsds.ndm.adm.aem.AemFile;
+import org.orekit.files.ccsds.ndm.adm.aem.AemParser;
+import org.orekit.files.ccsds.ndm.adm.aem.AemSatelliteEphemeris;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -60,10 +60,10 @@ public class AggregateBoundedAttitudeProviderTest {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1);
-        final AEMFile file = parser.parseMessage(source);
+        final AemParser parser = new AemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1);
+        final AemFile file = parser.parseMessage(source);
 
-        final AEMSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
+        final AemSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
         final BoundedAttitudeProvider provider = ephemeris.getAttitudeProvider();
 
         // Verify dates
@@ -91,10 +91,10 @@ public class AggregateBoundedAttitudeProviderTest {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1);
-        final AEMFile file = parser.parseMessage(source);
+        final AemParser parser = new AemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1);
+        final AemFile file = parser.parseMessage(source);
 
-        final AEMSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
+        final AemSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
         final BoundedAttitudeProvider provider = ephemeris.getAttitudeProvider();
 
         // Verify dates
@@ -118,10 +118,10 @@ public class AggregateBoundedAttitudeProviderTest {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1);
-        final AEMFile file = parser.parseMessage(source);
+        final AemParser parser = new AemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1);
+        final AemFile file = parser.parseMessage(source);
 
-        final AEMSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
+        final AemSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
         final BoundedAttitudeProvider provider = ephemeris.getAttitudeProvider();
         
         // before bound of first attitude provider
@@ -149,10 +149,10 @@ public class AggregateBoundedAttitudeProviderTest {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1);
-        final AEMFile file = parser.parseMessage(source);
+        final AemParser parser = new AemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1);
+        final AemFile file = parser.parseMessage(source);
 
-        final AEMSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
+        final AemSatelliteEphemeris ephemeris = file.getSatellites().get("1996-062A");
         final BoundedAttitudeProvider provider = ephemeris.getAttitudeProvider();
         
         // before bound of first attitude provider

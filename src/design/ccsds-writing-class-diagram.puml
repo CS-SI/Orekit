@@ -76,8 +76,8 @@
         }
 
         package generation #CBDBC8 {
-          class KVNGenerator
-          class XMLGenerator
+          class KvnGenerator
+          class XmlGenerator
           interface Generator {
             +FileFormat getFileFormat()
           }
@@ -88,13 +88,13 @@
       package ndm.odm #CBDBC8 {
 
         package oem #CCCCC7 {
-          class OEMWriter
-          class OEMFile
+          class OemWriter
+          class OemFile
         }
 
         package opm #CCCCC7 {
-          class OPMWriter
-          class OPMFile
+          class OpmWriter
+          class OpmFile
         }
 
       }
@@ -109,18 +109,18 @@
 
   }
 
-  Generator <|.. KVNGenerator
-  Generator <|.. XMLGenerator
+  Generator <|.. KvnGenerator
+  Generator <|.. XmlGenerator
   FileFormat <-- Generator
   EphemerisFile *--> EphemerisFile.SatelliteEphemeris
   EphemerisFile.SatelliteEphemeris o--> EphemerisFile.EphemerisSegment
   OrekitEphemerisFile ..|> EphemerisFile
   EphemerisFileWriter --> EphemerisFile
-  EphemerisFileWriter <|.. OEMWriter
-  EphemerisFile       <|.. OEMFile
-  OEMWriter --> OEMFile
-  OEMWriter --> Generator
-  OPMWriter --> OPMFile
-  OPMWriter --> Generator
+  EphemerisFileWriter <|.. OemWriter
+  EphemerisFile       <|.. OemFile
+  OemWriter --> OemFile
+  OemWriter --> Generator
+  OpmWriter --> OemFile
+  OpmWriter --> Generator
 
 @enduml

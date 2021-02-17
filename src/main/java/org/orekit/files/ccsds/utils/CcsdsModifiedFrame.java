@@ -37,7 +37,7 @@ public class CcsdsModifiedFrame extends Frame {
     private static final long serialVersionUID = 20170619L;
 
     /** Reference frame used to create this frame. */
-    private final CCSDSFrame refFrame;
+    private final CcsdsFrame refFrame;
 
     /** Value of the CENTER_NAME keyword in the ODM file used to create this frame. */
     private final String centerName;
@@ -52,7 +52,7 @@ public class CcsdsModifiedFrame extends Frame {
      *                   {@code body}.
      */
     public CcsdsModifiedFrame(final Frame frame,
-                              final CCSDSFrame refFrame,
+                              final CcsdsFrame refFrame,
                               final CelestialBody body,
                               final String centerName) {
         super(
@@ -69,7 +69,7 @@ public class CcsdsModifiedFrame extends Frame {
      *
      * @return the reference frame used to create this frame.
      */
-    public CCSDSFrame getRefFrame() {
+    public CcsdsFrame getRefFrame() {
         return refFrame;
     }
 

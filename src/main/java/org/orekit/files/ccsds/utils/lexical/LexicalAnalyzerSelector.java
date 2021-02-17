@@ -24,7 +24,7 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
-/** Utility class for selecting either {@link XMLLexicalAnalyzer} or {@link KVNLexicalAnalyzer} depending on
+/** Utility class for selecting either {@link XmlLexicalAnalyzer} or {@link KvnLexicalAnalyzer} depending on
  * data first bytes.
  * @author Luc Maisonobe
  * @since 11.0
@@ -116,7 +116,7 @@ public class LexicalAnalyzerSelector {
                 // we return arbitrarily a KVN lexical analyzer,
                 // anyway, it will fail shortly during parsing
                 bis.reset();
-                return new KVNLexicalAnalyzer(new DataSource(source.getName(), () -> bis));
+                return new KvnLexicalAnalyzer(new DataSource(source.getName(), () -> bis));
             }
             read += n;
         }
@@ -132,11 +132,11 @@ public class LexicalAnalyzerSelector {
             checkSequence(first, UCS_4_BE)  || checkSequence(first, UCS_4_BE_BOM)) {
             // we recognized the "<?xml" sequence at start of an XML file
             bis.reset();
-            return new XMLLexicalAnalyzer(new DataSource(source.getName(), () -> bis));
+            return new XmlLexicalAnalyzer(new DataSource(source.getName(), () -> bis));
         } else {
             // it was not XML, the only other option is KVN
             bis.reset();
-            return new KVNLexicalAnalyzer(new DataSource(source.getName(), () -> bis));
+            return new KvnLexicalAnalyzer(new DataSource(source.getName(), () -> bis));
         }
 
     }

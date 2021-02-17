@@ -18,7 +18,7 @@ package org.orekit.files.ccsds.utils.state;
 
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitInternalError;
-import org.orekit.files.ccsds.ndm.NDMFile;
+import org.orekit.files.ccsds.ndm.NdmFile;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.MessageParser;
@@ -40,7 +40,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public abstract class AbstractMessageParser<T extends NDMFile<?, ?>, P extends AbstractMessageParser<T, ?>>
+public abstract class AbstractMessageParser<T extends NdmFile<?, ?>, P extends AbstractMessageParser<T, ?>>
     implements MessageParser<T> {
 
     /** Safety limit for loop over processing states. */

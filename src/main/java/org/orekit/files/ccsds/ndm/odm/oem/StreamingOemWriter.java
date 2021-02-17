@@ -21,7 +21,7 @@ import java.io.IOException;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.utils.CCSDSFrame;
+import org.orekit.files.ccsds.utils.CcsdsFrame;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.Propagator;
@@ -52,7 +52,7 @@ import org.orekit.time.AbsoluteDate;
  *      Messages</a>
  * @see <a href="https://public.ccsds.org/Pubs/500x0g4.pdf">CCSDS 500.0-G-4 Navigation
  *      Data Definitions and Conventions</a>
- * @see OEMWriter
+ * @see OemWriter
  */
 public class StreamingOemWriter {
 
@@ -60,7 +60,7 @@ public class StreamingOemWriter {
     private final Generator generator;
 
     /** Writer for the OEM message format. */
-    private final OEMWriter oemWriter;
+    private final OemWriter oemWriter;
 
     /** Indicator for writing header. */
     private boolean headerWritePending;
@@ -70,7 +70,7 @@ public class StreamingOemWriter {
      * @param oemWriter writer for the OEM message format
      * @since 11.0
      */
-    public StreamingOemWriter(final Generator generator, final OEMWriter oemWriter) {
+    public StreamingOemWriter(final Generator generator, final OemWriter oemWriter) {
         this.generator          = generator;
         this.oemWriter          = oemWriter;
         this.headerWritePending = true;
@@ -92,9 +92,9 @@ public class StreamingOemWriter {
         /**
          * {@inheritDoc}
          *
-         * <p> Sets the {@link OEMMetadataKey#START_TIME} and {@link OEMMetadataKey#STOP_TIME} in this
-         * segment's metadata if not already set by the user. Then calls {@link OEMWriter#writeHeader(Generator)
-         * writeHeader} if it is the first segment) and {@link OEMWriter#writeMetadata()} to start the segment.
+         * <p> Sets the {@link OemMetadataKey#START_TIME} and {@link OemMetadataKey#STOP_TIME} in this
+         * segment's metadata if not already set by the user. Then calls {@link OemWriter#writeHeader(Generator)
+         * writeHeader} if it is the first segment) and {@link OemWriter#writeMetadata()} to start the segment.
          */
         @Override
         public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {
@@ -109,13 +109,13 @@ public class StreamingOemWriter {
                     headerWritePending = false;
                 }
 
-                final OEMMetadata metadata = oemWriter.getMetadata();
+                final OemMetadata metadata = oemWriter.getMetadata();
                 metadata.setStartTime(s0.getDate());
                 metadata.setUseableStartTime(null);
                 metadata.setUseableStopTime(null);
                 metadata.setStopTime(t);
                 final Frame      stateFrame = s0.getAttitude().getReferenceFrame();
-                final CCSDSFrame ccsdsFrame = CCSDSFrame.map(stateFrame);
+                final CcsdsFrame ccsdsFrame = CcsdsFrame.map(stateFrame);
                 metadata.setRefFrame(stateFrame, ccsdsFrame);
                 oemWriter.writeMetadata(generator);
                 oemWriter.startData(generator);

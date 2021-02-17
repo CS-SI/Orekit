@@ -31,10 +31,10 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
-import org.orekit.files.ccsds.ndm.odm.ODMCovariance;
-import org.orekit.files.ccsds.ndm.odm.ODMKeplerianElements;
-import org.orekit.files.ccsds.ndm.odm.ODMSpacecraftParameters;
-import org.orekit.files.ccsds.ndm.odm.ODMUserDefined;
+import org.orekit.files.ccsds.ndm.odm.Covariance;
+import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
+import org.orekit.files.ccsds.ndm.odm.SpacecraftParameters;
+import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
@@ -61,8 +61,8 @@ public class OMMParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
         // initialize parser
-        final OMMParser parser = new ParserBuilder().withMu(398600e9).withDefaultMass(1000.0).buildOMMParser();
-        final OMMFile   file   = parser.parseMessage(source);
+        final OmmParser parser = new ParserBuilder().withMu(398600e9).withDefaultMass(1000.0).buildOmmParser();
+        final OmmFile   file   = parser.parseMessage(source);
 
         // Check Header Block;
         Assert.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
@@ -86,7 +86,7 @@ public class OMMParserTest {
         Assert.assertTrue(file.getData().getTLEBlock().getComments().isEmpty());
 
         // Check Mean Keplerian elements data block;
-        ODMKeplerianElements kep = file.getData().getKeplerianElementsBlock();
+        KeplerianElements kep = file.getData().getKeplerianElementsBlock();
         Assert.assertEquals(new AbsoluteDate(2007, 03, 05, 10, 34, 41.4264,
                                              TimeScalesFactory.getUTC()),
                             file.getDate());
@@ -100,7 +100,7 @@ public class OMMParserTest {
 
 
         // Check TLE Related Parameters data block;
-        OMMTLE tle = file.getData().getTLEBlock();
+        OemTle tle = file.getData().getTLEBlock();
         Assert.assertEquals(0, tle.getEphemerisType());
         Assert.assertEquals('U', tle.getClassificationType());
         int[] noradIDExpected = new int[23581];
@@ -135,14 +135,14 @@ public class OMMParserTest {
         // data.
         final String name = "/ccsds/odm/omm/OMMExample2.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-        final OMMParser parser = new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).buildOMMParser();
+        final OmmParser parser = new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).buildOmmParser();
 
-        final OMMFile file = parser.parseMessage(source);
+        final OmmFile file = parser.parseMessage(source);
         Assert.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
-        final ODMKeplerianElements kep = file.getData().getKeplerianElementsBlock();
+        final KeplerianElements kep = file.getData().getKeplerianElementsBlock();
         Assert.assertEquals(1.00273272, Constants.JULIAN_DAY * kep.getMeanMotion() / MathUtils.TWO_PI, 1e-10);
         Assert.assertTrue(Double.isNaN(file.getData().getMass()));
-        ODMCovariance covariance = file.getData().getCovarianceBlock();
+        Covariance covariance = file.getData().getCovarianceBlock();
         Assert.assertEquals(FramesFactory.getTEME(), covariance.getRefFrame());
         Assert.assertEquals(6, covariance.getCovarianceMatrix().getRowDimension());
         Assert.assertEquals(6, covariance.getCovarianceMatrix().getColumnDimension());
@@ -161,28 +161,28 @@ public class OMMParserTest {
         final String name = "/ccsds/odm/omm/OMMExample3.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final AbsoluteDate missionReferenceDate = new AbsoluteDate();
-        final OMMParser parser = new ParserBuilder().
+        final OmmParser parser = new ParserBuilder().
                                  withMu(Constants.EIGEN5C_EARTH_MU).
                                  withMissionReferenceDate(missionReferenceDate).
                                  withDefaultMass(1000.0).
-                                 buildOMMParser();
+                                 buildOmmParser();
 
-        final OMMFile file = parser.parseMessage(source);
-        final ODMKeplerianElements kep = file.getData().getKeplerianElementsBlock();
+        final OmmFile file = parser.parseMessage(source);
+        final KeplerianElements kep = file.getData().getKeplerianElementsBlock();
         Assert.assertEquals(2.0, file.getHeader().getFormatVersion(), 1.0e-10);
         Assert.assertEquals(missionReferenceDate.shiftedBy(210840), file.getMetadata().getFrameEpoch());
         Assert.assertEquals(6800e3, kep.getA(), 1e-10);
 
-        final ODMSpacecraftParameters sp = file.getData().getSpacecraftParametersBlock();
+        final SpacecraftParameters sp = file.getData().getSpacecraftParametersBlock();
         Assert.assertEquals(300, sp.getMass(), 1e-10);
         Assert.assertEquals(5, sp.getSolarRadArea(), 1e-10);
         Assert.assertEquals(0.001, sp.getSolarRadCoeff(), 1e-10);
 
-        ODMCovariance covariance = file.getData().getCovarianceBlock();
+        Covariance covariance = file.getData().getCovarianceBlock();
         Assert.assertEquals(null, covariance.getRefFrame());
         Assert.assertEquals(LOFType.TNW, covariance.getRefCCSDSFrame().getLofType());
 
-        ODMUserDefined ud = file.getData().getUserDefinedBlock();
+        UserDefined ud = file.getData().getUserDefinedBlock();
         HashMap<String, String> userDefinedParameters = new HashMap<String, String>();
         userDefinedParameters.put("EARTH_MODEL", "WGS-84");
         Assert.assertEquals(userDefinedParameters, ud.getParameters());
@@ -211,11 +211,11 @@ public class OMMParserTest {
         // data.
         final String name = "/ccsds/odm/omm/OMM-wrong-keyword.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-        final OMMParser parser = new ParserBuilder().
+        final OmmParser parser = new ParserBuilder().
                                  withMu(Constants.EIGEN5C_EARTH_MU).
                                  withMissionReferenceDate(new AbsoluteDate()).
                                  withDefaultMass(1000.0).
-                                 buildOMMParser();
+                                 buildOmmParser();
         try {
             parser.parseMessage(source);
             Assert.fail("an exception should have been thrown");
@@ -233,13 +233,13 @@ public class OMMParserTest {
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
 
         // initialize parser
-        final OMMParser parser = new ParserBuilder().
+        final OmmParser parser = new ParserBuilder().
                         withMu(398600e9).
                         withMissionReferenceDate(new AbsoluteDate()).
                         withDefaultMass(1000.0).
-                        buildOMMParser();
+                        buildOmmParser();
 
-        final OMMFile file = parser.parseMessage(source);
+        final OmmFile file = parser.parseMessage(source);
 
         final String satId = "1995-025A";
         Assert.assertEquals(satId, file.getMetadata().getObjectID());
@@ -256,7 +256,7 @@ public class OMMParserTest {
             withMu(Constants.EIGEN5C_EARTH_MU).
             withMissionReferenceDate(new AbsoluteDate()).
             withDefaultMass(1000.0).
-            buildOMMParser().
+            buildOmmParser().
             parseMessage(source);
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
@@ -274,7 +274,7 @@ public class OMMParserTest {
             withMu(Constants.EIGEN5C_EARTH_MU).
             withMissionReferenceDate(new AbsoluteDate()).
             withDefaultMass(1000.0).
-            buildOMMParser().
+            buildOmmParser().
             parseMessage(source);
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
@@ -295,7 +295,7 @@ public class OMMParserTest {
             withMu(Constants.EIGEN5C_EARTH_MU).
             withMissionReferenceDate(new AbsoluteDate()).
             withDefaultMass(1000.0).
-            buildOMMParser().
+            buildOmmParser().
             parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {

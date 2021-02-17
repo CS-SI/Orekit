@@ -37,8 +37,8 @@
 
       package section #CBDBC8 {
         class HeaderProcessingState
-        class KVNStructureProcessingState
-        class XMLStructureProcessingState
+        class KvnStructureProcessingState
+        class XmlStructureProcessingState
       }
 
       package lexical #CBDBC8 {
@@ -93,27 +93,27 @@
       package ndm #CBDBC8 {
 
          package odm.opm #CCCCC7 {
-          class OPMParser
+          class OpmParser
           note bottom
             uses method references to
             provide multiple implementations
             of ProcessingState for different
             logical blocks
           end note
-          class OPMFile
+          class OpmFile
         }
 
         class ParserBuilder {
           +withConventions()
           +withDataContext()
           +with...()
-          +buildOPMParser()
-          +buildOMMParser()
-          +buildOEMParser()
-          +buildOCMParser()
-          +buildAPMParser()
-          +buildAEMParser()
-          +buildTDMParser()
+          +buildOpmParser()
+          +buildOmmParser()
+          +buildOemParser()
+          +buildOcmParser()
+          +buildApmParser()
+          +buildAemParser()
+          +buildTdmParser()
         }
 
       }
@@ -131,11 +131,11 @@
   AbstractMessageParser ..|> MessageParser
   ProcessingState <--o AbstractMessageParser : "current"
   ProcessingState <--o AbstractMessageParser : "fallback"
-  OPMParser --> OPMFile : "build"
+  OpmParser --> OpmFile : "build"
   HeaderProcessingState       ..|> ProcessingState
-  KVNStructureProcessingState ..|> ProcessingState
-  XMLStructureProcessingState ..|> ProcessingState
-  ProcessingState <|.. OPMParser
-  ParserBuilder -right-> OPMParser : build
+  KvnStructureProcessingState ..|> ProcessingState
+  XmlStructureProcessingState ..|> ProcessingState
+  ProcessingState <|.. OpmParser
+  ParserBuilder -right-> OpmParser : build
 
 @enduml

@@ -32,10 +32,10 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
-import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
+import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
 import org.orekit.files.ccsds.section.Segment;
-import org.orekit.files.ccsds.utils.CCSDSBodyFrame;
-import org.orekit.files.ccsds.utils.CCSDSFrame;
+import org.orekit.files.ccsds.utils.CcsdsBodyFrame;
+import org.orekit.files.ccsds.utils.CcsdsFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -60,15 +60,15 @@ public class APMParserTest {
         final String ex = "/ccsds/adm/apm/APMExample.txt";
 
         // Initialize the parser
-        final APMParser parser = new ParserBuilder().
+        final ApmParser parser = new ParserBuilder().
                                  withMissionReferenceDate(new AbsoluteDate("2002-09-30T14:28:15.117",
                                                                            TimeScalesFactory.getUTC())).
-                                 buildAPMParser();
+                                 buildApmParser();
 
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
         // Generated APM file
-        final APMFile file = parser.parseMessage(source);
+        final ApmFile file = parser.parseMessage(source);
 
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
@@ -81,7 +81,7 @@ public class APMParserTest {
                             file.getHeader().getCreationDate());
         Assert.assertEquals("GSFC", file.getHeader().getOriginator());
 
-        Segment<ADMMetadata, APMData> segment = file.getSegments().get(0);
+        Segment<AdmMetadata, ApmData> segment = file.getSegments().get(0);
 
         // Check Metadata Block
         Assert.assertEquals("TRMM",       segment.getMetadata().getObjectName());
@@ -96,10 +96,10 @@ public class APMParserTest {
 
         // Check data block
         Assert.assertFalse(segment.getData().hasManeuvers());
-        Assert.assertEquals(CCSDSBodyFrame.BaseEquipment.SC_BODY,
+        Assert.assertEquals(CcsdsBodyFrame.BaseEquipment.SC_BODY,
                             segment.getData().getQuaternionBlock().getEndPoints().getLocalFrame().getBaseEquipment());
         Assert.assertEquals("1", segment.getData().getQuaternionBlock().getEndPoints().getLocalFrame().getLabel());
-        Assert.assertEquals(CCSDSFrame.ITRF97, segment.getData().getQuaternionBlock().getEndPoints().getExternalFrame());
+        Assert.assertEquals(CcsdsFrame.ITRF97, segment.getData().getQuaternionBlock().getEndPoints().getExternalFrame());
         Assert.assertFalse(segment.getData().getQuaternionBlock().getEndPoints().isExternal2Local());
         Assert.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, 15.1172,
                                              TimeScalesFactory.getUTC()),
@@ -130,15 +130,15 @@ public class APMParserTest {
         final String ex = "/ccsds/adm/apm/APMExample2.txt";
 
         // Initialize the parser
-        final APMParser parser = new ParserBuilder().
+        final ApmParser parser = new ParserBuilder().
                                  withMissionReferenceDate(new AbsoluteDate("2002-09-30T14:28:15.117",
                                                                            TimeScalesFactory.getUTC())).
-                                 buildAPMParser();
+                                 buildApmParser();
 
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
         // Generated APM file
-        final APMFile file = parser.parseMessage(source);
+        final ApmFile file = parser.parseMessage(source);
 
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
@@ -151,7 +151,7 @@ public class APMParserTest {
                             file.getHeader().getCreationDate());
         Assert.assertEquals("JPL", file.getHeader().getOriginator());
 
-        Segment<ADMMetadata, APMData> segment = file.getSegments().get(0);
+        Segment<AdmMetadata, ApmData> segment = file.getSegments().get(0);
 
         // Check Metadata Block
         Assert.assertEquals("MARS SPIRIT", segment.getMetadata().getObjectName());
@@ -175,10 +175,10 @@ public class APMParserTest {
         epochComment.add("planning data.");
         epochComment.add("Attitude state quaternion");
         Assert.assertEquals(epochComment,   segment.getData().getQuaternionBlock().getComments());
-        Assert.assertEquals(CCSDSBodyFrame.BaseEquipment.INSTRUMENT,
+        Assert.assertEquals(CcsdsBodyFrame.BaseEquipment.INSTRUMENT,
                             segment.getData().getQuaternionBlock().getEndPoints().getLocalFrame().getBaseEquipment());
         Assert.assertEquals("A", segment.getData().getQuaternionBlock().getEndPoints().getLocalFrame().getLabel());
-        Assert.assertEquals(CCSDSFrame.ITRF97, segment.getData().getQuaternionBlock().getEndPoints().getExternalFrame());
+        Assert.assertEquals(CcsdsFrame.ITRF97, segment.getData().getQuaternionBlock().getEndPoints().getExternalFrame());
         Assert.assertEquals(new AbsoluteDate(2004, 2, 14, 14, 28, 15.1172,
                                              TimeScalesFactory.getUTC()),
                             segment.getData().getQuaternionBlock().getEpoch());
@@ -196,8 +196,8 @@ public class APMParserTest {
         ArrayList<String> eulerComment = new ArrayList<String>();
         eulerComment.add("Attitude specified as Euler elements");
         Assert.assertEquals(eulerComment,    segment.getData().getEulerBlock().getComments());
-        Assert.assertEquals(CCSDSFrame.ITRF97, segment.getData().getEulerBlock().getEndPoints().getExternalFrame());
-        Assert.assertEquals(CCSDSBodyFrame.BaseEquipment.INSTRUMENT,  segment.getData().getEulerBlock().getEndPoints().getLocalFrame().getBaseEquipment());
+        Assert.assertEquals(CcsdsFrame.ITRF97, segment.getData().getEulerBlock().getEndPoints().getExternalFrame());
+        Assert.assertEquals(CcsdsBodyFrame.BaseEquipment.INSTRUMENT,  segment.getData().getEulerBlock().getEndPoints().getLocalFrame().getBaseEquipment());
         Assert.assertEquals("A",  segment.getData().getEulerBlock().getEndPoints().getLocalFrame().getLabel());
         Assert.assertTrue(segment.getData().getEulerBlock().getEndPoints().isExternal2Local());
         Assert.assertEquals("EULER FRAME A",   segment.getData().getEulerBlock().getRateFrameString());
@@ -249,15 +249,15 @@ public class APMParserTest {
         final String ex = "/ccsds/adm/apm/APMExample3.txt";
 
         // Initialize the parser
-        final APMParser parser = new ParserBuilder().
+        final ApmParser parser = new ParserBuilder().
                                  withMissionReferenceDate(new AbsoluteDate("2002-09-30T14:28:15.117",
                                                                            TimeScalesFactory.getUTC())).
-                                 buildAPMParser();
+                                 buildApmParser();
 
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
         // Generated APM file
-        final APMFile file = parser.parseMessage(source);
+        final ApmFile file = parser.parseMessage(source);
 
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
@@ -270,7 +270,7 @@ public class APMParserTest {
                             file.getHeader().getCreationDate());
         Assert.assertEquals("GSFC", file.getHeader().getOriginator());
 
-        Segment<ADMMetadata, APMData> segment = file.getSegments().get(0);
+        Segment<AdmMetadata, ApmData> segment = file.getSegments().get(0);
 
         // Check Metadata Block
         Assert.assertEquals("TRMM",       segment.getMetadata().getObjectName());
@@ -285,10 +285,10 @@ public class APMParserTest {
 
         // Check data block: QUATERNION
         Assert.assertFalse(segment.getData().hasManeuvers());
-        Assert.assertEquals(CCSDSBodyFrame.BaseEquipment.SC_BODY,
+        Assert.assertEquals(CcsdsBodyFrame.BaseEquipment.SC_BODY,
                             segment.getData().getQuaternionBlock().getEndPoints().getLocalFrame().getBaseEquipment());
         Assert.assertEquals("1", segment.getData().getQuaternionBlock().getEndPoints().getLocalFrame().getLabel());
-        Assert.assertEquals(CCSDSFrame.ITRF97, segment.getData().getQuaternionBlock().getEndPoints().getExternalFrame());
+        Assert.assertEquals(CcsdsFrame.ITRF97, segment.getData().getQuaternionBlock().getEndPoints().getExternalFrame());
         Assert.assertTrue(segment.getData().getQuaternionBlock().getEndPoints().isExternal2Local());
         Assert.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, 15.1172,
                                              TimeScalesFactory.getUTC()),
@@ -306,10 +306,10 @@ public class APMParserTest {
         ArrayList<String> spinComment = new ArrayList<String>();
         spinComment.add("SPIN Parameters");
         Assert.assertEquals(spinComment, segment.getData().getSpinStabilizedBlock().getComments());
-        Assert.assertEquals(CCSDSBodyFrame.BaseEquipment.SC_BODY,
+        Assert.assertEquals(CcsdsBodyFrame.BaseEquipment.SC_BODY,
                             segment.getData().getSpinStabilizedBlock().getEndPoints().getLocalFrame().getBaseEquipment());
         Assert.assertEquals("1", segment.getData().getSpinStabilizedBlock().getEndPoints().getLocalFrame().getLabel());
-        Assert.assertEquals(CCSDSFrame.ITRF97, segment.getData().getSpinStabilizedBlock().getEndPoints().getExternalFrame());
+        Assert.assertEquals(CcsdsFrame.ITRF97, segment.getData().getSpinStabilizedBlock().getEndPoints().getExternalFrame());
         Assert.assertFalse(segment.getData().getSpinStabilizedBlock().getEndPoints().isExternal2Local());
         Assert.assertEquals(FastMath.toRadians(24.8),   segment.getData().getSpinStabilizedBlock().getSpinAlpha(),      ANGLE_PRECISION);
         Assert.assertEquals(FastMath.toRadians(33.7),   segment.getData().getSpinStabilizedBlock().getSpinDelta(),      ANGLE_PRECISION);
@@ -328,15 +328,15 @@ public class APMParserTest {
         final String ex = "/ccsds/adm/apm/APMExample4.txt";
 
         // Initialize the parser
-        final APMParser parser = new ParserBuilder().
+        final ApmParser parser = new ParserBuilder().
                                  withMissionReferenceDate(new AbsoluteDate("2002-09-30T14:28:15.117",
                                                                            TimeScalesFactory.getUTC())).
-                                 buildAPMParser();
+                                 buildApmParser();
 
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
         // Generated APM file
-        final APMFile file = parser.parseMessage(source);
+        final ApmFile file = parser.parseMessage(source);
 
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
@@ -349,7 +349,7 @@ public class APMParserTest {
                             file.getHeader().getCreationDate());
         Assert.assertEquals("GSFC", file.getHeader().getOriginator());
 
-        Segment<ADMMetadata, APMData> segment = file.getSegments().get(0);
+        Segment<AdmMetadata, ApmData> segment = file.getSegments().get(0);
 
         // Check Metadata Block
         Assert.assertEquals("TRMM",       segment.getMetadata().getObjectName());
@@ -364,10 +364,10 @@ public class APMParserTest {
 
         // Check data block
         Assert.assertFalse(segment.getData().hasManeuvers());
-        Assert.assertEquals(CCSDSBodyFrame.BaseEquipment.SC_BODY,
+        Assert.assertEquals(CcsdsBodyFrame.BaseEquipment.SC_BODY,
                             segment.getData().getQuaternionBlock().getEndPoints().getLocalFrame().getBaseEquipment());
         Assert.assertEquals("1", segment.getData().getQuaternionBlock().getEndPoints().getLocalFrame().getLabel());
-        Assert.assertEquals(CCSDSFrame.ITRF97, segment.getData().getQuaternionBlock().getEndPoints().getExternalFrame());
+        Assert.assertEquals(CcsdsFrame.ITRF97, segment.getData().getQuaternionBlock().getEndPoints().getExternalFrame());
         Assert.assertFalse(segment.getData().getQuaternionBlock().getEndPoints().isExternal2Local());
         Assert.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, 15.1172,
                                              TimeScalesFactory.getUTC()),
@@ -390,7 +390,7 @@ public class APMParserTest {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
             new ParserBuilder().
             withMissionReferenceDate(AbsoluteDate.J2000_EPOCH).
-            buildAPMParser().
+            buildApmParser().
             parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -406,7 +406,7 @@ public class APMParserTest {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
             new ParserBuilder().
             withMissionReferenceDate(AbsoluteDate.J2000_EPOCH).
-            buildAPMParser().
+            buildApmParser().
             parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -422,7 +422,7 @@ public class APMParserTest {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
             new ParserBuilder().
             withMissionReferenceDate(AbsoluteDate.J2000_EPOCH).
-            buildAPMParser().
+            buildApmParser().
             parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -442,7 +442,7 @@ public class APMParserTest {
             final DataSource source = new DataSource(wrongName, () -> getClass().getResourceAsStream(wrongName));
             new ParserBuilder().
             withMissionReferenceDate(AbsoluteDate.J2000_EPOCH).
-            buildAPMParser().
+            buildApmParser().
             parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -458,7 +458,7 @@ public class APMParserTest {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
             new ParserBuilder().
             withMissionReferenceDate(AbsoluteDate.J2000_EPOCH).
-            buildAPMParser().
+            buildApmParser().
             parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -475,7 +475,7 @@ public class APMParserTest {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
             new ParserBuilder().
             withMissionReferenceDate(AbsoluteDate.J2000_EPOCH).
-            buildAPMParser().
+            buildApmParser().
             parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {

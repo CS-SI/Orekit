@@ -34,10 +34,10 @@ import org.orekit.data.DataSource;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndPoints;
 import org.orekit.files.ccsds.section.Header;
-import org.orekit.files.ccsds.utils.CCSDSBodyFrame;
-import org.orekit.files.ccsds.utils.CCSDSFrame;
+import org.orekit.files.ccsds.utils.CcsdsBodyFrame;
+import org.orekit.files.ccsds.utils.CcsdsFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
-import org.orekit.files.ccsds.utils.generation.KVNGenerator;
+import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -71,11 +71,11 @@ public class StreamingAemWriterTest {
 
             // Reference AEM file
             final DataSource source0 = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-            AEMParser parser = new ParserBuilder().buildAEMParser();
-            AEMFile aemFile  = parser.parseMessage(source0);
+            AemParser parser = new ParserBuilder().buildAemParser();
+            AemFile aemFile  = parser.parseMessage(source0);
 
             // Satellite attitude ephemeris as read from the reference file
-            AEMSegment ephemerisBlock = aemFile.getSegments().get(0);
+            AemSegment ephemerisBlock = aemFile.getSegments().get(0);
 
             // Meta data are extracted from the reference file
             String            originator   = aemFile.getHeader().getOriginator();
@@ -84,9 +84,9 @@ public class StreamingAemWriterTest {
             String            headerCmt    = aemFile.getHeader().getComments().get(0);
             AttitudeEndPoints ep           = ephemerisBlock.getMetadata().getEndPoints();
             boolean           attitudeDir  = ep.isExternal2Local();
-            CCSDSFrame        refFrameA    = ep.getExternalFrame();
-            CCSDSBodyFrame    refFrameB    = ep.getLocalFrame();
-            AEMAttitudeType   attitudeType = ephemerisBlock.getMetadata().getAttitudeType();
+            CcsdsFrame        refFrameA    = ep.getExternalFrame();
+            CcsdsBodyFrame    refFrameB    = ep.getLocalFrame();
+            AemAttitudeType   attitudeType = ephemerisBlock.getMetadata().getAttitudeType();
             boolean           isFirst      = ephemerisBlock.getMetadata().isFirst();
 
             // Initialize the header and metadata
@@ -95,7 +95,7 @@ public class StreamingAemWriterTest {
             header.setOriginator(originator);
             header.addComment(headerCmt);
 
-            AEMMetadata metadata = new AEMMetadata(1);
+            AemMetadata metadata = new AemMetadata(1);
             metadata.setTimeSystem(CcsdsTimeScale.UTC);
             metadata.setObjectID(objectID);
             metadata.setObjectName("will be overwritten");
@@ -106,10 +106,10 @@ public class StreamingAemWriterTest {
             metadata.getEndPoints().setExternal2Local(attitudeDir);
             metadata.setStartTime(AbsoluteDate.PAST_INFINITY);  // will be overwritten at propagation start
             metadata.setStopTime(AbsoluteDate.FUTURE_INFINITY); // will be overwritten at propagation start
-            final AEMWriter aemWriter = new AEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(), header, metadata);
+            final AemWriter aemWriter = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), header, metadata);
 
             StringBuilder buffer = new StringBuilder();
-            StreamingAemWriter writer = new StreamingAemWriter(new KVNGenerator(buffer, AEMWriter.DEFAULT_FILE_NAME),
+            StreamingAemWriter writer = new StreamingAemWriter(new KvnGenerator(buffer, AemWriter.DEFAULT_FILE_NAME),
                                                                aemWriter);
             aemWriter.getMetadata().setObjectName(objectName);
 
@@ -130,11 +130,11 @@ public class StreamingAemWriterTest {
             // Generated AEM file
             final DataSource source1 = new DataSource("buffer",
                                                    () -> new ByteArrayInputStream(buffer.toString().getBytes(StandardCharsets.UTF_8)));
-            AEMFile generatedAemFile = parser.parseMessage(source1);
+            AemFile generatedAemFile = parser.parseMessage(source1);
 
             // There is only one attitude ephemeris block
             Assert.assertEquals(1, generatedAemFile.getSegments().size());
-            AEMSegment attitudeBlocks = generatedAemFile.getSegments().get(0);
+            AemSegment attitudeBlocks = generatedAemFile.getSegments().get(0);
             // There are 7 data lines in the attitude ephemeris block
             List<? extends TimeStampedAngularCoordinates> ac  = attitudeBlocks.getAngularCoordinates();
             Assert.assertEquals(7, ac.size());

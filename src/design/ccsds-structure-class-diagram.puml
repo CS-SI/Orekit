@@ -57,23 +57,23 @@
 
       package odm #CBDBC8 {
 
-        class ODMMetadata
-        Metadata <|-- ODMMetadata
+        class OdmMetadata
+        Metadata <|-- OdmMetadata
 
         package oem #CCCCC7 {
-          class OEMData {
+          class OemData {
             -ephemeridesDataLines
             -covarianceMatrices
           }
-          class OEMMetadata
-          class OEMFile
-          Data <|.. OEMData
-          ODMMetadata <|-- OEMMetadata
+          class OemMetadata
+          class OemFile
+          Data <|.. OemData
+          OdmMetadata <|-- OemMetadata
         }
 
         package opm #CCCCC7 {
-          class OPMMetadata
-          class OPMData {
+          class OpmMetadata
+          class OpmData {
             - stateVector
             - keplerianElements
             - spacecraftParameters
@@ -81,9 +81,9 @@
             - maneuvers
             - userDefinedParameters
           }
-          class OPMFile
-          ODMMetadata <|-- OPMMetadata
-          Data <|.. OPMData
+          class OpmFile
+          OdmMetadata <|-- OpmMetadata
+          Data <|.. OpmData
          }
 
       }
@@ -93,12 +93,12 @@
         OMM, OCM, TDM, APM, and AEM
       end note
 
-      abstract class NDMFile
+      abstract class NdmFile
 
-      NDMFile <|-- OEMFile
-      NDMFile <|-- OPMFile
-      Header  "1" <--o NDMFile
-      Segment "*" <--o NDMFile
+      NdmFile <|-- OemFile
+      NdmFile <|-- OpmFile
+      Header  "1" <--o NdmFile
+      Segment "*" <--o NdmFile
 
     }
   }

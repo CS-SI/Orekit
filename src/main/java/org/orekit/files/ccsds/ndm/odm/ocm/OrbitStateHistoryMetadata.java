@@ -24,8 +24,8 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.odm.oem.InterpolationMethod;
 import org.orekit.files.ccsds.section.CommentsContainer;
-import org.orekit.files.ccsds.utils.CCSDSFrame;
-import org.orekit.files.ccsds.utils.CCSDSUnit;
+import org.orekit.files.ccsds.utils.CcsdsFrame;
+import org.orekit.files.ccsds.utils.CcsdsUnit;
 import org.orekit.files.ccsds.utils.CenterName;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -70,7 +70,7 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
     private Frame orbRefFrame;
 
     /** Reference frame of the orbit. */
-    private CCSDSFrame orbRefCCSDSFrame;
+    private CcsdsFrame orbRefCCSDSFrame;
 
     /** Epoch of the {@link #ORB_REF_FRAME orbit reference frame}. */
     private AbsoluteDate orbFrameEpoch;
@@ -87,7 +87,7 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
     private ElementsType orbType;
 
     /** Units of orbit element set. */
-    private List<CCSDSUnit> orbUnits;
+    private List<CcsdsUnit> orbUnits;
 
     /** Simple constructor.
      * @param epochT0 T0 epoch from file metadata
@@ -103,7 +103,7 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
         centerName          = "EARTH";
         centerBody          = dataContext.getCelestialBodies().getEarth();
         orbRefFrame         = dataContext.getFrames().getICRF();
-        orbRefCCSDSFrame    = CCSDSFrame.ICRF;
+        orbRefCCSDSFrame    = CcsdsFrame.ICRF;
         orbFrameEpoch       = epochT0;
         orbType             = ElementsType.CARTPV;
     }
@@ -293,7 +293,7 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
     /** Get reference frame of the orbit.
      * @return reference frame of the orbit
      */
-    public CCSDSFrame getOrbRefCCSDSFrame() {
+    public CcsdsFrame getOrbRefCCSDSFrame() {
         return orbRefCCSDSFrame;
     }
 
@@ -301,7 +301,7 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
      * @param frame the reference frame to be set
      * @param ccsdsFrame the reference frame to be set
      */
-    void setOrbRefFrame(final Frame frame, final CCSDSFrame ccsdsFrame) {
+    void setOrbRefFrame(final Frame frame, final CcsdsFrame ccsdsFrame) {
         refuseFurtherComments();
         this.orbRefFrame      = frame;
         this.orbRefCCSDSFrame = ccsdsFrame;
@@ -374,14 +374,14 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
     /** Get orbit element set units.
      * @return orbit element set units
      */
-    public List<CCSDSUnit> getOrbUnits() {
+    public List<CcsdsUnit> getOrbUnits() {
         return orbUnits;
     }
 
     /** Set orbit element set units.
      * @param orbUnits orbit element set units
      */
-    void setOrbUnits(final List<CCSDSUnit> orbUnits) {
+    void setOrbUnits(final List<CcsdsUnit> orbUnits) {
         refuseFurtherComments();
         this.orbUnits = orbUnits;
     }

@@ -33,10 +33,10 @@ Orekit-specific `Section` interface that is used for checks at the end of parsin
 `Metadata` and `Data` are gathered together in a `Segment` structure.
 
 The `org.orekit.files.ccsds.ndm` sub-package defines a single top-level abstract
-class `NDMFile`, which stands for Navigation Data Message. All CCDSD messages extend
-this top-level abstract class. `NDMfile` is a container for one `Header` and one or
-more `Segment` objects, depending on the file type (for example `OPMFile` only contains
-one segment whereas `OEMFile` may contain several segments).
+class `NdmFile`, which stands for Navigation Data Message. All CCDSD messages extend
+this top-level abstract class. `NdmFile` is a container for one `Header` and one or
+more `Segment` objects, depending on the file type (for example `OpmFile` only contains
+one segment whereas `OemFile` may contain several segments).
 
 There are as many sub-packages as there are CCSDS message types, with
 intermediate sub-packages for each officially published recommendation:
@@ -44,7 +44,7 @@ intermediate sub-packages for each officially published recommendation:
 `org.orekit.files.ccsds.ndm.odm.opm`, `org.orekit.files.ccsds.ndm.odm.oem`,
 `org.orekit.files.ccsds.ndm.odm.omm`, `org.orekit.files.ccsds.ndm.odm.ocm`,
 and `org.orekit.files.ccsds.ndm.tdm`. Each contain the logical structures
-that correspond to the message type, among which at least one `##MFile`
+that correspond to the message type, among which at least one `##mFile`
 class that represents a complete message/file. As some data are common to
 several types, there may be some intermediate classes in order to avoid
 code duplication. These classes are implementation details and not displayed
@@ -68,7 +68,7 @@ are shortcuts to use `file.getMetadata()` and `file.getData()` instead of
 respectively. Where it is relevant, other shortcuts are provided to access
 Orekit-compatible objects as shown in the following code snippet:
 
-    OPMFile         opm       = ...;
+    OpmFile         opm       = ...;
     AbsoluteDate    fileDate  = opm.getHeader().getCreationDate();
     Vector3D        dV        = opm.getManeuver(0).getdV();
     SpacecraftState state     = opm.generateSpacecraftState();
@@ -82,7 +82,7 @@ segments, header and finally file.
 
 ### Parsing
 
-Parsing a text message to build some kind of `NDMFile` object is performed
+Parsing a text message to build some kind of `NdmFile` object is performed
 by setting up a parser. Each message type has its own parser. Once created,
 its `parseMessage` method is called with a data source. It will return the
 parsed file as a hierarchical container as depicted in the previous
@@ -113,7 +113,7 @@ the real opening of the file until the `parseMessage` method is called and
 takes care to close it properly after parsing, even if parsing is interrupted
 due to some parse error.
 
-The `OEMParser` and `OCMParser` have an additional feature: they also implement
+The `OemParser` and `OcmParser` have an additional feature: they also implement
 the generic `EphemerisFileParser` interface, so they can be used in a more
 general way when ephemerides can be read from various formats (CCSDS, CPF, SP3).
 The `EphemerisFileParser` interface defines a `parse(dataSource)` method that
@@ -123,16 +123,16 @@ As the parsers are parameterized with the type of the parsed file, the `parseMes
 and `parse` methods in all parsers already have the specific type, there is no need
 to cast the returned value.
 
-The following code snippet shows how to parse an oem file, in this case using a
+The following code snippet shows how to parse an OEM file, in this case using a
 file name to create the data source, and using the default values for the parser builder:
 
-    OEMFile oem = new ParserBuilder().buildOEMParser().parseMessage(new DataSource(fileName));
+    OemFile oem = new ParserBuilder().buildOemParser().parseMessage(new DataSource(fileName));
 
 ### Writing
 
 Writing a CCSDS message is done by using a specific writer class for the message
 type and using a low level generator corresponding to the desired file format,
-`KVNGenerator` for Key-Value Notation or `XMLGenerator` for eXtended Markup Language.
+`KvnGenerator` for Key-Value Notation or `XmlGenerator` for eXtended Markup Language.
 
 Ephemeris-type messages (AEM, OEM and OCM) implement the generic ephemeris writer
 interfaces (`AttitudeEphemerisFileWriter` and `EphemerisFileWriter`) in addition
@@ -178,12 +178,12 @@ parse or write CCSDS messages.
 
 The first level of parsing is lexical analysis. Its aim is to read the
 stream of characters from the data source and to generate a stream of
-`ParseToken`. Two different lexical analyzers are provided: `KVNLexicalAnalyzer`
-for Key-Value Notation and `XMLLexicalAnalyzer` for eXtended Markup Language.
+`ParseToken`. Two different lexical analyzers are provided: `KvnLexicalAnalyzer`
+for Key-Value Notation and `XmlLexicalAnalyzer` for eXtended Markup Language.
 The `LexicalAnalyzerSelector` utility class selects one or the other of these lexical
 analyzers depending on the first few bytes read from the data source. If the
 start of the XML declaration ("<?xml ...>") which is mandatory in all XML documents
-is found, then `XMLLexicalAnalyzer` is selected, otherwise `KVNLexicalAnalyzer`
+is found, then `XmlLexicalAnalyzer` is selected, otherwise `KvnLexicalAnalyzer`
 is selected. Detection works for UCS-4, UTF-16 and UTF-8 encodings, with or
 without a Byte Order Mark, and regardless of endianness. After the first few bytes
 allowing selection have been read, the characters stream is reset to beginning so
@@ -240,7 +240,7 @@ processing state by anticipating what the next state could be when one state is
 activated. This is highly specific for each message type, and unfortunately also
 depends on file format (KVN vs. XML). As an example, in KVN files, the initial
 processing state is already the `HeaderProcessingState`, but in XML file it is
-rather `XMLStructureProvessingState` and `HeaderProcessingState` is triggered only
+rather `XmlStructureProcessingState` and `HeaderProcessingState` is triggered only
 when the XML `<header>` start element is processed. CCSDS messages type are also not
 very consistent, which makes implementation more complex. As an example, APM files
 don't have `META_START`, `META_STOP`, `DATA_START` or `DATA_STOP` keys in the
@@ -249,8 +249,8 @@ but have neither `DATA_START` nor `DATA_STOP`. All parsers extend the `AbstractM
 abstract class from which declares several hooks (`prepareHeader`, `inHeader`,
 `finalizeHeader`, `prepareMetadata`...) which can be called by various states
 so the parser knows where it is and prepare the fallback processing state. The
-`prepareMetadata` hook for example is called by `KVNStructureProcessingState`
-when it sees a `META_START` key, and by `XMLStructureProcessingState` when it
+`prepareMetadata` hook for example is called by `KvnStructureProcessingState`
+when it sees a `META_START` key, and by `XmlStructureProcessingState` when it
 sees a `metadata` start element. The parser then knows that metadata parsing is
 going to start an set up the fallback state for it.
 
@@ -258,8 +258,8 @@ When the parser is not switching states, one state is active and processes all
 upcoming token one after the other. Each processing state may adopt a different
 strategy for this, depending on the section it handles. Processing states are
 always quite small. Some processing states that can be reused from message type
-to message type (like `HeaderProcessingState`, `KVNStructureProcessingState` or
-`XMLStructureProcessingstate`) are implemented as classes. Other processing
+to message type (like `HeaderProcessingState`, `KvnStructureProcessingState` or
+`XmlStructureProcessingstate`) are implemented as classes. Other processing
 states that are specific to one message type (and hence to one parser), are
 implemented as a single private method within the parser and method references
 are used to point directly to the method. This allows one parser class to
@@ -273,17 +273,24 @@ then just call one of the `processAs` method from the token, pointing it to the
 metadata/data/logical block setter to call for storing the token content. For
 sections that both reuse some keys from a more general section and add their
 own keys, several enumerate types can be checked in row. A typical example of this
-design is the `processMetadataToken` method in `OEMParser`, which is a single
+design is the `processMetadataToken` method in `OemParser`, which is a single
 private method acting as a `ProcessingState` and tries the enumerates `MetadataKey`,
-`ODMMetadataKey`, `OCommonMetadataKey` and finally `OEMMetadataKey` to fill up
+`OdmMetadataKey`, `CommonMetadataKey` and finally `OemMetadataKey` to fill up
 the metadata section.
 
-Adding a new message type (lets name it XYZ message) involves creating  the `XYZFile`
-class that extends `NDMFile`, creating the `XYZData` container for the data part,
-and creating one or more `XYZSection1Key`, `XYZSection2Key`... enumerates for each
-logical blocks that are allowed in the message format. The final task is to create
-the `XYZParser` and set up the state switching logic, using existing classes for
-the global structure and header, and private methods `processSection1Token`,
+Adding a new message type (lets name it XYZ message) involves:
+
+* creating  the `XyzFile` class that extends `NdmFile`,
+* creating the `XyzData` container for the data part,
+* creating one or more `XyzSection1Key`, `XyzSection2Key`... enumerates for each
+  logical blocks that are allowed in the message format
+* creating the `XyzParser`
+* creating the `buildXyzParser` method in `ParserBuilder`
+* creating the `XyzWriter` class.
+
+In the list above, creating the `XyzParser` is probably the most time-consuming task.
+In this new parser, one has to set up the state switching logic, using existing classes
+for the global structure and header, and private methods `processSection1Token`,
 `processSection2Token`... for processing the tokens from each logical block.
 
 Adding a new key to an existing message when a new version of the message format

@@ -21,7 +21,7 @@ import java.io.IOException;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
-import org.orekit.files.ccsds.ndm.NDMFile;
+import org.orekit.files.ccsds.ndm.NdmFile;
 import org.orekit.files.ccsds.utils.FileFormat;
 
 /** Parser for CCSDS messages.
@@ -29,7 +29,7 @@ import org.orekit.files.ccsds.utils.FileFormat;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public interface MessageParser<T extends NDMFile<?, ?>> {
+public interface MessageParser<T extends NdmFile<?, ?>> {
 
     /** Parse a data source.
      * @param source data source to parse

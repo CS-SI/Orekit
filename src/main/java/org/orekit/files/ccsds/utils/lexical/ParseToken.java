@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.utils.CCSDSFrame;
+import org.orekit.files.ccsds.utils.CcsdsFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.ccsds.utils.CenterName;
 import org.orekit.files.ccsds.utils.ParsingContext;
@@ -366,7 +366,7 @@ public class ParseToken {
     /** Process the content as a frame.
      * @param consumer consumer of the frame
      * @param context parsing context
-     * @param allowLOF if true, {@link CCSDSFrame#isLof() Local Orbital Frames} are allowed
+     * @param allowLOF if true, {@link CcsdsFrame#isLof() Local Orbital Frames} are allowed
      * @return always returns {@code true}
      */
     public boolean processAsFrame(final FrameConsumer consumer,
@@ -374,7 +374,7 @@ public class ParseToken {
                                   final boolean allowLOF) {
         if (type == TokenType.ENTRY) {
             try {
-                final CCSDSFrame frame = CCSDSFrame.valueOf(DASH.matcher(content).replaceAll(""));
+                final CcsdsFrame frame = CcsdsFrame.valueOf(DASH.matcher(content).replaceAll(""));
                 consumer.accept(allowLOF && frame.isLof() ?
                                 null : frame.getFrame(context.getConventions(),
                                                       context.isSimpleEOP(),
@@ -512,7 +512,7 @@ public class ParseToken {
          * @param frame Orekit frame
          * @param ccsdsFrame CCSDS frame
          */
-        void accept(Frame frame, CCSDSFrame ccsdsFrame);
+        void accept(Frame frame, CcsdsFrame ccsdsFrame);
     }
 
     /** Interface representing instance methods that consume center values. */

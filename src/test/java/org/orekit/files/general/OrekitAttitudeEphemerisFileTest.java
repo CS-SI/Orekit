@@ -41,11 +41,11 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.adm.aem.AEMAttitudeType;
-import org.orekit.files.ccsds.ndm.adm.aem.AEMMetadata;
-import org.orekit.files.ccsds.ndm.adm.aem.AEMParser;
-import org.orekit.files.ccsds.ndm.adm.aem.AEMSegment;
-import org.orekit.files.ccsds.ndm.adm.aem.AEMWriter;
+import org.orekit.files.ccsds.ndm.adm.aem.AemAttitudeType;
+import org.orekit.files.ccsds.ndm.adm.aem.AemMetadata;
+import org.orekit.files.ccsds.ndm.adm.aem.AemParser;
+import org.orekit.files.ccsds.ndm.adm.aem.AemSegment;
+import org.orekit.files.ccsds.ndm.adm.aem.AemWriter;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.general.AttitudeEphemerisFile.AttitudeEphemerisSegment;
 import org.orekit.files.general.OrekitAttitudeEphemerisFile.OrekitSatelliteAttitudeEphemeris;
@@ -140,12 +140,12 @@ public class OrekitAttitudeEphemerisFileTest {
 
         String tempAemFile = Files.createTempFile("OrekitAttitudeEphemerisFileTest", ".aem").toString();
         try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(tempAemFile), StandardCharsets.UTF_8)) {
-            new AEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null, dummyMetadata()).
+            new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null, dummyMetadata()).
             write(writer, ephemerisFile);
         }
 
-        AttitudeEphemerisFile<TimeStampedAngularCoordinates, AEMSegment> ephemerisFromFile =
-                        new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1).
+        AttitudeEphemerisFile<TimeStampedAngularCoordinates, AemSegment> ephemerisFromFile =
+                        new AemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1).
                         parseMessage(new DataSource(tempAemFile));
         Files.delete(Paths.get(tempAemFile));
         
@@ -223,8 +223,8 @@ public class OrekitAttitudeEphemerisFileTest {
         }
     }
 
-    private AEMMetadata dummyMetadata() {
-        AEMMetadata metadata = new AEMMetadata(4);
+    private AemMetadata dummyMetadata() {
+        AemMetadata metadata = new AemMetadata(4);
         metadata.setTimeSystem(CcsdsTimeScale.TT);
         metadata.setObjectID("SATELLITE1");
         metadata.setObjectName("transgalactic");
@@ -233,7 +233,7 @@ public class OrekitAttitudeEphemerisFileTest {
         metadata.getEndPoints().setDirection("A2B");
         metadata.setStartTime(AbsoluteDate.J2000_EPOCH.shiftedBy(80 * Constants.JULIAN_CENTURY));
         metadata.setStopTime(metadata.getStartTime().shiftedBy(Constants.JULIAN_YEAR));
-        metadata.setAttitudeType(AEMAttitudeType.QUATERNION_DERIVATIVE);
+        metadata.setAttitudeType(AemAttitudeType.QUATERNION_DERIVATIVE);
         metadata.setIsFirst(true);
         return metadata;
     }

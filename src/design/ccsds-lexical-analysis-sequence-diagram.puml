@@ -38,7 +38,7 @@
   participant DataSource
   participant LexicalAnalyzerSelector
   participant BufferedInputStream
-  participant XYZLexicalAnalyzer
+  participant XyzLexicalAnalyzer
   participant ParseToken
   participant NDMFile
 
@@ -61,30 +61,30 @@
         activate BufferedInputStream
           BufferedInputStream --> LexicalAnalyzerSelector : 24 bytes
         deactivate BufferedInputStream
-        create XYZLexicalAnalyzer
-        LexicalAnalyzerSelector -> XYZLexicalAnalyzer : new
+        create XyzLexicalAnalyzer
+        LexicalAnalyzerSelector -> XyzLexicalAnalyzer : new
         LexicalAnalyzerSelector -> BufferedInputStream : reset to stream start
         activate BufferedInputStream
         deactivate BufferedInputStream
         LexicalAnalyzerSelector --> MessageParser : selected lexical analyzer
       deactivate LexicalAnalyzerSelector
-      MessageParser -> XYZLexicalAnalyzer : accept(parser)
-      activate XYZLexicalAnalyzer
-        XYZLexicalAnalyzer -> MessageParser : reset(fileFormat)
+      MessageParser -> XyzLexicalAnalyzer : accept(parser)
+      activate XyzLexicalAnalyzer
+        XyzLexicalAnalyzer -> MessageParser : reset(fileFormat)
         activate MessageParser
         deactivate MessageParser
         loop until end of message reached
-          XYZLexicalAnalyzer -> BufferedInputStream : read
+          XyzLexicalAnalyzer -> BufferedInputStream : read
           activate BufferedInputStream
-            BufferedInputStream --> XYZLexicalAnalyzer : characters
+            BufferedInputStream --> XyzLexicalAnalyzer : characters
           deactivate BufferedInputStream
           create ParseToken
-          XYZLexicalAnalyzer -> ParseToken : new
-        XYZLexicalAnalyzer -> MessageParser : process(parseToken)
+          XyzLexicalAnalyzer -> ParseToken : new
+        XyzLexicalAnalyzer -> MessageParser : process(parseToken)
         activate MessageParser
         deactivate MessageParser
         end
-      deactivate XYZLexicalAnalyzer
+      deactivate XyzLexicalAnalyzer
       create NDMFile
       MessageParser -> NDMFile : new
       MessageParser --> Main : NDMFile

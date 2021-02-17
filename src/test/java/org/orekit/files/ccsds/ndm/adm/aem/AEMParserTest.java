@@ -39,7 +39,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.section.Segment;
-import org.orekit.files.ccsds.utils.CCSDSBodyFrame;
+import org.orekit.files.ccsds.utils.CcsdsBodyFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
@@ -61,9 +61,9 @@ public class AEMParserTest {
     public void testParseAEM1() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AEMFile file = new ParserBuilder().buildAEMParser().parseMessage(source);
-        final Segment<AEMMetadata, AEMData> segment0 = file.getSegments().get(0);
-        final Segment<AEMMetadata, AEMData> segment1 = file.getSegments().get(1);
+        final AemFile file = new ParserBuilder().buildAemParser().parseMessage(source);
+        final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
+        final Segment<AemMetadata, AemData> segment1 = file.getSegments().get(1);
         final AbsoluteDate start = new AbsoluteDate("1996-11-28T22:08:02.5555", TimeScalesFactory.getUTC());
         Assert.assertEquals(0.0, start.durationFrom(file.getSatellites().get("1996-062A").getStart()), Double.MIN_VALUE);
         final AbsoluteDate end = new AbsoluteDate("1996-12-28T21:23:00.5555", TimeScalesFactory.getUTC());
@@ -94,12 +94,12 @@ public class AEMParserTest {
         Assert.assertEquals(7,         segment0.getMetadata().getInterpolationDegree());
         Assert.assertFalse(segment0.getMetadata().isFirst());
         Assert.assertEquals("EME2000",       segment0.getMetadata().getEndPoints().getExternalFrame().name());
-        Assert.assertEquals(CCSDSBodyFrame.BaseEquipment.SC_BODY,
+        Assert.assertEquals(CcsdsBodyFrame.BaseEquipment.SC_BODY,
                             segment0.getMetadata().getEndPoints().getLocalFrame().getBaseEquipment());
         Assert.assertEquals("1",
                             segment0.getMetadata().getEndPoints().getLocalFrame().getLabel());
         Assert.assertTrue(segment0.getMetadata().getEndPoints().isExternal2Local());
-        Assert.assertEquals(AEMAttitudeType.QUATERNION, segment1.getMetadata().getAttitudeType());
+        Assert.assertEquals(AemAttitudeType.QUATERNION, segment1.getMetadata().getAttitudeType());
         Assert.assertEquals(AngularDerivativesFilter.USE_R, segment0.getMetadata().getAttitudeType().getAngularDerivativesFilter());
         verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 11, 28, 21, 29, 7.2555, TimeScalesFactory.getUTC()),
                                                                    new Rotation(0.68427, 0.56748, 0.03146, 0.45689, false),
@@ -141,12 +141,12 @@ public class AEMParserTest {
                             segment1.getMetadata().getUseableStopTime());
         Assert.assertFalse(segment1.getMetadata().isFirst());
         Assert.assertEquals("EME2000",       segment0.getMetadata().getEndPoints().getExternalFrame().name());
-        Assert.assertEquals(CCSDSBodyFrame.BaseEquipment.SC_BODY,
+        Assert.assertEquals(CcsdsBodyFrame.BaseEquipment.SC_BODY,
                             segment0.getMetadata().getEndPoints().getLocalFrame().getBaseEquipment());
         Assert.assertEquals("1",
                             segment0.getMetadata().getEndPoints().getLocalFrame().getLabel());
         Assert.assertTrue(segment0.getMetadata().getEndPoints().isExternal2Local());
-        Assert.assertEquals(AEMAttitudeType.QUATERNION, segment1.getMetadata().getAttitudeType());
+        Assert.assertEquals(AemAttitudeType.QUATERNION, segment1.getMetadata().getAttitudeType());
         Assert.assertEquals(AngularDerivativesFilter.USE_R, segment0.getMetadata().getAttitudeType().getAngularDerivativesFilter());
         verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 12, 18, 12, 5, 0.5555, TimeScalesFactory.getUTC()),
                                                                    new Rotation(0.72501, -0.64585, 0.018542, -0.23854, false),
@@ -172,13 +172,13 @@ public class AEMParserTest {
     public void testParseAEM2() throws URISyntaxException {
         final String name = "/ccsds/adm/aem/AEMExample2.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-        AEMParser parser = new ParserBuilder().
+        AemParser parser = new ParserBuilder().
                            withMissionReferenceDate(new AbsoluteDate("1996-12-17T00:00:00.000",
                                                                      TimeScalesFactory.getUTC())).
-                           buildAEMParser();
+                           buildAemParser();
 
-        final AEMFile file = parser.parse(source); // using generic API here
-        final Segment<AEMMetadata, AEMData> segment0 = file.getSegments().get(0);
+        final AemFile file = parser.parse(source); // using generic API here
+        final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
         final List<String> headerComment = new ArrayList<String>();
         headerComment.add("comment");
         Assert.assertEquals(headerComment, file.getHeader().getComments());
@@ -188,11 +188,11 @@ public class AEMParserTest {
         metadataComment.add("attitudes is 0.1 degrees per axis.");
         Assert.assertEquals(metadataComment, segment0.getMetadata().getComments());
         Assert.assertEquals("EME2000",       segment0.getMetadata().getEndPoints().getExternalFrame().name());
-        Assert.assertEquals(CCSDSBodyFrame.BaseEquipment.SC_BODY,
+        Assert.assertEquals(CcsdsBodyFrame.BaseEquipment.SC_BODY,
                             segment0.getMetadata().getEndPoints().getLocalFrame().getBaseEquipment());
         Assert.assertEquals("1",
                             segment0.getMetadata().getEndPoints().getLocalFrame().getLabel());
-        List<AEMSegment> blocks = file.getSegments();
+        List<AemSegment> blocks = file.getSegments();
         Assert.assertEquals(1, blocks.size());
         Assert.assertEquals(IERSConventions.IERS_2010, parser.getConventions());
         Assert.assertTrue(parser.isSimpleEOP());
@@ -207,13 +207,13 @@ public class AEMParserTest {
     public void testParseAEM3() throws URISyntaxException {
         final String ex = "/ccsds/adm/aem/AEMExample3.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AEMParser parser  = new ParserBuilder().buildAEMParser();
+        final AemParser parser  = new ParserBuilder().buildAemParser();
         
         try {
             parser.parseMessage(source);
         }  catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
-            Assert.assertEquals(AEMAttitudeType.SPIN.name(), oe.getParts()[0]);
+            Assert.assertEquals(AemAttitudeType.SPIN.name(), oe.getParts()[0]);
         }
     }
 
@@ -221,9 +221,9 @@ public class AEMParserTest {
     public void testParseAEM4() throws URISyntaxException {
         final String ex = "/ccsds/adm/aem/AEMExample4.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AEMParser parser  = new ParserBuilder().buildAEMParser();
-        final AEMFile file = parser.parseMessage(source);
-        final Segment<AEMMetadata, AEMData> segment0 = file.getSegments().get(0);
+        final AemParser parser  = new ParserBuilder().buildAemParser();
+        final AemFile file = parser.parseMessage(source);
+        final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
         final List<String> dataComment = new ArrayList<String>();
         dataComment.add("Spin KF ground solution, SPINKF rates");
         Assert.assertEquals(dataComment, segment0.getData().getComments());
@@ -233,9 +233,9 @@ public class AEMParserTest {
     public void testParseAEM5() throws URISyntaxException {
         final String ex = "/ccsds/adm/aem/AEMExample5.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AEMParser parser  = new ParserBuilder().buildAEMParser();
-        final AEMFile file = parser.parseMessage(source);
-        final Segment<AEMMetadata, AEMData> segment0 = file.getSegments().get(0);
+        final AemParser parser  = new ParserBuilder().buildAemParser();
+        final AemFile file = parser.parseMessage(source);
+        final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
         final List<String> headerComment = new ArrayList<String>();
         headerComment.add("comment");
         Assert.assertEquals(headerComment, file.getHeader().getComments());
@@ -279,14 +279,14 @@ public class AEMParserTest {
     public void testParseAEM6() throws URISyntaxException {
         final String ex = "/ccsds/adm/aem/AEMExample6.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AEMParser parser  = new ParserBuilder().buildAEMParser();
+        final AemParser parser  = new ParserBuilder().buildAemParser();
         
         try {
             parser.parseMessage(source);
             Assert.fail("an exception should have been thrown");
         }  catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
-            Assert.assertEquals(AEMAttitudeType.SPIN_NUTATION.name(), oe.getParts()[0]);
+            Assert.assertEquals(AemAttitudeType.SPIN_NUTATION.name(), oe.getParts()[0]);
         }
     }
 
@@ -295,7 +295,7 @@ public class AEMParserTest {
         final String name = "/ccsds/odm/opm/OPMExample1.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-            new ParserBuilder().buildAEMParser().parseMessage(source);
+            new ParserBuilder().buildAemParser().parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
@@ -309,7 +309,7 @@ public class AEMParserTest {
         final String wrongName = realName + "xxxxx";
         final DataSource source =  new DataSource(wrongName, () -> getClass().getResourceAsStream(wrongName));
         try {
-            new ParserBuilder().buildAEMParser().parseMessage(source);
+            new ParserBuilder().buildAemParser().parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
@@ -322,11 +322,11 @@ public class AEMParserTest {
         try {
             final String name = "/ccsds/adm/aem/AEM-missing-attitude-type.txt";
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-            new ParserBuilder().buildAEMParser().parseMessage(source);
+            new ParserBuilder().buildAemParser().parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, oe.getSpecifier());
-            Assert.assertEquals(AEMMetadataKey.ATTITUDE_TYPE.name(), oe.getParts()[0]);
+            Assert.assertEquals(AemMetadataKey.ATTITUDE_TYPE.name(), oe.getParts()[0]);
         }
     }
 
@@ -335,7 +335,7 @@ public class AEMParserTest {
         try {
             final String name = "/ccsds/adm/aem/AEM-inconsistent-time-systems.txt";
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-            new ParserBuilder().buildAEMParser().parseMessage(source);
+            new ParserBuilder().buildAemParser().parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS, oe.getSpecifier());
@@ -351,7 +351,7 @@ public class AEMParserTest {
         final DataSource source = new DataSource(file, () -> getClass().getResourceAsStream(file));
 
         //action
-        AEMFile actual = new ParserBuilder().buildAEMParser().parseMessage(source);
+        AemFile actual = new ParserBuilder().buildAemParser().parseMessage(source);
 
         //verify
         Assert.assertEquals(
@@ -364,7 +364,7 @@ public class AEMParserTest {
         final String name = "/ccsds/odm/opm/OPMExample1.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-            new ParserBuilder().buildAEMParser().parseMessage(source);
+            new ParserBuilder().buildAemParser().parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
@@ -379,7 +379,7 @@ public class AEMParserTest {
         final String name = "/ccsds/adm/aem/AEM-wrong-keyword.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
-            new ParserBuilder().buildAEMParser().parseMessage(source);
+            new ParserBuilder().buildAemParser().parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
@@ -393,7 +393,7 @@ public class AEMParserTest {
         final String name = "/ccsds/adm/aem/AEM-ephemeris-number-format-error.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-            new ParserBuilder().buildAEMParser().parseMessage(source);
+            new ParserBuilder().buildAemParser().parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
@@ -410,7 +410,7 @@ public class AEMParserTest {
         final String name = "/ccsds/adm/aem/AEM-keyword-within-ephemeris.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
-            new ParserBuilder().buildAEMParser().parseMessage(source);
+            new ParserBuilder().buildAemParser().parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
@@ -425,7 +425,7 @@ public class AEMParserTest {
         final String name = "/ccsds/adm/aem/AEM-inconsistent-rotation-sequence.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
-            new ParserBuilder().buildAEMParser().parseMessage(source);
+            new ParserBuilder().buildAemParser().parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_INVALID_ROTATION_SEQUENCE, oe.getSpecifier());
@@ -439,7 +439,7 @@ public class AEMParserTest {
     public void testMissingConvention() throws URISyntaxException {
         final String ex = "/ccsds/adm/aem/AEMExample.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AEMFile file = new ParserBuilder().buildAEMParser().parseMessage(source);
+        final AemFile file = new ParserBuilder().buildAemParser().parseMessage(source);
         try {
             file.getConventions();
         } catch (OrekitException oe) {
@@ -474,11 +474,11 @@ public class AEMParserTest {
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         ParserBuilder builder = new ParserBuilder();
 
-        final AEMFile file = builder.buildAEMParser().parseMessage(source);
+        final AemFile file = builder.buildAemParser().parseMessage(source);
         Assert.assertEquals(7, file.getSegments().get(0).getMetadata().getInterpolationDegree());
         Assert.assertEquals(1, file.getSegments().get(1).getMetadata().getInterpolationDegree());
 
-        final AEMFile file2 = builder.withDefaultInterpolationDegree(5).buildAEMParser().parseMessage(source);
+        final AemFile file2 = builder.withDefaultInterpolationDegree(5).buildAemParser().parseMessage(source);
         Assert.assertEquals(7, file2.getSegments().get(0).getMetadata().getInterpolationDegree());
         Assert.assertEquals(5, file2.getSegments().get(1).getMetadata().getInterpolationDegree());
     }
@@ -487,8 +487,8 @@ public class AEMParserTest {
     public void testIssue739() {
         final String ex = "/ccsds/adm/aem/AEMExample8.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AEMFile file = new ParserBuilder().buildAEMParser().parseMessage(source);
-        final AEMSegment segment0 = file.getSegments().get(0);
+        final AemFile file = new ParserBuilder().buildAemParser().parseMessage(source);
+        final AemSegment segment0 = file.getSegments().get(0);
         Assert.assertEquals(FramesFactory.getGTOD(IERSConventions.IERS_2010, true),
                             segment0.getMetadata().getEndPoints().getExternalFrame().getFrame(IERSConventions.IERS_2010, true));
 
@@ -508,8 +508,8 @@ public class AEMParserTest {
     public void testIssue739_2() {
         final String ex = "/ccsds/adm/aem/AEMExample9.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AEMFile file = new ParserBuilder().buildAEMParser().parseMessage(source);
-        final AEMSegment segment0 = file.getSegments().get(0);
+        final AemFile file = new ParserBuilder().buildAemParser().parseMessage(source);
+        final AemSegment segment0 = file.getSegments().get(0);
         Assert.assertEquals(FramesFactory.getITRF(ITRFVersion.ITRF_93, IERSConventions.IERS_2010, true),
                             segment0.getMetadata().getEndPoints().getExternalFrame().getFrame(IERSConventions.IERS_2010, true));
 

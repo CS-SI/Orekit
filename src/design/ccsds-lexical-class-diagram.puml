@@ -44,8 +44,8 @@
       }
 
       package lexical #CBDBC8 {
-        class KVNLexicalAnalyzer
-        class XMLLexicalAnalyzer
+        class KvnLexicalAnalyzer
+        class XmlLexicalAnalyzer
         interface LexicalAnalyzer {
           +accept(MessageParser)
         }
@@ -75,10 +75,10 @@
     }
   }
 
-  DataSource <-- KVNLexicalAnalyzer
-  DataSource <-- XMLLexicalAnalyzer
-  KVNLexicalAnalyzer ..|> LexicalAnalyzer
-  XMLLexicalAnalyzer ..|> LexicalAnalyzer
+  DataSource <-- KvnLexicalAnalyzer
+  DataSource <-- XmlLexicalAnalyzer
+  KvnLexicalAnalyzer ..|> LexicalAnalyzer
+  XmlLexicalAnalyzer ..|> LexicalAnalyzer
   LexicalAnalyzer -right-> ParseToken : produces
   LexicalAnalyzer <-- LexicalAnalyzerSelector : create
   LexicalAnalyzer --> MessageParser : reset

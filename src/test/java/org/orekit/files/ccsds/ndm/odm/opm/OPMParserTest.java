@@ -36,10 +36,10 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
-import org.orekit.files.ccsds.ndm.odm.ODMCovariance;
-import org.orekit.files.ccsds.ndm.odm.ODMKeplerianElements;
-import org.orekit.files.ccsds.ndm.odm.ODMSpacecraftParameters;
-import org.orekit.files.ccsds.utils.CCSDSFrame;
+import org.orekit.files.ccsds.ndm.odm.Covariance;
+import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
+import org.orekit.files.ccsds.ndm.odm.SpacecraftParameters;
+import org.orekit.files.ccsds.utils.CcsdsFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -65,9 +65,9 @@ public class OPMParserTest {
         final String ex = "/ccsds/odm/opm/OPMExample1.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
-        final OPMParser parser = new ParserBuilder().withMu(398600e9).withDefaultMass(1000.0).buildOPMParser();
+        final OpmParser parser = new ParserBuilder().withMu(398600e9).withDefaultMass(1000.0).buildOpmParser();
 
-        final OPMFile file = parser.parseMessage(source);
+        final OpmFile file = parser.parseMessage(source);
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
 
         // Check Header Block;
@@ -87,7 +87,7 @@ public class OPMParserTest {
         Assert.assertEquals("EARTH", file.getMetadata().getCenterName());
         Assert.assertNotNull(file.getMetadata().getCenterBody());
         Assert.assertEquals(CelestialBodyFactory.getEarth(), file.getMetadata().getCenterBody());
-        Assert.assertEquals(CCSDSFrame.ITRF2000, CCSDSFrame.map(file.getMetadata().getFrame()));
+        Assert.assertEquals(CcsdsFrame.ITRF2000, CcsdsFrame.map(file.getMetadata().getFrame()));
         Assert.assertEquals(CcsdsTimeScale.UTC, file.getMetadata().getTimeSystem());
         Assert.assertNull(file.getData().getCovarianceBlock());
 
@@ -130,8 +130,8 @@ public class OPMParserTest {
         final String ex = "/ccsds/odm/opm/OPMExample2.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
-        final OPMParser parser = new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).withDefaultMass(1000.0).buildOPMParser();
-        final OPMFile file = parser.parseMessage(source);
+        final OpmParser parser = new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).withDefaultMass(1000.0).buildOpmParser();
+        final OpmFile file = parser.parseMessage(source);
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
 
         // Check Header Block;
@@ -169,7 +169,7 @@ public class OPMParserTest {
                      file.getPVCoordinates());
 
         // Check Data Keplerian Elements block
-        ODMKeplerianElements keplerianElements = file.getData().getKeplerianElementsBlock();
+        KeplerianElements keplerianElements = file.getData().getKeplerianElementsBlock();
         Assert.assertNotNull(keplerianElements);
         ArrayList<String> keplerianElementsComment = new ArrayList<String>();
         keplerianElementsComment.add("Keplerian elements");
@@ -184,7 +184,7 @@ public class OPMParserTest {
         Assert.assertEquals(398600.4415 * 1e9, keplerianElements.getMu(), 1e-10);
 
         // Check Data Spacecraft block
-        ODMSpacecraftParameters spacecraftParameters = file.getData().getSpacecraftParametersBlock();
+        SpacecraftParameters spacecraftParameters = file.getData().getSpacecraftParametersBlock();
         Assert.assertNotNull(spacecraftParameters);
         ArrayList<String> spacecraftComment = new ArrayList<String>();
         spacecraftComment.add("Spacecraft parameters");
@@ -246,8 +246,8 @@ public class OPMParserTest {
         final String ex = "/ccsds/odm/opm/OPMExample5.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
-        final OPMParser parser = new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).withDefaultMass(1000.0).buildOPMParser();
-        final OPMFile file = parser.parseMessage(source);
+        final OpmParser parser = new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).withDefaultMass(1000.0).buildOpmParser();
+        final OpmFile file = parser.parseMessage(source);
 
         // Check Header Block;
         Assert.assertEquals(2.0, file.getHeader().getFormatVersion(), 1.0e-10);
@@ -282,7 +282,7 @@ public class OPMParserTest {
                      file.getPVCoordinates());
 
         // Check Data Keplerian Elements block
-        ODMKeplerianElements keplerianElements = file.getData().getKeplerianElementsBlock();
+        KeplerianElements keplerianElements = file.getData().getKeplerianElementsBlock();
         Assert.assertNotNull(keplerianElements);
         ArrayList<String> keplerianElementsComment = new ArrayList<String>();
         keplerianElementsComment.add("Keplerian elements");
@@ -297,7 +297,7 @@ public class OPMParserTest {
         Assert.assertEquals(398600.4415 * 1e9, keplerianElements.getMu(), 1e-10);
 
         // Check Data Spacecraft block
-        ODMSpacecraftParameters spacecraftParameters = file.getData().getSpacecraftParametersBlock();
+        SpacecraftParameters spacecraftParameters = file.getData().getSpacecraftParametersBlock();
         ArrayList<String> spacecraftComment = new ArrayList<String>();
         spacecraftComment.add("Spacecraft parameters");
         Assert.assertEquals(spacecraftComment, spacecraftParameters.getComments());
@@ -368,8 +368,8 @@ public class OPMParserTest {
         // Spacecraft parameters and the position/velocity Covariance Matrix.
         final String name = "/ccsds/odm/opm/OPMExample3.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-        OPMParser parser = new ParserBuilder().withDefaultMass(1000.0).buildOPMParser();
-        final OPMFile file = parser.parseMessage(source);
+        OpmParser parser = new ParserBuilder().withDefaultMass(1000.0).buildOpmParser();
+        final OpmFile file = parser.parseMessage(source);
         Assert.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
                                              TimeScalesFactory.getUTC()),
                             file.getMetadata().getFrameEpoch());
@@ -378,7 +378,7 @@ public class OPMParserTest {
         Assert.assertEquals(15951238.3495, file.generateKeplerianOrbit().getA(), 0.001);
         Assert.assertEquals(0.5914452565, file.generateKeplerianOrbit().getE(), 1.0e-10);
         // Check Data Covariance matrix Block
-        ODMCovariance covariance = file.getData().getCovarianceBlock();
+        Covariance covariance = file.getData().getCovarianceBlock();
         Assert.assertNotNull(covariance);
         Assert.assertSame(file.getMetadata().getFrame(), covariance.getRefFrame());
 
@@ -433,8 +433,8 @@ public class OPMParserTest {
     public void testParseOPM3NoDesignator() throws URISyntaxException {
         final String ex = "/ccsds/odm/opm/OPM-no-designator.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        OPMParser parser = new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).withDefaultMass(1000.0).buildOPMParser();
-        final OPMFile file = parser.parseMessage(source);
+        OpmParser parser = new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).withDefaultMass(1000.0).buildOpmParser();
+        final OpmFile file = parser.parseMessage(source);
         Assert.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
                                                  TimeScalesFactory.getGMST(IERSConventions.IERS_2010, false)),
                             file.getMetadata().getFrameEpoch());
@@ -466,11 +466,11 @@ public class OPMParserTest {
         //
         final String ex = "/ccsds/odm/opm/OPMExample4.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final OPMFile file = new ParserBuilder().
+        final OpmFile file = new ParserBuilder().
                              withMu(Constants.EIGEN5C_EARTH_MU).
                              withSimpleEOP(false).
                              withDefaultMass(1000.0).
-                             buildOPMParser().
+                             buildOpmParser().
                              parseMessage(source);
         Assert.assertEquals("TOD/2010 accurate EOP", file.getMetadata().getFrame().toString());
         Assert.assertEquals("2000-028A", file.getMetadata().getObjectID());
@@ -489,8 +489,8 @@ public class OPMParserTest {
         // Spacecraft parameters and the position/velocity Covariance Matrix.
         final String name = "/ccsds/odm/opm/OPMExample6.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-        OPMParser parser = new ParserBuilder().withDefaultMass(1000.0).buildOPMParser();
-        final OPMFile file = parser.parseMessage(source);
+        OpmParser parser = new ParserBuilder().withDefaultMass(1000.0).buildOpmParser();
+        final OpmFile file = parser.parseMessage(source);
         Assert.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
                                              TimeScalesFactory.getGMST(IERSConventions.IERS_2010, false)),
                             file.getMetadata().getFrameEpoch());
@@ -501,7 +501,7 @@ public class OPMParserTest {
         Assert.assertEquals(15951238.3495, file.generateKeplerianOrbit().getA(), 0.001);
         Assert.assertEquals(0.5914452565, file.generateKeplerianOrbit().getE(), 1.0e-10);
         // Check Data Covariance matrix Block
-        ODMCovariance covariance = file.getData().getCovarianceBlock();
+        Covariance covariance = file.getData().getCovarianceBlock();
         Assert.assertNotNull(covariance);
         ArrayList<String> dataCovMatrixComment = new ArrayList<String>();
         dataCovMatrixComment.add("covariance comment 1");
@@ -563,41 +563,41 @@ public class OPMParserTest {
     @Test
     public void testCentersAndTimeScales() {
 
-        final OPMParser parser = new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).withDefaultMass(1000.0).buildOPMParser();
+        final OpmParser parser = new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).withDefaultMass(1000.0).buildOpmParser();
 
         final String name1 = "/ccsds/odm/opm/OPM-dummy-solar-system-barycenter.txt";
         final DataSource source1 = new DataSource(name1, () -> getClass().getResourceAsStream(name1));
-        OPMFile file1 = parser.parseMessage(source1);
+        OpmFile file1 = parser.parseMessage(source1);
         Assert.assertEquals(CcsdsTimeScale.TDB, file1.getMetadata().getTimeSystem());
         Assert.assertEquals("solar system barycenter", file1.getMetadata().getCenterBody().getName());
 
         final String name2 = "/ccsds/odm/opm/OPM-dummy-ssb.txt";
         final DataSource source2 = new DataSource(name2, () -> getClass().getResourceAsStream(name2));
-        OPMFile file2 = parser.parseMessage(source2);
+        OpmFile file2 = parser.parseMessage(source2);
         Assert.assertEquals(CcsdsTimeScale.TCB, file2.getMetadata().getTimeSystem());
         Assert.assertEquals("solar system barycenter", file2.getMetadata().getCenterBody().getName());
 
         final String name3 = "/ccsds/odm/opm/OPM-dummy-earth-barycenter.txt";
         final DataSource source3 = new DataSource(name3, () -> getClass().getResourceAsStream(name3));
-        OPMFile file3 = parser.parseMessage(source3);
+        OpmFile file3 = parser.parseMessage(source3);
         Assert.assertEquals(CcsdsTimeScale.TDB, file3.getMetadata().getTimeSystem());
         Assert.assertEquals("Earth-Moon barycenter", file3.getMetadata().getCenterBody().getName());
 
         final String name4 = "/ccsds/odm/opm/OPM-dummy-earth-dash-moon-barycenter.txt";
         final DataSource source4 = new DataSource(name4, () -> getClass().getResourceAsStream(name4));
-        OPMFile file4 = parser.parseMessage(source4);
+        OpmFile file4 = parser.parseMessage(source4);
         Assert.assertEquals(CcsdsTimeScale.TDB, file4.getMetadata().getTimeSystem());
         Assert.assertEquals("Earth-Moon barycenter", file4.getMetadata().getCenterBody().getName());
 
         final String name5 = "/ccsds/odm/opm/OPM-dummy-earth-moon-barycenter.txt";
         final DataSource source5 = new DataSource(name5, () -> getClass().getResourceAsStream(name5));
-        OPMFile file5 = parser.parseMessage(source5);
+        OpmFile file5 = parser.parseMessage(source5);
         Assert.assertEquals(CcsdsTimeScale.UT1, file5.getMetadata().getTimeSystem());
         Assert.assertEquals("Earth-Moon barycenter", file5.getMetadata().getCenterBody().getName());
 
         final String name6 = "/ccsds/odm/opm/OPM-dummy-emb.txt";
         final DataSource source6 = new DataSource(name6, () -> getClass().getResourceAsStream(name6));
-        OPMFile file6 = parser.parseMessage(source6);
+        OpmFile file6 = parser.parseMessage(source6);
         Assert.assertEquals(CcsdsTimeScale.TT, file6.getMetadata().getTimeSystem());
         Assert.assertEquals("Earth-Moon barycenter", file6.getMetadata().getCenterBody().getName());
 
@@ -608,9 +608,9 @@ public class OPMParserTest {
         final String ex = "/ccsds/odm/opm/OPMExample4.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
-        final OPMParser parser = new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).withDefaultMass(1000.0).buildOPMParser();
+        final OpmParser parser = new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).withDefaultMass(1000.0).buildOpmParser();
 
-        final OPMFile file = parser.parseMessage(source);
+        final OpmFile file = parser.parseMessage(source);
 
         final String satId = "2000-028A";
         Assert.assertEquals(satId, file.getMetadata().getObjectID());
@@ -646,7 +646,7 @@ public class OPMParserTest {
             new ParserBuilder().
             withMu(Constants.EIGEN5C_EARTH_MU).
             withDefaultMass(1000.0).
-            buildOPMParser().
+            buildOpmParser().
             parseMessage(source);
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
@@ -663,7 +663,7 @@ public class OPMParserTest {
             withMu(Constants.EIGEN5C_EARTH_MU).
             withMissionReferenceDate(new AbsoluteDate()).
             withDefaultMass(1000.0).
-            buildOPMParser().
+            buildOpmParser().
             parseMessage(source);
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
@@ -679,7 +679,7 @@ public class OPMParserTest {
         final String wrongName = realName + "xxxxx";
         final DataSource source = new DataSource(wrongName, () -> getClass().getResourceAsStream(wrongName));
         try {
-            new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).withDefaultMass(1000.0).buildOPMParser().
+            new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).withDefaultMass(1000.0).buildOpmParser().
             parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -698,7 +698,7 @@ public class OPMParserTest {
             new ParserBuilder().
             withMu(Constants.EIGEN5C_EARTH_MU).
             withDefaultMass(1000.0).
-            buildOPMParser().
+            buildOpmParser().
             parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -716,11 +716,11 @@ public class OPMParserTest {
 		AbsoluteDate date = new AbsoluteDate(2000, 1, 1, 12, 0, 00, TimeScalesFactory.getUTC());
 		final String ex = "/ccsds/odm/opm/OPM-dummy-moon-EME2000.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-		final OPMParser parser = new ParserBuilder().
+		final OpmParser parser = new ParserBuilder().
 		                         withMu(CelestialBodyFactory.getEarth().getGM()).
 		                         withDefaultMass(1000.0).
-		                         buildOPMParser();
-		final OPMFile file = parser.parseMessage(source);
+		                         buildOpmParser();
+		final OpmFile file = parser.parseMessage(source);
         final Frame actualFrame = file.getMetadata().getFrame();
         MatcherAssert.assertThat(moon.getPVCoordinates(date, actualFrame),
                                  OrekitMatchers.pvCloseTo(PVCoordinates.ZERO, 1e-3));     

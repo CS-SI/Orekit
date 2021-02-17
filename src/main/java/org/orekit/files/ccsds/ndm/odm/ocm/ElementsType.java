@@ -16,9 +16,9 @@
  */
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
-import org.orekit.files.ccsds.utils.CCSDSUnit;
+import org.orekit.files.ccsds.utils.CcsdsUnit;
 
-/** Orbit element set type used in CCSDS {@link OCMFile Orbit Comprehensive Messages}.
+/** Orbit element set type used in CCSDS {@link OcmFile Orbit Comprehensive Messages}.
  * @see <a href="https://sanaregistry.org/r/orbital_elements">SANA registry for orbital elements</a>
  * @author Luc Maisonobe
  * @since 11.0
@@ -27,94 +27,94 @@ public enum ElementsType {
 
     /** Spherical 6-element set (α,δ,β,A,r,v). */
     ADBARV("Spherical 6-element set (α,δ,β,A,r,v)",
-           CCSDSUnit.DEG, CCSDSUnit.DEG, CCSDSUnit.DEG,
-           CCSDSUnit.DEG, CCSDSUnit.KM, CCSDSUnit.KM),
+           CcsdsUnit.DEG, CcsdsUnit.DEG, CcsdsUnit.DEG,
+           CcsdsUnit.DEG, CcsdsUnit.KM, CcsdsUnit.KM),
 
     /** Cartesian 3-element position (X, Y, Z). */
     CARTP("Cartesian 3-element position (X, Y, Z)",
-          CCSDSUnit.KM, CCSDSUnit.KM, CCSDSUnit.KM),
+          CcsdsUnit.KM, CcsdsUnit.KM, CcsdsUnit.KM),
 
     /** Cartesian 6-element position and velocity (X, Y, Z, XD, YD, ZD). */
     CARTPV(" Cartesian 6-element position and velocity (X, Y, Z, XD, YD, ZD)",
-           CCSDSUnit.KM, CCSDSUnit.KM, CCSDSUnit.KM,
-           CCSDSUnit.KM_S, CCSDSUnit.KM_S, CCSDSUnit.KM_S),
+           CcsdsUnit.KM, CcsdsUnit.KM, CcsdsUnit.KM,
+           CcsdsUnit.KM_S, CcsdsUnit.KM_S, CcsdsUnit.KM_S),
 
     /** Cartesian 9-element position, velocity and acceleration (X, Y, Z, XD, YD, ZD, XDD, YDD, ZDD). */
     CARTPVA("Cartesian 9-element position, velocity and acceleration (X, Y, Z, XD, YD, ZD, XDD, YDD, ZDD)",
-            CCSDSUnit.KM, CCSDSUnit.KM, CCSDSUnit.KM,
-            CCSDSUnit.KM_S, CCSDSUnit.KM_S, CCSDSUnit.KM_S,
-            CCSDSUnit.KM_S2, CCSDSUnit.KM_S2, CCSDSUnit.KM_S2),
+            CcsdsUnit.KM, CcsdsUnit.KM, CcsdsUnit.KM,
+            CcsdsUnit.KM_S, CcsdsUnit.KM_S, CcsdsUnit.KM_S,
+            CcsdsUnit.KM_S2, CcsdsUnit.KM_S2, CcsdsUnit.KM_S2),
 
     /** Delaunay elements (L, G, H, l, g, h). */
     DELAUNAY("Delaunay elements (L, G, H, l, g, h)",
-             CCSDSUnit.KM2_S, CCSDSUnit.KM2_S, CCSDSUnit.KM2_S,
-             CCSDSUnit.DEG, CCSDSUnit.DEG, CCSDSUnit.DEG),
+             CcsdsUnit.KM2_S, CcsdsUnit.KM2_S, CcsdsUnit.KM2_S,
+             CcsdsUnit.DEG, CcsdsUnit.DEG, CcsdsUnit.DEG),
 
     /** Modified Delaunay elements (Lm, Gm, Hm, lm, gm, hm). */
     DELAUNAYMOD("Delaunay elements (Lm, Gm, Hm, lm, gm, hm)",
-                CCSDSUnit.SQKM, CCSDSUnit.SQKM, CCSDSUnit.SQKM,
-                CCSDSUnit.DEG, CCSDSUnit.DEG, CCSDSUnit.DEG),
+                CcsdsUnit.SQKM, CcsdsUnit.SQKM, CcsdsUnit.SQKM,
+                CcsdsUnit.DEG, CcsdsUnit.DEG, CcsdsUnit.DEG),
 
     /** 12 elements eigenvalue/eigenvectors (EigMaj, EigMed, EigMin, EigVecMaj, EigVecMed, EigVecMin). */
     EIGVAL3EIGVEC3("12 elements eigenvalue/eigenvectors (EigMaj, EigMed, EigMin, EigVecMaj, EigVecMed, EigVecMin)",
-                   CCSDSUnit.KM, CCSDSUnit.KM, CCSDSUnit.KM,
-                   CCSDSUnit.DIMENSIONLESS, CCSDSUnit.DIMENSIONLESS, CCSDSUnit.DIMENSIONLESS,
-                   CCSDSUnit.DIMENSIONLESS, CCSDSUnit.DIMENSIONLESS, CCSDSUnit.DIMENSIONLESS,
-                   CCSDSUnit.DIMENSIONLESS, CCSDSUnit.DIMENSIONLESS, CCSDSUnit.DIMENSIONLESS),
+                   CcsdsUnit.KM, CcsdsUnit.KM, CcsdsUnit.KM,
+                   CcsdsUnit.DIMENSIONLESS, CcsdsUnit.DIMENSIONLESS, CcsdsUnit.DIMENSIONLESS,
+                   CcsdsUnit.DIMENSIONLESS, CcsdsUnit.DIMENSIONLESS, CcsdsUnit.DIMENSIONLESS,
+                   CcsdsUnit.DIMENSIONLESS, CcsdsUnit.DIMENSIONLESS, CcsdsUnit.DIMENSIONLESS),
 
     /** Equinoctial elements (a, af, ag, L=M+ω+frΩ, χ, ψ, fr). */
     EQUINOCTIAL(" Equinoctial elements (a, af, ag, L=M+ω+frΩ, χ, ψ, fr)",
-                CCSDSUnit.KM, CCSDSUnit.DIMENSIONLESS, CCSDSUnit.DIMENSIONLESS,
-                CCSDSUnit.DEG, CCSDSUnit.DIMENSIONLESS, CCSDSUnit.DIMENSIONLESS,
-                CCSDSUnit.DIMENSIONLESS),
+                CcsdsUnit.KM, CcsdsUnit.DIMENSIONLESS, CcsdsUnit.DIMENSIONLESS,
+                CcsdsUnit.DEG, CcsdsUnit.DIMENSIONLESS, CcsdsUnit.DIMENSIONLESS,
+                CcsdsUnit.DIMENSIONLESS),
 
     /** Modified equinoctial elements (p=a(1−e²), af, ag, L'=υ+ω+frΩ, χ, ψ, fr). */
     EQUINOCTIALMOD("Modified equinoctial elements (p=a(1−e²), af, ag, L'=υ+ω+frΩ, χ, ψ, fr)",
-                   CCSDSUnit.KM, CCSDSUnit.DIMENSIONLESS, CCSDSUnit.DIMENSIONLESS,
-                   CCSDSUnit.DEG, CCSDSUnit.DIMENSIONLESS, CCSDSUnit.DIMENSIONLESS,
-                   CCSDSUnit.DIMENSIONLESS),
+                   CcsdsUnit.KM, CcsdsUnit.DIMENSIONLESS, CcsdsUnit.DIMENSIONLESS,
+                   CcsdsUnit.DEG, CcsdsUnit.DIMENSIONLESS, CcsdsUnit.DIMENSIONLESS,
+                   CcsdsUnit.DIMENSIONLESS),
 
     /** Geodetic elements (λ, ΦGD, β, A, h, vre). */
     GEODETIC("Geodetic elements (λ, ΦGD, β, A, h, vre)",
-             CCSDSUnit.DEG, CCSDSUnit.DEG, CCSDSUnit.DEG,
-             CCSDSUnit.DEG, CCSDSUnit.KM, CCSDSUnit.KM_S),
+             CcsdsUnit.DEG, CcsdsUnit.DEG, CcsdsUnit.DEG,
+             CcsdsUnit.DEG, CcsdsUnit.KM, CcsdsUnit.KM_S),
 
     /** Keplerian 6-elemnt classical set (a, e, i, Ω, ω, ν). */
     KEPLERIAN("Keplerian 6-elemnt classical set (a, e, i, Ω, ω, ν)",
-              CCSDSUnit.KM, CCSDSUnit.DIMENSIONLESS, CCSDSUnit.DEG,
-              CCSDSUnit.DEG, CCSDSUnit.DEG, CCSDSUnit.DEG),
+              CcsdsUnit.KM, CcsdsUnit.DIMENSIONLESS, CcsdsUnit.DEG,
+              CcsdsUnit.DEG, CcsdsUnit.DEG, CcsdsUnit.DEG),
 
     /** Keplerian 6-elemnt classical set (a, e, i, Ω, ω, M). */
     KEPLERIANMEAN("Keplerian 6-elemnt classical set (a, e, i, Ω, ω, M)",
-                  CCSDSUnit.KM, CCSDSUnit.DIMENSIONLESS, CCSDSUnit.DEG,
-                  CCSDSUnit.DEG, CCSDSUnit.DEG, CCSDSUnit.DEG),
+                  CcsdsUnit.KM, CcsdsUnit.DIMENSIONLESS, CcsdsUnit.DEG,
+                  CcsdsUnit.DEG, CcsdsUnit.DEG, CcsdsUnit.DEG),
 
     /** Modified spherical 6-element set (λ, δ, β, A, r, v). */
     LDBARV(" Modified spherical 6-element set (λ, δ, β, A, r, v)",
-           CCSDSUnit.DEG, CCSDSUnit.DEG, CCSDSUnit.DEG,
-           CCSDSUnit.DEG, CCSDSUnit.KM, CCSDSUnit.KM_S),
+           CcsdsUnit.DEG, CcsdsUnit.DEG, CcsdsUnit.DEG,
+           CcsdsUnit.DEG, CcsdsUnit.KM, CcsdsUnit.KM_S),
 
     /** Geosynchronous on-station tailored set (a, ex, ey, ix, iy, λ). */
     ONSTATION("Geosynchronous on-station tailored set (a, ex, ey, ix, iy, λ)",
-              CCSDSUnit.KM, CCSDSUnit.DIMENSIONLESS, CCSDSUnit.DIMENSIONLESS,
-              CCSDSUnit.DIMENSIONLESS, CCSDSUnit.DIMENSIONLESS, CCSDSUnit.DEG),
+              CcsdsUnit.KM, CcsdsUnit.DIMENSIONLESS, CcsdsUnit.DIMENSIONLESS,
+              CcsdsUnit.DIMENSIONLESS, CcsdsUnit.DIMENSIONLESS, CcsdsUnit.DEG),
 
     /** Canonical counterpart of equinoctial 6-element set (λM=M+ω+Ω, gp, hp, Lp, Gp, Hp). */
     POINCARE("Canonical counterpart of equinoctial 6-element set (λM=M+ω+Ω, gp, hp, Lp, Gp, Hp)",
-             CCSDSUnit.DEG, CCSDSUnit.KM_SQS, CCSDSUnit.KM_SQS,
-             CCSDSUnit.KM2_S, CCSDSUnit.KM_SQS, CCSDSUnit.KM_SQS);
+             CcsdsUnit.DEG, CcsdsUnit.KM_SQS, CcsdsUnit.KM_SQS,
+             CcsdsUnit.KM2_S, CcsdsUnit.KM_SQS, CcsdsUnit.KM_SQS);
 
     /** Description. */
     private final String description;
 
     /** Elements units. */
-    private final CCSDSUnit[] units;
+    private final CcsdsUnit[] units;
 
     /** Simple constructor.
      * @param description description
      * @param units elements units
      */
-    ElementsType(final String description, final CCSDSUnit... units) {
+    ElementsType(final String description, final CcsdsUnit... units) {
         this.description = description;
         this.units  = units.clone();
     }
@@ -122,7 +122,7 @@ public enum ElementsType {
     /** Get the elements units.
      * @return elements units
      */
-    public CCSDSUnit[] getUnits() {
+    public CcsdsUnit[] getUnits() {
         return units.clone();
     }
 

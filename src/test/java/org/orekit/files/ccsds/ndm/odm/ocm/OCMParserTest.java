@@ -29,7 +29,7 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
-import org.orekit.files.ccsds.utils.CCSDSFrame;
+import org.orekit.files.ccsds.utils.CcsdsFrame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -50,7 +50,7 @@ public class OCMParserTest {
         try {
             new ParserBuilder().
             withMu(Constants.EIGEN5C_EARTH_MU).
-            buildOCMParser().
+            buildOcmParser().
             parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -66,12 +66,12 @@ public class OCMParserTest {
         try {
             new ParserBuilder().
             withMu(Constants.EIGEN5C_EARTH_MU).
-            buildOCMParser().
+            buildOcmParser().
             parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, oe.getSpecifier());
-            Assert.assertEquals(OCMMetadataKey.EPOCH_TZERO.name(), oe.getParts()[0]);
+            Assert.assertEquals(OcmMetadataKey.EPOCH_TZERO.name(), oe.getParts()[0]);
         }
     }
 
@@ -82,7 +82,7 @@ public class OCMParserTest {
         try {
             new ParserBuilder().
             withMu(Constants.EIGEN5C_EARTH_MU).
-            buildOCMParser().
+            buildOcmParser().
             parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -100,7 +100,7 @@ public class OCMParserTest {
         try {
             new ParserBuilder().
             withMu(Constants.EIGEN5C_EARTH_MU).
-            buildOCMParser().
+            buildOcmParser().
             parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -114,9 +114,9 @@ public class OCMParserTest {
     public void testParseOCM1() {
         final String   name  = "/ccsds/odm/ocm/OCMExample1.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-        final OCMFile file = new ParserBuilder().
+        final OcmFile file = new ParserBuilder().
                              withMu(Constants.EIGEN5C_EARTH_MU).
-                             buildOCMParser().
+                             buildOcmParser().
                              parseMessage(source);
 
         // check the default values that are not set in this simple file
@@ -146,7 +146,7 @@ public class OCMParserTest {
                             history.getMetadata().getComments().get(0));
         Assert.assertEquals("OSCULATING", history.getMetadata().getOrbAveraging());
         Assert.assertEquals("EARTH", history.getMetadata().getCenterName());
-        Assert.assertEquals(CCSDSFrame.ITRF2000, history.getMetadata().getOrbRefCCSDSFrame());
+        Assert.assertEquals(CcsdsFrame.ITRF2000, history.getMetadata().getOrbRefCCSDSFrame());
         Assert.assertEquals(ElementsType.CARTPV, history.getMetadata().getOrbType());
         Assert.assertEquals(0.0, file.getMetadata().getEpochT0().durationFrom(t0), 1.0e-15);
         List<OrbitState> states = history.getOrbitalStates();
@@ -196,9 +196,9 @@ public class OCMParserTest {
     public void testParseOCM2() {
         final String  name = "/ccsds/odm/ocm/OCMExample2.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-        final OCMFile file = new ParserBuilder().
+        final OcmFile file = new ParserBuilder().
                              withMu(Constants.EIGEN5C_EARTH_MU).
-                             buildOCMParser().
+                             buildOcmParser().
                              parseMessage(source);
 
         // Check Header Block;
@@ -240,9 +240,9 @@ public class OCMParserTest {
     public void testParseOCM3() throws IOException {
         final String   name  = "/ccsds/odm/ocm/OCMExample3.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-        final OCMFile file = new ParserBuilder().
+        final OcmFile file = new ParserBuilder().
                              withMu(Constants.EIGEN5C_EARTH_MU).
-                             buildOCMParser().
+                             buildOcmParser().
                              parse(source); // using EphemerisFileParser API here
 
         // Check Header Block;
@@ -271,9 +271,9 @@ public class OCMParserTest {
     public void testParseOCM4() {
         final String   name  = "/ccsds/odm/ocm/OCMExample4.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-        final OCMFile file = new ParserBuilder().
+        final OcmFile file = new ParserBuilder().
                              withMu(Constants.EIGEN5C_EARTH_MU).
-                             buildOCMParser().
+                             buildOcmParser().
                              parseMessage(source);
 
         // Check Header Block;

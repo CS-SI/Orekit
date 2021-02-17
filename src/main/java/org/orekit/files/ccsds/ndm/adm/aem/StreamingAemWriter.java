@@ -21,7 +21,7 @@ import java.io.IOException;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.utils.CCSDSFrame;
+import org.orekit.files.ccsds.utils.CcsdsFrame;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.Propagator;
@@ -47,7 +47,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Bryan Cazabonne
  * @author Luc Maisonobe
  * @see <a href="https://public.ccsds.org/Pubs/504x0b1c1.pdf">CCSDS 504.0-B-1 Attitude Data Messages</a>
- * @see AEMWriter
+ * @see AemWriter
  * @since 10.2
  */
 public class StreamingAemWriter {
@@ -56,7 +56,7 @@ public class StreamingAemWriter {
     private final Generator generator;
 
     /** Writer for the AEM message format. */
-    private final AEMWriter aemWriter;
+    private final AemWriter aemWriter;
 
     /** Indicator for writing header. */
     private boolean headerWritePending;
@@ -66,7 +66,7 @@ public class StreamingAemWriter {
      * @param aemWriter writer for the AEM message format
      * @since 10.3
      */
-    public StreamingAemWriter(final Generator generator, final AEMWriter aemWriter) {
+    public StreamingAemWriter(final Generator generator, final AemWriter aemWriter) {
         this.generator          = generator;
         this.aemWriter          = aemWriter;
         this.headerWritePending = true;
@@ -88,9 +88,9 @@ public class StreamingAemWriter {
         /**
          * {@inheritDoc}
          *
-         * <p> Sets the {@link AEMMetadataKey#START_TIME} and {@link AEMMetadataKey#STOP_TIME} in this
-         * segment's metadata if not already set by the user. Then calls {@link AEMWriter#writeHeader(Generator)
-         * writeHeader} if it is the first segment) and {@link AEMWriter#writeMetadata()} to start the segment.
+         * <p> Sets the {@link AemMetadataKey#START_TIME} and {@link AemMetadataKey#STOP_TIME} in this
+         * segment's metadata if not already set by the user. Then calls {@link AemWriter#writeHeader(Generator)
+         * writeHeader} if it is the first segment) and {@link AemWriter#writeMetadata()} to start the segment.
          */
         @Override
         public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {
@@ -105,13 +105,13 @@ public class StreamingAemWriter {
                     headerWritePending = false;
                 }
 
-                final AEMMetadata metadata = aemWriter.getMetadata();
+                final AemMetadata metadata = aemWriter.getMetadata();
                 metadata.setStartTime(s0.getDate());
                 metadata.setUseableStartTime(null);
                 metadata.setUseableStopTime(null);
                 metadata.setStopTime(t);
                 final Frame      stateFrame = s0.getAttitude().getReferenceFrame();
-                final CCSDSFrame ccsdsFrame = CCSDSFrame.map(stateFrame);
+                final CcsdsFrame ccsdsFrame = CcsdsFrame.map(stateFrame);
                 metadata.getEndPoints().setExternalFrame(ccsdsFrame);
                 aemWriter.writeMetadata(generator);
                 aemWriter.startAttitudeBlock(generator);

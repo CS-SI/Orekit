@@ -18,17 +18,17 @@ package org.orekit.files.ccsds.ndm;
 
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
-import org.orekit.files.ccsds.ndm.adm.aem.AEMParser;
-import org.orekit.files.ccsds.ndm.adm.apm.APMParser;
-import org.orekit.files.ccsds.ndm.odm.ocm.OCMParser;
-import org.orekit.files.ccsds.ndm.odm.oem.OEMParser;
-import org.orekit.files.ccsds.ndm.odm.omm.OMMParser;
-import org.orekit.files.ccsds.ndm.odm.opm.OPMParser;
-import org.orekit.files.ccsds.ndm.tdm.TDMParser;
+import org.orekit.files.ccsds.ndm.adm.aem.AemParser;
+import org.orekit.files.ccsds.ndm.adm.apm.ApmParser;
+import org.orekit.files.ccsds.ndm.odm.ocm.OcmParser;
+import org.orekit.files.ccsds.ndm.odm.oem.OemParser;
+import org.orekit.files.ccsds.ndm.odm.omm.OmmParser;
+import org.orekit.files.ccsds.ndm.odm.opm.OpmParser;
+import org.orekit.files.ccsds.ndm.tdm.TdmParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
-/** Build for all {@link NDMFile CCSDS Message} files.
+/** Build for all {@link NdmFile CCSDS Message} files.
  * <p>
  * This builder can be used for building all CCSDS Messages parsers types.
  * It is particularly useful in multi-threaded context as parsers cannot
@@ -175,8 +175,8 @@ public class ParserBuilder {
 
     /** Set up mission reference date or Mission Elapsed Time or Mission Relative Time time systems.
      * <p>
-     * The mission reference date is used only by {@link AEMParser} and {@link APMParser},
-     * and by {@link OPMParser}, {@link OMMParser} and {@link OEMParser} up to version 2.0
+     * The mission reference date is used only by {@link AemParser} and {@link ApmParser},
+     * and by {@link OpmParser}, {@link OmmParser} and {@link OemParser} up to version 2.0
      * of ODM (starting with version 3.0of ODM, both MET and MRT time system have been
      * withdrawn from the standard).
      * </p>
@@ -215,7 +215,7 @@ public class ParserBuilder {
 
     /** Set up the default mass.
      * <p>
-     * The default mass is used only by {@link OPMParser}.
+     * The default mass is used only by {@link OpmParser}.
      * </p>
      * @param newDefaultMass default mass
      * @return a new builder with updated configuration (the instance is not changed)
@@ -235,8 +235,8 @@ public class ParserBuilder {
 
     /** Set up the default interpolation degree.
      * <p>
-     * The default interpolation degree is used only by {@link AEMParser}
-     * and {@link OEMParser}.
+     * The default interpolation degree is used only by {@link AemParser}
+     * and {@link OemParser}.
      * </p>
      * @param newDefaultInterpolationDegree default interpolation degree
      * @return a new builder with updated configuration (the instance is not changed)
@@ -254,57 +254,57 @@ public class ParserBuilder {
         return defaultInterpolationDegree;
     }
 
-    /** Build a parser for {@link org.orekit.files.ccsds.ndm.tdm.TDMFile Tracking Data Messages}.
+    /** Build a parser for {@link org.orekit.files.ccsds.ndm.odm.opm.OpmFile Orbit Parameters Messages}.
      * @return a new parser
      */
-    public TDMParser buildTDMParser() {
-        return new TDMParser(getConventions(), isSimpleEOP(), getDataContext());
-    }
-
-    /** Build a parser for {@link org.orekit.files.ccsds.ndm.odm.opm.OPMFile Orbit Parameters Messages}.
-     * @return a new parser
-     */
-    public OPMParser buildOPMParser() {
-        return new OPMParser(getConventions(), isSimpleEOP(), getDataContext(), getMissionReferenceDate(),
+    public OpmParser buildOpmParser() {
+        return new OpmParser(getConventions(), isSimpleEOP(), getDataContext(), getMissionReferenceDate(),
                              getMu(), getDefaultMass());
     }
 
-    /** Build a parser for {@link org.orekit.files.ccsds.ndm.odm.opm.OMMFile Orbit Mean elements Messages}.
+    /** Build a parser for {@link org.orekit.files.ccsds.ndm.odm.opm.OmmFile Orbit Mean elements Messages}.
      * @return a new parser
      */
-    public OMMParser buildOMMParser() {
-        return new OMMParser(getConventions(), isSimpleEOP(), getDataContext(), getMissionReferenceDate(),
+    public OmmParser buildOmmParser() {
+        return new OmmParser(getConventions(), isSimpleEOP(), getDataContext(), getMissionReferenceDate(),
                              getMu(), getDefaultMass());
     }
 
-    /** Build a parser for {@link org.orekit.files.ccsds.ndm.odm.oem.OEMFile Orbit Ephemeris Messages}.
+    /** Build a parser for {@link org.orekit.files.ccsds.ndm.odm.oem.OemFile Orbit Ephemeris Messages}.
      * @return a new parser
      */
-    public OEMParser buildOEMParser() {
-        return new OEMParser(getConventions(), isSimpleEOP(), getDataContext(), getMissionReferenceDate(),
+    public OemParser buildOemParser() {
+        return new OemParser(getConventions(), isSimpleEOP(), getDataContext(), getMissionReferenceDate(),
                              getMu(), getDefaultInterpolationDegree());
     }
 
-    /** Build a parser for {@link org.orekit.files.ccsds.ndm.odm.ocm.OCMFile Orbit Comprehensive Messages}.
+    /** Build a parser for {@link org.orekit.files.ccsds.ndm.odm.ocm.OcmFile Orbit Comprehensive Messages}.
      * @return a new parser
      */
-    public OCMParser buildOCMParser() {
-        return new OCMParser(getConventions(), isSimpleEOP(), getDataContext(), getMu());
+    public OcmParser buildOcmParser() {
+        return new OcmParser(getConventions(), isSimpleEOP(), getDataContext(), getMu());
     }
 
-    /** Build a parser for {@link org.orekit.files.ccsds.ndm.adm.apm.APMFile Attitude Parameters Messages}.
+    /** Build a parser for {@link org.orekit.files.ccsds.ndm.adm.apm.ApmFile Attitude Parameters Messages}.
      * @return a new parser
      */
-    public APMParser buildAPMParser() {
-        return new APMParser(getConventions(), isSimpleEOP(), getDataContext(), getMissionReferenceDate());
+    public ApmParser buildApmParser() {
+        return new ApmParser(getConventions(), isSimpleEOP(), getDataContext(), getMissionReferenceDate());
     }
 
-    /** Build a parser for {@link org.orekit.files.ccsds.ndm.adm.aem.AEMFile Attitude Ephemeris Messages}.
+    /** Build a parser for {@link org.orekit.files.ccsds.ndm.adm.aem.AemFile Attitude Ephemeris Messages}.
      * @return a new parser
      */
-    public AEMParser buildAEMParser() {
-        return new AEMParser(getConventions(), isSimpleEOP(), getDataContext(), getMissionReferenceDate(),
+    public AemParser buildAemParser() {
+        return new AemParser(getConventions(), isSimpleEOP(), getDataContext(), getMissionReferenceDate(),
                              getDefaultInterpolationDegree());
+    }
+
+    /** Build a parser for {@link org.orekit.files.ccsds.ndm.tdm.TdmFile Tracking Data Messages}.
+     * @return a new parser
+     */
+    public TdmParser buildTdmParser() {
+        return new TdmParser(getConventions(), isSimpleEOP(), getDataContext());
     }
 
 }

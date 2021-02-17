@@ -84,7 +84,7 @@ public class LexicalAnalyzerSelectorTest {
         try {
             final DataSource source = new DataSource(resourceName, () -> getClass().getResourceAsStream(resourceName));
             final LexicalAnalyzer analyzer = LexicalAnalyzerSelector.select(source);
-            return analyzer instanceof XMLLexicalAnalyzer ? FileFormat.XML : FileFormat.KVN;
+            return analyzer instanceof XmlLexicalAnalyzer ? FileFormat.XML : FileFormat.KVN;
         } catch (IOException ioe) {
             ioe.printStackTrace();
             Assert.fail(ioe.getLocalizedMessage());

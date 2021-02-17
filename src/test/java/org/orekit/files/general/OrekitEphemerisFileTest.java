@@ -39,11 +39,11 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
-import org.orekit.files.ccsds.ndm.odm.oem.OEMMetadata;
-import org.orekit.files.ccsds.ndm.odm.oem.OEMParser;
-import org.orekit.files.ccsds.ndm.odm.oem.OEMSegment;
-import org.orekit.files.ccsds.ndm.odm.oem.OEMWriter;
-import org.orekit.files.ccsds.utils.CCSDSFrame;
+import org.orekit.files.ccsds.ndm.odm.oem.OemMetadata;
+import org.orekit.files.ccsds.ndm.odm.oem.OemParser;
+import org.orekit.files.ccsds.ndm.odm.oem.OemSegment;
+import org.orekit.files.ccsds.ndm.odm.oem.OemWriter;
+import org.orekit.files.ccsds.utils.CcsdsFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.general.EphemerisFile.EphemerisSegment;
 import org.orekit.files.general.OrekitEphemerisFile.OrekitSatelliteEphemeris;
@@ -134,18 +134,18 @@ public class OrekitEphemerisFileTest {
                      satellite.getSegments().get(0).getMu(), muTolerance);
 
         String tempOemFile = Files.createTempFile("OrekitEphemerisFileTest", ".oem").toString();
-        OEMMetadata template = new OEMMetadata(2);
+        OemMetadata template = new OemMetadata(2);
         template.setTimeSystem(CcsdsTimeScale.UTC);
         template.setObjectID(satId);
         template.setObjectName(satId);
         template.setCenterName("EARTH", CelestialBodyFactory.getCelestialBodies());
-        template.setRefFrame(FramesFactory.getEME2000(), CCSDSFrame.EME2000);
-        new OEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null, template).
+        template.setRefFrame(FramesFactory.getEME2000(), CcsdsFrame.EME2000);
+        new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null, template).
         write(tempOemFile, ephemerisFile);
 
-        OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
+        OemParser parser = new OemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                          null, body.getGM(), 2);
-        EphemerisFile<TimeStampedPVCoordinates, OEMSegment> ephemerisFromFile = parser.parse(new DataSource(tempOemFile));
+        EphemerisFile<TimeStampedPVCoordinates, OemSegment> ephemerisFromFile = parser.parse(new DataSource(tempOemFile));
         Files.delete(Paths.get(tempOemFile));
         
         EphemerisSegment<TimeStampedPVCoordinates> segment = ephemerisFromFile.getSatellites().get(satId).getSegments().get(0);

@@ -19,9 +19,9 @@ package org.orekit.files.ccsds.ndm.adm;
 import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.adm.aem.AEMMetadataKey;
-import org.orekit.files.ccsds.utils.CCSDSBodyFrame;
-import org.orekit.files.ccsds.utils.CCSDSFrame;
+import org.orekit.files.ccsds.ndm.adm.aem.AemMetadataKey;
+import org.orekit.files.ccsds.utils.CcsdsBodyFrame;
+import org.orekit.files.ccsds.utils.CcsdsFrame;
 
 /**
  * Container for a pair of frames acting as attitude end points.
@@ -29,11 +29,11 @@ import org.orekit.files.ccsds.utils.CCSDSFrame;
  * There are two different perspectives implemented by this class.
  * </p>
  * <p>
- * In the Orekit perspective, one of the frame is an {@link CCSDSFrame external
+ * In the Orekit perspective, one of the frame is an {@link CcsdsFrame external
  * frame} suitable for reference for Orekit {@link Attitude}, the other one
- * is a {@link CCSDSBodyFrame local spaceraft body frame}. The suitable
- * setters to be used in this perspective are {@link #setExternalFrame(CCSDSFrame)},
- * {@link #setLocalFrame(CCSDSBodyFrame)} and {@link #setExternal2Local(boolean)}.
+ * is a {@link CcsdsBodyFrame local spaceraft body frame}. The suitable
+ * setters to be used in this perspective are {@link #setExternalFrame(CcsdsFrame)},
+ * {@link #setLocalFrame(CcsdsBodyFrame)} and {@link #setExternal2Local(boolean)}.
  * </p>
  * <p>
  * In the CCSDS perspective, the frames are simply labeled as 'A' and 'B', there
@@ -52,10 +52,10 @@ import org.orekit.files.ccsds.utils.CCSDSFrame;
 public class AttitudeEndPoints {
 
     /** External frame. */
-    private CCSDSFrame externalFrame;
+    private CcsdsFrame externalFrame;
 
     /** Local spacecraft body frame. */
-    private CCSDSBodyFrame localFrame;
+    private CcsdsBodyFrame localFrame;
 
     /** Indicator for frame A. */
     private boolean frameAIsExternal;
@@ -79,36 +79,36 @@ public class AttitudeEndPoints {
      * </p>
      */
     public void checkMandatoryEntries() {
-        checkNotNull(externalFrame, isLocalSuffix('B') ? AEMMetadataKey.REF_FRAME_A : AEMMetadataKey.REF_FRAME_B);
-        checkNotNull(localFrame,    isLocalSuffix('A') ? AEMMetadataKey.REF_FRAME_A : AEMMetadataKey.REF_FRAME_B);
-        checkNotNull(isExternal2Local(), AEMMetadataKey.ATTITUDE_DIR);
+        checkNotNull(externalFrame, isLocalSuffix('B') ? AemMetadataKey.REF_FRAME_A : AemMetadataKey.REF_FRAME_B);
+        checkNotNull(localFrame,    isLocalSuffix('A') ? AemMetadataKey.REF_FRAME_A : AemMetadataKey.REF_FRAME_B);
+        checkNotNull(isExternal2Local(), AemMetadataKey.ATTITUDE_DIR);
     }
 
     /** Set the external frame.
      * @param externalFrame external frame suitable for reference for Orekit {@link Attitude}
      */
-    public void setExternalFrame(final CCSDSFrame externalFrame) {
+    public void setExternalFrame(final CcsdsFrame externalFrame) {
         this.externalFrame = externalFrame;
     }
 
     /** Get the external frame.
      * @return external frame suitable for reference for Orekit {@link Attitude}
      */
-    public CCSDSFrame getExternalFrame() {
+    public CcsdsFrame getExternalFrame() {
         return externalFrame;
     }
 
     /** Set the local spacecraft body frame.
      * @param localFrame local spacecraft body frame
      */
-    public void setLocalFrame(final CCSDSBodyFrame localFrame) {
+    public void setLocalFrame(final CcsdsBodyFrame localFrame) {
         this.localFrame = localFrame;
     }
 
     /** Get the local spacecraft body frame.
      * @return local spacecraft body frame
      */
-    public CCSDSBodyFrame getLocalFrame() {
+    public CcsdsBodyFrame getLocalFrame() {
         return localFrame;
     }
 
@@ -161,10 +161,10 @@ public class AttitudeEndPoints {
      */
     private boolean setFrame(final String name) {
         try {
-            setExternalFrame(CCSDSFrame.parse(name));
+            setExternalFrame(CcsdsFrame.parse(name));
             return true;
         } catch (IllegalArgumentException iaeE) {
-            setLocalFrame(CCSDSBodyFrame.parse(name));
+            setLocalFrame(CcsdsBodyFrame.parse(name));
             return false;
         }
     }

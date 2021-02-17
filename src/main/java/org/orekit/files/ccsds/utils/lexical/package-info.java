@@ -23,8 +23,8 @@
  * org.orekit.files.ccsds.utils.lexical.LexicalAnalyzer LexicalAnalyzer}
  * interface are able to generate {@link org.orekit.files.ccsds.utils.lexical.ParseToken
  * parse tokens} from files in different formats ({@link
- * org.orekit.files.ccsds.utils.lexical.KVNLexicalAnalyzer Key-Value Notation} and
- * {@link org.orekit.files.ccsds.utils.lexical.XMLLexicalAnalyzer XML}). They will
+ * org.orekit.files.ccsds.utils.lexical.KvnLexicalAnalyzer Key-Value Notation} and
+ * {@link org.orekit.files.ccsds.utils.lexical.XmlLexicalAnalyzer XML}). They will
  * feed {@link org.orekit.files.ccsds.utils.lexical.MessageParser message parsers}
  * with these {@link org.orekit.files.ccsds.utils.lexical.ParseToken
  * parse tokens}.

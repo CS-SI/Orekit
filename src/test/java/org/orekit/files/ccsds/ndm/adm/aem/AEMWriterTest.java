@@ -47,7 +47,7 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.section.Header;
-import org.orekit.files.ccsds.utils.CCSDSFrame;
+import org.orekit.files.ccsds.utils.CcsdsFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.frames.Frame;
@@ -72,22 +72,22 @@ public class AEMWriterTest {
 
     @Test
     public void testAEMWriter() {
-        assertNotNull(new AEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null, dummyMetadata()));
+        assertNotNull(new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null, dummyMetadata()));
     }
 
     @Test
     public void testWriteAEM1() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AEMFile aemFile = new ParserBuilder().buildAEMParser().parseMessage(source);
+        final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
 
         Header header = new Header();
         header.setFormatVersion(aemFile.getHeader().getFormatVersion());
         header.setCreationDate(aemFile.getHeader().getCreationDate());
         header.setOriginator(aemFile.getHeader().getOriginator());
 
-        final AEMSegment s0 = aemFile.getSegments().get(0);
-        AEMMetadata metadata = new AEMMetadata(s0.getInterpolationSamples() - 1);
+        final AemSegment s0 = aemFile.getSegments().get(0);
+        AemMetadata metadata = new AemMetadata(s0.getInterpolationSamples() - 1);
         metadata.setObjectName(s0.getMetadata().getObjectName());
         metadata.setObjectID(s0.getMetadata().getObjectID());
         metadata.getEndPoints().setFrameA(s0.getMetadata().getEndPoints().getExternalFrame().name());
@@ -101,10 +101,10 @@ public class AEMWriterTest {
         metadata.setCenterName(s0.getMetadata().getCenterName(), DataContext.getDefault().getCelestialBodies());
         metadata.setInterpolationMethod(s0.getMetadata().getInterpolationMethod());
         String tempAEMFilePath = tempFolder.newFile("TestWriteAEM1.aem").toString();
-        AEMWriter writer = new AEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(), header, metadata);
+        AemWriter writer = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), header, metadata);
         writer.write(tempAEMFilePath, aemFile);
 
-        final AEMFile generatedOemFile = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1).
+        final AemFile generatedOemFile = new AemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1).
                                          parseMessage(new DataSource(tempAEMFilePath));
         compareAemFiles(aemFile, generatedOemFile);
     }
@@ -113,12 +113,12 @@ public class AEMWriterTest {
     public void testUnfoundSpaceId() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AEMFile aemFile = new ParserBuilder().buildAEMParser().parseMessage(source);
+        final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
 
-        AEMMetadata metadata = dummyMetadata();
+        AemMetadata metadata = dummyMetadata();
         metadata.setObjectID("12345");
         String tempOEMFilePath = tempFolder.newFile("TestAEMUnfoundSpaceId.aem").toString();
-        AEMWriter writer = new AEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null, metadata);
+        AemWriter writer = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null, metadata);
         try {
             writer.write(tempOEMFilePath, aemFile);
             fail("an exception should have been thrown");
@@ -132,8 +132,8 @@ public class AEMWriterTest {
     public void testNullFile() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AEMFile aemFile = new ParserBuilder().buildAEMParser().parseMessage(source);
-        AEMWriter writer = new AEMWriter(aemFile.getConventions(), aemFile.getDataContext(),
+        final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
+        AemWriter writer = new AemWriter(aemFile.getConventions(), aemFile.getDataContext(),
                                          aemFile.getHeader(), aemFile.getSegments().get(0).getMetadata());
         try {
             writer.write((BufferedWriter) null, aemFile);
@@ -149,10 +149,10 @@ public class AEMWriterTest {
         File tempAEMFile = tempFolder.newFile("TestNullEphemeris.aem");
         Header header = new Header();
         header.setOriginator("NASA/JPL");
-        AEMMetadata metadata = dummyMetadata();
+        AemMetadata metadata = dummyMetadata();
         metadata.setObjectID("1996-062A");
         metadata.setObjectName("MARS GLOBAL SURVEYOR");
-        AEMWriter writer = new AEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(), header, metadata);
+        AemWriter writer = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), header, metadata);
         writer.write(tempAEMFile.toString(), null);
         assertTrue(tempAEMFile.exists());
         try (FileInputStream   fis = new FileInputStream(tempAEMFile);
@@ -170,14 +170,14 @@ public class AEMWriterTest {
     public void testUnisatelliteFileWithDefault() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AEMFile aemFile = new ParserBuilder().buildAEMParser().parseMessage(source);
+        final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
 
         String tempAEMFilePath = tempFolder.newFile("TestOEMUnisatelliteWithDefault.oem").toString();
-        AEMWriter writer = new AEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
+        AemWriter writer = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
                                          null, aemFile.getSegments().get(0).getMetadata());
         writer.write(tempAEMFilePath, aemFile);
 
-        final AEMFile generatedAemFile = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1).
+        final AemFile generatedAemFile = new AemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1).
                                          parseMessage(new DataSource(tempAEMFilePath));
         assertEquals(aemFile.getSegments().get(0).getMetadata().getObjectID(),
                      generatedAemFile.getSegments().get(0).getMetadata().getObjectID());
@@ -190,14 +190,14 @@ public class AEMWriterTest {
         final String id1 = "1999-012A";
         final String id2 = "1999-012B";
         StandAloneEphemerisFile file = new StandAloneEphemerisFile(IERSConventions.IERS_2010, true, context);
-        file.generate(id1, id1 + "-name", AEMAttitudeType.QUATERNION_RATE,
+        file.generate(id1, id1 + "-name", AemAttitudeType.QUATERNION_RATE,
                       context.getFrames().getEME2000(),
                       new TimeStampedAngularCoordinates(AbsoluteDate.GALILEO_EPOCH,
                                                         Rotation.IDENTITY,
                                                         new Vector3D(0.000, 0.010, 0.000),
                                                         new Vector3D(0.000, 0.000, 0.001)),
                       900.0, 60.0);
-        file.generate(id2, id2 + "-name", AEMAttitudeType.QUATERNION_RATE,
+        file.generate(id2, id2 + "-name", AemAttitudeType.QUATERNION_RATE,
                       context.getFrames().getEME2000(),
                       new TimeStampedAngularCoordinates(AbsoluteDate.GALILEO_EPOCH,
                                                         Rotation.IDENTITY,
@@ -207,9 +207,9 @@ public class AEMWriterTest {
 
        File written = tempFolder.newFile("TestAEMMultisatellite.aem");
 
-        AEMMetadata metadata = dummyMetadata();
+        AemMetadata metadata = dummyMetadata();
         metadata.setObjectID(id2);
-        AEMWriter writer = new AEMWriter(IERSConventions.IERS_2010, context, null, metadata);
+        AemWriter writer = new AemWriter(IERSConventions.IERS_2010, context, null, metadata);
         writer.write(written.getAbsolutePath(), file);
 
         int count = 0;
@@ -228,14 +228,14 @@ public class AEMWriterTest {
     public void testIssue723() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample2.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AEMFile aemFile = new ParserBuilder().buildAEMParser().parseMessage(source);
+        final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
 
         String tempAEMFilePath = tempFolder.newFile("TestAEMIssue723.aem").toString();
-        AEMWriter writer = new AEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
+        AemWriter writer = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
                                          aemFile.getHeader(), aemFile.getSegments().get(0).getMetadata());
         writer.write(tempAEMFilePath, aemFile);
 
-        final AEMFile generatedAemFile = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1).
+        final AemFile generatedAemFile = new AemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1).
                                          parseMessage(new DataSource(tempAEMFilePath));
         assertEquals(aemFile.getHeader().getComments().get(0), generatedAemFile.getHeader().getComments().get(0));
     }
@@ -250,10 +250,10 @@ public class AEMWriterTest {
         // setup
         String exampleFile = "/ccsds/adm/aem/AEMExample7.txt";
         final DataSource source = new DataSource(exampleFile, () -> getClass().getResourceAsStream(exampleFile));
-        final AEMFile aemFile = new ParserBuilder().buildAEMParser().parseMessage(source);
+        final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
         StringBuilder buffer = new StringBuilder();
 
-        AEMWriter writer = new AEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
+        AemWriter writer = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
                                          null, aemFile.getSegments().get(0).getMetadata(),
                                          "some-name", "%.2f");
 
@@ -266,7 +266,7 @@ public class AEMWriterTest {
         assertEquals(lines[25], "2002-12-18T12:02:00.331000000 -0.85 0.27 -0.07 0.46");
 
         // Default format
-        writer = new AEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
+        writer = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
                                null, aemFile.getSegments().get(0).getMetadata());
         buffer = new StringBuilder();
         writer.write(buffer, aemFile);
@@ -278,11 +278,11 @@ public class AEMWriterTest {
         assertEquals(lines2[25], "2002-12-18T12:02:00.331000000 -0.845318824  0.269739625 -0.065319909  0.456519365");
     }
 
-    private static void compareAemAttitudeBlocks(AEMSegment segment1, AEMSegment segment2) {
+    private static void compareAemAttitudeBlocks(AemSegment segment1, AemSegment segment2) {
 
         // compare metadata
-        AEMMetadata meta1 = segment1.getMetadata();
-        AEMMetadata meta2 = segment2.getMetadata();
+        AemMetadata meta1 = segment1.getMetadata();
+        AemMetadata meta2 = segment2.getMetadata();
         assertEquals(meta1.getObjectID(),            meta2.getObjectID());
         assertEquals(meta1.getObjectName(),          meta2.getObjectName());
         assertEquals(meta1.getCenterName(),          meta2.getCenterName());
@@ -311,7 +311,7 @@ public class AEMWriterTest {
         }
     }
 
-    static void compareAemFiles(AEMFile file1, AEMFile file2) {
+    static void compareAemFiles(AemFile file1, AemFile file2) {
         assertEquals(file1.getHeader().getOriginator(), file2.getHeader().getOriginator());
         assertEquals(file1.getSegments().size(), file2.getSegments().size());
         for (int i = 0; i < file1.getSegments().size(); i++) {
@@ -320,8 +320,8 @@ public class AEMWriterTest {
     }
 
     private class StandAloneEphemerisFile
-        implements AttitudeEphemerisFile<TimeStampedAngularCoordinates, AEMSegment> {
-        private final Map<String, AEMSatelliteEphemeris> satEphem;
+        implements AttitudeEphemerisFile<TimeStampedAngularCoordinates, AemSegment> {
+        private final Map<String, AemSatelliteEphemeris> satEphem;
 
         private final IERSConventions conventions;
         private final boolean         simpleEOP;
@@ -341,22 +341,22 @@ public class AEMWriterTest {
         }
 
         private void generate(final String objectID, final String objectName,
-                              final AEMAttitudeType type, final Frame referenceFrame,
+                              final AemAttitudeType type, final Frame referenceFrame,
                               final TimeStampedAngularCoordinates ac0,
                               final double duration, final double step) {
 
-            AEMMetadata metadata = dummyMetadata();
+            AemMetadata metadata = dummyMetadata();
             metadata.addComment("metadata for " + objectName);
             metadata.setObjectID(objectID);
             metadata.setObjectName(objectName);
-            metadata.getEndPoints().setExternalFrame(CCSDSFrame.map(referenceFrame));
+            metadata.getEndPoints().setExternalFrame(CcsdsFrame.map(referenceFrame));
             metadata.setAttitudeType(type);
             metadata.setStartTime(ac0.getDate());
             metadata.setStopTime(ac0.getDate().shiftedBy(duration));
             metadata.setUseableStartTime(metadata.getStartTime().shiftedBy(step));
             metadata.setUseableStartTime(metadata.getStopTime().shiftedBy(-step));
 
-            AEMData data = new AEMData();
+            AemData data = new AemData();
             data.addComment("generated data for " + objectName);
             data.addComment("duration was set to " + duration + " s");
             data.addComment("step was set to " + step + " s");
@@ -365,24 +365,24 @@ public class AEMWriterTest {
             }
 
             if (!satEphem.containsKey(objectID)) {
-                satEphem.put(objectID, new AEMSatelliteEphemeris(objectID, Collections.emptyList()));
+                satEphem.put(objectID, new AemSatelliteEphemeris(objectID, Collections.emptyList()));
             }
 
-            List<AEMSegment> segments = new ArrayList<>(satEphem.get(objectID).getSegments());
-            segments.add(new AEMSegment(metadata, data, conventions, simpleEOP, dataContext));
-            satEphem.put(objectID, new AEMSatelliteEphemeris(objectID, segments));
+            List<AemSegment> segments = new ArrayList<>(satEphem.get(objectID).getSegments());
+            segments.add(new AemSegment(metadata, data, conventions, simpleEOP, dataContext));
+            satEphem.put(objectID, new AemSatelliteEphemeris(objectID, segments));
 
         }
 
         @Override
-        public Map<String, AEMSatelliteEphemeris> getSatellites() {
+        public Map<String, AemSatelliteEphemeris> getSatellites() {
             return satEphem;
         }
 
     }
 
-    private AEMMetadata dummyMetadata() {
-        AEMMetadata metadata = new AEMMetadata(4);
+    private AemMetadata dummyMetadata() {
+        AemMetadata metadata = new AemMetadata(4);
         metadata.setTimeSystem(CcsdsTimeScale.TT);
         metadata.setObjectID("9999-999ZZZ");
         metadata.setObjectName("transgalactic");
@@ -391,7 +391,7 @@ public class AEMWriterTest {
         metadata.getEndPoints().setDirection("A2B");
         metadata.setStartTime(AbsoluteDate.J2000_EPOCH.shiftedBy(80 * Constants.JULIAN_CENTURY));
         metadata.setStopTime(metadata.getStartTime().shiftedBy(Constants.JULIAN_YEAR));
-        metadata.setAttitudeType(AEMAttitudeType.QUATERNION_DERIVATIVE);
+        metadata.setAttitudeType(AemAttitudeType.QUATERNION_DERIVATIVE);
         metadata.setIsFirst(true);
         return metadata;
     }

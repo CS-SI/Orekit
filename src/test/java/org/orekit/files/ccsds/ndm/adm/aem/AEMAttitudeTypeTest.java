@@ -44,14 +44,14 @@ public class AEMAttitudeTypeTest {
     private static final double QUATERNION_PRECISION = 1.0e-5;
     private static final double ANGLE_PRECISION = 1.0e-3;
 
-    AEMMetadata metadata;
+    AemMetadata metadata;
     ParsingContext context;
 
     @Before
     public void setUp()
         throws Exception {
         Utils.setDataRoot("regular-data");
-        metadata = new AEMMetadata(4);
+        metadata = new AemMetadata(4);
         context  =  new ParsingContext(() -> IERSConventions.IERS_2010,
                                        () -> true,
                                        () -> DataContext.getDefault(),
@@ -74,27 +74,27 @@ public class AEMAttitudeTypeTest {
     @Test
     public void testSpin() {
         // Initialize the attitude type
-        final AEMAttitudeType spin = AEMAttitudeType.parseType("SPIN");
+        final AemAttitudeType spin = AemAttitudeType.parseType("SPIN");
         // Test exception on the first method
         try {
             spin.parse(null, null, new String[6], null);
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
-            Assert.assertEquals(AEMAttitudeType.SPIN.name(), oe.getParts()[0]);
+            Assert.assertEquals(AemAttitudeType.SPIN.name(), oe.getParts()[0]);
         }
         // Test exception on the second method
         try {
-            spin.getAttitudeData(null, new AEMMetadata(1));
+            spin.getAttitudeData(null, new AemMetadata(1));
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
-            Assert.assertEquals(AEMAttitudeType.SPIN.name(), oe.getParts()[0]);
+            Assert.assertEquals(AemAttitudeType.SPIN.name(), oe.getParts()[0]);
         }
         // Test exception on the third method
         try {
             spin.getAngularDerivativesFilter();
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
-            Assert.assertEquals(AEMAttitudeType.SPIN.name(), oe.getParts()[0]);
+            Assert.assertEquals(AemAttitudeType.SPIN.name(), oe.getParts()[0]);
         }
     }
 
@@ -105,34 +105,34 @@ public class AEMAttitudeTypeTest {
     @Test
     public void testSpinNutation() {
         // Initialize the attitude type
-        final AEMAttitudeType spinNutation = AEMAttitudeType.parseType("SPIN/NUTATION");
+        final AemAttitudeType spinNutation = AemAttitudeType.parseType("SPIN/NUTATION");
         // Test exception on the first method
         try {
             spinNutation.parse(null, null, new String[6], null);
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
-            Assert.assertEquals(AEMAttitudeType.SPIN_NUTATION.name(), oe.getParts()[0]);
+            Assert.assertEquals(AemAttitudeType.SPIN_NUTATION.name(), oe.getParts()[0]);
         }
         // Test exception on the second method
         try {
-            spinNutation.getAttitudeData(null, new AEMMetadata(1));
+            spinNutation.getAttitudeData(null, new AemMetadata(1));
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
-            Assert.assertEquals(AEMAttitudeType.SPIN_NUTATION.name(), oe.getParts()[0]);
+            Assert.assertEquals(AemAttitudeType.SPIN_NUTATION.name(), oe.getParts()[0]);
         }
         // Test exception on the third method
         try {
             spinNutation.getAngularDerivativesFilter();
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
-            Assert.assertEquals(AEMAttitudeType.SPIN_NUTATION.name(), oe.getParts()[0]);
+            Assert.assertEquals(AemAttitudeType.SPIN_NUTATION.name(), oe.getParts()[0]);
         }
     }
 
     @Test
     public void testQuaternion() {
         // Initialize the attitude type
-        final AEMAttitudeType quaternion = AEMAttitudeType.parseType("QUATERNION");
+        final AemAttitudeType quaternion = AemAttitudeType.parseType("QUATERNION");
 
         // Test computation of angular coordinates from attitude data
         final String[] attitudeData = new String[] {
@@ -146,7 +146,7 @@ public class AEMAttitudeTypeTest {
         Assert.assertEquals(0.45689, tsac.getRotation().getQ3(), QUATERNION_PRECISION);
 
         // Test computation of attitude data from angular coordinates
-        AEMMetadata metadata = new AEMMetadata(3);
+        AemMetadata metadata = new AemMetadata(3);
         metadata.setIsFirst(true);
         metadata.setLocalRates(true);
         metadata.getEndPoints().setExternal2Local(true);
@@ -162,7 +162,7 @@ public class AEMAttitudeTypeTest {
     @Test
     public void testQuaternionDerivates() {
         // Initialize the attitude type
-        final AEMAttitudeType quaternion = AEMAttitudeType.parseType("QUATERNION/DERIVATIVE");
+        final AemAttitudeType quaternion = AemAttitudeType.parseType("QUATERNION/DERIVATIVE");
 
         // Test computation of angular coordinates from attitude data
         final String[] attitudeData = new String[] {
@@ -176,7 +176,7 @@ public class AEMAttitudeTypeTest {
         Assert.assertEquals(0.45689,    tsac.getRotation().getQ3(),    QUATERNION_PRECISION);
 
         // Test computation of attitude data from angular coordinates
-        AEMMetadata metadata = new AEMMetadata(3);
+        AemMetadata metadata = new AemMetadata(3);
         metadata.setIsFirst(true);
         metadata.setLocalRates(true);
         metadata.getEndPoints().setExternal2Local(true);
@@ -192,7 +192,7 @@ public class AEMAttitudeTypeTest {
     @Test
     public void testQuaternionRate() {
         // Initialize the attitude type
-        final AEMAttitudeType quaternionRate = AEMAttitudeType.parseType("QUATERNION/RATE");
+        final AemAttitudeType quaternionRate = AemAttitudeType.parseType("QUATERNION/RATE");
 
         // Test computation of angular coordinates from attitude data
         final String[] attitudeData = new String[] {
@@ -211,7 +211,7 @@ public class AEMAttitudeTypeTest {
         Assert.assertEquals(FastMath.toRadians(37.9), rebuiltRate.getZ(), ANGLE_PRECISION);
 
         // Test computation of attitude data from angular coordinates
-        AEMMetadata metadata = new AEMMetadata(3);
+        AemMetadata metadata = new AemMetadata(3);
         metadata.setIsFirst(false);
         metadata.setLocalRates(false);
         metadata.getEndPoints().setExternal2Local(true);
@@ -227,7 +227,7 @@ public class AEMAttitudeTypeTest {
     @Test
     public void testEulerAngle() {
         // Initialize the attitude type
-        final AEMAttitudeType eulerAngle = AEMAttitudeType.parseType("EULER ANGLE");
+        final AemAttitudeType eulerAngle = AemAttitudeType.parseType("EULER ANGLE");
 
         // Test computation of angular coordinates from attitude data
         final String[] attitudeData = new String[] {
@@ -241,7 +241,7 @@ public class AEMAttitudeTypeTest {
         Assert.assertEquals(37.9, FastMath.toDegrees(angles[2]), ANGLE_PRECISION);
 
         // Test computation of attitude data from angular coordinates
-        AEMMetadata metadata = new AEMMetadata(3);
+        AemMetadata metadata = new AemMetadata(3);
         metadata.setLocalRates(true);
         metadata.setEulerRotSeq(RotationOrder.XYZ);
         metadata.getEndPoints().setExternal2Local(true);
@@ -257,7 +257,7 @@ public class AEMAttitudeTypeTest {
     @Test
     public void testEulerAngleRateMissingRateRefFrame() {
         // Initialize the attitude type
-        final AEMAttitudeType eulerAngleRate = AEMAttitudeType.parseType("EULER ANGLE/RATE");
+        final AemAttitudeType eulerAngleRate = AemAttitudeType.parseType("EULER ANGLE/RATE");
 
         // Test computation of angular coordinates from attitude data
         final String[] attitudeData = new String[] {
@@ -269,7 +269,7 @@ public class AEMAttitudeTypeTest {
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_MISSING_KEYWORD, oe.getSpecifier());
-            Assert.assertEquals(AEMMetadataKey.RATE_FRAME.name(), oe.getParts()[0]);
+            Assert.assertEquals(AemMetadataKey.RATE_FRAME.name(), oe.getParts()[0]);
             Assert.assertEquals("some-file", oe.getParts()[1]);
         }
     }
@@ -277,7 +277,7 @@ public class AEMAttitudeTypeTest {
     @Test
     public void testEulerAngleRate() {
         // Initialize the attitude type
-        final AEMAttitudeType eulerAngleRate = AEMAttitudeType.parseType("EULER ANGLE/RATE");
+        final AemAttitudeType eulerAngleRate = AemAttitudeType.parseType("EULER ANGLE/RATE");
 
         // Test computation of angular coordinates from attitude data
         final String[] attitudeData = new String[] {
@@ -295,7 +295,7 @@ public class AEMAttitudeTypeTest {
         Assert.assertEquals(1.112, FastMath.toDegrees(tsac.getRotationRate().getZ()), ANGLE_PRECISION);
 
         // Test computation of attitude data from angular coordinates
-        AEMMetadata metadata = new AEMMetadata(3);
+        AemMetadata metadata = new AemMetadata(3);
         metadata.setLocalRates(true);
         metadata.setEulerRotSeq(RotationOrder.ZXZ);
         metadata.getEndPoints().setExternal2Local(true);
@@ -310,35 +310,35 @@ public class AEMAttitudeTypeTest {
 
     @Test
     public void testSymmetryQuaternion() {
-        doTestSymmetry(AEMAttitudeType.QUATERNION, 0.1, 0.2, 0.3, -0.7, 0.02, -0.05, 0.1, -0.04,
+        doTestSymmetry(AemAttitudeType.QUATERNION, 0.1, 0.2, 0.3, -0.7, 0.02, -0.05, 0.1, -0.04,
                        2.0e-16, Double.NaN);
     }
 
     @Test
     public void testSymmetryQuaternionDerivative() {
-        doTestSymmetry(AEMAttitudeType.QUATERNION_DERIVATIVE, 0.1, 0.2, 0.3, -0.7, 0.02, -0.05, 0.1, -0.04,
+        doTestSymmetry(AemAttitudeType.QUATERNION_DERIVATIVE, 0.1, 0.2, 0.3, -0.7, 0.02, -0.05, 0.1, -0.04,
                        2.0e-16, 8.0e-17);
     }
 
     @Test
     public void testSymmetryQuaternionRate() {
-        doTestSymmetry(AEMAttitudeType.QUATERNION_RATE, 0.1, 0.2, 0.3, -0.7, 0.02, -0.05, 0.1, -0.04,
+        doTestSymmetry(AemAttitudeType.QUATERNION_RATE, 0.1, 0.2, 0.3, -0.7, 0.02, -0.05, 0.1, -0.04,
                        2.0e-16, 9.0e-17);
     }
 
     @Test
     public void testSymmetryEulerAngle() {
-        doTestSymmetry(AEMAttitudeType.EULER_ANGLE, 0.1, 0.2, 0.3, -0.7, 0.02, -0.05, 0.1, -0.04,
+        doTestSymmetry(AemAttitudeType.EULER_ANGLE, 0.1, 0.2, 0.3, -0.7, 0.02, -0.05, 0.1, -0.04,
                        2.0e-15, Double.NaN);
     }
 
     @Test
     public void testSymmetryEulerAngleRate() {
-        doTestSymmetry(AEMAttitudeType.EULER_ANGLE_RATE, 0.1, 0.2, 0.3, -0.7, 0.02, -0.05, 0.1, -0.04,
+        doTestSymmetry(AemAttitudeType.EULER_ANGLE_RATE, 0.1, 0.2, 0.3, -0.7, 0.02, -0.05, 0.1, -0.04,
                        2.0e-15, 3.0e-16);
     }
 
-    private void doTestSymmetry(AEMAttitudeType type,
+    private void doTestSymmetry(AemAttitudeType type,
                                 double q0, double q1, double q2, double q3,
                                 double q0Dot, double q1Dot, double q2Dot, double q3Dot,
                                 double tolAngle, double tolRate) {
@@ -361,7 +361,7 @@ public class AEMAttitudeTypeTest {
         }
     }
 
-    private void checkSymmetry(AEMAttitudeType type, TimeStampedAngularCoordinates tac,
+    private void checkSymmetry(AemAttitudeType type, TimeStampedAngularCoordinates tac,
                                boolean localRates, boolean isFirst, RotationOrder order, boolean ext2Local,
                                double tolAngle, double tolRate) {
         ParsingContext context = new ParsingContext(() -> IERSConventions.IERS_2010,
@@ -369,7 +369,7 @@ public class AEMAttitudeTypeTest {
                                                     () -> DataContext.getDefault(),
                                                     () -> null,
                                                     () -> CcsdsTimeScale.UTC);
-        AEMMetadata metadata = new AEMMetadata(3);
+        AemMetadata metadata = new AemMetadata(3);
         metadata.setLocalRates(localRates);
         metadata.setIsFirst(isFirst);
         metadata.setEulerRotSeq(order);
@@ -393,7 +393,7 @@ public class AEMAttitudeTypeTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidAttitudeType() {
-        AEMAttitudeType.parseType("TAG");
+        AemAttitudeType.parseType("TAG");
     }
 
 }
