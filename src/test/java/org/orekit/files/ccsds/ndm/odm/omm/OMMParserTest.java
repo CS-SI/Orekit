@@ -27,10 +27,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.odm.ODMCovariance;
 import org.orekit.files.ccsds.ndm.odm.ODMKeplerianElements;
 import org.orekit.files.ccsds.ndm.odm.ODMSpacecraftParameters;
@@ -61,10 +61,8 @@ public class OMMParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
         // initialize parser
-        final OMMParser parser = new OMMParser(IERSConventions.IERS_2010, true,
-                                               DataContext.getDefault(), null, 398600e9, 1000.0);
-
-        final OMMFile file = parser.parseMessage(source);
+        final OMMParser parser = new ParserBuilder().withMu(398600e9).withDefaultMass(1000.0).buildOMMParser();
+        final OMMFile   file   = parser.parseMessage(source);
 
         // Check Header Block;
         Assert.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
@@ -137,9 +135,7 @@ public class OMMParserTest {
         // data.
         final String name = "/ccsds/odm/omm/OMMExample2.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-        final OMMParser parser = new OMMParser(IERSConventions.IERS_1996, true,
-                                               DataContext.getDefault(), new AbsoluteDate(),
-                                               Constants.EIGEN5C_EARTH_MU, Double.NaN);
+        final OMMParser parser = new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).buildOMMParser();
 
         final OMMFile file = parser.parseMessage(source);
         Assert.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
@@ -165,9 +161,11 @@ public class OMMParserTest {
         final String name = "/ccsds/odm/omm/OMMExample3.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final AbsoluteDate missionReferenceDate = new AbsoluteDate();
-        final OMMParser parser = new OMMParser(IERSConventions.IERS_1996, true,
-                                               DataContext.getDefault(), missionReferenceDate,
-                                               Constants.EIGEN5C_EARTH_MU, 1000.0);
+        final OMMParser parser = new ParserBuilder().
+                                 withMu(Constants.EIGEN5C_EARTH_MU).
+                                 withMissionReferenceDate(missionReferenceDate).
+                                 withDefaultMass(1000.0).
+                                 buildOMMParser();
 
         final OMMFile file = parser.parseMessage(source);
         final ODMKeplerianElements kep = file.getData().getKeplerianElementsBlock();
@@ -213,9 +211,11 @@ public class OMMParserTest {
         // data.
         final String name = "/ccsds/odm/omm/OMM-wrong-keyword.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-        final OMMParser parser = new OMMParser(IERSConventions.IERS_1996, true,
-                                               DataContext.getDefault(), new AbsoluteDate(),
-                                               Constants.EIGEN5C_EARTH_MU, 1000.0);
+        final OMMParser parser = new ParserBuilder().
+                                 withMu(Constants.EIGEN5C_EARTH_MU).
+                                 withMissionReferenceDate(new AbsoluteDate()).
+                                 withDefaultMass(1000.0).
+                                 buildOMMParser();
         try {
             parser.parseMessage(source);
             Assert.fail("an exception should have been thrown");
@@ -233,9 +233,11 @@ public class OMMParserTest {
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
 
         // initialize parser
-        final OMMParser parser = new OMMParser(IERSConventions.IERS_1996, true,
-                                               DataContext.getDefault(), new AbsoluteDate(),
-                                               398600e9, 1000.0);
+        final OMMParser parser = new ParserBuilder().
+                        withMu(398600e9).
+                        withMissionReferenceDate(new AbsoluteDate()).
+                        withDefaultMass(1000.0).
+                        buildOMMParser();
 
         final OMMFile file = parser.parseMessage(source);
 
@@ -249,9 +251,12 @@ public class OMMParserTest {
         final String name = "/ccsds/odm/oem/OEMExample1.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
-            new OMMParser(IERSConventions.IERS_1996, true,
-                          DataContext.getDefault(), new AbsoluteDate(),
-                          Constants.EIGEN5C_EARTH_MU, 1000.0).
+            new ParserBuilder().
+            withConventions(IERSConventions.IERS_1996).
+            withMu(Constants.EIGEN5C_EARTH_MU).
+            withMissionReferenceDate(new AbsoluteDate()).
+            withDefaultMass(1000.0).
+            buildOMMParser().
             parseMessage(source);
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
@@ -264,9 +269,13 @@ public class OMMParserTest {
         final String name = "/ccsds/odm/omm/OMM-number-format-error.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
-            new OMMParser(IERSConventions.IERS_1996, true,
-                                                                DataContext.getDefault(), new AbsoluteDate(),
-                                                                Constants.EIGEN5C_EARTH_MU, 1000.0).parseMessage(source);
+            new ParserBuilder().
+            withConventions(IERSConventions.IERS_1996).
+            withMu(Constants.EIGEN5C_EARTH_MU).
+            withMissionReferenceDate(new AbsoluteDate()).
+            withDefaultMass(1000.0).
+            buildOMMParser().
+            parseMessage(source);
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
             Assert.assertEquals("ARG_OF_PERICENTER", oe.getParts()[0]);
@@ -281,9 +290,12 @@ public class OMMParserTest {
         final String wrongName = realName + "xxxxx";
         final DataSource source = new DataSource(wrongName, () -> getClass().getResourceAsStream(wrongName));
         try {
-            new OMMParser(IERSConventions.IERS_1996, true,
-                                 DataContext.getDefault(), new AbsoluteDate(),
-                                 Constants.EIGEN5C_EARTH_MU, 1000.0).
+            new ParserBuilder().
+            withConventions(IERSConventions.IERS_1996).
+            withMu(Constants.EIGEN5C_EARTH_MU).
+            withMissionReferenceDate(new AbsoluteDate()).
+            withDefaultMass(1000.0).
+            buildOMMParser().
             parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {

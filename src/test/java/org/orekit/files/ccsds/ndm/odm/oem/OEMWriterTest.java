@@ -45,6 +45,7 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.odm.ODMCovariance;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
@@ -79,8 +80,7 @@ public class OEMWriterTest {
     public void testWriteOEM1() throws IOException {
         final String ex = "/ccsds/odm/oem/OEMExample1.txt";
         final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                               null, CelestialBodyFactory.getMars().getGM(), 1);
+        final OEMParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getMars().getGM()).buildOEMParser();
         final OEMFile oemFile = parser.parseMessage(source);
 
         String tempOEMFilePath = tempFolder.newFile("TestWriteOEM1.oem").toString();
@@ -98,8 +98,7 @@ public class OEMWriterTest {
     public void testUnfoundSpaceId() throws IOException {
         final String ex = "/ccsds/odm/oem/OEMExample1.txt";
         final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                               null, CelestialBodyFactory.getEarth().getGM(), 1);
+        final OEMParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOEMParser();
         final OEMFile oemFile = parser.parseMessage(source);
 
         String tempOEMFilePath = tempFolder.newFile("TestOEMUnfoundSpaceId.oem").toString();
@@ -119,8 +118,7 @@ public class OEMWriterTest {
     public void testNullFile() throws IOException {
         final String ex = "/ccsds/odm/oem/OEMExample1.txt";
         final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                               null, CelestialBodyFactory.getEarth().getGM(), 1);
+        final OEMParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOEMParser();
         final OEMFile oemFile = parser.parseMessage(source);
         OEMWriter writer = new OEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
                                          oemFile.getHeader(), oemFile.getSegments().get(0).getMetadata());
@@ -155,8 +153,7 @@ public class OEMWriterTest {
     public void testUnisatelliteFileWithDefault() throws IOException {
         final String ex = "/ccsds/odm/oem/OEMExample1.txt";
         final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                               null, CelestialBodyFactory.getEarth().getGM(), 1);
+        final OEMParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOEMParser();
         final OEMFile oemFile = parser.parseMessage(source);
 
         String tempOEMFilePath = tempFolder.newFile("TestOEMUnisatelliteWithDefault.oem").toString();
@@ -175,8 +172,7 @@ public class OEMWriterTest {
     public void testIssue723() throws IOException {
         final String ex = "/ccsds/odm/oem/OEMExampleWithHeaderComment.txt";
         final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                               null, CelestialBodyFactory.getEarth().getGM(), 1);
+        final OEMParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOEMParser();
         final OEMFile oemFile = parser.parseMessage(source);
 
         String tempOEMFilePath = tempFolder.newFile("TestOEMIssue723.aem").toString();
@@ -200,8 +196,7 @@ public class OEMWriterTest {
         // setup
         String exampleFile = "/ccsds/odm/oem/OEMExample4.txt";
         final DataSource source =  new DataSource(exampleFile, () -> getClass().getResourceAsStream(exampleFile));
-        OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                         null, CelestialBodyFactory.getEarth().getGM(), 1);
+        final OEMParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOEMParser();
         OEMFile oemFile = parser.parseMessage(source);
         StringBuilder buffer = new StringBuilder();
 

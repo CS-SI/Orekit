@@ -25,10 +25,10 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -48,7 +48,9 @@ public class OCMParserTest {
         final String wrongName = realName + "xxxxx";
         final DataSource source = new DataSource(wrongName, () -> getClass().getResourceAsStream(wrongName));
         try {
-            new OCMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), Constants.EIGEN5C_EARTH_MU).
+            new ParserBuilder().
+            withMu(Constants.EIGEN5C_EARTH_MU).
+            buildOCMParser().
             parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -62,7 +64,9 @@ public class OCMParserTest {
         final String name = "/ccsds/odm/ocm/OCM-missing-t0.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
-            new OCMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), Constants.EIGEN5C_EARTH_MU).
+            new ParserBuilder().
+            withMu(Constants.EIGEN5C_EARTH_MU).
+            buildOCMParser().
             parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -76,7 +80,9 @@ public class OCMParserTest {
         final String name = "/ccsds/odm/ocm/OCM-wrong-time-span.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
-            new OCMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), Constants.EIGEN5C_EARTH_MU).
+            new ParserBuilder().
+            withMu(Constants.EIGEN5C_EARTH_MU).
+            buildOCMParser().
             parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -92,7 +98,9 @@ public class OCMParserTest {
         final String name = "/ccsds/odm/ocm/OCM-spurious-metadata-section.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
-            new OCMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), Constants.EIGEN5C_EARTH_MU).
+            new ParserBuilder().
+            withMu(Constants.EIGEN5C_EARTH_MU).
+            buildOCMParser().
             parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -106,8 +114,10 @@ public class OCMParserTest {
     public void testParseOCM1() {
         final String   name  = "/ccsds/odm/ocm/OCMExample1.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-        OCMFile file = new OCMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), Constants.EIGEN5C_EARTH_MU).
-                       parseMessage(source);
+        final OCMFile file = new ParserBuilder().
+                             withMu(Constants.EIGEN5C_EARTH_MU).
+                             buildOCMParser().
+                             parseMessage(source);
 
         // check the default values that are not set in this simple file
         Assert.assertEquals("CSPOC",              file.getMetadata().getCatalogName());
@@ -186,7 +196,9 @@ public class OCMParserTest {
     public void testParseOCM2() {
         final String  name = "/ccsds/odm/ocm/OCMExample2.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-        final OCMFile file = new OCMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), Constants.EIGEN5C_EARTH_MU).
+        final OCMFile file = new ParserBuilder().
+                             withMu(Constants.EIGEN5C_EARTH_MU).
+                             buildOCMParser().
                              parseMessage(source);
 
         // Check Header Block;
@@ -228,7 +240,9 @@ public class OCMParserTest {
     public void testParseOCM3() throws IOException {
         final String   name  = "/ccsds/odm/ocm/OCMExample3.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-        final OCMFile file = new OCMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), Constants.EIGEN5C_EARTH_MU).
+        final OCMFile file = new ParserBuilder().
+                             withMu(Constants.EIGEN5C_EARTH_MU).
+                             buildOCMParser().
                              parse(source); // using EphemerisFileParser API here
 
         // Check Header Block;
@@ -257,7 +271,9 @@ public class OCMParserTest {
     public void testParseOCM4() {
         final String   name  = "/ccsds/odm/ocm/OCMExample4.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-        final OCMFile file = new OCMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), Constants.EIGEN5C_EARTH_MU).
+        final OCMFile file = new ParserBuilder().
+                             withMu(Constants.EIGEN5C_EARTH_MU).
+                             buildOCMParser().
                              parseMessage(source);
 
         // Check Header Block;

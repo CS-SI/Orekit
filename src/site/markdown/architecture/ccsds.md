@@ -93,12 +93,15 @@ not present in the CCSDS messages are set up when building the parser. This
 includes for example IERS conventions, data context, and gravitational
 coefficient for ODM files as it is sometimes optional in these messages.
 One change introduced in Orekit 11.0 is that the progressive set up of
-parser using the fluent API (methods `withXxx()`) has been removed. Now the
-few required parameters are all set at once in the constructor. Another change
+parsers using the fluent API (methods `withXxx()`) has been moved to a common
+`ParserBuilder` that can build the parsers for all CCSDS messages. Another change
 is that the parsers are mutable objects that gather the data during the parsing.
 They can therefore not be used in multi-threaded environment. The recommended way
-to use parsers is to either dedicate one parser for each message and drop it
-afterwards, or to use a single-thread loop.
+to use parsers is then to set up one `ParserBuilder` and to call its `buildXymParser()`
+methods from within each thread to dedicate one parser for each message and drop it
+afterwards. In single-threaded cases, parsers used from within a loop can be reused
+safely after the `parseMethod` has returned, but building a new parser from the
+builder is simple.
 
 Parsers automatically recognize if the file is in Key-Value Notation (KVN) or in
 eXtended Markup Language (XML) format and adapt accordingly. This is
@@ -121,11 +124,9 @@ and `parse` methods in all parsers already have the specific type, there is no n
 to cast the returned value.
 
 The following code snippet shows how to parse an oem file, in this case using a
-file name to create the data source:
+file name to create the data source, and using the default values for the parser builder:
 
-    OEMParser  parser = new OEMParser(conventions, simpleEOP, dataContext,
-                                      missionReferenceDate, mu, defaultInterpolationDegree);
-    OEMFile    oem    = parser.parseMessage(new DataSource(fileName));
+    OEMFile oem = new ParserBuilder().buildOEMParser().parseMessage(new DataSource(fileName));
 
 ### Writing
 

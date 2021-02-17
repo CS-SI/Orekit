@@ -45,6 +45,7 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsTimeScale;
@@ -78,8 +79,7 @@ public class AEMWriterTest {
     public void testWriteAEM1() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1);
-        final AEMFile aemFile = parser.parseMessage(source);
+        final AEMFile aemFile = new ParserBuilder().buildAEMParser().parseMessage(source);
 
         Header header = new Header();
         header.setFormatVersion(aemFile.getHeader().getFormatVersion());
@@ -113,9 +113,7 @@ public class AEMWriterTest {
     public void testUnfoundSpaceId() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                               null, 1);
-        final AEMFile aemFile = parser.parseMessage(source);
+        final AEMFile aemFile = new ParserBuilder().buildAEMParser().parseMessage(source);
 
         AEMMetadata metadata = dummyMetadata();
         metadata.setObjectID("12345");
@@ -134,9 +132,7 @@ public class AEMWriterTest {
     public void testNullFile() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                               null, 1);
-        final AEMFile aemFile = parser.parseMessage(source);
+        final AEMFile aemFile = new ParserBuilder().buildAEMParser().parseMessage(source);
         AEMWriter writer = new AEMWriter(aemFile.getConventions(), aemFile.getDataContext(),
                                          aemFile.getHeader(), aemFile.getSegments().get(0).getMetadata());
         try {
@@ -174,7 +170,7 @@ public class AEMWriterTest {
     public void testUnisatelliteFileWithDefault() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AEMFile aemFile = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1).parseMessage(source);
+        final AEMFile aemFile = new ParserBuilder().buildAEMParser().parseMessage(source);
 
         String tempAEMFilePath = tempFolder.newFile("TestOEMUnisatelliteWithDefault.oem").toString();
         AEMWriter writer = new AEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
@@ -232,7 +228,7 @@ public class AEMWriterTest {
     public void testIssue723() throws IOException {
         final String ex = "/ccsds/adm/aem/AEMExample2.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final AEMFile aemFile = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1).parseMessage(source);
+        final AEMFile aemFile = new ParserBuilder().buildAEMParser().parseMessage(source);
 
         String tempAEMFilePath = tempFolder.newFile("TestAEMIssue723.aem").toString();
         AEMWriter writer = new AEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
@@ -254,8 +250,7 @@ public class AEMWriterTest {
         // setup
         String exampleFile = "/ccsds/adm/aem/AEMExample7.txt";
         final DataSource source = new DataSource(exampleFile, () -> getClass().getResourceAsStream(exampleFile));
-        AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1);
-        AEMFile aemFile = parser.parseMessage(source);
+        final AEMFile aemFile = new ParserBuilder().buildAEMParser().parseMessage(source);
         StringBuilder buffer = new StringBuilder();
 
         AEMWriter writer = new AEMWriter(IERSConventions.IERS_2010, DataContext.getDefault(),

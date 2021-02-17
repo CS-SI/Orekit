@@ -94,6 +94,7 @@
       end note
 
       abstract class NDMFile
+
       NDMFile <|-- OEMFile
       NDMFile <|-- OPMFile
       Header  "1" <--o NDMFile

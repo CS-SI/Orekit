@@ -36,6 +36,7 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
+import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.odm.ODMHeader;
 import org.orekit.files.ccsds.utils.CCSDSFrame;
 import org.orekit.files.ccsds.utils.CcsdsModifiedFrame;
@@ -121,8 +122,7 @@ public class StreamingOemWriterTest {
                 Arrays.asList("/ccsds/odm/oem/OEMExample5.txt", "/ccsds/odm/oem/OEMExample4.txt");
         for (final String ex : files) {
             final DataSource source0 =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-            OEMParser parser = new OEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                             null, CelestialBodyFactory.getEarth().getGM(), 1);
+            final OEMParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOEMParser();
             OEMFile oemFile = parser.parseMessage(source0);
 
             OEMSatelliteEphemeris satellite = oemFile.getSatellites().values().iterator().next();

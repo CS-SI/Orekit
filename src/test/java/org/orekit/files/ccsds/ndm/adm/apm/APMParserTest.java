@@ -31,6 +31,7 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.adm.ADMMetadata;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.utils.CCSDSBodyFrame;
@@ -59,8 +60,10 @@ public class APMParserTest {
         final String ex = "/ccsds/adm/apm/APMExample.txt";
 
         // Initialize the parser
-        final APMParser parser = new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                               new AbsoluteDate("2002-09-30T14:28:15.117", TimeScalesFactory.getUTC()));
+        final APMParser parser = new ParserBuilder().
+                                 withMissionReferenceDate(new AbsoluteDate("2002-09-30T14:28:15.117",
+                                                                           TimeScalesFactory.getUTC())).
+                                 buildAPMParser();
 
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
@@ -127,8 +130,10 @@ public class APMParserTest {
         final String ex = "/ccsds/adm/apm/APMExample2.txt";
 
         // Initialize the parser
-        final APMParser parser = new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                               new AbsoluteDate("2002-09-30T14:28:15.117", TimeScalesFactory.getUTC()));
+        final APMParser parser = new ParserBuilder().
+                                 withMissionReferenceDate(new AbsoluteDate("2002-09-30T14:28:15.117",
+                                                                           TimeScalesFactory.getUTC())).
+                                 buildAPMParser();
 
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
@@ -244,8 +249,10 @@ public class APMParserTest {
         final String ex = "/ccsds/adm/apm/APMExample3.txt";
 
         // Initialize the parser
-        final APMParser parser = new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                               new AbsoluteDate("2002-09-30T14:28:15.117", TimeScalesFactory.getUTC()));
+        final APMParser parser = new ParserBuilder().
+                                 withMissionReferenceDate(new AbsoluteDate("2002-09-30T14:28:15.117",
+                                                                           TimeScalesFactory.getUTC())).
+                                 buildAPMParser();
 
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
@@ -321,8 +328,10 @@ public class APMParserTest {
         final String ex = "/ccsds/adm/apm/APMExample4.txt";
 
         // Initialize the parser
-        final APMParser parser = new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                               new AbsoluteDate("2002-09-30T14:28:15.117", TimeScalesFactory.getUTC()));
+        final APMParser parser = new ParserBuilder().
+                                 withMissionReferenceDate(new AbsoluteDate("2002-09-30T14:28:15.117",
+                                                                           TimeScalesFactory.getUTC())).
+                                 buildAPMParser();
 
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
@@ -379,7 +388,11 @@ public class APMParserTest {
         try {
             final String name = "/ccsds/adm/apm/APM-inconsistent-time-systems.txt";
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-            new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), AbsoluteDate.J2000_EPOCH).parseMessage(source);
+            new ParserBuilder().
+            withMissionReferenceDate(AbsoluteDate.J2000_EPOCH).
+            buildAPMParser().
+            parseMessage(source);
+            Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED, oe.getSpecifier());
             Assert.assertEquals("BCE", oe.getParts()[0]);
@@ -391,8 +404,11 @@ public class APMParserTest {
         final String name = "/ccsds/adm/aem/AEMExample.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-            new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), AbsoluteDate.J2000_EPOCH).
+            new ParserBuilder().
+            withMissionReferenceDate(AbsoluteDate.J2000_EPOCH).
+            buildAPMParser().
             parseMessage(source);
+            Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
             Assert.assertEquals(name, oe.getParts()[0]);
@@ -403,9 +419,12 @@ public class APMParserTest {
     public void testNumberFormatErrorType() {
         final String name = "/ccsds/adm/apm/APM-number-format-error.txt";
         try {
-            APMParser parser = new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), AbsoluteDate.J2000_EPOCH);
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-            parser.parseMessage(source);
+            new ParserBuilder().
+            withMissionReferenceDate(AbsoluteDate.J2000_EPOCH).
+            buildAPMParser().
+            parseMessage(source);
+            Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
             Assert.assertEquals("Q1", oe.getParts()[0]);
@@ -421,7 +440,9 @@ public class APMParserTest {
         final String wrongName = realName + "xxxxx";
         try {
             final DataSource source = new DataSource(wrongName, () -> getClass().getResourceAsStream(wrongName));
-            new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), AbsoluteDate.J2000_EPOCH).
+            new ParserBuilder().
+            withMissionReferenceDate(AbsoluteDate.J2000_EPOCH).
+            buildAPMParser().
             parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -435,7 +456,9 @@ public class APMParserTest {
         final String name = "/ccsds/adm/apm/APM-wrong-keyword.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-            new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), AbsoluteDate.J2000_EPOCH).
+            new ParserBuilder().
+            withMissionReferenceDate(AbsoluteDate.J2000_EPOCH).
+            buildAPMParser().
             parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -450,7 +473,9 @@ public class APMParserTest {
         final String name = "/ccsds/adm/apm/APM-wrong-Euler-sequence.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-            new APMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), AbsoluteDate.J2000_EPOCH).
+            new ParserBuilder().
+            withMissionReferenceDate(AbsoluteDate.J2000_EPOCH).
+            buildAPMParser().
             parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {

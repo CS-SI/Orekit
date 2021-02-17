@@ -31,6 +31,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
+import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndPoints;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.CCSDSBodyFrame;
@@ -70,7 +71,7 @@ public class StreamingAemWriterTest {
 
             // Reference AEM file
             final DataSource source0 = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-            AEMParser parser = new AEMParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1);
+            AEMParser parser = new ParserBuilder().buildAEMParser();
             AEMFile aemFile  = parser.parseMessage(source0);
 
             // Satellite attitude ephemeris as read from the reference file
