@@ -7,3 +7,7 @@ target
 /build
 /lib
 *.class
+
+# IntelliJ
+.idea
+*.iml

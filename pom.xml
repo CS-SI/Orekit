@@ -5,7 +5,7 @@
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
-  <version>11.0-SNAPSHOT</version>
+  <version>11.0.AIRBUS.0-SNAPSHOT</version>
   <name>ORbit Extrapolation KIT</name>
   <url>http://www.orekit.org/</url>
 
@@ -63,12 +63,17 @@
   </properties>
 
   <distributionManagement>
-    <site>
-      <id>website</id>
-      <url>scp://cochise@spoutnik.orekit.org/var/www/mvn-sites/site-orekit-${project.version}</url>
-    </site>
+    <repository>
+      <id>scarif</id>
+      <url>https://scarif.tls.fr.astrium.corp/nexus/repository/releases/</url>
+    </repository>
+    <snapshotRepository>
+      <id>scarif</id>
+      <url>https://scarif.tls.fr.astrium.corp/nexus/repository/snapshots/</url>
+      <uniqueVersion>false</uniqueVersion>
+    </snapshotRepository>
   </distributionManagement>
-
+  
   <developers>
     <developer>
       <name>Luc Maisonobe</name>
