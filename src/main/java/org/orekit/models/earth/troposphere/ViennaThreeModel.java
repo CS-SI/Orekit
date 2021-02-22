@@ -173,8 +173,8 @@ public class ViennaThreeModel implements DiscreteTroposphericModel {
 
         // Compute Mapping Function Eq. 4
         final double[] function = new double[2];
-        function[0] = computeFunction(coefficientsA[0], bh, ch, elevation);
-        function[1] = computeFunction(coefficientsA[1], bw, cw, elevation);
+        function[0] = TroposphericModelUtils.mappingFunction(coefficientsA[0], bh, ch, elevation);
+        function[1] = TroposphericModelUtils.mappingFunction(coefficientsA[1], bw, cw, elevation);
 
         return function;
     }
@@ -261,8 +261,8 @@ public class ViennaThreeModel implements DiscreteTroposphericModel {
 
         // Compute Mapping Function Eq. 4
         final T[] function = MathArrays.buildArray(field, 2);
-        function[0] = computeFunction(zero.add(coefficientsA[0]), bh, ch, elevation);
-        function[1] = computeFunction(zero.add(coefficientsA[1]), bw, cw, elevation);
+        function[0] = TroposphericModelUtils.mappingFunction(zero.add(coefficientsA[0]), bh, ch, elevation);
+        function[1] = TroposphericModelUtils.mappingFunction(zero.add(coefficientsA[1]), bw, cw, elevation);
 
         return function;
     }
@@ -313,45 +313,6 @@ public class ViennaThreeModel implements DiscreteTroposphericModel {
     @Override
     public List<ParameterDriver> getParametersDrivers() {
         return Collections.emptyList();
-    }
-
-    /** Compute the mapping function related to the coefficient values and the elevation.
-     * @param a a coefficient
-     * @param b b coefficient
-     * @param c c coefficient
-     * @param elevation the elevation of the satellite, in radians.
-     * @return the value of the function at a given elevation
-     */
-    private double computeFunction(final double a, final double b, final double c, final double elevation) {
-        final double sinE = FastMath.sin(elevation);
-        // Numerator
-        final double numMP = 1 + a / (1 + b / (1 + c));
-        // Denominator
-        final double denMP = sinE + a / (sinE + b / (sinE + c));
-
-        final double felevation = numMP / denMP;
-
-        return felevation;
-    }
-
-    /** Compute the mapping function related to the coefficient values and the elevation.
-     * @param <T> type of the elements
-     * @param a a coefficient
-     * @param b b coefficient
-     * @param c c coefficient
-     * @param elevation the elevation of the satellite, in radians.
-     * @return the value of the function at a given elevation
-     */
-    private <T extends RealFieldElement<T>> T computeFunction(final T a, final T b, final T c, final T elevation) {
-        final T sinE = FastMath.sin(elevation);
-        // Numerator
-        final T numMP = a.divide(b.divide(c.add(1.0)).add(1.0)).add(1.0);
-        // Denominator
-        final T denMP = a.divide(b.divide(c.add(sinE)).add(sinE)).add(sinE);
-
-        final T felevation = numMP.divide(denMP);
-
-        return felevation;
     }
 
     /** Computes the empirical temporal information for the mapping function

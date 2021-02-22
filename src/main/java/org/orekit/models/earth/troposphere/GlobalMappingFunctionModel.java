@@ -166,11 +166,11 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         final double aw = a0Wet + amplWet * FastMath.cos(coef - psi);
 
         final double[] function = new double[2];
-        function[0] = computeFunction(ah, bh, ch, elevation);
-        function[1] = computeFunction(aw, bw, cw, elevation);
+        function[0] = TroposphericModelUtils.mappingFunction(ah, bh, ch, elevation);
+        function[1] = TroposphericModelUtils.mappingFunction(aw, bw, cw, elevation);
 
         // Apply height correction
-        final double correction = computeHeightCorrection(elevation, point.getAltitude());
+        final double correction = TroposphericModelUtils.computeHeightCorrection(elevation, point.getAltitude());
         function[0] = function[0] + correction;
 
         return function;
@@ -265,11 +265,11 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         final T aw = a0Wet.add(amplWet.multiply(FastMath.cos(coef.subtract(psi))));
 
         final T[] function = MathArrays.buildArray(field, 2);
-        function[0] = computeFunction(ah, bh, ch, elevation);
-        function[1] = computeFunction(aw, bw, cw, elevation);
+        function[0] = TroposphericModelUtils.mappingFunction(ah, bh, ch, elevation);
+        function[1] = TroposphericModelUtils.mappingFunction(aw, bw, cw, elevation);
 
         // Apply height correction
-        final T correction = computeHeightCorrection(elevation, point.getAltitude(), field);
+        final T correction = TroposphericModelUtils.computeHeightCorrection(elevation, point.getAltitude(), field);
         function[0] = function[0].add(correction);
 
         return function;
@@ -279,96 +279,6 @@ public class GlobalMappingFunctionModel implements MappingFunction {
     @Override
     public List<ParameterDriver> getParametersDrivers() {
         return Collections.emptyList();
-    }
-
-    /** Compute the mapping function related to the coefficient values and the elevation.
-     * @param a a coefficient
-     * @param b b coefficient
-     * @param c c coefficient
-     * @param elevation the elevation of the satellite, in radians.
-     * @return the value of the function at a given elevation
-     */
-    private double computeFunction(final double a, final double b, final double c, final double elevation) {
-        final double sinE = FastMath.sin(elevation);
-        // Numerator
-        final double numMP = 1 + a / (1 + b / (1 + c));
-        // Denominator
-        final double denMP = sinE + a / (sinE + b / (sinE + c));
-
-        final double fElevation = numMP / denMP;
-
-        return fElevation;
-    }
-
-    /** Compute the mapping function related to the coefficient values and the elevation.
-     * @param <T> type of the elements
-     * @param a a coefficient
-     * @param b b coefficient
-     * @param c c coefficient
-     * @param elevation the elevation of the satellite, in radians.
-     * @return the value of the function at a given elevation
-     */
-    private <T extends RealFieldElement<T>> T computeFunction(final T a, final T b, final T c, final T elevation) {
-        final T sinE = FastMath.sin(elevation);
-        // Numerator
-        final T numMP = a.divide(b.divide(c.add(1.0)).add(1.0)).add(1.0);
-        // Denominator
-        final T denMP = a.divide(b.divide(c.add(sinE)).add(sinE)).add(sinE);
-
-        final T fElevation = numMP.divide(denMP);
-
-        return fElevation;
-    }
-
-    /** This method computes the height correction for the hydrostatic
-     *  component of the mapping function.
-     *  The formulas are given by Neill's paper, 1996:
-     *<p>
-     *      Niell A. E. (1996)
-     *      "Global mapping functions for the atmosphere delay of radio wavelengths,”
-     *      J. Geophys. Res., 101(B2), pp.  3227–3246, doi:  10.1029/95JB03048.
-     *</p>
-     * @param elevation the elevation of the satellite, in radians.
-     * @param height the height of the station in m above sea level.
-     * @return the height correction, in m
-     */
-    private double computeHeightCorrection(final double elevation, final double height) {
-        final double fixedHeight = FastMath.max(0.0, height);
-        final double sinE = FastMath.sin(elevation);
-        // Ref: Eq. 4
-        final double function = computeFunction(2.53e-5, 5.49e-3, 1.14e-3, elevation);
-        // Ref: Eq. 6
-        final double dmdh = (1 / sinE) - function;
-        // Ref: Eq. 7
-        final double correction = dmdh * (fixedHeight / 1000.0);
-        return correction;
-    }
-
-    /** This method computes the height correction for the hydrostatic
-     *  component of the mapping function.
-     *  The formulas are given by Neill's paper, 1996:
-     *<p>
-     *      Niell A. E. (1996)
-     *      "Global mapping functions for the atmosphere delay of radio wavelengths,”
-     *      J. Geophys. Res., 101(B2), pp.  3227–3246, doi:  10.1029/95JB03048.
-     *</p>
-     * @param <T> type of the elements
-     * @param elevation the elevation of the satellite, in radians.
-     * @param height the height of the station in m above sea level.
-     * @param field field to which the elements belong
-     * @return the height correction, in m
-     */
-    private <T extends RealFieldElement<T>> T computeHeightCorrection(final T elevation, final T height, final Field<T> field) {
-        final T zero = field.getZero();
-        final T fixedHeight = FastMath.max(zero, height);
-        final T sinE = FastMath.sin(elevation);
-        // Ref: Eq. 4
-        final T function = computeFunction(zero.add(2.53e-5), zero.add(5.49e-3), zero.add(1.14e-3), elevation);
-        // Ref: Eq. 6
-        final T dmdh = sinE.reciprocal().subtract(function);
-        // Ref: Eq. 7
-        final T correction = dmdh.multiply(fixedHeight.divide(1000.0));
-        return correction;
     }
 
     /** Computes the P<sub>nm</sub>(sin(&#934)) coefficients of Eq. 3 (Boehm et al, 2006).
