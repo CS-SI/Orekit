@@ -402,7 +402,7 @@ public class ViennaThreeModel implements DiscreteTroposphericModel {
      *  The computation of the Legendre polynomials is performed following:
      *  Heiskanen and Moritz, Physical Geodesy, 1967, eq. 1-62
      */
-    private class LegendrePolynomials {
+    private static class LegendrePolynomials {
 
         /** Array for the Legendre polynomials. */
         private double[][] pCoef;
@@ -465,7 +465,7 @@ public class ViennaThreeModel implements DiscreteTroposphericModel {
      *    IERS Technical Note No. 36, BKG (2010)
      *  </p>
      */
-    private class FieldLegendrePolynomials<T extends RealFieldElement<T>> {
+    private static class FieldLegendrePolynomials<T extends RealFieldElement<T>> {
 
         /** Array for the Legendre polynomials. */
         private T[][] pCoef;

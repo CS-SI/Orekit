@@ -380,7 +380,7 @@ public class GlobalMappingFunctionModel implements MappingFunction {
      *    IERS Technical Note No. 36, BKG (2010)
      *  </p>
      */
-    private class LegendrePolynomials {
+    private static class LegendrePolynomials {
 
         /** Array for the Legendre polynomials. */
         private double[][] pCoef;
@@ -442,7 +442,7 @@ public class GlobalMappingFunctionModel implements MappingFunction {
      *    IERS Technical Note No. 36, BKG (2010)
      *  </p>
      */
-    private class FieldLegendrePolynomials<T extends RealFieldElement<T>> {
+    private static class FieldLegendrePolynomials<T extends RealFieldElement<T>> {
 
         /** Array for the Legendre polynomials. */
         private T[][] pCoef;
