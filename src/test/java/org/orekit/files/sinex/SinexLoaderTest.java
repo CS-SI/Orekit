@@ -33,7 +33,7 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
-public class SINEXLoaderTest {
+public class SinexLoaderTest {
 
     @Before
     public void setUp() {
@@ -44,7 +44,7 @@ public class SINEXLoaderTest {
     @Test
     public void testSmallIGSSinexFile() {
 
-        SINEXLoader loader = new SINEXLoader("cod20842-small.snx");
+        SinexLoader loader = new SinexLoader("cod20842-small.snx");
  
         Assert.assertEquals(2, loader.getStations().size());
 
@@ -63,11 +63,11 @@ public class SINEXLoaderTest {
     @Test
     public void testSLRSinexFile() {
 
-        SINEXLoader loader = new SINEXLoader("SLRF2008_150928_2015.09.28.snx");
+        SinexLoader loader = new SinexLoader("SLRF2008_150928_2015.09.28.snx");
 
         // Test date computation using format description
         try {
-            Method method = SINEXLoader.class.getDeclaredMethod("stringEpochToAbsoluteDate", String.class);
+            Method method = SinexLoader.class.getDeclaredMethod("stringEpochToAbsoluteDate", String.class);
             method.setAccessible(true);
             final AbsoluteDate date = (AbsoluteDate) method.invoke(loader, "95:120:86399");
             final AbsoluteDate refDate = new AbsoluteDate("1995-04-30T23:59:59.000", TimeScalesFactory.getUTC());
@@ -102,7 +102,7 @@ public class SINEXLoaderTest {
     public void testStationEccentricityXYZFile() {
 
         // Load file (it corresponds to a small version of the real entier file)
-        SINEXLoader loader = new SINEXLoader("ecc_xyz-small.snx");
+        SinexLoader loader = new SinexLoader("ecc_xyz-small.snx");
         Assert.assertEquals(3, loader.getStations().size());
 
         // Reference values
@@ -124,7 +124,7 @@ public class SINEXLoaderTest {
     public void testStationEccentricityUNEFile() {
 
         // Load file (it corresponds to a small version of the real entier file)
-        SINEXLoader loader = new SINEXLoader("ecc_une-small.snx");
+        SinexLoader loader = new SinexLoader("ecc_une-small.snx");
         Assert.assertEquals(3, loader.getStations().size());
 
         // Reference values
@@ -145,7 +145,7 @@ public class SINEXLoaderTest {
     @Test
     public void testCorruptedFile() {
         try {
-            new SINEXLoader("cod20842-corrupted.snx");
+            new SinexLoader("cod20842-corrupted.snx");
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());

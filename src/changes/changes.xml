@@ -22,7 +22,10 @@
   <body>
     <release version="11.0" date="TBD" description="TBD">
       <action dev="luc" type="update" >
-      	Use DataSource in RinexLoader and SinexLoader.
+      	Renamed SINEXLoader into SinexLoader.
+      </action>
+      <action dev="luc" type="update" >
+        Use DataSource in RinexLoader and SinexLoader.
       </action>
       <action dev="luc" type="update" >
         Renamed NamedData into DataSource.

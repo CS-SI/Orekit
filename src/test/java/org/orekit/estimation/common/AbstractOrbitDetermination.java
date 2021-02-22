@@ -94,7 +94,7 @@ import org.orekit.files.ilrs.CRDFile.RangeMeasurement;
 import org.orekit.files.ilrs.CRDHeader;
 import org.orekit.files.ilrs.CRDHeader.RangeType;
 import org.orekit.files.ilrs.CRDParser;
-import org.orekit.files.sinex.SINEXLoader;
+import org.orekit.files.sinex.SinexLoader;
 import org.orekit.files.sinex.Station;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.drag.IsotropicDrag;
@@ -343,8 +343,8 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
         final BatchLSEstimator estimator = createEstimator(parser, propagatorBuilder);
 
         // read sinex files
-        final SINEXLoader                 stationPositionData      = readSinexFile(input, parser, ParameterKey.SINEX_POSITION_FILE);
-        final SINEXLoader                 stationEccData           = readSinexFile(input, parser, ParameterKey.SINEX_ECC_FILE);
+        final SinexLoader                 stationPositionData      = readSinexFile(input, parser, ParameterKey.SINEX_POSITION_FILE);
+        final SinexLoader                 stationEccData           = readSinexFile(input, parser, ParameterKey.SINEX_ECC_FILE);
 
         final Map<String, StationData>    stations                 = createStationsData(parser, stationPositionData, stationEccData, conventions, body);
         final PVData                      pvData                   = createPVData(parser);
@@ -522,8 +522,8 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
                         configurePropagatorBuilder(parser, conventions, body, initialGuess);
 
         // read sinex files
-        final SINEXLoader                 stationPositionData      = readSinexFile(input, parser, ParameterKey.SINEX_POSITION_FILE);
-        final SINEXLoader                 stationEccData           = readSinexFile(input, parser, ParameterKey.SINEX_ECC_FILE);
+        final SinexLoader                 stationPositionData      = readSinexFile(input, parser, ParameterKey.SINEX_POSITION_FILE);
+        final SinexLoader                 stationEccData           = readSinexFile(input, parser, ParameterKey.SINEX_ECC_FILE);
 
         final Map<String, StationData>    stations                 = createStationsData(parser, stationPositionData, stationEccData, conventions, body);
         final PVData                      pvData                   = createPVData(parser);
@@ -1291,8 +1291,8 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
      * @throws NoSuchElementException if input parameters are missing
      */
     private Map<String, StationData> createStationsData(final KeyValueFileParser<ParameterKey> parser,
-                                                        final SINEXLoader sinexPosition,
-                                                        final SINEXLoader sinexEcc,
+                                                        final SinexLoader sinexPosition,
+                                                        final SinexLoader sinexEcc,
                                                         final IERSConventions conventions,
                                                         final OneAxisEllipsoid body)
         throws NoSuchElementException {
@@ -1800,7 +1800,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
      * @return container for sinex data or null if key does not exist
      * @throws IOException if file is not read properly
      */
-    private SINEXLoader readSinexFile(final File input,
+    private SinexLoader readSinexFile(final File input,
                                       final KeyValueFileParser<ParameterKey> parser,
                                       final ParameterKey key)
         throws IOException {
@@ -1820,7 +1820,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
             }
 
             // Return a configured SINEX file
-            return new SINEXLoader(nd);
+            return new SinexLoader(nd);
 
         } else {
 

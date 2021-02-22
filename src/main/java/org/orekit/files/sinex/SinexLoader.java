@@ -53,7 +53,7 @@ import org.orekit.utils.Constants;
  * @author Bryan Cazabonne
  * @since 10.3
  */
-public class SINEXLoader {
+public class SinexLoader {
 
     /** Pattern for delimiting regular expressions. */
     private static final Pattern SEPARATOR = Pattern.compile(":");
@@ -72,7 +72,7 @@ public class SINEXLoader {
      * @see #SINEXLoader(String, DataProvidersManager, TimeScale)
      */
     @DefaultDataContext
-    public SINEXLoader(final String supportedNames) {
+    public SinexLoader(final String supportedNames) {
         this(supportedNames,
              DataContext.getDefault().getDataProvidersManager(),
              DataContext.getDefault().getTimeScales().getUTC());
@@ -84,7 +84,7 @@ public class SINEXLoader {
      * @param dataProvidersManager provides access to auxiliary data.
      * @param utc UTC time scale
      */
-    public SINEXLoader(final String supportedNames,
+    public SinexLoader(final String supportedNames,
                        final DataProvidersManager dataProvidersManager,
                        final TimeScale utc) {
         this.utc = utc;
@@ -98,7 +98,7 @@ public class SINEXLoader {
      * @see #SINEXLoader(InputStream, String, TimeScale)
      */
     @DefaultDataContext
-    public SINEXLoader(final DataSource source) {
+    public SinexLoader(final DataSource source) {
         this(source, DataContext.getDefault().getTimeScales().getUTC());
     }
 
@@ -107,7 +107,7 @@ public class SINEXLoader {
      * @param source source for the RINEX data
      * @param utc UTC time scale
      */
-    public SINEXLoader(final DataSource source, final TimeScale utc) {
+    public SinexLoader(final DataSource source, final TimeScale utc) {
         try {
             this.utc = utc;
             stations = new HashMap<>();
