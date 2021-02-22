@@ -403,10 +403,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                 final AbsoluteDate epoch;
                 if (fields[0].indexOf('T') > 0) {
                     // absolute date
-                    epoch = context.getTimeScale().parseDate(fields[0],
-                                                             context.getConventions(),
-                                                             metadata.getEpochT0(),
-                                                             context.getDataContext().getTimeScales());
+                    epoch = context.getTimeScale().parseDate(fields[0], context);
                 } else {
                     // relative date
                     epoch = metadata.getEpochT0().shiftedBy(Double.parseDouble(fields[0]));

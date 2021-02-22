@@ -51,15 +51,12 @@ public enum CcsdsTimeScale {
     /** Mission Elapsed Time. */
     MET {
         @Override
-        public AbsoluteDate parseDate(final String date,
-                                      final IERSConventions conventions,
-                                      final AbsoluteDate missionReferenceDate,
-                                      final TimeScales timeScales) {
+        public AbsoluteDate parseDate(final String date, final ParsingContext context) {
             final DateTimeComponents clock = DateTimeComponents.parseDateTime(date);
             final double offset = clock.getDate().getYear() * Constants.JULIAN_YEAR +
                                   clock.getDate().getDayOfYear() * Constants.JULIAN_DAY +
                                   clock.getTime().getSecondsInUTCDay();
-            return missionReferenceDate.shiftedBy(offset);
+            return context.getReferenceDate().shiftedBy(offset);
         }
 
         @Override
@@ -72,15 +69,12 @@ public enum CcsdsTimeScale {
     /** Mission Relative Time. */
     MRT {
         @Override
-        public AbsoluteDate parseDate(final String date,
-                                      final IERSConventions conventions,
-                                      final AbsoluteDate missionReferenceDate,
-                                      final TimeScales timeScales) {
+        public AbsoluteDate parseDate(final String date, final ParsingContext context) {
             final DateTimeComponents clock = DateTimeComponents.parseDateTime(date);
             final double offset = clock.getDate().getYear() * Constants.JULIAN_YEAR +
                                   clock.getDate().getDayOfYear() * Constants.JULIAN_DAY +
                                   clock.getTime().getSecondsInUTCDay();
-            return missionReferenceDate.shiftedBy(offset);
+            return context.getReferenceDate().shiftedBy(offset);
         }
 
         @Override
@@ -93,10 +87,7 @@ public enum CcsdsTimeScale {
     /** Spacecraft Clock. Not currently Implemented. */
     SCLK {
         @Override
-        public AbsoluteDate parseDate(final String date,
-                                      final IERSConventions conventions,
-                                      final AbsoluteDate missionReferenceDate,
-                                      final TimeScales timeScales) {
+        public AbsoluteDate parseDate(final String date, final ParsingContext context) {
             // TODO: implement SCLK, delegating interpretation to user-provided method
             throw new OrekitException(
                     OrekitMessages.CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED,
@@ -163,37 +154,15 @@ public enum CcsdsTimeScale {
     /**
      * Parse a date in this time scale.
      *
-     * <p>This method uses the {@link DataContext#getDefault() default data context}.
-     *
-     * @param date                 a CCSDS date string.
-     * @param conventions          IERS conventions for {@link #UT1} and {@link #GMST}.
-     * @param missionReferenceDate epoch for {@link #MET} and {@link #MRT}.
-     * @return parsed {@code date}.
-     * @see #parseDate(String, IERSConventions, AbsoluteDate, TimeScales)
-     */
-    @DefaultDataContext
-    public AbsoluteDate parseDate(final String date,
-                                  final IERSConventions conventions,
-                                  final AbsoluteDate missionReferenceDate) {
-        return parseDate(date, conventions, missionReferenceDate,
-                         DataContext.getDefault().getTimeScales());
-    }
-
-    /**
-     * Parse a date in this time scale.
-     *
-     * @param date                 a CCSDS date string.
-     * @param conventions          IERS conventions for {@link #UT1} and {@link #GMST}.
-     * @param missionReferenceDate epoch for {@link #MET} and {@link #MRT}.
-     * @param timeScales the set of time scales to use.
+     * @param date    a CCSDS date string.
+     * @param context parsing context
      * @return parsed {@code date}.
      * @since 10.1
      */
-    public AbsoluteDate parseDate(final String date,
-                                  final IERSConventions conventions,
-                                  final AbsoluteDate missionReferenceDate,
-                                  final TimeScales timeScales) {
-        return new AbsoluteDate(date, this.getTimeScale(conventions, timeScales));
+    public AbsoluteDate parseDate(final String date, final ParsingContext context) {
+        return new AbsoluteDate(date,
+                                getTimeScale(context.getConventions(),
+                                             context.getDataContext().getTimeScales()));
     }
 
     /**

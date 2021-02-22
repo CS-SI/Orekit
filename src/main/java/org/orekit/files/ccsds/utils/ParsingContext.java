@@ -44,8 +44,9 @@ public class ParsingContext {
     /** Supplier for data context. */
     private final Supplier<DataContext> dataContextSupplier;
 
-    /** Supplier for reference date for Mission Elapsed Time or Mission Relative Time time systems. */
-    private final Supplier<AbsoluteDate> missionReferenceDateSupplier;
+    /** Supplier for reference date for mission elapsed time (MET), mission relative time (MRT),
+     * or spacecraft clock (SCLK) time systems. */
+    private final Supplier<AbsoluteDate> referenceDateSupplier;
 
     /** Supplier for reference system for interpreting dates. */
     private final Supplier<CcsdsTimeScale> timeScaleSupplier;
@@ -54,24 +55,24 @@ public class ParsingContext {
      * @param conventionsSupplier supplier for IERS conventions to use
      * @param simpleEOPSupplier supplier for simple or accurate EOP interpolation indicator
      * @param dataContextSupplier supplier for data context to use
-     * @param missionReferenceDateSupplier supplier for reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * @param referenceDateSupplier supplier for reference date for mission elapsed time (MET),
+     * mission relative time (MRT), or spacecraft clock (SCLK) time systems
      * @param timeScaleSupplier supplier for reference system for interpreting dates
      */
     public ParsingContext(final Supplier<IERSConventions> conventionsSupplier,
                           final BooleanSupplier           simpleEOPSupplier,
                           final Supplier<DataContext>     dataContextSupplier,
-                          final Supplier<AbsoluteDate>    missionReferenceDateSupplier,
+                          final Supplier<AbsoluteDate>    referenceDateSupplier,
                           final Supplier<CcsdsTimeScale>  timeScaleSupplier) {
-        this.conventionsSupplier          = conventionsSupplier;
-        this.simpleEOPSupplier            = simpleEOPSupplier;
-        this.dataContextSupplier          = dataContextSupplier;
-        this.missionReferenceDateSupplier = missionReferenceDateSupplier;
-        this.timeScaleSupplier            = timeScaleSupplier;
+        this.conventionsSupplier   = conventionsSupplier;
+        this.simpleEOPSupplier     = simpleEOPSupplier;
+        this.dataContextSupplier   = dataContextSupplier;
+        this.referenceDateSupplier = referenceDateSupplier;
+        this.timeScaleSupplier     = timeScaleSupplier;
     }
 
     /** Get IERS conventions.
      * @return IERS conventions to use while parsing
-     * @see #withConventions(IERSConventions)
      */
     public IERSConventions getConventions() {
         return conventionsSupplier.get();
@@ -79,15 +80,12 @@ public class ParsingContext {
 
     /** Get EOP interpolation method.
      * @return true if tidal effects are ignored when interpolating EOP
-     * @see #withSimpleEOP(boolean)
      */
     public boolean isSimpleEOP() {
         return simpleEOPSupplier.getAsBoolean();
     }
 
-    /**
-     * Get the data context used for getting frames, time scales, and celestial bodies.
-     *
+    /** Get the data context used for getting frames, time scales, and celestial bodies.
      * @return the data context.
      */
     public DataContext getDataContext() {
@@ -95,11 +93,10 @@ public class ParsingContext {
     }
 
     /** Get initial date.
-     * @return mission reference date to use while parsing
-     * @see #withMissionReferenceDate(AbsoluteDate)
+     * @return reference date to use while parsing
      */
-    public AbsoluteDate getMissionReferenceDate() {
-        return missionReferenceDateSupplier.get();
+    public AbsoluteDate getReferenceDate() {
+        return referenceDateSupplier.get();
     }
 
     /** Get the time scale.

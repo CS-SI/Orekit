@@ -344,10 +344,7 @@ public class ParseToken {
                 throw new OrekitException(OrekitMessages.CCSDS_TIME_SYSTEM_NOT_READ_YET,
                                           getLineNumber(), getFileName());
             }
-            consumer.accept(context.getTimeScale().parseDate(content,
-                                                             context.getConventions(),
-                                                             context.getMissionReferenceDate(),
-                                                             context.getDataContext().getTimeScales()));
+            consumer.accept(context.getTimeScale().parseDate(content, context));
         }
         return true;
     }

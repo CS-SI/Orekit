@@ -85,10 +85,7 @@ public class CommonMetadata extends OdmMetadata {
      */
     public void finalizeMetadata(final ParsingContext context) {
         if (frameEpochString != null) {
-            frameEpoch = context.getTimeScale().parseDate(frameEpochString,
-                                                          context.getConventions(),
-                                                          context.getMissionReferenceDate(),
-                                                          context.getDataContext().getTimeScales());
+            frameEpoch = context.getTimeScale().parseDate(frameEpochString, context);
         }
     }
 

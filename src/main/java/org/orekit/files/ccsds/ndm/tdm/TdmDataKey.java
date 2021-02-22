@@ -225,9 +225,7 @@ public enum TdmDataKey {
                     throw token.generateException(null);
                 }
                 // parse the epoch
-                final AbsoluteDate epoch = context.getTimeScale().parseDate(fields[0],
-                                                                            context.getConventions(),
-                                                                            context.getMissionReferenceDate());
+                final AbsoluteDate epoch = context.getTimeScale().parseDate(fields[0], context);
                 observationsBlock.addObservationEpoch(epoch);
 
                 // parse the measurement
