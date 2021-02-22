@@ -26,6 +26,8 @@ import org.hipparchus.analysis.interpolation.PiecewiseBicubicSplineInterpolator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.annotation.DefaultDataContext;
+import org.orekit.bodies.FieldGeodeticPoint;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -127,10 +129,11 @@ public class FixedTroposphericDelay implements DiscreteTroposphericModel {
     }
 
     /** {@inheritDoc} */
-    public double pathDelay(final double elevation, final double height,
+    @Override
+    public double pathDelay(final double elevation, final GeodeticPoint point,
                             final double[] parameters, final AbsoluteDate date) {
         // limit the height to 5000 m
-        final double h = FastMath.min(FastMath.max(0, height), 5000);
+        final double h = FastMath.min(FastMath.max(0, point.getAltitude()), 5000);
         // limit the elevation to 0 - π
         final double ele = FastMath.min(FastMath.PI, FastMath.max(0d, elevation));
         // mirror elevation at the right angle of π/2
@@ -140,11 +143,12 @@ public class FixedTroposphericDelay implements DiscreteTroposphericModel {
     }
 
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final T height,
+    @Override
+    public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
                                                        final T[] parameters, final FieldAbsoluteDate<T> date) {
-        final T zero = height.getField().getZero();
+        final T zero = date.getField().getZero();
         // limit the height to 5000 m
-        final T h = FastMath.min(FastMath.max(zero, height), zero.add(5000));
+        final T h = FastMath.min(FastMath.max(zero, point.getAltitude()), zero.add(5000));
         // limit the elevation to 0 - π
         final T ele = FastMath.min(zero.add(FastMath.PI), FastMath.max(zero, elevation));
         // mirror elevation at the right angle of π/2
@@ -153,28 +157,31 @@ public class FixedTroposphericDelay implements DiscreteTroposphericModel {
         return delayFunction.value(h, e);
     }
 
+    /** {@inheritDoc} */
     @Override
-    public double[] computeZenithDelay(final double height, final double[] parameters,
+    public double[] computeZenithDelay(final GeodeticPoint point, final double[] parameters,
                                        final AbsoluteDate date) {
         return new double[] {
-            pathDelay(0.5 * FastMath.PI, height, parameters, date),
+            pathDelay(0.5 * FastMath.PI, point, parameters, date),
             0.
         };
     }
 
+    /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final T height, final T[] parameters,
+    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final FieldGeodeticPoint<T> point, final T[] parameters,
                                                                   final FieldAbsoluteDate<T> date) {
-        final Field<T> field = height.getField();
+        final Field<T> field = date.getField();
         final T zero = field.getZero();
         final T[] delay = MathArrays.buildArray(field, 2);
-        delay[0] = pathDelay(zero.add(0.5 * FastMath.PI), height, parameters, date);
+        delay[0] = pathDelay(zero.add(0.5 * FastMath.PI), point, parameters, date);
         delay[1] = zero;
         return delay;
     }
 
+    /** {@inheritDoc} */
     @Override
-    public double[] mappingFactors(final double elevation, final double height,
+    public double[] mappingFactors(final double elevation, final GeodeticPoint point,
                                    final double[] parameters, final AbsoluteDate date) {
         return new double[] {
             1.0,
@@ -182,8 +189,9 @@ public class FixedTroposphericDelay implements DiscreteTroposphericModel {
         };
     }
 
+    /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final T height,
+    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
                                                               final T[] parameters, final FieldAbsoluteDate<T> date) {
         final Field<T> field = date.getField();
         final T one = field.getOne();
@@ -193,6 +201,7 @@ public class FixedTroposphericDelay implements DiscreteTroposphericModel {
         return factors;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
         return Collections.emptyList();

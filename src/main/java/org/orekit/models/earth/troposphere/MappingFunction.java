@@ -21,6 +21,8 @@ import java.util.List;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.MathArrays;
+import org.orekit.bodies.FieldGeodeticPoint;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -36,13 +38,13 @@ public interface MappingFunction {
      * <li>double[0] = m<sub>h</sub>(e) → hydrostatic mapping function
      * <li>double[1] = m<sub>w</sub>(e) → wet mapping function
      * </ul>
-     * @param elevation the elevation of the satellite, in radians.
-     * @param height the height of the station in m above sea level.
+     * @param elevation the elevation of the satellite, in radians
+     * @param point station location
      * @param parameters tropospheric model parameters.
      * @param date current date
      * @return a two components array containing the hydrostatic and wet mapping functions.
      */
-    double[] mappingFactors(double elevation, double height, double[] parameters, AbsoluteDate date);
+    double[] mappingFactors(double elevation, GeodeticPoint point, double[] parameters, AbsoluteDate date);
 
     /** This method allows the computation of the hydrostatic and
      * wet mapping functions. The resulting element is an array having the following form:
@@ -50,14 +52,14 @@ public interface MappingFunction {
      * <li>T[0] = m<sub>h</sub>(e) → hydrostatic mapping function
      * <li>T[1] = m<sub>w</sub>(e) → wet mapping function
      * </ul>
-     * @param elevation the elevation of the satellite, in radians.
-     * @param height the height of the station in m above sea level.
-     * @param parameters tropospheric model parameters.
+     * @param elevation the elevation of the satellite, in radians
+     * @param point station location
+     * @param parameters tropospheric model parameters
      * @param date current date
      * @param <T> type of the elements
      * @return a two components array containing the hydrostatic and wet mapping functions.
      */
-    <T extends RealFieldElement<T>> T[] mappingFactors(T elevation, T height, T[] parameters, FieldAbsoluteDate<T> date);
+    <T extends RealFieldElement<T>> T[] mappingFactors(T elevation, FieldGeodeticPoint<T> point, T[] parameters, FieldAbsoluteDate<T> date);
 
     /** Get the drivers for tropospheric model parameters.
      * @return drivers for tropospheric model parameters

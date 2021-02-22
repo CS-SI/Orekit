@@ -23,6 +23,8 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.orekit.bodies.FieldGeodeticPoint;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -41,7 +43,7 @@ import org.orekit.utils.ParameterDriver;
  * <p>
  * The mapping functions m<sub>h</sub>(e) and m<sub>w</sub>(e) are
  * computed thanks to a {@link #model} initialized by the user.
- * The user has the possiblility to use several mapping function models for the computations:
+ * The user has the possibility to use several mapping function models for the computations:
  * the {@link GlobalMappingFunctionModel Global Mapping Function}, or
  * the {@link NiellMappingFunctionModel Niell Mapping Function}
  * </p> <p>
@@ -94,43 +96,48 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
         this(273.15 + 18.0, 1013.25, model, totalDelay);
     }
 
+    /** {@inheritDoc} */
     @Override
-    public double[] mappingFactors(final double elevation, final double height,
+    public double[] mappingFactors(final double elevation, final GeodeticPoint point,
                                    final double[] parameters, final AbsoluteDate date) {
-        return model.mappingFactors(elevation, height, parameters, date);
+        return model.mappingFactors(elevation, point, parameters, date);
     }
 
+    /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final T height,
+    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
                                                               final T[] parameters, final FieldAbsoluteDate<T> date) {
-        return model.mappingFactors(elevation, height, parameters, date);
+        return model.mappingFactors(elevation, point, parameters, date);
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
         return Collections.singletonList(totalZenithDelay);
     }
 
+    /** {@inheritDoc} */
     @Override
-    public double pathDelay(final double elevation, final double height,
+    public double pathDelay(final double elevation, final GeodeticPoint point,
                             final double[] parameters, final AbsoluteDate date) {
 
         // Mapping functions
-        final double[] mf = mappingFactors(elevation, height, parameters, date);
+        final double[] mf = mappingFactors(elevation, point, parameters, date);
         // Zenith delays
-        final double[] delays = computeZenithDelay(height, parameters, date);
+        final double[] delays = computeZenithDelay(point, parameters, date);
         // Total delay
         return mf[0] * delays[0] + mf[1] * (delays[1] - delays[0]);
     }
 
+    /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final T height,
+    public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
                                                        final T[] parameters, final FieldAbsoluteDate<T> date) {
 
         // Mapping functions
-        final T[] mf = mappingFactors(elevation, height, parameters, date);
+        final T[] mf = mappingFactors(elevation, point, parameters, date);
         // Zenith delays
-        final T[] delays = computeZenithDelay(height, parameters, date);
+        final T[] delays = computeZenithDelay(point, parameters, date);
         // Total delay
         return mf[0].multiply(delays[0]).add(mf[1].multiply(delays[1].subtract(delays[0])));
     }
@@ -145,19 +152,20 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
      * The user have to be careful because the others tropospheric models in Orekit
      * compute the zenith wet delay instead of the total zenith delay.
      * </p>
-     * @param height the height of the station in m above sea level.
-     * @param parameters tropospheric model parameters.
+     * @param point station location
+     * @param parameters tropospheric model parameters
      * @param date current date
      * @return a two components array containing the zenith hydrostatic and wet delays.
      */
-    public double[] computeZenithDelay(final double height, final double[] parameters,
+    @Override
+    public double[] computeZenithDelay(final GeodeticPoint point, final double[] parameters,
                                        final AbsoluteDate date) {
 
         // Use an empirical model for tropospheric zenith hydro-static delay : Saastamoinen model
         final SaastamoinenModel saastamoinen = new SaastamoinenModel(t0, p0, 0.0);
 
         // elevation = pi/2 because we compute the delay in the zenith direction
-        final double zhd = saastamoinen.pathDelay(0.5 * FastMath.PI, height, parameters, date);
+        final double zhd = saastamoinen.computeZenithDelay(point, parameters, date)[0];
         final double ztd = parameters[0];
 
         return new double[] {
@@ -177,23 +185,23 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
      * compute the zenith wet delay instead of the total zenith delay.
      * </p>
      * @param <T> type of the elements
-     * @param height the height of the station in m above sea level.
-     * @param parameters tropospheric model parameters.
+     * @param point station location
+     * @param parameters tropospheric model parameters
      * @param date current date
      * @return a two components array containing the zenith hydrostatic and wet delays.
      */
-    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final T height, final T[] parameters,
+    @Override
+    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final FieldGeodeticPoint<T> point, final T[] parameters,
                                                                   final FieldAbsoluteDate<T> date) {
 
         // Field
         final Field<T> field = date.getField();
-        final T zero         = field.getZero();
 
         // Use an empirical model for tropospheric zenith hydro-static delay : Saastamoinen model
         final SaastamoinenModel saastamoinen = new SaastamoinenModel(t0, p0, 0.0);
 
         // elevation = pi/2 because we compute the delay in the zenith direction
-        final T zhd = saastamoinen.pathDelay(zero.add(0.5 * FastMath.PI), height, parameters, date);
+        final T zhd = saastamoinen.computeZenithDelay(point, parameters, date)[0];
         final T ztd = parameters[0];
 
         final T[] delays = MathArrays.buildArray(field, 2);

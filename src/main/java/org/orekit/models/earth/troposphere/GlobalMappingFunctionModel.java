@@ -23,9 +23,12 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
+import org.orekit.bodies.FieldGeodeticPoint;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
@@ -59,12 +62,6 @@ public class GlobalMappingFunctionModel implements MappingFunction {
     /** Multiplication factor for mapping function coefficients. */
     private static final double FACTOR = 1.0e-5;
 
-    /** Geodetic site latitude, radians.*/
-    private final double latitude;
-
-    /** Geodetic site longitude, radians.*/
-    private final double longitude;
-
     /** UTC time scale. */
     private final TimeScale utc;
 
@@ -72,32 +69,24 @@ public class GlobalMappingFunctionModel implements MappingFunction {
      *
      * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
      *
-     * @param latitude geodetic latitude of the station, in radians
-     * @param longitude geodetic latitude of the station, in radians
      * @see #GlobalMappingFunctionModel(double, double, TimeScale)
      */
     @DefaultDataContext
-    public GlobalMappingFunctionModel(final double latitude, final double longitude) {
-        this(latitude, longitude, DataContext.getDefault().getTimeScales().getUTC());
+    public GlobalMappingFunctionModel() {
+        this(DataContext.getDefault().getTimeScales().getUTC());
     }
 
     /** Build a new instance.
-     * @param latitude geodetic latitude of the station, in radians
-     * @param longitude geodetic latitude of the station, in radians
      * @param utc UTC time scale.
      * @since 10.1
      */
-    public GlobalMappingFunctionModel(final double latitude,
-                                      final double longitude,
-                                      final TimeScale utc) {
-        this.latitude  = latitude;
-        this.longitude = longitude;
+    public GlobalMappingFunctionModel(final TimeScale utc) {
         this.utc = utc;
     }
 
     /** {@inheritDoc} */
     @Override
-    public double[] mappingFactors(final double elevation, final double height,
+    public double[] mappingFactors(final double elevation, final GeodeticPoint point,
                                    final double[] parameters, final AbsoluteDate date) {
         // Day of year computation
         final DateTimeComponents dtc = date.getComponents(utc);
@@ -109,6 +98,10 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         final double c10h;
         final double c11h;
         final double psi;
+
+        // Latitude and longitude of the station
+        final double latitude  = point.getLatitude();
+        final double longitude = point.getLongitude();
 
         if (FastMath.sin(latitude) > 0) {
             // northern hemisphere case
@@ -139,7 +132,7 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         // Compute Legendre Polynomials Pnm(sin(phi))
         final int degree = 9;
         final int order  = 9;
-        final LegendrePolynomials p = new LegendrePolynomials(degree, order);
+        final LegendrePolynomials p = new LegendrePolynomials(degree, order, latitude);
 
         double a0Hydro   = 0.;
         double amplHydro = 0.;
@@ -177,7 +170,7 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         function[1] = computeFunction(aw, bw, cw, elevation);
 
         // Apply height correction
-        final double correction = computeHeightCorrection(elevation, height);
+        final double correction = computeHeightCorrection(elevation, point.getAltitude());
         function[0] = function[0] + correction;
 
         return function;
@@ -185,7 +178,7 @@ public class GlobalMappingFunctionModel implements MappingFunction {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final T height,
+    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
                                                               final T[] parameters, final FieldAbsoluteDate<T> date) {
         // Day of year computation
         final DateTimeComponents dtc = date.getComponents(utc);
@@ -201,8 +194,12 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         final T c11h;
         final T psi;
 
+        // Latitude and longitude of the station
+        final T latitude  = point.getLatitude();
+        final T longitude = point.getLongitude();
+
         // sin(latitude) > 0 -> northern hemisphere
-        if (FastMath.sin(latitude) > 0) {
+        if (FastMath.sin(latitude.getReal()) > 0) {
             c10h = zero.add(0.001);
             c11h = zero.add(0.005);
             psi  = zero;
@@ -213,12 +210,12 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         }
 
         double t0 = 28;
-        if (latitude < 0) {
+        if (latitude.getReal() < 0) {
             // southern hemisphere: t0 = 28 + an integer half of year
             t0 += 183;
         }
         final T coef = psi.add(((dofyear + 1 - t0) / 365.25) * 2 * FastMath.PI);
-        final T ch = c11h.divide(2.0).multiply(FastMath.cos(coef).add(1.0)).add(c10h).multiply(1 - FastMath.cos(latitude)).add(c0h);
+        final T ch = c11h.divide(2.0).multiply(FastMath.cos(coef).add(1.0)).add(c10h).multiply(FastMath.cos(latitude).negate().add(1.0)).add(c0h);
 
         // bw and cw constants (Boehm, J et al, 2006) | WET PART
         final T bw = zero.add(0.00146);
@@ -229,7 +226,7 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         // Compute Legendre Polynomials Pnm(sin(phi))
         final int degree = 9;
         final int order  = 9;
-        final LegendrePolynomials p = new LegendrePolynomials(degree, order);
+        final FieldLegendrePolynomials<T> p = new FieldLegendrePolynomials<>(degree, order, latitude);
 
         T a0Hydro   = zero;
         T amplHydro = zero;
@@ -240,19 +237,24 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         for (int n = 0; n <= 9; n++) {
             for (int m = 0; m <= n; m++) {
                 // Sine and cosine of m * longitude
-                final SinCos sc = FastMath.sinCos(m * longitude);
+                final FieldSinCos<T> sc = FastMath.sinCos(longitude.multiply(m));
+
                 // Compute coefficients
-                a0Hydro   = a0Hydro.add((abCoef.getAHMean(j) * p.getPnm(n, m) * sc.cos() +
-                                         abCoef.getBHMean(j) * p.getPnm(n, m) * sc.sin()) * FACTOR);
+                a0Hydro   = a0Hydro.add(p.getPnm(n, m).multiply(abCoef.getAHMean(j)).multiply(sc.cos()).
+                                    add(p.getPnm(n, m).multiply(abCoef.getBHMean(j)).multiply(sc.sin())).
+                                    multiply(FACTOR));
 
-                a0Wet     = a0Wet.add((abCoef.getAWMean(j) * p.getPnm(n, m) * sc.cos() +
-                                       abCoef.getBWMean(j) * p.getPnm(n, m) * sc.sin()) * FACTOR);
+                a0Wet     = a0Wet.add(p.getPnm(n, m).multiply(abCoef.getAWMean(j)).multiply(sc.cos()).
+                                  add(p.getPnm(n, m).multiply(abCoef.getBWMean(j)).multiply(sc.sin())).
+                                  multiply(FACTOR));
 
-                amplHydro = amplHydro.add((abCoef.getAHAmplitude(j) * p.getPnm(n, m) * sc.cos() +
-                                           abCoef.getBHAmplitude(j) * p.getPnm(n, m) * sc.sin()) * FACTOR);
+                amplHydro = amplHydro.add(p.getPnm(n, m).multiply(abCoef.getAHAmplitude(j)).multiply(sc.cos()).
+                                      add(p.getPnm(n, m).multiply(abCoef.getBHAmplitude(j)).multiply(sc.sin())).
+                                      multiply(FACTOR));
 
-                amplWet   = amplWet.add((abCoef.getAWAmplitude(j) * p.getPnm(n, m) * sc.cos() +
-                                         abCoef.getBWAmplitude(j) * p.getPnm(n, m) * sc.sin()) * FACTOR);
+                amplWet   = amplWet.add(p.getPnm(n, m).multiply(abCoef.getAWAmplitude(j)).multiply(sc.cos()).
+                                    add(p.getPnm(n, m).multiply(abCoef.getBWAmplitude(j)).multiply(sc.sin())).
+                                    multiply(FACTOR));
 
                 j = j + 1;
             }
@@ -267,7 +269,7 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         function[1] = computeFunction(aw, bw, cw, elevation);
 
         // Apply height correction
-        final T correction = computeHeightCorrection(elevation, height, field);
+        final T correction = computeHeightCorrection(elevation, point.getAltitude(), field);
         function[0] = function[0].add(correction);
 
         return function;
@@ -386,8 +388,10 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         /** Create Legendre polynomials for the given degree and order.
          * @param degree degree of the spherical harmonics
          * @param order order of the spherical harmonics
+         * @param latitude station latitude in radians
          */
-        LegendrePolynomials(final int degree, final int order) {
+        LegendrePolynomials(final int degree, final int order,
+                            final double latitude) {
 
             this.pCoef = new double[degree + 1][order + 1];
 
@@ -424,6 +428,71 @@ public class GlobalMappingFunctionModel implements MappingFunction {
          * @return The coefficient P<sub>nm</sub>
          */
         public double getPnm(final int n, final int m) {
+            return pCoef[n][m];
+        }
+
+    }
+
+    /** Computes the P<sub>nm</sub>(sin(&#934)) coefficients of Eq. 3 (Boehm et al, 2006).
+     *  The computation of the Legendre polynomials is performed following:
+     *  Heiskanen and Moritz, Physical Geodesy, 1967, eq. 1-62
+     *  <p>
+     *    This computation is the one used by the IERS 2010 Conventions.
+     *    Petit, G. and Luzum, B. (eds.), IERS Conventions (2010),
+     *    IERS Technical Note No. 36, BKG (2010)
+     *  </p>
+     */
+    private class FieldLegendrePolynomials<T extends RealFieldElement<T>> {
+
+        /** Array for the Legendre polynomials. */
+        private T[][] pCoef;
+
+        /** Create Legendre polynomials for the given degree and order.
+         * @param degree degree of the spherical harmonics
+         * @param order order of the spherical harmonics
+         * @param latitude station latitude in radians
+         */
+        FieldLegendrePolynomials(final int degree, final int order,
+                                 final T latitude) {
+
+            // Field
+            final Field<T> field = latitude.getField();
+
+            this.pCoef = MathArrays.buildArray(field, degree + 1, order + 1);
+
+            final T t  = FastMath.sin(latitude);
+            final T t2 = t.multiply(t);
+
+            for (int n = 0; n <= degree; n++) {
+
+                // m shall be <= n (Heiskanen and Moritz, 1967, pp 21)
+                for (int m = 0; m <= FastMath.min(n, order); m++) {
+
+                    // r = int((n - m) / 2)
+                    final int r = (int) (n - m) / 2;
+                    T sum = field.getZero();
+                    for (int k = 0; k <= r; k++) {
+                        final T term = FastMath.pow(t, n - m - 2 * k).
+                                       multiply(FastMath.pow(-1.0, k) * CombinatoricsUtils.factorialDouble(2 * n - 2 * k) /
+                                                                               (CombinatoricsUtils.factorialDouble(k) * CombinatoricsUtils.factorialDouble(n - k) *
+                                                                                               CombinatoricsUtils.factorialDouble(n - m - 2 * k)));
+                        sum = sum.add(term);
+                    }
+
+                    pCoef[n][m] = FastMath.pow(t2.negate().add(1.0), 0.5 * m).multiply(FastMath.pow(2, -n)).multiply(sum);
+
+                }
+
+            }
+
+        }
+
+        /** Return the coefficient P<sub>nm</sub>.
+         * @param n index
+         * @param m index
+         * @return The coefficient P<sub>nm</sub>
+         */
+        public T getPnm(final int n, final int m) {
             return pCoef[n][m];
         }
 

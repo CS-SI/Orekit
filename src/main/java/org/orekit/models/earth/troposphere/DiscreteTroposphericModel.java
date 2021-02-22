@@ -17,6 +17,8 @@
 package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.RealFieldElement;
+import org.orekit.bodies.FieldGeodeticPoint;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -41,24 +43,24 @@ public interface DiscreteTroposphericModel extends MappingFunction {
      * station to a satellite.
      *
      * @param elevation the elevation of the satellite, in radians
-     * @param height the height of the station in m above sea level
-     * @param parameters tropospheric model parameters.
+     * @param point station location
+     * @param parameters tropospheric model parameters
      * @param date current date
      * @return the path delay due to the troposphere in m
      */
-    double pathDelay(double elevation, double height, double[] parameters, AbsoluteDate date);
+    double pathDelay(double elevation, GeodeticPoint point, double[] parameters, AbsoluteDate date);
 
     /** Calculates the tropospheric path delay for the signal path from a ground
      * station to a satellite.
      *
      * @param <T> type of the elements
      * @param elevation the elevation of the satellite, in radians
-     * @param height the height of the station in m above sea level
-     * @param parameters tropospheric model parameters.
+     * @param point station location
+     * @param parameters tropospheric model parameters
      * @param date current date
      * @return the path delay due to the troposphere in m
      */
-    <T extends RealFieldElement<T>> T pathDelay(T elevation, T height, T[] parameters, FieldAbsoluteDate<T> date);
+    <T extends RealFieldElement<T>> T pathDelay(T elevation, FieldGeodeticPoint<T> point, T[] parameters, FieldAbsoluteDate<T> date);
 
     /** This method allows the  computation of the zenith hydrostatic and
      * zenith wet delay. The resulting element is an array having the following form:
@@ -66,12 +68,12 @@ public interface DiscreteTroposphericModel extends MappingFunction {
      * <li>double[0] = D<sub>hz</sub> → zenith hydrostatic delay
      * <li>double[1] = D<sub>wz</sub> → zenith wet delay
      * </ul>
-     * @param height the height of the station in m above sea level.
-     * @param parameters tropospheric model parameters.
+     * @param point station location
+     * @param parameters tropospheric model parameters
      * @param date current date
      * @return a two components array containing the zenith hydrostatic and wet delays.
      */
-     double[] computeZenithDelay(double height, double[] parameters, AbsoluteDate date);
+     double[] computeZenithDelay(GeodeticPoint point, double[] parameters, AbsoluteDate date);
 
     /** This method allows the  computation of the zenith hydrostatic and
      * zenith wet delay. The resulting element is an array having the following form:
@@ -80,11 +82,11 @@ public interface DiscreteTroposphericModel extends MappingFunction {
      * <li>T[1] = D<sub>wz</sub> → zenith wet delay
      * </ul>
      * @param <T> type of the elements
-     * @param height the height of the station in m above sea level.
-     * @param parameters tropospheric model parameters.
+     * @param point station location
+     * @param parameters tropospheric model parameters
      * @param date current date
      * @return a two components array containing the zenith hydrostatic and wet delays.
      */
-    <T extends RealFieldElement<T>> T[] computeZenithDelay(T height, T[] parameters, FieldAbsoluteDate<T> date);
+    <T extends RealFieldElement<T>> T[] computeZenithDelay(FieldGeodeticPoint<T> point, T[] parameters, FieldAbsoluteDate<T> date);
 
 }

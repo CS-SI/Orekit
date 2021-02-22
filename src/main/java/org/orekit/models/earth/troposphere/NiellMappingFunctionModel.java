@@ -26,6 +26,8 @@ import org.hipparchus.analysis.interpolation.LinearInterpolator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.annotation.DefaultDataContext;
+import org.orekit.bodies.FieldGeodeticPoint;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
@@ -126,9 +128,6 @@ public class NiellMappingFunctionModel implements MappingFunction {
     /** Interpolation function for the cw term. */
     private final UnivariateFunction cwFunction;
 
-    /** Geodetic site latitude, radians.*/
-    private final double latitude;
-
     /** UTC time scale. */
     private final TimeScale utc;
 
@@ -136,21 +135,18 @@ public class NiellMappingFunctionModel implements MappingFunction {
      *
      * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
      *
-     * @param latitude geodetic latitude of the station, in radians
      * @see #NiellMappingFunctionModel(double, TimeScale)
      */
     @DefaultDataContext
-    public NiellMappingFunctionModel(final double latitude) {
-        this(latitude, DataContext.getDefault().getTimeScales().getUTC());
+    public NiellMappingFunctionModel() {
+        this(DataContext.getDefault().getTimeScales().getUTC());
     }
 
     /** Builds a new instance.
-     * @param latitude geodetic latitude of the station, in radians
      * @param utc UTC time scale.
      * @since 10.1
      */
-    public NiellMappingFunctionModel(final double latitude,
-                                     final TimeScale utc) {
+    public NiellMappingFunctionModel(final TimeScale utc) {
         this.utc = utc;
         // Interpolation functions for hydrostatic coefficients
         this.ahAverageFunction    = new LinearInterpolator().interpolate(LATITUDE_VALUES, VALUES_FOR_AH_AVERAGE);
@@ -164,12 +160,11 @@ public class NiellMappingFunctionModel implements MappingFunction {
         this.awFunction  = new LinearInterpolator().interpolate(LATITUDE_VALUES, VALUES_FOR_AW);
         this.bwFunction  = new LinearInterpolator().interpolate(LATITUDE_VALUES, VALUES_FOR_BW);
         this.cwFunction  = new LinearInterpolator().interpolate(LATITUDE_VALUES, VALUES_FOR_CW);
-
-        this.latitude = latitude;
     }
 
+    /** {@inheritDoc} */
     @Override
-    public double[] mappingFactors(final double elevation, final double height,
+    public double[] mappingFactors(final double elevation, final GeodeticPoint point,
                                    final double[] parameters, final AbsoluteDate date) {
         // Day of year computation
         final DateTimeComponents dtc = date.getComponents(utc);
@@ -177,7 +172,7 @@ public class NiellMappingFunctionModel implements MappingFunction {
 
         // Temporal factor
         double t0 = 28;
-        if (latitude < 0) {
+        if (point.getLatitude() < 0) {
             // southern hemisphere: t0 = 28 + an integer half of year
             t0 += 183;
         }
@@ -185,7 +180,7 @@ public class NiellMappingFunctionModel implements MappingFunction {
         final double cosCoef = FastMath.cos(coef);
 
         // Compute ah, bh and ch Eq. 5
-        double absLatidude = FastMath.abs(latitude);
+        double absLatidude = FastMath.abs(point.getLatitude());
         // there are no data in the model for latitudes lower than 15°
         absLatidude = FastMath.max(FastMath.toRadians(15.0), absLatidude);
         // there are no data in the model for latitudes greater than 75°
@@ -203,16 +198,17 @@ public class NiellMappingFunctionModel implements MappingFunction {
         function[1] = computeFunction(awFunction.value(absLatidude), bwFunction.value(absLatidude), cwFunction.value(absLatidude), elevation);
 
         // Apply height correction
-        final double correction = computeHeightCorrection(elevation, height);
+        final double correction = computeHeightCorrection(elevation, point.getAltitude());
         function[0] = function[0] + correction;
 
         return function;
     }
 
+    /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final T height,
+    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
                                                               final T[] parameters, final FieldAbsoluteDate<T> date) {
-        final Field<T> field = height.getField();
+        final Field<T> field = date.getField();
         final T zero = field.getZero();
 
         // Day of year computation
@@ -221,7 +217,7 @@ public class NiellMappingFunctionModel implements MappingFunction {
 
         // Temporal factor
         double t0 = 28;
-        if (latitude < 0) {
+        if (point.getLatitude().getReal() < 0) {
             // southern hemisphere: t0 = 28 + an integer half of year
             t0 += 183;
         }
@@ -229,7 +225,7 @@ public class NiellMappingFunctionModel implements MappingFunction {
         final T cosCoef = FastMath.cos(coef);
 
         // Compute ah, bh and ch Eq. 5
-        double absLatidude = FastMath.abs(latitude);
+        double absLatidude = FastMath.abs(point.getLatitude().getReal());
         // there are no data in the model for latitudes lower than 15°
         absLatidude = FastMath.max(FastMath.toRadians(15.0), absLatidude);
         // there are no data in the model for latitudes greater than 75°
@@ -248,7 +244,7 @@ public class NiellMappingFunctionModel implements MappingFunction {
                                       zero.add(cwFunction.value(absLatidude)), elevation);
 
         // Apply height correction
-        final T correction = computeHeightCorrection(elevation, height, field);
+        final T correction = computeHeightCorrection(elevation, point.getAltitude(), field);
         function[0] = function[0].add(correction);
 
         return function;

@@ -59,30 +59,6 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
         tropoModel = model;
     }
 
-    /** Get the station height above mean sea level.
-     *
-     * @param station  ground station (or measuring station)
-     * @return the measuring station height above sea level, m
-     */
-    private double getStationHeightAMSL(final GroundStation station) {
-        // FIXME height should be computed with respect to geoid WGS84+GUND = EGM2008 for example
-        final double height = station.getBaseFrame().getPoint().getAltitude();
-        return height;
-    }
-
-    /** Get the station height above mean sea level.
-    * @param <T> type of the elements
-    * @param field field of the elements
-    * @param station  ground station (or measuring station)
-    * @return the measuring station height above sea level, m
-    */
-    private <T extends RealFieldElement<T>> T getStationHeightAMSL(final Field<T> field,
-                                                                   final GroundStation station) {
-        // FIXME heigth should be computed with respect to geoid WGS84+GUND = EGM2008 for example
-        final T height = station.getBaseFrame().getPoint(field).getAltitude();
-        return height;
-    }
-
     /** Compute the measurement error due to Troposphere.
      * @param station station
      * @param state spacecraft state
@@ -99,11 +75,8 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
 
         // only consider measures above the horizon
         if (elevation > 0) {
-            // altitude AMSL in meters
-            final double height = getStationHeightAMSL(station);
-
             // Delay in meters
-            final double delay = tropoModel.pathDelay(elevation, height, tropoModel.getParameters(), state.getDate());
+            final double delay = tropoModel.pathDelay(elevation, station.getBaseFrame().getPoint(), tropoModel.getParameters(), state.getDate());
 
             return delay;
         }
@@ -133,11 +106,8 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
 
         // only consider measures above the horizon
         if (dsElevation.getReal() > 0) {
-            // altitude AMSL in meters
-            final T height = getStationHeightAMSL(field, station);
-
             // Delay in meters
-            final T delay = tropoModel.pathDelay(dsElevation, height, parameters, state.getDate());
+            final T delay = tropoModel.pathDelay(dsElevation, station.getBaseFrame().getPoint(field), parameters, state.getDate());
 
             return delay;
         }

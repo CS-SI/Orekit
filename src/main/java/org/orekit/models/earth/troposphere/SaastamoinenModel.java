@@ -29,6 +29,8 @@ import org.hipparchus.analysis.polynomials.PolynomialSplineFunction;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.annotation.DefaultDataContext;
+import org.orekit.bodies.FieldGeodeticPoint;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -214,12 +216,13 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
      * @see #getLowElevationThreshold()
      * @see #setLowElevationThreshold(double)
      */
-    public double pathDelay(final double elevation, final double height,
+    @Override
+    public double pathDelay(final double elevation, final GeodeticPoint point,
                             final double[] parameters, final AbsoluteDate date) {
 
         // there are no data in the model for negative altitudes and altitude bigger than 5000 m
         // limit the height to a range of [0, 5000] m
-        final double fixedHeight = FastMath.min(FastMath.max(0, height), 5000);
+        final double fixedHeight = FastMath.min(FastMath.max(0, point.getAltitude()), 5000);
 
         // the corrected temperature using a temperature gradient of -6.5 K/km
         final double T = t0 - 6.5e-3 * fixedHeight;
@@ -260,14 +263,15 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
      * @see #getLowElevationThreshold()
      * @see #setLowElevationThreshold(double)
      */
-    public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final T height,
+    @Override
+    public <T extends RealFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
                                                        final T[] parameters, final FieldAbsoluteDate<T> date) {
 
-        final Field<T> field = height.getField();
+        final Field<T> field = date.getField();
         final T zero = field.getZero();
         // there are no data in the model for negative altitudes and altitude bigger than 5000 m
         // limit the height to a range of [0, 5000] m
-        final T fixedHeight = FastMath.min(FastMath.max(zero, height), zero.add(5000));
+        final T fixedHeight = FastMath.min(FastMath.max(zero, point.getAltitude()), zero.add(5000));
 
         // the corrected temperature using a temperature gradient of -6.5 K/km
         final T T = fixedHeight.multiply(6.5e-3).negate().add(t0);
@@ -401,28 +405,31 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
 
     }
 
+    /** {@inheritDoc} */
     @Override
-    public double[] computeZenithDelay(final double height, final double[] parameters,
+    public double[] computeZenithDelay(final GeodeticPoint point, final double[] parameters,
                                        final AbsoluteDate date) {
         return new double[] {
-            pathDelay(0.5 * FastMath.PI, height, parameters, date),
+            pathDelay(0.5 * FastMath.PI, point, parameters, date),
             0.
         };
     }
 
+    /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final T height, final T[] parameters,
+    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final FieldGeodeticPoint<T> point, final T[] parameters,
                                                                   final FieldAbsoluteDate<T> date) {
-        final Field<T> field = height.getField();
+        final Field<T> field = date.getField();
         final T zero = field.getZero();
         final T[] delay = MathArrays.buildArray(field, 2);
-        delay[0] = pathDelay(zero.add(0.5 * FastMath.PI), height, parameters, date);
+        delay[0] = pathDelay(zero.add(0.5 * FastMath.PI), point, parameters, date);
         delay[1] = zero;
         return delay;
     }
 
+    /** {@inheritDoc} */
     @Override
-    public double[] mappingFactors(final double elevation, final double height,
+    public double[] mappingFactors(final double elevation, final GeodeticPoint point,
                                    final double[] parameters, final AbsoluteDate date) {
         return new double[] {
             1.0,
@@ -430,8 +437,9 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
         };
     }
 
+    /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final T height,
+    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
                                                               final T[] parameters, final FieldAbsoluteDate<T> date) {
         final Field<T> field = date.getField();
         final T one = field.getOne();
@@ -441,6 +449,7 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
         return factors;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
         return Collections.emptyList();
