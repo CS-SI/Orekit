@@ -89,6 +89,12 @@ public enum OrbitStateHistoryMetadataKey {
     /** Epoch of the {@link #ORB_REF_FRAME orbit reference frame}. */
     ORB_FRAME_EPOCH((token, context, metadata) -> token.processAsDate(metadata::setOrbFrameEpoch, context)),
 
+    /** Useable start time entry. */
+    USEABLE_START_TIME((token, context, metadata) -> token.processAsDate(metadata::setUseableStartTime, context)),
+
+    /** Useable stop time entry. */
+    USEABLE_STOP_TIME((token, context, metadata) -> token.processAsDate(metadata::setUseableStopTime, context)),
+
     /** Orbit element set type.
      * @see ElementsType
      */
