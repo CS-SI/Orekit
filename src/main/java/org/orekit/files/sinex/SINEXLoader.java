@@ -16,6 +16,7 @@
  */
 package org.orekit.files.sinex;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,6 +35,7 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.sinex.Station.ReferenceSystem;
@@ -92,28 +94,27 @@ public class SINEXLoader {
 
     /** Simple constructor. This constructor uses the {@link DataContext#getDefault()
      * default data context}.
-     * @param input data input stream
-     * @param name name of the file (or zip entry)
+     * @param source source for the RINEX data
      * @see #SINEXLoader(InputStream, String, TimeScale)
      */
     @DefaultDataContext
-    public SINEXLoader(final InputStream input, final String name) {
-        this(input, name, DataContext.getDefault().getTimeScales().getUTC());
+    public SINEXLoader(final DataSource source) {
+        this(source, DataContext.getDefault().getTimeScales().getUTC());
     }
 
     /**
      * Loads SINEX from the given input stream using the specified auxiliary data.
-     * @param input data input stream
-     * @param name name of the file (or zip entry)
+     * @param source source for the RINEX data
      * @param utc UTC time scale
      */
-    public SINEXLoader(final InputStream input,
-                       final String name,
-                       final TimeScale utc) {
+    public SINEXLoader(final DataSource source, final TimeScale utc) {
         try {
             this.utc = utc;
             stations = new HashMap<>();
-            new Parser().loadData(input, name);
+            try (InputStream         is  = source.getStreamOpener().openOnce();
+                 BufferedInputStream bis = new BufferedInputStream(is)) {
+                new Parser().loadData(bis, source.getName());
+            }
         } catch (IOException | ParseException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
         }

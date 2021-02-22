@@ -1820,7 +1820,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
             }
 
             // Return a configured SINEX file
-            return new SINEXLoader(nd.getStreamOpener().openOnce(), nd.getName());
+            return new SINEXLoader(nd);
 
         } else {
 
@@ -1973,7 +1973,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
             default:
                 prnNumber = -1;
         }
-        final RinexLoader loader = new RinexLoader(source.getStreamOpener().openOnce(), source.getName());
+        final RinexLoader loader = new RinexLoader(source);
         for (final ObservationDataSet observationDataSet : loader.getObservationDataSets()) {
             if (observationDataSet.getSatelliteSystem() == system    &&
                 observationDataSet.getPrnNumber()       == prnNumber) {

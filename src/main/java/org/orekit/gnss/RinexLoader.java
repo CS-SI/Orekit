@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 package org.orekit.gnss;
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,6 +35,7 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -155,30 +157,30 @@ public class RinexLoader {
     /** Simple constructor. This constructor uses the {@link DataContext#getDefault()
      * default data context}.
      *
-     * @param input data input stream
-     * @param name name of the file (or zip entry)
-     * @see #RinexLoader(InputStream, String, TimeScales)
+     * @param source source for the RINEX data
+     * @see #RinexLoader(DataSource, TimeScales)
      */
     @DefaultDataContext
-    public RinexLoader(final InputStream input, final String name) {
-        this(input, name, DataContext.getDefault().getTimeScales());
+    public RinexLoader(final DataSource source) {
+        this(source, DataContext.getDefault().getTimeScales());
     }
 
     /**
      * Loads RINEX from the given input stream using the specified auxiliary data.
      *
-     * @param input data input stream
-     * @param name name of the file (or zip entry)
+     * @param source source for the RINEX data
      * @param timeScales the set of time scales to use when parsing dates.
      * @since 10.1
      */
-    public RinexLoader(final InputStream input,
-                       final String name,
+    public RinexLoader(final DataSource source,
                        final TimeScales timeScales) {
         try {
             this.timeScales = timeScales;
             observationDataSets = new ArrayList<>();
-            new Parser().loadData(input, name);
+            try (InputStream         is  = source.getStreamOpener().openOnce();
+                 BufferedInputStream bis = new BufferedInputStream(is)) {
+                new Parser().loadData(bis, source.getName());
+            }
         } catch (IOException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
         }

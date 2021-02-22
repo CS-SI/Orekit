@@ -60,12 +60,11 @@ public class RinexLoaderTest {
     @Test
     public void testReadError() {
         try {
-            final InputStream failingStream = new InputStream() {
+            new RinexLoader(new DataSource("read-error", () -> new InputStream() {
                 public int read() throws IOException {
                     throw new IOException("boo!");
                 }
-            };
-            new RinexLoader(failingStream, "read-error");
+            }));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals("boo!", oe.getSpecifier().getSourceString());
@@ -765,20 +764,15 @@ public class RinexLoaderTest {
     }
 
     private RinexLoader load(final String name) {
-        return new RinexLoader(Utils.class.getClassLoader().getResourceAsStream(name), name);
+        return new RinexLoader(new DataSource(name,
+                                              () -> Utils.class.getClassLoader().getResourceAsStream(name)));
      }
 
     private RinexLoader loadCompressed(final String name) {
-        RinexLoader loader = null;
-        try {
-            final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
-                                                () -> Utils.class.getClassLoader().getResourceAsStream(name));
-            DataSource filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
-            loader = new RinexLoader(filtered.getStreamOpener().openOnce(), filtered.getName());
-        } catch (IOException ioe) {
-            Assert.fail(ioe.getLocalizedMessage());
-        }
-        return loader;
+        final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
+                                              () -> Utils.class.getClassLoader().getResourceAsStream(name));
+        DataSource filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
+        return new RinexLoader(filtered);
      }
 
 }
