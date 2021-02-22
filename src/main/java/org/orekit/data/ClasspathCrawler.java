@@ -141,7 +141,7 @@ public class ClasspathCrawler implements DataProvider {
 
                             if (supported.matcher(data.getName()).matches()) {
                                 // visit the current file
-                                try (InputStream input = data.getStreamOpener().openStream()) {
+                                try (InputStream input = data.getStreamOpener().openOnce()) {
                                     final URI uri = classLoader.getResource(name).toURI();
                                     visitor.loadData(input, uri.toString());
                                     loaded = true;

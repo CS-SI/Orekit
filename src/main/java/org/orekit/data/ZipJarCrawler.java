@@ -222,7 +222,7 @@ public class ZipJarCrawler implements DataProvider {
 
                         if (supported.matcher(data.getName()).matches()) {
                             // visit the current file
-                            try (InputStream input = data.getStreamOpener().openStream()) {
+                            try (InputStream input = data.getStreamOpener().openOnce()) {
                                 visitor.loadData(input, fullName);
                                 loaded = true;
                             }

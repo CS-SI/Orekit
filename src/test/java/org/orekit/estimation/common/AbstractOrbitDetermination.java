@@ -1820,7 +1820,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
             }
 
             // Return a configured SINEX file
-            return new SINEXLoader(nd.getStreamOpener().openStream(), nd.getName());
+            return new SINEXLoader(nd.getStreamOpener().openOnce(), nd.getName());
 
         } else {
 
@@ -1860,7 +1860,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
         throws IOException {
 
         final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
-        try (InputStream is = source.getStreamOpener().openStream();
+        try (InputStream is = source.getStreamOpener().openOnce();
              InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
              BufferedReader br = new BufferedReader(isr)) {
             int lineNumber = 0;
@@ -1973,7 +1973,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
             default:
                 prnNumber = -1;
         }
-        final RinexLoader loader = new RinexLoader(source.getStreamOpener().openStream(), source.getName());
+        final RinexLoader loader = new RinexLoader(source.getStreamOpener().openOnce(), source.getName());
         for (final ObservationDataSet observationDataSet : loader.getObservationDataSets()) {
             if (observationDataSet.getSatelliteSystem() == system    &&
                 observationDataSet.getPrnNumber()       == prnNumber) {
@@ -2071,7 +2071,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
 
         // Initialise parser and read file
         final CRDParser parser =  new CRDParser();
-        final CRDFile   file   = parser.parse(source.getStreamOpener().openStream());
+        final CRDFile   file   = parser.parse(source.getStreamOpener().openOnce());
 
         // Loop on data block
         for (final CRDDataBlock block : file.getDataBlocks()) {

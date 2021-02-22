@@ -76,7 +76,7 @@ class XmlLexicalAnalyzer implements LexicalAnalyzer {
 
             // Read the xml file
             messageParser.reset(FileFormat.XML);
-            final InputStream is = source.getStreamOpener().openStream();
+            final InputStream is = source.getStreamOpener().openOnce();
             if (is == null) {
                 throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, source.getName());
             }

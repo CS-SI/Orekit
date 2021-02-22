@@ -133,7 +133,7 @@ public abstract class AbstractListCrawler<T> implements DataProvider {
 
                             if (supported.matcher(data.getName()).matches()) {
                                 // visit the current file
-                                try (InputStream is = data.getStreamOpener().openStream()) {
+                                try (InputStream is = data.getStreamOpener().openOnce()) {
                                     visitor.loadData(is, name);
                                     loaded = true;
                                 }

@@ -256,7 +256,7 @@ public class DataProvidersManagerTest {
                 DataSource f = new DataSource(original.getName(),
                                             () -> {
                                                 ++opened;
-                                                return original.getStreamOpener().openStream();
+                                                return original.getStreamOpener().openOnce();
                                             });
                 filtered.put(f, f);
                 return f;
@@ -292,7 +292,7 @@ public class DataProvidersManagerTest {
                 return new DataSource(PREFIX + level + "-" + baseName,
                                      () -> {
                                          ++opened;
-                                         return original.getStreamOpener().openStream();
+                                         return original.getStreamOpener().openOnce();
                                      });
             } else {
                 // final layer, don't filter anymore

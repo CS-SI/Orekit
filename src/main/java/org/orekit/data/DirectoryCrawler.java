@@ -131,7 +131,7 @@ public class DirectoryCrawler implements DataProvider {
 
                         if (supported.matcher(data.getName()).matches()) {
                             // visit the current file
-                            try (InputStream input = data.getStreamOpener().openStream()) {
+                            try (InputStream input = data.getStreamOpener().openOnce()) {
                                 visitor.loadData(input, file.getPath());
                                 loaded = true;
                             }

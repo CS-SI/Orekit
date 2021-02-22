@@ -89,7 +89,7 @@ class KvnLexicalAnalyzer implements LexicalAnalyzer {
 
         messageParser.reset(FileFormat.KVN);
 
-        try (InputStream       is     = source.getStreamOpener().openStream();
+        try (InputStream       is     = source.getStreamOpener().openOnce();
              InputStreamReader isr    = (is  == null) ? null : new InputStreamReader(is, StandardCharsets.UTF_8);
              BufferedReader    reader = (isr == null) ? null : new BufferedReader(isr)) {
 

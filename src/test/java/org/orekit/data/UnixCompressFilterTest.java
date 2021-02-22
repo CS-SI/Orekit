@@ -86,7 +86,7 @@ public class UnixCompressFilterTest {
         final byte[] array = new byte[] { (byte) 0x1f, (byte) 0x9d, (byte) 0x90, (byte) 0x0a, (byte) 0x00 };
         DataSource filtered = new UnixCompressFilter().
                         filter(new DataSource("empty-line.Z", () -> new ByteArrayInputStream(array)));
-        InputStream is = filtered.getStreamOpener().openStream();
+        InputStream is = filtered.getStreamOpener().openOnce();
         Assert.assertEquals('\n', is.read());
         for (int i = 0; i < 1000; ++i) {
             Assert.assertEquals(-1,   is.read());
@@ -137,7 +137,7 @@ public class UnixCompressFilterTest {
         DataSource filtered = new UnixCompressFilter().
                              filter(new DataSource(name,
                                                   () -> Utils.class.getClassLoader().getResourceAsStream(name)));
-        try (InputStream is = filtered.getStreamOpener().openStream();
+        try (InputStream is = filtered.getStreamOpener().openOnce();
              InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
              BufferedReader br = new BufferedReader(isr)) {
             int lines = 0;
@@ -155,7 +155,7 @@ public class UnixCompressFilterTest {
         }
         DataSource filtered = new UnixCompressFilter().
                         filter(new DataSource(name, () -> new ByteArrayInputStream(array)));
-        InputStream is = filtered.getStreamOpener().openStream();
+        InputStream is = filtered.getStreamOpener().openOnce();
         List<Integer> output = new ArrayList<>();
         while (true) {
             boolean shouldWork = is.available() > 0;

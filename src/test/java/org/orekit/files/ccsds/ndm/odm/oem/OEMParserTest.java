@@ -555,15 +555,16 @@ public class OEMParserTest {
         throws URISyntaxException {
 
         final String name = "/ccsds/odm/oem/OEMExample8.txt";
-        final DataSource source =  new DataSource(name, () -> getClass().getResourceAsStream(name));
 
         final ParserBuilder builder = new ParserBuilder().withMu(CelestialBodyFactory.getMars().getGM());
 
-        final OemFile file1 = builder.buildOemParser().parseMessage(source);
+        final DataSource source1 =  new DataSource(name, () -> getClass().getResourceAsStream(name));
+        final OemFile file1 = builder.buildOemParser().parseMessage(source1);
         Assert.assertEquals(1, file1.getSegments().get(0).getMetadata().getInterpolationDegree());
         Assert.assertEquals(7, file1.getSegments().get(1).getMetadata().getInterpolationDegree());
 
-        final OemFile file2 = builder.withDefaultInterpolationDegree(5).buildOemParser().parseMessage(source);
+        final DataSource source2 =  new DataSource(name, () -> getClass().getResourceAsStream(name));
+        final OemFile file2 = builder.withDefaultInterpolationDegree(5).buildOemParser().parseMessage(source2);
         Assert.assertEquals(5, file2.getSegments().get(0).getMetadata().getInterpolationDegree());
         Assert.assertEquals(7, file2.getSegments().get(1).getMetadata().getInterpolationDegree());
     }

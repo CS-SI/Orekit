@@ -98,7 +98,7 @@ public class HatanakaCompressFilterTest {
         final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
         try {
-            try (InputStream       is  = new HatanakaCompressFilter().filter(raw).getStreamOpener().openStream();
+            try (InputStream       is  = new HatanakaCompressFilter().filter(raw).getStreamOpener().openOnce();
                  InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
                  BufferedReader    br  = new BufferedReader(isr)) {
                 for (String line = br.readLine(); line != null; line = br.readLine()) {
@@ -119,7 +119,7 @@ public class HatanakaCompressFilterTest {
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
         DataSource filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
         MessageDigest md = MessageDigest.getInstance("SHA-256");
-        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
+        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openOnce(), md),
                                              filtered.getName());
 
         List<ObservationDataSet> ods = loader.getObservationDataSets();
@@ -154,7 +154,7 @@ public class HatanakaCompressFilterTest {
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
         DataSource filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
         MessageDigest md = MessageDigest.getInstance("SHA-256");
-        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
+        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openOnce(), md),
                                              filtered.getName());
 
         AbsoluteDate t0 = new AbsoluteDate(2001, 1, 9, TimeScalesFactory.getGPS());
@@ -214,7 +214,7 @@ public class HatanakaCompressFilterTest {
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
         DataSource filtered = new HatanakaCompressFilter().filter(new GzipFilter().filter(raw));
         MessageDigest md = MessageDigest.getInstance("SHA-256");
-        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
+        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openOnce(), md),
                                              filtered.getName());
 
         AbsoluteDate t0 = new AbsoluteDate(2015, 7, 8, TimeScalesFactory.getGPS());
@@ -273,7 +273,7 @@ public class HatanakaCompressFilterTest {
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
         DataSource filtered = new HatanakaCompressFilter().filter(raw);
         MessageDigest md = MessageDigest.getInstance("SHA-256");
-        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
+        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openOnce(), md),
                                              filtered.getName());
 
         List<ObservationDataSet> ods = loader.getObservationDataSets();
@@ -304,7 +304,7 @@ public class HatanakaCompressFilterTest {
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
         DataSource filtered = new HatanakaCompressFilter().filter(new GzipFilter().filter(raw));
         MessageDigest md = MessageDigest.getInstance("SHA-256");
-        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
+        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openOnce(), md),
                                              filtered.getName());
 
         List<ObservationDataSet> ods = loader.getObservationDataSets();
@@ -329,7 +329,7 @@ public class HatanakaCompressFilterTest {
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
         DataSource filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
         MessageDigest md = MessageDigest.getInstance("SHA-256");
-        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
+        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openOnce(), md),
                                              filtered.getName());
 
         AbsoluteDate t0 = new AbsoluteDate(2016, 2, 13, TimeScalesFactory.getGPS());
@@ -354,7 +354,7 @@ public class HatanakaCompressFilterTest {
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
         DataSource filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
         MessageDigest md = MessageDigest.getInstance("SHA-256");
-        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
+        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openOnce(), md),
                                              filtered.getName());
 
         AbsoluteDate t0 = new AbsoluteDate(2016, 2, 13, 0, 10, 0.0, TimeScalesFactory.getGPS());
@@ -381,7 +381,7 @@ public class HatanakaCompressFilterTest {
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
         DataSource filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
         MessageDigest md = MessageDigest.getInstance("SHA-256");
-        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
+        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openOnce(), md),
                                              filtered.getName());
 
         AbsoluteDate t0 = new AbsoluteDate(2016, 2, 13, 0, 0, 0.0, TimeScalesFactory.getGPS());
@@ -407,7 +407,7 @@ public class HatanakaCompressFilterTest {
         final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
         DataSource filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
-        try (InputStream is = filtered.getStreamOpener().openStream()) {
+        try (InputStream is = filtered.getStreamOpener().openOnce()) {
             int count = 0;
             while (is.read() >= 0) {
                 ++count;
@@ -542,7 +542,7 @@ public class HatanakaCompressFilterTest {
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
         DataSource filtered = new HatanakaCompressFilter().filter(new GzipFilter().filter(raw));
         MessageDigest md = MessageDigest.getInstance("SHA-256");
-        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
+        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openOnce(), md),
                                              filtered.getName());
 
         AbsoluteDate t0 = new AbsoluteDate(2016, 2, 13, 0, 0, 0.0, TimeScalesFactory.getGPS());
@@ -569,7 +569,7 @@ public class HatanakaCompressFilterTest {
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
         DataSource filtered = new HatanakaCompressFilter().filter(new GzipFilter().filter(raw));
         MessageDigest md = MessageDigest.getInstance("SHA-256");
-        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
+        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openOnce(), md),
                                              filtered.getName());
 
         AbsoluteDate t0 = new AbsoluteDate(2016, 2, 13, 0, 0, 0.0, TimeScalesFactory.getGPS());
@@ -596,7 +596,7 @@ public class HatanakaCompressFilterTest {
                                             () -> Utils.class.getClassLoader().getResourceAsStream(name));
         DataSource filtered = new HatanakaCompressFilter().filter(new GzipFilter().filter(raw));
         MessageDigest md = MessageDigest.getInstance("SHA-256");
-        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openStream(), md),
+        RinexLoader loader = new RinexLoader(new DigestInputStream(filtered.getStreamOpener().openOnce(), md),
                                              filtered.getName());
 
         AbsoluteDate t0 = new AbsoluteDate(2016, 2, 13, 0, 0, 0.0, TimeScalesFactory.getGPS());

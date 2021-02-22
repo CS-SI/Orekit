@@ -41,7 +41,7 @@ public class UnixCompressFilter implements DataFilter {
         final DataSource.StreamOpener oOpener = original.getStreamOpener();
         if (oName.endsWith(SUFFIX)) {
             final String                 fName   = oName.substring(0, oName.length() - SUFFIX.length());
-            final DataSource.StreamOpener fOpener = () -> new ZInputStream(oName, new Buffer(oOpener.openStream()));
+            final DataSource.StreamOpener fOpener = () -> new ZInputStream(oName, new Buffer(oOpener.openOnce()));
             return new DataSource(fName, fOpener);
         } else {
             return original;

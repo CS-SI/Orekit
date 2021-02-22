@@ -98,7 +98,7 @@ public class LexicalAnalyzerSelector {
      */
     public static LexicalAnalyzer select(final DataSource source) throws IOException {
 
-        final InputStream is = source.getStreamOpener().openStream();
+        final InputStream is = source.getStreamOpener().openOnce();
         if (is == null) {
             throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, source.getName());
         }

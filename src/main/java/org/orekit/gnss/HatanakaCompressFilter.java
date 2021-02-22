@@ -58,7 +58,7 @@ public class HatanakaCompressFilter implements DataFilter {
         if (rinex2Matcher.matches()) {
             // this is a rinex 2 file compressed with Hatanaka method
             final String                 fName   = rinex2Matcher.group(1) + "o";
-            final DataSource.StreamOpener fOpener = () -> new HatanakaInputStream(oName, oOpener.openStream());
+            final DataSource.StreamOpener fOpener = () -> new HatanakaInputStream(oName, oOpener.openOnce());
             return new DataSource(fName, fOpener);
         }
 
@@ -66,7 +66,7 @@ public class HatanakaCompressFilter implements DataFilter {
         if (rinex3Matcher.matches()) {
             // this is a rinex 3 file compressed with Hatanaka method
             final String                 fName   = rinex3Matcher.group(1) + ".rnx";
-            final DataSource.StreamOpener fOpener = () -> new HatanakaInputStream(oName, oOpener.openStream());
+            final DataSource.StreamOpener fOpener = () -> new HatanakaInputStream(oName, oOpener.openOnce());
             return new DataSource(fName, fOpener);
         }
 

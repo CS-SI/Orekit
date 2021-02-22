@@ -59,7 +59,7 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
                                                      new HatanakaCompressFilter())) {
             nd = filter.filter(nd);
         }
-        final RinexLoader loader = new RinexLoader(nd.getStreamOpener().openStream(), nd.getName());
+        final RinexLoader loader = new RinexLoader(nd.getStreamOpener().openOnce(), nd.getName());
         final List<ObservationDataSet> obserDataSets = loader.getObservationDataSets();
         PhaseMinusCodeCycleSlipDetector slipDetectors =
             new PhaseMinusCodeCycleSlipDetector(90, 10, 20, 3); 
@@ -133,7 +133,7 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
                                                      new HatanakaCompressFilter())) {
             nd = filter.filter(nd);
         }
-        final RinexLoader loader = new RinexLoader(nd.getStreamOpener().openStream(), nd.getName());
+        final RinexLoader loader = new RinexLoader(nd.getStreamOpener().openOnce(), nd.getName());
         final List<ObservationDataSet> obserDataSets = loader.getObservationDataSets();
         PhaseMinusCodeCycleSlipDetector slipDetectors =
             new PhaseMinusCodeCycleSlipDetector(90, 1e15, 20, 3);
@@ -182,7 +182,7 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
                                                      new HatanakaCompressFilter())) {
             nd = filter.filter(nd);
         }
-        final RinexLoader loader = new RinexLoader(nd.getStreamOpener().openStream(), nd.getName());
+        final RinexLoader loader = new RinexLoader(nd.getStreamOpener().openOnce(), nd.getName());
         final List<ObservationDataSet> obserDataSets = loader.getObservationDataSets();
         final double dt = 31; //great time gap threshold to don't detect cycle-slip because of time gap
         final int N = 25;

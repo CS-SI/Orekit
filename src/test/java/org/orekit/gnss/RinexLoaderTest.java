@@ -774,7 +774,7 @@ public class RinexLoaderTest {
             final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                                 () -> Utils.class.getClassLoader().getResourceAsStream(name));
             DataSource filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));
-            loader = new RinexLoader(filtered.getStreamOpener().openStream(), filtered.getName());
+            loader = new RinexLoader(filtered.getStreamOpener().openOnce(), filtered.getName());
         } catch (IOException ioe) {
             Assert.fail(ioe.getLocalizedMessage());
         }

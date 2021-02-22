@@ -471,14 +471,15 @@ public class AEMParserTest {
         throws URISyntaxException {
 
         final String name = "/ccsds/adm/aem/AEMExample.txt";
-        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         ParserBuilder builder = new ParserBuilder();
 
-        final AemFile file = builder.buildAemParser().parseMessage(source);
+        final DataSource source1 = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        final AemFile file = builder.buildAemParser().parseMessage(source1);
         Assert.assertEquals(7, file.getSegments().get(0).getMetadata().getInterpolationDegree());
         Assert.assertEquals(1, file.getSegments().get(1).getMetadata().getInterpolationDegree());
 
-        final AemFile file2 = builder.withDefaultInterpolationDegree(5).buildAemParser().parseMessage(source);
+        final DataSource source2 = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        final AemFile file2 = builder.withDefaultInterpolationDegree(5).buildAemParser().parseMessage(source2);
         Assert.assertEquals(7, file2.getSegments().get(0).getMetadata().getInterpolationDegree());
         Assert.assertEquals(5, file2.getSegments().get(1).getMetadata().getInterpolationDegree());
     }
