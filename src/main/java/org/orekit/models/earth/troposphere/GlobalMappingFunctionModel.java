@@ -18,7 +18,6 @@ package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
@@ -31,6 +30,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
+import org.orekit.utils.FieldLegendrePolynomials;
+import org.orekit.utils.LegendrePolynomials;
 
 /** The Global Mapping Function  model for radio techniques.
  *  This model is an empirical mapping function. It only needs the
@@ -128,7 +129,7 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         // Compute Legendre Polynomials Pnm(sin(phi))
         final int degree = 9;
         final int order  = 9;
-        final LegendrePolynomials p = new LegendrePolynomials(degree, order, latitude);
+        final LegendrePolynomials p = new LegendrePolynomials(degree, order, FastMath.sin(latitude));
 
         double a0Hydro   = 0.;
         double amplHydro = 0.;
@@ -222,7 +223,7 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         // Compute Legendre Polynomials Pnm(sin(phi))
         final int degree = 9;
         final int order  = 9;
-        final FieldLegendrePolynomials<T> p = new FieldLegendrePolynomials<>(degree, order, latitude);
+        final FieldLegendrePolynomials<T> p = new FieldLegendrePolynomials<>(degree, order, FastMath.sin(latitude));
 
         T a0Hydro   = zero;
         T amplHydro = zero;
@@ -269,133 +270,6 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         function[0] = function[0].add(correction);
 
         return function;
-    }
-
-    /** Computes the P<sub>nm</sub>(sin(&#934)) coefficients of Eq. 3 (Boehm et al, 2006).
-     *  The computation of the Legendre polynomials is performed following:
-     *  Heiskanen and Moritz, Physical Geodesy, 1967, eq. 1-62
-     *  <p>
-     *    This computation is the one used by the IERS 2010 Conventions.
-     *    Petit, G. and Luzum, B. (eds.), IERS Conventions (2010),
-     *    IERS Technical Note No. 36, BKG (2010)
-     *  </p>
-     */
-    private static class LegendrePolynomials {
-
-        /** Array for the Legendre polynomials. */
-        private double[][] pCoef;
-
-        /** Create Legendre polynomials for the given degree and order.
-         * @param degree degree of the spherical harmonics
-         * @param order order of the spherical harmonics
-         * @param latitude station latitude in radians
-         */
-        LegendrePolynomials(final int degree, final int order,
-                            final double latitude) {
-
-            this.pCoef = new double[degree + 1][order + 1];
-
-            final double t  = FastMath.sin(latitude);
-            final double t2 = t * t;
-
-            for (int n = 0; n <= degree; n++) {
-
-                // m shall be <= n (Heiskanen and Moritz, 1967, pp 21)
-                for (int m = 0; m <= FastMath.min(n, order); m++) {
-
-                    // r = int((n - m) / 2)
-                    final int r = (int) (n - m) / 2;
-                    double sum = 0.;
-                    for (int k = 0; k <= r; k++) {
-                        final double term = FastMath.pow(-1.0, k) * CombinatoricsUtils.factorialDouble(2 * n - 2 * k) /
-                                        (CombinatoricsUtils.factorialDouble(k) * CombinatoricsUtils.factorialDouble(n - k) *
-                                         CombinatoricsUtils.factorialDouble(n - m - 2 * k)) *
-                                         FastMath.pow(t, n - m - 2 * k);
-                        sum = sum + term;
-                    }
-
-                    pCoef[n][m] = FastMath.pow(2, -n) * FastMath.pow(1.0 - t2, 0.5 * m) * sum;
-
-                }
-
-            }
-
-        }
-
-        /** Return the coefficient P<sub>nm</sub>.
-         * @param n index
-         * @param m index
-         * @return The coefficient P<sub>nm</sub>
-         */
-        public double getPnm(final int n, final int m) {
-            return pCoef[n][m];
-        }
-
-    }
-
-    /** Computes the P<sub>nm</sub>(sin(&#934)) coefficients of Eq. 3 (Boehm et al, 2006).
-     *  The computation of the Legendre polynomials is performed following:
-     *  Heiskanen and Moritz, Physical Geodesy, 1967, eq. 1-62
-     *  <p>
-     *    This computation is the one used by the IERS 2010 Conventions.
-     *    Petit, G. and Luzum, B. (eds.), IERS Conventions (2010),
-     *    IERS Technical Note No. 36, BKG (2010)
-     *  </p>
-     */
-    private static class FieldLegendrePolynomials<T extends RealFieldElement<T>> {
-
-        /** Array for the Legendre polynomials. */
-        private T[][] pCoef;
-
-        /** Create Legendre polynomials for the given degree and order.
-         * @param degree degree of the spherical harmonics
-         * @param order order of the spherical harmonics
-         * @param latitude station latitude in radians
-         */
-        FieldLegendrePolynomials(final int degree, final int order,
-                                 final T latitude) {
-
-            // Field
-            final Field<T> field = latitude.getField();
-
-            this.pCoef = MathArrays.buildArray(field, degree + 1, order + 1);
-
-            final T t  = FastMath.sin(latitude);
-            final T t2 = t.multiply(t);
-
-            for (int n = 0; n <= degree; n++) {
-
-                // m shall be <= n (Heiskanen and Moritz, 1967, pp 21)
-                for (int m = 0; m <= FastMath.min(n, order); m++) {
-
-                    // r = int((n - m) / 2)
-                    final int r = (int) (n - m) / 2;
-                    T sum = field.getZero();
-                    for (int k = 0; k <= r; k++) {
-                        final T term = FastMath.pow(t, n - m - 2 * k).
-                                       multiply(FastMath.pow(-1.0, k) * CombinatoricsUtils.factorialDouble(2 * n - 2 * k) /
-                                                                               (CombinatoricsUtils.factorialDouble(k) * CombinatoricsUtils.factorialDouble(n - k) *
-                                                                                               CombinatoricsUtils.factorialDouble(n - m - 2 * k)));
-                        sum = sum.add(term);
-                    }
-
-                    pCoef[n][m] = FastMath.pow(t2.negate().add(1.0), 0.5 * m).multiply(FastMath.pow(2, -n)).multiply(sum);
-
-                }
-
-            }
-
-        }
-
-        /** Return the coefficient P<sub>nm</sub>.
-         * @param n index
-         * @param m index
-         * @return The coefficient P<sub>nm</sub>
-         */
-        public T getPnm(final int n, final int m) {
-            return pCoef[n][m];
-        }
-
     }
 
     private static class ABCoefficients {
