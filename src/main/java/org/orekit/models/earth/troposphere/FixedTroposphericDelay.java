@@ -19,12 +19,10 @@ package org.orekit.models.earth.troposphere;
 import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.interpolation.PiecewiseBicubicSplineInterpolatingFunction;
 import org.hipparchus.analysis.interpolation.PiecewiseBicubicSplineInterpolator;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathArrays;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
@@ -155,28 +153,6 @@ public class FixedTroposphericDelay implements DiscreteTroposphericModel {
         final T e = ele.getReal() > 0.5 * FastMath.PI ? ele.negate().add(FastMath.PI) : ele;
 
         return delayFunction.value(h, e);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double[] computeZenithDelay(final GeodeticPoint point, final double[] parameters,
-                                       final AbsoluteDate date) {
-        return new double[] {
-            pathDelay(0.5 * FastMath.PI, point, parameters, date),
-            0.
-        };
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final FieldGeodeticPoint<T> point, final T[] parameters,
-                                                                  final FieldAbsoluteDate<T> date) {
-        final Field<T> field = date.getField();
-        final T zero = field.getZero();
-        final T[] delay = MathArrays.buildArray(field, 2);
-        delay[0] = pathDelay(zero.add(0.5 * FastMath.PI), point, parameters, date);
-        delay[1] = zero;
-        return delay;
     }
 
     /** {@inheritDoc} */

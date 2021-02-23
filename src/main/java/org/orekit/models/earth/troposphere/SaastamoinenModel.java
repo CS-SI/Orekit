@@ -27,7 +27,6 @@ import org.hipparchus.analysis.interpolation.LinearInterpolator;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.analysis.polynomials.PolynomialSplineFunction;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathArrays;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
@@ -403,28 +402,6 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
         // the actual delta R is interpolated using a a bilinear interpolator
         return new BilinearInterpolatingFunction(xValForR, yValForR, fval);
 
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double[] computeZenithDelay(final GeodeticPoint point, final double[] parameters,
-                                       final AbsoluteDate date) {
-        return new double[] {
-            pathDelay(0.5 * FastMath.PI, point, parameters, date),
-            0.
-        };
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final FieldGeodeticPoint<T> point, final T[] parameters,
-                                                                  final FieldAbsoluteDate<T> date) {
-        final Field<T> field = date.getField();
-        final T zero = field.getZero();
-        final T[] delay = MathArrays.buildArray(field, 2);
-        delay[0] = pathDelay(zero.add(0.5 * FastMath.PI), point, parameters, date);
-        delay[1] = zero;
-        return delay;
     }
 
     /** {@inheritDoc} */

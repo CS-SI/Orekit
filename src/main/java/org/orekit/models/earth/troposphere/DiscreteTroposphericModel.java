@@ -67,33 +67,6 @@ public interface DiscreteTroposphericModel {
      */
     <T extends RealFieldElement<T>> T pathDelay(T elevation, FieldGeodeticPoint<T> point, T[] parameters, FieldAbsoluteDate<T> date);
 
-    /** This method allows the  computation of the zenith hydrostatic and
-     * zenith wet delay. The resulting element is an array having the following form:
-     * <ul>
-     * <li>double[0] = D<sub>hz</sub> → zenith hydrostatic delay
-     * <li>double[1] = D<sub>wz</sub> → zenith wet delay
-     * </ul>
-     * @param point station location
-     * @param parameters tropospheric model parameters
-     * @param date current date
-     * @return a two components array containing the zenith hydrostatic and wet delays.
-     */
-     double[] computeZenithDelay(GeodeticPoint point, double[] parameters, AbsoluteDate date);
-
-    /** This method allows the  computation of the zenith hydrostatic and
-     * zenith wet delay. The resulting element is an array having the following form:
-     * <ul>
-     * <li>T[0] = D<sub>hz</sub> → zenith hydrostatic delay
-     * <li>T[1] = D<sub>wz</sub> → zenith wet delay
-     * </ul>
-     * @param <T> type of the elements
-     * @param point station location
-     * @param parameters tropospheric model parameters
-     * @param date current date
-     * @return a two components array containing the zenith hydrostatic and wet delays.
-     */
-    <T extends RealFieldElement<T>> T[] computeZenithDelay(FieldGeodeticPoint<T> point, T[] parameters, FieldAbsoluteDate<T> date);
-
     /** Get the drivers for tropospheric model parameters.
      * @return drivers for tropospheric model parameters
      */

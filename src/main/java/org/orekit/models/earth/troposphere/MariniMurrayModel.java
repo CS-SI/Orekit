@@ -19,10 +19,8 @@ package org.orekit.models.earth.troposphere;
 import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathArrays;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.time.AbsoluteDate;
@@ -110,28 +108,6 @@ public class MariniMurrayModel implements DiscreteTroposphericModel {
         final T sinE = FastMath.sin(elevation);
         final T dR = fsite.divide(flambda).reciprocal().multiply(B.add(A)).divide(sinE.add(sinE.add(0.01).multiply(B.add(A)).divide(B).reciprocal()));
         return dR;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double[] computeZenithDelay(final GeodeticPoint point, final double[] parameters,
-                                       final AbsoluteDate date) {
-        return new double[] {
-            pathDelay(0.5 * FastMath.PI, point, parameters, date),
-            0.
-        };
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final FieldGeodeticPoint<T> point, final T[] parameters,
-                                                                  final FieldAbsoluteDate<T> date) {
-        final Field<T> field = date.getField();
-        final T zero = field.getZero();
-        final T[] delay = MathArrays.buildArray(field, 2);
-        delay[0] = pathDelay(zero.add(0.5 * FastMath.PI), point, parameters, date);
-        delay[1] = zero;
-        return delay;
     }
 
     /** {@inheritDoc} */

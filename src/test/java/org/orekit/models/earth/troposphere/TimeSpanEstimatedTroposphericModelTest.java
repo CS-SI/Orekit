@@ -385,9 +385,6 @@ public class TimeSpanEstimatedTroposphericModelTest {
         Assert.assertEquals(estimatedModel.pathDelay(elevation, point, estimatedParameters, date),
                             timeSpanModel.pathDelay(elevation, point, timeSpanParameters, date),
                             Double.MIN_VALUE);
-        Assert.assertEquals(estimatedModel.computeZenithDelay(point, estimatedParameters, date)[0],
-                            timeSpanModel.computeZenithDelay(point, timeSpanParameters, date)[0],
-                            Double.MIN_VALUE);
     }
 
     @Test
@@ -409,9 +406,6 @@ public class TimeSpanEstimatedTroposphericModelTest {
 
         Assert.assertEquals(estimatedModel.pathDelay(elevation, dsPoint, estimatedParameters, date).getReal(),
                             timeSpanModel.pathDelay(elevation, dsPoint, timeSpanParameters, date).getReal(),
-                            Double.MIN_VALUE);
-        Assert.assertEquals(estimatedModel.computeZenithDelay(dsPoint, estimatedParameters, date)[0].getReal(),
-                            timeSpanModel.computeZenithDelay(dsPoint, timeSpanParameters, date)[0].getReal(),
                             Double.MIN_VALUE);
     }
 

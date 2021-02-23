@@ -254,54 +254,6 @@ public class SaastamoinenModelTest {
     }
 
     @Test
-    public void testZenithDelay() {
-
-        Utils.setDataRoot("atmosphere");
-        SaastamoinenModel model = SaastamoinenModel.getStandardModel();
-
-        for (int h = 0; h < heights.length; h++) {
-            for (int e = 0; e < elevations.length; e++) {
-                double height = heights[h];
-                double elevation = elevations[e];
-                // Select only the expected value for elevation = 90°
-                if (elevation == FastMath.toRadians(90.0)) {
-                    double expectedValue = expectedValues[h][e];
-                    double[] actualValue = model.computeZenithDelay(new GeodeticPoint(0.0, 0.0, height), model.getParameters(), AbsoluteDate.J2000_EPOCH);
-                    Assert.assertEquals(expectedValue, actualValue[0], epsilon);
-                }
-            }
-        }
-
-    }
-
-    @Test
-    public void testFieldZenithDelay() {
-        doTestFieldZenithDelay(Decimal64Field.getInstance());
-    }
-
-    private <T extends RealFieldElement<T>> void doTestFieldZenithDelay(final Field<T> field) {
-
-        Utils.setDataRoot("atmosphere");
-        SaastamoinenModel model = SaastamoinenModel.getStandardModel();
-
-        // Zero
-        final T zero = field.getZero();
-
-        for (int h = 0; h < heights.length; h++) {
-            for (int e = 0; e < elevations.length; e++) {
-                T height = zero.add(heights[h]);
-                T elevation = zero.add(elevations[e]);
-                // Select only the expected value for elevation = 90°
-                if (elevation.getReal() == FastMath.toRadians(90.0)) {
-                    double expectedValue = expectedValues[h][e];
-                    T[] actualValue = model.computeZenithDelay(new FieldGeodeticPoint<>(zero, zero, zero.add(height)), model.getParameters(field), FieldAbsoluteDate.getJ2000Epoch(field));
-                    Assert.assertEquals(expectedValue, actualValue[0].getReal(), epsilon);
-                }
-            }
-        }
-    }
-
-    @Test
     public void testIssue572() {
         Utils.setDataRoot("atmosphere");
         SaastamoinenModel model = SaastamoinenModel.getStandardModel();

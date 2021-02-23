@@ -235,26 +235,6 @@ public class TimeSpanEstimatedTroposphericModel implements DiscreteTroposphericM
                                                                      extractedParameters, date);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public double[] computeZenithDelay(final GeodeticPoint point, final double[] parameters,
-                                       final AbsoluteDate date) {
-        // Extract the proper parameters valid at date from the input array
-        final double[] extractedParameters = extractParameters(parameters, date);
-        // Compute and return zenith delay
-        return getTroposphericModel(date).computeZenithDelay(point, extractedParameters, date);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends RealFieldElement<T>> T[] computeZenithDelay(final FieldGeodeticPoint<T> point, final T[] parameters,
-                                                                  final FieldAbsoluteDate<T> date) {
-        // Extract the proper parameters valid at date from the input array
-        final T[] extractedParameters = extractParameters(parameters, date);
-        // Compute and return zenith delay
-        return getTroposphericModel(date.toAbsoluteDate()).computeZenithDelay(point, extractedParameters, date);
-    }
-
     /** Find if a parameter driver with a given name already exists in a list of parameter drivers.
      * @param driversList the list of parameter drivers
      * @param name the parameter driver's name to filter with

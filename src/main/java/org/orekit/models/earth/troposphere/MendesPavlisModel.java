@@ -130,8 +130,17 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
         return delays[0].multiply(mappingFunction[0]).add(delays[1].multiply(mappingFunction[1]));
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /** This method allows the  computation of the zenith hydrostatic and
+     * zenith wet delay. The resulting element is an array having the following form:
+     * <ul>
+     * <li>double[0] = D<sub>hz</sub> → zenith hydrostatic delay
+     * <li>double[1] = D<sub>wz</sub> → zenith wet delay
+     * </ul>
+     * @param point station location
+     * @param parameters tropospheric model parameters
+     * @param date current date
+     * @return a two components array containing the zenith hydrostatic and wet delays.
+     */
     public double[] computeZenithDelay(final GeodeticPoint point, final double[] parameters, final AbsoluteDate date) {
         final double fsite   = getSiteFunctionValue(point);
 
@@ -169,8 +178,18 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
         return delay;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /** This method allows the  computation of the zenith hydrostatic and
+     * zenith wet delay. The resulting element is an array having the following form:
+     * <ul>
+     * <li>T[0] = D<sub>hz</sub> → zenith hydrostatic delay
+     * <li>T[1] = D<sub>wz</sub> → zenith wet delay
+     * </ul>
+     * @param <T> type of the elements
+     * @param point station location
+     * @param parameters tropospheric model parameters
+     * @param date current date
+     * @return a two components array containing the zenith hydrostatic and wet delays.
+     */
     public <T extends RealFieldElement<T>> T[] computeZenithDelay(final FieldGeodeticPoint<T> point, final T[] parameters,
                                                                   final FieldAbsoluteDate<T> date) {
         final Field<T> field = date.getField();
