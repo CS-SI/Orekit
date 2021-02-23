@@ -19,10 +19,8 @@ package org.orekit.estimation.leastsquares;
 import java.util.List;
 
 import org.orekit.annotation.DefaultDataContext;
-import org.orekit.data.DataContext;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLEJacobiansMapper;
@@ -58,27 +56,23 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
                            final ParameterDriversList estimatedMeasurementsParameters,
                            final ModelObserver observer) {
         // call super constructor
-        super(propagatorBuilders, measurements, estimatedMeasurementsParameters, observer);
+        super(propagatorBuilders, measurements, estimatedMeasurementsParameters,
+              new TLEJacobiansMapper[propagatorBuilders.length], observer);
     }
 
-    /** Configure the propagator to compute derivatives.
-     *
-     *<p>This method uses the {@link DataContext#getDefault() default data context}.
-     *
-     * @param propagators {@link Propagator} to configure
-     * @return mapper for this propagator
-     */
+    /** {@inheritDoc} */
+    @Override
     @DefaultDataContext
-    protected TLEJacobiansMapper configureDerivatives(final AbstractPropagator propagators) {
+    protected TLEJacobiansMapper configureDerivatives(final Propagator propagator) {
 
         final String equationName = TLEBatchLSModel.class.getName() + "-derivatives";
 
-        final TLEPartialDerivativesEquations partials = new TLEPartialDerivativesEquations(equationName, (TLEPropagator) propagators);
+        final TLEPartialDerivativesEquations partials = new TLEPartialDerivativesEquations(equationName, (TLEPropagator) propagator);
 
         // add the derivatives to the initial state
-        final SpacecraftState rawState = propagators.getInitialState();
+        final SpacecraftState rawState = propagator.getInitialState();
         final SpacecraftState stateWithDerivatives = partials.setInitialJacobians(rawState);
-        ((TLEPropagator) propagators).setInitialState(stateWithDerivatives);
+        propagator.resetInitialState(stateWithDerivatives);
 
         return partials.getMapper();
 
@@ -86,26 +80,9 @@ public class TLEBatchLSModel extends AbstractBatchLSModel {
 
     /** {@inheritDoc} */
     @Override
-    protected AbstractJacobiansMapper[] buildMappers() {
-        return new TLEJacobiansMapper[getBuilders().length];
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected AbstractPropagator[] buildPropagators() {
-        return new TLEPropagator[getBuilders().length];
-    }
-
-    /** {@inheritDoc} */
-    protected void computeDerivatives(final AbstractJacobiansMapper mapper,
-                                      final SpacecraftState state) {
-        ((TLEJacobiansMapper) mapper).computeDerivatives(state);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected Orbit computeInitialDerivatives(final AbstractJacobiansMapper mapper,
-                                              final AbstractPropagator propagator) {
+    protected Orbit configureOrbits(final AbstractJacobiansMapper mapper,
+                                    final Propagator propagator) {
+        // Directly return the propagator's initial state
         return propagator.getInitialState().getOrbit();
     }
 

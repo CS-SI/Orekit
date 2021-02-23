@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -60,31 +59,30 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
      * @param stateType type of the elements used to define the orbital state (mean or osculating)
      */
     public DSSTBatchLSModel(final OrbitDeterminationPropagatorBuilder[] propagatorBuilders,
-                     final List<ObservedMeasurement<?>> measurements,
-                     final ParameterDriversList estimatedMeasurementsParameters,
-                     final ModelObserver observer,
-                     final PropagationType propagationType,
-                     final PropagationType stateType) {
+                            final List<ObservedMeasurement<?>> measurements,
+                            final ParameterDriversList estimatedMeasurementsParameters,
+                            final ModelObserver observer,
+                            final PropagationType propagationType,
+                            final PropagationType stateType) {
         // call super constructor
-        super(propagatorBuilders, measurements, estimatedMeasurementsParameters, observer);
+        super(propagatorBuilders, measurements, estimatedMeasurementsParameters,
+              new DSSTJacobiansMapper[propagatorBuilders.length], observer);
         this.propagationType = propagationType;
         this.stateType       = stateType;
     }
 
-    /** Configure the propagator to compute derivatives.
-     * @param propagators {@link Propagator} to configure
-     * @return mapper for this propagator
-     */
-    protected DSSTJacobiansMapper configureDerivatives(final AbstractPropagator propagators) {
+    /** {@inheritDoc} */
+    @Override
+    protected DSSTJacobiansMapper configureDerivatives(final Propagator propagator) {
 
         final String equationName = DSSTBatchLSModel.class.getName() + "-derivatives";
 
-        final DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations(equationName, (DSSTPropagator) propagators, propagationType);
+        final DSSTPartialDerivativesEquations partials = new DSSTPartialDerivativesEquations(equationName, (DSSTPropagator) propagator, propagationType);
 
         // add the derivatives to the initial state
-        final SpacecraftState rawState = propagators.getInitialState();
+        final SpacecraftState rawState = propagator.getInitialState();
         final SpacecraftState stateWithDerivatives = partials.setInitialJacobians(rawState);
-        ((DSSTPropagator) propagators).setInitialState(stateWithDerivatives, stateType);
+        ((DSSTPropagator) propagator).setInitialState(stateWithDerivatives, stateType);
 
         return partials.getMapper();
 
@@ -92,35 +90,17 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
 
     /** {@inheritDoc} */
     @Override
-    protected AbstractJacobiansMapper[] buildMappers() {
-        return new DSSTJacobiansMapper[getBuilders().length];
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected AbstractPropagator[] buildPropagators() {
-        return new DSSTPropagator[getBuilders().length];
-    }
-
-
-    /** {@inheritDoc} */
-    protected void computeDerivatives(final AbstractJacobiansMapper mapper,
-                                      final SpacecraftState state) {
-        // does nothing
-        // DSST OD does not require more analytical derivative calculations
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected Orbit computeInitialDerivatives(final AbstractJacobiansMapper mapper,
-                                             final AbstractPropagator propagator) {
-
+    protected Orbit configureOrbits(final AbstractJacobiansMapper mapper,
+                                    final Propagator propagator) {
+        // Cast
         final DSSTPropagator dsstPropagator = (DSSTPropagator) propagator;
+        // Mean orbit
         final SpacecraftState initial = dsstPropagator.initialIsOsculating() ?
                        DSSTPropagator.computeMeanState(dsstPropagator.getInitialState(), dsstPropagator.getAttitudeProvider(), dsstPropagator.getAllForceModels()) :
                        dsstPropagator.getInitialState();
-        // compute short period derivatives at the beginning of the iteration
+        // Compute short period derivatives at the beginning of the iteration
         ((DSSTJacobiansMapper) mapper).setShortPeriodJacobians(initial);
         return initial.getOrbit();
     }
+
 }

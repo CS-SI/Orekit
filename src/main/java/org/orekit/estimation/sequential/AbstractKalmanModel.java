@@ -40,8 +40,8 @@ import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.PropagationType;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
 import org.orekit.propagation.integration.AbstractJacobiansMapper;
@@ -102,7 +102,7 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
     private final AbstractJacobiansMapper[] mappers;
 
     /** Propagators for the reference trajectories, up to current date. */
-    private AbstractPropagator[] referenceTrajectories;
+    private Propagator[] referenceTrajectories;
 
     /** Current corrected estimate. */
     private ProcessEstimate correctedEstimate;
@@ -141,13 +141,15 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
      * @param covarianceMatricesProviders providers for covariance matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
      * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
+     * @param mappers mappers for extracting Jacobians from integrated states
      */
     protected AbstractKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
                                   final List<CovarianceMatrixProvider> covarianceMatricesProviders,
                                   final ParameterDriversList estimatedMeasurementParameters,
-                                  final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
+                                  final CovarianceMatrixProvider measurementProcessNoiseMatrix,
+                                  final AbstractJacobiansMapper[] mappers) {
         this(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementParameters,
-             measurementProcessNoiseMatrix, PropagationType.MEAN, PropagationType.MEAN);
+             measurementProcessNoiseMatrix, mappers, PropagationType.MEAN, PropagationType.MEAN);
     }
 
     /** Kalman process model constructor (package private).
@@ -157,6 +159,7 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
      * @param covarianceMatricesProviders providers for covariance matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
      * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
+     * @param mappers mappers for extracting Jacobians from integrated states
      * @param propagationType type of the orbit used for the propagation (mean or osculating), applicable only for DSST
      * @param stateType type of the elements used to define the orbital state (mean or osculating), applicable only for DSST
      */
@@ -164,6 +167,7 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
                                   final List<CovarianceMatrixProvider> covarianceMatricesProviders,
                                   final ParameterDriversList estimatedMeasurementParameters,
                                   final CovarianceMatrixProvider measurementProcessNoiseMatrix,
+                                  final AbstractJacobiansMapper[] mappers,
                                   final PropagationType propagationType,
                                   final PropagationType stateType) {
 
@@ -281,7 +285,7 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
         }
 
         // Build the reference propagators and add their partial derivatives equations implementation
-        mappers = buildMappers();
+        this.mappers = mappers;
         updateReferenceTrajectories(getEstimatedPropagators(), propagationType, stateType);
         this.predictedSpacecraftStates = new SpacecraftState[referenceTrajectories.length];
         for (int i = 0; i < predictedSpacecraftStates.length; ++i) {
@@ -347,6 +351,22 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
         correctedEstimate = new ProcessEstimate(0.0, correctedState, correctedCovariance);
 
     }
+
+    /** Update the reference trajectories using the propagators as input.
+     * @param propagators The new propagators to use
+     * @param pType propagationType type of the orbit used for the propagation (mean or osculating)
+     * @param sType type of the elements used to define the orbital state (mean or osculating)
+     */
+    protected abstract void updateReferenceTrajectories(Propagator[] propagators,
+                                                        PropagationType pType,
+                                                        PropagationType sType);
+
+    /** Analytical computation of derivatives.
+     * This method allow to compute analytical derivatives.
+     * @param mapper Jacobian mapper to calculate short period perturbations
+     * @param state state used to calculate short period perturbations
+     */
+    protected abstract void analyticalDerivativeComputations(AbstractJacobiansMapper mapper, SpacecraftState state);
 
     /** Check dimension.
      * @param dimension dimension to check
@@ -777,8 +797,6 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
             // Jacobian of the measurement with respect to propagation parameters
             final int nbParams = estimatedPropagationParameters[p].getNbParams();
             if (nbParams > 0) {
-                // Short period derivatives
-                analyticalDerivativeComputations(mappers[p], evaluationStates[k]);
                 final double[][] aYPp  = new double[6][nbParams];
                 mappers[p].getParametersJacobian(evaluationStates[k], aYPp);
                 final RealMatrix dYdPp = new Array2DRowRealMatrix(aYPp, false);
@@ -1034,7 +1052,7 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
 
         // Get the estimated propagator (mirroring parameter update in the builder)
         // and the estimated spacecraft state
-        final AbstractPropagator[] estimatedPropagators = getEstimatedPropagators();
+        final Propagator[] estimatedPropagators = getEstimatedPropagators();
         for (int k = 0; k < estimatedPropagators.length; ++k) {
             correctedSpacecraftStates[k] = estimatedPropagators[k].getInitialState();
         }
@@ -1132,102 +1150,18 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
         return builders;
     }
 
-    /** Getter for the estimated orbital parameters.
-     * @return the estimated orbital parameters
-     */
-    public ParameterDriversList getAllEstimatedOrbitalParameters() {
-        return allEstimatedOrbitalParameters;
-    }
-
-    /** Getter for the estimated propagation parameters.
-     * @return the estimated propagation parameters
-     */
-    public ParameterDriversList getAllEstimatedPropagationParameters() {
-        return allEstimatedPropagationParameters;
-    }
-
-    /** Getter for the orbit start column indexes.
-     * @return the orbit start column indexes
-     */
-    public int[] getOrbitsStartColumns() {
-        return orbitsStartColumns;
-    }
-
-    /** Getter for the orbit end column indexes.
-     * @return the orbit end column indexes
-     */
-    public int[] getOrbitsEndColumns() {
-        return orbitsEndColumns;
-    }
-
-    /** Getter for the propagation parameter column map.
-     * @return the propagation parameter column map
-     */
-    public Map<String, Integer> getPropagationParameterColumns() {
-        return propagationParameterColumns;
-    }
-
-    /** Getter for the measurement parameter column map.
-     * @return the propagation measurement column map
-     */
-    public Map<String, Integer> getMeasurementParameterColumns() {
-        return measurementParameterColumns;
-    }
-
-    /** Getter for the covariance matrix providers.
-     * @return the covariance matrix providers
-     */
-    public List<CovarianceMatrixProvider> getCovarianceMatricesProviders() {
-        return covarianceMatricesProviders;
-    }
-
-    /** Getter for the covariance indirections.
-     * @return the covariance indirections
-     */
-    public int[][] getCovarianceIndirection() {
-        return covarianceIndirection;
-    }
-
-    /** Getter for the scales.
-     * @return the scales
-     */
-    public double[] getScale() {
-        return scale;
-    }
-
     /** Getter for the reference trajectories.
      * @return the referencetrajectories
      */
-    public AbstractPropagator[] getReferenceTrajectories() {
+    public Propagator[] getReferenceTrajectories() {
         return referenceTrajectories;
     }
 
     /** Setter for the reference trajectories.
-     * @param propagators the reference trajectories to be setted
+     * @param referenceTrajectories the reference trajectories to be setted
      */
-    public void setReferenceTrajectories(final AbstractPropagator[] propagators) {
-        referenceTrajectories = propagators;
-    }
-
-    /** Getter for the corrected estimate.
-     * @return the corrected estimate
-     */
-    public ProcessEstimate getCorrectedEstimate() {
-        return correctedEstimate;
-    }
-
-    /** Getter for the covariance indirection.
-     * @return the covariance indirection
-     */
-    public AbsoluteDate getReferenceDate() {
-        return referenceDate;
-    }
-
-    /** Getter for the estimated propagation parameters for each builder.
-     * @return the estimated propagation parameters for each builder
-     */
-    public ParameterDriversList[] getPerBuilderEstimatedPropagationParameters() {
-        return estimatedPropagationParameters;
+    public void setReferenceTrajectories(final Propagator[] referenceTrajectories) {
+        this.referenceTrajectories = referenceTrajectories;
     }
 
     /** Getter for the jacobian mappers.
@@ -1240,26 +1174,13 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
     /** Get the propagators estimated with the values set in the propagators builders.
      * @return propagators based on the current values in the builder
      */
-    public abstract AbstractPropagator[] getEstimatedPropagators();
+    public Propagator[] getEstimatedPropagators() {
+        // Return propagators built with current instantiation of the propagator builders
+        final Propagator[] propagators = new Propagator[getBuilders().size()];
+        for (int k = 0; k < getBuilders().size(); ++k) {
+            propagators[k] = getBuilders().get(k).buildPropagator(getBuilders().get(k).getSelectedNormalizedParameters());
+        }
+        return propagators;
+    }
 
-    /** Update the reference trajectories using the propagators as input.
-     * @param propagators The new propagators to use
-     * @param pType propagationType type of the orbit used for the propagation (mean or osculating)
-     * @param sType type of the elements used to define the orbital state (mean or osculating)
-     */
-    protected abstract void updateReferenceTrajectories(AbstractPropagator[] propagators,
-                                                        PropagationType pType,
-                                                        PropagationType sType);
-
-    /** Build the specific Jacobian mappers to run Kalman estimation.
-     * @return the specific Jacobian mappers
-     */
-    protected abstract AbstractJacobiansMapper[] buildMappers();
-
-    /** Analytical computation of derivatives.
-     * This method allow to compute analytical derivatives.
-     * @param mapper Jacobian mapper to calculate short period perturbations
-     * @param state state used to calculate short period perturbations
-     */
-    protected abstract void analyticalDerivativeComputations(AbstractJacobiansMapper mapper, SpacecraftState state);
 }

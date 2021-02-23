@@ -28,7 +28,6 @@ import org.orekit.estimation.sequential.AbstractKalmanModel;
 import org.orekit.estimation.sequential.CovarianceMatrixProvider;
 import org.orekit.estimation.sequential.TLEKalmanModel;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -113,14 +112,12 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
         // create the orbit
         setParameters(normalizedParameters);
 
-        final Orbit orbit = createInitialOrbit();
-
         // we really need a Keplerian orbit type
-        final KeplerianOrbit kep = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orbit);
+        final KeplerianOrbit kep = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(createInitialOrbit());
         final SpacecraftState state = new SpacecraftState(kep);
 
         final TLEPropagator propagator = TLEPropagator.selectExtrapolator(templateTLE, getAttitudeProvider(),
-                                                                    Propagator.DEFAULT_MASS, dataContext.getFrames().getTEME());
+                                                                          Propagator.DEFAULT_MASS, dataContext.getFrames().getTEME());
         propagator.resetInitialState(state);
         return propagator;
     }

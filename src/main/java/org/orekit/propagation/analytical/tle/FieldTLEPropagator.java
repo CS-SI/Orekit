@@ -75,7 +75,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
     // CHECKSTYLE: stop VisibilityModifier check
 
     /** Initial state. */
-    protected final FieldTLE<T> tle;
+    protected FieldTLE<T> tle;
 
     /** UTC time scale. */
     protected final TimeScale utc;
@@ -578,6 +578,11 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
     /** {@inheritDoc} */
     public void resetInitialState(final FieldSpacecraftState<T> state) {
         super.resetInitialState(state);
+        super.setStartDate(state.getDate());
+        final FieldTLE<T> newTLE = FieldTLE.stateToTLE(state, tle);
+        this.tle = newTLE;
+        initializeCommons(tle.getParameters(state.getDate().getField()));
+        sxpInitialize(tle.getParameters(state.getDate().getField()));
     }
 
     /** {@inheritDoc} */

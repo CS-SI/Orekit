@@ -29,7 +29,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Position;
-import org.orekit.propagation.AbstractPropagator;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -233,7 +233,7 @@ public class KalmanEstimator {
      * @param observedMeasurement the measurement to process
      * @return estimated propagators
      */
-    public AbstractPropagator[] estimationStep(final ObservedMeasurement<?> observedMeasurement) {
+    public Propagator[] estimationStep(final ObservedMeasurement<?> observedMeasurement) {
         try {
             final ProcessEstimate estimate = filter.estimationStep(decorate(observedMeasurement));
             processModel.finalizeEstimation(observedMeasurement, estimate);
@@ -250,8 +250,8 @@ public class KalmanEstimator {
      * @param observedMeasurements the measurements to process in <em>chronologically sorted</em> order
      * @return estimated propagators
      */
-    public AbstractPropagator[] processMeasurements(final Iterable<ObservedMeasurement<?>> observedMeasurements) {
-        AbstractPropagator[] propagators = null;
+    public Propagator[] processMeasurements(final Iterable<ObservedMeasurement<?>> observedMeasurements) {
+        Propagator[] propagators = null;
         for (ObservedMeasurement<?> observedMeasurement : observedMeasurements) {
             propagators = estimationStep(observedMeasurement);
         }

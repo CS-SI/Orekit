@@ -184,12 +184,6 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
 
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public int getAdditionalStateDimension() {
-        return STATE_DIMENSION * (STATE_DIMENSION + parameters.getNbParams());
-    }
-
     /** Compute the derivatives of the short period terms related to the additional state parameters.
     * @param s Current state information: date, kinematics, attitude, and additional state
     */

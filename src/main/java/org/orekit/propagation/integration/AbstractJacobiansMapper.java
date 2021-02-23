@@ -62,7 +62,19 @@ public abstract class AbstractJacobiansMapper {
     /** Compute the length of the one-dimensional additional state array needed.
      * @return length of the one-dimensional additional state array
      */
-    public abstract int getAdditionalStateDimension();
+    public int getAdditionalStateDimension() {
+        return STATE_DIMENSION * (STATE_DIMENSION + parameters.getNbParams());
+    }
+
+    /** Compute the derivatives needed by analytical orbit determination methods.
+     *
+     *<p> By default, this method does nothing.
+     *
+     * @param s initial spacecraft state with respect to which calculate derivatives
+     */
+    public void analyticalDerivatives(final SpacecraftState s) {
+        // noting by default
+    }
 
     /** Get the conversion Jacobian between state parameters and parameters used for derivatives.
      * <p>

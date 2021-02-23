@@ -27,7 +27,7 @@ import org.orekit.utils.ParameterDriversList;
 /** Set of {@link AdditionalEquations additional equations} computing the partial derivatives
  * of the state (orbit) with respect to initial state.
  * <p>
- * This set of equations are automatically added to a {@link AbstractAnalyticalPropagator analytical propagator}
+ * This set of equations are automatically added to an {@link AbstractAnalyticalPropagator analytical propagator}
  * in order to compute partial derivatives of the orbit along with the orbit itself. This is
  * useful for example in orbit determination applications.
  * </p>
@@ -54,17 +54,17 @@ public class TLEPartialDerivativesEquations implements AdditionalEquations {
 
     /** Simple constructor.
      * <p>
-     * Instance that regroups equations to compute derivatives.
+     * Instance regrouping equations to compute derivatives.
      * </p>
      * @param name name of the partial derivatives equations
      * @param propagator the propagator that will handle the orbit propagation
      */
     public TLEPartialDerivativesEquations(final String name,
                                           final TLEPropagator propagator) {
-        this.name                   = name;
-        this.selected               = null;
-        this.propagator             = propagator;
-        this.initialized            = false;
+        this.name        = name;
+        this.selected    = null;
+        this.propagator  = propagator;
+        this.initialized = false;
     }
 
     /** {@inheritDoc} */

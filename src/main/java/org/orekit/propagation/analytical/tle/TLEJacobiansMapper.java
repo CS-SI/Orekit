@@ -18,7 +18,6 @@ package org.orekit.propagation.analytical.tle;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.annotation.DefaultDataContext;
-import org.orekit.data.DataContext;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
@@ -45,8 +44,7 @@ import org.orekit.utils.ParameterDriversList;
  */
 public class TLEJacobiansMapper extends AbstractJacobiansMapper {
 
-    /** State dimension, fixed to 6.
-     */
+    /** State dimension, fixed to 6. */
     public static final int STATE_DIMENSION = 6;
 
     /** Name. */
@@ -67,8 +65,8 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
      * @param propagator the propagator that will handle the orbit propagation
      */
     public TLEJacobiansMapper(final String name,
-                        final ParameterDriversList parameters,
-                        final TLEPropagator propagator) {
+                              final ParameterDriversList parameters,
+                              final TLEPropagator propagator) {
 
         super(name, parameters);
 
@@ -151,18 +149,8 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
 
     /** {@inheritDoc} */
     @Override
-    public int getAdditionalStateDimension() {
-        return STATE_DIMENSION * (STATE_DIMENSION + parameters.getNbParams());
-    }
-
-    /** Compute the derivatives of the orbital parameters with respect to orbital parameters.
-     *
-     *<p>This constructor uses the {@link DataContext#getDefault() default data context}.
-     *
-     * @param s initial spacecraft state with respect to which calculate derivatives
-     */
     @DefaultDataContext
-    public void computeDerivatives(final SpacecraftState s) {
+    public void analyticalDerivatives(final SpacecraftState s) {
 
         final double[] p = s.getAdditionalState(name);
         if (stateTransition == null) {
@@ -180,7 +168,7 @@ public class TLEJacobiansMapper extends AbstractJacobiansMapper {
 
         // Compute Jacobian
         final AbsoluteDate init = getInitialState().getDate();
-        final AbsoluteDate end = s.getDate();
+        final AbsoluteDate end  = s.getDate();
         final double dt = end.durationFrom(init);
         final FieldOrbit<Gradient> orbit = gPropagator.propagateOrbit(gPropagator.getTLE().getDate().shiftedBy(dt), gParameters);
         final FieldKeplerianOrbit<Gradient> gOrbit = (FieldKeplerianOrbit<Gradient>) OrbitType.KEPLERIAN.convertType(orbit);

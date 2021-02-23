@@ -18,8 +18,8 @@ package org.orekit.estimation.sequential;
 
 import java.util.List;
 
-import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.PropagationType;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
 import org.orekit.propagation.integration.AbstractJacobiansMapper;
@@ -59,28 +59,21 @@ public class KalmanModel extends AbstractKalmanModel {
                        final ParameterDriversList estimatedMeasurementParameters,
                        final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
         // call super constructor
-        super(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementParameters, measurementProcessNoiseMatrix);
+        super(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementParameters,
+              measurementProcessNoiseMatrix, new JacobiansMapper[propagatorBuilders.size()]);
     }
 
     /** {@inheritDoc} */
     @Override
-    public AbstractPropagator[] getEstimatedPropagators() {
-        // Return propagators built with current instantiation of the propagator builders
-        final NumericalPropagator[] propagators = new NumericalPropagator[getBuilders().size()];
-        for (int k = 0; k < getBuilders().size(); ++k) {
-            propagators[k] = (NumericalPropagator) getBuilders().get(k).buildPropagator(getBuilders().get(k).getSelectedNormalizedParameters());
-        }
-        return propagators;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected void updateReferenceTrajectories(final AbstractPropagator[] propagators,
+    protected void updateReferenceTrajectories(final Propagator[] propagators,
                                                final PropagationType pType,
                                                final PropagationType sType) {
 
         // Update the reference trajectory propagator
         setReferenceTrajectories(propagators);
+
+        // Jacobian mappers
+        final AbstractJacobiansMapper[] mappers = getMappers();
 
         for (int k = 0; k < propagators.length; ++k) {
             // Link the partial derivatives to this new propagator
@@ -91,16 +84,9 @@ public class KalmanModel extends AbstractKalmanModel {
             final SpacecraftState rawState = getReferenceTrajectories()[k].getInitialState();
             final SpacecraftState stateWithDerivatives = pde.setInitialJacobians(rawState);
             getReferenceTrajectories()[k].resetInitialState(stateWithDerivatives);
-            getMappers()[k] = pde.getMapper();
+            mappers[k] = pde.getMapper();
         }
 
-    }
-
-
-    /** {@inheritDoc} */
-    @Override
-    protected AbstractJacobiansMapper[] buildMappers() {
-        return new JacobiansMapper[getBuilders().size()];
     }
 
     /** {@inheritDoc} */

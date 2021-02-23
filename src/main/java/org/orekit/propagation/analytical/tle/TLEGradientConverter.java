@@ -19,9 +19,7 @@ package org.orekit.propagation.analytical.tle;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.analysis.differentiation.GradientField;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.data.DataContext;
@@ -46,7 +44,7 @@ class TLEGradientConverter extends AbstractGradientConverter {
     /** Initial TLE. */
     private final TLE tle;
 
-    /** States with various number of additional parameters for force models. */
+    /** List of TLE propagators. */
     private final List<FieldTLEPropagator<Gradient>> gPropagators;
 
     /** Simple constructor.
@@ -82,9 +80,6 @@ class TLEGradientConverter extends AbstractGradientConverter {
     @DefaultDataContext
     public FieldTLE<Gradient> getGradientTLE() {
 
-        // derivative field
-        final Field<Gradient> field =  GradientField.getField(FREE_STATE_PARAMETERS);
-
         // keplerian elements always has derivatives
         final Gradient meanMotion   = Gradient.variable(FREE_STATE_PARAMETERS, 0, tle.getMeanMotion());
         final Gradient ge           = Gradient.variable(FREE_STATE_PARAMETERS, 1, tle.getE());
@@ -94,7 +89,7 @@ class TLEGradientConverter extends AbstractGradientConverter {
         final Gradient gMeanAnomaly = Gradient.variable(FREE_STATE_PARAMETERS, 5, tle.getMeanAnomaly());
 
         // date
-        final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(field, tle.getDate());
+        final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(meanMotion.getField(), tle.getDate());
 
         // TLE parameters
         final int satelliteNumber         = tle.getSatelliteNumber();

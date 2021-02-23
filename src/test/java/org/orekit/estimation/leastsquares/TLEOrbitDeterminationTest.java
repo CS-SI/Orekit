@@ -18,7 +18,6 @@ package org.orekit.estimation.leastsquares;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.NoSuchElementException;
@@ -36,9 +35,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.estimation.common.AbstractOrbitDetermination;
 import org.orekit.estimation.common.ParameterKey;
 import org.orekit.estimation.common.ResultBatchLeastSquares;
-import org.orekit.files.sp3.SP3File;
-import org.orekit.files.sp3.SP3File.SP3Ephemeris;
-import org.orekit.files.sp3.SP3Parser;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
@@ -48,7 +44,6 @@ import org.orekit.frames.Transform;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEConstants;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
@@ -222,15 +217,8 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         odPV = transform.transformPVCoordinates(odPV);
         final Vector3D estimatedPos = odPV.getPosition();
         
-        // create reference position from GPS ephemris
-        final String ex = "/sp3/esa18836.sp3";
-        final SP3Parser parser = new SP3Parser();
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final SP3File file = parser.parse(inEntry);
-        SP3Ephemeris ephemeris = file.getSatellites().get("G07");
-        BoundedPropagator propagator = ephemeris.getPropagator();
-        final TimeStampedPVCoordinates ephem = propagator.propagate(odPV.getDate()).getPVCoordinates();
-        final Vector3D refPos = ephem.getPosition();      
+        // Reference position from GPS ephemeris (esa18836.sp3)
+        final Vector3D refPos = new Vector3D(13848957.285213307, -22916266.10257542, -23458.8341713716);  
 
         //test on the estimated position
         Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);

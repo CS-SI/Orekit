@@ -36,7 +36,6 @@ import org.hipparchus.util.Pair;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.PropagatorsParallelizer;
 import org.orekit.propagation.SpacecraftState;
@@ -118,12 +117,14 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
      * @param propagatorBuilders builders to use for propagation
      * @param measurements measurements
      * @param estimatedMeasurementsParameters estimated measurements parameters
+     * @param mappers jacobian mappers
      * @param observer observer to be notified at model calls
      */
     public AbstractBatchLSModel(final OrbitDeterminationPropagatorBuilder[] propagatorBuilders,
-                        final List<ObservedMeasurement<?>> measurements,
-                        final ParameterDriversList estimatedMeasurementsParameters,
-                        final ModelObserver observer) {
+                                final List<ObservedMeasurement<?>> measurements,
+                                final ParameterDriversList estimatedMeasurementsParameters,
+                                final AbstractJacobiansMapper[] mappers,
+                                final ModelObserver observer) {
 
         this.builders                        = propagatorBuilders.clone();
         this.measurements                    = measurements;
@@ -132,7 +133,7 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
         this.estimatedPropagationParameters  = new ParameterDriversList[builders.length];
         this.evaluations                     = new IdentityHashMap<>(measurements.size());
         this.observer                        = observer;
-        this.mappers                         = buildMappers();
+        this.mappers                         = mappers;
 
         // allocate vector and matrix
         int rows = 0;
@@ -224,16 +225,32 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
         return forwardPropagation;
     }
 
+    /** Configure the propagator to compute derivatives.
+     * @param propagators {@link Propagator} to configure
+     * @return mapper for this propagator
+     */
+    protected abstract AbstractJacobiansMapper configureDerivatives(Propagator propagators);
+
+    /** Configure the current estimated orbits.
+     * <p>
+     * For DSST orbit determination, short period derivatives are also calculated.
+     * </p>
+     * @param mapper Jacobian mapper
+     * @param propagator the orbit propagator
+     * @return the current estimated orbits
+     */
+    protected abstract Orbit configureOrbits(AbstractJacobiansMapper mapper, Propagator propagator);
+
     /** {@inheritDoc} */
     @Override
     public Pair<RealVector, RealMatrix> value(final RealVector point) {
 
         // Set up the propagators parallelizer
-        final AbstractPropagator[] propagators = createPropagators(point);
+        final Propagator[] propagators = createPropagators(point);
         final Orbit[] orbits = new Orbit[propagators.length];
         for (int i = 0; i < propagators.length; ++i) {
             mappers[i] = configureDerivatives(propagators[i]);
-            orbits[i]  = computeInitialDerivatives(mappers[i], propagators[i]);
+            orbits[i]  = configureOrbits(mappers[i], propagators[i]);
         }
         final PropagatorsParallelizer parallelizer =
                         new PropagatorsParallelizer(Arrays.asList(propagators), configureMeasurements(point));
@@ -260,20 +277,6 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
 
         return new Pair<RealVector, RealMatrix>(value, jacobian);
 
-    }
-
-    /** Get the iterations count.
-     * @return iterations count
-     */
-    public int getIterationsCount() {
-        return iterationsCounter.getCount();
-    }
-
-    /** Get the evaluations count.
-     * @return evaluations count
-     */
-    public int getEvaluationsCount() {
-        return evaluationsCounter.getCount();
     }
 
     /** Get the selected propagation drivers for a propagatorBuilder.
@@ -309,15 +312,15 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
      * @param point evaluation point
      * @return an array of new propagators
      */
-    public AbstractPropagator[] createPropagators(final RealVector point) {
+    public Propagator[] createPropagators(final RealVector point) {
 
-        final AbstractPropagator[] propagators = buildPropagators();
+        final Propagator[] propagators = new Propagator[builders.length];
 
         // Set up the propagators
-        for (int i = 0; i < getBuilders().length; ++i) {
+        for (int i = 0; i < builders.length; ++i) {
 
             // Get the number of selected orbital drivers in the builder
-            final int nbOrb    = getOrbitsEndColumns()[i] - getOrbitsStartColumns()[i];
+            final int nbOrb    = orbitsEndColumns[i] - orbitsStartColumns[i];
 
             // Get the list of selected propagation drivers in the builder and its size
             final ParameterDriversList selectedPropagationDrivers = getSelectedPropagationDriversForBuilder(i);
@@ -338,52 +341,12 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
             }
 
             // Build the propagator
-            propagators[i] = (AbstractPropagator) builders[i].buildPropagator(propagatorArray);
+            propagators[i] = builders[i].buildPropagator(propagatorArray);
         }
 
         return propagators;
 
     }
-
-    /** Configure the multi-satellites handler to handle measurements.
-     * @param point evaluation point
-     * @return multi-satellites handler to handle measurements
-     */
-    protected MultiSatStepHandler configureMeasurements(final RealVector point) {
-
-        // Set up the measurement parameters
-        int index = orbitsEndColumns[builders.length - 1] + propagationParameterColumns.size();
-        for (final ParameterDriver parameter : estimatedMeasurementsParameters.getDrivers()) {
-            parameter.setNormalizedValue(point.getEntry(index++));
-        }
-
-        // Set up measurements handler
-        final List<PreCompensation> precompensated = new ArrayList<>();
-        for (final ObservedMeasurement<?> measurement : measurements) {
-            if (measurement.isEnabled()) {
-                precompensated.add(new PreCompensation(measurement, evaluations.get(measurement)));
-            }
-        }
-        precompensated.sort(new ChronologicalComparator());
-
-        // Assign first and last date
-        firstDate = precompensated.get(0).getDate();
-        lastDate  = precompensated.get(precompensated.size() - 1).getDate();
-
-        // Reverse the list in case of backward propagation
-        if (!forwardPropagation) {
-            Collections.reverse(precompensated);
-        }
-
-        return new MeasurementHandler(this, precompensated);
-
-    }
-
-    /** Configure the propagator to compute derivatives.
-     * @param propagators {@link Propagator} to configure
-     * @return mapper for this propagator
-     */
-    protected abstract AbstractJacobiansMapper configureDerivatives(AbstractPropagator propagators);
 
     /** Fetch a measurement that was evaluated during propagation.
      * @param index index of the measurement first component
@@ -423,8 +386,8 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
             final RealMatrix dMdC = new Array2DRowRealMatrix(evaluation.getStateDerivatives(k), false);
             final RealMatrix dMdY = dMdC.multiply(dCdY);
 
-            // compute state derivatives
-            computeDerivatives(mappers[p], evaluationStates[k]);
+            // compute derivatives used by analytical orbit determination methods
+            mappers[p].analyticalDerivatives(evaluationStates[k]);
 
             // Jacobian of the measurement with respect to initial orbital state
             final double[][] aYY0 = new double[6][6];
@@ -472,142 +435,52 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
 
     }
 
-    /** Build the specific Jacobian mappers to run Batch LS estimation.
-     * @return the specific Jacobian mappers
+    /** Configure the multi-satellites handler to handle measurements.
+     * @param point evaluation point
+     * @return multi-satellites handler to handle measurements
      */
-    protected abstract AbstractJacobiansMapper[] buildMappers();
+    private MultiSatStepHandler configureMeasurements(final RealVector point) {
 
-    /** Build the specific propagators to run Batch LS estimation.
-     * @return the specific propagators
-     */
-    protected abstract AbstractPropagator[] buildPropagators();
+        // Set up the measurement parameters
+        int index = orbitsEndColumns[builders.length - 1] + propagationParameterColumns.size();
+        for (final ParameterDriver parameter : estimatedMeasurementsParameters.getDrivers()) {
+            parameter.setNormalizedValue(point.getEntry(index++));
+        }
 
-    /** Specific computation of derivatives considering propagated state.
-     * This method allow to compute analytical derivatives.
-     * @param mapper Jacobian mapper to calculate short period perturbations
-     * @param state state used to calculate short period perturbations
-     */
-    protected abstract void computeDerivatives(AbstractJacobiansMapper mapper, SpacecraftState state);
+        // Set up measurements handler
+        final List<PreCompensation> precompensated = new ArrayList<>();
+        for (final ObservedMeasurement<?> measurement : measurements) {
+            if (measurement.isEnabled()) {
+                precompensated.add(new PreCompensation(measurement, evaluations.get(measurement)));
+            }
+        }
+        precompensated.sort(new ChronologicalComparator());
 
-    /** Specific computation of derivatives considering initial state, prior propagation.
-     * This method allow to compute initial analytical derivatives such as the short periods in DSST case.
-     * @param mapper Jacobian mapper to calculate short period perturbations
-     * @param propagator the propagator
-     * @return the orbit corresponding to the initial propagator state
-     */
-    protected abstract Orbit computeInitialDerivatives(AbstractJacobiansMapper mapper, AbstractPropagator propagator);
+        // Assign first and last date
+        firstDate = precompensated.get(0).getDate();
+        lastDate  = precompensated.get(precompensated.size() - 1).getDate();
 
-    /** Getter for the date of the first enabled meausurement.
-     * @return date of the first enabled measurement
-     */
-    public AbsoluteDate getFirstDate() {
-        return firstDate;
+        // Reverse the list in case of backward propagation
+        if (!forwardPropagation) {
+            Collections.reverse(precompensated);
+        }
+
+        return new MeasurementHandler(this, precompensated);
+
     }
 
-    /** Getter for the date of the last enabled measurment.
-     * @return date of the last enabled measurement.
+    /** Get the iterations count.
+     * @return iterations count
      */
-    public AbsoluteDate getLastDate() {
-        return lastDate;
+    public int getIterationsCount() {
+        return iterationsCounter.getCount();
     }
 
-    /** Getter for the value fonction of the model.
-     * @return the value function of the model
+    /** Get the evaluations count.
+     * @return evaluations count
      */
-    public RealVector getValue() {
-        return value;
+    public int getEvaluationsCount() {
+        return evaluationsCounter.getCount();
     }
-
-    /**Getter for the jacobian matrix.
-     * @return the jacobian matrix
-     */
-    public RealMatrix getJacobian() {
-        return jacobian;
-    }
-
-    /**Getter for propagator builders.
-     * @return an array of the propagator builders
-     */
-    public OrbitDeterminationPropagatorBuilder[] getBuilders() {
-        return builders;
-    }
-
-    /** Getter for each builder's selected propagation drivers.
-     * @return an array of each builder's selected propagation drivers.
-     */
-    public ParameterDriversList[] getEstimatedPropagationParameters() {
-        return estimatedPropagationParameters;
-    }
-
-    /** Getter for estimated measurements parameters.
-     * @return the estimated measurements parameters
-     */
-    public ParameterDriversList getEstimatedMeasurementsParameters() {
-        return estimatedMeasurementsParameters;
-    }
-
-    /** Getter for the measurments.
-     * @return the list of measurements
-     */
-    public List<ObservedMeasurement<?>> getMeasurements() {
-        return measurements;
-    }
-
-    /** Getter for start columns of each estimated orbit.
-     * @return an array with start index of each estimated orbit
-     */
-    public int[] getOrbitsStartColumns() {
-        return orbitsStartColumns;
-    }
-
-    /** Getter for end columns of each estimated orbit.
-     * @return an array with end index of each estimated orbit
-     */
-    public int[] getOrbitsEndColumns() {
-        return orbitsEndColumns;
-    }
-
-    /** Getter for the map of propagation parameters columns.
-     * @return the map of propagation parameters columns
-     */
-    public Map<String, Integer> getPropagationParameterColumns() {
-        return propagationParameterColumns;
-    }
-
-    /** Getter for the map of measurements parameters columns.
-     * @return the map of measurements parameters columns
-     */
-    public Map<String, Integer> getMeasurementParameterColumns() {
-        return measurementParameterColumns;
-    }
-
-    /** Getter for the last evaluations.
-     * @return the map of the last evalutaions
-     */
-    public Map<ObservedMeasurement<?>, EstimatedMeasurement<?>> getEvaluations() {
-        return evaluations;
-    }
-
-    /** Getter for the observer to be notified at orbit changes.
-     * @return the observer to be notified at orbit changes.
-     */
-    public ModelObserver getObserver() {
-        return observer;
-    }
-
-    /** Getter for evaluation counter.
-     * @return the evaluation counter
-     */
-    public Incrementor getEvaluationsCounter() {
-        return evaluationsCounter;
-    }
-
-    /** Getter for the iteration counter.
-     * @return the iteration counter
-     */
-    public Incrementor getIterationsCounter() {
-        return iterationsCounter;
-    }
-
 
 }

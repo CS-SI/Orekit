@@ -279,21 +279,13 @@ public class FieldTLEPropagatorTest {
         initDate = tleISS.getDate();
         endDate = initDate.shiftedBy(propagtime);        
         SpacecraftState finalISS = propagator.propagate(endDate);
-        
-        // calculate GPS position and velocity differences between Field and Double
-        double normDifPosGPS = fieldfinalGPS.getPosition().subtract(finalGPS.getPosition()).getNorm().getReal();
-        double normDifVelGPS = fieldfinalGPS.getVelocity().subtract(finalGPS.getVelocity()).getNorm().getReal();
-        
-        // calculate ISS position and velocity differences between Field and Double
-        double normDifPosISS = fieldfinalISS.getPVCoordinates().getPosition().subtract(finalISS.getPVCoordinates().getPosition()).getNorm().getReal();
-        double normDifVelISS = fieldfinalISS.getPVCoordinates().getVelocity().subtract(finalISS.getPVCoordinates().getVelocity()).getNorm().getReal();
-        
+
         // check
-        Assert.assertEquals(0, normDifPosGPS, 2e-3);
-        Assert.assertEquals(0, normDifVelGPS, 1e-5);
+        Assert.assertEquals(0, Vector3D.distance(finalGPS.getPosition(), fieldfinalGPS.getPosition().toVector3D()), 3.8e-9);
+        Assert.assertEquals(0, Vector3D.distance(finalGPS.getVelocity(), fieldfinalGPS.getVelocity().toVector3D()), 0.);
         
-        Assert.assertEquals(0, normDifPosISS, 2e-3);
-        Assert.assertEquals(0, normDifVelISS, 1e-5);
+        Assert.assertEquals(0, Vector3D.distance(finalISS.getPVCoordinates().getPosition(), fieldfinalISS.getPVCoordinates().getPosition().toVector3D()), 0.);
+        Assert.assertEquals(0, Vector3D.distance(finalISS.getPVCoordinates().getVelocity(), fieldfinalISS.getPVCoordinates().getVelocity().toVector3D()), 0.);
         
     }
     

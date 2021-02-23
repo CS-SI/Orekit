@@ -21,51 +21,23 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 
-import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
-import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.forces.ForceModel;
-import org.orekit.forces.drag.DragForce;
-import org.orekit.forces.drag.IsotropicDrag;
-import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
-import org.orekit.forces.gravity.ThirdBodyAttraction;
-import org.orekit.forces.gravity.potential.GravityFieldFactory;
-import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
-import org.orekit.forces.gravity.potential.SHMFormatReader;
-import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
-import org.orekit.forces.radiation.IsotropicRadiationCNES95Convention;
-import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
-import org.orekit.models.earth.atmosphere.Atmosphere;
-import org.orekit.models.earth.atmosphere.HarrisPriester;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
-import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
@@ -78,43 +50,21 @@ public class TLEPartialDerivativesTest {
     private TLE tleSPOT;
 
     @Test
-    public void testSDP4PropagationwrtKeplerian() throws FileNotFoundException, UnsupportedEncodingException {
-        doTestPropagationwrtKeplerian(4.63e-7, tleGPS);
+    public void testStateJacobianSDP4() throws FileNotFoundException, UnsupportedEncodingException {
+        doTestStateJacobian(4.63e-7, tleGPS);
     }
-    
+
     @Test
-    public void testSDP4ProgationwrtDSST() throws FileNotFoundException, UnsupportedEncodingException {
-        doTestPropagationwrtDSST(4.63e-7, tleGPS, true);
+    public void testStateJacobianSGP4() throws FileNotFoundException, UnsupportedEncodingException {
+        doTestStateJacobian(4.71e-2, tleSPOT);
     }
-    
+
     @Test
-    public void testSDP4PropagationwrtNumerical() throws FileNotFoundException, UnsupportedEncodingException {
-        doTestPropagationwrtNumerical(4.29e-6, tleGPS, true);
-    }
-    
-    @Test
-    public void testSDP4BStarDerivatives() throws ParseException, IOException {
+    public void testBStarDerivatives() throws ParseException, IOException {
         doTestParametersDerivatives(TLE.B_STAR,
                                     5.88e-4,
                                     tleGPS,
                                     PropagationType.MEAN);
-    }
-    
-    @Test
-    public void testSGP4PropagationwrtKeplerian() throws FileNotFoundException, UnsupportedEncodingException {
-        doTestPropagationwrtKeplerian(8.71e-2, tleSPOT);
-    }
-    
-    
-    @Test
-    public void testSGP4ProgationwrtDSST() throws FileNotFoundException, UnsupportedEncodingException {
-        doTestPropagationwrtDSST(8.71e-2, tleSPOT, false);
-    }
-    
-    
-    @Test
-    public void testSGP4PropagationwrtNumerical() throws FileNotFoundException, UnsupportedEncodingException {
-        doTestPropagationwrtNumerical(8.71e-1, tleSPOT, false);
     }
    
     @Test(expected=OrekitException.class)
@@ -182,143 +132,46 @@ public class TLEPartialDerivativesTest {
         }
     }
     
-    private void doTestPropagationwrtKeplerian(double tolerance, TLE tle)
+    private void doTestStateJacobian(double tolerance, TLE tle)
         throws FileNotFoundException, UnsupportedEncodingException {
                
-        double dt = 900;
-        double dP = 0.001;        
-        
+        double dt = Constants.JULIAN_DAY;
+
         // compute state Jacobian using PartialDerivatives
         TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
         final SpacecraftState initialState = propagator.getInitialState();
         final AbsoluteDate target = initialState.getDate().shiftedBy(dt);
         KeplerianOrbit orbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(propagator.getInitialState().getOrbit());
         TLEPartialDerivativesEquations partials = new TLEPartialDerivativesEquations("partials", propagator);
-        final SpacecraftState endState = partials.setInitialJacobians(propagator.propagate(target));
+        final SpacecraftState initState = partials.setInitialJacobians(propagator.getInitialState());
         final double[] stateVector = new double[6];
-        OrbitType.KEPLERIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngle.MEAN, stateVector, null);
+        OrbitType.KEPLERIAN.mapOrbitToArray(initState.getOrbit(), PositionAngle.MEAN, stateVector, null);
         final TLEJacobiansMapper mapper = partials.getMapper();
         double[][] dYdY0 =  new double[TLEJacobiansMapper.STATE_DIMENSION][TLEJacobiansMapper.STATE_DIMENSION];
-        mapper.computeDerivatives(endState);
-        mapper.getStateJacobian(initialState, dYdY0);
+        propagator.setInitialState(initState);
+        mapper.analyticalDerivatives(propagator.propagate(target));
+        mapper.getStateJacobian(initState, dYdY0);
 
         // compute reference state Jacobian using finite differences
         double[][] dYdY0Ref = new double[6][6];
-        KeplerianPropagator propagator2;
-        double[] steps = NumericalPropagator.tolerances(10000 * dP, orbit, OrbitType.KEPLERIAN)[0];
+        TLEPropagator propagator2;
+        double[] steps = NumericalPropagator.tolerances(10, orbit, OrbitType.KEPLERIAN)[0];
         for (int i = 0; i < 6; ++i) {
-            propagator2 = new KeplerianPropagator(shiftState(initialState, OrbitType.KEPLERIAN, -4 * steps[i], i).getOrbit());
+            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.KEPLERIAN, -4 * steps[i], i), tle));
             SpacecraftState sM4h = propagator2.propagate(target);
-            propagator2 = new KeplerianPropagator(shiftState(initialState, OrbitType.KEPLERIAN, -3 * steps[i], i).getOrbit());
+            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.KEPLERIAN, -3 * steps[i], i), tle));
             SpacecraftState sM3h = propagator2.propagate(target);
-            propagator2 = new KeplerianPropagator(shiftState(initialState, OrbitType.KEPLERIAN, -2 * steps[i], i).getOrbit());
+            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.KEPLERIAN, -2 * steps[i], i), tle));
             SpacecraftState sM2h = propagator2.propagate(target);
-            propagator2 = new KeplerianPropagator(shiftState(initialState, OrbitType.KEPLERIAN, -1 * steps[i], i).getOrbit());
+            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.KEPLERIAN, -1 * steps[i], i), tle));
             SpacecraftState sM1h = propagator2.propagate(target);
-            propagator2 = new KeplerianPropagator(shiftState(initialState, OrbitType.KEPLERIAN, +1 * steps[i], i).getOrbit());
+            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.KEPLERIAN, +1 * steps[i], i), tle));
             SpacecraftState sP1h = propagator2.propagate(target);
-            propagator2 = new KeplerianPropagator(shiftState(initialState, OrbitType.KEPLERIAN, +2 * steps[i], i).getOrbit());
+            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.KEPLERIAN, +2 * steps[i], i), tle));
             SpacecraftState sP2h = propagator2.propagate(target);
-            propagator2 = new KeplerianPropagator(shiftState(initialState, OrbitType.KEPLERIAN, +3 * steps[i], i).getOrbit());
+            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.KEPLERIAN, +3 * steps[i], i), tle));
             SpacecraftState sP3h = propagator2.propagate(target);
-            propagator2 = new KeplerianPropagator(shiftState(initialState, OrbitType.KEPLERIAN, +4 * steps[i], i).getOrbit());
-            SpacecraftState sP4h = propagator2.propagate(target);
-            fillJacobianColumn(dYdY0Ref, i, OrbitType.KEPLERIAN, steps[i],
-                               sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
-        }
-
-        for (int i = 0; i < 6; ++i) {
-            for (int j = 0; j < 6; ++j) {
-                if (stateVector[i] != 0) {
-                    double error = FastMath.abs((dYdY0[i][j] - dYdY0Ref[i][j]) / stateVector[i]) * steps[j];
-                    Assert.assertEquals(0, error, tolerance);
-                }
-            }
-        }
-    }
-    
-    private void doTestPropagationwrtDSST(double tolerance, TLE tle, boolean isDeepSpace)
-        throws FileNotFoundException, UnsupportedEncodingException {
-        
-        double dt = 900;
-        double dP = 0.001;        
-        
-        // compute state Jacobian using PartialDerivatives
-        TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
-        final SpacecraftState initialState = propagator.getInitialState();
-        final AbsoluteDate target = initialState.getDate().shiftedBy(dt);
-        KeplerianOrbit orbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(propagator.getInitialState().getOrbit());
-        TLEPartialDerivativesEquations partials = new TLEPartialDerivativesEquations("partials", propagator);
-        final SpacecraftState endState = partials.setInitialJacobians(propagator.propagate(target));
-        final double[] stateVector = new double[6];
-        OrbitType.KEPLERIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngle.MEAN, stateVector, null);
-        final TLEJacobiansMapper mapper = partials.getMapper();
-        double[][] dYdY0 =  new double[TLEJacobiansMapper.STATE_DIMENSION][TLEJacobiansMapper.STATE_DIMENSION];
-        mapper.computeDerivatives(endState);
-        mapper.getStateJacobian(initialState, dYdY0);
-
-        // compute reference state Jacobian using finite differences
-        double[][] dYdY0Ref = new double[6][6];
-        
-        // Earth gravity field
-        Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
-        UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(4, 4);
-        DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
-                                                   Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
-                                                   4, 4, 4, 8, 4, 4, 2);
-  
-        DSSTForceModel zonal = new DSSTZonal(provider, 4, 3, 9);
-        
-        
-
-        // Solar Radiation Pressure
-        DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 10., CelestialBodyFactory.getSun(),
-                                                            Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                            provider.getMu());
-        
-        
-        DSSTPropagator propagator2 = setUpPropagator(PropagationType.MEAN, orbit, dP, OrbitType.KEPLERIAN, srp, tesseral, zonal);
-        
-        
-        // Atmospheric drag is added if a LEO satellite is considered
-        if (!isDeepSpace) {
-            final OneAxisEllipsoid earth = new OneAxisEllipsoid(provider.getAe(),
-                                                                Constants.WGS84_EARTH_FLATTENING,
-                                                                CelestialBodyFactory.getEarth().getBodyOrientedFrame());
-            final Atmosphere atm = new HarrisPriester(CelestialBodyFactory.getSun(), earth, 6);
-            final double cd = 1.0;
-            final double area = 10.0;
-            DSSTForceModel drag = new DSSTAtmosphericDrag(atm, cd, area, provider.getMu());
-            propagator2.addForceModel(drag);
-            
-        }
-        
-        // Luni-solar attraction is added if deep-space satellite is considered
-        else {
-            // Third Bodies (Moon and Sun) Force Models
-            DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), provider.getMu());
-            DSSTForceModel sun  = new DSSTThirdBody(CelestialBodyFactory.getSun(), provider.getMu());
-            propagator2.addForceModel(sun);
-            propagator2.addForceModel(moon);
-        }
-        
-        double[] steps = NumericalPropagator.tolerances(10000 * dP, orbit, OrbitType.KEPLERIAN)[0];
-        for (int i = 0; i < 6; ++i) {
-            propagator2.setInitialState(shiftState(initialState, OrbitType.KEPLERIAN, -4 * steps[i], i), PropagationType.MEAN);
-            SpacecraftState sM4h = propagator2.propagate(target);
-            propagator2.setInitialState(shiftState(initialState, OrbitType.KEPLERIAN, -3 * steps[i], i), PropagationType.MEAN);
-            SpacecraftState sM3h = propagator2.propagate(target);
-            propagator2.setInitialState(shiftState(initialState, OrbitType.KEPLERIAN, -2 * steps[i], i), PropagationType.MEAN);
-            SpacecraftState sM2h = propagator2.propagate(target);
-            propagator2.setInitialState(shiftState(initialState, OrbitType.KEPLERIAN, -1 * steps[i], i), PropagationType.MEAN);
-            SpacecraftState sM1h = propagator2.propagate(target);
-            propagator2.setInitialState(shiftState(initialState, OrbitType.KEPLERIAN,  1 * steps[i], i), PropagationType.MEAN);
-            SpacecraftState sP1h = propagator2.propagate(target);
-            propagator2.setInitialState(shiftState(initialState, OrbitType.KEPLERIAN,  2 * steps[i], i), PropagationType.MEAN);
-            SpacecraftState sP2h = propagator2.propagate(target);
-            propagator2.setInitialState(shiftState(initialState, OrbitType.KEPLERIAN,  3 * steps[i], i), PropagationType.MEAN);
-            SpacecraftState sP3h = propagator2.propagate(target);
-            propagator2.setInitialState(shiftState(initialState, OrbitType.KEPLERIAN,  4 * steps[i], i), PropagationType.MEAN);
+            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.KEPLERIAN, +4 * steps[i], i), tle));
             SpacecraftState sP4h = propagator2.propagate(target);
             fillJacobianColumn(dYdY0Ref, i, OrbitType.KEPLERIAN, steps[i],
                                sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
@@ -334,99 +187,10 @@ public class TLEPartialDerivativesTest {
         }
     }
 
-    private void doTestPropagationwrtNumerical(double tolerance, TLE tle, boolean isDeepSpace)
-        throws FileNotFoundException, UnsupportedEncodingException {
-               
-        double dt = 900;
-        double dP = 1;        
-        
-        // compute state Jacobian using PartialDerivatives
-        TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
-        final SpacecraftState initialState = propagator.getInitialState();
-        final AbsoluteDate target = initialState.getDate().shiftedBy(dt);
-        KeplerianOrbit orbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(propagator.getInitialState().getOrbit());
-        TLEPartialDerivativesEquations partials = new TLEPartialDerivativesEquations("partials", propagator);
-        final SpacecraftState endState = partials.setInitialJacobians(propagator.propagate(target));
-        final double[] stateVector = new double[6];
-        OrbitType.KEPLERIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngle.MEAN, stateVector, null);
-        final TLEJacobiansMapper mapper = partials.getMapper();
-        double[][] dYdY0 =  new double[TLEJacobiansMapper.STATE_DIMENSION][TLEJacobiansMapper.STATE_DIMENSION];
-        mapper.computeDerivatives(endState);
-        mapper.getStateJacobian(initialState, dYdY0);
-
-        // compute reference state Jacobian using finite differences
-        double[][] dYdY0Ref = new double[6][6];
-        
-        // Earth Gravity Field
-        NormalizedSphericalHarmonicsProvider gravityProvider = GravityFieldFactory.getNormalizedProvider(4, 4);
-        ForceModel gravityField =
-            new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), gravityProvider);
-        
-        
-        // Solar Radiation Pressure 
-        ExtendedPVCoordinatesProvider sunSRP = CelestialBodyFactory.getSun();
-        OneAxisEllipsoid earth =
-                        new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
-                                             FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        SolarRadiationPressure srp =
-                        new SolarRadiationPressure(sunSRP, earth.getEquatorialRadius(),
-                                                   new IsotropicRadiationCNES95Convention(10.0, 0.5, 0.5));
-        
-        NumericalPropagator propagator2 = setUpPropagator(orbit, dP, orbit.getType(), PositionAngle.MEAN, gravityField, srp);
-        
-        // Atmospheric drag is added if a LEO satellite is considered
-        if (!isDeepSpace) {
-            ForceModel drag = new DragForce(new HarrisPriester(CelestialBodyFactory.getSun(), earth),
-                                            new IsotropicDrag(10., 1.0));
-            propagator2.addForceModel(drag);    
-        }
-        
-
-        // Luni-solar attraction is added if deep-space satellite is considered
-        else {
-         // Third Bodies (Moon and Sun) Force Models
-            ForceModel moon = new ThirdBodyAttraction(CelestialBodyFactory.getMoon());
-            ForceModel sun  = new ThirdBodyAttraction(CelestialBodyFactory.getSun());
-            propagator2.addForceModel(sun);
-            propagator2.addForceModel(moon);
-        }
-        
-        double[] steps = NumericalPropagator.tolerances(100 * dP, orbit, orbit.getType())[0];
-        for (int i = 0; i < 6; ++i) {          
-            propagator2.resetInitialState(shiftState(initialState, orbit.getType(), -4 * steps[i], i));
-            SpacecraftState sM4h = propagator2.propagate(target);
-            propagator2.resetInitialState(shiftState(initialState, orbit.getType(), -3 * steps[i], i));
-            SpacecraftState sM3h = propagator2.propagate(target);
-            propagator2.resetInitialState(shiftState(initialState, orbit.getType(), -2 * steps[i], i));
-            SpacecraftState sM2h = propagator2.propagate(target);
-            propagator2.resetInitialState(shiftState(initialState, orbit.getType(), -1 * steps[i], i));
-            SpacecraftState sM1h = propagator2.propagate(target);
-            propagator2.resetInitialState(shiftState(initialState, orbit.getType(),  1 * steps[i], i));
-            SpacecraftState sP1h = propagator2.propagate(target);
-            propagator2.resetInitialState(shiftState(initialState, orbit.getType(),  2 * steps[i], i));
-            SpacecraftState sP2h = propagator2.propagate(target);
-            propagator2.resetInitialState(shiftState(initialState, orbit.getType(),  3 * steps[i], i));
-            SpacecraftState sP3h = propagator2.propagate(target);
-            propagator2.resetInitialState(shiftState(initialState, orbit.getType(),  4 * steps[i], i));
-            SpacecraftState sP4h = propagator2.propagate(target);
-            fillJacobianColumn(dYdY0Ref, i, orbit.getType(), steps[i],
-                               sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
-        }
-
-        for (int i = 0; i < 6; ++i) {
-            for (int j = 0; j < 6; ++j) {
-                if (stateVector[i] != 0) {
-                    double error = FastMath.abs((dYdY0[i][j] - dYdY0Ref[i][j]) / stateVector[i]) * steps[j];
-                    Assert.assertEquals(0, error, tolerance);
-                }
-            }
-        }
-    }
-    
     private void doTestParametersDerivatives(String parameterName, double tolerance, TLE tle,
                                              PropagationType type) {
 
-        double dt = 900;       
+        double dt = Constants.JULIAN_DAY;       
         // compute state Jacobian using PartialDerivatives
         ParameterDriversList bound = new ParameterDriversList();
 
@@ -447,7 +211,7 @@ public class TLEPartialDerivativesTest {
         OrbitType.KEPLERIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngle.MEAN, stateVector, null);
         final TLEJacobiansMapper mapper = partials.getMapper();
         double[][] dYdP =  new double[TLEJacobiansMapper.STATE_DIMENSION][mapper.getParameters()];
-        mapper.computeDerivatives(endState);
+        mapper.analyticalDerivatives(endState);
         mapper.getParametersJacobian(initialState, dYdP);
 
         // compute reference Jacobian using finite differences
@@ -560,54 +324,17 @@ public class TLEPartialDerivativesTest {
       }
 
 
-      private SpacecraftState arrayToState(double[][] array, 
+    private SpacecraftState arrayToState(double[][] array, 
                                            Frame frame, AbsoluteDate date, double mu,
                                            Attitude attitude) {
-          KeplerianOrbit orbit = (KeplerianOrbit) OrbitType.KEPLERIAN.mapArrayToOrbit(array[0], array[1], PositionAngle.MEAN, date, mu, frame);
-          return new SpacecraftState(orbit, attitude);
-      }
+        KeplerianOrbit orbit = (KeplerianOrbit) OrbitType.KEPLERIAN.mapArrayToOrbit(array[0], array[1], PositionAngle.MEAN, date, mu, frame);
+        return new SpacecraftState(orbit, attitude);
+    }
       
-
-      private DSSTPropagator setUpPropagator(PropagationType type, Orbit orbit, double dP,
-                                             OrbitType orbitType,
-                                             DSSTForceModel... models) {
-
-          final double minStep = 0.001;
-          final double maxStep = 1000;
-          
-          double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
-          DSSTPropagator propagator =
-              new DSSTPropagator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]), type);
-          for (DSSTForceModel model : models) {
-              propagator.addForceModel(model);
-          }
-          return propagator;
-      }
-      
-      private NumericalPropagator setUpPropagator(Orbit orbit, double dP,
-                                                  OrbitType orbitType,
-                                                  PositionAngle angleType,
-                                                  ForceModel... models)
-          {
-
-          final double minStep = 0.001;
-          final double maxStep = 1000;
-
-          double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
-          NumericalPropagator propagator =
-              new NumericalPropagator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]));
-          propagator.setOrbitType(orbitType);
-          propagator.setPositionAngleType(angleType);
-          for (ForceModel model : models) {
-              propagator.addForceModel(model);
-          }
-          return propagator;
-      }
 
     @Before
     public void setUp() {
-        Utils.setDataRoot("regular-data:potential/shm-format");
-        GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
+        Utils.setDataRoot("regular-data");
         
         // GPS TLE propagation will use SDP4
         String line1GPS = "1 11783U 80032A   03300.87313441  .00000062  00000-0  10000-3 0  6416";

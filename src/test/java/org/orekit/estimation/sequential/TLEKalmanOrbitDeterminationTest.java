@@ -18,7 +18,6 @@ package org.orekit.estimation.sequential;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,9 +42,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.estimation.common.AbstractOrbitDetermination;
 import org.orekit.estimation.common.ParameterKey;
 import org.orekit.estimation.common.ResultKalman;
-import org.orekit.files.sp3.SP3File;
-import org.orekit.files.sp3.SP3File.SP3Ephemeris;
-import org.orekit.files.sp3.SP3Parser;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
@@ -66,7 +62,6 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEConstants;
@@ -367,7 +362,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
 
         // Definition of the accuracy for the test
         // Initial TLE error at last measurement date is 1053.6m
-        final double distanceAccuracy = 75.5;
+        final double distanceAccuracy = 72.9;
 
         // Tests
         
@@ -381,15 +376,8 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         odPV = transform.transformPVCoordinates(odPV);
         final Vector3D estimatedPos = odPV.getPosition();
 
-        // create reference position from GPS ephemris
-        final String ex = "/sp3/esa18836.sp3";
-        final SP3Parser parser = new SP3Parser();
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final SP3File file = parser.parse(inEntry);
-        SP3Ephemeris ephemeris = file.getSatellites().get("G07");
-        BoundedPropagator propagator = ephemeris.getPropagator();
-        final TimeStampedPVCoordinates ephem = propagator.propagate(odPV.getDate()).getPVCoordinates();
-        final Vector3D refPos = ephem.getPosition();  
+        // Reference position from GPS ephemeris (esa18836.sp3)
+        final Vector3D refPos = new Vector3D(2167703.453226041, 19788555.311260417, 17514805.616900872);  
 
         // Check distances
         final double dP = Vector3D.distance(refPos, estimatedPos);

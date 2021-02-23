@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
@@ -49,23 +48,22 @@ public class BatchLSModel extends AbstractBatchLSModel {
                         final ParameterDriversList estimatedMeasurementsParameters,
                         final ModelObserver observer) {
         // call super constructor
-        super(propagatorBuilders, measurements, estimatedMeasurementsParameters, observer);
+        super(propagatorBuilders, measurements, estimatedMeasurementsParameters,
+              new JacobiansMapper[propagatorBuilders.length], observer);
     }
 
-    /** Configure the propagator to compute derivatives.
-     * @param propagators {@link Propagator} to configure
-     * @return mapper for this propagator
-     */
-    protected JacobiansMapper configureDerivatives(final AbstractPropagator propagators) {
+    /** {@inheritDoc} */
+    @Override
+    protected JacobiansMapper configureDerivatives(final Propagator propagator) {
 
         final String equationName = BatchLSModel.class.getName() + "-derivatives";
 
-        final PartialDerivativesEquations partials = new PartialDerivativesEquations(equationName, (NumericalPropagator) propagators);
+        final PartialDerivativesEquations partials = new PartialDerivativesEquations(equationName, (NumericalPropagator) propagator);
 
         // add the derivatives to the initial state
-        final SpacecraftState rawState = propagators.getInitialState();
+        final SpacecraftState rawState = propagator.getInitialState();
         final SpacecraftState stateWithDerivatives = partials.setInitialJacobians(rawState);
-        propagators.resetInitialState(stateWithDerivatives);
+        propagator.resetInitialState(stateWithDerivatives);
 
         return partials.getMapper();
 
@@ -73,27 +71,9 @@ public class BatchLSModel extends AbstractBatchLSModel {
 
     /** {@inheritDoc} */
     @Override
-    protected AbstractJacobiansMapper[] buildMappers() {
-        return new JacobiansMapper[getBuilders().length];
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected AbstractPropagator[] buildPropagators() {
-        return new NumericalPropagator[getBuilders().length];
-    }
-
-    /** {@inheritDoc} */
-    protected void computeDerivatives(final AbstractJacobiansMapper mapper,
-                                      final SpacecraftState state) {
-        // does nothing
-        // numerical method does not require analytical terms calculations
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected Orbit computeInitialDerivatives(final AbstractJacobiansMapper mapper,
-                                              final AbstractPropagator propagator) {
+    protected Orbit configureOrbits(final AbstractJacobiansMapper mapper,
+                                    final Propagator propagator) {
+        // Directly return the propagator's initial state
         return propagator.getInitialState().getOrbit();
     }
 

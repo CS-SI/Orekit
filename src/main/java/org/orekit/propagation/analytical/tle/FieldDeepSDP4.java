@@ -241,7 +241,7 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
             final T a1  = zcosh.multiply(zcosg).add(zsinh.multiply(zsing).multiply(zcosi));
             final T a3  = zcosh.multiply(zsing.negate()).add(zsinh.multiply(zcosg).multiply(zcosi));
             final T a7  = zsinh.negate().multiply(zcosg).add(zcosh.multiply(zcosi).multiply(zsing));
-            final T a8 = zsing.multiply(zsini);
+            final T a8  = zsing.multiply(zsini);
             final T a9  = zsinh.multiply(zsing).add(zcosh.multiply(zcosi).multiply(zcosg));
             final T a10 = zcosg.multiply(zsini);
             final T a2  = cosi0.multiply(a7).add(sini0.multiply(a8));
