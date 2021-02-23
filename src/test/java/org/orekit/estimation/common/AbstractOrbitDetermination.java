@@ -1514,10 +1514,9 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
 
                 MappingFunction mappingModel = null;
                 if (stationGlobalMappingFunction[i]) {
-                    mappingModel = new GlobalMappingFunctionModel(stationLatitudes[i],
-                                                                  stationLongitudes[i]);
+                    mappingModel = new GlobalMappingFunctionModel();
                 } else if (stationNiellMappingFunction[i]) {
-                    mappingModel = new NiellMappingFunctionModel(stationLatitudes[i]);
+                    mappingModel = new NiellMappingFunctionModel();
                 }
 
                 final DiscreteTroposphericModel troposphericModel;
@@ -2165,10 +2164,10 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                 // Tropospheric model
                 final DiscreteTroposphericModel model;
                 if (meteoData != null) {
-                    model = new MendesPavlisModel(meteoData.getTemperature(), meteoData.getPressure() * 1000.0, 0.01 * meteoData.getHumidity(),
-                                                  stationData.getStation().getBaseFrame().getPoint().getLatitude(), wavelength * 1.0e6);
+                    model = new MendesPavlisModel(meteoData.getTemperature(), meteoData.getPressure() * 1000.0,
+                                                  0.01 * meteoData.getHumidity(), wavelength * 1.0e6);
                 } else {
-                    model = MendesPavlisModel.getStandardModel(stationData.getStation().getBaseFrame().getPoint().getLatitude(), wavelength * 1.0e6);
+                    model = MendesPavlisModel.getStandardModel(wavelength * 1.0e6);
                 }
                 measurement.addModifier(new RangeTroposphericDelayModifier(model));
 
