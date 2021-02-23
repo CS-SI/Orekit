@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="bryan" type="fix" issue="624">
+        Allowed dynamic station coordinates when calculating tropospheric delay.
+      </action>
       <action dev="bryan" type="update" issue="755">
         Modified IodGooding constructor to be consistent with other IOD methods.
       </action>
