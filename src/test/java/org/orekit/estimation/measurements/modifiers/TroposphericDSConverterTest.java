@@ -53,7 +53,7 @@ public class TroposphericDSConverterTest {
         SpacecraftState state = new SpacecraftState(orbit, mass);
 
         // Model
-        EstimatedTroposphericModel model = new EstimatedTroposphericModel(new NiellMappingFunctionModel(0.5), 2.3);
+        EstimatedTroposphericModel model = new EstimatedTroposphericModel(new NiellMappingFunctionModel(), 2.3);
         model.getParametersDrivers().get(0).setSelected(true);
 
         // Convert state

@@ -29,7 +29,6 @@ import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.bodies.GeodeticPoint;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
@@ -635,14 +634,10 @@ public class RangeTest {
                     (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate())  <=  0.)
                    ) {
 
-                    // Parameter corresponding to station position offset
-                    final GroundStation stationParameter = ((Range) measurement).getStation();
-
                     String stationName  = ((Range) measurement).getStation().getBaseFrame().getName();
 
                     // Add modifiers if test implies it
-                    final GeodeticPoint point = stationParameter.getBaseFrame().getPoint();
-                    final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel(point.getLatitude());
+                    final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel();
                     final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 5.0);
                     
                     final List<ParameterDriver> parameters = tropoModel.getParametersDrivers();
