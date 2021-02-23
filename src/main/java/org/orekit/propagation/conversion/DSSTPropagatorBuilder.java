@@ -241,6 +241,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
     }
 
     /** {@inheritDoc} */
+    @Override
     public DSSTBatchLSModel buildLSModel(final OrbitDeterminationPropagatorBuilder[] builders,
                                 final List<ObservedMeasurement<?>> measurements,
                                 final ParameterDriversList estimatedMeasurementsParameters,
@@ -250,17 +251,6 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
                                     estimatedMeasurementsParameters,
                                     observer,
                                     propagationType, stateType);
-    }
-
-    /** {@inheritDoc} */
-    @Deprecated
-    public DSSTKalmanModel buildKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
-                                            final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                                            final ParameterDriversList estimatedMeasurementsParameters) {
-        return new DSSTKalmanModel(propagatorBuilders,
-                                   covarianceMatricesProviders,
-                                   estimatedMeasurementsParameters,
-                                   propagationType, stateType);
     }
 
     /** {@inheritDoc} */
