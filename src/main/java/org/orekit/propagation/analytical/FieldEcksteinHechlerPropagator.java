@@ -41,6 +41,7 @@ import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTimeSpanMap;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** This class propagates a {@link org.orekit.propagation.FieldSpacecraftState}
@@ -438,6 +439,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * must be defined with an osculating orbit.</p>
      * @see #resetInitialState(FieldSpacecraftState, PropagationType)
      */
+    @Override
     public void resetInitialState(final FieldSpacecraftState<T> state) {
         resetInitialState(state, PropagationType.OSCULATING);
     }
@@ -457,6 +459,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward) {
         final FieldEHModel<T> newModel = computeMeanParameters((FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(state.getOrbit()),
                                                        state.getMass());
@@ -534,7 +537,8 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
     }
 
     /** {@inheritDoc} */
-    public FieldCartesianOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date) {
+    @Override
+    public FieldCartesianOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
         // compute Cartesian parameters, taking derivatives into account
         // to make sure velocity and acceleration are consistent
         final FieldEHModel<T> current = models.get(date);
@@ -961,6 +965,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
     }
 
     /** {@inheritDoc} */
+    @Override
     protected T getMass(final FieldAbsoluteDate<T> date) {
         return models.get(date).mass;
     }
@@ -988,6 +993,13 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
     @Deprecated
     public static <T extends RealFieldElement<T>> T normalizeAngle(final T a, final T center) {
         return a.subtract(2 * FastMath.PI * FastMath.floor((a.getReal() + FastMath.PI - center.getReal()) / (2 * FastMath.PI)));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected ParameterDriver[] getParametersDrivers() {
+        // Eckstein Hechler propagation model does not have parameter drivers.
+        return new ParameterDriver[0];
     }
 
 }

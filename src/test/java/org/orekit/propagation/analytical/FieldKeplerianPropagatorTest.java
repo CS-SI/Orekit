@@ -558,8 +558,10 @@ public class FieldKeplerianPropagatorTest {
         FieldOrekitStepHandlerMultiplexer<T> multiplexer = new FieldOrekitStepHandlerMultiplexer<>();
         propagator.setMasterMode(multiplexer);
         multiplexer.add(new FieldOrekitStepHandler<T>() {
+            @Override
             public void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t) {
             }
+            @Override
             public void handleStep(FieldOrekitStepInterpolator<T> interpolator,
                                    boolean isLast) {
                 if (isLast) {
@@ -579,9 +581,11 @@ public class FieldKeplerianPropagatorTest {
                                       FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit,
                         new AttitudeProvider() {
+            @Override
             public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) {
                 throw new OrekitException((Throwable) null, new DummyLocalizable("dummy error"));
             }
+            @Override
             public <Q extends RealFieldElement<Q>> FieldAttitude<Q> getAttitude(FieldPVCoordinatesProvider<Q> pvProv,
                                                                                 FieldAbsoluteDate<Q> date,
                                                                                 Frame frame) {
@@ -704,6 +708,7 @@ public class FieldKeplerianPropagatorTest {
         final T step = zero.add(100.0);
         propagator.setMasterMode(step, new FieldOrekitFixedStepHandler<T>() {
             private FieldAbsoluteDate<T> previous;
+            @Override
             public void handleStep(FieldSpacecraftState<T> currentState, boolean isLast)
             {
                 if (previous != null) {
@@ -725,8 +730,10 @@ public class FieldKeplerianPropagatorTest {
         final T step = orbit.getKeplerianPeriod().divide(100);
         propagator.setMasterMode(new FieldOrekitStepHandler<T>() {
             private FieldAbsoluteDate<T> previous;
+            @Override
             public void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t) {
             }
+            @Override
             public void handleStep(FieldOrekitStepInterpolator<T> interpolator,
                                    boolean isLast) {
                 if ((previous != null) && !isLast) {
@@ -787,6 +794,7 @@ public class FieldKeplerianPropagatorTest {
         FieldPropagator<T> propagator = new FieldKeplerianPropagator<T>(orbit) {
             FieldAbsoluteDate<T> lastDate = FieldAbsoluteDate.getPastInfinity(field);
 
+            @Override
             protected FieldSpacecraftState<T> basicPropagate(final FieldAbsoluteDate<T> date) {
                 if (date.compareTo(lastDate) < 0) {
                     throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
@@ -860,7 +868,7 @@ public class FieldKeplerianPropagatorTest {
                                 5.0e-15);
 
             T dt = initial.getKeplerianPeriod().multiply(0.2);
-            FieldOrbit<T> orbit = propagator.propagateOrbit(initial.getDate().shiftedBy(dt));
+            FieldOrbit<T> orbit = propagator.propagateOrbit(initial.getDate().shiftedBy(dt), null);
             Assert.assertEquals(type, orbit.getType());
 
             // at the end, we don't have non-Keplerian derivatives
