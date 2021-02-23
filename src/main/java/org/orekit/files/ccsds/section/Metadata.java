@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.CcsdsTimeScale;
+import org.orekit.files.ccsds.definitions.TimeSystem;
 
 /** This class gathers the meta-data present in the Navigation Data Message (ADM, ODM and TDM).
  * @author Luc Maisonobe
@@ -34,12 +34,12 @@ public class Metadata extends CommentsContainer {
     private static final Pattern INTERNATIONAL_DESIGNATOR = Pattern.compile("(\\p{Digit}{4})-(\\p{Digit}{3})(\\p{Upper}{1,3})");
 
     /** Time System: used for metadata, orbit state and covariance data. */
-    private CcsdsTimeScale timeSystem;
+    private TimeSystem timeSystem;
 
     /** Simple constructor.
      * @param defaultTimeSystem default time system (may be null)
      */
-    protected Metadata(final CcsdsTimeScale defaultTimeSystem) {
+    protected Metadata(final TimeSystem defaultTimeSystem) {
         this.timeSystem = defaultTimeSystem;
     }
 
@@ -56,7 +56,7 @@ public class Metadata extends CommentsContainer {
      * covariance data.
      * @return the time system
      */
-    public CcsdsTimeScale getTimeSystem() {
+    public TimeSystem getTimeSystem() {
         return timeSystem;
     }
 
@@ -66,7 +66,7 @@ public class Metadata extends CommentsContainer {
      * covariance data.
      * @param timeSystem the time system to be set
      */
-    public void setTimeSystem(final CcsdsTimeScale timeSystem) {
+    public void setTimeSystem(final TimeSystem timeSystem) {
         refuseFurtherComments();
         this.timeSystem = timeSystem;
     }

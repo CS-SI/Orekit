@@ -22,7 +22,7 @@ import java.util.TreeMap;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.CcsdsFrame;
+import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.section.Metadata;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -136,7 +136,7 @@ public class TdmMetadata extends Metadata {
     private Frame referenceFrame;
 
     /** Reference frame in which data are given: used in combination with ANGLE_TYPE=RADEC. */
-    private CcsdsFrame referenceCCSDSFrame;
+    private CelestialBodyFrame referenceCCSDSFrame;
 
     /** Transmit delays map.<p>
      *  Specifies a fixed interval of time, in seconds, for the signal to travel from the transmitting
@@ -514,7 +514,7 @@ public class TdmMetadata extends Metadata {
     /** Get the the value of {@code REFERENCE_FRAME} as an Orekit {@link Frame}.
      * @return The reference frame specified by the {@code REFERENCE_FRAME} keyword.
      */
-    public CcsdsFrame getReferenceCCSDSFrame() {
+    public CelestialBodyFrame getReferenceCCSDSFrame() {
         return referenceCCSDSFrame;
     }
 
@@ -522,7 +522,7 @@ public class TdmMetadata extends Metadata {
      * @param refFrame the reference frame to be set
      * @param refCCSDSFrame the reference frame to be set
      */
-    public void setReferenceFrame(final Frame refFrame, final CcsdsFrame refCCSDSFrame) {
+    public void setReferenceFrame(final Frame refFrame, final CelestialBodyFrame refCCSDSFrame) {
         refuseFurtherComments();
         this.referenceFrame      = refFrame;
         this.referenceCCSDSFrame = refCCSDSFrame;

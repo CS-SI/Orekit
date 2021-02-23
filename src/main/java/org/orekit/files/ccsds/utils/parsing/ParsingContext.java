@@ -20,7 +20,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import org.orekit.data.DataContext;
-import org.orekit.files.ccsds.definitions.CcsdsTimeScale;
+import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -28,7 +28,7 @@ import org.orekit.utils.IERSConventions;
  * <p>
  * This class is a facade providing late binding access to data used during parsing.
  * Late binding allow some data to be set up during parsing itself. This is
- * used for example to access {@link #getTimeScale() time scale} that is generally
+ * used for example to access {@link #getTimeSystem() time scale} that is generally
  * parsed from metadata block, and used later on within the same metadata block.
  * </p>
  * @author Luc Maisonobe
@@ -50,7 +50,7 @@ public class ParsingContext {
     private final Supplier<AbsoluteDate> referenceDateSupplier;
 
     /** Supplier for reference system for interpreting dates. */
-    private final Supplier<CcsdsTimeScale> timeScaleSupplier;
+    private final Supplier<TimeSystem> timeSystemSupplier;
 
     /** Create a new context.
      * @param conventionsSupplier supplier for IERS conventions to use
@@ -58,18 +58,18 @@ public class ParsingContext {
      * @param dataContextSupplier supplier for data context to use
      * @param referenceDateSupplier supplier for reference date for mission elapsed time (MET),
      * mission relative time (MRT), or spacecraft clock (SCLK) time systems
-     * @param timeScaleSupplier supplier for reference system for interpreting dates
+     * @param timeystemSupplier supplier for reference system for interpreting dates
      */
     public ParsingContext(final Supplier<IERSConventions> conventionsSupplier,
                           final BooleanSupplier           simpleEOPSupplier,
                           final Supplier<DataContext>     dataContextSupplier,
                           final Supplier<AbsoluteDate>    referenceDateSupplier,
-                          final Supplier<CcsdsTimeScale>  timeScaleSupplier) {
+                          final Supplier<TimeSystem>      timeystemSupplier) {
         this.conventionsSupplier   = conventionsSupplier;
         this.simpleEOPSupplier     = simpleEOPSupplier;
         this.dataContextSupplier   = dataContextSupplier;
         this.referenceDateSupplier = referenceDateSupplier;
-        this.timeScaleSupplier     = timeScaleSupplier;
+        this.timeSystemSupplier    = timeystemSupplier;
     }
 
     /** Get IERS conventions.
@@ -100,11 +100,11 @@ public class ParsingContext {
         return referenceDateSupplier.get();
     }
 
-    /** Get the time scale.
-     * @return time scale
+    /** Get the time system.
+     * @return time system
      */
-    public CcsdsTimeScale getTimeScale() {
-        return timeScaleSupplier.get();
+    public TimeSystem getTimeSystem() {
+        return timeSystemSupplier.get();
     }
 
 }

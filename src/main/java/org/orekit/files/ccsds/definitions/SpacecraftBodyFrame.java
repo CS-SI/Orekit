@@ -23,7 +23,7 @@ import org.orekit.errors.OrekitMessages;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class CcsdsBodyFrame {
+public class SpacecraftBodyFrame {
 
     /** Equipment on which the frame is located. */
     public enum BaseEquipment {
@@ -63,7 +63,7 @@ public class CcsdsBodyFrame {
      * @param baseEquipment equipment on which the frame is located
      * @param label frame label
      */
-    public CcsdsBodyFrame(final BaseEquipment baseEquipment, final String label) {
+    public SpacecraftBodyFrame(final BaseEquipment baseEquipment, final String label) {
         this.baseEquipment = baseEquipment;
         this.label         = label;
     }
@@ -102,12 +102,12 @@ public class CcsdsBodyFrame {
      * @param descriptor normalized descriptor
      * @return parsed body frame
      */
-    public static CcsdsBodyFrame parse(final String descriptor) {
+    public static SpacecraftBodyFrame parse(final String descriptor) {
         final int separatorIndex = descriptor.lastIndexOf(' ');
         if (separatorIndex >= 0) {
             try {
                 final String equipmentName = descriptor.substring(0, separatorIndex).replace(' ', '_');
-                return new CcsdsBodyFrame(BaseEquipment.valueOf(equipmentName),
+                return new SpacecraftBodyFrame(BaseEquipment.valueOf(equipmentName),
                                           descriptor.substring(separatorIndex + 1));
             } catch (IllegalArgumentException iae) {
                 // ignored, errors are handled below

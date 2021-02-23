@@ -34,7 +34,7 @@ import org.orekit.utils.IERSConventions;
  * @author Steven Ports
  * @since 6.1
  */
-public enum CcsdsFrame {
+public enum CelestialBodyFrame {
 
     /** Earth Mean Equator and Equinox of J2000. */
     EME2000(null) {
@@ -427,7 +427,7 @@ public enum CcsdsFrame {
     /** Simple constructor.
      * @param lofType type of Local Orbital Frame (null if frame is not a Local Orbital Frame)
      */
-    CcsdsFrame(final LOFType lofType) {
+    CelestialBodyFrame(final LOFType lofType) {
         this.lofType = lofType;
     }
 
@@ -486,8 +486,8 @@ public enum CcsdsFrame {
      * @param frameName name of the frame, as the value of a CCSDS key=value line
      * @return CCSDS frame corresponding to the name
      */
-    public static CcsdsFrame parse(final String frameName) {
-        return CcsdsFrame.valueOf(DASH.matcher(frameName).replaceAll(""));
+    public static CelestialBodyFrame parse(final String frameName) {
+        return CelestialBodyFrame.valueOf(DASH.matcher(frameName).replaceAll(""));
     }
 
     /**
@@ -499,15 +499,15 @@ public enum CcsdsFrame {
      * @param frame a reference frame.
      * @return the CCSDSFrame corresponding to the Orekit frame
      */
-    public static CcsdsFrame map(final Frame frame) {
+    public static CelestialBodyFrame map(final Frame frame) {
         // Try to determine the CCSDS name from Annex A by examining the Orekit name.
         final String name = frame.getName();
         try {
             // should handle J2000, GCRF, TEME, and some frames created by OEMParser.
-            return CcsdsFrame.valueOf(name);
+            return CelestialBodyFrame.valueOf(name);
         } catch (IllegalArgumentException iae) {
-            if (frame instanceof CcsdsModifiedFrame) {
-                return ((CcsdsModifiedFrame) frame).getRefFrame();
+            if (frame instanceof ModifiedFrame) {
+                return ((ModifiedFrame) frame).getRefFrame();
             } else if ((CelestialBodyFactory.MARS + INERTIAL_FRAME_SUFFIX).equals(name)) {
                 return MCI;
             } else if ((CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER + INERTIAL_FRAME_SUFFIX).equals(name)) {
@@ -521,7 +521,7 @@ public enum CcsdsFrame {
             } else if (frame instanceof VersionedITRF) {
                 try {
                     final ITRFVersion itrfVersion = ((VersionedITRF) frame).getITRFVersion();
-                    return CcsdsFrame.valueOf(itrfVersion.name().replace("_", ""));
+                    return CelestialBodyFrame.valueOf(itrfVersion.name().replace("_", ""));
                 } catch (IllegalArgumentException iae2) {
                     // this should never happen
                     throw new OrekitInternalError(iae2);

@@ -17,7 +17,7 @@
 
 package org.orekit.files.ccsds.ndm.odm;
 
-import org.orekit.files.ccsds.definitions.CcsdsTimeScale;
+import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.section.Metadata;
 
 /** This class gathers the meta-data present in the Orbital Data Message (ODM).
@@ -32,7 +32,7 @@ public class OdmMetadata extends Metadata {
     /** Simple constructor.
      * @param defaultTimeSystem default time system (may be null)
      */
-    protected OdmMetadata(final CcsdsTimeScale defaultTimeSystem) {
+    protected OdmMetadata(final TimeSystem defaultTimeSystem) {
         super(defaultTimeSystem);
     }
 

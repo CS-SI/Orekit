@@ -41,7 +41,7 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.CcsdsTimeScale;
+import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.adm.aem.AemAttitudeType;
 import org.orekit.files.ccsds.ndm.adm.aem.AemMetadata;
 import org.orekit.files.ccsds.ndm.adm.aem.AemParser;
@@ -225,7 +225,7 @@ public class OrekitAttitudeEphemerisFileTest {
 
     private AemMetadata dummyMetadata() {
         AemMetadata metadata = new AemMetadata(4);
-        metadata.setTimeSystem(CcsdsTimeScale.TT);
+        metadata.setTimeSystem(TimeSystem.TT);
         metadata.setObjectID("SATELLITE1");
         metadata.setObjectName("transgalactic");
         metadata.getEndPoints().setFrameA("GCRF");

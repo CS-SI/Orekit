@@ -70,7 +70,7 @@ public enum AemAttitudeType {
                                                    final String[] fields, final String fileName) {
 
             // Build the needed objects
-            final AbsoluteDate date = context.getTimeScale().parseDate(fields[0], context);
+            final AbsoluteDate date = context.getTimeSystem().parseDate(fields[0], context);
             Rotation rotation       = metadata.isFirst() ?
                                       new Rotation(Double.parseDouble(fields[1]),
                                                    Double.parseDouble(fields[2]),
@@ -136,7 +136,7 @@ public enum AemAttitudeType {
                                                    final String[] fields, final String fileName) {
 
             // Build the needed objects
-            final AbsoluteDate date = context.getTimeScale().parseDate(fields[0], context);
+            final AbsoluteDate date = context.getTimeSystem().parseDate(fields[0], context);
             FieldRotation<UnivariateDerivative1> rotation =
                             metadata.isFirst() ?
                             new FieldRotation<>(new UnivariateDerivative1(Double.parseDouble(fields[1]), Double.parseDouble(fields[5])),
@@ -202,7 +202,7 @@ public enum AemAttitudeType {
         public TimeStampedAngularCoordinates parse(final AemMetadata metadata, final ParsingContext context,
                                                    final String[] fields, final String fileName) {
             // Build the needed objects
-            final AbsoluteDate date = context.getTimeScale().parseDate(fields[0], context);
+            final AbsoluteDate date = context.getTimeSystem().parseDate(fields[0], context);
             final Rotation rotation = metadata.isFirst() ?
                                       new Rotation(Double.parseDouble(fields[1]),
                                                    Double.parseDouble(fields[2]),
@@ -265,7 +265,7 @@ public enum AemAttitudeType {
                                                    final String[] fields, final String fileName) {
 
             // Build the needed objects
-            final AbsoluteDate date = context.getTimeScale().parseDate(fields[0], context);
+            final AbsoluteDate date = context.getTimeSystem().parseDate(fields[0], context);
             Rotation rotation = new Rotation(metadata.getEulerRotSeq(),
                                              RotationConvention.FRAME_TRANSFORM,
                                              FastMath.toRadians(Double.parseDouble(fields[1])),
@@ -322,7 +322,7 @@ public enum AemAttitudeType {
                                                    final String[] fields, final String fileName) {
 
             // Build the needed objects
-            final AbsoluteDate date = context.getTimeScale().parseDate(fields[0], context);
+            final AbsoluteDate date = context.getTimeSystem().parseDate(fields[0], context);
             final Rotation rotation = new Rotation(metadata.getEulerRotSeq(),
                                                    RotationConvention.FRAME_TRANSFORM,
                                                    FastMath.toRadians(Double.parseDouble(fields[1])),

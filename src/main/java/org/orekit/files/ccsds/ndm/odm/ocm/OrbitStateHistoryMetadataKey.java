@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.CcsdsUnit;
+import org.orekit.files.ccsds.definitions.Unit;
 import org.orekit.files.ccsds.ndm.odm.oem.InterpolationMethod;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
@@ -156,12 +156,12 @@ public enum OrbitStateHistoryMetadataKey {
             if (line.charAt(0) != '[' || line.charAt(line.length() - 1) != ']') {
                 throw token.generateException(null);
             }
-            final List<CcsdsUnit> orbUnits = new ArrayList<>();
+            final List<Unit> orbUnits = new ArrayList<>();
             final Matcher matcher = UNITS_FINDER.matcher(line.substring(1, line.length() - 1).trim());
             while (!matcher.hitEnd()) {
                 if (matcher.find()) {
                     final String u = matcher.group(1).replace("*", "").replace('/', '_').toUpperCase(Locale.US);
-                    orbUnits.add(CcsdsUnit.valueOf(u));
+                    orbUnits.add(Unit.valueOf(u));
                 } else {
                     throw token.generateException(null);
                 }

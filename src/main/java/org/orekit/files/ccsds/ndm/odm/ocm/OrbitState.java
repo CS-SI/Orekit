@@ -19,7 +19,7 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.util.List;
 
-import org.orekit.files.ccsds.definitions.CcsdsUnit;
+import org.orekit.files.ccsds.definitions.Unit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.CartesianDerivativesFilter;
@@ -48,7 +48,7 @@ public class OrbitState implements TimeStamped {
      * @param units units to use for parsing
      */
     public OrbitState(final ElementsType type, final AbsoluteDate date,
-                      final String[] fields, final int first, final List<CcsdsUnit> units) {
+                      final String[] fields, final int first, final List<Unit> units) {
         this.type     = type;
         this.date     = date;
         this.elements = new double[units.size()];

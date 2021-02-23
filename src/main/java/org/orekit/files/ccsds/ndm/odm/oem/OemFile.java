@@ -25,7 +25,7 @@ import java.util.Map;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.CcsdsTimeScale;
+import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.NdmFile;
 import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.general.EphemerisFile;
@@ -90,9 +90,9 @@ public class OemFile extends NdmFile<OdmHeader, OemSegment>
     /** Check that, according to the CCSDS standard, every OEMBlock has the same time system.
      */
     public void checkTimeSystems() {
-        CcsdsTimeScale referenceTimeSystem = null;
+        TimeSystem referenceTimeSystem = null;
         for (final OemSegment segment : getSegments()) {
-            final CcsdsTimeScale timeSystem = segment.getMetadata().getTimeSystem();
+            final TimeSystem timeSystem = segment.getMetadata().getTimeSystem();
             if (referenceTimeSystem == null) {
                 referenceTimeSystem = timeSystem;
             } else if (!referenceTimeSystem.equals(timeSystem)) {

@@ -294,7 +294,7 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
                                               token.getLineNumber(), token.getFileName(), token.getContent());
                 }
                 final boolean hasAcceleration = fields.length == 10;
-                final AbsoluteDate epoch = context.getTimeScale().parseDate(fields[0], context);
+                final AbsoluteDate epoch = context.getTimeSystem().parseDate(fields[0], context);
                 final Vector3D position = new Vector3D(Double.parseDouble(fields[1]) * 1000,
                                                        Double.parseDouble(fields[2]) * 1000,
                                                        Double.parseDouble(fields[3]) * 1000);

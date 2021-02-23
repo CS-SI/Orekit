@@ -31,9 +31,9 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
-import org.orekit.files.ccsds.definitions.CcsdsBodyFrame;
-import org.orekit.files.ccsds.definitions.CcsdsFrame;
-import org.orekit.files.ccsds.definitions.CcsdsTimeScale;
+import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
+import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndPoints;
 import org.orekit.files.ccsds.section.Header;
@@ -84,8 +84,8 @@ public class StreamingAemWriterTest {
             String            headerCmt    = aemFile.getHeader().getComments().get(0);
             AttitudeEndPoints ep           = ephemerisBlock.getMetadata().getEndPoints();
             boolean           attitudeDir  = ep.isExternal2Local();
-            CcsdsFrame        refFrameA    = ep.getExternalFrame();
-            CcsdsBodyFrame    refFrameB    = ep.getLocalFrame();
+            CelestialBodyFrame        refFrameA    = ep.getExternalFrame();
+            SpacecraftBodyFrame    refFrameB    = ep.getLocalFrame();
             AemAttitudeType   attitudeType = ephemerisBlock.getMetadata().getAttitudeType();
             boolean           isFirst      = ephemerisBlock.getMetadata().isFirst();
 
@@ -96,7 +96,7 @@ public class StreamingAemWriterTest {
             header.addComment(headerCmt);
 
             AemMetadata metadata = new AemMetadata(1);
-            metadata.setTimeSystem(CcsdsTimeScale.UTC);
+            metadata.setTimeSystem(TimeSystem.UTC);
             metadata.setObjectID(objectID);
             metadata.setObjectName("will be overwritten");
             metadata.setAttitudeType(attitudeType);

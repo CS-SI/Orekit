@@ -25,7 +25,7 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.CcsdsUnit;
+import org.orekit.files.ccsds.definitions.Unit;
 import org.orekit.files.ccsds.ndm.odm.CommonParser;
 import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.ndm.odm.OdmHeaderProcessingState;
@@ -395,7 +395,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
             }
             try {
                 final String[] fields = SPLIT_AT_BLANKS.split(token.getContent().trim());
-                final List<CcsdsUnit> units = currentOrbitStateHistoryMetadata.getOrbUnits();
+                final List<Unit> units = currentOrbitStateHistoryMetadata.getOrbUnits();
                 if (fields.length != units.size() + 1) {
                     throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                               token.getLineNumber(), token.getFileName(), token.getContent());
@@ -403,7 +403,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                 final AbsoluteDate epoch;
                 if (fields[0].indexOf('T') > 0) {
                     // absolute date
-                    epoch = context.getTimeScale().parseDate(fields[0], context);
+                    epoch = context.getTimeSystem().parseDate(fields[0], context);
                 } else {
                     // relative date
                     epoch = metadata.getEpochT0().shiftedBy(Double.parseDouble(fields[0]));

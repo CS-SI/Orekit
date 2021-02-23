@@ -45,8 +45,8 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.CcsdsFrame;
-import org.orekit.files.ccsds.definitions.CcsdsTimeScale;
+import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.odm.Covariance;
 import org.orekit.files.general.EphemerisFile;
@@ -357,11 +357,11 @@ public class OEMWriterTest {
 
     private OemMetadata dummyMetadata() {
         OemMetadata metadata = new OemMetadata(4);
-        metadata.setTimeSystem(CcsdsTimeScale.TT);
+        metadata.setTimeSystem(TimeSystem.TT);
         metadata.setObjectID("9999-999ZZZ");
         metadata.setObjectName("transgalactic");
         metadata.setCenterName("EARTH", CelestialBodyFactory.getCelestialBodies());
-        metadata.setRefFrame(FramesFactory.getEME2000(), CcsdsFrame.EME2000);
+        metadata.setRefFrame(FramesFactory.getEME2000(), CelestialBodyFrame.EME2000);
         metadata.setStartTime(AbsoluteDate.J2000_EPOCH.shiftedBy(80 * Constants.JULIAN_CENTURY));
         metadata.setStopTime(metadata.getStartTime().shiftedBy(Constants.JULIAN_YEAR));
         return metadata;

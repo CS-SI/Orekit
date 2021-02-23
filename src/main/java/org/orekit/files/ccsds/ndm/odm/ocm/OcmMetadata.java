@@ -19,7 +19,7 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.util.List;
 
-import org.orekit.files.ccsds.definitions.CcsdsTimeScale;
+import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadata;
 import org.orekit.time.AbsoluteDate;
 
@@ -164,7 +164,7 @@ public class OcmMetadata extends OdmMetadata {
     OcmMetadata() {
 
         // set up the few fields that have default values as per CCSDS standard
-        super(CcsdsTimeScale.UTC);
+        super(TimeSystem.UTC);
         catalogName      = "CSPOC";
         clockSecPerSISec = 1.0;
         interpMethodEOP  = DEFAULT_INTERPOLATION_METHOD;

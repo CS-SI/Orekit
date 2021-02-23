@@ -29,11 +29,11 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 /**
- * The set of time scales defined in Annex A of the ODM CCSDS standard 502.0-B-2.
+ * The set of time systems defined in CCSDS standards (ADM, ODM, NDM).
  *
  * @author Evan Ward
  */
-public enum CcsdsTimeScale {
+public enum TimeSystem {
 
     /** Greenwich Mean Sidereal Time. */
     GMST {
@@ -197,7 +197,7 @@ public enum CcsdsTimeScale {
      * the same string.
      */
     public static boolean contains(final String timeScale) {
-        for (final CcsdsTimeScale scale : values()) {
+        for (final TimeSystem scale : values()) {
             if (scale.name().equals(timeScale)) {
                 return true;
             }
@@ -209,8 +209,8 @@ public enum CcsdsTimeScale {
      * @param value value to parse
      * @return CCSDS time system corresponding to the value
      */
-    public static CcsdsTimeScale parse(final String value) {
-        for (final CcsdsTimeScale scale : values()) {
+    public static TimeSystem parse(final String value) {
+        for (final TimeSystem scale : values()) {
             if (scale.name().equals(value)) {
                 return scale;
             }

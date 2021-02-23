@@ -27,8 +27,8 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.CcsdsFrame;
-import org.orekit.files.ccsds.definitions.CcsdsTimeScale;
+import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndPoints;
 import org.orekit.files.ccsds.section.Header;
@@ -212,7 +212,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  *
  * <p> The {@link MetadataKey#TIME_SYSTEM} must be constant for the whole file and is used
  * to interpret all dates except {@link HeaderKey#CREATION_DATE} which is always in {@link
- * CcsdsTimeScale#UTC UTC}. The guessing algorithm is not guaranteed to work so it is recommended
+ * TimeSystem#UTC UTC}. The guessing algorithm is not guaranteed to work so it is recommended
  * to provide values for {@link AdmMetadataKey#CENTER_NAME} and {@link MetadataKey#TIME_SYSTEM}
  * to avoid any bugs associated with incorrect guesses.
  *
@@ -233,7 +233,7 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
     public static final String DEFAULT_ORIGINATOR = "OREKIT";
 
     /** Default value for {@link #TIME_SYSTEM}. */
-    public static final CcsdsTimeScale DEFAULT_TIME_SYSTEM = CcsdsTimeScale.UTC;
+    public static final TimeSystem DEFAULT_TIME_SYSTEM = TimeSystem.UTC;
 
     /** Default file name for error messages. */
     public static final String DEFAULT_FILE_NAME = "<AEM output>";
@@ -349,7 +349,7 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
         this.metadata       = copy(template);
         this.fileName       = fileName;
         this.attitudeFormat = attitudeFormat;
-        final CcsdsTimeScale cts = metadata.getTimeSystem();
+        final TimeSystem cts = metadata.getTimeSystem();
         if (cts == null) {
             throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
                                       MetadataKey.TIME_SYSTEM.name(), fileName);
@@ -420,7 +420,7 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
                 metadata.setStartTime(segment.getStart());
                 metadata.setStopTime(segment.getStop());
                 final Frame      segmentFrame = segment.getReferenceFrame();
-                final CcsdsFrame ccsdsFrame   = CcsdsFrame.map(segmentFrame);
+                final CelestialBodyFrame ccsdsFrame   = CelestialBodyFrame.map(segmentFrame);
                 metadata.getEndPoints().setExternalFrame(ccsdsFrame);
                 metadata.setInterpolationMethod(segment.getInterpolationMethod());
                 metadata.setInterpolationDegree(segment.getInterpolationSamples() - 1);

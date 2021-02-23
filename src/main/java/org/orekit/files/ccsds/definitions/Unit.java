@@ -22,7 +22,7 @@ import org.hipparchus.util.FastMath;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public enum CcsdsUnit {
+public enum Unit {
 
     /** Kilometers. */
     KM() {

@@ -30,7 +30,7 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.CcsdsTimeScale;
+import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.odm.Covariance;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
@@ -80,7 +80,7 @@ public class OMMParserTest {
         Assert.assertNotNull(file.getMetadata().getCenterBody());
         Assert.assertEquals(CelestialBodyFactory.getEarth(), file.getMetadata().getCenterBody());
         Assert.assertEquals(FramesFactory.getTEME(), file.getMetadata().getFrame());
-        Assert.assertEquals(CcsdsTimeScale.UTC, file.getMetadata().getTimeSystem());
+        Assert.assertEquals(TimeSystem.UTC, file.getMetadata().getTimeSystem());
         Assert.assertEquals("SGP/SGP4", file.getMetadata().getMeanElementTheory());
         Assert.assertEquals("TEME", file.getMetadata().getFrame().toString());
         Assert.assertTrue(file.getData().getTLEBlock().getComments().isEmpty());

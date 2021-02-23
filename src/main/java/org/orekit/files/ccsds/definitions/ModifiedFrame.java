@@ -31,13 +31,13 @@ import org.orekit.time.FieldAbsoluteDate;
  *
  * @author Evan Ward
  */
-public class CcsdsModifiedFrame extends Frame {
+public class ModifiedFrame extends Frame {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20170619L;
 
     /** Reference frame used to create this frame. */
-    private final CcsdsFrame refFrame;
+    private final CelestialBodyFrame refFrame;
 
     /** Value of the CENTER_NAME keyword in the ODM file used to create this frame. */
     private final String centerName;
@@ -51,15 +51,12 @@ public class CcsdsModifiedFrame extends Frame {
      * @param centerName the value of the {@code CENTER_NAME} key word used to create
      *                   {@code body}.
      */
-    public CcsdsModifiedFrame(final Frame frame,
-                              final CcsdsFrame refFrame,
+    public ModifiedFrame(final Frame frame,
+                              final CelestialBodyFrame refFrame,
                               final CelestialBody body,
                               final String centerName) {
-        super(
-                frame,
-                new OriginTransformProvider(body, frame),
-                body.getName() + "/" + frame.getName(),
-                frame.isPseudoInertial());
+        super(frame, new OriginTransformProvider(body, frame),
+              body.getName() + "/" + frame.getName(), frame.isPseudoInertial());
         this.refFrame   = refFrame;
         this.centerName = centerName;
     }
@@ -69,7 +66,7 @@ public class CcsdsModifiedFrame extends Frame {
      *
      * @return the reference frame used to create this frame.
      */
-    public CcsdsFrame getRefFrame() {
+    public CelestialBodyFrame getRefFrame() {
         return refFrame;
     }
 
@@ -83,7 +80,7 @@ public class CcsdsModifiedFrame extends Frame {
         return centerName;
     }
 
-    /** Transform provider for {@link CcsdsModifiedFrame}. */
+    /** Transform provider for {@link ModifiedFrame}. */
     private static class OriginTransformProvider implements TransformProvider {
 
         /** Serializable UID. */

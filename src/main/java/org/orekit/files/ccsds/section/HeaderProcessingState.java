@@ -19,7 +19,7 @@ package org.orekit.files.ccsds.section;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.CcsdsTimeScale;
+import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.parsing.AbstractMessageParser;
@@ -43,7 +43,7 @@ public class HeaderProcessingState implements ProcessingState {
      * @param parser parser for the complete message
      */
     public HeaderProcessingState(final DataContext dataContext, final AbstractMessageParser<?, ?> parser) {
-        this.context = new ParsingContext(() -> null, () -> true, () -> dataContext, () -> null, () -> CcsdsTimeScale.UTC);
+        this.context = new ParsingContext(() -> null, () -> true, () -> dataContext, () -> null, () -> TimeSystem.UTC);
         this.parser  = parser;
     }
 

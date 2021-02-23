@@ -36,9 +36,9 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
-import org.orekit.files.ccsds.definitions.CcsdsFrame;
-import org.orekit.files.ccsds.definitions.CcsdsModifiedFrame;
-import org.orekit.files.ccsds.definitions.CcsdsTimeScale;
+import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.ModifiedFrame;
+import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.definitions.CenterName;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.odm.OdmHeader;
@@ -94,8 +94,8 @@ public class StreamingOemWriterTest {
         MatcherAssert.assertThat(CenterName.guessCenter(emb.getBodyOrientedFrame()),
                                  CoreMatchers.is("EARTH-MOON BARYCENTER"));
         // check some special CCSDS frames
-        CcsdsModifiedFrame frame = new CcsdsModifiedFrame(FramesFactory.getEME2000(),
-                                                          CcsdsFrame.EME2000,
+        ModifiedFrame frame = new ModifiedFrame(FramesFactory.getEME2000(),
+                                                          CelestialBodyFrame.EME2000,
                                                           CelestialBodyFactory.getMars(), "MARS");
         MatcherAssert.assertThat(CenterName.guessCenter(frame), CoreMatchers.is("MARS"));
 
@@ -142,9 +142,9 @@ public class StreamingOemWriterTest {
             OemMetadata metadata = new OemMetadata(1);
             metadata.setObjectName("will be overwritten");
             metadata.setObjectID(objectID);
-            metadata.setTimeSystem(CcsdsTimeScale.UTC);
+            metadata.setTimeSystem(TimeSystem.UTC);
             metadata.setCenterName(ephemerisBlock.getMetadata().getCenterName(), CelestialBodyFactory.getCelestialBodies());
-            metadata.setRefFrame(FramesFactory.getEME2000(), CcsdsFrame.EME2000); // will be overwritten
+            metadata.setRefFrame(FramesFactory.getEME2000(), CelestialBodyFrame.EME2000); // will be overwritten
             metadata.setStartTime(AbsoluteDate.J2000_EPOCH.shiftedBy(80 * Constants.JULIAN_CENTURY));
             metadata.setStopTime(metadata.getStartTime().shiftedBy(Constants.JULIAN_YEAR));
             OemWriter oemWriter = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
@@ -176,7 +176,7 @@ public class StreamingOemWriterTest {
                 oemWriter.getMetadata().setStartTime(block.getStart());
                 oemWriter.getMetadata().setStopTime(block.getStop());
                 final Frame      stateFrame = satellite.getPropagator().getFrame();
-                final CcsdsFrame ccsdsFrame = CcsdsFrame.map(stateFrame);
+                final CelestialBodyFrame ccsdsFrame = CelestialBodyFrame.map(stateFrame);
                 oemWriter.getMetadata().setRefFrame(stateFrame, ccsdsFrame);
                 oemWriter.writeMetadata(generator);
                 for (TimeStampedPVCoordinates coordinate : block.getCoordinates()) {

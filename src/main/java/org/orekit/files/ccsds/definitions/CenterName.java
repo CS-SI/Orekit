@@ -131,8 +131,8 @@ public enum CenterName {
         final String name = frame.getName();
         if (name.endsWith(INERTIAL_FRAME_SUFFIX) || name.endsWith(ROTATING_FRAME_SUFFIX)) {
             return name.substring(0, name.length() - 9).toUpperCase(STANDARDIZED_LOCALE);
-        } else if (frame instanceof CcsdsModifiedFrame) {
-            return ((CcsdsModifiedFrame) frame).getCenterName();
+        } else if (frame instanceof ModifiedFrame) {
+            return ((ModifiedFrame) frame).getCenterName();
         } else if (frame.getName().equals(Predefined.ICRF.getName())) {
             return CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER.toUpperCase(STANDARDIZED_LOCALE);
         } else if (frame.getDepth() == 0 || frame instanceof FactoryManagedFrame) {

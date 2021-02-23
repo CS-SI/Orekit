@@ -18,7 +18,7 @@ package org.orekit.files.ccsds.ndm.odm.opm;
 
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
-import org.orekit.files.ccsds.definitions.CcsdsFrame;
+import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 
 
@@ -38,7 +38,7 @@ public enum ManeuverKey {
     /** Coordinate system for velocity increment vector. */
     MAN_REF_FRAME((token, context, data) -> {
         if (token.getType() == TokenType.ENTRY) {
-            final CcsdsFrame manFrame = CcsdsFrame.parse(token.getContent());
+            final CelestialBodyFrame manFrame = CelestialBodyFrame.parse(token.getContent());
             if (manFrame.isLof()) {
                 data.setRefLofType(manFrame.getLofType());
             } else {

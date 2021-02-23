@@ -45,8 +45,8 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.CcsdsFrame;
-import org.orekit.files.ccsds.definitions.CcsdsTimeScale;
+import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.general.AttitudeEphemerisFile;
@@ -349,7 +349,7 @@ public class AEMWriterTest {
             metadata.addComment("metadata for " + objectName);
             metadata.setObjectID(objectID);
             metadata.setObjectName(objectName);
-            metadata.getEndPoints().setExternalFrame(CcsdsFrame.map(referenceFrame));
+            metadata.getEndPoints().setExternalFrame(CelestialBodyFrame.map(referenceFrame));
             metadata.setAttitudeType(type);
             metadata.setStartTime(ac0.getDate());
             metadata.setStopTime(ac0.getDate().shiftedBy(duration));
@@ -383,7 +383,7 @@ public class AEMWriterTest {
 
     private AemMetadata dummyMetadata() {
         AemMetadata metadata = new AemMetadata(4);
-        metadata.setTimeSystem(CcsdsTimeScale.TT);
+        metadata.setTimeSystem(TimeSystem.TT);
         metadata.setObjectID("9999-999ZZZ");
         metadata.setObjectName("transgalactic");
         metadata.getEndPoints().setFrameA("GCRF");

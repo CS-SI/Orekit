@@ -31,9 +31,9 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.CcsdsBodyFrame;
-import org.orekit.files.ccsds.definitions.CcsdsFrame;
-import org.orekit.files.ccsds.definitions.CcsdsTimeScale;
+import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
+import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
 import org.orekit.files.ccsds.section.Segment;
@@ -92,14 +92,14 @@ public class APMParserTest {
         Assert.assertEquals("EARTH",      segment.getMetadata().getCenterName());
         Assert.assertTrue(segment.getMetadata().getHasCreatableBody());
         Assert.assertEquals(CelestialBodyFactory.getEarth(), segment.getMetadata().getCenterBody());
-        Assert.assertEquals(CcsdsTimeScale.UTC,              segment.getMetadata().getTimeSystem());
+        Assert.assertEquals(TimeSystem.UTC,              segment.getMetadata().getTimeSystem());
 
         // Check data block
         Assert.assertFalse(segment.getData().hasManeuvers());
-        Assert.assertEquals(CcsdsBodyFrame.BaseEquipment.SC_BODY,
+        Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY,
                             segment.getData().getQuaternionBlock().getEndPoints().getLocalFrame().getBaseEquipment());
         Assert.assertEquals("1", segment.getData().getQuaternionBlock().getEndPoints().getLocalFrame().getLabel());
-        Assert.assertEquals(CcsdsFrame.ITRF97, segment.getData().getQuaternionBlock().getEndPoints().getExternalFrame());
+        Assert.assertEquals(CelestialBodyFrame.ITRF97, segment.getData().getQuaternionBlock().getEndPoints().getExternalFrame());
         Assert.assertFalse(segment.getData().getQuaternionBlock().getEndPoints().isExternal2Local());
         Assert.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, 15.1172,
                                              TimeScalesFactory.getUTC()),
@@ -163,7 +163,7 @@ public class APMParserTest {
         Assert.assertTrue(segment.getMetadata().getHasCreatableBody());
         Assert.assertTrue(segment.getMetadata().getComments().isEmpty());
         Assert.assertEquals(CelestialBodyFactory.getEarth(), segment.getMetadata().getCenterBody());
-        Assert.assertEquals(CcsdsTimeScale.UTC,              segment.getMetadata().getTimeSystem());
+        Assert.assertEquals(TimeSystem.UTC,              segment.getMetadata().getTimeSystem());
 
         // Check data block: QUATERNION
         ArrayList<String> epochComment = new ArrayList<String>();
@@ -175,10 +175,10 @@ public class APMParserTest {
         epochComment.add("planning data.");
         epochComment.add("Attitude state quaternion");
         Assert.assertEquals(epochComment,   segment.getData().getQuaternionBlock().getComments());
-        Assert.assertEquals(CcsdsBodyFrame.BaseEquipment.INSTRUMENT,
+        Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.INSTRUMENT,
                             segment.getData().getQuaternionBlock().getEndPoints().getLocalFrame().getBaseEquipment());
         Assert.assertEquals("A", segment.getData().getQuaternionBlock().getEndPoints().getLocalFrame().getLabel());
-        Assert.assertEquals(CcsdsFrame.ITRF97, segment.getData().getQuaternionBlock().getEndPoints().getExternalFrame());
+        Assert.assertEquals(CelestialBodyFrame.ITRF97, segment.getData().getQuaternionBlock().getEndPoints().getExternalFrame());
         Assert.assertEquals(new AbsoluteDate(2004, 2, 14, 14, 28, 15.1172,
                                              TimeScalesFactory.getUTC()),
                             segment.getData().getQuaternionBlock().getEpoch());
@@ -196,8 +196,8 @@ public class APMParserTest {
         ArrayList<String> eulerComment = new ArrayList<String>();
         eulerComment.add("Attitude specified as Euler elements");
         Assert.assertEquals(eulerComment,    segment.getData().getEulerBlock().getComments());
-        Assert.assertEquals(CcsdsFrame.ITRF97, segment.getData().getEulerBlock().getEndPoints().getExternalFrame());
-        Assert.assertEquals(CcsdsBodyFrame.BaseEquipment.INSTRUMENT,  segment.getData().getEulerBlock().getEndPoints().getLocalFrame().getBaseEquipment());
+        Assert.assertEquals(CelestialBodyFrame.ITRF97, segment.getData().getEulerBlock().getEndPoints().getExternalFrame());
+        Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.INSTRUMENT,  segment.getData().getEulerBlock().getEndPoints().getLocalFrame().getBaseEquipment());
         Assert.assertEquals("A",  segment.getData().getEulerBlock().getEndPoints().getLocalFrame().getLabel());
         Assert.assertTrue(segment.getData().getEulerBlock().getEndPoints().isExternal2Local());
         Assert.assertEquals("EULER FRAME A",   segment.getData().getEulerBlock().getRateFrameString());
@@ -281,14 +281,14 @@ public class APMParserTest {
         Assert.assertEquals("EARTH",      segment.getMetadata().getCenterName());
         Assert.assertTrue(segment.getMetadata().getHasCreatableBody());
         Assert.assertEquals(CelestialBodyFactory.getEarth(), segment.getMetadata().getCenterBody());
-        Assert.assertEquals(CcsdsTimeScale.UTC,              segment.getMetadata().getTimeSystem());
+        Assert.assertEquals(TimeSystem.UTC,              segment.getMetadata().getTimeSystem());
 
         // Check data block: QUATERNION
         Assert.assertFalse(segment.getData().hasManeuvers());
-        Assert.assertEquals(CcsdsBodyFrame.BaseEquipment.SC_BODY,
+        Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY,
                             segment.getData().getQuaternionBlock().getEndPoints().getLocalFrame().getBaseEquipment());
         Assert.assertEquals("1", segment.getData().getQuaternionBlock().getEndPoints().getLocalFrame().getLabel());
-        Assert.assertEquals(CcsdsFrame.ITRF97, segment.getData().getQuaternionBlock().getEndPoints().getExternalFrame());
+        Assert.assertEquals(CelestialBodyFrame.ITRF97, segment.getData().getQuaternionBlock().getEndPoints().getExternalFrame());
         Assert.assertTrue(segment.getData().getQuaternionBlock().getEndPoints().isExternal2Local());
         Assert.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, 15.1172,
                                              TimeScalesFactory.getUTC()),
@@ -306,10 +306,10 @@ public class APMParserTest {
         ArrayList<String> spinComment = new ArrayList<String>();
         spinComment.add("SPIN Parameters");
         Assert.assertEquals(spinComment, segment.getData().getSpinStabilizedBlock().getComments());
-        Assert.assertEquals(CcsdsBodyFrame.BaseEquipment.SC_BODY,
+        Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY,
                             segment.getData().getSpinStabilizedBlock().getEndPoints().getLocalFrame().getBaseEquipment());
         Assert.assertEquals("1", segment.getData().getSpinStabilizedBlock().getEndPoints().getLocalFrame().getLabel());
-        Assert.assertEquals(CcsdsFrame.ITRF97, segment.getData().getSpinStabilizedBlock().getEndPoints().getExternalFrame());
+        Assert.assertEquals(CelestialBodyFrame.ITRF97, segment.getData().getSpinStabilizedBlock().getEndPoints().getExternalFrame());
         Assert.assertFalse(segment.getData().getSpinStabilizedBlock().getEndPoints().isExternal2Local());
         Assert.assertEquals(FastMath.toRadians(24.8),   segment.getData().getSpinStabilizedBlock().getSpinAlpha(),      ANGLE_PRECISION);
         Assert.assertEquals(FastMath.toRadians(33.7),   segment.getData().getSpinStabilizedBlock().getSpinDelta(),      ANGLE_PRECISION);
@@ -360,14 +360,14 @@ public class APMParserTest {
         Assert.assertEquals("EARTH",      segment.getMetadata().getCenterName());
         Assert.assertTrue(segment.getMetadata().getHasCreatableBody());
         Assert.assertEquals(CelestialBodyFactory.getEarth(), segment.getMetadata().getCenterBody());
-        Assert.assertEquals(CcsdsTimeScale.UTC,              segment.getMetadata().getTimeSystem());
+        Assert.assertEquals(TimeSystem.UTC,              segment.getMetadata().getTimeSystem());
 
         // Check data block
         Assert.assertFalse(segment.getData().hasManeuvers());
-        Assert.assertEquals(CcsdsBodyFrame.BaseEquipment.SC_BODY,
+        Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY,
                             segment.getData().getQuaternionBlock().getEndPoints().getLocalFrame().getBaseEquipment());
         Assert.assertEquals("1", segment.getData().getQuaternionBlock().getEndPoints().getLocalFrame().getLabel());
-        Assert.assertEquals(CcsdsFrame.ITRF97, segment.getData().getQuaternionBlock().getEndPoints().getExternalFrame());
+        Assert.assertEquals(CelestialBodyFrame.ITRF97, segment.getData().getQuaternionBlock().getEndPoints().getExternalFrame());
         Assert.assertFalse(segment.getData().getQuaternionBlock().getEndPoints().isExternal2Local());
         Assert.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, 15.1172,
                                              TimeScalesFactory.getUTC()),

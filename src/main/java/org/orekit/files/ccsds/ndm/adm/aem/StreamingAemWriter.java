@@ -21,7 +21,7 @@ import java.io.IOException;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.CcsdsFrame;
+import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.Propagator;
@@ -111,7 +111,7 @@ public class StreamingAemWriter {
                 metadata.setUseableStopTime(null);
                 metadata.setStopTime(t);
                 final Frame      stateFrame = s0.getAttitude().getReferenceFrame();
-                final CcsdsFrame ccsdsFrame = CcsdsFrame.map(stateFrame);
+                final CelestialBodyFrame ccsdsFrame = CelestialBodyFrame.map(stateFrame);
                 metadata.getEndPoints().setExternalFrame(ccsdsFrame);
                 aemWriter.writeMetadata(generator);
                 aemWriter.startAttitudeBlock(generator);

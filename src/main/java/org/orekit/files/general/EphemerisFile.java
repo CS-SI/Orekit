@@ -125,7 +125,7 @@ public interface EphemerisFile<C extends TimeStampedPVCoordinates,
          * several conditions must be met. An Orekit {@link Frame} and {@link TimeScale}
          * must be constructable from the frame and time scale specification in the
          * ephemeris file. This condition is met when {@link EphemerisSegment#getFrame()}
-         * and {@link EphemerisSegment#getTimeScale()} return normally for all {@link
+         * and {@link EphemerisSegment#getTimeSystem()} return normally for all {@link
          * #getSegments() segments}. If there are multiple segments they must be adjacent
          * such that there are no duplicates or gaps in the ephemeris. The definition of
          * adjacent depends on the ephemeris format as some formats define usable start
@@ -253,7 +253,7 @@ public interface EphemerisFile<C extends TimeStampedPVCoordinates,
          * several conditions must be met. An Orekit {@link Frame} and {@link TimeScale}
          * must be constructable from the frame and time scale specification in the
          * ephemeris file. This condition is met when {@link EphemerisSegment#getFrame()}
-         * and {@link EphemerisSegment#getTimeScale()} return normally. Additionally,
+         * and {@link EphemerisSegment#getTimeSystem()} return normally. Additionally,
          * {@link #getMu()} must return a valid value. If these conditions are not met an
          * {@link OrekitException} may be thrown by this method or by one of the methods
          * of the returned {@link Propagator}.

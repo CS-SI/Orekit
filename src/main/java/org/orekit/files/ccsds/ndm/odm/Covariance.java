@@ -23,7 +23,7 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.CcsdsFrame;
+import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Data;
 import org.orekit.frames.Frame;
@@ -44,7 +44,7 @@ public class Covariance extends CommentsContainer implements Data {
     private final Supplier<Frame> defaultFrameSupplier;
 
     /** Supplier for default CCSDS reference frame. */
-    private final Supplier<CcsdsFrame> defaultCCSDSFrameSupplier;
+    private final Supplier<CelestialBodyFrame> defaultCCSDSFrameSupplier;
 
     /** Matrix epoch. */
     private AbsoluteDate epoch;
@@ -53,7 +53,7 @@ public class Covariance extends CommentsContainer implements Data {
     private Frame referenceFrame;
 
     /** Reference frame in which data are given. */
-    private CcsdsFrame referenceCCSDSFrame;
+    private CelestialBodyFrame referenceCCSDSFrame;
 
     /** Position/Velocity covariance matrix. */
     private RealMatrix covarianceMatrix;
@@ -65,7 +65,7 @@ public class Covariance extends CommentsContainer implements Data {
      * if no frame is specified in the CCSDS message
      */
     public Covariance(final Supplier<Frame> defaultFrameSupplier,
-                         final Supplier<CcsdsFrame> defaultCCSDSFrameSupplier) {
+                         final Supplier<CelestialBodyFrame> defaultCCSDSFrameSupplier) {
         this.defaultFrameSupplier      = defaultFrameSupplier;
         this.defaultCCSDSFrameSupplier = defaultCCSDSFrameSupplier;
         covarianceMatrix = MatrixUtils.createRealMatrix(6, 6);
@@ -117,12 +117,12 @@ public class Covariance extends CommentsContainer implements Data {
     }
 
     /**
-     * Get the reference frame as a {@link CcsdsFrame}.
+     * Get the reference frame as a {@link CelestialBodyFrame}.
      *
      * @return The reference frame specified by the {@code COV_REF_FRAME} keyword
      * or inherited from metadate
      */
-    public CcsdsFrame getRefCCSDSFrame() {
+    public CelestialBodyFrame getRefCCSDSFrame() {
         return useDefaultSuppliers() ? defaultCCSDSFrameSupplier.get() : referenceCCSDSFrame;
     }
 
@@ -140,7 +140,7 @@ public class Covariance extends CommentsContainer implements Data {
      * @param frame the reference frame to be set
      * @param ccsdsFrame the reference frame to be set
      */
-    public void setRefFrame(final Frame frame, final CcsdsFrame ccsdsFrame) {
+    public void setRefFrame(final Frame frame, final CelestialBodyFrame ccsdsFrame) {
         refuseFurtherComments();
         this.referenceFrame      = frame;
         this.referenceCCSDSFrame = ccsdsFrame;

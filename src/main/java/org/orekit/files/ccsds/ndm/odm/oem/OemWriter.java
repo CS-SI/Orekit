@@ -29,8 +29,8 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.CcsdsFrame;
-import org.orekit.files.ccsds.definitions.CcsdsTimeScale;
+import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.Covariance;
@@ -187,7 +187,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *
  * <p> The {@link MetadataKey#TIME_SYSTEM} must be constant for the whole file and is used
  * to interpret all dates except {@link HeaderKey#CREATION_DATE} which is always in {@link
- * CcsdsTimeScale#UTC UTC}. The guessing algorithm is not guaranteed to work so it is recommended
+ * TimeSystem#UTC UTC}. The guessing algorithm is not guaranteed to work so it is recommended
  * to provide values for {@link AdmMetadataKey#CENTER_NAME} and {@link MetadataKey#TIME_SYSTEM}
  * to avoid any bugs associated with incorrect guesses.
  *
@@ -214,7 +214,7 @@ public class OemWriter implements EphemerisFileWriter {
     public static final String DEFAULT_ORIGINATOR = "OREKIT";
 
     /** Default value for {@link #TIME_SYSTEM}. */
-    public static final CcsdsTimeScale DEFAULT_TIME_SYSTEM = CcsdsTimeScale.UTC;
+    public static final TimeSystem DEFAULT_TIME_SYSTEM = TimeSystem.UTC;
 
     /** Default file name for error messages. */
     public static final String DEFAULT_FILE_NAME = "<OEM output>";
@@ -410,7 +410,7 @@ public class OemWriter implements EphemerisFileWriter {
                     metadata.setRefFrame(oemSegment.getMetadata().getRefFrame(),
                                          oemSegment.getMetadata().getRefCCSDSFrame());
                 } else {
-                    metadata.setRefFrame(segment.getFrame(), CcsdsFrame.map(segment.getFrame()));
+                    metadata.setRefFrame(segment.getFrame(), CelestialBodyFrame.map(segment.getFrame()));
                 }
                 metadata.setStartTime(segment.getStart());
                 metadata.setStopTime(segment.getStop());

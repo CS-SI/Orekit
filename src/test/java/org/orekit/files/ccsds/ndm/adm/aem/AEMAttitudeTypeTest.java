@@ -32,7 +32,7 @@ import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.CcsdsTimeScale;
+import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
@@ -57,7 +57,7 @@ public class AEMAttitudeTypeTest {
                                        () -> DataContext.getDefault(),
                                        () -> null,
                                        metadata::getTimeSystem);
-        metadata.setTimeSystem(CcsdsTimeScale.TAI);
+        metadata.setTimeSystem(TimeSystem.TAI);
         metadata.getEndPoints().setExternal2Local(true);
     }
 
@@ -368,7 +368,7 @@ public class AEMAttitudeTypeTest {
                                                     () -> true,
                                                     () -> DataContext.getDefault(),
                                                     () -> null,
-                                                    () -> CcsdsTimeScale.UTC);
+                                                    () -> TimeSystem.UTC);
         AemMetadata metadata = new AemMetadata(3);
         metadata.setLocalRates(localRates);
         metadata.setIsFirst(isFirst);
@@ -377,7 +377,7 @@ public class AEMAttitudeTypeTest {
         double[] dData = type.getAttitudeData(tac, metadata);
         String[] sData = new String[1 + dData.length];
         sData[0] = tac.getDate().toString(context.
-                                          getTimeScale().
+                                          getTimeSystem().
                                           getTimeScale(context.getConventions(),
                                                        context.getDataContext().getTimeScales()));
         for (int i = 0; i < dData.length; ++i) {

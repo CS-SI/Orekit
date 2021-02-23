@@ -19,8 +19,8 @@ package org.orekit.files.ccsds.ndm.adm;
 import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.CcsdsBodyFrame;
-import org.orekit.files.ccsds.definitions.CcsdsFrame;
+import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
+import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.ndm.adm.aem.AemMetadataKey;
 
 /**
@@ -29,11 +29,11 @@ import org.orekit.files.ccsds.ndm.adm.aem.AemMetadataKey;
  * There are two different perspectives implemented by this class.
  * </p>
  * <p>
- * In the Orekit perspective, one of the frame is an {@link CcsdsFrame external
+ * In the Orekit perspective, one of the frame is an {@link CelestialBodyFrame external
  * frame} suitable for reference for Orekit {@link Attitude}, the other one
- * is a {@link CcsdsBodyFrame local spaceraft body frame}. The suitable
- * setters to be used in this perspective are {@link #setExternalFrame(CcsdsFrame)},
- * {@link #setLocalFrame(CcsdsBodyFrame)} and {@link #setExternal2Local(boolean)}.
+ * is a {@link SpacecraftBodyFrame local spaceraft body frame}. The suitable
+ * setters to be used in this perspective are {@link #setExternalFrame(CelestialBodyFrame)},
+ * {@link #setLocalFrame(SpacecraftBodyFrame)} and {@link #setExternal2Local(boolean)}.
  * </p>
  * <p>
  * In the CCSDS perspective, the frames are simply labeled as 'A' and 'B', there
@@ -52,10 +52,10 @@ import org.orekit.files.ccsds.ndm.adm.aem.AemMetadataKey;
 public class AttitudeEndPoints {
 
     /** External frame. */
-    private CcsdsFrame externalFrame;
+    private CelestialBodyFrame externalFrame;
 
     /** Local spacecraft body frame. */
-    private CcsdsBodyFrame localFrame;
+    private SpacecraftBodyFrame localFrame;
 
     /** Indicator for frame A. */
     private boolean frameAIsExternal;
@@ -87,28 +87,28 @@ public class AttitudeEndPoints {
     /** Set the external frame.
      * @param externalFrame external frame suitable for reference for Orekit {@link Attitude}
      */
-    public void setExternalFrame(final CcsdsFrame externalFrame) {
+    public void setExternalFrame(final CelestialBodyFrame externalFrame) {
         this.externalFrame = externalFrame;
     }
 
     /** Get the external frame.
      * @return external frame suitable for reference for Orekit {@link Attitude}
      */
-    public CcsdsFrame getExternalFrame() {
+    public CelestialBodyFrame getExternalFrame() {
         return externalFrame;
     }
 
     /** Set the local spacecraft body frame.
      * @param localFrame local spacecraft body frame
      */
-    public void setLocalFrame(final CcsdsBodyFrame localFrame) {
+    public void setLocalFrame(final SpacecraftBodyFrame localFrame) {
         this.localFrame = localFrame;
     }
 
     /** Get the local spacecraft body frame.
      * @return local spacecraft body frame
      */
-    public CcsdsBodyFrame getLocalFrame() {
+    public SpacecraftBodyFrame getLocalFrame() {
         return localFrame;
     }
 
@@ -161,10 +161,10 @@ public class AttitudeEndPoints {
      */
     private boolean setFrame(final String name) {
         try {
-            setExternalFrame(CcsdsFrame.parse(name));
+            setExternalFrame(CelestialBodyFrame.parse(name));
             return true;
         } catch (IllegalArgumentException iaeE) {
-            setLocalFrame(CcsdsBodyFrame.parse(name));
+            setLocalFrame(SpacecraftBodyFrame.parse(name));
             return false;
         }
     }

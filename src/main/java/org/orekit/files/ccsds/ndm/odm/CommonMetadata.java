@@ -22,8 +22,8 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.CcsdsFrame;
-import org.orekit.files.ccsds.definitions.CcsdsModifiedFrame;
+import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.ModifiedFrame;
 import org.orekit.files.ccsds.definitions.CenterName;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 import org.orekit.frames.Frame;
@@ -50,7 +50,7 @@ public class CommonMetadata extends OdmMetadata {
 
     /** Reference frame in which data are given: used for state vector
      * and Keplerian elements data (and for the covariance reference frame if none is given). */
-    private CcsdsFrame referenceCCSDSFrame;
+    private CelestialBodyFrame referenceCCSDSFrame;
 
     /** Epoch of reference frame, if not intrinsic to the definition of the
      * reference frame. */
@@ -85,7 +85,7 @@ public class CommonMetadata extends OdmMetadata {
      */
     public void finalizeMetadata(final ParsingContext context) {
         if (frameEpochString != null) {
-            frameEpoch = context.getTimeScale().parseDate(frameEpochString, context);
+            frameEpoch = context.getTimeSystem().parseDate(frameEpochString, context);
         }
     }
 
@@ -185,8 +185,8 @@ public class CommonMetadata extends OdmMetadata {
         }
         // Just return frame if we don't need to shift the center based on CENTER_NAME
         // MCI and ICRF are the only non-Earth centered frames specified in Annex A.
-        final boolean isMci  = referenceCCSDSFrame == CcsdsFrame.MCI;
-        final boolean isIcrf = referenceCCSDSFrame == CcsdsFrame.ICRF;
+        final boolean isMci  = referenceCCSDSFrame == CelestialBodyFrame.MCI;
+        final boolean isIcrf = referenceCCSDSFrame == CelestialBodyFrame.ICRF;
         final boolean isSolarSystemBarycenter =
                 CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER.equals(centerBody.getName());
         if ((!(isMci || isIcrf) && CelestialBodyFactory.EARTH.equals(centerBody.getName())) ||
@@ -195,7 +195,7 @@ public class CommonMetadata extends OdmMetadata {
             return referenceFrame;
         }
         // else, translate frame to specified center.
-        return new CcsdsModifiedFrame(referenceFrame, referenceCCSDSFrame, centerBody, centerName);
+        return new ModifiedFrame(referenceFrame, referenceCCSDSFrame, centerBody, centerName);
     }
 
     /**
@@ -218,7 +218,7 @@ public class CommonMetadata extends OdmMetadata {
      * @return The reference frame specified by the {@code REF_FRAME} keyword.
      * @see #getFrame()
      */
-    public CcsdsFrame getRefCCSDSFrame() {
+    public CelestialBodyFrame getRefCCSDSFrame() {
         return referenceCCSDSFrame;
     }
 
@@ -227,7 +227,7 @@ public class CommonMetadata extends OdmMetadata {
      * @param frame the reference frame to be set
      * @param ccsdsFrame the reference frame to be set
      */
-    public void setRefFrame(final Frame frame, final CcsdsFrame ccsdsFrame) {
+    public void setRefFrame(final Frame frame, final CelestialBodyFrame ccsdsFrame) {
         refuseFurtherComments();
         this.referenceFrame      = frame;
         this.referenceCCSDSFrame = ccsdsFrame;
