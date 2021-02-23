@@ -81,7 +81,7 @@ public class ViennaThreeModelTest {
         
         final ViennaThreeModel model = new ViennaThreeModel(a, z);
         
-        final double[] computedMapping = model.mappingFactors(elevation, point, model.getParameters(), date);
+        final double[] computedMapping = model.mappingFactors(elevation, point, date);
         
         Assert.assertEquals(expectedHydro, computedMapping[0], epsilon);
         Assert.assertEquals(expectedWet,   computedMapping[1], epsilon);
@@ -126,7 +126,7 @@ public class ViennaThreeModelTest {
         
         final ViennaThreeModel model = new ViennaThreeModel(a, z);
         
-        final double[] computedMapping = model.mappingFactors(elevation, point, model.getParameters(), date);
+        final double[] computedMapping = model.mappingFactors(elevation, point, date);
         
         Assert.assertEquals(expectedHydro, computedMapping[0], epsilon);
         Assert.assertEquals(expectedWet,   computedMapping[1], epsilon);
@@ -171,7 +171,7 @@ public class ViennaThreeModelTest {
         
         final ViennaThreeModel model = new ViennaThreeModel(a, z);
         
-        final double[] computedMapping = model.mappingFactors(elevation, point, model.getParameters(), date);
+        final double[] computedMapping = model.mappingFactors(elevation, point, date);
         
         Assert.assertEquals(expectedHydro, computedMapping[0], epsilon);
         Assert.assertEquals(expectedWet,   computedMapping[1], epsilon);

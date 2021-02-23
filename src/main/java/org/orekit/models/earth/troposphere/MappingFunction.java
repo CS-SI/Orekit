@@ -16,16 +16,11 @@
  */
 package org.orekit.models.earth.troposphere;
 
-import java.util.List;
-
-import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.util.MathArrays;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.ParameterDriver;
 
 /** Interface for mapping functions used in the tropospheric delay computation.
  * @author Bryan Cazabonne
@@ -40,11 +35,10 @@ public interface MappingFunction {
      * </ul>
      * @param elevation the elevation of the satellite, in radians
      * @param point station location
-     * @param parameters tropospheric model parameters.
      * @param date current date
      * @return a two components array containing the hydrostatic and wet mapping functions.
      */
-    double[] mappingFactors(double elevation, GeodeticPoint point, double[] parameters, AbsoluteDate date);
+    double[] mappingFactors(double elevation, GeodeticPoint point, AbsoluteDate date);
 
     /** This method allows the computation of the hydrostatic and
      * wet mapping functions. The resulting element is an array having the following form:
@@ -54,41 +48,10 @@ public interface MappingFunction {
      * </ul>
      * @param elevation the elevation of the satellite, in radians
      * @param point station location
-     * @param parameters tropospheric model parameters
      * @param date current date
      * @param <T> type of the elements
      * @return a two components array containing the hydrostatic and wet mapping functions.
      */
-    <T extends RealFieldElement<T>> T[] mappingFactors(T elevation, FieldGeodeticPoint<T> point, T[] parameters, FieldAbsoluteDate<T> date);
+    <T extends RealFieldElement<T>> T[] mappingFactors(T elevation, FieldGeodeticPoint<T> point, FieldAbsoluteDate<T> date);
 
-    /** Get the drivers for tropospheric model parameters.
-     * @return drivers for tropospheric model parameters
-     */
-    List<ParameterDriver> getParametersDrivers();
-
-    /** Get tropospheric model parameters.
-     * @return tropospheric model parameters
-     */
-    default double[] getParameters() {
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final double[] parameters = new double[drivers.size()];
-        for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = drivers.get(i).getValue();
-        }
-        return parameters;
-    }
-
-    /** Get tropospheric model parameters.
-     * @param field field to which the elements belong
-     * @param <T> type of the elements
-     * @return tropospheric model parameters
-     */
-    default <T extends RealFieldElement<T>> T[] getParameters(final Field<T> field) {
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final T[] parameters = MathArrays.buildArray(field, drivers.size());
-        for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = field.getZero().add(drivers.get(i).getValue());
-        }
-        return parameters;
-    }
 }

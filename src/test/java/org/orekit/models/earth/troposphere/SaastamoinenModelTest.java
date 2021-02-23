@@ -269,9 +269,6 @@ public class SaastamoinenModelTest {
                     double[] actualValue = model.computeZenithDelay(new GeodeticPoint(0.0, 0.0, height), model.getParameters(), AbsoluteDate.J2000_EPOCH);
                     Assert.assertEquals(expectedValue, actualValue[0], epsilon);
                 }
-                final double[] mapping = model.mappingFactors(elevation, new GeodeticPoint(0.0, 0.0, height), model.getParameters(), AbsoluteDate.J2000_EPOCH);
-                Assert.assertEquals(1.0, mapping[0], epsilon);
-                Assert.assertEquals(1.0, mapping[1], epsilon);
             }
         }
 
@@ -300,9 +297,6 @@ public class SaastamoinenModelTest {
                     T[] actualValue = model.computeZenithDelay(new FieldGeodeticPoint<>(zero, zero, zero.add(height)), model.getParameters(field), FieldAbsoluteDate.getJ2000Epoch(field));
                     Assert.assertEquals(expectedValue, actualValue[0].getReal(), epsilon);
                 }
-                final T[] mapping = model.mappingFactors(zero.add(elevation), new FieldGeodeticPoint<>(zero, zero, zero.add(height)), model.getParameters(field), FieldAbsoluteDate.getJ2000Epoch(field));
-                Assert.assertEquals(1.0, mapping[0].getReal(), epsilon);
-                Assert.assertEquals(1.0, mapping[1].getReal(), epsilon);
             }
         }
     }

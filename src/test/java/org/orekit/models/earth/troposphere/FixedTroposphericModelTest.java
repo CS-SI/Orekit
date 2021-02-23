@@ -86,14 +86,6 @@ public class FixedTroposphericModelTest {
         final double[] zenithDelay = model.computeZenithDelay(new GeodeticPoint(0., 0., 0.), model.getParameters(), AbsoluteDate.J2000_EPOCH);
         Assert.assertEquals(2.5d, zenithDelay[0], epsilon);
         Assert.assertEquals(0.0d, zenithDelay[1], epsilon);
-
-        // Compute delay using zenith delay and mapping factors
-        // For Fixed Troposheric model, the delay is not split into hydrostatic and non-hydrostatic parts
-        // In that respect, mapping function is equal to 1.0 for for both components and for any elevation angle
-        final double[] mapping = model.mappingFactors(0d, new GeodeticPoint(0., 0., 0.), model.getParameters(), AbsoluteDate.J2000_EPOCH);
-        // Delay
-        final double delay = zenithDelay[0] * mapping[0] + zenithDelay[1] * mapping[1];
-        Assert.assertEquals(2.5d, delay, epsilon);
     }
 
     @Test
@@ -108,14 +100,6 @@ public class FixedTroposphericModelTest {
         final T[] zenithDelay = model.computeZenithDelay(new FieldGeodeticPoint<T>(zero, zero, zero), model.getParameters(field), FieldAbsoluteDate.getJ2000Epoch(field));
         Assert.assertEquals(2.5d, zenithDelay[0].getReal(), epsilon);
         Assert.assertEquals(0.0d, zenithDelay[1].getReal(), epsilon);
-
-        // Compute delay using zenith delay and mapping factors
-        // For Fixed Troposheric model, the delay is not split into hydrostatic and non-hydrostatic parts
-        // In that respect, mapping function is equal to 1.0 for for both components and for any elevation angle
-        final T[] mapping = model.mappingFactors(zero, new FieldGeodeticPoint<T>(zero, zero, zero), model.getParameters(field), FieldAbsoluteDate.getJ2000Epoch(field));
-        // Delay
-        final T delay = zenithDelay[0].multiply(mapping[0]).add(zenithDelay[1].multiply(mapping[1]));
-        Assert.assertEquals(2.5d, delay.getReal(), epsilon);
     }
 
     @Test

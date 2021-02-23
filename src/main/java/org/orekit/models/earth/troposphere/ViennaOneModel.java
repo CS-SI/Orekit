@@ -48,7 +48,7 @@ import org.orekit.utils.ParameterDriver;
  *
  * @author Bryan Cazabonne
  */
-public class ViennaOneModel implements DiscreteTroposphericModel {
+public class ViennaOneModel implements DiscreteTroposphericModel, MappingFunction {
 
     /** The a coefficient for the computation of the wet and hydrostatic mapping functions.*/
     private final double[] coefficientsA;
@@ -97,7 +97,7 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
         // zenith delay
         final double[] delays = computeZenithDelay(point, parameters, date);
         // mapping function
-        final double[] mappingFunction = mappingFactors(elevation, point, parameters, date);
+        final double[] mappingFunction = mappingFactors(elevation, point, date);
         // Tropospheric path delay
         return delays[0] * mappingFunction[0] + delays[1] * mappingFunction[1];
     }
@@ -109,7 +109,7 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
         // zenith delay
         final T[] delays = computeZenithDelay(point, parameters, date);
         // mapping function
-        final T[] mappingFunction = mappingFactors(elevation, point, parameters, date);
+        final T[] mappingFunction = mappingFactors(elevation, point, date);
         // Tropospheric path delay
         return delays[0].multiply(mappingFunction[0]).add(delays[1].multiply(mappingFunction[1]));
     }
@@ -135,7 +135,7 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
     /** {@inheritDoc} */
     @Override
     public double[] mappingFactors(final double elevation, final GeodeticPoint point,
-                                   final double[] parameters, final AbsoluteDate date) {
+                                   final AbsoluteDate date) {
         // Day of year computation
         final DateTimeComponents dtc = date.getComponents(utc);
         final int dofyear = dtc.getDate().getDayOfYear();
@@ -189,7 +189,7 @@ public class ViennaOneModel implements DiscreteTroposphericModel {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
-                                                              final T[] parameters, final FieldAbsoluteDate<T> date) {
+                                                              final FieldAbsoluteDate<T> date) {
         final Field<T> field = date.getField();
         final T zero = field.getZero();
 

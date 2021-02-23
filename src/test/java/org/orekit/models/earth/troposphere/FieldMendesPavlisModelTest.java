@@ -158,7 +158,7 @@ public class FieldMendesPavlisModelTest {
         final MendesPavlisModel model = new MendesPavlisModel(temperature, pressure,
                                                               humidity, lambda);
         
-        final T[] computedMapping = model.mappingFactors(zero.add(elevation), point, model.getParameters(field), date);
+        final T[] computedMapping = model.mappingFactors(zero.add(elevation), point, date);
 
         Assert.assertEquals(expectedMapping, computedMapping[0].getReal(), 5.0e-8);
         Assert.assertEquals(expectedMapping, computedMapping[1].getReal(), 5.0e-8);

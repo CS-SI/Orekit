@@ -215,28 +215,6 @@ public class TimeSpanEstimatedTroposphericModel implements DiscreteTroposphericM
 
     /** {@inheritDoc} */
     @Override
-    public double[] mappingFactors(final double elevation, final GeodeticPoint point,
-                                   final double[] parameters, final AbsoluteDate date) {
-        // Extract the proper parameters valid at date from the input array
-        final double[] extractedParameters = extractParameters(parameters, date);
-        // Compute and return the mapping factors
-        return getTroposphericModel(date).mappingFactors(elevation, point,
-                                                         extractedParameters, date);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends RealFieldElement<T>> T[]  mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
-                                                               final T[] parameters, final  FieldAbsoluteDate<T> date) {
-        // Extract the proper parameters valid at date from the input array
-        final T[] extractedParameters = extractParameters(parameters, date);
-        // Compute and return the mapping factors
-        return getTroposphericModel(date.toAbsoluteDate()).mappingFactors(elevation, point,
-                                                                          extractedParameters, date);
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public double pathDelay(final double elevation, final GeodeticPoint point,
                             final double[] parameters, final AbsoluteDate date) {
         // Extract the proper parameters valid at date from the input array

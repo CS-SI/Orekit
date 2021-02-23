@@ -68,7 +68,7 @@ public class GlobalMappingFunctionModelTest {
 
         final MappingFunction model = new GlobalMappingFunctionModel();
         
-        final double[] computedMapping = model.mappingFactors(elevation, point, model.getParameters(), date);
+        final double[] computedMapping = model.mappingFactors(elevation, point, date);
         
         Assert.assertEquals(expectedHydro, computedMapping[0], 1.0e-6);
         Assert.assertEquals(expectedWet,   computedMapping[1], 1.0e-6);
@@ -85,7 +85,7 @@ public class GlobalMappingFunctionModelTest {
         GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), 350.0);
         // mapping functions shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final double[] factors = model.mappingFactors(FastMath.toRadians(elev), point, model.getParameters(), date);
+            final double[] factors = model.mappingFactors(FastMath.toRadians(elev), point, date);
             Assert.assertTrue(Precision.compareTo(factors[0], lastFactors[0], 1.0e-6) < 0);
             Assert.assertTrue(Precision.compareTo(factors[1], lastFactors[1], 1.0e-6) < 0);
             lastFactors[0] = factors[0];

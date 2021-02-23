@@ -124,7 +124,7 @@ public class MendesPavlisModelTest {
         final MendesPavlisModel model = new MendesPavlisModel(temperature, pressure,
                                                                humidity, lambda);
         
-        final double[] computedMapping = model.mappingFactors(elevation, point, model.getParameters(), date);
+        final double[] computedMapping = model.mappingFactors(elevation, point, date);
 
         Assert.assertEquals(expectedMapping, computedMapping[0], 5.0e-8);
         Assert.assertEquals(expectedMapping, computedMapping[1], 5.0e-8);

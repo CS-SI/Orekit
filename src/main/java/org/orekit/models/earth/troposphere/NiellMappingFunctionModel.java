@@ -16,9 +16,6 @@
  */
 package org.orekit.models.earth.troposphere;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.UnivariateFunction;
@@ -33,7 +30,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
-import org.orekit.utils.ParameterDriver;
 
 /** The Niell Mapping Function  model for radio wavelengths.
  *  This model is an empirical mapping function. It only needs the
@@ -165,7 +161,7 @@ public class NiellMappingFunctionModel implements MappingFunction {
     /** {@inheritDoc} */
     @Override
     public double[] mappingFactors(final double elevation, final GeodeticPoint point,
-                                   final double[] parameters, final AbsoluteDate date) {
+                                   final AbsoluteDate date) {
         // Day of year computation
         final DateTimeComponents dtc = date.getComponents(utc);
         final int dofyear = dtc.getDate().getDayOfYear();
@@ -207,7 +203,7 @@ public class NiellMappingFunctionModel implements MappingFunction {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
-                                                              final T[] parameters, final FieldAbsoluteDate<T> date) {
+                                                              final FieldAbsoluteDate<T> date) {
         final Field<T> field = date.getField();
         final T zero = field.getZero();
 
@@ -248,12 +244,6 @@ public class NiellMappingFunctionModel implements MappingFunction {
         function[0] = function[0].add(correction);
 
         return function;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public List<ParameterDriver> getParametersDrivers() {
-        return Collections.emptyList();
     }
 
 }

@@ -16,11 +16,16 @@
  */
 package org.orekit.models.earth.troposphere;
 
+import java.util.List;
+
+import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.util.MathArrays;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 /** Defines a tropospheric model, used to calculate the path delay imposed to
  * electro-magnetic signals between an orbital satellite and a ground station.
@@ -37,7 +42,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * </ul>
  * @author Bryan Cazabonne
  */
-public interface DiscreteTroposphericModel extends MappingFunction {
+public interface DiscreteTroposphericModel {
 
     /** Calculates the tropospheric path delay for the signal path from a ground
      * station to a satellite.
@@ -88,5 +93,36 @@ public interface DiscreteTroposphericModel extends MappingFunction {
      * @return a two components array containing the zenith hydrostatic and wet delays.
      */
     <T extends RealFieldElement<T>> T[] computeZenithDelay(FieldGeodeticPoint<T> point, T[] parameters, FieldAbsoluteDate<T> date);
+
+    /** Get the drivers for tropospheric model parameters.
+     * @return drivers for tropospheric model parameters
+     */
+    List<ParameterDriver> getParametersDrivers();
+
+    /** Get tropospheric model parameters.
+     * @return tropospheric model parameters
+     */
+    default double[] getParameters() {
+        final List<ParameterDriver> drivers = getParametersDrivers();
+        final double[] parameters = new double[drivers.size()];
+        for (int i = 0; i < drivers.size(); ++i) {
+            parameters[i] = drivers.get(i).getValue();
+        }
+        return parameters;
+    }
+
+    /** Get tropospheric model parameters.
+     * @param field field to which the elements belong
+     * @param <T> type of the elements
+     * @return tropospheric model parameters
+     */
+    default <T extends RealFieldElement<T>> T[] getParameters(final Field<T> field) {
+        final List<ParameterDriver> drivers = getParametersDrivers();
+        final T[] parameters = MathArrays.buildArray(field, drivers.size());
+        for (int i = 0; i < drivers.size(); ++i) {
+            parameters[i] = field.getZero().add(drivers.get(i).getValue());
+        }
+        return parameters;
+    }
 
 }

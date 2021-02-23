@@ -40,7 +40,7 @@ import org.orekit.utils.ParameterDriver;
 *
 * @author Bryan Cazabonne
 */
-public class MendesPavlisModel implements DiscreteTroposphericModel {
+public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunction {
 
     /** Coefficients for the dispertion equation for the hydrostatic component [µm<sup>-2</sup>]. */
     private static final double[] K_COEFFICIENTS = {
@@ -113,7 +113,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
         // Zenith delay
         final double[] zenithDelay = computeZenithDelay(point, parameters, date);
         // Mapping function
-        final double[] mappingFunction = mappingFactors(elevation, point, parameters, date);
+        final double[] mappingFunction = mappingFactors(elevation, point, date);
         // Tropospheric path delay
         return zenithDelay[0] * mappingFunction[0] + zenithDelay[1] * mappingFunction[1];
     }
@@ -125,7 +125,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
         // Zenith delay
         final T[] delays = computeZenithDelay(point, parameters, date);
         // Mapping function
-        final T[] mappingFunction = mappingFactors(elevation, point, parameters, date);
+        final T[] mappingFunction = mappingFactors(elevation, point, date);
         // Tropospheric path delay
         return delays[0].multiply(mappingFunction[0]).add(delays[1].multiply(mappingFunction[1]));
     }
@@ -227,7 +227,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
      */
     @Override
     public double[] mappingFactors(final double elevation, final GeodeticPoint point,
-                                   final double[] parameters, final AbsoluteDate date) {
+                                   final AbsoluteDate date) {
         final double sinE = FastMath.sin(elevation);
 
         final double T2degree = T0 - 273.15;
@@ -271,7 +271,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel {
      */
     @Override
     public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
-                                                              final T[] parameters, final FieldAbsoluteDate<T> date) {
+                                                              final FieldAbsoluteDate<T> date) {
         final Field<T> field = date.getField();
 
         final T sinE = FastMath.sin(elevation);

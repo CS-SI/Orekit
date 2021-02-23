@@ -16,9 +16,6 @@
  */
 package org.orekit.models.earth.troposphere;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.CombinatoricsUtils;
@@ -34,7 +31,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
-import org.orekit.utils.ParameterDriver;
 
 /** The Global Mapping Function  model for radio techniques.
  *  This model is an empirical mapping function. It only needs the
@@ -87,7 +83,7 @@ public class GlobalMappingFunctionModel implements MappingFunction {
     /** {@inheritDoc} */
     @Override
     public double[] mappingFactors(final double elevation, final GeodeticPoint point,
-                                   final double[] parameters, final AbsoluteDate date) {
+                                   final AbsoluteDate date) {
         // Day of year computation
         final DateTimeComponents dtc = date.getComponents(utc);
         final int dofyear = dtc.getDate().getDayOfYear();
@@ -179,7 +175,7 @@ public class GlobalMappingFunctionModel implements MappingFunction {
     /** {@inheritDoc} */
     @Override
     public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
-                                                              final T[] parameters, final FieldAbsoluteDate<T> date) {
+                                                              final FieldAbsoluteDate<T> date) {
         // Day of year computation
         final DateTimeComponents dtc = date.getComponents(utc);
         final int dofyear = dtc.getDate().getDayOfYear();
@@ -273,12 +269,6 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         function[0] = function[0].add(correction);
 
         return function;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public List<ParameterDriver> getParametersDrivers() {
-        return Collections.emptyList();
     }
 
     /** Computes the P<sub>nm</sub>(sin(&#934)) coefficients of Eq. 3 (Boehm et al, 2006).

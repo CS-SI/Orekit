@@ -67,7 +67,7 @@ public class NiellMappingFunctionModelTest {
 
         final MappingFunction model = new NiellMappingFunctionModel();
         
-        final double[] computedMapping = model.mappingFactors(elevation, point, model.getParameters(), date);
+        final double[] computedMapping = model.mappingFactors(elevation, point, date);
         
         Assert.assertEquals(expectedHydro, computedMapping[0], 1.0e-2);
         Assert.assertEquals(expectedWet,   computedMapping[1], 1.0e-2);
@@ -84,7 +84,7 @@ public class NiellMappingFunctionModelTest {
         };
         // mapping functions shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final double[] factors = model.mappingFactors(FastMath.toRadians(elev), point, model.getParameters(), date);
+            final double[] factors = model.mappingFactors(FastMath.toRadians(elev), point, date);
             Assert.assertTrue(Precision.compareTo(factors[0], lastFactors[0], 1.0e-6) < 0);
             Assert.assertTrue(Precision.compareTo(factors[1], lastFactors[1], 1.0e-6) < 0);
             lastFactors[0] = factors[0];

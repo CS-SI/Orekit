@@ -113,7 +113,7 @@ public class FieldViennaOneModelTest {
         final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), zero.add(height));
         final ViennaOneModel model = new ViennaOneModel(a, z);
         
-        final T[] computedMapping = model.mappingFactors(zero.add(elevation), point, model.getParameters(field), date);
+        final T[] computedMapping = model.mappingFactors(zero.add(elevation), point, date);
         
         Assert.assertEquals(expectedHydro, computedMapping[0].getReal(), 4.1e-6);
         Assert.assertEquals(expectedWet,   computedMapping[1].getReal(), 1.0e-6);

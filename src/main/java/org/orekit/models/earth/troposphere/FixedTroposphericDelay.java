@@ -181,28 +181,6 @@ public class FixedTroposphericDelay implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public double[] mappingFactors(final double elevation, final GeodeticPoint point,
-                                   final double[] parameters, final AbsoluteDate date) {
-        return new double[] {
-            1.0,
-            1.0
-        };
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
-                                                              final T[] parameters, final FieldAbsoluteDate<T> date) {
-        final Field<T> field = date.getField();
-        final T one = field.getOne();
-        final T[] factors = MathArrays.buildArray(field, 2);
-        factors[0] = one;
-        factors[1] = one;
-        return factors;
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public List<ParameterDriver> getParametersDrivers() {
         return Collections.emptyList();
     }

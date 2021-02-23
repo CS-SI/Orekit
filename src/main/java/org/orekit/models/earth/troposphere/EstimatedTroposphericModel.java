@@ -98,20 +98,6 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public double[] mappingFactors(final double elevation, final GeodeticPoint point,
-                                   final double[] parameters, final AbsoluteDate date) {
-        return model.mappingFactors(elevation, point, parameters, date);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends RealFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
-                                                              final T[] parameters, final FieldAbsoluteDate<T> date) {
-        return model.mappingFactors(elevation, point, parameters, date);
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public List<ParameterDriver> getParametersDrivers() {
         return Collections.singletonList(totalZenithDelay);
     }
@@ -122,7 +108,7 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
                             final double[] parameters, final AbsoluteDate date) {
 
         // Mapping functions
-        final double[] mf = mappingFactors(elevation, point, parameters, date);
+        final double[] mf = model.mappingFactors(elevation, point, date);
         // Zenith delays
         final double[] delays = computeZenithDelay(point, parameters, date);
         // Total delay
@@ -135,7 +121,7 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
                                                        final T[] parameters, final FieldAbsoluteDate<T> date) {
 
         // Mapping functions
-        final T[] mf = mappingFactors(elevation, point, parameters, date);
+        final T[] mf = model.mappingFactors(elevation, point, date);
         // Zenith delays
         final T[] delays = computeZenithDelay(point, parameters, date);
         // Total delay
