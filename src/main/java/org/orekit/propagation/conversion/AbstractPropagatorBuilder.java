@@ -384,4 +384,14 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         return additionalEquations;
     }
 
+    /** Deselects orbital and propagation drivers. */
+    public void deselectDynamicParameters() {
+        for (ParameterDriver driver : getPropagationParametersDrivers().getDrivers()) {
+            driver.setSelected(false);
+        }
+        for (ParameterDriver driver : getOrbitalParametersDrivers().getDrivers()) {
+            driver.setSelected(false);
+        }
+    }
+
 }

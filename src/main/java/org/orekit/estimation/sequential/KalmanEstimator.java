@@ -29,9 +29,9 @@ import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Position;
-import org.orekit.propagation.conversion.IntegratedPropagatorBuilder;
+import org.orekit.propagation.Propagator;
+import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
-import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -43,7 +43,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 /**
  * Implementation of a Kalman filter to perform orbit determination.
  * <p>
- * The filter uses a {@link IntegratedPropagatorBuilder} to initialize its reference trajectory {@link NumericalPropagator}
+ * The filter uses a {@link OrbitDeterminationPropagatorBuilder} to initialize its reference trajectory {@link NumericalPropagator}
  * or {@link DSSTPropagator} .
  * </p>
  * <p>
@@ -75,13 +75,13 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 public class KalmanEstimator {
 
     /** Builders for orbit propagators. */
-    private List<IntegratedPropagatorBuilder> propagatorBuilders;
+    private List<OrbitDeterminationPropagatorBuilder> propagatorBuilders;
 
     /** Reference date. */
     private final AbsoluteDate referenceDate;
 
     /** Kalman filter process model. */
-    private final KalmanODModel processModel;
+    private final AbstractKalmanModel processModel;
 
     /** Filter. */
     private final ExtendedKalmanFilter<MeasurementDecorator> filter;
@@ -99,7 +99,7 @@ public class KalmanEstimator {
      */
     @Deprecated
     KalmanEstimator(final MatrixDecomposer decomposer,
-                    final List<IntegratedPropagatorBuilder> propagatorBuilders,
+                    final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
                     final List<CovarianceMatrixProvider> processNoiseMatricesProviders,
                     final ParameterDriversList estimatedMeasurementParameters) {
         this(decomposer, propagatorBuilders, processNoiseMatricesProviders,
@@ -115,7 +115,7 @@ public class KalmanEstimator {
      * @since 10.3
      */
     KalmanEstimator(final MatrixDecomposer decomposer,
-                    final List<IntegratedPropagatorBuilder> propagatorBuilders,
+                    final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
                     final List<CovarianceMatrixProvider> processNoiseMatricesProviders,
                     final ParameterDriversList estimatedMeasurementParameters,
                     final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
@@ -126,9 +126,9 @@ public class KalmanEstimator {
 
         // Build the process model and measurement model
         this.processModel = propagatorBuilders.get(0).buildKalmanModel(propagatorBuilders,
-                                                                   processNoiseMatricesProviders,
-                                                                   estimatedMeasurementParameters,
-                                                                   measurementProcessNoiseMatrix);
+                                                                       processNoiseMatricesProviders,
+                                                                       estimatedMeasurementParameters,
+                                                                       measurementProcessNoiseMatrix);
 
         this.filter = new ExtendedKalmanFilter<>(decomposer, processModel, processModel.getEstimate());
 
@@ -233,7 +233,7 @@ public class KalmanEstimator {
      * @param observedMeasurement the measurement to process
      * @return estimated propagators
      */
-    public AbstractIntegratedPropagator[] estimationStep(final ObservedMeasurement<?> observedMeasurement) {
+    public Propagator[] estimationStep(final ObservedMeasurement<?> observedMeasurement) {
         try {
             final ProcessEstimate estimate = filter.estimationStep(decorate(observedMeasurement));
             processModel.finalizeEstimation(observedMeasurement, estimate);
@@ -250,8 +250,8 @@ public class KalmanEstimator {
      * @param observedMeasurements the measurements to process in <em>chronologically sorted</em> order
      * @return estimated propagators
      */
-    public AbstractIntegratedPropagator[] processMeasurements(final Iterable<ObservedMeasurement<?>> observedMeasurements) {
-        AbstractIntegratedPropagator[] propagators = null;
+    public Propagator[] processMeasurements(final Iterable<ObservedMeasurement<?>> observedMeasurements) {
+        Propagator[] propagators = null;
         for (ObservedMeasurement<?> observedMeasurement : observedMeasurements) {
             propagators = estimationStep(observedMeasurement);
         }
