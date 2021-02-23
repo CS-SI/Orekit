@@ -32,6 +32,7 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -187,14 +188,24 @@ public class LofOffsetPointingTest {
                     dir = Vector3D.PLUS_J;
                     break;
                 case QSW:
+                    dir = Vector3D.MINUS_I;
+                    break;
                 case LVLH:
                     dir = Vector3D.MINUS_I;
                     break;
                 case VVLH:
                     dir = Vector3D.PLUS_K;
                     break;
-                default : // VNC
+                case VNC:
                     dir = Vector3D.MINUS_K;
+                    break;
+                case EQW:
+                    continue;
+                case NTW:
+                    dir = Vector3D.MINUS_I;
+                    break;
+                default :
+                    throw new OrekitInternalError(null);
             }
             LofOffsetPointing lop = new LofOffsetPointing(orbit.getFrame(), earthSpheric, law, dir);
             checkField(Decimal64Field.getInstance(), lop, orbit, date, orbit.getFrame());
