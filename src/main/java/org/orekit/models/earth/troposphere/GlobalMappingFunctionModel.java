@@ -66,7 +66,7 @@ public class GlobalMappingFunctionModel implements MappingFunction {
      *
      * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
      *
-     * @see #GlobalMappingFunctionModel(double, double, TimeScale)
+     * @see #GlobalMappingFunctionModel(TimeScale)
      */
     @DefaultDataContext
     public GlobalMappingFunctionModel() {

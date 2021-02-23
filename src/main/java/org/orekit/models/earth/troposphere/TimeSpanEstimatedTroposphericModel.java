@@ -158,7 +158,7 @@ public class TimeSpanEstimatedTroposphericModel implements DiscreteTroposphericM
     }
 
     /** Extract the proper parameter drivers' values from the array in input of the
-     * {@link #pathDelay(double, double, double[], AbsoluteDate) pathDelay} method.
+     * {@link #pathDelay(double, GeodeticPoint, double[], AbsoluteDate) pathDelay} method.
      *  Parameters are filtered given an input date.
      * @param parameters the input parameters array
      * @param date the date
@@ -185,7 +185,7 @@ public class TimeSpanEstimatedTroposphericModel implements DiscreteTroposphericM
     }
 
     /** Extract the proper parameter drivers' values from the array in input of the
-     * {@link #pathDelay(double, double, double[], AbsoluteDate) pathDelay} method.
+     * {@link #pathDelay(double, GeodeticPoint, double[], AbsoluteDate) pathDelay} method.
      *  Parameters are filtered given an input date.
      * @param parameters the input parameters array
      * @param date the date

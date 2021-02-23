@@ -412,8 +412,8 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
 
     /** Get the low elevation threshold value for path delay computation.
      * @return low elevation threshold, in rad.
-     * @see #pathDelay(double, double, double[], AbsoluteDate)
-     * @see #pathDelay(RealFieldElement, RealFieldElement, RealFieldElement[], FieldAbsoluteDate)
+     * @see #pathDelay(double, GeodeticPoint, double[], AbsoluteDate)
+     * @see #pathDelay(RealFieldElement, FieldGeodeticPoint, RealFieldElement[], FieldAbsoluteDate)
      * @since 10.2
      */
     public double getLowElevationThreshold() {
@@ -422,8 +422,8 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
 
     /** Set the low elevation threshold value for path delay computation.
      * @param lowElevationThreshold The new value for the threshold [rad]
-     * @see #pathDelay(double, double, double[], AbsoluteDate)
-     * @see #pathDelay(RealFieldElement, RealFieldElement, RealFieldElement[], FieldAbsoluteDate)
+     * @see #pathDelay(double, GeodeticPoint, double[], AbsoluteDate)
+     * @see #pathDelay(RealFieldElement, FieldGeodeticPoint, RealFieldElement[], FieldAbsoluteDate)
      * @since 10.2
      */
     public void setLowElevationThreshold(final double lowElevationThreshold) {

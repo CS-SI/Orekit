@@ -65,7 +65,7 @@ public class ViennaOneModel implements DiscreteTroposphericModel, MappingFunctio
      *
      * @param coefficientA The a coefficients for the computation of the wet and hydrostatic mapping functions.
      * @param zenithDelay Values of hydrostatic and wet delays
-     * @see #ViennaOneModel(double[], double[], double, TimeScale)
+     * @see #ViennaOneModel(double[], double[], TimeScale)
      */
     @DefaultDataContext
     public ViennaOneModel(final double[] coefficientA, final double[] zenithDelay) {

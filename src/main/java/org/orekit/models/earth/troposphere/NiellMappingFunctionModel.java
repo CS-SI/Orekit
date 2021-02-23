@@ -131,7 +131,7 @@ public class NiellMappingFunctionModel implements MappingFunction {
      *
      * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
      *
-     * @see #NiellMappingFunctionModel(double, TimeScale)
+     * @see #NiellMappingFunctionModel(TimeScale)
      */
     @DefaultDataContext
     public NiellMappingFunctionModel() {

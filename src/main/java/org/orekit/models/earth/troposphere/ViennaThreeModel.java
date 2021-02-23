@@ -73,7 +73,7 @@ public class ViennaThreeModel implements DiscreteTroposphericModel, MappingFunct
      *
      * @param coefficientA The a coefficients for the computation of the wet and hydrostatic mapping functions.
      * @param zenithDelay Values of hydrostatic and wet delays
-     * @see #ViennaThreeModel(double[], double[], double, double, TimeScale)
+     * @see #ViennaThreeModel(double[], double[], TimeScale)
      */
     @DefaultDataContext
     public ViennaThreeModel(final double[] coefficientA, final double[] zenithDelay) {
