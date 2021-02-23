@@ -42,6 +42,7 @@ import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.FieldPropagator;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
@@ -734,7 +735,7 @@ public class FieldTLETest {
         Assert.assertEquals(tle.getElementNumber(),           converted.getElementNumber());
         Assert.assertEquals(tle.getRevolutionNumberAtEpoch(), converted.getRevolutionNumberAtEpoch());
 
-        final double eps = 1.0e-9;
+        final double eps = 1.0e-7;
         Assert.assertEquals(tle.getMeanMotion().getReal(), converted.getMeanMotion().getReal(), eps * tle.getMeanMotion().getReal());
         Assert.assertEquals(tle.getE().getReal(), converted.getE().getReal(), eps * tle.getE().getReal());
         Assert.assertEquals(tle.getI().getReal(), converted.getI().getReal(), eps * tle.getI().getReal());
@@ -744,7 +745,45 @@ public class FieldTLETest {
         Assert.assertEquals(tle.getMeanAnomaly().getReal(), converted.getMeanAnomaly().getReal(), eps * tle.getMeanAnomaly().getReal());
         Assert.assertEquals(tle.getBStar(), converted.getBStar(), eps * tle.getBStar());
 
+    }
 
+    @Test
+    public void testStateToTleISS() {
+        doTestStateToTleISS(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestStateToTleISS(final Field<T> field) {
+
+        // Initialize TLE
+        final FieldTLE<T> tleISS = new FieldTLE<>(field, "1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0 9998",
+                                                  "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
+
+        // TLE propagator
+        final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tleISS, tleISS.getParameters(field));
+
+        // State at TLE epoch
+        final FieldSpacecraftState<T> state = propagator.propagate(tleISS.getDate());
+
+        // Convert to TLE
+        final FieldTLE<T> rebuilt = FieldTLE.stateToTLE(state, tleISS);
+
+        // Verify
+        final double eps = 1.0e-7;
+        Assert.assertEquals(tleISS.getSatelliteNumber(),           rebuilt.getSatelliteNumber());
+        Assert.assertEquals(tleISS.getClassification(),            rebuilt.getClassification());
+        Assert.assertEquals(tleISS.getLaunchYear(),                rebuilt.getLaunchYear());
+        Assert.assertEquals(tleISS.getLaunchNumber(),              rebuilt.getLaunchNumber());
+        Assert.assertEquals(tleISS.getLaunchPiece(),               rebuilt.getLaunchPiece());
+        Assert.assertEquals(tleISS.getElementNumber(),             rebuilt.getElementNumber());
+        Assert.assertEquals(tleISS.getRevolutionNumberAtEpoch(),   rebuilt.getRevolutionNumberAtEpoch());
+        Assert.assertEquals(tleISS.getMeanMotion().getReal(),      rebuilt.getMeanMotion().getReal(),      eps * tleISS.getMeanMotion().getReal());
+        Assert.assertEquals(tleISS.getE().getReal(),               rebuilt.getE().getReal(),               eps * tleISS.getE().getReal());
+        Assert.assertEquals(tleISS.getI().getReal(),               rebuilt.getI().getReal(),               eps * tleISS.getI().getReal());
+        Assert.assertEquals(tleISS.getPerigeeArgument().getReal(), rebuilt.getPerigeeArgument().getReal(), eps * tleISS.getPerigeeArgument().getReal());
+        Assert.assertEquals(tleISS.getRaan().getReal(),            rebuilt.getRaan().getReal(),            eps * tleISS.getRaan().getReal());
+        Assert.assertEquals(tleISS.getMeanAnomaly().getReal(),     rebuilt.getMeanAnomaly().getReal(),     eps * tleISS.getMeanAnomaly().getReal());
+        Assert.assertEquals(tleISS.getMeanAnomaly().getReal(),     rebuilt.getMeanAnomaly().getReal(),     eps * tleISS.getMeanAnomaly().getReal());
+        Assert.assertEquals(tleISS.getBStar(),                     rebuilt.getBStar(),                     eps * tleISS.getBStar());
     }
 
     @Before

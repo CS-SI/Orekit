@@ -610,7 +610,41 @@ public class TLETest {
         Assert.assertEquals(tle.getMeanAnomaly(), converted.getMeanAnomaly(), eps * tle.getMeanAnomaly());
         Assert.assertEquals(tle.getBStar(), converted.getBStar(), eps * tle.getBStar());
 
+    }
 
+    @Test
+    public void testStateToTleISS() {
+
+        // Initialize TLE
+        final TLE tleISS = new TLE("1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0 9998",
+                                   "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
+
+        // TLE propagator
+        final TLEPropagator propagator = TLEPropagator.selectExtrapolator(tleISS);
+
+        // State at TLE epoch
+        final SpacecraftState state = propagator.propagate(tleISS.getDate());
+
+        // Convert to TLE
+        final TLE rebuilt = TLE.stateToTLE(state, tleISS);
+
+        // Verify
+        final double eps = 1.0e-7;
+        Assert.assertEquals(tleISS.getSatelliteNumber(),         rebuilt.getSatelliteNumber());
+        Assert.assertEquals(tleISS.getClassification(),          rebuilt.getClassification());
+        Assert.assertEquals(tleISS.getLaunchYear(),              rebuilt.getLaunchYear());
+        Assert.assertEquals(tleISS.getLaunchNumber(),            rebuilt.getLaunchNumber());
+        Assert.assertEquals(tleISS.getLaunchPiece(),             rebuilt.getLaunchPiece());
+        Assert.assertEquals(tleISS.getElementNumber(),           rebuilt.getElementNumber());
+        Assert.assertEquals(tleISS.getRevolutionNumberAtEpoch(), rebuilt.getRevolutionNumberAtEpoch());
+        Assert.assertEquals(tleISS.getMeanMotion(),              rebuilt.getMeanMotion(),      eps * tleISS.getMeanMotion());
+        Assert.assertEquals(tleISS.getE(),                       rebuilt.getE(),               eps * tleISS.getE());
+        Assert.assertEquals(tleISS.getI(),                       rebuilt.getI(),               eps * tleISS.getI());
+        Assert.assertEquals(tleISS.getPerigeeArgument(),         rebuilt.getPerigeeArgument(), eps * tleISS.getPerigeeArgument());
+        Assert.assertEquals(tleISS.getRaan(),                    rebuilt.getRaan(),            eps * tleISS.getRaan());
+        Assert.assertEquals(tleISS.getMeanAnomaly(),             rebuilt.getMeanAnomaly(),     eps * tleISS.getMeanAnomaly());
+        Assert.assertEquals(tleISS.getMeanAnomaly(),             rebuilt.getMeanAnomaly(),     eps * tleISS.getMeanAnomaly());
+        Assert.assertEquals(tleISS.getBStar(),                   rebuilt.getBStar(),           eps * tleISS.getBStar());
     }
 
     @Before

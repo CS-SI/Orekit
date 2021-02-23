@@ -24,11 +24,6 @@ import java.util.Objects;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.FieldGradient;
-import org.hipparchus.linear.FieldMatrix;
-import org.hipparchus.linear.FieldQRDecomposition;
-import org.hipparchus.linear.FieldVector;
-import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
@@ -38,9 +33,11 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
@@ -849,122 +846,90 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
 
         // get keplerian parameters from state
         final FieldOrbit<T> orbit = state.getOrbit();
+        final FieldEquinoctialOrbit<T> equiOrbit = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(orbit);
+        T sma = equiOrbit.getA();
+        T ex  = equiOrbit.getEquinoctialEx();
+        T ey  = equiOrbit.getEquinoctialEy();
+        T hx  = equiOrbit.getHx();
+        T hy  = equiOrbit.getHy();
+        T lv  = equiOrbit.getLv();
+
+        // Rough initialization of the TLE
         final FieldKeplerianOrbit<T> keplerianOrbit = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(orbit);
+        FieldTLE<T> current = newTLE(keplerianOrbit, templateTLE);
 
-        T meanMotion  = keplerianOrbit.getKeplerianMeanMotion();
-        T e           = keplerianOrbit.getE();
-        T i           = keplerianOrbit.getI();
-        T raan        = keplerianOrbit.getRightAscensionOfAscendingNode();
-        T pa          = keplerianOrbit.getPerigeeArgument();
-        T meanAnomaly = keplerianOrbit.getMeanAnomaly();
-
-        // rough initialization of the TLE
-        FieldTLE<FieldGradient<T>> current = gradTLE(meanMotion, e, i, raan, pa, meanAnomaly, state.getDate(), templateTLE);
-
-        final FieldGradient<T> zero = current.getE().getField().getZero();
+        // Field
+        final Field<T> field = state.getDate().getField();
 
         // threshold for each parameter
-        final T      thresholdMeanMotion = keplerianOrbit.getKeplerianMeanMotion().add(1.0).multiply(epsilon);
-        final T      thresholdE          = state.getE().add(1.0).multiply(epsilon);
-        final T      thresholdI          = state.getI().add(1.0).multiply(epsilon);
-        final double thresholdAngles     = epsilon * FastMath.PI;
+        final T thrA = sma.add(1).multiply(epsilon);
+        final T thrE = FastMath.hypot(ex, ey).add(1).multiply(epsilon);
+        final T thrH = FastMath.hypot(hx, hy).add(1).multiply(epsilon);
+        final double thrV = epsilon * FastMath.PI;
+
         int k = 0;
         while (k++ < maxIterations) {
 
             // recompute the state from the current TLE
-            final FieldGradient<T>[] parameters = MathArrays.buildArray(zero.getField(), 1);
-            parameters[0] = zero.add(current.getBStar());
-            final FieldTLEPropagator<FieldGradient<T>> propagator = FieldTLEPropagator.selectExtrapolator(current, parameters);
-            final FieldSpacecraftState<FieldGradient<T>> recoveredState = propagator.getInitialState();
-            final FieldOrbit<FieldGradient<T>> recoveredOrbit = recoveredState.getOrbit();
-            final FieldKeplerianOrbit<FieldGradient<T>> recoveredKeplerianOrbit = (FieldKeplerianOrbit<FieldGradient<T>>) OrbitType.KEPLERIAN.convertType(recoveredOrbit);
+            final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(current, templateTLE.getParameters(field));
+            final FieldOrbit<T> recovOrbit = propagator.getInitialState().getOrbit();
+            final FieldEquinoctialOrbit<T> recovEquiOrbit = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(recovOrbit);
 
             // adapted parameters residuals
-            final FieldGradient<T> deltaMeanMotion  = recoveredKeplerianOrbit.getKeplerianMeanMotion().negate().add(keplerianOrbit.getKeplerianMeanMotion());
-            final FieldGradient<T> deltaE           = recoveredKeplerianOrbit.getE().negate().add(keplerianOrbit.getE());
-            final FieldGradient<T> deltaI           = recoveredKeplerianOrbit.getI().negate().add(keplerianOrbit.getI());
-            final FieldGradient<T> deltaRAAN        = MathUtils.normalizeAngle(recoveredKeplerianOrbit.getRightAscensionOfAscendingNode().negate()
-                                                                                     .add(keplerianOrbit.getRightAscensionOfAscendingNode()), zero);
-            final FieldGradient<T> deltaPA          = MathUtils.normalizeAngle(recoveredKeplerianOrbit.getPerigeeArgument().negate()
-                                                                                     .add(keplerianOrbit.getPerigeeArgument()), zero);
-            final FieldGradient<T> deltaMeanAnomaly = MathUtils.normalizeAngle(recoveredKeplerianOrbit.getMeanAnomaly().negate()
-                                                                                     .add(keplerianOrbit.getMeanAnomaly()), zero);
+            final T deltaSma = equiOrbit.getA().subtract(recovEquiOrbit.getA());
+            final T deltaEx  = equiOrbit.getEquinoctialEx().subtract(recovEquiOrbit.getEquinoctialEx());
+            final T deltaEy  = equiOrbit.getEquinoctialEy().subtract(recovEquiOrbit.getEquinoctialEy());
+            final T deltaHx  = equiOrbit.getHx().subtract(recovEquiOrbit.getHx());
+            final T deltaHy  = equiOrbit.getHy().subtract(recovEquiOrbit.getHy());
+            final T deltaLv  = MathUtils.normalizeAngle(equiOrbit.getLv().subtract(recovEquiOrbit.getLv()), field.getZero());
 
             // check convergence
-            if ((FastMath.abs(deltaMeanMotion.getValue()).getReal() < thresholdMeanMotion.getReal()) &&
-                (FastMath.abs(deltaE.getValue()).getReal()          < thresholdE.getReal()) &&
-                (FastMath.abs(deltaI.getValue()).getReal()          < thresholdI.getReal()) &&
-                (FastMath.abs(deltaPA.getValue()).getReal()         < thresholdAngles) &&
-                (FastMath.abs(deltaRAAN.getValue()).getReal()       < thresholdAngles) &&
-                (FastMath.abs(deltaMeanMotion.getValue()).getReal() < thresholdAngles)) {
+            if ((FastMath.abs(deltaSma.getReal()) < thrA.getReal()) &&
+                (FastMath.abs(deltaEx.getReal())  < thrE.getReal()) &&
+                (FastMath.abs(deltaEy.getReal())  < thrE.getReal()) &&
+                (FastMath.abs(deltaHx.getReal())  < thrH.getReal()) &&
+                (FastMath.abs(deltaHy.getReal())  < thrH.getReal()) &&
+                (FastMath.abs(deltaLv.getReal())  < thrV)) {
 
-                return new FieldTLE<T>(current.getSatelliteNumber(), current.getClassification(), current.getLaunchYear(),
-                                current.getLaunchNumber(), current.getLaunchPiece(), current.getEphemerisType(), current.getElementNumber(),
-                                state.getDate(), current.getMeanMotion().getValue(), current.getMeanMotionFirstDerivative().getValue(),
-                                current.getMeanMotionSecondDerivative().getValue(), current.getE().getValue(), current.getI().getValue(),
-                                current.getPerigeeArgument().getValue(), current.getRaan().getValue(), current.getMeanAnomaly().getValue(),
-                                current.getRevolutionNumberAtEpoch(), current.getBStar());
-
+                return current;
             }
 
-            // compute differencial correction according to Newton method
-            final T[] vector = MathArrays.buildArray(e.getField(), 6);
-            vector[0] = deltaMeanMotion.getValue().negate();
-            vector[1] = deltaE.getValue().negate();
-            vector[2] = deltaI.getValue().negate();
-            vector[3] = deltaRAAN.getValue().negate();
-            vector[4] = deltaPA.getValue().negate();
-            vector[5] = deltaMeanAnomaly.getValue().negate();
-            final FieldVector<T> F = MatrixUtils.createFieldVector(vector);
-            final FieldMatrix<T> J = MatrixUtils.createFieldMatrix(e.getField(), 6, 6);
-            J.setRow(0, deltaMeanMotion.getGradient());
-            J.setRow(1, deltaE.getGradient());
-            J.setRow(2, deltaI.getGradient());
-            J.setRow(3, deltaRAAN.getGradient());
-            J.setRow(4, deltaPA.getGradient());
-            J.setRow(5, deltaMeanAnomaly.getGradient());
-            final FieldQRDecomposition<T> decomp = new FieldQRDecomposition<>(J);
-
-            final FieldVector<T> deltaTLE = decomp.getSolver().solve(F);
+            // update state
+            sma = sma.add(deltaSma);
+            ex  = ex.add(deltaEx);
+            ey  = ey.add(deltaEy);
+            hx  = hx.add(deltaHx);
+            hy  = hy.add(deltaHy);
+            lv  = lv.add(deltaLv);
+            final FieldEquinoctialOrbit<T> newEquiOrbit =
+                                    new FieldEquinoctialOrbit<>(sma, ex, ey, hx, hy, lv, PositionAngle.TRUE,
+                                    orbit.getFrame(), orbit.getDate(), orbit.getMu() );
+            final FieldKeplerianOrbit<T> newKeplOrbit = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(newEquiOrbit);
 
             // update TLE
-            meanMotion  = meanMotion.add(deltaTLE.getEntry(0));
-            e           = e.add(deltaTLE.getEntry(1));
-            i           = i.add(deltaTLE.getEntry(2));
-            raan        = raan.add(deltaTLE.getEntry(3));
-            pa          = pa.add(deltaTLE.getEntry(4));
-            meanAnomaly = meanAnomaly.add(deltaTLE.getEntry(5));
-
-            current = gradTLE(meanMotion, e, i, raan, pa, meanAnomaly, state.getDate(), templateTLE);
-
+            current = newTLE(newKeplOrbit, templateTLE);
         }
 
         throw new OrekitException(OrekitMessages.UNABLE_TO_COMPUTE_TLE, k);
     }
 
     /**
-     * Builds a Gradient TLE from a TLE and specified parameters.
-     * Warning! This Gradient TLE should not be used for any propagation!
-     * @param meanMotion Mean Motion (rad/s)
-     * @param e excentricity
-     * @param i inclination (rad)
-     * @param raan right ascension of ascending node (rad)
-     * @param pa perigee argument (rad)
-     * @param meanAnomaly mean anomaly (rad)
+     * Builds a new TLE from Keplerian parameters and a template for TLE data.
+     * @param keplerianOrbit the Keplerian parameters to build the TLE from
      * @param templateTLE TLE used to get object identification
-     * @param epoch epoch of the new TLE
      * @param <T> type of the element
      * @return TLE with template identification and new orbital parameters
      */
-    private static <T extends RealFieldElement<T>> FieldTLE<FieldGradient<T>> gradTLE(final T meanMotion,
-                                                                                      final T e,
-                                                                                      final T i,
-                                                                                      final T raan,
-                                                                                      final T pa,
-                                                                                      final T meanAnomaly,
-                                                                                      final FieldAbsoluteDate<T> epoch,
-                                                                                      final FieldTLE<T> templateTLE) {
-
+    private static <T extends RealFieldElement<T>> FieldTLE<T> newTLE(final FieldKeplerianOrbit<T> keplerianOrbit, final FieldTLE<T> templateTLE) {
+        // Keplerian parameters
+        final T meanMotion  = keplerianOrbit.getKeplerianMeanMotion();
+        final T e           = keplerianOrbit.getE();
+        final T i           = keplerianOrbit.getI();
+        final T raan        = keplerianOrbit.getRightAscensionOfAscendingNode();
+        final T pa          = keplerianOrbit.getPerigeeArgument();
+        final T meanAnomaly = keplerianOrbit.getMeanAnomaly();
+        // TLE epoch is state epoch
+        final FieldAbsoluteDate<T> epoch = keplerianOrbit.getDate();
         // Identification
         final int satelliteNumber = templateTLE.getSatelliteNumber();
         final char classification = templateTLE.getClassification();
@@ -973,37 +938,21 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
         final String launchPiece = templateTLE.getLaunchPiece();
         final int ephemerisType = templateTLE.getEphemerisType();
         final int elementNumber = templateTLE.getElementNumber();
+        // Updates revolutionNumberAtEpoch
         final int revolutionNumberAtEpoch = templateTLE.getRevolutionNumberAtEpoch();
         final T dt = epoch.durationFrom(templateTLE.getDate());
-        final int newRevolutionNumberAtEpoch = (int) ((int) revolutionNumberAtEpoch +
-                  FastMath.floor((MathUtils.normalizeAngle(meanAnomaly.getReal(), FastMath.PI) + dt.getReal() * meanMotion.getReal()) / (2 * FastMath.PI)));
-
-        final FieldGradient<T> gMeanMotion  = FieldGradient.variable(6, 0, meanMotion);
-        final FieldGradient<T> ge           = FieldGradient.variable(6, 1, e);
-        final FieldGradient<T> gi           = FieldGradient.variable(6, 2, i);
-        final FieldGradient<T> graan        = FieldGradient.variable(6, 3, raan);
-        final FieldGradient<T> gpa          = FieldGradient.variable(6, 4, pa);
-        final FieldGradient<T> gMeanAnomaly = FieldGradient.variable(6, 5, meanAnomaly);
-        // Epoch
-        final FieldAbsoluteDate<FieldGradient<T>> gEpoch = new FieldAbsoluteDate<>(gMeanMotion.getField(), epoch.toAbsoluteDate());
-
-        // B*
+        final int newRevolutionNumberAtEpoch = (int) ((int) revolutionNumberAtEpoch + FastMath.floor((MathUtils.normalizeAngle(meanAnomaly.getReal(), FastMath.PI) + dt.getReal() * meanMotion.getReal()) / (2 * FastMath.PI)));
+        // Gets B*
         final double bStar = templateTLE.getBStar();
-
-        // Mean Motion derivatives
-        final FieldGradient<T> gMeanMotionFirstDerivative  = FieldGradient.constant(6, templateTLE.getMeanMotionFirstDerivative());
-        final FieldGradient<T> gMeanMotionSecondDerivative = FieldGradient.constant(6, templateTLE.getMeanMotionSecondDerivative());
-
-        final FieldTLE<FieldGradient<T>> newTLE = new FieldTLE<>(satelliteNumber, classification, launchYear, launchNumber, launchPiece, ephemerisType,
-                       elementNumber, gEpoch, gMeanMotion, gMeanMotionFirstDerivative, gMeanMotionSecondDerivative,
-                       ge, gi, gpa, graan, gMeanAnomaly, newRevolutionNumberAtEpoch, bStar, templateTLE.getUtc());
-
-        for (int k = 0; k < newTLE.getParametersDrivers().length; ++k) {
-            newTLE.getParametersDrivers()[k].setSelected(templateTLE.getParametersDrivers()[k].isSelected());
-        }
-
-        return newTLE;
+        // Gets Mean Motion derivatives
+        final T meanMotionFirstDerivative = templateTLE.getMeanMotionFirstDerivative();
+        final T meanMotionSecondDerivative = templateTLE.getMeanMotionSecondDerivative();
+        // Returns the new TLE
+        return new FieldTLE<>(satelliteNumber, classification, launchYear, launchNumber, launchPiece, ephemerisType,
+                       elementNumber, epoch, meanMotion, meanMotionFirstDerivative, meanMotionSecondDerivative,
+                       e, i, pa, raan, meanAnomaly, newRevolutionNumberAtEpoch, bStar);
     }
+
 
     /** Check the lines format validity.
      * @param line1 the first element
