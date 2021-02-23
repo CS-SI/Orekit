@@ -22,8 +22,8 @@ import java.util.TreeMap;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.CcsdsFrame;
 import org.orekit.files.ccsds.section.Metadata;
-import org.orekit.files.ccsds.utils.CcsdsFrame;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 

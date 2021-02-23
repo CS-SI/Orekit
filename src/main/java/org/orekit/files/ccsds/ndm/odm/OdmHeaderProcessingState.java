@@ -20,8 +20,8 @@ import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.files.ccsds.utils.state.AbstractMessageParser;
-import org.orekit.files.ccsds.utils.state.ProcessingState;
+import org.orekit.files.ccsds.utils.parsing.AbstractMessageParser;
+import org.orekit.files.ccsds.utils.parsing.ProcessingState;
 
 /** {@link ProcessingState} for {@link OdmHeader ODM header}.
  * @author Luc Maisonobe

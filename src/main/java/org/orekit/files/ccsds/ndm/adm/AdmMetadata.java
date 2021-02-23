@@ -18,8 +18,8 @@ package org.orekit.files.ccsds.ndm.adm;
 
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
+import org.orekit.files.ccsds.definitions.CenterName;
 import org.orekit.files.ccsds.section.Metadata;
-import org.orekit.files.ccsds.utils.CenterName;
 
 /** This class gathers the meta-data present in the Attitude Data Message (ADM).
  * @author Bryan Cazabonne

@@ -17,8 +17,8 @@
 
 package org.orekit.files.ccsds.ndm.odm;
 
+import org.orekit.files.ccsds.definitions.CcsdsTimeScale;
 import org.orekit.files.ccsds.section.Metadata;
-import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 
 /** This class gathers the meta-data present in the Orbital Data Message (ODM).
  * @author sports

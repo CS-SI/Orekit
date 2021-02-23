@@ -23,9 +23,9 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.CcsdsFrame;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Data;
-import org.orekit.files.ccsds.utils.CcsdsFrame;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 

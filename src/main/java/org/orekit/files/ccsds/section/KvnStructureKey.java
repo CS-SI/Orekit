@@ -19,7 +19,7 @@ package org.orekit.files.ccsds.section;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.files.ccsds.utils.state.AbstractMessageParser;
+import org.orekit.files.ccsds.utils.parsing.AbstractMessageParser;
 
 /** Keys for {@link FileFormat#KVN} format structure.
  * @author Luc Maisonobe

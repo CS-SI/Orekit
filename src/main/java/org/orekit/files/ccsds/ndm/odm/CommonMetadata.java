@@ -22,10 +22,10 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.utils.CcsdsFrame;
-import org.orekit.files.ccsds.utils.CcsdsModifiedFrame;
-import org.orekit.files.ccsds.utils.CenterName;
-import org.orekit.files.ccsds.utils.ParsingContext;
+import org.orekit.files.ccsds.definitions.CcsdsFrame;
+import org.orekit.files.ccsds.definitions.CcsdsModifiedFrame;
+import org.orekit.files.ccsds.definitions.CenterName;
+import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 

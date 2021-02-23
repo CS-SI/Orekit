@@ -24,11 +24,11 @@ import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.CcsdsUnit;
 import org.orekit.files.ccsds.ndm.odm.oem.InterpolationMethod;
-import org.orekit.files.ccsds.utils.CcsdsUnit;
-import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 
 /** Keys for {@link OrbitStateHistoryMetadata orbit state history metadata} entries.

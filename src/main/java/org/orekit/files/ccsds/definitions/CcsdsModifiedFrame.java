@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.ccsds.utils;
+package org.orekit.files.ccsds.definitions;
 
 import org.hipparchus.RealFieldElement;
 import org.orekit.bodies.CelestialBody;

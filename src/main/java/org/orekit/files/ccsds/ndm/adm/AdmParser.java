@@ -23,7 +23,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NdmFile;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.files.ccsds.utils.state.AbstractMessageParser;
+import org.orekit.files.ccsds.utils.parsing.AbstractMessageParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 

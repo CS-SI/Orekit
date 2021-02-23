@@ -27,10 +27,10 @@ import org.orekit.files.ccsds.section.MetadataKey;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.section.XmlStructureProcessingState;
 import org.orekit.files.ccsds.utils.FileFormat;
-import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
-import org.orekit.files.ccsds.utils.state.AbstractMessageParser;
-import org.orekit.files.ccsds.utils.state.ProcessingState;
+import org.orekit.files.ccsds.utils.parsing.AbstractMessageParser;
+import org.orekit.files.ccsds.utils.parsing.ParsingContext;
+import org.orekit.files.ccsds.utils.parsing.ProcessingState;
 import org.orekit.utils.IERSConventions;
 
 

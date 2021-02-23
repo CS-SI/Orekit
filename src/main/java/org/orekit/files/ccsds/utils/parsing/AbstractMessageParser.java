@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.ccsds.utils.state;
+package org.orekit.files.ccsds.utils.parsing;
 
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitInternalError;

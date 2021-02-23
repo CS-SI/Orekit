@@ -22,11 +22,11 @@ import java.util.List;
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.definitions.CcsdsFrame;
+import org.orekit.files.ccsds.definitions.CcsdsUnit;
+import org.orekit.files.ccsds.definitions.CenterName;
 import org.orekit.files.ccsds.ndm.odm.oem.InterpolationMethod;
 import org.orekit.files.ccsds.section.CommentsContainer;
-import org.orekit.files.ccsds.utils.CcsdsFrame;
-import org.orekit.files.ccsds.utils.CcsdsUnit;
-import org.orekit.files.ccsds.utils.CenterName;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 

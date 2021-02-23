@@ -22,7 +22,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.files.ccsds.utils.CenterName;
+import org.orekit.files.ccsds.definitions.CenterName;
 
 
 public class CenterNameTest {

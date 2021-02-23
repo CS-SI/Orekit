@@ -18,9 +18,9 @@ package org.orekit.files.ccsds.ndm.adm.aem;
 
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.AdmParser;
-import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 
 /** Keys for {@link AemMetadata AEM metadata} entries.

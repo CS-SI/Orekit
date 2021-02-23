@@ -14,29 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.ccsds.utils.state;
-
-import org.orekit.files.ccsds.utils.lexical.MessageParser;
-import org.orekit.files.ccsds.utils.lexical.ParseToken;
-
 /**
- * Interface for processing parsing tokens for CCSDS NDM files.
- * <p>
- * This interface is intended for use as the state in
- * state design pattern, the {@link MessageParser message parser}
- * itself being used as the context that holds the active state.
- * </p>
- * @see MessageParser
+ *
+ * This package contains definitions for CCSDS objects (frames, time systems...).
  *
  * @author Luc Maisonobe
  * @since 11.0
  */
-public interface ProcessingState {
-
-    /** Process one token.
-     * @param token token to process
-     * @return true if token was processed, false otherwise
-     */
-    boolean processToken(ParseToken token);
-
-}
+package org.orekit.files.ccsds.definitions;

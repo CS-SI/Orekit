@@ -16,7 +16,7 @@
  */
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
-import org.orekit.files.ccsds.utils.CcsdsUnit;
+import org.orekit.files.ccsds.definitions.CcsdsUnit;
 
 /** Orbit element set type used in CCSDS {@link OcmFile Orbit Comprehensive Messages}.
  * @see <a href="https://sanaregistry.org/r/orbital_elements">SANA registry for orbital elements</a>

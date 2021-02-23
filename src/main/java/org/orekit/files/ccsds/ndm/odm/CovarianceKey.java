@@ -16,9 +16,9 @@
  */
 package org.orekit.files.ccsds.ndm.odm;
 
-import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 
 /** Keys for {@link Covariance ODM covariance} entries.

@@ -19,9 +19,9 @@ package org.orekit.files.ccsds.ndm.adm;
 import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.CcsdsBodyFrame;
+import org.orekit.files.ccsds.definitions.CcsdsFrame;
 import org.orekit.files.ccsds.ndm.adm.aem.AemMetadataKey;
-import org.orekit.files.ccsds.utils.CcsdsBodyFrame;
-import org.orekit.files.ccsds.utils.CcsdsFrame;
 
 /**
  * Container for a pair of frames acting as attitude end points.

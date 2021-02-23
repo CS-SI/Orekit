@@ -19,8 +19,8 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.util.List;
 
+import org.orekit.files.ccsds.definitions.CcsdsTimeScale;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadata;
-import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.time.AbsoluteDate;
 
 /** Meta-data for {@link OcmMetadata Orbit Comprehensive Message}.

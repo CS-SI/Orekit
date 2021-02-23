@@ -16,8 +16,8 @@
  */
 package org.orekit.files.ccsds.ndm.tdm;
 
-import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 
 /** Keys for {@link TdmMetadata TDM metadata} entries.

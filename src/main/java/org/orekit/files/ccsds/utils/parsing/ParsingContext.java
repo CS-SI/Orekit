@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.ccsds.utils;
+package org.orekit.files.ccsds.utils.parsing;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.definitions.CcsdsTimeScale;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 

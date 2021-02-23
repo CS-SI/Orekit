@@ -24,10 +24,10 @@ import java.util.regex.Pattern;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.utils.CcsdsFrame;
-import org.orekit.files.ccsds.utils.CcsdsTimeScale;
-import org.orekit.files.ccsds.utils.CenterName;
-import org.orekit.files.ccsds.utils.ParsingContext;
+import org.orekit.files.ccsds.definitions.CcsdsFrame;
+import org.orekit.files.ccsds.definitions.CcsdsTimeScale;
+import org.orekit.files.ccsds.definitions.CenterName;
+import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
@@ -203,6 +203,18 @@ public class ParseToken {
     /** Process the content as a normalized string.
      * @param consumer consumer of the normalized string
      * @return always returns {@code true}
+     * @see #processAsNormalizedString(StringConsumer)
+     */
+    public boolean processAsFreeTextString(final StringConsumer consumer) {
+        if (type == TokenType.ENTRY) {
+            consumer.accept(getContent());
+        }
+        return true;
+    }
+
+    /** Process the content as a normalized string.
+     * @param consumer consumer of the normalized string
+     * @return always returns {@code true}
      * @see #processAsFreeTextString(StringConsumer)
      */
     public boolean processAsNormalizedString(final StringConsumer consumer) {
@@ -214,7 +226,7 @@ public class ParseToken {
 
     /** Process the content as an indexed free text string.
      * @param index index
-     * @param consumer consumer of the indexed free test string
+     * @param consumer consumer of the indexed free text string
      * @return always returns {@code true}
      */
     public boolean processAsIndexedFreeTextString(final int index, final IndexedStringConsumer consumer) {
@@ -232,6 +244,17 @@ public class ParseToken {
     public boolean processAsIndexedNormalizedString(final int index, final IndexedStringConsumer consumer) {
         if (type == TokenType.ENTRY) {
             consumer.accept(index, getContentAsNormalizedString());
+        }
+        return true;
+    }
+
+    /** Process the content as a list of free text strings.
+     * @param consumer consumer of the free text strings list
+     * @return always returns {@code true}
+     */
+    public boolean processAsFreeTextStringList(final StringListConsumer consumer) {
+        if (type == TokenType.ENTRY) {
+            consumer.accept(getContentAsFreeTextStringList());
         }
         return true;
     }

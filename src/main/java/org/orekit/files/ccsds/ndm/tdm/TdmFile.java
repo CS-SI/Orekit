@@ -22,10 +22,10 @@ import java.util.List;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.CcsdsTimeScale;
 import org.orekit.files.ccsds.ndm.NdmFile;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
-import org.orekit.files.ccsds.utils.CcsdsTimeScale;
 import org.orekit.utils.IERSConventions;
 
 /** This class stores all the information of the CCSDS Tracking Data Message file parsed by TDMParser or TDMXMLParser. <p>

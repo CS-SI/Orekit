@@ -21,7 +21,7 @@ import java.io.IOException;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.utils.CcsdsFrame;
+import org.orekit.files.ccsds.definitions.CcsdsFrame;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.Propagator;

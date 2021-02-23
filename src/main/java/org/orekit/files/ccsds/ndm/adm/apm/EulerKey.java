@@ -18,9 +18,9 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.files.ccsds.ndm.adm.AdmParser;
-import org.orekit.files.ccsds.utils.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 /** Keys for {@link ApmData APM Euler angles} entries.
  * @author Bryan Cazabonne
