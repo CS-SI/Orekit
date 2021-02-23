@@ -31,7 +31,7 @@ import org.orekit.files.ccsds.ndm.adm.aem.AemMetadataKey;
  * <p>
  * In the Orekit perspective, one of the frame is an {@link CelestialBodyFrame external
  * frame} suitable for reference for Orekit {@link Attitude}, the other one
- * is a {@link SpacecraftBodyFrame local spaceraft body frame}. The suitable
+ * is a {@link SpacecraftBodyFrame local spacecraft body frame}. The suitable
  * setters to be used in this perspective are {@link #setExternalFrame(CelestialBodyFrame)},
  * {@link #setLocalFrame(SpacecraftBodyFrame)} and {@link #setExternal2Local(boolean)}.
  * </p>
