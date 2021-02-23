@@ -170,21 +170,6 @@ public class FieldTLETest {
     }
     
     @Test
-    public void testMeanMotionRange() {
-        doTestMeanMotionRange(Decimal64Field.getInstance());
-    }
-    
-    @Test
-    public void testInclinationRange() {
-        doTestInclinationRange(Decimal64Field.getInstance());
-    }
-    
-    @Test
-    public void testEccentricityRange() {
-        doTestEccentricityRange(Decimal64Field.getInstance());
-    }
-    
-    @Test
     public void testDifferentFields() {
         String line1 = "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20";
         String line2 = "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62";
@@ -375,11 +360,9 @@ public class FieldTLETest {
             tle.getLine2();
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.TLE_INVALID_PARAMETER_RANGE, oe.getSpecifier());
-            Assert.assertEquals("eccentricity", oe.getParts()[0]);
-            Assert.assertEquals(1.0075476, oe.getParts()[1]);
-            Assert.assertEquals(0.0, oe.getParts()[2]);
-            Assert.assertEquals(1.0, oe.getParts()[3]);
+            Assert.assertEquals(OrekitMessages.TLE_INVALID_PARAMETER, oe.getSpecifier());
+            Assert.assertEquals(5555, ((Integer) oe.getParts()[0]).intValue());
+            Assert.assertEquals("eccentricity", oe.getParts()[1]);
         }
     }
 
@@ -633,70 +616,6 @@ public class FieldTLETest {
         // and PA to the [0, 2*Pi] range
         Assert.assertEquals(tle.getLine1(), "1 99999X 20042F   20001.04166667  .00000000  00000-0  10000-4 0  9997");
         Assert.assertEquals(tle.getLine2(), "2 99999  97.3982 239.8686 0016311 175.5448 123.6195 15.14038717    18");
-    }
-
-    public <T extends RealFieldElement<T>> void doTestMeanMotionRange(Field<T> field) {
-        final T T_zero = field.getZero();
-        final double[] wrongMeanMotions = new double[] { -42.0 };
-        for (double wrongMeanMotion : wrongMeanMotions) {
-            try {
-                new FieldTLE<T>(99999, 'X', 2020, 42, "F", 0, 999,
-                        new FieldAbsoluteDate<T>(field, "2020-01-01T01:00:00.000", TimeScalesFactory.getUTC()), T_zero.add(wrongMeanMotion), T_zero.add(0.0),
-                        T_zero.add(0.0), T_zero.add(0.0016310523359516962), T_zero.add(1.6999188604164899),
-                        T_zero.add(3.063834020452862), T_zero.add(4.1864962873682305),
-                        T_zero.add(2.157567545975006), 1, 1e-05);
-                Assert.fail("an exception should have been thrown");
-            } catch (OrekitException oe) {
-                Assert.assertEquals(OrekitMessages.TLE_INVALID_PARAMETER_RANGE, oe.getSpecifier());
-                Assert.assertEquals("meanMotion", oe.getParts()[0]);
-                Assert.assertEquals(wrongMeanMotion, oe.getParts()[1]);
-                Assert.assertEquals(0.0, oe.getParts()[2]);
-                Assert.assertEquals(Double.POSITIVE_INFINITY, oe.getParts()[3]);
-            }
-        }
-    }
-
-    public <T extends RealFieldElement<T>> void doTestInclinationRange(Field<T> field) {
-        final T T_zero = field.getZero();
-        final double[] wrongInclinations = new double[] { -42.0, +42.0 };
-        for (double wrongInclination : wrongInclinations) {
-            try {
-                new FieldTLE<T>(99999, 'X', 2020, 42, "F", 0, 999,
-                        new FieldAbsoluteDate<T>(field, "2020-01-01T01:00:00.000", TimeScalesFactory.getUTC()), T_zero.add(0.0011010400252833312),
-                        T_zero.add(0.0), T_zero.add(0.0), T_zero.add(0.0016310523359516962),
-                        T_zero.add(wrongInclination), T_zero.add(3.063834020452862), T_zero.add(4.1864962873682305),
-                        T_zero.add(2.157567545975006), 1, 1e-05);
-                Assert.fail("an exception should have been thrown");
-            } catch (OrekitException oe) {
-                Assert.assertEquals(OrekitMessages.TLE_INVALID_PARAMETER_RANGE, oe.getSpecifier());
-                Assert.assertEquals("inclination", oe.getParts()[0]);
-                Assert.assertEquals(wrongInclination, oe.getParts()[1]);
-                Assert.assertEquals(0.0, oe.getParts()[2]);
-                Assert.assertEquals(FastMath.PI, oe.getParts()[3]);
-                ;
-            }
-        }
-    }
-
-    public <T extends RealFieldElement<T>> void doTestEccentricityRange(Field<T> field) {
-        final T T_zero = field.getZero();
-        final double[] wrongEccentricities = new double[] { -42.0, +42.0 };
-        for (double wrongEccentricity : wrongEccentricities) {
-            try {
-                new FieldTLE<T>(99999, 'X', 2020, 42, "F", 0, 999,
-                        new FieldAbsoluteDate<T>(field, "2020-01-01T01:00:00.000", TimeScalesFactory.getUTC()), T_zero.add(0.0011010400252833312),
-                        T_zero.add(0.0), T_zero.add(0.0), T_zero.add(wrongEccentricity), T_zero.add(1.6999188604164899),
-                        T_zero.add(3.063834020452862), T_zero.add(4.1864962873682305),
-                        T_zero.add(2.157567545975006), 1, 1e-05);
-                Assert.fail("an exception should have been thrown");
-            } catch (OrekitException oe) {
-                Assert.assertEquals(OrekitMessages.TLE_INVALID_PARAMETER_RANGE, oe.getSpecifier());
-                Assert.assertEquals("eccentricity", oe.getParts()[0]);
-                Assert.assertEquals(wrongEccentricity, oe.getParts()[1]);
-                Assert.assertEquals(0.0, oe.getParts()[2]);
-                Assert.assertEquals(1.0, oe.getParts()[3]);
-            }
-        }
     }
 
     @Test

@@ -163,9 +163,6 @@ TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = le linee TLE non si riferiscono allo ste
 # invalid TLE parameter for object {0}: {1} = {2}
 TLE_INVALID_PARAMETER = parametro TLE non valido per l''oggetto {0}: {1} = {2}
 
-# invalid TLE parameter {0}: {1} not in range [{2}, {3}]
-TLE_INVALID_PARAMETER_RANGE = <MISSING TRANSLATION>
-
 # wrong checksum of TLE line {0}, expected {1} but got {2} ({3})
 TLE_CHECKSUM_ERROR = somma di controllo incorretta per la linea TLE {0}, {2} invece del valore atteso {1} ({3})
 
