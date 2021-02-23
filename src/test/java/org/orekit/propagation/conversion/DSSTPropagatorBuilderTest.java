@@ -253,7 +253,7 @@ public class DSSTPropagatorBuilderTest {
     }
     
     @Test
-    public void testDeselctOrbitals() {
+    public void testDeselectOrbitals() {
         // Integrator builder
         final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
         // Propagator builder
@@ -262,6 +262,9 @@ public class DSSTPropagatorBuilderTest {
                                                                   1.0,
                                                                   PropagationType.MEAN,
                                                                   PropagationType.MEAN);
+        for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
+            Assert.assertTrue(driver.isSelected());
+        }
         builder.deselectDynamicParameters();
         for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
             Assert.assertFalse(driver.isSelected());

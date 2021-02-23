@@ -398,8 +398,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
         try {
 
             // evaluate orbit
-            final T[] parameters = getParameters(date.getField());
-            final FieldOrbit<T> orbit = propagateOrbit(date, parameters);
+            final FieldOrbit<T> orbit = propagateOrbit(date, getParameters(date.getField()));
 
             // evaluate attitude
             final FieldAttitude<T> attitude =
@@ -419,9 +418,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
         /** {@inheritDoc} */
         @Override
         public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
-
-            final T[] parameters = getParameters(date.getField());
-            return propagateOrbit(date, parameters).getPVCoordinates(frame);
+            return propagateOrbit(date, getParameters(date.getField())).getPVCoordinates(frame);
         }
 
     }

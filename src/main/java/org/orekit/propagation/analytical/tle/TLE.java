@@ -798,6 +798,7 @@ public class TLE implements TimeStamped, Serializable {
      * @param state Spacecraft State to convert into TLE
      * @param templateTLE first guess used to get identification and estimate new TLE
      * @return TLE matching with Spacecraft State and template identification
+     * @since 11.0
      */
     @DefaultDataContext
     public static TLE stateToTLE(final SpacecraftState state, final TLE templateTLE) {
@@ -817,7 +818,7 @@ public class TLE implements TimeStamped, Serializable {
      * @param epsilon used to compute threshold for convergence check
      * @param maxIterations maximum number of iterations for convergence
      * @return TLE matching with Spacecraft State and template identification
-     * @throws OrekitException
+     * @since 11.0
      */
     @DefaultDataContext
     public static TLE stateToTLE(final SpacecraftState state, final TLE templateTLE,
