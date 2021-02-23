@@ -491,7 +491,9 @@ public class AEMParserTest {
         final AemFile file = new ParserBuilder().buildAemParser().parseMessage(source);
         final AemSegment segment0 = file.getSegments().get(0);
         Assert.assertEquals(FramesFactory.getGTOD(IERSConventions.IERS_2010, true),
-                            segment0.getMetadata().getEndPoints().getExternalFrame().getFrame(IERSConventions.IERS_2010, true));
+                            segment0.getMetadata().getEndPoints().getExternalFrame().getFrame(IERSConventions.IERS_2010,
+                                                                                              true,
+                                                                                              DataContext.getDefault()));
 
         final BoundedAttitudeProvider provider = segment0.getAttitudeProvider();
         Attitude attitude = provider.getAttitude(null, new AbsoluteDate("1996-11-28T22:08:03.555", TimeScalesFactory.getUTC()), null);
@@ -512,7 +514,9 @@ public class AEMParserTest {
         final AemFile file = new ParserBuilder().buildAemParser().parseMessage(source);
         final AemSegment segment0 = file.getSegments().get(0);
         Assert.assertEquals(FramesFactory.getITRF(ITRFVersion.ITRF_93, IERSConventions.IERS_2010, true),
-                            segment0.getMetadata().getEndPoints().getExternalFrame().getFrame(IERSConventions.IERS_2010, true));
+                            segment0.getMetadata().getEndPoints().getExternalFrame().getFrame(IERSConventions.IERS_2010,
+                                                                                              true,
+                                                                                              DataContext.getDefault()));
 
         final BoundedAttitudeProvider provider = segment0.getAttitudeProvider();
         Attitude attitude = provider.getAttitude(null, new AbsoluteDate("1996-11-28T22:08:03.555", TimeScalesFactory.getUTC()), null);
