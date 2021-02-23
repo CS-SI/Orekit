@@ -385,20 +385,17 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
         // orbital parameters
         this.epoch = epoch;
         // Checking mean motion range
-        checkParameterRangeInclusive(MEAN_MOTION, meanMotion.getReal(), 0.0, Double.POSITIVE_INFINITY);
         this.meanMotion = meanMotion;
         this.meanMotionFirstDerivative = meanMotionFirstDerivative;
         this.meanMotionSecondDerivative = meanMotionSecondDerivative;
 
         // Checking inclination range
-        checkParameterRangeInclusive(INCLINATION, i.getReal(), 0, FastMath.PI);
         this.inclination = i;
 
         // Normalizing RAAN in [0,2pi] interval
         this.raan = MathUtils.normalizeAngle(raan, raan.getField().getZero().add(FastMath.PI));
 
         // Checking eccentricity range
-        checkParameterRangeInclusive(ECCENTRICITY, e.getReal(), 0.0, 1.0);
         this.eccentricity = e;
 
         // Normalizing PA in [0,2pi] interval
@@ -979,37 +976,6 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
             }
         }
         return sum % 10;
-    }
-
-    /**
-     * <p>
-     * Check if the given parameter is within an acceptable range.
-     * The bounds are inclusive: an exception is raised when either of those conditions are met:
-     * <ul>
-     *     <li>The parameter is strictly greater than upperBound</li>
-     *     <li>The parameter is strictly lower than lowerBound</li>
-     * </ul>
-     * </p>
-     * <p>
-     * In either of these cases, an OrekitException is raised with a TLE_INVALID_PARAMETER_RANGE
-     * message, for instance:
-     * <pre>
-     *   "invalid TLE parameter eccentricity: 42.0 not in range [0.0, 1.0]"
-     * </pre>
-     * </p>
-     * @param parameterName name of the parameter
-     * @param parameter value of the parameter
-     * @param lowerBound lower bound of the acceptable range (inclusive)
-     * @param upperBound upper bound of the acceptable range (inclusive)
-     */
-    private void checkParameterRangeInclusive(final String parameterName, final double parameter,
-            final double lowerBound,
-            final double upperBound) {
-        if ((parameter < lowerBound) || (parameter > upperBound)) {
-            throw new OrekitException(OrekitMessages.TLE_INVALID_PARAMETER_RANGE, parameterName,
-                    parameter,
-                    lowerBound, upperBound);
-        }
     }
 
     /**
