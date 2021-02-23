@@ -539,7 +539,9 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      */
     protected abstract void sxpPropagate(double t);
 
-    /** {@inheritDoc} */
+    /** Set the initial state.
+     *  @param initialState initial state
+     */
     @DefaultDataContext
     public void setInitialState(final SpacecraftState initialState) {
         resetInitialState(initialState);
