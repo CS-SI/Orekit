@@ -146,7 +146,7 @@ public class OCMParserTest {
                             history.getMetadata().getComments().get(0));
         Assert.assertEquals("OSCULATING", history.getMetadata().getOrbAveraging());
         Assert.assertEquals("EARTH", history.getMetadata().getCenterName());
-        Assert.assertEquals(CelestialBodyFrame.ITRF2000, history.getMetadata().getOrbRefCCSDSFrame());
+        Assert.assertEquals(CelestialBodyFrame.ITRF2000, history.getMetadata().getOrbReferenceFrame().asCelestialBodyFrame());
         Assert.assertEquals(ElementsType.CARTPV, history.getMetadata().getOrbType());
         Assert.assertEquals(0.0, file.getMetadata().getEpochT0().durationFrom(t0), 1.0e-15);
         List<OrbitState> states = history.getOrbitalStates();

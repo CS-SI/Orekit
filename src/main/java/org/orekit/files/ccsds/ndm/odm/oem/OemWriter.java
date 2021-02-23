@@ -29,7 +29,7 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
@@ -407,10 +407,9 @@ public class OemWriter implements EphemerisFileWriter {
                 // override template metadata with segment values
                 if (segment instanceof OemSegment) {
                     final OemSegment oemSegment = (OemSegment) segment;
-                    metadata.setRefFrame(oemSegment.getMetadata().getRefFrame(),
-                                         oemSegment.getMetadata().getRefCCSDSFrame());
+                    metadata.setReferenceFrame(oemSegment.getMetadata().getReferenceFrame());
                 } else {
-                    metadata.setRefFrame(segment.getFrame(), CelestialBodyFrame.map(segment.getFrame()));
+                    metadata.setReferenceFrame(FrameFacade.map(segment.getFrame()));
                 }
                 metadata.setStartTime(segment.getStart());
                 metadata.setStopTime(segment.getStop());
@@ -446,9 +445,9 @@ public class OemWriter implements EphemerisFileWriter {
                                 generator.writeEntry(CovarianceKey.EPOCH.name(),
                                                      dateToString(covariance.getEpoch()),
                                                      true);
-                                if (covariance.getRefCCSDSFrame() != metadata.getRefCCSDSFrame()) {
+                                if (covariance.getReferenceFrame() != metadata.getReferenceFrame()) {
                                     generator.writeEntry(CovarianceKey.COV_REF_FRAME.name(),
-                                                         covariance.getRefCCSDSFrame().name(),
+                                                         covariance.getReferenceFrame().getName(),
                                                          false);
                                 }
                                 final RealMatrix m = covariance.getCovarianceMatrix();
@@ -550,12 +549,12 @@ public class OemWriter implements EphemerisFileWriter {
         generator.writeComments(metadata);
 
         // objects
-        generator.writeEntry(OdmMetadataKey.OBJECT_NAME.name(),     metadata.getObjectName(), true);
+        generator.writeEntry(OdmMetadataKey.OBJECT_NAME.name(),    metadata.getObjectName(), true);
         generator.writeEntry(CommonMetadataKey.OBJECT_ID.name(),   metadata.getObjectID(),   true);
         generator.writeEntry(CommonMetadataKey.CENTER_NAME.name(), metadata.getCenterName(), false);
 
         // frames
-        generator.writeEntry(CommonMetadataKey.REF_FRAME.name(), metadata.getRefCCSDSFrame().name(), true);
+        generator.writeEntry(CommonMetadataKey.REF_FRAME.name(), metadata.getReferenceFrame().getName(), true);
         if (metadata.getFrameEpoch() != null) {
             generator.writeEntry(CommonMetadataKey.REF_FRAME_EPOCH.name(),
                                  dateToString(metadata.getFrameEpoch()),
@@ -692,7 +691,7 @@ public class OemWriter implements EphemerisFileWriter {
         // copy frames
         copy.setCenterName(original.getCenterName(), dataContext.getCelestialBodies());
         copy.setFrameEpoch(original.getFrameEpoch());
-        copy.setRefFrame(original.getRefFrame(), original.getRefCCSDSFrame());
+        copy.setReferenceFrame(original.getReferenceFrame());
 
         // copy time system only (ignore times themselves)
         copy.setTimeSystem(original.getTimeSystem());

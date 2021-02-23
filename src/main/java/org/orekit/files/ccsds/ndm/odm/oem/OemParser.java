@@ -344,7 +344,7 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
                 if (currentCovariance == null) {
                     // save the current metadata for later retrieval of reference frame
                     final CommonMetadata savedMetadata = metadata;
-                    currentCovariance = new Covariance(() -> savedMetadata.getFrame(),  () -> savedMetadata.getRefCCSDSFrame());
+                    currentCovariance = new Covariance(() -> savedMetadata.getReferenceFrame());
                     currentRow        = 0;
                 }
 

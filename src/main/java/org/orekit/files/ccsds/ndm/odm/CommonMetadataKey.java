@@ -39,7 +39,7 @@ public enum CommonMetadataKey {
     }),
 
     /** Name of the reference frame in which the state vector and optional Keplerian element data are given. */
-    REF_FRAME((token, context, metadata) -> token.processAsFrame(metadata::setRefFrame, context, false)),
+    REF_FRAME((token, context, metadata) -> token.processAsFrame(metadata::setReferenceFrame, context, true, false, false)),
 
     /** Epoch of reference frame, if not intrinsic to the definition of the reference frame. */
     REF_FRAME_EPOCH((token, context, metadata) -> token.processAsNormalizedString(metadata::setFrameEpochString));

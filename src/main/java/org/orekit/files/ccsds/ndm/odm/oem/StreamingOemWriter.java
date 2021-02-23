@@ -21,9 +21,8 @@ import java.io.IOException;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.utils.generation.Generator;
-import org.orekit.frames.Frame;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -114,9 +113,7 @@ public class StreamingOemWriter {
                 metadata.setUseableStartTime(null);
                 metadata.setUseableStopTime(null);
                 metadata.setStopTime(t);
-                final Frame      stateFrame = s0.getAttitude().getReferenceFrame();
-                final CelestialBodyFrame ccsdsFrame = CelestialBodyFrame.map(stateFrame);
-                metadata.setRefFrame(stateFrame, ccsdsFrame);
+                metadata.setReferenceFrame(FrameFacade.map(s0.getAttitude().getReferenceFrame()));
                 oemWriter.writeMetadata(generator);
                 oemWriter.startData(generator);
             } catch (IOException e) {

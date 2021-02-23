@@ -20,11 +20,8 @@ package org.orekit.files.ccsds.ndm.odm.opm;
 import java.util.Arrays;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.section.CommentsContainer;
-import org.orekit.frames.Frame;
-import org.orekit.frames.LOFType;
 import org.orekit.time.AbsoluteDate;
 
 /** Maneuver in an OPM file.
@@ -36,11 +33,8 @@ public class Maneuver extends CommentsContainer {
     /** Epoch ignition. */
     private AbsoluteDate epochIgnition;
 
-    /** Coordinate system for velocity increment vector, for Local Orbital Frames. */
-    private LOFType refLofType;
-
     /** Coordinate system for velocity increment vector, for absolute frames. */
-    private Frame refFrame;
+    private FrameFacade referenceFrame;
 
     /** Duration (value is 0 for impulsive maneuver). */
     private double duration;
@@ -64,16 +58,13 @@ public class Maneuver extends CommentsContainer {
     @Override
     public void checkMandatoryEntries() {
         super.checkMandatoryEntries();
-        checkNotNull(epochIgnition, ManeuverKey.MAN_EPOCH_IGNITION);
-        if (refLofType == null && refFrame == null) {
-            throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY,
-                                      ManeuverKey.MAN_REF_FRAME.name());
-        }
-        checkNotNaN(duration,  ManeuverKey.MAN_DURATION);
-        checkNotNaN(deltaMass, ManeuverKey.MAN_DELTA_MASS);
-        checkNotNaN(dV[0],     ManeuverKey.MAN_DV_1);
-        checkNotNaN(dV[1],     ManeuverKey.MAN_DV_2);
-        checkNotNaN(dV[2],     ManeuverKey.MAN_DV_3);
+        checkNotNull(epochIgnition,  ManeuverKey.MAN_EPOCH_IGNITION);
+        checkNotNull(referenceFrame, ManeuverKey.MAN_REF_FRAME);
+        checkNotNaN(duration,        ManeuverKey.MAN_DURATION);
+        checkNotNaN(deltaMass,       ManeuverKey.MAN_DELTA_MASS);
+        checkNotNaN(dV[0],           ManeuverKey.MAN_DV_1);
+        checkNotNaN(dV[1],           ManeuverKey.MAN_DV_2);
+        checkNotNaN(dV[2],           ManeuverKey.MAN_DV_3);
     }
 
     /** Get epoch ignition.
@@ -90,34 +81,18 @@ public class Maneuver extends CommentsContainer {
         this.epochIgnition = epochIgnition;
     }
 
-    /** Get coordinate system for velocity increment vector, for Local Orbital Frames.
-     * @return coordinate system for velocity increment vector, for Local Orbital Frames
+    /** Get Coordinate system for velocity increment vector.
+     * @return coordinate system for velocity increment vector
      */
-    public LOFType getRefLofType() {
-        return refLofType;
+    public FrameFacade getReferenceFrame() {
+        return referenceFrame;
     }
 
-    /** Set coordinate system for velocity increment vector, for Local Orbital Frames.
-     * @param refLofType coordinate system for velocity increment vector, for Local Orbital Frames
+    /** Set Coordinate system for velocity increment vector.
+     * @param referenceFrame coordinate system for velocity increment vector
      */
-    public void setRefLofType(final LOFType refLofType) {
-        this.refLofType = refLofType;
-        this.refFrame   = null;
-    }
-
-    /** Get Coordinate system for velocity increment vector, for absolute frames.
-     * @return coordinate system for velocity increment vector, for absolute frames
-     */
-    public Frame getRefFrame() {
-        return refFrame;
-    }
-
-    /** Set Coordinate system for velocity increment vector, for absolute frames.
-     * @param refFrame coordinate system for velocity increment vector, for absolute frames
-     */
-    public void setRefFrame(final Frame refFrame) {
-        this.refLofType = null;
-        this.refFrame   = refFrame;
+    public void setReferenceFrame(final FrameFacade referenceFrame) {
+        this.referenceFrame = referenceFrame;
     }
 
     /** Get duration (value is 0 for impulsive maneuver).
@@ -168,7 +143,7 @@ public class Maneuver extends CommentsContainer {
      */
     public boolean completed() {
         return !(epochIgnition == null ||
-                 (refLofType == null && refFrame == null) ||
+                 referenceFrame == null ||
                  Double.isNaN(duration + deltaMass + dV[0] + dV[1] + dV[2]));
     }
 

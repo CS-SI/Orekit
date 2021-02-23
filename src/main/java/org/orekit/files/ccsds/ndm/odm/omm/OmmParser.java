@@ -360,7 +360,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
         if (covarianceBlock == null) {
             // save the current metadata for later retrieval of reference frame
             final CommonMetadata savedMetadata = metadata;
-            covarianceBlock = new Covariance(() -> savedMetadata.getFrame(), () -> savedMetadata.getRefCCSDSFrame());
+            covarianceBlock = new Covariance(() -> savedMetadata.getReferenceFrame());
             if (moveCommentsIfEmpty(tleBlock, covarianceBlock)) {
                 // get rid of the empty logical block
                 tleBlock = null;

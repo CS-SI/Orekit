@@ -145,11 +145,13 @@ public class OEMParserTest {
         Assert.assertEquals(new AbsoluteDate("1996-12-28T21:29:07.267", TimeScalesFactory.getUTC()),
                             file.getSegments().get(2).getCovarianceMatrices().get(0).getEpoch());
         Assert.assertEquals(LOFType.QSW,
-                            file.getSegments().get(2).getCovarianceMatrices().get(0).getRefCCSDSFrame().getLofType());
-        Assert.assertNull(file.getSegments().get(2).getCovarianceMatrices().get(0).getRefFrame());
-        Assert.assertNull(file.getSegments().get(2).getCovarianceMatrices().get(1).getRefCCSDSFrame().getLofType());
+                            file.getSegments().get(2).getCovarianceMatrices().get(0).getReferenceFrame().asOrbitRelativeFrame().getLofType());
+        Assert.assertNull(file.getSegments().get(2).getCovarianceMatrices().get(0).getReferenceFrame().asFrame());
+        Assert.assertNull(file.getSegments().get(2).getCovarianceMatrices().get(0).getReferenceFrame().asCelestialBodyFrame());
+        Assert.assertNull(file.getSegments().get(2).getCovarianceMatrices().get(0).getReferenceFrame().asSpacecraftBodyFrame());
+        Assert.assertNull(file.getSegments().get(2).getCovarianceMatrices().get(1).getReferenceFrame().asOrbitRelativeFrame());
         Assert.assertEquals(FramesFactory.getEME2000(),
-                            file.getSegments().get(2).getCovarianceMatrices().get(1).getRefFrame());
+                            file.getSegments().get(2).getCovarianceMatrices().get(1).getReferenceFrame().asFrame());
     }
 
     @Test
@@ -176,7 +178,7 @@ public class OEMParserTest {
         Assert.assertEquals("1996-062A", satellite.getId());
         final OemSegment segment = (OemSegment) satellite.getSegments().get(0);
         Assert.assertEquals(CelestialBodyFactory.getMars().getGM(), segment.getMu(), 1.0);
-        Assert.assertEquals("EME2000", segment.getMetadata().getRefCCSDSFrame().name());
+        Assert.assertEquals("EME2000", segment.getMetadata().getReferenceFrame().getName());
         Assert.assertEquals(segment.getMetadata().getCenterName(), "MARS BARYCENTER");
         Assert.assertNull(segment.getMetadata().getCenterBody());
         // Frame not creatable since it's center can't be created.
@@ -242,7 +244,7 @@ public class OEMParserTest {
         Assert.assertEquals(actualTransform.getRotationRate(), Vector3D.ZERO);
         Assert.assertEquals(actualTransform.getRotationAcceleration(), Vector3D.ZERO);
         Assert.assertEquals("Mars/EME2000", actualFrame.getName());
-        Assert.assertEquals(CelestialBodyFrame.EME2000, segment.getMetadata().getRefCCSDSFrame());
+        Assert.assertEquals(CelestialBodyFrame.EME2000, segment.getMetadata().getReferenceFrame().asCelestialBodyFrame());
         Assert.assertEquals(TimeSystem.UTC, segment.getMetadata().getTimeSystem());
         Assert.assertEquals(segment.getAvailableDerivatives(),
                 CartesianDerivativesFilter.USE_PV);
@@ -297,8 +299,11 @@ public class OEMParserTest {
         metadataComment.add("comment 1");
         metadataComment.add("comment 2");
         Assert.assertEquals(metadataComment, file.getSegments().get(0).getMetadata().getComments());
-        Assert.assertEquals("TOD/2010 simple EOP", file.getSegments().get(0).getMetadata().getRefFrame().getName());
-        Assert.assertEquals("EME2000", file.getSegments().get(1).getMetadata().getRefFrame().getName());
+        Assert.assertEquals("TOD/2010 simple EOP",
+                            file.getSegments().get(0).getMetadata().getReferenceFrame().asFrame().getName());
+        Assert.assertEquals("TOD",
+                            file.getSegments().get(0).getMetadata().getReferenceFrame().getName());
+        Assert.assertEquals("EME2000", file.getSegments().get(1).getMetadata().getReferenceFrame().getName());
         List<OemSegment> blocks = file.getSegments();
         Assert.assertEquals(2, blocks.size());
         Assert.assertEquals(129600.331,
@@ -604,7 +609,8 @@ public class OEMParserTest {
 
             // verify
             OemSegment segment = actual.getSegments().get(0);
-            Assert.assertEquals(frameName.replace("-", ""), segment.getMetadata().getRefCCSDSFrame().name());
+            Assert.assertEquals(frameName.replace("-", ""),
+                                segment.getMetadata().getReferenceFrame().getName());
             // check expected frame
             Frame actualFrame = segment.getFrame();
             Frame expectedFrame = frame.getSecond();

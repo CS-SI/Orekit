@@ -16,10 +16,9 @@
  */
 package org.orekit.files.ccsds.ndm.odm.opm;
 
+import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
-import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
-import org.orekit.files.ccsds.utils.lexical.ParseToken;
 
 
 /** Keys for {@link Maneuver OPM maneuver} entries.
@@ -36,19 +35,7 @@ public enum ManeuverKey {
     MAN_EPOCH_IGNITION((token, context, data) -> token.processAsDate(data::setEpochIgnition, context)),
 
     /** Coordinate system for velocity increment vector. */
-    MAN_REF_FRAME((token, context, data) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            final CelestialBodyFrame manFrame = CelestialBodyFrame.parse(token.getContent());
-            if (manFrame.isLof()) {
-                data.setRefLofType(manFrame.getLofType());
-            } else {
-                data.setRefFrame(manFrame.getFrame(context.getConventions(),
-                                                   context.isSimpleEOP(),
-                                                   context.getDataContext()));
-            }
-        }
-        return true;
-    }),
+    MAN_REF_FRAME((token, context, data) -> token.processAsFrame(data::setReferenceFrame, context, true, true, false)),
 
     /** Maneuver duration (0 for impulsive maneuvers). */
     MAN_DURATION((token, context, data) -> token.processAsDouble(1.0, data::setDuration)),

@@ -18,7 +18,6 @@ package org.orekit.files.ccsds.definitions;
 
 import java.util.regex.Pattern;
 
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -26,7 +25,6 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.ITRFVersion;
-import org.orekit.frames.LOFType;
 import org.orekit.frames.VersionedITRF;
 import org.orekit.utils.IERSConventions;
 
@@ -37,7 +35,7 @@ import org.orekit.utils.IERSConventions;
 public enum CelestialBodyFrame {
 
     /** Earth Mean Equator and Equinox of J2000. */
-    EME2000(null) {
+    EME2000 {
 
         /** {@inheritDoc} */
         @Override
@@ -50,7 +48,7 @@ public enum CelestialBodyFrame {
     },
 
     /** Earth Mean Equator and Equinox of J2000. */
-    J2000(null) {
+    J2000 {
 
         /** {@inheritDoc} */
         @Override
@@ -63,7 +61,7 @@ public enum CelestialBodyFrame {
     },
 
     /** Geocentric Celestial Reference Frame. */
-    GCRF(null) {
+    GCRF {
 
         /** {@inheritDoc} */
         @Override
@@ -76,7 +74,7 @@ public enum CelestialBodyFrame {
     },
 
     /** Greenwich Rotating Coordinates. */
-    GRC(null) {
+    GRC {
 
         /** {@inheritDoc} */
         @Override
@@ -94,7 +92,7 @@ public enum CelestialBodyFrame {
     /** Greenwich True Of Date.
      * @since 11.0
      */
-    GTOD(null) {
+    GTOD {
 
         /** {@inheritDoc} */
         @Override
@@ -110,7 +108,7 @@ public enum CelestialBodyFrame {
     },
 
     /** International Celestial Reference Frame. */
-    ICRF(null) {
+    ICRF {
 
         /** {@inheritDoc} */
         @Override
@@ -123,7 +121,7 @@ public enum CelestialBodyFrame {
     },
 
     /** International Terrestrial Reference Frame 2014. */
-    ITRF2014(null) {
+    ITRF2014 {
 
         /** {@inheritDoc} */
         @Override
@@ -139,7 +137,7 @@ public enum CelestialBodyFrame {
     },
 
     /** International Terrestrial Reference Frame 2008. */
-    ITRF2008(null) {
+    ITRF2008 {
 
         /** {@inheritDoc} */
         @Override
@@ -155,7 +153,7 @@ public enum CelestialBodyFrame {
     },
 
     /** International Terrestrial Reference Frame 2005. */
-    ITRF2005(null) {
+    ITRF2005 {
 
         /** {@inheritDoc} */
         @Override
@@ -171,7 +169,7 @@ public enum CelestialBodyFrame {
     },
 
     /** International Terrestrial Reference Frame 2000. */
-    ITRF2000(null) {
+    ITRF2000 {
 
         /** {@inheritDoc} */
         @Override
@@ -187,7 +185,7 @@ public enum CelestialBodyFrame {
     },
 
     /** International Terrestrial Reference Frame 1997. */
-    ITRF97(null) {
+    ITRF97 {
 
         /** {@inheritDoc} */
         @Override
@@ -203,7 +201,7 @@ public enum CelestialBodyFrame {
     },
 
     /** International Terrestrial Reference Frame 1996. */
-    ITRF96(null) {
+    ITRF96 {
 
         /** {@inheritDoc} */
         @Override
@@ -219,7 +217,7 @@ public enum CelestialBodyFrame {
     },
 
     /** International Terrestrial Reference Frame 1994. */
-    ITRF94(null) {
+    ITRF94 {
 
         /** {@inheritDoc} */
         @Override
@@ -235,7 +233,7 @@ public enum CelestialBodyFrame {
     },
 
     /** International Terrestrial Reference Frame 1993. */
-    ITRF93(null) {
+    ITRF93 {
 
         /** {@inheritDoc} */
         @Override
@@ -251,7 +249,7 @@ public enum CelestialBodyFrame {
     },
 
     /** International Terrestrial Reference Frame 1992. */
-    ITRF92(null) {
+    ITRF92 {
 
         /** {@inheritDoc} */
         @Override
@@ -267,7 +265,7 @@ public enum CelestialBodyFrame {
     },
 
     /** International Terrestrial Reference Frame 1991. */
-    ITRF91(null) {
+    ITRF91 {
 
         /** {@inheritDoc} */
         @Override
@@ -283,7 +281,7 @@ public enum CelestialBodyFrame {
     },
 
     /** International Terrestrial Reference Frame 1990. */
-    ITRF90(null) {
+    ITRF90 {
 
         /** {@inheritDoc} */
         @Override
@@ -299,7 +297,7 @@ public enum CelestialBodyFrame {
     },
 
     /** International Terrestrial Reference Frame 1989. */
-    ITRF89(null) {
+    ITRF89 {
 
         /** {@inheritDoc} */
         @Override
@@ -315,7 +313,7 @@ public enum CelestialBodyFrame {
     },
 
     /** International Terrestrial Reference Frame 1988. */
-    ITRF88(null) {
+    ITRF88 {
 
         /** {@inheritDoc} */
         @Override
@@ -331,7 +329,7 @@ public enum CelestialBodyFrame {
     },
 
     /** Mars Centered Inertial. */
-    MCI(null) {
+    MCI {
 
         /** {@inheritDoc} */
         @Override
@@ -344,7 +342,7 @@ public enum CelestialBodyFrame {
     },
 
     /** True of Date, Rotating. */
-    TDR(null) {
+    TDR {
 
         /** {@inheritDoc} */
         @Override
@@ -364,7 +362,7 @@ public enum CelestialBodyFrame {
      * TEME may be used only for OMMs based on NORAD
      * Two Line Element sets, and in no other circumstances.
      */
-    TEME(null) {
+    TEME {
 
         /** {@inheritDoc} */
         @Override
@@ -377,7 +375,7 @@ public enum CelestialBodyFrame {
     },
 
     /** True of Date. */
-    TOD(null) {
+    TOD {
 
         /** {@inheritDoc} */
         @Override
@@ -390,27 +388,7 @@ public enum CelestialBodyFrame {
             return dataContext.getFrames().getTOD(conventions, simpleEOP);
         }
 
-    },
-
-    /** Local vertical, Local Horizontal.
-     * @since 11.0
-     */
-    LVLH(LOFType.LVLH),
-
-    /** Radial, Transverse (along-track) and Normal. */
-    RTN(LOFType.QSW),
-
-    /** Another name for Radial, Transverse (along-track) and Normal. */
-    RSW(LOFType.QSW),
-
-    /** Another name for Radial, Transverse (along-track) and Normal.
-     * @since 11.0
-     */
-    QSW(LOFType.QSW),
-
-    /** TNW : x-axis along the velocity vector, W along the orbital angular momentum vector and
-    N completes the right handed system. */
-    TNW(LOFType.TNW);
+    };
 
     /** Pattern for dash. */
     private static final Pattern DASH = Pattern.compile("-");
@@ -420,52 +398,6 @@ public enum CelestialBodyFrame {
 
     /** Substring common to all ITRF frames. */
     private static final String ITRF_SUBSTRING = "ITRF";
-
-    /** Type of Local Orbital Frame (may be null). */
-    private final LOFType lofType;
-
-    /** Simple constructor.
-     * @param lofType type of Local Orbital Frame (null if frame is not a Local Orbital Frame)
-     */
-    CelestialBodyFrame(final LOFType lofType) {
-        this.lofType = lofType;
-    }
-
-    /** Check if the frame is a Local Orbital frame.
-     * @return true if the frame is a Local Orbital Frame
-     */
-    public boolean isLof() {
-        return lofType != null;
-    }
-
-    /** Get the type of Local Orbital frame.
-     * <p>
-     * If the frame is not a Local Orbital frame (i.e. if this method returns null),
-     * then the {@link #getFrame(IERSConventions, boolean, DataContext) getFrame} method
-     * must be used to retrieve the absolute frame.
-     * </p>
-     * @return type of Local Orbital Frame, or null if the frame is not a local orbital frame
-     * @see #isLof()
-     */
-    public LOFType getLofType() {
-        return lofType;
-    }
-
-    /**
-     * Get the frame corresponding to the CCSDS constant.
-     *
-     * <p>This method uses the {@link DataContext#getDefault() default data context}.
-     *
-     * @param conventions IERS conventions to use
-     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @return frame corresponding to the CCSDS constant
-     * @see #isLof()
-     * @see #getFrame(IERSConventions, boolean, DataContext)
-     */
-    @DefaultDataContext
-    public Frame getFrame(final IERSConventions conventions, final boolean simpleEOP) {
-        return getFrame(conventions, simpleEOP, DataContext.getDefault());
-    }
 
     /**
      * Get the frame corresponding to the CCSDS constant.

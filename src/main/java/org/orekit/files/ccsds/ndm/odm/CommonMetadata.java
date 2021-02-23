@@ -23,8 +23,9 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
-import org.orekit.files.ccsds.definitions.ModifiedFrame;
 import org.orekit.files.ccsds.definitions.CenterName;
+import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.ModifiedFrame;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -46,11 +47,7 @@ public class CommonMetadata extends OdmMetadata {
 
     /** Reference frame in which data are given: used for state vector
      * and Keplerian elements data (and for the covariance reference frame if none is given). */
-    private Frame referenceFrame;
-
-    /** Reference frame in which data are given: used for state vector
-     * and Keplerian elements data (and for the covariance reference frame if none is given). */
-    private CelestialBodyFrame referenceCCSDSFrame;
+    private FrameFacade referenceFrame;
 
     /** Epoch of reference frame, if not intrinsic to the definition of the
      * reference frame. */
@@ -70,9 +67,9 @@ public class CommonMetadata extends OdmMetadata {
     @Override
     public void checkMandatoryEntries() {
         super.checkMandatoryEntries();
-        checkNotNull(objectID,   CommonMetadataKey.OBJECT_ID);
-        checkNotNull(centerName, CommonMetadataKey.CENTER_NAME);
-        checkNotNull(referenceFrame,   CommonMetadataKey.REF_FRAME);
+        checkNotNull(objectID,       CommonMetadataKey.OBJECT_ID);
+        checkNotNull(centerName,     CommonMetadataKey.CENTER_NAME);
+        checkNotNull(referenceFrame, CommonMetadataKey.REF_FRAME);
     }
 
     /** Finalize the metadata.
@@ -185,17 +182,18 @@ public class CommonMetadata extends OdmMetadata {
         }
         // Just return frame if we don't need to shift the center based on CENTER_NAME
         // MCI and ICRF are the only non-Earth centered frames specified in Annex A.
-        final boolean isMci  = referenceCCSDSFrame == CelestialBodyFrame.MCI;
-        final boolean isIcrf = referenceCCSDSFrame == CelestialBodyFrame.ICRF;
+        final boolean isMci  = referenceFrame.asCelestialBodyFrame() == CelestialBodyFrame.MCI;
+        final boolean isIcrf = referenceFrame.asCelestialBodyFrame() == CelestialBodyFrame.ICRF;
         final boolean isSolarSystemBarycenter =
                 CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER.equals(centerBody.getName());
         if ((!(isMci || isIcrf) && CelestialBodyFactory.EARTH.equals(centerBody.getName())) ||
             (isMci && CelestialBodyFactory.MARS.equals(centerBody.getName())) ||
             (isIcrf && isSolarSystemBarycenter)) {
-            return referenceFrame;
+            return referenceFrame.asFrame();
         }
         // else, translate frame to specified center.
-        return new ModifiedFrame(referenceFrame, referenceCCSDSFrame, centerBody, centerName);
+        return new ModifiedFrame(referenceFrame.asFrame(), referenceFrame.asCelestialBodyFrame(),
+                                 centerBody, centerName);
     }
 
     /**
@@ -206,31 +204,17 @@ public class CommonMetadata extends OdmMetadata {
      * @return The reference frame specified by the {@code REF_FRAME} keyword.
      * @see #getFrame()
      */
-    public Frame getRefFrame() {
+    public FrameFacade getReferenceFrame() {
         return referenceFrame;
-    }
-
-    /**
-     * Get the value of {@code REF_FRAME} as an Orekit {@link Frame}. The {@code
-     * CENTER_NAME} key word has not been applied yet, so the returned frame may not
-     * correspond to the reference frame of the data in the file.
-     *
-     * @return The reference frame specified by the {@code REF_FRAME} keyword.
-     * @see #getFrame()
-     */
-    public CelestialBodyFrame getRefCCSDSFrame() {
-        return referenceCCSDSFrame;
     }
 
     /** Set the reference frame in which data are given: used for state vector
      * and Keplerian elements data (and for the covariance reference frame if none is given).
-     * @param frame the reference frame to be set
-     * @param ccsdsFrame the reference frame to be set
+     * @param referenceFrame the reference frame to be set
      */
-    public void setRefFrame(final Frame frame, final CelestialBodyFrame ccsdsFrame) {
+    public void setReferenceFrame(final FrameFacade referenceFrame) {
         refuseFurtherComments();
-        this.referenceFrame      = frame;
-        this.referenceCCSDSFrame = ccsdsFrame;
+        this.referenceFrame = referenceFrame;
     }
 
     /** Get epoch of reference frame, if not intrinsic to the definition of the

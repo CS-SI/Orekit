@@ -933,8 +933,8 @@ public class TDMParserTest {
         Assert.assertEquals("RU", metadata.getRangeUnits());
         Assert.assertEquals("RADEC", metadata.getAngleType());
         Assert.assertEquals("EME2000", metadata.getReferenceFrame().getName());
-        Assert.assertEquals(CelestialBodyFrame.EME2000, metadata.getReferenceCCSDSFrame());
-        Assert.assertEquals(true,FramesFactory.getEME2000().equals(metadata.getReferenceFrame()));
+        Assert.assertEquals(CelestialBodyFrame.EME2000, metadata.getReferenceFrame().asCelestialBodyFrame());
+        Assert.assertEquals(FramesFactory.getEME2000(), metadata.getReferenceFrame().asFrame());
         Assert.assertEquals(0.000077, metadata.getTransmitDelays().get(1), 0.0);
         Assert.assertEquals(0.000077, metadata.getTransmitDelays().get(2), 0.0);
         Assert.assertEquals(0.000077, metadata.getTransmitDelays().get(3), 0.0);

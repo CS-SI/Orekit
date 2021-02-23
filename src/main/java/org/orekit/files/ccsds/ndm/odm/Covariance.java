@@ -23,10 +23,9 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Data;
-import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
 /** Container for covariance matrix.
@@ -41,33 +40,23 @@ public class Covariance extends CommentsContainer implements Data {
     };
 
     /** Supplier for default reference frame. */
-    private final Supplier<Frame> defaultFrameSupplier;
-
-    /** Supplier for default CCSDS reference frame. */
-    private final Supplier<CelestialBodyFrame> defaultCCSDSFrameSupplier;
+    private final Supplier<FrameFacade> defaultFrameSupplier;
 
     /** Matrix epoch. */
     private AbsoluteDate epoch;
 
-    /** Reference frame in which data are given (may be null if referenceCCSDSFrame is a LOF frame). */
-    private Frame referenceFrame;
-
     /** Reference frame in which data are given. */
-    private CelestialBodyFrame referenceCCSDSFrame;
+    private FrameFacade referenceFrame;
 
     /** Position/Velocity covariance matrix. */
     private RealMatrix covarianceMatrix;
 
     /** Create an empty data set.
      * @param defaultFrameSupplier supplier for default reference frame
-    * if no frame is specified in the CCSDS message
-     * @param defaultCCSDSFrameSupplier supplier for default CCSDS reference frame
      * if no frame is specified in the CCSDS message
      */
-    public Covariance(final Supplier<Frame> defaultFrameSupplier,
-                         final Supplier<CelestialBodyFrame> defaultCCSDSFrameSupplier) {
-        this.defaultFrameSupplier      = defaultFrameSupplier;
-        this.defaultCCSDSFrameSupplier = defaultCCSDSFrameSupplier;
+    public Covariance(final Supplier<FrameFacade> defaultFrameSupplier) {
+        this.defaultFrameSupplier = defaultFrameSupplier;
         covarianceMatrix = MatrixUtils.createRealMatrix(6, 6);
         for (int i = 0; i < covarianceMatrix.getRowDimension(); ++i) {
             for (int j = 0; j <= i; ++j) {
@@ -107,43 +96,21 @@ public class Covariance extends CommentsContainer implements Data {
     }
 
     /**
-     * Get the reference frame as an Orekit {@link Frame}.
+     * Get the reference frame.
      *
      * @return The reference frame specified by the {@code COV_REF_FRAME} keyword
-     * or inherited from metadate
+     * or inherited from metadata
      */
-    public Frame getRefFrame() {
-        return useDefaultSuppliers() ? defaultFrameSupplier.get() : referenceFrame;
-    }
-
-    /**
-     * Get the reference frame as a {@link CelestialBodyFrame}.
-     *
-     * @return The reference frame specified by the {@code COV_REF_FRAME} keyword
-     * or inherited from metadate
-     */
-    public CelestialBodyFrame getRefCCSDSFrame() {
-        return useDefaultSuppliers() ? defaultCCSDSFrameSupplier.get() : referenceCCSDSFrame;
-    }
-
-    /** Check if we should rely on default suppliers for frames.
-     * @return true if we should rely on default frame suppliers
-     */
-    private boolean useDefaultSuppliers() {
-        // we check referenceCCSDSFrame even when we want referenceFrame
-        // because referenceFrame may be null when referenceCCSDSFrame has been
-        // initialized with a LOF-type frame
-        return referenceCCSDSFrame == null;
+    public FrameFacade getReferenceFrame() {
+        return referenceFrame == null ? defaultFrameSupplier.get() : referenceFrame;
     }
 
     /** Set the reference frame in which data are given.
-     * @param frame the reference frame to be set
-     * @param ccsdsFrame the reference frame to be set
+     * @param referenceFrame the reference frame to be set
      */
-    public void setRefFrame(final Frame frame, final CelestialBodyFrame ccsdsFrame) {
+    public void setReferenceFrame(final FrameFacade referenceFrame) {
         refuseFurtherComments();
-        this.referenceFrame      = frame;
-        this.referenceCCSDSFrame = ccsdsFrame;
+        this.referenceFrame = referenceFrame;
     }
 
     /** Get the Position/Velocity covariance matrix.

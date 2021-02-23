@@ -23,11 +23,11 @@ import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
-import org.orekit.files.ccsds.definitions.Unit;
 import org.orekit.files.ccsds.definitions.CenterName;
+import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.Unit;
 import org.orekit.files.ccsds.ndm.odm.oem.InterpolationMethod;
 import org.orekit.files.ccsds.section.CommentsContainer;
-import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
 /** Metadata for orbit state history.
@@ -67,10 +67,7 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
     private CelestialBody centerBody;
 
     /** Reference frame of the orbit. */
-    private Frame orbRefFrame;
-
-    /** Reference frame of the orbit. */
-    private CelestialBodyFrame orbRefCCSDSFrame;
+    private FrameFacade orbReferenceFrame;
 
     /** Epoch of the {@link #ORB_REF_FRAME orbit reference frame}. */
     private AbsoluteDate orbFrameEpoch;
@@ -102,8 +99,9 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
         orbAveraging        = "OSCULATING";
         centerName          = "EARTH";
         centerBody          = dataContext.getCelestialBodies().getEarth();
-        orbRefFrame         = dataContext.getFrames().getICRF();
-        orbRefCCSDSFrame    = CelestialBodyFrame.ICRF;
+        orbReferenceFrame   = new FrameFacade(dataContext.getFrames().getICRF(),
+                                              CelestialBodyFrame.ICRF, null, null,
+                                              CelestialBodyFrame.ICRF.name());
         orbFrameEpoch       = epochT0;
         orbType             = ElementsType.CARTPV;
     }
@@ -286,25 +284,16 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
     /** Get reference frame of the orbit.
      * @return reference frame of the orbit
      */
-    public Frame getOrbRefFrame() {
-        return orbRefFrame;
-    }
-
-    /** Get reference frame of the orbit.
-     * @return reference frame of the orbit
-     */
-    public CelestialBodyFrame getOrbRefCCSDSFrame() {
-        return orbRefCCSDSFrame;
+    public FrameFacade getOrbReferenceFrame() {
+        return orbReferenceFrame;
     }
 
     /** Set reference frame of the orbit.
-     * @param frame the reference frame to be set
-     * @param ccsdsFrame the reference frame to be set
+     * @param orbReferenceFrame the reference frame to be set
      */
-    void setOrbRefFrame(final Frame frame, final CelestialBodyFrame ccsdsFrame) {
+    void setOrbReferenceFrame(final FrameFacade orbReferenceFrame) {
         refuseFurtherComments();
-        this.orbRefFrame      = frame;
-        this.orbRefCCSDSFrame = ccsdsFrame;
+        this.orbReferenceFrame = orbReferenceFrame;
     }
 
     /** Get epoch of the {@link #getOrbRefFrame() orbit reference frame}.

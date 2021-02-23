@@ -52,9 +52,9 @@ public class ModifiedFrame extends Frame {
      *                   {@code body}.
      */
     public ModifiedFrame(final Frame frame,
-                              final CelestialBodyFrame refFrame,
-                              final CelestialBody body,
-                              final String centerName) {
+                         final CelestialBodyFrame refFrame,
+                         final CelestialBody body,
+                         final String centerName) {
         super(frame, new OriginTransformProvider(body, frame),
               body.getName() + "/" + frame.getName(), frame.isPseudoInertial());
         this.refFrame   = refFrame;

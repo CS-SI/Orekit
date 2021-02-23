@@ -80,7 +80,7 @@ public class OrbitStateHistory extends CommentsContainer
     /** {@inheritDoc} */
     @Override
     public Frame getFrame() {
-        return metadata.getOrbRefFrame();
+        return metadata.getOrbReferenceFrame().asFrame();
     }
 
     /** {@inheritDoc} */

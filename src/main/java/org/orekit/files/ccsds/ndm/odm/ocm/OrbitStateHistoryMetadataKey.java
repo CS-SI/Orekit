@@ -84,7 +84,7 @@ public enum OrbitStateHistoryMetadataKey {
     }),
 
     /** Reference frame of the orbit. */
-    ORB_REF_FRAME((token, context, metadata) -> token.processAsFrame(metadata::setOrbRefFrame, context, false)),
+    ORB_REF_FRAME((token, context, metadata) -> token.processAsFrame(metadata::setOrbReferenceFrame, context, true, false, false)),
 
     /** Epoch of the {@link #ORB_REF_FRAME orbit reference frame}. */
     ORB_FRAME_EPOCH((token, context, metadata) -> token.processAsDate(metadata::setOrbFrameEpoch, context)),

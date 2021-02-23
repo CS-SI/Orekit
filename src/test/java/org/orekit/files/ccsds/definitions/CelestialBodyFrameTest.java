@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.ccsds;
+package org.orekit.files.ccsds.definitions;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
@@ -29,10 +29,9 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
-import org.orekit.files.ccsds.definitions.ModifiedFrame;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
@@ -44,24 +43,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 
-public class CCSDSFrameTest {
-
-    @Test
-    public void testLOFFramesNotRegularFrames() {
-        for (final CelestialBodyFrame frame : CelestialBodyFrame.values()) {
-            if (frame.isLof()) {
-                try {
-                    frame.getFrame(IERSConventions.IERS_2010, true);
-                    Assert.fail("an exception should have been thrown");
-                } catch (OrekitException oe) {
-                    Assert.assertEquals(OrekitMessages.CCSDS_INVALID_FRAME, oe.getSpecifier());
-                }
-            } else {
-                Assert.assertNull(frame.getLofType());
-                Assert.assertNotNull(frame.getFrame(IERSConventions.IERS_2010, true));
-            }
-        }
-    }
+public class CelestialBodyFrameTest {
 
     /**
      * Check mapping frames to CCSDS frames.
@@ -71,21 +53,19 @@ public class CCSDSFrameTest {
         // action + verify
         // check all non-LOF frames created by OEMParser
         for (CelestialBodyFrame ccsdsFrame : CelestialBodyFrame.values()) {
-            if (!ccsdsFrame.isLof()) {
-                Frame frame = ccsdsFrame.getFrame(IERSConventions.IERS_2010, true);
-                CelestialBodyFrame actual = CelestialBodyFrame.map(frame);
-                if (ccsdsFrame == CelestialBodyFrame.J2000) {
-                    // CCSDS allows both J2000 and EME2000 names
-                    // Orekit chose to use EME2000 when guessing name from frame instance
-                    MatcherAssert.assertThat(actual, CoreMatchers.is(CelestialBodyFrame.EME2000));
-                } else  if (ccsdsFrame == CelestialBodyFrame.TDR) {
-                    // CCSDS allows both GTOD (in ADM section A3) and
-                    // TDR (in ODM table 5-3 and section A2) names
-                    // Orekit chose to use GTOD when guessing name from frame instance
-                    MatcherAssert.assertThat(actual, CoreMatchers.is(CelestialBodyFrame.GTOD));
-                } else {
-                    MatcherAssert.assertThat(actual, CoreMatchers.is(ccsdsFrame));
-                }
+            Frame frame = ccsdsFrame.getFrame(IERSConventions.IERS_2010, true, DataContext.getDefault());
+            CelestialBodyFrame actual = CelestialBodyFrame.map(frame);
+            if (ccsdsFrame == CelestialBodyFrame.J2000) {
+                // CCSDS allows both J2000 and EME2000 names
+                // Orekit chose to use EME2000 when guessing name from frame instance
+                MatcherAssert.assertThat(actual, CoreMatchers.is(CelestialBodyFrame.EME2000));
+            } else  if (ccsdsFrame == CelestialBodyFrame.TDR) {
+                // CCSDS allows both GTOD (in ADM section A3) and
+                // TDR (in ODM table 5-3 and section A2) names
+                // Orekit chose to use GTOD when guessing name from frame instance
+                MatcherAssert.assertThat(actual, CoreMatchers.is(CelestialBodyFrame.GTOD));
+            } else {
+                MatcherAssert.assertThat(actual, CoreMatchers.is(ccsdsFrame));
             }
         }
 

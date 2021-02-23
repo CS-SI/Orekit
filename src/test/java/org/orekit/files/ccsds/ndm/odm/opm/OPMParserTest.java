@@ -211,8 +211,8 @@ public class OPMParserTest {
                             file.getManeuvers().get(0).getEpochIgnition());
         Assert.assertEquals(132.6, file.getManeuver(0).getDuration(), 1e-10);
         Assert.assertEquals(-18.418, file.getManeuver(0).getDeltaMass(), 1e-10);
-        Assert.assertNull(file.getManeuver(0).getRefLofType());
-        Assert.assertEquals(FramesFactory.getEME2000(), file.getManeuver(0).getRefFrame());
+        Assert.assertNull(file.getManeuver(0).getReferenceFrame().asOrbitRelativeFrame());
+        Assert.assertEquals(FramesFactory.getEME2000(), file.getManeuver(0).getReferenceFrame().asFrame());
         Assert.assertEquals(0.0,
                             new Vector3D(-23.25700, 16.83160, -8.93444).distance(file.getManeuver(0).getDV()),
                             1.0e-10);
@@ -226,8 +226,9 @@ public class OPMParserTest {
                             file.getManeuvers().get(1).getEpochIgnition());
         Assert.assertEquals(0.0, file.getManeuver(1).getDuration(), 1e-10);
         Assert.assertEquals(-1.469, file.getManeuver(1).getDeltaMass(), 1e-10);
-        Assert.assertEquals(LOFType.QSW, file.getManeuver(1).getRefLofType());
-        Assert.assertNull(file.getManeuver(1).getRefFrame());
+        Assert.assertEquals(LOFType.QSW, file.getManeuver(1).getReferenceFrame().asOrbitRelativeFrame().getLofType());
+        Assert.assertNull(file.getManeuver(1).getReferenceFrame().asFrame());
+        Assert.assertNull(file.getManeuver(1).getReferenceFrame().asCelestialBodyFrame());
         Assert.assertEquals(0.0,
                             new Vector3D(1.015, -1.873, 0.0).distance(file.getManeuver(1).getDV()),
                             1.0e-10);
@@ -323,8 +324,8 @@ public class OPMParserTest {
                             file.getManeuvers().get(0).getEpochIgnition());
         Assert.assertEquals(132.6, file.getManeuver(0).getDuration(), 1e-10);
         Assert.assertEquals(-18.418, file.getManeuver(0).getDeltaMass(), 1e-10);
-        Assert.assertNull(file.getManeuver(0).getRefLofType());
-        Assert.assertEquals(FramesFactory.getEME2000(), file.getManeuver(0).getRefFrame());
+        Assert.assertNull(file.getManeuver(0).getReferenceFrame().asOrbitRelativeFrame());
+        Assert.assertEquals(FramesFactory.getEME2000(), file.getManeuver(0).getReferenceFrame().asFrame());
         Assert.assertEquals(0.0,
                             new Vector3D(-23.25700, 16.83160, -8.93444).distance(file.getManeuver(0).getDV()),
                             1.0e-10);
@@ -338,8 +339,9 @@ public class OPMParserTest {
                             file.getManeuvers().get(1).getEpochIgnition());
         Assert.assertEquals(0.0, file.getManeuver(1).getDuration(), 1e-10);
         Assert.assertEquals(-1.469, file.getManeuver(1).getDeltaMass(), 1e-10);
-        Assert.assertEquals(LOFType.QSW, file.getManeuver(1).getRefLofType());
-        Assert.assertNull(file.getManeuver(1).getRefFrame());
+        Assert.assertEquals(LOFType.QSW, file.getManeuver(1).getReferenceFrame().asOrbitRelativeFrame().getLofType());
+        Assert.assertNull(file.getManeuver(1).getReferenceFrame().asFrame());
+        Assert.assertNull(file.getManeuver(1).getReferenceFrame().asCelestialBodyFrame());
         Assert.assertEquals(0.0,
                             new Vector3D(1.015, -1.873, 0.0).distance(file.getManeuver(1).getDV()),
                             1.0e-10);
@@ -350,8 +352,9 @@ public class OPMParserTest {
                             file.getManeuvers().get(2).getEpochIgnition());
         Assert.assertEquals(0.0, file.getManeuver(2).getDuration(), 1e-10);
         Assert.assertEquals(-1.469, file.getManeuver(2).getDeltaMass(), 1e-10);
-        Assert.assertEquals(LOFType.QSW, file.getManeuver(2).getRefLofType());
-        Assert.assertNull(file.getManeuver(2).getRefFrame());
+        Assert.assertEquals(LOFType.QSW, file.getManeuver(2).getReferenceFrame().asOrbitRelativeFrame().getLofType());
+        Assert.assertNull(file.getManeuver(2).getReferenceFrame().asFrame());
+        Assert.assertNull(file.getManeuver(2).getReferenceFrame().asCelestialBodyFrame());
         Assert.assertEquals(0.0,
                             new Vector3D(1.015, -1.873, 0.0).distance(file.getManeuver(2).getDV()),
                             1.0e-10);
@@ -380,7 +383,7 @@ public class OPMParserTest {
         // Check Data Covariance matrix Block
         Covariance covariance = file.getData().getCovarianceBlock();
         Assert.assertNotNull(covariance);
-        Assert.assertSame(file.getMetadata().getFrame(), covariance.getRefFrame());
+        Assert.assertSame(file.getMetadata().getReferenceFrame(), covariance.getReferenceFrame());
 
         Array2DRowRealMatrix covMatrix = new Array2DRowRealMatrix(6, 6);
         double[] column1 = {
@@ -507,7 +510,7 @@ public class OPMParserTest {
         dataCovMatrixComment.add("covariance comment 1");
         dataCovMatrixComment.add("covariance comment 2");
         Assert.assertEquals(dataCovMatrixComment, covariance.getComments());
-        Assert.assertEquals(covariance.getRefFrame(), FramesFactory.getTEME());
+        Assert.assertEquals(FramesFactory.getTEME(), covariance.getReferenceFrame().asFrame());
 
         Array2DRowRealMatrix covMatrix = new Array2DRowRealMatrix(6, 6);
         double[] column1 = {

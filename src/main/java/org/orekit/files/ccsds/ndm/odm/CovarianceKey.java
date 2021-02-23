@@ -34,9 +34,8 @@ public enum CovarianceKey {
     /** Epoch entry (only for OEM files). */
     EPOCH((token, context, data) -> token.processAsDate(data::setEpoch, context)),
 
-    /** Coordinate system for covariance matrix. Its value can either be RSW, RTN (both indicating
-    /* "Radial, Transverse, Normal") or TNW. */
-    COV_REF_FRAME((token, context, data) -> token.processAsFrame(data::setRefFrame, context, true)),
+    /** Coordinate system for covariance matrix. */
+    COV_REF_FRAME((token, context, data) -> token.processAsFrame(data::setReferenceFrame, context, true, true, true)),
 
     /** Covariance matrix [1, 1] element. */
     CX_X((token, context, data) -> token.processAsDoublyIndexedDouble(0, 0, 1.0e6, data::setCovarianceMatrixEntry)),

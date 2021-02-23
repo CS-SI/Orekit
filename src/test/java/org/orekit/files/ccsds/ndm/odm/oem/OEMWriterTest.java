@@ -45,7 +45,7 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.odm.Covariance;
@@ -284,17 +284,23 @@ public class OEMWriterTest {
         	Covariance covMat1 = block1.getCovarianceMatrices().get(j);
         	Covariance covMat2 = block2.getCovarianceMatrices().get(j);
         	assertEquals(covMat1.getEpoch(), covMat2.getEpoch());
-        	assertEquals(covMat1.getRefCCSDSFrame(), covMat2.getRefCCSDSFrame());
+            assertEquals(covMat1.getReferenceFrame().asFrame(),               covMat2.getReferenceFrame().asFrame());
+            assertEquals(covMat1.getReferenceFrame().asCelestialBodyFrame(),  covMat2.getReferenceFrame().asCelestialBodyFrame());
+            assertEquals(covMat1.getReferenceFrame().asOrbitRelativeFrame(),  covMat2.getReferenceFrame().asOrbitRelativeFrame());
+            assertEquals(covMat1.getReferenceFrame().asSpacecraftBodyFrame(), covMat2.getReferenceFrame().asSpacecraftBodyFrame());
         	assertEquals(covMat1.getCovarianceMatrix(),covMat2.getCovarianceMatrix());       	
         }
     }
 
     private static void compareOemEphemerisBlocksMetadata(OemMetadata meta1, OemMetadata meta2) {
-        assertEquals(meta1.getObjectID(),   meta2.getObjectID());
-        assertEquals(meta1.getObjectName(), meta2.getObjectName());
-        assertEquals(meta1.getCenterName(), meta2.getCenterName());
-        assertEquals(meta1.getRefFrame(),   meta2.getRefFrame());
-        assertEquals(meta1.getTimeSystem(), meta2.getTimeSystem());
+        assertEquals(meta1.getObjectID(),                               meta2.getObjectID());
+        assertEquals(meta1.getObjectName(),                             meta2.getObjectName());
+        assertEquals(meta1.getCenterName(),                             meta2.getCenterName());
+        assertEquals(meta1.getReferenceFrame().asFrame(),               meta2.getReferenceFrame().asFrame());
+        assertEquals(meta1.getReferenceFrame().asCelestialBodyFrame(),  meta2.getReferenceFrame().asCelestialBodyFrame());
+        assertEquals(meta1.getReferenceFrame().asOrbitRelativeFrame(),  meta2.getReferenceFrame().asOrbitRelativeFrame());
+        assertEquals(meta1.getReferenceFrame().asSpacecraftBodyFrame(), meta2.getReferenceFrame().asSpacecraftBodyFrame());
+        assertEquals(meta1.getTimeSystem(),                             meta2.getTimeSystem());
     }
 
     static void compareOemFiles(OemFile file1, OemFile file2) {
@@ -361,7 +367,7 @@ public class OEMWriterTest {
         metadata.setObjectID("9999-999ZZZ");
         metadata.setObjectName("transgalactic");
         metadata.setCenterName("EARTH", CelestialBodyFactory.getCelestialBodies());
-        metadata.setRefFrame(FramesFactory.getEME2000(), CelestialBodyFrame.EME2000);
+        metadata.setReferenceFrame(FrameFacade.map(FramesFactory.getEME2000()));
         metadata.setStartTime(AbsoluteDate.J2000_EPOCH.shiftedBy(80 * Constants.JULIAN_CENTURY));
         metadata.setStopTime(metadata.getStartTime().shiftedBy(Constants.JULIAN_YEAR));
         return metadata;

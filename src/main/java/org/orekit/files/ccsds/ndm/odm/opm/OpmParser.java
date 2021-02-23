@@ -365,7 +365,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
         if (covarianceBlock == null) {
             // save the current metadata for later retrieval of reference frame
             final CommonMetadata savedMetadata = metadata;
-            covarianceBlock = new Covariance(() -> savedMetadata.getFrame(), () -> savedMetadata.getRefCCSDSFrame());
+            covarianceBlock = new Covariance(() -> savedMetadata.getReferenceFrame());
             if (moveCommentsIfEmpty(spacecraftParametersBlock, covarianceBlock)) {
                 // get rid of the empty logical block
                 spacecraftParametersBlock = null;

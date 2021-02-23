@@ -25,10 +25,12 @@ import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
-import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.definitions.CenterName;
+import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
+import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
+import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
-import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
 /** Token occurring during CCSDS file parsing.
@@ -386,22 +388,22 @@ public class ParseToken {
     /** Process the content as a frame.
      * @param consumer consumer of the frame
      * @param context parsing context
-     * @param allowLOF if true, {@link CelestialBodyFrame#isLof() Local Orbital Frames} are allowed
+     * @param allowCelestial if true, {@link CelestialBodyFrame} are allowed
+     * @param allowOrbit if true, {@link OrbitRelativeFrame} are allowed
+     * @param allowSpacecraft if true, {@link SpacecraftBodyFrame} are allowed
      * @return always returns {@code true}
      */
-    public boolean processAsFrame(final FrameConsumer consumer,
-                                  final ParsingContext context,
-                                  final boolean allowLOF) {
+    public boolean processAsFrame(final FrameConsumer consumer, final ParsingContext context,
+                                  final boolean allowCelestial, final boolean allowOrbit,
+                                  final boolean allowSpacecraft) {
         if (type == TokenType.ENTRY) {
             try {
-                final CelestialBodyFrame frame = CelestialBodyFrame.valueOf(DASH.matcher(content).replaceAll(""));
-                consumer.accept(allowLOF && frame.isLof() ?
-                                null : frame.getFrame(context.getConventions(),
-                                                      context.isSimpleEOP(),
-                                                      context.getDataContext()),
-                                frame);
-            } catch (IllegalArgumentException iae) {
-                throw generateException(iae);
+                consumer.accept(FrameFacade.parse(DASH.matcher(content).replaceAll(""),
+                                                  context.getConventions(),
+                                                  context.isSimpleEOP(), context.getDataContext(),
+                                                  allowCelestial, allowOrbit, allowSpacecraft));
+            } catch (OrekitException oe) {
+                throw generateException(oe);
             }
         }
         return true;
@@ -529,10 +531,9 @@ public class ParseToken {
     /** Interface representing instance methods that consume frame values. */
     public interface FrameConsumer {
         /** Consume a frame.
-         * @param frame Orekit frame
-         * @param ccsdsFrame CCSDS frame
+         * @param frameFacade facade in front of several frames types
          */
-        void accept(Frame frame, CelestialBodyFrame ccsdsFrame);
+        void accept(FrameFacade frameFacade);
     }
 
     /** Interface representing instance methods that consume center values. */

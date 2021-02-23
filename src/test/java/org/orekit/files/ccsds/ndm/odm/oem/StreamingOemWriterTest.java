@@ -40,6 +40,7 @@ import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.ModifiedFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.definitions.CenterName;
+import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.utils.generation.Generator;
@@ -144,7 +145,7 @@ public class StreamingOemWriterTest {
             metadata.setObjectID(objectID);
             metadata.setTimeSystem(TimeSystem.UTC);
             metadata.setCenterName(ephemerisBlock.getMetadata().getCenterName(), CelestialBodyFactory.getCelestialBodies());
-            metadata.setRefFrame(FramesFactory.getEME2000(), CelestialBodyFrame.EME2000); // will be overwritten
+            metadata.setReferenceFrame(FrameFacade.map(FramesFactory.getEME2000())); // will be overwritten
             metadata.setStartTime(AbsoluteDate.J2000_EPOCH.shiftedBy(80 * Constants.JULIAN_CENTURY));
             metadata.setStopTime(metadata.getStartTime().shiftedBy(Constants.JULIAN_YEAR));
             OemWriter oemWriter = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
@@ -176,8 +177,7 @@ public class StreamingOemWriterTest {
                 oemWriter.getMetadata().setStartTime(block.getStart());
                 oemWriter.getMetadata().setStopTime(block.getStop());
                 final Frame      stateFrame = satellite.getPropagator().getFrame();
-                final CelestialBodyFrame ccsdsFrame = CelestialBodyFrame.map(stateFrame);
-                oemWriter.getMetadata().setRefFrame(stateFrame, ccsdsFrame);
+                oemWriter.getMetadata().setReferenceFrame(FrameFacade.map(stateFrame));
                 oemWriter.writeMetadata(generator);
                 for (TimeStampedPVCoordinates coordinate : block.getCoordinates()) {
                     oemWriter.writeOrbitEphemerisLine(generator, coordinate, true);
@@ -217,11 +217,14 @@ public class StreamingOemWriterTest {
     }
 
     private static void compareOemEphemerisBlocksMetadata(OemMetadata meta1, OemMetadata meta2) {
-        assertEquals(meta1.getObjectID(),   meta2.getObjectID());
-        assertEquals(meta1.getObjectName(), meta2.getObjectName());
-        assertEquals(meta1.getCenterName(), meta2.getCenterName());
-        assertEquals(meta1.getRefFrame(),   meta2.getRefFrame());
-        assertEquals(meta1.getTimeSystem(), meta2.getTimeSystem());
+        assertEquals(meta1.getObjectID(),                               meta2.getObjectID());
+        assertEquals(meta1.getObjectName(),                             meta2.getObjectName());
+        assertEquals(meta1.getCenterName(),                             meta2.getCenterName());
+        assertEquals(meta1.getReferenceFrame().asFrame(),               meta2.getReferenceFrame().asFrame());
+        assertEquals(meta1.getReferenceFrame().asCelestialBodyFrame(),  meta2.getReferenceFrame().asCelestialBodyFrame());
+        assertEquals(meta1.getReferenceFrame().asOrbitRelativeFrame(),  meta2.getReferenceFrame().asOrbitRelativeFrame());
+        assertEquals(meta1.getReferenceFrame().asSpacecraftBodyFrame(), meta2.getReferenceFrame().asSpacecraftBodyFrame());
+        assertEquals(meta1.getTimeSystem(),                             meta2.getTimeSystem());
     }
 
     static void compareOemFiles(OemFile file1, OemFile file2, double p_tol, double v_tol) {
