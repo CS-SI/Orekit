@@ -22,14 +22,11 @@ import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.complex.Quaternion;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.orekit.attitudes.Attitude;
-import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.adm.AttitudeEndPoints;
+import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.section.CommentsContainer;
-import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
 /**
@@ -42,8 +39,14 @@ public class ApmQuaternion extends CommentsContainer {
     /** Epoch of the data. */
     private AbsoluteDate epoch;
 
-    /** Attitude end points. */
-    private AttitudeEndPoints endPoints;
+    /** Frame A. */
+    private FrameFacade frameA;
+
+    /** Frame B. */
+    private FrameFacade frameB;
+
+    /** Flag for frames direction. */
+    private Boolean a2b;
 
     /** Quaternion. */
     private double[] q;
@@ -54,7 +57,6 @@ public class ApmQuaternion extends CommentsContainer {
     /** Simple constructor.
      */
     public ApmQuaternion() {
-        endPoints = new AttitudeEndPoints();
         q         = new double[4];
         qDot      = new double[4];
         Arrays.fill(q,    Double.NaN);
@@ -64,7 +66,9 @@ public class ApmQuaternion extends CommentsContainer {
     @Override
     public void checkMandatoryEntries() {
         super.checkMandatoryEntries();
-        endPoints.checkMandatoryEntries();
+        checkNotNull(frameA, ApmQuaternionKey.Q_FRAME_A);
+        checkNotNull(frameB, ApmQuaternionKey.Q_FRAME_B);
+        checkNotNull(a2b,    ApmQuaternionKey.Q_DIR);
         if (Double.isNaN(q[0] + q[1] + q[2] + q[3])) {
             throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, "Q{C|1|2|3}");
         }
@@ -87,11 +91,47 @@ public class ApmQuaternion extends CommentsContainer {
         this.epoch = epoch;
     }
 
-    /** Get the attitude end points.
-     * @return attitude end points
+    /** Set frame A.
+     * @param frameA frame A
      */
-    public AttitudeEndPoints getEndPoints() {
-        return endPoints;
+    public void setFrameA(final FrameFacade frameA) {
+        this.frameA = frameA;
+    }
+
+    /** Get frame A.
+     * @return frame A
+     */
+    public FrameFacade getFrameA() {
+        return frameA;
+    }
+
+    /** Set frame B.
+     * @param frameB frame B
+     */
+    public void setFrameB(final FrameFacade frameB) {
+        this.frameB = frameB;
+    }
+
+    /** Get frame B.
+     * @return frame B
+     */
+    public FrameFacade getFrameB() {
+        return frameB;
+    }
+
+    /** Set rotation direction.
+     * @param a2b if true, rotation is from {@link #getFrameA() frame A}
+     * to {@link #getFrameB() frame B}
+     */
+    public void setA2b(final boolean a2b) {
+        this.a2b = a2b;
+    }
+
+    /** Check if rotation direction is from {@link #getFrameA() frame A} to {@link #getFrameB() frame B}.
+     * @return true if rotation direction is from {@link #getFrameA() frame A} to {@link #getFrameB() frame B}
+     */
+    public boolean isA2b() {
+        return a2b == null ? true : a2b;
     }
 
     /**
@@ -131,22 +171,30 @@ public class ApmQuaternion extends CommentsContainer {
     }
 
     /** Get the attitude.
-     * @param conventions IERS conventions
-     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param dataContext used for creating frames, time scales, etc.
      * @return attitude
      */
-    public Attitude getAttitude(final IERSConventions conventions, final boolean simpleEOP,
-                                final DataContext dataContext) {
-        final Frame reference = endPoints.getExternalFrame().getFrame(conventions, simpleEOP, dataContext);
+    public Attitude getAttitude() {
+
+        final FrameFacade ext = frameA.asSpacecraftBodyFrame() == null ? frameA : frameB;
+        if (ext.asFrame() == null) {
+            // external frame has no Orekit mapping
+            throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, ext.getName());
+        }
+        final boolean ext2local = a2b ^ (ext == frameB);
+
+        // attitude has it is stored in the APM
         final FieldRotation<UnivariateDerivative1> raw =
                         new FieldRotation<>(new UnivariateDerivative1(q[0], qDot[0]),
                                             new UnivariateDerivative1(q[1], qDot[1]),
                                             new UnivariateDerivative1(q[2], qDot[2]),
                                             new UnivariateDerivative1(q[3], qDot[3]),
                                             true);
-        final FieldRotation<UnivariateDerivative1> rot = endPoints.isExternal2Local() ? raw : raw.revert();
-        return new Attitude(reference, new TimeStampedAngularCoordinates(epoch, rot));
+
+        // attitude converted to Orekit conventions
+        return new Attitude(ext.asFrame(),
+                            new TimeStampedAngularCoordinates(epoch,
+                                                              ext2local ? raw : raw.revert()));
+
     }
 
 }

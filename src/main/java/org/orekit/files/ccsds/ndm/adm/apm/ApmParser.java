@@ -223,8 +223,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
         // APM KVN file lack a DATA_STOP keyword, hence we can't call finalizeData()
         // automatically before the end of the file
         finalizeData();
-        final ApmFile file = new ApmFile(header, segments,
-                                         getConventions(), isSimpleEOP(), getDataContext());
+        final ApmFile file = new ApmFile(header, segments, getConventions(), getDataContext());
         return file;
     }
 

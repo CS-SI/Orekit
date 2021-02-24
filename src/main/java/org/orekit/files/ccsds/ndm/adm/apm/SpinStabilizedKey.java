@@ -34,13 +34,26 @@ public enum SpinStabilizedKey {
             token.getType() == TokenType.ENTRY ? data.addComment(token.getContent()) : true),
 
     /** First reference frame entry. */
-    SPIN_FRAME_A((token, context, data) -> token.processAsNormalizedString(data.getEndPoints()::setFrameA)),
+    SPIN_FRAME_A((token, context, data) -> token.processAsFrame(data::setFrameA, context, true, true, true)),
 
     /** Second reference frame entry. */
-    SPIN_FRAME_B((token, context, data) -> token.processAsNormalizedString(data.getEndPoints()::setFrameB)),
+    SPIN_FRAME_B((token, context, data) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            data.checkNotNull(data.getFrameA(), SPIN_FRAME_A);
+            final boolean aIsSpaceraftBody = data.getFrameA().asSpacecraftBodyFrame() != null;
+            return token.processAsFrame(data::setFrameB, context,
+                                        aIsSpaceraftBody, aIsSpaceraftBody, !aIsSpaceraftBody);
+        }
+        return true;
+    }),
 
     /** Rotation direction entry. */
-    SPIN_DIR((token, context, data) -> token.processAsNormalizedString(data.getEndPoints()::setDirection)),
+    SPIN_DIR((token, context, data) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            data.setA2b(token.getContentAsNormalizedCharacter() == 'A');
+        }
+        return true;
+    }),
 
     /** Spin right ascension entry. */
     SPIN_ALPHA((token, context, data) -> token.processAsAngle(data::setSpinAlpha)),

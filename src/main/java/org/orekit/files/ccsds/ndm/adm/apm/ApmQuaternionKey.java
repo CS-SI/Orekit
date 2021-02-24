@@ -43,13 +43,26 @@ public enum ApmQuaternionKey {
     EPOCH((token, context, data) -> token.processAsDate(data::setEpoch, context)),
 
     /** First reference frame entry. */
-    Q_FRAME_A((token, context, data) -> token.processAsNormalizedString(data.getEndPoints()::setFrameA)),
+    Q_FRAME_A((token, context, data) -> token.processAsFrame(data::setFrameA, context, true, true, true)),
 
     /** Second reference frame entry. */
-    Q_FRAME_B((token, context, data) -> token.processAsNormalizedString(data.getEndPoints()::setFrameB)),
+    Q_FRAME_B((token, context, data) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            data.checkNotNull(data.getFrameA(), Q_FRAME_A);
+            final boolean aIsSpaceraftBody = data.getFrameA().asSpacecraftBodyFrame() != null;
+            return token.processAsFrame(data::setFrameB, context,
+                                        aIsSpaceraftBody, aIsSpaceraftBody, !aIsSpaceraftBody);
+        }
+        return true;
+    }),
 
     /** Rotation direction entry. */
-    Q_DIR((token, context, data) -> token.processAsNormalizedString(data.getEndPoints()::setDirection)),
+    Q_DIR((token, context, data) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            data.setA2b(token.getContentAsNormalizedCharacter() == 'A');
+        }
+        return true;
+    }),
 
     /** Scalar part of the quaternion entry. */
     QC((token, context, data) -> token.processAsIndexedDouble(0, 1.0, data::setQ)),

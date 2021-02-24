@@ -148,7 +148,7 @@ public class FrameFacade {
         } catch (IllegalArgumentException iaeC) {
             iae = iaeC;
             try {
-                final OrbitRelativeFrame orf = OrbitRelativeFrame.valueOf(name);
+                final OrbitRelativeFrame orf = OrbitRelativeFrame.valueOf(name.replace(' ', '_'));
                 if (allowOrbit) {
                     return new FrameFacade(null, null, orf, null, orf.name());
                 }

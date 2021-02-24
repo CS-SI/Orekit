@@ -21,7 +21,7 @@ import java.util.Arrays;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.adm.AttitudeEndPoints;
+import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.section.CommentsContainer;
 
 /**
@@ -31,8 +31,14 @@ import org.orekit.files.ccsds.section.CommentsContainer;
  */
 public class Euler extends CommentsContainer {
 
-    /** Attitude end points. */
-    private AttitudeEndPoints endPoints;
+    /** Frame A. */
+    private FrameFacade frameA;
+
+    /** Frame B. */
+    private FrameFacade frameB;
+
+    /** Flag for frames direction. */
+    private Boolean a2b;
 
     /** Rotation order of the Euler angles. */
     private RotationOrder eulerRotSeq;
@@ -52,7 +58,6 @@ public class Euler extends CommentsContainer {
     /** Simple constructor.
      */
     public Euler() {
-        this.endPoints        = new AttitudeEndPoints();
         this.rotationAngles   = new double[3];
         this.rotationRates    = new double[3];
         this.inRotationAngles = false;
@@ -64,7 +69,9 @@ public class Euler extends CommentsContainer {
     @Override
     public void checkMandatoryEntries() {
         super.checkMandatoryEntries();
-        endPoints.checkMandatoryEntries();
+        checkNotNull(frameA, EulerKey.EULER_FRAME_A);
+        checkNotNull(frameB, EulerKey.EULER_FRAME_B);
+        checkNotNull(a2b,    EulerKey.EULER_DIR);
         checkNotNull(eulerRotSeq, EulerKey.EULER_ROT_SEQ);
         if (Double.isNaN(rotationAngles[0] + rotationAngles[1] + rotationAngles[2])) {
             throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, "{X|Y|Z}_ANGLE");
@@ -79,11 +86,47 @@ public class Euler extends CommentsContainer {
         }
     }
 
-    /** Get the attitude end points.
-     * @return attitude end points
+    /** Set frame A.
+     * @param frameA frame A
      */
-    public AttitudeEndPoints getEndPoints() {
-        return endPoints;
+    public void setFrameA(final FrameFacade frameA) {
+        this.frameA = frameA;
+    }
+
+    /** Get frame A.
+     * @return frame A
+     */
+    public FrameFacade getFrameA() {
+        return frameA;
+    }
+
+    /** Set frame B.
+     * @param frameB frame B
+     */
+    public void setFrameB(final FrameFacade frameB) {
+        this.frameB = frameB;
+    }
+
+    /** Get frame B.
+     * @return frame B
+     */
+    public FrameFacade getFrameB() {
+        return frameB;
+    }
+
+    /** Set rotation direction.
+     * @param a2b if true, rotation is from {@link #getFrameA() frame A}
+     * to {@link #getFrameB() frame B}
+     */
+    public void setA2b(final boolean a2b) {
+        this.a2b = a2b;
+    }
+
+    /** Check if rotation direction is from {@link #getFrameA() frame A} to {@link #getFrameB() frame B}.
+     * @return true if rotation direction is from {@link #getFrameA() frame A} to {@link #getFrameB() frame B}
+     */
+    public boolean isA2b() {
+        return a2b == null ? true : a2b;
     }
 
     /**

@@ -81,13 +81,26 @@ public enum EulerKey {
             token.getType() == TokenType.ENTRY ? data.addComment(token.getContent()) : true),
 
     /** First reference frame entry. */
-    EULER_FRAME_A((token, context, data) -> token.processAsNormalizedString(data.getEndPoints()::setFrameA)),
+    EULER_FRAME_A((token, context, data) -> token.processAsFrame(data::setFrameA, context, true, true, true)),
 
     /** Second reference frame entry. */
-    EULER_FRAME_B((token, context, data) -> token.processAsNormalizedString(data.getEndPoints()::setFrameB)),
+    EULER_FRAME_B((token, context, data) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            data.checkNotNull(data.getFrameA(), EULER_FRAME_A);
+            final boolean aIsSpaceraftBody = data.getFrameA().asSpacecraftBodyFrame() != null;
+            return token.processAsFrame(data::setFrameB, context,
+                                        aIsSpaceraftBody, aIsSpaceraftBody, !aIsSpaceraftBody);
+        }
+        return true;
+    }),
 
     /** Rotation direction entry. */
-    EULER_DIR((token, context, data) -> token.processAsNormalizedString(data.getEndPoints()::setDirection)),
+    EULER_DIR((token, context, data) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            data.setA2b(token.getContentAsNormalizedCharacter() == 'A');
+        }
+        return true;
+    }),
 
     /** Rotation sequence entry. */
     EULER_ROT_SEQ((token, context, data) -> AdmParser.processRotationOrder(token, data::setEulerRotSeq)),

@@ -18,7 +18,7 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.adm.AttitudeEndPoints;
+import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.section.CommentsContainer;
 
 /**
@@ -28,8 +28,14 @@ import org.orekit.files.ccsds.section.CommentsContainer;
  */
 public class SpinStabilized extends CommentsContainer {
 
-    /** Attitude end points. */
-    private AttitudeEndPoints endPoints;
+    /** Frame A. */
+    private FrameFacade frameA;
+
+    /** Frame B. */
+    private FrameFacade frameB;
+
+    /** Flag for frames direction. */
+    private Boolean a2b;
 
     /** Right ascension of spin axis vector (rad). */
     private double spinAlpha;
@@ -55,7 +61,6 @@ public class SpinStabilized extends CommentsContainer {
     /** Simple constructor.
      */
     public SpinStabilized() {
-        this.endPoints = new AttitudeEndPoints();
         spinAlpha      = Double.NaN;
         spinDelta      = Double.NaN;
         spinAngle      = Double.NaN;
@@ -69,7 +74,9 @@ public class SpinStabilized extends CommentsContainer {
     @Override
     public void checkMandatoryEntries() {
         super.checkMandatoryEntries();
-        endPoints.checkMandatoryEntries();
+        checkNotNull(frameA,      SpinStabilizedKey.SPIN_FRAME_A);
+        checkNotNull(frameB,      SpinStabilizedKey.SPIN_FRAME_B);
+        checkNotNull(a2b,         SpinStabilizedKey.SPIN_DIR);
         checkNotNaN(spinAlpha,    SpinStabilizedKey.SPIN_ALPHA);
         checkNotNaN(spinDelta,    SpinStabilizedKey.SPIN_DELTA);
         checkNotNaN(spinAngle,    SpinStabilizedKey.SPIN_ANGLE);
@@ -82,11 +89,47 @@ public class SpinStabilized extends CommentsContainer {
         }
     }
 
-    /** Get the attitude end points.
-     * @return attitude end points
+    /** Set frame A.
+     * @param frameA frame A
      */
-    public AttitudeEndPoints getEndPoints() {
-        return endPoints;
+    public void setFrameA(final FrameFacade frameA) {
+        this.frameA = frameA;
+    }
+
+    /** Get frame A.
+     * @return frame A
+     */
+    public FrameFacade getFrameA() {
+        return frameA;
+    }
+
+    /** Set frame B.
+     * @param frameB frame B
+     */
+    public void setFrameB(final FrameFacade frameB) {
+        this.frameB = frameB;
+    }
+
+    /** Get frame B.
+     * @return frame B
+     */
+    public FrameFacade getFrameB() {
+        return frameB;
+    }
+
+    /** Set rotation direction.
+     * @param a2b if true, rotation is from {@link #getFrameA() frame A}
+     * to {@link #getFrameB() frame B}
+     */
+    public void setA2b(final boolean a2b) {
+        this.a2b = a2b;
+    }
+
+    /** Check if rotation direction is from {@link #getFrameA() frame A} to {@link #getFrameB() frame B}.
+     * @return true if rotation direction is from {@link #getFrameA() frame A} to {@link #getFrameB() frame B}
+     */
+    public boolean isA2b() {
+        return a2b == null ? true : a2b;
     }
 
     /**

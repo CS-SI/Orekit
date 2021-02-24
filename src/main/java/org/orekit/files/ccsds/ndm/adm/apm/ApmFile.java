@@ -37,21 +37,15 @@ public class ApmFile extends NdmFile<Header, Segment<AdmMetadata, ApmData>> {
     /** Key for format version. */
     public static final String FORMAT_VERSION_KEY = "CCSDS_APM_VERS";
 
-    /** Indicator for simple or accurate EOP interpolation. */
-    private final  boolean simpleEOP;
-
     /** Simple constructor.
      * @param header file header
      * @param segments file segments
      * @param conventions IERS conventions
-     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used for creating frames, time scales, etc.
      */
     public ApmFile(final Header header, final List<Segment<AdmMetadata, ApmData>> segments,
-                   final IERSConventions conventions, final boolean simpleEOP,
-                   final DataContext dataContext) {
+                   final IERSConventions conventions, final DataContext dataContext) {
         super(header, segments, conventions, dataContext);
-        this.simpleEOP = simpleEOP;
     }
 
     /** Get the attitude.
@@ -66,7 +60,7 @@ public class ApmFile extends NdmFile<Header, Segment<AdmMetadata, ApmData>> {
                get(0).
                getData().
                getQuaternionBlock().
-               getAttitude(getConventions(), simpleEOP, getDataContext());
+               getAttitude();
     }
 
 }
