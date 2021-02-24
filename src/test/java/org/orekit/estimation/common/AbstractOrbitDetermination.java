@@ -146,8 +146,8 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
-import org.orekit.propagation.conversion.IntegratedPropagatorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
+import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScale;
@@ -164,7 +164,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * @author Luc Maisonobe
  * @author Bryan Cazabonne
  */
-public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorBuilder> {
+public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPropagatorBuilder> {
 
     /** Suffix for range bias. */
     private final String RANGE_BIAS_SUFFIX = "/range bias";
@@ -177,6 +177,12 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
 
     /** Suffix for elevation bias. */
     private final String ELEVATION_BIAS_SUFFIX = "/el bias";
+
+    /** Flag for range measurement use. */
+    private boolean useRangeMeasurements;
+
+    /** Flag for range rate measurement use. */
+    private boolean useRangeRateMeasurements;
 
     /** Create a gravity field from input parameters.
      * @param parser input file parser
@@ -341,10 +347,16 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
 
         // estimator
         final BatchLSEstimator estimator = createEstimator(parser, propagatorBuilder);
+        
+        
 
         // read sinex files
         final SINEXLoader                 stationPositionData      = readSinexFile(input, parser, ParameterKey.SINEX_POSITION_FILE);
         final SINEXLoader                 stationEccData           = readSinexFile(input, parser, ParameterKey.SINEX_ECC_FILE);
+        
+        // use measurement types flags
+        useRangeMeasurements                                       = parser.getBoolean(ParameterKey.USE_RANGE_MEASUREMENTS);
+        useRangeRateMeasurements                                   = parser.getBoolean(ParameterKey.USE_RANGE_RATE_MEASUREMENTS);
 
         final Map<String, StationData>    stations                 = createStationsData(parser, stationPositionData, stationEccData, conventions, body);
         final PVData                      pvData                   = createPVData(parser);
@@ -524,6 +536,10 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
         // read sinex files
         final SINEXLoader                 stationPositionData      = readSinexFile(input, parser, ParameterKey.SINEX_POSITION_FILE);
         final SINEXLoader                 stationEccData           = readSinexFile(input, parser, ParameterKey.SINEX_ECC_FILE);
+        
+        // use measurement types flags
+        useRangeMeasurements                                       = parser.getBoolean(ParameterKey.USE_RANGE_MEASUREMENTS);
+        useRangeRateMeasurements                                   = parser.getBoolean(ParameterKey.USE_RANGE_RATE_MEASUREMENTS);
 
         final Map<String, StationData>    stations                 = createStationsData(parser, stationPositionData, stationEccData, conventions, body);
         final PVData                      pvData                   = createPVData(parser);
@@ -1299,6 +1315,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
 
         final Map<String, StationData> stations       = new HashMap<String, StationData>();
 
+        final boolean   useTimeSpanTroposphericModel      = parser.getBoolean(ParameterKey.USE_TIME_SPAN_TROPOSPHERIC_MODEL);
         final String[]  stationNames                      = parser.getStringArray(ParameterKey.GROUND_STATION_NAME);
         final double[]  stationLatitudes                  = parser.getAngleArray(ParameterKey.GROUND_STATION_LATITUDE);
         final double[]  stationLongitudes                 = parser.getAngleArray(ParameterKey.GROUND_STATION_LONGITUDE);
@@ -1399,7 +1416,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
             final GeodeticPoint position;
             if (sinexPosition != null) {
                 // A sinex file is available -> use the station positions inside the file
-                final Station stationData = sinexPosition.getStation(stationNames[i]);
+                final Station stationData = sinexPosition.getStation(stationNames[i].substring(0, 4));
                 position = body.transform(stationData.getPosition(), body.getBodyFrame(), stationData.getEpoch());
             } else {
                 // If a sinex file is not available -> use the values in input file
@@ -1525,52 +1542,64 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
                         pressure    = 1013.25;
                     }
 
-                    // Initial model used to initialize the time span tropospheric model
-                    final EstimatedTroposphericModel initialModel = new EstimatedTroposphericModel(temperature, pressure, mappingModel,
-                                                                                                   stationTroposphericZenithDelay[i]);
-
-                    // Initialize the time span tropospheric model
-                    final TimeSpanEstimatedTroposphericModel timeSpanModel = new TimeSpanEstimatedTroposphericModel(initialModel);
-
-                    // Median date
-                    final AbsoluteDate epoch = parser.getDate(ParameterKey.TROPOSPHERIC_CORRECTION_DATE, TimeScalesFactory.getUTC());
-
-                    // Station name
-                    final String subName = stationNames[i].substring(0, 5);
-
-                    // Estimated tropospheric model BEFORE the median date
-                    final EstimatedTroposphericModel modelBefore = new EstimatedTroposphericModel(temperature, pressure, mappingModel,
-                                                                                                  stationTroposphericZenithDelay[i]);
-                    final ParameterDriver totalDelayBefore = modelBefore.getParametersDrivers().get(0);
-                    totalDelayBefore.setSelected(stationZenithDelayEstimated[i]);
-                    totalDelayBefore.setName(subName + TimeSpanEstimatedTroposphericModel.DATE_BEFORE + epoch.toString(TimeScalesFactory.getUTC()) + " " + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
-
-                    // Estimated tropospheric model AFTER the median date
-                    final EstimatedTroposphericModel modelAfter = new EstimatedTroposphericModel(temperature, pressure, mappingModel,
-                                                                                                 stationTroposphericZenithDelay[i]);
-                    final ParameterDriver totalDelayAfter = modelAfter.getParametersDrivers().get(0);
-                    totalDelayAfter.setSelected(stationZenithDelayEstimated[i]);
-                    totalDelayAfter.setName(subName + TimeSpanEstimatedTroposphericModel.DATE_AFTER + epoch.toString(TimeScalesFactory.getUTC()) + " " + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
-
-                    // Add models to the time span tropospheric model
-                    // A very ugly trick is used when no measurements are available for a specific time span.
-                    // Indeed, the tropospheric parameter will not be estimated for the time span with no measurements.
-                    // Therefore, the diagonal elements of the covariance matrix will be equal to zero.
-                    // At the end, an exception is thrown when accessing the physical covariance matrix because of singularities issues.
-                    if (subName.equals("SEAT/")) {
-                        // Do not add the model because no measurements are available
-                        // for the time span before the median date for this station.
+                    if (useTimeSpanTroposphericModel) {
+                        // Initial model used to initialize the time span tropospheric model
+                        final EstimatedTroposphericModel initialModel = new EstimatedTroposphericModel(temperature, pressure, mappingModel,
+                                                                                                       stationTroposphericZenithDelay[i]);
+    
+                        // Initialize the time span tropospheric model
+                        final TimeSpanEstimatedTroposphericModel timeSpanModel = new TimeSpanEstimatedTroposphericModel(initialModel);
+    
+                        // Median date
+                        final AbsoluteDate epoch = parser.getDate(ParameterKey.TROPOSPHERIC_CORRECTION_DATE, TimeScalesFactory.getUTC());
+    
+                        // Station name
+                        final String subName = stationNames[i].substring(0, 5);
+    
+                        // Estimated tropospheric model BEFORE the median date
+                        final EstimatedTroposphericModel modelBefore = new EstimatedTroposphericModel(temperature, pressure, mappingModel,
+                                                                                                      stationTroposphericZenithDelay[i]);
+                        final ParameterDriver totalDelayBefore = modelBefore.getParametersDrivers().get(0);
+                        totalDelayBefore.setSelected(stationZenithDelayEstimated[i]);
+                        totalDelayBefore.setName(subName + TimeSpanEstimatedTroposphericModel.DATE_BEFORE + epoch.toString(TimeScalesFactory.getUTC()) + " " + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
+    
+                        // Estimated tropospheric model AFTER the median date
+                        final EstimatedTroposphericModel modelAfter = new EstimatedTroposphericModel(temperature, pressure, mappingModel,
+                                                                                                     stationTroposphericZenithDelay[i]);
+                        final ParameterDriver totalDelayAfter = modelAfter.getParametersDrivers().get(0);
+                        totalDelayAfter.setSelected(stationZenithDelayEstimated[i]);
+                        totalDelayAfter.setName(subName + TimeSpanEstimatedTroposphericModel.DATE_AFTER + epoch.toString(TimeScalesFactory.getUTC()) + " " + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
+    
+                        // Add models to the time span tropospheric model
+                        // A very ugly trick is used when no measurements are available for a specific time span.
+                        // Indeed, the tropospheric parameter will not be estimated for the time span with no measurements.
+                        // Therefore, the diagonal elements of the covariance matrix will be equal to zero.
+                        // At the end, an exception is thrown when accessing the physical covariance matrix because of singularities issues.
+                        if (subName.equals("SEAT/")) {
+                            // Do not add the model because no measurements are available
+                            // for the time span before the median date for this station.
+                        } else {
+                            timeSpanModel.addTroposphericModelValidBefore(modelBefore, epoch);
+                        }
+                        if (subName.equals("BADG/") || subName.equals("IRKM/")) {
+                            // Do not add the model because no measurements are available
+                            // for the time span after the median date for this station.
+                        } else {
+                            timeSpanModel.addTroposphericModelValidAfter(modelAfter, epoch);
+                        }
+    
+                        troposphericModel = timeSpanModel;
+                        
                     } else {
-                        timeSpanModel.addTroposphericModelValidBefore(modelBefore, epoch);
+                        
+                        troposphericModel = new EstimatedTroposphericModel(temperature, pressure,
+                                                                           mappingModel, stationTroposphericZenithDelay[i]);
+                        final ParameterDriver driver = troposphericModel.getParametersDrivers().get(0);
+                        driver.setName(stationNames[i].substring(0, 4) + "/ " + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
+                        driver.setSelected(stationZenithDelayEstimated[i]);
+                        
                     }
-                    if (subName.equals("BADG/") || subName.equals("IRKM/")) {
-                        // Do not add the model because no measurements are available
-                        // for the time span after the median date for this station.
-                    } else {
-                        timeSpanModel.addTroposphericModelValidAfter(modelAfter, epoch);
-                    }
-
-                    troposphericModel = timeSpanModel;
+                    
                 } else {
                     // Empirical tropospheric model
                     troposphericModel = SaastamoinenModel.getStandardModel();
@@ -1737,7 +1766,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
      * @throws NoSuchElementException if input parameters are missing
      */
     private BatchLSEstimator createEstimator(final KeyValueFileParser<ParameterKey> parser,
-                                             final IntegratedPropagatorBuilder propagatorBuilder)
+                                             final OrbitDeterminationPropagatorBuilder propagatorBuilder)
         throws NoSuchElementException {
 
         final boolean optimizerIsLevenbergMarquardt;
@@ -1874,25 +1903,29 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
                     }
                     switch (fields[1]) {
                         case "RANGE" :
-                            final Range range = new RangeParser().parseFields(fields, stations, pvData, satellite,
-                                                                              satRangeBias, weights,
-                                                                              line, lineNumber, nd.getName());
-                            if (satAntennaRangeModifier != null) {
-                                range.addModifier(satAntennaRangeModifier);
+                            if (useRangeMeasurements) {
+                                final Range range = new RangeParser().parseFields(fields, stations, pvData, satellite,
+                                                                                  satRangeBias, weights,
+                                                                                  line, lineNumber, nd.getName());
+                                if (satAntennaRangeModifier != null) {
+                                    range.addModifier(satAntennaRangeModifier);
+                                }
+                                if (rangeOutliersManager != null) {
+                                    range.addModifier(rangeOutliersManager);
+                                }
+                                addIfNonZeroWeight(range, measurements);
                             }
-                            if (rangeOutliersManager != null) {
-                                range.addModifier(rangeOutliersManager);
-                            }
-                            addIfNonZeroWeight(range, measurements);
                             break;
                         case "RANGE_RATE" :
-                            final RangeRate rangeRate = new RangeRateParser().parseFields(fields, stations, pvData, satellite,
-                                                                                          satRangeBias, weights,
-                                                                                          line, lineNumber, nd.getName());
-                            if (rangeRateOutliersManager != null) {
-                                rangeRate.addModifier(rangeRateOutliersManager);
+                            if (useRangeRateMeasurements) {
+                                final RangeRate rangeRate = new RangeRateParser().parseFields(fields, stations, pvData, satellite,
+                                                                                              satRangeBias, weights,
+                                                                                              line, lineNumber, nd.getName());
+                                if (rangeRateOutliersManager != null) {
+                                    rangeRate.addModifier(rangeRateOutliersManager);
+                                }
+                                addIfNonZeroWeight(rangeRate, measurements);
                             }
-                            addIfNonZeroWeight(rangeRate, measurements);
                             break;
                         case "AZ_EL" :
                             final AngularAzEl angular = new AzElParser().parseFields(fields, stations, pvData, satellite,
@@ -1979,7 +2012,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
                 for (final ObservationData od : observationDataSet.getObservationData()) {
                     final double snr = od.getSignalStrength();
                     if (!Double.isNaN(od.getValue()) && (snr == 0 || snr >= 4)) {
-                        if (od.getObservationType().getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
+                        if (od.getObservationType().getMeasurementType() == MeasurementType.PSEUDO_RANGE && useRangeMeasurements) {
                             // this is a measurement we want
                             final String stationName = observationDataSet.getHeader().getMarkerName() + "/" + od.getObservationType();
                             final StationData stationData = stations.get(stationName);
@@ -2012,7 +2045,7 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
                             }
                             addIfNonZeroWeight(range, measurements);
 
-                        } else if (od.getObservationType().getMeasurementType() == MeasurementType.DOPPLER) {
+                        } else if (od.getObservationType().getMeasurementType() == MeasurementType.DOPPLER && useRangeRateMeasurements) {
                             // this is a measurement we want
                             final String stationName = observationDataSet.getHeader().getMarkerName() + "/" + od.getObservationType();
                             final StationData stationData = stations.get(stationName);
@@ -2434,5 +2467,5 @@ public abstract class AbstractOrbitDetermination<T extends IntegratedPropagatorB
             }
         }
     }
-
+    
 }

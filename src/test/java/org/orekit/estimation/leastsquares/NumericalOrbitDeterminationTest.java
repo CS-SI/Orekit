@@ -251,7 +251,6 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         Assert.assertEquals(RefStatRange[1], odLageos2.getRangeStat().getMax(),               distanceAccuracy);
         Assert.assertEquals(RefStatRange[2], odLageos2.getRangeStat().getMean(),              distanceAccuracy);
         Assert.assertEquals(RefStatRange[3], odLageos2.getRangeStat().getStandardDeviation(), distanceAccuracy);
-
     }
 
     @Test
@@ -291,7 +290,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         final Vector3D refVel = new Vector3D(-2729.5151218788005, 1142.6629459030657, -2523.9055974487947);
         Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
         Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
-
+        
         //test on statistic for the range residuals
         final long nbRangeInit     = 8981;
         final long nbRangeExcluded = 305;
