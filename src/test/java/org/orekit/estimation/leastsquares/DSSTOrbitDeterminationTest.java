@@ -184,7 +184,7 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
                                                   final double angularResolution,
                                                   final RadiationSensitive spacecraft) {
         throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
-                        "Relativity not implemented in DSST");
+                        "Albedo and infrared not implemented in DSST");
     }
 
     /** {@inheritDoc} */
@@ -266,6 +266,7 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
         Assert.assertEquals(RefStatRange[1], odLageos2.getRangeStat().getMax(),               1.0e-3);
         Assert.assertEquals(RefStatRange[2], odLageos2.getRangeStat().getMean(),              1.0e-3);
         Assert.assertEquals(RefStatRange[3], odLageos2.getRangeStat().getStandardDeviation(), 1.0e-3);
+
 
     }
 

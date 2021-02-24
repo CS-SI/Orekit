@@ -169,6 +169,10 @@ polynomial.acceleration.direction.Z  [2] = 1.0
 polynomial.acceleration.coefficients [2] = 0.0, 0.0
 polynomial.acceleration.estimated    [2] = true
 
+## Use range and range-rate measurements
+use.range.measurements = true
+use.range.rate.measurements = false
+
 ## On-board range bias (m) [0.0]
 onboard.range.bias     =   5969.0
 onboard.range.bias.min = -50000.0
@@ -197,6 +201,9 @@ on.board.clock.offset.estimated = false
 solid.tides.displacement.correction                   = false
 solid.tides.displacement.remove.permanent.deformation = false
 ocean.loading.correction                              = false
+
+## Use a time span tropospheric model or not
+use.time.span.tropospheric.model = true
 
 ## Ground stations (angles in degrees, altitude and range bias in meters)
 ground.station.name                            [0] = Fucino
