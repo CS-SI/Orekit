@@ -256,7 +256,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         Assert.assertTrue(forceModel.dependsOnPositionOnly());
 
         checkStateJacobianVs80Implementation(new SpacecraftState(orbit), forceModel,
-                                             new LofOffset(orbit.getFrame(), LOFType.VVLH),
+                                             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS),
                                              2.0e-15, false);
 
     }
@@ -285,7 +285,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         Assert.assertTrue(forceModel.dependsOnPositionOnly());
 
         checkStateJacobianVs80ImplementationGradient(new SpacecraftState(orbit), forceModel,
-                                             new LofOffset(orbit.getFrame(), LOFType.VVLH),
+                                             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS),
                                              2.0e-15, false);
 
     }
@@ -313,7 +313,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                                CelestialBodyFactory.getMoon());
 
         checkStateJacobianVs80Implementation(new SpacecraftState(orbit), forceModel,
-                                             new LofOffset(orbit.getFrame(), LOFType.VVLH),
+                                             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS),
                                              2.0e-15, false);
 
     }
@@ -341,7 +341,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                                CelestialBodyFactory.getMoon());
 
         checkStateJacobianVs80ImplementationGradient(new SpacecraftState(orbit), forceModel,
-                                             new LofOffset(orbit.getFrame(), LOFType.VVLH),
+                                             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS),
                                              2.0e-15, false);
 
     }

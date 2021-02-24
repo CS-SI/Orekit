@@ -29,29 +29,14 @@ public enum OrbitRelativeFrame {
     /** Equinoctial coordinate system (X towards ascending node, Z towards momentum). */
     EQW_INERTIAL(LOFType.EQW, true),
 
-    /** Local vertical, Local Horizontal (Z towards nadir, Y opposite to momentum).
-     * <p>
-     * BEWARE, this is the CCSDS definition of LVLH, which corresponds to what
-     * we call {@link LofType#VVLH} elsewhere in Orekit.
-     * </p>
-     */
-    LVLH_ROTATING(LOFType.VVLH, false),
+    /** Local vertical, Local Horizontal (Z towards nadir, Y opposite to momentum). */
+    LVLH_ROTATING(LOFType.LVLH_CCSDS, false),
 
-    /** Local vertical, Local Horizontal (Z towards nadir, Y opposite to momentum).
-     * <p>
-     * BEWARE, this is the CCSDS definition of LVLH, which corresponds to what
-     * we call {@link LofType#VVLH} elsewhere in Orekit.
-     * </p>
-     */
-    LVLH_INERTIAL(LOFType.VVLH, true),
+    /** Local vertical, Local Horizontal (Z towards nadir, Y opposite to momentum). */
+    LVLH_INERTIAL(LOFType.LVLH_CCSDS, true),
 
-    /** Local vertical, Local Horizontal (Z towards nadir, Y opposite to momentum).
-     * <p>
-     * BEWARE, this is the CCSDS definition of LVLH, which corresponds to what
-     * we call {@link LofType#VVLH} elsewhere in Orekit.
-     * </p>
-     */
-    LVLH(LOFType.VVLH, false),
+    /** Local vertical, Local Horizontal (Z towards nadir, Y opposite to momentum). */
+    LVLH(LOFType.LVLH_CCSDS, false),
 
     /** Nadir, Sun, Normal (X towards nadir, Y as close to Sun as possible). */
     NSW_ROTATING(null, false),

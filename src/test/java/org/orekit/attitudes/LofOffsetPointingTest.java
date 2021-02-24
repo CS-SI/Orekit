@@ -84,7 +84,7 @@ public class LofOffsetPointingTest {
 
         // Create lof aligned law
         //************************
-        final LofOffset lofLaw = new LofOffset(circ.getFrame(), LOFType.VVLH);
+        final LofOffset lofLaw = new LofOffset(circ.getFrame(), LOFType.LVLH_CCSDS);
         final LofOffsetPointing lofPointing = new LofOffsetPointing(circ.getFrame(), earthSpheric, lofLaw, Vector3D.PLUS_K);
         final Rotation lofRot = lofPointing.getAttitude(circ, date, circ.getFrame()).getRotation();
 
@@ -110,7 +110,7 @@ public class LofOffsetPointingTest {
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(0.), FastMath.toRadians(270.),
                                    FastMath.toRadians(5.300), PositionAngle.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
-        final LofOffset upsideDown = new LofOffset(circ.getFrame(), LOFType.VVLH, RotationOrder.XYX, FastMath.PI, 0, 0);
+        final LofOffset upsideDown = new LofOffset(circ.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYX, FastMath.PI, 0, 0);
         final LofOffsetPointing pointing = new LofOffsetPointing(circ.getFrame(), earthSpheric, upsideDown, Vector3D.PLUS_K);
         try {
             pointing.getTargetPV(circ, date, circ.getFrame());
@@ -134,7 +134,7 @@ public class LofOffsetPointingTest {
 
         final AttitudeProvider law =
             new LofOffsetPointing(orbit.getFrame(), earthSpheric,
-                                  new LofOffset(orbit.getFrame(), LOFType.VVLH, RotationOrder.XYX, 0.1, 0.2, 0.3),
+                                  new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYX, 0.1, 0.2, 0.3),
                                   Vector3D.PLUS_K);
 
         Propagator propagator = new KeplerianPropagator(orbit, law);
@@ -193,19 +193,18 @@ public class LofOffsetPointingTest {
                 case LVLH:
                     dir = Vector3D.MINUS_I;
                     break;
-                case VVLH:
+                case LVLH_CCSDS:
                     dir = Vector3D.PLUS_K;
                     break;
                 case VNC:
                     dir = Vector3D.MINUS_K;
                     break;
-                case EQW:
-                    continue;
                 case NTW:
                     dir = Vector3D.MINUS_I;
                     break;
                 default :
-                    throw new OrekitInternalError(null);
+                    // EQW and deprecated VVLH, not used in this test
+                    continue;
             }
             LofOffsetPointing lop = new LofOffsetPointing(orbit.getFrame(), earthSpheric, law, dir);
             checkField(Decimal64Field.getInstance(), lop, orbit, date, orbit.getFrame());

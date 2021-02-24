@@ -104,22 +104,19 @@ public enum LOFType {
      * (X axis aligned with position, Z axis aligned with orbital momentum).
      * <p>
      * BEWARE! Depending on the background (software used, textbook, community),
-     * different incompatible definitions for VVLH/LVLH are used. The one used in
-     * this class is consistent with Vallado's book and with AGI STK. However CCSDS
-     * standard, Wertz, and other software use {@code LVLH} to represent what we call
-     * {@link #VVLH}. Adding to the confusion, Orekit reverts to CCSDS naming (i.e.
-     * {@code LVLH} in the CCSDS specific {@link org.orekit.files.ccsds.definitions.OrbitRelativeFrame}
-     * enum.
+     * different incompatible definitions for LVLH are used. This one is consistent
+     * with Vallado's book and with AGI's STK. However CCSDS standard, Wertz, and
+     * a.i. solutions' FreeFlyer use another definition (see {@link #LVLH_CCSDS}).
      * </p>
      * <p>
      * This frame is also known as the {@link #QSW} frame, both constants are equivalent.
      * </p>
      * <p>
-     * The axes of these frames are parallel to the axes of the {@link #VVLH} frame:
+     * The axes of these frames are parallel to the axes of the {@link #LVLH_CCSDS} frame:
      * <ul>
-     *   <li>X<sub>LVLH/QSW</sub> = -Z<sub>VVLH</sub></li>
-     *   <li>Y<sub>LVLH/QSW</sub> =  X<sub>VVLH</sub></li>
-     *   <li>Z<sub>LVLH/QSW</sub> = -Y<sub>VVLH</sub></li>
+     *   <li>X<sub>LVLH/QSW</sub> = -Z<sub>LVLH_CCSDS</sub></li>
+     *   <li>Y<sub>LVLH/QSW</sub> =  X<sub>LVLH_CCSDS</sub></li>
+     *   <li>Z<sub>LVLH/QSW</sub> = -Y<sub>LVLH_CCSDS</sub></li>
      * </ul>
      * </p>
      *
@@ -144,30 +141,28 @@ public enum LOFType {
 
     },
 
-    /** Constant for Vehicle Velocity, Local Horizontal frame
+    /** Constant for Local Vertical, Local Horizontal frame as defined by CCSDS
      * (Z axis aligned with opposite of position, Y axis aligned with opposite of orbital momentum).
      * <p>
      * BEWARE! Depending on the background (software used, textbook, community),
-     * different incompatible definitions for VVLH/LVLH are used. The one used in
-     * this class is consistent with Vallado's book and with AGI STK. However CCSDS
-     * standard, Wertz, and other software use {@code LVLH} to represent what we call
-     * {@link #VVLH}. Adding to the confusion, Orekit reverts to CCSDS naming (i.e.
-     * {@code LVLH} in the CCSDS specific {@link org.orekit.files.ccsds.definitions.OrbitRelativeFrame}
-     * enum.
+     * different incompatible definitions for LVLH are used. This one is consistent
+     * with CCSDS standard, Wertz, and a.i. solutions' FreeFlyer. However Vallado's
+     * book and with AGI's STK use another definition (see {@link #LVLH}).
      * </p>
      * <p>
      * The axes of this frame are parallel to the axes of both the {@link #QSW} and {@link #LVLH} frames:
      * <ul>
-     *   <li>X<sub>VVLH</sub> =  Y<sub>QSW/LVLH</sub></li>
-     *   <li>Y<sub>VVLH</sub> = -Z<sub>QSW/LVLH</sub></li>
-     *   <li>Z<sub>VVLH</sub> = -X<sub>QSW/LVLH</sub></li>
+     *   <li>X<sub>LVLH_CCSDS</sub> =  Y<sub>QSW/LVLH</sub></li>
+     *   <li>Y<sub>LVLH_CCSDS</sub> = -Z<sub>QSW/LVLH</sub></li>
+     *   <li>Z<sub>LVLH_CCSDS</sub> = -X<sub>QSW/LVLH</sub></li>
      * </ul>
      * </p>
      *
      * @see #QSW
      * @see #LVLH
+     * @since 11.0
      */
-    VVLH {
+    LVLH_CCSDS {
 
         /** {@inheritDoc} */
         public Rotation rotationFromInertial(final PVCoordinates pv) {
@@ -181,6 +176,26 @@ public enum LOFType {
             return new FieldRotation<>(pv.getPosition(), pv.getMomentum(),
                                        new FieldVector3D<>(field, Vector3D.MINUS_K),
                                        new FieldVector3D<>(field, Vector3D.MINUS_J));
+        }
+
+    },
+
+    /** Obsolete name for {@link #LVLH_CCSDS}.
+     * @see #LVLH_CCSDS
+     * @deprecated as of 11.0, replaced by {@link #LVLH_CCSDS}
+     */
+    @Deprecated
+    VVLH {
+
+        /** {@inheritDoc} */
+        public Rotation rotationFromInertial(final PVCoordinates pv) {
+            return LVLH_CCSDS.rotationFromInertial(pv);
+        }
+
+        /** {@inheritDoc} */
+        public <T extends RealFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
+                                                                                     final FieldPVCoordinates<T> pv) {
+            return LVLH_CCSDS.rotationFromInertial(field, pv);
         }
 
     },

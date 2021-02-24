@@ -64,6 +64,18 @@ public class LocalOrbitalFrameTest {
     }
 
     @Test
+    public void testLVLH_CCSDS() {
+        AbsoluteDate date = initDate.shiftedBy(400);
+        PVCoordinates pv = provider.getPVCoordinates(date, inertialFrame);
+        checkFrame(LOFType.LVLH_CCSDS, date,
+                   Vector3D.crossProduct(pv.getMomentum(), pv.getPosition()),
+                   pv.getMomentum().negate(),
+                   pv.getPosition().negate(),
+                   pv.getMomentum().negate());
+    }
+
+    @Deprecated
+    @Test
     public void testVVLH() {
         AbsoluteDate date = initDate.shiftedBy(400);
         PVCoordinates pv = provider.getPVCoordinates(date, inertialFrame);

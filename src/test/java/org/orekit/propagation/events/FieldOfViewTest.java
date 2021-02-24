@@ -248,7 +248,7 @@ public class FieldOfViewTest {
                                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
                                                   Constants.EIGEN5C_EARTH_MU);
         Propagator propagator = new KeplerianPropagator(orbit);
-        propagator.setAttitudeProvider(new LofOffset(orbit.getFrame(), LOFType.VVLH, RotationOrder.XYZ,
+        propagator.setAttitudeProvider(new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYZ,
                                                      FastMath.toRadians(10),
                                                      FastMath.toRadians(20),
                                                      FastMath.toRadians(5)));
