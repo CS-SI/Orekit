@@ -112,19 +112,6 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
     }
 
     /** {@inheritDoc} */
-    protected double[][] getConversionJacobian(final SpacecraftState state) {
-
-        final double[][] identity = new double[STATE_DIMENSION][STATE_DIMENSION];
-
-        for (int i = 0; i < STATE_DIMENSION; ++i) {
-            identity[i][i] = 1.0;
-        }
-
-        return identity;
-
-    }
-
-    /** {@inheritDoc} */
     public void setInitialJacobians(final SpacecraftState state, final double[][] dY1dY0,
                                     final double[][] dY1dP, final double[] p) {
 

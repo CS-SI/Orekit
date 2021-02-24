@@ -76,21 +76,6 @@ public abstract class AbstractJacobiansMapper {
         // noting by default
     }
 
-    /** Get the conversion Jacobian between state parameters and parameters used for derivatives.
-     * <p>
-     * For DSST and TLE propagators, state parameters and parameters used for derivatives are the same,
-     * so the Jocabian is simply the identity.
-     * </p>
-     * <p>
-     * For Numerical propagator, parameters used for derivatives are cartesian
-     * and they can be different from state parameters because the numerical propagator can accept different type
-     * of orbits.
-     * </p>
-     * @param state spacecraft state
-     * @return conversion Jacobian
-     */
-    protected abstract double[][] getConversionJacobian(SpacecraftState state);
-
     /** Set the Jacobian with respect to state into a one-dimensional additional state array.
      * @param state spacecraft state
      * @param dY1dY0 Jacobian of current state at time t₁
