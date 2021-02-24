@@ -185,7 +185,7 @@ public class TLE implements TimeStamped, Serializable {
     private final TimeScale utc;
 
     /** Driver for ballistic coefficient parameter. */
-    private final ParameterDriver bStarParameterDriver;
+    private final transient ParameterDriver bStarParameterDriver;
 
     /** Simple constructor from unparsed two lines. This constructor uses the {@link
      * DataContext#getDefault() default data context}.

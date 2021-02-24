@@ -133,7 +133,7 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
         this.estimatedPropagationParameters  = new ParameterDriversList[builders.length];
         this.evaluations                     = new IdentityHashMap<>(measurements.size());
         this.observer                        = observer;
-        this.mappers                         = mappers;
+        this.mappers                         = mappers.clone();
 
         // allocate vector and matrix
         int rows = 0;

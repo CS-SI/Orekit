@@ -140,7 +140,7 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
     private final int elementNumber;
 
     /** the TLE current date. */
-    private final FieldAbsoluteDate<T> epoch;
+    private final transient FieldAbsoluteDate<T> epoch;
 
     /** Mean motion (rad/s). */
     private final T meanMotion;
@@ -179,7 +179,7 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
     private final TimeScale utc;
 
     /** Driver for ballistic coefficient parameter. */
-    private final ParameterDriver bStarParameterDriver;
+    private final transient ParameterDriver bStarParameterDriver;
 
     /** Simple constructor from unparsed two lines. This constructor uses the {@link
      * DataContext#getDefault() default data context}.

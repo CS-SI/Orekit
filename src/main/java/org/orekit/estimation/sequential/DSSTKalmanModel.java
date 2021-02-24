@@ -84,6 +84,9 @@ public class DSSTKalmanModel extends AbstractKalmanModel {
             mappers[k] = pde.getMapper();
         }
 
+        // Update Jacobian mappers
+        setMappers(mappers);
+
     }
 
     /** {@inheritDoc} */

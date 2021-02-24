@@ -99,7 +99,7 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
     private final double[] scale;
 
     /** Mappers for extracting Jacobians from integrated states. */
-    private final AbstractJacobiansMapper[] mappers;
+    private AbstractJacobiansMapper[] mappers;
 
     /** Propagators for the reference trajectories, up to current date. */
     private Propagator[] referenceTrajectories;
@@ -285,7 +285,7 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
         }
 
         // Build the reference propagators and add their partial derivatives equations implementation
-        this.mappers = mappers;
+        this.mappers = mappers.clone();
         updateReferenceTrajectories(getEstimatedPropagators(), propagationType, stateType);
         this.predictedSpacecraftStates = new SpacecraftState[referenceTrajectories.length];
         for (int i = 0; i < predictedSpacecraftStates.length; ++i) {
@@ -1154,21 +1154,28 @@ public abstract class AbstractKalmanModel implements KalmanEstimation, NonLinear
      * @return the referencetrajectories
      */
     public Propagator[] getReferenceTrajectories() {
-        return referenceTrajectories;
+        return referenceTrajectories.clone();
     }
 
     /** Setter for the reference trajectories.
      * @param referenceTrajectories the reference trajectories to be setted
      */
     public void setReferenceTrajectories(final Propagator[] referenceTrajectories) {
-        this.referenceTrajectories = referenceTrajectories;
+        this.referenceTrajectories = referenceTrajectories.clone();
     }
 
     /** Getter for the jacobian mappers.
      * @return the jacobian mappers
      */
     public AbstractJacobiansMapper[] getMappers() {
-        return mappers;
+        return mappers.clone();
+    }
+
+    /** Setter for the jacobian mappers.
+     * @param mappers the jacobian mappers to set
+     */
+    public void setMappers(final AbstractJacobiansMapper[] mappers) {
+        this.mappers = mappers.clone();
     }
 
     /** Get the propagators estimated with the values set in the propagators builders.
