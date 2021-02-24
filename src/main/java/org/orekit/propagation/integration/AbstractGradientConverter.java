@@ -19,11 +19,8 @@ package org.orekit.propagation.integration;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 
-/** Converter for states and parameters arrays
- *  for both {@link NumericalPropagator numerical} and {@link DSSTPropagator semi-analytical} propagators.
+/** Converter for states and parameters arrays.
  *  @author Luc Maisonobe
  *  @author Bryan Cazabonne
  *  @since 10.2

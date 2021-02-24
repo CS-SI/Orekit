@@ -16,65 +16,39 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathUtils;
+import java.util.List;
+
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
+import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
+import org.orekit.estimation.leastsquares.ModelObserver;
+import org.orekit.estimation.leastsquares.TLEBatchLSModel;
+import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.sequential.AbstractKalmanModel;
+import org.orekit.estimation.sequential.CovarianceMatrixProvider;
+import org.orekit.estimation.sequential.TLEKalmanModel;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterObserver;
+import org.orekit.utils.ParameterDriversList;
 
 /** Builder for TLEPropagator.
  * @author Pascal Parraud
+ * @author Thomas Paulet
  * @since 6.0
  */
-public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
-
-    /** Parameter name for B* coefficient. */
-    public static final String B_STAR = "BSTAR";
-
-    /** B* scaling factor.
-     * <p>
-     * We use a power of 2 to avoid numeric noise introduction
-     * in the multiplications/divisions sequences.
-     * </p>
-     */
-    private static final double B_STAR_SCALE = FastMath.scalb(1.0, -20);
-
-    /** Satellite number. */
-    private final int satelliteNumber;
-
-    /** Classification (U for unclassified). */
-    private final char classification;
-
-    /** Launch year (all digits). */
-    private final int launchYear;
-
-    /** Launch number. */
-    private final int launchNumber;
-
-    /** Launch piece. */
-    private final String launchPiece;
-
-    /** Element number. */
-    private final int elementNumber;
-
-    /** Revolution number at epoch. */
-    private final int revolutionNumberAtEpoch;
+public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements OrbitDeterminationPropagatorBuilder {
 
     /** Data context used to access frames and time scales. */
     private final DataContext dataContext;
 
-    /** Ballistic coefficient. */
-    private double bStar;
+    /** Template TLE. */
+    private final TLE templateTLE;
 
     /** Build a new instance. This constructor uses the {@link DataContext#getDefault()
      * default data context}.
@@ -119,63 +93,57 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
                                 final PositionAngle positionAngle,
                                 final double positionScale,
                                 final DataContext dataContext) {
-        super(TLEPropagator.selectExtrapolator(templateTLE, dataContext.getFrames())
-                        .getInitialState().getOrbit(),
+        super(OrbitType.KEPLERIAN.convertType(TLEPropagator.selectExtrapolator(templateTLE, dataContext.getFrames())
+                        .getInitialState().getOrbit()),
               positionAngle, positionScale, false,
               Propagator.getDefaultLaw(dataContext.getFrames()));
-        this.satelliteNumber         = templateTLE.getSatelliteNumber();
-        this.classification          = templateTLE.getClassification();
-        this.launchYear              = templateTLE.getLaunchYear();
-        this.launchNumber            = templateTLE.getLaunchNumber();
-        this.launchPiece             = templateTLE.getLaunchPiece();
-        this.elementNumber           = templateTLE.getElementNumber();
-        this.revolutionNumberAtEpoch = templateTLE.getRevolutionNumberAtEpoch();
-        this.bStar                   = 0.0;
-        this.dataContext = dataContext;
-        try {
-            final ParameterDriver driver = new ParameterDriver(B_STAR, bStar, B_STAR_SCALE,
-                                                               Double.NEGATIVE_INFINITY,
-                                                               Double.POSITIVE_INFINITY);
-            driver.addObserver(new ParameterObserver() {
-                /** {@inheritDoc} */
-                @Override
-                public void valueChanged(final double previousValue, final ParameterDriver driver) {
-                    TLEPropagatorBuilder.this.bStar = driver.getValue();
-                }
-            });
+        for (final ParameterDriver driver : templateTLE.getParametersDrivers()) {
             addSupportedParameter(driver);
-        } catch (OrekitException oe) {
-            // this should never happen
-            throw new OrekitInternalError(oe);
         }
+        this.templateTLE = templateTLE;
+        this.dataContext = dataContext;
 
     }
 
     /** {@inheritDoc} */
-    public Propagator buildPropagator(final double[] normalizedParameters) {
+    @DefaultDataContext
+    public TLEPropagator buildPropagator(final double[] normalizedParameters) {
 
         // create the orbit
         setParameters(normalizedParameters);
-        final Orbit orbit = createInitialOrbit();
 
         // we really need a Keplerian orbit type
-        final KeplerianOrbit kep = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orbit);
+        final KeplerianOrbit kep = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(createInitialOrbit());
+        final SpacecraftState state = new SpacecraftState(kep);
 
-        final TLE tle = new TLE(satelliteNumber, classification, launchYear, launchNumber, launchPiece,
-                                TLE.DEFAULT, elementNumber, orbit.getDate(),
-                                kep.getKeplerianMeanMotion(), 0.0, 0.0,
-                                kep.getE(), MathUtils.normalizeAngle(orbit.getI(), FastMath.PI),
-                                MathUtils.normalizeAngle(kep.getPerigeeArgument(), FastMath.PI),
-                                MathUtils.normalizeAngle(kep.getRightAscensionOfAscendingNode(), FastMath.PI),
-                                MathUtils.normalizeAngle(kep.getMeanAnomaly(), FastMath.PI),
-                                revolutionNumberAtEpoch, bStar,
-                                dataContext.getTimeScales().getUTC());
+        final TLEPropagator propagator = TLEPropagator.selectExtrapolator(templateTLE, getAttitudeProvider(),
+                                                                          Propagator.DEFAULT_MASS, dataContext.getFrames().getTEME());
+        propagator.resetInitialState(state);
+        return propagator;
+    }
 
-        return TLEPropagator.selectExtrapolator(
-                tle,
-                getAttitudeProvider(),
-                Propagator.DEFAULT_MASS,
-                dataContext.getFrames().getTEME());
+    /** Getter for the template TLE.
+     * @return the template TLE
+     */
+    public TLE getTemplateTLE() {
+        return templateTLE;
+    }
+
+    /** {@inheritDoc} */
+    public AbstractBatchLSModel buildLSModel(final OrbitDeterminationPropagatorBuilder[] builders,
+                                final List<ObservedMeasurement<?>> measurements,
+                                final ParameterDriversList estimatedMeasurementsParameters,
+                                final ModelObserver observer) {
+        return new TLEBatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
+    }
+
+    @Override
+    public AbstractKalmanModel
+        buildKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
+                         final List<CovarianceMatrixProvider> covarianceMatricesProviders,
+                         final ParameterDriversList estimatedMeasurementsParameters,
+                         final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
+        return new TLEKalmanModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters, measurementProcessNoiseMatrix);
     }
 
 }

@@ -55,6 +55,8 @@ public enum OrekitMessages implements Localizable {
     ALMOST_CRITICALLY_INCLINED_ORBIT("almost critically inclined orbit (i = {0} degrees)"),
     UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS(
             "unable to compute Eckstein-Hechler mean parameters after {0} iterations"),
+    UNABLE_TO_COMPUTE_TLE(
+                    "unable to compute TLE after {0} iterations"),
     NULL_PARENT_FOR_FRAME("null parent for frame {0}"),
     FRAME_ALREADY_ATTACHED("frame {0} is already attached to frame {1}"),
     FRAME_NOT_ATTACHED("frame {0} is not attached to the main frames tree"),
@@ -103,7 +105,6 @@ public enum OrekitMessages implements Localizable {
     MISSING_SECOND_TLE_LINE("expected a second TLE line after line {0}:\n{0}: \"{1}\""),
     TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT("TLE lines do not refer to the same object:\n{0}\n{1}"),
     TLE_INVALID_PARAMETER("invalid TLE parameter for object {0}: {1} = {2}"),
-    TLE_INVALID_PARAMETER_RANGE("invalid TLE parameter {0}: {1} not in range [{2}, {3}]"),
     TLE_CHECKSUM_ERROR("wrong checksum of TLE line {0}, expected {1} but got {2} ({3})"),
     NO_TLE_DATA_AVAILABLE("no TLE data available"),
     NOT_POSITIVE_SPACECRAFT_MASS("spacecraft mass is not positive: {0} kg"),
