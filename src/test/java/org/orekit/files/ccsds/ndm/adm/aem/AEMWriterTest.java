@@ -46,11 +46,14 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -90,9 +93,9 @@ public class AEMWriterTest {
         AemMetadata metadata = new AemMetadata(s0.getInterpolationSamples() - 1);
         metadata.setObjectName(s0.getMetadata().getObjectName());
         metadata.setObjectID(s0.getMetadata().getObjectID());
-        metadata.getEndPoints().setFrameA(s0.getMetadata().getEndPoints().getExternalFrame().name());
-        metadata.getEndPoints().setFrameB(s0.getMetadata().getEndPoints().getLocalFrame().toString());
-        metadata.getEndPoints().setDirection("A2B");
+        metadata.setFrameA(s0.getMetadata().getFrameA());
+        metadata.setFrameB(s0.getMetadata().getFrameB());
+        metadata.setA2b(s0.getMetadata().isA2b());
         metadata.setTimeSystem(s0.getMetadata().getTimeSystem());
         metadata.setStartTime(s0.getMetadata().getStart());
         metadata.setStopTime(s0.getMetadata().getStop());
@@ -189,7 +192,7 @@ public class AEMWriterTest {
         final DataContext context = DataContext.getDefault();
         final String id1 = "1999-012A";
         final String id2 = "1999-012B";
-        StandAloneEphemerisFile file = new StandAloneEphemerisFile(IERSConventions.IERS_2010, true, context);
+        StandAloneEphemerisFile file = new StandAloneEphemerisFile();
         file.generate(id1, id1 + "-name", AemAttitudeType.QUATERNION_RATE,
                       context.getFrames().getEME2000(),
                       new TimeStampedAngularCoordinates(AbsoluteDate.GALILEO_EPOCH,
@@ -323,21 +326,8 @@ public class AEMWriterTest {
         implements AttitudeEphemerisFile<TimeStampedAngularCoordinates, AemSegment> {
         private final Map<String, AemSatelliteEphemeris> satEphem;
 
-        private final IERSConventions conventions;
-        private final boolean         simpleEOP;
-        private final DataContext     dataContext;
-
-        /** Simple constructor.
-         * @param conventions IERS conventions
-         * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-         * @param dataContext used for creating frames, time scales, etc.
-         */
-        public StandAloneEphemerisFile(final IERSConventions conventions, final boolean simpleEOP,
-                                       final DataContext dataContext) {
-            this.conventions = conventions;
-            this.simpleEOP   = simpleEOP;
-            this.dataContext = dataContext;
-            this.satEphem    = new HashMap<>();
+        public StandAloneEphemerisFile() {
+            this.satEphem = new HashMap<>();
         }
 
         private void generate(final String objectID, final String objectName,
@@ -349,7 +339,7 @@ public class AEMWriterTest {
             metadata.addComment("metadata for " + objectName);
             metadata.setObjectID(objectID);
             metadata.setObjectName(objectName);
-            metadata.getEndPoints().setExternalFrame(CelestialBodyFrame.map(referenceFrame));
+            metadata.setFrameA(FrameFacade.map(referenceFrame));
             metadata.setAttitudeType(type);
             metadata.setStartTime(ac0.getDate());
             metadata.setStopTime(ac0.getDate().shiftedBy(duration));
@@ -369,7 +359,7 @@ public class AEMWriterTest {
             }
 
             List<AemSegment> segments = new ArrayList<>(satEphem.get(objectID).getSegments());
-            segments.add(new AemSegment(metadata, data, conventions, simpleEOP, dataContext));
+            segments.add(new AemSegment(metadata, data));
             satEphem.put(objectID, new AemSatelliteEphemeris(objectID, segments));
 
         }
@@ -386,9 +376,12 @@ public class AEMWriterTest {
         metadata.setTimeSystem(TimeSystem.TT);
         metadata.setObjectID("9999-999ZZZ");
         metadata.setObjectName("transgalactic");
-        metadata.getEndPoints().setFrameA("GCRF");
-        metadata.getEndPoints().setFrameB("GYRO 1");
-        metadata.getEndPoints().setDirection("A2B");
+        metadata.setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
+                                           null, null, "GCRF"));
+        metadata.setFrameB(new FrameFacade(null, null, null,
+                                           new SpacecraftBodyFrame(SpacecraftBodyFrame.BaseEquipment.GYRO, "1"),
+                                           "GYRO 1"));
+        metadata.setA2b(true);
         metadata.setStartTime(AbsoluteDate.J2000_EPOCH.shiftedBy(80 * Constants.JULIAN_CENTURY));
         metadata.setStopTime(metadata.getStartTime().shiftedBy(Constants.JULIAN_YEAR));
         metadata.setAttitudeType(AemAttitudeType.QUATERNION_DERIVATIVE);

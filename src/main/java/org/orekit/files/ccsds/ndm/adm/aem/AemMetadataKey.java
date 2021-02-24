@@ -33,13 +33,26 @@ import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 public enum AemMetadataKey {
 
     /** First reference frame. */
-    REF_FRAME_A((token, context, metadata) -> token.processAsNormalizedString(metadata.getEndPoints()::setFrameA)),
+    REF_FRAME_A((token, context, metadata) -> token.processAsFrame(metadata::setFrameA, context, true, true, true)),
 
     /** Second reference frame. */
-    REF_FRAME_B((token, context, metadata) -> token.processAsNormalizedString(metadata.getEndPoints()::setFrameB)),
+    REF_FRAME_B((token, context, metadata) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            metadata.checkNotNull(metadata.getFrameA(), REF_FRAME_A);
+            final boolean aIsSpaceraftBody = metadata.getFrameA().asSpacecraftBodyFrame() != null;
+            return token.processAsFrame(metadata::setFrameB, context,
+                                        aIsSpaceraftBody, aIsSpaceraftBody, !aIsSpaceraftBody);
+        }
+        return true;
+    }),
 
     /** Rotation direction entry. */
-    ATTITUDE_DIR((token, context, metadata) -> token.processAsNormalizedString(metadata.getEndPoints()::setDirection)),
+    ATTITUDE_DIR((token, context, metadata) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            metadata.setA2b(token.getContentAsNormalizedCharacter() == 'A');
+        }
+        return true;
+    }),
 
     /** Start time entry. */
     START_TIME((token, context, metadata) -> token.processAsDate(metadata::setStartTime, context)),
@@ -82,7 +95,7 @@ public enum AemMetadataKey {
         if (token.getType() == TokenType.ENTRY) {
             final String content = token.getContentAsNormalizedString();
             final char   suffix  = content.charAt(content.length() - 1);
-            metadata.setLocalRates(metadata.getEndPoints().isLocalSuffix(suffix));
+            metadata.setRateFrameIsA(suffix == 'A');
         }
         return true;
     }),

@@ -198,8 +198,7 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
     public boolean finalizeData() {
         if (metadata != null) {
             currentBlock.checkMandatoryEntries();
-            segments.add(new AemSegment(metadata, currentBlock,
-                                        getConventions(), isSimpleEOP(), getDataContext()));
+            segments.add(new AemSegment(metadata, currentBlock));
         }
         metadata = null;
         context  = null;

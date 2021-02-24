@@ -18,13 +18,12 @@ package org.orekit.files.ccsds.ndm.adm.aem;
 
 import java.util.List;
 
-import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
-import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
 /**
@@ -35,29 +34,12 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
 public class AemSegment extends Segment<AemMetadata, AemData>
     implements AttitudeEphemerisFile.AttitudeEphemerisSegment<TimeStampedAngularCoordinates> {
 
-    /** IERS conventions to use. */
-    private final IERSConventions conventions;
-
-    /** Indicator for simple or accurate EOP interpolation. */
-    private final  boolean simpleEOP;
-
-    /** Data context. */
-    private final DataContext dataContext;
-
     /** Simple constructor.
      * @param metadata segment metadata
      * @param data segment data
-     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param conventions IERS conventions to use
-     * @param dataContext data context to use
      */
-    public AemSegment(final AemMetadata metadata, final AemData data,
-                      final IERSConventions conventions, final boolean simpleEOP,
-                      final DataContext dataContext) {
+    public AemSegment(final AemMetadata metadata, final AemData data) {
         super(metadata, data);
-        this.conventions = conventions;
-        this.simpleEOP   = simpleEOP;
-        this.dataContext = dataContext;
     }
 
     /** {@inheritDoc} */
@@ -69,7 +51,9 @@ public class AemSegment extends Segment<AemMetadata, AemData>
     /** {@inheritDoc} */
     @Override
     public Frame getReferenceFrame() {
-        return getMetadata().getEndPoints().getExternalFrame().getFrame(conventions, simpleEOP, dataContext);
+        final FrameFacade ff = getMetadata().getFrameA().asSpacecraftBodyFrame() == null ?
+                               getMetadata().getFrameA() : getMetadata().getFrameB();
+        return ff.asFrame();
     }
 
     /** {@inheritDoc} */

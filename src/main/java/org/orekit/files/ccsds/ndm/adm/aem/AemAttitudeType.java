@@ -52,7 +52,7 @@ public enum AemAttitudeType {
 
             // Fill the array
             Rotation rotation  = coordinates.getRotation();
-            if (!metadata.getEndPoints().isExternal2Local()) {
+            if (!metadata.isExternal2SpacecraftBody()) {
                 rotation = rotation.revert();
             }
             data[quaternionIndex[0]] = rotation.getQ0();
@@ -82,7 +82,7 @@ public enum AemAttitudeType {
                                                    Double.parseDouble(fields[2]),
                                                    Double.parseDouble(fields[3]),
                                                    true);
-            if (!metadata.getEndPoints().isExternal2Local()) {
+            if (!metadata.isExternal2SpacecraftBody()) {
                 rotation = rotation.revert();
             }
 
@@ -109,7 +109,7 @@ public enum AemAttitudeType {
             final double[] data = new double[8];
 
             FieldRotation<UnivariateDerivative1> rotation = coordinates.toUnivariateDerivative1Rotation();
-            if (!metadata.getEndPoints().isExternal2Local()) {
+            if (!metadata.isExternal2SpacecraftBody()) {
                 rotation = rotation.revert();
             }
 
@@ -149,7 +149,7 @@ public enum AemAttitudeType {
                                                 new UnivariateDerivative1(Double.parseDouble(fields[2]), Double.parseDouble(fields[6])),
                                                 new UnivariateDerivative1(Double.parseDouble(fields[3]), Double.parseDouble(fields[7])),
                                                 true);
-            if (!metadata.getEndPoints().isExternal2Local()) {
+            if (!metadata.isExternal2SpacecraftBody()) {
                 rotation = rotation.revert();
             }
 
@@ -179,16 +179,14 @@ public enum AemAttitudeType {
 
             // Attitude
             final TimeStampedAngularCoordinates c =
-                            metadata.getEndPoints().isExternal2Local() ? coordinates : coordinates.revert();
-            final Rotation rotation     = c.getRotation();
-            final Vector3D rawRate      = c.getRotationRate();
-            final Vector3D rotationRate = metadata.localRates() ? rawRate : rotation.applyInverseTo(rawRate);
+                            metadata.isExternal2SpacecraftBody() ? coordinates : coordinates.revert();
+            final Vector3D rotationRate = metadataRate(c.getRotationRate(), c.getRotation(), metadata);
 
             // Fill the array
-            data[quaternionIndex[0]] = rotation.getQ0();
-            data[quaternionIndex[1]] = rotation.getQ1();
-            data[quaternionIndex[2]] = rotation.getQ2();
-            data[quaternionIndex[3]] = rotation.getQ3();
+            data[quaternionIndex[0]] = c.getRotation().getQ0();
+            data[quaternionIndex[1]] = c.getRotation().getQ1();
+            data[quaternionIndex[2]] = c.getRotation().getQ2();
+            data[quaternionIndex[3]] = c.getRotation().getQ3();
             data[4] = FastMath.toDegrees(rotationRate.getX());
             data[5] = FastMath.toDegrees(rotationRate.getY());
             data[6] = FastMath.toDegrees(rotationRate.getZ());
@@ -214,15 +212,15 @@ public enum AemAttitudeType {
                                                    Double.parseDouble(fields[2]),
                                                    Double.parseDouble(fields[3]),
                                                    true);
-            final Vector3D rotationRate = localRate(new Vector3D(FastMath.toRadians(Double.parseDouble(fields[5])),
+            final Vector3D rotationRate = orekitRate(new Vector3D(FastMath.toRadians(Double.parseDouble(fields[5])),
                                                                  FastMath.toRadians(Double.parseDouble(fields[6])),
                                                                  FastMath.toRadians(Double.parseDouble(fields[7]))),
-                                                    rotation, metadata, fileName);
+                                                    rotation, metadata);
 
             // Return
             final TimeStampedAngularCoordinates ac =
                             new TimeStampedAngularCoordinates(date, rotation, rotationRate, Vector3D.ZERO);
-            return metadata.getEndPoints().isExternal2Local() ? ac : ac.revert();
+            return metadata.isExternal2SpacecraftBody() ? ac : ac.revert();
 
         }
 
@@ -245,7 +243,7 @@ public enum AemAttitudeType {
 
             // Attitude
             Rotation rotation = coordinates.getRotation();
-            if (!metadata.getEndPoints().isExternal2Local()) {
+            if (!metadata.isExternal2SpacecraftBody()) {
                 rotation = rotation.revert();
             }
             final double[] angles   = rotation.getAngles(metadata.getEulerRotSeq(), RotationConvention.FRAME_TRANSFORM);
@@ -271,7 +269,7 @@ public enum AemAttitudeType {
                                              FastMath.toRadians(Double.parseDouble(fields[1])),
                                              FastMath.toRadians(Double.parseDouble(fields[2])),
                                              FastMath.toRadians(Double.parseDouble(fields[3])));
-            if (!metadata.getEndPoints().isExternal2Local()) {
+            if (!metadata.isExternal2SpacecraftBody()) {
                 rotation = rotation.revert();
             }
 
@@ -298,11 +296,9 @@ public enum AemAttitudeType {
 
             // Attitude
             final TimeStampedAngularCoordinates c =
-                            metadata.getEndPoints().isExternal2Local() ? coordinates : coordinates.revert();
-            final Rotation rotation     = c.getRotation();
-            final Vector3D rawRate      = c.getRotationRate();
-            final Vector3D rotationRate = metadata.localRates() ? rawRate : rotation.applyInverseTo(rawRate);
-            final double[] angles       = rotation.getAngles(metadata.getEulerRotSeq(), RotationConvention.FRAME_TRANSFORM);
+                            metadata.isExternal2SpacecraftBody() ? coordinates : coordinates.revert();
+            final Vector3D rotationRate = metadataRate(c.getRotationRate(), c.getRotation(), metadata);
+            final double[] angles       = c.getRotation().getAngles(metadata.getEulerRotSeq(), RotationConvention.FRAME_TRANSFORM);
 
             // Fill the array
             data[0] = FastMath.toDegrees(angles[0]);
@@ -328,14 +324,14 @@ public enum AemAttitudeType {
                                                    FastMath.toRadians(Double.parseDouble(fields[1])),
                                                    FastMath.toRadians(Double.parseDouble(fields[2])),
                                                    FastMath.toRadians(Double.parseDouble(fields[3])));
-            final Vector3D rotationRate = localRate(new Vector3D(FastMath.toRadians(Double.parseDouble(fields[4])),
+            final Vector3D rotationRate = orekitRate(new Vector3D(FastMath.toRadians(Double.parseDouble(fields[4])),
                                                                  FastMath.toRadians(Double.parseDouble(fields[5])),
                                                                  FastMath.toRadians(Double.parseDouble(fields[6]))),
-                                                    rotation, metadata, fileName);
+                                                    rotation, metadata);
             // Return
             final TimeStampedAngularCoordinates ac =
                             new TimeStampedAngularCoordinates(date, rotation, rotationRate, Vector3D.ZERO);
-            return metadata.getEndPoints().isExternal2Local() ? ac : ac.revert();
+            return metadata.isExternal2SpacecraftBody() ? ac : ac.revert();
 
         }
 
@@ -476,23 +472,24 @@ public enum AemAttitudeType {
      */
     public abstract AngularDerivativesFilter getAngularDerivativesFilter();
 
-    /** Convert a rotation rate to spacecraft body local frame.
+    /** Convert a rotation rate for Orekit convention to metadata convention.
+     * @param rate rotation rate from Orekit attitude
+     * @param rotation corresponding rotation
+     * @param metadata segment metadata
+     * @return rotation rate in metadata convention
+     */
+    private static Vector3D metadataRate(final Vector3D rate, final Rotation rotation, final AemMetadata metadata) {
+        return metadata.isSpacecraftBodyRate() ? rate : rotation.applyInverseTo(rate);
+    }
+
+    /** Convert a rotation rate for metadata convention to Orekit convention.
      * @param rate rotation rate read from the data line
      * @param rotation corresponding rotation
      * @param metadata segment metadata
-     * @return rotation rate in spacecraft body local frame
-     * @param fileName name of the file
+     * @return rotation rate in Orekit convention (i.e. in spacecraft body local frame)
      */
-    private static Vector3D localRate(final Vector3D rate, final Rotation rotation,
-                                      final AemMetadata metadata, final String fileName) {
-
-        if (metadata.localRates() == null) {
-            throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
-                                      AemMetadataKey.RATE_FRAME.name(), fileName);
-        }
-
-        return metadata.localRates() ? rate : rotation.applyTo(rate);
-
+    private static Vector3D orekitRate(final Vector3D rate, final Rotation rotation, final AemMetadata metadata) {
+        return metadata.isSpacecraftBodyRate() ? rate : rotation.applyTo(rate);
     }
 
 }

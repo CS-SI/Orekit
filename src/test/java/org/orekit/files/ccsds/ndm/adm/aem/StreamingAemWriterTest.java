@@ -31,11 +31,9 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
-import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
-import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
-import org.orekit.files.ccsds.ndm.adm.AttitudeEndPoints;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.frames.FramesFactory;
@@ -82,10 +80,9 @@ public class StreamingAemWriterTest {
             String            objectName   = ephemerisBlock.getMetadata().getObjectName();
             String            objectID     = ephemerisBlock.getMetadata().getObjectID();
             String            headerCmt    = aemFile.getHeader().getComments().get(0);
-            AttitudeEndPoints ep           = ephemerisBlock.getMetadata().getEndPoints();
-            boolean           attitudeDir  = ep.isExternal2Local();
-            CelestialBodyFrame        refFrameA    = ep.getExternalFrame();
-            SpacecraftBodyFrame    refFrameB    = ep.getLocalFrame();
+            FrameFacade       frameA       = ephemerisBlock.getMetadata().getFrameA();
+            FrameFacade       frameB       = ephemerisBlock.getMetadata().getFrameB();
+            boolean           a2b          = ephemerisBlock.getMetadata().isA2b();
             AemAttitudeType   attitudeType = ephemerisBlock.getMetadata().getAttitudeType();
             boolean           isFirst      = ephemerisBlock.getMetadata().isFirst();
 
@@ -101,9 +98,9 @@ public class StreamingAemWriterTest {
             metadata.setObjectName("will be overwritten");
             metadata.setAttitudeType(attitudeType);
             metadata.setIsFirst(isFirst);
-            metadata.getEndPoints().setExternalFrame(refFrameA);
-            metadata.getEndPoints().setLocalFrame(refFrameB);
-            metadata.getEndPoints().setExternal2Local(attitudeDir);
+            metadata.setFrameA(frameA);
+            metadata.setFrameB(frameB);
+            metadata.setA2b(a2b);
             metadata.setStartTime(AbsoluteDate.PAST_INFINITY);  // will be overwritten at propagation start
             metadata.setStopTime(AbsoluteDate.FUTURE_INFINITY); // will be overwritten at propagation start
             final AemWriter aemWriter = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), header, metadata);

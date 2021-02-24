@@ -27,10 +27,9 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
-import org.orekit.files.ccsds.ndm.adm.AttitudeEndPoints;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderKey;
 import org.orekit.files.ccsds.section.KvnStructureKey;
@@ -42,7 +41,6 @@ import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.files.general.AttitudeEphemerisFile.SatelliteAttitudeEphemeris;
 import org.orekit.files.general.AttitudeEphemerisFileWriter;
-import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
@@ -138,14 +136,12 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  *        <tr>
  *            <td>{@link AemMetadataKey#REF_FRAME_A}</td>
  *            <td>Yes</td>
- *            <td>Orekit will always use the {@link AttitudeEndPoints#getExternalFrame()
- *                external frame} for frame A</td>
+ *            <td></td>
  *        </tr>
  *        <tr>
  *            <td>{@link AemMetadataKey#REF_FRAME_B}</td>
  *            <td>Yes</td>
- *            <td>Orekit will always use the {@link AttitudeEndPoints#getLocalFrame()
- *                local spacecraft body frame} for frame B</td>
+ *            <td></td>
  *        </tr>
  *        <tr>
  *            <td>{@link AemMetadataKey#ATTITUDE_DIR}</td>
@@ -256,11 +252,11 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
     /** String format used for dates. **/
     private static final String DATE_FORMAT = "%04d-%02d-%02dT%02d:%02d:%012.9f";
 
-    /** Constant for external frame to local frame attitude. */
-    private static final String EXTERNAL_TO_LOCAL = "A2B";
+    /** Constant for frame A to frame B attitude. */
+    private static final String A_TO_B = "A2B";
 
-    /** Constant for local frame to external frame attitude. */
-    private static final String LOCAL_TO_EXTERNAL = "B2A";
+    /** Constant for frame B to frame A attitude. */
+    private static final String B_TO_A = "B2A";
 
     /** Constant for quaternions with scalar component in first position. */
     private static final String FIRST = "FIRST";
@@ -268,11 +264,11 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
     /** Constant for quaternions with scalar component in last position. */
     private static final String LAST = "LAST";
 
-    /** Constant for angular rates in external frame. */
-    private static final String EXTERNAL_RATES = "REF_FRAME_A";
+    /** Constant for angular rates in frame A. */
+    private static final String REF_FRAME_A = "REF_FRAME_A";
 
-    /** Constant for angular rates in local frame. */
-    private static final String LOCAL_RATES = "REF_FRAME_B";
+    /** Constant for angular rates in frame B. */
+    private static final String REF_FRAME_B = "REF_FRAME_B";
 
     /** Data context used for obtain frames and time scales. */
     private final DataContext dataContext;
@@ -419,9 +415,13 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
                 // override template metadata with segment values
                 metadata.setStartTime(segment.getStart());
                 metadata.setStopTime(segment.getStop());
-                final Frame      segmentFrame = segment.getReferenceFrame();
-                final CelestialBodyFrame ccsdsFrame   = CelestialBodyFrame.map(segmentFrame);
-                metadata.getEndPoints().setExternalFrame(ccsdsFrame);
+                if (metadata.getFrameA() == null || metadata.getFrameA().asSpacecraftBodyFrame() == null) {
+                    // the external frame must be frame A
+                    metadata.setFrameA(FrameFacade.map(segment.getReferenceFrame()));
+                } else {
+                    // the external frame must be frame B
+                    metadata.setFrameB(FrameFacade.map(segment.getReferenceFrame()));
+                }
                 metadata.setInterpolationMethod(segment.getInterpolationMethod());
                 metadata.setInterpolationDegree(segment.getInterpolationSamples() - 1);
                 writeMetadata(generator);
@@ -491,8 +491,7 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
      * @param generator generator to use for producing output
      * @throws IOException if the output stream throws one while writing.
      */
-    public void writeMetadata(final Generator generator)
-        throws IOException {
+    public void writeMetadata(final Generator generator) throws IOException {
 
         // Start metadata
         generator.enterSection(generator.getFormat() == FileFormat.KVN ?
@@ -507,16 +506,9 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
         generator.writeEntry(AdmMetadataKey.CENTER_NAME.name(), metadata.getCenterName(), false);
 
         // frames
-        final AttitudeEndPoints endPoints = metadata.getEndPoints();
-        generator.writeEntry(AemMetadataKey.REF_FRAME_A.name(),
-                             endPoints.getExternalFrame() == null ? null : endPoints.getExternalFrame().name(),
-                             true);
-        generator.writeEntry(AemMetadataKey.REF_FRAME_B.name(),
-                             endPoints.getLocalFrame() == null ? null : endPoints.getLocalFrame().toString(),
-                             true);
-        generator.writeEntry(AemMetadataKey.ATTITUDE_DIR.name(),
-                             endPoints.isExternal2Local() ? EXTERNAL_TO_LOCAL : LOCAL_TO_EXTERNAL,
-                             true);
+        generator.writeEntry(AemMetadataKey.REF_FRAME_A.name(),  metadata.getFrameA().getName(),     true);
+        generator.writeEntry(AemMetadataKey.REF_FRAME_B.name(),  metadata.getFrameB().getName(),     true);
+        generator.writeEntry(AemMetadataKey.ATTITUDE_DIR.name(), metadata.isA2b() ? A_TO_B : B_TO_A, true);
 
         // time
         generator.writeEntry(MetadataKey.TIME_SYSTEM.name(), metadata.getTimeSystem().name(), true);
@@ -552,13 +544,8 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
 
         if (attitudeType == AemAttitudeType.QUATERNION_RATE ||
             attitudeType == AemAttitudeType.EULER_ANGLE_RATE) {
-            if (metadata.localRates() == null) {
-                // the keyword *will* be missing because we cannot set it
-                throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
-                                          AemMetadataKey.RATE_FRAME.name(), fileName);
-            }
             generator.writeEntry(AemMetadataKey.RATE_FRAME.name(),
-                                 metadata.localRates() ? LOCAL_RATES : EXTERNAL_RATES,
+                                 metadata.rateFrameIsA() ? REF_FRAME_A : REF_FRAME_B,
                                  false);
         }
 
@@ -618,13 +605,13 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
         generator.exitSection();
     }
 
-    /** Copy a metadata object (excluding times), making sure mandatory fields have been initialized.
+    /** Copy a metadata object (excluding times and frames), making sure mandatory fields have been initialized.
      * @param original original object
      * @return a new copy
      */
     private AemMetadata copy(final AemMetadata original) {
 
-        original.checkMandatoryEntries();
+        original.checkMandatoryEntriesExceptDatesAndExternalFrame();
 
         // allocate new instance
         final AemMetadata copy = new AemMetadata(original.getInterpolationDegree());
@@ -641,11 +628,11 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
             copy.setCenterName(original.getCenterName(), dataContext.getCelestialBodies());
         }
 
-        // copy frames
-        copy.getEndPoints().setExternalFrame(original.getEndPoints().getExternalFrame());
-        copy.getEndPoints().setLocalFrame(original.getEndPoints().getLocalFrame());
-        copy.getEndPoints().setExternal2Local(original.getEndPoints().isExternal2Local());
-        copy.getEndPoints().setFrameA(original.getEndPoints().getExternalFrame().name());
+        // copy frames (we may copy null references here)
+        copy.setFrameA(original.getFrameA());
+        copy.setFrameB(original.getFrameB());
+        copy.setA2b(original.isA2b());
+        copy.setRateFrameIsA(original.rateFrameIsA());
 
         // copy time system only (ignore times themselves)
         copy.setTimeSystem(original.getTimeSystem());
@@ -657,9 +644,6 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
         }
         if (original.getEulerRotSeq() != null) {
             copy.setEulerRotSeq(original.getEulerRotSeq());
-        }
-        if (original.localRates() != null) {
-            copy.setLocalRates(original.localRates());
         }
 
         // copy interpolation (degree has already been set up at construction)

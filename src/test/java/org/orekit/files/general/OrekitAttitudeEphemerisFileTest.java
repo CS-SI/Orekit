@@ -41,6 +41,9 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.adm.aem.AemAttitudeType;
 import org.orekit.files.ccsds.ndm.adm.aem.AemMetadata;
@@ -228,9 +231,12 @@ public class OrekitAttitudeEphemerisFileTest {
         metadata.setTimeSystem(TimeSystem.TT);
         metadata.setObjectID("SATELLITE1");
         metadata.setObjectName("transgalactic");
-        metadata.getEndPoints().setFrameA("GCRF");
-        metadata.getEndPoints().setFrameB("GYRO 1");
-        metadata.getEndPoints().setDirection("A2B");
+        metadata.setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
+                                           null, null, "GCRF"));
+        metadata.setFrameB(new FrameFacade(null, null, null,
+                                           new SpacecraftBodyFrame(SpacecraftBodyFrame.BaseEquipment.GYRO, "1"),
+                                           "GYRO 1"));
+        metadata.setA2b(true);
         metadata.setStartTime(AbsoluteDate.J2000_EPOCH.shiftedBy(80 * Constants.JULIAN_CENTURY));
         metadata.setStopTime(metadata.getStartTime().shiftedBy(Constants.JULIAN_YEAR));
         metadata.setAttitudeType(AemAttitudeType.QUATERNION_DERIVATIVE);
