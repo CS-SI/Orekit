@@ -124,7 +124,6 @@ public class TLEPartialDerivativesTest {
         try {
             partials.setInitialJacobians(propagator.getInitialState(),
                                          new double[6][6], new double[6][3]);
-            partials.computeDerivatives(propagator.getInitialState(), new double[6]);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH,

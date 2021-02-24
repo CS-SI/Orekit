@@ -38,7 +38,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Thomas Paulet
  * @since 11.0
  */
-public class TLEPartialDerivativesEquations implements AdditionalEquations {
+public class TLEPartialDerivativesEquations {
 
     /** Propagator computing state evolution. */
     private final TLEPropagator propagator;
@@ -67,8 +67,9 @@ public class TLEPartialDerivativesEquations implements AdditionalEquations {
         this.initialized = false;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /** Get the name of the additional state.
+     * @return name of the additional state
+     */
     public String getName() {
         return name;
     }
@@ -167,27 +168,6 @@ public class TLEPartialDerivativesEquations implements AdditionalEquations {
             throw new OrekitException(OrekitMessages.STATE_JACOBIAN_NOT_INITIALIZED);
         }
         return new TLEJacobiansMapper(name, selected, propagator);
-    }
-
-    /** Get the selected parameters, in Jacobian matrix column order.
-     * <p>
-     * The force models parameters for which partial derivatives are desired,
-     * <em>must</em> have been {@link ParameterDriver#setSelected(boolean) selected}
-     * before this method is called, so the proper list is returned.
-     * </p>
-     * @return selected parameters, in Jacobian matrix column order which
-     * is lexicographic order
-     */
-    public ParameterDriversList getSelectedParameters() {
-        freezeParametersSelection();
-        return selected;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double[] computeDerivatives(final SpacecraftState s, final double[] pDot) {
-        // Nothing is done since it is an analytical propagation
-        return null;
     }
 
 }
