@@ -241,20 +241,6 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
         return new DSSTJacobiansMapper(name, selected, propagator, map, propagationType);
     }
 
-    /** Get the selected parameters, in Jacobian matrix column order.
-     * <p>
-     * The force models parameters for which partial derivatives are desired,
-     * <em>must</em> have been {@link ParameterDriver#setSelected(boolean) selected}
-     * before this method is called, so the proper list is returned.
-     * </p>
-     * @return selected parameters, in Jacobian matrix column order which
-     * is lexicographic order
-     */
-    public ParameterDriversList getSelectedParameters() {
-        freezeParametersSelection();
-        return selected;
-    }
-
     /** {@inheritDoc} */
     public double[] computeDerivatives(final SpacecraftState s, final double[] pDot) {
 

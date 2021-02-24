@@ -99,6 +99,10 @@ general.relativity = true
 ## LOF_ALIGNED_LVLH, LOF_ALIGNED_QSW, LOF_ALIGNED_TNW, LOF_ALIGNED_VNC, LOF_ALIGNED_VVLH
 attitude.mode = CENTER_POINTING_WITH_YAW_STEERING
 
+## Use range and range-rate measurements
+use.range.measurements = true
+use.range.rate.measurements = false
+
 ## On-board range bias (m) [0.0]
 onboard.range.bias     =  0.0
 onboard.range.bias.min = -1000000.0
@@ -131,6 +135,9 @@ ocean.loading.correction                              = false
 
 ## Shapiro time delay on range measurement
 range.shapiro = true
+
+## Use a time span tropospheric model or not
+use.time.span.tropospheric.model = true
 
 ## Ground stations (angles in degrees, altitude and range bias in meters)
 ground.station.name                            [0] =  SHLD/C1
