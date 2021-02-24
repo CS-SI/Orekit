@@ -705,6 +705,20 @@ public class FieldTLETest {
         Assert.assertEquals(tleISS.getBStar(),                     rebuilt.getBStar(),                     eps * tleISS.getBStar());
     }
 
+    @Test
+    public void testToTLE() {
+        doTestToTLE(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestToTLE(final Field<T> field) {
+        final TLE tle = new TLE("1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0  9998",
+                                "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
+        final FieldTLE<T> fieldTle = new FieldTLE<T>(field, tle.getLine1(), tle.getLine2());
+        final TLE rebuilt = fieldTle.toTLE();
+        Assert.assertTrue(rebuilt.equals(tle));
+        Assert.assertEquals(tle.toString(), rebuilt.toString());
+    }
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");
