@@ -18,6 +18,7 @@ package org.orekit.estimation.sequential;
 
 import java.util.List;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -58,6 +59,7 @@ public class TLEKalmanModel extends AbstractKalmanModel {
 
     /** {@inheritDoc} */
     @Override
+    @DefaultDataContext
     protected void updateReferenceTrajectories(final Propagator[] propagators,
                                                final PropagationType pType,
                                                final PropagationType sType) {
@@ -84,6 +86,7 @@ public class TLEKalmanModel extends AbstractKalmanModel {
 
     /** {@inheritDoc} */
     @Override
+    @DefaultDataContext
     protected void analyticalDerivativeComputations(final AbstractJacobiansMapper mapper, final SpacecraftState state) {
         ((TLEJacobiansMapper) mapper).analyticalDerivatives(state);
     }

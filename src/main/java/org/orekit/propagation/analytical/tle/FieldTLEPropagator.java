@@ -576,6 +576,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
     protected abstract void sxpPropagate(T t, T[] parameters);
 
     /** {@inheritDoc} */
+    @DefaultDataContext
     public void resetInitialState(final FieldSpacecraftState<T> state) {
         super.resetInitialState(state);
         super.setStartDate(state.getDate());

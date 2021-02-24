@@ -896,6 +896,7 @@ public class TLE implements TimeStamped, Serializable {
      * @param templateTLE TLE used to get object identification
      * @return TLE with template identification and new orbital parameters
      */
+    @DefaultDataContext
     private static TLE newTLE(final KeplerianOrbit keplerianOrbit, final TLE templateTLE) {
         // Keplerian parameters
         final double meanMotion  = keplerianOrbit.getKeplerianMeanMotion();

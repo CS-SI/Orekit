@@ -917,6 +917,7 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
      * @param <T> type of the element
      * @return TLE with template identification and new orbital parameters
      */
+    @DefaultDataContext
     private static <T extends RealFieldElement<T>> FieldTLE<T> newTLE(final FieldKeplerianOrbit<T> keplerianOrbit, final FieldTLE<T> templateTLE) {
         // Keplerian parameters
         final T meanMotion  = keplerianOrbit.getKeplerianMeanMotion();
