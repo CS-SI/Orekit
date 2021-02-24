@@ -120,20 +120,6 @@ public class KalmanEstimatorBuilder {
      * If this method is not called, no measurement parameters will be estimated.
      * </p>
      * @param estimatedMeasurementsParams The estimated measurements' parameters list.
-     * @return this object.
-     * @deprecated since 10.3 replaced by {@link #estimatedMeasurementsParameters(ParameterDriversList, CovarianceMatrixProvider)}
-     */
-    @Deprecated
-    public KalmanEstimatorBuilder estimatedMeasurementsParameters(final ParameterDriversList estimatedMeasurementsParams) {
-        estimatedMeasurementsParameters = estimatedMeasurementsParams;
-        return this;
-    }
-
-    /** Configure the estimated measurement parameters.
-     * <p>
-     * If this method is not called, no measurement parameters will be estimated.
-     * </p>
-     * @param estimatedMeasurementsParams The estimated measurements' parameters list.
      * @param provider covariance matrix provider for the estimated measurement parameters
      * @return this object.
      * @since 10.3

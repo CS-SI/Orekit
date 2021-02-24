@@ -44,25 +44,6 @@ public class DSSTKalmanModel extends AbstractKalmanModel {
      * @param propagatorBuilders propagators builders used to evaluate the orbits.
      * @param covarianceMatricesProviders providers for covariance matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
-     * @param propagationType type of the orbit used for the propagation (mean or osculating)
-     * @param stateType type of the elements used to define the orbital state (mean or osculating)
-     * @deprecated since 10.3, replaced by {@link
-     * #DSSTKalmanModel(List, List, ParameterDriversList, CovarianceMatrixProvider, PropagationType, PropagationType)}
-     */
-    @Deprecated
-    public DSSTKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
-                           final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                           final ParameterDriversList estimatedMeasurementParameters,
-                           final PropagationType propagationType,
-                           final PropagationType stateType) {
-        this(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementParameters,
-             null, propagationType, stateType);
-    }
-
-    /** Kalman process model constructor.
-     * @param propagatorBuilders propagators builders used to evaluate the orbits.
-     * @param covarianceMatricesProviders providers for covariance matrices
-     * @param estimatedMeasurementParameters measurement parameters to estimate
      * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
      * @param propagationType type of the orbit used for the propagation (mean or osculating)
      * @param stateType type of the elements used to define the orbital state (mean or osculating)

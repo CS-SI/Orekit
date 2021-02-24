@@ -94,23 +94,6 @@ public class KalmanEstimator {
      * @param propagatorBuilders propagators builders used to evaluate the orbit.
      * @param processNoiseMatricesProviders providers for process noise matrices
      * @param estimatedMeasurementParameters measurement parameters to estimate
-     * @deprecated since 10.3, replaced by
-     * {@link #KalmanEstimator(MatrixDecomposer, List, List, ParameterDriversList, CovarianceMatrixProvider)}
-     */
-    @Deprecated
-    KalmanEstimator(final MatrixDecomposer decomposer,
-                    final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
-                    final List<CovarianceMatrixProvider> processNoiseMatricesProviders,
-                    final ParameterDriversList estimatedMeasurementParameters) {
-        this(decomposer, propagatorBuilders, processNoiseMatricesProviders,
-             estimatedMeasurementParameters, null);
-    }
-
-    /** Kalman filter estimator constructor (package private).
-     * @param decomposer decomposer to use for the correction phase
-     * @param propagatorBuilders propagators builders used to evaluate the orbit.
-     * @param processNoiseMatricesProviders providers for process noise matrices
-     * @param estimatedMeasurementParameters measurement parameters to estimate
      * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
      * @since 10.3
      */
