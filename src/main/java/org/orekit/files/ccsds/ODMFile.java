@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -64,7 +64,7 @@ public abstract class ODMFile extends NDMFile {
      * Set the gravitational coefficient set by the user.
      * @param muSet the coefficient to be set
      */
-    void setMuSet(final double muSet) {
+    public void setMuSet(final double muSet) {
         this.muSet = muSet;
     }
 

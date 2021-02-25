@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,9 +15,6 @@
  * limitations under the License.
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -51,16 +48,6 @@ public class DSSTTesseralContext extends ForceModelContext {
      * </p>
      */
     private static final int I = 1;
-
-    /** Minimum period for analytically averaged high-order resonant
-     *  central body spherical harmonics in seconds.
-     */
-    private static final double MIN_PERIOD_IN_SECONDS = 864000.;
-
-    /** Minimum period for analytically averaged high-order resonant
-     *  central body spherical harmonics in satellite revolutions.
-     */
-    private static final double MIN_PERIOD_IN_SAT_REV = 10.;
 
     /** A = sqrt(μ * a). */
     private double A;
@@ -100,9 +87,6 @@ public class DSSTTesseralContext extends ForceModelContext {
     /** ecc². */
     private double e2;
 
-    /** Maximum power of the eccentricity to use in summation over s. */
-    private int maxEccPow;
-
     /** Keplerian mean motion. */
     private double n;
 
@@ -111,9 +95,6 @@ public class DSSTTesseralContext extends ForceModelContext {
 
     /** Ratio of satellite period to central body rotation period. */
     private double ratio;
-
-    /** List of resonant orders. */
-    private final List<Integer> resOrders;
 
     /**
      * Simple constructor.
@@ -133,9 +114,6 @@ public class DSSTTesseralContext extends ForceModelContext {
                         final double[] parameters) {
 
         super(auxiliaryElements);
-
-        this.maxEccPow = 0;
-        this.resOrders = new ArrayList<Integer>();
 
         final double mu = parameters[0];
 
@@ -179,51 +157,9 @@ public class DSSTTesseralContext extends ForceModelContext {
         chi = 1. / auxiliaryElements.getB();
         chi2 = chi * chi;
 
-        // Set the highest power of the eccentricity in the analytical power
-        // series expansion for the averaged high order resonant central body
-        // spherical harmonic perturbation
-        final double e = auxiliaryElements.getEcc();
-        if (e <= 0.005) {
-            maxEccPow = 3;
-        } else if (e <= 0.02) {
-            maxEccPow = 4;
-        } else if (e <= 0.1) {
-            maxEccPow = 7;
-        } else if (e <= 0.2) {
-            maxEccPow = 10;
-        } else if (e <= 0.3) {
-            maxEccPow = 12;
-        } else if (e <= 0.4) {
-            maxEccPow = 15;
-        } else {
-            maxEccPow = 20;
-        }
-
         // Ratio of satellite to central body periods to define resonant terms
         ratio = period / bodyPeriod;
 
-        // Compute natural resonant terms
-        final double tolerance = 1. / FastMath.max(MIN_PERIOD_IN_SAT_REV, MIN_PERIOD_IN_SECONDS / period);
-
-        // Search the resonant orders in the tesseral harmonic field
-        resOrders.clear();
-        for (int m = 1; m <= provider.getMaxOrder(); m++) {
-            final double resonance = ratio * m;
-            final int jComputedRes = (int) FastMath.round(resonance);
-            if (jComputedRes > 0 && jComputedRes <= maxFrequencyShortPeriodics &&
-                    FastMath.abs(resonance - jComputedRes) <= tolerance) {
-                // Store each resonant index and order
-                this.resOrders.add(m);
-            }
-        }
-
-    }
-
-    /** Get the list of resonant orders.
-     * @return resOrders
-     */
-    public List<Integer> getResOrders() {
-        return resOrders;
     }
 
     /** Get ecc².
@@ -311,14 +247,6 @@ public class DSSTTesseralContext extends ForceModelContext {
      */
     public double getRoa() {
         return roa;
-    }
-
-    /**
-     * Get the maximum power of the eccentricity to use in summation over s.
-     * @return maxEccPow
-     */
-    public int getMaxEccPow() {
-        return maxEccPow;
     }
 
     /**

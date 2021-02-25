@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -991,6 +991,30 @@ public class DSSTPropagatorTest {
         final SpacecraftState computedOsculatingState = DSSTPropagator.computeOsculatingState(meanState, attitudeProvider, forces);
         Assert.assertEquals(0.0, Vector3D.distance(osculatingState.getPVCoordinates().getPosition(), computedOsculatingState.getPVCoordinates().getPosition()),
                             5.0e-6);
+    }
+
+    @Test
+    public void testIssue704() {
+
+        // Coordinates
+        final Orbit         orbit = getLEOState().getOrbit();
+        final PVCoordinates pv    = orbit.getPVCoordinates();
+
+        // dP
+        final double dP = 10.0;
+
+        // Computes dV
+        final double r2 = pv.getPosition().getNormSq();
+        final double v  = pv.getVelocity().getNorm();
+        final double dV = orbit.getMu() * dP / (v * r2);
+
+        // Verify
+        final double[][] tol1 = DSSTPropagator.tolerances(dP, orbit);
+        final double[][] tol2 = DSSTPropagator.tolerances(dP, dV, orbit);
+        for (int i = 0; i < tol1.length; i++) {
+            Assert.assertArrayEquals(tol1[i], tol2[i], Double.MIN_VALUE);
+        }
+
     }
 
     private SpacecraftState getGEOState() throws IllegalArgumentException, OrekitException {

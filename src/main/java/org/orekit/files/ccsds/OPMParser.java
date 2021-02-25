@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -134,30 +134,35 @@ public class OPMParser extends ODMParser {
     }
 
     /** {@inheritDoc} */
+    @Override
     public OPMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
         return new OPMParser(newMissionReferenceDate, getMu(), getConventions(), isSimpleEOP(),
                              getLaunchYear(), getLaunchNumber(), getLaunchPiece(), getDataContext());
     }
 
     /** {@inheritDoc} */
+    @Override
     public OPMParser withMu(final double newMu) {
         return new OPMParser(getMissionReferenceDate(), newMu, getConventions(), isSimpleEOP(),
                              getLaunchYear(), getLaunchNumber(), getLaunchPiece(), getDataContext());
     }
 
     /** {@inheritDoc} */
+    @Override
     public OPMParser withConventions(final IERSConventions newConventions) {
         return new OPMParser(getMissionReferenceDate(), getMu(), newConventions, isSimpleEOP(),
                              getLaunchYear(), getLaunchNumber(), getLaunchPiece(), getDataContext());
     }
 
     /** {@inheritDoc} */
+    @Override
     public OPMParser withSimpleEOP(final boolean newSimpleEOP) {
         return new OPMParser(getMissionReferenceDate(), getMu(), getConventions(), newSimpleEOP,
                              getLaunchYear(), getLaunchNumber(), getLaunchPiece(), getDataContext());
     }
 
     /** {@inheritDoc} */
+    @Override
     public OPMParser withInternationalDesignator(final int newLaunchYear,
                                                  final int newLaunchNumber,
                                                  final String newLaunchPiece) {
@@ -165,6 +170,7 @@ public class OPMParser extends ODMParser {
                              newLaunchYear, newLaunchNumber, newLaunchPiece, getDataContext());
     }
 
+    /** {@inheritDoc} */
     @Override
     public OPMParser withDataContext(final DataContext newDataContext) {
         return new OPMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
@@ -184,6 +190,7 @@ public class OPMParser extends ODMParser {
     }
 
     /** {@inheritDoc} */
+    @Override
     public OPMFile parse(final InputStream stream, final String fileName) {
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {

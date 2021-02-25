@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,7 @@
  */
 package org.orekit.forces.gravity;
 
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.CelestialBody;
@@ -52,7 +51,7 @@ public class ThirdBodyAttractionEpoch extends ThirdBodyAttraction {
      * @param parameters values of the force model parameters
      * @return acceleration in same frame as state
      */
-    private FieldVector3D<DerivativeStructure> accelerationToEpoch(final SpacecraftState s, final double[] parameters) {
+    private FieldVector3D<Gradient> accelerationToEpoch(final SpacecraftState s, final double[] parameters) {
 
         final double gm = parameters[0];
 
@@ -64,17 +63,17 @@ public class ThirdBodyAttractionEpoch extends ThirdBodyAttraction {
         final double ry = centralToBody.getY();
         final double rz = centralToBody.getZ();
 
-        final DSFactory factoryP = new DSFactory(3, 1);
-        final DerivativeStructure fpx = factoryP.variable(0, rx);
-        final DerivativeStructure fpy = factoryP.variable(1, ry);
-        final DerivativeStructure fpz = factoryP.variable(2, rz);
+        final int freeParameters = 3;
+        final Gradient fpx = Gradient.variable(freeParameters, 0, rx);
+        final Gradient fpy = Gradient.variable(freeParameters, 1, ry);
+        final Gradient fpz = Gradient.variable(freeParameters, 2, rz);
 
-        final FieldVector3D<DerivativeStructure> centralToBodyFV = new FieldVector3D<>(new DerivativeStructure[] {fpx, fpy, fpz});
+        final FieldVector3D<Gradient> centralToBodyFV = new FieldVector3D<>(new Gradient[] {fpx, fpy, fpz});
 
 
-        final DerivativeStructure                r2Central = centralToBodyFV.getNormSq();
-        final FieldVector3D<DerivativeStructure> satToBody = centralToBodyFV.subtract(s.getPVCoordinates().getPosition());
-        final DerivativeStructure                r2Sat     = satToBody.getNormSq();
+        final Gradient                r2Central = centralToBodyFV.getNormSq();
+        final FieldVector3D<Gradient> satToBody = centralToBodyFV.subtract(s.getPVCoordinates().getPosition());
+        final Gradient                r2Sat     = satToBody.getNormSq();
 
         return new FieldVector3D<>(gm, satToBody.scalarMultiply(r2Sat.multiply(r2Sat.sqrt()).reciprocal()),
                                   -gm, centralToBodyFV.scalarMultiply(r2Central.multiply(r2Central.sqrt()).reciprocal()));
@@ -87,17 +86,17 @@ public class ThirdBodyAttractionEpoch extends ThirdBodyAttraction {
      */
     public double[] getDerivativesToEpoch(final SpacecraftState s, final double[] parameters) {
 
-        final FieldVector3D<DerivativeStructure> acc = accelerationToEpoch(s, parameters);
+        final FieldVector3D<Gradient> acc = accelerationToEpoch(s, parameters);
         final Vector3D centralToBodyVelocity = body.getPVCoordinates(s.getDate(), s.getFrame()).getVelocity();
 
-        final double[] dAccxdR1i = acc.getX().getAllDerivatives();
-        final double[] dAccydR1i = acc.getY().getAllDerivatives();
-        final double[] dAcczdR1i = acc.getZ().getAllDerivatives();
+        final double[] dAccxdR1i = acc.getX().getGradient();
+        final double[] dAccydR1i = acc.getY().getGradient();
+        final double[] dAcczdR1i = acc.getZ().getGradient();
         final double[] v = centralToBodyVelocity.toArray();
 
-        return new double[] {dAccxdR1i[1] * v[0] + dAccxdR1i[1] * v[1] + dAccxdR1i[1] * v[2],
-            dAccydR1i[1] * v[0] + dAccydR1i[1] * v[1] + dAccydR1i[1] * v[2],
-            dAcczdR1i[1] * v[0] + dAcczdR1i[1] * v[1] + dAcczdR1i[1] * v[2]};
+        return new double[] {dAccxdR1i[0] * v[0] + dAccxdR1i[0] * v[1] + dAccxdR1i[0] * v[2],
+            dAccydR1i[0] * v[0] + dAccydR1i[0] * v[1] + dAccydR1i[0] * v[2],
+            dAcczdR1i[0] * v[0] + dAcczdR1i[0] * v[1] + dAcczdR1i[0] * v[2]};
     }
 
 }

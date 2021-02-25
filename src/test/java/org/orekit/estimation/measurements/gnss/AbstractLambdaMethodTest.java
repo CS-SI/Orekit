@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -54,8 +54,8 @@ public abstract class AbstractLambdaMethodTest {
         AbstractLambdaMethod reducer = buildReducer();
         initializeProblem(reducer, new double[indirection.length], indirection, covariance, 2);
         reducer.ltdlDecomposition();
-        Assert.assertEquals(0.0, refLow.subtract(getLow(reducer)).getNorm(), 9.9e-13 * refLow.getNorm());
-        Assert.assertEquals(0.0, refDiag.subtract(getDiag(reducer)).getNorm(), 6.7e-13 * refDiag.getNorm());
+        Assert.assertEquals(0.0, refLow.subtract(getLow(reducer)).getNorm1(), 9.9e-13 * refLow.getNorm1());
+        Assert.assertEquals(0.0, refDiag.subtract(getDiag(reducer)).getNorm1(), 6.7e-13 * refDiag.getNorm1());
     }
 
     @Test
@@ -127,8 +127,8 @@ public abstract class AbstractLambdaMethodTest {
         }
         final RealMatrix rebuilt = buildCovariance(reducer);
         Assert.assertEquals(0.0,
-                            rebuilt.subtract(extracted).getNorm(),
-                            2.5e-13 * extracted.getNorm());
+                            rebuilt.subtract(extracted).getNorm1(),
+                            2.5e-13 * extracted.getNorm1());
 
     }
     

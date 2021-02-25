@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,10 @@ import java.io.Serializable;
 
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
@@ -174,14 +177,15 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
                                  v.toDerivativeStructureVector(2)));
     }
 
-    /** Builds a AngularCoordinates from  a {@link FieldRotation}&lt;{@link DerivativeStructure}&gt;.
+    /** Builds a AngularCoordinates from  a {@link FieldRotation}&lt;{@link Derivative}&gt;.
      * <p>
      * The rotation components must have time as their only derivation parameter and
      * have consistent derivation orders.
      * </p>
      * @param r rotation with time-derivatives embedded within the coordinates
+     * @param <U> type of the derivative
      */
-    public AngularCoordinates(final FieldRotation<DerivativeStructure> r) {
+    public <U extends Derivative<U>> AngularCoordinates(final FieldRotation<U> r) {
 
         final double q0       = r.getQ0().getReal();
         final double q1       = r.getQ1().getReal();
@@ -401,6 +405,97 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
         }
 
         return new FieldRotation<>(q0DS, q1DS, q2DS, q3DS, false);
+
+    }
+
+    /** Transform the instance to a {@link FieldRotation}&lt;{@link UnivariateDerivative1}&gt;.
+     * <p>
+     * The {@link UnivariateDerivative1} coordinates correspond to time-derivatives up
+     * to the order 1.
+     * </p>
+     * @return rotation with time-derivatives embedded within the coordinates
+     */
+    public FieldRotation<UnivariateDerivative1> toUnivariateDerivative1Rotation() {
+
+        // quaternion components
+        final double q0 = rotation.getQ0();
+        final double q1 = rotation.getQ1();
+        final double q2 = rotation.getQ2();
+        final double q3 = rotation.getQ3();
+
+        // first time-derivatives of the quaternion
+        final double oX    = rotationRate.getX();
+        final double oY    = rotationRate.getY();
+        final double oZ    = rotationRate.getZ();
+        final double q0Dot = 0.5 * MathArrays.linearCombination(-q1, oX, -q2, oY, -q3, oZ);
+        final double q1Dot = 0.5 * MathArrays.linearCombination( q0, oX, -q3, oY,  q2, oZ);
+        final double q2Dot = 0.5 * MathArrays.linearCombination( q3, oX,  q0, oY, -q1, oZ);
+        final double q3Dot = 0.5 * MathArrays.linearCombination(-q2, oX,  q1, oY,  q0, oZ);
+
+        final UnivariateDerivative1 q0UD = new UnivariateDerivative1(q0, q0Dot);
+        final UnivariateDerivative1 q1UD = new UnivariateDerivative1(q1, q1Dot);
+        final UnivariateDerivative1 q2UD = new UnivariateDerivative1(q2, q2Dot);
+        final UnivariateDerivative1 q3UD = new UnivariateDerivative1(q3, q3Dot);
+
+        return new FieldRotation<>(q0UD, q1UD, q2UD, q3UD, false);
+
+    }
+
+    /** Transform the instance to a {@link FieldRotation}&lt;{@link UnivariateDerivative2}&gt;.
+     * <p>
+     * The {@link UnivariateDerivative2} coordinates correspond to time-derivatives up
+     * to the order 2.
+     * </p>
+     * @return rotation with time-derivatives embedded within the coordinates
+     */
+    public FieldRotation<UnivariateDerivative2> toUnivariateDerivative2Rotation() {
+
+        // quaternion components
+        final double q0 = rotation.getQ0();
+        final double q1 = rotation.getQ1();
+        final double q2 = rotation.getQ2();
+        final double q3 = rotation.getQ3();
+
+        // first time-derivatives of the quaternion
+        final double oX    = rotationRate.getX();
+        final double oY    = rotationRate.getY();
+        final double oZ    = rotationRate.getZ();
+        final double q0Dot = 0.5 * MathArrays.linearCombination(-q1, oX, -q2, oY, -q3, oZ);
+        final double q1Dot = 0.5 * MathArrays.linearCombination( q0, oX, -q3, oY,  q2, oZ);
+        final double q2Dot = 0.5 * MathArrays.linearCombination( q3, oX,  q0, oY, -q1, oZ);
+        final double q3Dot = 0.5 * MathArrays.linearCombination(-q2, oX,  q1, oY,  q0, oZ);
+
+        // second time-derivatives of the quaternion
+        final double oXDot = rotationAcceleration.getX();
+        final double oYDot = rotationAcceleration.getY();
+        final double oZDot = rotationAcceleration.getZ();
+        final double q0DotDot = -0.5 * MathArrays.linearCombination(new double[] {
+            q1, q2,  q3, q1Dot, q2Dot,  q3Dot
+        }, new double[] {
+            oXDot, oYDot, oZDot, oX, oY, oZ
+        });
+        final double q1DotDot =  0.5 * MathArrays.linearCombination(new double[] {
+            q0, q2, -q3, q0Dot, q2Dot, -q3Dot
+        }, new double[] {
+            oXDot, oZDot, oYDot, oX, oZ, oY
+        });
+        final double q2DotDot =  0.5 * MathArrays.linearCombination(new double[] {
+            q0, q3, -q1, q0Dot, q3Dot, -q1Dot
+        }, new double[] {
+            oYDot, oXDot, oZDot, oY, oX, oZ
+        });
+        final double q3DotDot =  0.5 * MathArrays.linearCombination(new double[] {
+            q0, q1, -q2, q0Dot, q1Dot, -q2Dot
+        }, new double[] {
+            oZDot, oYDot, oXDot, oZ, oY, oX
+        });
+
+        final UnivariateDerivative2 q0UD = new UnivariateDerivative2(q0, q0Dot, q0DotDot);
+        final UnivariateDerivative2 q1UD = new UnivariateDerivative2(q1, q1Dot, q1DotDot);
+        final UnivariateDerivative2 q2UD = new UnivariateDerivative2(q2, q2Dot, q2DotDot);
+        final UnivariateDerivative2 q3UD = new UnivariateDerivative2(q3, q3Dot, q3DotDot);
+
+        return new FieldRotation<>(q0UD, q1UD, q2UD, q3UD, false);
 
     }
 

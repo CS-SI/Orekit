@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -1091,6 +1091,34 @@ public class FieldDSSTPropagatorTest {
 
         // Verify is the propagation is correctly performed
         Assert.assertEquals(finalState.getMu().getReal(), 3.986004415E14, Double.MIN_VALUE);
+    }
+
+    @Test
+    public void testIssue704() {
+        doTestIssue704(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestIssue704(final Field<T> field) {
+
+        // Coordinates
+        final FieldOrbit<T>         orbit = getLEOState(field).getOrbit();
+        final FieldPVCoordinates<T> pv    = orbit.getPVCoordinates();
+
+        // dP
+        final T dP = field.getZero().add(10.0);
+
+        // Computes dV
+        final T r2 = pv.getPosition().getNormSq();
+        final T v  = pv.getVelocity().getNorm();
+        final T dV = dP.multiply(orbit.getMu()).divide(v.multiply(r2));
+
+        // Verify
+        final double[][] tol1 = FieldDSSTPropagator.tolerances(dP, orbit);
+        final double[][] tol2 = FieldDSSTPropagator.tolerances(dP, dV, orbit);
+        for (int i = 0; i < tol1.length; i++) {
+            Assert.assertArrayEquals(tol1[i], tol2[i], Double.MIN_VALUE);
+        }
+
     }
 
     private <T extends RealFieldElement<T>> FieldSpacecraftState<T> getGEOState(final Field<T> field) {

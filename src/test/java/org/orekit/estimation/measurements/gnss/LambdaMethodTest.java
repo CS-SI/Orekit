@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -68,7 +68,7 @@ public class LambdaMethodTest extends AbstractLambdaMethodTest {
         double[]   aBase              = getDecorrelated(reducer).clone();
         double[]   aRef               = aBase.clone();
         Assert.assertEquals(0.0,
-                            zRef.subtract(getZTransformation(reducer)).getNorm(),
+                            zRef.subtract(getZTransformation(reducer)).getNorm1(),
                             1.0e-15);
         for (int k = 0; k < 10; ++k) {
             final Permutation permutation = createRandomPermutation(getLow(reducer),
@@ -79,15 +79,15 @@ public class LambdaMethodTest extends AbstractLambdaMethodTest {
             // check accumulated Z transform, with reference based on naive matrix multiplication
             zRef = zRef.multiply(permutation.z);
             Assert.assertEquals(0.0,
-                                zRef.subtract(getZTransformation(reducer)).getNorm(),
+                                zRef.subtract(getZTransformation(reducer)).getNorm1(),
                                 Precision.SAFE_MIN);
 
             // check rebuilt permuted covariance
             RealMatrix rebuilt  = getLow(reducer).transposeMultiply(getDiag(reducer)).multiply(getLow(reducer));
             RealMatrix permuted = zRef.transposeMultiply(filteredCovariance).multiply(zRef);
             Assert.assertEquals(0.0,
-                                permuted.subtract(rebuilt).getNorm(),
-                                2.7e-12 * filteredCovariance.getNorm());
+                                permuted.subtract(rebuilt).getNorm1(),
+                                2.7e-12 * filteredCovariance.getNorm1());
 
             // check ambiguities, with reference based on direct permutation
             final double tmp = aRef[permutation.i];
@@ -140,7 +140,7 @@ public class LambdaMethodTest extends AbstractLambdaMethodTest {
         double[]   aBase    = getDecorrelated(reducer).clone();
         double[]   aRef     = aBase;
         Assert.assertEquals(0.0,
-                            zRef.subtract(getZTransformation(reducer)).getNorm(),
+                            zRef.subtract(getZTransformation(reducer)).getNorm1(),
                             1.0e-15);
         for (int k = 0; k < 10; ++k) {
             final IntegerGaussTransformation gauss = createRandomIntegerGaussTransformation(getLow(reducer), random);
@@ -149,18 +149,18 @@ public class LambdaMethodTest extends AbstractLambdaMethodTest {
             // check accumulated Z transform, with reference based on naive matrix multiplication
             zRef = zRef.multiply(gauss.z);
             Assert.assertEquals(0.0,
-                                zRef.subtract(getZTransformation(reducer)).getNorm(),
-                                1.5e-15 * zRef.getNorm());
+                                zRef.subtract(getZTransformation(reducer)).getNorm1(),
+                                1.5e-15 * zRef.getNorm1());
 
             // check diagonal part, which should not change
             Assert.assertEquals(0.0,
-                                diagRef.subtract(getDiag(reducer)).getNorm(),
+                                diagRef.subtract(getDiag(reducer)).getNorm1(),
                                 Precision.SAFE_MIN);
 
             // check accumulated low triangular part, with reference based on naive matrix multiplication
             lowRef = lowRef.multiply(gauss.z);
             Assert.assertEquals(0.0,
-                                lowRef.subtract(getLow(reducer)).getNorm(),
+                                lowRef.subtract(getLow(reducer)).getNorm1(),
                                 Precision.SAFE_MIN);
             Assert.assertTrue(getLow(reducer).getEntry(gauss.i, gauss.j) <= 0.5);
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,6 +32,8 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -41,6 +43,10 @@ import org.orekit.utils.PVCoordinates;
 
 
 public class TLETest {
+    
+    private TLE geoTLE;
+
+    private TLE leoTLE;
 
     @Test
     public void testTLEFormat() {
@@ -222,11 +228,9 @@ public class TLETest {
             tle.getLine2();
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.TLE_INVALID_PARAMETER_RANGE, oe.getSpecifier());
-            Assert.assertEquals("eccentricity", oe.getParts()[0]);
-            Assert.assertEquals(1.0075476, oe.getParts()[1]);
-            Assert.assertEquals(0.0, oe.getParts()[2]);
-            Assert.assertEquals(1.0, oe.getParts()[3]);
+            Assert.assertEquals(OrekitMessages.TLE_INVALID_PARAMETER, oe.getSpecifier());
+            Assert.assertEquals(5555, ((Integer) oe.getParts()[0]).intValue());
+            Assert.assertEquals("eccentricity", oe.getParts()[1]);
         }
     }
 
@@ -431,9 +435,9 @@ public class TLETest {
     @Test
     public void testEqualTLE() {
         TLE tleA = new TLE("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
-                "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
+                           "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
         TLE tleB = new TLE("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
-                "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
+                           "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
         Assert.assertTrue(tleA.equals(tleB));
     }
 
@@ -484,71 +488,108 @@ public class TLETest {
         Assert.assertEquals(tle.getLine1(), "1 99999X 20042F   20001.04166667  .00000000  00000-0  10000-4 0  9997");
         Assert.assertEquals(tle.getLine2(), "2 99999  97.3982 239.8686 0016311 175.5448 123.6195 15.14038717    18");
     }
-
+    
     @Test
-    public void testMeanMotionRange() {
-        final double[] wrongMeanMotions = new double[] { -42.0 };
-        for (double wrongMeanMotion : wrongMeanMotions) {
-            try {
-                new TLE(99999, 'X', 2020, 42, "F", 0, 999,
-                        new AbsoluteDate("2020-01-01T01:00:00.000", TimeScalesFactory.getUTC()), wrongMeanMotion, 0.0,
-                        0.0, 0.0016310523359516962, 1.6999188604164899, 3.063834020452862, 4.1864962873682305,
-                        2.157567545975006, 1, 1e-05);
-                Assert.fail("an exception should have been thrown");
-            } catch (OrekitException oe) {
-                Assert.assertEquals(OrekitMessages.TLE_INVALID_PARAMETER_RANGE, oe.getSpecifier());
-                Assert.assertEquals("meanMotion", oe.getParts()[0]);
-                Assert.assertEquals(wrongMeanMotion, oe.getParts()[1]);
-                Assert.assertEquals(0.0, oe.getParts()[2]);
-                Assert.assertEquals(Double.POSITIVE_INFINITY, oe.getParts()[3]);
-            }
-        }
+    public void testOneMoreRevolution() {
+        final TLEPropagator propagator = TLEPropagator.selectExtrapolator(leoTLE);
+        final int initRevolutionNumber = leoTLE.getRevolutionNumberAtEpoch();
+        final double dt =  2 * FastMath.PI / leoTLE.getMeanMotion();
+        final AbsoluteDate target = leoTLE.getDate().shiftedBy(dt);
+        final SpacecraftState endState = propagator.propagate(target);
+        final TLE endLEOTLE = TLE.stateToTLE(endState, leoTLE);
+        final int endRevolutionNumber = endLEOTLE.getRevolutionNumberAtEpoch();
+        Assert.assertEquals(initRevolutionNumber + 1 , endRevolutionNumber);
+    }
+    
+    @Test
+    public void testOneLessRevolution() {
+        final TLEPropagator propagator = TLEPropagator.selectExtrapolator(leoTLE);
+        final int initRevolutionNumber = leoTLE.getRevolutionNumberAtEpoch();
+        final double dt =  - 2 * FastMath.PI / leoTLE.getMeanMotion();
+        final AbsoluteDate target = leoTLE.getDate().shiftedBy(dt);
+        final SpacecraftState endState = propagator.propagate(target);
+        final TLE endLEOTLE = TLE.stateToTLE(endState, leoTLE);
+        final int endRevolutionNumber = endLEOTLE.getRevolutionNumberAtEpoch();
+        Assert.assertEquals(initRevolutionNumber - 1 , endRevolutionNumber);
+    }
+    
+    @Test
+    public void testConversionLeo() {
+        checkConversion(leoTLE);
     }
 
     @Test
-    public void testInclinationRange() {
-        final double[] wrongInclinations = new double[] { -42.0, +42.0 };
-        for (double wrongInclination : wrongInclinations) {
-            try {
-                new TLE(99999, 'X', 2020, 42, "F", 0, 999,
-                        new AbsoluteDate("2020-01-01T01:00:00.000", TimeScalesFactory.getUTC()), 0.0011010400252833312,
-                        0.0, 0.0, 0.0016310523359516962, wrongInclination, 3.063834020452862, 4.1864962873682305,
-                        2.157567545975006, 1, 1e-05);
-                Assert.fail("an exception should have been thrown");
-            } catch (OrekitException oe) {
-                Assert.assertEquals(OrekitMessages.TLE_INVALID_PARAMETER_RANGE, oe.getSpecifier());
-                Assert.assertEquals("inclination", oe.getParts()[0]);
-                Assert.assertEquals(wrongInclination, oe.getParts()[1]);
-                Assert.assertEquals(0.0, oe.getParts()[2]);
-                Assert.assertEquals(FastMath.PI, oe.getParts()[3]);
-                ;
-            }
-        }
+    public void testConversionGeo() {
+        checkConversion(geoTLE);
+    }
+
+    /** Check the State to TLE conversion. */
+    protected void checkConversion(final TLE tle) {
+
+        Propagator p = TLEPropagator.selectExtrapolator(tle);
+        final TLE converted = TLE.stateToTLE(p.getInitialState(), tle);
+
+        Assert.assertEquals(tle.getSatelliteNumber(),         converted.getSatelliteNumber());
+        Assert.assertEquals(tle.getClassification(),          converted.getClassification());
+        Assert.assertEquals(tle.getLaunchYear(),              converted.getLaunchYear());
+        Assert.assertEquals(tle.getLaunchNumber(),            converted.getLaunchNumber());
+        Assert.assertEquals(tle.getLaunchPiece(),             converted.getLaunchPiece());
+        Assert.assertEquals(tle.getElementNumber(),           converted.getElementNumber());
+        Assert.assertEquals(tle.getRevolutionNumberAtEpoch(), converted.getRevolutionNumberAtEpoch());
+
+        final double eps = 1.0e-7;
+        Assert.assertEquals(tle.getMeanMotion(), converted.getMeanMotion(), eps * tle.getMeanMotion());
+        Assert.assertEquals(tle.getE(), converted.getE(), eps * tle.getE());
+        Assert.assertEquals(tle.getI(), converted.getI(), eps * tle.getI());
+        Assert.assertEquals(tle.getPerigeeArgument(), converted.getPerigeeArgument(), eps * tle.getPerigeeArgument());
+        Assert.assertEquals(tle.getRaan(), converted.getRaan(), eps * tle.getRaan());
+        Assert.assertEquals(tle.getMeanAnomaly(), converted.getMeanAnomaly(), eps * tle.getMeanAnomaly());
+        Assert.assertEquals(tle.getMeanAnomaly(), converted.getMeanAnomaly(), eps * tle.getMeanAnomaly());
+        Assert.assertEquals(tle.getBStar(), converted.getBStar(), eps * tle.getBStar());
+
     }
 
     @Test
-    public void testEccentricityRange() {
-        final double[] wrongEccentricities = new double[] { -42.0, +42.0 };
-        for (double wrongEccentricity : wrongEccentricities) {
-            try {
-                new TLE(99999, 'X', 2020, 42, "F", 0, 999,
-                        new AbsoluteDate("2020-01-01T01:00:00.000", TimeScalesFactory.getUTC()), 0.0011010400252833312,
-                        0.0, 0.0, wrongEccentricity, 1.6999188604164899, 3.063834020452862, 4.1864962873682305,
-                        2.157567545975006, 1, 1e-05);
-                Assert.fail("an exception should have been thrown");
-            } catch (OrekitException oe) {
-                Assert.assertEquals(OrekitMessages.TLE_INVALID_PARAMETER_RANGE, oe.getSpecifier());
-                Assert.assertEquals("eccentricity", oe.getParts()[0]);
-                Assert.assertEquals(wrongEccentricity, oe.getParts()[1]);
-                Assert.assertEquals(0.0, oe.getParts()[2]);
-                Assert.assertEquals(1.0, oe.getParts()[3]);
-            }
-        }
+    public void testStateToTleISS() {
+
+        // Initialize TLE
+        final TLE tleISS = new TLE("1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0 9998",
+                                   "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
+
+        // TLE propagator
+        final TLEPropagator propagator = TLEPropagator.selectExtrapolator(tleISS);
+
+        // State at TLE epoch
+        final SpacecraftState state = propagator.propagate(tleISS.getDate());
+
+        // Convert to TLE
+        final TLE rebuilt = TLE.stateToTLE(state, tleISS);
+
+        // Verify
+        final double eps = 1.0e-7;
+        Assert.assertEquals(tleISS.getSatelliteNumber(),         rebuilt.getSatelliteNumber());
+        Assert.assertEquals(tleISS.getClassification(),          rebuilt.getClassification());
+        Assert.assertEquals(tleISS.getLaunchYear(),              rebuilt.getLaunchYear());
+        Assert.assertEquals(tleISS.getLaunchNumber(),            rebuilt.getLaunchNumber());
+        Assert.assertEquals(tleISS.getLaunchPiece(),             rebuilt.getLaunchPiece());
+        Assert.assertEquals(tleISS.getElementNumber(),           rebuilt.getElementNumber());
+        Assert.assertEquals(tleISS.getRevolutionNumberAtEpoch(), rebuilt.getRevolutionNumberAtEpoch());
+        Assert.assertEquals(tleISS.getMeanMotion(),              rebuilt.getMeanMotion(),      eps * tleISS.getMeanMotion());
+        Assert.assertEquals(tleISS.getE(),                       rebuilt.getE(),               eps * tleISS.getE());
+        Assert.assertEquals(tleISS.getI(),                       rebuilt.getI(),               eps * tleISS.getI());
+        Assert.assertEquals(tleISS.getPerigeeArgument(),         rebuilt.getPerigeeArgument(), eps * tleISS.getPerigeeArgument());
+        Assert.assertEquals(tleISS.getRaan(),                    rebuilt.getRaan(),            eps * tleISS.getRaan());
+        Assert.assertEquals(tleISS.getMeanAnomaly(),             rebuilt.getMeanAnomaly(),     eps * tleISS.getMeanAnomaly());
+        Assert.assertEquals(tleISS.getMeanAnomaly(),             rebuilt.getMeanAnomaly(),     eps * tleISS.getMeanAnomaly());
+        Assert.assertEquals(tleISS.getBStar(),                   rebuilt.getBStar(),           eps * tleISS.getBStar());
     }
 
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");
+        geoTLE = new TLE("1 27508U 02040A   12021.25695307 -.00000113  00000-0  10000-3 0  7326",
+                         "2 27508   0.0571 356.7800 0005033 344.4621 218.7816  1.00271798 34501");
+        leoTLE = new TLE("1 31135U 07013A   11003.00000000  .00000816  00000+0  47577-4 0    11",
+                         "2 31135   2.4656 183.9084 0021119 236.4164  60.4567 15.10546832    15");
     }
-
 }

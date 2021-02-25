@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,7 +39,6 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.filtering.ResidualFilter;
 import org.orekit.estimation.measurements.generation.EventBasedScheduler;
 import org.orekit.estimation.measurements.generation.Generator;
 import org.orekit.estimation.measurements.generation.MeasurementBuilder;

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.orekit.propagation.analytical.tle;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -28,7 +29,9 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
@@ -67,7 +70,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     // CHECKSTYLE: stop VisibilityModifier check
 
     /** Initial state. */
-    protected final TLE tle;
+    protected TLE tle;
 
     /** UTC time scale. */
     protected final TimeScale utc;
@@ -202,10 +205,11 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
         this.teme = teme;
         this.mass = mass;
         this.utc = initialTLE.getUtc();
+
         initializeCommons();
         sxpInitialize();
         // set the initial state
-        final Orbit orbit = propagateOrbit(initialTLE.getDate());
+        final KeplerianOrbit orbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(propagateOrbit(initialTLE.getDate()));
         final Attitude attitude = attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
         super.resetInitialState(new SpacecraftState(orbit, attitude, mass));
     }
@@ -309,8 +313,11 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      */
     private void initializeCommons() {
 
+        // Sine and cosine of inclination
+        final SinCos scI0 = FastMath.sinCos(tle.getI());
+
         final double a1 = FastMath.pow(TLEConstants.XKE / (tle.getMeanMotion() * 60.0), TLEConstants.TWO_THIRD);
-        cosi0 = FastMath.cos(tle.getI());
+        cosi0 = scI0.cos();
         theta2 = cosi0 * cosi0;
         final double x3thm1 = 3.0 * theta2 - 1.0;
         e0sq = tle.getE() * tle.getE();
@@ -360,7 +367,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
         c2 = coef1 * xn0dp * (a0dp * (1.0 + 1.5 * etasq + eeta * (4.0 + etasq)) +
              0.75 * TLEConstants.CK2 * tsi / psisq * x3thm1 * (8.0 + 3.0 * etasq * (8.0 + etasq)));
         c1 = tle.getBStar() * c2;
-        sini0 = FastMath.sin(tle.getI());
+        sini0 = scI0.sin();
 
         final double x1mth2 = 1.0 - theta2;
 
@@ -400,15 +407,18 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      */
     private PVCoordinates computePVCoordinates() {
 
+        // Sine and cosine of final perigee argument
+        final SinCos scOmega = FastMath.sinCos(omega);
+
         // Long period periodics
-        final double axn = e * FastMath.cos(omega);
+        final double axn = e * scOmega.cos();
         double temp = 1.0 / (a * (1.0 - e * e));
         final double xlcof = 0.125 * TLEConstants.A3OVK2 * sini0 * (3.0 + 5.0 * cosi0) / (1.0 + cosi0);
         final double aycof = 0.25 * TLEConstants.A3OVK2 * sini0;
         final double xll = temp * xlcof * axn;
         final double aynl = temp * aycof;
         final double xlt = xl + xll;
-        final double ayn = e * FastMath.sin(omega) + aynl;
+        final double ayn = e * scOmega.sin() + aynl;
         final double elsq = axn * axn + ayn * ayn;
         final double capu = MathUtils.normalizeAngle(xlt - xnode, FastMath.PI);
         double epw = capu;
@@ -433,8 +443,9 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
 
             boolean doSecondOrderNewtonRaphson = true;
 
-            sinEPW = FastMath.sin( epw);
-            cosEPW = FastMath.cos( epw);
+            final SinCos scEPW = FastMath.sinCos(epw);
+            sinEPW = scEPW.sin();
+            cosEPW = scEPW.cos();
             ecosE = axn * cosEPW + ayn * sinEPW;
             esinE = axn * sinEPW - ayn * cosEPW;
             final double f = capu - epw + esinE;
@@ -482,17 +493,20 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
         final double xinck = i + 1.5 * temp2 * cosi0 * sini0 * cos2u;
 
         // Orientation vectors
-        final double sinuk = FastMath.sin(uk);
-        final double cosuk = FastMath.cos(uk);
-        final double sinik = FastMath.sin(xinck);
-        final double cosik = FastMath.cos(xinck);
-        final double sinnok = FastMath.sin(xnodek);
-        final double cosnok = FastMath.cos(xnodek);
+        final SinCos scuk   = FastMath.sinCos(uk);
+        final SinCos scik   = FastMath.sinCos(xinck);
+        final SinCos scnok  = FastMath.sinCos(xnodek);
+        final double sinuk  = scuk.sin();
+        final double cosuk  = scuk.cos();
+        final double sinik  = scik.sin();
+        final double cosik  = scik.cos();
+        final double sinnok = scnok.sin();
+        final double cosnok = scnok.cos();
         final double xmx = -sinnok * cosik;
         final double xmy = cosnok * cosik;
-        final double ux = xmx * sinuk + cosnok * cosuk;
-        final double uy = xmy * sinuk + sinnok * cosuk;
-        final double uz = sinik * sinuk;
+        final double ux  = xmx * sinuk + cosnok * cosuk;
+        final double uy  = xmy * sinuk + sinnok * cosuk;
+        final double uz  = sinik * sinuk;
 
         // Position and velocity
         final double cr = 1000 * rk * TLEConstants.EARTH_RADIUS;
@@ -525,9 +539,23 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      */
     protected abstract void sxpPropagate(double t);
 
+    /** Set the initial state.
+     *  @param initialState initial state
+     */
+    @DefaultDataContext
+    public void setInitialState(final SpacecraftState initialState) {
+        resetInitialState(initialState);
+    }
+
     /** {@inheritDoc} */
+    @DefaultDataContext
     public void resetInitialState(final SpacecraftState state) {
-        throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
+        super.resetInitialState(state);
+        super.setStartDate(state.getDate());
+        final TLE newTLE = TLE.stateToTLE(state, tle);
+        this.tle = newTLE;
+        initializeCommons();
+        sxpInitialize();
     }
 
     /** {@inheritDoc} */
@@ -542,7 +570,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
 
     /** {@inheritDoc} */
     protected Orbit propagateOrbit(final AbsoluteDate date) {
-        return new CartesianOrbit(getPVCoordinates(date), teme, date, TLEConstants.MU);
+        return OrbitType.KEPLERIAN.convertType(new CartesianOrbit(getPVCoordinates(date), teme, date, TLEConstants.MU));
     }
 
     /** Get the underlying TLE.

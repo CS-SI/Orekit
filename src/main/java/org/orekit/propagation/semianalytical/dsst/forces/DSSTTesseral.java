@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,16 +29,16 @@ import java.util.TreeMap;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.analysis.differentiation.FDSFactory;
-import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
+import org.hipparchus.analysis.differentiation.FieldGradient;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
@@ -169,11 +169,20 @@ public class DSSTTesseral implements DSSTForceModel {
     /** Maximum value for j. */
     private final int maxFrequencyShortPeriodics;
 
+    /** Maximum power of the eccentricity to use in summation over s. */
+    private int maxEccPow;
+
+    /** Maximum power of the eccentricity to use in Hansen coefficient Kernel expansion. */
+    private int maxHansen;
+
     /** Maximum value between maxOrderMdailyTesseralSP and maxOrderTesseralSP. */
     private int mMax;
 
     /** List of non resonant orders with j != 0. */
     private final SortedMap<Integer, List<Integer> > nonResOrders;
+
+    /** List of resonant orders. */
+    private final List<Integer> resOrders;
 
     /** Short period terms. */
     private TesseralShortPeriodicCoefficients shortPeriodTerms;
@@ -189,12 +198,6 @@ public class DSSTTesseral implements DSSTForceModel {
 
     /** Hansen objects for field elements. */
     private Map<Field<?>, FieldHansenObjects<?>> fieldHansen;
-
-    /** Factory for the DerivativeStructure instances. */
-    private DSFactory factory;
-
-    /** Factory for the DerivativeStructure instances. */
-    private Map<Field<?>, FDSFactory<?>> fieldFactory;
 
     /** Flag for force model initialization with field elements. */
     private boolean pendingInitialization;
@@ -299,13 +302,16 @@ public class DSSTTesseral implements DSSTForceModel {
         this.maxFrequencyShortPeriodics = maxFrequencyShortPeriodics;
 
         // Initialize default values
-        this.nonResOrders = new TreeMap<Integer, List <Integer> >();
+        this.resOrders    = new ArrayList<Integer>();
+        this.nonResOrders = new TreeMap<Integer, List <Integer>>();
 
         pendingInitialization = true;
 
-        fieldShortPeriodTerms = new HashMap<>();
-        fieldHansen           = new HashMap<>();
-        fieldFactory          = new HashMap<>();
+        // Initialize default values
+        this.fieldShortPeriodTerms = new HashMap<>();
+        this.fieldHansen           = new HashMap<>();
+        this.maxEccPow             = 0;
+        this.maxHansen             = 0;
 
     }
 
@@ -329,17 +335,21 @@ public class DSSTTesseral implements DSSTForceModel {
         // Initializes specific parameters.
         final DSSTTesseralContext context = initializeStep(auxiliaryElements, parameters);
 
+        // Set the highest power of the eccentricity in the analytical power
+        // series expansion for the averaged high order resonant central body
+        // spherical harmonic perturbation
+        maxEccPow = getMaxEccPow(auxiliaryElements.getEcc());
+
+        // Set the maximum power of the eccentricity to use in Hansen coefficient Kernel expansion.
+        maxHansen = maxEccPow / 2;
+
         // The following terms are only used for hansen objects initialization
-        final double ratio            = context.getRatio();
-        final int maxEccPow           = context.getMaxEccPow();
-        final List<Integer> resOrders = context.getResOrders();
+        final double ratio = context.getRatio();
 
         // Compute the non resonant tesseral harmonic terms if not set by the user
-        getNonResonantTerms(type, context);
+        getResonantAndNonResonantTerms(type, context.getOrbitPeriod(), ratio);
 
-        hansen = new HansenObjects(ratio, maxEccPow, resOrders, type);
-
-        factory = new DSFactory(1, 1);
+        hansen = new HansenObjects(ratio, type);
 
         mMax = FastMath.max(maxOrderTesseralSP, maxOrderMdailyTesseralSP);
 
@@ -369,19 +379,24 @@ public class DSSTTesseral implements DSSTForceModel {
             // Initializes specific parameters.
             final FieldDSSTTesseralContext<T> context = initializeStep(auxiliaryElements, parameters);
 
-            // Compute the non resonant tesseral harmonic terms if not set by the user
-            getNonResonantTerms(type, context, field);
+            // Set the highest power of the eccentricity in the analytical power
+            // series expansion for the averaged high order resonant central body
+            // spherical harmonic perturbation
+            maxEccPow = getMaxEccPow(auxiliaryElements.getEcc().getReal());
+
+            // Set the maximum power of the eccentricity to use in Hansen coefficient Kernel expansion.
+            maxHansen = maxEccPow / 2;
 
             // The following terms are only used for hansen objects initialization
-            final T      ratio            = context.getRatio();
-            final int maxEccPow           = context.getMaxEccPow();
-            final List<Integer> resOrders = context.getResOrders();
+            final T ratio = context.getRatio();
 
+            // Compute the non resonant tesseral harmonic terms if not set by the user
+            // Field information is not important here
+            getResonantAndNonResonantTerms(type, context.getOrbitPeriod().getReal(), ratio.getReal());
 
             mMax = FastMath.max(maxOrderTesseralSP, maxOrderMdailyTesseralSP);
 
-            fieldFactory.put(field, new FDSFactory<>(field, 1, 1));
-            fieldHansen.put(field, new FieldHansenObjects<>(ratio, maxEccPow, resOrders, type, field));
+            fieldHansen.put(field, new FieldHansenObjects<>(ratio, type));
 
             pendingInitialization = false;
         }
@@ -398,6 +413,30 @@ public class DSSTTesseral implements DSSTForceModel {
         fieldShortPeriodTerms.put(field, ftspc);
         return Collections.singletonList(ftspc);
 
+    }
+
+    /**
+     * Get the maximum power of the eccentricity to use in summation over s.
+     * @param e eccentricity
+     * @return the maximum power of the eccentricity
+     */
+    private int getMaxEccPow(final double e) {
+        // maxEccPow depends on satellite eccentricity
+        if (e <= 0.005) {
+            return 3;
+        } else if (e <= 0.02) {
+            return 4;
+        } else if (e <= 0.1) {
+            return 7;
+        } else if (e <= 0.2) {
+            return 10;
+        } else if (e <= 0.3) {
+            return 12;
+        } else if (e <= 0.4) {
+            return 15;
+        } else {
+            return 20;
+        }
     }
 
     /** Performs initialization at each integration step for the current force model.
@@ -733,66 +772,29 @@ public class DSSTTesseral implements DSSTForceModel {
     }
 
      /**
-      * Get the non-resonant tesseral terms in the central body spherical harmonic field.
+      * Get the resonant and non-resonant tesseral terms in the central body spherical harmonic field.
       *
       * @param type type of the elements used during the propagation
-      * @param context container for attributes
+      * @param orbitPeriod Keplerian period
+      * @param ratio ratio of satellite period to central body rotation period
       */
-    private void getNonResonantTerms(final PropagationType type, final DSSTTesseralContext context) {
+    private void getResonantAndNonResonantTerms(final PropagationType type, final double orbitPeriod,
+                                                final double ratio) {
 
         // Compute natural resonant terms
         final double tolerance = 1. / FastMath.max(MIN_PERIOD_IN_SAT_REV,
-                                                   MIN_PERIOD_IN_SECONDS / context.getOrbitPeriod());
+                                                   MIN_PERIOD_IN_SECONDS / orbitPeriod);
 
+        // Search the resonant orders in the tesseral harmonic field
+        resOrders.clear();
         nonResOrders.clear();
         for (int m = 1; m <= maxOrder; m++) {
-            final double resonance = context.getRatio() * m;
+            final double resonance = ratio * m;
             int jRes = 0;
             final int jComputedRes = (int) FastMath.round(resonance);
             if (jComputedRes > 0 && jComputedRes <= maxFrequencyShortPeriodics && FastMath.abs(resonance - jComputedRes) <= tolerance) {
                 // Store each resonant index and order
-                jRes = jComputedRes;
-            }
-
-            if (type == PropagationType.OSCULATING && maxDegreeTesseralSP >= 0 && m <= maxOrderTesseralSP) {
-                //compute non resonant orders in the tesseral harmonic field
-                final List<Integer> listJofM = new ArrayList<Integer>();
-                //for the moment we take only the pairs (j,m) with |j| <= maxDegree + maxEccPow (from |s-j| <= maxEccPow and |s| <= maxDegree)
-                for (int j = -maxFrequencyShortPeriodics; j <= maxFrequencyShortPeriodics; j++) {
-                    if (j != 0 && j != jRes) {
-                        listJofM.add(j);
-                    }
-                }
-
-                nonResOrders.put(m, listJofM);
-            }
-        }
-    }
-
-    /**
-     * Get the non-resonant tesseral terms in the central body spherical harmonic field.
-     *
-     * @param <T> type of the elements
-     * @param type type of the elements used during the propagation
-     * @param context container for attributes
-     * @param field field used by default
-     */
-    private <T extends RealFieldElement<T>> void getNonResonantTerms(final PropagationType type,
-                                                                     final FieldDSSTTesseralContext<T> context,
-                                                                     final Field<T> field) {
-
-        final T zero = field.getZero();
-        // Compute natural resonant terms
-        final T tolerance = FastMath.max(zero.add(MIN_PERIOD_IN_SAT_REV),
-                                         context.getOrbitPeriod().divide(MIN_PERIOD_IN_SECONDS).reciprocal()).reciprocal();
-
-        nonResOrders.clear();
-        for (int m = 1; m <= maxOrder; m++) {
-            final T resonance = context.getRatio().multiply(m);
-            int jRes = 0;
-            final int jComputedRes = (int) FastMath.round(resonance);
-            if (jComputedRes > 0 && jComputedRes <= maxFrequencyShortPeriodics && FastMath.abs(resonance.subtract(jComputedRes)).getReal() <= tolerance.getReal()) {
-                // Store each resonant index and order
+                resOrders.add(m);
                 jRes = jComputedRes;
             }
 
@@ -898,8 +900,8 @@ public class DSSTTesseral implements DSSTForceModel {
                 // Jacobi l-index from 2.7.1-(15)
                 final int l = FastMath.min(n - m, n - FastMath.abs(s));
                 // Jacobi polynomial and derivative
-                final DerivativeStructure jacobi =
-                        JacobiPolynomials.getValue(l, v, w, factory.variable(0, auxiliaryElements.getGamma()));
+                final Gradient jacobi =
+                        JacobiPolynomials.getValue(l, v, w, Gradient.variable(1, 0, auxiliaryElements.getGamma()));
 
                 // Geopotential coefficients
                 final double cnm = harmonics.getUnnormalizedCnm(n, m);
@@ -915,7 +917,7 @@ public class DSSTTesseral implements DSSTForceModel {
                 final double dKgsMhcx2 = 2. * dkJNS * gsMhc;
                 final double dUdaCoef  = (n + 1) * cf_2;
                 final double dUdlCoef  = j * cf_2;
-                final double dUdGaCoef = cf_0 * kJNS * (jacobi.getValue() * dGaMNS + gaMNS * jacobi.getPartialDerivative(1));
+                final double dUdGaCoef = cf_0 * kJNS * (jacobi.getValue() * dGaMNS + gaMNS * jacobi.getGradient()[0]);
 
                 // dU / da components
                 dUdaCos  += dUdaCoef * gcPhs;
@@ -1050,10 +1052,8 @@ public class DSSTTesseral implements DSSTForceModel {
                 // Jacobi l-index from 2.7.1-(15)
                 final int l = FastMath.min(n - m, n - FastMath.abs(s));
                 // Jacobi polynomial and derivative
-                @SuppressWarnings("unchecked")
-                final FDSFactory<T> fdsf = (FDSFactory<T>) fieldFactory.get(field);
-                final FieldDerivativeStructure<T> jacobi =
-                        JacobiPolynomials.getValue(l, v, w, fdsf.variable(0, auxiliaryElements.getGamma()));
+                final FieldGradient<T> jacobi =
+                        JacobiPolynomials.getValue(l, v, w, FieldGradient.variable(1, 0, auxiliaryElements.getGamma()));
 
                 // Geopotential coefficients
                 final T cnm = zero.add(harmonics.getUnnormalizedCnm(n, m));
@@ -1069,7 +1069,7 @@ public class DSSTTesseral implements DSSTForceModel {
                 final T dKgsMhcx2 = dkJNS.multiply(gsMhc).multiply(2.);
                 final T dUdaCoef  = cf_2.multiply(n + 1);
                 final T dUdlCoef  = cf_2.multiply(j);
-                final T dUdGaCoef = cf_0.multiply(kJNS).multiply(dGaMNS.multiply(jacobi.getValue()).add(gaMNS.multiply(jacobi.getPartialDerivative(1))));
+                final T dUdGaCoef = cf_0.multiply(kJNS).multiply(dGaMNS.multiply(jacobi.getValue()).add(gaMNS.multiply(jacobi.getGradient()[0])));
 
                 // dU / da components
                 dUdaCos  = dUdaCos.add(dUdaCoef.multiply(gcPhs));
@@ -1773,8 +1773,9 @@ public class DSSTTesseral implements DSSTForceModel {
                 for (int m = 1; m <= maxOrderMdailyTesseralSP; m++) {
                     // Phase angle
                     final double jlMmt  = -m * currentTheta;
-                    final double sinPhi = FastMath.sin(jlMmt);
-                    final double cosPhi = FastMath.cos(jlMmt);
+                    final SinCos scPhi  = FastMath.sinCos(jlMmt);
+                    final double sinPhi = scPhi.sin();
+                    final double cosPhi = scPhi.cos();
 
                     // compute contribution for each element
                     final double[] c = slot.getCijm(0, m, meanOrbit.getDate());
@@ -1792,8 +1793,9 @@ public class DSSTTesseral implements DSSTForceModel {
                     for (int j : listJ) {
                         // Phase angle
                         final double jlMmt  = j * meanOrbit.getLM() - m * currentTheta;
-                        final double sinPhi = FastMath.sin(jlMmt);
-                        final double cosPhi = FastMath.cos(jlMmt);
+                        final SinCos scPhi  = FastMath.sinCos(jlMmt);
+                        final double sinPhi = scPhi.sin();
+                        final double cosPhi = scPhi.cos();
 
                         // compute contribution for each element
                         final double[] c = slot.getCijm(j, m, meanOrbit.getDate());
@@ -2005,9 +2007,10 @@ public class DSSTTesseral implements DSSTForceModel {
                 //Add the m-daily contribution
                 for (int m = 1; m <= maxOrderMdailyTesseralSP; m++) {
                     // Phase angle
-                    final T jlMmt  = currentTheta.multiply(-m);
-                    final T sinPhi = FastMath.sin(jlMmt);
-                    final T cosPhi = FastMath.cos(jlMmt);
+                    final T jlMmt              = currentTheta.multiply(-m);
+                    final FieldSinCos<T> scPhi = FastMath.sinCos(jlMmt);
+                    final T sinPhi             = scPhi.sin();
+                    final T cosPhi             = scPhi.cos();
 
                     // compute contribution for each element
                     final T[] c = slot.getCijm(0, m, meanOrbit.getDate());
@@ -2024,9 +2027,10 @@ public class DSSTTesseral implements DSSTForceModel {
 
                     for (int j : listJ) {
                         // Phase angle
-                        final T jlMmt  = meanOrbit.getLM().multiply(j).subtract(currentTheta.multiply(m));
-                        final T sinPhi = FastMath.sin(jlMmt);
-                        final T cosPhi = FastMath.cos(jlMmt);
+                        final T jlMmt              = meanOrbit.getLM().multiply(j).subtract(currentTheta.multiply(m));
+                        final FieldSinCos<T> scPhi = FastMath.sinCos(jlMmt);
+                        final T sinPhi             = scPhi.sin();
+                        final T cosPhi             = scPhi.cos();
 
                         // compute contribution for each element
                         final T[] c = slot.getCijm(j, m, meanOrbit.getDate());
@@ -2328,7 +2332,7 @@ public class DSSTTesseral implements DSSTForceModel {
             dUdGa = 0.;
 
             // Compute only if there is at least one resonant tesseral
-            if (!context.getResOrders().isEmpty()) {
+            if (!resOrders.isEmpty()) {
                 // Gmsj and Hmsj polynomials
                 final GHmsjPolynomials ghMSJ = new GHmsjPolynomials(auxiliaryElements.getK(), auxiliaryElements.getH(), auxiliaryElements.getAlpha(), auxiliaryElements.getBeta(), I);
 
@@ -2343,15 +2347,16 @@ public class DSSTTesseral implements DSSTForceModel {
                 }
 
                 // SUM over resonant terms {j,m}
-                for (int m : context.getResOrders()) {
+                for (int m : resOrders) {
 
                     // Resonant index for the current resonant order
                     final int j = FastMath.max(1, (int) FastMath.round(context.getRatio() * m));
 
                     // Phase angle
                     final double jlMmt  = j * auxiliaryElements.getLM() - m * context.getTheta();
-                    final double sinPhi = FastMath.sin(jlMmt);
-                    final double cosPhi = FastMath.cos(jlMmt);
+                    final SinCos scPhi  = FastMath.sinCos(jlMmt);
+                    final double sinPhi = scPhi.sin();
+                    final double cosPhi = scPhi.cos();
 
                     // Potential derivatives components for a given resonant pair {j,m}
                     double dUdaCos  = 0.;
@@ -2370,8 +2375,8 @@ public class DSSTTesseral implements DSSTForceModel {
                     double dUdGaSin = 0.;
 
                     // s-SUM from -sMin to sMax
-                    final int sMin = FastMath.min(context.getMaxEccPow() - j, maxDegree);
-                    final int sMax = FastMath.min(context.getMaxEccPow() + j, maxDegree);
+                    final int sMin = FastMath.min(maxEccPow - j, maxDegree);
+                    final int sMax = FastMath.min(maxEccPow + j, maxDegree);
                     for (int s = 0; s <= sMax; s++) {
 
                         //Compute the initial values for Hansen coefficients using newComb operators
@@ -2552,7 +2557,7 @@ public class DSSTTesseral implements DSSTForceModel {
             dUdGa = zero;
 
             // Compute only if there is at least one resonant tesseral
-            if (!context.getResOrders().isEmpty()) {
+            if (!resOrders.isEmpty()) {
                 // Gmsj and Hmsj polynomials
                 final FieldGHmsjPolynomials<T> ghMSJ = new FieldGHmsjPolynomials<>(auxiliaryElements.getK(), auxiliaryElements.getH(), auxiliaryElements.getAlpha(), auxiliaryElements.getBeta(), I, field);
 
@@ -2567,15 +2572,16 @@ public class DSSTTesseral implements DSSTForceModel {
                 }
 
                 // SUM over resonant terms {j,m}
-                for (int m : context.getResOrders()) {
+                for (int m : resOrders) {
 
                     // Resonant index for the current resonant order
                     final int j = FastMath.max(1, (int) FastMath.round(context.getRatio().multiply(m)));
 
                     // Phase angle
-                    final T jlMmt  = auxiliaryElements.getLM().multiply(j).subtract(context.getTheta().multiply(m));
-                    final T sinPhi = FastMath.sin(jlMmt);
-                    final T cosPhi = FastMath.cos(jlMmt);
+                    final T jlMmt              = auxiliaryElements.getLM().multiply(j).subtract(context.getTheta().multiply(m));
+                    final FieldSinCos<T> scPhi = FastMath.sinCos(jlMmt);
+                    final T sinPhi             = scPhi.sin();
+                    final T cosPhi             = scPhi.cos();
 
                     // Potential derivatives components for a given resonant pair {j,m}
                     T dUdaCos  = zero;
@@ -2594,8 +2600,8 @@ public class DSSTTesseral implements DSSTForceModel {
                     T dUdGaSin = zero;
 
                     // s-SUM from -sMin to sMax
-                    final int sMin = FastMath.min(context.getMaxEccPow() - j, maxDegree);
-                    final int sMax = FastMath.min(context.getMaxEccPow() + j, maxDegree);
+                    final int sMin = FastMath.min(maxEccPow - j, maxDegree);
+                    final int sMax = FastMath.min(maxEccPow + j, maxDegree);
                     for (int s = 0; s <= sMax; s++) {
 
                         //Compute the initial values for Hansen coefficients using newComb operators
@@ -2719,26 +2725,16 @@ public class DSSTTesseral implements DSSTForceModel {
     /** Computes init values of the Hansen Objects. */
     private class HansenObjects {
 
-        /** Maximum power of the eccentricity to use in Hansen coefficient Kernel expansion. */
-        private int maxHansen;
-
         /** A two dimensional array that contains the objects needed to build the Hansen coefficients. <br/>
          * The indexes are s + maxDegree and j */
         private HansenTesseralLinear[][] hansenObjects;
 
         /** Simple constructor.
          * @param ratio Ratio of satellite period to central body rotation period
-         * @param maxEccPow Maximum power of the eccentricity to use in summation over s.
-         * @param resOrders List of resonant orders
          * @param type type of the elements used during the propagation
          */
         HansenObjects(final double ratio,
-                      final int maxEccPow,
-                      final List<Integer> resOrders,
                       final PropagationType type) {
-
-            // Set the maximum power of the eccentricity to use in Hansen coefficient Kernel expansion.
-            maxHansen = maxEccPow / 2;
 
             //Allocate the two dimensional array
             final int rows     = 2 * maxDegree + 1;
@@ -2810,26 +2806,17 @@ public class DSSTTesseral implements DSSTForceModel {
     /** Computes init values of the Hansen Objects. */
     private class FieldHansenObjects<T extends RealFieldElement<T>> {
 
-        /** Maximum power of the eccentricity to use in Hansen coefficient Kernel expansion. */
-        private int maxHansen;
-
         /** A two dimensional array that contains the objects needed to build the Hansen coefficients. <br/>
          * The indexes are s + maxDegree and j */
         private FieldHansenTesseralLinear<T>[][] hansenObjects;
 
         /** Simple constructor.
          * @param ratio Ratio of satellite period to central body rotation period
-         * @param maxEccPow Maximum power of the eccentricity to use in summation over s.
-         * @param resOrders List of resonant orders
          * @param type type of the elements used during the propagation
-         * @param field field used by default.
          */
         @SuppressWarnings("unchecked")
         FieldHansenObjects(final T ratio,
-                           final int maxEccPow,
-                           final List<Integer> resOrders,
-                           final PropagationType type,
-                           final Field<T> field) {
+                           final PropagationType type) {
 
             // Set the maximum power of the eccentricity to use in Hansen coefficient Kernel expansion.
             maxHansen = maxEccPow / 2;
@@ -2856,11 +2843,11 @@ public class DSSTTesseral implements DSSTForceModel {
                             final int n0 = FastMath.max(FastMath.max(2, m), s);
 
                             //Create the object for the pair j, s
-                            this.hansenObjects[s + maxDegree][j] = new FieldHansenTesseralLinear<>(maxDegree, s, j, n0, maxHansen, field);
+                            this.hansenObjects[s + maxDegree][j] = new FieldHansenTesseralLinear<>(maxDegree, s, j, n0, maxHansen, ratio.getField());
 
                             if (s > 0 && s <= sMin) {
                                 //Also create the object for the pair j, -s
-                                this.hansenObjects[maxDegree - s][j] =  new FieldHansenTesseralLinear<>(maxDegree, -s, j, n0, maxHansen, field);
+                                this.hansenObjects[maxDegree - s][j] =  new FieldHansenTesseralLinear<>(maxDegree, -s, j, n0, maxHansen, ratio.getField());
                             }
                         }
                     }
@@ -2872,7 +2859,7 @@ public class DSSTTesseral implements DSSTForceModel {
                         for (int s = -maxDegree; s <= maxDegree; s++) {
                             //Compute the n0 value
                             final int n0 = FastMath.max(2, FastMath.abs(s));
-                            this.hansenObjects[s + maxDegree][j] = new FieldHansenTesseralLinear<>(maxDegree, s, j, n0, maxHansen, field);
+                            this.hansenObjects[s + maxDegree][j] = new FieldHansenTesseralLinear<>(maxDegree, s, j, n0, maxHansen, ratio.getField());
                         }
                     }
                     break;

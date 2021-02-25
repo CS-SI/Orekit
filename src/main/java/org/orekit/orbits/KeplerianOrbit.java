@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,13 +21,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -86,9 +86,6 @@ public class KeplerianOrbit extends Orbit {
 
     /** Name of the eccentricity parameter. */
     private static final String ECCENTRICITY = "eccentricity";
-
-    /** Factory for first time derivatives. */
-    private static final DSFactory FACTORY = new DSFactory(1, 1);
 
     /** First coefficient to compute Kepler equation solver starter. */
     private static final double A;
@@ -220,28 +217,28 @@ public class KeplerianOrbit extends Orbit {
         this.raanDot = raanDot;
 
         if (hasDerivatives()) {
-            final DerivativeStructure eDS        = FACTORY.build(e, eDot);
-            final DerivativeStructure anomalyDS  = FACTORY.build(anomaly,  anomalyDot);
-            final DerivativeStructure vDS;
+            final UnivariateDerivative1 eUD        = new UnivariateDerivative1(e, eDot);
+            final UnivariateDerivative1 anomalyUD  = new UnivariateDerivative1(anomaly,  anomalyDot);
+            final UnivariateDerivative1 vUD;
             switch (type) {
                 case MEAN :
-                    vDS = (a < 0) ?
-                          FieldKeplerianOrbit.hyperbolicEccentricToTrue(FieldKeplerianOrbit.meanToHyperbolicEccentric(anomalyDS, eDS), eDS) :
-                          FieldKeplerianOrbit.ellipticEccentricToTrue(FieldKeplerianOrbit.meanToEllipticEccentric(anomalyDS, eDS), eDS);
+                    vUD = (a < 0) ?
+                          FieldKeplerianOrbit.hyperbolicEccentricToTrue(FieldKeplerianOrbit.meanToHyperbolicEccentric(anomalyUD, eUD), eUD) :
+                          FieldKeplerianOrbit.ellipticEccentricToTrue(FieldKeplerianOrbit.meanToEllipticEccentric(anomalyUD, eUD), eUD);
                     break;
                 case ECCENTRIC :
-                    vDS = (a < 0) ?
-                          FieldKeplerianOrbit.hyperbolicEccentricToTrue(anomalyDS, eDS) :
-                          FieldKeplerianOrbit.ellipticEccentricToTrue(anomalyDS, eDS);
+                    vUD = (a < 0) ?
+                          FieldKeplerianOrbit.hyperbolicEccentricToTrue(anomalyUD, eUD) :
+                          FieldKeplerianOrbit.ellipticEccentricToTrue(anomalyUD, eUD);
                     break;
                 case TRUE :
-                    vDS = anomalyDS;
+                    vUD = anomalyUD;
                     break;
                 default : // this should never happen
                     throw new OrekitInternalError(null);
             }
-            this.v    = vDS.getValue();
-            this.vDot = vDS.getPartialDerivative(1);
+            this.v    = vUD.getValue();
+            this.vDot = vUD.getDerivative(1);
         } else {
             switch (type) {
                 case MEAN :
@@ -383,12 +380,12 @@ public class KeplerianOrbit extends Orbit {
             // mean anomaly derivative including Keplerian motion and convert to true anomaly
             final double MDot = getKeplerianMeanMotion() +
                                 jacobian[5][3] * aX + jacobian[5][4] * aY + jacobian[5][5] * aZ;
-            final DerivativeStructure eDS = FACTORY.build(e, eDot);
-            final DerivativeStructure MDS = FACTORY.build(getMeanAnomaly(), MDot);
-            final DerivativeStructure vDS = (a < 0) ?
-                                            FieldKeplerianOrbit.hyperbolicEccentricToTrue(FieldKeplerianOrbit.meanToHyperbolicEccentric(MDS, eDS), eDS) :
-                                            FieldKeplerianOrbit.ellipticEccentricToTrue(FieldKeplerianOrbit.meanToEllipticEccentric(MDS, eDS), eDS);
-            vDot = vDS.getPartialDerivative(1);
+            final UnivariateDerivative1 eUD = new UnivariateDerivative1(e, eDot);
+            final UnivariateDerivative1 MUD = new UnivariateDerivative1(getMeanAnomaly(), MDot);
+            final UnivariateDerivative1 vUD = (a < 0) ?
+                                            FieldKeplerianOrbit.hyperbolicEccentricToTrue(FieldKeplerianOrbit.meanToHyperbolicEccentric(MUD, eUD), eUD) :
+                                            FieldKeplerianOrbit.ellipticEccentricToTrue(FieldKeplerianOrbit.meanToEllipticEccentric(MUD, eUD), eUD);
+            vDot = vUD.getDerivative(1);
 
         } else {
             // acceleration is either almost zero or NaN,
@@ -529,12 +526,12 @@ public class KeplerianOrbit extends Orbit {
      * @since 9.0
      */
     public double getEccentricAnomalyDot() {
-        final DerivativeStructure eDS = FACTORY.build(e, eDot);
-        final DerivativeStructure vDS = FACTORY.build(v, vDot);
-        final DerivativeStructure EDS = (a < 0) ?
-                                        FieldKeplerianOrbit.trueToHyperbolicEccentric(vDS, eDS) :
-                                        FieldKeplerianOrbit.trueToEllipticEccentric(vDS, eDS);
-        return EDS.getPartialDerivative(1);
+        final UnivariateDerivative1 eUD = new UnivariateDerivative1(e, eDot);
+        final UnivariateDerivative1 vUD = new UnivariateDerivative1(v, vDot);
+        final UnivariateDerivative1 EUD = (a < 0) ?
+                                        FieldKeplerianOrbit.trueToHyperbolicEccentric(vUD, eUD) :
+                                        FieldKeplerianOrbit.trueToEllipticEccentric(vUD, eUD);
+        return EUD.getDerivative(1);
     }
 
     /** Get the mean anomaly.
@@ -551,12 +548,12 @@ public class KeplerianOrbit extends Orbit {
      * @since 9.0
      */
     public double getMeanAnomalyDot() {
-        final DerivativeStructure eDS = FACTORY.build(e, eDot);
-        final DerivativeStructure vDS = FACTORY.build(v, vDot);
-        final DerivativeStructure MDS = (a < 0) ?
-                                        FieldKeplerianOrbit.hyperbolicEccentricToMean(FieldKeplerianOrbit.trueToHyperbolicEccentric(vDS, eDS), eDS) :
-                                        FieldKeplerianOrbit.ellipticEccentricToMean(FieldKeplerianOrbit.trueToEllipticEccentric(vDS, eDS), eDS);
-        return MDS.getPartialDerivative(1);
+        final UnivariateDerivative1 eUD = new UnivariateDerivative1(e, eDot);
+        final UnivariateDerivative1 vUD = new UnivariateDerivative1(v, vDot);
+        final UnivariateDerivative1 MUD = (a < 0) ?
+                                        FieldKeplerianOrbit.hyperbolicEccentricToMean(FieldKeplerianOrbit.trueToHyperbolicEccentric(vUD, eUD), eUD) :
+                                        FieldKeplerianOrbit.ellipticEccentricToMean(FieldKeplerianOrbit.trueToEllipticEccentric(vUD, eUD), eUD);
+        return MUD.getDerivative(1);
     }
 
     /** Get the anomaly.
@@ -588,7 +585,8 @@ public class KeplerianOrbit extends Orbit {
      */
     public static double ellipticEccentricToTrue(final double E, final double e) {
         final double beta = e / (1 + FastMath.sqrt((1 - e) * (1 + e)));
-        return E + 2 * FastMath.atan(beta * FastMath.sin(E) / (1 - beta * FastMath.cos(E)));
+        final SinCos scE = FastMath.sinCos(E);
+        return E + 2 * FastMath.atan(beta * scE.sin() / (1 - beta * scE.cos()));
     }
 
     /** Computes the elliptic eccentric anomaly from the true anomaly.
@@ -599,7 +597,8 @@ public class KeplerianOrbit extends Orbit {
      */
     public static double trueToEllipticEccentric(final double v, final double e) {
         final double beta = e / (1 + FastMath.sqrt(1 - e * e));
-        return v - 2 * FastMath.atan(beta * FastMath.sin(v) / (1 + beta * FastMath.cos(v)));
+        final SinCos scv = FastMath.sinCos(v);
+        return v - 2 * FastMath.atan(beta * scv.sin() / (1 + beta * scv.cos()));
     }
 
     /** Computes the true anomaly from the hyperbolic eccentric anomaly.
@@ -618,7 +617,8 @@ public class KeplerianOrbit extends Orbit {
      * @since 9.0
      */
     public static double trueToHyperbolicEccentric(final double v, final double e) {
-        final double sinhH = FastMath.sqrt(e * e - 1) * FastMath.sin(v) / (1 + e * FastMath.cos(v));
+        final SinCos scv = FastMath.sinCos(v);
+        final double sinhH = FastMath.sqrt(e * e - 1) * scv.sin() / (1 + e * scv.cos());
         return FastMath.asinh(sinhH);
     }
 
@@ -658,8 +658,9 @@ public class KeplerianOrbit extends Orbit {
         for (int j = 0; j < 2; ++j) {
             final double f;
             double fd;
-            final double fdd  = e * FastMath.sin(E);
-            final double fddd = e * FastMath.cos(E);
+            final SinCos sc   = FastMath.sinCos(E);
+            final double fdd  = e * sc.sin();
+            final double fddd = e * sc.cos();
             if (noCancellationRisk) {
                 f  = (E - fdd) - reducedM;
                 fd = 1 - fddd;
@@ -791,9 +792,8 @@ public class KeplerianOrbit extends Orbit {
     /** {@inheritDoc} */
     public double getEquinoctialExDot() {
         final double paPraan = pa + raan;
-        final double cos     = FastMath.cos(paPraan);
-        final double sin     = FastMath.sin(paPraan);
-        return eDot * cos - e * sin * (paDot + raanDot);
+        final SinCos sc      = FastMath.sinCos(paPraan);
+        return eDot * sc.cos() - e * sc.sin() * (paDot + raanDot);
     }
 
     /** {@inheritDoc} */
@@ -804,9 +804,8 @@ public class KeplerianOrbit extends Orbit {
     /** {@inheritDoc} */
     public double getEquinoctialEyDot() {
         final double paPraan = pa + raan;
-        final double cos     = FastMath.cos(paPraan);
-        final double sin     = FastMath.sin(paPraan);
-        return eDot * sin + e * cos * (paDot + raanDot);
+        final SinCos sc      = FastMath.sinCos(paPraan);
+        return eDot * sc.sin() + e * sc.cos() * (paDot + raanDot);
     }
 
     /** {@inheritDoc} */
@@ -824,10 +823,9 @@ public class KeplerianOrbit extends Orbit {
         if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
             return Double.NaN;
         }
-        final double cosRaan = FastMath.cos(raan);
-        final double sinRaan = FastMath.sin(raan);
+        final SinCos sc      = FastMath.sinCos(raan);
         final double tan     = FastMath.tan(0.5 * i);
-        return 0.5 * (1 + tan * tan) * cosRaan * iDot - tan * sinRaan * raanDot;
+        return 0.5 * (1 + tan * tan) * sc.cos() * iDot - tan * sc.sin() * raanDot;
     }
 
     /** {@inheritDoc} */
@@ -845,10 +843,9 @@ public class KeplerianOrbit extends Orbit {
         if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
             return Double.NaN;
         }
-        final double cosRaan = FastMath.cos(raan);
-        final double sinRaan = FastMath.sin(raan);
+        final SinCos sc      = FastMath.sinCos(raan);
         final double tan     = FastMath.tan(0.5 * i);
-        return 0.5 * (1 + tan * tan) * sinRaan * iDot + tan * cosRaan * raanDot;
+        return 0.5 * (1 + tan * tan) * sc.sin() * iDot + tan * sc.cos() * raanDot;
     }
 
     /** {@inheritDoc} */
@@ -891,12 +888,15 @@ public class KeplerianOrbit extends Orbit {
         }
 
         // preliminary variables
-        final double cosRaan = FastMath.cos(raan);
-        final double sinRaan = FastMath.sin(raan);
-        final double cosPa   = FastMath.cos(pa);
-        final double sinPa   = FastMath.sin(pa);
-        final double cosI    = FastMath.cos(i);
-        final double sinI    = FastMath.sin(i);
+        final SinCos scRaan  = FastMath.sinCos(raan);
+        final SinCos scPa    = FastMath.sinCos(pa);
+        final SinCos scI     = FastMath.sinCos(i);
+        final double cosRaan = scRaan.cos();
+        final double sinRaan = scRaan.sin();
+        final double cosPa   = scPa.cos();
+        final double sinPa   = scPa.sin();
+        final double cosI    = scI.cos();
+        final double sinI    = scI.sin();
 
         final double crcp    = cosRaan * cosPa;
         final double crsp    = cosRaan * sinPa;
@@ -914,9 +914,9 @@ public class KeplerianOrbit extends Orbit {
             // elliptic eccentric anomaly
             final double uME2   = (1 - e) * (1 + e);
             final double s1Me2  = FastMath.sqrt(uME2);
-            final double E      = getEccentricAnomaly();
-            final double cosE   = FastMath.cos(E);
-            final double sinE   = FastMath.sin(E);
+            final SinCos scE    = FastMath.sinCos(getEccentricAnomaly());
+            final double cosE   = scE.cos();
+            final double sinE   = scE.sin();
 
             // coordinates of position and velocity in the orbital plane
             final double x      = a * (cosE - e);
@@ -934,8 +934,9 @@ public class KeplerianOrbit extends Orbit {
             // hyperbolic case
 
             // compute position and velocity factors
-            final double sinV      = FastMath.sin(v);
-            final double cosV      = FastMath.cos(v);
+            final SinCos scV       = FastMath.sinCos(v);
+            final double sinV      = scV.sin();
+            final double cosV      = scV.cos();
             final double f         = a * (1 - e * e);
             final double posFactor = f / (1 + e * cosV);
             final double velFactor = FastMath.sqrt(getMu() / f);
@@ -1181,10 +1182,12 @@ public class KeplerianOrbit extends Orbit {
         final double epsilon    = FastMath.sqrt(oMe2);
         final double sqrtRec    = 1 / epsilon;
 
-        final double cosI       = FastMath.cos(i);
-        final double sinI       = FastMath.sin(i);
-        final double cosPA      = FastMath.cos(pa);
-        final double sinPA      = FastMath.sin(pa);
+        final SinCos scI        = FastMath.sinCos(i);
+        final SinCos scPA       = FastMath.sinCos(pa);
+        final double cosI       = scI.cos();
+        final double sinI       = scI.sin();
+        final double cosPA      = scPA.cos();
+        final double sinPA      = scPA.sin();
 
         final double pv         = Vector3D.dotProduct(position, velocity);
         final double cosE       = (a - r) / (a * e);
@@ -1313,8 +1316,9 @@ public class KeplerianOrbit extends Orbit {
         final double a2         = a * a;
         final double rOa        = r / absA;
 
-        final double cosI       = FastMath.cos(i);
-        final double sinI       = FastMath.sin(i);
+        final SinCos scI        = FastMath.sinCos(i);
+        final double cosI       = scI.cos();
+        final double sinI       = scI.sin();
 
         final double pv         = Vector3D.dotProduct(position, velocity);
 
@@ -1427,16 +1431,14 @@ public class KeplerianOrbit extends Orbit {
         // dM = (1 - e cos E) dE - sin E de
         // which is inverted and rewritten as:
         // dE = a/r dM + sin E a/r de
-        final double eccentricAnomaly = getEccentricAnomaly();
-        final double cosE             = FastMath.cos(eccentricAnomaly);
-        final double sinE             = FastMath.sin(eccentricAnomaly);
-        final double aOr              = 1 / (1 - e * cosE);
+        final SinCos scE              = FastMath.sinCos(getEccentricAnomaly());
+        final double aOr              = 1 / (1 - e * scE.cos());
 
         // update anomaly row
         final double[] eRow           = jacobian[1];
         final double[] anomalyRow     = jacobian[5];
         for (int j = 0; j < anomalyRow.length; ++j) {
-            anomalyRow[j] = aOr * (anomalyRow[j] + sinE * eRow[j]);
+            anomalyRow[j] = aOr * (anomalyRow[j] + scE.sin() * eRow[j]);
         }
 
         return jacobian;
@@ -1503,19 +1505,17 @@ public class KeplerianOrbit extends Orbit {
         // dE = [sqrt (1 - e^2) / (1 + e cos v)] dv - [sin E / (1 - e^2)] de
         // which is inverted and rewritten as:
         // dv = sqrt (1 - e^2) a/r dE + [sin E / sqrt (1 - e^2)] a/r de
-        final double e2               = e * e;
-        final double oMe2             = 1 - e2;
-        final double epsilon          = FastMath.sqrt(oMe2);
-        final double eccentricAnomaly = getEccentricAnomaly();
-        final double cosE             = FastMath.cos(eccentricAnomaly);
-        final double sinE             = FastMath.sin(eccentricAnomaly);
-        final double aOr              = 1 / (1 - e * cosE);
-        final double aFactor          = epsilon * aOr;
-        final double eFactor          = sinE * aOr / epsilon;
+        final double e2           = e * e;
+        final double oMe2         = 1 - e2;
+        final double epsilon      = FastMath.sqrt(oMe2);
+        final SinCos scE          = FastMath.sinCos(getEccentricAnomaly());
+        final double aOr          = 1 / (1 - e * scE.cos());
+        final double aFactor      = epsilon * aOr;
+        final double eFactor      = scE.sin() * aOr / epsilon;
 
         // update anomaly row
-        final double[] eRow           = jacobian[1];
-        final double[] anomalyRow     = jacobian[5];
+        final double[] eRow       = jacobian[1];
+        final double[] anomalyRow = jacobian[5];
         for (int j = 0; j < anomalyRow.length; ++j) {
             anomalyRow[j] = aFactor * anomalyRow[j] + eFactor * eRow[j];
         }

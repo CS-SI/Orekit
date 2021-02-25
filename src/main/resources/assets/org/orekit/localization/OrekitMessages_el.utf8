@@ -19,6 +19,9 @@ ALMOST_CRITICALLY_INCLINED_ORBIT = σχεδόν κρίσιμα κεκλιμέν�
 # unable to compute Eckstein-Hechler mean parameters after {0} iterations
 UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS =  αδύνατο να υπολογιστούν οι Eckstein-Hechler μέσες παράμετροι μετά από {0} επαναλήψεις
 
+# unable to compute TLE after {0} iterations
+UNABLE_TO_COMPUTE_TLE =  αδύνατο να υπολογιστούν οι TLE μετά από {0} επαναλήψεις
+
 # null parent for frame {0}
 NULL_PARENT_FOR_FRAME = null γονέας πλαισiου {0} 
 
@@ -159,9 +162,6 @@ TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = οι γραμμές TLE δεν αναφ�
 
 # invalid TLE parameter for object {0}: {1} = {2}
 TLE_INVALID_PARAMETER = <MISSING TRANSLATION>
-
-# invalid TLE parameter {0}: {1} not in range [{2}, {3}]
-TLE_INVALID_PARAMETER_RANGE = <MISSING TRANSLATION>
 
 # wrong checksum of TLE line {0}, expected {1} but got {2} ({3})
 TLE_CHECKSUM_ERROR = λάθος άθροισμα ελέγχου για τη γραμμή TLE {0}, αναμενόμενο {1} αλλά πήρε {2} ({3})
@@ -454,6 +454,9 @@ CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = <MISSING TRANSLATION>
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 NOT_ENOUGH_PROPAGATORS = <MISSING TRANSLATION>
 
+# Creating an aggregate attitude provider requires at least one constituent attitude provider, but none were provided.
+NOT_ENOUGH_ATTITUDE_PROVIDERS = <MISSING TRANSLATION>
+
 # argument {0} cannot be null
 NULL_ARGUMENT = <MISSING TRANSLATION>
 
@@ -614,3 +617,27 @@ NON_COPLANAR_POINTS = <MISSING TRANSLATION>
 
 # invalid parameter {0}: {1} not in range [{2}, {3}]
 INVALID_PARAMETER_RANGE = <MISSING TRANSLATION>
+
+# The parameter {0} should not be null in {1}
+PARAMETER_NOT_SET = <MISSING TRANSLATION>
+
+# {0} is not implemented
+FUNCTION_NOT_IMPLEMENTED = <MISSING TRANSLATION>
+
+# Impossible to execute {0} with {1} set to {2}
+INVALID_TYPE_FOR_FUNCTION = <MISSING TRANSLATION>
+
+# No data could be parsed from file {0}
+NO_DATA_IN_FILE = <MISSING TRANSLATION>
+
+# Unexpected end of CPF file (after line {0})
+CPF_UNEXPECTED_END_OF_FILE = <MISSING TRANSLATION>
+
+# Unexpected file format. Must be {0} but is {1}
+UNEXPECTED_FORMAT_FOR_ILRS_FILE = <MISSING TRANSLATION>
+
+# Invalid range indicator {0} in CRD file header
+INVALID_RANGE_INDICATOR_IN_CRD_FILE = <MISSING TRANSLATION>
+
+# Unexpected end of CRD file (after line {0})
+CRD_UNEXPECTED_END_OF_FILE = <MISSING TRANSLATION>

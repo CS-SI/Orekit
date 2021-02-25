@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,6 +47,7 @@ import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.ParameterDriver;
 
 public class DSSTPropagatorBuilderTest {
 
@@ -248,6 +249,25 @@ public class DSSTPropagatorBuilderTest {
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
+        }
+    }
+    
+    @Test
+    public void testDeselectOrbitals() {
+        // Integrator builder
+        final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
+        // Propagator builder
+        final DSSTPropagatorBuilder builder = new DSSTPropagatorBuilder(orbit,
+                                                                  dp54Builder,
+                                                                  1.0,
+                                                                  PropagationType.MEAN,
+                                                                  PropagationType.MEAN);
+        for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
+            Assert.assertTrue(driver.isSelected());
+        }
+        builder.deselectDynamicParameters();
+        for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
+            Assert.assertFalse(driver.isSelected());
         }
     }
     

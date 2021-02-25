@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -1082,6 +1082,30 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
      */
     public static <T extends RealFieldElement<T>> double[][] tolerances(final T dP, final FieldOrbit<T> orbit) {
         return FieldNumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
+    }
+
+    /** Estimate tolerance vectors for an AdaptativeStepsizeIntegrator.
+     *  <p>
+     *  The errors are estimated from partial derivatives properties of orbits,
+     *  starting from scalar position and velocity errors specified by the user.
+     *  <p>
+     *  The tolerances are only <em>orders of magnitude</em>, and integrator tolerances are only
+     *  local estimates, not global ones. So some care must be taken when using these tolerances.
+     *  Setting 1mm as a position error does NOT mean the tolerances will guarantee a 1mm error
+     *  position after several orbits integration.
+     *  </p>
+     *
+     * @param <T> elements type
+     * @param dP user specified position error (m)
+     * @param dV user specified velocity error (m/s)
+     * @param orbit reference orbit
+     * @return a two rows array, row 0 being the absolute tolerance error
+     *                       and row 1 being the relative tolerance error
+     * @since 10.3
+     */
+    public static <T extends RealFieldElement<T>> double[][] tolerances(final T dP, final T dV,
+                                                                        final FieldOrbit<T> orbit) {
+        return FieldNumericalPropagator.tolerances(dP, dV, orbit, OrbitType.EQUINOCTIAL);
     }
 
     /** Step handler used to compute the parameters for the short periodic contributions.

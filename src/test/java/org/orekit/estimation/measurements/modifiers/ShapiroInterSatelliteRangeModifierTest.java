@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -78,9 +78,13 @@ public class ShapiroInterSatelliteRangeModifierTest {
         final BoundedPropagator ephemeris = closePropagator.getGeneratedEphemeris();
         final Propagator p1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
+        final double localClockOffset  = 0.137e-6;
+        final double remoteClockOffset = 469.0e-6;
         List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(p1,
                                                                new InterSatellitesRangeMeasurementCreator(ephemeris,
+                                                                                                          localClockOffset,
+                                                                                                          remoteClockOffset,
                                                                                                           Vector3D.ZERO,
                                                                                                           Vector3D.ZERO),
                                                                1.0, 3.0, 300.0);

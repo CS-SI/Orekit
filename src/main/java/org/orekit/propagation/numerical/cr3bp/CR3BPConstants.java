@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,26 +16,74 @@
  */
 package org.orekit.propagation.numerical.cr3bp;
 
-import java.util.Calendar;
-
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
 
 /**
  * Set of useful physical CR3BP constants using JPL data.
  * @author Vincent Mouraux
+ * @since 11.0
  */
+public class CR3BPConstants {
 
-public interface CR3BPConstants {
+    /** Private constructor.
+     * <p>This class is a utility class, it should neither have a public
+     * nor a default constructor. This private constructor prevents
+     * the compiler from generating one automatically.</p>
+     */
+    private CR3BPConstants() {
+    }
 
-    /** Moon semi-major axis = 384 400 000 m. */
-    double CENTURY = (Calendar.getInstance().get(Calendar.YEAR) - 2000.0) / 100.0;
+    /**
+     * Get the Moon semi-major axis.
+     * @return the Moon semi-major axis in meters
+     */
+    public static double getMoonSemiMajorAxis() {
+        return 384400000.0;
+    }
 
-    /** Moon semi-major axis in meters. */
-    double MOON_SEMI_MAJOR_AXIS = 384400000.0;
+    /**
+     * Get the Earth-Moon barycenter semi-major axis.
+     * @param date date
+     * @param timeScale time scale
+     * @return the Earth-Moon barycenter semi-major axis in meters
+     */
+    public static double getEarthMoonBarycenterSemiMajorAxis(final AbsoluteDate date,
+                                                             final TimeScale timeScale) {
+        // Century
+        final double century = getCentury(date, timeScale);
+        // Return the Earth - Moon barycenter semi-major axis
+        return  (1.00000261 + 0.00000562 * century) * Constants.IAU_2012_ASTRONOMICAL_UNIT;
+    }
 
-    /** Earth-Moon barycenter semi-major axis in meters. */
-    double EARTH_MOON_BARYCENTER_SEMI_MAJOR_AXIS = (1.00000261 + 0.00000562 * CENTURY) * Constants.IAU_2012_ASTRONOMICAL_UNIT;
+    /**
+     * Get the Jupiter semi-major axis.
+     * @param date date
+     * @param timeScale time scale
+     * @return the Jupiter semi-major axis in meters
+     */
+    public static double getJupiterSemiMajorAxis(final AbsoluteDate date,
+                                                 final TimeScale timeScale) {
+        // Century
+        final double century = getCentury(date, timeScale);
+        // Return the Jupiter semi-major axis
+        return (5.20288700 - 0.00011607 * century) * Constants.IAU_2012_ASTRONOMICAL_UNIT;
+    }
 
-    /** Jupiter semi-major axis in meters. */
-    double JUPITER_SEMI_MAJOR_AXIS = (5.20288700 - 0.00011607 * CENTURY) * Constants.IAU_2012_ASTRONOMICAL_UNIT;
+    /**
+     * Get the current century as a floating value.
+     * @param date date
+     * @param timeScale time scale
+     * @return the current century as a floating value
+     */
+    private static double getCentury(final AbsoluteDate date,
+                                     final TimeScale timeScale) {
+        // Get the date component
+        final DateComponents dc = date.getComponents(timeScale).getDate();
+        // Return the current century as a floating value
+        return 0.01 * (dc.getYear() - 2000.0);
+    }
+
 }

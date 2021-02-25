@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2020 CS GROUP
+<!--- Copyright 2002-2021 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -28,6 +28,7 @@
     * high accuracy absolute dates
     * time scales (TAI, UTC, UT1, GPS, TT, TCG, TDB, TCB, GMST, GST, GLONASS, QZSS, BDT, IRNSS ...)
     * transparent handling of leap seconds
+    * support for CCSDS time code standards
 
   * Geometry
 
@@ -67,6 +68,9 @@
     * analytical models for small maneuvers without propagation
     * impulse maneuvers for any propagator type
     * continuous maneuvers for numerical propagator type
+    * configurable low thrust maneuver model based on event detectors
+    * propulsion models intended to be used with maneuver class
+    * user-friendly interface for the maneuver triggers
 
   * Propagation
 
@@ -85,7 +89,9 @@
         * radiation pressure with eclipses
         * solid tides, with or without solid pole tide
         * ocean tides, with or without ocean pole tide
-        * general relativity
+        * Earth's albedo and infrared
+        * empirical accelerations to account for the unmodeled forces
+        * general relativity (including Lense-Thirring and De Sitter corrections)
         * multiple maneuvers
         * state of the art ODE integrators (adaptive stepsize with error control,
           continuous output, switching functions, G-stop, step normalization ...)
@@ -95,6 +101,7 @@
           later use
         * propagation in non-inertial frames (e.g. for Lagrange point halo orbits)
     * semi-analytical propagation model (DSST) with customizable force models
+    * trajectories around Lagragian points using CR3BP model
     * tabulated ephemerides
         * file based
         * memory based
@@ -158,6 +165,7 @@
         * space referenced attitudes (inertial, celestial body-pointed, spin-stabilized)
         * tabulated attitudes, either respective to inertial frame or respective to Local Orbital Frames
         * specific law for GNSS satellites: GPS (block IIA, block IIF, block IIF), GLONASS, GALILEO, BEIDOU (GEO, IGSO, MEO)
+    * loading of CCSDS Attitude Data Messages (both AEM, and APM types are supported)
 
   * Orbit determination
   
@@ -175,7 +183,7 @@
         * measurements parameters estimation (biases, satellite clock offset, station clock offset,
           station position, pole motion and rate, prime meridian correction and rate, total zenith
           delay in tropospheric correction)
-    * Use numerical propagator or DSST propagator
+    * can be used with numerical, DSST, or SDP4/SGP4 propagators
     * multi-satellites orbit determination
     * initial orbit determination methods (Gibbs, Gooding, Lambert and Laplace)
     * ground stations displacements due to solid tides
@@ -189,13 +197,16 @@
         * position-velocity
         * position
         * inter-satellites range (one way and two way)
+        * inter-satellites GNSS phase
         * GNSS code
         * GNSS phase with integer ambiguity resolution and wind-up effect
         * multiplexed
     * possibility to add custom measurements
+    * loading of ILRS CRD laser ranging measurements file
     * several predefined modifiers
         * tropospheric effects
         * ionospheric effects
+        * clock relativistic effects
         * station offsets
         * biases
         * delays
@@ -222,6 +233,7 @@
     * loading of ANTEX antenna models file
     * loading of RINEX observation files (version 2 and version 3)
     * support for Hatanaka compact RINEX format
+    * loading of SINEX station file
 
   * Orbit file handling
   
@@ -229,16 +241,19 @@
     * loading of CCSDS Orbit Data Messages (both OPM, OEM, and OMM types are supported)
     * loading of SEM and YUMA files for GPS constellation
     * exporting of ephemeris in CCSDS OEM file format
+    * loading of ILRS CPF orbit files
 
   * Earth models
   
     * atmospheric models (DTM2000, Jacchia-Bowman 2008, NRL MSISE 2000, Harris-Priester and simple exponential models), and Marshall solar Activity Future Estimation, optionally with lift component
+    * support for CSSI space weather data
     * tropospheric delay (modified Saastamoinen, Mendes-Pavlis, Vienna 1, Vienna 3, estimated, fixed)
     * tropospheric refraction correction angle (Recommendation ITU-R P.834-7 and Saemundssen's formula quoted by Meeus)
     * tropospheric model for laser ranging (Marini-Murray)
     * Klobuchar ionospheric model (including parsing α and β coefficients from University of Bern Astronomical Institute files)
     * Global Ionospheric Map model
     * NeQuick ionospheric model
+    * VTEC estimated ionospheric model
     * Global Pression and Temperature models (GPT and GPT2)
     * geomagnetic field (WMM, IGRF)
     * geoid model from any gravity field

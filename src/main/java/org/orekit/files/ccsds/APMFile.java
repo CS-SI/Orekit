@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -152,7 +152,7 @@ public class APMFile extends ADMFile {
         this.eulerComment      = Collections.emptyList();
         this.spinComment       = Collections.emptyList();
         this.spacecraftComment = Collections.emptyList();
-        this.maneuvers         = new ArrayList<APMManeuver>();
+        this.maneuvers         = new ArrayList<>();
         this.rotationAngles    = Vector3D.ZERO;
         this.rotationRates     = Vector3D.ZERO;
         this.quaternion        = new Quaternion(0.0, 0.0, 0.0, 0.0);
@@ -179,7 +179,7 @@ public class APMFile extends ADMFile {
      * Set the epoch of the data.
      * @param epoch the epoch to be set
      */
-    void setEpoch(final AbsoluteDate epoch) {
+    public void setEpoch(final AbsoluteDate epoch) {
         this.epoch = epoch;
     }
 
@@ -195,7 +195,7 @@ public class APMFile extends ADMFile {
      * Set the reference frame specifying one frame of the transformation.
      * @param frameA the frame to be set
      */
-    void setQuaternionFrameAString(final String frameA) {
+    public void setQuaternionFrameAString(final String frameA) {
         this.qFrameA = frameA;
     }
 
@@ -211,7 +211,7 @@ public class APMFile extends ADMFile {
      * Set the reference frame specifying the second portion of the transformation.
      * @param frameB the frame to be set
      */
-    void setQuaternionFrameBString(final String frameB) {
+    public void setQuaternionFrameBString(final String frameB) {
         this.qFrameB = frameB;
     }
 
@@ -227,7 +227,7 @@ public class APMFile extends ADMFile {
      * Set the rotation direction of the attitude quaternion.
      * @param direction rotation direction to be set
      */
-    void setAttitudeQuaternionDirection(final String direction) {
+    public void setAttitudeQuaternionDirection(final String direction) {
         this.qDir = direction;
     }
 
@@ -243,7 +243,7 @@ public class APMFile extends ADMFile {
      * Set the quaternion.
      * @param q quaternion to set
      */
-    void setQuaternion(final Quaternion q) {
+    public void setQuaternion(final Quaternion q) {
         this.quaternion = q;
     }
 
@@ -259,7 +259,7 @@ public class APMFile extends ADMFile {
      * Set the derivative of the quaternion.
      * @param qDot quaternion to set
      */
-    void setQuaternionDot(final Quaternion qDot) {
+    public void setQuaternionDot(final Quaternion qDot) {
         this.quaternionDot = qDot;
     }
 
@@ -275,7 +275,7 @@ public class APMFile extends ADMFile {
      * Set the reference frame specifying one frame of the transformation.
      * @param frame the frame to be set
      */
-    void setEulerFrameAString(final String frame) {
+    public void setEulerFrameAString(final String frame) {
         this.eulerFrameA = frame;
     }
 
@@ -291,7 +291,7 @@ public class APMFile extends ADMFile {
      * Set the reference frame specifying the second portion of the transformation.
      * @param frame the frame to be set
      */
-    void setEulerFrameBString(final String frame) {
+    public void setEulerFrameBString(final String frame) {
         this.eulerFrameB = frame;
     }
 
@@ -307,7 +307,7 @@ public class APMFile extends ADMFile {
      * Set the rotation direction of the attitude Euler angles (A2B or B2A).
      * @param direction direction to be set
      */
-    void setEulerDirection(final String direction) {
+    public void setEulerDirection(final String direction) {
         this.eulerDir = direction;
     }
 
@@ -323,7 +323,7 @@ public class APMFile extends ADMFile {
      * Set the rotation order for Euler angles (X=1, Y=2, Z=3).
      * @param eulerRotSeq order to be setS
      */
-    void setEulerRotSeq(final String eulerRotSeq) {
+    public void setEulerRotSeq(final String eulerRotSeq) {
         this.eulerRotSeq = eulerRotSeq;
     }
 
@@ -339,7 +339,7 @@ public class APMFile extends ADMFile {
      * Set the frame of reference in which the Euler angles are expressed.
      * @param frame frame to be set
      */
-    void setRateFrameString(final String frame) {
+    public void setRateFrameString(final String frame) {
         this.rateFrame = frame;
     }
 
@@ -355,7 +355,7 @@ public class APMFile extends ADMFile {
      * Set the coordinates of the Euler angles (rad).
      * @param rotationAngles coordinates to be set
      */
-    void setRotationAngles(final Vector3D rotationAngles) {
+    public void setRotationAngles(final Vector3D rotationAngles) {
         this.rotationAngles = rotationAngles;
     }
 
@@ -371,7 +371,7 @@ public class APMFile extends ADMFile {
      * Set the rates of the Euler angles (rad/s).
      * @param rotationRates coordinates to be set
      */
-    void setRotationRates(final Vector3D rotationRates) {
+    public void setRotationRates(final Vector3D rotationRates) {
         this.rotationRates = rotationRates;
     }
 
@@ -387,7 +387,7 @@ public class APMFile extends ADMFile {
      * Set the reference frame specifying one frame of the transformation (spin).
      * @param frame frame to be set
      */
-    void setSpinFrameAString(final String frame) {
+    public void setSpinFrameAString(final String frame) {
         this.spinFrameA = frame;
     }
 
@@ -403,7 +403,7 @@ public class APMFile extends ADMFile {
      * Set the reference frame specifying the second portion of the transformation (spin).
      * @param frame frame to be set
      */
-    void setSpinFrameBString(final String frame) {
+    public void setSpinFrameBString(final String frame) {
         this.spinFrameB = frame;
     }
 
@@ -419,7 +419,7 @@ public class APMFile extends ADMFile {
      * Set the rotation direction of the Spin angles.
      * @param direction rotation direction to be set
      */
-    void setSpinDirection(final String direction) {
+    public void setSpinDirection(final String direction) {
         this.spinDir = direction;
     }
 
@@ -435,7 +435,7 @@ public class APMFile extends ADMFile {
      * Set the right ascension of spin axis vector (rad).
      * @param spinAlpha value to be set
      */
-    void setSpinAlpha(final double spinAlpha) {
+    public void setSpinAlpha(final double spinAlpha) {
         this.spinAlpha = spinAlpha;
     }
 
@@ -451,7 +451,7 @@ public class APMFile extends ADMFile {
      * Set the declination of the spin axis vector (rad).
      * @param spinDelta value to be set
      */
-    void setSpinDelta(final double spinDelta) {
+    public void setSpinDelta(final double spinDelta) {
         this.spinDelta = spinDelta;
     }
 
@@ -468,7 +468,7 @@ public class APMFile extends ADMFile {
      * Set the phase of the satellite about the spin axis (rad).
      * @param spinAngle value to be set
      */
-    void setSpinAngle(final double spinAngle) {
+    public void setSpinAngle(final double spinAngle) {
         this.spinAngle = spinAngle;
     }
 
@@ -484,7 +484,7 @@ public class APMFile extends ADMFile {
      * Set the angular velocity of satellite around spin axis (rad/s).
      * @param spinAngleVel value to be set
      */
-    void setSpinAngleVel(final double spinAngleVel) {
+    public void setSpinAngleVel(final double spinAngleVel) {
         this.spinAngleVel = spinAngleVel;
     }
 
@@ -500,7 +500,7 @@ public class APMFile extends ADMFile {
      * Set the nutation angle of spin axis (rad).
      * @param nutation the nutation angle to be set
      */
-    void setNutation(final double nutation) {
+    public void setNutation(final double nutation) {
         this.nutation = nutation;
     }
 
@@ -516,7 +516,7 @@ public class APMFile extends ADMFile {
      * Set the body nutation period of the spin axis (s).
      * @param period the nutation period to be set
      */
-    void setNutationPeriod(final double period) {
+    public void setNutationPeriod(final double period) {
         this.nutationPer = period;
     }
 
@@ -532,7 +532,7 @@ public class APMFile extends ADMFile {
      * Set the inertial nutation phase (rad).
      * @param nutationPhase the nutation phase to be set
      */
-    void setNutationPhase(final double nutationPhase) {
+    public void setNutationPhase(final double nutationPhase) {
         this.nutationPhase = nutationPhase;
     }
 
@@ -548,7 +548,7 @@ public class APMFile extends ADMFile {
      * Set the coordinate system for the inertia tensor.
      * @param frame frame to be set
      */
-    void setInertiaRefFrameString(final String frame) {
+    public void setInertiaRefFrameString(final String frame) {
         this.inertiaRefFrame = frame;
     }
 
@@ -564,7 +564,7 @@ public class APMFile extends ADMFile {
      * Set the moment of Inertia about the 1-axis (N.m²).
      * @param i11 moment of Inertia about the 1-axis
      */
-    void setI11(final double i11) {
+    public void setI11(final double i11) {
         this.i11 = i11;
     }
 
@@ -580,7 +580,7 @@ public class APMFile extends ADMFile {
      * Set the moment of Inertia about the 2-axis (N.m²).
      * @param i22 moment of Inertia about the 2-axis
      */
-    void setI22(final double i22) {
+    public void setI22(final double i22) {
         this.i22 = i22;
     }
 
@@ -596,7 +596,7 @@ public class APMFile extends ADMFile {
      * Set the moment of Inertia about the 3-axis (N.m²).
      * @param i33 moment of Inertia about the 3-axis
      */
-    void setI33(final double i33) {
+    public void setI33(final double i33) {
         this.i33 = i33;
     }
 
@@ -612,7 +612,7 @@ public class APMFile extends ADMFile {
      * Set the moment of Inertia about the 1 and 2 axes (N.m²).
      * @param i12 moment of Inertia about the 1 and 2 axes
      */
-    void setI12(final double i12) {
+    public void setI12(final double i12) {
         this.i12 = i12;
     }
 
@@ -628,7 +628,7 @@ public class APMFile extends ADMFile {
      * Set the moment of Inertia about the 1 and 3 axes (N.m²).
      * @param i13 moment of Inertia about the 1 and 3 axes
      */
-    void setI13(final double i13) {
+    public void setI13(final double i13) {
         this.i13 = i13;
     }
 
@@ -644,7 +644,7 @@ public class APMFile extends ADMFile {
      * Set the moment of Inertia about the 2 and 3 axes (N.m²).
      * @param i23 moment of Inertia about the 2 and 3 axes
      */
-    void setI23(final double i23) {
+    public void setI23(final double i23) {
         this.i23 = i23;
     }
 
@@ -660,8 +660,8 @@ public class APMFile extends ADMFile {
      * Set the comment for epoch.
      * @param comment comment to set
      */
-    void setEpochComment(final List<String> comment) {
-        epochComment = new ArrayList<String>(comment);
+    public void setEpochComment(final List<String> comment) {
+        epochComment = new ArrayList<>(comment);
     }
 
     /**
@@ -676,8 +676,8 @@ public class APMFile extends ADMFile {
      * Set the comment for Euler angles.
      * @param comment comment to set
      */
-    void setEulerComment(final List<String> comment) {
-        eulerComment = new ArrayList<String>(comment);
+    public void setEulerComment(final List<String> comment) {
+        eulerComment = new ArrayList<>(comment);
     }
 
     /**
@@ -692,8 +692,8 @@ public class APMFile extends ADMFile {
      * Set the comment for spin data.
      * @param comment comment to set
      */
-    void setSpinComment(final List<String> comment) {
-        spinComment = new ArrayList<String>(comment);
+    public void setSpinComment(final List<String> comment) {
+        spinComment = new ArrayList<>(comment);
     }
 
     /**
@@ -708,8 +708,8 @@ public class APMFile extends ADMFile {
      * Set the comment for spacecraft.
      * @param comment comment to set
      */
-    void setSpacecraftComment(final List<String> comment) {
-        spacecraftComment = new ArrayList<String>(comment);
+    public void setSpacecraftComment(final List<String> comment) {
+        spacecraftComment = new ArrayList<>(comment);
     }
 
     /**
@@ -741,7 +741,7 @@ public class APMFile extends ADMFile {
      * Add a maneuver.
      * @param maneuver maneuver to be set
      */
-    void addManeuver(final APMManeuver maneuver) {
+    public void addManeuver(final APMManeuver maneuver) {
         maneuvers.add(maneuver);
     }
 
@@ -802,7 +802,7 @@ public class APMFile extends ADMFile {
          * Set epoch start.
          * @param epochStart epoch start
          */
-        void setEpochStart(final AbsoluteDate epochStart) {
+        public void setEpochStart(final AbsoluteDate epochStart) {
             this.epochStart = epochStart;
         }
 
@@ -818,7 +818,7 @@ public class APMFile extends ADMFile {
          * Set Coordinate system for the torque vector, for absolute frames.
          * @param frame coordinate system for the torque vector, for absolute frames
          */
-        void setRefFrameString(final String frame) {
+        public void setRefFrameString(final String frame) {
             this.refFrame = frame;
         }
 
@@ -834,7 +834,7 @@ public class APMFile extends ADMFile {
          * Set duration (value is 0 for impulsive maneuver).
          * @param duration duration (value is 0 for impulsive maneuver)
          */
-        void setDuration(final double duration) {
+        public void setDuration(final double duration) {
             this.duration = duration;
         }
 
@@ -850,7 +850,7 @@ public class APMFile extends ADMFile {
          * Set the torque vector (N.m).
          * @param vector torque vector
          */
-        void setTorque(final Vector3D vector) {
+        public void setTorque(final Vector3D vector) {
             this.torque = vector;
         }
 
@@ -866,8 +866,8 @@ public class APMFile extends ADMFile {
          * Set the maneuvers data comment, each string in the list corresponds to one line of comment.
          * @param comment maneuvers data comment, each string in the list corresponds to one line of comment
          */
-        void setComment(final List<String> comment) {
-            this.comment = new ArrayList<String>(comment);
+        public void setComment(final List<String> comment) {
+            this.comment = new ArrayList<>(comment);
         }
 
     }

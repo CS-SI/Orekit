@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -73,7 +73,19 @@ public class JacobiansMapper extends AbstractJacobiansMapper {
         this.name = name;
     }
 
-    /** {@inheritDoc} */
+    /** Get the conversion Jacobian between state parameters and parameters used for derivatives.
+     * <p>
+     * For DSST and TLE propagators, state parameters and parameters used for derivatives are the same,
+     * so the Jocabian is simply the identity.
+     * </p>
+     * <p>
+     * For Numerical propagator, parameters used for derivatives are cartesian
+     * and they can be different from state parameters because the numerical propagator can accept different type
+     * of orbits.
+     * </p>
+     * @param state spacecraft state
+     * @return conversion Jacobian
+     */
     protected double[][] getConversionJacobian(final SpacecraftState state) {
 
         final double[][] dYdC = new double[STATE_DIMENSION][STATE_DIMENSION];
@@ -180,12 +192,6 @@ public class JacobiansMapper extends AbstractJacobiansMapper {
 
         }
 
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public int getAdditionalStateDimension() {
-        return STATE_DIMENSION * (STATE_DIMENSION + parameters.getNbParams());
     }
 
 }

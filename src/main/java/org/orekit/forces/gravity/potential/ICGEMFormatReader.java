@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -238,7 +238,8 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
         try (BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
             for (line = r.readLine(); line != null; line = r.readLine()) {
                 ++lineNumber;
-                if (line.trim().length() == 0) {
+                line = line.trim();
+                if (line.length() == 0) {
                     continue;
                 }
                 final String[] tab = SEPARATOR.split(line);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.forces.empirical.PolynomialAccelerationModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -29,7 +30,9 @@ import org.orekit.utils.ParameterDriver;
  * with polynomial signed amplitude.
  * @since 9.0
  * @author Luc Maisonobe
+ * @deprecated as of 10.3, replaced by {@link PolynomialAccelerationModel}
  */
+@Deprecated
 public class PolynomialParametricAcceleration extends AbstractParametricAcceleration {
 
     /** Acceleration scaling factor.

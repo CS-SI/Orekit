@@ -19,6 +19,7 @@ package org.orekit.forces.gravity;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -92,6 +93,33 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         }
     }
 
+    @Override
+    protected FieldVector3D<Gradient> accelerationDerivativesGradient(final ForceModel forceModel,
+                                                                      final AbsoluteDate date, final  Frame frame,
+                                                                      final FieldVector3D<Gradient> position,
+                                                                      final FieldVector3D<Gradient> velocity,
+                                                                      final FieldRotation<Gradient> rotation,
+                                                                      final Gradient mass)
+        {
+        try {
+            double gm = forceModel.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).getValue();
+            //radius
+            final Gradient r2 = position.getNormSq();
+            final Gradient r = r2.sqrt();
+            //speed squared
+            final Gradient s2 = velocity.getNormSq();
+            final double c2 = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT;
+            //eq. 3.146
+            return new FieldVector3D<>(r.reciprocal().multiply(4 * gm).subtract(s2),
+                                       position,
+                                       position.dotProduct(velocity).multiply(4),
+                                       velocity).scalarMultiply(r2.multiply(r).multiply(c2).reciprocal().multiply(gm));
+
+        } catch (IllegalArgumentException | SecurityException e) {
+            return null;
+        }
+    }
+
     /** set orekit data */
     @BeforeClass
     public static void setUpBefore() {
@@ -152,6 +180,24 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         ));
 
         checkStateJacobianVs80Implementation(s, relativity,
+                                             new LofOffset(s.getFrame(), LOFType.VVLH),
+                                             1.0e-50, false);
+    }
+
+    @Test
+    public void testJacobianVs80ImplementationGradient() {
+        double gm = Constants.EIGEN5C_EARTH_MU;
+        Relativity relativity = new Relativity(gm);
+        final Vector3D p = new Vector3D(3777828.75000531, -5543949.549783845, 2563117.448578311);
+        final Vector3D v = new Vector3D(489.0060271721, -2849.9328929417, -6866.4671013153);
+        SpacecraftState s = new SpacecraftState(new CartesianOrbit(
+                new PVCoordinates(p, v),
+                frame,
+                date,
+                gm
+        ));
+
+        checkStateJacobianVs80ImplementationGradient(s, relativity,
                                              new LofOffset(s.getFrame(), LOFType.VVLH),
                                              1.0e-50, false);
     }
@@ -264,6 +310,69 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         // Do the test
         checkRealFieldPropagation(FKO, PositionAngle.MEAN, 1005., NP, FNP,
                                   1.0e-15, 5.0e-10, 3.0e-11, 3.0e-10,
+                                  1, false);
+    }
+
+    /**Testing if the propagation between the FieldPropagation and the propagation
+     * is equivalent.
+     * Also testing if propagating X+dX with the propagation is equivalent to
+     * propagation X with the FieldPropagation and then applying the taylor
+     * expansion of dX to the result.*/
+    @Test
+    public void RealFieldGradientTest() {
+
+        final int freeParameters = 6;
+        Gradient a_0 = Gradient.variable(freeParameters, 0, 7e7);
+        Gradient e_0 = Gradient.variable(freeParameters, 1, 0.4);
+        Gradient i_0 = Gradient.variable(freeParameters, 2, 85 * FastMath.PI / 180);
+        Gradient R_0 = Gradient.variable(freeParameters, 3, 0.7);
+        Gradient O_0 = Gradient.variable(freeParameters, 4, 0.5);
+        Gradient n_0 = Gradient.variable(freeParameters, 5, 0.1);
+        Gradient mu  = Gradient.constant(freeParameters, Constants.EIGEN5C_EARTH_MU);
+
+        Field<Gradient> field = a_0.getField();
+        Gradient zero = field.getZero();
+
+        FieldAbsoluteDate<Gradient> J2000 = new FieldAbsoluteDate<>(field);
+
+        Frame EME = FramesFactory.getEME2000();
+
+        FieldKeplerianOrbit<Gradient> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
+                                                                      PositionAngle.MEAN,
+                                                                      EME,
+                                                                      J2000,
+                                                                      mu);
+
+        FieldSpacecraftState<Gradient> initialState = new FieldSpacecraftState<>(FKO);
+
+        SpacecraftState iSR = initialState.toSpacecraftState();
+        OrbitType type = OrbitType.KEPLERIAN;
+        double[][] tolerance = NumericalPropagator.tolerances(0.001, FKO.toOrbit(), type);
+
+
+        AdaptiveStepsizeFieldIntegrator<Gradient> integrator =
+                        new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
+        integrator.setInitialStepSize(zero.add(60));
+        AdaptiveStepsizeIntegrator RIntegrator =
+                        new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
+        RIntegrator.setInitialStepSize(60);
+
+        FieldNumericalPropagator<Gradient> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FNP.setOrbitType(type);
+        FNP.setInitialState(initialState);
+
+        NumericalPropagator NP = new NumericalPropagator(RIntegrator);
+        NP.setOrbitType(type);
+        NP.setInitialState(iSR);
+
+        final Relativity forceModel = new Relativity(Constants.EIGEN5C_EARTH_MU);
+
+        FNP.addForceModel(forceModel);
+        NP.addForceModel(forceModel);
+        
+        // Do the test
+        checkRealFieldPropagationGradient(FKO, PositionAngle.MEAN, 1005., NP, FNP,
+                                  1.0e-15, 1.3e-2, 2.9e-4, 4.4e-3,
                                   1, false);
     }
 

@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2020 CS GROUP
+<!--- Copyright 2002-2021 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -19,6 +19,12 @@ Orekit can be built from source using several different tools.
 All these tools are Java based and can run on many different operating
 systems, including Unix, GNU/Linux, Windows and Mac OS X. Some GNU/Linux
 distributions provide these tools in their packages repositories.
+
+The instructions below are for people seeking to modify the Orekit library.
+For instance, to include their own models or modifications in the library
+before using it in their applications.
+They are not intended for people who are simply trying to use or to include
+Orekit in their projects.
 
 ## Building with Maven 3
 

@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -163,7 +164,7 @@ public class ImmutableTimeStampedCacheTest {
             Assert.fail("Expected Exception");
         } catch (TimeStampedCacheException e) {
             // expected
-            Assert.assertThat(e.getMessage(),
+            MatcherAssert.assertThat(e.getMessage(),
                     CoreMatchers.containsString(central.toString()));
         }
     }

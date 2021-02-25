@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -62,7 +62,6 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.PropagatorBuilder;
-import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -399,7 +398,7 @@ public class EstimationTestUtils {
                                                       {
 
         // Add the measurements to the Kalman filter
-        AbstractIntegratedPropagator[] estimated = kalman.processMeasurements(measurements);
+        Propagator[] estimated = kalman.processMeasurements(measurements);
         
         // Check the number of measurements processed by the filter
         Assert.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());

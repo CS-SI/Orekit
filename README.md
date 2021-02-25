@@ -17,7 +17,7 @@ handle them (conversions, propagations, pointing, ...).
 
 ### Official releases
 
-[Official Orekit releases](https://gitlab.orekit.org/orekit/orekit/releases)
+[Official Orekit releases](https://gitlab.orekit.org/orekit/orekit/-/releases)
 are available on our [Gitlab instance](https://gitlab.orekit.org/). They are
 also available in the
 [Maven repository](https://mvnrepository.com/artifact/org.orekit/orekit).
