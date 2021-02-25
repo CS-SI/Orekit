@@ -40,14 +40,14 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  */
 public class TabulatedProvider implements AttitudeProvider {
 
-    /** Reference frame for tabulated attitudes. */
-    private final Frame referenceFrame;
-
     /** Cached attitude table. */
     private final transient ImmutableTimeStampedCache<TimeStampedAngularCoordinates> table;
 
     /** Filter for derivatives from the sample to use in interpolation. */
     private final AngularDerivativesFilter filter;
+
+    /** Builder for filtered attitudes. */
+    private final AttitudeBuilder builder;
 
     /** Creates new instance.
      * @param referenceFrame reference frame for tabulated attitudes
@@ -57,9 +57,9 @@ public class TabulatedProvider implements AttitudeProvider {
      */
     public TabulatedProvider(final Frame referenceFrame, final List<TimeStampedAngularCoordinates> table,
                              final int n, final AngularDerivativesFilter filter) {
-        this.referenceFrame  = referenceFrame;
         this.table           = new ImmutableTimeStampedCache<TimeStampedAngularCoordinates>(n, table);
         this.filter          = filter;
+        this.builder         = new FixedFrameBuilder(referenceFrame);
     }
 
     /** {@inheritDoc} */
@@ -74,7 +74,7 @@ public class TabulatedProvider implements AttitudeProvider {
                 TimeStampedAngularCoordinates.interpolate(date, filter, sample);
 
         // build the attitude
-        return new Attitude(referenceFrame, interpolated);
+        return builder.build(frame, pvProv, interpolated);
 
     }
 
@@ -95,7 +95,7 @@ public class TabulatedProvider implements AttitudeProvider {
                 TimeStampedFieldAngularCoordinates.interpolate(date, filter, sample);
 
         // build the attitude
-        return new FieldAttitude<>(referenceFrame, interpolated);
+        return builder.build(frame, pvProv, interpolated);
 
     }
 
