@@ -30,12 +30,16 @@ import org.orekit.gnss.ObservationData;
 import org.orekit.gnss.ObservationDataSet;
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.utils.Constants;
 
 /** Base class for dual frequency combination of measurements.
  * @author Bryan Cazabonne
  * @since 10.1
  */
 public abstract class AbstractDualFrequencyCombination implements MeasurementCombination {
+
+    /** Mega Hertz to Hertz converter. */
+    public static final double MHZ_TO_HZ = 1.0e6;
 
     /** Type of combination of measurements. */
     private final CombinationType type;
@@ -91,11 +95,21 @@ public abstract class AbstractDualFrequencyCombination implements MeasurementCom
                                       measType1, measType2, getName());
         }
 
-        // Combined value
-        final double combinedValue = getCombinedValue(od1.getValue(), freq1, od2.getValue(), freq2);
-
         // Combined frequency
         final double combinedFrequency = getCombinedFrequency(freq1, freq2);
+
+        // Combined value
+        final double combinedValue;
+        if (obsType1.getMeasurementType() == MeasurementType.CARRIER_PHASE && !Double.isNaN(combinedFrequency)) {
+            // Transform from cycle to meters measurements
+            final double obs1Meters = od1.getValue() * Constants.SPEED_OF_LIGHT / (freq1.getMHzFrequency() * MHZ_TO_HZ);
+            final double obs2Meters = od2.getValue() * Constants.SPEED_OF_LIGHT / (freq2.getMHzFrequency() * MHZ_TO_HZ);
+
+            // Calculate the combined value and convert it in cycles using the combined frequency
+            combinedValue = getCombinedValue(obs1Meters, freq1, obs2Meters, freq2) * (combinedFrequency * MHZ_TO_HZ) / Constants.SPEED_OF_LIGHT;
+        } else {
+            combinedValue = getCombinedValue(od1.getValue(), freq1, od2.getValue(), freq2);
+        }
 
         // Combined observation data
         return new CombinedObservationData(type, measType1, combinedValue, combinedFrequency, Arrays.asList(od1, od2));
