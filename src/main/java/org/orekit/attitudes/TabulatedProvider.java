@@ -40,9 +40,6 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  */
 public class TabulatedProvider implements BoundedAttitudeProvider {
 
-    /** Reference frame for tabulated attitudes. */
-    private final Frame referenceFrame;
-
     /** Cached attitude table. */
     private final transient ImmutableTimeStampedCache<? extends TimeStampedAngularCoordinates> table;
 
@@ -54,6 +51,9 @@ public class TabulatedProvider implements BoundedAttitudeProvider {
 
     /** Last date of the range. */
     private final AbsoluteDate maxDate;
+
+    /** Builder for filtered attitudes. */
+    private final AttitudeBuilder builder;
 
     /** Creates new instance.
      * <p>
@@ -67,26 +67,28 @@ public class TabulatedProvider implements BoundedAttitudeProvider {
      */
     public TabulatedProvider(final Frame referenceFrame, final List<? extends TimeStampedAngularCoordinates> table,
                              final int n, final AngularDerivativesFilter filter) {
-        this(referenceFrame, table, n, filter, table.get(0).getDate(), table.get(table.size() - 1).getDate());
+        this(table, n, filter, table.get(0).getDate(), table.get(table.size() - 1).getDate(),
+             new FixedFrameBuilder(referenceFrame));
     }
 
     /** Creates new instance.
-     * @param referenceFrame reference frame for tabulated attitudes
      * @param table tabulated attitudes
      * @param n number of attitude to use for interpolation
      * @param filter filter for derivatives from the sample to use in interpolation
      * @param minDate min date to use
      * @param maxDate max date to use
+     * @param builder builder to use
      * @since 11.0
      */
-    public TabulatedProvider(final Frame referenceFrame, final List<? extends TimeStampedAngularCoordinates> table,
+    public TabulatedProvider(final List<? extends TimeStampedAngularCoordinates> table,
                              final int n, final AngularDerivativesFilter filter,
-                             final AbsoluteDate minDate, final AbsoluteDate maxDate) {
-        this.referenceFrame  = referenceFrame;
-        this.table           = new ImmutableTimeStampedCache<TimeStampedAngularCoordinates>(n, table);
-        this.filter          = filter;
-        this.minDate         = minDate;
-        this.maxDate         = maxDate;
+                             final AbsoluteDate minDate, final AbsoluteDate maxDate,
+                             final AttitudeBuilder builder) {
+        this.table          = new ImmutableTimeStampedCache<TimeStampedAngularCoordinates>(n, table);
+        this.filter         = filter;
+        this.minDate        = minDate;
+        this.maxDate        = maxDate;
+        this.builder        = builder;
     }
 
     /** {@inheritDoc} */
@@ -101,7 +103,7 @@ public class TabulatedProvider implements BoundedAttitudeProvider {
                 TimeStampedAngularCoordinates.interpolate(date, filter, sample);
 
         // build the attitude
-        return new Attitude(referenceFrame, interpolated);
+        return builder.build(frame, pvProv, interpolated);
 
     }
 
@@ -122,7 +124,7 @@ public class TabulatedProvider implements BoundedAttitudeProvider {
                 TimeStampedFieldAngularCoordinates.interpolate(date, filter, sample);
 
         // build the attitude
-        return new FieldAttitude<>(referenceFrame, interpolated);
+        return builder.build(frame, pvProv, interpolated);
 
     }
 

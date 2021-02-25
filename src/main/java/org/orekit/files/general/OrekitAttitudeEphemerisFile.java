@@ -22,6 +22,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.orekit.attitudes.BoundedAttitudeProvider;
+import org.orekit.attitudes.FixedFrameBuilder;
+import org.orekit.attitudes.TabulatedProvider;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -272,6 +275,15 @@ public class OrekitAttitudeEphemerisFile
         @Override
         public AngularDerivativesFilter getAvailableDerivatives() {
             return availableDerivatives;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public BoundedAttitudeProvider getAttitudeProvider() {
+            return new TabulatedProvider(getAngularCoordinates(),
+                                         getInterpolationSamples(), getAvailableDerivatives(),
+                                         getStart(), getStop(),
+                                         new FixedFrameBuilder(getReferenceFrame()));
         }
 
     }

@@ -18,6 +18,8 @@ package org.orekit.files.ccsds.ndm.adm.aem;
 
 import java.util.List;
 
+import org.orekit.attitudes.BoundedAttitudeProvider;
+import org.orekit.attitudes.TabulatedProvider;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.frames.Frame;
@@ -81,6 +83,14 @@ public class AemSegment extends Segment<AemMetadata, AemData>
     @Override
     public AngularDerivativesFilter getAvailableDerivatives() {
         return getMetadata().getAttitudeType().getAngularDerivativesFilter();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public BoundedAttitudeProvider getAttitudeProvider() {
+        return new TabulatedProvider(getAngularCoordinates(), getInterpolationSamples(),
+                                     getAvailableDerivatives(), getStart(), getStop(),
+                                     getMetadata().getEndpoints());
     }
 
 }

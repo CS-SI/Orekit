@@ -22,7 +22,6 @@ import java.util.Map;
 
 import org.orekit.attitudes.AggregateBoundedAttitudeProvider;
 import org.orekit.attitudes.BoundedAttitudeProvider;
-import org.orekit.attitudes.TabulatedProvider;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
@@ -187,11 +186,7 @@ public interface AttitudeEphemerisFile<C extends TimeStampedAngularCoordinates,
          *
          * @return the attitude provider for this attitude ephemeris segment.
          */
-        default BoundedAttitudeProvider getAttitudeProvider() {
-            return new TabulatedProvider(getReferenceFrame(), getAngularCoordinates(),
-                                         getInterpolationSamples(), getAvailableDerivatives(),
-                                         getStart(), getStop());
-        }
+        BoundedAttitudeProvider getAttitudeProvider();
 
     }
 

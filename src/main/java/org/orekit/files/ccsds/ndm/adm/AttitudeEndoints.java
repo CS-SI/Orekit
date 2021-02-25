@@ -16,16 +16,26 @@
  */
 package org.orekit.files.ccsds.ndm.adm;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.AttitudeBuilder;
+import org.orekit.attitudes.FieldAttitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.frames.Frame;
 import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.FieldAngularCoordinates;
+import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
 /** Endpoints for attitude definition.
  * <p>
@@ -42,7 +52,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class AttitudeEndoints {
+public class AttitudeEndoints implements AttitudeBuilder {
 
     /** Frame A. */
     private FrameFacade frameA;
@@ -176,17 +186,10 @@ public class AttitudeEndoints {
         return a2b ^ frameB.asSpacecraftBodyFrame() == null;
     }
 
-    /** Get the attitude.
-     * @param frame reference frame with respect to which attitude must be defined
-     * (may be null if attitude is <em>not</em> orbit-relative and one wants
-     * attitude in the same frame as used in the attitude message)
-     * @param pv spacecraft position and velocity expressed in {@code frame}
-     * (may be null if attitude is <em>not</em> orbit-relative)
-     * @param rawAttitude raw rotation/rotation rate/rotation acceleration as stored in th CCSDS message
-     * @return attitude
-     */
-    public Attitude getAttitude(final Frame frame, final PVCoordinates pv,
-                                final TimeStampedAngularCoordinates rawAttitude) {
+    /**  {@inheritDoc} */
+    @Override
+    public Attitude build(final Frame frame, final PVCoordinatesProvider pvProv,
+                          final TimeStampedAngularCoordinates rawAttitude) {
 
         // attitude converted to Orekit conventions
         final TimeStampedAngularCoordinates att =
@@ -201,13 +204,14 @@ public class AttitudeEndoints {
             }
 
             // construction of the local orbital frame, using PV from reference frame
-            final AngularCoordinates referenceToLof =
+            final PVCoordinates pv = pvProv.getPVCoordinates(rawAttitude.getDate(), frame);
+            final AngularCoordinates frame2Lof =
                             orf.isQuasiInertial() ?
                             new AngularCoordinates(orf.getLofType().rotationFromInertial(pv), Vector3D.ZERO) :
                             orf.getLofType().transformFromInertial(att.getDate(), pv).getAngular();
 
             // compose with APM
-            return new Attitude(frame, att.addOffset(referenceToLof));
+            return new Attitude(frame, att.addOffset(frame2Lof));
 
         } else {
             // this is an absolute attitude
@@ -216,6 +220,48 @@ public class AttitudeEndoints {
                 throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, external.getName());
             }
             final Attitude attitude = new Attitude(external.asFrame(), att);
+            return frame == null ? attitude : attitude.withReferenceFrame(frame);
+        }
+
+    }
+
+    /**  {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>>
+        FieldAttitude<T> build(final Frame frame, final FieldPVCoordinatesProvider<T> pvProv,
+                               final TimeStampedFieldAngularCoordinates<T> rawAttitude) {
+
+        // attitude converted to Orekit conventions
+        final TimeStampedFieldAngularCoordinates<T> att =
+                        isExternal2SpacecraftBody() ? rawAttitude : rawAttitude.revert();
+
+        final FrameFacade        external = getExternalFrame();
+        final OrbitRelativeFrame orf      = external.asOrbitRelativeFrame();
+        if (orf != null) {
+            // this is an orbit-relative attitude
+            if (orf.getLofType() == null) {
+                throw new OrekitException(OrekitMessages.UNSUPPORTED_LOCAL_ORBITAL_FRAME, external.getName());
+            }
+
+            // construction of the local orbital frame, using PV from reference frame
+            final FieldPVCoordinates<T> pv = pvProv.getPVCoordinates(rawAttitude.getDate(), frame);
+            final Field<T> field = rawAttitude.getDate().getField();
+            final FieldAngularCoordinates<T> referenceToLof =
+                            orf.isQuasiInertial() ?
+                            new FieldAngularCoordinates<>(orf.getLofType().rotationFromInertial(field, pv),
+                                                          FieldVector3D.getZero(field)) :
+                            orf.getLofType().transformFromInertial(att.getDate(), pv).getAngular();
+
+            // compose with APM
+            return new FieldAttitude<>(frame, att.addOffset(referenceToLof));
+
+        } else {
+            // this is an absolute attitude
+            if (external.asFrame() == null) {
+                // this should never happen as all CelestialBodyFrame have an Orekit mapping
+                throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, external.getName());
+            }
+            final FieldAttitude<T> attitude = new FieldAttitude<>(external.asFrame(), att);
             return frame == null ? attitude : attitude.withReferenceFrame(frame);
         }
 

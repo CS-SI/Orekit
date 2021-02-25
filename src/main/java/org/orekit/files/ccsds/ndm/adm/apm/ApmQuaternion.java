@@ -28,7 +28,7 @@ import org.orekit.files.ccsds.ndm.adm.AttitudeEndoints;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
 /**
@@ -136,11 +136,11 @@ public class ApmQuaternion extends CommentsContainer {
      * @param frame reference frame with respect to which attitude must be defined
      * (may be null if attitude is <em>not</em> orbit-relative and one wants
      * attitude in the same frame as used in the attitude message)
-     * @param pv spacecraft position and velocity expressed in {@code frame}
+     * @param pvProvider provider for spacecraft position and velocity
      * (may be null if attitude is <em>not</em> orbit-relative)
      * @return attitude
      */
-    public Attitude getAttitude(final Frame frame, final PVCoordinates pv) {
+    public Attitude getAttitude(final Frame frame, final PVCoordinatesProvider pvProvider) {
 
         // attitude has it is stored in the APM
         final UnivariateDerivative1                q0 = new UnivariateDerivative1(q[0], qDot[0]);
@@ -150,7 +150,7 @@ public class ApmQuaternion extends CommentsContainer {
         final FieldRotation<UnivariateDerivative1> rd = new FieldRotation<>(q0, q1, q2, q3, true);
 
         // attitude converted to Orekit conventions
-        return endpoints.getAttitude(frame, pv, new TimeStampedAngularCoordinates(epoch, rd));
+        return endpoints.build(frame, pvProvider, new TimeStampedAngularCoordinates(epoch, rd));
 
     }
 

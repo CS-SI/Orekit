@@ -44,6 +44,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class APMParserTest {
 
@@ -438,9 +439,10 @@ public class APMParserTest {
         Assert.assertEquals(new AbsoluteDate(2021, 1, 1, 0, 0, 0.0, TimeScalesFactory.getTDB()),
                             segment.getData().getQuaternionBlock().getEpoch());
 
-        PVCoordinates pv = new PVCoordinates(new Vector3D( 1.234e7, -0.567e7, 9.876e6),
-                                             new Vector3D(-0.772e4,  5.002e4, 4.892e2));
-        Attitude attitude = file.getAttitude(FramesFactory.getEME2000(), pv);
+        final PVCoordinates pv = new PVCoordinates(new Vector3D( 1.234e7, -0.567e7, 9.876e6),
+                                                   new Vector3D(-0.772e4,  5.002e4, 4.892e2));
+        Attitude attitude = file.getAttitude(FramesFactory.getEME2000(),
+                                             (date, frame) -> new TimeStampedPVCoordinates(date, pv));
         Vector3D xSat = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
         Vector3D ySat = attitude.getRotation().applyInverseTo(Vector3D.PLUS_J);
         Assert.assertEquals(FastMath.PI, Vector3D.angle(xSat, pv.getVelocity()), 1.0e-10);
@@ -504,7 +506,8 @@ public class APMParserTest {
 
         PVCoordinates pv = new PVCoordinates(new Vector3D( 1.234e7, -0.567e7, 9.876e6),
                                              new Vector3D(-0.772e4,  5.002e4, 4.892e2));
-        Attitude attitude = file.getAttitude(FramesFactory.getEME2000(), pv);
+        Attitude attitude = file.getAttitude(FramesFactory.getEME2000(),
+                                             (date, frame) -> new TimeStampedPVCoordinates(date, pv));
         Vector3D xSat = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
         Vector3D ySat = attitude.getRotation().applyInverseTo(Vector3D.PLUS_J);
         Assert.assertEquals(FastMath.PI, Vector3D.angle(xSat, pv.getVelocity()), 1.0e-10);
@@ -567,8 +570,10 @@ public class APMParserTest {
                             segment.getData().getQuaternionBlock().getEpoch());
 
         try {
-            file.getAttitude(FramesFactory.getEME2000(), new PVCoordinates(new Vector3D( 1.234e7, -0.567e7, 9.876e6),
-                                                                           new Vector3D(-0.772e4,  5.002e4, 4.892e2)));
+            file.getAttitude(FramesFactory.getEME2000(),
+                             (date, frame) -> new TimeStampedPVCoordinates(date,
+                                                                           new PVCoordinates(new Vector3D( 1.234e7, -0.567e7, 9.876e6),
+                                                                                             new Vector3D(-0.772e4,  5.002e4, 4.892e2))));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNSUPPORTED_LOCAL_ORBITAL_FRAME, oe.getSpecifier());
