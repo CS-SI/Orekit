@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="bryan" type="add" issue="756">
+        Added new method signature in IodGooding using AngularRaDec measurement.
+      </action>
       <action dev="thomas" type="fix" issue="688">
         Fixed ignored fields from TLE template in TLEPropagatorBuilder.
       </action>
