@@ -89,7 +89,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
     private SpacecraftParameters spacecraftParametersBlock;
 
     /** TLE logical block being read. */
-    private OemTle tleBlock;
+    private OmmTle tleBlock;
 
     /** Covariance matrix logical block being read. */
     private Covariance covarianceBlock;
@@ -336,7 +336,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
      */
     private boolean processTLEToken(final ParseToken token) {
         if (tleBlock == null) {
-            tleBlock = new OemTle();
+            tleBlock = new OmmTle();
             if (moveCommentsIfEmpty(spacecraftParametersBlock, tleBlock)) {
                 // get rid of the empty logical block
                 spacecraftParametersBlock = null;
@@ -345,7 +345,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
         setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processCovarianceToken);
         try {
             return token.getName() != null &&
-                   OemTleKey.valueOf(token.getName()).process(token, context, tleBlock);
+                   OmmTleKey.valueOf(token.getName()).process(token, context, tleBlock);
         } catch (IllegalArgumentException iae) {
             // token has not been recognized
             return false;

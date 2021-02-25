@@ -100,7 +100,7 @@ public class OMMParserTest {
 
 
         // Check TLE Related Parameters data block;
-        OemTle tle = file.getData().getTLEBlock();
+        OmmTle tle = file.getData().getTLEBlock();
         Assert.assertEquals(0, tle.getEphemerisType());
         Assert.assertEquals('U', tle.getClassificationType());
         int[] noradIDExpected = new int[23581];

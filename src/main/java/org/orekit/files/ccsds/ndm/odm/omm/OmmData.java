@@ -40,7 +40,7 @@ public class OmmData implements Data {
     private final SpacecraftParameters spacecraftParameters;
 
     /** TLE block. */
-    private final OemTle tleBlock;
+    private final OmmTle tleBlock;
 
     /** Covariance matrix logical block being read. */
     private final Covariance covarianceBlock;
@@ -61,7 +61,7 @@ public class OmmData implements Data {
      */
     public OmmData(final KeplerianElements keplerianElementsBlock,
                    final SpacecraftParameters spacecraftParameters,
-                   final OemTle tleBlock,
+                   final OmmTle tleBlock,
                    final Covariance covarianceBlock,
                    final UserDefined userDefinedBlock,
                    final double mass) {
@@ -120,7 +120,7 @@ public class OmmData implements Data {
     /** Get the TLE logical block.
      * @return TLE block
      */
-    public OemTle getTLEBlock() {
+    public OmmTle getTLEBlock() {
         return tleBlock;
     }
 

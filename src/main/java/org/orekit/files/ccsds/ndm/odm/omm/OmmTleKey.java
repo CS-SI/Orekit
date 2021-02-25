@@ -21,11 +21,11 @@ import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 
-/** Keys for {@link OemTle TLE} entries.
+/** Keys for {@link OmmTle TLE} entries.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public enum OemTleKey {
+public enum OmmTleKey {
 
     /** Ephemeris Type, only required if MEAN_ELEMENT_THEORY = SGP/SGP4. */
     EPHEMERIS_TYPE((token, context, data) -> token.processAsInteger(data::setEphemerisType)),
@@ -59,7 +59,7 @@ public enum OemTleKey {
     /** Simple constructor.
      * @param processor processing method
      */
-    OemTleKey(final TokenProcessor processor) {
+    OmmTleKey(final TokenProcessor processor) {
         this.processor = processor;
     }
 
@@ -69,7 +69,7 @@ public enum OemTleKey {
      * @param data data to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final OemTle data) {
+    public boolean process(final ParseToken token, final ParsingContext context, final OmmTle data) {
         return processor.process(token, context, data);
     }
 
@@ -81,7 +81,7 @@ public enum OemTleKey {
          * @param data data to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, OemTle data);
+        boolean process(ParseToken token, ParsingContext context, OmmTle data);
     }
 
 }

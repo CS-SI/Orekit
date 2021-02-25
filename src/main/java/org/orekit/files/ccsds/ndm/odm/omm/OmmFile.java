@@ -96,7 +96,7 @@ public class OmmFile extends NdmFile<OdmHeader, Segment<OmmMetadata, OmmData>> i
     public TLE generateTLE() {
         final CommonMetadata metadata = getMetadata();
         final KeplerianElements kep = getData().getKeplerianElementsBlock();
-        final OemTle               tle = getData().getTLEBlock();
+        final OmmTle               tle = getData().getTLEBlock();
         return new TLE(tle.getNoradID(), tle.getClassificationType(),
                        metadata.getLaunchYear(), metadata.getLaunchNumber(), metadata.getLaunchPiece(),
                        tle.getEphemerisType(), tle.getElementSetNumber(), kep.getEpoch(),

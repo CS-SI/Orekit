@@ -23,7 +23,7 @@ import org.orekit.files.ccsds.section.CommentsContainer;
  * @author sports
  * @since 6.1
  */
-public class OemTle extends CommentsContainer {
+public class OmmTle extends CommentsContainer {
 
     /** Ephemeris Type, only required if MEAN_ELEMENT_THEORY = SGP/SGP4. Some sources suggest the coding for
      * the EPHEMERIS_TYPE keyword: 1 = SGP, 2 = SGP4, 3 = SDP4, 4 = SGP8, 5 = SDP8. Default value = 0.
@@ -57,7 +57,7 @@ public class OemTle extends CommentsContainer {
 
     /** Create an empty data set.
      */
-    public OemTle() {
+    public OmmTle() {
         ephemerisType      = 0;
         classificationType = 'U';
         noradID            = -1;
@@ -72,11 +72,11 @@ public class OemTle extends CommentsContainer {
     @Override
     public void checkMandatoryEntries() {
         super.checkMandatoryEntries();
-        checkNotNaN(meanMotionDot,     OemTleKey.MEAN_MOTION_DOT);
-        checkNotNaN(meanMotionDotDot,  OemTleKey.MEAN_MOTION_DDOT);
-        checkNotNegative(noradID,      OemTleKey.NORAD_CAT_ID);
-        checkNotNegative(elementSetNo, OemTleKey.ELEMENT_SET_NO);
-        checkNotNegative(revAtEpoch,   OemTleKey.REV_AT_EPOCH);
+        checkNotNaN(meanMotionDot,     OmmTleKey.MEAN_MOTION_DOT);
+        checkNotNaN(meanMotionDotDot,  OmmTleKey.MEAN_MOTION_DDOT);
+        checkNotNegative(noradID,      OmmTleKey.NORAD_CAT_ID);
+        checkNotNegative(elementSetNo, OmmTleKey.ELEMENT_SET_NO);
+        checkNotNegative(revAtEpoch,   OmmTleKey.REV_AT_EPOCH);
     }
 
     /** Get the ephemeris type.
