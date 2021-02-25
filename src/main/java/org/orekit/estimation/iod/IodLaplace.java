@@ -179,7 +179,7 @@ public class IodLaplace {
      * @return the line of sight vector
      * @since 11.0
      */
-    private static Vector3D lineOfSight(final AngularRaDec raDec) {
+    public static Vector3D lineOfSight(final AngularRaDec raDec) {
 
         // Observed values
         final double[] observed = raDec.getObservedValue();

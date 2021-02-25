@@ -18,6 +18,7 @@ package org.orekit.estimation.iod;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
@@ -119,6 +120,48 @@ public class IodGooding {
      */
     public double getRange3() {
         return rho3 * R;
+    }
+
+    /** Orbit got from three angular observations.
+     * @param frame inertial frame for observer coordinates and orbit estimate
+     * @param raDec1 first angular observation
+     * @param raDec2 second angular observation
+     * @param raDec3 third angular observation
+     * @param rho1init initial guess of the range problem. range 1, in meters
+     * @param rho3init initial guess of the range problem. range 3, in meters
+     * @param nRev number of complete revolutions between observation 1 and 3
+     * @param direction true if posigrade (short way)
+     * @return an estimate of the Keplerian orbit
+     * @since 11.0
+     */
+    public KeplerianOrbit estimate(final Frame frame, final AngularRaDec raDec1,
+                                   final AngularRaDec raDec2, final AngularRaDec raDec3,
+                                   final double rho1init, final double rho3init,
+                                   final int nRev, final boolean direction) {
+        return estimate(frame,
+                        stationPosition(frame, raDec1),
+                        stationPosition(frame, raDec2),
+                        stationPosition(frame, raDec3),
+                        lineOfSight(raDec1), raDec1.getDate(),
+                        lineOfSight(raDec2), raDec2.getDate(),
+                        lineOfSight(raDec3), raDec3.getDate(),
+                        rho1init, rho3init, nRev, direction);
+    }
+
+    /** Orbit got from three angular observations.
+     * @param frame inertial frame for observer coordinates and orbit estimate
+     * @param raDec1 first angular observation
+     * @param raDec2 second angular observation
+     * @param raDec3 third angular observation
+     * @param rho1init initial guess of the range problem. range 1, in meters
+     * @param rho3init initial guess of the range problem. range 3, in meters
+     * @return an estimate of the Keplerian orbit
+     * @since 11.0
+     */
+    public KeplerianOrbit estimate(final Frame frame, final AngularRaDec raDec1,
+                                   final AngularRaDec raDec2, final AngularRaDec raDec3,
+                                   final double rho1init, final double rho3init) {
+        return estimate(frame, raDec1, raDec2, raDec3, rho1init, rho3init, 0, true);
     }
 
     /** Orbit got from Observed Three Lines of Sight (angles only).
@@ -586,6 +629,45 @@ public class IodGooding {
         // create a Keplerian orbit. Assume MU = 1.
         final KeplerianOrbit orbit = new KeplerianOrbit(pv1, frame, date1, 1.);
         return orbit.shiftedBy(tau).getPVCoordinates().getPosition();
+    }
+
+    /**
+     * Calculates the line of sight vector.
+     * @param alpha right ascension angle, in radians
+     * @param delta declination angle, in radians
+     * @return the line of sight vector
+     * @since 11.0
+     */
+    public static Vector3D lineOfSight(final double alpha, final double delta) {
+        return new Vector3D(FastMath.cos(delta) * FastMath.cos(alpha),
+                            FastMath.cos(delta) * FastMath.sin(alpha),
+                            FastMath.sin(delta));
+    }
+
+    /**
+     * Calculate the line of sight vector from an AngularRaDec measurement.
+     * @param raDec measurement
+     * @return the line of sight vector
+     * @since 11.0
+     */
+    public static Vector3D lineOfSight(final AngularRaDec raDec) {
+
+        // Observed values
+        final double[] observed = raDec.getObservedValue();
+
+        // Return
+        return lineOfSight(observed[0], observed[1]);
+
+    }
+
+    /**
+     * Get the station position from the right ascension / declination measurement.
+     * @param frame inertial frame for station posiiton and orbit estimate
+     * @param raDec measurement
+     * @return the station position
+     */
+    private static Vector3D stationPosition(final Frame frame, final AngularRaDec raDec) {
+        return raDec.getStation().getBaseFrame().getPVCoordinates(raDec.getDate(), frame).getPosition();
     }
 
 }
