@@ -19,6 +19,9 @@ ALMOST_CRITICALLY_INCLINED_ORBIT = orbită cu înclinație aproape critică (i =
 # unable to compute Eckstein-Hechler mean parameters after {0} iterations
 UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = imposibil de calculat parametrii medii Eckstein-Hechler după {0} iterații
 
+# unable to compute TLE after {0} iterations
+UNABLE_TO_COMPUTE_TLE = imposibil de calculat TLE după {0} iterații
+
 # null parent for frame {0}
 NULL_PARENT_FOR_FRAME = părintele sistemului de coordonate {0} este nul
 
@@ -165,9 +168,6 @@ TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = liniile TLE nu se referă la același ob
 
 # invalid TLE parameter for object {0}: {1} = {2}
 TLE_INVALID_PARAMETER = parametru TLE nevalid pentru obiectul {0}: {1} = {2}
-
-# invalid TLE parameter {0}: {1} not in range [{2}, {3}]
-TLE_INVALID_PARAMETER_RANGE = parametrul TLE {0} este nevalid: {1} nu este în intervalul [{2}, {3}]
 
 # wrong checksum of TLE line {0}, expected {1} but got {2} ({3})
 TLE_CHECKSUM_ERROR = sumă de control eronată pentru linia TLE {0}, {2} în loc de valoarea așteptată {1} ({3})

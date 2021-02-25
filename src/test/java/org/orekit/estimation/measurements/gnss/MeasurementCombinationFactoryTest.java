@@ -38,6 +38,7 @@ import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.RinexHeader;
 import org.orekit.gnss.RinexLoader;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.utils.Constants;
 
 public class MeasurementCombinationFactoryTest {
 
@@ -205,25 +206,25 @@ public class MeasurementCombinationFactoryTest {
     @Test
     public void testRinex2IonoFree() {
         doTestRinexDualFrequency(MeasurementCombinationFactory.getIonosphereFreeCombination(system),
-                     CombinationType.IONO_FREE, 23732467.5026, 167275826.4529, 0.0, 4658 * Frequency.F0, 2, 2);
+                     CombinationType.IONO_FREE, 23732467.5026, 3772223175.669, 0.0, 4658 * Frequency.F0, 2, 2);
     }
 
     @Test
     public void testRinex2WideLane() {
         doTestRinexDualFrequency(MeasurementCombinationFactory.getWideLaneCombination(system),
-                     CombinationType.WIDE_LANE, 23732453.7100, 221895480.9217, 0.0, 34 * Frequency.F0, 2, 2);
+                     CombinationType.WIDE_LANE, 23732453.7100, 27534453.519, 0.0, 34 * Frequency.F0, 2, 2);
     }
 
     @Test
     public void testRinex2NarrowLane() {
         doTestRinexDualFrequency(MeasurementCombinationFactory.getNarrowLaneCombination(system),
-                     CombinationType.NARROW_LANE, 23732481.2951, 112656171.9842, 0.0, 274 * Frequency.F0, 2, 2);
+                     CombinationType.NARROW_LANE, 23732481.2951, 221895659.955, 0.0, 274 * Frequency.F0, 2, 2);
     }
 
     @Test
     public void testRinex2MelbourneWubbena() {
         doTestRinexDualFrequency(MeasurementCombinationFactory.getMelbourneWubbenaCombination(system),
-                     CombinationType.MELBOURNE_WUBBENA, 0.0, 0.0, 198162999.6266, 34 * Frequency.F0, 1, 2);
+                     CombinationType.MELBOURNE_WUBBENA, 0.0, 0.0, 3801972.2239, 34 * Frequency.F0, 1, 2);
     }
 
     @Test
@@ -266,25 +267,25 @@ public class MeasurementCombinationFactoryTest {
     @Test
     public void testRinex3IonoFree() {
         doTestRinexDualFrequency(MeasurementCombinationFactory.getIonosphereFreeCombination(system),
-                     CombinationType.IONO_FREE, 22399214.1934, 134735627.3126, 0.0, 235 * Frequency.F0, 2, 3);
+                     CombinationType.IONO_FREE, 22399214.1934, 179620369.206, 0.0, 235 * Frequency.F0, 2, 3);
     }
 
     @Test
     public void testRinex3WideLane() {
         doTestRinexDualFrequency(MeasurementCombinationFactory.getWideLaneCombination(system),
-                     CombinationType.WIDE_LANE, 22399239.8790, 179620369.2060, 0.0, 5 * Frequency.F0, 2, 3);
+                     CombinationType.WIDE_LANE, 22399239.8790, 3821708.096, 0.0, 5 * Frequency.F0, 2, 3);
     }
 
     @Test
     public void testRinex3NarrowLane() {
         doTestRinexDualFrequency(MeasurementCombinationFactory.getNarrowLaneCombination(system),
-                    CombinationType.NARROW_LANE, 22399188.5078, 89850885.4191, 0.0, 235 * Frequency.F0, 2, 3);
+                    CombinationType.NARROW_LANE, 22399188.5078, 179620457.900, 0.0, 235 * Frequency.F0, 2, 3);
     }
 
     @Test
     public void testRinex3MelbourneWubbena() {
         doTestRinexDualFrequency(MeasurementCombinationFactory.getMelbourneWubbenaCombination(system),
-                     CombinationType.MELBOURNE_WUBBENA, 0.0, 0.0, 157221180.6982, 5 * Frequency.F0, 1, 3);
+                     CombinationType.MELBOURNE_WUBBENA, 0.0, 0.0, -18577480.4117, 5 * Frequency.F0, 1, 3);
     }
 
     @Test
@@ -386,6 +387,29 @@ public class MeasurementCombinationFactoryTest {
 
     private RinexLoader load(final String name) {
         return new RinexLoader(new DataSource(name, () -> Utils.class.getClassLoader().getResourceAsStream(name)));
+    }
+
+    @Test
+    public void testIssue746() {
+
+        // This test uses the example provided by Amir Allahvirdi-Zadeh in the Orekit issue tracker
+        // Source of the values: https://gitlab.orekit.org/orekit/orekit/-/issues/746
+
+        // Build the observation data
+        final ObservationData obs1 = new ObservationData(ObservationType.L1, 1.17452520667E8, 0, 0);
+        final ObservationData obs2 = new ObservationData(ObservationType.L2, 9.1521434853E7, 0, 0);
+
+        // Ionosphere-free measurement
+        final IonosphereFreeCombination ionoFree = MeasurementCombinationFactory.getIonosphereFreeCombination(SatelliteSystem.GPS);
+        final CombinedObservationData   combined = ionoFree.combine(obs1, obs2);
+
+        // Combine data
+        final double wavelength         = Constants.SPEED_OF_LIGHT / (combined.getCombinedMHzFrequency() * 1.0e6);
+        final double combineValueMeters = combined.getValue() * wavelength;
+
+        // Verify
+        Assert.assertEquals(22350475.245, combineValueMeters, 0.001);
+
     }
 
 }

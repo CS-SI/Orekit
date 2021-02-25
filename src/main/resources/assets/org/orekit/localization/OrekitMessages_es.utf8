@@ -19,6 +19,9 @@ ALMOST_CRITICALLY_INCLINED_ORBIT = órbita con inclinación casi crítica (i = {
 # unable to compute Eckstein-Hechler mean parameters after {0} iterations
 UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = después de {0} iteraciones no se han conseguido calcular los parámetros medios de Eckstein-Hechler
 
+# unable to compute TLE after {0} iterations
+UNABLE_TO_COMPUTE_TLE = después de {0} iteraciones no se han conseguido calcular el TLE
+
 # null parent for frame {0}
 NULL_PARENT_FOR_FRAME = sistema de referencia {0} huérfano en el árbol de sistemas de referencia
 
@@ -165,9 +168,6 @@ TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = las líneas TLE no se refieren al mismo 
 
 # invalid TLE parameter for object {0}: {1} = {2}
 TLE_INVALID_PARAMETER = parámetro del TLE inválido para el objeto {0}: {1} = {2}
-
-# invalid TLE parameter {0}: {1} not in range [{2}, {3}]
-TLE_INVALID_PARAMETER_RANGE = <MISSING TRANSLATION>
 
 # wrong checksum of TLE line {0}, expected {1} but got {2} ({3})
 TLE_CHECKSUM_ERROR = suma de control incorrecta para la línea TLE {0}, en vez del valor esperado {1} se obtiene {2} ({3})

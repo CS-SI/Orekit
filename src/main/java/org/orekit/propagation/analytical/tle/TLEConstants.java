@@ -23,7 +23,7 @@ package org.orekit.propagation.analytical.tle;
  *
  * @author Fabien Maussion
  */
-interface TLEConstants {
+public interface TLEConstants {
 
     /** Constant 1.0 / 3.0. */
     double ONE_THIRD = 1.0 / 3.0;
@@ -53,6 +53,44 @@ interface TLEConstants {
     double QOMS2T = 1.880279159015270643865e-9;
     double A3OVK2 = -XJ3 / CK2 * NORMALIZED_EQUATORIAL_RADIUS * NORMALIZED_EQUATORIAL_RADIUS *
                     NORMALIZED_EQUATORIAL_RADIUS;
+
+    // Deep SDP4 constants
+    double ZNS      = 1.19459E-5;
+    double ZES      = 0.01675;
+    double ZNL      = 1.5835218E-4;
+    double ZEL      = 0.05490;
+    double THDT     = 4.3752691E-3;
+    double C1SS     =  2.9864797E-6;
+    double C1L      = 4.7968065E-7;
+
+    double ROOT22   = 1.7891679E-6;
+    double ROOT32   = 3.7393792E-7;
+    double ROOT44   = 7.3636953E-9;
+    double ROOT52   = 1.1428639E-7;
+    double ROOT54   = 2.1765803E-9;
+
+    double Q22      =  1.7891679E-6;
+    double Q31      =  2.1460748E-6;
+    double Q33      =  2.2123015E-7;
+
+    double C_FASX2  =  0.99139134268488593;
+    double S_FASX2  =  0.13093206501640101;
+    double C_2FASX4 =  0.87051638752972937;
+    double S_2FASX4 = -0.49213943048915526;
+    double C_3FASX6 =  0.43258117585763334;
+    double S_3FASX6 =  0.90159499016666422;
+
+    double C_G22    =  0.87051638752972937;
+    double S_G22    = -0.49213943048915526;
+    double C_G32    =  0.57972190187001149;
+    double S_G32    =  0.81481440616389245;
+    double C_G44    = -0.22866241528815548;
+    double S_G44    =  0.97350577801807991;
+    double C_G52    =  0.49684831179884198;
+    double S_G52    =  0.86783740128127729;
+    double C_G54    = -0.29695209575316894;
+    double S_G54    = -0.95489237761529999;
+
     // CHECKSTYLE: resume JavadocVariable check
 
     /** Earth gravity coefficient in m³/s². */

@@ -19,6 +19,9 @@ ALMOST_CRITICALLY_INCLINED_ORBIT = banen er nær kritisk hældning (i = {0} grad
 # unable to compute Eckstein-Hechler mean parameters after {0} iterations
 UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = umuligt at udregne Eckstein-Hechler middelparametrene efter {0} iterationer
 
+# unable to compute TLE after {0} iterations
+UNABLE_TO_COMPUTE_TLE = umuligt at udregne TLE efter {0} iterationer
+
 # null parent for frame {0}
 NULL_PARENT_FOR_FRAME = null forælder for ramme {0}
 
@@ -165,9 +168,6 @@ TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = TLE linjerne refererer ikke til det samm
 
 # invalid TLE parameter for object {0}: {1} = {2}
 TLE_INVALID_PARAMETER = ugyldig TLE parameter for objekt {0}: {1} = {2}
-
-# invalid TLE parameter {0}: {1} not in range [{2}, {3}]
-TLE_INVALID_PARAMETER_RANGE = <MISSING TRANSLATION>
 
 # wrong checksum of TLE line {0}, expected {1} but got {2} ({3})
 TLE_CHECKSUM_ERROR = forkert checksum for TLE linje {0}, forventede værdien {1} men fandt {2} ({3})

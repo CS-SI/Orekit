@@ -29,7 +29,9 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
@@ -68,7 +70,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     // CHECKSTYLE: stop VisibilityModifier check
 
     /** Initial state. */
-    protected final TLE tle;
+    protected TLE tle;
 
     /** UTC time scale. */
     protected final TimeScale utc;
@@ -203,10 +205,11 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
         this.teme = teme;
         this.mass = mass;
         this.utc = initialTLE.getUtc();
+
         initializeCommons();
         sxpInitialize();
         // set the initial state
-        final Orbit orbit = propagateOrbit(initialTLE.getDate());
+        final KeplerianOrbit orbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(propagateOrbit(initialTLE.getDate()));
         final Attitude attitude = attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
         super.resetInitialState(new SpacecraftState(orbit, attitude, mass));
     }
@@ -536,9 +539,23 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      */
     protected abstract void sxpPropagate(double t);
 
+    /** Set the initial state.
+     *  @param initialState initial state
+     */
+    @DefaultDataContext
+    public void setInitialState(final SpacecraftState initialState) {
+        resetInitialState(initialState);
+    }
+
     /** {@inheritDoc} */
+    @DefaultDataContext
     public void resetInitialState(final SpacecraftState state) {
-        throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
+        super.resetInitialState(state);
+        super.setStartDate(state.getDate());
+        final TLE newTLE = TLE.stateToTLE(state, tle);
+        this.tle = newTLE;
+        initializeCommons();
+        sxpInitialize();
     }
 
     /** {@inheritDoc} */
@@ -553,7 +570,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
 
     /** {@inheritDoc} */
     protected Orbit propagateOrbit(final AbsoluteDate date) {
-        return new CartesianOrbit(getPVCoordinates(date), teme, date, TLEConstants.MU);
+        return OrbitType.KEPLERIAN.convertType(new CartesianOrbit(getPVCoordinates(date), teme, date, TLEConstants.MU));
     }
 
     /** Get the underlying TLE.

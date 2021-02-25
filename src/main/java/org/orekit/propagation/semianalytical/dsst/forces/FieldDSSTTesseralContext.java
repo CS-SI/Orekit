@@ -34,7 +34,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
  * @author Bryan Cazabonne
  * @since 10.0
  */
-class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends FieldForceModelContext<T> {
+public class FieldDSSTTesseralContext<T extends RealFieldElement<T>> extends FieldForceModelContext<T> {
 
     /** Retrograde factor I.
      *  <p>
