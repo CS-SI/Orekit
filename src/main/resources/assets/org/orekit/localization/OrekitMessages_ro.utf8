@@ -40,8 +40,8 @@ FRAME_NO_NTH_ANCESTOR = sistemul de coordonate {0} are nivelul {1}, nu poate ave
 # ITRF frame {0} not found
 NO_SUCH_ITRF_FRAME = sistemul de coordonate ITRF cu numele {0} nu a fost găsit
 
-# unsupported local orbital frame, supported types: {0} and {1}
-UNSUPPORTED_LOCAL_ORBITAL_FRAME = sistem orbital de coordonate nesuportat, tipuri suportate: {0} și {1}
+# unsupported local orbital frame {0}
+UNSUPPORTED_LOCAL_ORBITAL_FRAME = sistem orbital de coordonate nesuportat {0}
 
 # non pseudo-inertial frame "{0}"
 NON_PSEUDO_INERTIAL_FRAME = sistemul de coordonate non pseudo-inerțial "{0}"

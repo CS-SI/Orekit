@@ -40,8 +40,8 @@ FRAME_NO_NTH_ANCESTOR = o sistema de referencia {0} está a unha profundidade do
 # ITRF frame {0} not found
 NO_SUCH_ITRF_FRAME = <MISSING TRANSLATION>
 
-# unsupported local orbital frame, supported types: {0} and {1}
-UNSUPPORTED_LOCAL_ORBITAL_FRAME = sistema de referencia orbital local non soportado, sistemas de referencia soportados : {0} e {1}
+# unsupported local orbital frame {0}
+UNSUPPORTED_LOCAL_ORBITAL_FRAME = sistema de referencia orbital local non soportado {0}
 
 # non pseudo-inertial frame "{0}"
 NON_PSEUDO_INERTIAL_FRAME = sistema de referencia non pseudo-inercial "{0}"

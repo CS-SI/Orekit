@@ -40,8 +40,8 @@ FRAME_NO_NTH_ANCESTOR = ramme {0} har dybden {1}, den kan ikke have en forgænge
 # ITRF frame {0} not found
 NO_SUCH_ITRF_FRAME = ITRF ramme {0} blev ikke fundet
 
-# unsupported local orbital frame, supported types: {0} and {1}
-UNSUPPORTED_LOCAL_ORBITAL_FRAME = ikke understøttet baneramme, understøttede typer: {0} og {1}
+# unsupported local orbital frame {0}
+UNSUPPORTED_LOCAL_ORBITAL_FRAME = ikke understøttet baneramme {0}
 
 # non pseudo-inertial frame "{0}"
 NON_PSEUDO_INERTIAL_FRAME = ikke pseudo-inertial ramme "{0}"

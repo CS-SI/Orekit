@@ -24,7 +24,9 @@ import org.orekit.files.ccsds.ndm.NdmFile;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
+import org.orekit.frames.Frame;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
 
 /**
  * This class stores all the information of the Attitude Parameter Message (APM) File parsed
@@ -53,14 +55,19 @@ public class ApmFile extends NdmFile<Header, Segment<AdmMetadata, ApmData>> {
      * The attitude is extracted from the file mandatory
      * {@link ApmQuaternion quaternion logical block}.
      * </p>
+     * @param frame reference frame with respect to which attitude must be defined,
+     * (may be null if attitude is <em>not</em> orbit-relative and one wants
+     * attitude in the same frame as used in the attitude message)
+     * @param pv spacecraft position and velocity expressed in {@code frame}
+     * (may be null if attitude is <em>not</em> orbit-relative)
      * @return attitude
      */
-    public Attitude getAttitude() {
+    public Attitude getAttitude(final Frame frame, final PVCoordinates pv) {
         return getSegments().
                get(0).
                getData().
                getQuaternionBlock().
-               getAttitude();
+               getAttitude(frame, pv);
     }
 
 }

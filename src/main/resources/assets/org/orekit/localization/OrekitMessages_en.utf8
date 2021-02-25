@@ -40,8 +40,8 @@ FRAME_NO_NTH_ANCESTOR = frame {0} has depth {1}, it cannot have an ancestor {2} 
 # ITRF frame {0} not found
 NO_SUCH_ITRF_FRAME = ITRF frame {0} not found
 
-# unsupported local orbital frame, supported types: {0} and {1}
-UNSUPPORTED_LOCAL_ORBITAL_FRAME = unsupported local orbital frame, supported types: {0} and {1}
+# unsupported local orbital frame {0}
+UNSUPPORTED_LOCAL_ORBITAL_FRAME = unsupported local orbital frame {0}
 
 # non pseudo-inertial frame "{0}"
 NON_PSEUDO_INERTIAL_FRAME = non pseudo-inertial frame "{0}"

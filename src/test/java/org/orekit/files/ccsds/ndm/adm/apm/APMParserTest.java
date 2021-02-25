@@ -20,6 +20,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,16 +32,18 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
+import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
 import org.orekit.files.ccsds.section.Segment;
+import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
 
 public class APMParserTest {
 
@@ -114,7 +117,7 @@ public class APMParserTest {
         Assert.assertEquals(0.0,     segment.getData().getQuaternionBlock().getQuaternionDot().getQ2(), QUATERNION_PRECISION);
         Assert.assertEquals(0.0,     segment.getData().getQuaternionBlock().getQuaternionDot().getQ3(), QUATERNION_PRECISION);
 
-        Attitude attitude = file.getAttitude();
+        Attitude attitude = file.getAttitude(null, null);
         Assert.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, 15.1172, TimeScalesFactory.getUTC()),
                             attitude.getDate());
         Assert.assertEquals("ITRF-97/CIO/2010-based ITRF simple EOP", attitude.getReferenceFrame().getName());
@@ -385,10 +388,10 @@ public class APMParserTest {
     }
 
     @Test
-    public void testOrbitRelativeFrame() {
+    public void testOrbitRelativeFrameInertial() {
 
         // File
-        final String ex = "/ccsds/adm/apm/APM-orbit-relative-frame.txt";
+        final String ex = "/ccsds/adm/apm/APM-orbit-relative-frame-inertial.txt";
 
         // Initialize the parser
         final ApmParser parser = new ParserBuilder().
@@ -407,23 +410,87 @@ public class APMParserTest {
 
         // Check Header Block
         Assert.assertEquals(1.0, file.getHeader().getFormatVersion(), 1.0e-10);
-        Assert.assertEquals(new AbsoluteDate(2003, 9, 30, 19, 23, 57,
+        Assert.assertEquals(new AbsoluteDate(2021, 2, 24, 18, 59, 43,
                                              TimeScalesFactory.getUTC()),
                             file.getHeader().getCreationDate());
-        Assert.assertEquals("GSFC", file.getHeader().getOriginator());
+        Assert.assertEquals("CS GROUP", file.getHeader().getOriginator());
 
         Segment<AdmMetadata, ApmData> segment = file.getSegments().get(0);
 
         // Check Metadata Block
-        Assert.assertEquals("TRMM",       segment.getMetadata().getObjectName());
-        Assert.assertEquals("1997-009A",  segment.getMetadata().getObjectID());
-        Assert.assertEquals(1997,         segment.getMetadata().getLaunchYear());
-        Assert.assertEquals(9,            segment.getMetadata().getLaunchNumber());
-        Assert.assertEquals("A",          segment.getMetadata().getLaunchPiece());
-        Assert.assertEquals("EARTH",      segment.getMetadata().getCenterName());
+        Assert.assertEquals("DUMMY",      segment.getMetadata().getObjectName());
+        Assert.assertEquals("9999-111Z",  segment.getMetadata().getObjectID());
+        Assert.assertEquals(9999,         segment.getMetadata().getLaunchYear());
+        Assert.assertEquals(111,          segment.getMetadata().getLaunchNumber());
+        Assert.assertEquals("Z",          segment.getMetadata().getLaunchPiece());
+        Assert.assertEquals("JUPITER",    segment.getMetadata().getCenterName());
         Assert.assertTrue(segment.getMetadata().getHasCreatableBody());
-        Assert.assertEquals(CelestialBodyFactory.getEarth(), segment.getMetadata().getCenterBody());
-        Assert.assertEquals(TimeSystem.UTC,              segment.getMetadata().getTimeSystem());
+        Assert.assertEquals(CelestialBodyFactory.getJupiter(), segment.getMetadata().getCenterBody());
+        Assert.assertEquals(TimeSystem.TDB,              segment.getMetadata().getTimeSystem());
+
+        // Check data block
+        Assert.assertFalse(segment.getData().hasManeuvers());
+        Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY,
+                            segment.getData().getQuaternionBlock().getFrameA().asSpacecraftBodyFrame().getBaseEquipment());
+        Assert.assertEquals("1", segment.getData().getQuaternionBlock().getFrameA().asSpacecraftBodyFrame().getLabel());
+        Assert.assertEquals(OrbitRelativeFrame.VNC_INERTIAL, segment.getData().getQuaternionBlock().getFrameB().asOrbitRelativeFrame());
+        Assert.assertFalse(segment.getData().getQuaternionBlock().isA2b());
+        Assert.assertEquals(new AbsoluteDate(2021, 1, 1, 0, 0, 0.0, TimeScalesFactory.getTDB()),
+                            segment.getData().getQuaternionBlock().getEpoch());
+
+        PVCoordinates pv = new PVCoordinates(new Vector3D( 1.234e7, -0.567e7, 9.876e6),
+                                             new Vector3D(-0.772e4,  5.002e4, 4.892e2));
+        Attitude attitude = file.getAttitude(FramesFactory.getEME2000(), pv);
+        Vector3D xSat = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
+        Vector3D ySat = attitude.getRotation().applyInverseTo(Vector3D.PLUS_J);
+        Assert.assertEquals(FastMath.PI, Vector3D.angle(xSat, pv.getVelocity()), 1.0e-10);
+        Assert.assertEquals(0.0,         Vector3D.angle(ySat, pv.getMomentum()), 1.0e-10);
+        Assert.assertEquals(0.0,         attitude.getSpin().getX(), 1.0e-10);
+        Assert.assertEquals(0.0,         attitude.getSpin().getY(), 1.0e-10);
+        Assert.assertEquals(0.0,         attitude.getSpin().getZ(), 1.0e-10);
+
+    }
+
+    @Test
+    public void testOrbitRelativeFrameRotating() {
+
+        // File
+        final String ex = "/ccsds/adm/apm/APM-orbit-relative-frame-rotating.txt";
+
+        // Initialize the parser
+        final ApmParser parser = new ParserBuilder().
+                                 withMissionReferenceDate(new AbsoluteDate("2002-09-30T14:28:15.117",
+                                                                           TimeScalesFactory.getUTC())).
+                                 buildApmParser();
+
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+
+        // Generated APM file
+        final ApmFile file = parser.parseMessage(source);
+
+        // Verify general data
+        Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
+        Assert.assertEquals(DataContext.getDefault(),  file.getDataContext());
+
+        // Check Header Block
+        Assert.assertEquals(1.0, file.getHeader().getFormatVersion(), 1.0e-10);
+        Assert.assertEquals(new AbsoluteDate(2021, 2, 24, 18, 59, 43,
+                                             TimeScalesFactory.getUTC()),
+                            file.getHeader().getCreationDate());
+        Assert.assertEquals("CS GROUP", file.getHeader().getOriginator());
+
+        Segment<AdmMetadata, ApmData> segment = file.getSegments().get(0);
+
+        // Check Metadata Block
+        Assert.assertEquals("DUMMY",      segment.getMetadata().getObjectName());
+        Assert.assertEquals("9999-111Z",  segment.getMetadata().getObjectID());
+        Assert.assertEquals(9999,         segment.getMetadata().getLaunchYear());
+        Assert.assertEquals(111,          segment.getMetadata().getLaunchNumber());
+        Assert.assertEquals("Z",          segment.getMetadata().getLaunchPiece());
+        Assert.assertEquals("JUPITER",    segment.getMetadata().getCenterName());
+        Assert.assertTrue(segment.getMetadata().getHasCreatableBody());
+        Assert.assertEquals(CelestialBodyFactory.getJupiter(), segment.getMetadata().getCenterBody());
+        Assert.assertEquals(TimeSystem.TDB,              segment.getMetadata().getTimeSystem());
 
         // Check data block
         Assert.assertFalse(segment.getData().hasManeuvers());
@@ -431,25 +498,81 @@ public class APMParserTest {
                             segment.getData().getQuaternionBlock().getFrameA().asSpacecraftBodyFrame().getBaseEquipment());
         Assert.assertEquals("1", segment.getData().getQuaternionBlock().getFrameA().asSpacecraftBodyFrame().getLabel());
         Assert.assertEquals(OrbitRelativeFrame.VNC_ROTATING, segment.getData().getQuaternionBlock().getFrameB().asOrbitRelativeFrame());
-        Assert.assertTrue(segment.getData().getQuaternionBlock().isA2b());
-        Assert.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, 15.1172,
-                                             TimeScalesFactory.getUTC()),
+        Assert.assertFalse(segment.getData().getQuaternionBlock().isA2b());
+        Assert.assertEquals(new AbsoluteDate(2021, 1, 1, 0, 0, 0.0, TimeScalesFactory.getTDB()),
                             segment.getData().getQuaternionBlock().getEpoch());
-        Assert.assertEquals(0.25678, segment.getData().getQuaternionBlock().getQuaternion().getQ0(),    QUATERNION_PRECISION);
-        Assert.assertEquals(0.00005, segment.getData().getQuaternionBlock().getQuaternion().getQ1(),    QUATERNION_PRECISION);
-        Assert.assertEquals(0.87543, segment.getData().getQuaternionBlock().getQuaternion().getQ2(),    QUATERNION_PRECISION);
-        Assert.assertEquals(0.40949, segment.getData().getQuaternionBlock().getQuaternion().getQ3(),    QUATERNION_PRECISION);
-        Assert.assertEquals(0.0,     segment.getData().getQuaternionBlock().getQuaternionDot().getQ0(), QUATERNION_PRECISION);
-        Assert.assertEquals(0.0,     segment.getData().getQuaternionBlock().getQuaternionDot().getQ1(), QUATERNION_PRECISION);
-        Assert.assertEquals(0.0,     segment.getData().getQuaternionBlock().getQuaternionDot().getQ2(), QUATERNION_PRECISION);
-        Assert.assertEquals(0.0,     segment.getData().getQuaternionBlock().getQuaternionDot().getQ3(), QUATERNION_PRECISION);
+
+        PVCoordinates pv = new PVCoordinates(new Vector3D( 1.234e7, -0.567e7, 9.876e6),
+                                             new Vector3D(-0.772e4,  5.002e4, 4.892e2));
+        Attitude attitude = file.getAttitude(FramesFactory.getEME2000(), pv);
+        Vector3D xSat = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
+        Vector3D ySat = attitude.getRotation().applyInverseTo(Vector3D.PLUS_J);
+        Assert.assertEquals(FastMath.PI, Vector3D.angle(xSat, pv.getVelocity()), 1.0e-10);
+        Assert.assertEquals(0.0,         Vector3D.angle(ySat, pv.getMomentum()), 1.0e-10);
+        Assert.assertEquals(0.0,                               attitude.getSpin().getX(), 1.0e-10);
+        Assert.assertEquals(pv.getAngularVelocity().getNorm(), attitude.getSpin().getY(), 1.0e-10);
+        Assert.assertEquals(0.0,                               attitude.getSpin().getZ(), 1.0e-10);
+
+    }
+
+    @Test
+    public void testUnsupportedOrbitRelativeFrame() {
+
+        // File
+        final String ex = "/ccsds/adm/apm/APM-unsupported-orbit-relative-frame.txt";
+
+        // Initialize the parser
+        final ApmParser parser = new ParserBuilder().
+                                 withMissionReferenceDate(new AbsoluteDate("2002-09-30T14:28:15.117",
+                                                                           TimeScalesFactory.getUTC())).
+                                 buildApmParser();
+
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+
+        // Generated APM file
+        final ApmFile file = parser.parseMessage(source);
+
+        // Verify general data
+        Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
+        Assert.assertEquals(DataContext.getDefault(),  file.getDataContext());
+
+        // Check Header Block
+        Assert.assertEquals(1.0, file.getHeader().getFormatVersion(), 1.0e-10);
+        Assert.assertEquals(new AbsoluteDate(2021, 2, 24, 18, 59, 43,
+                                             TimeScalesFactory.getUTC()),
+                            file.getHeader().getCreationDate());
+        Assert.assertEquals("CS GROUP", file.getHeader().getOriginator());
+
+        Segment<AdmMetadata, ApmData> segment = file.getSegments().get(0);
+
+        // Check Metadata Block
+        Assert.assertEquals("DUMMY",      segment.getMetadata().getObjectName());
+        Assert.assertEquals("9999-111Z",  segment.getMetadata().getObjectID());
+        Assert.assertEquals(9999,         segment.getMetadata().getLaunchYear());
+        Assert.assertEquals(111,          segment.getMetadata().getLaunchNumber());
+        Assert.assertEquals("Z",          segment.getMetadata().getLaunchPiece());
+        Assert.assertEquals("JUPITER",    segment.getMetadata().getCenterName());
+        Assert.assertTrue(segment.getMetadata().getHasCreatableBody());
+        Assert.assertEquals(CelestialBodyFactory.getJupiter(), segment.getMetadata().getCenterBody());
+        Assert.assertEquals(TimeSystem.TDB,              segment.getMetadata().getTimeSystem());
+
+        // Check data block
+        Assert.assertFalse(segment.getData().hasManeuvers());
+        Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY,
+                            segment.getData().getQuaternionBlock().getFrameA().asSpacecraftBodyFrame().getBaseEquipment());
+        Assert.assertEquals("1", segment.getData().getQuaternionBlock().getFrameA().asSpacecraftBodyFrame().getLabel());
+        Assert.assertEquals(OrbitRelativeFrame.SEZ_INERTIAL, segment.getData().getQuaternionBlock().getFrameB().asOrbitRelativeFrame());
+        Assert.assertTrue(segment.getData().getQuaternionBlock().isA2b());
+        Assert.assertEquals(new AbsoluteDate(2021, 1, 1, 0, 0, 0.0, TimeScalesFactory.getTDB()),
+                            segment.getData().getQuaternionBlock().getEpoch());
 
         try {
-            file.getAttitude();
+            file.getAttitude(FramesFactory.getEME2000(), new PVCoordinates(new Vector3D( 1.234e7, -0.567e7, 9.876e6),
+                                                                           new Vector3D(-0.772e4,  5.002e4, 4.892e2)));
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_INVALID_FRAME, oe.getSpecifier());
-            Assert.assertEquals(OrbitRelativeFrame.VNC_ROTATING.name(), oe.getParts()[0]);
+            Assert.assertEquals(OrekitMessages.UNSUPPORTED_LOCAL_ORBITAL_FRAME, oe.getSpecifier());
+            Assert.assertEquals(OrbitRelativeFrame.SEZ_INERTIAL.name(), oe.getParts()[0]);
         }
 
     }

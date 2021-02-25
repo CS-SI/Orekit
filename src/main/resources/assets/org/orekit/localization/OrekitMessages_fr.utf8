@@ -40,8 +40,8 @@ FRAME_NO_NTH_ANCESTOR = le repère {0} est à une profondeur de {1}, il ne peut 
 # ITRF frame {0} not found
 NO_SUCH_ITRF_FRAME = le repère ITRF {0} n''a pas été trouvé
 
-# unsupported local orbital frame, supported types: {0} and {1}
-UNSUPPORTED_LOCAL_ORBITAL_FRAME = repère orbital local non supporté, repères supportés : {0} et {1}
+# unsupported local orbital frame {0}
+UNSUPPORTED_LOCAL_ORBITAL_FRAME = repère orbital local {0} non supporté
 
 # non pseudo-inertial frame "{0}"
 NON_PSEUDO_INERTIAL_FRAME = le repère "{0}" n''est pas pseudo-inertiel
