@@ -93,9 +93,9 @@ public class AEMWriterTest {
         AemMetadata metadata = new AemMetadata(s0.getInterpolationSamples() - 1);
         metadata.setObjectName(s0.getMetadata().getObjectName());
         metadata.setObjectID(s0.getMetadata().getObjectID());
-        metadata.setFrameA(s0.getMetadata().getFrameA());
-        metadata.setFrameB(s0.getMetadata().getFrameB());
-        metadata.setA2b(s0.getMetadata().isA2b());
+        metadata.getEndpoints().setFrameA(s0.getMetadata().getEndpoints().getFrameA());
+        metadata.getEndpoints().setFrameB(s0.getMetadata().getEndpoints().getFrameB());
+        metadata.getEndpoints().setA2b(s0.getMetadata().getEndpoints().isA2b());
         metadata.setTimeSystem(s0.getMetadata().getTimeSystem());
         metadata.setStartTime(s0.getMetadata().getStart());
         metadata.setStopTime(s0.getMetadata().getStop());
@@ -339,7 +339,7 @@ public class AEMWriterTest {
             metadata.addComment("metadata for " + objectName);
             metadata.setObjectID(objectID);
             metadata.setObjectName(objectName);
-            metadata.setFrameA(FrameFacade.map(referenceFrame));
+            metadata.getEndpoints().setFrameA(FrameFacade.map(referenceFrame));
             metadata.setAttitudeType(type);
             metadata.setStartTime(ac0.getDate());
             metadata.setStopTime(ac0.getDate().shiftedBy(duration));
@@ -376,12 +376,12 @@ public class AEMWriterTest {
         metadata.setTimeSystem(TimeSystem.TT);
         metadata.setObjectID("9999-999ZZZ");
         metadata.setObjectName("transgalactic");
-        metadata.setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
-                                           null, null, "GCRF"));
-        metadata.setFrameB(new FrameFacade(null, null, null,
-                                           new SpacecraftBodyFrame(SpacecraftBodyFrame.BaseEquipment.GYRO, "1"),
-                                           "GYRO 1"));
-        metadata.setA2b(true);
+        metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
+                                                          null, null, "GCRF"));
+        metadata.getEndpoints().setFrameB(new FrameFacade(null, null, null,
+                                                          new SpacecraftBodyFrame(SpacecraftBodyFrame.BaseEquipment.GYRO, "1"),
+                                                          "GYRO 1"));
+        metadata.getEndpoints().setA2b(true);
         metadata.setStartTime(AbsoluteDate.J2000_EPOCH.shiftedBy(80 * Constants.JULIAN_CENTURY));
         metadata.setStopTime(metadata.getStartTime().shiftedBy(Constants.JULIAN_YEAR));
         metadata.setAttitudeType(AemAttitudeType.QUATERNION_DERIVATIVE);

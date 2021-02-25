@@ -231,12 +231,12 @@ public class OrekitAttitudeEphemerisFileTest {
         metadata.setTimeSystem(TimeSystem.TT);
         metadata.setObjectID("SATELLITE1");
         metadata.setObjectName("transgalactic");
-        metadata.setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
-                                           null, null, "GCRF"));
-        metadata.setFrameB(new FrameFacade(null, null, null,
-                                           new SpacecraftBodyFrame(SpacecraftBodyFrame.BaseEquipment.GYRO, "1"),
-                                           "GYRO 1"));
-        metadata.setA2b(true);
+        metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
+                                                          null, null, "GCRF"));
+        metadata.getEndpoints().setFrameB(new FrameFacade(null, null, null,
+                                                          new SpacecraftBodyFrame(SpacecraftBodyFrame.BaseEquipment.GYRO, "1"),
+                                                          "GYRO 1"));
+        metadata.getEndpoints().setA2b(true);
         metadata.setStartTime(AbsoluteDate.J2000_EPOCH.shiftedBy(80 * Constants.JULIAN_CENTURY));
         metadata.setStopTime(metadata.getStartTime().shiftedBy(Constants.JULIAN_YEAR));
         metadata.setAttitudeType(AemAttitudeType.QUATERNION_DERIVATIVE);

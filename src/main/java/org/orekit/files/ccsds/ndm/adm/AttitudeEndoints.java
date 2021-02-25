@@ -1,0 +1,224 @@
+/* Copyright 2002-2021 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.orekit.files.ccsds.ndm.adm;
+
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.attitudes.Attitude;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
+import org.orekit.frames.Frame;
+import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedAngularCoordinates;
+
+/** Endpoints for attitude definition.
+ * <p>
+ * This class provides a bridge between two different views of attitude definition.
+ * In both views, there is an external frame, based on either celestial body or orbit-relative
+ * and there is a spacecraft body frame.
+ * <ul>
+ *   <li>CCSDS ADM view: frames are labeled as A and B but nothing tells which is which
+ *   and attitude can be defined in any direction</li>
+ *   <li>{@link Attitude Orekit attitude} view: attitude is always from external to
+ *   spacecraft body</li>
+ * </ul>
+ * </p>
+ * @author Luc Maisonobe
+ * @since 11.0
+ */
+public class AttitudeEndoints {
+
+    /** Frame A. */
+    private FrameFacade frameA;
+
+    /** Frame B. */
+    private FrameFacade frameB;
+
+    /** Flag for frames direction. */
+    private Boolean a2b;
+
+    /** Complain if a field is null.
+     * @param field field to check
+     * @param key key associated with the field
+     */
+    private void checkNotNull(final Object field, final Enum<?> key) {
+        if (field == null) {
+            throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, key.name());
+        }
+    }
+    /** Check external frame is properly initialized.
+     * @param aKey key for frame A
+     * @param bKey key for frame B
+     */
+    public void checkExternalFrame(final Enum<?> aKey, final Enum<?> bKey) {
+        checkNotNull(frameA, aKey);
+        checkNotNull(frameB, bKey);
+        if (frameA.asSpacecraftBodyFrame() != null && frameB.asSpacecraftBodyFrame() != null) {
+            // we cannot have two spacecraft body frames
+            throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, frameB.getName());
+        }
+    }
+
+    /** Check is mandatory entries <em>except external frame</em> have been initialized.
+     * <p>
+     * Either frame A or frame B must be initialized with a {@link
+     * org.orekit.files.ccsds.definitions.SpacecraftBodyFrame spacecraft body frame}.
+     * </p>
+     * <p>
+     * This method should throw an exception if some mandatory entry is missing
+     * </p>
+     * @param aKey key for frame A
+     * @param bKey key for frame B
+     * @param dirKey key for direction
+     */
+    public void checkMandatoryEntriesExceptExternalFrame(final Enum<?> aKey, final Enum<?> bKey,
+                                                         final Enum<?> dirKey) {
+
+        if (frameA == null) {
+            if (frameB == null || frameB.asSpacecraftBodyFrame() == null) {
+                throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, aKey);
+            }
+        } else if (frameA.asSpacecraftBodyFrame() == null) {
+            if (frameB == null) {
+                throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, bKey);
+            } else if (frameB.asSpacecraftBodyFrame() == null) {
+                // at least one of the frame must be a spacecraft body frame
+                throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, frameB.getName());
+            }
+        }
+
+        checkNotNull(a2b, dirKey);
+
+    }
+
+    /** Set frame A.
+     * @param frameA frame A
+     */
+    public void setFrameA(final FrameFacade frameA) {
+        this.frameA = frameA;
+    }
+
+    /** Get frame A.
+     * @return frame A
+     */
+    public FrameFacade getFrameA() {
+        return frameA;
+    }
+
+    /** Set frame B.
+     * @param frameB frame B
+     */
+    public void setFrameB(final FrameFacade frameB) {
+        this.frameB = frameB;
+    }
+
+    /** Get frame B.
+     * @return frame B
+     */
+    public FrameFacade getFrameB() {
+        return frameB;
+    }
+
+    /** Set rotation direction.
+     * @param a2b if true, rotation is from {@link #getFrameA() frame A}
+     * to {@link #getFrameB() frame B}
+     */
+    public void setA2b(final boolean a2b) {
+        this.a2b = a2b;
+    }
+
+    /** Check if rotation direction is from {@link #getFrameA() frame A} to {@link #getFrameB() frame B}.
+     * @return true if rotation direction is from {@link #getFrameA() frame A} to {@link #getFrameB() frame B}
+     */
+    public boolean isA2b() {
+        return a2b == null ? true : a2b;
+    }
+
+    /** Get the external frame.
+     * @return external frame
+     */
+    public FrameFacade getExternalFrame() {
+        return frameA.asSpacecraftBodyFrame() == null ? frameA : frameB;
+    }
+
+    /** Get the spacecraft body frame.
+     * @return spacecraft body frame
+     */
+    public FrameFacade getSpacecraftBodyFrame() {
+        return frameA.asSpacecraftBodyFrame() == null ? frameB : frameA;
+    }
+
+    /** Check if attitude is from external frame to spacecraft body frame.
+     * <p>
+     * {@link #checkMandatoryEntries() Mandatory entries} must have been
+     * initialized properly to non-null values before this method is called,
+     * otherwise {@code NullPointerException} will be thrown.
+     * </p>
+     * @return true if attitude is from external frame to spacecraft body frame
+     */
+    public boolean isExternal2SpacecraftBody() {
+        return a2b ^ frameB.asSpacecraftBodyFrame() == null;
+    }
+
+    /** Get the attitude.
+     * @param frame reference frame with respect to which attitude must be defined
+     * (may be null if attitude is <em>not</em> orbit-relative and one wants
+     * attitude in the same frame as used in the attitude message)
+     * @param pv spacecraft position and velocity expressed in {@code frame}
+     * (may be null if attitude is <em>not</em> orbit-relative)
+     * @param rawAttitude raw rotation/rotation rate/rotation acceleration as stored in th CCSDS message
+     * @return attitude
+     */
+    public Attitude getAttitude(final Frame frame, final PVCoordinates pv,
+                                final TimeStampedAngularCoordinates rawAttitude) {
+
+        // attitude converted to Orekit conventions
+        final TimeStampedAngularCoordinates att =
+                        isExternal2SpacecraftBody() ? rawAttitude : rawAttitude.revert();
+
+        final FrameFacade        external = getExternalFrame();
+        final OrbitRelativeFrame orf      = external.asOrbitRelativeFrame();
+        if (orf != null) {
+            // this is an orbit-relative attitude
+            if (orf.getLofType() == null) {
+                throw new OrekitException(OrekitMessages.UNSUPPORTED_LOCAL_ORBITAL_FRAME, external.getName());
+            }
+
+            // construction of the local orbital frame, using PV from reference frame
+            final AngularCoordinates referenceToLof =
+                            orf.isQuasiInertial() ?
+                            new AngularCoordinates(orf.getLofType().rotationFromInertial(pv), Vector3D.ZERO) :
+                            orf.getLofType().transformFromInertial(att.getDate(), pv).getAngular();
+
+            // compose with APM
+            return new Attitude(frame, att.addOffset(referenceToLof));
+
+        } else {
+            // this is an absolute attitude
+            if (external.asFrame() == null) {
+                // this should never happen as all CelestialBodyFrame have an Orekit mapping
+                throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, external.getName());
+            }
+            final Attitude attitude = new Attitude(external.asFrame(), att);
+            return frame == null ? attitude : attitude.withReferenceFrame(frame);
+        }
+
+    }
+
+}

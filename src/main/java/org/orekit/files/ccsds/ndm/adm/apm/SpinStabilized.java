@@ -18,7 +18,7 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.ndm.adm.AttitudeEndoints;
 import org.orekit.files.ccsds.section.CommentsContainer;
 
 /**
@@ -28,14 +28,8 @@ import org.orekit.files.ccsds.section.CommentsContainer;
  */
 public class SpinStabilized extends CommentsContainer {
 
-    /** Frame A. */
-    private FrameFacade frameA;
-
-    /** Frame B. */
-    private FrameFacade frameB;
-
-    /** Flag for frames direction. */
-    private Boolean a2b;
+    /** Endpoints (i.e. frames A, B and their relationship). */
+    private final AttitudeEndoints endpoints;
 
     /** Right ascension of spin axis vector (rad). */
     private double spinAlpha;
@@ -61,6 +55,7 @@ public class SpinStabilized extends CommentsContainer {
     /** Simple constructor.
      */
     public SpinStabilized() {
+        endpoints      = new AttitudeEndoints();
         spinAlpha      = Double.NaN;
         spinDelta      = Double.NaN;
         spinAngle      = Double.NaN;
@@ -74,9 +69,10 @@ public class SpinStabilized extends CommentsContainer {
     @Override
     public void checkMandatoryEntries() {
         super.checkMandatoryEntries();
-        checkNotNull(frameA,      SpinStabilizedKey.SPIN_FRAME_A);
-        checkNotNull(frameB,      SpinStabilizedKey.SPIN_FRAME_B);
-        checkNotNull(a2b,         SpinStabilizedKey.SPIN_DIR);
+        endpoints.checkMandatoryEntriesExceptExternalFrame(SpinStabilizedKey.SPIN_FRAME_A,
+                                                           SpinStabilizedKey.SPIN_FRAME_B,
+                                                           SpinStabilizedKey.SPIN_DIR);
+        endpoints.checkExternalFrame(SpinStabilizedKey.SPIN_FRAME_A, SpinStabilizedKey.SPIN_FRAME_B);
         checkNotNaN(spinAlpha,    SpinStabilizedKey.SPIN_ALPHA);
         checkNotNaN(spinDelta,    SpinStabilizedKey.SPIN_DELTA);
         checkNotNaN(spinAngle,    SpinStabilizedKey.SPIN_ANGLE);
@@ -89,47 +85,11 @@ public class SpinStabilized extends CommentsContainer {
         }
     }
 
-    /** Set frame A.
-     * @param frameA frame A
+    /** Get the endpoints (i.e. frames A, B and their relationship).
+     * @return endpoints
      */
-    public void setFrameA(final FrameFacade frameA) {
-        this.frameA = frameA;
-    }
-
-    /** Get frame A.
-     * @return frame A
-     */
-    public FrameFacade getFrameA() {
-        return frameA;
-    }
-
-    /** Set frame B.
-     * @param frameB frame B
-     */
-    public void setFrameB(final FrameFacade frameB) {
-        this.frameB = frameB;
-    }
-
-    /** Get frame B.
-     * @return frame B
-     */
-    public FrameFacade getFrameB() {
-        return frameB;
-    }
-
-    /** Set rotation direction.
-     * @param a2b if true, rotation is from {@link #getFrameA() frame A}
-     * to {@link #getFrameB() frame B}
-     */
-    public void setA2b(final boolean a2b) {
-        this.a2b = a2b;
-    }
-
-    /** Check if rotation direction is from {@link #getFrameA() frame A} to {@link #getFrameB() frame B}.
-     * @return true if rotation direction is from {@link #getFrameA() frame A} to {@link #getFrameB() frame B}
-     */
-    public boolean isA2b() {
-        return a2b == null ? true : a2b;
+    public AttitudeEndoints getEndpoints() {
+        return endpoints;
     }
 
     /**

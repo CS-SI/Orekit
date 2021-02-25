@@ -62,12 +62,12 @@ public class AEMAttitudeTypeTest {
                                        () -> null,
                                        metadata::getTimeSystem);
         metadata.setTimeSystem(TimeSystem.TAI);
-        metadata.setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
-                                           null, null, "GCRF"));
-        metadata.setFrameB(new FrameFacade(null, null, null,
-                                           new SpacecraftBodyFrame(SpacecraftBodyFrame.BaseEquipment.GYRO, "1"),
-                                           "GYRO 1"));
-        metadata.setA2b(true);
+        metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
+                                                          null, null, "GCRF"));
+        metadata.getEndpoints().setFrameB(new FrameFacade(null, null, null,
+                                                          new SpacecraftBodyFrame(SpacecraftBodyFrame.BaseEquipment.GYRO, "1"),
+                        "GYRO 1"));
+        metadata.getEndpoints().setA2b(true);
     }
 
     @After
@@ -156,14 +156,14 @@ public class AEMAttitudeTypeTest {
 
         // Test computation of attitude data from angular coordinates
         AemMetadata metadata = new AemMetadata(3);
-        metadata.setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
-                                           null, null, "GCRF"));
-        metadata.setFrameB(new FrameFacade(null, null, null,
-                                           new SpacecraftBodyFrame(SpacecraftBodyFrame.BaseEquipment.GYRO, "1"),
-                                           "GYRO 1"));
+        metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
+                                                          null, null, "GCRF"));
+        metadata.getEndpoints().setFrameB(new FrameFacade(null, null, null,
+                                                          new SpacecraftBodyFrame(SpacecraftBodyFrame.BaseEquipment.GYRO, "1"),
+                        "GYRO 1"));
         metadata.setIsFirst(true);
         metadata.setRateFrameIsA(false);
-        metadata.setA2b(true);
+        metadata.getEndpoints().setA2b(true);
         final double[] attitudeDataBis = quaternion.getAttitudeData(tsac, metadata);
         for (int i = 0; i < attitudeDataBis.length; i++) {
             Assert.assertEquals(Double.parseDouble(attitudeData[i + 1]), attitudeDataBis[i], QUATERNION_PRECISION);
@@ -192,13 +192,13 @@ public class AEMAttitudeTypeTest {
         // Test computation of attitude data from angular coordinates
         AemMetadata metadata = new AemMetadata(3);
         metadata.setIsFirst(true);
-        metadata.setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
-                                           null, null, "GCRF"));
-        metadata.setFrameB(new FrameFacade(null, null, null,
-                                           new SpacecraftBodyFrame(SpacecraftBodyFrame.BaseEquipment.GYRO, "1"),
-                                           "GYRO 1"));
+        metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
+                                                          null, null, "GCRF"));
+        metadata.getEndpoints().setFrameB(new FrameFacade(null, null, null,
+                                                          new SpacecraftBodyFrame(SpacecraftBodyFrame.BaseEquipment.GYRO, "1"),
+                                                          "GYRO 1"));
         metadata.setRateFrameIsA(false);
-        metadata.setA2b(true);
+        metadata.getEndpoints().setA2b(true);
         final double[] attitudeDataBis = quaternion.getAttitudeData(tsac, metadata);
         for (int i = 0; i < attitudeDataBis.length; i++) {
             Assert.assertEquals(Double.parseDouble(attitudeData[i + 1]), attitudeDataBis[i], QUATERNION_PRECISION);
@@ -218,7 +218,7 @@ public class AEMAttitudeTypeTest {
             "2021-01-29T21:24:37", "0.56748", "0.03146", "0.45689", "0.68427", "43.1", "12.8", "37.9"
         };
         metadata.setRateFrameIsA(true);
-        metadata.setA2b(true);
+        metadata.getEndpoints().setA2b(true);
         metadata.setIsFirst(false);
         final TimeStampedAngularCoordinates tsac = quaternionRate.parse(metadata, context, attitudeData, null);
         Assert.assertEquals(0.68427,  tsac.getRotation().getQ0(),    QUATERNION_PRECISION);
@@ -232,14 +232,14 @@ public class AEMAttitudeTypeTest {
 
         // Test computation of attitude data from angular coordinates
         AemMetadata metadata = new AemMetadata(3);
-        metadata.setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
-                                           null, null, "GCRF"));
-        metadata.setFrameB(new FrameFacade(null, null, null,
-                                           new SpacecraftBodyFrame(SpacecraftBodyFrame.BaseEquipment.GYRO, "1"),
-                                           "GYRO 1"));
+        metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
+                                                          null, null, "GCRF"));
+        metadata.getEndpoints().setFrameB(new FrameFacade(null, null, null,
+                                                          new SpacecraftBodyFrame(SpacecraftBodyFrame.BaseEquipment.GYRO, "1"),
+                                                          "GYRO 1"));
         metadata.setIsFirst(false);
         metadata.setRateFrameIsA(true);
-        metadata.setA2b(true);
+        metadata.getEndpoints().setA2b(true);
         final double[] attitudeDataBis = quaternionRate.getAttitudeData(tsac, metadata);
         for (int i = 0; i < attitudeDataBis.length; i++) {
             Assert.assertEquals(Double.parseDouble(attitudeData[i + 1]), attitudeDataBis[i], QUATERNION_PRECISION);
@@ -267,13 +267,13 @@ public class AEMAttitudeTypeTest {
 
         // Test computation of attitude data from angular coordinates
         AemMetadata metadata = new AemMetadata(3);
-        metadata.setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
-                                           null, null, "GCRF"));
-        metadata.setFrameB(new FrameFacade(null, null, null,
-                                           new SpacecraftBodyFrame(SpacecraftBodyFrame.BaseEquipment.GYRO, "1"),
-                                           "GYRO 1"));
+        metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
+                                                          null, null, "GCRF"));
+        metadata.getEndpoints().setFrameB(new FrameFacade(null, null, null,
+                                                          new SpacecraftBodyFrame(SpacecraftBodyFrame.BaseEquipment.GYRO, "1"),
+                                                          "GYRO 1"));
         metadata.setRateFrameIsA(false);
-        metadata.setA2b(true);
+        metadata.getEndpoints().setA2b(true);
         metadata.setEulerRotSeq(RotationOrder.XYZ);
         final double[] attitudeDataBis = eulerAngle.getAttitudeData(tsac, metadata);
         for (int i = 0; i < attitudeDataBis.length; i++) {
@@ -291,15 +291,15 @@ public class AEMAttitudeTypeTest {
 
         AemMetadata mdWithoutRateFrame = new AemMetadata(4);
         mdWithoutRateFrame.setTimeSystem(TimeSystem.TAI);
-        mdWithoutRateFrame.setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
-                                           null, null, "GCRF"));
-        mdWithoutRateFrame.setFrameB(new FrameFacade(null, null, null,
-                                           new SpacecraftBodyFrame(SpacecraftBodyFrame.BaseEquipment.GYRO, "1"),
-                                           "GYRO 1"));
+        mdWithoutRateFrame.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
+                                                                    null, null, "GCRF"));
+        mdWithoutRateFrame.getEndpoints().setFrameB(new FrameFacade(null, null, null,
+                                                                    new SpacecraftBodyFrame(SpacecraftBodyFrame.BaseEquipment.GYRO, "1"),
+                                                                    "GYRO 1"));
         mdWithoutRateFrame.setObjectID("9999-999ZZZ");
         mdWithoutRateFrame.setObjectName("the-object");
         mdWithoutRateFrame.setAttitudeType(eulerAngleRate);
-        mdWithoutRateFrame.setA2b(true);
+        mdWithoutRateFrame.getEndpoints().setA2b(true);
         mdWithoutRateFrame.setEulerRotSeq(RotationOrder.ZXZ);
         try {
             mdWithoutRateFrame.checkMandatoryEntriesExceptDatesAndExternalFrame();
@@ -320,7 +320,7 @@ public class AEMAttitudeTypeTest {
             "2021-01-29T21:24:37", "43.1", "12.8", "37.9", "1.452", "0.475", "1.112"
         };
         metadata.setRateFrameIsA(false);
-        metadata.setA2b(true);
+        metadata.getEndpoints().setA2b(true);
         metadata.setEulerRotSeq(RotationOrder.ZXZ);
         final TimeStampedAngularCoordinates tsac = eulerAngleRate.parse(metadata, context, attitudeData, null);
         final double[] angles = tsac.getRotation().getAngles(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM);
@@ -333,13 +333,13 @@ public class AEMAttitudeTypeTest {
 
         // Test computation of attitude data from angular coordinates
         AemMetadata metadata = new AemMetadata(3);
-        metadata.setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
-                                           null, null, "GCRF"));
-        metadata.setFrameB(new FrameFacade(null, null, null,
-                                           new SpacecraftBodyFrame(SpacecraftBodyFrame.BaseEquipment.GYRO, "1"),
-                                           "GYRO 1"));
+        metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
+                                                          null, null, "GCRF"));
+        metadata.getEndpoints().setFrameB(new FrameFacade(null, null, null,
+                                                          new SpacecraftBodyFrame(SpacecraftBodyFrame.BaseEquipment.GYRO, "1"),
+                                                          "GYRO 1"));
         metadata.setRateFrameIsA(false);
-        metadata.setA2b(true);
+        metadata.getEndpoints().setA2b(true);
         metadata.setEulerRotSeq(RotationOrder.ZXZ);
         final double[] attitudeDataBis = eulerAngleRate.getAttitudeData(tsac, metadata);
         for (int i = 0; i < attitudeDataBis.length; i++) {
@@ -412,17 +412,17 @@ public class AEMAttitudeTypeTest {
                                                     () -> null,
                                                     () -> TimeSystem.UTC);
         AemMetadata metadata = new AemMetadata(3);
-        metadata.setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
-                                           null, null, "GCRF"));
-        metadata.setFrameB(new FrameFacade(null, null, null,
-                                           new SpacecraftBodyFrame(SpacecraftBodyFrame.BaseEquipment.GYRO, "1"),
-                                           "GYRO 1"));
+        metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
+                                                          null, null, "GCRF"));
+        metadata.getEndpoints().setFrameB(new FrameFacade(null, null, null,
+                                                          new SpacecraftBodyFrame(SpacecraftBodyFrame.BaseEquipment.GYRO, "1"),
+                                                          "GYRO 1"));
         if (type == AemAttitudeType.QUATERNION_RATE || type == AemAttitudeType.EULER_ANGLE_RATE) {
             metadata.setRateFrameIsA(rateFrameIsA);
         }
         metadata.setIsFirst(isFirst);
         metadata.setEulerRotSeq(order);
-        metadata.setA2b(a2b);
+        metadata.getEndpoints().setA2b(a2b);
         double[] dData = type.getAttitudeData(tac, metadata);
         String[] sData = new String[1 + dData.length];
         sData[0] = tac.getDate().toString(context.

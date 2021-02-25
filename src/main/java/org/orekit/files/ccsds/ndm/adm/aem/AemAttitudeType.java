@@ -52,7 +52,7 @@ public enum AemAttitudeType {
 
             // Fill the array
             Rotation rotation  = coordinates.getRotation();
-            if (!metadata.isExternal2SpacecraftBody()) {
+            if (!metadata.getEndpoints().isExternal2SpacecraftBody()) {
                 rotation = rotation.revert();
             }
             data[quaternionIndex[0]] = rotation.getQ0();
@@ -82,7 +82,7 @@ public enum AemAttitudeType {
                                                    Double.parseDouble(fields[2]),
                                                    Double.parseDouble(fields[3]),
                                                    true);
-            if (!metadata.isExternal2SpacecraftBody()) {
+            if (!metadata.getEndpoints().isExternal2SpacecraftBody()) {
                 rotation = rotation.revert();
             }
 
@@ -109,7 +109,7 @@ public enum AemAttitudeType {
             final double[] data = new double[8];
 
             FieldRotation<UnivariateDerivative1> rotation = coordinates.toUnivariateDerivative1Rotation();
-            if (!metadata.isExternal2SpacecraftBody()) {
+            if (!metadata.getEndpoints().isExternal2SpacecraftBody()) {
                 rotation = rotation.revert();
             }
 
@@ -149,7 +149,7 @@ public enum AemAttitudeType {
                                                 new UnivariateDerivative1(Double.parseDouble(fields[2]), Double.parseDouble(fields[6])),
                                                 new UnivariateDerivative1(Double.parseDouble(fields[3]), Double.parseDouble(fields[7])),
                                                 true);
-            if (!metadata.isExternal2SpacecraftBody()) {
+            if (!metadata.getEndpoints().isExternal2SpacecraftBody()) {
                 rotation = rotation.revert();
             }
 
@@ -179,7 +179,7 @@ public enum AemAttitudeType {
 
             // Attitude
             final TimeStampedAngularCoordinates c =
-                            metadata.isExternal2SpacecraftBody() ? coordinates : coordinates.revert();
+                            metadata.getEndpoints().isExternal2SpacecraftBody() ? coordinates : coordinates.revert();
             final Vector3D rotationRate = metadataRate(c.getRotationRate(), c.getRotation(), metadata);
 
             // Fill the array
@@ -220,7 +220,7 @@ public enum AemAttitudeType {
             // Return
             final TimeStampedAngularCoordinates ac =
                             new TimeStampedAngularCoordinates(date, rotation, rotationRate, Vector3D.ZERO);
-            return metadata.isExternal2SpacecraftBody() ? ac : ac.revert();
+            return metadata.getEndpoints().isExternal2SpacecraftBody() ? ac : ac.revert();
 
         }
 
@@ -243,7 +243,7 @@ public enum AemAttitudeType {
 
             // Attitude
             Rotation rotation = coordinates.getRotation();
-            if (!metadata.isExternal2SpacecraftBody()) {
+            if (!metadata.getEndpoints().isExternal2SpacecraftBody()) {
                 rotation = rotation.revert();
             }
             final double[] angles   = rotation.getAngles(metadata.getEulerRotSeq(), RotationConvention.FRAME_TRANSFORM);
@@ -269,7 +269,7 @@ public enum AemAttitudeType {
                                              FastMath.toRadians(Double.parseDouble(fields[1])),
                                              FastMath.toRadians(Double.parseDouble(fields[2])),
                                              FastMath.toRadians(Double.parseDouble(fields[3])));
-            if (!metadata.isExternal2SpacecraftBody()) {
+            if (!metadata.getEndpoints().isExternal2SpacecraftBody()) {
                 rotation = rotation.revert();
             }
 
@@ -296,7 +296,7 @@ public enum AemAttitudeType {
 
             // Attitude
             final TimeStampedAngularCoordinates c =
-                            metadata.isExternal2SpacecraftBody() ? coordinates : coordinates.revert();
+                            metadata.getEndpoints().isExternal2SpacecraftBody() ? coordinates : coordinates.revert();
             final Vector3D rotationRate = metadataRate(c.getRotationRate(), c.getRotation(), metadata);
             final double[] angles       = c.getRotation().getAngles(metadata.getEulerRotSeq(), RotationConvention.FRAME_TRANSFORM);
 
@@ -331,7 +331,7 @@ public enum AemAttitudeType {
             // Return
             final TimeStampedAngularCoordinates ac =
                             new TimeStampedAngularCoordinates(date, rotation, rotationRate, Vector3D.ZERO);
-            return metadata.isExternal2SpacecraftBody() ? ac : ac.revert();
+            return metadata.getEndpoints().isExternal2SpacecraftBody() ? ac : ac.revert();
 
         }
 

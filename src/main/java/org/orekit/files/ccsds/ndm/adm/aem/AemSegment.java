@@ -18,7 +18,6 @@ package org.orekit.files.ccsds.ndm.adm.aem;
 
 import java.util.List;
 
-import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.frames.Frame;
@@ -51,9 +50,7 @@ public class AemSegment extends Segment<AemMetadata, AemData>
     /** {@inheritDoc} */
     @Override
     public Frame getReferenceFrame() {
-        final FrameFacade ff = getMetadata().getFrameA().asSpacecraftBodyFrame() == null ?
-                               getMetadata().getFrameA() : getMetadata().getFrameB();
-        return ff.asFrame();
+        return getMetadata().getEndpoints().getExternalFrame().asFrame();
     }
 
     /** {@inheritDoc} */

@@ -17,10 +17,8 @@
 package org.orekit.files.ccsds.ndm.adm.aem;
 
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
+import org.orekit.files.ccsds.ndm.adm.AttitudeEndoints;
 import org.orekit.time.AbsoluteDate;
 
 /** This class gathers the meta-data present in the Attitude Data Message (ADM).
@@ -29,14 +27,8 @@ import org.orekit.time.AbsoluteDate;
  */
 public class AemMetadata extends AdmMetadata {
 
-    /** Frame A. */
-    private FrameFacade frameA;
-
-    /** Frame B. */
-    private FrameFacade frameB;
-
-    /** Flag for frames direction. */
-    private Boolean a2b;
+    /** Endpoints (i.e. frames A, B and their relationship). */
+    private final AttitudeEndoints endpoints;
 
     /** Start of total time span covered by attitude data. */
     private AbsoluteDate startTime;
@@ -72,6 +64,7 @@ public class AemMetadata extends AdmMetadata {
      * @param defaultInterpolationDegree default interpolation degree
      */
     public AemMetadata(final int defaultInterpolationDegree) {
+        endpoints           = new AttitudeEndoints();
         interpolationDegree = defaultInterpolationDegree;
     }
 
@@ -80,14 +73,7 @@ public class AemMetadata extends AdmMetadata {
     public void checkMandatoryEntries() {
 
         checkMandatoryEntriesExceptDatesAndExternalFrame();
-
-        checkNotNull(frameA, AemMetadataKey.REF_FRAME_A);
-        checkNotNull(frameB, AemMetadataKey.REF_FRAME_B);
-        if (frameA.asSpacecraftBodyFrame() != null &&
-            frameB.asSpacecraftBodyFrame() != null) {
-            // we cannot have two spacecraft body frames
-            throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, frameB.getName());
-        }
+        endpoints.checkExternalFrame(AemMetadataKey.REF_FRAME_A, AemMetadataKey.REF_FRAME_B);
 
         checkNotNull(startTime, AemMetadataKey.START_TIME);
         checkNotNull(stopTime,  AemMetadataKey.STOP_TIME);
@@ -107,22 +93,10 @@ public class AemMetadata extends AdmMetadata {
 
         super.checkMandatoryEntries();
 
-        if (frameA == null) {
-            if (frameB == null || frameB.asSpacecraftBodyFrame() == null) {
-                throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY,
-                                          AemMetadataKey.REF_FRAME_A);
-            }
-        } else if (frameA.asSpacecraftBodyFrame() == null) {
-            if (frameB == null) {
-                throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY,
-                                          AemMetadataKey.REF_FRAME_B);
-            } else if (frameB.asSpacecraftBodyFrame() == null) {
-                // at least one of the frame must be a spacecraft body frame
-                throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, frameB.getName());
-            }
-        }
+        endpoints.checkMandatoryEntriesExceptExternalFrame(AemMetadataKey.REF_FRAME_A,
+                                                           AemMetadataKey.REF_FRAME_B,
+                                                           AemMetadataKey.ATTITUDE_DIR);
 
-        checkNotNull(a2b,         AemMetadataKey.ATTITUDE_DIR);
         checkNotNull(attitudeType, AemMetadataKey.ATTITUDE_TYPE);
         if (attitudeType == AemAttitudeType.QUATERNION ||
             attitudeType == AemAttitudeType.QUATERNION_DERIVATIVE) {
@@ -136,61 +110,14 @@ public class AemMetadata extends AdmMetadata {
             attitudeType == AemAttitudeType.EULER_ANGLE_RATE) {
             checkNotNull(rateFrameIsA, AemMetadataKey.RATE_FRAME);
         }
+
     }
 
-    /** Set frame A.
-     * @param frameA frame A
+    /** Get the endpoints (i.e. frames A, B and their relationship).
+     * @return endpoints
      */
-    public void setFrameA(final FrameFacade frameA) {
-        this.frameA = frameA;
-    }
-
-    /** Get frame A.
-     * @return frame A
-     */
-    public FrameFacade getFrameA() {
-        return frameA;
-    }
-
-    /** Set frame B.
-     * @param frameB frame B
-     */
-    public void setFrameB(final FrameFacade frameB) {
-        this.frameB = frameB;
-    }
-
-    /** Get frame B.
-     * @return frame B
-     */
-    public FrameFacade getFrameB() {
-        return frameB;
-    }
-
-    /** Set rotation direction.
-     * @param a2b if true, rotation is from {@link #getFrameA() frame A}
-     * to {@link #getFrameB() frame B}
-     */
-    public void setA2b(final boolean a2b) {
-        this.a2b = a2b;
-    }
-
-    /** Check if rotation direction is from {@link #getFrameA() frame A} to {@link #getFrameB() frame B}.
-     * @return true if rotation direction is from {@link #getFrameA() frame A} to {@link #getFrameB() frame B}
-     */
-    public boolean isA2b() {
-        return a2b == null ? true : a2b;
-    }
-
-    /** Check if attitude is from external frame to spacecraft body frame.
-     * <p>
-     * {@link #checkMandatoryEntries() Mandatory entries} must have been
-     * initialized properly to non-null values before this method is called,
-     * otherwise {@code NullPointerException} will be thrown.
-     * </p>
-     * @return true if attitude is from external frame to spacecraft body frame
-     */
-    public boolean isExternal2SpacecraftBody() {
-        return a2b ^ frameB.asSpacecraftBodyFrame() == null;
+    public AttitudeEndoints getEndpoints() {
+        return endpoints;
     }
 
     /** Check if rates are specified in {@link #getFrameA() frame A}.
@@ -217,7 +144,7 @@ public class AemMetadata extends AdmMetadata {
      * @return true if if rates are specified in spacecraft body frame
      */
     public boolean isSpacecraftBodyRate() {
-        return rateFrameIsA ^ frameA.asSpacecraftBodyFrame() == null;
+        return rateFrameIsA ^ endpoints.getFrameA().asSpacecraftBodyFrame() == null;
     }
 
     /**

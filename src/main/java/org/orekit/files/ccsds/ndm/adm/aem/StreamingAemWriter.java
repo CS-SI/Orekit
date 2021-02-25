@@ -109,12 +109,13 @@ public class StreamingAemWriter {
                 metadata.setUseableStartTime(null);
                 metadata.setUseableStopTime(null);
                 metadata.setStopTime(t);
-                if (metadata.getFrameA() == null || metadata.getFrameA().asSpacecraftBodyFrame() == null) {
+                if (metadata.getEndpoints().getFrameA() == null ||
+                    metadata.getEndpoints().getFrameA().asSpacecraftBodyFrame() == null) {
                     // the external frame must be frame A
-                    metadata.setFrameA(FrameFacade.map(s0.getAttitude().getReferenceFrame()));
+                    metadata.getEndpoints().setFrameA(FrameFacade.map(s0.getAttitude().getReferenceFrame()));
                 } else {
                     // the external frame must be frame B
-                    metadata.setFrameB(FrameFacade.map(s0.getAttitude().getReferenceFrame()));
+                    metadata.getEndpoints().setFrameB(FrameFacade.map(s0.getAttitude().getReferenceFrame()));
                 }
                 aemWriter.writeMetadata(generator);
                 aemWriter.startAttitudeBlock(generator);

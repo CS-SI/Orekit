@@ -80,9 +80,9 @@ public class StreamingAemWriterTest {
             String            objectName   = ephemerisBlock.getMetadata().getObjectName();
             String            objectID     = ephemerisBlock.getMetadata().getObjectID();
             String            headerCmt    = aemFile.getHeader().getComments().get(0);
-            FrameFacade       frameA       = ephemerisBlock.getMetadata().getFrameA();
-            FrameFacade       frameB       = ephemerisBlock.getMetadata().getFrameB();
-            boolean           a2b          = ephemerisBlock.getMetadata().isA2b();
+            FrameFacade       frameA       = ephemerisBlock.getMetadata().getEndpoints().getFrameA();
+            FrameFacade       frameB       = ephemerisBlock.getMetadata().getEndpoints().getFrameB();
+            boolean           a2b          = ephemerisBlock.getMetadata().getEndpoints().isA2b();
             AemAttitudeType   attitudeType = ephemerisBlock.getMetadata().getAttitudeType();
             boolean           isFirst      = ephemerisBlock.getMetadata().isFirst();
 
@@ -98,9 +98,9 @@ public class StreamingAemWriterTest {
             metadata.setObjectName("will be overwritten");
             metadata.setAttitudeType(attitudeType);
             metadata.setIsFirst(isFirst);
-            metadata.setFrameA(frameA);
-            metadata.setFrameB(frameB);
-            metadata.setA2b(a2b);
+            metadata.getEndpoints().setFrameA(frameA);
+            metadata.getEndpoints().setFrameB(frameB);
+            metadata.getEndpoints().setA2b(a2b);
             metadata.setStartTime(AbsoluteDate.PAST_INFINITY);  // will be overwritten at propagation start
             metadata.setStopTime(AbsoluteDate.FUTURE_INFINITY); // will be overwritten at propagation start
             final AemWriter aemWriter = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), header, metadata);

@@ -101,10 +101,10 @@ public class APMParserTest {
         // Check data block
         Assert.assertFalse(segment.getData().hasManeuvers());
         Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY,
-                            segment.getData().getQuaternionBlock().getFrameA().asSpacecraftBodyFrame().getBaseEquipment());
-        Assert.assertEquals("1", segment.getData().getQuaternionBlock().getFrameA().asSpacecraftBodyFrame().getLabel());
-        Assert.assertEquals(CelestialBodyFrame.ITRF97, segment.getData().getQuaternionBlock().getFrameB().asCelestialBodyFrame());
-        Assert.assertTrue(segment.getData().getQuaternionBlock().isA2b());
+                            segment.getData().getQuaternionBlock().getEndpoints().getFrameA().asSpacecraftBodyFrame().getBaseEquipment());
+        Assert.assertEquals("1", segment.getData().getQuaternionBlock().getEndpoints().getFrameA().asSpacecraftBodyFrame().getLabel());
+        Assert.assertEquals(CelestialBodyFrame.ITRF97, segment.getData().getQuaternionBlock().getEndpoints().getFrameB().asCelestialBodyFrame());
+        Assert.assertTrue(segment.getData().getQuaternionBlock().getEndpoints().isA2b());
         Assert.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, 15.1172,
                                              TimeScalesFactory.getUTC()),
                             segment.getData().getQuaternionBlock().getEpoch());
@@ -180,9 +180,9 @@ public class APMParserTest {
         epochComment.add("Attitude state quaternion");
         Assert.assertEquals(epochComment,   segment.getData().getQuaternionBlock().getComments());
         Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.INSTRUMENT,
-                            segment.getData().getQuaternionBlock().getFrameA().asSpacecraftBodyFrame().getBaseEquipment());
-        Assert.assertEquals("A", segment.getData().getQuaternionBlock().getFrameA().asSpacecraftBodyFrame().getLabel());
-        Assert.assertEquals(CelestialBodyFrame.ITRF97, segment.getData().getQuaternionBlock().getFrameB().asCelestialBodyFrame());
+                            segment.getData().getQuaternionBlock().getEndpoints().getFrameA().asSpacecraftBodyFrame().getBaseEquipment());
+        Assert.assertEquals("A", segment.getData().getQuaternionBlock().getEndpoints().getFrameA().asSpacecraftBodyFrame().getLabel());
+        Assert.assertEquals(CelestialBodyFrame.ITRF97, segment.getData().getQuaternionBlock().getEndpoints().getFrameB().asCelestialBodyFrame());
         Assert.assertEquals(new AbsoluteDate(2004, 2, 14, 14, 28, 15.1172,
                                              TimeScalesFactory.getUTC()),
                             segment.getData().getQuaternionBlock().getEpoch());
@@ -200,10 +200,10 @@ public class APMParserTest {
         ArrayList<String> eulerComment = new ArrayList<String>();
         eulerComment.add("Attitude specified as Euler elements");
         Assert.assertEquals(eulerComment,    segment.getData().getEulerBlock().getComments());
-        Assert.assertEquals(CelestialBodyFrame.ITRF97, segment.getData().getEulerBlock().getFrameA().asCelestialBodyFrame());
-        Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.INSTRUMENT,  segment.getData().getEulerBlock().getFrameB().asSpacecraftBodyFrame().getBaseEquipment());
-        Assert.assertEquals("A",  segment.getData().getEulerBlock().getFrameB().asSpacecraftBodyFrame().getLabel());
-        Assert.assertTrue(segment.getData().getEulerBlock().isA2b());
+        Assert.assertEquals(CelestialBodyFrame.ITRF97, segment.getData().getEulerBlock().getEndpoints().getFrameA().asCelestialBodyFrame());
+        Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.INSTRUMENT,  segment.getData().getEulerBlock().getEndpoints().getFrameB().asSpacecraftBodyFrame().getBaseEquipment());
+        Assert.assertEquals("A",  segment.getData().getEulerBlock().getEndpoints().getFrameB().asSpacecraftBodyFrame().getLabel());
+        Assert.assertTrue(segment.getData().getEulerBlock().getEndpoints().isA2b());
         Assert.assertEquals("EULER FRAME A",   segment.getData().getEulerBlock().getRateFrameString());
         Assert.assertEquals(RotationOrder.ZXY, segment.getData().getEulerBlock().getEulerRotSeq());
 
@@ -290,10 +290,10 @@ public class APMParserTest {
         // Check data block: QUATERNION
         Assert.assertFalse(segment.getData().hasManeuvers());
         Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY,
-                            segment.getData().getQuaternionBlock().getFrameA().asSpacecraftBodyFrame().getBaseEquipment());
-        Assert.assertEquals("1", segment.getData().getQuaternionBlock().getFrameA().asSpacecraftBodyFrame().getLabel());
-        Assert.assertEquals(CelestialBodyFrame.ITRF97, segment.getData().getQuaternionBlock().getFrameB().asCelestialBodyFrame());
-        Assert.assertFalse(segment.getData().getQuaternionBlock().isA2b());
+                            segment.getData().getQuaternionBlock().getEndpoints().getFrameA().asSpacecraftBodyFrame().getBaseEquipment());
+        Assert.assertEquals("1", segment.getData().getQuaternionBlock().getEndpoints().getFrameA().asSpacecraftBodyFrame().getLabel());
+        Assert.assertEquals(CelestialBodyFrame.ITRF97, segment.getData().getQuaternionBlock().getEndpoints().getFrameB().asCelestialBodyFrame());
+        Assert.assertFalse(segment.getData().getQuaternionBlock().getEndpoints().isA2b());
         Assert.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, 15.1172,
                                              TimeScalesFactory.getUTC()),
                             segment.getData().getQuaternionBlock().getEpoch());
@@ -311,10 +311,10 @@ public class APMParserTest {
         spinComment.add("SPIN Parameters");
         Assert.assertEquals(spinComment, segment.getData().getSpinStabilizedBlock().getComments());
         Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY,
-                            segment.getData().getSpinStabilizedBlock().getFrameB().asSpacecraftBodyFrame().getBaseEquipment());
-        Assert.assertEquals("1", segment.getData().getSpinStabilizedBlock().getFrameB().asSpacecraftBodyFrame().getLabel());
-        Assert.assertEquals(CelestialBodyFrame.ITRF97, segment.getData().getSpinStabilizedBlock().getFrameA().asCelestialBodyFrame());
-        Assert.assertFalse(segment.getData().getSpinStabilizedBlock().isA2b());
+                            segment.getData().getSpinStabilizedBlock().getEndpoints().getFrameB().asSpacecraftBodyFrame().getBaseEquipment());
+        Assert.assertEquals("1", segment.getData().getSpinStabilizedBlock().getEndpoints().getFrameB().asSpacecraftBodyFrame().getLabel());
+        Assert.assertEquals(CelestialBodyFrame.ITRF97, segment.getData().getSpinStabilizedBlock().getEndpoints().getFrameA().asCelestialBodyFrame());
+        Assert.assertFalse(segment.getData().getSpinStabilizedBlock().getEndpoints().isA2b());
         Assert.assertEquals(FastMath.toRadians(24.8),   segment.getData().getSpinStabilizedBlock().getSpinAlpha(),      ANGLE_PRECISION);
         Assert.assertEquals(FastMath.toRadians(33.7),   segment.getData().getSpinStabilizedBlock().getSpinDelta(),      ANGLE_PRECISION);
         Assert.assertEquals(FastMath.toRadians(42.5),   segment.getData().getSpinStabilizedBlock().getSpinAngle(),      ANGLE_PRECISION);
@@ -369,10 +369,10 @@ public class APMParserTest {
         // Check data block
         Assert.assertFalse(segment.getData().hasManeuvers());
         Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY,
-                            segment.getData().getQuaternionBlock().getFrameA().asSpacecraftBodyFrame().getBaseEquipment());
-        Assert.assertEquals("1", segment.getData().getQuaternionBlock().getFrameA().asSpacecraftBodyFrame().getLabel());
-        Assert.assertEquals(CelestialBodyFrame.ITRF97, segment.getData().getQuaternionBlock().getFrameB().asCelestialBodyFrame());
-        Assert.assertTrue(segment.getData().getQuaternionBlock().isA2b());
+                            segment.getData().getQuaternionBlock().getEndpoints().getFrameA().asSpacecraftBodyFrame().getBaseEquipment());
+        Assert.assertEquals("1", segment.getData().getQuaternionBlock().getEndpoints().getFrameA().asSpacecraftBodyFrame().getLabel());
+        Assert.assertEquals(CelestialBodyFrame.ITRF97, segment.getData().getQuaternionBlock().getEndpoints().getFrameB().asCelestialBodyFrame());
+        Assert.assertTrue(segment.getData().getQuaternionBlock().getEndpoints().isA2b());
         Assert.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, 15.1172,
                                              TimeScalesFactory.getUTC()),
                             segment.getData().getQuaternionBlock().getEpoch());
@@ -431,10 +431,10 @@ public class APMParserTest {
         // Check data block
         Assert.assertFalse(segment.getData().hasManeuvers());
         Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY,
-                            segment.getData().getQuaternionBlock().getFrameA().asSpacecraftBodyFrame().getBaseEquipment());
-        Assert.assertEquals("1", segment.getData().getQuaternionBlock().getFrameA().asSpacecraftBodyFrame().getLabel());
-        Assert.assertEquals(OrbitRelativeFrame.VNC_INERTIAL, segment.getData().getQuaternionBlock().getFrameB().asOrbitRelativeFrame());
-        Assert.assertFalse(segment.getData().getQuaternionBlock().isA2b());
+                            segment.getData().getQuaternionBlock().getEndpoints().getFrameA().asSpacecraftBodyFrame().getBaseEquipment());
+        Assert.assertEquals("1", segment.getData().getQuaternionBlock().getEndpoints().getFrameA().asSpacecraftBodyFrame().getLabel());
+        Assert.assertEquals(OrbitRelativeFrame.VNC_INERTIAL, segment.getData().getQuaternionBlock().getEndpoints().getFrameB().asOrbitRelativeFrame());
+        Assert.assertFalse(segment.getData().getQuaternionBlock().getEndpoints().isA2b());
         Assert.assertEquals(new AbsoluteDate(2021, 1, 1, 0, 0, 0.0, TimeScalesFactory.getTDB()),
                             segment.getData().getQuaternionBlock().getEpoch());
 
@@ -495,10 +495,10 @@ public class APMParserTest {
         // Check data block
         Assert.assertFalse(segment.getData().hasManeuvers());
         Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY,
-                            segment.getData().getQuaternionBlock().getFrameA().asSpacecraftBodyFrame().getBaseEquipment());
-        Assert.assertEquals("1", segment.getData().getQuaternionBlock().getFrameA().asSpacecraftBodyFrame().getLabel());
-        Assert.assertEquals(OrbitRelativeFrame.VNC_ROTATING, segment.getData().getQuaternionBlock().getFrameB().asOrbitRelativeFrame());
-        Assert.assertFalse(segment.getData().getQuaternionBlock().isA2b());
+                            segment.getData().getQuaternionBlock().getEndpoints().getFrameA().asSpacecraftBodyFrame().getBaseEquipment());
+        Assert.assertEquals("1", segment.getData().getQuaternionBlock().getEndpoints().getFrameA().asSpacecraftBodyFrame().getLabel());
+        Assert.assertEquals(OrbitRelativeFrame.VNC_ROTATING, segment.getData().getQuaternionBlock().getEndpoints().getFrameB().asOrbitRelativeFrame());
+        Assert.assertFalse(segment.getData().getQuaternionBlock().getEndpoints().isA2b());
         Assert.assertEquals(new AbsoluteDate(2021, 1, 1, 0, 0, 0.0, TimeScalesFactory.getTDB()),
                             segment.getData().getQuaternionBlock().getEpoch());
 
@@ -559,10 +559,10 @@ public class APMParserTest {
         // Check data block
         Assert.assertFalse(segment.getData().hasManeuvers());
         Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY,
-                            segment.getData().getQuaternionBlock().getFrameA().asSpacecraftBodyFrame().getBaseEquipment());
-        Assert.assertEquals("1", segment.getData().getQuaternionBlock().getFrameA().asSpacecraftBodyFrame().getLabel());
-        Assert.assertEquals(OrbitRelativeFrame.SEZ_INERTIAL, segment.getData().getQuaternionBlock().getFrameB().asOrbitRelativeFrame());
-        Assert.assertTrue(segment.getData().getQuaternionBlock().isA2b());
+                            segment.getData().getQuaternionBlock().getEndpoints().getFrameA().asSpacecraftBodyFrame().getBaseEquipment());
+        Assert.assertEquals("1", segment.getData().getQuaternionBlock().getEndpoints().getFrameA().asSpacecraftBodyFrame().getLabel());
+        Assert.assertEquals(OrbitRelativeFrame.SEZ_INERTIAL, segment.getData().getQuaternionBlock().getEndpoints().getFrameB().asOrbitRelativeFrame());
+        Assert.assertTrue(segment.getData().getQuaternionBlock().getEndpoints().isA2b());
         Assert.assertEquals(new AbsoluteDate(2021, 1, 1, 0, 0, 0.0, TimeScalesFactory.getTDB()),
                             segment.getData().getQuaternionBlock().getEpoch());
 

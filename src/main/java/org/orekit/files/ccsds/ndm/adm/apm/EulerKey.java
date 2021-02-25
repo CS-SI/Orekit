@@ -81,14 +81,14 @@ public enum EulerKey {
             token.getType() == TokenType.ENTRY ? data.addComment(token.getContent()) : true),
 
     /** First reference frame entry. */
-    EULER_FRAME_A((token, context, data) -> token.processAsFrame(data::setFrameA, context, true, true, true)),
+    EULER_FRAME_A((token, context, data) -> token.processAsFrame(data.getEndpoints()::setFrameA, context, true, true, true)),
 
     /** Second reference frame entry. */
     EULER_FRAME_B((token, context, data) -> {
         if (token.getType() == TokenType.ENTRY) {
-            data.checkNotNull(data.getFrameA(), EULER_FRAME_A);
-            final boolean aIsSpaceraftBody = data.getFrameA().asSpacecraftBodyFrame() != null;
-            return token.processAsFrame(data::setFrameB, context,
+            data.checkNotNull(data.getEndpoints().getFrameA(), EULER_FRAME_A);
+            final boolean aIsSpaceraftBody = data.getEndpoints().getFrameA().asSpacecraftBodyFrame() != null;
+            return token.processAsFrame(data.getEndpoints()::setFrameB, context,
                                         aIsSpaceraftBody, aIsSpaceraftBody, !aIsSpaceraftBody);
         }
         return true;
@@ -97,7 +97,7 @@ public enum EulerKey {
     /** Rotation direction entry. */
     EULER_DIR((token, context, data) -> {
         if (token.getType() == TokenType.ENTRY) {
-            data.setA2b(token.getContentAsNormalizedCharacter() == 'A');
+            data.getEndpoints().setA2b(token.getContentAsNormalizedCharacter() == 'A');
         }
         return true;
     }),

@@ -21,7 +21,7 @@ import java.util.Arrays;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.ndm.adm.AttitudeEndoints;
 import org.orekit.files.ccsds.section.CommentsContainer;
 
 /**
@@ -31,14 +31,8 @@ import org.orekit.files.ccsds.section.CommentsContainer;
  */
 public class Euler extends CommentsContainer {
 
-    /** Frame A. */
-    private FrameFacade frameA;
-
-    /** Frame B. */
-    private FrameFacade frameB;
-
-    /** Flag for frames direction. */
-    private Boolean a2b;
+    /** Endpoints (i.e. frames A, B and their relationship). */
+    private final AttitudeEndoints endpoints;
 
     /** Rotation order of the Euler angles. */
     private RotationOrder eulerRotSeq;
@@ -58,6 +52,7 @@ public class Euler extends CommentsContainer {
     /** Simple constructor.
      */
     public Euler() {
+        this.endpoints        = new AttitudeEndoints();
         this.rotationAngles   = new double[3];
         this.rotationRates    = new double[3];
         this.inRotationAngles = false;
@@ -69,9 +64,10 @@ public class Euler extends CommentsContainer {
     @Override
     public void checkMandatoryEntries() {
         super.checkMandatoryEntries();
-        checkNotNull(frameA, EulerKey.EULER_FRAME_A);
-        checkNotNull(frameB, EulerKey.EULER_FRAME_B);
-        checkNotNull(a2b,    EulerKey.EULER_DIR);
+        endpoints.checkMandatoryEntriesExceptExternalFrame(EulerKey.EULER_FRAME_A,
+                                                           EulerKey.EULER_FRAME_B,
+                                                           EulerKey.EULER_DIR);
+        endpoints.checkExternalFrame(EulerKey.EULER_FRAME_A, EulerKey.EULER_FRAME_B);
         checkNotNull(eulerRotSeq, EulerKey.EULER_ROT_SEQ);
         if (Double.isNaN(rotationAngles[0] + rotationAngles[1] + rotationAngles[2])) {
             throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, "{X|Y|Z}_ANGLE");
@@ -86,47 +82,11 @@ public class Euler extends CommentsContainer {
         }
     }
 
-    /** Set frame A.
-     * @param frameA frame A
+    /** Get the endpoints (i.e. frames A, B and their relationship).
+     * @return endpoints
      */
-    public void setFrameA(final FrameFacade frameA) {
-        this.frameA = frameA;
-    }
-
-    /** Get frame A.
-     * @return frame A
-     */
-    public FrameFacade getFrameA() {
-        return frameA;
-    }
-
-    /** Set frame B.
-     * @param frameB frame B
-     */
-    public void setFrameB(final FrameFacade frameB) {
-        this.frameB = frameB;
-    }
-
-    /** Get frame B.
-     * @return frame B
-     */
-    public FrameFacade getFrameB() {
-        return frameB;
-    }
-
-    /** Set rotation direction.
-     * @param a2b if true, rotation is from {@link #getFrameA() frame A}
-     * to {@link #getFrameB() frame B}
-     */
-    public void setA2b(final boolean a2b) {
-        this.a2b = a2b;
-    }
-
-    /** Check if rotation direction is from {@link #getFrameA() frame A} to {@link #getFrameB() frame B}.
-     * @return true if rotation direction is from {@link #getFrameA() frame A} to {@link #getFrameB() frame B}
-     */
-    public boolean isA2b() {
-        return a2b == null ? true : a2b;
+    public AttitudeEndoints getEndpoints() {
+        return endpoints;
     }
 
     /**

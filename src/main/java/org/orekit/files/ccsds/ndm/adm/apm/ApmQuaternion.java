@@ -21,16 +21,13 @@ import java.util.Arrays;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.complex.Quaternion;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.FrameFacade;
-import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
+import org.orekit.files.ccsds.ndm.adm.AttitudeEndoints;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
@@ -44,14 +41,8 @@ public class ApmQuaternion extends CommentsContainer {
     /** Epoch of the data. */
     private AbsoluteDate epoch;
 
-    /** Frame A. */
-    private FrameFacade frameA;
-
-    /** Frame B. */
-    private FrameFacade frameB;
-
-    /** Flag for frames direction. */
-    private Boolean a2b;
+    /** Endpoints (i.e. frames A, B and their relationship). */
+    private final AttitudeEndoints endpoints;
 
     /** Quaternion. */
     private double[] q;
@@ -62,6 +53,7 @@ public class ApmQuaternion extends CommentsContainer {
     /** Simple constructor.
      */
     public ApmQuaternion() {
+        endpoints = new AttitudeEndoints();
         q         = new double[4];
         qDot      = new double[4];
         Arrays.fill(q,    Double.NaN);
@@ -71,9 +63,10 @@ public class ApmQuaternion extends CommentsContainer {
     @Override
     public void checkMandatoryEntries() {
         super.checkMandatoryEntries();
-        checkNotNull(frameA, ApmQuaternionKey.Q_FRAME_A);
-        checkNotNull(frameB, ApmQuaternionKey.Q_FRAME_B);
-        checkNotNull(a2b,    ApmQuaternionKey.Q_DIR);
+        endpoints.checkMandatoryEntriesExceptExternalFrame(ApmQuaternionKey.Q_FRAME_A,
+                                                           ApmQuaternionKey.Q_FRAME_B,
+                                                           ApmQuaternionKey.Q_DIR);
+        endpoints.checkExternalFrame(ApmQuaternionKey.Q_FRAME_A, ApmQuaternionKey.Q_FRAME_B);
         if (Double.isNaN(q[0] + q[1] + q[2] + q[3])) {
             throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, "Q{C|1|2|3}");
         }
@@ -96,47 +89,11 @@ public class ApmQuaternion extends CommentsContainer {
         this.epoch = epoch;
     }
 
-    /** Set frame A.
-     * @param frameA frame A
+    /** Get the endpoints (i.e. frames A, B and their relationship).
+     * @return endpoints
      */
-    public void setFrameA(final FrameFacade frameA) {
-        this.frameA = frameA;
-    }
-
-    /** Get frame A.
-     * @return frame A
-     */
-    public FrameFacade getFrameA() {
-        return frameA;
-    }
-
-    /** Set frame B.
-     * @param frameB frame B
-     */
-    public void setFrameB(final FrameFacade frameB) {
-        this.frameB = frameB;
-    }
-
-    /** Get frame B.
-     * @return frame B
-     */
-    public FrameFacade getFrameB() {
-        return frameB;
-    }
-
-    /** Set rotation direction.
-     * @param a2b if true, rotation is from {@link #getFrameA() frame A}
-     * to {@link #getFrameB() frame B}
-     */
-    public void setA2b(final boolean a2b) {
-        this.a2b = a2b;
-    }
-
-    /** Check if rotation direction is from {@link #getFrameA() frame A} to {@link #getFrameB() frame B}.
-     * @return true if rotation direction is from {@link #getFrameA() frame A} to {@link #getFrameB() frame B}
-     */
-    public boolean isA2b() {
-        return a2b == null ? true : a2b;
+    public AttitudeEndoints getEndpoints() {
+        return endpoints;
     }
 
     /**
@@ -186,45 +143,14 @@ public class ApmQuaternion extends CommentsContainer {
     public Attitude getAttitude(final Frame frame, final PVCoordinates pv) {
 
         // attitude has it is stored in the APM
-        final FieldRotation<UnivariateDerivative1> raw =
-                        new FieldRotation<>(new UnivariateDerivative1(q[0], qDot[0]),
-                                            new UnivariateDerivative1(q[1], qDot[1]),
-                                            new UnivariateDerivative1(q[2], qDot[2]),
-                                            new UnivariateDerivative1(q[3], qDot[3]),
-                                            true);
+        final UnivariateDerivative1                q0 = new UnivariateDerivative1(q[0], qDot[0]);
+        final UnivariateDerivative1                q1 = new UnivariateDerivative1(q[1], qDot[1]);
+        final UnivariateDerivative1                q2 = new UnivariateDerivative1(q[2], qDot[2]);
+        final UnivariateDerivative1                q3 = new UnivariateDerivative1(q[3], qDot[3]);
+        final FieldRotation<UnivariateDerivative1> rd = new FieldRotation<>(q0, q1, q2, q3, true);
 
         // attitude converted to Orekit conventions
-        final FrameFacade external                = frameA.asSpacecraftBodyFrame() == null ? frameA : frameB;
-        final boolean     external2spacecraftBody = a2b ^ (external == frameB);
-        final TimeStampedAngularCoordinates tac =
-                        new TimeStampedAngularCoordinates(epoch,
-                                                          external2spacecraftBody ? raw : raw.revert());
-
-        final OrbitRelativeFrame orf = external.asOrbitRelativeFrame();
-        if (orf != null) {
-            // this is an orbit-relative attitude
-            if (orf.getLofType() == null) {
-                throw new OrekitException(OrekitMessages.UNSUPPORTED_LOCAL_ORBITAL_FRAME, external.getName());
-            }
-
-            // construction of the local orbital frame, using PV from reference frame
-            final AngularCoordinates referenceToLof =
-                            orf.isQuasiInertial() ?
-                            new AngularCoordinates(orf.getLofType().rotationFromInertial(pv), Vector3D.ZERO) :
-                            orf.getLofType().transformFromInertial(epoch, pv).getAngular();
-
-            // compose with APM
-            return new Attitude(frame, tac.addOffset(referenceToLof));
-
-        } else {
-            // this is an absolute attitude
-            if (external.asFrame() == null) {
-                // this should never happen as all CelestialBodyFrame have an Orekit mapping
-                throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, external.getName());
-            }
-            final Attitude attitude = new Attitude(external.asFrame(), tac);
-            return frame == null ? attitude : attitude.withReferenceFrame(frame);
-        }
+        return endpoints.getAttitude(frame, pv, new TimeStampedAngularCoordinates(epoch, rd));
 
     }
 

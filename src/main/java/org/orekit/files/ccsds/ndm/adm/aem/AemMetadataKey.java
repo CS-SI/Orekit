@@ -33,14 +33,14 @@ import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 public enum AemMetadataKey {
 
     /** First reference frame. */
-    REF_FRAME_A((token, context, metadata) -> token.processAsFrame(metadata::setFrameA, context, true, true, true)),
+    REF_FRAME_A((token, context, metadata) -> token.processAsFrame(metadata.getEndpoints()::setFrameA, context, true, true, true)),
 
     /** Second reference frame. */
     REF_FRAME_B((token, context, metadata) -> {
         if (token.getType() == TokenType.ENTRY) {
-            metadata.checkNotNull(metadata.getFrameA(), REF_FRAME_A);
-            final boolean aIsSpaceraftBody = metadata.getFrameA().asSpacecraftBodyFrame() != null;
-            return token.processAsFrame(metadata::setFrameB, context,
+            metadata.checkNotNull(metadata.getEndpoints().getFrameA(), REF_FRAME_A);
+            final boolean aIsSpaceraftBody = metadata.getEndpoints().getFrameA().asSpacecraftBodyFrame() != null;
+            return token.processAsFrame(metadata.getEndpoints()::setFrameB, context,
                                         aIsSpaceraftBody, aIsSpaceraftBody, !aIsSpaceraftBody);
         }
         return true;
@@ -49,7 +49,7 @@ public enum AemMetadataKey {
     /** Rotation direction entry. */
     ATTITUDE_DIR((token, context, metadata) -> {
         if (token.getType() == TokenType.ENTRY) {
-            metadata.setA2b(token.getContentAsNormalizedCharacter() == 'A');
+            metadata.getEndpoints().setA2b(token.getContentAsNormalizedCharacter() == 'A');
         }
         return true;
     }),

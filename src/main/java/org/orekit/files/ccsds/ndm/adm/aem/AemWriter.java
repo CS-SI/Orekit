@@ -415,12 +415,13 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
                 // override template metadata with segment values
                 metadata.setStartTime(segment.getStart());
                 metadata.setStopTime(segment.getStop());
-                if (metadata.getFrameA() == null || metadata.getFrameA().asSpacecraftBodyFrame() == null) {
+                if (metadata.getEndpoints().getFrameA() == null ||
+                    metadata.getEndpoints().getFrameA().asSpacecraftBodyFrame() == null) {
                     // the external frame must be frame A
-                    metadata.setFrameA(FrameFacade.map(segment.getReferenceFrame()));
+                    metadata.getEndpoints().setFrameA(FrameFacade.map(segment.getReferenceFrame()));
                 } else {
                     // the external frame must be frame B
-                    metadata.setFrameB(FrameFacade.map(segment.getReferenceFrame()));
+                    metadata.getEndpoints().setFrameB(FrameFacade.map(segment.getReferenceFrame()));
                 }
                 metadata.setInterpolationMethod(segment.getInterpolationMethod());
                 metadata.setInterpolationDegree(segment.getInterpolationSamples() - 1);
@@ -506,9 +507,9 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
         generator.writeEntry(AdmMetadataKey.CENTER_NAME.name(), metadata.getCenterName(), false);
 
         // frames
-        generator.writeEntry(AemMetadataKey.REF_FRAME_A.name(),  metadata.getFrameA().getName(),     true);
-        generator.writeEntry(AemMetadataKey.REF_FRAME_B.name(),  metadata.getFrameB().getName(),     true);
-        generator.writeEntry(AemMetadataKey.ATTITUDE_DIR.name(), metadata.isA2b() ? A_TO_B : B_TO_A, true);
+        generator.writeEntry(AemMetadataKey.REF_FRAME_A.name(),  metadata.getEndpoints().getFrameA().getName(),     true);
+        generator.writeEntry(AemMetadataKey.REF_FRAME_B.name(),  metadata.getEndpoints().getFrameB().getName(),     true);
+        generator.writeEntry(AemMetadataKey.ATTITUDE_DIR.name(), metadata.getEndpoints().isA2b() ? A_TO_B : B_TO_A, true);
 
         // time
         generator.writeEntry(MetadataKey.TIME_SYSTEM.name(), metadata.getTimeSystem().name(), true);
@@ -629,9 +630,9 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
         }
 
         // copy frames (we may copy null references here)
-        copy.setFrameA(original.getFrameA());
-        copy.setFrameB(original.getFrameB());
-        copy.setA2b(original.isA2b());
+        copy.getEndpoints().setFrameA(original.getEndpoints().getFrameA());
+        copy.getEndpoints().setFrameB(original.getEndpoints().getFrameB());
+        copy.getEndpoints().setA2b(original.getEndpoints().isA2b());
         copy.setRateFrameIsA(original.rateFrameIsA());
 
         // copy time system only (ignore times themselves)
