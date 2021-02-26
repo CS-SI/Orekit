@@ -21,6 +21,13 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="bryan" type="update" issue="650">
+        Methods computeMeanState() and computeOsculatingState()
+        of FieldDSSTPropagator are now statics.
+      </action>
+      <action dev="bryan" type="update" issue="762">
+        TabulatelofOffset now implements BoundedAttitudeProvider.
+      </action>
       <action dev="luc" type="update" issue="761">
         TabulateProvider now implements BoundedAttitudeProvider.
       </action>

@@ -27,7 +27,6 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
-import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -895,8 +894,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         // Mean state computation
         final List<DSSTForceModel> models = new ArrayList<>();
         models.add(new DSSTZonal(provider));
-        final FieldDSSTPropagator<T> dsst = new FieldDSSTPropagator<>(field, new ClassicalRungeKuttaFieldIntegrator<>(field, zero.add(10.0)));
-        final FieldSpacecraftState<T> meanState = dsst.computeMeanState(initialState, Propagator.DEFAULT_LAW, models);
+        final FieldSpacecraftState<T> meanState = FieldDSSTPropagator.computeMeanState(initialState, Propagator.DEFAULT_LAW, models);
 
         // Initialize Eckstein-Hechler model with mean state
         final FieldEcksteinHechlerPropagator<T> propagator = new FieldEcksteinHechlerPropagator<>(meanState.getOrbit(), provider, PropagationType.MEAN);
@@ -937,8 +935,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         // Mean state computation
         final List<DSSTForceModel> models = new ArrayList<>();
         models.add(new DSSTZonal(provider));
-        final FieldDSSTPropagator<T> dsst = new FieldDSSTPropagator<>(field, new ClassicalRungeKuttaFieldIntegrator<>(field, zero.add(10.0)));
-        final FieldSpacecraftState<T> meanState = dsst.computeMeanState(initialState, Propagator.DEFAULT_LAW, models);
+        final FieldSpacecraftState<T> meanState = FieldDSSTPropagator.computeMeanState(initialState, Propagator.DEFAULT_LAW, models);
 
         // Initialize Eckstein-Hechler model with mean state
         final FieldEcksteinHechlerPropagator<T> propagator = new FieldEcksteinHechlerPropagator<>(meanState.getOrbit(), Propagator.DEFAULT_LAW, zero.add(498.5), provider, PropagationType.MEAN);

@@ -118,8 +118,7 @@ public class FieldDSSTPropagatorTest {
         dsstForceModels.add(new DSSTThirdBody(CelestialBodyFactory.getMoon(), orbit.getMu().getReal()));
         dsstForceModels.add(new DSSTThirdBody(CelestialBodyFactory.getSun(), orbit.getMu().getReal()));
 
-        final FieldDSSTPropagator<T> dsstPropagator = setDSSTProp(field, osculatingState);
-        FieldSpacecraftState<T> meanState = dsstPropagator.computeMeanState(osculatingState, null, dsstForceModels);
+        FieldSpacecraftState<T> meanState = FieldDSSTPropagator.computeMeanState(osculatingState, null, dsstForceModels);
         Assert.assertEquals( 0.421,   osculatingState.getA().subtract(meanState.getA()).getReal(),                         1.0e-3);
         Assert.assertEquals(-5.23e-8, osculatingState.getEquinoctialEx().subtract(meanState.getEquinoctialEx()).getReal(), 1.0e-10);
         Assert.assertEquals(15.22e-8, osculatingState.getEquinoctialEy().subtract(meanState.getEquinoctialEy()).getReal(), 1.0e-10);
@@ -148,8 +147,7 @@ public class FieldDSSTPropagatorTest {
         dsstForceModels.add(new DSSTThirdBody(CelestialBodyFactory.getMoon(), orbit.getMu().getReal()));
         dsstForceModels.add(new DSSTThirdBody(CelestialBodyFactory.getSun(), orbit.getMu().getReal()));
 
-        final FieldDSSTPropagator<T> dsstPropagator = setDSSTProp(field, osculatingState);
-        FieldSpacecraftState<T> meanState = dsstPropagator.computeMeanState(osculatingState, null, dsstForceModels);
+        FieldSpacecraftState<T> meanState = FieldDSSTPropagator.computeMeanState(osculatingState, null, dsstForceModels);
         Assert.assertEquals( 0.421,   osculatingState.getA().subtract(meanState.getA()).getReal(),                         1.0e-3);
         Assert.assertEquals(-5.23e-8, osculatingState.getEquinoctialEx().subtract(meanState.getEquinoctialEx()).getReal(), 1.0e-10);
         Assert.assertEquals(15.22e-8, osculatingState.getEquinoctialEy().subtract(meanState.getEquinoctialEy()).getReal(), 1.0e-10);
@@ -191,8 +189,7 @@ public class FieldDSSTPropagatorTest {
                 zero.add(FastMath.toRadians(12.0)),
                 PositionAngle.TRUE, eci, initialDate, zero.add(Constants.EIGEN5C_EARTH_MU));
         final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(orbit);
-        final FieldDSSTPropagator<T> dsstPropagator = setDSSTProp(field, state);
-        FieldSpacecraftState<T> oscuState = dsstPropagator.computeOsculatingState(state, null, forces);
+        FieldSpacecraftState<T> oscuState = FieldDSSTPropagator.computeOsculatingState(state, null, forces);
         Assert.assertEquals(7119927.097122, oscuState.getA().getReal(), 0.001);
     }
 
@@ -801,8 +798,7 @@ public class FieldDSSTPropagatorTest {
         forces.add(zonal);
         forces.add(tesseral);
 
-        final FieldDSSTPropagator<T> dsstPropagator = setDSSTProp(field, meanState);
-        final FieldSpacecraftState<T> osculatingState = dsstPropagator.computeOsculatingState(meanState, null, forces);
+        final FieldSpacecraftState<T> osculatingState = FieldDSSTPropagator.computeOsculatingState(meanState, null, forces);
         Assert.assertEquals(1559.1,
                             FieldVector3D.distance(meanState.getPVCoordinates().getPosition(),
                                               osculatingState.getPVCoordinates().getPosition()).getReal(),
@@ -829,11 +825,10 @@ public class FieldDSSTPropagatorTest {
         forces.add(zonal);
         forces.add(tesseral);
 
-        final FieldDSSTPropagator<T> dsstPropagator = setDSSTProp(field, meanState);
-        final FieldSpacecraftState<T> osculatingState = dsstPropagator.computeOsculatingState(meanState, null, forces);
+        final FieldSpacecraftState<T> osculatingState = FieldDSSTPropagator.computeOsculatingState(meanState, null, forces);
 
         // there are no Gaussian force models, we don't need an attitude provider
-        final FieldSpacecraftState<T> computedMeanState = dsstPropagator.computeMeanState(osculatingState, null, forces);
+        final FieldSpacecraftState<T> computedMeanState = FieldDSSTPropagator.computeMeanState(osculatingState, null, forces);
 
         Assert.assertEquals(meanState.getA().getReal(), computedMeanState.getA().getReal(), 2.0e-8);
         Assert.assertEquals(0.0,
@@ -934,8 +929,7 @@ public class FieldDSSTPropagatorTest {
         forces.add(zonal);
         forces.add(tesseral);
         // Computes J2 mean elements using the DSST osculating to mean converter
-        final FieldDSSTPropagator<T> dsstPropagator = setDSSTProp(field, ss);
-        final FieldOrbit<T> meanOrb = dsstPropagator.computeMeanState(ss, null, forces).getOrbit();
+        final FieldOrbit<T> meanOrb = FieldDSSTPropagator.computeMeanState(ss, null, forces).getOrbit();
         Assert.assertEquals(0.0164196, FastMath.toDegrees(orb.getI().subtract(meanOrb.getI()).getReal()), 1.0e-7);
     }
 
@@ -955,14 +949,13 @@ public class FieldDSSTPropagatorTest {
         forces.add(moon);
         forces.add(sun);
 
-        final FieldDSSTPropagator<T> dsstPropagator = setDSSTProp(field, meanState);
-        final FieldSpacecraftState<T> osculatingState = dsstPropagator.computeOsculatingState(meanState, null, forces);
+        final FieldSpacecraftState<T> osculatingState = FieldDSSTPropagator.computeOsculatingState(meanState, null, forces);
         Assert.assertEquals(734.3,
                             FieldVector3D.distance(meanState.getPVCoordinates().getPosition(),
                                               osculatingState.getPVCoordinates().getPosition()).getReal(),
                             1.0);
 
-        final FieldSpacecraftState<T> computedMeanState = dsstPropagator.computeMeanState(osculatingState, null, forces);
+        final FieldSpacecraftState<T> computedMeanState = FieldDSSTPropagator.computeMeanState(osculatingState, null, forces);
         Assert.assertEquals(734.3,
                             FieldVector3D.distance(osculatingState.getPVCoordinates().getPosition(),
                                               computedMeanState.getPVCoordinates().getPosition()).getReal(),
@@ -1007,14 +1000,13 @@ public class FieldDSSTPropagatorTest {
                                                   osculatingState.getMu().getReal()));
         forces.add(new DSSTAtmosphericDrag(atmosphere, boxAndWing, osculatingState.getMu().getReal()));
 
-        final FieldDSSTPropagator<T> dsstPropagator = setDSSTProp(field, osculatingState);
-        final FieldSpacecraftState<T> meanState = dsstPropagator.computeMeanState(osculatingState, attitudeProvider, forces);
+        final FieldSpacecraftState<T> meanState = FieldDSSTPropagator.computeMeanState(osculatingState, attitudeProvider, forces);
         Assert.assertEquals(0.522,
                             FieldVector3D.distance(osculatingState.getPVCoordinates().getPosition(),
                                               meanState.getPVCoordinates().getPosition()).getReal(),
                             0.001);
 
-        final FieldSpacecraftState<T> computedOsculatingState = dsstPropagator.computeOsculatingState(meanState, attitudeProvider, forces);
+        final FieldSpacecraftState<T> computedOsculatingState = FieldDSSTPropagator.computeOsculatingState(meanState, attitudeProvider, forces);
         Assert.assertEquals(0.0,
                             FieldVector3D.distance(osculatingState.getPVCoordinates().getPosition(),
                                               computedOsculatingState.getPVCoordinates().getPosition()).getReal(),
@@ -1038,9 +1030,8 @@ public class FieldDSSTPropagatorTest {
         // Surface force models that require an attitude provider
         final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
         forces.add(new DSSTAtmosphericDrag(atmosphere, boxAndWing, osculatingState.getMu().getReal()));
-        final FieldDSSTPropagator<T> dsstPropagator = setDSSTProp(field, osculatingState);
-        final FieldSpacecraftState<T> meanState = dsstPropagator.computeMeanState(osculatingState, attitudeProvider, forces);
-        final FieldSpacecraftState<T> computedOsculatingState = dsstPropagator.computeOsculatingState(meanState, attitudeProvider, forces);
+        final FieldSpacecraftState<T> meanState = FieldDSSTPropagator.computeMeanState(osculatingState, attitudeProvider, forces);
+        final FieldSpacecraftState<T> computedOsculatingState = FieldDSSTPropagator.computeOsculatingState(meanState, attitudeProvider, forces);
         Assert.assertEquals(0.0, FieldVector3D.distance(osculatingState.getPVCoordinates().getPosition(), computedOsculatingState.getPVCoordinates().getPosition()).getReal(),
                             5.0e-6);
     }
