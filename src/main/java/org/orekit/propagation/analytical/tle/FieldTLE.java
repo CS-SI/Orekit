@@ -19,8 +19,7 @@ package org.orekit.propagation.analytical.tle;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
@@ -111,6 +110,18 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
     /** Name of the eccentricity parameter. */
     private static final String ECCENTRICITY = "eccentricity";
 
+    /** Letter-number map for satellite number */
+    private static final int MAX_NUMERIC_SATNUM = 99999;
+
+    /** Letter-number map for satellite number */
+    private static final Map<Character, Integer> ALPHA5_NUMBERS;
+
+    /** Number-letter map for satellite number */
+    private static final Map<Integer, Character> ALPHA5_LETTERS;
+
+    /** Scaling factor for alpha5 numbers */
+    private static final int ALPHA5_SCALING = 10000;
+
     /** International symbols for parsing. */
     private static final DecimalFormatSymbols SYMBOLS =
         new DecimalFormatSymbols(Locale.US);
@@ -181,6 +192,20 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
     /** Driver for ballistic coefficient parameter. */
     private final transient ParameterDriver bStarParameterDriver;
 
+    /* Generate maps between TLE satellite alphabetic characters and integers.
+     */
+    static {
+        final List<Character> alpha5Letters = Arrays.asList('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J',
+                'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T',
+                'U', 'V', 'W', 'X', 'Y', 'Z');
+        ALPHA5_NUMBERS = new HashMap<>(alpha5Letters.size());
+        ALPHA5_LETTERS = new HashMap<>(alpha5Letters.size());
+        for(int i=0; i < alpha5Letters.size(); ++i) {
+            ALPHA5_NUMBERS.put(alpha5Letters.get(i), i + 10);
+            ALPHA5_LETTERS.put(i + 10, alpha5Letters.get(i));
+        }
+    }
+
     /** Simple constructor from unparsed two lines. This constructor uses the {@link
      * DataContext#getDefault() default data context}.
      *
@@ -213,8 +238,8 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
         final T zero = field.getZero();
 
         // identification
-        satelliteNumber = parseInteger(line1, 2, 5);
-        final int satNum2 = parseInteger(line2, 2, 5);
+        satelliteNumber = parseSatelliteNumber(line1, 2, 5);
+        final int satNum2 = parseSatelliteNumber(line2, 2, 5);
         if (satelliteNumber != satNum2) {
             throw new OrekitException(OrekitMessages.TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT,
                                       line1, line2);
@@ -445,6 +470,26 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
         return line2;
     }
 
+    /** Build an alpha5 satellite number.
+     */
+    private String buildSatelliteNumber(final int satelliteNumber, final String name) {
+        String satnumString;
+        if (satelliteNumber > MAX_NUMERIC_SATNUM) {
+            int highDigits = satelliteNumber / ALPHA5_SCALING;
+            int lowDigits = satelliteNumber - highDigits * ALPHA5_SCALING;
+
+            Character alpha = ALPHA5_LETTERS.get(highDigits);
+            if (alpha == null) {
+                throw new OrekitException(OrekitMessages.TLE_INVALID_PARAMETER,
+                        satelliteNumber, name, alpha);
+            }
+            satnumString = alpha + addPadding(name, lowDigits, '0', 4, true);
+        } else {
+            satnumString = addPadding(name, satelliteNumber, '0', 5, true);
+        }
+        return satnumString;
+    }
+
     /** Build the line 1 from the parsed elements.
      */
     private void buildLine1() {
@@ -454,7 +499,7 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
         buffer.append('1');
 
         buffer.append(' ');
-        buffer.append(addPadding("satelliteNumber-1", satelliteNumber, '0', 5, true));
+        buffer.append(buildSatelliteNumber(satelliteNumber, "satelliteNumber-1"));
         buffer.append(classification);
 
         buffer.append(' ');
@@ -539,7 +584,7 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
         buffer.append('2');
 
         buffer.append(' ');
-        buffer.append(addPadding("satelliteNumber-2", satelliteNumber, '0', 5, true));
+        buffer.append(buildSatelliteNumber(satelliteNumber, "satelliteNumber-2"));
 
         buffer.append(' ');
         buffer.append(addPadding(INCLINATION, f34.format(FastMath.toDegrees(inclination)), ' ', 8, true));
@@ -628,6 +673,26 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
     private int parseInteger(final String line, final int start, final int length) {
         final String field = line.substring(start, start + length).trim();
         return field.length() > 0 ? Integer.parseInt(field.replace(' ', '0')) : 0;
+    }
+
+    /** Parse a satellite number
+     * @param line line to parse
+     * @param start start index of the first character
+     * @param length length of the string
+     * @return value of the integer
+     */
+    private int parseSatelliteNumber(final String line, final int start, final int length) {
+        String field = line.substring(start, start + length);
+        int satelliteNumber;
+
+        if(Character.isUpperCase(field.charAt(0))) {
+            satelliteNumber = Integer.parseInt(field.substring(1));
+            satelliteNumber += ALPHA5_NUMBERS.get(field.charAt(0)) * ALPHA5_SCALING;
+        } else {
+            field = field.trim();
+            satelliteNumber = field.length() > 0 ? Integer.parseInt(field.replace(' ', '0')) : 0;
+        }
+        return satelliteNumber;
     }
 
     /** Parse a year written on 2 digits.

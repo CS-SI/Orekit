@@ -65,7 +65,7 @@ public class FieldTLETest {
     }
     
     @Test
-    public void testSylletry() {
+    public void testSymmetry() {
         doTestSymmetry(Decimal64Field.getInstance());
     }
     
@@ -207,6 +207,13 @@ public class FieldTLETest {
         Assert.assertEquals(tle.getRevolutionNumberAtEpoch(), 6, 0);
         Assert.assertEquals(tle.getElementNumber(), 2 , 0);
 
+        line1 = "1 T7421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    28";
+        line2 = "2 T7421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    60";
+        Assert.assertTrue(TLE.isFormatOK(line1, line2));
+
+        tle = new FieldTLE<T>(field, line1, line2);
+        Assert.assertEquals(277421, tle.getSatelliteNumber(), 0);
+
         line1 = "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20";
         line2 = "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14*26113993    62";
         Assert.assertFalse(TLE.isFormatOK(line1, line2));
@@ -257,6 +264,8 @@ public class FieldTLETest {
                       "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
         checkSymmetry(field, "1 31928U 98067BA  08269.84884916  .00114257  17652-4  13615-3 0  4412",
                       "2 31928  51.6257 175.4142 0001703  41.9031 318.2112 16.08175249 68368");
+        checkSymmetry(field, "1 T7421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    28",
+                      "2 T7421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    60");
     }
 
     private <T extends RealFieldElement<T>> void checkSymmetry(Field<T> field, String line1, String line2) {
