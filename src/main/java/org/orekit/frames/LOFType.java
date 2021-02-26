@@ -152,9 +152,9 @@ public enum LOFType {
      * <p>
      * The axes of this frame are parallel to the axes of both the {@link #QSW} and {@link #LVLH} frames:
      * <ul>
-     *   <li>X<sub>LVLH_CCSDS</sub> =  Y<sub>QSW/LVLH</sub></li>
-     *   <li>Y<sub>LVLH_CCSDS</sub> = -Z<sub>QSW/LVLH</sub></li>
-     *   <li>Z<sub>LVLH_CCSDS</sub> = -X<sub>QSW/LVLH</sub></li>
+     *   <li>X<sub>LVLH_CCSDS/VVLH</sub> =  Y<sub>QSW/LVLH</sub></li>
+     *   <li>Y<sub>LVLH_CCSDS/VVLH</sub> = -Z<sub>QSW/LVLH</sub></li>
+     *   <li>Z<sub>LVLH_CCSDS/VVLH</sub> = -X<sub>QSW/LVLH</sub></li>
      * </ul>
      * </p>
      *
@@ -180,11 +180,25 @@ public enum LOFType {
 
     },
 
-    /** Obsolete name for {@link #LVLH_CCSDS}.
+    /** Constant for Vehicle Velocity, Local Horizontal frame
+     * (Z axis aligned with opposite of position, Y axis aligned with opposite of orbital momentum).
+     * <p>
+     * This is another name for {@link #LVLH_CCSDS}, kept here for compatibility with STK.
+     * </p>
+     * <p>
+     * Beware that the name is misleading: in the general case (i.e. not perfectly circular),
+     * none of the axes is perfectly aligned with velocity! The preferred name for this
+     * should be {@link #LVLH_CCSDS}.
+     * </p>
+     * <p>
+     * The axes of this frame are parallel to the axes of both the {@link #QSW} and {@link #LVLH} frames:
+     * <ul>
+     *   <li>X<sub>LVLH_CCSDS/VVLH</sub> =  Y<sub>QSW/LVLH</sub></li>
+     *   <li>Y<sub>LVLH_CCSDS/VVLH</sub> = -Z<sub>QSW/LVLH</sub></li>
+     *   <li>Z<sub>LVLH_CCSDS/VVLH</sub> = -X<sub>QSW/LVLH</sub></li>
+     * </ul>
      * @see #LVLH_CCSDS
-     * @deprecated as of 11.0, replaced by {@link #LVLH_CCSDS}
      */
-    @Deprecated
     VVLH {
 
         /** {@inheritDoc} */

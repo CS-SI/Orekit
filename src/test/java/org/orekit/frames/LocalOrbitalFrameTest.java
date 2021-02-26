@@ -74,7 +74,6 @@ public class LocalOrbitalFrameTest {
                    pv.getMomentum().negate());
     }
 
-    @Deprecated
     @Test
     public void testVVLH() {
         AbsoluteDate date = initDate.shiftedBy(400);
