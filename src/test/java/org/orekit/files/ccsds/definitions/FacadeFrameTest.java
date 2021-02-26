@@ -68,6 +68,19 @@ public class FacadeFrameTest {
         }
     }
 
+    @Test
+    public void testUnknownFrame() {
+        final String name = "unknown";
+        FrameFacade ff = FrameFacade.parse(name,
+                                           IERSConventions.IERS_2010, true, DataContext.getDefault(),
+                                           true, true, true);
+        Assert.assertNull(ff.asFrame());
+        Assert.assertNull(ff.asCelestialBodyFrame());
+        Assert.assertNull(ff.asOrbitRelativeFrame());
+        Assert.assertNull(ff.asSpacecraftBodyFrame());
+        Assert.assertEquals(name, ff.getName());
+    }
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");

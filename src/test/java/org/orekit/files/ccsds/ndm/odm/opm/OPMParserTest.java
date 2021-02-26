@@ -677,6 +677,45 @@ public class OPMParserTest {
     }
 
     @Test
+    public void testUnknownCenter() throws URISyntaxException {
+        final String name = "/ccsds/odm/opm/OPM-unknown-center.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        final OpmFile opm = new ParserBuilder().
+                            withMu(Constants.EIGEN5C_EARTH_MU).
+                            withDefaultMass(1000.0).
+                            buildOpmParser().
+                            parseMessage(source);
+        Assert.assertEquals("UNKNOWN-CENTER", opm.getMetadata().getCenterName());
+        Assert.assertNull(opm.getMetadata().getCenterBody());
+        try {
+            opm.getMetadata().getFrame();
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, oe.getSpecifier());
+            Assert.assertEquals("UNKNOWN-CENTER", oe.getParts()[0]);
+        }
+    }
+
+    @Test
+    public void testUnknownFrame() throws URISyntaxException {
+        final String name = "/ccsds/odm/opm/OPM-unknown-frame.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        final OpmFile opm = new ParserBuilder().
+                            withMu(Constants.EIGEN5C_EARTH_MU).
+                            withDefaultMass(1000.0).
+                            buildOpmParser().
+                            parseMessage(source);
+        Assert.assertEquals("ZZRF", opm.getMetadata().getReferenceFrame().getName());
+        try {
+            opm.getMetadata().getFrame();
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_INVALID_FRAME, oe.getSpecifier());
+            Assert.assertEquals("ZZRF", oe.getParts()[0]);
+        }
+    }
+
+    @Test
     public void testNonExistentFile() throws URISyntaxException {
         final String realName = getClass().getResource("/ccsds/odm/opm/OPMExample1.txt").toURI().getPath();
         final String wrongName = realName + "xxxxx";

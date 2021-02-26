@@ -180,6 +180,9 @@ public class CommonMetadata extends OdmMetadata {
         if (centerBody == null) {
             throw new OrekitException(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, centerName);
         }
+        if (referenceFrame.asFrame() == null) {
+            throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, referenceFrame.getName());
+        }
         // Just return frame if we don't need to shift the center based on CENTER_NAME
         // MCI and ICRF are the only non-Earth centered frames specified in Annex A.
         final boolean isMci  = referenceFrame.asCelestialBodyFrame() == CelestialBodyFrame.MCI;

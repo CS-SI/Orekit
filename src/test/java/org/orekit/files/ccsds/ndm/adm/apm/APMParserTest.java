@@ -33,6 +33,7 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
@@ -578,6 +579,75 @@ public class APMParserTest {
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNSUPPORTED_LOCAL_ORBITAL_FRAME, oe.getSpecifier());
             Assert.assertEquals(OrbitRelativeFrame.SEZ_INERTIAL.name(), oe.getParts()[0]);
+        }
+
+    }
+
+    @Test
+    public void testUnknownFrame() {
+
+        // File
+        final String ex = "/ccsds/adm/apm/APM-unknown-frame.txt";
+
+        // Initialize the parser
+        final ApmParser parser = new ParserBuilder().
+                                 withMissionReferenceDate(new AbsoluteDate("2002-09-30T14:28:15.117",
+                                                                           TimeScalesFactory.getUTC())).
+                                 buildApmParser();
+
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+
+        // Generated APM file
+        final ApmFile file = parser.parseMessage(source);
+
+        // Verify general data
+        Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
+        Assert.assertEquals(DataContext.getDefault(),  file.getDataContext());
+
+        // Check Header Block
+        Assert.assertEquals(1.0, file.getHeader().getFormatVersion(), 1.0e-10);
+        Assert.assertEquals(new AbsoluteDate(2021, 2, 24, 18, 59, 43,
+                                             TimeScalesFactory.getUTC()),
+                            file.getHeader().getCreationDate());
+        Assert.assertEquals("CS GROUP", file.getHeader().getOriginator());
+
+        Segment<AdmMetadata, ApmData> segment = file.getSegments().get(0);
+
+        // Check Metadata Block
+        Assert.assertEquals("DUMMY",      segment.getMetadata().getObjectName());
+        Assert.assertEquals("9999-111Z",  segment.getMetadata().getObjectID());
+        Assert.assertEquals(9999,         segment.getMetadata().getLaunchYear());
+        Assert.assertEquals(111,          segment.getMetadata().getLaunchNumber());
+        Assert.assertEquals("Z",          segment.getMetadata().getLaunchPiece());
+        Assert.assertEquals("JUPITER",    segment.getMetadata().getCenterName());
+        Assert.assertTrue(segment.getMetadata().getHasCreatableBody());
+        Assert.assertEquals(CelestialBodyFactory.getJupiter(), segment.getMetadata().getCenterBody());
+        Assert.assertEquals(TimeSystem.TDB,              segment.getMetadata().getTimeSystem());
+
+        // Check data block
+        Assert.assertFalse(segment.getData().hasManeuvers());
+        FrameFacade sb = segment.getData().getQuaternionBlock().getEndpoints().getSpacecraftBodyFrame();
+        Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY, sb.asSpacecraftBodyFrame().getBaseEquipment());
+        Assert.assertEquals("1", sb.asSpacecraftBodyFrame().getLabel());
+        FrameFacade ext = segment.getData().getQuaternionBlock().getEndpoints().getExternalFrame();
+        Assert.assertNull(ext.asFrame());
+        Assert.assertNull(ext.asCelestialBodyFrame());
+        Assert.assertNull(ext.asOrbitRelativeFrame());
+        Assert.assertNull(ext.asSpacecraftBodyFrame());
+        Assert.assertEquals("UNKNOWN", ext.getName());
+        Assert.assertFalse(segment.getData().getQuaternionBlock().getEndpoints().isA2b());
+        Assert.assertEquals(new AbsoluteDate(2021, 1, 1, 0, 0, 0.0, TimeScalesFactory.getTDB()),
+                            segment.getData().getQuaternionBlock().getEpoch());
+
+        try {
+            file.getAttitude(FramesFactory.getEME2000(),
+                             (date, frame) -> new TimeStampedPVCoordinates(date,
+                                                                           new PVCoordinates(new Vector3D( 1.234e7, -0.567e7, 9.876e6),
+                                                                                             new Vector3D(-0.772e4,  5.002e4, 4.892e2))));
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_INVALID_FRAME, oe.getSpecifier());
+            Assert.assertEquals(ext.getName(), oe.getParts()[0]);
         }
 
     }

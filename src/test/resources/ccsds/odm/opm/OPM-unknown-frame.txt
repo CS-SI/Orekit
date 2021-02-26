@@ -1,0 +1,17 @@
+CCSDS_OPM_VERS = 3.0
+CREATION_DATE  = 2021-02-24T18:59:43.000
+ORIGINATOR     = CS GROUP
+
+OBJECT_NAME    = BLIP 
+OBJECT_ID      = 8976-003G
+REF_FRAME      = ZZRF
+CENTER_NAME    = EARTH
+TIME_SYSTEM    = TAI
+
+EPOCH          = 2021-01-01T00:00:00
+X              =  -12345.678
+Y              =     528.659
+Z              =    -717.490
+X_DOT          =       0.432274
+Y_DOT          =      -0.861172
+Z_DOT          =      -8.528524

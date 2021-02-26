@@ -161,7 +161,11 @@ public enum OrbitStateHistoryMetadataKey {
             while (!matcher.hitEnd()) {
                 if (matcher.find()) {
                     final String u = matcher.group(1).replace("*", "").replace('/', '_').toUpperCase(Locale.US);
-                    orbUnits.add(Unit.valueOf(u));
+                    try {
+                        orbUnits.add(Unit.parse(u));
+                    } catch (OrekitException oe) {
+                        throw token.generateException(oe);
+                    }
                 } else {
                     throw token.generateException(null);
                 }

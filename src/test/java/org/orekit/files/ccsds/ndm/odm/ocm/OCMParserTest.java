@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Locale;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -107,6 +108,26 @@ public class OCMParserTest {
             Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
             Assert.assertEquals(13, ((Integer) oe.getParts()[0]).intValue());
             Assert.assertEquals("META", oe.getParts()[2]);
+        }
+    }
+
+    @Test
+    public void testUnknownFrame() throws URISyntaxException {
+        final String name = "/ccsds/odm/ocm/OCM-unknown-frame.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        final OcmFile    ocm    = new ParserBuilder().
+                                  withMu(Constants.EIGEN5C_EARTH_MU).
+                                  buildOcmParser().
+                                  parseMessage(source);
+        Assert.assertEquals("CS GROUP", ocm.getHeader().getOriginator());
+        Assert.assertEquals("728b0d2a-01fc-4d0e-9f0a-370c6930ea84", ocm.getHeader().getMessageId().toLowerCase(Locale.US));
+        Assert.assertEquals("ZZRF", ocm.getData().getOrbitBlocks().get(0).getMetadata().getOrbReferenceFrame().getName());
+        try {
+            ocm.getData().getOrbitBlocks().get(0).getFrame();
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_INVALID_FRAME, oe.getSpecifier());
+            Assert.assertEquals("ZZRF", oe.getParts()[0]);
         }
     }
 

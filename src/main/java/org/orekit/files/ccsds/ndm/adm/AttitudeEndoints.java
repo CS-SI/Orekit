@@ -216,7 +216,7 @@ public class AttitudeEndoints implements AttitudeBuilder {
         } else {
             // this is an absolute attitude
             if (external.asFrame() == null) {
-                // this should never happen as all CelestialBodyFrame have an Orekit mapping
+                // unknown frame
                 throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, external.getName());
             }
             final Attitude attitude = new Attitude(external.asFrame(), att);

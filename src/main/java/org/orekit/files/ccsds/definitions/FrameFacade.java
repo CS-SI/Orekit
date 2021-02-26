@@ -18,7 +18,6 @@ package org.orekit.files.ccsds.definitions;
 
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.utils.IERSConventions;
 
@@ -45,8 +44,9 @@ public class FrameFacade {
 
     /** Simple constructor.
      * <p>
-     * Only one of {@code celestialBodyFrame}, {@code orbitRelativeFrame}
-     * or {@code spacecraftBodyFrame} may be non null
+     * At most one of {@code celestialBodyFrame}, {@code orbitRelativeFrame}
+     * or {@code spacecraftBodyFrame} may be non null. They may all be null
+     * if frame is unknown, in which case only the name will be available.
      * </p>
      * @param frame reference to node in Orekit frames tree (may be null)
      * @param celestialBodyFrame reference to celestial body centered frame (may be null)
@@ -138,7 +138,6 @@ public class FrameFacade {
                                     final boolean allowCelestial,
                                     final boolean allowOrbit,
                                     final boolean allowSpacecraft) {
-        IllegalArgumentException iae = null;
         try {
             final CelestialBodyFrame cbf = CelestialBodyFrame.parse(name);
             if (allowCelestial) {
@@ -146,7 +145,6 @@ public class FrameFacade {
                                        cbf, null, null, cbf.name());
             }
         } catch (IllegalArgumentException iaeC) {
-            iae = iaeC;
             try {
                 final OrbitRelativeFrame orf = OrbitRelativeFrame.valueOf(name.replace(' ', '_'));
                 if (allowOrbit) {
@@ -158,12 +156,15 @@ public class FrameFacade {
                     if (allowSpacecraft) {
                         return new FrameFacade(null, null, null, sbf, sbf.toString());
                     }
-                } catch (IllegalArgumentException iaeS) {
-                    // nothing to do here, error is handled below
+                } catch (OrekitException | IllegalArgumentException e) {
+                    // nothing to do here, use fallback below
                 }
             }
         }
-        throw new OrekitException(iae, OrekitMessages.CCSDS_INVALID_FRAME, name);
+
+        // we don't know any frame with this name, just store the name itself
+        return new FrameFacade(null, null, null, null, name);
+
     }
 
 }
