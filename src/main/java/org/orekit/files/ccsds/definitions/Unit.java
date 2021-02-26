@@ -17,6 +17,8 @@
 package org.orekit.files.ccsds.definitions;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 
 /** CCSDS/SANA units (km, km/s, degrees...).
  * @author Luc Maisonobe
@@ -87,6 +89,69 @@ public enum Unit {
         }
     },
 
+    /** Meters. */
+    M() {
+        /** {@inheritDoc} */
+        @Override
+        public double toSI(final double value) {
+            return value;
+        }
+    },
+
+    /** Meters per seconds. */
+    M_S() {
+        /** {@inheritDoc} */
+        @Override
+        public double toSI(final double value) {
+            return value;
+        }
+    },
+
+    /** Meters per squared seconds. */
+    M_S2() {
+        /** {@inheritDoc} */
+        @Override
+        public double toSI(final double value) {
+            return value;
+        }
+    },
+
+    /** Square meters. */
+    M2() {
+        /** {@inheritDoc} */
+        @Override
+        public double toSI(final double value) {
+            return value;
+        }
+    },
+
+    /** Square meters per second. */
+    M2_S() {
+        /** {@inheritDoc} */
+        @Override
+        public double toSI(final double value) {
+            return value;
+        }
+    },
+
+    /** Meters square roots. */
+    SQM() {
+        /** {@inheritDoc} */
+        @Override
+        public double toSI(final double value) {
+            return value;
+        }
+    },
+
+    /** Meters per seconds square roots. */
+    M_SQS() {
+        /** {@inheritDoc} */
+        @Override
+        public double toSI(final double value) {
+            return value;
+        }
+    },
+
     /** Degrees. */
     DEG() {
         /** {@inheritDoc} */
@@ -96,8 +161,17 @@ public enum Unit {
         }
     },
 
+    /** Radians. */
+    RAD() {
+        /** {@inheritDoc} */
+        @Override
+        public double toSI(final double value) {
+            return value;
+        }
+    },
+
     /** Dimensionless values. */
-    DIMENSIONLESS() {
+    ND() {
         /** {@inheritDoc} */
         @Override
         public double toSI(final double value) {
@@ -110,5 +184,17 @@ public enum Unit {
      * @return value in SI units
      */
     public abstract double toSI(double value);
+
+    /** Parse a unit.
+     * @param unit unit to parse
+     * @return parsed unit
+     */
+    public static Unit parse(final String unit) {
+        try {
+            return Unit.valueOf(unit);
+        } catch (IllegalArgumentException iae) {
+            throw new OrekitException(OrekitMessages.UNKNOWN_UNIT, unit);
+        }
+    }
 
 }

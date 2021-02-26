@@ -639,5 +639,8 @@ NOT_VALID_INTERNATIONAL_DESIGNATOR = {0} n''est pas un numéro d''immatriculatio
 # value for key {0} has not been initialized
 UNINITIALIZED_VALUE_FOR_KEY = valeur non initialisée pour la clef {0}
 
+# unknown unit {0}
+UNKNOWN_UNIT = unité {0} inconnue
+
 # missing velocity data
 MISSING_VELOCITY = données de vitesse manquantes

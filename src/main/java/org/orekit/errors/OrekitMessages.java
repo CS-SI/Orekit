@@ -293,6 +293,7 @@ public enum OrekitMessages implements Localizable {
     INVALID_RANGE_INDICATOR_IN_CRD_FILE("Invalid range indicator {0} in CRD file header"),
     NOT_VALID_INTERNATIONAL_DESIGNATOR("{0} is not a valid international designator"),
     UNINITIALIZED_VALUE_FOR_KEY("value for key {0} has not been initialized"),
+    UNKNOWN_UNIT("unknown unit {0}"),
     MISSING_VELOCITY("missing velocity data");
 
     // CHECKSTYLE: resume JavadocVariable check
