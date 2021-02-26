@@ -659,9 +659,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
             this.meanMode = meanMode;
             this.j = j;
-            this.parameters = parameters;
+            this.parameters = parameters.clone();
             this.auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), I);
-            this.context = new FieldAbstractGaussianContributionContext<>(auxiliaryElements, parameters);
+            this.context = new FieldAbstractGaussianContributionContext<>(auxiliaryElements, this.parameters);
             // remove derivatives from state
             final T[] stateVector = MathArrays.buildArray(field, 6);
             OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), PositionAngle.TRUE, stateVector, null);
@@ -936,9 +936,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
             this.meanMode = meanMode;
             this.j = j;
-            this.parameters = parameters;
+            this.parameters = parameters.clone();
             this.auxiliaryElements = new AuxiliaryElements(state.getOrbit(), I);
-            this.context = new AbstractGaussianContributionContext(auxiliaryElements, parameters);
+            this.context = new AbstractGaussianContributionContext(auxiliaryElements, this.parameters);
             // remove derivatives from state
             final double[] stateVector = new double[6];
             OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), PositionAngle.TRUE, stateVector, null);
