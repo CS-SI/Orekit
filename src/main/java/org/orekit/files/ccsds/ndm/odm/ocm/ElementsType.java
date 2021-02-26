@@ -58,21 +58,21 @@ public enum ElementsType {
     /** 12 elements eigenvalue/eigenvectors (EigMaj, EigMed, EigMin, EigVecMaj, EigVecMed, EigVecMin). */
     EIGVAL3EIGVEC3("12 elements eigenvalue/eigenvectors (EigMaj, EigMed, EigMin, EigVecMaj, EigVecMed, EigVecMin)",
                    Unit.KM, Unit.KM, Unit.KM,
-                   Unit.DIMENSIONLESS, Unit.DIMENSIONLESS, Unit.DIMENSIONLESS,
-                   Unit.DIMENSIONLESS, Unit.DIMENSIONLESS, Unit.DIMENSIONLESS,
-                   Unit.DIMENSIONLESS, Unit.DIMENSIONLESS, Unit.DIMENSIONLESS),
+                   Unit.ND, Unit.ND, Unit.ND,
+                   Unit.ND, Unit.ND, Unit.ND,
+                   Unit.ND, Unit.ND, Unit.ND),
 
     /** Equinoctial elements (a, af, ag, L=M+ω+frΩ, χ, ψ, fr). */
     EQUINOCTIAL(" Equinoctial elements (a, af, ag, L=M+ω+frΩ, χ, ψ, fr)",
-                Unit.KM, Unit.DIMENSIONLESS, Unit.DIMENSIONLESS,
-                Unit.DEG, Unit.DIMENSIONLESS, Unit.DIMENSIONLESS,
-                Unit.DIMENSIONLESS),
+                Unit.KM, Unit.ND, Unit.ND,
+                Unit.DEG, Unit.ND, Unit.ND,
+                Unit.ND),
 
     /** Modified equinoctial elements (p=a(1−e²), af, ag, L'=υ+ω+frΩ, χ, ψ, fr). */
     EQUINOCTIALMOD("Modified equinoctial elements (p=a(1−e²), af, ag, L'=υ+ω+frΩ, χ, ψ, fr)",
-                   Unit.KM, Unit.DIMENSIONLESS, Unit.DIMENSIONLESS,
-                   Unit.DEG, Unit.DIMENSIONLESS, Unit.DIMENSIONLESS,
-                   Unit.DIMENSIONLESS),
+                   Unit.KM, Unit.ND, Unit.ND,
+                   Unit.DEG, Unit.ND, Unit.ND,
+                   Unit.ND),
 
     /** Geodetic elements (λ, ΦGD, β, A, h, vre). */
     GEODETIC("Geodetic elements (λ, ΦGD, β, A, h, vre)",
@@ -81,12 +81,12 @@ public enum ElementsType {
 
     /** Keplerian 6-elemnt classical set (a, e, i, Ω, ω, ν). */
     KEPLERIAN("Keplerian 6-elemnt classical set (a, e, i, Ω, ω, ν)",
-              Unit.KM, Unit.DIMENSIONLESS, Unit.DEG,
+              Unit.KM, Unit.ND, Unit.DEG,
               Unit.DEG, Unit.DEG, Unit.DEG),
 
     /** Keplerian 6-elemnt classical set (a, e, i, Ω, ω, M). */
     KEPLERIANMEAN("Keplerian 6-elemnt classical set (a, e, i, Ω, ω, M)",
-                  Unit.KM, Unit.DIMENSIONLESS, Unit.DEG,
+                  Unit.KM, Unit.ND, Unit.DEG,
                   Unit.DEG, Unit.DEG, Unit.DEG),
 
     /** Modified spherical 6-element set (λ, δ, β, A, r, v). */
@@ -96,8 +96,8 @@ public enum ElementsType {
 
     /** Geosynchronous on-station tailored set (a, ex, ey, ix, iy, λ). */
     ONSTATION("Geosynchronous on-station tailored set (a, ex, ey, ix, iy, λ)",
-              Unit.KM, Unit.DIMENSIONLESS, Unit.DIMENSIONLESS,
-              Unit.DIMENSIONLESS, Unit.DIMENSIONLESS, Unit.DEG),
+              Unit.KM, Unit.ND, Unit.ND,
+              Unit.ND, Unit.ND, Unit.DEG),
 
     /** Canonical counterpart of equinoctial 6-element set (λM=M+ω+Ω, gp, hp, Lp, Gp, Hp). */
     POINCARE("Canonical counterpart of equinoctial 6-element set (λM=M+ω+Ω, gp, hp, Lp, Gp, Hp)",
