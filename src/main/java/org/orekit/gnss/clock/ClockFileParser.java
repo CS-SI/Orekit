@@ -45,6 +45,7 @@ import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.gnss.clock.ClockFile.ClockDataType;
+import org.orekit.gnss.clock.ClockFile.Receiver;
 import org.orekit.gnss.clock.ClockFile.ReferenceClock;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -72,6 +73,21 @@ public class ClockFileParser {
 
     /** Handled clock file format versions. */
     private static final List<Double> HANDLED_VERSIONS = Arrays.asList(2.00, 3.00, 3.01, 3.02, 3.04);
+
+    /** Pattern for date format yyyy-mm-dd hh:mm. */
+    private static final Pattern DATE_PATTERN_1 = Pattern.compile("^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}.*$");;
+
+    /** Pattern for date format yyyymmdd hhmmss zone or YYYYMMDD  HHMMSS zone. */
+    private static final Pattern DATE_PATTERN_2 = Pattern.compile("^[0-9]{8}\\s{1,2}[0-9]{6}.*$");
+
+    /** Pattern for date format dd-MONTH-yyyy hh:mm zone or d-MONTH-yyyy hh:mm zone. */
+    private static final Pattern DATE_PATTERN_3 = Pattern.compile("^[0-9]{1,2}-[a-z,A-Z]{3}-[0-9]{4} [0-9]{2}:[0-9]{2}.*$");
+
+    /** Pattern for date format dd-MONTH-yy hh:mm zone or d-MONTH-yy hh:mm zone. */
+    private static final Pattern DATE_PATTERN_4 = Pattern.compile("^[0-9]{1,2}-[a-z,A-Z]{3}-[0-9]{2} [0-9]{2}:[0-9]{2}.*$");
+
+    /** Pattern for date format yyyy MONTH dd hh:mm:ss or yyyy MONTH d hh:mm:ss. */
+    private static final Pattern DATE_PATTERN_5 = Pattern.compile("^[0-9]{4} [a-z,A-Z]{3} [0-9]{1,2} [0-9]{2}:[0-9]{2}:[0-9]{2}.*$");
 
     /** Spaces delimiters. */
     private static final String SPACES = "\\s+";
@@ -405,7 +421,7 @@ public class ClockFileParser {
                     String currentObsType = scanner.next();
                     while (!currentObsType.equals(SYS)) {
                         final ObservationType obsType = ObservationType.valueOf(currentObsType);
-                        pi.file.AddSystemObservationType(satelliteSystem, obsType);
+                        pi.file.addSystemObservationType(satelliteSystem, obsType);
                         currentObsType = scanner.next();
                     }
                 }
@@ -434,7 +450,7 @@ public class ClockFileParser {
                     String currentObsType = scanner.next();
                     while (!currentObsType.equals(SYS)) {
                         final ObservationType obsType = ObservationType.valueOf(currentObsType);
-                        pi.file.AddSystemObservationType(pi.currentSatelliteSystem, obsType);
+                        pi.file.addSystemObservationType(pi.currentSatelliteSystem, obsType);
                         currentObsType = scanner.next();
                     }
                 }
@@ -772,8 +788,9 @@ public class ClockFileParser {
                     }
 
                     // Add reference clock to current reference clock list
-                    pi.currentReferenceClocks.add(pi.file.new ReferenceClock(referenceName, clockID, clockConstraint,
-                                                                             pi.referenceClockStartDate, pi.referenceClockEndDate));
+                    final ReferenceClock referenceClock = new ReferenceClock(referenceName, clockID, clockConstraint,
+                                                                             pi.referenceClockStartDate, pi.referenceClockEndDate);
+                    pi.currentReferenceClocks.add(referenceClock);
 
                     // Modify time span map of the reference clocks to accept the new reference clock
                     pi.file.addReferenceClockList(pi.currentReferenceClocks, pi.referenceClockStartDate);
@@ -854,7 +871,8 @@ public class ClockFileParser {
                 final double y = MILLIMETER * Double.parseDouble(yString);
                 final double z = MILLIMETER * Double.parseDouble(zString);
 
-                pi.file.addReceiver(pi.file.new Receiver(designator, receiverIdentifier, x, y, z));
+                final Receiver receiver = new Receiver(designator, receiverIdentifier, x, y, z);
+                pi.file.addReceiver(receiver);
 
             }
 
@@ -971,7 +989,7 @@ public class ClockFileParser {
                     // Check if continuation line is required
                     if (pi.currentNumberOfValues <= 2) {
                         // No continuation line is required
-                        pi.file.AddClockData(pi.currentName, pi.file.new ClockDataLine(pi.currentDataType,
+                        pi.file.addClockData(pi.currentName, pi.file.new ClockDataLine(pi.currentDataType,
                                                                                        pi.currentName,
                                                                                        pi.currentDateComponents,
                                                                                        pi.currentTimeComponents,
@@ -1009,7 +1027,7 @@ public class ClockFileParser {
                     }
 
                     // Add clock data line
-                    pi.file.AddClockData(pi.currentName, pi.file.new ClockDataLine(pi.currentDataType,
+                    pi.file.addClockData(pi.currentName, pi.file.new ClockDataLine(pi.currentDataType,
                                                                                    pi.currentName,
                                                                                    pi.currentDateComponents,
                                                                                    pi.currentTimeComponents,
@@ -1074,28 +1092,13 @@ public class ClockFileParser {
             DateComponents dateComponents = null;
             TimeComponents timeComponents = null;
 
-            // Pattern for date format yyyy-mm-dd hh:mm
-            final Pattern pattern1 = Pattern.compile("^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}.*$");
-
-            // Pattern for date format yyyymmdd hhmmss zone or YYYYMMDD  HHMMSS zone
-            final Pattern pattern2 = Pattern.compile("^[0-9]{8}\\s{1,2}[0-9]{6}.*$");
-
-            // Pattern for date format dd-MONTH-yyyy hh:mm zone or d-MONTH-yyyy hh:mm zone
-            final Pattern pattern3 = Pattern.compile("^[0-9]{1,2}-[a-z,A-Z]{3}-[0-9]{4} [0-9]{2}:[0-9]{2}.*$");
-
-            // Pattern for date format dd-MONTH-yy hh:mm zone or d-MONTH-yy hh:mm zone
-            final Pattern pattern4 = Pattern.compile("^[0-9]{1,2}-[a-z,A-Z]{3}-[0-9]{2} [0-9]{2}:[0-9]{2}.*$");
-
-            // Pattern for date format yyyy MONTH dd hh:mm:ss or yyyy MONTH d hh:mm:ss
-            final Pattern pattern5 = Pattern.compile("^[0-9]{4} [a-z,A-Z]{3} [0-9]{1,2} [0-9]{2}:[0-9]{2}:[0-9]{2}.*$");
-
-            if (pattern1.matcher(dateString).matches()) {
+            if (DATE_PATTERN_1.matcher(dateString).matches()) {
 
                 date = dateString.substring(0, 10).trim();
                 time = dateString.substring(11, 16).trim();
                 zone = dateString.substring(16).trim();
 
-            } else if (pattern2.matcher(dateString).matches()) {
+            } else if (DATE_PATTERN_2.matcher(dateString).matches()) {
 
                 date = dateString.substring(0, 8).trim();
                 time = dateString.substring(9, 16).trim();
@@ -1112,19 +1115,19 @@ public class ClockFileParser {
 
                 }
 
-            } else if (pattern3.matcher(dateString).matches()) {
+            } else if (DATE_PATTERN_3.matcher(dateString).matches()) {
 
                 date = dateString.substring(0, 11).trim();
                 time = dateString.substring(11, 17).trim();
                 zone = dateString.substring(17).trim();
 
-            } else if (pattern4.matcher(dateString).matches()) {
+            } else if (DATE_PATTERN_4.matcher(dateString).matches()) {
 
                 date = dateString.substring(0, 9).trim();
                 time = dateString.substring(9, 15).trim();
                 zone = dateString.substring(15).trim();
 
-            } else if (pattern5.matcher(dateString).matches()) {
+            } else if (DATE_PATTERN_5.matcher(dateString).matches()) {
 
                 date = dateString.substring(0, 11).trim();
                 time = dateString.substring(11, 20).trim();

@@ -212,8 +212,8 @@ public class ClockFile {
     public int getTotalNumberOfDataLines() {
         int result = 0;
         final Map<String, List<ClockDataLine>> data = getClockData();
-        for (String id : data.keySet()) {
-            result += data.get(id).size();
+        for (final Map.Entry<String, List<ClockDataLine>> entry : data.entrySet()) {
+            result += entry.getValue().size();
         }
         return result;
     }
@@ -381,7 +381,7 @@ public class ClockFile {
      * @param satSystem the satellite system to add observation type
      * @param observationType the system observation type to set
      */
-    public void AddSystemObservationType(final SatelliteSystem satSystem,
+    public void addSystemObservationType(final SatelliteSystem satSystem,
                                          final ObservationType observationType) {
         systemObservationTypes.putIfAbsent(satSystem, new ArrayList<ObservationType>());
         systemObservationTypes.get(satSystem).add(observationType);
@@ -625,7 +625,7 @@ public class ClockFile {
      * @param id the satellite system to add observation type
      * @param clockDataLine the clock data line to add
      */
-    public void AddClockData(final String id,
+    public void addClockData(final String id,
                              final ClockDataLine clockDataLine) {
         clockData.putIfAbsent(id, new ArrayList<ClockDataLine>());
         clockData.get(id).add(clockDataLine);
@@ -792,9 +792,8 @@ public class ClockFile {
 
     }
 
-
     /** Represents a reference clock with its validity time span. */
-    public class ReferenceClock {
+    public static class ReferenceClock {
 
         /** Receiver/satellite embedding the reference clock name. */
         private String referenceName;
@@ -865,7 +864,7 @@ public class ClockFile {
     }
 
     /** Represents a receiver or a satellite with its position in the considered frame. */
-    public class Receiver {
+    public static class Receiver {
 
         /** Designator. */
         private String designator;
