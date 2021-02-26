@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.orekit.annotation.DefaultDataContext;
@@ -40,6 +41,7 @@ import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTimeSpanMap;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** This class propagates a {@link org.orekit.propagation.FieldSpacecraftState}
@@ -437,6 +439,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * must be defined with an osculating orbit.</p>
      * @see #resetInitialState(FieldSpacecraftState, PropagationType)
      */
+    @Override
     public void resetInitialState(final FieldSpacecraftState<T> state) {
         resetInitialState(state, PropagationType.OSCULATING);
     }
@@ -456,6 +459,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward) {
         final FieldEHModel<T> newModel = computeMeanParameters((FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(state.getOrbit()),
                                                        state.getMass());
@@ -533,7 +537,8 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
     }
 
     /** {@inheritDoc} */
-    public FieldCartesianOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date) {
+    @Override
+    public FieldCartesianOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
         // compute Cartesian parameters, taking derivatives into account
         // to make sure velocity and acceleration are consistent
         final FieldEHModel<T> current = models.get(date);
@@ -634,8 +639,9 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
             ql = ql.multiply(q);
             final T g6 = ql.multiply(ck0[6]);
 
-            final T cosI1 = mean.getI().cos();
-            final T sinI1 = mean.getI().sin();
+            final FieldSinCos<T> sc = FastMath.sinCos(mean.getI());
+            final T cosI1 = sc.cos();
+            final T sinI1 = sc.sin();
             final T sinI2 = sinI1.multiply(sinI1);
             final T sinI4 = sinI2.multiply(sinI2);
             final T sinI6 = sinI2.multiply(sinI4);
@@ -959,6 +965,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
     }
 
     /** {@inheritDoc} */
+    @Override
     protected T getMass(final FieldAbsoluteDate<T> date) {
         return models.get(date).mass;
     }
@@ -986,6 +993,13 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
     @Deprecated
     public static <T extends RealFieldElement<T>> T normalizeAngle(final T a, final T center) {
         return a.subtract(2 * FastMath.PI * FastMath.floor((a.getReal() + FastMath.PI - center.getReal()) / (2 * FastMath.PI)));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected ParameterDriver[] getParametersDrivers() {
+        // Eckstein Hechler propagation model does not have parameter drivers.
+        return new ParameterDriver[0];
     }
 
 }

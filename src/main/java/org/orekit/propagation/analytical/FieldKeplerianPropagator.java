@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,6 +34,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTimeSpanMap;
+import org.orekit.utils.ParameterDriver;
 
 /** Simple Keplerian orbit propagator.
  * @see FieldOrbit
@@ -180,7 +181,7 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
     }
 
     /** {@inheritDoc} */
-    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date) {
+    protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
         // propagate orbit
         FieldOrbit<T> orbit = states.get(date).getOrbit();
         do {
@@ -194,6 +195,13 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
     /** {@inheritDoc}*/
     protected T getMass(final FieldAbsoluteDate<T> date) {
         return states.get(date).getMass();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected ParameterDriver[] getParametersDrivers() {
+        // Keplerian propagation model does not have parameter drivers.
+        return new ParameterDriver[0];
     }
 
 }

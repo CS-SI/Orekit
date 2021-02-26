@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,11 +28,22 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
+import org.orekit.propagation.Propagator;
 
 /** Attitude modes.
  * @author Luc Maisonobe
  */
 enum AttitudeMode {
+
+    /** Default law. */
+    DEFAULT_LAW() {
+        /** {@inheritDoc} */
+        @Override
+        public AttitudeProvider getProvider(Frame inertialFrame,
+                                            OneAxisEllipsoid body) {
+            return Propagator.DEFAULT_LAW;
+        }
+    },
 
     /** Nadir pointing with yaw compensation. */
     NADIR_POINTING_WITH_YAW_COMPENSATION() {

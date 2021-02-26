@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.orekit.utils;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.FDSFactory;
+import org.hipparchus.analysis.differentiation.FieldDerivative;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
@@ -308,9 +309,10 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
      * have consistent derivation orders.
      * </p>
      * @param p vector with time-derivatives embedded within the coordinates
+     * @param <U> type of the derivative
      * @since 9.2
      */
-    public FieldPVCoordinates(final FieldVector3D<FieldDerivativeStructure<T>> p) {
+    public <U extends FieldDerivative<T, U>> FieldPVCoordinates(final FieldVector3D<U> p) {
         position = new FieldVector3D<>(p.getX().getValue(), p.getY().getValue(), p.getZ().getValue());
         if (p.getX().getOrder() >= 1) {
             velocity = new FieldVector3D<>(p.getX().getPartialDerivative(1),

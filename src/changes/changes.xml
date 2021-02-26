@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!-- Copyright 2002-2020 CS GROUP
+<!-- Copyright 2002-2021 CS GROUP
   Licensed to CS GROUP (CS) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
@@ -24,7 +24,61 @@
    	  <action dev="thomas" type="add" issue="712">
       	Added IGS clock file support.
       </action>
-   	  <action dev="bryan" type="update" issue="743">
+      <action dev="bryan" type="update" issue="650">
+        Methods computeMeanState() and computeOsculatingState()
+        of FieldDSSTPropagator are now statics.
+      </action>
+      <action dev="bryan" type="update" issue="762">
+        TabulatelofOffset now implements BoundedAttitudeProvider.
+      </action>
+      <action dev="luc" type="update" issue="761">
+        TabulateProvider now implements BoundedAttitudeProvider.
+      </action>
+      <action dev="luc" type="fix" issue="760">
+        Fixed reference frame in tabulated attitude provider.
+      </action>
+      <action dev="amir" type="fix" issue="746">
+        Fixed combination of measurements using GNSS phase measurements.
+      </action>
+      <action dev="bryan" type="add" issue="756">
+        Added new method signature in IodGooding using AngularRaDec measurement.
+      </action>
+      <action dev="thomas" type="fix" issue="688">
+        Fixed ignored fields from TLE template in TLEPropagatorBuilder.
+      </action>
+      <action dev="thomas" type="fix" issue="372">
+        Added TLE generation.
+      </action>
+      <action dev="bryan" type="fix" issue="624">
+        Allowed dynamic station coordinates when calculating tropospheric delay.
+      </action>
+      <action dev="bryan" type="update" issue="755">
+        Modified IodGooding constructor to be consistent with other IOD methods.
+      </action>
+      <action dev="bryan" type="add" issue="753">
+        Added new method signature in IodLaplace using AngularRaDec measurement.
+      </action>
+      <action dev="bryan" type="add" issue="752">
+        Added new method signature in IodLambert using Position measurement.
+      </action>
+      <action dev="bryan" type="add" issue="751">
+        Added new method signature in IodGibbs using Position measurement.
+      </action>
+      <action dev="luc" type="fix" issue="749">
+      	Allow building PVCoordinates and AngularCoordinates (as well as their Field,
+        Absolute and TimeStamped variations) to be build from UnivariateDerivative1
+        and UnivariateDerivative2 in addition to DerivativeStructure.
+      </action>
+      <action dev="bryan" type="fix" issue="736">
+        Fixed NullPointerException in DSSTTesseral Hansen object.
+      </action>
+      <action dev="bryan" type="update" issue="601">
+      	Changed getPVInPZ90() method to private.
+      </action>
+      <action dev="bryan" type="fix" issue="744">
+      	Fixed calculation of CR3BP constants.
+      </action>
+      <action dev="bryan" type="update" issue="743">
       	Updated JUnit version to 4.13.1.
       </action>
     </release>

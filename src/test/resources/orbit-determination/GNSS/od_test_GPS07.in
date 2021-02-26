@@ -85,6 +85,12 @@ solar.radiation.pressure.cr.estimated = true
 ## SRP area (m^2)
 solar.radiation.pressure.area = 50
 
+## Earth's Albedo and Infrared (true/false) [true]
+## It reuses the configuration of the solar radiation pressure for the reflection coefficient
+earth.albedo.infrared = true
+## Angular resolution
+albedo.infrared.angular.resolution = 15.0
+
 # Post-Newtonian correction force due to general relativity (true/false) [false]
 general.relativity = true
 
@@ -92,6 +98,10 @@ general.relativity = true
 ## NADIR_POINTING_WITH_YAW_COMPENSATION, CENTER_POINTING_WITH_YAW_STEERING,
 ## LOF_ALIGNED_LVLH, LOF_ALIGNED_QSW, LOF_ALIGNED_TNW, LOF_ALIGNED_VNC, LOF_ALIGNED_VVLH
 attitude.mode = CENTER_POINTING_WITH_YAW_STEERING
+
+## Use range and range-rate measurements
+use.range.measurements = true
+use.range.rate.measurements = false
 
 ## On-board range bias (m) [0.0]
 onboard.range.bias     =  0.0
@@ -125,6 +135,9 @@ ocean.loading.correction                              = false
 
 ## Shapiro time delay on range measurement
 range.shapiro = true
+
+## Use a time span tropospheric model or not
+use.time.span.tropospheric.model = true
 
 ## Ground stations (angles in degrees, altitude and range bias in meters)
 ground.station.name                            [0] =  SHLD/C1

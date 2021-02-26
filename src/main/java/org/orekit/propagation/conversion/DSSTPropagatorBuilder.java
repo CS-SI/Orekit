@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,7 +47,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements IntegratedPropagatorBuilder {
+public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements OrbitDeterminationPropagatorBuilder {
 
     /** First order integrator builder for propagation. */
     private final ODEIntegratorBuilder builder;
@@ -241,7 +241,8 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
     }
 
     /** {@inheritDoc} */
-    public DSSTBatchLSModel buildLSModel(final IntegratedPropagatorBuilder[] builders,
+    @Override
+    public DSSTBatchLSModel buildLSModel(final OrbitDeterminationPropagatorBuilder[] builders,
                                 final List<ObservedMeasurement<?>> measurements,
                                 final ParameterDriversList estimatedMeasurementsParameters,
                                 final ModelObserver observer) {
@@ -253,22 +254,11 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
     }
 
     /** {@inheritDoc} */
-    @Deprecated
-    public DSSTKalmanModel buildKalmanModel(final List<IntegratedPropagatorBuilder> propagatorBuilders,
-                                  final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                                  final ParameterDriversList estimatedMeasurementsParameters) {
-        return new DSSTKalmanModel(propagatorBuilders,
-                                   covarianceMatricesProviders,
-                                   estimatedMeasurementsParameters,
-                                   propagationType, stateType);
-    }
-
-    /** {@inheritDoc} */
     @Override
-    public DSSTKalmanModel buildKalmanModel(final List<IntegratedPropagatorBuilder> propagatorBuilders,
-                                  final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                                  final ParameterDriversList estimatedMeasurementsParameters,
-                                  final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
+    public DSSTKalmanModel buildKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
+                                            final List<CovarianceMatrixProvider> covarianceMatricesProviders,
+                                            final ParameterDriversList estimatedMeasurementsParameters,
+                                            final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
         return new DSSTKalmanModel(propagatorBuilders, covarianceMatricesProviders,
                                    estimatedMeasurementsParameters, measurementProcessNoiseMatrix,
                                    propagationType, stateType);

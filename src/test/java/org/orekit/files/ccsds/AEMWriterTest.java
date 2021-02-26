@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -173,13 +173,38 @@ public class AEMWriterTest {
                 generatedAemFile.getAttitudeBlocks().get(0).getMetaData().getObjectID());
     }
 
+    @Deprecated
     @Test
-    public void testMultisatelliteFile() throws IOException {
+    public void testMultisatelliteFileDeprecated() throws IOException {
         final String id1 = "ID1";
         final String id2 = "ID2";
         AEMFile file = new StandInEphemerisFile();
         file.getSatellites().put(id1, new StandInSatelliteEphemeris(new ArrayList<>()));
         file.getSatellites().put(id2, new StandInSatelliteEphemeris(new ArrayList<>()));
+
+        String tempAEMFilePath = tempFolder.newFile("TestAEMMultisatellite-1.aem").toString();
+
+        AEMWriter writer1 = new AEMWriter();
+
+        try {
+            writer1.write(tempAEMFilePath, file);
+            fail("Should have thrown OrekitIllegalArgumentException due to multiple satellites");
+        } catch (OrekitIllegalArgumentException e) {
+            assertEquals(OrekitMessages.EPHEMERIS_FILE_NO_MULTI_SUPPORT, e.getSpecifier());
+        }
+
+        tempAEMFilePath = tempFolder.newFile("TestAEMMultisatellite-2.aem").toString();
+        AEMWriter writer2 = new AEMWriter(null, id1, null);
+        writer2.write(tempAEMFilePath, file);
+    }
+
+    @Test
+    public void testMultisatelliteFile() throws IOException {
+        final String id1 = "ID1";
+        final String id2 = "ID2";
+        AEMFile file = new StandInEphemerisFile();
+        file.getSatellites().put(id1, new StandInSatelliteEphemeris(id1, new ArrayList<>()));
+        file.getSatellites().put(id2, new StandInSatelliteEphemeris(id2, new ArrayList<>()));
 
         String tempAEMFilePath = tempFolder.newFile("TestAEMMultisatellite-1.aem").toString();
 
@@ -296,8 +321,14 @@ public class AEMWriterTest {
     private class StandInSatelliteEphemeris extends AemSatelliteEphemeris {
         final List<AttitudeEphemeridesBlock> blocks;
 
+        @Deprecated
         public StandInSatelliteEphemeris(List<AttitudeEphemeridesBlock> blocks) {
             super(blocks);
+            this.blocks = blocks;
+        }
+
+        public StandInSatelliteEphemeris(String id, List<AttitudeEphemeridesBlock> blocks) {
+            super(id, blocks);
             this.blocks = blocks;
         }
 

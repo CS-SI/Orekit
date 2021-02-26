@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -44,7 +44,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implements IntegratedPropagatorBuilder {
+public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implements OrbitDeterminationPropagatorBuilder {
 
     /** First order integrator builder for propagation. */
     private final ODEIntegratorBuilder builder;
@@ -231,7 +231,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
     }
 
     /** {@inheritDoc} */
-    public BatchLSModel buildLSModel(final IntegratedPropagatorBuilder[] builders,
+    public BatchLSModel buildLSModel(final OrbitDeterminationPropagatorBuilder[] builders,
                             final List<ObservedMeasurement<?>> measurements,
                             final ParameterDriversList estimatedMeasurementsParameters,
                             final ModelObserver observer) {
@@ -239,20 +239,11 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
     }
 
     /** {@inheritDoc} */
-    @Deprecated
-    public KalmanModel buildKalmanModel(final List<IntegratedPropagatorBuilder> propagatorBuilders,
-                                  final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                                  final ParameterDriversList estimatedMeasurementsParameters) {
-        return new KalmanModel(propagatorBuilders, covarianceMatricesProviders,
-                               estimatedMeasurementsParameters);
-    }
-
-    /** {@inheritDoc} */
     @Override
-    public KalmanModel buildKalmanModel(final List<IntegratedPropagatorBuilder> propagatorBuilders,
-                                  final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                                  final ParameterDriversList estimatedMeasurementsParameters,
-                                  final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
+    public KalmanModel buildKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
+                                        final List<CovarianceMatrixProvider> covarianceMatricesProviders,
+                                        final ParameterDriversList estimatedMeasurementsParameters,
+                                        final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
         return new KalmanModel(propagatorBuilders, covarianceMatricesProviders,
                                estimatedMeasurementsParameters, measurementProcessNoiseMatrix);
     }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -59,14 +60,15 @@ public class GlobalMappingFunctionModelTest {
         final double latitude    = 0.6708665767;
         final double longitude   = -1.393397187;
         final double height      = 844.715;
+        final GeodeticPoint point = new GeodeticPoint(latitude, longitude, height);
 
         final double elevation     = 0.5 * FastMath.PI - 1.278564131;
         final double expectedHydro = 3.425246;
         final double expectedWet   = 3.449589;
 
-        final MappingFunction model = new GlobalMappingFunctionModel(latitude, longitude);
+        final MappingFunction model = new GlobalMappingFunctionModel();
         
-        final double[] computedMapping = model.mappingFactors(elevation, height, model.getParameters(), date);
+        final double[] computedMapping = model.mappingFactors(elevation, point, date);
         
         Assert.assertEquals(expectedHydro, computedMapping[0], 1.0e-6);
         Assert.assertEquals(expectedWet,   computedMapping[1], 1.0e-6);
@@ -75,14 +77,15 @@ public class GlobalMappingFunctionModelTest {
     @Test
     public void testFixedHeight() {
         final AbsoluteDate date = new AbsoluteDate();
-        MappingFunction model = new GlobalMappingFunctionModel(FastMath.toRadians(45.0), FastMath.toRadians(45.0));
+        MappingFunction model = new GlobalMappingFunctionModel();
         double[] lastFactors = new double[] {
             Double.MAX_VALUE,
             Double.MAX_VALUE
         };
+        GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), 350.0);
         // mapping functions shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final double[] factors = model.mappingFactors(FastMath.toRadians(elev), 350, model.getParameters(), date);
+            final double[] factors = model.mappingFactors(FastMath.toRadians(elev), point, date);
             Assert.assertTrue(Precision.compareTo(factors[0], lastFactors[0], 1.0e-6) < 0);
             Assert.assertTrue(Precision.compareTo(factors[1], lastFactors[1], 1.0e-6) < 0);
             lastFactors[0] = factors[0];

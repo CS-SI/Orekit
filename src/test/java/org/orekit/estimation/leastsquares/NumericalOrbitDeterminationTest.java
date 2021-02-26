@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -52,6 +52,7 @@ import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.radiation.KnockeRediffusedForceModel;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.models.earth.atmosphere.Atmosphere;
@@ -170,6 +171,17 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
 
     /** {@inheritDoc} */
     @Override
+    protected ParameterDriver[] setAlbedoInfrared(final NumericalPropagatorBuilder propagatorBuilder,
+                                                  final CelestialBody sun, final double equatorialRadius,
+                                                  final double angularResolution,
+                                                  final RadiationSensitive spacecraft) {
+        final ForceModel albedoIR = new KnockeRediffusedForceModel(sun, spacecraft, equatorialRadius, angularResolution);
+        propagatorBuilder.addForceModel(albedoIR);
+        return albedoIR.getParametersDrivers();
+    }
+
+    /** {@inheritDoc} */
+    @Override
     protected ParameterDriver[] setRelativity(final NumericalPropagatorBuilder propagatorBuilder) {
         final ForceModel relativityModel = new Relativity(gravityField.getMu());
         propagatorBuilder.addForceModel(relativityModel);
@@ -239,7 +251,6 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         Assert.assertEquals(RefStatRange[1], odLageos2.getRangeStat().getMax(),               distanceAccuracy);
         Assert.assertEquals(RefStatRange[2], odLageos2.getRangeStat().getMean(),              distanceAccuracy);
         Assert.assertEquals(RefStatRange[3], odLageos2.getRangeStat().getStandardDeviation(), distanceAccuracy);
-
     }
 
     @Test
@@ -279,7 +290,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         final Vector3D refVel = new Vector3D(-2729.5151218788005, 1142.6629459030657, -2523.9055974487947);
         Assert.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
         Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
-
+        
         //test on statistic for the range residuals
         final long nbRangeInit     = 8981;
         final long nbRangeExcluded = 305;

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -55,6 +55,8 @@ public enum OrekitMessages implements Localizable {
     ALMOST_CRITICALLY_INCLINED_ORBIT("almost critically inclined orbit (i = {0} degrees)"),
     UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS(
             "unable to compute Eckstein-Hechler mean parameters after {0} iterations"),
+    UNABLE_TO_COMPUTE_TLE(
+                    "unable to compute TLE after {0} iterations"),
     NULL_PARENT_FOR_FRAME("null parent for frame {0}"),
     FRAME_ALREADY_ATTACHED("frame {0} is already attached to frame {1}"),
     FRAME_NOT_ATTACHED("frame {0} is not attached to the main frames tree"),
@@ -103,7 +105,6 @@ public enum OrekitMessages implements Localizable {
     MISSING_SECOND_TLE_LINE("expected a second TLE line after line {0}:\n{0}: \"{1}\""),
     TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT("TLE lines do not refer to the same object:\n{0}\n{1}"),
     TLE_INVALID_PARAMETER("invalid TLE parameter for object {0}: {1} = {2}"),
-    TLE_INVALID_PARAMETER_RANGE("invalid TLE parameter {0}: {1} not in range [{2}, {3}]"),
     TLE_CHECKSUM_ERROR("wrong checksum of TLE line {0}, expected {1} but got {2} ({3})"),
     NO_TLE_DATA_AVAILABLE("no TLE data available"),
     NOT_POSITIVE_SPACECRAFT_MASS("spacecraft mass is not positive: {0} kg"),
@@ -221,6 +222,8 @@ public enum OrekitMessages implements Localizable {
     NOT_ENOUGH_GNSS_FOR_DOP("only {0} GNSS orbits are provided while {1} are needed to compute the DOP"),
     NOT_ENOUGH_PROPAGATORS(
             "Creating an aggregate propagator requires at least one constituent propagator, but none were provided."),
+    NOT_ENOUGH_ATTITUDE_PROVIDERS(
+                    "Creating an aggregate attitude provider requires at least one constituent attitude provider, but none were provided."),
     NULL_ARGUMENT("argument {0} cannot be null"), VALUE_NOT_FOUND("value {0} not found in {1}"),
     EPHEMERIS_FILE_NO_MULTI_SUPPORT("Ephemeris file format does not support multiple space objects"),
     KLOBUCHAR_ALPHA_BETA_NOT_LOADED("Klobuchar coefficients α or β could not be loaded from {0}"),

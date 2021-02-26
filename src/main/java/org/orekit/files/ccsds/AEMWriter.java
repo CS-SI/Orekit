@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,9 +27,11 @@ import java.util.Map;
 
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.AEMFile.AemSatelliteEphemeris;
-import org.orekit.files.ccsds.AEMFile.AttitudeEphemeridesBlock;
 import org.orekit.files.ccsds.StreamingAemWriter.AEMSegment;
+import org.orekit.files.general.AttitudeEphemerisFile;
+import org.orekit.files.general.AttitudeEphemerisFile.SatelliteAttitudeEphemeris;
+import org.orekit.files.general.AttitudeEphemerisFile.AttitudeEphemerisSegment;
+import org.orekit.files.general.AttitudeEphemerisFileWriter;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
@@ -38,7 +40,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class AEMWriter {
+public class AEMWriter implements AttitudeEphemerisFileWriter {
 
     /** Originator name, usually the organization and/or country. **/
     private final String originator;
@@ -97,48 +99,41 @@ public class AEMWriter {
         this.attitudeFormat      = attitudeFormat;
     }
 
-    /**
-     * Write the passed in {@link AEMFile} using the passed in {@link Appendable}.
-     * @param writer a configured Appendable to feed with text
-     * @param aemFile a populated AEM file to serialize into the buffer
-     * @throws IOException if any buffer writing operations fail or if the underlying
-     *         format doesn't support a configuration in the EphemerisFile
-     *         for example having multiple satellites in one file, having
-     *         the origin at an unspecified celestial body, etc.)
-     */
-    public void write(final Appendable writer, final AEMFile aemFile)
+    /** {@inheritDoc} */
+    @Override
+    public void write(final Appendable writer, final AttitudeEphemerisFile ephemerisFile)
         throws IOException {
 
         if (writer == null) {
             throw new OrekitIllegalArgumentException(OrekitMessages.NULL_ARGUMENT, "writer");
         }
 
-        if (aemFile == null) {
+        if (ephemerisFile == null) {
             return;
         }
 
         final String idToProcess;
         if (spaceObjectId != null) {
-            if (aemFile.getSatellites().containsKey(spaceObjectId)) {
+            if (ephemerisFile.getSatellites().containsKey(spaceObjectId)) {
                 idToProcess = spaceObjectId;
             } else {
                 throw new OrekitIllegalArgumentException(OrekitMessages.VALUE_NOT_FOUND, spaceObjectId, "ephemerisFile");
             }
-        } else if (aemFile.getSatellites().keySet().size() == 1) {
-            idToProcess = aemFile.getSatellites().keySet().iterator().next();
+        } else if (ephemerisFile.getSatellites().keySet().size() == 1) {
+            idToProcess = ephemerisFile.getSatellites().keySet().iterator().next();
         } else {
             throw new OrekitIllegalArgumentException(OrekitMessages.EPHEMERIS_FILE_NO_MULTI_SUPPORT);
         }
 
         // Get satellite and attitude ephemeris segments to output.
-        final AemSatelliteEphemeris          satEphem = aemFile.getSatellites().get(idToProcess);
-        final List<AttitudeEphemeridesBlock> segments = satEphem.getSegments();
+        final SatelliteAttitudeEphemeris satEphem = ephemerisFile.getSatellites().get(idToProcess);
+        final List<? extends AttitudeEphemerisSegment> segments = satEphem.getSegments();
         if (segments.isEmpty()) {
             // No data -> No output
             return;
         }
         // First segment
-        final AttitudeEphemeridesBlock firstSegment = segments.get(0);
+        final AttitudeEphemerisSegment firstSegment = segments.get(0);
 
         final String objectName = this.spaceObjectName == null ? idToProcess : this.spaceObjectName;
         // Only one time scale per AEM file, see Section 4.2.5.4.2
@@ -152,14 +147,18 @@ public class AEMWriter {
         metadata.put(Keyword.OBJECT_ID,     idToProcess);
 
         // Header comments. If header comments are presents, they are assembled together in a single line
-        if (!aemFile.getHeaderComment().isEmpty()) {
-            // Loop on comments
-            final StringBuffer buffer = new StringBuffer();
-            for (String comment : aemFile.getHeaderComment()) {
-                buffer.append(comment);
+        if (ephemerisFile instanceof AEMFile) {
+            // Cast to OEMFile
+            final AEMFile aemFile = (AEMFile) ephemerisFile;
+            if (!aemFile.getHeaderComment().isEmpty()) {
+                // Loop on comments
+                final StringBuffer buffer = new StringBuffer();
+                for (String comment : aemFile.getHeaderComment()) {
+                    buffer.append(comment);
+                }
+                // Update metadata
+                metadata.put(Keyword.COMMENT, buffer.toString());
             }
-            // Update metadata
-            metadata.put(Keyword.COMMENT, buffer.toString());
         }
 
         // Writer for AEM files
@@ -168,7 +167,7 @@ public class AEMWriter {
         aemWriter.writeHeader();
 
         // Loop on segments
-        for (final AttitudeEphemeridesBlock segment : segments) {
+        for (final AttitudeEphemerisSegment segment : segments) {
             // Segment specific metadata
             metadata.clear();
             metadata.put(Keyword.CENTER_NAME,          segment.getFrameCenterString());
@@ -179,7 +178,8 @@ public class AEMWriter {
             metadata.put(Keyword.STOP_TIME,            segment.getStop().toString(timeScale));
             metadata.put(Keyword.ATTITUDE_TYPE,        segment.getAttitudeType());
             metadata.put(Keyword.INTERPOLATION_METHOD, segment.getInterpolationMethod());
-            metadata.put(Keyword.INTERPOLATION_DEGREE, String.valueOf(segment.getInterpolationDegree()));
+            metadata.put(Keyword.INTERPOLATION_DEGREE,
+                         String.valueOf(segment.getInterpolationSamples() - 1));
 
             final AEMSegment segmentWriter = aemWriter.newSegment(metadata);
             segmentWriter.writeMetadata();
@@ -195,6 +195,19 @@ public class AEMWriter {
     }
 
     /**
+     * Write the passed in {@link AEMFile} using the passed in {@link Appendable}.
+     * @param writer a configured Appendable to feed with text
+     * @param aemFile a populated aem file to serialize into the buffer
+     * @throws IOException if any buffer writing operations fail or if the underlying
+     *         format doesn't support a configuration in the EphemerisFile
+     *         for example having multiple satellites in one file, having
+     *         the origin at an unspecified celestial body, etc.)
+     */
+    public void write(final Appendable writer, final AEMFile aemFile) throws IOException {
+        write(writer, (AttitudeEphemerisFile) aemFile);
+    }
+
+    /**
      * Write the passed in {@link AEMFile} to a file at the output path specified.
      * @param outputFilePath a file path that the corresponding file will be written to
      * @param aemFile a populated aem file to serialize into the buffer
@@ -206,7 +219,7 @@ public class AEMWriter {
     public void write(final String outputFilePath, final AEMFile aemFile)
         throws IOException {
         try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(outputFilePath), StandardCharsets.UTF_8)) {
-            write(writer, aemFile);
+            write(writer, (AttitudeEphemerisFile) aemFile);
         }
     }
 

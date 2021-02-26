@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,7 +36,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
  * @author Bryan Cazabonne
  * @since 10.0
  */
-class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends FieldForceModelContext<T> {
+public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends FieldForceModelContext<T> {
 
     /** Max power for summation. */
     private static final int    MAX_POWER = 22;
@@ -389,7 +389,7 @@ class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends FieldFor
      * @return aoR3Pow
      */
     public T[] getAoR3Pow() {
-        return aoR3Pow;
+        return aoR3Pow.clone();
     }
 
    /** Get the value of max frequency of F.
@@ -412,7 +412,7 @@ class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends FieldFor
      * @return Qns
      */
     public T[][] getQns() {
-        return Qns;
+        return Qns.clone();
     }
 
 }

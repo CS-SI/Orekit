@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,12 +31,19 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.ParameterDriver;
 
 /** This class is a container for a single set of TLE data.
  *
@@ -56,9 +63,6 @@ import org.orekit.time.TimeStamped;
  */
 public class TLE implements TimeStamped, Serializable {
 
-    /** Identifier for default type of ephemeris (SGP4/SDP4). */
-    public static final int DEFAULT = 0;
-
     /** Identifier for SGP type of ephemeris. */
     public static final int SGP = 1;
 
@@ -73,6 +77,26 @@ public class TLE implements TimeStamped, Serializable {
 
     /** Identifier for SDP8 type of ephemeris. */
     public static final int SDP8 = 5;
+
+    /** Identifier for default type of ephemeris (SGP4/SDP4). */
+    public static final int DEFAULT = 0;
+
+    /** Parameter name for B* coefficient. */
+    public static final String B_STAR = "BSTAR";
+
+    /** Default value for epsilon. */
+    private static final double EPSILON_DEFAULT = 1.0e-10;
+
+    /** Default value for maxIterations. */
+    private static final int MAX_ITERATIONS_DEFAULT = 100;
+
+    /** B* scaling factor.
+     * <p>
+     * We use a power of 2 to avoid numeric noise introduction
+     * in the multiplications/divisions sequences.
+     * </p>
+     */
+    private static final double B_STAR_SCALE = FastMath.scalb(1.0, -20);
 
     /** Name of the mean motion parameter. */
     private static final String MEAN_MOTION = "meanMotion";
@@ -151,9 +175,6 @@ public class TLE implements TimeStamped, Serializable {
     /** Revolution number at epoch. */
     private final int revolutionNumberAtEpoch;
 
-    /** Ballistic coefficient. */
-    private final double bStar;
-
     /** First line. */
     private String line1;
 
@@ -162,6 +183,9 @@ public class TLE implements TimeStamped, Serializable {
 
     /** The UTC scale. */
     private final TimeScale utc;
+
+    /** Driver for ballistic coefficient parameter. */
+    private final transient ParameterDriver bStarParameterDriver;
 
     /** Simple constructor from unparsed two lines. This constructor uses the {@link
      * DataContext#getDefault() default data context}.
@@ -228,7 +252,7 @@ public class TLE implements TimeStamped, Serializable {
         meanAnomaly  = FastMath.toRadians(parseDouble(line2, 43, 8));
 
         revolutionNumberAtEpoch = parseInteger(line2, 63, 5);
-        bStar = Double.parseDouble((line1.substring(53, 54) + '.' +
+        final double bStarValue = Double.parseDouble((line1.substring(53, 54) + '.' +
                                     line1.substring(54, 59) + 'e' +
                                     line1.substring(59, 61)).replace(' ', '0'));
 
@@ -236,6 +260,11 @@ public class TLE implements TimeStamped, Serializable {
         this.line1 = line1;
         this.line2 = line2;
         this.utc = utc;
+
+        // create model parameter drivers
+        this.bStarParameterDriver = new ParameterDriver(B_STAR, bStarValue, B_STAR_SCALE,
+                                                        Double.NEGATIVE_INFINITY,
+                                                        Double.POSITIVE_INFINITY);
 
     }
 
@@ -377,12 +406,17 @@ public class TLE implements TimeStamped, Serializable {
         this.meanAnomaly = MathUtils.normalizeAngle(meanAnomaly, FastMath.PI);
 
         this.revolutionNumberAtEpoch = revolutionNumberAtEpoch;
-        this.bStar = bStar;
+
 
         // don't build the line until really needed
         this.line1 = null;
         this.line2 = null;
         this.utc = utc;
+
+        // create model parameter drivers
+        this.bStarParameterDriver = new ParameterDriver(B_STAR, bStar, B_STAR_SCALE,
+                                                        Double.NEGATIVE_INFINITY,
+                                                        Double.POSITIVE_INFINITY);
 
     }
 
@@ -391,7 +425,7 @@ public class TLE implements TimeStamped, Serializable {
      *
      * @return UTC time scale.
      */
-    TimeScale getUtc() {
+    public TimeScale getUtc() {
         return utc;
     }
 
@@ -452,7 +486,7 @@ public class TLE implements TimeStamped, Serializable {
         buffer.append(formatExponentMarkerFree("meanMotionSecondDerivative", n2, 5, ' ', 8, true));
 
         buffer.append(' ');
-        buffer.append(formatExponentMarkerFree("B*", bStar, 5, ' ', 8, true));
+        buffer.append(formatExponentMarkerFree("B*", getBStar(), 5, ' ', 8, true));
 
         buffer.append(' ');
         buffer.append(ephemerisType);
@@ -734,7 +768,7 @@ public class TLE implements TimeStamped, Serializable {
      * @return bStar
      */
     public double getBStar() {
-        return bStar;
+        return bStarParameterDriver.getValue();
     }
 
     /** Get a string representation of this TLE set.
@@ -748,6 +782,152 @@ public class TLE implements TimeStamped, Serializable {
         } catch (OrekitException oe) {
             throw new OrekitInternalError(oe);
         }
+    }
+
+    /**
+     * Convert Spacecraft State into TLE.
+     * This converter uses Fixed Point method to reverse SGP4 and SDP4 propagation algorithm
+     * and generates a usable TLE version of a state.
+     * Equinocital orbital parameters are used in order to get a stiff method.
+     * New TLE epoch is state epoch.
+     *
+     * <p>
+     * This method uses the {@link DataContext#getDefault() default data context},
+     * as well as {@link #EPSILON_DEFAULT} and {@link #MAX_ITERATIONS_DEFAULT} for method convergence.
+     *
+     * @param state Spacecraft State to convert into TLE
+     * @param templateTLE first guess used to get identification and estimate new TLE
+     * @return TLE matching with Spacecraft State and template identification
+     * @since 11.0
+     */
+    @DefaultDataContext
+    public static TLE stateToTLE(final SpacecraftState state, final TLE templateTLE) {
+        return stateToTLE(state, templateTLE, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
+    }
+
+    /**
+     * Convert Spacecraft State into TLE.
+     * This converter uses Newton method to reverse SGP4 and SDP4 propagation algorithm
+     * and generates a usable TLE version of a state.
+     * New TLE epoch is state epoch.
+     *
+     *<p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param state Spacecraft State to convert into TLE
+     * @param templateTLE first guess used to get identification and estimate new TLE
+     * @param epsilon used to compute threshold for convergence check
+     * @param maxIterations maximum number of iterations for convergence
+     * @return TLE matching with Spacecraft State and template identification
+     * @since 11.0
+     */
+    @DefaultDataContext
+    public static TLE stateToTLE(final SpacecraftState state, final TLE templateTLE,
+                                 final double epsilon, final int maxIterations) {
+
+        // Gets equinoctial parameters from state
+        final Orbit orbit = state.getOrbit();
+        final EquinoctialOrbit equiOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
+        double sma = equiOrbit.getA();
+        double ex  = equiOrbit.getEquinoctialEx();
+        double ey  = equiOrbit.getEquinoctialEy();
+        double hx  = equiOrbit.getHx();
+        double hy  = equiOrbit.getHy();
+        double lv  = equiOrbit.getLv();
+
+        // Rough initialization of the TLE
+        final KeplerianOrbit keplerianOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orbit);
+        TLE current = newTLE(keplerianOrbit, templateTLE);
+
+        // threshold for each parameter
+        final double thrA = epsilon * (1 + sma);
+        final double thrE = epsilon * (1 + FastMath.hypot(ex, ey));
+        final double thrH = epsilon * (1 + FastMath.hypot(hx, hy));
+        final double thrV = epsilon * FastMath.PI;
+
+        int k = 0;
+        while (k++ < maxIterations) {
+
+            // recompute the state from the current TLE
+            final TLEPropagator propagator = TLEPropagator.selectExtrapolator(current);
+            final Orbit recovOrbit = propagator.getInitialState().getOrbit();
+            final EquinoctialOrbit recovEquiOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(recovOrbit);
+
+            // adapted parameters residuals
+            final double deltaSma = equiOrbit.getA() - recovEquiOrbit.getA();
+            final double deltaEx  = equiOrbit.getEquinoctialEx() - recovEquiOrbit.getEquinoctialEx();
+            final double deltaEy  = equiOrbit.getEquinoctialEy() - recovEquiOrbit.getEquinoctialEy();
+            final double deltaHx  = equiOrbit.getHx() - recovEquiOrbit.getHx();
+            final double deltaHy  = equiOrbit.getHy() - recovEquiOrbit.getHy();
+            final double deltaLv  = MathUtils.normalizeAngle(equiOrbit.getLv() - recovEquiOrbit.getLv(), 0.0);
+
+            // check convergence
+            if ((FastMath.abs(deltaSma) < thrA) &&
+                (FastMath.abs(deltaEx)  < thrE) &&
+                (FastMath.abs(deltaEy)  < thrE) &&
+                (FastMath.abs(deltaHx)  < thrH) &&
+                (FastMath.abs(deltaHy)  < thrH) &&
+                (FastMath.abs(deltaLv)  < thrV)) {
+
+                return current;
+            }
+
+            // update state
+            sma += deltaSma;
+            ex  += deltaEx;
+            ey  += deltaEy;
+            hx  += deltaHx;
+            hy  += deltaHy;
+            lv  += deltaLv;
+            final EquinoctialOrbit newEquiOrbit =
+                                    new EquinoctialOrbit(sma, ex, ey, hx, hy, lv, PositionAngle.TRUE,
+                                    orbit.getFrame(), orbit.getDate(), orbit.getMu() );
+            final KeplerianOrbit newKeplOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(newEquiOrbit);
+
+            // update TLE
+            current = newTLE(newKeplOrbit, templateTLE);
+        }
+
+        throw new OrekitException(OrekitMessages.UNABLE_TO_COMPUTE_TLE, k);
+    }
+
+    /**
+     * Builds a new TLE from Keplerian parameters and a template for TLE data.
+     * @param keplerianOrbit the Keplerian parameters to build the TLE from
+     * @param templateTLE TLE used to get object identification
+     * @return TLE with template identification and new orbital parameters
+     */
+    @DefaultDataContext
+    private static TLE newTLE(final KeplerianOrbit keplerianOrbit, final TLE templateTLE) {
+        // Keplerian parameters
+        final double meanMotion  = keplerianOrbit.getKeplerianMeanMotion();
+        final double e           = keplerianOrbit.getE();
+        final double i           = keplerianOrbit.getI();
+        final double raan        = keplerianOrbit.getRightAscensionOfAscendingNode();
+        final double pa          = keplerianOrbit.getPerigeeArgument();
+        final double meanAnomaly = keplerianOrbit.getMeanAnomaly();
+        // TLE epoch is state epoch
+        final AbsoluteDate epoch = keplerianOrbit.getDate();
+        // Identification
+        final int satelliteNumber = templateTLE.getSatelliteNumber();
+        final char classification = templateTLE.getClassification();
+        final int launchYear = templateTLE.getLaunchYear();
+        final int launchNumber = templateTLE.getLaunchNumber();
+        final String launchPiece = templateTLE.getLaunchPiece();
+        final int ephemerisType = templateTLE.getEphemerisType();
+        final int elementNumber = templateTLE.getElementNumber();
+        // Updates revolutionNumberAtEpoch
+        final int revolutionNumberAtEpoch = templateTLE.getRevolutionNumberAtEpoch();
+        final double dt = epoch.durationFrom(templateTLE.getDate());
+        final int newRevolutionNumberAtEpoch = (int) ((int) revolutionNumberAtEpoch + FastMath.floor((MathUtils.normalizeAngle(meanAnomaly, FastMath.PI) + dt * meanMotion) / (2 * FastMath.PI)));
+        // Gets B*
+        final double bStar = templateTLE.getBStar();
+        // Gets Mean Motion derivatives
+        final double meanMotionFirstDerivative = templateTLE.getMeanMotionFirstDerivative();
+        final double meanMotionSecondDerivative = templateTLE.getMeanMotionSecondDerivative();
+        // Returns the new TLE
+        return new TLE(satelliteNumber, classification, launchYear, launchNumber, launchPiece, ephemerisType,
+                       elementNumber, epoch, meanMotion, meanMotionFirstDerivative, meanMotionSecondDerivative,
+                       e, i, pa, raan, meanAnomaly, newRevolutionNumberAtEpoch, bStar);
     }
 
     /** Check the lines format validity.
@@ -836,7 +1016,7 @@ public class TLE implements TimeStamped, Serializable {
                 raan == tle.raan &&
                 meanAnomaly == tle.meanAnomaly &&
                 revolutionNumberAtEpoch == tle.revolutionNumberAtEpoch &&
-                bStar == tle.bStar;
+                getBStar() == tle.getBStar();
     }
 
     /** Get a hashcode for this tle.
@@ -861,7 +1041,16 @@ public class TLE implements TimeStamped, Serializable {
                 raan,
                 meanAnomaly,
                 revolutionNumberAtEpoch,
-                bStar);
+                getBStar());
+    }
+
+    /** Get the drivers for TLE propagation SGP4 and SDP4.
+     * @return drivers for SGP4 and SDP4 model parameters
+     */
+    public ParameterDriver[] getParametersDrivers() {
+        return new ParameterDriver[] {
+            bStarParameterDriver
+        };
     }
 
 }

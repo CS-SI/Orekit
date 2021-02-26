@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,10 @@ package org.orekit.utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -111,20 +115,103 @@ public class TimeStampedAngularCoordinatesTest {
     }
 
     @Test
-    public void testDerivativesStructures2() {
-        RandomGenerator random = new Well1024a(0x75fbebbdbf127b3dl);
+    public void testDerivativesStructures0() {
+        RandomGenerator random = new Well1024a(0x18a0a08fd63f047al);
 
         Rotation r    = randomRotation(random);
         Vector3D o    = randomVector(random, 1.0e-2);
         Vector3D oDot = randomVector(random, 1.0e-2);
-        TimeStampedAngularCoordinates ac = new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH,
-                                                                             r, o, oDot);
-        TimeStampedAngularCoordinates rebuilt =
-                new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH,
-                                                  ac.toDerivativeStructureRotation(2));
+        TimeStampedAngularCoordinates ac = new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, r, o, oDot);
+        TimeStampedAngularCoordinates rebuilt = new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH,
+                                                                                  ac.toDerivativeStructureRotation(0));
+        Assert.assertEquals(0.0, Rotation.distance(ac.getRotation(), rebuilt.getRotation()), 1.0e-15);
+        Assert.assertEquals(0.0, rebuilt.getRotationRate().getNorm(), 1.0e-15);
+        Assert.assertEquals(0.0, rebuilt.getRotationAcceleration().getNorm(), 1.0e-15);
+    }
+
+    @Test
+    public void testDerivativesStructures1() {
+        RandomGenerator random = new Well1024a(0x8f8fc6d27bbdc46dl);
+
+        Rotation r    = randomRotation(random);
+        Vector3D o    = randomVector(random, 1.0e-2);
+        Vector3D oDot = randomVector(random, 1.0e-2);
+        TimeStampedAngularCoordinates ac = new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, r, o, oDot);
+        TimeStampedAngularCoordinates rebuilt = new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH,
+                                                                                  ac.toDerivativeStructureRotation(1));
+        Assert.assertEquals(0.0, Rotation.distance(ac.getRotation(), rebuilt.getRotation()), 1.0e-15);
+        Assert.assertEquals(0.0, Vector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()), 1.0e-15);
+        Assert.assertEquals(0.0, rebuilt.getRotationAcceleration().getNorm(), 1.0e-15);
+    }
+
+    @Test
+    public void testDerivativesStructures2() {
+        RandomGenerator random = new Well1024a(0x1633878dddac047dl);
+
+        Rotation r    = randomRotation(random);
+        Vector3D o    = randomVector(random, 1.0e-2);
+        Vector3D oDot = randomVector(random, 1.0e-2);
+        TimeStampedAngularCoordinates ac = new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, r, o, oDot);
+        TimeStampedAngularCoordinates rebuilt = new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH,
+                                                                                  ac.toDerivativeStructureRotation(2));
         Assert.assertEquals(0.0, Rotation.distance(ac.getRotation(), rebuilt.getRotation()), 1.0e-15);
         Assert.assertEquals(0.0, Vector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()), 1.0e-15);
         Assert.assertEquals(0.0, Vector3D.distance(ac.getRotationAcceleration(), rebuilt.getRotationAcceleration()), 1.0e-15);
+    }
+
+    @Test
+    public void testUnivariateDerivative1() {
+        RandomGenerator random = new Well1024a(0x6de8cce747539904l);
+
+        Rotation r    = randomRotation(random);
+        Vector3D o    = randomVector(random, 1.0e-2);
+        Vector3D oDot = randomVector(random, 1.0e-2);
+        TimeStampedAngularCoordinates ac = new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, r, o, oDot);
+        FieldRotation<UnivariateDerivative1> rotationUD = ac.toUnivariateDerivative1Rotation();
+        FieldRotation<DerivativeStructure>   rotationDS = ac.toDerivativeStructureRotation(1);
+        Assert.assertEquals(rotationDS.getQ0().getReal(), rotationUD.getQ0().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ1().getReal(), rotationUD.getQ1().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ2().getReal(), rotationUD.getQ2().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ3().getReal(), rotationUD.getQ3().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ0().getPartialDerivative(1), rotationUD.getQ0().getFirstDerivative(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ1().getPartialDerivative(1), rotationUD.getQ1().getFirstDerivative(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ2().getPartialDerivative(1), rotationUD.getQ2().getFirstDerivative(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ3().getPartialDerivative(1), rotationUD.getQ3().getFirstDerivative(), 1.0e-15);
+
+        TimeStampedAngularCoordinates rebuilt = new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, rotationUD);
+        Assert.assertEquals(0.0, Rotation.distance(ac.getRotation(), rebuilt.getRotation()), 1.0e-15);
+        Assert.assertEquals(0.0, Vector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()), 1.0e-15);
+
+    }
+
+    @Test
+    public void testUnivariateDerivative2() {
+        RandomGenerator random = new Well1024a(0x255710c8fa2247ecl);
+
+        Rotation r    = randomRotation(random);
+        Vector3D o    = randomVector(random, 1.0e-2);
+        Vector3D oDot = randomVector(random, 1.0e-2);
+        TimeStampedAngularCoordinates ac = new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, r, o, oDot);
+        FieldRotation<UnivariateDerivative2> rotationUD = ac.toUnivariateDerivative2Rotation();
+        FieldRotation<DerivativeStructure>   rotationDS = ac.toDerivativeStructureRotation(2);
+        Assert.assertEquals(rotationDS.getQ0().getReal(), rotationUD.getQ0().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ1().getReal(), rotationUD.getQ1().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ2().getReal(), rotationUD.getQ2().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ3().getReal(), rotationUD.getQ3().getReal(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ0().getPartialDerivative(1), rotationUD.getQ0().getFirstDerivative(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ1().getPartialDerivative(1), rotationUD.getQ1().getFirstDerivative(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ2().getPartialDerivative(1), rotationUD.getQ2().getFirstDerivative(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ3().getPartialDerivative(1), rotationUD.getQ3().getFirstDerivative(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ0().getPartialDerivative(2), rotationUD.getQ0().getSecondDerivative(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ1().getPartialDerivative(2), rotationUD.getQ1().getSecondDerivative(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ2().getPartialDerivative(2), rotationUD.getQ2().getSecondDerivative(), 1.0e-15);
+        Assert.assertEquals(rotationDS.getQ3().getPartialDerivative(2), rotationUD.getQ3().getSecondDerivative(), 1.0e-15);
+
+        TimeStampedAngularCoordinates rebuilt = new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, rotationUD);
+        Assert.assertEquals(0.0, Rotation.distance(ac.getRotation(), rebuilt.getRotation()), 1.0e-15);
+        Assert.assertEquals(0.0, Vector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()), 1.0e-15);
+        Assert.assertEquals(0.0, Vector3D.distance(ac.getRotationAcceleration(), rebuilt.getRotationAcceleration()), 1.0e-15);
+
     }
 
     @Test

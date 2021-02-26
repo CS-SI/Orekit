@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,6 @@ import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.bodies.GeodeticPoint;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeRateTroposphericDelayModifier;
@@ -520,13 +519,8 @@ public class RangeRateTest {
         double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
 
-            // parameter corresponding to station position offset
-            final GroundStation stationParameter = ((RangeRate) measurement).getStation();
-
             // Add modifiers if test implies it
-            final GeodeticPoint point = stationParameter.getBaseFrame().getPoint();
-            final GlobalMappingFunctionModel mappingFunction = new GlobalMappingFunctionModel(point.getLatitude(),
-                                                                                              point.getLongitude());
+            final GlobalMappingFunctionModel mappingFunction = new GlobalMappingFunctionModel();
             final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 5.0);
 
             final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(tropoModel, true);
@@ -680,13 +674,8 @@ public class RangeRateTest {
         double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
 
-            // parameter corresponding to station position offset
-            final GroundStation stationParameter = ((RangeRate) measurement).getStation();
-
             // Add modifiers if test implies it
-            final GeodeticPoint point = stationParameter.getBaseFrame().getPoint();
-            final GlobalMappingFunctionModel mappingFunction = new GlobalMappingFunctionModel(point.getLatitude(),
-                                                                                              point.getLongitude());
+            final GlobalMappingFunctionModel mappingFunction = new GlobalMappingFunctionModel();
             final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 10.0);
             
             final List<ParameterDriver> parameters = tropoModel.getParametersDrivers();

@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,7 +27,6 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
-import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -673,7 +672,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         FieldVector3D<T> referenceV    = interpolated.getVelocity();
         FieldVector3D<T> computedA     = sample.get(1).getAcceleration();
         FieldVector3D<T> referenceA    = interpolated.getAcceleration();
-        final FieldCircularOrbit<T> propagated = (FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(propagator.propagateOrbit(target));
+        final FieldCircularOrbit<T> propagated = (FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(propagator.propagateOrbit(target, null));
         final FieldCircularOrbit<T> keplerian =
                 new FieldCircularOrbit<>(propagated.getA(),
                                          propagated.getCircularEx(),
@@ -826,6 +825,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         final T step = zero.add(100.0);
         propagator.setMasterMode(step, new FieldOrekitFixedStepHandler<T>() {
             private FieldAbsoluteDate<T> previous;
+            @Override
             public void handleStep(FieldSpacecraftState<T> currentState, boolean isLast)
             {
                 if (previous != null) {
@@ -894,8 +894,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         // Mean state computation
         final List<DSSTForceModel> models = new ArrayList<>();
         models.add(new DSSTZonal(provider));
-        final FieldDSSTPropagator<T> dsst = new FieldDSSTPropagator<>(field, new ClassicalRungeKuttaFieldIntegrator<>(field, zero.add(10.0)));
-        final FieldSpacecraftState<T> meanState = dsst.computeMeanState(initialState, Propagator.DEFAULT_LAW, models);
+        final FieldSpacecraftState<T> meanState = FieldDSSTPropagator.computeMeanState(initialState, Propagator.DEFAULT_LAW, models);
 
         // Initialize Eckstein-Hechler model with mean state
         final FieldEcksteinHechlerPropagator<T> propagator = new FieldEcksteinHechlerPropagator<>(meanState.getOrbit(), provider, PropagationType.MEAN);
@@ -936,8 +935,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         // Mean state computation
         final List<DSSTForceModel> models = new ArrayList<>();
         models.add(new DSSTZonal(provider));
-        final FieldDSSTPropagator<T> dsst = new FieldDSSTPropagator<>(field, new ClassicalRungeKuttaFieldIntegrator<>(field, zero.add(10.0)));
-        final FieldSpacecraftState<T> meanState = dsst.computeMeanState(initialState, Propagator.DEFAULT_LAW, models);
+        final FieldSpacecraftState<T> meanState = FieldDSSTPropagator.computeMeanState(initialState, Propagator.DEFAULT_LAW, models);
 
         // Initialize Eckstein-Hechler model with mean state
         final FieldEcksteinHechlerPropagator<T> propagator = new FieldEcksteinHechlerPropagator<>(meanState.getOrbit(), Propagator.DEFAULT_LAW, zero.add(498.5), provider, PropagationType.MEAN);

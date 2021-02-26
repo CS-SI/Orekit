@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.forces.maneuvers;
 
 
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -690,9 +691,9 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         propagator2.setAttitudeProvider(lofLaw);
         propagator2.addForceModel(maneuverWithOverride);
         final SpacecraftState finalState2 = propagator2.propagate(finalState1.getDate());
-        Assert.assertThat(finalState2.getPVCoordinates(),
-                          OrekitMatchers.pvCloseTo(finalState1.getPVCoordinates(),
-                                                   1.0e-10));
+        MatcherAssert.assertThat(finalState2.getPVCoordinates(),
+                                 OrekitMatchers.pvCloseTo(finalState1.getPVCoordinates(),
+                                                          1.0e-10));
         Assert.assertFalse(maneuverWithoutOverride.isFiring(fireDate.shiftedBy(-1.0e-6)));
         Assert.assertTrue(maneuverWithoutOverride.isFiring(fireDate.shiftedBy(+1.0e-6)));
         Assert.assertTrue(maneuverWithoutOverride.isFiring(fireDate.shiftedBy(0.5 * duration)));

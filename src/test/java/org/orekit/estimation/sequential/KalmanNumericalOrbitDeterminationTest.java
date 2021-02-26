@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -52,6 +52,7 @@ import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.radiation.KnockeRediffusedForceModel;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.models.earth.atmosphere.Atmosphere;
@@ -167,6 +168,17 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
         final ForceModel srpModel = new SolarRadiationPressure(sun, equatorialRadius, spacecraft);
         propagatorBuilder.addForceModel(srpModel);
         return srpModel.getParametersDrivers();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected ParameterDriver[] setAlbedoInfrared(final NumericalPropagatorBuilder propagatorBuilder,
+                                                  final CelestialBody sun, final double equatorialRadius,
+                                                  final double angularResolution,
+                                                  final RadiationSensitive spacecraft) {
+        final ForceModel albedoIR = new KnockeRediffusedForceModel(sun, spacecraft, equatorialRadius, angularResolution);
+        propagatorBuilder.addForceModel(albedoIR);
+        return albedoIR.getParametersDrivers();
     }
 
     /** {@inheritDoc} */

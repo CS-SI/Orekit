@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,125 +16,29 @@
  */
 package org.orekit.propagation.conversion;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.hipparchus.util.FastMath;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.Propagator;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
-import org.orekit.propagation.analytical.tle.TLEPropagator;
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+import org.orekit.utils.ParameterDriver;
 
 public class TLEConverterTest {
 
-    private TLE geoTLE;
-
-    private TLE leoTLE;
-
     @Test
-    public void testConversionGeoPositionVelocity() {
-        checkFit(geoTLE, 86400, 300, 1.0e-3, false, false, 9.350e-8);
-    }
+    public void testDeselectOrbitals() {
 
-    @Test
-    public void testConversionGeoPositionOnly() {
-        checkFit(geoTLE, 86400, 300, 1.0e-3, true, false, 1.328e-7);
-    }
-
-    @Test
-    public void testConversionLeoPositionVelocityWithoutBStar() {
-        checkFit(leoTLE, 86400, 300, 1.0e-3, false, false, 10.77);
-    }
-
-    @Test
-    public void testConversionLeoPositionOnlyWithoutBStar() {
-        checkFit(leoTLE, 86400, 300, 1.0e-3, true, false, 15.23);
-    }
-
-    @Test
-    public void testConversionLeoPositionVelocityWithBStar() {
-        checkFit(leoTLE, 86400, 300, 1.0e-3, false, true, 2.646e-8);
-    }
-
-    @Test
-    public void testConversionLeoPositionOnlyWithBStar() {
-        checkFit(leoTLE, 86400, 300, 1.0e-3, true, true, 4.102e-8);
-    }
-
-    protected void checkFit(final TLE tle,
-                            final double duration,
-                            final double stepSize,
-                            final double threshold,
-                            final boolean positionOnly,
-                            final boolean withBStar,
-                            final double expectedRMS)
-        {
-
-        Propagator p = TLEPropagator.selectExtrapolator(tle);
-        List<SpacecraftState> sample = new ArrayList<SpacecraftState>();
-        for (double dt = 0; dt < duration; dt += stepSize) {
-            sample.add(p.propagate(tle.getDate().shiftedBy(dt)));
-        }
-
-        TLEPropagatorBuilder builder = new TLEPropagatorBuilder(tle, PositionAngle.TRUE, 1.0);
-
-        List<DelegatingDriver> drivers = builder.getPropagationParametersDrivers().getDrivers();
-
-        // there should *not* be any drivers for central attraction coefficient (see issue #313)
-        Assert.assertEquals(1, drivers.size());
-        Assert.assertEquals("BSTAR", drivers.get(0).getName());
-
-        FiniteDifferencePropagatorConverter fitter = new FiniteDifferencePropagatorConverter(builder, threshold, 1000);
-
-        if (withBStar) {
-            fitter.convert(sample, positionOnly, TLEPropagatorBuilder.B_STAR);
-        } else {
-            fitter.convert(sample, positionOnly);
-        }
-
-        TLEPropagator prop = (TLEPropagator)fitter.getAdaptedPropagator();
-        TLE fitted = prop.getTLE();
-
-        // changes to the RMS less than the threshold are not significant
-        double tolerance = FastMath.max(threshold, 0.001 * expectedRMS);
-        Assert.assertEquals(expectedRMS, fitter.getRMS(), tolerance);
-
-        Assert.assertEquals(tle.getSatelliteNumber(),         fitted.getSatelliteNumber());
-        Assert.assertEquals(tle.getClassification(),          fitted.getClassification());
-        Assert.assertEquals(tle.getLaunchYear(),              fitted.getLaunchYear());
-        Assert.assertEquals(tle.getLaunchNumber(),            fitted.getLaunchNumber());
-        Assert.assertEquals(tle.getLaunchPiece(),             fitted.getLaunchPiece());
-        Assert.assertEquals(tle.getElementNumber(),           fitted.getElementNumber());
-        Assert.assertEquals(tle.getRevolutionNumberAtEpoch(), fitted.getRevolutionNumberAtEpoch());
-
-        final double eps = 1.0e-5;
-        Assert.assertEquals(tle.getMeanMotion(), fitted.getMeanMotion(), eps * tle.getMeanMotion());
-        Assert.assertEquals(tle.getE(), fitted.getE(), eps * tle.getE());
-        Assert.assertEquals(tle.getI(), fitted.getI(), eps * tle.getI());
-        Assert.assertEquals(tle.getPerigeeArgument(), fitted.getPerigeeArgument(), eps * tle.getPerigeeArgument());
-        Assert.assertEquals(tle.getRaan(), fitted.getRaan(), eps * tle.getRaan());
-        Assert.assertEquals(tle.getMeanAnomaly(), fitted.getMeanAnomaly(), eps * tle.getMeanAnomaly());
-
-        if (withBStar) {
-            Assert.assertEquals(tle.getBStar(), fitted.getBStar(), eps * tle.getBStar());
-        }
-
-    }
-
-    @Before
-    public void setUp() {
         Utils.setDataRoot("regular-data");
-        geoTLE = new TLE("1 27508U 02040A   12021.25695307 -.00000113  00000-0  10000-3 0  7326",
-                         "2 27508   0.0571 356.7800 0005033 344.4621 218.7816  1.00271798 34501");
-        leoTLE = new TLE("1 31135U 07013A   11003.00000000  .00000816  00000+0  47577-4 0    11",
-                         "2 31135   2.4656 183.9084 0021119 236.4164  60.4567 15.10546832    15");
+        final TLE tle = new TLE("1 27508U 02040A   12021.25695307 -.00000113  00000-0  10000-3 0  7326",
+                                "2 27508   0.0571 356.7800 0005033 344.4621 218.7816  1.00271798 34501");
+        
+        TLEPropagatorBuilder builder = new TLEPropagatorBuilder(tle, PositionAngle.MEAN, 1.0);
+        for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
+            Assert.assertTrue(driver.isSelected());
+        }
+        builder.deselectDynamicParameters();
+        for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
+            Assert.assertFalse(driver.isSelected());
+        }
     }
-
 }
-

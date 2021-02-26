@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -620,14 +620,10 @@ public class PhaseTest {
                 if ((measurement.getDate().durationFrom(interpolator.getPreviousState().getDate()) > 0.) &&
                     (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate())  <=  0.)) {
 
-                    // Parameter corresponding to station position offset
-                    final GroundStation stationParameter = ((Phase) measurement).getStation();
-
                     String stationName  = ((Phase) measurement).getStation().getBaseFrame().getName();
 
                     // Add modifier
-                    final GeodeticPoint point = stationParameter.getBaseFrame().getPoint();
-                    final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel(point.getLatitude());
+                    final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel();
                     final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 5.0);
                     final PhaseTroposphericDelayModifier modifier = new PhaseTroposphericDelayModifier(tropoModel);
                     final List<ParameterDriver> parameters = modifier.getParametersDrivers();

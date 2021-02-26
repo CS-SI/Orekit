@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -239,20 +239,6 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
             throw new OrekitException(OrekitMessages.STATE_JACOBIAN_NOT_INITIALIZED);
         }
         return new DSSTJacobiansMapper(name, selected, propagator, map, propagationType);
-    }
-
-    /** Get the selected parameters, in Jacobian matrix column order.
-     * <p>
-     * The force models parameters for which partial derivatives are desired,
-     * <em>must</em> have been {@link ParameterDriver#setSelected(boolean) selected}
-     * before this method is called, so the proper list is returned.
-     * </p>
-     * @return selected parameters, in Jacobian matrix column order which
-     * is lexicographic order
-     */
-    public ParameterDriversList getSelectedParameters() {
-        freezeParametersSelection();
-        return selected;
     }
 
     /** {@inheritDoc} */

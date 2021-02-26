@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -179,9 +179,19 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
 
     /** {@inheritDoc} */
     @Override
+    protected ParameterDriver[] setAlbedoInfrared(final DSSTPropagatorBuilder propagatorBuilder,
+                                                  final CelestialBody sun, final double equatorialRadius,
+                                                  final double angularResolution,
+                                                  final RadiationSensitive spacecraft) {
+        throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
+                        "Albedo and infrared not implemented in DSST");
+    }
+
+    /** {@inheritDoc} */
+    @Override
     protected ParameterDriver[] setRelativity(final DSSTPropagatorBuilder propagatorBuilder) {
         throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
-                        "Relativity not implemented in DSST");
+                        "Albedo and infrared not implemented in DSST");
     }
 
     /** {@inheritDoc} */
@@ -256,6 +266,7 @@ public class DSSTOrbitDeterminationTest extends AbstractOrbitDetermination<DSSTP
         Assert.assertEquals(RefStatRange[1], odLageos2.getRangeStat().getMax(),               1.0e-3);
         Assert.assertEquals(RefStatRange[2], odLageos2.getRangeStat().getMean(),              1.0e-3);
         Assert.assertEquals(RefStatRange[3], odLageos2.getRangeStat().getStandardDeviation(), 1.0e-3);
+
 
     }
 
