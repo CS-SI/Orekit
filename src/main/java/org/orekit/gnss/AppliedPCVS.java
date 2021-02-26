@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,35 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss.corrections;
+package org.orekit.gnss;
 
-import org.orekit.gnss.SatelliteSystem;
-
-/** Corrections of Differential Code Biases (DCBs) applied.
+/** Corrections of antenna phase center variations (PCVs) applied.
  * Contains information on the programs used to correct the observations
- * in RINEX or clock files for differential code biases.
+ * in RINEX or clock files for antenna phase center variations.
  */
-public class AppliedDCBS {
+public class AppliedPCVS {
 
     /** Satellite system. */
     private final SatelliteSystem satelliteSystem;
 
-    /** Program name used to apply differential code bias corrections. */
-    private final String progDCBS;
+    /** Program name used to antenna center variation corrections. */
+    private final String progPCVS;
 
     /** Source of corrections (URL). */
-    private final String sourceDCBS;
+    private final String sourcePCVS;
 
     /** Simple constructor.
      * @param satelliteSystem satellite system
-     * @param progDCBS Program name used to apply DCBs
-     * @param sourceDCBS Source of corrections (URL)
+     * @param progPCVS Program name used for PCVs
+     * @param sourcePCVS Source of corrections (URL)
      */
-    public AppliedDCBS(final SatelliteSystem satelliteSystem,
-                        final String progDCBS, final String sourceDCBS) {
+    public AppliedPCVS(final SatelliteSystem satelliteSystem,
+                        final String progPCVS, final String sourcePCVS) {
         this.satelliteSystem = satelliteSystem;
-        this.progDCBS        = progDCBS;
-        this.sourceDCBS      = sourceDCBS;
+        this.progPCVS        = progPCVS;
+        this.sourcePCVS      = sourcePCVS;
     }
 
     /** Get the satellite system.
@@ -52,18 +50,18 @@ public class AppliedDCBS {
         return satelliteSystem;
     }
 
-    /** Get the program name used to apply DCBs.
-     * @return  Program name used to apply DCBs
+    /** Get the program name used to apply PCVs.
+     * @return  Program name used to apply PCVs
      */
-    public String getProgDCBS() {
-        return progDCBS;
+    public String getProgPCVS() {
+        return progPCVS;
     }
 
     /** Get the source of corrections.
      * @return Source of corrections (URL)
      */
-    public String getSourceDCBS() {
-        return sourceDCBS;
+    public String getSourcePCVS() {
+        return sourcePCVS;
     }
 
 }

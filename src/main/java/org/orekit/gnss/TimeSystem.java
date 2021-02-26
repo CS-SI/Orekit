@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,12 +24,12 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
 
-/** Enumerate for the time systems.
+/** Enumerate for the time systems used in navigation files.
  *
  * @author Thomas Neidhart
  * @author Evan Ward
  * @author Thomas Paulet
- *
+ * @since 11.0
  */
 public enum TimeSystem {
 

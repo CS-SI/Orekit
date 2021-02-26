@@ -100,7 +100,8 @@ public enum SatelliteSystem {
 
     /** Get default time scale for satellite system.
      * @param timeScales the set of timeScales to use
-     * @return the default time scale among the given set matching to satellitesystem, null if there are not
+     * @return the default time scale among the given set matching to satellite system,
+     *         null if there are not
      */
     public TimeScale getDefaultTimeSystem(final TimeScales timeScales) {
 

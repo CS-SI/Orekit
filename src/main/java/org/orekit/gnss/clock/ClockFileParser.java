@@ -1,4 +1,4 @@
-/* Copyright 2002-2012 Space Applications Services
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,13 +39,13 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
+import org.orekit.gnss.AppliedDCBS;
+import org.orekit.gnss.AppliedPCVS;
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.gnss.clock.ClockFile.ClockDataType;
 import org.orekit.gnss.clock.ClockFile.ReferenceClock;
-import org.orekit.gnss.corrections.AppliedDCBS;
-import org.orekit.gnss.corrections.AppliedPCVS;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -60,14 +60,14 @@ import org.orekit.utils.IERSConventions;
  * <p> A time system should be specified in the file. However, if it is not, default time system will be chosen
  * regarding the satellite system. If it is mixed or not specified, default time system will be UTC. </p>
  * <p> Caution, files with missing information in header can lead to wrong data dates and station positions.
- * It is adviced to check the correctness and format compliance of the clock file to be parsed. </p>
- * @see <a href="ftp://igs.org/pub/data/format/rinex_clock300.txt"> 3.00 clock file format</a>
- * @see <a href="ftp://igs.org/pub/data/format/rinex_clock302.txt"> 3.02 clock file format</a>
- * @see <a href="ftp://igs.org/pub/data/format/rinex_clock304.txt"> 3.04 clock file format</a>
+ * It is advised to check the correctness and format compliance of the clock file to be parsed. </p>
+ * @see <a href="https://files.igs.org/pub/data/format/rinex_clock300.txt"> 3.00 clock file format</a>
+ * @see <a href="https://files.igs.org/pub/data/format/rinex_clock302.txt"> 3.02 clock file format</a>
+ * @see <a href="https://files.igs.org/pub/data/format/rinex_clock304.txt"> 3.04 clock file format</a>
  *
  * @author Thomas Paulet
+ * @since 11.0
  */
-
 public class ClockFileParser {
 
     /** Handled clock file format versions. */
@@ -88,7 +88,6 @@ public class ClockFileParser {
     /** Set of time scales. */
     private final TimeScales timeScales;
 
-
     /**
      * Create an clock file parser using default values.
      *
@@ -101,15 +100,14 @@ public class ClockFileParser {
         this(ClockFileParser::guessFrame);
     }
 
-
     /**
-     * Create an clock file parser and specify the frame builder.
+     * Create a clock file parser and specify the frame builder.
      *
      * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
      *
-     * @param frameBuilder         is a function that can construct a frame from a clock file
-     *                             coordinate system string. The coordinate system can be
-     *                             any 5 character string e.g. ITR92, IGb08.
+     * @param frameBuilder is a function that can construct a frame from a clock file
+     *                     coordinate system string. The coordinate system can be
+     *                     any 5 character string e.g. ITR92, IGb08.
      * @see #ClockFileParser(Function, TimeScales)
      */
     @DefaultDataContext
@@ -118,10 +116,10 @@ public class ClockFileParser {
     }
 
     /** Constructor, build the IGS clock file parser.
-     * @param frameBuilder         is a function that can construct a frame from a clock file
-     *                             coordinate system string. The coordinate system can be
-     *                             any 5 character string e.g. ITR92, IGb08.
-     * @param timeScales           the set of time scales used for parsing dates.
+     * @param frameBuilder is a function that can construct a frame from a clock file
+     *                     coordinate system string. The coordinate system can be
+     *                     any 5 character string e.g. ITR92, IGb08.
+     * @param timeScales   the set of time scales used for parsing dates.
      */
     public ClockFileParser(final Function<? super String, ? extends Frame> frameBuilder,
                            final TimeScales timeScales) {
@@ -136,8 +134,8 @@ public class ClockFileParser {
      * <p>This method uses the {@link DataContext#getDefault() default data context}.
      *
      * @param name of the frame.
-     * @return defaultly, return ITRF based on 2010 conventions,
-     * with tidal effects considered during EOP interpolation.
+     * @return by default, return ITRF based on 2010 conventions,
+     *         with tidal effects considered during EOP interpolation.
      * <p>If String matches to other already recorded frames, it will return the corresponding frame.</p>
      * Already embedded frames are:
      * <p> - ITRF96
@@ -160,9 +158,9 @@ public class ClockFileParser {
      * method may read more data than necessary from {@code stream} and the additional
      * data will be lost. The other parse methods do not have this issue.
      *
-     * @param stream to read the IGS clock file from.
-     * @return a parsed IGS clock file.
-     * @throws IOException     if {@code stream} throws one.
+     * @param stream to read the IGS clock file from
+     * @return a parsed IGS clock file
+     * @throws IOException if {@code stream} throws one
      * @see #parse(String)
      * @see #parse(BufferedReader, String)
      */
@@ -172,15 +170,30 @@ public class ClockFileParser {
         }
     }
 
-
-    public ClockFile parse(final String fileName) throws IOException, OrekitException {
+    /**
+     * Parse an IGS clock file from a file on the local file system.
+     * @param fileName file name
+     * @return a parsed IGS clock file
+     * @throws IOException if one is thrown while opening or reading from {@code fileName}
+     * @see #parse(InputStream)
+     * @see #parse(BufferedReader, String)
+     */
+    public ClockFile parse(final String fileName) throws IOException {
         try (BufferedReader reader = Files.newBufferedReader(Paths.get(fileName),
                                                              StandardCharsets.UTF_8)) {
             return parse(reader, fileName);
         }
     }
 
-
+    /**
+     * Parse an IGS clock file from a stream.
+     * @param reader containing the clock file
+     * @param fileName file name
+     * @return a parsed IGS clock file
+     * @throws IOException if {@code reader} throws one
+     * @see #parse(InputStream)
+     * @see #parse(String)
+     */
     public ClockFile parse(final BufferedReader reader,
                            final String fileName) throws IOException {
 
@@ -212,6 +225,7 @@ public class ClockFileParser {
 
     }
 
+    /** Transient data used for parsing a clock file. */
     private class ParseInfo {
 
         /** Set of time scales for parsing dates. */
@@ -252,7 +266,6 @@ public class ClockFileParser {
 
         /** Constructor, build the ParseInfo object. */
         protected ParseInfo () {
-
             this.timeScales = ClockFileParser.this.timeScales;
             this.file = new ClockFile(frameBuilder);
         }
@@ -335,6 +348,7 @@ public class ClockFileParser {
 
                     // Date string location after 3.04 format version
                     dateString = line.substring(42, 65);
+
                 }
 
                 parseDateTimeZone(dateString, pi);
@@ -517,7 +531,7 @@ public class ClockFileParser {
                 // Second element is the program name
                 final String progDCBS = line.substring(2, 20).trim();
 
-                // Thrid element is the source of the corrections
+                // Third element is the source of the corrections
                 String sourceDCBS = "";
                 if (pi.file.getFormatVersion() < 3.04) {
                     sourceDCBS = line.substring(19, 60).trim();
@@ -551,7 +565,7 @@ public class ClockFileParser {
                 // Second element is the program name
                 final String progPCVS = line.substring(2, 20).trim();
 
-                // Thrid element is the source of the corrections
+                // Third element is the source of the corrections
                 String sourcePCVS = "";
                 if (pi.file.getFormatVersion() < 3.04) {
                     sourcePCVS = line.substring(19, 60).trim();
@@ -705,7 +719,7 @@ public class ClockFileParser {
                                                                          pi.file.getTimeScale());
                         pi.referenceClockStartDate = startEpoch;
 
-                        // Thrid element is the end epoch of the period
+                        // Third element is the end epoch of the period
                         final int endYear   = scanner.nextInt();
                         final int endMonth  = scanner.nextInt();
                         final int endDay    = scanner.nextInt();
@@ -751,7 +765,7 @@ public class ClockFileParser {
                     // Second element is the reference clock ID
                     final String clockID = scanner.next();
 
-                    // Optionally, third element is an a priori clock constraint, defaultly equal to zero
+                    // Optionally, third element is an a priori clock constraint, by default equal to zero
                     double clockConstraint = 0.0;
                     if (scanner.hasNextDouble()) {
                         clockConstraint = scanner.nextDouble();

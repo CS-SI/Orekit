@@ -1,4 +1,4 @@
-/* Copyright 2002-2012 Space Applications Services
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,11 +26,11 @@ import java.util.function.Function;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
+import org.orekit.gnss.AppliedDCBS;
+import org.orekit.gnss.AppliedPCVS;
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
-import org.orekit.gnss.corrections.AppliedDCBS;
-import org.orekit.gnss.corrections.AppliedPCVS;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -49,6 +49,7 @@ import org.orekit.utils.TimeSpanMap;
  * @see <a href="ftp://igs.org/pub/data/format/rinex_clock304.txt"> 3.04 clock file format</a>
  *
  * @author Thomas Paulet
+ * @since 11.0
  */
 public class ClockFile {
 
@@ -140,7 +141,7 @@ public class ClockFile {
      * @param frameBuilder for constructing a reference frame from the identifier
      */
     public ClockFile(final Function<? super String, ? extends Frame> frameBuilder) {
-
+        // Initialize fields with default data
         this.systemObservationTypes  = new HashMap<SatelliteSystem, List<ObservationType>>();
         this.listAppliedDCBS         = new ArrayList<AppliedDCBS>();
         this.listAppliedPCVS         = new ArrayList<AppliedPCVS>();
@@ -243,14 +244,12 @@ public class ClockFile {
         return satellites.size();
     }
 
-
     /** Getter for the format version.
      * @return the format version
      */
     public double getFormatVersion() {
         return formatVersion;
     }
-
 
     /** Setter for the format version.
      * @param formatVersion the format version to set
@@ -266,7 +265,6 @@ public class ClockFile {
         return satelliteSystem;
     }
 
-
     /** Setter for the satellite system.
      * @param satelliteSystem the satellite system to set
      */
@@ -281,14 +279,12 @@ public class ClockFile {
         return programName;
     }
 
-
     /** Setter for the program name.
      * @param programName the program name to set
      */
     public void setProgramName(final String programName) {
         this.programName = programName;
     }
-
 
     /** Getter for the agency name.
      * @return the agencyName
@@ -297,7 +293,6 @@ public class ClockFile {
         return agencyName;
     }
 
-
     /** Setter for the agency name.
      * @param agencyName the agency name to set
      */
@@ -305,14 +300,12 @@ public class ClockFile {
         this.agencyName = agencyName;
     }
 
-
     /** Getter for the creation date of the file as a string.
-     * @return the creation dateas a string
+     * @return the creation date as a string
      */
     public String getCreationDateString() {
         return creationDateString;
     }
-
 
     /** Setter for the creation date as a string.
      * @param creationDateString the creation date as a string to set
@@ -321,14 +314,12 @@ public class ClockFile {
         this.creationDateString = creationDateString;
     }
 
-
     /** Getter for the creation time of the file as a string.
      * @return the creation time as a string
      */
     public String getCreationTimeString() {
         return creationTimeString;
     }
-
 
     /** Setter for the creation time as a string.
      * @param creationTimeString the creation time as a string to set
@@ -337,14 +328,12 @@ public class ClockFile {
         this.creationTimeString = creationTimeString;
     }
 
-
     /** Getter for the creation time zone of the file as a string.
      * @return the creation time zone as a string
      */
     public String getCreationTimeZoneString() {
         return creationTimeZoneString;
     }
-
 
     /** Setter for the creation time zone.
      * @param creationTimeZoneString the creation time zone as a string to set
@@ -360,7 +349,6 @@ public class ClockFile {
         return creationDate;
     }
 
-
     /** Setter for the creation date.
      * @param creationDate the creation date to set
      */
@@ -375,7 +363,6 @@ public class ClockFile {
         return comments;
     }
 
-
     /** Add a comment line.
      * @param comment the comment line to add
      */
@@ -383,14 +370,12 @@ public class ClockFile {
         this.comments = comments.concat(comment + "\n");
     }
 
-
     /** Getter for the different observation type for each satellite system.
      * @return the map of the different observation type per satellite system
      */
     public Map<SatelliteSystem, List<ObservationType>> getSystemObservationTypes() {
         return Collections.unmodifiableMap(systemObservationTypes);
     }
-
 
     /** Add an observation type for a specified satellite system.
      * @param satSystem the satellite system to add observation type
@@ -402,14 +387,12 @@ public class ClockFile {
         systemObservationTypes.get(satSystem).add(observationType);
     }
 
-
     /** Getter for the file time system.
      * @return the file time system
      */
     public TimeSystem getTimeSystem() {
         return timeSystem;
     }
-
 
     /** Setter for the file time system.
      * @param timeSystem the file time system to set
@@ -425,7 +408,6 @@ public class ClockFile {
         return timeScale;
     }
 
-
     /** Setter for the data time scale.
      * @param timeScale the data time scale to set
      */
@@ -440,15 +422,12 @@ public class ClockFile {
         return numberOfLeapSeconds;
     }
 
-
     /** Setter for the number of leap seconds.
      * @param numberOfLeapSeconds the number of leap seconds to set
      */
     public void setNumberOfLeapSeconds(final int numberOfLeapSeconds) {
         this.numberOfLeapSeconds = numberOfLeapSeconds;
     }
-
-
 
     /** Getter for the number of leap second for GNSS time scales.
      * @return the number of leap seconds for GNSS time scales
@@ -457,7 +436,6 @@ public class ClockFile {
         return numberOfLeapSecondsGNSS;
     }
 
-
     /** Setter for the number of leap seconds for GNSS time scales.
      * @param numberOfLeapSecondsGNSS the number of leap seconds for GNSS time scales to set
      */
@@ -465,14 +443,12 @@ public class ClockFile {
         this.numberOfLeapSecondsGNSS = numberOfLeapSecondsGNSS;
     }
 
-
-    /** Getter for the applied differencial code bias corrections.
-     * @return the list of applied differencial code bias corrections
+    /** Getter for the applied differential code bias corrections.
+     * @return the list of applied differential code bias corrections
      */
     public List<AppliedDCBS> getListAppliedDCBS() {
         return Collections.unmodifiableList(listAppliedDCBS);
     }
-
 
     /** Add an applied differencial code bias corrections.
      * @param appliedDCBS the applied differencial code bias corrections to add
@@ -481,14 +457,12 @@ public class ClockFile {
         listAppliedDCBS.add(appliedDCBS);
     }
 
-
     /** Getter for the applied phase center variations.
      * @return the list of the applied phase center variations
      */
     public List<AppliedPCVS> getListAppliedPCVS() {
         return Collections.unmodifiableList(listAppliedPCVS);
     }
-
 
     /** Add an applied phase center variations.
      * @param appliedPCVS the phase center variations to add
@@ -497,14 +471,12 @@ public class ClockFile {
         listAppliedPCVS.add(appliedPCVS);
     }
 
-
     /** Getter for the different clock data types.
      * @return the list of the different clock data types
      */
     public List<ClockDataType> getClockDataTypes() {
         return Collections.unmodifiableList(clockDataTypes);
     }
-
 
     /** Add a clock data types.
      * @param clockDataType the clock data types to add
@@ -513,14 +485,12 @@ public class ClockFile {
         clockDataTypes.add(clockDataType);
     }
 
-
     /** Getter for the station name.
      * @return the station name
      */
     public String getStationName() {
         return stationName;
     }
-
 
     /** Setter for the station name.
      * @param stationName the station name to set
@@ -536,7 +506,6 @@ public class ClockFile {
         return stationIdentifier;
     }
 
-
     /** Setter for the station identifier.
      * @param stationIdentifier the station identifier to set
      */
@@ -551,14 +520,12 @@ public class ClockFile {
         return externalClockReference;
     }
 
-
     /** Setter for the external clock reference.
      * @param externalClockReference the external clock reference to set
      */
     public void setExternalClockReference(final String externalClockReference) {
         this.externalClockReference = externalClockReference;
     }
-
 
     /** Getter for the analysis center ID.
      * @return the analysis center ID
@@ -567,14 +534,12 @@ public class ClockFile {
         return analysisCenterID;
     }
 
-
     /** Setter for the analysis center ID.
      * @param analysisCenterID the analysis center ID to set
      */
     public void setAnalysisCenterID(final String analysisCenterID) {
         this.analysisCenterID = analysisCenterID;
     }
-
 
     /** Getter for the analysis center name.
      * @return the analysis center name
@@ -583,14 +548,12 @@ public class ClockFile {
         return analysisCenterName;
     }
 
-
     /** Setter for the analysis center name.
      * @param analysisCenterName the analysis center name to set
      */
     public void setAnalysisCenterName(final String analysisCenterName) {
         this.analysisCenterName = analysisCenterName;
     }
-
 
     /** Getter for the reference clocks.
      * @return the time span map of the different refence clocks
@@ -635,8 +598,6 @@ public class ClockFile {
         return Collections.unmodifiableList(receivers);
     }
 
-
-
     /** Getter for the satellites.
      * @return the list of the satellites
      */
@@ -652,7 +613,7 @@ public class ClockFile {
     }
 
 
-    /** Getter for the clock data.
+    /** Getter for an unmodifiable map of clock data.
      * @return the clock data
      */
     public Map<String, List<ClockDataLine>> getClockData() {
@@ -924,9 +885,9 @@ public class ClockFile {
         /** Constructor.
          * @param designator the designator
          * @param receiverIdentifier the receiver identifier
-         * @param x the X coordinates in meters in considred Earth centered frame
-         * @param y the Y coordinates in meters in considred Earth centered frame
-         * @param z the Z coordinates in meters in considred Earth centered frame
+         * @param x the X coordinate in meters in considered Earth centered frame
+         * @param y the Y coordinate in meters in considered Earth centered frame
+         * @param z the Z coordinate in meters in considered Earth centered frame
          */
         public Receiver(final String designator, final String receiverIdentifier,
                         final double x, final double y, final double z) {
@@ -951,22 +912,22 @@ public class ClockFile {
             return receiverIdentifier;
         }
 
-        /** Getter for the X coordinates in meters in considred Earth centered frame.
-         * @return  the X coordinates in meters in considred Earth centered frame
+        /** Getter for the X coordinate in meters in considered Earth centered frame.
+         * @return  the X coordinate in meters in considered Earth centered frame
          */
         public double getX() {
             return x;
         }
 
-        /** Getter for the Y coordinates in meters in considred Earth centered frame.
-         * @return  the Y coordinates in meters in considred Earth centered frame
+        /** Getter for the Y coordinate in meters in considered Earth centered frame.
+         * @return  the Y coordinate in meters in considered Earth centered frame
          */
         public double getY() {
             return y;
         }
 
-        /** Getter for the Z coordinates in meters in considred Earth centered frame.
-         * @return  the Z coordinates in meters in considred Earth centered frame
+        /** Getter for the Z coordinate in meters in considered Earth centered frame.
+         * @return  the Z coordinate in meters in considered Earth centered frame
          */
         public double getZ() {
             return z;

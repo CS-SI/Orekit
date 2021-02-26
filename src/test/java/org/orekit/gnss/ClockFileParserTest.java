@@ -1,4 +1,4 @@
-/* Copyright 2002-2020 CS GROUP
+/* Copyright 2002-2021 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,6 +28,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -836,7 +837,19 @@ public class ClockFileParserTest {
             Assert.assertEquals("WWW",  oe.getParts()[0]);
         }
     }
-    
+
+    @Test
+    public void testTimeSystem() {
+        Assert.assertEquals(TimeScalesFactory.getGPS(),     TimeSystem.GPS.getTimeScale(DataContext.getDefault().getTimeScales()));
+        Assert.assertEquals(TimeScalesFactory.getGST(),     TimeSystem.GALILEO.getTimeScale(DataContext.getDefault().getTimeScales()));
+        Assert.assertEquals(TimeScalesFactory.getGLONASS(), TimeSystem.GLONASS.getTimeScale(DataContext.getDefault().getTimeScales()));
+        Assert.assertEquals(TimeScalesFactory.getQZSS(),    TimeSystem.QZSS.getTimeScale(DataContext.getDefault().getTimeScales()));
+        Assert.assertEquals(TimeScalesFactory.getTAI(),     TimeSystem.TAI.getTimeScale(DataContext.getDefault().getTimeScales()));
+        Assert.assertEquals(TimeScalesFactory.getUTC(),     TimeSystem.UTC.getTimeScale(DataContext.getDefault().getTimeScales()));
+        Assert.assertEquals(TimeScalesFactory.getBDT(),     TimeSystem.BEIDOU.getTimeScale(DataContext.getDefault().getTimeScales()));
+        Assert.assertEquals(TimeScalesFactory.getIRNSS(),   TimeSystem.IRNSS.getTimeScale(DataContext.getDefault().getTimeScales()));
+        Assert.assertEquals(TimeScalesFactory.getGPS(),     TimeSystem.UNKNOWN.getTimeScale(DataContext.getDefault().getTimeScales()));
+    }
     
     /** Check the content of a clock file. */
     private void checkClockFileContent(final ClockFile file,
