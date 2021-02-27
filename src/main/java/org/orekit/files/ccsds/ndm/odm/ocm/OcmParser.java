@@ -226,9 +226,11 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
     public boolean finalizeData() {
         // fix gravitational parameter now that all sections have been completed
         final List<OrbitStateHistory> old = orbitBlocks;
-        orbitBlocks = new ArrayList<>(old.size());
-        for (final OrbitStateHistory osh : old) {
-            orbitBlocks.add(new OrbitStateHistory(osh.getMetadata(), osh.getOrbitalStates(), getSelectedMu()));
+        if (old != null) {
+            orbitBlocks = new ArrayList<>(old.size());
+            for (final OrbitStateHistory osh : old) {
+                orbitBlocks.add(new OrbitStateHistory(osh.getMetadata(), osh.getOrbitalStates(), getSelectedMu()));
+            }
         }
         return true;
     }
