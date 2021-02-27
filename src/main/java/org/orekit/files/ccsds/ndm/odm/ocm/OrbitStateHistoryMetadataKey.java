@@ -18,17 +18,16 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.Unit;
 import org.orekit.files.ccsds.ndm.odm.oem.InterpolationMethod;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
+import org.orekit.utils.units.Unit;
 
 
 /** Keys for {@link OrbitStateHistoryMetadata orbit state history metadata} entries.
@@ -160,9 +159,8 @@ public enum OrbitStateHistoryMetadataKey {
             final Matcher matcher = UNITS_FINDER.matcher(line.substring(1, line.length() - 1).trim());
             while (!matcher.hitEnd()) {
                 if (matcher.find()) {
-                    final String u = matcher.group(1).replace("*", "").replace('/', '_').toUpperCase(Locale.US);
                     try {
-                        orbUnits.add(Unit.parse(u));
+                        orbUnits.add(Unit.parse(matcher.group(1)));
                     } catch (OrekitException oe) {
                         throw token.generateException(oe);
                     }

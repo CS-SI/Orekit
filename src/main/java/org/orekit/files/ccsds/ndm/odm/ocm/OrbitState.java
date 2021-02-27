@@ -19,11 +19,11 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.util.List;
 
-import org.orekit.files.ccsds.definitions.Unit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.units.Unit;
 
 /** Orbit state entry.
  * @author Luc Maisonobe
@@ -93,8 +93,7 @@ public class OrbitState implements TimeStamped {
      * @return Cartesian coordinates
      */
     public TimeStampedPVCoordinates toCartesian(final double mu) {
-        // TODO
-        return null;
+        return type.toCartesian(date, elements, mu);
     }
 
 }

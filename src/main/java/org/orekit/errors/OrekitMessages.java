@@ -294,6 +294,8 @@ public enum OrekitMessages implements Localizable {
     NOT_VALID_INTERNATIONAL_DESIGNATOR("{0} is not a valid international designator"),
     UNINITIALIZED_VALUE_FOR_KEY("value for key {0} has not been initialized"),
     UNKNOWN_UNIT("unknown unit {0}"),
+    INCOMPATIBLE_UNITS("units {0} and {1} are not compatible"),
+    UNSUPPORTED_ELEMENT_TYPE("element type {0} is not supported yet"),
     MISSING_VELOCITY("missing velocity data");
 
     // CHECKSTYLE: resume JavadocVariable check

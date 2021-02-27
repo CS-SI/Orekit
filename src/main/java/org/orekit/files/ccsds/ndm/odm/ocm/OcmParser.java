@@ -25,7 +25,6 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.Unit;
 import org.orekit.files.ccsds.ndm.odm.CommonParser;
 import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.ndm.odm.OdmHeaderProcessingState;
@@ -44,6 +43,7 @@ import org.orekit.files.ccsds.utils.parsing.ProcessingState;
 import org.orekit.files.general.EphemerisFileParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.units.Unit;
 
 /** A parser for the CCSDS OCM (Orbit Comprehensive Message).
  * <p>
@@ -324,6 +324,9 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
     /** {@inheritDoc} */
     @Override
     public OcmFile build() {
+        // OCM KVN file lack a DATA_STOP keyword, hence we can't call finalizeData()
+        // automatically before the end of the file
+        finalizeData();
         if (userDefinedBlock != null && userDefinedBlock.getParameters().isEmpty()) {
             userDefinedBlock = null;
         }

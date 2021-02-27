@@ -642,5 +642,11 @@ UNINITIALIZED_VALUE_FOR_KEY = value for key {0} has not been initialized
 # unknown unit {0}
 UNKNOWN_UNIT = unknown unit {0}
 
+# element type {0} is not supported yet
+UNSUPPORTED_ELEMENT_TYPE = element type {0} is not supported yet
+
+# units {0} and {1} are not compatible
+INCOMPATIBLE_UNITS = units {0} and {1} are not compatible
+
 # missing velocity data
 MISSING_VELOCITY = missing velocity data

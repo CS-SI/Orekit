@@ -35,6 +35,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class OCMParserTest {
 
@@ -121,7 +123,15 @@ public class OCMParserTest {
                                   parseMessage(source);
         Assert.assertEquals("CS GROUP", ocm.getHeader().getOriginator());
         Assert.assertEquals("728b0d2a-01fc-4d0e-9f0a-370c6930ea84", ocm.getHeader().getMessageId().toLowerCase(Locale.US));
-        Assert.assertEquals("ZZRF", ocm.getData().getOrbitBlocks().get(0).getMetadata().getOrbReferenceFrame().getName());
+        final OrbitStateHistory h = ocm.getData().getOrbitBlocks().get(0);
+        Assert.assertEquals("ZZRF", h.getMetadata().getOrbReferenceFrame().getName());
+        List<TimeStampedPVCoordinates> l = h.getCoordinates();
+        Assert.assertEquals( 3.0e6, h.getCoordinates().get(0).getPosition().getX(), 1.0e-9);
+        Assert.assertEquals( 4.0e6, h.getCoordinates().get(0).getPosition().getY(), 1.0e-9);
+        Assert.assertEquals( 5.0e6, h.getCoordinates().get(0).getPosition().getZ(), 1.0e-9);
+        Assert.assertEquals(-1.0e3, h.getCoordinates().get(0).getVelocity().getX(), 1.0e-12);
+        Assert.assertEquals(-2.0e3, h.getCoordinates().get(0).getVelocity().getY(), 1.0e-12);
+        Assert.assertEquals(-3.0e3, h.getCoordinates().get(0).getVelocity().getZ(), 1.0e-1);
         try {
             ocm.getData().getOrbitBlocks().get(0).getFrame();
             Assert.fail("an exception should have been thrown");

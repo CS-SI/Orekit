@@ -16,7 +16,11 @@
  */
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
-import org.orekit.files.ccsds.definitions.Unit;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Orbit element set type used in CCSDS {@link OcmFile Orbit Comprehensive Messages}.
  * @see <a href="https://sanaregistry.org/r/orbital_elements">SANA registry for orbital elements</a>
@@ -27,103 +31,140 @@ public enum ElementsType {
 
     /** Spherical 6-element set (α,δ,β,A,r,v). */
     ADBARV("Spherical 6-element set (α,δ,β,A,r,v)",
-           Unit.DEG, Unit.DEG, Unit.DEG,
-           Unit.DEG, Unit.KM, Unit.KM),
+           ElementsUnit.DEG, ElementsUnit.DEG, ElementsUnit.DEG,
+           ElementsUnit.DEG, ElementsUnit.KM, ElementsUnit.KM),
 
     /** Cartesian 3-element position (X, Y, Z). */
     CARTP("Cartesian 3-element position (X, Y, Z)",
-          Unit.KM, Unit.KM, Unit.KM),
+          ElementsUnit.KM, ElementsUnit.KM, ElementsUnit.KM) {
+        /** {@inheritDoc} */
+        @Override
+        public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements, final double mu) {
+            return new TimeStampedPVCoordinates(date,
+                                                new Vector3D(elements[0], elements[1], elements[2]),
+                                                Vector3D.ZERO,
+                                                Vector3D.ZERO);
+        }
+    },
 
     /** Cartesian 6-element position and velocity (X, Y, Z, XD, YD, ZD). */
     CARTPV(" Cartesian 6-element position and velocity (X, Y, Z, XD, YD, ZD)",
-           Unit.KM, Unit.KM, Unit.KM,
-           Unit.KM_S, Unit.KM_S, Unit.KM_S),
+           ElementsUnit.KM, ElementsUnit.KM, ElementsUnit.KM,
+           ElementsUnit.KM_S, ElementsUnit.KM_S, ElementsUnit.KM_S) {
+        /** {@inheritDoc} */
+        @Override
+        public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements, final double mu) {
+            return new TimeStampedPVCoordinates(date,
+                                                new Vector3D(elements[0], elements[1], elements[2]),
+                                                new Vector3D(elements[3], elements[4], elements[5]),
+                                                Vector3D.ZERO);
+        }
+    },
 
     /** Cartesian 9-element position, velocity and acceleration (X, Y, Z, XD, YD, ZD, XDD, YDD, ZDD). */
     CARTPVA("Cartesian 9-element position, velocity and acceleration (X, Y, Z, XD, YD, ZD, XDD, YDD, ZDD)",
-            Unit.KM, Unit.KM, Unit.KM,
-            Unit.KM_S, Unit.KM_S, Unit.KM_S,
-            Unit.KM_S2, Unit.KM_S2, Unit.KM_S2),
+            ElementsUnit.KM, ElementsUnit.KM, ElementsUnit.KM,
+            ElementsUnit.KM_S, ElementsUnit.KM_S, ElementsUnit.KM_S,
+            ElementsUnit.KM_S2, ElementsUnit.KM_S2, ElementsUnit.KM_S2) {
+        /** {@inheritDoc} */
+        @Override
+        public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements, final double mu) {
+            return new TimeStampedPVCoordinates(date,
+                                                new Vector3D(elements[0], elements[1], elements[2]),
+                                                new Vector3D(elements[3], elements[4], elements[5]),
+                                                new Vector3D(elements[6], elements[7], elements[8]));
+        }
+    },
 
     /** Delaunay elements (L, G, H, l, g, h). */
     DELAUNAY("Delaunay elements (L, G, H, l, g, h)",
-             Unit.KM2_S, Unit.KM2_S, Unit.KM2_S,
-             Unit.DEG, Unit.DEG, Unit.DEG),
+             ElementsUnit.KM2_S, ElementsUnit.KM2_S, ElementsUnit.KM2_S,
+             ElementsUnit.DEG, ElementsUnit.DEG, ElementsUnit.DEG),
 
     /** Modified Delaunay elements (Lm, Gm, Hm, lm, gm, hm). */
     DELAUNAYMOD("Delaunay elements (Lm, Gm, Hm, lm, gm, hm)",
-                Unit.SQKM, Unit.SQKM, Unit.SQKM,
-                Unit.DEG, Unit.DEG, Unit.DEG),
+                ElementsUnit.SQKM, ElementsUnit.SQKM, ElementsUnit.SQKM,
+                ElementsUnit.DEG, ElementsUnit.DEG, ElementsUnit.DEG),
 
     /** 12 elements eigenvalue/eigenvectors (EigMaj, EigMed, EigMin, EigVecMaj, EigVecMed, EigVecMin). */
     EIGVAL3EIGVEC3("12 elements eigenvalue/eigenvectors (EigMaj, EigMed, EigMin, EigVecMaj, EigVecMed, EigVecMin)",
-                   Unit.KM, Unit.KM, Unit.KM,
-                   Unit.ND, Unit.ND, Unit.ND,
-                   Unit.ND, Unit.ND, Unit.ND,
-                   Unit.ND, Unit.ND, Unit.ND),
+                   ElementsUnit.KM, ElementsUnit.KM, ElementsUnit.KM,
+                   ElementsUnit.ND, ElementsUnit.ND, ElementsUnit.ND,
+                   ElementsUnit.ND, ElementsUnit.ND, ElementsUnit.ND,
+                   ElementsUnit.ND, ElementsUnit.ND, ElementsUnit.ND),
 
     /** Equinoctial elements (a, af, ag, L=M+ω+frΩ, χ, ψ, fr). */
     EQUINOCTIAL(" Equinoctial elements (a, af, ag, L=M+ω+frΩ, χ, ψ, fr)",
-                Unit.KM, Unit.ND, Unit.ND,
-                Unit.DEG, Unit.ND, Unit.ND,
-                Unit.ND),
+                ElementsUnit.KM, ElementsUnit.ND, ElementsUnit.ND,
+                ElementsUnit.DEG, ElementsUnit.ND, ElementsUnit.ND,
+                ElementsUnit.ND),
 
     /** Modified equinoctial elements (p=a(1−e²), af, ag, L'=υ+ω+frΩ, χ, ψ, fr). */
     EQUINOCTIALMOD("Modified equinoctial elements (p=a(1−e²), af, ag, L'=υ+ω+frΩ, χ, ψ, fr)",
-                   Unit.KM, Unit.ND, Unit.ND,
-                   Unit.DEG, Unit.ND, Unit.ND,
-                   Unit.ND),
+                   ElementsUnit.KM, ElementsUnit.ND, ElementsUnit.ND,
+                   ElementsUnit.DEG, ElementsUnit.ND, ElementsUnit.ND,
+                   ElementsUnit.ND),
 
     /** Geodetic elements (λ, ΦGD, β, A, h, vre). */
     GEODETIC("Geodetic elements (λ, ΦGD, β, A, h, vre)",
-             Unit.DEG, Unit.DEG, Unit.DEG,
-             Unit.DEG, Unit.KM, Unit.KM_S),
+             ElementsUnit.DEG, ElementsUnit.DEG, ElementsUnit.DEG,
+             ElementsUnit.DEG, ElementsUnit.KM, ElementsUnit.KM_S),
 
     /** Keplerian 6-elemnt classical set (a, e, i, Ω, ω, ν). */
     KEPLERIAN("Keplerian 6-elemnt classical set (a, e, i, Ω, ω, ν)",
-              Unit.KM, Unit.ND, Unit.DEG,
-              Unit.DEG, Unit.DEG, Unit.DEG),
+              ElementsUnit.KM, ElementsUnit.ND, ElementsUnit.DEG,
+              ElementsUnit.DEG, ElementsUnit.DEG, ElementsUnit.DEG),
 
     /** Keplerian 6-elemnt classical set (a, e, i, Ω, ω, M). */
     KEPLERIANMEAN("Keplerian 6-elemnt classical set (a, e, i, Ω, ω, M)",
-                  Unit.KM, Unit.ND, Unit.DEG,
-                  Unit.DEG, Unit.DEG, Unit.DEG),
+                  ElementsUnit.KM, ElementsUnit.ND, ElementsUnit.DEG,
+                  ElementsUnit.DEG, ElementsUnit.DEG, ElementsUnit.DEG),
 
     /** Modified spherical 6-element set (λ, δ, β, A, r, v). */
     LDBARV(" Modified spherical 6-element set (λ, δ, β, A, r, v)",
-           Unit.DEG, Unit.DEG, Unit.DEG,
-           Unit.DEG, Unit.KM, Unit.KM_S),
+           ElementsUnit.DEG, ElementsUnit.DEG, ElementsUnit.DEG,
+           ElementsUnit.DEG, ElementsUnit.KM, ElementsUnit.KM_S),
 
     /** Geosynchronous on-station tailored set (a, ex, ey, ix, iy, λ). */
     ONSTATION("Geosynchronous on-station tailored set (a, ex, ey, ix, iy, λ)",
-              Unit.KM, Unit.ND, Unit.ND,
-              Unit.ND, Unit.ND, Unit.DEG),
+              ElementsUnit.KM, ElementsUnit.ND, ElementsUnit.ND,
+              ElementsUnit.ND, ElementsUnit.ND, ElementsUnit.DEG),
 
     /** Canonical counterpart of equinoctial 6-element set (λM=M+ω+Ω, gp, hp, Lp, Gp, Hp). */
     POINCARE("Canonical counterpart of equinoctial 6-element set (λM=M+ω+Ω, gp, hp, Lp, Gp, Hp)",
-             Unit.DEG, Unit.KM_SQS, Unit.KM_SQS,
-             Unit.KM2_S, Unit.KM_SQS, Unit.KM_SQS);
+             ElementsUnit.DEG, ElementsUnit.KM_SQS, ElementsUnit.KM_SQS,
+             ElementsUnit.KM2_S, ElementsUnit.KM_SQS, ElementsUnit.KM_SQS);
 
     /** Description. */
     private final String description;
 
     /** Elements units. */
-    private final Unit[] units;
+    private final ElementsUnit[] units;
 
     /** Simple constructor.
      * @param description description
      * @param units elements units
      */
-    ElementsType(final String description, final Unit... units) {
+    ElementsType(final String description, final ElementsUnit... units) {
         this.description = description;
         this.units  = units.clone();
     }
 
-    /** Get the elements units.
-     * @return elements units
+    /** Get the reference units.
+     * @return reference units
      */
-    public Unit[] getUnits() {
+    public ElementsUnit[] getUnits() {
         return units.clone();
+    }
+
+    /** Convert to Cartesian coordinates.
+     * @param date elements date
+     * @param elements elements values
+     * @param mu gravitational parameter in m³/s²
+     * @return Cartesian coordinates
+     */
+    public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements, final double mu) {
+        throw new OrekitException(OrekitMessages.UNSUPPORTED_ELEMENT_TYPE, name());
     }
 
     /** {@inheritDoc} */

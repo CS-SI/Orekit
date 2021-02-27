@@ -19,16 +19,19 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.util.List;
 
+import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.data.DataContext;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.CenterName;
 import org.orekit.files.ccsds.definitions.FrameFacade;
-import org.orekit.files.ccsds.definitions.Unit;
 import org.orekit.files.ccsds.ndm.odm.oem.InterpolationMethod;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.units.Unit;
 
 /** Metadata for orbit state history.
  * @author Luc Maisonobe
@@ -111,6 +114,15 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
     public void checkMandatoryEntries() {
         super.checkMandatoryEntries();
         checkNotNull(orbUnits, OrbitStateHistoryMetadataKey.ORB_UNITS);
+        final ElementsUnit[] referenceUnits = orbType.getUnits();
+        MathUtils.checkDimension(referenceUnits.length, orbUnits.size());
+        for (int i = 0; i < referenceUnits.length; ++i) {
+            if (!referenceUnits[i].toUnit().sameDimension(orbUnits.get(i))) {
+                throw new OrekitException(OrekitMessages.INCOMPATIBLE_UNITS,
+                                          referenceUnits[i].toUnit().getName(),
+                                          orbUnits.get(i).getName());
+            }
+        }
     }
 
     /** Get orbit identification number.
