@@ -110,12 +110,12 @@ public enum ElementsType {
              ElementsUnit.DEG, ElementsUnit.DEG, ElementsUnit.DEG,
              ElementsUnit.DEG, ElementsUnit.KM, ElementsUnit.KM_S),
 
-    /** Keplerian 6-elemnt classical set (a, e, i, Ω, ω, ν). */
+    /** Keplerian 6-element classical set (a, e, i, Ω, ω, ν). */
     KEPLERIAN("Keplerian 6-elemnt classical set (a, e, i, Ω, ω, ν)",
               ElementsUnit.KM, ElementsUnit.ND, ElementsUnit.DEG,
               ElementsUnit.DEG, ElementsUnit.DEG, ElementsUnit.DEG),
 
-    /** Keplerian 6-elemnt classical set (a, e, i, Ω, ω, M). */
+    /** Keplerian 6-element classical set (a, e, i, Ω, ω, M). */
     KEPLERIANMEAN("Keplerian 6-elemnt classical set (a, e, i, Ω, ω, M)",
                   ElementsUnit.KM, ElementsUnit.ND, ElementsUnit.DEG,
                   ElementsUnit.DEG, ElementsUnit.DEG, ElementsUnit.DEG),
