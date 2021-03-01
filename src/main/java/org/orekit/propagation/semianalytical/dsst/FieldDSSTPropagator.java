@@ -62,6 +62,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldFixedNumberInterpolationGrid;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldInterpolationGrid;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldMaxGapInterpolationGrid;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
@@ -525,7 +526,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
         for (final DSSTForceModel force : forces) {
             final T[] parameters = force.getParameters(mean.getDate().getField());
             force.registerAttitudeProvider(attitudeProvider);
-            shortPeriodTerms.addAll(force.initialize(aux, PropagationType.OSCULATING, parameters));
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, parameters));
             force.updateShortPeriodTerms(parameters, mean);
         }
 
@@ -644,7 +645,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
         // initialize all perturbing forces
         final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<T>>();
         for (final DSSTForceModel force : forceModels) {
-            shortPeriodTerms.addAll(force.initialize(aux, type, force.getParameters(field)));
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, type, force.getParameters(field)));
         }
         mapper.setShortPeriodTerms(shortPeriodTerms);
 
@@ -739,7 +740,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
             final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<T>>();
             for (final DSSTForceModel force : forceModel) {
                 final T[] parameters = force.getParameters(osculating.getDate().getField());
-                shortPeriodTerms.addAll(force.initialize(aux, PropagationType.OSCULATING, parameters));
+                shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, parameters));
                 force.updateShortPeriodTerms(parameters, meanState);
             }
 
@@ -1021,6 +1022,11 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
         /** {@inheritDoc} */
         @Override
         public void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target) {
+            final SpacecraftState stateD  = initialState.toSpacecraftState();
+            final AbsoluteDate    targetD = target.toAbsoluteDate();
+            for (final DSSTForceModel forceModel : forceModels) {
+                forceModel.init(stateD, targetD);
+            }
         }
 
         /** {@inheritDoc} */

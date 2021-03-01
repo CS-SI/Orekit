@@ -259,7 +259,7 @@ public class DSSTPartialDerivativesEquations implements AdditionalEquations {
             final FieldAuxiliaryElements<Gradient> auxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), I);
 
             // "field" initialization of the force model if it was not done before
-            forceModel.initialize(auxiliaryElements, propagationType, parameters);
+            forceModel.initializeShortPeriodTerms(auxiliaryElements, propagationType, parameters);
             final Gradient[] meanElementRate = forceModel.getMeanElementRate(dsState, auxiliaryElements, parameters);
             final double[] derivativesA  = meanElementRate[0].getGradient();
             final double[] derivativesEx = meanElementRate[1].getGradient();

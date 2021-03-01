@@ -23,8 +23,12 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.hamcrest.MatcherAssert;
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.ODEIntegrator;
@@ -34,6 +38,7 @@ import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince54Integrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -47,6 +52,7 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.BoxAndSolarArraySpacecraft;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
@@ -70,22 +76,27 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AltitudeDetector;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.LatitudeCrossingDetector;
 import org.orekit.propagation.events.NodeDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.semianalytical.dsst.forces.AbstractGaussianContribution;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
+import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
+import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -94,6 +105,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class DSSTPropagatorTest {
@@ -1017,6 +1029,34 @@ public class DSSTPropagatorTest {
 
     }
 
+    /** This test is based on the example given by Orekit user kris06 in https://gitlab.orekit.org/orekit/orekit/-/issues/670. */
+    @Test
+    public void testIssue670() {
+
+        final NumericalForce force     = new NumericalForce();
+        final DSSTForce      dsstForce = new DSSTForce(force, Constants.WGS84_EARTH_MU);
+
+        SpacecraftState state = getLEOState();
+        setDSSTProp(state);
+        dsstProp.addForceModel(dsstForce);
+
+        // Verify flag are false
+        Assert.assertFalse(force.initialized);
+        Assert.assertFalse(force.accComputed);
+
+        // Propagation of the initial state at t + dt
+        final double dt = 3200.;
+        final AbsoluteDate target = state.getDate().shiftedBy(dt);
+
+        dsstProp.propagate(target);
+
+        // Flag must be true
+        Assert.assertTrue(force.initialized);
+        Assert.assertTrue(force.accComputed);
+
+    }
+
+
     private SpacecraftState getGEOState() throws IllegalArgumentException, OrekitException {
         // No shadow at this date
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
@@ -1074,6 +1114,109 @@ public class DSSTPropagatorTest {
             return actionOnEvent;
         }
 
+    }
+
+    /** This class is based on the example given by Orekit user kris06 in https://gitlab.orekit.org/orekit/orekit/-/issues/670. */
+    private class DSSTForce extends AbstractGaussianContribution {
+
+        DSSTForce(ForceModel contribution, double mu) {
+            super("DSST mock -", 6.0e-10, contribution, mu);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public EventDetector[] getEventsDetectors() {
+            return null;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
+            return null;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        protected ParameterDriver[] getParametersDriversWithoutMu() {
+            return new ParameterDriver[0];
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        protected double[] getLLimits(SpacecraftState state,
+                                      AuxiliaryElements auxiliaryElements) {
+            return new double[] { -FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0),
+                                   FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0) };
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        protected <T extends RealFieldElement<T>> T[] getLLimits(FieldSpacecraftState<T> state,
+                                                                 FieldAuxiliaryElements<T> auxiliaryElements) {
+            final Field<T> field = state.getDate().getField();
+            final T zero = field.getZero();
+            final T[] tab = MathArrays.buildArray(field, 2);
+            tab[0] = MathUtils.normalizeAngle(state.getLv(), zero).subtract(FastMath.PI);
+            tab[1] = MathUtils.normalizeAngle(state.getLv(), zero).add(FastMath.PI);
+            return tab;
+        }
+        
+    }
+
+    /** This class is based on the example given by Orekit user kris06 in https://gitlab.orekit.org/orekit/orekit/-/issues/670. */
+    private class NumericalForce extends AbstractForceModel {
+
+        private boolean initialized;
+        private boolean accComputed;
+
+        NumericalForce() {
+            this.initialized = false;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void init(final SpacecraftState s0, final AbsoluteDate t) {
+            this.initialized = true;
+            this.accComputed = false;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public boolean dependsOnPositionOnly() {
+            return false;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Vector3D acceleration(SpacecraftState s, double[] parameters) {
+            this.accComputed = true;
+            return Vector3D.ZERO;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s, T[] parameters) {
+            return FieldVector3D.getZero(s.getDate().getField());
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Stream<EventDetector> getEventsDetectors() {
+            return Stream.empty();
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+            return Stream.empty();
+        }
+
+
+        @Override
+        public ParameterDriver[] getParametersDrivers() {
+            return new ParameterDriver[0];
+        }
+        
     }
 
     @Before

@@ -29,6 +29,7 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 /** This interface represents a force modifying spacecraft motion for a {@link
@@ -40,7 +41,7 @@ import org.orekit.utils.ParameterDriver;
  *  </p>
  *  <p>
  *  The propagator will call at the very beginning of a propagation the {@link
- *  #initialize(AuxiliaryElements, PropagationType, double[])} method allowing
+ *  #initializeShortPeriodTerms(AuxiliaryElements, PropagationType, double[])} method allowing
  *  preliminary computation such as truncation if needed.
  *  </p>
  *  <p>
@@ -59,6 +60,17 @@ import org.orekit.utils.ParameterDriver;
  */
 public interface DSSTForceModel {
 
+    /**
+     * Initialize the force model at the start of propagation.
+     * <p> The default implementation of this method does nothing.</p>
+     *
+     * @param initialState spacecraft state at the start of propagation.
+     * @param target       date of propagation. Not equal to {@code initialState.getDate()}.
+     * @since 11.0
+     */
+    default void init(SpacecraftState initialState, AbsoluteDate target) {
+    }
+
     /** Performs initialization prior to propagation for the current force model.
      *  <p>
      *  This method aims at being called at the very beginning of a propagation.
@@ -69,8 +81,8 @@ public interface DSSTForceModel {
      *  @return a list of objects that will hold short period terms (the objects
      *  are also retained by the force model, which will update them during propagation)
      */
-    List<ShortPeriodTerms> initialize(AuxiliaryElements auxiliaryElements,
-                                      PropagationType type, double[] parameters);
+    List<ShortPeriodTerms> initializeShortPeriodTerms(AuxiliaryElements auxiliaryElements,
+                                                      PropagationType type, double[] parameters);
 
     /** Performs initialization prior to propagation for the current force model.
      *  <p>
@@ -83,8 +95,8 @@ public interface DSSTForceModel {
      *  @return a list of objects that will hold short period terms (the objects
      *  are also retained by the force model, which will update them during propagation)
      */
-    <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                              PropagationType type, T[] parameters);
+    <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initializeShortPeriodTerms(FieldAuxiliaryElements<T> auxiliaryElements,
+                                                                                              PropagationType type, T[] parameters);
 
     /** Get force model parameters.
      * @return force model parameters
@@ -162,7 +174,7 @@ public interface DSSTForceModel {
      * <p>
      * The {@link ShortPeriodTerms short period terms} that will be updated
      * are the ones that were returned during the call to {@link
-     * #initialize(AuxiliaryElements, PropagationType, double[])}.
+     * #initializeShortPeriodTerms(AuxiliaryElements, PropagationType, double[])}.
      * </p>
      * @param parameters values of the force model parameters
      * @param meanStates mean states information: date, kinematics, attitude
@@ -173,7 +185,7 @@ public interface DSSTForceModel {
      * <p>
      * The {@link ShortPeriodTerms short period terms} that will be updated
      * are the ones that were returned during the call to {@link
-     * #initialize(AuxiliaryElements, PropagationType, double[])}.
+     * #initializeShortPeriodTerms(AuxiliaryElements, PropagationType, double[])}.
      * </p>
      * @param <T> type of the elements
      * @param parameters values of the force model parameters
