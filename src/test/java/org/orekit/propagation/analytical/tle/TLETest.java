@@ -72,6 +72,13 @@ public class TLETest {
         Assert.assertEquals(tle.getRevolutionNumberAtEpoch(), 6, 0);
         Assert.assertEquals(tle.getElementNumber(), 2 , 0);
 
+        line1 = "1 T7421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    28";
+        line2 = "2 T7421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    60";
+        Assert.assertTrue(TLE.isFormatOK(line1, line2));
+
+        tle = new TLE(line1, line2);
+        Assert.assertEquals(277421, tle.getSatelliteNumber(), 0);
+
         line1 = "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20";
         line2 = "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14*26113993    62";
         Assert.assertFalse(TLE.isFormatOK(line1, line2));
@@ -123,6 +130,8 @@ public class TLETest {
                       "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
         checkSymmetry("1 31928U 98067BA  08269.84884916  .00114257  17652-4  13615-3 0  4412",
                       "2 31928  51.6257 175.4142 0001703  41.9031 318.2112 16.08175249 68368");
+        checkSymmetry("1 T7421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    28",
+                      "2 T7421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    60");
     }
 
     private void checkSymmetry(String line1, String line2) {
@@ -237,7 +246,7 @@ public class TLETest {
     @Test
     public void testBug77TooLargeSatelliteNumber1() {
         try {
-            TLE tle = new TLE(1000000, 'U', 1971, 86, "J", 0, 908,
+            TLE tle = new TLE(340000, 'U', 1971, 86, "J", 0, 908,
                               new AbsoluteDate(new DateComponents(2012, 26),
                                                new TimeComponents(0.96078249 * Constants.JULIAN_DAY),
                                                TimeScalesFactory.getUTC()),
@@ -248,7 +257,7 @@ public class TLETest {
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.TLE_INVALID_PARAMETER, oe.getSpecifier());
-            Assert.assertEquals(1000000, ((Integer) oe.getParts()[0]).intValue());
+            Assert.assertEquals(340000, ((Integer) oe.getParts()[0]).intValue());
             Assert.assertEquals("satelliteNumber-1", oe.getParts()[1]);
         }
     }
