@@ -448,6 +448,21 @@ CCSDS_NO_CORRESPONDING_TIME_SCALE = CCSDS tidssystemet {0} har ingen tilsvarende
 # use of time system {0} in CCSDS files requires an additional ICD and is not implemented in Orekit
 CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = brugen af tidssystemet {0} i CCSDS filer kræver en ekstra ICD, og er ikke implementeret i Orekit
 
+# inconsistent time systems in the attitude blocks: {0} ≠ {1}
+CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = <MISSING TRANSLATION>
+
+# attitude type {0} in CCSDS AEM files is not implemented in Orekit
+CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED = <MISSING TRANSLATION>
+
+# invalid rotation sequence {0} at line {1} of file {2}
+CCSDS_INVALID_ROTATION_SEQUENCE = <MISSING TRANSLATION>
+
+# element set type {0} ({1}) is not supported yet
+CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE = <MISSING TRANSLATION>
+
+# element set type {0} ({1}) expects {2} elements
+CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS = <MISSING TRANSLATION>
+
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 NOT_ENOUGH_PROPAGATORS = Oprettelsen af en aggregeret propagator kræver mindst en propagator-bestanddel, men ingen blev angivet.
 
@@ -591,15 +606,6 @@ NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = <MISSING TRANSLATION>
 # Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.
 EXCEPTIONAL_DATA_CONTEXT = <MISSING TRANSLATION>
 
-# inconsistent time systems in the attitude blocks: {0} ≠ {1}
-CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = <MISSING TRANSLATION>
-
-# attitude type {0} in CCSDS AEM files is not implemented in Orekit
-CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED = <MISSING TRANSLATION>
-
-# invalid rotation sequence {0} at line {1} of file {2}
-CCSDS_INVALID_ROTATION_SEQUENCE = <MISSING TRANSLATION>
-
 # observations {0}, {1} and {2} must have different dates
 NON_DIFFERENT_DATES_FOR_OBSERVATIONS = <MISSING TRANSLATION>
 
@@ -641,9 +647,6 @@ UNINITIALIZED_VALUE_FOR_KEY = <MISSING TRANSLATION>
 
 # unknown unit {0}
 UNKNOWN_UNIT = <MISSING TRANSLATION>
-
-# element type {0} is not supported yet
-UNSUPPORTED_ELEMENT_TYPE = <MISSING TRANSLATION>
 
 # units {0} and {1} are not compatible
 INCOMPATIBLE_UNITS = <MISSING TRANSLATION>

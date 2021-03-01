@@ -179,6 +179,8 @@ public enum OrekitMessages implements Localizable {
     CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS("inconsistent time systems in the attitude blocks: {0} ≠ {1}"),
     CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED("attitude type {0} in CCSDS AEM files is not implemented in Orekit"),
     CCSDS_INVALID_ROTATION_SEQUENCE("invalid rotation sequence {0} at line {1} of file {2}"),
+    CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE("element set type {0} ({1}) is not supported yet"),
+    CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS("element set type {0} ({1}) expects {2} elements"),
     ADDITIONAL_STATE_NAME_ALREADY_IN_USE("name \"{0}\" is already used for an additional state"),
     NON_RESETABLE_STATE("reset state not allowed"),
     DSST_NEWCOMB_OPERATORS_COMPUTATION("Cannot compute Newcomb operators for sigma > rho ({0} > {1})"),
@@ -295,7 +297,6 @@ public enum OrekitMessages implements Localizable {
     UNINITIALIZED_VALUE_FOR_KEY("value for key {0} has not been initialized"),
     UNKNOWN_UNIT("unknown unit {0}"),
     INCOMPATIBLE_UNITS("units {0} and {1} are not compatible"),
-    UNSUPPORTED_ELEMENT_TYPE("element type {0} is not supported yet"),
     MISSING_VELOCITY("missing velocity data");
 
     // CHECKSTYLE: resume JavadocVariable check
