@@ -476,7 +476,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
         for (final DSSTForceModel force : forces) {
             force.registerAttitudeProvider(attitudeProvider);
-            shortPeriodTerms.addAll(force.initialize(aux, PropagationType.OSCULATING, force.getParameters()));
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters()));
             force.updateShortPeriodTerms(force.getParameters(), mean);
         }
 
@@ -592,7 +592,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         // initialize all perturbing forces
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
         for (final DSSTForceModel force : forceModels) {
-            shortPeriodTerms.addAll(force.initialize(aux, type, force.getParameters()));
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, type, force.getParameters()));
         }
         mapper.setShortPeriodTerms(shortPeriodTerms);
 
@@ -684,7 +684,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             // Set the force models
             final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
             for (final DSSTForceModel force : forceModels) {
-                shortPeriodTerms.addAll(force.initialize(aux, PropagationType.OSCULATING, force.getParameters()));
+                shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters()));
                 force.updateShortPeriodTerms(force.getParameters(), meanState);
             }
 
@@ -961,6 +961,14 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                 }
             }
 
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void init(final SpacecraftState initialState, final AbsoluteDate target) {
+            for (final DSSTForceModel forceModel : forceModels) {
+                forceModel.init(initialState, target);
+            }
         }
 
         /** {@inheritDoc} */

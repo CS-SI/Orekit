@@ -138,14 +138,14 @@ public class DSSTPartialDerivativesEquationsTest {
         public Gradient l;
 
         @Override
-        public List<ShortPeriodTerms> initialize(AuxiliaryElements auxiliaryElements,
+        public List<ShortPeriodTerms> initializeShortPeriodTerms(AuxiliaryElements auxiliaryElements,
                                                  PropagationType type,
                                                  double[] parameters) {
             return new ArrayList<ShortPeriodTerms>();
         }
 
         @Override
-        public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(FieldAuxiliaryElements<T> auxiliaryElements,
+        public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initializeShortPeriodTerms(FieldAuxiliaryElements<T> auxiliaryElements,
                                                                                          PropagationType type,
                                                                                          T[] parameters) {
             return new ArrayList<FieldShortPeriodTerms<T>>();

@@ -93,7 +93,7 @@ public class DSSTTesseralTest {
         final double[] parameters = tesseral.getParameters();
 
         // Initialize force model
-        tesseral.initialize(auxiliaryElements, PropagationType.MEAN, parameters);
+        tesseral.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, parameters);
 
         final double[] elements = new double[7];
         Arrays.fill(elements, 0.0);
@@ -141,7 +141,7 @@ public class DSSTTesseralTest {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
 
         force.registerAttitudeProvider(null);
-        shortPeriodTerms.addAll(force.initialize(aux, PropagationType.OSCULATING, force.getParameters()));
+        shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters()));
         force.updateShortPeriodTerms(force.getParameters(), meanState);
         
         double[] y = new double[6];
@@ -196,13 +196,13 @@ public class DSSTTesseralTest {
         final DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
                                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
                                                          4, 4, 4, 8, 4, 4, 2);
-        tesseral.initialize(auxiliaryElements, PropagationType.MEAN, tesseral.getParameters());
+        tesseral.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, tesseral.getParameters());
 
         // Tesseral force model with default constructor
         final DSSTForceModel tesseralDefault = new DSSTTesseral(earthFrame,
                                                                 Constants.WGS84_EARTH_ANGULAR_VELOCITY,
                                                                 provider);
-        tesseralDefault.initialize(auxiliaryElements, PropagationType.MEAN, tesseralDefault.getParameters());
+        tesseralDefault.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, tesseralDefault.getParameters());
 
         // Compute mean element rate for the tesseral force model
         final double[] elements = tesseral.getMeanElementRate(state, auxiliaryElements, tesseral.getParameters());
@@ -240,7 +240,7 @@ public class DSSTTesseralTest {
         final double[] parameters = tesseral.getParameters();
 
         // Initialize force model
-        tesseral.initialize(new AuxiliaryElements(orbit, 1), PropagationType.MEAN, parameters);
+        tesseral.initializeShortPeriodTerms(new AuxiliaryElements(orbit, 1), PropagationType.MEAN, parameters);
 
         // Eccentricity shift
         final Orbit shfitedOrbit = new EquinoctialOrbit(2.655989E7, 0.02, 0.0041543085910249414,

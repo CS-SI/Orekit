@@ -202,7 +202,7 @@ public class DSSTJacobiansMapper extends AbstractJacobiansMapper {
 
                     final Gradient zero = dsState.getDate().getField().getZero();
                     final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<>();
-                    shortPeriodTerms.addAll(forceModel.initialize(auxiliaryElements, propagationType, dsParameters));
+                    shortPeriodTerms.addAll(forceModel.initializeShortPeriodTerms(auxiliaryElements, propagationType, dsParameters));
                     forceModel.updateShortPeriodTerms(dsParameters, dsState);
                     final Gradient[] shortPeriod = new Gradient[6];
                     Arrays.fill(shortPeriod, zero);
