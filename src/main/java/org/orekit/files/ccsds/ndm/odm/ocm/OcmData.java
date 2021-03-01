@@ -20,11 +20,10 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 import java.util.List;
 
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
-import org.orekit.files.ccsds.ndm.odm.opm.Maneuver;
 import org.orekit.files.ccsds.section.Data;
 
 /** Data container for Orbit Comprehensive Messages.
- * @author Luc Maisonobe
+ * @author LOuc Maisonobe
  * @since 11.0
  */
 public class OcmData implements Data {
@@ -39,7 +38,7 @@ public class OcmData implements Data {
     private final List<CovarianceHistory> covarianceBlocks;
 
     /** Maneuvers logical blocks. */
-    private final List<Maneuver> maneuverBlocks;
+    private final List<ManeuverHistory> maneuverBlocks;
 
     /** Perturbations logical block. */
     private final Perturbations perturbationsBlock;
@@ -62,7 +61,7 @@ public class OcmData implements Data {
     public OcmData(final List<OrbitStateHistory> orbitBlocks,
                    final PhysicalProperties      physicBlock,
                    final List<CovarianceHistory> covarianceBlocks,
-                   final List<Maneuver>       maneuverBlocks,
+                   final List<ManeuverHistory>   maneuverBlocks,
                    final Perturbations           perturbationsBlock,
                    final OrbitDetermination      orbitDeterminationBlock,
                    final UserDefined          userDefinedBlock) {
@@ -92,8 +91,8 @@ public class OcmData implements Data {
             }
         }
         if (maneuverBlocks != null) {
-            for (final Maneuver m : maneuverBlocks) {
-                m.checkMandatoryEntries();
+            for (final ManeuverHistory mh : maneuverBlocks) {
+                mh.checkMandatoryEntries();
             }
         }
         if (perturbationsBlock != null) {
@@ -131,7 +130,7 @@ public class OcmData implements Data {
     /** Get maneuvers logical blocks.
      * @return maneuvers logical block (may be empty)
      */
-    public List<Maneuver> getManeuverBlocks() {
+    public List<ManeuverHistory> getManeuverBlocks() {
         return maneuverBlocks;
     }
 

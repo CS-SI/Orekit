@@ -176,6 +176,23 @@ public class OCMParserTest {
     }
 
     @Test
+    public void testUUserDefined() throws URISyntaxException {
+        final String name = "/ccsds/odm/ocm/OCM-user-defined.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        final OcmFile    ocm    = new ParserBuilder().
+                                  withMu(Constants.EIGEN5C_EARTH_MU).
+                                  buildOcmParser().
+                                  parseMessage(source);
+        Assert.assertEquals("CS GROUP", ocm.getHeader().getOriginator());
+        Assert.assertEquals("b77d785c-f7a8-4a80-a9b1-a540eac19d7a", ocm.getHeader().getMessageId().toLowerCase(Locale.US));
+        Assert.assertNull(ocm.getData().getOrbitBlocks());
+        Assert.assertEquals(1, ocm.getData().getUserDefinedBlock().getComments().size());
+        Assert.assertEquals("some user data", ocm.getData().getUserDefinedBlock().getComments().get(0));
+        Assert.assertEquals(1, ocm.getData().getUserDefinedBlock().getParameters().size());
+        Assert.assertEquals("OREKIT", ocm.getData().getUserDefinedBlock().getParameters().get("GENERATOR"));
+    }
+
+    @Test
     public void testParseOCM1() {
         final String   name  = "/ccsds/odm/ocm/OCMExample1.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));

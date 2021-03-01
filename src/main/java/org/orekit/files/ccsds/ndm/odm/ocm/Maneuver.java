@@ -17,45 +17,31 @@
 
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
-import java.util.Collections;
-import java.util.List;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeStamped;
 
-import org.orekit.files.ccsds.section.CommentsContainer;
-
-/** Covariance history.
+/** Maneuver entry.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class CovarianceHistory extends CommentsContainer {
+public class Maneuver implements TimeStamped {
 
-    /** Metadata. */
-    private final CovarianceHistoryMetadata metadata;
+    /** Entry date. */
+    private final AbsoluteDate date;
 
-    /** Covariance. */
-    private final List<Covariance> covariances;
+    // TODO add fields
 
     /** Simple constructor.
-     * @param metadata metadata
-     * @param covariances covariances
+     * @param date entry date
      */
-    CovarianceHistory(final CovarianceHistoryMetadata metadata,
-                      final List<Covariance> covariances) {
-        this.metadata    = metadata;
-        this.covariances = covariances;
+    public Maneuver(final AbsoluteDate date) {
+        this.date   = date;
     }
 
-    /** Get metadata.
-     * @return metadata
-     */
-    public CovarianceHistoryMetadata getMetadata() {
-        return metadata;
-    }
-
-    /** Get the covariances.
-     * @return covariances
-     */
-    public List<Covariance> getCovariances() {
-        return Collections.unmodifiableList(covariances);
+    /** {@inheritDoc} */
+    @Override
+    public AbsoluteDate getDate() {
+        return date;
     }
 
 }

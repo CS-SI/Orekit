@@ -69,7 +69,7 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
     /** Reference frame of the orbit. */
     private FrameFacade orbReferenceFrame;
 
-    /** Epoch of the {@link #ORB_REF_FRAME orbit reference frame}. */
+    /** Epoch of the orbit reference frame. */
     private AbsoluteDate orbFrameEpoch;
 
     /** Start of useable time span covered by ephemerides data, it may be

@@ -22,40 +22,40 @@ import java.util.List;
 
 import org.orekit.files.ccsds.section.CommentsContainer;
 
-/** Covariance history.
+/** Maneuver history.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class CovarianceHistory extends CommentsContainer {
+public class ManeuverHistory extends CommentsContainer {
 
     /** Metadata. */
-    private final CovarianceHistoryMetadata metadata;
+    private final ManeuverHistoryMetadata metadata;
 
-    /** Covariance. */
-    private final List<Covariance> covariances;
+    /** Maneuver. */
+    private final List<Maneuver> maneuvers;
 
     /** Simple constructor.
      * @param metadata metadata
-     * @param covariances covariances
+     * @param maneuvers maneuvers
      */
-    CovarianceHistory(final CovarianceHistoryMetadata metadata,
-                      final List<Covariance> covariances) {
-        this.metadata    = metadata;
-        this.covariances = covariances;
+    ManeuverHistory(final ManeuverHistoryMetadata metadata,
+                    final List<Maneuver> maneuvers) {
+        this.metadata  = metadata;
+        this.maneuvers = maneuvers;
     }
 
     /** Get metadata.
      * @return metadata
      */
-    public CovarianceHistoryMetadata getMetadata() {
+    public ManeuverHistoryMetadata getMetadata() {
         return metadata;
     }
 
-    /** Get the covariances.
-     * @return covariances
+    /** Get the maneuvers.
+     * @return maneuvers
      */
-    public List<Covariance> getCovariances() {
-        return Collections.unmodifiableList(covariances);
+    public List<Maneuver> getManeuvers() {
+        return Collections.unmodifiableList(maneuvers);
     }
 
 }

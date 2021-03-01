@@ -17,45 +17,12 @@
 
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.orekit.files.ccsds.section.CommentsContainer;
 
-/** Covariance history.
+/** Metadata for maneuver history.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class CovarianceHistory extends CommentsContainer {
-
-    /** Metadata. */
-    private final CovarianceHistoryMetadata metadata;
-
-    /** Covariance. */
-    private final List<Covariance> covariances;
-
-    /** Simple constructor.
-     * @param metadata metadata
-     * @param covariances covariances
-     */
-    CovarianceHistory(final CovarianceHistoryMetadata metadata,
-                      final List<Covariance> covariances) {
-        this.metadata    = metadata;
-        this.covariances = covariances;
-    }
-
-    /** Get metadata.
-     * @return metadata
-     */
-    public CovarianceHistoryMetadata getMetadata() {
-        return metadata;
-    }
-
-    /** Get the covariances.
-     * @return covariances
-     */
-    public List<Covariance> getCovariances() {
-        return Collections.unmodifiableList(covariances);
-    }
-
+public class ManeuverHistoryMetadata extends CommentsContainer {
+    // TODO
 }

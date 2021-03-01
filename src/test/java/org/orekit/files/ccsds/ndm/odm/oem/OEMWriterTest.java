@@ -48,7 +48,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
-import org.orekit.files.ccsds.ndm.odm.Covariance;
+import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -281,8 +281,8 @@ public class OEMWriterTest {
         }
         assertEquals(block1.getCovarianceMatrices().size(), block2.getCovarianceMatrices().size());
         for (int j = 0; j < block1.getCovarianceMatrices().size(); j++) {
-        	Covariance covMat1 = block1.getCovarianceMatrices().get(j);
-        	Covariance covMat2 = block2.getCovarianceMatrices().get(j);
+        	CartesianCovariance covMat1 = block1.getCovarianceMatrices().get(j);
+        	CartesianCovariance covMat2 = block2.getCovarianceMatrices().get(j);
         	assertEquals(covMat1.getEpoch(), covMat2.getEpoch());
             assertEquals(covMat1.getReferenceFrame().asFrame(),               covMat2.getReferenceFrame().asFrame());
             assertEquals(covMat1.getReferenceFrame().asCelestialBodyFrame(),  covMat2.getReferenceFrame().asCelestialBodyFrame());

@@ -32,7 +32,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
-import org.orekit.files.ccsds.ndm.odm.Covariance;
+import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
 import org.orekit.files.ccsds.ndm.odm.SpacecraftParameters;
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
@@ -142,7 +142,7 @@ public class OMMParserTest {
         final KeplerianElements kep = file.getData().getKeplerianElementsBlock();
         Assert.assertEquals(1.00273272, Constants.JULIAN_DAY * kep.getMeanMotion() / MathUtils.TWO_PI, 1e-10);
         Assert.assertTrue(Double.isNaN(file.getData().getMass()));
-        Covariance covariance = file.getData().getCovarianceBlock();
+        CartesianCovariance covariance = file.getData().getCovarianceBlock();
         Assert.assertEquals(FramesFactory.getTEME(), covariance.getReferenceFrame().asFrame());
         Assert.assertEquals(6, covariance.getCovarianceMatrix().getRowDimension());
         Assert.assertEquals(6, covariance.getCovarianceMatrix().getColumnDimension());
@@ -178,7 +178,7 @@ public class OMMParserTest {
         Assert.assertEquals(5, sp.getSolarRadArea(), 1e-10);
         Assert.assertEquals(0.001, sp.getSolarRadCoeff(), 1e-10);
 
-        Covariance covariance = file.getData().getCovarianceBlock();
+        CartesianCovariance covariance = file.getData().getCovarianceBlock();
         Assert.assertEquals(null, covariance.getReferenceFrame().asFrame());
         Assert.assertEquals(null, covariance.getReferenceFrame().asCelestialBodyFrame());
         Assert.assertEquals(LOFType.TNW, covariance.getReferenceFrame().asOrbitRelativeFrame().getLofType());

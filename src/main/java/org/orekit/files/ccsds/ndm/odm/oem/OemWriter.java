@@ -33,8 +33,8 @@ import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
-import org.orekit.files.ccsds.ndm.odm.Covariance;
-import org.orekit.files.ccsds.ndm.odm.CovarianceKey;
+import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
+import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
 import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
 import org.orekit.files.ccsds.section.Header;
@@ -433,20 +433,20 @@ public class OemWriter implements EphemerisFileWriter {
 
                 if (segment instanceof OemSegment) {
                     // output covariance data
-                    final List<Covariance> covariances = ((OemSegment) segment).getCovarianceMatrices();
+                    final List<CartesianCovariance> covariances = ((OemSegment) segment).getCovarianceMatrices();
                     boolean continuation = false;
                     if (!covariances.isEmpty()) {
                         if (generator.getFormat() == FileFormat.KVN) {
                             generator.enterSection(OemFile.COVARIANCE_KVN);
-                            for (final Covariance covariance : covariances) {
+                            for (final CartesianCovariance covariance : covariances) {
                                 if (continuation) {
                                     generator.writeEmptyLine();
                                 }
-                                generator.writeEntry(CovarianceKey.EPOCH.name(),
+                                generator.writeEntry(CartesianCovarianceKey.EPOCH.name(),
                                                      dateToString(covariance.getEpoch()),
                                                      true);
                                 if (covariance.getReferenceFrame() != metadata.getReferenceFrame()) {
-                                    generator.writeEntry(CovarianceKey.COV_REF_FRAME.name(),
+                                    generator.writeEntry(CartesianCovarianceKey.COV_REF_FRAME.name(),
                                                          covariance.getReferenceFrame().getName(),
                                                          false);
                                 }

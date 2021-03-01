@@ -24,8 +24,8 @@ import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.CommonParser;
-import org.orekit.files.ccsds.ndm.odm.Covariance;
-import org.orekit.files.ccsds.ndm.odm.CovarianceKey;
+import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
+import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
 import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.ndm.odm.OdmHeaderProcessingState;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
@@ -92,7 +92,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
     private OmmTle tleBlock;
 
     /** Covariance matrix logical block being read. */
-    private Covariance covarianceBlock;
+    private CartesianCovariance covarianceBlock;
 
     /** User defined parameters. */
     private UserDefined userDefinedBlock;
@@ -360,7 +360,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
         if (covarianceBlock == null) {
             // save the current metadata for later retrieval of reference frame
             final CommonMetadata savedMetadata = metadata;
-            covarianceBlock = new Covariance(() -> savedMetadata.getReferenceFrame());
+            covarianceBlock = new CartesianCovariance(() -> savedMetadata.getReferenceFrame());
             if (moveCommentsIfEmpty(tleBlock, covarianceBlock)) {
                 // get rid of the empty logical block
                 tleBlock = null;
@@ -369,7 +369,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
         setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processUserDefinedToken);
         try {
             return token.getName() != null &&
-                   CovarianceKey.valueOf(token.getName()).process(token, context, covarianceBlock);
+                   CartesianCovarianceKey.valueOf(token.getName()).process(token, context, covarianceBlock);
         } catch (IllegalArgumentException iae) {
             // token has not been recognized
             return false;
