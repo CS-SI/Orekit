@@ -109,7 +109,7 @@ public class FieldDSSTZonalTest {
         // Force model parameters
         final T[] parameters = zonal.getParameters(field);
         // Initialize force model
-        zonal.initialize(auxiliaryElements,
+        zonal.initializeShortPeriodTerms(auxiliaryElements,
                          PropagationType.MEAN, parameters);
 
         final T[] elements = MathArrays.buildArray(field, 7);
@@ -150,7 +150,7 @@ public class FieldDSSTZonalTest {
         final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<T>>();
 
         zonal.registerAttitudeProvider(null);
-        shortPeriodTerms.addAll(zonal.initialize(aux, PropagationType.OSCULATING, zonal.getParameters(field)));
+        shortPeriodTerms.addAll(zonal.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, zonal.getParameters(field)));
         zonal.updateShortPeriodTerms(zonal.getParameters(field), meanState);
 
         T[] y = MathArrays.buildArray(field, 6);
@@ -212,11 +212,11 @@ public class FieldDSSTZonalTest {
 
         // Zonal force model
         final DSSTZonal zonal = new DSSTZonal(provider, 32, 4, 65);
-        zonal.initialize(auxiliaryElements, PropagationType.MEAN, zonal.getParameters(field));
+        zonal.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, zonal.getParameters(field));
 
         // Zonal force model with default constructor
         final DSSTZonal zonalDefault = new DSSTZonal(provider);
-        zonalDefault.initialize(auxiliaryElements, PropagationType.MEAN, zonalDefault.getParameters(field));
+        zonalDefault.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, zonalDefault.getParameters(field));
 
         // Compute mean element rate for the zonal force model
         final T[] elements = zonal.getMeanElementRate(state, auxiliaryElements, zonal.getParameters(field));
@@ -271,7 +271,7 @@ public class FieldDSSTZonalTest {
         
         // Compute state Jacobian using directly the method
         final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<Gradient>>();
-        shortPeriodTerms.addAll(zonal.initialize(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
+        shortPeriodTerms.addAll(zonal.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
         zonal.updateShortPeriodTerms(dsParameters, dsState);
         final Gradient[] shortPeriod = new Gradient[6];
         Arrays.fill(shortPeriod, zero);
@@ -392,7 +392,7 @@ public class FieldDSSTZonalTest {
       
         // Compute Jacobian using directly the method
         final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<Gradient>>();
-        shortPeriodTerms.addAll(zonal.initialize(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
+        shortPeriodTerms.addAll(zonal.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
         zonal.updateShortPeriodTerms(dsParameters, dsState);
         final Gradient[] shortPeriod = new Gradient[6];
         Arrays.fill(shortPeriod, zero);
@@ -502,7 +502,7 @@ public class FieldDSSTZonalTest {
         
         List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
         double[] parameters = force.getParameters();
-        shortPeriodTerms.addAll(force.initialize(auxiliaryElements, PropagationType.OSCULATING, parameters));
+        shortPeriodTerms.addAll(force.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING, parameters));
         force.updateShortPeriodTerms(parameters, state);
         
         double[] shortPeriod = new double[6];

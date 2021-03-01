@@ -183,7 +183,7 @@ public class DSSTThirdBody implements DSSTForceModel {
      *  @param parameters values of the force model parameters
      */
     @Override
-    public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements,
+    public List<ShortPeriodTerms> initializeShortPeriodTerms(final AuxiliaryElements auxiliaryElements,
                                              final PropagationType type,
                                              final double[] parameters) {
 
@@ -207,7 +207,7 @@ public class DSSTThirdBody implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(final FieldAuxiliaryElements<T> auxiliaryElements,
+    public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initializeShortPeriodTerms(final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                                      final PropagationType type,
                                                                                      final T[] parameters) {
 

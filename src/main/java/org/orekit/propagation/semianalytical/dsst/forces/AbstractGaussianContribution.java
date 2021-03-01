@@ -187,6 +187,13 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
+    public void init(final SpacecraftState initialState, final AbsoluteDate target) {
+        // Initialize the numerical force model
+        contribution.init(initialState, target);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public ParameterDriver[] getParametersDrivers() {
 
         final ParameterDriver[] driversWithoutMu = getParametersDriversWithoutMu();
@@ -220,7 +227,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements, final PropagationType type,
+    public List<ShortPeriodTerms> initializeShortPeriodTerms(final AuxiliaryElements auxiliaryElements, final PropagationType type,
             final double[] parameters) {
 
         final List<ShortPeriodTerms> list = new ArrayList<ShortPeriodTerms>();
@@ -233,7 +240,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(
+    public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initializeShortPeriodTerms(
             final FieldAuxiliaryElements<T> auxiliaryElements, final PropagationType type, final T[] parameters) {
 
         final Field<T> field = auxiliaryElements.getDate().getField();

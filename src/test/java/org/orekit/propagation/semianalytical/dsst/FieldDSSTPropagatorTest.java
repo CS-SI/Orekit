@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
@@ -38,6 +39,7 @@ import org.hipparchus.ode.nonstiff.DormandPrince54FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -50,6 +52,7 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.BoxAndSolarArraySpacecraft;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
@@ -75,18 +78,24 @@ import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldAltitudeDetector;
 import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.FieldLatitudeCrossingDetector;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
+import org.orekit.propagation.semianalytical.dsst.forces.AbstractGaussianContribution;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
+import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
+import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
@@ -95,6 +104,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 public class FieldDSSTPropagatorTest {
@@ -1112,6 +1122,39 @@ public class FieldDSSTPropagatorTest {
 
     }
 
+    /** This test is based on the example given by Orekit user kris06 in https://gitlab.orekit.org/orekit/orekit/-/issues/670. */
+    @Test
+    public void testIssue670() {
+        doTestIssue670(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestIssue670(final Field<T> field) {
+
+        final NumericalForce force     = new NumericalForce();
+        final DSSTForce      dsstForce = new DSSTForce(force, Constants.WGS84_EARTH_MU);
+
+        FieldSpacecraftState<T> state = getLEOState(field);
+
+        // Set propagator with state and force model
+        final FieldDSSTPropagator<T> dsstPropagator = setDSSTProp(field, state);
+        dsstPropagator.addForceModel(dsstForce);
+
+        // Verify flag are false
+        Assert.assertFalse(force.initialized);
+        Assert.assertFalse(force.accComputed);
+
+        // Propagation of the initial state at t + dt
+        final double dt = 3200.;
+        final FieldAbsoluteDate<T> target = state.getDate().shiftedBy(dt);
+
+        dsstPropagator.propagate(target);
+
+        // Flag must be true
+        Assert.assertTrue(force.initialized);
+        Assert.assertTrue(force.accComputed);
+
+    }
+
     private <T extends RealFieldElement<T>> FieldSpacecraftState<T> getGEOState(final Field<T> field) {
         final T zero = field.getZero();
         // No shadow at this date
@@ -1176,6 +1219,109 @@ public class FieldDSSTPropagatorTest {
             return actionOnEvent;
         }
 
+    }
+
+    /** This class is based on the example given by Orekit user kris06 in https://gitlab.orekit.org/orekit/orekit/-/issues/670. */
+    private class DSSTForce extends AbstractGaussianContribution {
+
+        DSSTForce(ForceModel contribution, double mu) {
+            super("DSST mock -", 6.0e-10, contribution, mu);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public EventDetector[] getEventsDetectors() {
+            return null;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
+            return null;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        protected ParameterDriver[] getParametersDriversWithoutMu() {
+            return new ParameterDriver[0];
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        protected double[] getLLimits(SpacecraftState state,
+                                      AuxiliaryElements auxiliaryElements) {
+            return new double[] { -FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0),
+                                   FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0) };
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        protected <T extends RealFieldElement<T>> T[] getLLimits(FieldSpacecraftState<T> state,
+                                                                 FieldAuxiliaryElements<T> auxiliaryElements) {
+            final Field<T> field = state.getDate().getField();
+            final T zero = field.getZero();
+            final T[] tab = MathArrays.buildArray(field, 2);
+            tab[0] = MathUtils.normalizeAngle(state.getLv(), zero).subtract(FastMath.PI);
+            tab[1] = MathUtils.normalizeAngle(state.getLv(), zero).add(FastMath.PI);
+            return tab;
+        }
+        
+    }
+
+    /** This class is based on the example given by Orekit user kris06 in https://gitlab.orekit.org/orekit/orekit/-/issues/670. */
+    private class NumericalForce extends AbstractForceModel {
+
+        private boolean initialized;
+        private boolean accComputed;
+
+        NumericalForce() {
+            this.initialized = false;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void init(final SpacecraftState s0, final AbsoluteDate t) {
+            this.initialized = true;
+            this.accComputed = false;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public boolean dependsOnPositionOnly() {
+            return false;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Vector3D acceleration(SpacecraftState s, double[] parameters) {
+            return Vector3D.ZERO;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s, T[] parameters) {
+            this.accComputed = true;
+            return FieldVector3D.getZero(s.getDate().getField());
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Stream<EventDetector> getEventsDetectors() {
+            return Stream.empty();
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+            return Stream.empty();
+        }
+
+
+        @Override
+        public ParameterDriver[] getParametersDrivers() {
+            return new ParameterDriver[0];
+        }
+        
     }
 
     @Before
