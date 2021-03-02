@@ -28,6 +28,9 @@ public enum PredefinedUnit {
     /** Dimensionless unit. */
     ONE(new Unit("1", 1.0, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO)),
 
+    /** Percentage unit. */
+    PERCENT(new Unit("%", 1.0e-2, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO)),
+
     /** Second unit. */
     SECOND(new Unit("s", 1.0, Fraction.ZERO, Fraction.ZERO, Fraction.ONE, Fraction.ZERO)),
 
@@ -82,7 +85,10 @@ public enum PredefinedUnit {
     JOULE(NEWTON.unit.multiply("J", METRE.unit)),
 
     /** Watt unit. */
-    WATT(JOULE.unit.divide("W", SECOND.unit));
+    WATT(JOULE.unit.divide("W", SECOND.unit)),
+
+    /** Solar Flux Unit. */
+    SOLAR_FLUX_UNIT(WATT.unit.divide(null, METRE.unit.power(null, Fraction.TWO).multiply(null, HERTZ.unit)).scale("sfu", 1.0e-22));
 
     /** Underlying unit. */
     private final Unit unit;
