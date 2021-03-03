@@ -169,7 +169,7 @@ public class Euler extends CommentsContainer {
     /** Set flag for rotation angle parsing.
      * @param inRotationAngles if true, we are in the rotationAngles part of XML files
      */
-    void setInRotationAngles(final boolean inRotationAngles) {
+    public void setInRotationAngles(final boolean inRotationAngles) {
         refuseFurtherComments();
         this.inRotationAngles = inRotationAngles;
     }

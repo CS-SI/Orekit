@@ -232,7 +232,7 @@ public class CommonMetadata extends OdmMetadata {
      * reference frame.
      * @param frameEpochString the epoch of reference frame to be set
      */
-    void setFrameEpochString(final String frameEpochString) {
+    public void setFrameEpochString(final String frameEpochString) {
         refuseFurtherComments();
         this.frameEpochString = frameEpochString;
     }

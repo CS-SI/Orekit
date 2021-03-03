@@ -43,8 +43,8 @@ public class PhysicalProperties extends CommentsContainer {
     /** Other space objects this object is docked to. */
     private List<String> dockedWith;
 
-    /** Additional drag area, not already into attitude-dependent area along OEB. */
-    private double dragAdditionalArea;
+    /** Attitude-independent drag cross-sectional area, not already into attitude-dependent area along OEB. */
+    private double dragConstantArea;
 
     /** Nominal drag coefficient. */
     private double nominalDragCoefficient;
@@ -53,10 +53,10 @@ public class PhysicalProperties extends CommentsContainer {
     private double dragUncertainty;
 
     /** Total mass at beginning of life. */
-    private double initialMass;
+    private double initialWetMass;
 
     /** Total mass at T₀. */
-    private double mass;
+    private double wetMass;
 
     /** Mass without propellant. */
     private double dryMass;
@@ -106,8 +106,8 @@ public class PhysicalProperties extends CommentsContainer {
     /** Maximum radar cross-section. */
     private double maxRcs;
 
-    /** Additional SRP area, not already into attitude-dependent area along OEB. */
-    private double srpAdditionalArea;
+    /** Attitude-independent SRP area, not already into attitude-dependent area along OEB. */
+    private double srpConstantArea;
 
     /** Nominal SRP coefficient. */
     private double nominalSrpCoefficient;
@@ -167,11 +167,11 @@ public class PhysicalProperties extends CommentsContainer {
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
         dockedWith                     = new ArrayList<>();
-        dragAdditionalArea             = Double.NaN;
+        dragConstantArea                  = Double.NaN;
         nominalDragCoefficient         = Double.NaN;
         dragUncertainty                = 0.0;
-        initialMass                    = Double.NaN;
-        mass                           = Double.NaN;
+        initialWetMass                    = Double.NaN;
+        wetMass                           = Double.NaN;
         dryMass                        = Double.NaN;
         oebParentFrame                 = new FrameFacade(null, null, OrbitRelativeFrame.RIC, null,
                                                          OrbitRelativeFrame.RIC.name());
@@ -189,7 +189,7 @@ public class PhysicalProperties extends CommentsContainer {
         rcs                            = Double.NaN;
         minRcs                         = Double.NaN;
         maxRcs                         = Double.NaN;
-        srpAdditionalArea              = Double.NaN;
+        srpConstantArea                = Double.NaN;
         nominalSrpCoefficient          = Double.NaN;
         srpUncertainty                 = Double.NaN;
         vmAbsolute                     = Double.NaN;
@@ -217,7 +217,7 @@ public class PhysicalProperties extends CommentsContainer {
     /** Set manufacturer name.
      * @param manufacturer manufacturer name
      */
-    void setManufacturer(final String manufacturer) {
+    public void setManufacturer(final String manufacturer) {
         refuseFurtherComments();
         this.manufacturer = manufacturer;
     }
@@ -252,19 +252,19 @@ public class PhysicalProperties extends CommentsContainer {
         this.dockedWith = dockedWith;
     }
 
-    /** Get the additional drag area, not already into attitude-dependent area along OEB.
-     * @return additional drag area, not already into attitude-dependent area along OEB
+    /** Get the attitude-independent drag cross-sectional area, not already into attitude-dependent area along OEB.
+     * @return attitude-independent drag cross-sectional area, not already into attitude-dependent area along OEB
      */
-    public double getDragAdditionalArea() {
-        return dragAdditionalArea;
+    public double getDragConstantArea() {
+        return dragConstantArea;
     }
 
-    /** Set the additional drag area, not already into attitude-dependent area along OEB.
-     * @param dragAdditionalArea additional drag area, not already into attitude-dependent area along OEB
+    /** Set the attitude-independent drag cross-sectional area, not already into attitude-dependent area along OEB.
+     * @param dragConstantArea attitude-independent drag cross-sectional area, not already into attitude-dependent area along OEB
      */
-    public void setDragAdditionalArea(final double dragAdditionalArea) {
+    public void setDragConstantArea(final double dragConstantArea) {
         refuseFurtherComments();
-        this.dragAdditionalArea = dragAdditionalArea;
+        this.dragConstantArea = dragConstantArea;
     }
 
     /** Get the nominal drag coefficient.
@@ -300,31 +300,31 @@ public class PhysicalProperties extends CommentsContainer {
     /** Get the total mass at beginning of life.
      * @return total mass at beginning of life
      */
-    public double getInitialMass() {
-        return initialMass;
+    public double getInitialWetMass() {
+        return initialWetMass;
     }
 
     /** Set the total mass at beginning of life.
-     * @param initialMass total mass at beginning of life
+     * @param initialWetMass total mass at beginning of life
      */
-    public void setInitialMass(final double initialMass) {
+    public void setInitialWetMass(final double initialWetMass) {
         refuseFurtherComments();
-        this.initialMass = initialMass;
+        this.initialWetMass = initialWetMass;
     }
 
     /** Get the total mass at T₀.
      * @return total mass at T₀
      */
-    public double getMass() {
-        return mass;
+    public double getWetMass() {
+        return wetMass;
     }
 
     /** Set the total mass at T₀.
-     * @param mass total mass at T₀
+     * @param wetMass total mass at T₀
      */
-    public void setMass(final double mass) {
+    public void setWetMass(final double wetMass) {
         refuseFurtherComments();
-        this.mass = mass;
+        this.wetMass = wetMass;
     }
 
     /** Get the mass without propellant.
@@ -568,19 +568,19 @@ public class PhysicalProperties extends CommentsContainer {
         this.maxRcs = maxRcs;
     }
 
-    /** Get the additional SRP area, not already into attitude-dependent area along OEB.
-     * @return additional SRP area, not already into attitude-dependent area along OEB
+    /** Get the attitude-independent SRP area, not already into attitude-dependent area along OEB.
+     * @return attitude-independent SRP area, not already into attitude-dependent area along OEB
      */
-    public double getSrpAdditionalArea() {
-        return srpAdditionalArea;
+    public double getSrpConstantArea() {
+        return srpConstantArea;
     }
 
-    /** Set the additional SRP area, not already into attitude-dependent area along OEB.
-     * @param srpAdditionalArea additional SRP area, not already into attitude-dependent area along OEB
+    /** Set the attitude-independent SRP area, not already into attitude-dependent area along OEB.
+     * @param srpConstantArea attitude-independent SRP area, not already into attitude-dependent area along OEB
      */
-    public void setSrpAdditionalArea(final double srpAdditionalArea) {
+    public void setSrpConstantArea(final double srpConstantArea) {
         refuseFurtherComments();
-        this.srpAdditionalArea = srpAdditionalArea;
+        this.srpConstantArea = srpConstantArea;
     }
 
     /** Get the nominal SRP coefficient.

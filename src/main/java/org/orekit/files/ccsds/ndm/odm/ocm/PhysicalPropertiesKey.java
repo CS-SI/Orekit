@@ -40,8 +40,8 @@ public enum PhysicalPropertiesKey {
     /** Other space objects this object is docked to. */
     DOCKED_WITH((token, context, metadata) -> token.processAsFreeTextStringList(metadata::setDockedWith)),
 
-    /** Additional drag area, not already into attitude-dependent area along OEB. */
-    DRAG_ADDL_AREA((token, context, metadata) -> token.processAsDouble(1.0, metadata::setDragAdditionalArea)),
+    /** Attitude-independent drag cross-sectional area, not already into attitude-dependent area along OEB. */
+    DRAG_CONST_AREA((token, context, metadata) -> token.processAsDouble(1.0, metadata::setDragConstantArea)),
 
     /** Nominal drag coefficient. */
     DRAG_COEFF_NOM((token, context, metadata) -> token.processAsDouble(1.0, metadata::setNominalDragCoefficient)),
@@ -50,10 +50,10 @@ public enum PhysicalPropertiesKey {
     DRAG_UNCERTAINTY((token, context, metadata) -> token.processAsDouble(1.0, metadata::setDragUncertainty)),
 
     /** Total mass at beginning of life. */
-    INITIAL_MASS((token, context, metadata) -> token.processAsDouble(1.0, metadata::setInitialMass)),
+    INITIAL_WET_MASS((token, context, metadata) -> token.processAsDouble(1.0, metadata::setInitialWetMass)),
 
     /** Total mass at T₀. */
-    MASS((token, context, metadata) -> token.processAsDouble(1.0, metadata::setMass)),
+    WET_MASS((token, context, metadata) -> token.processAsDouble(1.0, metadata::setWetMass)),
 
     /** Mass without propellant. */
     DRY_MASS((token, context, metadata) -> token.processAsDouble(1.0, metadata::setDryMass)),
@@ -112,8 +112,8 @@ public enum PhysicalPropertiesKey {
     /** Maximum radar cross-section. */
     RCS_MAX((token, context, metadata) -> token.processAsDouble(1.0, metadata::setMaxRcs)),
 
-    /** Additional SRP area, not already into attitude-dependent area along OEB. */
-    SRP_ADDL_AREA((token, context, metadata) -> token.processAsDouble(1.0, metadata::setSrpAdditionalArea)),
+    /** Attitude-independent SRP area, not already into attitude-dependent area along OEB. */
+    SRP_CONST_AREA((token, context, metadata) -> token.processAsDouble(1.0, metadata::setSrpConstantArea)),
 
     /** Nominal SRP coefficient. */
     SOLAR_RAD_COEFF_NOM((token, context, metadata) -> token.processAsDouble(1.0, metadata::setNominalSrpCoefficient)),
