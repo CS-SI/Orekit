@@ -17,8 +17,11 @@
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -36,11 +39,11 @@ public enum ElementsType {
 
     /** Spherical 6-element set (α,δ,β,A,r,v). */
     ADBARV("Spherical 6-element set (α,δ,β,A,r,v)",
-           "° ° ° ° km km"),
+           "°", "°", "°", "°", "km", "km"),
 
     /** Cartesian 3-element position (X, Y, Z). */
     CARTP("Cartesian 3-element position (X, Y, Z)",
-          "km km km") {
+          "km", "km", "km") {
         /** {@inheritDoc} */
         @Override
         public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements, final double mu) {
@@ -53,7 +56,7 @@ public enum ElementsType {
 
     /** Cartesian 6-element position and velocity (X, Y, Z, XD, YD, ZD). */
     CARTPV(" Cartesian 6-element position and velocity (X, Y, Z, XD, YD, ZD)",
-           "km km km km/s km/s km/s") {
+           "km", "km", "km", "km/s", "km/s", "km/s") {
         /** {@inheritDoc} */
         @Override
         public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements, final double mu) {
@@ -66,7 +69,7 @@ public enum ElementsType {
 
     /** Cartesian 9-element position, velocity and acceleration (X, Y, Z, XD, YD, ZD, XDD, YDD, ZDD). */
     CARTPVA("Cartesian 9-element position, velocity and acceleration (X, Y, Z, XD, YD, ZD, XDD, YDD, ZDD)",
-            "km km km km/s km/s km/s km/s² km/s² km/s²") {
+            "km", "km", "km", "km/s", "km/s", "km/s", "km/s²", "km/s²", "km/s²") {
         /** {@inheritDoc} */
         @Override
         public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements, final double mu) {
@@ -79,47 +82,47 @@ public enum ElementsType {
 
     /** Delaunay elements (L, G, H, l, g, h). */
     DELAUNAY("Delaunay elements (L, G, H, l, g, h)",
-             "km²/s km²/s km²/s ° ° °"),
+             "km²/s", "km²/s", "km²/s", "°", "°", "°"),
 
     /** Modified Delaunay elements (Lm, Gm, Hm, lm, gm, hm). */
     DELAUNAYMOD("Delaunay elements (Lm, Gm, Hm, lm, gm, hm)",
-                "√km √km √km ° ° °"),
+                "√km", "√km", "√km", "°", "°", "°"),
 
     /** 12 elements eigenvalue/eigenvectors (EigMaj, EigMed, EigMin, EigVecMaj, EigVecMed, EigVecMin). */
     EIGVAL3EIGVEC3("12 elements eigenvalue/eigenvectors (EigMaj, EigMed, EigMin, EigVecMaj, EigVecMed, EigVecMin)",
-                   "km km km nd nd nd nd nd nd nd nd nd"),
+                   "km", "km", "km", "nd", "nd", "nd", "nd", "nd", "nd", "nd", "nd", "nd"),
 
     /** Equinoctial elements (a, af, ag, L=M+ω+frΩ, χ, ψ, fr). */
     EQUINOCTIAL(" Equinoctial elements (a, af, ag, L=M+ω+frΩ, χ, ψ, fr)",
-                "km nd nd ° nd nd nd"),
+                "km", "nd", "nd", "°", "nd", "nd", "nd"),
 
     /** Modified equinoctial elements (p=a(1−e²), af, ag, L'=υ+ω+frΩ, χ, ψ, fr). */
     EQUINOCTIALMOD("Modified equinoctial elements (p=a(1−e²), af, ag, L'=υ+ω+frΩ, χ, ψ, fr)",
-                   "km nd nd ° nd nd nd"),
+                   "km", "nd", "nd", "°", "nd", "nd", "nd"),
 
     /** Geodetic elements (λ, ΦGD, β, A, h, vre). */
     GEODETIC("Geodetic elements (λ, ΦGD, β, A, h, vre)",
-             "° ° ° ° km km/s"),
+             "°", "°", "°", "°", "km", "km/s"),
 
     /** Keplerian 6-element classical set (a, e, i, Ω, ω, ν). */
     KEPLERIAN("Keplerian 6-elemnt classical set (a, e, i, Ω, ω, ν)",
-              "km nd ° ° ° °"),
+              "km", "nd", "°", "°", "°", "°"),
 
     /** Keplerian 6-element classical set (a, e, i, Ω, ω, M). */
     KEPLERIANMEAN("Keplerian 6-elemnt classical set (a, e, i, Ω, ω, M)",
-                  "km nd ° ° ° °"),
+                  "km", "nd", "°", "°", "°", "°"),
 
     /** Modified spherical 6-element set (λ, δ, β, A, r, v). */
     LDBARV(" Modified spherical 6-element set (λ, δ, β, A, r, v)",
-           "° ° ° ° km km/s"),
+           "°", "°", "°", "°", "km", "km/s"),
 
     /** Geosynchronous on-station tailored set (a, ex, ey, ix, iy, λ). */
     ONSTATION("Geosynchronous on-station tailored set (a, ex, ey, ix, iy, λ)",
-              "km nd nd nd nd °"),
+              "km", "nd", "nd", "nd", "nd", "°"),
 
     /** Canonical counterpart of equinoctial 6-element set (λM=M+ω+Ω, gp, hp, Lp, Gp, Hp). */
     POINCARE("Canonical counterpart of equinoctial 6-element set (λM=M+ω+Ω, gp, hp, Lp, Gp, Hp)",
-             "° km/√s km/√s km²/s km/√s km/√s");
+             "°", "km/√s", "km/√s", "km²/s", "km/√s", "km/√s");
 
     // CHECKSTYLE: resume MultipleStringLiterals check
 
@@ -127,35 +130,39 @@ public enum ElementsType {
     private final String description;
 
     /** Elements units. */
-    private final Unit[] units;
+    private final List<Unit> units;
 
     /** Simple constructor.
      * @param description description
      * @param unitsSpecifications elements units specifications
      */
-    ElementsType(final String description, final String unitsSpecifications) {
+    ElementsType(final String description, final String... unitsSpecifications) {
         this.description = description;
-        final String[] fields = unitsSpecifications.split(" ");
-        this.units  = new Unit[fields.length];
-        for (int i = 0; i < fields.length; ++i) {
-            units[i] = Unit.parse(fields[i]);
-        }
+        this.units       = Stream.of(unitsSpecifications).
+                           map(s -> Unit.parse(s)).
+                           collect(Collectors.toList());
     }
 
-    /** Check if parsed units are compatible with expectation.
+    /** Get the elements units.
+     * @return elements units
+     */
+    public List<Unit> getUnits() {
+        return units;
+    }
+
+    /** Check if parsed units are compatible with elements types.
      * @param parsedUnits units to check
-     * @exception OrekitException if number of elements
-     * or types do not match
      */
     public void checkUnits(final List<Unit> parsedUnits) {
-        if (parsedUnits.size() != units.length) {
+        if (parsedUnits.size() != units.size()) {
             throw new OrekitException(OrekitMessages.CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS,
-                                      name(), toString(), units.length);
+                                      name(), toString(), units.size());
         }
-        for (int i = 0; i < units.length; ++i) {
-            if (!units[i].sameDimension(parsedUnits.get(i))) {
+        for (int i = 0; i < units.size(); ++i) {
+            if (!(units.get(i).sameDimension(parsedUnits.get(i)) &&
+                  Precision.equals(units.get(i).getScale(), parsedUnits.get(i).getScale(), 1))) {
                 throw new OrekitException(OrekitMessages.INCOMPATIBLE_UNITS,
-                                          units[i].getName(),
+                                          units.get(i).getName(),
                                           parsedUnits.get(i).getName());
             }
         }

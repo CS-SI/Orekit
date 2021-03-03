@@ -87,8 +87,9 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
     @Override
     public void checkMandatoryEntries() {
         super.checkMandatoryEntries();
-        checkNotNull(covUnits, CovarianceHistoryMetadataKey.COV_UNITS);
-        covType.checkUnits(covUnits);
+        if (covUnits != null) {
+            covType.checkUnits(covUnits);
+        }
     }
 
     /** Get covariance identification number.
@@ -101,7 +102,7 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
     /** Set covariance identification number.
      * @param orbID covariance identification number
      */
-    void setCovID(final String orbID) {
+    public void setCovID(final String orbID) {
         refuseFurtherComments();
         this.covID = orbID;
     }
@@ -116,7 +117,7 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
     /** Set identification number of previous covariance.
      * @param orbPrevID identification number of previous covariance
      */
-    void setCovPrevID(final String orbPrevID) {
+    public void setCovPrevID(final String orbPrevID) {
         refuseFurtherComments();
         this.covPrevID = orbPrevID;
     }
@@ -131,7 +132,7 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
     /** Set identification number of next covariance.
      * @param orbNextID identification number of next covariance
      */
-    void setCovNextID(final String orbNextID) {
+    public void setCovNextID(final String orbNextID) {
         refuseFurtherComments();
         this.covNextID = orbNextID;
     }
@@ -146,7 +147,7 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
     /** Set basis of this covariance time history data.
      * @param orbBasis basis of this covariance time history data
      */
-    void setCovBasis(final String orbBasis) {
+    public void setCovBasis(final String orbBasis) {
         refuseFurtherComments();
         this.covBasis = orbBasis;
     }
@@ -161,7 +162,7 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
     /** Set identification number of the orbit determination or simulation upon which this covariance is based.
      * @param orbBasisID identification number of the orbit determination or simulation upon which this covariance is based
      */
-    void setCovBasisID(final String orbBasisID) {
+    public void setCovBasisID(final String orbBasisID) {
         refuseFurtherComments();
         this.covBasisID = orbBasisID;
     }
@@ -176,7 +177,7 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
     /** Set reference frame of the covariance.
      * @param orbReferenceFrame the reference frame to be set
      */
-    void setCovReferenceFrame(final FrameFacade orbReferenceFrame) {
+    public void setCovReferenceFrame(final FrameFacade orbReferenceFrame) {
         refuseFurtherComments();
         this.covReferenceFrame = orbReferenceFrame;
     }
@@ -191,7 +192,7 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
     /** Set epoch of the {@link #getCovRefFrame() covariance reference frame}.
      * @param orbFrameEpoch epoch of the {@link #getCovRefFrame() covariance reference frame}
      */
-    void setCovFrameEpoch(final AbsoluteDate orbFrameEpoch) {
+    public void setCovFrameEpoch(final AbsoluteDate orbFrameEpoch) {
         refuseFurtherComments();
         this.covFrameEpoch = orbFrameEpoch;
     }
@@ -248,7 +249,7 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
     /** Set covariance element set type.
      * @param orbType covariance element set type
      */
-    void setCovType(final ElementsType orbType) {
+    public void setCovType(final ElementsType orbType) {
         refuseFurtherComments();
         this.covType = orbType;
     }
@@ -263,7 +264,7 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
     /** Set covariance element set units.
      * @param orbUnits covariance element set units
      */
-    void setCovUnits(final List<Unit> orbUnits) {
+    public void setCovUnits(final List<Unit> orbUnits) {
         refuseFurtherComments();
         this.covUnits = orbUnits;
     }

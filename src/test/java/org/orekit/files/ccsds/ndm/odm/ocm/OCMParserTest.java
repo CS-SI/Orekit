@@ -113,8 +113,8 @@ public class OCMParserTest {
     }
 
     @Test
-    public void testIncompatibleUnits() throws URISyntaxException {
-        final String name = "/ccsds/odm/ocm/OCM-incompatible-units.txt";
+    public void testIncompatibleUnitsDimension() throws URISyntaxException {
+        final String name = "/ccsds/odm/ocm/OCM-incompatible-units-dimension.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
             new ParserBuilder().
@@ -125,6 +125,23 @@ public class OCMParserTest {
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.INCOMPATIBLE_UNITS, oe.getSpecifier());
             Assert.assertEquals("km²/s", oe.getParts()[0]);
+            Assert.assertEquals("m", oe.getParts()[1]);
+        }
+    }
+
+    @Test
+    public void testIncompatibleUnitsScale() throws URISyntaxException {
+        final String name = "/ccsds/odm/ocm/OCM-incompatible-units-scale.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        try {
+            new ParserBuilder().
+            withMu(Constants.EIGEN5C_EARTH_MU).
+            buildOcmParser().
+            parseMessage(source);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.INCOMPATIBLE_UNITS, oe.getSpecifier());
+            Assert.assertEquals("km", oe.getParts()[0]);
             Assert.assertEquals("m", oe.getParts()[1]);
         }
     }

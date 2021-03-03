@@ -110,8 +110,9 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
     @Override
     public void checkMandatoryEntries() {
         super.checkMandatoryEntries();
-        checkNotNull(orbUnits, OrbitStateHistoryMetadataKey.ORB_UNITS);
-        orbType.checkUnits(orbUnits);
+        if (orbUnits != null) {
+            orbType.checkUnits(orbUnits);
+        }
     }
 
     /** Get orbit identification number.
@@ -124,7 +125,7 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
     /** Set orbit identification number.
      * @param orbID orbit identification number
      */
-    void setOrbID(final String orbID) {
+    public void setOrbID(final String orbID) {
         refuseFurtherComments();
         this.orbID = orbID;
     }
@@ -139,7 +140,7 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
     /** Set identification number of previous orbit.
      * @param orbPrevID identification number of previous orbit
      */
-    void setOrbPrevID(final String orbPrevID) {
+    public void setOrbPrevID(final String orbPrevID) {
         refuseFurtherComments();
         this.orbPrevID = orbPrevID;
     }
@@ -154,7 +155,7 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
     /** Set identification number of next orbit.
      * @param orbNextID identification number of next orbit
      */
-    void setOrbNextID(final String orbNextID) {
+    public void setOrbNextID(final String orbNextID) {
         refuseFurtherComments();
         this.orbNextID = orbNextID;
     }
@@ -169,7 +170,7 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
     /** Set basis of this orbit state time history data.
      * @param orbBasis basis of this orbit state time history data
      */
-    void setOrbBasis(final String orbBasis) {
+    public void setOrbBasis(final String orbBasis) {
         refuseFurtherComments();
         this.orbBasis = orbBasis;
     }
@@ -184,7 +185,7 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
     /** Set identification number of the orbit determination or simulation upon which this orbit is based.
      * @param orbBasisID identification number of the orbit determination or simulation upon which this orbit is based
      */
-    void setOrbBasisID(final String orbBasisID) {
+    public void setOrbBasisID(final String orbBasisID) {
         refuseFurtherComments();
         this.orbBasisID = orbBasisID;
     }
@@ -229,7 +230,7 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
     /** Set type of averaging (Osculating, mean Brouwer, other.
      * @param orbAveraging type of averaging (Osculating, mean Brouwer, other
      .). */
-    void setOrbAveraging(final String orbAveraging) {
+    public void setOrbAveraging(final String orbAveraging) {
         refuseFurtherComments();
         this.orbAveraging = orbAveraging;
     }
@@ -292,7 +293,7 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
     /** Set reference frame of the orbit.
      * @param orbReferenceFrame the reference frame to be set
      */
-    void setOrbReferenceFrame(final FrameFacade orbReferenceFrame) {
+    public void setOrbReferenceFrame(final FrameFacade orbReferenceFrame) {
         refuseFurtherComments();
         this.orbReferenceFrame = orbReferenceFrame;
     }
@@ -307,7 +308,7 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
     /** Set epoch of the {@link #getOrbRefFrame() orbit reference frame}.
      * @param orbFrameEpoch epoch of the {@link #getOrbRefFrame() orbit reference frame}
      */
-    void setOrbFrameEpoch(final AbsoluteDate orbFrameEpoch) {
+    public void setOrbFrameEpoch(final AbsoluteDate orbFrameEpoch) {
         refuseFurtherComments();
         this.orbFrameEpoch = orbFrameEpoch;
     }
@@ -356,7 +357,7 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
     /** Set orbit element set type.
      * @param orbType orbit element set type
      */
-    void setOrbType(final ElementsType orbType) {
+    public void setOrbType(final ElementsType orbType) {
         refuseFurtherComments();
         this.orbType = orbType;
     }
@@ -371,7 +372,7 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
     /** Set orbit element set units.
      * @param orbUnits orbit element set units
      */
-    void setOrbUnits(final List<Unit> orbUnits) {
+    public void setOrbUnits(final List<Unit> orbUnits) {
         refuseFurtherComments();
         this.orbUnits = orbUnits;
     }
