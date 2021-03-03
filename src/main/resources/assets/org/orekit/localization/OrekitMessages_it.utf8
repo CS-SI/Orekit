@@ -446,13 +446,13 @@ NOT_ENOUGH_GNSS_FOR_DOP = solo {0} orbite GNSS fornite, mentre ne servono {1} pe
 CCSDS_NO_CORRESPONDING_TIME_SCALE = il sistema temporale {0} del CCSDS non ha un equivalente tra le scale temporali di Orekit
 
 # use of time system {0} in CCSDS files requires an additional ICD and is not implemented in Orekit
-CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = l''utilizzo del sistema temporale {0} nei file CCSDS richiede un ICD aggiuntivo e non è implementato in Orekit
+CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = l'' utilizzo del sistema temporale {0} nei file CCSDS richiede un ICD aggiuntivo e non è implementato in Orekit
 
 # inconsistent time systems in the attitude blocks: {0} ≠ {1}
 CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS =  sistema temporale inconsistente nei blocchi di assetto: {0} ≠ {1}
 
 # attitude type {0} in CCSDS AEM files is not implemented in Orekit
-CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED = il tipo di assetto {0} nei file CCDS AEM non è ancora implementato in Orekit
+CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED = il tipo di assetto {0} nei file CCSDS AEM non è ancora implementato in Orekit
 
 # invalid rotation sequence {0} at line {1} of file {2}
 CCSDS_INVALID_ROTATION_SEQUENCE = la sequenza di rotazione {0} presente alla linea {1} del file {2} è inconsistente
@@ -606,18 +606,6 @@ NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS = le osservazioni {0} e {1} non sono in
 # Use of the ExceptionalDataContext detected. This is typically used to detect developer errors.
 EXCEPTIONAL_DATA_CONTEXT = rilevato utilizzo di ExceptionalDataContext. Si utilizza solitamente per rilevare errori di programmazione
 
-<<<<<<< HEAD
-# inconsistent time systems in the attitude blocks: {0} ≠ {1}
-CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = le tempistiche nei blocchi di assetto sono inconsistenti: {0} ≠ {1}
-
-# attitude type {0} in CCSDS AEM files is not implemented in Orekit
-CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED = il tipo di assetto {0} presente nei files CCSDS AEM, non è implementato in Orekit
-
-# invalid rotation sequence {0} at line {1} of file {2}
-CCSDS_INVALID_ROTATION_SEQUENCE = la sequenza di rotazione {0} presente nel file {2}  alla linea {1} non è valida
-
-=======
->>>>>>> refs/heads/issue-474
 # observations {0}, {1} and {2} must have different dates
 NON_DIFFERENT_DATES_FOR_OBSERVATIONS = le osservazioni {0}, {1} e {2} non possono avere la stessa data
 
@@ -659,9 +647,6 @@ UNINITIALIZED_VALUE_FOR_KEY = il valore della chiave {0} non è stato inizializz
 
 # unknown unit {0}
 UNKNOWN_UNIT = l'' unità {0} è sconosciuta
-
-# element type {0} is not supported yet
-UNSUPPORTED_ELEMENT_TYPE = il tipo {0} non è attualmente supportato
 
 # units {0} and {1} are not compatible
 INCOMPATIBLE_UNITS = le unità {0} e {1} non sono compatibili
