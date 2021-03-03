@@ -133,6 +133,21 @@ public class UTCScale implements TimeScale {
 
     }
 
+    /**
+     * Returns the UTC-TAI offsets underlying this UTC scale.
+     * <p>
+     * Modifications to the returned list will not affect this UTC scale instance.
+     * @return new non-null modifiable list of UTC-TAI offsets time-sorted from
+     *         earliest to latest
+     */
+    public List<UTCTAIOffset> getUTCTAIOffsets() {
+        final List<UTCTAIOffset> offsetList = new ArrayList<>(offsets.length);
+        for (int i = 0; i < offsets.length; ++i) {
+            offsetList.add(offsets[i]);
+        }
+        return offsetList;
+    }
+
     /** {@inheritDoc} */
     @Override
     public double offsetFromTAI(final AbsoluteDate date) {
