@@ -417,7 +417,7 @@ public class FieldDSSTPropagator<T extends RealFieldElement<T>> extends FieldAbs
 
             try {
                 // ensure we are notified of any mu change
-                force.getParametersDrivers()[0].addObserver(new ParameterObserver() {
+                force.getParametersDrivers().get(0).addObserver(new ParameterObserver() {
                     /** {@inheritDoc} */
                     @Override
                     public void valueChanged(final double previousValue, final ParameterDriver driver) {

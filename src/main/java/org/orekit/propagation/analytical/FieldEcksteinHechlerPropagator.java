@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.analytical;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
@@ -997,9 +1000,9 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] getParametersDrivers() {
+    protected List<ParameterDriver> getParametersDrivers() {
         // Eckstein Hechler propagation model does not have parameter drivers.
-        return new ParameterDriver[0];
+        return Collections.emptyList();
     }
 
 }

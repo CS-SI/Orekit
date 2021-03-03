@@ -16,6 +16,8 @@
  */
 package org.orekit.forces.radiation;
 
+import java.util.List;
+
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -266,7 +268,7 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getParametersDrivers() {
+    public List<ParameterDriver> getParametersDrivers() {
         return spacecraft.getRadiationParametersDrivers();
     }
 

@@ -185,10 +185,8 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getParametersDrivers() {
-        return new ParameterDriver[] {
-            gmParameterDriver
-        };
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.singletonList(gmParameterDriver);
     }
 
 }

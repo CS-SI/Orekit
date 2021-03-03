@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="bryan" type="update" issue="691">
+        Improved consistency between getParametersDrivers() method signatures.
+      </action>
       <action dev="andrewsgoetz" type="add" issue="764">
         Added new method to UTCScale which exposes the raw UTC-TAI offset data.
       </action>

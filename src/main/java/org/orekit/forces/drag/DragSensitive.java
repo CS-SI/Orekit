@@ -16,6 +16,8 @@
  */
 package org.orekit.forces.drag;
 
+import java.util.List;
+
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -53,7 +55,7 @@ public interface DragSensitive {
      * @return parameters drivers
      * @since 8.0
      */
-    ParameterDriver[] getDragParametersDrivers();
+    List<ParameterDriver> getDragParametersDrivers();
 
     /** Compute the acceleration due to drag.
      * <p>

@@ -16,6 +16,7 @@
  */
 package org.orekit.forces.drag;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
@@ -121,7 +122,7 @@ public class DragForce extends AbstractDragForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getParametersDrivers() {
+    public List<ParameterDriver> getParametersDrivers() {
         return spacecraft.getDragParametersDrivers();
     }
 

@@ -16,6 +16,9 @@
  */
 package org.orekit.forces.radiation;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -82,10 +85,8 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getRadiationParametersDrivers() {
-        return new ParameterDriver[] {
-            reflectionParameterDriver
-        };
+    public List<ParameterDriver> getRadiationParametersDrivers() {
+        return Collections.singletonList(reflectionParameterDriver);
     }
 
     /** {@inheritDoc} */

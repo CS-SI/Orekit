@@ -18,6 +18,8 @@ package org.orekit.propagation.numerical;
 
 import static org.hamcrest.CoreMatchers.is;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.hamcrest.MatcherAssert;
@@ -152,8 +154,8 @@ public class AbsolutePartialDerivativesEquationsTest {
         }
 
         @Override
-        public ParameterDriver[] getParametersDrivers() {
-            return new ParameterDriver[0];
+        public List<ParameterDriver> getParametersDrivers() {
+            return Collections.emptyList();
         }
 
         @Override

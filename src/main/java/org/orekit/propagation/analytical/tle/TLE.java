@@ -19,6 +19,8 @@ package org.orekit.propagation.analytical.tle;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -1047,10 +1049,8 @@ public class TLE implements TimeStamped, Serializable {
     /** Get the drivers for TLE propagation SGP4 and SDP4.
      * @return drivers for SGP4 and SDP4 model parameters
      */
-    public ParameterDriver[] getParametersDrivers() {
-        return new ParameterDriver[] {
-            bStarParameterDriver
-        };
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.singletonList(bStarParameterDriver);
     }
 
 }

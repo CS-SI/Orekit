@@ -127,11 +127,8 @@ public class DSSTThirdBody implements DSSTForceModel {
     /** Short period terms. */
     private Map<Field<?>, FieldThirdBodyShortPeriodicCoefficients<?>> fieldShortPeriods;
 
-    /** Drivers for third body attraction coefficient. */
-    private final ParameterDriver bodyParameterDriver;
-
-    /** Driver for gravitational parameter. */
-    private final ParameterDriver gmParameterDriver;
+    /** Drivers for third body attraction coefficient and gravitational parameter. */
+    private final List<ParameterDriver> parameterDrivers;
 
     /** Hansen objects. */
     private HansenObjects hansen;
@@ -148,12 +145,13 @@ public class DSSTThirdBody implements DSSTForceModel {
      *  @see CelestialBodies
      */
     public DSSTThirdBody(final CelestialBody body, final double mu) {
-        bodyParameterDriver = new ParameterDriver(body.getName() + DSSTThirdBody.ATTRACTION_COEFFICIENT,
-                                                  body.getGM(), MU_SCALE,
-                                                  0.0, Double.POSITIVE_INFINITY);
-        gmParameterDriver = new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                                                mu, MU_SCALE,
-                                                0.0, Double.POSITIVE_INFINITY);
+        parameterDrivers = new ArrayList<>(2);
+        parameterDrivers.add(new ParameterDriver(body.getName() + DSSTThirdBody.ATTRACTION_COEFFICIENT,
+                                                 body.getGM(), MU_SCALE,
+                                                 0.0, Double.POSITIVE_INFINITY));
+        parameterDrivers.add(new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+                                                 mu, MU_SCALE,
+                                                 0.0, Double.POSITIVE_INFINITY));
 
         this.body = body;
         this.Vns  = CoefficientsFactory.computeVns(MAX_POWER);
@@ -540,11 +538,8 @@ public class DSSTThirdBody implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getParametersDrivers() {
-        return new ParameterDriver[] {
-            bodyParameterDriver,
-            gmParameterDriver
-        };
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.unmodifiableList(parameterDrivers);
     }
 
     /** Computes the C<sup>j</sup> and S<sup>j</sup> coefficients Danielson 4.2-(15,16)
