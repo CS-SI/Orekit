@@ -23,8 +23,10 @@ import org.hipparchus.fraction.Fraction;
  * This fairly basic parser uses recursive descent with the following grammar,
  * where '*' can in fact be either '*', '×' or '.', '/' can be either '/' or '⁄'
  * and '^' can be either '^', "**" or implicit with switch to superscripts.
+ * The special case "n/a" corresponds to {@link PredefinedUnit#NONE}.
  * </p>
  * <pre>
+ *   unit         → "n/a"        | chain
  *   chain        → operand operation
  *   operand      → '√' simple   | simple power
  *   operation    → '*' chain    | '/' chain    | ε
@@ -52,12 +54,17 @@ class Parser {
      * @return parsed unit
      */
     public static Unit parse(final String unitSpecification) {
-        final Lexer lexer = new Lexer(unitSpecification);
-        final Unit parsed = chain(lexer);
-        if (lexer.next() != null) {
-            throw lexer.generateException();
+        if (PredefinedUnit.NONE.toUnit().getName().equals(unitSpecification)) {
+            // special case
+            return PredefinedUnit.NONE.toUnit();
+        } else {
+            final Lexer lexer = new Lexer(unitSpecification);
+            final Unit parsed = chain(lexer);
+            if (lexer.next() != null) {
+                throw lexer.generateException();
+            }
+            return parsed.alias(unitSpecification);
         }
-        return parsed.alias(unitSpecification);
     }
 
     /** Parse a chain unit.

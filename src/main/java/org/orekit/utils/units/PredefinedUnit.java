@@ -25,6 +25,9 @@ import org.hipparchus.util.FastMath;
  */
 public enum PredefinedUnit {
 
+    /** No unit. */
+    NONE(new Unit("n/a", 1.0, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO)),
+
     /** Dimensionless unit. */
     ONE(new Unit("1", 1.0, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO)),
 

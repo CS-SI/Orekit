@@ -32,6 +32,11 @@ import org.orekit.utils.Constants;
 public class ParserTest {
 
     @Test
+    public void testNotAUnit() {
+        Assert.assertSame(PredefinedUnit.NONE.toUnit(), Parser.parse("n/a"));
+    }
+
+    @Test
     public void testPredefinedUnit() {
         checkReference("MHz",
                        1.0e6,
