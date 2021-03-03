@@ -88,7 +88,10 @@ public enum PredefinedUnit {
     WATT(JOULE.unit.divide("W", SECOND.unit)),
 
     /** Solar Flux Unit. */
-    SOLAR_FLUX_UNIT(WATT.unit.divide(null, METRE.unit.power(null, Fraction.TWO).multiply(null, HERTZ.unit)).scale("sfu", 1.0e-22));
+    SOLAR_FLUX_UNIT(WATT.unit.divide(null, METRE.unit.power(null, Fraction.TWO).multiply(null, HERTZ.unit)).scale("sfu", 1.0e-22)),
+
+    /** Total Electron Content Unit. */
+    TOTAL_ELECTRON_CONTENT_UNIT(METRE.unit.power(null, new Fraction(-2)).scale("TECU", 1.0e+16));
 
     /** Underlying unit. */
     private final Unit unit;
