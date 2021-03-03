@@ -448,7 +448,7 @@ public class ParseToken {
             if (bracketed.charAt(0) != '[' || bracketed.charAt(bracketed.length() - 1) != ']') {
                 throw generateException(null);
             }
-            final CharSequence unbracketed = bracketed.subSequence(1, bracketed.length() - 1);
+            final String unbracketed = bracketed.substring(1, bracketed.length() - 1).trim();
             consumer.accept(Stream.of(SPLIT_AT_COMMAS.split(unbracketed)).
                             map(s -> Unit.parse(s)).
                             collect(Collectors.toList()));
