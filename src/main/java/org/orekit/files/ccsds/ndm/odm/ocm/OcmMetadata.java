@@ -34,15 +34,18 @@ public class OcmMetadata extends OdmMetadata {
     /** Classification for this message. */
     private String classification;
 
-    /** Alternate names for this space object. */
-    private List<String> alternateNames;
+    /** International designator for the object as assigned by the UN Committee
+     * on Space Research (COSPAR) and the US National Space Science Data Center (NSSDC). */
+    private String internationalDesignator;
+
+    /** Specification of satellite catalog source. */
+    private String catalogName;
 
     /** Unique satellite identification designator for the object. */
     private String objectDesignator;
 
-    /** International designator for the object as assigned by the UN Committee
-     * on Space Research (COSPAR) and the US National Space Science Data Center (NSSDC). */
-    private String internationalDesignator;
+    /** Alternate names for this space object. */
+    private List<String> alternateNames;
 
     /** Programmatic Point Of Contact at originator. */
     private String originatorPOC;
@@ -89,8 +92,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Unique identifier of Reentry Data Messages linked to this Orbit Data Message. */
     private String rdmMessageLink;
 
-    /** Specification of satellite catalog source. */
-    private String catalogName;
+    /** Unique identifier of Tracking Data Messages linked to this Orbit Data Message. */
+    private String tdmMessageLink;
 
     /** Operator of the space object. */
     private String operator;
@@ -107,6 +110,10 @@ public class OcmMetadata extends OdmMetadata {
     /** Type of object. */
     private ObjectType objectType;
 
+    /** Epoch to which <em>all</em> relative times are referenced in data blocks;
+     * unless overridden by block-specific {@code EPOCH_TZERO} values. */
+    private AbsoluteDate epochT0;
+
     /** Operational status. */
     private OpsStatus opsStatus;
 
@@ -116,12 +123,8 @@ public class OcmMetadata extends OdmMetadata {
     /** List of elements of information data blocks included in this message. */
     private List<String> ocmDataElements;
 
-    /** Epoch to which <em>all</em> relative times are referenced in data blocks;
-     * unless overridden by block-specific {@code EPOCH_TZERO} values. */
-    private AbsoluteDate epochT0;
-
-    /** Epoch corresponding to t=0 for the spacecraft clock. */
-    private AbsoluteDate sclkEpoch;
+    /** Spacecraft clock count at {@link #getEpochT0()}. */
+    private double sclkOffsetAtEpoch;
 
     /** Number of clock seconds occurring during one SI second. */
     private double clockSecPerSISec;
@@ -197,19 +200,34 @@ public class OcmMetadata extends OdmMetadata {
         this.classification = classification;
     }
 
-    /** Get the alternate names for this space object.
-     * @return alternate names
+    /** Get the international designator for the object.
+     * @return international designator for the object
      */
-    public List<String> getAlternateNames() {
-        return alternateNames;
+    public String getInternationalDesignator() {
+        return internationalDesignator;
     }
 
-    /** Set the alternate names for this space object.
-     * @param alternateNames alternate names
+    /** Set the international designator for the object.
+     * @param internationalDesignator international designator for the object
      */
-    public void setAlternateNames(final List<String> alternateNames) {
+    void setInternationalDesignator(final String internationalDesignator) {
         refuseFurtherComments();
-        this.alternateNames = alternateNames;
+        this.internationalDesignator = internationalDesignator;
+    }
+
+    /** Get the specification of satellite catalog source.
+     * @return specification of satellite catalog source
+     */
+    public String getCatalogName() {
+        return catalogName;
+    }
+
+    /** Set the specification of satellite catalog source.
+     * @param catalogName specification of satellite catalog source
+     */
+    void setCatalogName(final String catalogName) {
+        refuseFurtherComments();
+        this.catalogName = catalogName;
     }
 
     /** Get the unique satellite identification designator for the object.
@@ -227,19 +245,19 @@ public class OcmMetadata extends OdmMetadata {
         this.objectDesignator = objectDesignator;
     }
 
-    /** Get the international designator for the object.
-     * @return international designator for the object
+    /** Get the alternate names for this space object.
+     * @return alternate names
      */
-    public String getInternationalDesignator() {
-        return internationalDesignator;
+    public List<String> getAlternateNames() {
+        return alternateNames;
     }
 
-    /** Set the international designator for the object.
-     * @param internationalDesignator international designator for the object
+    /** Set the alternate names for this space object.
+     * @param alternateNames alternate names
      */
-    void setInternationalDesignator(final String internationalDesignator) {
+    public void setAlternateNames(final List<String> alternateNames) {
         refuseFurtherComments();
-        this.internationalDesignator = internationalDesignator;
+        this.alternateNames = alternateNames;
     }
 
     /** Get the programmatic Point Of Contact at originator.
@@ -467,19 +485,19 @@ public class OcmMetadata extends OdmMetadata {
         this.rdmMessageLink = rdmMessageLink;
     }
 
-    /** Get the specification of satellite catalog source.
-     * @return specification of satellite catalog source
+    /** Get the Unique identifier of Tracking Data Message linked to this Orbit Data Message.
+     * @return Unique identifier of Tracking Data Message linked to this Orbit Data Message
      */
-    public String getCatalogName() {
-        return catalogName;
+    public String getTdmMessageLink() {
+        return tdmMessageLink;
     }
 
-    /** Set the specification of satellite catalog source.
-     * @param catalogName specification of satellite catalog source
+    /** Set the Unique identifier of Tracking Data Message linked to this Orbit Data Message.
+     * @param tdmMessageLink Unique identifier of Tracking Data Message linked to this Orbit Data Message
      */
-    void setCatalogName(final String catalogName) {
+    void setTdmMessageLink(final String tdmMessageLink) {
         refuseFurtherComments();
-        this.catalogName = catalogName;
+        this.tdmMessageLink = tdmMessageLink;
     }
 
     /** Get the operator of the space object.
@@ -557,6 +575,21 @@ public class OcmMetadata extends OdmMetadata {
         this.objectType = objectType;
     }
 
+    /** Get the epoch to which <em>all</em> relative times are referenced in data blocks.
+     * @return epoch to which <em>all</em> relative times are referenced in data blocks
+     */
+    public AbsoluteDate getEpochT0() {
+        return epochT0;
+    }
+
+    /** Set the epoch to which <em>all</em> relative times are referenced in data blocks.
+     * @param epochT0 epoch to which <em>all</em> relative times are referenced in data blocks
+     */
+    void setEpochT0(final AbsoluteDate epochT0) {
+        refuseFurtherComments();
+        this.epochT0 = epochT0;
+    }
+
     /** Get the operational status.
      * @return operational status
      */
@@ -602,34 +635,19 @@ public class OcmMetadata extends OdmMetadata {
         this.ocmDataElements = ocmDataElements;
     }
 
-    /** Get the epoch to which <em>all</em> relative times are referenced in data blocks.
-     * @return epoch to which <em>all</em> relative times are referenced in data blocks
+    /** Get the spacecraft clock count at {@link #EPOCH_TZERO}.
+     * @return spacecraft clock count at {@link #EPOCH_TZERO}
      */
-    public AbsoluteDate getEpochT0() {
-        return epochT0;
+    public double getSclkOffsetAtEpoch() {
+        return sclkOffsetAtEpoch;
     }
 
-    /** Set the epoch to which <em>all</em> relative times are referenced in data blocks.
-     * @param epochT0 epoch to which <em>all</em> relative times are referenced in data blocks
+    /** Set the spacecraft clock count at {@link #EPOCH_TZERO}.
+     * @param sclkOffsetAtEpoch spacecraft clock count at {@link #EPOCH_TZERO}
      */
-    void setEpochT0(final AbsoluteDate epochT0) {
+    void setSclkOffsetAtEpoch(final double sclkOffsetAtEpoch) {
         refuseFurtherComments();
-        this.epochT0 = epochT0;
-    }
-
-    /** Get the epoch corresponding to t=0 for the spacecraft clock.
-     * @return epoch corresponding to t=0 for the spacecraft clock
-     */
-    public AbsoluteDate getSclkEpoch() {
-        return sclkEpoch;
-    }
-
-    /** Set the epoch corresponding to t=0 for the spacecraft clock.
-     * @param sclkEpoch epoch corresponding to t=0 for the spacecraft clock
-     */
-    void setSclkEpoch(final AbsoluteDate sclkEpoch) {
-        refuseFurtherComments();
-        this.sclkEpoch = sclkEpoch;
+        this.sclkOffsetAtEpoch = sclkOffsetAtEpoch;
     }
 
     /** Get the number of clock seconds occurring during one SI second.

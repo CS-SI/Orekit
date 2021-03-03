@@ -31,15 +31,18 @@ public enum OcmMetadataKey {
     /** Classification of this message. */
     CLASSIFICATION((token, context, metadata) -> token.processAsNormalizedString(metadata::setClassification)),
 
-    /** Alternate names fir this space object. */
-    ALTERNATE_NAMES((token, context, metadata) -> token.processAsNormalizedStringList(metadata::setAlternateNames)),
+    /** International designator for the object as assigned by the UN Committee
+     * on Space Research (COSPAR) and the US National Space Science Data Center (NSSDC). */
+    INTERNATIONAL_DESIGNATOR((token, context, metadata) -> token.processAsNormalizedString(metadata::setInternationalDesignator)),
+
+    /** Specification of satellite catalog source. */
+    CATALOG_NAME((token, context, metadata) -> token.processAsNormalizedString(metadata::setCatalogName)),
 
     /** Unique satellite identification designator for the object. */
     OBJECT_DESIGNATOR((token, context, metadata) -> token.processAsNormalizedString(metadata::setObjectDesignator)),
 
-    /** International designator for the object as assigned by the UN Committee
-     * on Space Research (COSPAR) and the US National Space Science Data Center (NSSDC). */
-    INTERNATIONAL_DESIGNATOR((token, context, metadata) -> token.processAsNormalizedString(metadata::setInternationalDesignator)),
+    /** Alternate names fir this space object. */
+    ALTERNATE_NAMES((token, context, metadata) -> token.processAsNormalizedStringList(metadata::setAlternateNames)),
 
     /** Programmatic Point Of Contact at originator. */
     ORIGINATOR_POC((token, context, metadata) -> token.processAsNormalizedString(metadata::setOriginatorPOC)),
@@ -86,8 +89,8 @@ public enum OcmMetadataKey {
     /** Unique identifier of Reentry Data Message linked to this Orbit Data Message. */
     RDM_MESSAGE_LINK((token, context, metadata) -> token.processAsNormalizedString(metadata::setRdmMessageLink)),
 
-    /** Specification of satellite catalog source. */
-    CATALOG_NAME((token, context, metadata) -> token.processAsNormalizedString(metadata::setCatalogName)),
+    /** Unique identifier of Tracking Data Message linked to this Orbit Data Message. */
+    TDM_MESSAGE_LINK((token, context, metadata) -> token.processAsNormalizedString(metadata::setTdmMessageLink)),
 
     /** Operator of the space object. */
     OPERATOR((token, context, metadata) -> token.processAsNormalizedString(metadata::setOperator)),
@@ -114,6 +117,10 @@ public enum OcmMetadataKey {
         }
         return true;
     }),
+
+    /** Default epoch to which <em>all</em> relative times are referenced in data blocks,
+     * unless overridden by block-specific {@link #EPOCH_TZERO} values. */
+    EPOCH_TZERO((token, context, metadata) -> token.processAsDate(metadata::setEpochT0, context)),
 
     /** Operational status.
      * @see OpsStatus
@@ -146,12 +153,8 @@ public enum OcmMetadataKey {
     /** List of elements of information data blocks included in this message. */
     OCM_DATA_ELEMENTS((token, context, metadata) -> token.processAsNormalizedStringList(metadata::setOcmDataElements)),
 
-    /** Default epoch to which <em>all</em> relative times are referenced in data blocks,
-     * unless overridden by block-specific {@link #EPOCH_TZERO} values. */
-    EPOCH_TZERO((token, context, metadata) -> token.processAsDate(metadata::setEpochT0, context)),
-
-    /** Epoch corresponding to t=0 for the spacecraft clock. */
-    SCLK_EPOCH((token, context, metadata) -> token.processAsDate(metadata::setSclkEpoch, context)),
+    /** Spacecraft clock count at {@link #EPOCH_TZERO}. */
+    SCLK_OFFSET_AT_EPOCH((token, context, metadata) -> token.processAsDouble(1.0, metadata::setSclkOffsetAtEpoch)),
 
     /** Number of clock seconds occurring during one SI second. */
     SCLK_SEC_PER_SI_SEC((token, context, metadata) -> token.processAsDouble(1.0, metadata::setClockSecPerSISec)),

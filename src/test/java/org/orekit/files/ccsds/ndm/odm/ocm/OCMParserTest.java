@@ -112,7 +112,6 @@ public class OCMParserTest {
         }
     }
 
-    @Ignore
     @Test
     public void testIncompatibleUnits() throws URISyntaxException {
         final String name = "/ccsds/odm/ocm/OCM-incompatible-units.txt";
@@ -176,7 +175,6 @@ public class OCMParserTest {
         }
     }
 
-    @Ignore
     @Test
     public void testUUserDefined() throws URISyntaxException {
         final String name = "/ccsds/odm/ocm/OCM-user-defined.txt";
@@ -415,8 +413,7 @@ public class OCMParserTest {
         Assert.assertEquals("UTC",                                 file.getMetadata().getTimeSystem().getTimeScale(null).getName());
         Assert.assertEquals(new AbsoluteDate(2019, 7, 23,  0, 0, 0.0, TimeScalesFactory.getUTC()),
                             file.getMetadata().getEpochT0());
-        Assert.assertEquals(new AbsoluteDate(2019, 7, 23,  8, 0, 0.0, TimeScalesFactory.getUTC()),
-                            file.getMetadata().getSclkEpoch());
+        Assert.assertEquals(28800.0, file.getMetadata().getSclkOffsetAtEpoch(), 1.0e-10);
         Assert.assertEquals(2.5,                                   file.getMetadata().getClockSecPerSISec(), 1.0e-15);
         Assert.assertEquals(new AbsoluteDate(2019, 7, 23,  9, 29, 31.576, TimeScalesFactory.getUTC()),
                             file.getMetadata().getPreviousMessageEpoch());
