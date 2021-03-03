@@ -73,10 +73,8 @@ public enum CovarianceHistoryMetadataKey {
         return true;
     }),
 
-    /** SI units for each elements of the covariance.
-     * @see CCSDSUnit
-     */
-    COV_UNITS(new UnitsProcessor());
+    /** SI units for each elements of the covariance. */
+    COV_UNITS((token, context, metadata) -> token.processAsUnitList(metadata::setCovUnits));
 
     /** Processing method. */
     private final TokenProcessor processor;

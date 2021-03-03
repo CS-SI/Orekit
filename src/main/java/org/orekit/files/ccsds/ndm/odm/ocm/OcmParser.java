@@ -26,12 +26,10 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.odm.CommonParser;
-import org.orekit.files.ccsds.ndm.odm.KeplerianElementsKey;
 import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.ndm.odm.OdmHeaderProcessingState;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
-import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.KvnStructureProcessingState;
 import org.orekit.files.ccsds.section.MetadataKey;
@@ -40,7 +38,6 @@ import org.orekit.files.ccsds.section.XmlStructureProcessingState;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.files.ccsds.utils.parsing.ErrorState;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 import org.orekit.files.ccsds.utils.parsing.ProcessingState;
 import org.orekit.files.general.EphemerisFileParser;
@@ -317,8 +314,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                 // this is the first maneuver block, we need to allocate the container
                 maneuverBlocks = new ArrayList<>();
             }
-            currentManeuverHistoryMetadata = new ManeuverHistoryMetadata(metadata.getEpochT0(),
-                                                                         getDataContext());
+            currentManeuverHistoryMetadata = new ManeuverHistoryMetadata(metadata.getEpochT0());
             currentManeuverHistory         = new ArrayList<>();
             setFallback(this::processManeuverToken);
         }

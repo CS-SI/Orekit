@@ -17,12 +17,50 @@
 
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
+import java.util.List;
+
+import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.files.ccsds.section.CommentsContainer;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.units.Unit;
 
 /** Metadata for maneuver history.
  * @author Luc Maisonobe
  * @since 11.0
  */
 public class ManeuverHistoryMetadata extends CommentsContainer {
-    // TODO
+
+    /** Basis of this maneuver data. */
+    private String manBasis;
+
+    /** Reference frame of the maneuver. */
+    private FrameFacade manReferenceFrame;
+
+    /** Epoch of the maneuver reference frame. */
+    private AbsoluteDate manFrameEpoch;
+
+    /** Units of covariance element set. */
+    private List<Unit> manUnits;
+
+    /** Simple constructor.
+     * @param epochT0 T0 epoch from file metadata
+     */
+    ManeuverHistoryMetadata(final AbsoluteDate epochT0) {
+        // we don't call the setXxx() methods in order to avoid
+        // calling refuseFurtherComments as a side effect
+        manBasis            = "PLANNED";
+        manReferenceFrame   = new FrameFacade(null, null,
+                                              OrbitRelativeFrame.TNW_INERTIAL, null,
+                                              OrbitRelativeFrame.TNW_INERTIAL.name());
+        manFrameEpoch       = epochT0;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void checkMandatoryEntries() {
+        super.checkMandatoryEntries();
+        checkNotNull(manUnits, CovarianceHistoryMetadataKey.COV_UNITS);
+    }
+
 }
