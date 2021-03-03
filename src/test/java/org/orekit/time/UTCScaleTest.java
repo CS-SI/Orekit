@@ -454,6 +454,16 @@ public class UTCScaleTest {
         Assert.assertEquals(new AbsoluteDate(1960, 12, 31, 23, 59, 60, utc), first);
     }
 
+    @Test
+    public void testGetUTCTAIOffsets() {
+        final List<UTCTAIOffset> offsets = utc.getUTCTAIOffsets();
+        Assert.assertEquals(40, offsets.size());
+        final UTCTAIOffset firstOffset = offsets.get(0);
+        final UTCTAIOffset lastOffset = offsets.get(offsets.size() - 1);
+        Assert.assertEquals(37300, firstOffset.getMJD()); // 1961-01-01
+        Assert.assertEquals(57204, lastOffset.getMJD()); // 2015-07-01
+    }
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");
