@@ -446,7 +446,8 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
             }
             try {
                 final String[] fields = SPLIT_AT_BLANKS.split(token.getContent().trim());
-                final List<Unit> units = currentOrbitStateHistoryMetadata.getOrbUnits();
+                // as ORB_UNITS is optional and indeed MUST match type, get them directly from type
+                final List<Unit> units = currentOrbitStateHistoryMetadata.getOrbType().getUnits();
                 if (fields.length != units.size() + 1) {
                     throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                               token.getLineNumber(), token.getFileName(), token.getContent());
@@ -501,9 +502,36 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
      * @return true if token was processed, false otherwise
      */
     private boolean processManeuverToken(final ParseToken token) {
-        setFallback(this::processDataSubStructureToken);
-        // TODO
-        return false;
+        if (token.getName() != null) {
+            // we are in the section metadata part
+            try {
+                return ManeuverHistoryMetadataKey.valueOf(token.getName()).
+                       process(token, context, currentManeuverHistoryMetadata);
+            } catch (IllegalArgumentException iae) {
+                // token has not been recognized
+                return false;
+            }
+        } else {
+            // we are in the section data part
+            if (currentManeuverHistory.isEmpty()) {
+                // we are starting the real data section, we can now check metadata is complete
+                currentManeuverHistoryMetadata.checkMandatoryEntries();
+                setFallback(this::processDataSubStructureToken);
+            }
+            try {
+                final String[] fields = SPLIT_AT_BLANKS.split(token.getContent().trim());
+                final List<ManeuverFieldType> types = currentManeuverHistoryMetadata.getManComposition();
+                if (fields.length != types.size()) {
+                    throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                              token.getLineNumber(), token.getFileName(), token.getContent());
+                }
+                // TODO: parse fields
+                return true;
+            } catch (NumberFormatException nfe) {
+                throw new OrekitException(nfe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                          token.getLineNumber(), token.getFileName(), token.getContent());
+            }
+        }
     }
 
     /** Process one perturbation parameter data token.

@@ -181,6 +181,7 @@ public enum OrekitMessages implements Localizable {
     CCSDS_INVALID_ROTATION_SEQUENCE("invalid rotation sequence {0} at line {1} of file {2}"),
     CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE("element set type {0} ({1}) is not supported yet"),
     CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS("element set type {0} ({1}) expects {2} elements"),
+    CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS("wrong number of units for maneuver {0}"),
     ADDITIONAL_STATE_NAME_ALREADY_IN_USE("name \"{0}\" is already used for an additional state"),
     NON_RESETABLE_STATE("reset state not allowed"),
     DSST_NEWCOMB_OPERATORS_COMPUTATION("Cannot compute Newcomb operators for sigma > rho ({0} > {1})"),
