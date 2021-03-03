@@ -49,7 +49,7 @@ public enum CovarianceHistoryMetadataKey {
     /** Reference frame of the covariance. */
     COV_REF_FRAME((token, context, metadata) -> token.processAsFrame(metadata::setCovReferenceFrame, context, true, false, false)),
 
-    /** Epoch of the {@link #COV_REF_FRAME orbit reference frame}. */
+    /** Epoch of the {@link #COV_REF_FRAME covariance reference frame}. */
     COV_FRAME_EPOCH((token, context, metadata) -> token.processAsDate(metadata::setCovFrameEpoch, context)),
 
     /** Minimum scale factor to apply to achieve realism. */

@@ -100,11 +100,11 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
     }
 
     /** Set covariance identification number.
-     * @param orbID covariance identification number
+     * @param covID covariance identification number
      */
-    public void setCovID(final String orbID) {
+    public void setCovID(final String covID) {
         refuseFurtherComments();
-        this.covID = orbID;
+        this.covID = covID;
     }
 
     /** Get identification number of previous covariance.
@@ -115,11 +115,11 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
     }
 
     /** Set identification number of previous covariance.
-     * @param orbPrevID identification number of previous covariance
+     * @param covPrevID identification number of previous covariance
      */
-    public void setCovPrevID(final String orbPrevID) {
+    public void setCovPrevID(final String covPrevID) {
         refuseFurtherComments();
-        this.covPrevID = orbPrevID;
+        this.covPrevID = covPrevID;
     }
 
     /** Get identification number of next covariance.
@@ -130,11 +130,11 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
     }
 
     /** Set identification number of next covariance.
-     * @param orbNextID identification number of next covariance
+     * @param covNextID identification number of next covariance
      */
-    public void setCovNextID(final String orbNextID) {
+    public void setCovNextID(final String covNextID) {
         refuseFurtherComments();
-        this.covNextID = orbNextID;
+        this.covNextID = covNextID;
     }
 
     /** Get basis of this covariance time history data.
@@ -145,11 +145,11 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
     }
 
     /** Set basis of this covariance time history data.
-     * @param orbBasis basis of this covariance time history data
+     * @param covBasis basis of this covariance time history data
      */
-    public void setCovBasis(final String orbBasis) {
+    public void setCovBasis(final String covBasis) {
         refuseFurtherComments();
-        this.covBasis = orbBasis;
+        this.covBasis = covBasis;
     }
 
     /** Get identification number of the orbit determination or simulation upon which this covariance is based.
@@ -160,11 +160,11 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
     }
 
     /** Set identification number of the orbit determination or simulation upon which this covariance is based.
-     * @param orbBasisID identification number of the orbit determination or simulation upon which this covariance is based
+     * @param covBasisID identification number of the orbit determination or simulation upon which this covariance is based
      */
-    public void setCovBasisID(final String orbBasisID) {
+    public void setCovBasisID(final String covBasisID) {
         refuseFurtherComments();
-        this.covBasisID = orbBasisID;
+        this.covBasisID = covBasisID;
     }
 
     /** Get reference frame of the covariance.
@@ -175,11 +175,11 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
     }
 
     /** Set reference frame of the covariance.
-     * @param orbReferenceFrame the reference frame to be set
+     * @param covReferenceFrame the reference frame to be set
      */
-    public void setCovReferenceFrame(final FrameFacade orbReferenceFrame) {
+    public void setCovReferenceFrame(final FrameFacade covReferenceFrame) {
         refuseFurtherComments();
-        this.covReferenceFrame = orbReferenceFrame;
+        this.covReferenceFrame = covReferenceFrame;
     }
 
     /** Get epoch of the {@link #getCovRefFrame() covariance reference frame}.
@@ -190,11 +190,11 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
     }
 
     /** Set epoch of the {@link #getCovRefFrame() covariance reference frame}.
-     * @param orbFrameEpoch epoch of the {@link #getCovRefFrame() covariance reference frame}
+     * @param covFrameEpoch epoch of the {@link #getCovRefFrame() covariance reference frame}
      */
-    public void setCovFrameEpoch(final AbsoluteDate orbFrameEpoch) {
+    public void setCovFrameEpoch(final AbsoluteDate covFrameEpoch) {
         refuseFurtherComments();
-        this.covFrameEpoch = orbFrameEpoch;
+        this.covFrameEpoch = covFrameEpoch;
     }
 
     /** Set the minimum scale factor to apply to achieve realism.
@@ -247,11 +247,11 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
     }
 
     /** Set covariance element set type.
-     * @param orbType covariance element set type
+     * @param covType covariance element set type
      */
-    public void setCovType(final ElementsType orbType) {
+    public void setCovType(final ElementsType covType) {
         refuseFurtherComments();
-        this.covType = orbType;
+        this.covType = covType;
     }
 
     /** Get covariance element set units.
@@ -262,11 +262,11 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
     }
 
     /** Set covariance element set units.
-     * @param orbUnits covariance element set units
+     * @param covUnits covariance element set units
      */
-    public void setCovUnits(final List<Unit> orbUnits) {
+    public void setCovUnits(final List<Unit> covUnits) {
         refuseFurtherComments();
-        this.covUnits = orbUnits;
+        this.covUnits = covUnits;
     }
 
 }
