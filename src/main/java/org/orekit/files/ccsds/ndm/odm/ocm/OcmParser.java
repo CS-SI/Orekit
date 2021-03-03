@@ -551,7 +551,9 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
             userDefinedBlock = new UserDefined();
         }
         setFallback(this::processDataSubStructureToken);
-        if (token.getType() == TokenType.ENTRY &&
+        if ("COMMENT".equals(token.getName())) {
+            return token.getType() == TokenType.ENTRY ? userDefinedBlock.addComment(token.getContent()) : true;
+        } else if (token.getType() == TokenType.ENTRY &&
             token.getName().startsWith(UserDefined.USER_DEFINED_PREFIX)) {
             userDefinedBlock.addEntry(token.getName().substring(UserDefined.USER_DEFINED_PREFIX.length()),
                                       token.getContent());
