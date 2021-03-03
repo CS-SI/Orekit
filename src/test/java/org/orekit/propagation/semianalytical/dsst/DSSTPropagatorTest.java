@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -1137,8 +1138,8 @@ public class DSSTPropagatorTest {
 
         /** {@inheritDoc} */
         @Override
-        protected ParameterDriver[] getParametersDriversWithoutMu() {
-            return new ParameterDriver[0];
+        protected List<ParameterDriver> getParametersDriversWithoutMu() {
+            return Collections.emptyList();
         }
 
         /** {@inheritDoc} */
@@ -1213,8 +1214,8 @@ public class DSSTPropagatorTest {
 
 
         @Override
-        public ParameterDriver[] getParametersDrivers() {
-            return new ParameterDriver[0];
+        public List<ParameterDriver> getParametersDrivers() {
+            return Collections.emptyList();
         }
         
     }

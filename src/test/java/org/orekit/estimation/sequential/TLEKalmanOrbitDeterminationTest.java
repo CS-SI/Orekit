@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
@@ -115,78 +116,74 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setGravity(final TLEPropagatorBuilder propagatorBuilder,
-                                           final OneAxisEllipsoid body) {
-
-        return new ParameterDriver[0];
+    protected List<ParameterDriver> setGravity(final TLEPropagatorBuilder propagatorBuilder,
+                                               final OneAxisEllipsoid body) {
+        return Collections.emptyList();
 
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setOceanTides(final TLEPropagatorBuilder propagatorBuilder,
-                                              final IERSConventions conventions,
-                                              final OneAxisEllipsoid body,
-                                              final int degree, final int order) {
+    protected List<ParameterDriver> setOceanTides(final TLEPropagatorBuilder propagatorBuilder,
+                                                  final IERSConventions conventions,
+                                                  final OneAxisEllipsoid body,
+                                                  final int degree, final int order) {
         throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                         "Ocean tides not implemented in DSST");
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setSolidTides(final TLEPropagatorBuilder propagatorBuilder,
-                                              final IERSConventions conventions,
-                                              final OneAxisEllipsoid body,
-                                              final CelestialBody[] solidTidesBodies) {
+    protected List<ParameterDriver> setSolidTides(final TLEPropagatorBuilder propagatorBuilder,
+                                                  final IERSConventions conventions,
+                                                  final OneAxisEllipsoid body,
+                                                  final CelestialBody[] solidTidesBodies) {
         throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                                   "Solid tides not implemented in DSST");
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setThirdBody(final TLEPropagatorBuilder propagatorBuilder,
-                                             final CelestialBody thirdBody) {
-        
-        return new ParameterDriver[0];
+    protected List<ParameterDriver> setThirdBody(final TLEPropagatorBuilder propagatorBuilder,
+                                                 final CelestialBody thirdBody) {
+        return Collections.emptyList();
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setDrag(final TLEPropagatorBuilder propagatorBuilder,
-                                        final Atmosphere atmosphere, final DragSensitive spacecraft) {
-
-        return new ParameterDriver[0];
+    protected List<ParameterDriver> setDrag(final TLEPropagatorBuilder propagatorBuilder,
+                                            final Atmosphere atmosphere, final DragSensitive spacecraft) {
+        return Collections.emptyList();
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setSolarRadiationPressure(final TLEPropagatorBuilder propagatorBuilder, final CelestialBody sun,
-                                                          final double equatorialRadius, final RadiationSensitive spacecraft) {
-
-        return new ParameterDriver[0];
+    protected List<ParameterDriver> setSolarRadiationPressure(final TLEPropagatorBuilder propagatorBuilder, final CelestialBody sun,
+                                                              final double equatorialRadius, final RadiationSensitive spacecraft) {
+        return Collections.emptyList();
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setAlbedoInfrared(final TLEPropagatorBuilder propagatorBuilder,
-                                                  final CelestialBody sun, final double equatorialRadius,
-                                                  final double angularResolution,
-                                                  final RadiationSensitive spacecraft) {
+    protected List<ParameterDriver> setAlbedoInfrared(final TLEPropagatorBuilder propagatorBuilder,
+                                                      final CelestialBody sun, final double equatorialRadius,
+                                                      final double angularResolution,
+                                                      final RadiationSensitive spacecraft) {
         throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                         "Albedo and infrared not implemented in TLE Propagator");
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setRelativity(final TLEPropagatorBuilder propagatorBuilder) {
+    protected List<ParameterDriver> setRelativity(final TLEPropagatorBuilder propagatorBuilder) {
         throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                         "Relativity not implemented in TLE Propagator");
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setPolynomialAcceleration(final TLEPropagatorBuilder propagatorBuilder,
-                                                          final String name, final Vector3D direction, final int degree) {
+    protected List<ParameterDriver> setPolynomialAcceleration(final TLEPropagatorBuilder propagatorBuilder,
+                                                              final String name, final Vector3D direction, final int degree) {
         throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                         "Polynomial acceleration not implemented in TLE Propagator");
     }
@@ -217,7 +214,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final String line1 = "1 22195U 92070B   16045.51027931 -.00000009  00000-0  00000+0 0  9990";
         final String line2 = "2 22195  52.6508 132.9147 0137738 336.2706   1.6348  6.47294052551192";
         templateTLE = new TLE(line1, line2);
-        templateTLE.getParametersDrivers()[0].setSelected(false);
+        templateTLE.getParametersDrivers().get(0).setSelected(false);
         
         // Default for test is Cartesian
         final OrbitType orbitType = OrbitType.KEPLERIAN;
@@ -331,7 +328,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final String line1 = "1 32711U 08012A   16044.40566018 -.00000039 +00000-0 +00000-0 0  9993";
         final String line2 = "2 32711 055.4362 301.3402 0091581 207.7162 151.8496 02.00563594058026";
         templateTLE = new TLE(line1, line2);
-        templateTLE.getParametersDrivers()[0].setSelected(false);
+        templateTLE.getParametersDrivers().get(0).setSelected(false);
         
         // Default for test is Cartesian
         final OrbitType orbitType = OrbitType.KEPLERIAN;

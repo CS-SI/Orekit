@@ -17,6 +17,7 @@
 package org.orekit.forces.empirical;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.NavigableSet;
 import java.util.stream.Stream;
@@ -316,7 +317,7 @@ public class TimeSpanParametricAcceleration extends AbstractForceModel {
      * </p>
      */
     @Override
-    public ParameterDriver[] getParametersDrivers() {
+    public List<ParameterDriver> getParametersDrivers() {
 
         // Get all transitions from the TimeSpanMap
         final List<ParameterDriver> listParameterDrivers = new ArrayList<>();
@@ -342,7 +343,7 @@ public class TimeSpanParametricAcceleration extends AbstractForceModel {
         }
 
         // Return an array of parameter drivers with no duplicated name
-        return listParameterDrivers.toArray(new ParameterDriver[0]);
+        return Collections.unmodifiableList(listParameterDrivers);
 
     }
 
@@ -356,14 +357,14 @@ public class TimeSpanParametricAcceleration extends AbstractForceModel {
     public double[] extractParameters(final double[] parameters, final AbsoluteDate date) {
 
         // Get the acceleration model parameter drivers of the date
-        final ParameterDriver[] empiricalParameterDriver = getAccelerationModel(date).getParametersDrivers();
+        final List<ParameterDriver> empiricalParameterDriver = getAccelerationModel(date).getParametersDrivers();
 
         // Find out the indexes of the parameters in the whole array of parameters
-        final ParameterDriver[] allParameters = getParametersDrivers();
-        final double[] outParameters = new double[empiricalParameterDriver.length];
+        final List<ParameterDriver> allParameters = getParametersDrivers();
+        final double[] outParameters = new double[empiricalParameterDriver.size()];
         int index = 0;
-        for (int i = 0; i < allParameters.length; i++) {
-            final String driverName = allParameters[i].getName();
+        for (int i = 0; i < allParameters.size(); i++) {
+            final String driverName = allParameters.get(i).getName();
             for (ParameterDriver accDriver : empiricalParameterDriver) {
                 if (accDriver.getName().equals(driverName)) {
                     outParameters[index++] = parameters[i];
@@ -385,14 +386,14 @@ public class TimeSpanParametricAcceleration extends AbstractForceModel {
                                                                  final FieldAbsoluteDate<T> date) {
 
         // Get the acceleration parameter drivers of the date
-        final ParameterDriver[] empiricalParameterDriver = getAccelerationModel(date.toAbsoluteDate()).getParametersDrivers();
+        final List<ParameterDriver> empiricalParameterDriver = getAccelerationModel(date.toAbsoluteDate()).getParametersDrivers();
 
         // Find out the indexes of the parameters in the whole array of parameters
-        final ParameterDriver[] allParameters = getParametersDrivers();
-        final T[] outParameters = MathArrays.buildArray(date.getField(), empiricalParameterDriver.length);
+        final List<ParameterDriver> allParameters = getParametersDrivers();
+        final T[] outParameters = MathArrays.buildArray(date.getField(), empiricalParameterDriver.size());
         int index = 0;
-        for (int i = 0; i < allParameters.length; i++) {
-            final String driverName = allParameters[i].getName();
+        for (int i = 0; i < allParameters.size(); i++) {
+            final String driverName = allParameters.get(i).getName();
             for (ParameterDriver accDriver : empiricalParameterDriver) {
                 if (accDriver.getName().equals(driverName)) {
                     outParameters[index++] = parameters[i];

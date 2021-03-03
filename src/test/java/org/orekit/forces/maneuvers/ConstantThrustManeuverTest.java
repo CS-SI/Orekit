@@ -17,6 +17,8 @@
 package org.orekit.forces.maneuvers;
 
 
+import java.util.List;
+
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -225,10 +227,10 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         Assert.assertEquals(0.0, date.durationFrom(maneuver.getStartDate()), 1.0e-15);
         Assert.assertEquals(0.0, date.shiftedBy(10.0).durationFrom(maneuver.getEndDate()), 1.0e-15);
         Assert.assertEquals("", maneuver.getName());
-        ParameterDriver[] drivers = maneuver.getParametersDrivers();
-        Assert.assertEquals(2, drivers.length);
-        Assert.assertEquals("thrust", drivers[0].getName());
-        Assert.assertEquals("flow rate", drivers[1].getName());
+        List<ParameterDriver> drivers = maneuver.getParametersDrivers();
+        Assert.assertEquals(2, drivers.size());
+        Assert.assertEquals("thrust", drivers.get(0).getName());
+        Assert.assertEquals("flow rate", drivers.get(1).getName());
         EventDetector[] switches = maneuver.getEventsDetectors().toArray(EventDetector[]::new);
 
         Orbit o1 = dummyOrbit(date.shiftedBy(- 1.0));
@@ -249,10 +251,10 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         ConstantThrustManeuver maneuver =
             new ConstantThrustManeuver(date, -10.0, 400.0, 300.0, Vector3D.PLUS_K,
                                        "1A-");
-        ParameterDriver[] drivers = maneuver.getParametersDrivers();
-        Assert.assertEquals(2, drivers.length);
-        Assert.assertEquals("1A-thrust", drivers[0].getName());
-        Assert.assertEquals("1A-flow rate", drivers[1].getName());
+        List<ParameterDriver> drivers = maneuver.getParametersDrivers();
+        Assert.assertEquals(2, drivers.size());
+        Assert.assertEquals("1A-thrust", drivers.get(0).getName());
+        Assert.assertEquals("1A-flow rate", drivers.get(1).getName());
         EventDetector[] switches = maneuver.getEventsDetectors().toArray(EventDetector[]::new);
 
         Orbit o1 = dummyOrbit(date.shiftedBy(-11.0));

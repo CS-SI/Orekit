@@ -209,13 +209,14 @@ class TLEGradientConverter extends AbstractGradientConverter {
      */
     public Gradient[] getParameters(final FieldTLE<Gradient> gTLE) {
         final int freeParameters = gTLE.getE().getFreeParameters();
-        final ParameterDriver[] drivers = tle.getParametersDrivers();
-        final Gradient[] parameters = new Gradient[drivers.length];
+        final List<ParameterDriver> drivers = tle.getParametersDrivers();
+        final Gradient[] parameters = new Gradient[drivers.size()];
         int index = FREE_STATE_PARAMETERS;
-        for (int i = 0; i < drivers.length; ++i) {
-            parameters[i] = drivers[i].isSelected() ?
-                            Gradient.variable(freeParameters, index++, drivers[i].getValue()) :
-                            Gradient.constant(freeParameters, drivers[i].getValue());
+        int i = 0;
+        for (ParameterDriver driver : drivers) {
+            parameters[i++] = driver.isSelected() ?
+                              Gradient.variable(freeParameters, index++, driver.getValue()) :
+                              Gradient.constant(freeParameters, driver.getValue());
         }
         return parameters;
     }

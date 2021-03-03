@@ -16,6 +16,8 @@
  */
 package org.orekit.forces.inertia;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
@@ -151,8 +153,8 @@ public class InertialForces extends AbstractForceModel  {
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getParametersDrivers() {
-        return new ParameterDriver[0];
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.emptyList();
     }
 
     /** {@inheritDoc} */

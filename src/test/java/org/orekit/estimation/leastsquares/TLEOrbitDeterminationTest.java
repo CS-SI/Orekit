@@ -20,6 +20,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.text.ParseException;
+import java.util.Collections;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -62,7 +64,6 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
     @Override
     protected void createGravityField(final KeyValueFileParser<ParameterKey> parser)
         throws NoSuchElementException {
-        
         // TLE OD does not need gravity field
     }
 
@@ -75,8 +76,8 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
     /** {@inheritDoc} */
     @Override
     protected TLEPropagatorBuilder createPropagatorBuilder(final Orbit referenceOrbit,
-                                                            final ODEIntegratorBuilder builder,
-                                                            final double positionScale) {
+                                                           final ODEIntegratorBuilder builder,
+                                                           final double positionScale) {
         return new TLEPropagatorBuilder(templateTLE, PositionAngle.MEAN,
                                          positionScale);
     }
@@ -84,88 +85,83 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
     /** {@inheritDoc} */
     @Override
     protected void setMass(final TLEPropagatorBuilder propagatorBuilder,
-                                final double mass) {
-        
-     // TLE OD does not need to set mass
+                           final double mass) {
+        // TLE OD does not need to set mass
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setGravity(final TLEPropagatorBuilder propagatorBuilder,
-                                           final OneAxisEllipsoid body) {
-
-        return new ParameterDriver[0];
+    protected List<ParameterDriver> setGravity(final TLEPropagatorBuilder propagatorBuilder,
+                                               final OneAxisEllipsoid body) {
+        return Collections.emptyList();
 
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setOceanTides(final TLEPropagatorBuilder propagatorBuilder,
-                                              final IERSConventions conventions,
-                                              final OneAxisEllipsoid body,
-                                              final int degree, final int order) {
+    protected List<ParameterDriver> setOceanTides(final TLEPropagatorBuilder propagatorBuilder,
+                                                  final IERSConventions conventions,
+                                                  final OneAxisEllipsoid body,
+                                                  final int degree, final int order) {
         throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                         "Ocean tides not implemented in TLE Propagator");
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setSolidTides(final TLEPropagatorBuilder propagatorBuilder,
-                                              final IERSConventions conventions,
-                                              final OneAxisEllipsoid body,
-                                              final CelestialBody[] solidTidesBodies) {
+    protected List<ParameterDriver> setSolidTides(final TLEPropagatorBuilder propagatorBuilder,
+                                                  final IERSConventions conventions,
+                                                  final OneAxisEllipsoid body,
+                                                  final CelestialBody[] solidTidesBodies) {
         throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                                   "Solid tides not implemented in TLE Propagator");
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setThirdBody(final TLEPropagatorBuilder propagatorBuilder,
-                                             final CelestialBody thirdBody) {
-        
+    protected List<ParameterDriver> setThirdBody(final TLEPropagatorBuilder propagatorBuilder,
+                                                 final CelestialBody thirdBody) {
         throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                         "Third body not implemented in TLE Propagator");
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setDrag(final TLEPropagatorBuilder propagatorBuilder,
-                                        final Atmosphere atmosphere, final DragSensitive spacecraft) {
-
+    protected List<ParameterDriver> setDrag(final TLEPropagatorBuilder propagatorBuilder,
+                                            final Atmosphere atmosphere, final DragSensitive spacecraft) {
         throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                         "Drag not implemented in TLE Propagator");
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setSolarRadiationPressure(final TLEPropagatorBuilder propagatorBuilder, final CelestialBody sun,
-                                                          final double equatorialRadius, final RadiationSensitive spacecraft) {
-
+    protected List<ParameterDriver> setSolarRadiationPressure(final TLEPropagatorBuilder propagatorBuilder, final CelestialBody sun,
+                                                              final double equatorialRadius, final RadiationSensitive spacecraft) {
         throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                         "SRP not implemented in TLE Propagator");
     }
     
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setAlbedoInfrared(final TLEPropagatorBuilder propagatorBuilder,
-                                                  final CelestialBody sun, final double equatorialRadius,
-                                                  final double angularResolution,
-                                                  final RadiationSensitive spacecraft) {
+    protected List<ParameterDriver> setAlbedoInfrared(final TLEPropagatorBuilder propagatorBuilder,
+                                                      final CelestialBody sun, final double equatorialRadius,
+                                                      final double angularResolution,
+                                                      final RadiationSensitive spacecraft) {
         throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                         "Albedo and infrared not implemented in TLE Propagator");
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setRelativity(final TLEPropagatorBuilder propagatorBuilder) {
+    protected List<ParameterDriver> setRelativity(final TLEPropagatorBuilder propagatorBuilder) {
         throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                         "Relativity not implemented in TLE Propagator");
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setPolynomialAcceleration(final TLEPropagatorBuilder propagatorBuilder,
-                                                          final String name, final Vector3D direction, final int degree) {
+    protected List<ParameterDriver> setPolynomialAcceleration(final TLEPropagatorBuilder propagatorBuilder,
+                                                              final String name, final Vector3D direction, final int degree) {
         throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                         "Polynomial acceleration not implemented in TLE Propagator");
     }
@@ -195,7 +191,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         final String line1 = "1 32711U 08012A   16044.40566026 -.00000039  00000-0  00000+0 0  9991";
         final String line2 = "2 32711  55.4362 301.3402 0091577 207.7302 151.8353  2.00563580 58013";
         templateTLE = new TLE(line1, line2);
-        templateTLE.getParametersDrivers()[0].setSelected(false);
+        templateTLE.getParametersDrivers().get(0).setSelected(false);
 
         //orbit determination run.
         ResultBatchLeastSquares odGNSS = runBLS(input, false);
@@ -252,7 +248,7 @@ public class TLEOrbitDeterminationTest extends AbstractOrbitDetermination<TLEPro
         final String line1 = "1 22195U 92070B   16045.51027931 -.00000009  00000-0  00000+0 0  9990";
         final String line2 = "2 22195  52.6508 132.9147 0137738 336.2706   1.6348  6.47294052551192";
         templateTLE = new TLE(line1, line2);
-        templateTLE.getParametersDrivers()[0].setSelected(false);
+        templateTLE.getParametersDrivers().get(0).setSelected(false);
         
         //orbit determination run.
         ResultBatchLeastSquares odLageos2 = runBLS(input, false);

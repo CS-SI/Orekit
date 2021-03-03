@@ -773,10 +773,8 @@ public class DSSTZonal implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
-    public ParameterDriver[] getParametersDrivers() {
-        return new ParameterDriver[] {
-            gmParameterDriver
-        };
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.singletonList(gmParameterDriver);
     }
 
     /** Generate the values for the D<sub>i</sub> coefficients.

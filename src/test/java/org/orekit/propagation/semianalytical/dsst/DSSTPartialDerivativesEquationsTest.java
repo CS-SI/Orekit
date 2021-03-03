@@ -19,6 +19,7 @@ package org.orekit.propagation.semianalytical.dsst;
 import static org.hamcrest.CoreMatchers.is;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.hamcrest.MatcherAssert;
@@ -214,8 +215,8 @@ public class DSSTPartialDerivativesEquationsTest {
         }
 
         @Override
-        public ParameterDriver[] getParametersDrivers() {
-            return new ParameterDriver[0];
+        public List<ParameterDriver> getParametersDrivers() {
+            return Collections.emptyList();
         }
 
     }

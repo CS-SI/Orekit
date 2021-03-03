@@ -358,7 +358,7 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
      * </p>
      */
     @Override
-    public ParameterDriver[] getParametersDrivers() {
+    public List<ParameterDriver> getParametersDrivers() {
 
         // Get all transitions from the TimeSpanMap
         final List<ParameterDriver> listParameterDrivers = new ArrayList<>();
@@ -383,7 +383,7 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
         }
 
         // Return an array of parameter drivers with no duplicated name
-        return listParameterDrivers.toArray(new ParameterDriver[0]);
+        return listParameterDrivers;
 
     }
 
@@ -397,14 +397,14 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
     public double[] extractParameters(final double[] parameters, final AbsoluteDate date) {
 
         // Get the drag parameter drivers of the date
-        final ParameterDriver[] dragParameterDriver = getDragSensitive(date).getDragParametersDrivers();
+        final List<ParameterDriver> dragParameterDriver = getDragSensitive(date).getDragParametersDrivers();
 
         // Find out the indexes of the parameters in the whole array of parameters
-        final ParameterDriver[] allParameters = getParametersDrivers();
-        final double[] outParameters = new double[dragParameterDriver.length];
+        final List<ParameterDriver> allParameters = getParametersDrivers();
+        final double[] outParameters = new double[dragParameterDriver.size()];
         int index = 0;
-        for (int i = 0; i < allParameters.length; i++) {
-            final String driverName = allParameters[i].getName();
+        for (int i = 0; i < allParameters.size(); i++) {
+            final String driverName = allParameters.get(i).getName();
             for (ParameterDriver dragDriver : dragParameterDriver) {
                 if (dragDriver.getName().equals(driverName)) {
                     outParameters[index++] = parameters[i];
@@ -426,14 +426,14 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
                                                                  final FieldAbsoluteDate<T> date) {
 
         // Get the drag parameter drivers of the date
-        final ParameterDriver[] dragPD = getDragSensitive(date.toAbsoluteDate()).getDragParametersDrivers();
+        final List<ParameterDriver> dragPD = getDragSensitive(date.toAbsoluteDate()).getDragParametersDrivers();
 
         // Find out the indexes of the parameters in the whole array of parameters
-        final ParameterDriver[] allParameters = getParametersDrivers();
-        final T[] outParameters = MathArrays.buildArray(date.getField(), dragPD.length);
+        final List<ParameterDriver> allParameters = getParametersDrivers();
+        final T[] outParameters = MathArrays.buildArray(date.getField(), dragPD.size());
         int index = 0;
-        for (int i = 0; i < allParameters.length; i++) {
-            final String driverName = allParameters[i].getName();
+        for (int i = 0; i < allParameters.size(); i++) {
+            final String driverName = allParameters.get(i).getName();
             for (ParameterDriver dragDriver : dragPD) {
                 if (dragDriver.getName().equals(driverName)) {
                     outParameters[index++] = parameters[i];

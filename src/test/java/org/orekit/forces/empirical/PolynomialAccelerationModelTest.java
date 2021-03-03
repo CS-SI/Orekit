@@ -83,7 +83,7 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
         final AccelerationModel accelerationModel = new PolynomialAccelerationModel("", AbsoluteDate.J2000_EPOCH, 0);
         final ParametricAcceleration inertialAcceleration = new ParametricAcceleration(direction, true, accelerationModel);
         Assert.assertTrue(inertialAcceleration.dependsOnPositionOnly());
-        inertialAcceleration.getParametersDrivers()[0].setValue(f / mass);
+        inertialAcceleration.getParametersDrivers().get(0).setValue(f / mass);
         doTestEquivalentManeuver(mass, maneuverLaw, maneuver, accelerationLaw, inertialAcceleration, 1.0e-15);
     }
 
@@ -100,7 +100,7 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
         final AccelerationModel accelerationModel = new PolynomialAccelerationModel("", null, 0);
         final ParametricAcceleration lofAcceleration = new ParametricAcceleration(Vector3D.PLUS_I, false, accelerationModel);
         Assert.assertFalse(lofAcceleration.dependsOnPositionOnly());
-        lofAcceleration.getParametersDrivers()[0].setValue(f / mass);
+        lofAcceleration.getParametersDrivers().get(0).setValue(f / mass);
         doTestEquivalentManeuver(mass, commonLaw, maneuver, commonLaw, lofAcceleration, 1.0e-15);
     }
 
@@ -119,7 +119,7 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
                                                                           Vector3D.PLUS_I, Vector3D.PLUS_K);
         final AccelerationModel accelerationModel = new PolynomialAccelerationModel("prefix", null, 0);
         final ParametricAcceleration lofAcceleration = new ParametricAcceleration(Vector3D.PLUS_I, maneuverLaw, accelerationModel);
-        lofAcceleration.getParametersDrivers()[0].setValue(f / mass);
+        lofAcceleration.getParametersDrivers().get(0).setValue(f / mass);
         doTestEquivalentManeuver(mass, maneuverLaw, maneuver, accelerationLaw, lofAcceleration, 1.0e-15);
     }
 
@@ -186,7 +186,7 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
         final AttitudeProvider accelerationLaw = new InertialProvider(new Rotation(direction, Vector3D.PLUS_K));
         final AccelerationModel accelerationModel = new PolynomialAccelerationModel("", AbsoluteDate.J2000_EPOCH, 0);
         final ParametricAcceleration inertialAcceleration = new ParametricAcceleration(direction, true, accelerationModel);
-        inertialAcceleration.getParametersDrivers()[0].setValue(f / mass);
+        inertialAcceleration.getParametersDrivers().get(0).setValue(f / mass);
         doTestEquivalentManeuver(Decimal64Field.getInstance(),
                                  mass, maneuverLaw, maneuver, accelerationLaw, inertialAcceleration, 3.0e-9);
     }
@@ -203,7 +203,7 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
                                                                      duration, f, isp, Vector3D.PLUS_I);
         final AccelerationModel accelerationModel = new PolynomialAccelerationModel("", null, 0);
         final ParametricAcceleration lofAcceleration = new ParametricAcceleration(Vector3D.PLUS_I, false, accelerationModel);
-        lofAcceleration.getParametersDrivers()[0].setValue(f / mass);
+        lofAcceleration.getParametersDrivers().get(0).setValue(f / mass);
         doTestEquivalentManeuver(Decimal64Field.getInstance(),
                                  mass, commonLaw, maneuver, commonLaw, lofAcceleration, 1.0e-15);
     }
@@ -223,7 +223,7 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
                                                                           Vector3D.PLUS_I, Vector3D.PLUS_K);
         final AccelerationModel accelerationModel = new PolynomialAccelerationModel("prefix", null, 0);
         final ParametricAcceleration lofAcceleration = new ParametricAcceleration(Vector3D.PLUS_I, maneuverLaw, accelerationModel);
-        lofAcceleration.getParametersDrivers()[0].setValue(f / mass);
+        lofAcceleration.getParametersDrivers().get(0).setValue(f / mass);
         doTestEquivalentManeuver(Decimal64Field.getInstance(),
                                  mass, maneuverLaw, maneuver, accelerationLaw, lofAcceleration, 1.0e-15);
     }
@@ -300,10 +300,10 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
         final ParametricAcceleration ppa = new ParametricAcceleration(Vector3D.PLUS_K, false, accelerationModel);
 
         ppa.init(state, state.getDate().shiftedBy(3600.0));
-        ppa.getParametersDrivers()[0].setValue(0.00001);
-        ppa.getParametersDrivers()[1].setValue(0.00002);
-        ppa.getParametersDrivers()[2].setValue(0.00003);
-        ppa.getParametersDrivers()[3].setValue(0.00004);
+        ppa.getParametersDrivers().get(0).setValue(0.00001);
+        ppa.getParametersDrivers().get(1).setValue(0.00002);
+        ppa.getParametersDrivers().get(2).setValue(0.00003);
+        ppa.getParametersDrivers().get(3).setValue(0.00004);
 
         checkParameterDerivative(state, ppa, "ppa[0]", 1.0e-3, 7.0e-12);
         checkParameterDerivative(state, ppa, "ppa[1]", 1.0e-3, 9.0e-13);

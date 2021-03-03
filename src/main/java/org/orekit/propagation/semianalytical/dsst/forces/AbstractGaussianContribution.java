@@ -194,21 +194,18 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getParametersDrivers() {
+    public List<ParameterDriver> getParametersDrivers() {
 
-        final ParameterDriver[] driversWithoutMu = getParametersDriversWithoutMu();
+        // Parameter drivers
+        final List<ParameterDriver> drivers = new ArrayList<>();
 
-        // + 1 for central attraction coefficient driver
-        final ParameterDriver[] drivers = new ParameterDriver[driversWithoutMu.length + 1];
-
-        int index = 0;
-        for (final ParameterDriver driver : driversWithoutMu) {
-            drivers[index] = driver;
-            index++;
+        // Loop on drivers (without central attraction coefficient driver)
+        for (final ParameterDriver driver : getParametersDriversWithoutMu()) {
+            drivers.add(driver);
         }
 
         // We put central attraction coefficient driver at the end of the array
-        drivers[driversWithoutMu.length] = gmParameterDriver;
+        drivers.add(gmParameterDriver);
         return drivers;
 
     }
@@ -223,7 +220,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      * </p>
      * @return drivers for force model parameters
      */
-    protected abstract ParameterDriver[] getParametersDriversWithoutMu();
+    protected abstract List<ParameterDriver> getParametersDriversWithoutMu();
 
     /** {@inheritDoc} */
     @Override

@@ -16,6 +16,7 @@
  */
 package org.orekit.forces.gravity;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
@@ -154,7 +155,7 @@ public class SolidTides extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getParametersDrivers() {
+    public List<ParameterDriver> getParametersDrivers() {
         // delegate to underlying attraction model
         return attractionModel.getParametersDrivers();
     }
