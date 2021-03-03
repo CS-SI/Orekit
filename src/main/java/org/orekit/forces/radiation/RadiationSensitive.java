@@ -16,6 +16,8 @@
  */
 package org.orekit.forces.radiation;
 
+import java.util.List;
+
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -44,7 +46,7 @@ public interface RadiationSensitive {
      * @return parameters drivers
      * @since 8.0
      */
-    ParameterDriver[] getRadiationParametersDrivers();
+    List<ParameterDriver> getRadiationParametersDrivers();
 
     /** Compute the acceleration due to radiation pressure.
      * @param date current date

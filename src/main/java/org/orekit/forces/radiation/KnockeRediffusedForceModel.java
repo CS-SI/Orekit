@@ -16,6 +16,7 @@
  */
 package org.orekit.forces.radiation;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
@@ -327,7 +328,7 @@ public class KnockeRediffusedForceModel extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getParametersDrivers() {
+    public List<ParameterDriver> getParametersDrivers() {
         return spacecraft.getRadiationParametersDrivers();
     }
 

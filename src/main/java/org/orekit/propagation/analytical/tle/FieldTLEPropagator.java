@@ -17,6 +17,8 @@
 package org.orekit.propagation.analytical.tle;
 
 
+import java.util.List;
+
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
@@ -560,7 +562,7 @@ public abstract class FieldTLEPropagator<T extends RealFieldElement<T>> extends 
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getParametersDrivers() {
+    public List<ParameterDriver> getParametersDrivers() {
         return tle.getParametersDrivers();
     }
 

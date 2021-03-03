@@ -16,6 +16,8 @@
  */
 package org.orekit.forces.empirical;
 
+import java.util.List;
+
 import org.hipparchus.RealFieldElement;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -67,6 +69,6 @@ public interface AccelerationModel {
     /** Get the drivers for acceleration model parameters.
      * @return drivers for acceleration model parameters
      */
-    ParameterDriver[] getParametersDrivers();
+    List<ParameterDriver> getParametersDrivers();
 
 }

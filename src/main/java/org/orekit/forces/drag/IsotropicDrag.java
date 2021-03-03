@@ -16,6 +16,9 @@
  */
 package org.orekit.forces.drag;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -48,7 +51,7 @@ public class IsotropicDrag implements DragSensitive {
     private final double SCALE = FastMath.scalb(1.0, -3);
 
     /** Drivers for drag coefficient parameter. */
-    private final ParameterDriver[] dragParametersDrivers;
+    private final ParameterDriver dragParametersDrivers;
 
     /** Cross section (m²). */
     private final double crossSection;
@@ -69,10 +72,9 @@ public class IsotropicDrag implements DragSensitive {
      */
     public IsotropicDrag(final double crossSection, final double dragCoeff,
                          final double dragCoeffMin, final double dragCoeffMax) {
-        this.dragParametersDrivers = new ParameterDriver[1];
         // in some corner cases (unknown spacecraft, fuel leaks, active piloting ...)
         // the single coefficient may be arbitrary, and even negative
-        dragParametersDrivers[0]   = new ParameterDriver(DragSensitive.DRAG_COEFFICIENT,
+        this.dragParametersDrivers = new ParameterDriver(DragSensitive.DRAG_COEFFICIENT,
                                                          dragCoeff, SCALE,
                                                          dragCoeffMin, dragCoeffMax);
         this.crossSection = crossSection;
@@ -80,8 +82,8 @@ public class IsotropicDrag implements DragSensitive {
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getDragParametersDrivers() {
-        return dragParametersDrivers.clone();
+    public List<ParameterDriver> getDragParametersDrivers() {
+        return Collections.singletonList(dragParametersDrivers);
     }
 
     /** {@inheritDoc} */

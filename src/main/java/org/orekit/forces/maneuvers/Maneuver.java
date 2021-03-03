@@ -17,7 +17,9 @@
 
 package org.orekit.forces.maneuvers;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
@@ -237,23 +239,23 @@ public class Maneuver extends AbstractForceModel {
     }
 
     @Override
-    public ParameterDriver[] getParametersDrivers() {
+    public List<ParameterDriver> getParametersDrivers() {
 
         // Extract parameter drivers from propulsion model and maneuver triggers
-        final ParameterDriver[] propulsionModelDrivers  = propulsionModel.getParametersDrivers();
-        final ParameterDriver[] maneuverTriggersDrivers = maneuverTriggers.getParametersDrivers();
-        final int propulsionModelDriversLength  = propulsionModelDrivers.length;
-        final int maneuverTriggersDriversLength = maneuverTriggersDrivers.length;
+        final List<ParameterDriver> propulsionModelDrivers  = propulsionModel.getParametersDrivers();
+        final List<ParameterDriver> maneuverTriggersDrivers = maneuverTriggers.getParametersDrivers();
+        final int propulsionModelDriversLength  = propulsionModelDrivers.size();
+        final int maneuverTriggersDriversLength = maneuverTriggersDrivers.size();
 
         // Prepare final drivers' array
-        final ParameterDriver[] drivers = new ParameterDriver[propulsionModelDriversLength + maneuverTriggersDriversLength];
+        final List<ParameterDriver> drivers = new ArrayList<>(propulsionModelDriversLength + maneuverTriggersDriversLength);
 
         // Convention: Propulsion drivers are given before maneuver triggers drivers
         // Add propulsion drivers first
-        System.arraycopy(propulsionModelDrivers, 0, drivers, 0, propulsionModelDriversLength);
+        drivers.addAll(0, propulsionModelDrivers);
 
         // Then maneuver triggers' drivers
-        System.arraycopy(maneuverTriggersDrivers, 0, drivers, propulsionModelDriversLength, maneuverTriggersDriversLength);
+        drivers.addAll(propulsionModelDriversLength, maneuverTriggersDrivers);
 
         // Return full drivers' array
         return drivers;
@@ -265,7 +267,7 @@ public class Maneuver extends AbstractForceModel {
      * @return propulsion model parameters
      */
     private double[] getPropulsionModelParameters(final double[] parameters) {
-        return Arrays.copyOfRange(parameters, 0, propulsionModel.getParametersDrivers().length);
+        return Arrays.copyOfRange(parameters, 0, propulsionModel.getParametersDrivers().size());
     }
 
     /** Extract propulsion model parameters from the parameters' array called in by the ForceModel interface.
@@ -275,7 +277,7 @@ public class Maneuver extends AbstractForceModel {
      * @return propulsion model parameters
      */
     private <T extends RealFieldElement<T>> T[] getPropulsionModelParameters(final T[] parameters) {
-        return Arrays.copyOfRange(parameters, 0, propulsionModel.getParametersDrivers().length);
+        return Arrays.copyOfRange(parameters, 0, propulsionModel.getParametersDrivers().size());
     }
 
     /** Extract maneuver triggers' parameters from the parameters' array called in by the ForceModel interface.
@@ -284,9 +286,9 @@ public class Maneuver extends AbstractForceModel {
      * @return maneuver triggers' parameters
      */
     private double[] getManeuverTriggersParameters(final double[] parameters) {
-        final int nbPropulsionModelDrivers = propulsionModel.getParametersDrivers().length;
+        final int nbPropulsionModelDrivers = propulsionModel.getParametersDrivers().size();
         return Arrays.copyOfRange(parameters, nbPropulsionModelDrivers,
-                                  nbPropulsionModelDrivers + maneuverTriggers.getParametersDrivers().length);
+                                  nbPropulsionModelDrivers + maneuverTriggers.getParametersDrivers().size());
     }
 
     /** Extract maneuver triggers' parameters from the parameters' array called in by the ForceModel interface.
@@ -296,8 +298,8 @@ public class Maneuver extends AbstractForceModel {
      * @return maneuver triggers' parameters
      */
     private <T extends RealFieldElement<T>> T[] getManeuverTriggersParameters(final T[] parameters) {
-        final int nbPropulsionModelDrivers = propulsionModel.getParametersDrivers().length;
+        final int nbPropulsionModelDrivers = propulsionModel.getParametersDrivers().size();
         return Arrays.copyOfRange(parameters, nbPropulsionModelDrivers,
-                                  nbPropulsionModelDrivers + maneuverTriggers.getParametersDrivers().length);
+                                  nbPropulsionModelDrivers + maneuverTriggers.getParametersDrivers().size());
     }
 }

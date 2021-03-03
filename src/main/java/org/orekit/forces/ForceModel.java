@@ -16,6 +16,7 @@
  */
 package org.orekit.forces;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
@@ -105,10 +106,10 @@ public interface ForceModel {
      * @since 9.0
      */
     default double[] getParameters() {
-        final ParameterDriver[] drivers = getParametersDrivers();
-        final double[] parameters = new double[drivers.length];
-        for (int i = 0; i < drivers.length; ++i) {
-            parameters[i] = drivers[i].getValue();
+        final List<ParameterDriver> drivers = getParametersDrivers();
+        final double[] parameters = new double[drivers.size()];
+        for (int i = 0; i < drivers.size(); ++i) {
+            parameters[i] = drivers.get(i).getValue();
         }
         return parameters;
     }
@@ -120,10 +121,10 @@ public interface ForceModel {
      * @since 9.0
      */
     default <T extends RealFieldElement<T>> T[] getParameters(final Field<T> field) {
-        final ParameterDriver[] drivers = getParametersDrivers();
-        final T[] parameters = MathArrays.buildArray(field, drivers.length);
-        for (int i = 0; i < drivers.length; ++i) {
-            parameters[i] = field.getZero().add(drivers[i].getValue());
+        final List<ParameterDriver> drivers = getParametersDrivers();
+        final T[] parameters = MathArrays.buildArray(field, drivers.size());
+        for (int i = 0; i < drivers.size(); ++i) {
+            parameters[i] = field.getZero().add(drivers.get(i).getValue());
         }
         return parameters;
     }
@@ -169,12 +170,12 @@ public interface ForceModel {
      * @return drivers for force model parameters
      * @since 8.0
      */
-    ParameterDriver[] getParametersDrivers();
+    List<ParameterDriver> getParametersDrivers();
 
     /** Get parameter value from its name.
      * @param name parameter name
      * @return parameter value
-          * @since 8.0
+     * @since 8.0
      */
     ParameterDriver getParameterDriver(String name);
 

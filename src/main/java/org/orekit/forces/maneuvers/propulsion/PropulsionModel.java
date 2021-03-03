@@ -17,6 +17,9 @@
 
 package org.orekit.forces.maneuvers.propulsion;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -58,8 +61,8 @@ public interface PropulsionModel {
      * @return acceleration
      */
     <T extends RealFieldElement<T>> FieldVector3D<T> getAcceleration(FieldSpacecraftState<T> s,
-                                                                            FieldAttitude<T> maneuverAttitude,
-                                                                            T[] parameters);
+                                                                     FieldAttitude<T> maneuverAttitude,
+                                                                     T[] parameters);
 
     /** Get the mass derivative (i.e. flow rate in kg/s) during maneuver.
      *@param s current spacecraft state
@@ -75,13 +78,13 @@ public interface PropulsionModel {
      * @return mass derivative in kg/s
      */
     <T extends RealFieldElement<T>> T getMassDerivatives(FieldSpacecraftState<T> s,
-                                                                T[] parameters);
+                                                         T[] parameters);
 
     /** Get the propulsion model parameter drivers.
      * @return propulsion model parameter drivers
      */
-    default ParameterDriver[] getParametersDrivers() {
-        return new ParameterDriver[] {};
+    default List<ParameterDriver> getParametersDrivers() {
+        return Collections.emptyList();
     }
 
     /** Get the maneuver name.

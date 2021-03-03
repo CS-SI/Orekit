@@ -19,6 +19,8 @@ package org.orekit.propagation.analytical.tle;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -643,10 +645,8 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
     /** Get the drivers for TLE propagation SGP4 and SDP4.
      * @return drivers for SGP4 and SDP4 model parameters
      */
-    public ParameterDriver[] getParametersDrivers() {
-        return new ParameterDriver[] {
-            bStarParameterDriver
-        };
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.singletonList(bStarParameterDriver);
     }
 
     /** Get model parameters.
@@ -654,10 +654,11 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
      * @return model parameters
      */
     public T[] getParameters(final Field<T> field) {
-        final ParameterDriver[] drivers = getParametersDrivers();
-        final T[] parameters = MathArrays.buildArray(field, drivers.length);
-        for (int i = 0; i < drivers.length; ++i) {
-            parameters[i] = field.getZero().add(drivers[i].getValue());
+        final List<ParameterDriver> drivers = getParametersDrivers();
+        final T[] parameters = MathArrays.buildArray(field, drivers.size());
+        int i = 0;
+        for (ParameterDriver driver : drivers) {
+            parameters[i++] = field.getZero().add(driver.getValue());
         }
         return parameters;
     }
@@ -989,8 +990,8 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
                                        getMeanMotionSecondDerivative().getReal(), getE().getReal(), getI().getReal(), getPerigeeArgument().getReal(),
                                        getRaan().getReal(), getMeanAnomaly().getReal(), getRevolutionNumberAtEpoch(), getBStar(), getUtc());
 
-        for (int k = 0; k < regularTLE.getParametersDrivers().length; ++k) {
-            regularTLE.getParametersDrivers()[k].setSelected(getParametersDrivers()[k].isSelected());
+        for (int k = 0; k < regularTLE.getParametersDrivers().size(); ++k) {
+            regularTLE.getParametersDrivers().get(k).setSelected(getParametersDrivers().get(k).isSelected());
         }
 
         return regularTLE;

@@ -266,7 +266,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
 
             try {
                 // ensure we are notified of any mu change
-                model.getParametersDrivers()[0].addObserver(new ParameterObserver() {
+                model.getParametersDrivers().get(0).addObserver(new ParameterObserver() {
                     /** {@inheritDoc} */
                     @Override
                     public void valueChanged(final double previousValue, final ParameterDriver driver) {

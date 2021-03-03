@@ -223,7 +223,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
      * @param body central body
      * @return drivers for the force model
      */
-    protected abstract ParameterDriver[] setGravity(T propagatorBuilder, OneAxisEllipsoid body);
+    protected abstract List<ParameterDriver> setGravity(T propagatorBuilder, OneAxisEllipsoid body);
 
     /** Set third body attraction force model.
      * @param propagatorBuilder propagator builder
@@ -233,8 +233,8 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
      * @param order order of the tide model to load
      * @return drivers for the force model
      */
-    protected abstract ParameterDriver[] setOceanTides(T propagatorBuilder, IERSConventions conventions,
-                                                       OneAxisEllipsoid body, int degree, int order);
+    protected abstract List<ParameterDriver> setOceanTides(T propagatorBuilder, IERSConventions conventions,
+                                                          OneAxisEllipsoid body, int degree, int order);
 
     /** Set third body attraction force model.
      * @param propagatorBuilder propagator builder
@@ -243,15 +243,15 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
      * @param solidTidesBodies third bodies generating solid tides
      * @return drivers for the force model
      */
-    protected abstract ParameterDriver[]setSolidTides(T propagatorBuilder, IERSConventions conventions,
-                                                      OneAxisEllipsoid body, CelestialBody[] solidTidesBodies);
+    protected abstract List<ParameterDriver> setSolidTides(T propagatorBuilder, IERSConventions conventions,
+                                                           OneAxisEllipsoid body, CelestialBody[] solidTidesBodies);
 
     /** Set third body attraction force model.
      * @param propagatorBuilder propagator builder
      * @param thirdBody third body
      * @return drivers for the force model
      */
-    protected abstract ParameterDriver[] setThirdBody(T propagatorBuilder, CelestialBody thirdBody);
+    protected abstract List<ParameterDriver> setThirdBody(T propagatorBuilder, CelestialBody thirdBody);
 
     /** Set drag force model.
      * @param propagatorBuilder propagator builder
@@ -259,7 +259,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
      * @param spacecraft spacecraft model
      * @return drivers for the force model
      */
-    protected abstract ParameterDriver[] setDrag(T propagatorBuilder, Atmosphere atmosphere, DragSensitive spacecraft);
+    protected abstract List<ParameterDriver> setDrag(T propagatorBuilder, Atmosphere atmosphere, DragSensitive spacecraft);
 
     /** Set solar radiation pressure force model.
      * @param propagatorBuilder propagator builder
@@ -268,8 +268,8 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
      * @param spacecraft spacecraft model
      * @return drivers for the force model
      */
-    protected abstract ParameterDriver[] setSolarRadiationPressure(T propagatorBuilder, CelestialBody sun,
-                                                                   double equatorialRadius, RadiationSensitive spacecraft);
+    protected abstract List<ParameterDriver> setSolarRadiationPressure(T propagatorBuilder, CelestialBody sun,
+                                                                       double equatorialRadius, RadiationSensitive spacecraft);
 
     /** Set Earth's albedo and infrared force model.
      * @param propagatorBuilder propagator builder
@@ -279,15 +279,15 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
      * @param spacecraft spacecraft model
      * @return drivers for the force model
      */
-    protected abstract ParameterDriver[] setAlbedoInfrared(T propagatorBuilder, CelestialBody sun,
-                                                           double equatorialRadius, double angularResolution,
-                                                           RadiationSensitive spacecraft);
+    protected abstract List<ParameterDriver> setAlbedoInfrared(T propagatorBuilder, CelestialBody sun,
+                                                               double equatorialRadius, double angularResolution,
+                                                               RadiationSensitive spacecraft);
 
     /** Set relativity force model.
      * @param propagatorBuilder propagator builder
      * @return drivers for the force model
      */
-    protected abstract ParameterDriver[] setRelativity(T propagatorBuilder);
+    protected abstract List<ParameterDriver> setRelativity(T propagatorBuilder);
 
     /** Set polynomial acceleration force model.
      * @param propagatorBuilder propagator builder
@@ -296,8 +296,8 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
      * @param degree polynomial degree
      * @return drivers for the force model
      */
-    protected abstract ParameterDriver[] setPolynomialAcceleration(T propagatorBuilder, String name,
-                                                                   Vector3D direction, int degree);
+    protected abstract List<ParameterDriver> setPolynomialAcceleration(T propagatorBuilder, String name,
+                                                                       Vector3D direction, int degree);
 
     /** Set attitude provider.
      * @param propagatorBuilder propagator builder
@@ -1006,7 +1006,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             final DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
             manager.feed(msafe.getSupportedNames(), msafe);
             final Atmosphere atmosphere = new DTM2000(msafe, CelestialBodyFactory.getSun(), body);
-            final ParameterDriver[] drivers = setDrag(propagatorBuilder, atmosphere, new IsotropicDrag(area, cd));
+            final List<ParameterDriver> drivers = setDrag(propagatorBuilder, atmosphere, new IsotropicDrag(area, cd));
             if (cdEstimated) {
                 for (final ParameterDriver driver : drivers) {
                     if (driver.getName().equals(DragSensitive.DRAG_COEFFICIENT)) {
@@ -1021,9 +1021,9 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             final double  cr          = parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_CR);
             final double  area        = parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_AREA);
             final boolean cREstimated = parser.getBoolean(ParameterKey.SOLAR_RADIATION_PRESSURE_CR_ESTIMATED);
-            final ParameterDriver[] drivers = setSolarRadiationPressure(propagatorBuilder, CelestialBodyFactory.getSun(),
-                                                                        body.getEquatorialRadius(),
-                                                                        new IsotropicRadiationSingleCoefficient(area, cr));
+            final List<ParameterDriver> drivers = setSolarRadiationPressure(propagatorBuilder, CelestialBodyFactory.getSun(),
+                                                                            body.getEquatorialRadius(),
+                                                                            new IsotropicRadiationSingleCoefficient(area, cr));
             if (cREstimated) {
                 for (final ParameterDriver driver : drivers) {
                     if (driver.getName().equals(RadiationSensitive.REFLECTION_COEFFICIENT)) {
@@ -1039,9 +1039,9 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             final double  area             = parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_AREA);
             final boolean cREstimated      = parser.getBoolean(ParameterKey.SOLAR_RADIATION_PRESSURE_CR_ESTIMATED);
             final double angularResolution = parser.getAngle(ParameterKey.ALBEDO_INFRARED_ANGULAR_RESOLUTION);
-            final ParameterDriver[] drivers = setAlbedoInfrared(propagatorBuilder, CelestialBodyFactory.getSun(),
-                                                                body.getEquatorialRadius(), angularResolution,
-                                                                new IsotropicRadiationSingleCoefficient(area, cr));
+            final List<ParameterDriver> drivers = setAlbedoInfrared(propagatorBuilder, CelestialBodyFactory.getSun(),
+                                                                    body.getEquatorialRadius(), angularResolution,
+                                                                    new IsotropicRadiationSingleCoefficient(area, cr));
             if (cREstimated) {
                 for (final ParameterDriver driver : drivers) {
                     if (driver.getName().equals(RadiationSensitive.REFLECTION_COEFFICIENT)) {
@@ -1066,7 +1066,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             final boolean[]      estimated    = parser.getBooleanArray(ParameterKey.POLYNOMIAL_ACCELERATION_ESTIMATED);
 
             for (int i = 0; i < names.length; ++i) {
-                final ParameterDriver[] drivers = setPolynomialAcceleration(propagatorBuilder, names[i], directions[i], coefficients[i].size() - 1);
+                final List<ParameterDriver> drivers = setPolynomialAcceleration(propagatorBuilder, names[i], directions[i], coefficients[i].size() - 1);
                 for (int k = 0; k < coefficients[i].size(); ++k) {
                     final String coefficientName = names[i] + "[" + k + "]";
                     for (final ParameterDriver driver : drivers) {

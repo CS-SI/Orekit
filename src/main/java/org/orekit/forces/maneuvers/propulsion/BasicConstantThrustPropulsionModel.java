@@ -17,6 +17,10 @@
 
 package org.orekit.forces.maneuvers.propulsion;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -102,10 +106,11 @@ public class BasicConstantThrustPropulsionModel extends AbstractConstantThrustPr
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getParametersDrivers() {
-        return new ParameterDriver[] {
-            thrustDriver, flowRateDriver
-        };
+    public List<ParameterDriver> getParametersDrivers() {
+        final List<ParameterDriver> drivers = new ArrayList<>(2);
+        drivers.add(thrustDriver);
+        drivers.add(flowRateDriver);
+        return Collections.unmodifiableList(drivers);
     }
 
     /** {@inheritDoc} */

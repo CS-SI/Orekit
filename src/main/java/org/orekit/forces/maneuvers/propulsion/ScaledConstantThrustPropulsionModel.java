@@ -17,6 +17,10 @@
 
 package org.orekit.forces.maneuvers.propulsion;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -105,10 +109,12 @@ public class ScaledConstantThrustPropulsionModel extends AbstractConstantThrustP
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getParametersDrivers() {
-        return new ParameterDriver[] {
-            scaleFactorThrustXDriver, scaleFactorThrustYDriver, scaleFactorThrustZDriver
-        };
+    public List<ParameterDriver> getParametersDrivers() {
+        final List<ParameterDriver> drivers = new ArrayList<>(3);
+        drivers.add(scaleFactorThrustXDriver);
+        drivers.add(scaleFactorThrustYDriver);
+        drivers.add(scaleFactorThrustZDriver);
+        return Collections.unmodifiableList(drivers);
     }
 
     /** {@inheritDoc} */

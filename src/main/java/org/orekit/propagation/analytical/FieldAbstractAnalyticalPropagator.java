@@ -371,17 +371,17 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
     /** Get the parameters driver for propagation model.
      * @return drivers for propagation model
      */
-    protected abstract ParameterDriver[] getParametersDrivers();
+    protected abstract List<ParameterDriver> getParametersDrivers();
 
     /** Get model parameters.
      * @param field field to which the elements belong
      * @return model parameters
      */
     public T[] getParameters(final Field<T> field) {
-        final ParameterDriver[] drivers = getParametersDrivers();
-        final T[] parameters = MathArrays.buildArray(field, drivers.length);
-        for (int i = 0; i < drivers.length; ++i) {
-            parameters[i] = field.getZero().add(drivers[i].getValue());
+        final List<ParameterDriver> drivers = getParametersDrivers();
+        final T[] parameters = MathArrays.buildArray(field, drivers.size());
+        for (int i = 0; i < drivers.size(); ++i) {
+            parameters[i] = field.getZero().add(drivers.get(i).getValue());
         }
         return parameters;
     }
@@ -515,7 +515,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
         }
 
         @Override
-        protected ParameterDriver[] getParametersDrivers() {
+        protected List<ParameterDriver> getParametersDrivers() {
             return FieldAbstractAnalyticalPropagator.this.getParametersDrivers();
         }
     }

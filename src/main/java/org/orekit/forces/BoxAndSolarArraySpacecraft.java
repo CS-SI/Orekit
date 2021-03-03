@@ -595,21 +595,25 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getDragParametersDrivers() {
-        return liftParameterDriver == null ?
-               new ParameterDriver[] {
-                   dragParameterDriver
-               } : new ParameterDriver[] {
-                   dragParameterDriver, liftParameterDriver
-               };
+    public List<ParameterDriver> getDragParametersDrivers() {
+        // Initialize list of drag parameter drivers
+        final List<ParameterDriver> drivers = new ArrayList<>();
+        drivers.add(dragParameterDriver);
+        // Verify if the driver for lift ratio parameter is defined
+        if (liftParameterDriver != null) {
+            drivers.add(liftParameterDriver);
+        }
+        return drivers;
     }
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getRadiationParametersDrivers() {
-        return new ParameterDriver[] {
-            absorptionParameterDriver, reflectionParameterDriver
-        };
+    public List<ParameterDriver> getRadiationParametersDrivers() {
+        // Initialize list of drag parameter drivers
+        final List<ParameterDriver> drivers = new ArrayList<>();
+        drivers.add(absorptionParameterDriver);
+        drivers.add(reflectionParameterDriver);
+        return drivers;
     }
 
     /** Get solar array normal in spacecraft frame.

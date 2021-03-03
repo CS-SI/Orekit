@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.integration;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -264,9 +265,9 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] getParametersDrivers() {
+    protected List<ParameterDriver> getParametersDrivers() {
         // Integrated Ephemeris propagation model does not have parameter drivers.
-        return new ParameterDriver[0];
+        return Collections.emptyList();
     }
 
 }

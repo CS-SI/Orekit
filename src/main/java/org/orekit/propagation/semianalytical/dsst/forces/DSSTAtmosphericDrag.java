@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import java.util.List;
+
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
@@ -172,7 +174,7 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] getParametersDriversWithoutMu() {
+    protected List<ParameterDriver> getParametersDriversWithoutMu() {
         return drag.getParametersDrivers();
     }
 

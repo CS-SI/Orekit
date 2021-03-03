@@ -367,7 +367,7 @@ public class MultipleShooterTest {
 
             propagator.addForceModel(new NewtonianAttraction(primary.getGM()));
             final ForceModel model = new ThirdBodyAttractionEpoch(secondary);
-            model.getParametersDrivers()[0].setSelected(true);
+            model.getParametersDrivers().get(0).setSelected(true);
             propagator.addForceModel(model);
 
             propagator.setOrbitType(null);
