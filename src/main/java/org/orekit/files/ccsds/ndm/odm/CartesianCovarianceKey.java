@@ -21,11 +21,11 @@ import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 
-/** Keys for {@link Covariance ODM covariance} entries.
+/** Keys for {@link CartesianCovariance OPM/OMM/OCM Cartesian covariance} entries.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public enum CovarianceKey {
+public enum CartesianCovarianceKey {
 
     /** Comment entry. */
     COMMENT((token, context, data) ->
@@ -106,7 +106,7 @@ public enum CovarianceKey {
     /** Simple constructor.
      * @param processor processing method
      */
-    CovarianceKey(final TokenProcessor processor) {
+    CartesianCovarianceKey(final TokenProcessor processor) {
         this.processor = processor;
     }
 
@@ -116,7 +116,7 @@ public enum CovarianceKey {
      * @param data data to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final Covariance data) {
+    public boolean process(final ParseToken token, final ParsingContext context, final CartesianCovariance data) {
         return processor.process(token, context, data);
     }
 
@@ -128,7 +128,7 @@ public enum CovarianceKey {
          * @param data data to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, Covariance data);
+        boolean process(ParseToken token, ParsingContext context, CartesianCovariance data);
     }
 
 }

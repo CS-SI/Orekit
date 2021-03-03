@@ -28,11 +28,11 @@ import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Data;
 import org.orekit.time.AbsoluteDate;
 
-/** Container for covariance matrix.
+/** Container for OPM/OMM/OCM Cartesian covariance matrix.
  * @author sports
  * @since 6.1
  */
-public class Covariance extends CommentsContainer implements Data {
+public class CartesianCovariance extends CommentsContainer implements Data {
 
     /** Labels for matrix row/columns. */
     private static final String[] LABELS = {
@@ -55,7 +55,7 @@ public class Covariance extends CommentsContainer implements Data {
      * @param defaultFrameSupplier supplier for default reference frame
      * if no frame is specified in the CCSDS message
      */
-    public Covariance(final Supplier<FrameFacade> defaultFrameSupplier) {
+    public CartesianCovariance(final Supplier<FrameFacade> defaultFrameSupplier) {
         this.defaultFrameSupplier = defaultFrameSupplier;
         covarianceMatrix = MatrixUtils.createRealMatrix(6, 6);
         for (int i = 0; i < covarianceMatrix.getRowDimension(); ++i) {
@@ -69,7 +69,7 @@ public class Covariance extends CommentsContainer implements Data {
     @Override
     public void checkMandatoryEntries() {
         super.checkMandatoryEntries();
-        checkNotNull(epoch, CovarianceKey.EPOCH);
+        checkNotNull(epoch, CartesianCovarianceKey.EPOCH);
         for (int i = 0; i < covarianceMatrix.getRowDimension(); ++i) {
             for (int j = 0; j <= i; ++j) {
                 if (Double.isNaN(covarianceMatrix.getEntry(i, j))) {

@@ -69,8 +69,8 @@ public class LexerTest {
 
     @Test
     public void testSuperscriptExponent() {
-        final Lexer lexer = new Lexer("N⁺¹²³⁴⁵⁰ ⁄ mas⁻⁹⁸⁷⁶⁵");
-        expect(lexer, "N",       TokenType.PREFIXED_UNIT, null, PredefinedUnit.NEWTON.toUnit(), 0);
+        final Lexer lexer = new Lexer("SFU⁺¹²³⁴⁵⁰ ⁄ mas⁻⁹⁸⁷⁶⁵");
+        expect(lexer, "SFU",     TokenType.PREFIXED_UNIT, null, PredefinedUnit.SOLAR_FLUX_UNIT.toUnit(), 0);
         expect(lexer, "",        TokenType.POWER, null, null, 0);
         expect(lexer, "⁺¹²³⁴⁵⁰", TokenType.INTEGER, null, null, 123450);
         expect(lexer, "⁄",       TokenType.DIVISION, null, null, 0);
@@ -103,6 +103,13 @@ public class LexerTest {
         expect(lexer, "^",  TokenType.POWER, null, null, 0);
         expect(lexer, "2",  TokenType.INTEGER, null, null, 2);
         expectFailure(lexer); 
+    }
+
+    @Test
+    public void testPercentageCharacter() {
+        final Lexer lexer = new Lexer("%");
+        expect(lexer, "%", TokenType.PREFIXED_UNIT, null, PredefinedUnit.PERCENT.toUnit(), 0);
+        Assert.assertNull(lexer.next());
     }
 
     @Test

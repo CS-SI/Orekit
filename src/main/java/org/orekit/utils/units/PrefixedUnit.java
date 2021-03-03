@@ -30,7 +30,7 @@ import org.orekit.errors.OrekitMessages;
  */
 class PrefixedUnit extends Unit {
 
-    /** Allowed units with SI prefixes, with various aliases for angles and year. */
+    /** Allowed units with SI prefixes, with various aliases for angles, year, sfu, and tecu. */
     private static final Map<String, PrefixedUnit> ALLOWED;
 
     static {
@@ -56,7 +56,12 @@ class PrefixedUnit extends Unit {
                                               PredefinedUnit.NEWTON.toUnit(),
                                               PredefinedUnit.PASCAL.toUnit(), // must be after year to override peta-years
                                               PredefinedUnit.JOULE.toUnit(),
-                                              PredefinedUnit.WATT.toUnit());
+                                              PredefinedUnit.WATT.toUnit(),
+                                              PredefinedUnit.SOLAR_FLUX_UNIT.toUnit(),
+                                              PredefinedUnit.SOLAR_FLUX_UNIT.toUnit().alias("SFU"),
+                                              PredefinedUnit.TOTAL_ELECTRON_CONTENT_UNIT.toUnit(),
+                                              PredefinedUnit.TOTAL_ELECTRON_CONTENT_UNIT.toUnit().alias("tecu"),
+                                              PredefinedUnit.PERCENT.toUnit());
         ALLOWED = new HashMap<>(base.size() * Prefix.values().length);
         for (final Unit unit : base) {
             ALLOWED.put(unit.getName(), new PrefixedUnit(null, unit));

@@ -104,6 +104,7 @@ class Lexer {
                 unitSpecification.charAt(current) == '\'' ||
                 unitSpecification.charAt(current) == '″'  ||
                 unitSpecification.charAt(current) == '"'  ||
+                unitSpecification.charAt(current) == '%'  ||
                 unitSpecification.charAt(current) == 'µ')) {
             ++current;
         }

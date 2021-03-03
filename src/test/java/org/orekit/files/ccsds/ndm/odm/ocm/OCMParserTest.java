@@ -35,7 +35,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class OCMParserTest {
@@ -113,6 +112,42 @@ public class OCMParserTest {
         }
     }
 
+    @Ignore
+    @Test
+    public void testIncompatibleUnits() throws URISyntaxException {
+        final String name = "/ccsds/odm/ocm/OCM-incompatible-units.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        try {
+            new ParserBuilder().
+            withMu(Constants.EIGEN5C_EARTH_MU).
+            buildOcmParser().
+            parseMessage(source);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.INCOMPATIBLE_UNITS, oe.getSpecifier());
+            Assert.assertEquals("km²/s", oe.getParts()[0]);
+            Assert.assertEquals("m", oe.getParts()[1]);
+        }
+    }
+
+    @Test
+    public void testWrongNbElements() throws URISyntaxException {
+        final String name = "/ccsds/odm/ocm/OCM-wrong-nb-elements.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        try {
+            new ParserBuilder().
+            withMu(Constants.EIGEN5C_EARTH_MU).
+            buildOcmParser().
+            parseMessage(source);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS, oe.getSpecifier());
+            Assert.assertEquals(ElementsType.CARTP.name(), oe.getParts()[0]);
+            Assert.assertEquals(ElementsType.CARTP.toString(), oe.getParts()[1]);
+            Assert.assertEquals(3, ((Integer) oe.getParts()[2]).intValue());
+        }
+    }
+
     @Test
     public void testUnknownFrame() throws URISyntaxException {
         final String name = "/ccsds/odm/ocm/OCM-unknown-frame.txt";
@@ -126,12 +161,12 @@ public class OCMParserTest {
         final OrbitStateHistory h = ocm.getData().getOrbitBlocks().get(0);
         Assert.assertEquals("ZZRF", h.getMetadata().getOrbReferenceFrame().getName());
         List<TimeStampedPVCoordinates> l = h.getCoordinates();
-        Assert.assertEquals( 3.0e6, h.getCoordinates().get(0).getPosition().getX(), 1.0e-9);
-        Assert.assertEquals( 4.0e6, h.getCoordinates().get(0).getPosition().getY(), 1.0e-9);
-        Assert.assertEquals( 5.0e6, h.getCoordinates().get(0).getPosition().getZ(), 1.0e-9);
-        Assert.assertEquals(-1.0e3, h.getCoordinates().get(0).getVelocity().getX(), 1.0e-12);
-        Assert.assertEquals(-2.0e3, h.getCoordinates().get(0).getVelocity().getY(), 1.0e-12);
-        Assert.assertEquals(-3.0e3, h.getCoordinates().get(0).getVelocity().getZ(), 1.0e-1);
+        Assert.assertEquals( 3.0e6, l.get(0).getPosition().getX(), 1.0e-9);
+        Assert.assertEquals( 4.0e6, l.get(0).getPosition().getY(), 1.0e-9);
+        Assert.assertEquals( 5.0e6, l.get(0).getPosition().getZ(), 1.0e-9);
+        Assert.assertEquals(-1.0e3, l.get(0).getVelocity().getX(), 1.0e-12);
+        Assert.assertEquals(-2.0e3, l.get(0).getVelocity().getY(), 1.0e-12);
+        Assert.assertEquals(-3.0e3, l.get(0).getVelocity().getZ(), 1.0e-1);
         try {
             ocm.getData().getOrbitBlocks().get(0).getFrame();
             Assert.fail("an exception should have been thrown");
@@ -139,6 +174,24 @@ public class OCMParserTest {
             Assert.assertEquals(OrekitMessages.CCSDS_INVALID_FRAME, oe.getSpecifier());
             Assert.assertEquals("ZZRF", oe.getParts()[0]);
         }
+    }
+
+    @Ignore
+    @Test
+    public void testUUserDefined() throws URISyntaxException {
+        final String name = "/ccsds/odm/ocm/OCM-user-defined.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        final OcmFile    ocm    = new ParserBuilder().
+                                  withMu(Constants.EIGEN5C_EARTH_MU).
+                                  buildOcmParser().
+                                  parseMessage(source);
+        Assert.assertEquals("CS GROUP", ocm.getHeader().getOriginator());
+        Assert.assertEquals("b77d785c-f7a8-4a80-a9b1-a540eac19d7a", ocm.getHeader().getMessageId().toLowerCase(Locale.US));
+        Assert.assertNull(ocm.getData().getOrbitBlocks());
+        Assert.assertEquals(1, ocm.getData().getUserDefinedBlock().getComments().size());
+        Assert.assertEquals("some user data", ocm.getData().getUserDefinedBlock().getComments().get(0));
+        Assert.assertEquals(1, ocm.getData().getUserDefinedBlock().getParameters().size());
+        Assert.assertEquals("OREKIT", ocm.getData().getUserDefinedBlock().getParameters().get("GENERATOR"));
     }
 
     @Test

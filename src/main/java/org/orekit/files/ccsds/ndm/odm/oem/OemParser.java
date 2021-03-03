@@ -28,8 +28,8 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.CommonParser;
-import org.orekit.files.ccsds.ndm.odm.Covariance;
-import org.orekit.files.ccsds.ndm.odm.CovarianceKey;
+import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
+import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
 import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
 import org.orekit.files.ccsds.section.Header;
@@ -88,7 +88,7 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
     private boolean inCovariance;
 
     /** Current covariance matrix being parsed. */
-    private Covariance currentCovariance;
+    private CartesianCovariance currentCovariance;
 
     /** Current row number in covariance matrix. */
     private int currentRow;
@@ -344,13 +344,13 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
                 if (currentCovariance == null) {
                     // save the current metadata for later retrieval of reference frame
                     final CommonMetadata savedMetadata = metadata;
-                    currentCovariance = new Covariance(() -> savedMetadata.getReferenceFrame());
+                    currentCovariance = new CartesianCovariance(() -> savedMetadata.getReferenceFrame());
                     currentRow        = 0;
                 }
 
                 // parse the token
                 try {
-                    return CovarianceKey.valueOf(token.getName()).
+                    return CartesianCovarianceKey.valueOf(token.getName()).
                            process(token, context, currentCovariance);
                 } catch (IllegalArgumentException iae) {
                     // token not recognized

@@ -19,7 +19,7 @@ package org.orekit.files.ccsds.ndm.odm.oem;
 
 import java.util.List;
 
-import org.orekit.files.ccsds.ndm.odm.Covariance;
+import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.frames.Frame;
@@ -70,7 +70,7 @@ public class OemSegment extends Segment<OemMetadata, OemData>
     /** Get an unmodifiable view of Covariance Matrices.
      * @return unmodifiable view of Covariance Matrices
      */
-    public List<Covariance> getCovarianceMatrices() {
+    public List<CartesianCovariance> getCovarianceMatrices() {
         return getData().getCovarianceMatrices();
     }
 

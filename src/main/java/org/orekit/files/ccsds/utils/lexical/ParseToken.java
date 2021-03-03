@@ -20,6 +20,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
@@ -32,6 +34,7 @@ import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.units.Unit;
 
 /** Token occurring during CCSDS file parsing.
  * <p>
@@ -435,6 +438,24 @@ public class ParseToken {
         return true;
     }
 
+    /** Process the content as a list of units.
+     * @param consumer consumer of the time scale
+     * @return always returns {@code true} (or throws an exception)
+     */
+    public boolean processAsUnitList(final UnitListConsumer consumer) {
+        if (type == TokenType.ENTRY) {
+            final String bracketed = getContent();
+            if (bracketed.charAt(0) != '[' || bracketed.charAt(bracketed.length() - 1) != ']') {
+                throw generateException(null);
+            }
+            final CharSequence unbracketed = bracketed.subSequence(1, bracketed.length() - 1);
+            consumer.accept(Stream.of(SPLIT_AT_COMMAS.split(unbracketed)).
+                            map(s -> Unit.parse(s)).
+                            collect(Collectors.toList()));
+        }
+        return true;
+    }
+
     /** Generate a parse exception for this entry.
      * @param cause underlying cause exception (may be null)
      * @return exception for this entry
@@ -542,6 +563,14 @@ public class ParseToken {
          * @param value value to consume
          */
         void accept(CenterName value);
+    }
+
+    /** Interface representing instance methods that consume units lists values. */
+    public interface UnitListConsumer {
+        /** Consume a list of units.
+         * @param value value to consume
+         */
+        void accept(List<Unit> value);
     }
 
 }

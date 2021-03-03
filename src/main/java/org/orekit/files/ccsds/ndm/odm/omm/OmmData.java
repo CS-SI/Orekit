@@ -19,7 +19,7 @@ package org.orekit.files.ccsds.ndm.odm.omm;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.odm.Covariance;
+import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElementsKey;
 import org.orekit.files.ccsds.ndm.odm.SpacecraftParameters;
@@ -43,7 +43,7 @@ public class OmmData implements Data {
     private final OmmTle tleBlock;
 
     /** Covariance matrix logical block being read. */
-    private final Covariance covarianceBlock;
+    private final CartesianCovariance covarianceBlock;
 
     /** User defined parameters. */
     private final UserDefined userDefinedBlock;
@@ -62,7 +62,7 @@ public class OmmData implements Data {
     public OmmData(final KeplerianElements keplerianElementsBlock,
                    final SpacecraftParameters spacecraftParameters,
                    final OmmTle tleBlock,
-                   final Covariance covarianceBlock,
+                   final CartesianCovariance covarianceBlock,
                    final UserDefined userDefinedBlock,
                    final double mass) {
         this.keplerianElementsBlock = keplerianElementsBlock;
@@ -127,7 +127,7 @@ public class OmmData implements Data {
     /** Get the covariance matrix logical block.
      * @return covariance matrix block (may be null)
      */
-    public Covariance getCovarianceBlock() {
+    public CartesianCovariance getCovarianceBlock() {
         return covarianceBlock;
     }
 

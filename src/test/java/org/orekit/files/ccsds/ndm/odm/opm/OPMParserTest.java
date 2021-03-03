@@ -38,7 +38,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
-import org.orekit.files.ccsds.ndm.odm.Covariance;
+import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
 import org.orekit.files.ccsds.ndm.odm.SpacecraftParameters;
 import org.orekit.frames.Frame;
@@ -381,7 +381,7 @@ public class OPMParserTest {
         Assert.assertEquals(15951238.3495, file.generateKeplerianOrbit().getA(), 0.001);
         Assert.assertEquals(0.5914452565, file.generateKeplerianOrbit().getE(), 1.0e-10);
         // Check Data Covariance matrix Block
-        Covariance covariance = file.getData().getCovarianceBlock();
+        CartesianCovariance covariance = file.getData().getCovarianceBlock();
         Assert.assertNotNull(covariance);
         Assert.assertSame(file.getMetadata().getReferenceFrame(), covariance.getReferenceFrame());
 
@@ -504,7 +504,7 @@ public class OPMParserTest {
         Assert.assertEquals(15951238.3495, file.generateKeplerianOrbit().getA(), 0.001);
         Assert.assertEquals(0.5914452565, file.generateKeplerianOrbit().getE(), 1.0e-10);
         // Check Data Covariance matrix Block
-        Covariance covariance = file.getData().getCovarianceBlock();
+        CartesianCovariance covariance = file.getData().getCovarianceBlock();
         Assert.assertNotNull(covariance);
         ArrayList<String> dataCovMatrixComment = new ArrayList<String>();
         dataCovMatrixComment.add("covariance comment 1");

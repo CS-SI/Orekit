@@ -16,18 +16,12 @@
  */
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.odm.oem.InterpolationMethod;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
-import org.orekit.utils.units.Unit;
 
 
 /** Keys for {@link OrbitStateHistoryMetadata orbit state history metadata} entries.
@@ -106,10 +100,8 @@ public enum OrbitStateHistoryMetadataKey {
         return true;
     }),
 
-    /** SI units for each elements of the orbit state.
-     * @see CCSDSUnit
-     */
-    ORB_UNITS(new UnitsProcessor());
+    /** SI units for each elements of the orbit state. */
+    ORB_UNITS((token, context, metadata) -> token.processAsUnitList(metadata::setOrbUnits));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -140,37 +132,6 @@ public enum OrbitStateHistoryMetadataKey {
          * @return true of token was accepted
          */
         boolean process(ParseToken token, ParsingContext context, OrbitStateHistoryMetadata metadata);
-    }
-
-    /** dedicated processor for units. */
-    private static class UnitsProcessor implements TokenProcessor {
-
-        /** Pattern for splitting units lines. */
-        private static final Pattern UNITS_FINDER = Pattern.compile("((?:\\p{Alnum}|\\*|/)+)\\p{Space}*(?:,\\p{Space}*)?");
-
-        public boolean process(final ParseToken token, final ParsingContext context,
-                               final OrbitStateHistoryMetadata metadata) {
-
-            final String line = token.getContent();
-            if (line.charAt(0) != '[' || line.charAt(line.length() - 1) != ']') {
-                throw token.generateException(null);
-            }
-            final List<Unit> orbUnits = new ArrayList<>();
-            final Matcher matcher = UNITS_FINDER.matcher(line.substring(1, line.length() - 1).trim());
-            while (!matcher.hitEnd()) {
-                if (matcher.find()) {
-                    try {
-                        orbUnits.add(Unit.parse(matcher.group(1)));
-                    } catch (OrekitException oe) {
-                        throw token.generateException(oe);
-                    }
-                } else {
-                    throw token.generateException(null);
-                }
-            }
-            metadata.setOrbUnits(orbUnits);
-            return true;
-        }
     }
 
 }

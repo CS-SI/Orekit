@@ -19,7 +19,7 @@ package org.orekit.files.ccsds.ndm.odm.opm;
 import java.util.Collections;
 import java.util.List;
 
-import org.orekit.files.ccsds.ndm.odm.Covariance;
+import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElementsKey;
 import org.orekit.files.ccsds.ndm.odm.SpacecraftParameters;
@@ -44,7 +44,7 @@ public class OpmData implements Data {
     private final SpacecraftParameters spacecraftParametersBlock;
 
     /** Covariance matrix logical block being read. */
-    private final Covariance covarianceBlock;
+    private final CartesianCovariance covarianceBlock;
 
     /** Maneuvers. */
     private final List<Maneuver> maneuverBlocks;
@@ -67,7 +67,7 @@ public class OpmData implements Data {
     public OpmData(final StateVector stateVectorBlock,
                    final KeplerianElements keplerianElementsBlock,
                    final SpacecraftParameters spacecraftParametersBlock,
-                   final Covariance covarianceBlock,
+                   final CartesianCovariance covarianceBlock,
                    final List<Maneuver> maneuverBlocks,
                    final UserDefined userDefinedBlock,
                    final double mass) {
@@ -129,7 +129,7 @@ public class OpmData implements Data {
     /** Get the covariance matrix logical block.
      * @return covariance matrix block (may be null)
      */
-    public Covariance getCovarianceBlock() {
+    public CartesianCovariance getCovarianceBlock() {
         return covarianceBlock;
     }
 

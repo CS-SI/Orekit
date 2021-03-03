@@ -19,12 +19,9 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.util.List;
 
-import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.CenterName;
 import org.orekit.files.ccsds.definitions.FrameFacade;
@@ -72,7 +69,7 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
     /** Reference frame of the orbit. */
     private FrameFacade orbReferenceFrame;
 
-    /** Epoch of the {@link #ORB_REF_FRAME orbit reference frame}. */
+    /** Epoch of the orbit reference frame. */
     private AbsoluteDate orbFrameEpoch;
 
     /** Start of useable time span covered by ephemerides data, it may be
@@ -114,15 +111,7 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
     public void checkMandatoryEntries() {
         super.checkMandatoryEntries();
         checkNotNull(orbUnits, OrbitStateHistoryMetadataKey.ORB_UNITS);
-        final ElementsUnit[] referenceUnits = orbType.getUnits();
-        MathUtils.checkDimension(referenceUnits.length, orbUnits.size());
-        for (int i = 0; i < referenceUnits.length; ++i) {
-            if (!referenceUnits[i].toUnit().sameDimension(orbUnits.get(i))) {
-                throw new OrekitException(OrekitMessages.INCOMPATIBLE_UNITS,
-                                          referenceUnits[i].toUnit().getName(),
-                                          orbUnits.get(i).getName());
-            }
-        }
+        orbType.checkUnits(orbUnits);
     }
 
     /** Get orbit identification number.
