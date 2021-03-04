@@ -126,8 +126,8 @@ public class OcmMetadata extends OdmMetadata {
     /** Spacecraft clock count at {@link #getEpochT0()}. */
     private double sclkOffsetAtEpoch;
 
-    /** Number of clock seconds occurring during one SI second. */
-    private double clockSecPerSISec;
+    /** Number of spacecraft clock seconds occurring during one SI second. */
+    private double sclkSecPerSISec;
 
     /** Creation date of previous message from a given originator. */
     private AbsoluteDate previousMessageEpoch;
@@ -168,10 +168,11 @@ public class OcmMetadata extends OdmMetadata {
 
         // set up the few fields that have default values as per CCSDS standard
         super(TimeSystem.UTC);
-        catalogName      = "CSPOC";
-        clockSecPerSISec = 1.0;
-        interpMethodEOP  = DEFAULT_INTERPOLATION_METHOD;
-        interpMethodSW   = DEFAULT_INTERPOLATION_METHOD;
+        catalogName       = "CSPOC";
+        sclkOffsetAtEpoch = 0.0;
+        sclkSecPerSISec   = 1.0;
+        interpMethodEOP   = DEFAULT_INTERPOLATION_METHOD;
+        interpMethodSW    = DEFAULT_INTERPOLATION_METHOD;
 
     }
 
@@ -650,19 +651,19 @@ public class OcmMetadata extends OdmMetadata {
         this.sclkOffsetAtEpoch = sclkOffsetAtEpoch;
     }
 
-    /** Get the number of clock seconds occurring during one SI second.
-     * @return number of clock seconds occurring during one SI second
+    /** Get the number of spacecraft clock seconds occurring during one SI second.
+     * @return number of spacecraft clock seconds occurring during one SI second
      */
-    public double getClockSecPerSISec() {
-        return clockSecPerSISec;
+    public double getSclkSecPerSISec() {
+        return sclkSecPerSISec;
     }
 
-    /** Set the number of clock seconds occurring during one SI second.
-     * @param secClockPerSISec number of clock seconds occurring during one SI second
+    /** Set the number of spacecraft clock seconds occurring during one SI second.
+     * @param secClockPerSISec number of spacecraft clock seconds occurring during one SI second
      */
-    public void setClockSecPerSISec(final double secClockPerSISec) {
+    public void setSclkSecPerSISec(final double secClockPerSISec) {
         refuseFurtherComments();
-        this.clockSecPerSISec = secClockPerSISec;
+        this.sclkSecPerSISec = secClockPerSISec;
     }
 
     /** Get the creation date of previous message from a given originator.

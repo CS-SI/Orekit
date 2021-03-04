@@ -116,7 +116,7 @@ public enum PhysicalPropertiesKey {
     SRP_CONST_AREA((token, context, metadata) -> token.processAsDouble(1.0, metadata::setSrpConstantArea)),
 
     /** Nominal SRP coefficient. */
-    SOLAR_RAD_COEFF_NOM((token, context, metadata) -> token.processAsDouble(1.0, metadata::setNominalSrpCoefficient)),
+    SOLAR_RAD_COEFF((token, context, metadata) -> token.processAsDouble(1.0, metadata::setNominalSrpCoefficient)),
 
     /** SRP coefficient 1σ uncertainty. */
     SOLAR_RAD_UNCERTAINTY((token, context, metadata) -> token.processAsDouble(1.0, metadata::setSrpUncertainty)),

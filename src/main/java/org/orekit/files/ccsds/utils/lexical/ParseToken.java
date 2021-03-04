@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -160,6 +161,23 @@ public class ParseToken {
      */
     public double getContentAsAngle() {
         return FastMath.toRadians(getContentAsDouble());
+    }
+
+    /** Get the content of the entry as a vector.
+     * @return content as a vector
+     */
+    public Vector3D getContentAsVector() {
+        try {
+            final String[] fields = SPACE.split(content);
+            if (fields.length == 3) {
+                return new Vector3D(Double.parseDouble(fields[0]),
+                                    Double.parseDouble(fields[1]),
+                                    Double.parseDouble(fields[2]));
+            }
+        } catch (NumberFormatException nfe) {
+            // ignored, error handled below, together with wrong number of fields
+        }
+        throw generateException(null);
     }
 
     /** Get the content of the entry as an integer.
@@ -361,6 +379,17 @@ public class ParseToken {
         return true;
     }
 
+    /** Process the content as a vector.
+     * @param consumer consumer of the vector
+     * @return always returns {@code true} (or throws an exception)
+     */
+    public boolean processAsVector(final VectorConsumer consumer) {
+        if (type == TokenType.ENTRY) {
+            consumer.accept(getContentAsVector());
+        }
+        return true;
+    }
+
     /** Process the content as a date.
      * @param consumer consumer of the date
      * @param context parsing context
@@ -533,9 +562,17 @@ public class ParseToken {
         void accept(int i, int j, double value);
     }
 
+    /** Interface representing instance methods that consume vector values. */
+    public interface VectorConsumer {
+        /** Consume a vector.
+         * @param value value to consume
+         */
+        void accept(Vector3D value);
+    }
+
     /** Interface representing instance methods that consume date values. */
     public interface DateConsumer {
-        /** Consume a data.
+        /** Consume a date.
          * @param value value to consume
          */
         void accept(AbsoluteDate value);

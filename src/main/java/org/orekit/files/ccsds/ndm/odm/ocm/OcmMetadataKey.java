@@ -157,7 +157,7 @@ public enum OcmMetadataKey {
     SCLK_OFFSET_AT_EPOCH((token, context, metadata) -> token.processAsDouble(1.0, metadata::setSclkOffsetAtEpoch)),
 
     /** Number of clock seconds occurring during one SI second. */
-    SCLK_SEC_PER_SI_SEC((token, context, metadata) -> token.processAsDouble(1.0, metadata::setClockSecPerSISec)),
+    SCLK_SEC_PER_SI_SEC((token, context, metadata) -> token.processAsDouble(1.0, metadata::setSclkSecPerSISec)),
 
     /** Creation date of previous message from a given originator. */
     PREVIOUS_MESSAGE_EPOCH((token, context, metadata) -> token.processAsDate(metadata::setPreviousMessageEpoch, context)),

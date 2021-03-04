@@ -220,7 +220,7 @@ public class OCMParserTest {
 
         // check the default values that are not set in this simple file
         Assert.assertEquals("CSPOC",              file.getMetadata().getCatalogName());
-        Assert.assertEquals(1.0,                  file.getMetadata().getClockSecPerSISec(), 1.0e-15);
+        Assert.assertEquals(1.0,                  file.getMetadata().getSclkSecPerSISec(), 1.0e-15);
         Assert.assertEquals("LINEAR",             file.getMetadata().getInterpMethodEOP());
         Assert.assertEquals("LINEAR",             file.getMetadata().getInterpMethodSW());
 
@@ -431,7 +431,7 @@ public class OCMParserTest {
         Assert.assertEquals(new AbsoluteDate(2019, 7, 23,  0, 0, 0.0, TimeScalesFactory.getUTC()),
                             file.getMetadata().getEpochT0());
         Assert.assertEquals(28800.0, file.getMetadata().getSclkOffsetAtEpoch(), 1.0e-10);
-        Assert.assertEquals(2.5,                                   file.getMetadata().getClockSecPerSISec(), 1.0e-15);
+        Assert.assertEquals(2.5,                                   file.getMetadata().getSclkSecPerSISec(), 1.0e-15);
         Assert.assertEquals(new AbsoluteDate(2019, 7, 23,  9, 29, 31.576, TimeScalesFactory.getUTC()),
                             file.getMetadata().getPreviousMessageEpoch());
         Assert.assertEquals(new AbsoluteDate(2019, 7, 23, 11, 29, 31.576, TimeScalesFactory.getUTC()),
