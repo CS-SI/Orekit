@@ -26,16 +26,16 @@ import org.hipparchus.util.FastMath;
 public enum PredefinedUnit {
 
     /** No unit. */
-    NONE(new Unit("n/a", 1.0, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO)),
+    NONE(new Unit("n/a", 1.0, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO)),
 
     /** Dimensionless unit. */
-    ONE(new Unit("1", 1.0, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO)),
+    ONE(new Unit("1", 1.0, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO)),
 
     /** Percentage unit. */
-    PERCENT(new Unit("%", 1.0e-2, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO)),
+    PERCENT(new Unit("%", 1.0e-2, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO)),
 
     /** Second unit. */
-    SECOND(new Unit("s", 1.0, Fraction.ZERO, Fraction.ZERO, Fraction.ONE, Fraction.ZERO)),
+    SECOND(new Unit("s", 1.0, Fraction.ZERO, Fraction.ZERO, Fraction.ONE, Fraction.ZERO, Fraction.ZERO)),
 
     /** Minute unit. */
     MINUTE(SECOND.unit.scale("min", 60.0)),
@@ -55,19 +55,22 @@ public enum PredefinedUnit {
     HERTZ(SECOND.unit.power("Hz", Fraction.MINUS_ONE)),
 
     /** Metre unit. */
-    METRE(new Unit("m", 1.0, Fraction.ZERO, Fraction.ONE, Fraction.ZERO, Fraction.ZERO)),
+    METRE(new Unit("m", 1.0, Fraction.ZERO, Fraction.ONE, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO)),
 
     /** Kilometre unit. */
     KILOMETRE(METRE.unit.scale("km", 1000.0)),
 
     /** Kilogram unit. */
-    KILOGRAM(new Unit("kg", 1.0, Fraction.ONE, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO)),
+    KILOGRAM(new Unit("kg", 1.0, Fraction.ONE, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO)),
 
     /** Gram unit. */
     GRAM(KILOGRAM.unit.scale("g", 1.0e-3)),
 
+    /** Ampere unit. */
+    AMPERE(new Unit("A", 1.0, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ONE, Fraction.ZERO)),
+
     /** Radian unit. */
-    RADIAN(new Unit("rad", 1.0, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ONE)),
+    RADIAN(new Unit("rad", 1.0, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ONE)),
 
     /** Degree unit. */
     DEGREE(RADIAN.unit.scale("°", FastMath.toRadians(1.0))),
@@ -89,6 +92,18 @@ public enum PredefinedUnit {
 
     /** Watt unit. */
     WATT(JOULE.unit.divide("W", SECOND.unit)),
+
+    /** Coulomb unit. */
+    COULOMB(SECOND.unit.multiply("C", AMPERE.unit)),
+
+    /** Volt unit. */
+    VOLT(WATT.unit.divide("V", AMPERE.unit)),
+
+    /** Ohm unit. */
+    OHM(VOLT.unit.divide("Ω", AMPERE.unit)),
+
+    /** tesla unit. */
+    TESLA(VOLT.unit.multiply(null, SECOND.unit).divide("T", METRE.unit.power(null, Fraction.TWO))),
 
     /** Solar Flux Unit. */
     SOLAR_FLUX_UNIT(WATT.unit.divide(null, METRE.unit.power(null, Fraction.TWO).multiply(null, HERTZ.unit)).scale("sfu", 1.0e-22)),

@@ -30,7 +30,7 @@ public class LexerTest {
 
     @Test
     public void testAllTypes() {
-        final Lexer lexer = new Lexer("√kg*km**  (3/2) /(µs^2*rad⁻⁷)");
+        final Lexer lexer = new Lexer("√kg*km**  (3/2) /(µs^2*Ω⁻⁷)");
         expect(lexer, "√",    TokenType.SQUARE_ROOT, null, null, 0);
         expect(lexer, "kg",   TokenType.PREFIXED_UNIT, null, PredefinedUnit.KILOGRAM.toUnit(), 0);
         expect(lexer, "*",    TokenType.MULTIPLICATION, null, null, 0);
@@ -47,7 +47,7 @@ public class LexerTest {
         expect(lexer, "^",    TokenType.POWER, null, null, 0);
         expect(lexer, "2",    TokenType.INTEGER, null, null, 2);
         expect(lexer, "*",    TokenType.MULTIPLICATION, null, null, 0);
-        expect(lexer, "rad",  TokenType.PREFIXED_UNIT, null, PredefinedUnit.RADIAN.toUnit(), 0);
+        expect(lexer, "Ω",    TokenType.PREFIXED_UNIT, null, PredefinedUnit.OHM.toUnit(), 0);
         expect(lexer, "",     TokenType.POWER, null, null, 0);
         expect(lexer, "⁻⁷",   TokenType.INTEGER, null, null, -7);
         expect(lexer, ")",    TokenType.CLOSE, null, null, 0);
@@ -114,7 +114,7 @@ public class LexerTest {
 
     @Test
     public void testUnknownUnit() {
-        final Lexer lexer = new Lexer("Ω");
+        final Lexer lexer = new Lexer("K");
         expectFailure(lexer);   
     }
 

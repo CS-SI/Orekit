@@ -36,7 +36,7 @@ import org.hipparchus.fraction.Fraction;
  *   simple       → predefined   | '(' chain ')'
  * </pre>
  * <p>
- * This parses correctly units like MHz, km/√d, kg.m.s⁻¹, µas^(2/5)/(h**(2)×m)³, km/√(kg.s).
+ * This parses correctly units like MHz, km/√d, kg.m.s⁻¹, µas^(2/5)/(h**(2)×m)³, km/√(kg.s), √kg*km**  (3/2) /(µs^2*Ω⁻⁷).
  * Note that we don't accept both square root and power on the same operand, so km/√d³ is refused.
  * </p>
  * @author Luc Maisonobe

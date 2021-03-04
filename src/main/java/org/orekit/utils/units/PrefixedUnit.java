@@ -43,6 +43,7 @@ class PrefixedUnit extends Unit {
                                               PredefinedUnit.HERTZ.toUnit(),
                                               PredefinedUnit.METRE.toUnit(),
                                               PredefinedUnit.GRAM.toUnit(), // only case were we must use a derived unit
+                                              PredefinedUnit.AMPERE.toUnit(),
                                               PredefinedUnit.RADIAN.toUnit(),
                                               PredefinedUnit.DEGREE.toUnit(),
                                               PredefinedUnit.DEGREE.toUnit().alias("◦"),
@@ -57,6 +58,10 @@ class PrefixedUnit extends Unit {
                                               PredefinedUnit.PASCAL.toUnit(), // must be after year to override peta-years
                                               PredefinedUnit.JOULE.toUnit(),
                                               PredefinedUnit.WATT.toUnit(),
+                                              PredefinedUnit.COULOMB.toUnit(),
+                                              PredefinedUnit.VOLT.toUnit(),
+                                              PredefinedUnit.OHM.toUnit(),
+                                              PredefinedUnit.TESLA.toUnit(),
                                               PredefinedUnit.SOLAR_FLUX_UNIT.toUnit(),
                                               PredefinedUnit.SOLAR_FLUX_UNIT.toUnit().alias("SFU"),
                                               PredefinedUnit.TOTAL_ELECTRON_CONTENT_UNIT.toUnit(),
@@ -79,7 +84,7 @@ class PrefixedUnit extends Unit {
     PrefixedUnit(final Prefix prefix, final Unit unit) {
         super((prefix == null) ? unit.getName()  : (prefix.getSymbol() + unit.getName()),
               (prefix == null) ? unit.getScale() : (prefix.getFactor() * unit.getScale()),
-              unit.getMass(), unit.getLength(), unit.getTime(), unit.getAngle());
+              unit.getMass(), unit.getLength(), unit.getTime(), unit.getCurrent(), unit.getAngle());
     }
 
     /** Get one of the allowed prefixed unit.

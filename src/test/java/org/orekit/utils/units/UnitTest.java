@@ -45,36 +45,47 @@ public class UnitTest {
 
     @Test
     public void testReference() {                                
-        checkReference(PredefinedUnit.ONE.toUnit(),         "1",                     1.0,  0,  0,  0, 0);
-        checkReference(PredefinedUnit.SECOND.toUnit(),      "s",                     1.0,  0,  0,  1, 0);
-        checkReference(PredefinedUnit.MINUTE.toUnit(),    "min",                    60.0,  0,  0,  1, 0);
-        checkReference(PredefinedUnit.HOUR.toUnit(),        "h",                  3600.0,  0,  0,  1, 0);
-        checkReference(PredefinedUnit.DAY.toUnit(),         "d",                 86400.0,  0,  0,  1, 0);
-        checkReference(PredefinedUnit.YEAR.toUnit(),        "a",              31557600.0,  0,  0,  1, 0);
-        checkReference(PredefinedUnit.HERTZ.toUnit(),      "Hz",                     1.0,  0,  0, -1, 0);
-        checkReference(PredefinedUnit.METRE.toUnit(),       "m",                     1.0,  0,  1,  0, 0);
-        checkReference(PredefinedUnit.KILOMETRE.toUnit(),  "km",                  1000.0,  0,  1,  0, 0);
-        checkReference(PredefinedUnit.KILOGRAM.toUnit(),   "kg",                     1.0,  1,  0,  0, 0);
-        checkReference(PredefinedUnit.GRAM.toUnit(),        "g",                   0.001,  1,  0,  0, 0);
-        checkReference(PredefinedUnit.RADIAN.toUnit(),    "rad",                     1.0,  0,  0,  0, 1);
-        checkReference(PredefinedUnit.DEGREE.toUnit(),      "°",  FastMath.PI /    180.0,  0,  0,  0, 1);
-        checkReference(PredefinedUnit.ARC_MINUTE.toUnit(),  "′",  FastMath.PI /  10800.0,  0,  0,  0, 1);
-        checkReference(PredefinedUnit.ARC_SECOND.toUnit(),  "″",  FastMath.PI / 648000.0,  0,  0,  0, 1);
-        checkReference(PredefinedUnit.NEWTON.toUnit(),      "N",                     1.0,  1,  1, -2, 0);
-        checkReference(PredefinedUnit.PASCAL.toUnit(),     "Pa",                     1.0,  1, -1, -2, 0);
-        checkReference(PredefinedUnit.JOULE.toUnit(),       "J",                     1.0,  1,  2, -2, 0);
-        checkReference(PredefinedUnit.WATT.toUnit(),        "W",                     1.0,  1,  2, -3, 0);
+        checkReference(PredefinedUnit.NONE.toUnit(),                        "n/a",                     1.0,  0,  0,  0,  0, 0);
+        checkReference(PredefinedUnit.ONE.toUnit(),                           "1",                     1.0,  0,  0,  0,  0, 0);
+        checkReference(PredefinedUnit.PERCENT.toUnit(),                       "%",                    0.01,  0,  0,  0,  0, 0);
+        checkReference(PredefinedUnit.SECOND.toUnit(),                        "s",                     1.0,  0,  0,  1,  0, 0);
+        checkReference(PredefinedUnit.MINUTE.toUnit(),                      "min",                    60.0,  0,  0,  1,  0, 0);
+        checkReference(PredefinedUnit.HOUR.toUnit(),                          "h",                  3600.0,  0,  0,  1,  0, 0);
+        checkReference(PredefinedUnit.DAY.toUnit(),                           "d",                 86400.0,  0,  0,  1,  0, 0);
+        checkReference(PredefinedUnit.YEAR.toUnit(),                          "a",              31557600.0,  0,  0,  1,  0, 0);
+        checkReference(PredefinedUnit.HERTZ.toUnit(),                        "Hz",                     1.0,  0,  0, -1,  0, 0);
+        checkReference(PredefinedUnit.METRE.toUnit(),                         "m",                     1.0,  0,  1,  0,  0, 0);
+        checkReference(PredefinedUnit.KILOMETRE.toUnit(),                    "km",                  1000.0,  0,  1,  0,  0, 0);
+        checkReference(PredefinedUnit.KILOGRAM.toUnit(),                     "kg",                     1.0,  1,  0,  0,  0, 0);
+        checkReference(PredefinedUnit.GRAM.toUnit(),                          "g",                   0.001,  1,  0,  0,  0, 0);
+        checkReference(PredefinedUnit.AMPERE.toUnit(),                        "A",                     1.0,  0,  0,  0,  1, 0);
+        checkReference(PredefinedUnit.RADIAN.toUnit(),                      "rad",                     1.0,  0,  0,  0,  0, 1);
+        checkReference(PredefinedUnit.DEGREE.toUnit(),                        "°",  FastMath.PI /    180.0,  0,  0,  0,  0, 1);
+        checkReference(PredefinedUnit.ARC_MINUTE.toUnit(),                    "′",  FastMath.PI /  10800.0,  0,  0,  0,  0, 1);
+        checkReference(PredefinedUnit.ARC_SECOND.toUnit(),                    "″",  FastMath.PI / 648000.0,  0,  0,  0,  0, 1);
+        checkReference(PredefinedUnit.NEWTON.toUnit(),                        "N",                     1.0,  1,  1, -2,  0, 0);
+        checkReference(PredefinedUnit.PASCAL.toUnit(),                       "Pa",                     1.0,  1, -1, -2,  0, 0);
+        checkReference(PredefinedUnit.JOULE.toUnit(),                         "J",                     1.0,  1,  2, -2,  0, 0);
+        checkReference(PredefinedUnit.WATT.toUnit(),                          "W",                     1.0,  1,  2, -3,  0, 0);
+        checkReference(PredefinedUnit.COULOMB.toUnit(),                       "C",                     1.0,  0,  0,  1,  1, 0);
+        checkReference(PredefinedUnit.VOLT.toUnit(),                          "V",                     1.0,  1,  2, -3, -1, 0);
+        checkReference(PredefinedUnit.OHM.toUnit(),                           "Ω",                     1.0,  1,  2, -3, -2, 0);
+        checkReference(PredefinedUnit.TESLA.toUnit(),                         "T",                     1.0,  1,  0, -2, -1, 0);
+        checkReference(PredefinedUnit.SOLAR_FLUX_UNIT.toUnit(),              "sfu",                1.0e-22,  1,  0, -2,  0, 0);
+        checkReference(PredefinedUnit.TOTAL_ELECTRON_CONTENT_UNIT.toUnit(), "TECU",                 1.0e16,  0, -2,  0,  0, 0);
 
     }
 
     private void checkReference(final Unit unit, final String name, final double scale,
-                                final int mass, final int length, final int time, final int angle) {
+                                final int mass, final int length, final int time,
+                                final int current, final int angle) {
         Assert.assertEquals(name, unit.toString());
         Assert.assertEquals(scale, unit.getScale(), 1.0e-10);
-        Assert.assertEquals(new Fraction(mass),   unit.getMass());
-        Assert.assertEquals(new Fraction(length), unit.getLength());
-        Assert.assertEquals(new Fraction(time),   unit.getTime());
-        Assert.assertEquals(new Fraction(angle),  unit.getAngle());
+        Assert.assertEquals(new Fraction(mass),     unit.getMass());
+        Assert.assertEquals(new Fraction(length),   unit.getLength());
+        Assert.assertEquals(new Fraction(time),     unit.getTime());
+        Assert.assertEquals(new Fraction(current),  unit.getCurrent());
+        Assert.assertEquals(new Fraction(angle),    unit.getAngle());
     }
 
 }

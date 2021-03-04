@@ -23,7 +23,7 @@ import org.hipparchus.util.FastMath;
  * <p>
  * This class is by no means a complete handling of units. For complete
  * support, look at libraries like {@code UOM}. This class handles only
- * time, length and mass dimensions, as well as angles (which are
+ * time, length, mass and current dimensions, as well as angles (which are
  * dimensionless).
  * </p>
  * <p>
@@ -50,6 +50,9 @@ public class Unit {
     /** Time exponent. */
     private final Fraction time;
 
+    /** Current exponent. */
+    private final Fraction current;
+
     /** Angle exponent. */
     private final Fraction angle;
 
@@ -59,17 +62,20 @@ public class Unit {
      * @param mass mass exponent
      * @param length length exponent
      * @param time time exponent
+     * @param current current exponent
      * @param angle angle exponent
      */
     public Unit(final String name, final double scale,
                 final Fraction mass, final Fraction length,
-                final Fraction time, final Fraction angle) {
-        this.name   = name;
-        this.scale  = scale;
-        this.mass   = mass;
-        this.length = length;
-        this.time   = time;
-        this.angle  = angle;
+                final Fraction time, final Fraction current,
+                final Fraction angle) {
+        this.name    = name;
+        this.scale   = scale;
+        this.mass    = mass;
+        this.length  = length;
+        this.time    = time;
+        this.current = current;
+        this.angle   = angle;
     }
 
     /** Get the name of the unit.
@@ -107,6 +113,13 @@ public class Unit {
         return time;
     }
 
+    /** Get the current exponent.
+     * @return current exponent
+     */
+    public Fraction getCurrent() {
+        return current;
+    }
+
     /** Get the angle exponent.
      * @return angle exponent
      */
@@ -119,8 +132,9 @@ public class Unit {
      * @return true if unit has the same dimension as the other unit
      */
     public boolean sameDimension(final Unit other) {
-        return time.equals(other.time) && length.equals(other.length) &&
-               mass.equals(other.mass) && angle.equals(other.angle);
+        return time.equals(other.time) && length.equals(other.length)   &&
+               mass.equals(other.mass) && current.equals(other.current) &&
+               angle.equals(other.angle);
     }
 
     /** Create an alias for a unit.
@@ -128,7 +142,7 @@ public class Unit {
      * @return a new unit representing same unit as the instance but with a different name
      */
     public Unit alias(final String newName) {
-        return new Unit(newName, scale, mass, length, time, angle);
+        return new Unit(newName, scale, mass, length, time, current, angle);
     }
 
     /** Scale a unit.
@@ -137,7 +151,7 @@ public class Unit {
      * @return a new unit representing scale times the instance
      */
     public Unit scale(final String newName, final double factor) {
-        return new Unit(newName, factor * scale, mass, length, time, angle);
+        return new Unit(newName, factor * scale, mass, length, time, current, angle);
     }
 
     /** Create power of unit.
@@ -162,7 +176,8 @@ public class Unit {
 
         return new Unit(newName, s,
                         mass.multiply(exponent), length.multiply(exponent),
-                        time.multiply(exponent), angle.multiply(exponent));
+                        time.multiply(exponent), current.multiply(current),
+                        angle.multiply(exponent));
     }
 
     /** Create root of unit.
@@ -171,7 +186,8 @@ public class Unit {
      */
     public Unit sqrt(final String newName) {
         return new Unit(newName, FastMath.sqrt(scale),
-                        mass.divide(2), length.divide(2), time.divide(2),
+                        mass.divide(2), length.divide(2),
+                        time.divide(2), current.divide(2),
                         angle.divide(2));
     }
 
@@ -183,7 +199,8 @@ public class Unit {
     public Unit multiply(final String newName, final Unit other) {
         return new Unit(newName, scale * other.scale,
                         mass.add(other.mass), length.add(other.length),
-                        time.add(other.time), angle.add(other.angle));
+                        time.add(other.time), current.add(other.current),
+                        angle.add(other.angle));
     }
 
     /** Create quotient of units.
@@ -194,7 +211,8 @@ public class Unit {
     public Unit divide(final String newName, final Unit other) {
         return new Unit(newName, scale / other.scale,
                         mass.subtract(other.mass), length.subtract(other.length),
-                        time.subtract(other.time), angle.subtract(other.angle));
+                        time.subtract(other.time), current.subtract(other.current),
+                        angle.subtract(other.angle));
     }
 
     /** Convert a value to SI units.
