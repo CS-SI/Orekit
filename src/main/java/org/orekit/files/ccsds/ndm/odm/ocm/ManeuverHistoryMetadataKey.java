@@ -116,7 +116,21 @@ public enum ManeuverHistoryMetadataKey {
     /** Duty cycle elapsed time between start of a pulse and start of next pulse. */
     DC_TIME_PULSE_PERIOD((token, context, metadata) -> token.processAsDouble(1.0, metadata::setDcTimePulsePeriod)),
 
-    // TODO
+    /** Reference direction for triggering duty cycle. */
+    DC_REF_DIR((token, context, metadata) -> token.processAsVector(metadata::setDcRefDir)),
+
+    /** Spacecraft body frame in which {@link #dcBodyTrigger} is specified. */
+    DC_BODY_FRAME((token, context, metadata) -> token.processAsFrame(f -> metadata.setDcBodyFrame(f.asSpacecraftBodyFrame()),
+                                                                     context, false, false, true)),
+
+    /** Direction in {@link #dcBodyFrame body frame} for triggering duty cycle. */
+    DC_BODY_TRIGGER((token, context, metadata) -> token.processAsVector(metadata::setDcBodyTrigger)),
+
+    /** Phase angle of pulse start. */
+    DC_PA_START_ANGLE((token, context, metadata) -> token.processAsAngle(metadata::setDcPhaseStartAngle)),
+
+    /** Phase angle of pulse stop. */
+    DC_PA_STOP_ANGLE((token, context, metadata) -> token.processAsAngle(metadata::setDcPhaseStopAngle)),
 
     /** Maneuver elements of information. */
     MAN_COMPOSITION((token, context, metadata) -> {

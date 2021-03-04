@@ -94,7 +94,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
     private CovarianceHistoryMetadata currentCovarianceHistoryMetadata;
 
     /** Current covariance history being read. */
-    private List<CovarianceHistory> currentCovarianceHistory;
+    private List<Covariance> currentCovarianceHistory;
 
     /** Maneuver logical blocks. */
     private List<ManeuverHistory> maneuverBlocks;
@@ -103,7 +103,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
     private ManeuverHistoryMetadata currentManeuverHistoryMetadata;
 
     /** Current maneuver history being read. */
-    private List<ManeuverHistory> currentManeuverHistory;
+    private List<Maneuver> currentManeuverHistory;
 
     /** Perturbations logical block. */
     private Perturbations perturbationsBlock;
@@ -299,6 +299,11 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
             currentCovarianceHistoryMetadata = new CovarianceHistoryMetadata(metadata.getEpochT0());
             currentCovarianceHistory         = new ArrayList<>();
             setFallback(this::processCovarianceToken);
+        } else {
+            covarianceBlocks.add(new CovarianceHistory(currentCovarianceHistoryMetadata,
+                                                       currentCovarianceHistory));
+            currentCovarianceHistoryMetadata = null;
+            currentCovarianceHistory         = null;
         }
         return true;
     }
@@ -317,6 +322,11 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
             currentManeuverHistoryMetadata = new ManeuverHistoryMetadata(metadata.getEpochT0());
             currentManeuverHistory         = new ArrayList<>();
             setFallback(this::processManeuverToken);
+        } else {
+            maneuverBlocks.add(new ManeuverHistory(currentManeuverHistoryMetadata,
+                                                   currentManeuverHistory));
+            currentManeuverHistoryMetadata = null;
+            currentManeuverHistory         = null;
         }
         return true;
     }
@@ -492,9 +502,38 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
      * @return true if token was processed, false otherwise
      */
     private boolean processCovarianceToken(final ParseToken token) {
-        setFallback(this::processDataSubStructureToken);
-        // TODO
-        return false;
+        if (token.getName() != null) {
+            // we are in the section metadata part
+            try {
+                return CovarianceHistoryMetadataKey.valueOf(token.getName()).
+                       process(token, context, currentCovarianceHistoryMetadata);
+            } catch (IllegalArgumentException iae) {
+                // token has not been recognized
+                return false;
+            }
+        } else {
+            // we are in the section data part
+            if (currentCovarianceHistory.isEmpty()) {
+                // we are starting the real data section, we can now check metadata is complete
+                currentCovarianceHistoryMetadata.checkMandatoryEntries();
+                setFallback(this::processDataSubStructureToken);
+            }
+            try {
+                final String[] fields = SPLIT_AT_BLANKS.split(token.getContent().trim());
+                final int n = currentCovarianceHistoryMetadata.getCovUnits().size();
+                if (fields.length != 1 + (n * (n + 1) / 2)) {
+                    throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                              token.getLineNumber(), token.getFileName(), token.getContent());
+                }
+                currentCovarianceHistory.add(new Covariance(currentCovarianceHistoryMetadata.getCovType(),
+                                                            context.getTimeSystem().parseDate(fields[0], context),
+                                                            fields, 1));
+                return true;
+            } catch (NumberFormatException nfe) {
+                throw new OrekitException(nfe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                          token.getLineNumber(), token.getFileName(), token.getContent());
+            }
+        }
     }
 
     /** Process one maneuver data token.
@@ -525,7 +564,11 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                     throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                               token.getLineNumber(), token.getFileName(), token.getContent());
                 }
-                // TODO: parse fields
+                final Maneuver maneuver = new Maneuver();
+                for (int i = 0; i < fields.length; ++i) {
+                    types.get(i).process(fields[i], context, maneuver);
+                }
+                currentManeuverHistory.add(maneuver);
                 return true;
             } catch (NumberFormatException nfe) {
                 throw new OrekitException(nfe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
@@ -570,7 +613,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
         }
     }
 
-    /** Process one user-defined parametert data token.
+    /** Process one user-defined parameter data token.
      * @param token token to process
      * @return true if token was processed, false otherwise
      */

@@ -466,6 +466,9 @@ CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS = element set type {0} ({1}) expects {2} e
 # wrong number of units for maneuver {0}
 CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS = wrong number of units for maneuver {0}
 
+# missing time field for maneuver {0}
+CCSDS_MANEUVER_MISSING_TIME = missing time field for maneuver {0}
+
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 NOT_ENOUGH_PROPAGATORS = Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 

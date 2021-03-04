@@ -45,10 +45,10 @@ public class Covariance implements TimeStamped {
      * @param date entry date
      * @param fields matrix elements
      * @param first index of first field to consider
-     * @param units units to use for parsing
      */
     public Covariance(final ElementsType type, final AbsoluteDate date,
-                      final String[] fields, final int first, final List<Unit> units) {
+                      final String[] fields, final int first) {
+        final List<Unit> units = type.getUnits();
         this.type   = type;
         this.date   = date;
         this.matrix = MatrixUtils.createRealMatrix(units.size(), units.size());

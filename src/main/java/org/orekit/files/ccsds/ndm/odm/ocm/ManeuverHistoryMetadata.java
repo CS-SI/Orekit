@@ -20,6 +20,7 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 import java.util.Collections;
 import java.util.List;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
@@ -27,6 +28,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CenterName;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
+import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.units.Unit;
@@ -109,6 +111,21 @@ public class ManeuverHistoryMetadata extends CommentsContainer {
     /** Duty cycle elapsed time between start of a pulse and start of next pulse. */
     private double dcTimePulsePeriod;
 
+    /** Reference direction for triggering duty cycle. */
+    private Vector3D dcRefDir;
+
+    /** Spacecraft body frame in which {@link #dcBodyTrigger} is specified. */
+    private SpacecraftBodyFrame dcBodyFrame;
+
+    /** Direction in {@link #dcBodyFrame body frame} for triggering duty cycle. */
+    private Vector3D dcBodyTrigger;
+
+    /** Phase angle of pulse start. */
+    private double dcPhaseStartAngle;
+
+    /** Phase angle of pulse stop. */
+    private double dcPhaseStopAngle;
+
     /** Maneuver elements of information. */
     private List<ManeuverFieldType> manComposition;
 
@@ -128,8 +145,8 @@ public class ManeuverHistoryMetadata extends CommentsContainer {
         manFrameEpoch       = epochT0;
         manPurpose          = Collections.emptyList();
         dcType              = DutyCycleType.CONTINUOUS;
-        dcMinCycles         = -1;
-        dcMaxCycles         = -1;
+        dcMinCycles         = 0;
+        dcMaxCycles         = 0;
         dcTimePulseDuration = Double.NaN;
         dcTimePulsePeriod   = Double.NaN;
     }
@@ -146,11 +163,31 @@ public class ManeuverHistoryMetadata extends CommentsContainer {
             checkNotNull(dcWindowClose,      ManeuverHistoryMetadataKey.DC_WIN_CLOSE);
             checkNotNull(dcExecStart,        ManeuverHistoryMetadataKey.DC_EXEC_START);
             checkNotNull(dcExecStop,         ManeuverHistoryMetadataKey.DC_EXEC_STOP);
+        }
+        if (dcType != DutyCycleType.TIME) {
+            checkNotNull(dcRefTime,          ManeuverHistoryMetadataKey.DC_REF_TIME);
             checkNotNaN(dcTimePulseDuration, ManeuverHistoryMetadataKey.DC_TIME_PULSE_DURATION);
             checkNotNaN(dcTimePulsePeriod,   ManeuverHistoryMetadataKey.DC_TIME_PULSE_PERIOD);
         }
+        if (dcType == DutyCycleType.TIME_AND_ANGLE) {
+            checkNotNull(dcRefDir,           ManeuverHistoryMetadataKey.DC_REF_DIR);
+            checkNotNull(dcBodyFrame,        ManeuverHistoryMetadataKey.DC_BODY_FRAME);
+            checkNotNull(dcBodyTrigger,      ManeuverHistoryMetadataKey.DC_BODY_TRIGGER);
+            checkNotNull(dcPhaseStartAngle,  ManeuverHistoryMetadataKey.DC_PA_START_ANGLE);
+            checkNotNull(dcPhaseStopAngle,   ManeuverHistoryMetadataKey.DC_PA_STOP_ANGLE);
+        }
 
         checkNotNull(manComposition, ManeuverHistoryMetadataKey.MAN_COMPOSITION);
+        boolean foundTime = false;
+        for (final ManeuverFieldType type : manComposition) {
+            if (type == ManeuverFieldType.TIME_ABSOLUTE || type == ManeuverFieldType.TIME_RELATIVE) {
+                foundTime = true;
+            }
+        }
+        if (!foundTime) {
+            throw new OrekitException(OrekitMessages.CCSDS_MANEUVER_MISSING_TIME, manID);
+        }
+
         if (manUnits != null) {
             if (manUnits.size() != manComposition.size()) {
                 throw new OrekitException(OrekitMessages.CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS,
@@ -527,6 +564,76 @@ public class ManeuverHistoryMetadata extends CommentsContainer {
      */
     public void setDcTimePulsePeriod(final double dcTimePulsePeriod) {
         this.dcTimePulsePeriod = dcTimePulsePeriod;
+    }
+
+    /** Get reference direction for triggering duty cycle.
+     * @return reference direction for triggering duty cycle
+     */
+    public Vector3D getDcRefDir() {
+        return dcRefDir;
+    }
+
+    /** Set reference direction for triggering duty cycle.
+     * @param dcRefDir reference direction for triggering duty cycle
+     */
+    public void setDcRefDir(final Vector3D dcRefDir) {
+        this.dcRefDir = dcRefDir;
+    }
+
+    /** Get spacecraft body frame in which {@link #getDcBodyTrigger()} is specified.
+     * @return spacecraft body frame in which {@link #getDcBodyTrigger()} is specified
+     */
+    public SpacecraftBodyFrame getDcBodyFrame() {
+        return dcBodyFrame;
+    }
+
+    /** Set spacecraft body frame in which {@link #getDcBodyTrigger()} is specified.
+     * @param dcBodyFrame spacecraft body frame in which {@link #getDcBodyTrigger()} is specified
+     */
+    public void setDcBodyFrame(final SpacecraftBodyFrame dcBodyFrame) {
+        this.dcBodyFrame = dcBodyFrame;
+    }
+
+    /** Get direction in {@link #getDcBodyFrame() body frame} for triggering duty cycle.
+     * @return direction in {@link #getDcBodyFrame() body frame} for triggering duty cycle
+     */
+    public Vector3D getDcBodyTrigger() {
+        return  dcBodyTrigger;
+    }
+
+    /** Set direction in {@link #getDcBodyFrame() body frame} for triggering duty cycle.
+     * @param dcBodyTrigger direction in {@link #getDcBodyFrame() body frame} for triggering duty cycle
+     */
+    public void setDcBodyTrigger(final Vector3D dcBodyTrigger) {
+        this.dcBodyTrigger = dcBodyTrigger;
+    }
+
+    /** Get phase angle of pulse start.
+     * @return phase angle of pulse start
+     */
+    public double getDcPhaseStartAngle() {
+        return dcPhaseStartAngle;
+    }
+
+    /** Set phase angle of pulse start.
+     * @param dcPhaseStartAngle phase angle of pulse start
+     */
+    public void setDcPhaseStartAngle(final double dcPhaseStartAngle) {
+        this.dcPhaseStartAngle = dcPhaseStartAngle;
+    }
+
+    /** Get phase angle of pulse stop.
+     * @return phase angle of pulse stop
+     */
+    public double getDcPhaseStopAngle() {
+        return dcPhaseStopAngle;
+    }
+
+    /** Set phase angle of pulse stop.
+     * @param dcPhaseStopAngle phase angle of pulse stop
+     */
+    public void setDcPhaseStopAngle(final double dcPhaseStopAngle) {
+        this.dcPhaseStopAngle = dcPhaseStopAngle;
     }
 
     /** Get maneuver elements of information.

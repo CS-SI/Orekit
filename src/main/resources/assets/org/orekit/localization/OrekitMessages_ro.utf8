@@ -466,6 +466,9 @@ CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS = <MISSING TRANSLATION>
 # wrong number of units for maneuver {0}
 CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS = <MISSING TRANSLATION>
 
+# missing time field for maneuver {0}
+CCSDS_MANEUVER_MISSING_TIME = <MISSING TRANSLATION>
+
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 NOT_ENOUGH_PROPAGATORS = Crearea unui propagator combinator necesită cel puțin un propagator, dar nici unul nu a fost definit.
 
