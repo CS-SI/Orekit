@@ -159,8 +159,6 @@ public class ManeuverHistoryMetadata extends CommentsContainer {
             checkNotNull(dcWindowClose,      ManeuverHistoryMetadataKey.DC_WIN_CLOSE);
             checkNotNull(dcExecStart,        ManeuverHistoryMetadataKey.DC_EXEC_START);
             checkNotNull(dcExecStop,         ManeuverHistoryMetadataKey.DC_EXEC_STOP);
-        }
-        if (dcType != DutyCycleType.TIME) {
             checkNotNull(dcRefTime,          ManeuverHistoryMetadataKey.DC_REF_TIME);
             checkNotNaN(dcTimePulseDuration, ManeuverHistoryMetadataKey.DC_TIME_PULSE_DURATION);
             checkNotNaN(dcTimePulsePeriod,   ManeuverHistoryMetadataKey.DC_TIME_PULSE_PERIOD);

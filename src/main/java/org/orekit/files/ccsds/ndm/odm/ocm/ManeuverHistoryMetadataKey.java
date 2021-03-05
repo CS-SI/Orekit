@@ -133,7 +133,7 @@ public enum ManeuverHistoryMetadataKey {
     MAN_COMPOSITION((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
             try {
-                container.setManComposition(token.getContentAsNormalizedStringList().
+                container.setManComposition(token.getContentAsFreeTextStringList().
                                            stream().
                                            map(s -> ManeuverFieldType.valueOf(s)).
                                            collect(Collectors.toList()));

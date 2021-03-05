@@ -140,7 +140,7 @@ public enum ManeuverFieldType {
         (field, u, context, maneuver) -> maneuver.setDeployDvRatio(toSI(field, u))),
 
     /** Typical (50th percentile) product of drag coefficient times cross-sectional area of deployed "child" object. */
-    DEPLOY_DV_CDA("n/a",
+    DEPLOY_DV_CDA("m²",
         (field, u, context, maneuver) -> maneuver.setDeployDvCda(toSI(field, u)));
 
     // CHECKSTYLE: resume MultipleStringLiterals check

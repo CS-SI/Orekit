@@ -335,7 +335,6 @@ public class OCMParserTest {
     }
 
     // temporarily ignore the test as we don't manage all logical blocks
-    @Ignore
     @Test
     public void testParseOCM3() throws IOException {
         final String   name  = "/ccsds/odm/ocm/OCMExample3.txt";

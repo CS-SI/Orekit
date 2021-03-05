@@ -87,6 +87,10 @@ public class Maneuver implements TimeStamped {
     /** Build an uninitialized maneuver.
      */
     public Maneuver() {
+        acceleration = new double[3];
+        dV           = new double[3];
+        thrust       = new double[3];
+        deployDv     = new double[3];
     }
 
     /** {@inheritDoc} */

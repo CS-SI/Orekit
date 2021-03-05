@@ -485,9 +485,14 @@ public class ParseToken {
                 throw generateException(null);
             }
             final String unbracketed = bracketed.substring(1, bracketed.length() - 1).trim();
-            consumer.accept(Stream.of(SPLIT_AT_COMMAS.split(unbracketed)).
-                            map(s -> Unit.parse(s)).
-                            collect(Collectors.toList()));
+            try {
+                consumer.accept(Stream.of(SPLIT_AT_COMMAS.split(unbracketed)).
+                                map(s -> Unit.parse(s)).
+                                collect(Collectors.toList()));
+            } catch (OrekitException oe) {
+                // one unit is unknown
+                throw generateException(oe);
+            }
         }
         return true;
     }
