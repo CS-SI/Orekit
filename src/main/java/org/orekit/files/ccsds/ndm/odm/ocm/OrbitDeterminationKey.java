@@ -16,8 +16,7 @@
  */
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
-import org.orekit.files.ccsds.definitions.ODMethodFacade;
-import org.orekit.files.ccsds.definitions.OdMethodType;
+import org.orekit.files.ccsds.definitions.OdMethodFacade;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
@@ -43,19 +42,7 @@ public enum OrbitDeterminationKey {
     /** Orbit determination method. */
     OD_METHOD((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
-            final String[] fields = token.getContent().split("\\p{Blank}*:\\p{Blank}*");
-            if (fields.length == 2) {
-                // we have method and tool
-                OdMethodType type;
-                try {
-                    type = OdMethodType.valueOf(fields[0]);
-                } catch (IllegalArgumentException iae) {
-                    type = null;
-                }
-                container.setMethod(new ODMethodFacade(fields[0], type, fields[1]));
-            } else {
-                container.setMethod(new ODMethodFacade(token.getContent(), null, null));
-            }
+            container.setMethod(OdMethodFacade.parse(token.getContent()));
         }
         return true;
     }),

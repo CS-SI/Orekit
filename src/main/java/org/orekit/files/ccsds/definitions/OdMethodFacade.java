@@ -16,11 +16,16 @@
  */
 package org.orekit.files.ccsds.definitions;
 
+import java.util.regex.Pattern;
+
 /** Facade in front of several orbit determination methods in CCSDS messages.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class ODMethodFacade {
+public class OdMethodFacade {
+
+    /** Pattern for splitting string specification in OCM files. */
+    private static Pattern SPLITTER = Pattern.compile("\\p{Blank}*:\\p{Blank}*");
 
     /** Name of the method. */
     private final String name;
@@ -36,7 +41,7 @@ public class ODMethodFacade {
      * @param type method type (may be null)
      * @param tool tool used for OD (may be null)
      */
-    public ODMethodFacade(final String name, final OdMethodType type, final String tool) {
+    public OdMethodFacade(final String name, final OdMethodType type, final String tool) {
         this.name = name;
         this.type = type;
         this.tool = tool;
@@ -61,6 +66,26 @@ public class ODMethodFacade {
      */
     public String getTool() {
         return tool;
+    }
+
+    /** Parse a string from OCM.
+     * @param s string to parse
+     * @return OD method facade
+     */
+    public static OdMethodFacade parse(final String s) {
+        final String[] fields = SPLITTER.split(s);
+        if (fields.length == 2) {
+            // we have method and tool
+            OdMethodType type;
+            try {
+                type = OdMethodType.valueOf(fields[0]);
+            } catch (IllegalArgumentException iae) {
+                type = null;
+            }
+            return new OdMethodFacade(fields[0], type, fields[1]);
+        } else {
+            return new OdMethodFacade(s, null, null);
+        }
     }
 
 }

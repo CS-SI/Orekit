@@ -20,7 +20,7 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 import java.util.Collections;
 import java.util.List;
 
-import org.orekit.files.ccsds.definitions.ODMethodFacade;
+import org.orekit.files.ccsds.definitions.OdMethodFacade;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.time.AbsoluteDate;
 
@@ -37,7 +37,7 @@ public class OrbitDetermination extends CommentsContainer {
     private String prevId;
 
     /** Orbit determination method. */
-    private ODMethodFacade method;
+    private OdMethodFacade method;
 
     /** Time tag for orbit determination solved-for state. */
     private AbsoluteDate epoch;
@@ -163,14 +163,14 @@ public class OrbitDetermination extends CommentsContainer {
     /** Get orbit determination method.
      * @return orbit determination method
      */
-    public ODMethodFacade getMethod() {
+    public OdMethodFacade getMethod() {
         return method;
     }
 
     /** Set orbit determination method.
      * @param method orbit determination method
      */
-    public void setMethod(final ODMethodFacade method) {
+    public void setMethod(final OdMethodFacade method) {
         this.method = method;
     }
 
