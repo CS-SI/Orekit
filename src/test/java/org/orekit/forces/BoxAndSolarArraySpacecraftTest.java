@@ -79,107 +79,107 @@ public class BoxAndSolarArraySpacecraftTest {
 
         BoxAndSolarArraySpacecraft s1 =
                         new BoxAndSolarArraySpacecraft(1.5, 3.5, 2.5, sun, 20.0, Vector3D.PLUS_J, 2.0, 0.8, 0.1);
-        Assert.assertEquals(1, s1.getDragParametersDrivers().length);
-        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT, s1.getDragParametersDrivers()[0].getName());
-        Assert.assertEquals(2.0, s1.getDragParametersDrivers()[0].getValue(), 1.0e-15);
-        Assert.assertEquals(2, s1.getRadiationParametersDrivers().length);
-        Assert.assertEquals(RadiationSensitive.ABSORPTION_COEFFICIENT, s1.getRadiationParametersDrivers()[0].getName());
-        Assert.assertEquals(0.8, s1.getRadiationParametersDrivers()[0].getValue(), 1.0e-15);
-        Assert.assertEquals(RadiationSensitive.REFLECTION_COEFFICIENT, s1.getRadiationParametersDrivers()[1].getName());
-        Assert.assertEquals(0.1, s1.getRadiationParametersDrivers()[1].getValue(), 1.0e-15);
+        Assert.assertEquals(1, s1.getDragParametersDrivers().size());
+        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT, s1.getDragParametersDrivers().get(0).getName());
+        Assert.assertEquals(2.0, s1.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assert.assertEquals(2, s1.getRadiationParametersDrivers().size());
+        Assert.assertEquals(RadiationSensitive.ABSORPTION_COEFFICIENT, s1.getRadiationParametersDrivers().get(0).getName());
+        Assert.assertEquals(0.8, s1.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assert.assertEquals(RadiationSensitive.REFLECTION_COEFFICIENT, s1.getRadiationParametersDrivers().get(1).getName());
+        Assert.assertEquals(0.1, s1.getRadiationParametersDrivers().get(1).getValue(), 1.0e-15);
 
         BoxAndSolarArraySpacecraft s2 =
                         new BoxAndSolarArraySpacecraft(1.5, 3.5, 2.5, sun, 20.0, Vector3D.PLUS_J, 2.0, 0.4, 0.8, 0.1);
-        Assert.assertEquals(2, s2.getDragParametersDrivers().length);
-        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT, s2.getDragParametersDrivers()[0].getName());
-        Assert.assertEquals(2.0, s2.getDragParametersDrivers()[0].getValue(), 1.0e-15);
-        Assert.assertEquals(DragSensitive.LIFT_RATIO, s2.getDragParametersDrivers()[1].getName());
-        Assert.assertEquals(0.4, s2.getDragParametersDrivers()[1].getValue(), 1.0e-15);
-        Assert.assertEquals(2, s2.getRadiationParametersDrivers().length);
-        Assert.assertEquals(RadiationSensitive.ABSORPTION_COEFFICIENT, s2.getRadiationParametersDrivers()[0].getName());
-        Assert.assertEquals(0.8, s2.getRadiationParametersDrivers()[0].getValue(), 1.0e-15);
-        Assert.assertEquals(RadiationSensitive.REFLECTION_COEFFICIENT, s2.getRadiationParametersDrivers()[1].getName());
-        Assert.assertEquals(0.1, s2.getRadiationParametersDrivers()[1].getValue(), 1.0e-15);
+        Assert.assertEquals(2, s2.getDragParametersDrivers().size());
+        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT, s2.getDragParametersDrivers().get(0).getName());
+        Assert.assertEquals(2.0, s2.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assert.assertEquals(DragSensitive.LIFT_RATIO, s2.getDragParametersDrivers().get(1).getName());
+        Assert.assertEquals(0.4, s2.getDragParametersDrivers().get(1).getValue(), 1.0e-15);
+        Assert.assertEquals(2, s2.getRadiationParametersDrivers().size());
+        Assert.assertEquals(RadiationSensitive.ABSORPTION_COEFFICIENT, s2.getRadiationParametersDrivers().get(0).getName());
+        Assert.assertEquals(0.8, s2.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assert.assertEquals(RadiationSensitive.REFLECTION_COEFFICIENT, s2.getRadiationParametersDrivers().get(1).getName());
+        Assert.assertEquals(0.1, s2.getRadiationParametersDrivers().get(1).getValue(), 1.0e-15);
 
         BoxAndSolarArraySpacecraft s3 =
                         new BoxAndSolarArraySpacecraft(facets, sun, 20.0, Vector3D.PLUS_J, 2.0, 0.8, 0.1);
-        Assert.assertEquals(1, s3.getDragParametersDrivers().length);
-        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT, s3.getDragParametersDrivers()[0].getName());
-        Assert.assertEquals(2.0, s3.getDragParametersDrivers()[0].getValue(), 1.0e-15);
-        Assert.assertEquals(2, s3.getRadiationParametersDrivers().length);
-        Assert.assertEquals(RadiationSensitive.ABSORPTION_COEFFICIENT, s3.getRadiationParametersDrivers()[0].getName());
-        Assert.assertEquals(0.8, s3.getRadiationParametersDrivers()[0].getValue(), 1.0e-15);
-        Assert.assertEquals(RadiationSensitive.REFLECTION_COEFFICIENT, s3.getRadiationParametersDrivers()[1].getName());
-        Assert.assertEquals(0.1, s3.getRadiationParametersDrivers()[1].getValue(), 1.0e-15);
+        Assert.assertEquals(1, s3.getDragParametersDrivers().size());
+        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT, s3.getDragParametersDrivers().get(0).getName());
+        Assert.assertEquals(2.0, s3.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assert.assertEquals(2, s3.getRadiationParametersDrivers().size());
+        Assert.assertEquals(RadiationSensitive.ABSORPTION_COEFFICIENT, s3.getRadiationParametersDrivers().get(0).getName());
+        Assert.assertEquals(0.8, s3.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assert.assertEquals(RadiationSensitive.REFLECTION_COEFFICIENT, s3.getRadiationParametersDrivers().get(1).getName());
+        Assert.assertEquals(0.1, s3.getRadiationParametersDrivers().get(1).getValue(), 1.0e-15);
 
         BoxAndSolarArraySpacecraft s4 =
                         new BoxAndSolarArraySpacecraft(facets, sun, 20.0, Vector3D.PLUS_J, 2.0, 0.4, 0.8, 0.1);
-        Assert.assertEquals(2, s4.getDragParametersDrivers().length);
-        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT, s4.getDragParametersDrivers()[0].getName());
-        Assert.assertEquals(2.0, s4.getDragParametersDrivers()[0].getValue(), 1.0e-15);
-        Assert.assertEquals(DragSensitive.LIFT_RATIO, s4.getDragParametersDrivers()[1].getName());
-        Assert.assertEquals(0.4, s4.getDragParametersDrivers()[1].getValue(), 1.0e-15);
-        Assert.assertEquals(2, s4.getRadiationParametersDrivers().length);
-        Assert.assertEquals(RadiationSensitive.ABSORPTION_COEFFICIENT, s4.getRadiationParametersDrivers()[0].getName());
-        Assert.assertEquals(0.8, s4.getRadiationParametersDrivers()[0].getValue(), 1.0e-15);
-        Assert.assertEquals(RadiationSensitive.REFLECTION_COEFFICIENT, s4.getRadiationParametersDrivers()[1].getName());
-        Assert.assertEquals(0.1, s4.getRadiationParametersDrivers()[1].getValue(), 1.0e-15);
+        Assert.assertEquals(2, s4.getDragParametersDrivers().size());
+        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT, s4.getDragParametersDrivers().get(0).getName());
+        Assert.assertEquals(2.0, s4.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assert.assertEquals(DragSensitive.LIFT_RATIO, s4.getDragParametersDrivers().get(1).getName());
+        Assert.assertEquals(0.4, s4.getDragParametersDrivers().get(1).getValue(), 1.0e-15);
+        Assert.assertEquals(2, s4.getRadiationParametersDrivers().size());
+        Assert.assertEquals(RadiationSensitive.ABSORPTION_COEFFICIENT, s4.getRadiationParametersDrivers().get(0).getName());
+        Assert.assertEquals(0.8, s4.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assert.assertEquals(RadiationSensitive.REFLECTION_COEFFICIENT, s4.getRadiationParametersDrivers().get(1).getName());
+        Assert.assertEquals(0.1, s4.getRadiationParametersDrivers().get(1).getValue(), 1.0e-15);
 
         BoxAndSolarArraySpacecraft s5 =
                         new BoxAndSolarArraySpacecraft(1.5, 3.5, 2.5, sun, 20.0, Vector3D.PLUS_J,
                                                        AbsoluteDate.J2000_EPOCH, Vector3D.PLUS_I, 7.292e-5,
                                                        2.0, 0.8, 0.1);
-        Assert.assertEquals(1, s5.getDragParametersDrivers().length);
-        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT, s5.getDragParametersDrivers()[0].getName());
-        Assert.assertEquals(2.0, s5.getDragParametersDrivers()[0].getValue(), 1.0e-15);
-        Assert.assertEquals(2, s5.getRadiationParametersDrivers().length);
-        Assert.assertEquals(RadiationSensitive.ABSORPTION_COEFFICIENT, s5.getRadiationParametersDrivers()[0].getName());
-        Assert.assertEquals(0.8, s5.getRadiationParametersDrivers()[0].getValue(), 1.0e-15);
-        Assert.assertEquals(RadiationSensitive.REFLECTION_COEFFICIENT, s5.getRadiationParametersDrivers()[1].getName());
-        Assert.assertEquals(0.1, s5.getRadiationParametersDrivers()[1].getValue(), 1.0e-15);
+        Assert.assertEquals(1, s5.getDragParametersDrivers().size());
+        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT, s5.getDragParametersDrivers().get(0).getName());
+        Assert.assertEquals(2.0, s5.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assert.assertEquals(2, s5.getRadiationParametersDrivers().size());
+        Assert.assertEquals(RadiationSensitive.ABSORPTION_COEFFICIENT, s5.getRadiationParametersDrivers().get(0).getName());
+        Assert.assertEquals(0.8, s5.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assert.assertEquals(RadiationSensitive.REFLECTION_COEFFICIENT, s5.getRadiationParametersDrivers().get(1).getName());
+        Assert.assertEquals(0.1, s5.getRadiationParametersDrivers().get(1).getValue(), 1.0e-15);
 
         BoxAndSolarArraySpacecraft s6 =
                         new BoxAndSolarArraySpacecraft(1.5, 3.5, 2.5, sun, 20.0, Vector3D.PLUS_J,
                                                        AbsoluteDate.J2000_EPOCH, Vector3D.PLUS_I, 7.292e-5,
                                                        2.0, 0.4, 0.8, 0.1);
-        Assert.assertEquals(2, s6.getDragParametersDrivers().length);
-        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT, s6.getDragParametersDrivers()[0].getName());
-        Assert.assertEquals(2.0, s6.getDragParametersDrivers()[0].getValue(), 1.0e-15);
-        Assert.assertEquals(DragSensitive.LIFT_RATIO, s6.getDragParametersDrivers()[1].getName());
-        Assert.assertEquals(0.4, s6.getDragParametersDrivers()[1].getValue(), 1.0e-15);
-        Assert.assertEquals(2, s6.getRadiationParametersDrivers().length);
-        Assert.assertEquals(RadiationSensitive.ABSORPTION_COEFFICIENT, s6.getRadiationParametersDrivers()[0].getName());
-        Assert.assertEquals(0.8, s6.getRadiationParametersDrivers()[0].getValue(), 1.0e-15);
-        Assert.assertEquals(RadiationSensitive.REFLECTION_COEFFICIENT, s6.getRadiationParametersDrivers()[1].getName());
-        Assert.assertEquals(0.1, s6.getRadiationParametersDrivers()[1].getValue(), 1.0e-15);
+        Assert.assertEquals(2, s6.getDragParametersDrivers().size());
+        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT, s6.getDragParametersDrivers().get(0).getName());
+        Assert.assertEquals(2.0, s6.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assert.assertEquals(DragSensitive.LIFT_RATIO, s6.getDragParametersDrivers().get(1).getName());
+        Assert.assertEquals(0.4, s6.getDragParametersDrivers().get(1).getValue(), 1.0e-15);
+        Assert.assertEquals(2, s6.getRadiationParametersDrivers().size());
+        Assert.assertEquals(RadiationSensitive.ABSORPTION_COEFFICIENT, s6.getRadiationParametersDrivers().get(0).getName());
+        Assert.assertEquals(0.8, s6.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assert.assertEquals(RadiationSensitive.REFLECTION_COEFFICIENT, s6.getRadiationParametersDrivers().get(1).getName());
+        Assert.assertEquals(0.1, s6.getRadiationParametersDrivers().get(1).getValue(), 1.0e-15);
 
         BoxAndSolarArraySpacecraft s7 =
                         new BoxAndSolarArraySpacecraft(facets, sun, 20.0, Vector3D.PLUS_J,
                                                        AbsoluteDate.J2000_EPOCH, Vector3D.PLUS_I, 7.292e-5,
                                                        2.0, 0.8, 0.1);
-        Assert.assertEquals(1, s7.getDragParametersDrivers().length);
-        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT, s7.getDragParametersDrivers()[0].getName());
-        Assert.assertEquals(2.0, s7.getDragParametersDrivers()[0].getValue(), 1.0e-15);
-        Assert.assertEquals(2, s7.getRadiationParametersDrivers().length);
-        Assert.assertEquals(RadiationSensitive.ABSORPTION_COEFFICIENT, s7.getRadiationParametersDrivers()[0].getName());
-        Assert.assertEquals(0.8, s7.getRadiationParametersDrivers()[0].getValue(), 1.0e-15);
-        Assert.assertEquals(RadiationSensitive.REFLECTION_COEFFICIENT, s7.getRadiationParametersDrivers()[1].getName());
-        Assert.assertEquals(0.1, s7.getRadiationParametersDrivers()[1].getValue(), 1.0e-15);
+        Assert.assertEquals(1, s7.getDragParametersDrivers().size());
+        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT, s7.getDragParametersDrivers().get(0).getName());
+        Assert.assertEquals(2.0, s7.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assert.assertEquals(2, s7.getRadiationParametersDrivers().size());
+        Assert.assertEquals(RadiationSensitive.ABSORPTION_COEFFICIENT, s7.getRadiationParametersDrivers().get(0).getName());
+        Assert.assertEquals(0.8, s7.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assert.assertEquals(RadiationSensitive.REFLECTION_COEFFICIENT, s7.getRadiationParametersDrivers().get(1).getName());
+        Assert.assertEquals(0.1, s7.getRadiationParametersDrivers().get(1).getValue(), 1.0e-15);
 
         BoxAndSolarArraySpacecraft s8 =
                         new BoxAndSolarArraySpacecraft(facets, sun, 20.0, Vector3D.PLUS_J,
                                                        AbsoluteDate.J2000_EPOCH, Vector3D.PLUS_I, 7.292e-5,
                                                        2.0, 0.4, 0.8, 0.1);
-        Assert.assertEquals(2, s8.getDragParametersDrivers().length);
-        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT, s8.getDragParametersDrivers()[0].getName());
-        Assert.assertEquals(2.0, s8.getDragParametersDrivers()[0].getValue(), 1.0e-15);
-        Assert.assertEquals(DragSensitive.LIFT_RATIO, s8.getDragParametersDrivers()[1].getName());
-        Assert.assertEquals(0.4, s8.getDragParametersDrivers()[1].getValue(), 1.0e-15);
-        Assert.assertEquals(2, s8.getRadiationParametersDrivers().length);
-        Assert.assertEquals(RadiationSensitive.ABSORPTION_COEFFICIENT, s8.getRadiationParametersDrivers()[0].getName());
-        Assert.assertEquals(0.8, s8.getRadiationParametersDrivers()[0].getValue(), 1.0e-15);
-        Assert.assertEquals(RadiationSensitive.REFLECTION_COEFFICIENT, s8.getRadiationParametersDrivers()[1].getName());
-        Assert.assertEquals(0.1, s8.getRadiationParametersDrivers()[1].getValue(), 1.0e-15);
+        Assert.assertEquals(2, s8.getDragParametersDrivers().size());
+        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT, s8.getDragParametersDrivers().get(0).getName());
+        Assert.assertEquals(2.0, s8.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assert.assertEquals(DragSensitive.LIFT_RATIO, s8.getDragParametersDrivers().get(1).getName());
+        Assert.assertEquals(0.4, s8.getDragParametersDrivers().get(1).getValue(), 1.0e-15);
+        Assert.assertEquals(2, s8.getRadiationParametersDrivers().size());
+        Assert.assertEquals(RadiationSensitive.ABSORPTION_COEFFICIENT, s8.getRadiationParametersDrivers().get(0).getName());
+        Assert.assertEquals(0.8, s8.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assert.assertEquals(RadiationSensitive.REFLECTION_COEFFICIENT, s8.getRadiationParametersDrivers().get(1).getName());
+        Assert.assertEquals(0.1, s8.getRadiationParametersDrivers().get(1).getValue(), 1.0e-15);
 
     }
 
@@ -435,7 +435,7 @@ public class BoxAndSolarArraySpacecraftTest {
         saAreaField.setAccessible(true);
         final double solarArrayArea = (Double) saAreaField.get(bsa);
         
-        final double dragCoeff = bsa.getDragParametersDrivers()[0].getValue();
+        final double dragCoeff = bsa.getDragParametersDrivers().get(0).getValue();
         
         // relative velocity in spacecraft frame
         final Vector3D v = rotation.applyTo(relativeVelocity);
@@ -805,20 +805,20 @@ public class BoxAndSolarArraySpacecraftTest {
 
     /** Get drag parameters as double[]. */
     private double[] getDragParameters(final BoxAndSolarArraySpacecraft basa) {
-        final ParameterDriver[] drivers = basa.getDragParametersDrivers();
-        final double[] parameters = new double[drivers.length];
-        for (int i = 0; i < drivers.length; ++i) {
-            parameters[i] = drivers[i].getValue();
+        final List<ParameterDriver> drivers = basa.getDragParametersDrivers();
+        final double[] parameters = new double[drivers.size()];
+        for (int i = 0; i < drivers.size(); ++i) {
+            parameters[i] = drivers.get(i).getValue();
         }
         return parameters;
     }
 
     /** Get radiation parameters as double[]. */
     private double[] getRadiationParameters(final BoxAndSolarArraySpacecraft basa) {
-        final ParameterDriver[] drivers = basa.getRadiationParametersDrivers();
-        final double[] parameters = new double[drivers.length];
-        for (int i = 0; i < drivers.length; ++i) {
-            parameters[i] = drivers[i].getValue();
+        final List<ParameterDriver> drivers = basa.getRadiationParametersDrivers();
+        final double[] parameters = new double[drivers.size()];
+        for (int i = 0; i < drivers.size(); ++i) {
+            parameters[i] = drivers.get(i).getValue();
         }
         return parameters;
     }
@@ -826,10 +826,10 @@ public class BoxAndSolarArraySpacecraftTest {
     /** Get drag parameters as field[]. */
     private <T extends RealFieldElement<T>> T[] getDragParameters(final BoxAndSolarArraySpacecraft basa,
                                                                   final Field<T> field) {
-        final ParameterDriver[] drivers = basa.getDragParametersDrivers();
-        final T[] parameters = MathArrays.buildArray(field, drivers.length);
-        for (int i = 0; i < drivers.length; ++i) {
-            parameters[i] = field.getZero().add(drivers[i].getValue());
+        final List<ParameterDriver> drivers = basa.getDragParametersDrivers();
+        final T[] parameters = MathArrays.buildArray(field, drivers.size());
+        for (int i = 0; i < drivers.size(); ++i) {
+            parameters[i] = field.getZero().add(drivers.get(i).getValue());
         }
         return parameters;
     }
@@ -837,10 +837,10 @@ public class BoxAndSolarArraySpacecraftTest {
     /** Get radiation parameters as field[]. */
     private <T extends RealFieldElement<T>> T[] getRadiationParameters(final BoxAndSolarArraySpacecraft basa,
                                                                   final Field<T> field) {
-        final ParameterDriver[] drivers = basa.getRadiationParametersDrivers();
-        final T[] parameters = MathArrays.buildArray(field, drivers.length);
-        for (int i = 0; i < drivers.length; ++i) {
-            parameters[i] = field.getZero().add(drivers[i].getValue());
+        final List<ParameterDriver> drivers = basa.getRadiationParametersDrivers();
+        final T[] parameters = MathArrays.buildArray(field, drivers.size());
+        for (int i = 0; i < drivers.size(); ++i) {
+            parameters[i] = field.getZero().add(drivers.get(i).getValue());
         }
         return parameters;
     }

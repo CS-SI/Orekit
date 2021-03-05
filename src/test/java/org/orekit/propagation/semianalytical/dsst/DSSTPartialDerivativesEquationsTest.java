@@ -19,6 +19,7 @@ package org.orekit.propagation.semianalytical.dsst;
 import static org.hamcrest.CoreMatchers.is;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.hamcrest.MatcherAssert;
@@ -138,14 +139,14 @@ public class DSSTPartialDerivativesEquationsTest {
         public Gradient l;
 
         @Override
-        public List<ShortPeriodTerms> initialize(AuxiliaryElements auxiliaryElements,
+        public List<ShortPeriodTerms> initializeShortPeriodTerms(AuxiliaryElements auxiliaryElements,
                                                  PropagationType type,
                                                  double[] parameters) {
             return new ArrayList<ShortPeriodTerms>();
         }
 
         @Override
-        public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(FieldAuxiliaryElements<T> auxiliaryElements,
+        public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initializeShortPeriodTerms(FieldAuxiliaryElements<T> auxiliaryElements,
                                                                                          PropagationType type,
                                                                                          T[] parameters) {
             return new ArrayList<FieldShortPeriodTerms<T>>();
@@ -214,8 +215,8 @@ public class DSSTPartialDerivativesEquationsTest {
         }
 
         @Override
-        public ParameterDriver[] getParametersDrivers() {
-            return new ParameterDriver[0];
+        public List<ParameterDriver> getParametersDrivers() {
+            return Collections.emptyList();
         }
 
     }

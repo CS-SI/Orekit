@@ -367,6 +367,9 @@ SP3_NUMBER_OF_EPOCH_MISMATCH = fandt {0} epoker i filen {1}, forventede {2}
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = uventet ende på fil i sp3 fil (efter linje {0})
 
+# unsupported clock file version {0}
+CLOCK_FILE_UNSUPPORTED_VERSION = ikke-understøttet urfilversion {0}
+
 # non-existent geomagnetic model {0} for year {1}
 NON_EXISTENT_GEOMAGNETIC_MODEL = ikke-eksisterende geomagnetisk model {0} for år {1}
 
@@ -498,6 +501,12 @@ STATION_NOT_FOUND = station {0} blev ikke fundet, kendte stationer: {1}
 
 # unknown satellite system {0}
 UNKNOWN_SATELLITE_SYSTEM = ukendt satellitsystem {0}
+
+# unknown time system {0}
+UNKNOWN_TIME_SYSTEM = ukendt tidssystem {0}
+
+# unknown clock data type {0}
+UNKNOWN_CLOCK_DATA_TYPE = ukendt ur datatype {0}
 
 # unknown satellite antenna code {0}
 UNKNOWN_SATELLITE_ANTENNA_CODE = ukendt satellitantennekode {0}

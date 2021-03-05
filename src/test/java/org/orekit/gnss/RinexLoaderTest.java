@@ -31,8 +31,6 @@ import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.gnss.RinexLoader.Parser.AppliedDCBS;
-import org.orekit.gnss.RinexLoader.Parser.AppliedPCVS;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;

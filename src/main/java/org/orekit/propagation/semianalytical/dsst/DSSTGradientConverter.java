@@ -158,13 +158,14 @@ class DSSTGradientConverter extends AbstractGradientConverter {
     public Gradient[] getParameters(final FieldSpacecraftState<Gradient> state,
                                     final DSSTForceModel forceModel) {
         final int freeParameters = state.getA().getFreeParameters();
-        final ParameterDriver[] drivers = forceModel.getParametersDrivers();
-        final Gradient[] parameters = new Gradient[drivers.length];
+        final List<ParameterDriver> drivers = forceModel.getParametersDrivers();
+        final Gradient[] parameters = new Gradient[drivers.size()];
         int index = FREE_STATE_PARAMETERS;
-        for (int i = 0; i < drivers.length; ++i) {
-            parameters[i] = drivers[i].isSelected() ?
-                            Gradient.variable(freeParameters, index++, drivers[i].getValue()) :
-                            Gradient.constant(freeParameters, drivers[i].getValue());
+        int i = 0;
+        for (ParameterDriver driver : drivers) {
+            parameters[i++] = driver.isSelected() ?
+                              Gradient.variable(freeParameters, index++, driver.getValue()) :
+                              Gradient.constant(freeParameters, driver.getValue());
         }
         return parameters;
     }

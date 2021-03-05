@@ -16,6 +16,8 @@
  */
 package org.orekit.forces.maneuvers.propulsion;
 
+import java.util.List;
+
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -85,7 +87,7 @@ public class AbstractConstantThrustTest {
         };
         
         // Test non-abstract methods
-        Assert.assertEquals(0, model.getParametersDrivers().length);
+        Assert.assertEquals(0, model.getParametersDrivers().size());
         Assert.assertEquals(name, model.getName());
         Assert.assertEquals(isp , model.getIsp(), 0.);
         Assert.assertArrayEquals(direction.toArray(), model.getDirection().toArray(), 0.);
@@ -132,7 +134,7 @@ public class AbstractConstantThrustTest {
         // 1D constant thrust model
         final BasicConstantThrustPropulsionModel model =
                         new BasicConstantThrustPropulsionModel(thrust, isp, direction, name);
-        ParameterDriver[] drivers = model.getParametersDrivers();
+        List<ParameterDriver> drivers = model.getParametersDrivers();
         
         // References
         final Vector3D refThrustVector = direction.scalarMultiply(thrust);
@@ -149,11 +151,11 @@ public class AbstractConstantThrustTest {
         Assert.assertEquals(mult * refFlowRate, model.getFlowRate(new double[] {mult * thrust, mult * refFlowRate}), 0.);
         
         // Drivers
-        Assert.assertEquals(2, drivers.length);
-        Assert.assertEquals(name + BasicConstantThrustPropulsionModel.THRUST, drivers[0].getName());
-        Assert.assertEquals(name + BasicConstantThrustPropulsionModel.FLOW_RATE, drivers[1].getName());
-        Assert.assertEquals(thrust, drivers[0].getValue(), 0.);
-        Assert.assertEquals(refFlowRate, drivers[1].getValue(), 0.);
+        Assert.assertEquals(2, drivers.size());
+        Assert.assertEquals(name + BasicConstantThrustPropulsionModel.THRUST, drivers.get(0).getName());
+        Assert.assertEquals(name + BasicConstantThrustPropulsionModel.FLOW_RATE, drivers.get(1).getName());
+        Assert.assertEquals(thrust, drivers.get(0).getValue(), 0.);
+        Assert.assertEquals(refFlowRate, drivers.get(1).getValue(), 0.);
         
         // Thrust DS
         final DSFactory factory = new DSFactory(2, 1);
@@ -192,7 +194,7 @@ public class AbstractConstantThrustTest {
       // 3D "scaled" constant thrust model
       final ScaledConstantThrustPropulsionModel mod1 =
                       new ScaledConstantThrustPropulsionModel(thrust, isp, direction, name);
-      ParameterDriver[] drivers = mod1.getParametersDrivers();
+      List<ParameterDriver> drivers = mod1.getParametersDrivers();
       
       // References
       final Vector3D refThrustVector = direction.scalarMultiply(thrust);
@@ -207,13 +209,13 @@ public class AbstractConstantThrustTest {
       Assert.assertEquals(refFlowRate, mod1.getFlowRate(new double[] {0.}), 0.);
       
       // Drivers
-      Assert.assertEquals(3, drivers.length);
-      Assert.assertEquals(name + ScaledConstantThrustPropulsionModel.THRUSTX_SCALE_FACTOR, drivers[0].getName());
-      Assert.assertEquals(name + ScaledConstantThrustPropulsionModel.THRUSTY_SCALE_FACTOR, drivers[1].getName());
-      Assert.assertEquals(name + ScaledConstantThrustPropulsionModel.THRUSTZ_SCALE_FACTOR, drivers[2].getName());
-      Assert.assertEquals(1., drivers[0].getValue(), 0.);
-      Assert.assertEquals(1., drivers[1].getValue(), 0.);
-      Assert.assertEquals(1., drivers[2].getValue(), 0.);
+      Assert.assertEquals(3, drivers.size());
+      Assert.assertEquals(name + ScaledConstantThrustPropulsionModel.THRUSTX_SCALE_FACTOR, drivers.get(0).getName());
+      Assert.assertEquals(name + ScaledConstantThrustPropulsionModel.THRUSTY_SCALE_FACTOR, drivers.get(1).getName());
+      Assert.assertEquals(name + ScaledConstantThrustPropulsionModel.THRUSTZ_SCALE_FACTOR, drivers.get(2).getName());
+      Assert.assertEquals(1., drivers.get(0).getValue(), 0.);
+      Assert.assertEquals(1., drivers.get(1).getValue(), 0.);
+      Assert.assertEquals(1., drivers.get(2).getValue(), 0.);
       
       // Thrust DS
       final DSFactory factory = new DSFactory(3, 1);

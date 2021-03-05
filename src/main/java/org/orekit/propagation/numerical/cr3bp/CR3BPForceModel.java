@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.numerical.cr3bp;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
@@ -217,10 +219,8 @@ public class CR3BPForceModel extends AbstractForceModel {
     }
 
     /** {@inheritDoc} */
-    public ParameterDriver[] getParametersDrivers() {
-        return new ParameterDriver[] {
-            muParameterDriver
-        };
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.singletonList(muParameterDriver);
     }
 
     /** {@inheritDoc} */

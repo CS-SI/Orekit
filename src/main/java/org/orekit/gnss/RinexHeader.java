@@ -20,8 +20,6 @@ import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
-import org.orekit.gnss.RinexLoader.Parser.AppliedDCBS;
-import org.orekit.gnss.RinexLoader.Parser.AppliedPCVS;
 import org.orekit.gnss.RinexLoader.Parser.PhaseShiftCorrection;
 import org.orekit.time.AbsoluteDate;
 

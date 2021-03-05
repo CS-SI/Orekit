@@ -201,7 +201,7 @@ public class OceanTides extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getParametersDrivers() {
+    public List<ParameterDriver> getParametersDrivers() {
         // delegate to underlying attraction model
         return attractionModel.getParametersDrivers();
     }

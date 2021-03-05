@@ -367,6 +367,9 @@ SP3_NUMBER_OF_EPOCH_MISMATCH = <MISSING TRANSLATION>
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = μη αναμενόμενο τέλος αρχείου στο αρχείο sp3 (μετά από τη γραμμή {0})
 
+# unsupported clock file version {0}
+CLOCK_FILE_UNSUPPORTED_VERSION = μη υποστηριζόμενη έκδοση αρχείου ρολογιού {0}
+
 # non-existent geomagnetic model {0} for year {1}
 NON_EXISTENT_GEOMAGNETIC_MODEL = ανύπαρκτο γεωμαγνητικό μοντέλο {0} για το έτος {1}
 
@@ -498,6 +501,12 @@ STATION_NOT_FOUND = <MISSING TRANSLATION>
 
 # unknown satellite system {0}
 UNKNOWN_SATELLITE_SYSTEM = <MISSING TRANSLATION>
+
+# unknown time system {0}
+UNKNOWN_TIME_SYSTEM = άγνωστο σύστημα χρόνου {0}
+
+# unknown clock data type {0}
+UNKNOWN_CLOCK_DATA_TYPE = άγνωστος τύπος δεδομένων ρολογιού {0}
 
 # unknown satellite antenna code {0}
 UNKNOWN_SATELLITE_ANTENNA_CODE = <MISSING TRANSLATION>

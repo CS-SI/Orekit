@@ -389,7 +389,7 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
      * @return aoR3Pow
      */
     public T[] getAoR3Pow() {
-        return aoR3Pow;
+        return aoR3Pow.clone();
     }
 
    /** Get the value of max frequency of F.
@@ -412,7 +412,7 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
      * @return Qns
      */
     public T[][] getQns() {
-        return Qns;
+        return Qns.clone();
     }
 
 }

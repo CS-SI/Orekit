@@ -367,6 +367,9 @@ SP3_NUMBER_OF_EPOCH_MISMATCH = {0} époques trouvées dans le fichier {1} au lie
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = fin inattendue d''un fichier sp3 (après la ligne {0})
 
+# unsupported clock file version {0}
+CLOCK_FILE_UNSUPPORTED_VERSION = version de fichier d''horloge {0} non prise en charge
+
 # non-existent geomagnetic model {0} for year {1}
 NON_EXISTENT_GEOMAGNETIC_MODEL = fichier de modèle géomagnétique {0} absent pour l''année {1}
 
@@ -498,6 +501,12 @@ STATION_NOT_FOUND = station {0} inconnue, station connues : {1}
 
 # unknown satellite system {0}
 UNKNOWN_SATELLITE_SYSTEM = système satellitaire {0} inconnu
+
+# unknown time system {0}
+UNKNOWN_TIME_SYSTEM = système de temps {0} inconnu
+
+# unknown clock data type {0}
+UNKNOWN_CLOCK_DATA_TYPE = type de donnée d''horloge {0} inconnu
 
 # unknown satellite antenna code {0}
 UNKNOWN_SATELLITE_ANTENNA_CODE = code d''antenne satellite {0} inconnu

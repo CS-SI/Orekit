@@ -160,10 +160,10 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
      * @param parameters SGP4 and SDP4 model parameters
      */
     public FieldDeepSDP4(final FieldTLE<T> initialTLE,
-                    final AttitudeProvider attitudeProvider,
-                    final T mass,
-                    final Frame teme,
-                    final T[] parameters) {
+                         final AttitudeProvider attitudeProvider,
+                         final T mass,
+                         final Frame teme,
+                         final T[] parameters) {
         super(initialTLE, attitudeProvider, mass, teme, parameters);
     }
 

@@ -187,21 +187,25 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getParametersDrivers() {
+    public void init(final SpacecraftState initialState, final AbsoluteDate target) {
+        // Initialize the numerical force model
+        contribution.init(initialState, target);
+    }
 
-        final ParameterDriver[] driversWithoutMu = getParametersDriversWithoutMu();
+    /** {@inheritDoc} */
+    @Override
+    public List<ParameterDriver> getParametersDrivers() {
 
-        // + 1 for central attraction coefficient driver
-        final ParameterDriver[] drivers = new ParameterDriver[driversWithoutMu.length + 1];
+        // Parameter drivers
+        final List<ParameterDriver> drivers = new ArrayList<>();
 
-        int index = 0;
-        for (final ParameterDriver driver : driversWithoutMu) {
-            drivers[index] = driver;
-            index++;
+        // Loop on drivers (without central attraction coefficient driver)
+        for (final ParameterDriver driver : getParametersDriversWithoutMu()) {
+            drivers.add(driver);
         }
 
         // We put central attraction coefficient driver at the end of the array
-        drivers[driversWithoutMu.length] = gmParameterDriver;
+        drivers.add(gmParameterDriver);
         return drivers;
 
     }
@@ -216,11 +220,11 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      * </p>
      * @return drivers for force model parameters
      */
-    protected abstract ParameterDriver[] getParametersDriversWithoutMu();
+    protected abstract List<ParameterDriver> getParametersDriversWithoutMu();
 
     /** {@inheritDoc} */
     @Override
-    public List<ShortPeriodTerms> initialize(final AuxiliaryElements auxiliaryElements, final PropagationType type,
+    public List<ShortPeriodTerms> initializeShortPeriodTerms(final AuxiliaryElements auxiliaryElements, final PropagationType type,
             final double[] parameters) {
 
         final List<ShortPeriodTerms> list = new ArrayList<ShortPeriodTerms>();
@@ -233,7 +237,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initialize(
+    public <T extends RealFieldElement<T>> List<FieldShortPeriodTerms<T>> initializeShortPeriodTerms(
             final FieldAuxiliaryElements<T> auxiliaryElements, final PropagationType type, final T[] parameters) {
 
         final Field<T> field = auxiliaryElements.getDate().getField();
@@ -659,9 +663,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
             this.meanMode = meanMode;
             this.j = j;
-            this.parameters = parameters;
+            this.parameters = parameters.clone();
             this.auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), I);
-            this.context = new FieldAbstractGaussianContributionContext<>(auxiliaryElements, parameters);
+            this.context = new FieldAbstractGaussianContributionContext<>(auxiliaryElements, this.parameters);
             // remove derivatives from state
             final T[] stateVector = MathArrays.buildArray(field, 6);
             OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), PositionAngle.TRUE, stateVector, null);
@@ -936,9 +940,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
             this.meanMode = meanMode;
             this.j = j;
-            this.parameters = parameters;
+            this.parameters = parameters.clone();
             this.auxiliaryElements = new AuxiliaryElements(state.getOrbit(), I);
-            this.context = new AbstractGaussianContributionContext(auxiliaryElements, parameters);
+            this.context = new AbstractGaussianContributionContext(auxiliaryElements, this.parameters);
             // remove derivatives from state
             final double[] stateVector = new double[6];
             OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), PositionAngle.TRUE, stateVector, null);

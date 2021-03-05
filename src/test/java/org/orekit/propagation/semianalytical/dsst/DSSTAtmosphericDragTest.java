@@ -113,7 +113,7 @@ public class DSSTAtmosphericDragTest {
         // Force model parameters
         final double[] parameters = drag.getParameters();
         // Initialize force model
-        drag.initialize(auxiliaryElements, PropagationType.MEAN, parameters);
+        drag.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, parameters);
 
         // Register the attitude provider to the force model
         AttitudeProvider attitudeProvider = new InertialProvider(rotation);
@@ -180,7 +180,7 @@ public class DSSTAtmosphericDragTest {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
 
         drag.registerAttitudeProvider(attitudeProvider);
-        shortPeriodTerms.addAll(drag.initialize(aux, PropagationType.OSCULATING, drag.getParameters()));
+        shortPeriodTerms.addAll(drag.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, drag.getParameters()));
         drag.updateShortPeriodTerms(drag.getParameters(), meanState);
 
         double[] y = new double[6];

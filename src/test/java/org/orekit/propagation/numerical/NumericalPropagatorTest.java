@@ -20,6 +20,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
@@ -1681,17 +1682,17 @@ public class NumericalPropagatorTest {
         }
 
         @Override
-        public ParameterDriver[] getParametersDrivers() {
-            return new ParameterDriver[0];
+        public List<ParameterDriver> getParametersDrivers() {
+            return Collections.emptyList();
         }
 
         @Override
         public ParameterDriver getParameterDriver(String name)
             {
-            final ParameterDriver[] drivers =  getParametersDrivers();
-            final String[] names = new String[drivers.length];
+            final List<ParameterDriver> drivers =  getParametersDrivers();
+            final String[] names = new String[drivers.size()];
             for (int i = 0; i < names.length; ++i) {
-                names[i] = drivers[i].getName();
+                names[i] = drivers.get(i).getName();
             }
             throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
                                       name, names);

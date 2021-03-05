@@ -17,6 +17,8 @@
 
 package org.orekit.forces.maneuvers.trigger;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
@@ -73,8 +75,8 @@ public interface ManeuverTriggers {
     /** Get the maneuver triggers parameter drivers.
      * @return maneuver triggers parameter drivers
      */
-    default ParameterDriver[] getParametersDrivers() {
-        return new ParameterDriver[] {};
+    default List<ParameterDriver> getParametersDrivers() {
+        return Collections.emptyList();
     }
 
     /** Get the maneuver name.

@@ -16,6 +16,7 @@
  */
 package org.orekit.forces.empirical;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.hipparchus.Field;
@@ -139,7 +140,7 @@ public class ParametricAcceleration extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public ParameterDriver[] getParametersDrivers() {
+    public List<ParameterDriver> getParametersDrivers() {
         return accelerationModel.getParametersDrivers();
     }
 

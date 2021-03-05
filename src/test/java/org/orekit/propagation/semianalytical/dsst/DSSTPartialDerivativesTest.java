@@ -447,8 +447,8 @@ public class DSSTPartialDerivativesTest {
                                            OrbitType orbitType,
                                            DSSTForceModel... models) {
 
-        final double minStep = 0.001;
-        final double maxStep = 1000;
+        final double minStep = 6000.0;
+        final double maxStep = 86400.0;
         
         double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
         DSSTPropagator propagator =

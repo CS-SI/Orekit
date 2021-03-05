@@ -83,7 +83,7 @@ public class DSSTThirdBodyTest {
         final double[] parameters = moon.getParameters();
 
         // Initialize force model
-        moon.initialize(auxiliaryElements, PropagationType.MEAN, parameters);
+        moon.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, parameters);
 
         final double[] elements = new double[7];
         Arrays.fill(elements, 0.0);
@@ -119,7 +119,7 @@ public class DSSTThirdBodyTest {
 
         for (final DSSTForceModel force : forces) {
             force.registerAttitudeProvider(null);
-            shortPeriodTerms.addAll(force.initialize(aux, PropagationType.OSCULATING, force.getParameters()));
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters()));
             force.updateShortPeriodTerms(force.getParameters(), meanState);
         }
 

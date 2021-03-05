@@ -106,8 +106,8 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setGravity(final NumericalPropagatorBuilder propagatorBuilder,
-                                           final OneAxisEllipsoid body) {
+    protected List<ParameterDriver> setGravity(final NumericalPropagatorBuilder propagatorBuilder,
+                                               final OneAxisEllipsoid body) {
         final ForceModel gravityModel = new HolmesFeatherstoneAttractionModel(body.getBodyFrame(), gravityField);
         propagatorBuilder.addForceModel(gravityModel);
         return gravityModel.getParametersDrivers();
@@ -115,10 +115,10 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setOceanTides(final NumericalPropagatorBuilder propagatorBuilder,
-                                              final IERSConventions conventions,
-                                              final OneAxisEllipsoid body,
-                                              final int degree, final int order) {
+    protected List<ParameterDriver> setOceanTides(final NumericalPropagatorBuilder propagatorBuilder,
+                                                  final IERSConventions conventions,
+                                                  final OneAxisEllipsoid body,
+                                                  final int degree, final int order) {
         final ForceModel tidesModel = new OceanTides(body.getBodyFrame(),
                                                      gravityField.getAe(), gravityField.getMu(),
                                                      degree, order, conventions,
@@ -129,10 +129,10 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setSolidTides(final NumericalPropagatorBuilder propagatorBuilder,
-                                              final IERSConventions conventions,
-                                              final OneAxisEllipsoid body,
-                                              final CelestialBody[] solidTidesBodies) {
+    protected List<ParameterDriver> setSolidTides(final NumericalPropagatorBuilder propagatorBuilder,
+                                                  final IERSConventions conventions,
+                                                  final OneAxisEllipsoid body,
+                                                  final CelestialBody[] solidTidesBodies) {
         final ForceModel tidesModel = new SolidTides(body.getBodyFrame(),
                                                      gravityField.getAe(), gravityField.getMu(),
                                                      gravityField.getTideSystem(), conventions,
@@ -144,8 +144,8 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setThirdBody(final NumericalPropagatorBuilder propagatorBuilder,
-                                             final CelestialBody thirdBody) {
+    protected List<ParameterDriver> setThirdBody(final NumericalPropagatorBuilder propagatorBuilder,
+                                                 final CelestialBody thirdBody) {
         final ForceModel thirdBodyModel = new ThirdBodyAttraction(thirdBody);
         propagatorBuilder.addForceModel(thirdBodyModel);
         return thirdBodyModel.getParametersDrivers();
@@ -153,8 +153,8 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setDrag(final NumericalPropagatorBuilder propagatorBuilder,
-                                        final Atmosphere atmosphere, final DragSensitive spacecraft) {
+    protected List<ParameterDriver> setDrag(final NumericalPropagatorBuilder propagatorBuilder,
+                                            final Atmosphere atmosphere, final DragSensitive spacecraft) {
         final ForceModel dragModel = new DragForce(atmosphere, spacecraft);
         propagatorBuilder.addForceModel(dragModel);
         return dragModel.getParametersDrivers();
@@ -162,8 +162,8 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setSolarRadiationPressure(final NumericalPropagatorBuilder propagatorBuilder, final CelestialBody sun,
-                                                          final double equatorialRadius, final RadiationSensitive spacecraft) {
+    protected List<ParameterDriver> setSolarRadiationPressure(final NumericalPropagatorBuilder propagatorBuilder, final CelestialBody sun,
+                                                              final double equatorialRadius, final RadiationSensitive spacecraft) {
         final ForceModel srpModel = new SolarRadiationPressure(sun, equatorialRadius, spacecraft);
         propagatorBuilder.addForceModel(srpModel);
         return srpModel.getParametersDrivers();
@@ -171,10 +171,10 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setAlbedoInfrared(final NumericalPropagatorBuilder propagatorBuilder,
-                                                  final CelestialBody sun, final double equatorialRadius,
-                                                  final double angularResolution,
-                                                  final RadiationSensitive spacecraft) {
+    protected List<ParameterDriver> setAlbedoInfrared(final NumericalPropagatorBuilder propagatorBuilder,
+                                                      final CelestialBody sun, final double equatorialRadius,
+                                                      final double angularResolution,
+                                                      final RadiationSensitive spacecraft) {
         final ForceModel albedoIR = new KnockeRediffusedForceModel(sun, spacecraft, equatorialRadius, angularResolution);
         propagatorBuilder.addForceModel(albedoIR);
         return albedoIR.getParametersDrivers();
@@ -182,7 +182,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setRelativity(final NumericalPropagatorBuilder propagatorBuilder) {
+    protected List<ParameterDriver> setRelativity(final NumericalPropagatorBuilder propagatorBuilder) {
         final ForceModel relativityModel = new Relativity(gravityField.getMu());
         propagatorBuilder.addForceModel(relativityModel);
         return relativityModel.getParametersDrivers();
@@ -190,8 +190,8 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] setPolynomialAcceleration(final NumericalPropagatorBuilder propagatorBuilder,
-                                                          final String name, final Vector3D direction, final int degree) {
+    protected List<ParameterDriver> setPolynomialAcceleration(final NumericalPropagatorBuilder propagatorBuilder,
+                                                             final String name, final Vector3D direction, final int degree) {
         final AccelerationModel accModel = new PolynomialAccelerationModel(name, null, degree);
         final ForceModel polynomialModel = new ParametricAcceleration(direction, true, accModel);
         propagatorBuilder.addForceModel(polynomialModel);

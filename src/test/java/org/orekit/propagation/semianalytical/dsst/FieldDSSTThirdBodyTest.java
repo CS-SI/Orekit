@@ -107,7 +107,7 @@ public class FieldDSSTThirdBodyTest {
         // Force model parameters
         final T[] parameters = moon.getParameters(field);
         // Initialize force model
-        moon.initialize(auxiliaryElements,
+        moon.initializeShortPeriodTerms(auxiliaryElements,
                         PropagationType.MEAN, parameters);
 
         final T[] elements = MathArrays.buildArray(field, 7);
@@ -151,7 +151,7 @@ public class FieldDSSTThirdBodyTest {
 
         for (final DSSTForceModel force : forces) {
             force.registerAttitudeProvider(null);
-            shortPeriodTerms.addAll(force.initialize(aux, PropagationType.OSCULATING, force.getParameters(field)));
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters(field)));
             force.updateShortPeriodTerms(force.getParameters(field), meanState);
         }
 
@@ -221,7 +221,7 @@ public class FieldDSSTThirdBodyTest {
             Arrays.fill(shortPeriod, zero);
             
             final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<Gradient>>();
-            shortPeriodTerms.addAll(force.initialize(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
             force.updateShortPeriodTerms(dsParameters, dsState);
             
             for (final FieldShortPeriodTerms<Gradient> spt : shortPeriodTerms) {
@@ -347,7 +347,7 @@ public class FieldDSSTThirdBodyTest {
           
             // Compute Jacobian using directly the method
             final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<Gradient>>();
-            shortPeriodTerms.addAll(forceModel.initialize(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
+            shortPeriodTerms.addAll(forceModel.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
             forceModel.updateShortPeriodTerms(dsParameters, dsState);
             final Gradient[] shortPeriod = new Gradient[6];
             Arrays.fill(shortPeriod, zero);
@@ -462,7 +462,7 @@ public class FieldDSSTThirdBodyTest {
         List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
         for (final DSSTForceModel force : forces) {
             double[] parameters = force.getParameters();
-            shortPeriodTerms.addAll(force.initialize(auxiliaryElements, PropagationType.OSCULATING, parameters));
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING, parameters));
             force.updateShortPeriodTerms(parameters, state);
         }
         

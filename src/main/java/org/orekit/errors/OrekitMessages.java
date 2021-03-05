@@ -193,6 +193,7 @@ public enum OrekitMessages implements Localizable {
     SP3_UNSUPPORTED_VERSION("unsupported sp3 file version {0}"),
     SP3_NUMBER_OF_EPOCH_MISMATCH("found {0} epochs in file {1}, expected {2}"),
     SP3_UNEXPECTED_END_OF_FILE("unexpected end of sp3 file (after line {0})"),
+    CLOCK_FILE_UNSUPPORTED_VERSION("unsupported clock file version {0}"),
     NON_EXISTENT_GEOMAGNETIC_MODEL("non-existent geomagnetic model {0} for year {1}"),
     UNSUPPORTED_TIME_TRANSFORM(
             "geomagnetic model {0} with epoch {1} does not support time transformation, no secular variation coefficients defined"),
@@ -235,6 +236,8 @@ public enum OrekitMessages implements Localizable {
     NO_REFERENCE_DATE_FOR_PARAMETER("no reference date set for parameter {0}"),
     STATION_NOT_FOUND("station {0} not found, known stations: {1}"),
     UNKNOWN_SATELLITE_SYSTEM("unknown satellite system {0}"),
+    UNKNOWN_TIME_SYSTEM("unknown time system {0}"),
+    UNKNOWN_CLOCK_DATA_TYPE("unknown clock data type {0}"),
     UNKNOWN_SATELLITE_ANTENNA_CODE("unknown satellite antenna code {0}"),
     UNSUPPORTED_FREQUENCY_FOR_ANTENNA("frequency {0} is not supported by antenna {1}"),
     CANNOT_FIND_SATELLITE_IN_SYSTEM("cannot find satellite {0} in satellite system {1}"),

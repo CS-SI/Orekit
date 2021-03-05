@@ -18,6 +18,7 @@ package org.orekit.propagation.analytical;
 
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.hipparchus.RealFieldElement;
@@ -199,9 +200,9 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDriver[] getParametersDrivers() {
+    protected List<ParameterDriver> getParametersDrivers() {
         // Keplerian propagation model does not have parameter drivers.
-        return new ParameterDriver[0];
+        return Collections.emptyList();
     }
 
 }

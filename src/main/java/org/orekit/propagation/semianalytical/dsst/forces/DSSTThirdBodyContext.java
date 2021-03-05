@@ -383,7 +383,7 @@ public class DSSTThirdBodyContext extends ForceModelContext {
      * @return aoR3Pow
      */
     public double[] getAoR3Pow() {
-        return aoR3Pow;
+        return aoR3Pow.clone();
     }
 
    /** Get the value of max frequency of F.
@@ -406,7 +406,7 @@ public class DSSTThirdBodyContext extends ForceModelContext {
      * @return Qns
      */
     public double[][] getQns() {
-        return Qns;
+        return Qns.clone();
     }
 
 }

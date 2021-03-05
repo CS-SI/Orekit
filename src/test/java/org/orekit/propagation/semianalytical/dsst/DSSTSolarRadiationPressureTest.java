@@ -105,7 +105,7 @@ public class DSSTSolarRadiationPressureTest {
         // Force model parameters
         final double[] parameters = srp.getParameters();
         // Initialize force model
-        srp.initialize(auxiliaryElements, PropagationType.MEAN, parameters);
+        srp.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, parameters);
 
         // Register the attitude provider to the force model
         AttitudeProvider attitudeProvider = new InertialProvider(rotation);
@@ -170,7 +170,7 @@ public class DSSTSolarRadiationPressureTest {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
 
         srp.registerAttitudeProvider(attitudeProvider);
-        shortPeriodTerms.addAll(srp.initialize(aux, PropagationType.OSCULATING, srp.getParameters()));
+        shortPeriodTerms.addAll(srp.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, srp.getParameters()));
         srp.updateShortPeriodTerms(srp.getParameters(), meanState);
 
         double[] y = new double[6];

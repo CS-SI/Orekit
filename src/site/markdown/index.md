@@ -234,6 +234,7 @@
     * loading of RINEX observation files (version 2 and version 3)
     * support for Hatanaka compact RINEX format
     * loading of SINEX station file
+    * loading of RINEX clock files (version 2 and version 3)
 
   * Orbit file handling
   
