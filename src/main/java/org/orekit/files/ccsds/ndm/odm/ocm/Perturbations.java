@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.orekit.bodies.CelestialBodies;
-import org.orekit.bodies.CelestialBody;
+import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.time.AbsoluteDate;
 
@@ -50,7 +50,7 @@ public class Perturbations extends CommentsContainer {
     private double gm;
 
     /** N-body perturbation bodies. */
-    private List<CelestialBody> nBodyPerturbations;
+    private List<BodyFacade> nBodyPerturbations;
 
     /** Central body angular rotation rate. */
     private double centralBodyRotation;
@@ -77,7 +77,7 @@ public class Perturbations extends CommentsContainer {
     private ShadowModel shadowModel;
 
     /** Celestial bodies casting shadow. */
-    private List<CelestialBody> shadowBodies;
+    private List<BodyFacade> shadowBodies;
 
     /** Solar Radiation Pressure model. */
     private String srpModel;
@@ -130,7 +130,8 @@ public class Perturbations extends CommentsContainer {
     public Perturbations(final CelestialBodies celestialBodies) {
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
-        shadowBodies = Collections.singletonList(celestialBodies.getEarth());
+        shadowBodies = Collections.singletonList(new BodyFacade(celestialBodies.getEarth().getName(),
+                                                                celestialBodies.getEarth()));
     }
 
     /** Get name of atmospheric model.
@@ -210,14 +211,14 @@ public class Perturbations extends CommentsContainer {
     /** Get n-body perturbation bodies.
      * @return n-body perturbation bodies
      */
-    public List<CelestialBody> getNBodyPerturbations() {
+    public List<BodyFacade> getNBodyPerturbations() {
         return nBodyPerturbations;
     }
 
     /** Set n-body perturbation bodies.
      * @param nBody n-body perturbation bodies
      */
-    public void setNBodyPerturbations(final List<CelestialBody> nBody) {
+    public void setNBodyPerturbations(final List<BodyFacade> nBody) {
         this.nBodyPerturbations = nBody;
     }
 
@@ -336,14 +337,14 @@ public class Perturbations extends CommentsContainer {
     /** Get celestial bodies casting shadows.
      * @return celestial bodies casting shadows
      */
-    public List<CelestialBody> getShadowBodies() {
+    public List<BodyFacade> getShadowBodies() {
         return shadowBodies;
     }
 
     /** Set celestial bodies casting shadows.
      * @param shadowBodies celestial bodies casting shadows
      */
-    public void setShadowBodies(final List<CelestialBody> shadowBodies) {
+    public void setShadowBodies(final List<BodyFacade> shadowBodies) {
         this.shadowBodies = shadowBodies;
     }
 

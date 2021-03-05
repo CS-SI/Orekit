@@ -47,12 +47,8 @@ public enum PerturbationsKey {
     GM((token, context, container) -> token.processAsDouble(1.0e9, container::setGm)),
 
     /** N-body perturbation bodies. */
-    N_BODY_PERTURBATIONS((token, context, container) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            // TODO
-        }
-        return true;
-    }),
+    N_BODY_PERTURBATIONS((token, context, container) -> token.processAsCenterList(container::setNBodyPerturbations,
+                                                                                  context.getDataContext().getCelestialBodies())),
 
     /** Central body angular rotation rate. */
     CENTRAL_BODY_ROTATION((token, context, container) -> token.processAsAngle(container::setCentralBodyRotation)),
@@ -88,12 +84,8 @@ public enum PerturbationsKey {
     }),
 
     /** Names of shadow bodies. */
-    SHADOW_BODIES((token, context, container) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            // TODO
-        }
-        return true;
-    }),
+    SHADOW_BODIES((token, context, container) -> token.processAsCenterList(container::setShadowBodies,
+                                                                           context.getDataContext().getCelestialBodies())),
 
     /** Solar Radiation Pressure model. */
     SRP_MODEL((token, context, container) -> token.processAsFreeTextString(container::setSrpModel)),
@@ -191,16 +183,6 @@ public enum PerturbationsKey {
             container.setGravityModel(matcher.group(1),
                                       Integer.parseInt(matcher.group(2)),
                                       Integer.parseInt(matcher.group(3)));
-            return true;
-        }
-    }
-
-    /** Dedicated processor for list of {@link CelestialBody}. */
-    private static class CelestialBodyListProcessor implements TokenProcessor {
-        /** {@inheritDoc} */
-        @Override
-        public boolean process(final ParseToken token, final ParsingContext context, final Perturbations container) {
-            // TODO
             return true;
         }
     }
