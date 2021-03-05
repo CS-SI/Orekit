@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
+import org.orekit.files.ccsds.definitions.ElementsType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.units.Unit;

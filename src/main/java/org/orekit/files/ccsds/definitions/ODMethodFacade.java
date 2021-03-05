@@ -16,41 +16,51 @@
  */
 package org.orekit.files.ccsds.definitions;
 
-import org.orekit.bodies.CelestialBody;
-
-/** Facade in front of several center bodies in CCSDS messages.
+/** Facade in front of several orbit determination methods in CCSDS messages.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class BodyFacade {
+public class ODMethodFacade {
 
-    /** Name of the center. */
+    /** Name of the method. */
     private final String name;
 
-    /** Celestial body (may be null). */
-    private final CelestialBody body;
+    /** Method type (may be null). */
+    private final OdMethodType type;
+
+    /** Tool used for OD. */
+    private final String tool;
 
     /** Simple constructor.
-     * @param name name of the frame
-     * @param body celestial body (may be null)
+     * @param name name of the method
+     * @param type method type (may be null)
+     * @param tool tool used for OD (may be null)
      */
-    public BodyFacade(final String name, final CelestialBody body) {
+    public ODMethodFacade(final String name, final OdMethodType type, final String tool) {
         this.name = name;
-        this.body = body;
+        this.type = type;
+        this.tool = tool;
     }
 
-    /** Get the CCSDS name for the body.
-     * @return CCSDS name
+    /** Get the name of the method.
+     * @return name of the method
      */
     public String getName() {
         return name;
     }
 
-    /** Get the celestial body.
-     * @return celestial body (may be null)
+    /** Get the method type.
+     * @return method type
      */
-    public CelestialBody getBody() {
-        return body;
+    public OdMethodType getType() {
+        return type;
+    }
+
+    /** Get the tool used for OD.
+     * @return tool used for OD
+     */
+    public String getTool() {
+        return tool;
     }
 
 }

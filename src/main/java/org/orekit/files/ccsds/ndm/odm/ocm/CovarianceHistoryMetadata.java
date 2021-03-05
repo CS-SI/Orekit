@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.util.List;
 
+import org.orekit.files.ccsds.definitions.ElementsType;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.files.ccsds.section.CommentsContainer;

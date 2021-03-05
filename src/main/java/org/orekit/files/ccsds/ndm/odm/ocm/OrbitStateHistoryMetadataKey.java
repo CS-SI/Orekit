@@ -18,6 +18,7 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.ElementsType;
 import org.orekit.files.ccsds.ndm.odm.oem.InterpolationMethod;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;

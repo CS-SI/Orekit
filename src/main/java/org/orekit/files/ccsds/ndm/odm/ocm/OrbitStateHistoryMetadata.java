@@ -22,6 +22,7 @@ import java.util.List;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.ElementsType;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.ndm.odm.oem.InterpolationMethod;
 import org.orekit.files.ccsds.section.CommentsContainer;

@@ -24,6 +24,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.BodyFacade;
+import org.orekit.files.ccsds.definitions.DutyCycleType;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;

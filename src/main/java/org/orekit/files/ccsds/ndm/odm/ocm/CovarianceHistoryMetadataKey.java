@@ -16,6 +16,7 @@
  */
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
+import org.orekit.files.ccsds.definitions.ElementsType;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;

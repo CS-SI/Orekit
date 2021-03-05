@@ -30,6 +30,7 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.ElementsType;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;

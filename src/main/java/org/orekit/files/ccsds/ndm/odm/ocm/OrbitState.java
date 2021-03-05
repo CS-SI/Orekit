@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.util.List;
 
+import org.orekit.files.ccsds.definitions.ElementsType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.CartesianDerivativesFilter;

@@ -14,21 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.ccsds.ndm.odm.ocm;
+package org.orekit.files.ccsds.definitions;
 
-/** Type of duty cycle used in CCSDS {@link OcmFile Orbit Comprehensive Messages}.
+import org.orekit.files.ccsds.ndm.odm.ocm.OcmFile;
+
+/** Type of orbit determination method used in CCSDS {@link OcmFile Orbit Comprehensive Messages}.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public enum DutyCycleType {
+public enum OdMethodType {
 
-    /** Full/continuous thrust. */
-    CONTINUOUS,
+    /** Batch Weighted Least Squares. */
+    BWLS,
 
-    /** Time-based duty cycle. */
-    TIME,
+    /** Extended Kalman Filter. */
+    EKF,
 
-    /** Duty cycle based on phasing/clocking of space object body past a reference direction. */
-    TIME_AND_ANGLE;
+    /** Sequential Filter. */
+    SF,
+
+    /** Square Root Information Filter. */
+    SRIF,
+
+    /** Sequential Simultaneous Estimation Method. */
+    SSEM;
 
 }

@@ -16,9 +16,12 @@
  */
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
+import org.orekit.files.ccsds.definitions.ODMethodFacade;
+import org.orekit.files.ccsds.definitions.OdMethodType;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
+import org.orekit.utils.Constants;
 
 
 /** Keys for {@link OrbitDetermination orbit determination data} entries.
@@ -29,9 +32,113 @@ public enum OrbitDeterminationKey {
 
     /** Comment entry. */
     COMMENT((token, context, container) ->
-            token.getType() == TokenType.ENTRY ? container.addComment(token.getContent()) : true);
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContent()) : true),
 
-    // TODO
+    /** Identification number. */
+    OD_ID((token, context, container) -> token.processAsFreeTextString(container::setId)),
+
+    /** Identification of previous orbit determination. */
+    OD_PREV_ID((token, context, container) -> token.processAsFreeTextString(container::setPrevId)),
+
+    /** Orbit determination method. */
+    OD_METHOD((token, context, container) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            final String[] fields = token.getContent().split("\\p{Blank}*:\\p{Blank}*");
+            if (fields.length == 2) {
+                // we have method and tool
+                OdMethodType type;
+                try {
+                    type = OdMethodType.valueOf(fields[0]);
+                } catch (IllegalArgumentException iae) {
+                    type = null;
+                }
+                container.setMethod(new ODMethodFacade(fields[0], type, fields[1]));
+            } else {
+                container.setMethod(new ODMethodFacade(token.getContent(), null, null));
+            }
+        }
+        return true;
+    }),
+
+    /** Time tag for orbit determination solved-for state. */
+    OD_EPOCH((token, context, container) -> token.processAsDate(container::setEpoch, context)),
+
+    /** Time elapsed between first accepted observation on epoch. */
+    DAYS_SINCE_FIRST_OBS((token, context, container) -> token.processAsDouble(Constants.JULIAN_DAY,
+                                                                              container::setTimeSinceFirstObservation)),
+
+    /** Time elapsed between last accepted observation on epoch. */
+    DAYS_SINCE_LAST_OBS((token, context, container) -> token.processAsDouble(Constants.JULIAN_DAY,
+                                                                             container::setTimeSinceLastObservation)),
+
+    /** Sime span of observation recommended for the OD of the object. */
+    RECOMMENDED_OD_SPAN((token, context, container) -> token.processAsDouble(Constants.JULIAN_DAY,
+                                                                             container::setRecommendedOdSpan)),
+
+    /** Actual time span used for the OD of the object. */
+    ACTUAL_OD_SPAN((token, context, container) -> token.processAsDouble(Constants.JULIAN_DAY,
+                                                                        container::setActualOdSpan)),
+
+    /** Number of observations available within the actual OD span. */
+    OBS_AVAILABLE((token, context, container) -> token.processAsInteger(container::setObsAvailable)),
+
+    /** Number of observations accepted within the actual OD span. */
+    OBS_USED((token, context, container) -> token.processAsInteger(container::setObsUsed)),
+
+    /** Number of sensors tracks available for the OD within the actual OD span. */
+    TRACKS_AVAILABLE((token, context, container) -> token.processAsInteger(container::setTracksAvailable)),
+
+    /** Number of sensors tracks accepted for the OD within the actual OD span. */
+    TRACKS_USED((token, context, container) -> token.processAsInteger(container::setTracksUsed)),
+
+    /** Maximum time between observations in the OD of the object. */
+    MAXIMUM_OBS_GAP((token, context, container) -> token.processAsDouble(Constants.JULIAN_DAY,
+                                                                         container::setMaximumObsGap)),
+
+    /** Positional error ellipsoid 1σ major eigenvalue at the epoch of OD. */
+    OD_EPOCH_EIGMAJ((token, context, container) -> token.processAsDouble(1.0, container::setEpochEigenMaj)),
+
+    /** Positional error ellipsoid 1σ intermediate eigenvalue at the epoch of OD. */
+    OD_EPOCH_EIGMED((token, context, container) -> token.processAsDouble(1.0, container::setEpochEigenMed)),
+
+    /** Positional error ellipsoid 1σ minor eigenvalue at the epoch of OD. */
+    OD_EPOCH_EIGMIN((token, context, container) -> token.processAsDouble(1.0, container::setEpochEigenMin)),
+
+    /** Maximum predicted major eigenvalue of 1σ positional error ellipsoid over entire time span of the OCM. */
+    OD_MAX_PRED_EIGMAJ((token, context, container) -> token.processAsDouble(1.0, container::setMaxPredictedEigenMaj)),
+
+    /** Minimum predicted major eigenvalue of 1σ positional error ellipsoid over entire time span of the OCM. */
+    OD_MIN_PRED_EIGMIN((token, context, container) -> token.processAsDouble(1.0, container::setMinPredictedEigenMaj)),
+
+    /** Confidence metric. */
+    OD_CONFIDENCE((token, context, container) -> token.processAsDouble(0.01, container::setConfidence)),
+
+    /** Generalize Dilution Of Precision. */
+    GDOP((token, context, container) -> token.processAsDouble(1.0, container::setGdop)),
+
+    /** Number of solved-for states. */
+    SOLVE_N((token, context, container) -> token.processAsInteger(container::setSolveN)),
+
+    /** Description of state elements solved-for. */
+    SOLVE_STATES((token, context, container) -> token.processAsFreeTextStringList(container::setSolveStates)),
+
+    /** Number of consider parameters. */
+    CONSIDER_N((token, context, container) -> token.processAsInteger(container::setConsiderN)),
+
+    /** Description of consider parameters. */
+    CONSIDER_PARAMS((token, context, container) -> token.processAsFreeTextStringList(container::setConsiderParameters)),
+
+    /** Number of sensors used. */
+    SENSORS_N((token, context, container) -> token.processAsInteger(container::setSensorsN)),
+
+    /** Description of sensors used. */
+    SENSORS((token, context, container) -> token.processAsFreeTextStringList(container::setSensors)),
+
+    /** Weighted RMS residual ratio. */
+    WEIGHTED_RMS((token, context, container) -> token.processAsDouble(1.0, container::setWeightedRms)),
+
+    /** Observation data types used. */
+    DATA_TYPES((token, context, container) -> token.processAsFreeTextStringList(container::setDataTypes));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -46,11 +153,11 @@ public enum OrbitDeterminationKey {
     /** Process an token.
      * @param token token to process
      * @param context parsing context
-     * @param data data to fill
+     * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final OrbitDetermination data) {
-        return processor.process(token, context, data);
+    public boolean process(final ParseToken token, final ParsingContext context, final OrbitDetermination container) {
+        return processor.process(token, context, container);
     }
 
     /** Interface for processing one token. */
@@ -58,10 +165,10 @@ public enum OrbitDeterminationKey {
         /** Process one token.
          * @param token token to process
          * @param context parsing context
-         * @param data data to fill
+         * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, OrbitDetermination data);
+        boolean process(ParseToken token, ParsingContext context, OrbitDetermination container);
     }
 
 }

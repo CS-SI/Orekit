@@ -18,6 +18,7 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.util.stream.Collectors;
 
+import org.orekit.files.ccsds.definitions.DutyCycleType;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;

@@ -1,5 +1,5 @@
 /* Copyright 2002-2021 CS GROUP
- * Licensed to CS GROUP (CS) under one or more
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,41 +16,21 @@
  */
 package org.orekit.files.ccsds.definitions;
 
-import org.orekit.bodies.CelestialBody;
+import org.orekit.files.ccsds.ndm.odm.ocm.OcmFile;
 
-/** Facade in front of several center bodies in CCSDS messages.
+/** Type of duty cycle used in CCSDS {@link OcmFile Orbit Comprehensive Messages}.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class BodyFacade {
+public enum DutyCycleType {
 
-    /** Name of the center. */
-    private final String name;
+    /** Full/continuous thrust. */
+    CONTINUOUS,
 
-    /** Celestial body (may be null). */
-    private final CelestialBody body;
+    /** Time-based duty cycle. */
+    TIME,
 
-    /** Simple constructor.
-     * @param name name of the frame
-     * @param body celestial body (may be null)
-     */
-    public BodyFacade(final String name, final CelestialBody body) {
-        this.name = name;
-        this.body = body;
-    }
-
-    /** Get the CCSDS name for the body.
-     * @return CCSDS name
-     */
-    public String getName() {
-        return name;
-    }
-
-    /** Get the celestial body.
-     * @return celestial body (may be null)
-     */
-    public CelestialBody getBody() {
-        return body;
-    }
+    /** Duty cycle based on phasing/clocking of space object body past a reference direction. */
+    TIME_AND_ANGLE;
 
 }

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.ccsds.ndm.odm.ocm;
+package org.orekit.files.ccsds.definitions;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,6 +24,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.ndm.odm.ocm.OcmFile;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.units.Unit;
