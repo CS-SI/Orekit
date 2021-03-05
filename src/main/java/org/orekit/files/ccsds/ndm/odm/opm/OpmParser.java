@@ -201,8 +201,8 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
     public boolean finalizeMetadata() {
         metadata.finalizeMetadata(context);
         metadata.checkMandatoryEntries();
-        if (metadata.getCenterBody() != null) {
-            setMuCreated(metadata.getCenterBody().getGM());
+        if (metadata.getCenter().getBody() != null) {
+            setMuCreated(metadata.getCenter().getBody().getGM());
         }
         return true;
     }

@@ -144,7 +144,7 @@ public class StreamingOemWriterTest {
             metadata.setObjectName("will be overwritten");
             metadata.setObjectID(objectID);
             metadata.setTimeSystem(TimeSystem.UTC);
-            metadata.setCenterName(ephemerisBlock.getMetadata().getCenterName(), ephemerisBlock.getMetadata().getCenterBody());
+            metadata.setCenter(ephemerisBlock.getMetadata().getCenter());
             metadata.setReferenceFrame(FrameFacade.map(FramesFactory.getEME2000())); // will be overwritten
             metadata.setStartTime(AbsoluteDate.J2000_EPOCH.shiftedBy(80 * Constants.JULIAN_CENTURY));
             metadata.setStopTime(metadata.getStartTime().shiftedBy(Constants.JULIAN_YEAR));
@@ -219,7 +219,7 @@ public class StreamingOemWriterTest {
     private static void compareOemEphemerisBlocksMetadata(OemMetadata meta1, OemMetadata meta2) {
         assertEquals(meta1.getObjectID(),                               meta2.getObjectID());
         assertEquals(meta1.getObjectName(),                             meta2.getObjectName());
-        assertEquals(meta1.getCenterName(),                             meta2.getCenterName());
+        assertEquals(meta1.getCenter().getName(),                       meta2.getCenter().getName());
         assertEquals(meta1.getReferenceFrame().asFrame(),               meta2.getReferenceFrame().asFrame());
         assertEquals(meta1.getReferenceFrame().asCelestialBodyFrame(),  meta2.getReferenceFrame().asCelestialBodyFrame());
         assertEquals(meta1.getReferenceFrame().asOrbitRelativeFrame(),  meta2.getReferenceFrame().asOrbitRelativeFrame());

@@ -257,8 +257,8 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
             currentOrbitStateHistory         = new ArrayList<>();
             setFallback(this::processOrbitStateToken);
         } else {
-            if (currentOrbitStateHistoryMetadata.getCenterBody() != null) {
-                setMuCreated(currentOrbitStateHistoryMetadata.getCenterBody().getGM());
+            if (currentOrbitStateHistoryMetadata.getCenter().getBody() != null) {
+                setMuCreated(currentOrbitStateHistoryMetadata.getCenter().getBody().getGM());
             }
             // we temporarily set gravitational parameter to NaN,
             // as we may get a proper one in the perturbations section

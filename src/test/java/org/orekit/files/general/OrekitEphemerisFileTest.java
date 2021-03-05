@@ -39,6 +39,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
+import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.odm.oem.OemMetadata;
@@ -138,7 +139,7 @@ public class OrekitEphemerisFileTest {
         template.setTimeSystem(TimeSystem.UTC);
         template.setObjectID(satId);
         template.setObjectName(satId);
-        template.setCenterName("EARTH", CelestialBodyFactory.getCelestialBodies().getEarth());
+        template.setCenter(new BodyFacade("EARTH", CelestialBodyFactory.getCelestialBodies().getEarth()));
         template.setReferenceFrame(FrameFacade.map(FramesFactory.getEME2000()));
         new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null, template).
         write(tempOemFile, ephemerisFile);

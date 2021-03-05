@@ -76,9 +76,9 @@ public class OMMParserTest {
 
         Assert.assertEquals("GOES 9", file.getMetadata().getObjectName());
         Assert.assertEquals("1995-025A", file.getMetadata().getObjectID());
-        Assert.assertEquals("EARTH", file.getMetadata().getCenterName());
-        Assert.assertNotNull(file.getMetadata().getCenterBody());
-        Assert.assertEquals(CelestialBodyFactory.getEarth(), file.getMetadata().getCenterBody());
+        Assert.assertEquals("EARTH", file.getMetadata().getCenter().getName());
+        Assert.assertNotNull(file.getMetadata().getCenter().getBody());
+        Assert.assertEquals(CelestialBodyFactory.getEarth(), file.getMetadata().getCenter().getBody());
         Assert.assertEquals(FramesFactory.getTEME(), file.getMetadata().getFrame());
         Assert.assertEquals(TimeSystem.UTC, file.getMetadata().getTimeSystem());
         Assert.assertEquals("SGP/SGP4", file.getMetadata().getMeanElementTheory());

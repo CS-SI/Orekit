@@ -551,7 +551,7 @@ public class OemWriter implements EphemerisFileWriter {
         // objects
         generator.writeEntry(OdmMetadataKey.OBJECT_NAME.name(),    metadata.getObjectName(), true);
         generator.writeEntry(CommonMetadataKey.OBJECT_ID.name(),   metadata.getObjectID(),   true);
-        generator.writeEntry(CommonMetadataKey.CENTER_NAME.name(), metadata.getCenterName(), false);
+        generator.writeEntry(CommonMetadataKey.CENTER_NAME.name(), metadata.getCenter().getName(), false);
 
         // frames
         generator.writeEntry(CommonMetadataKey.REF_FRAME.name(), metadata.getReferenceFrame().getName(), true);
@@ -684,8 +684,8 @@ public class OemWriter implements EphemerisFileWriter {
         // copy object
         copy.setObjectName(original.getObjectName());
         copy.setObjectID(original.getObjectID());
-        if (original.getCenterName() != null) {
-            copy.setCenterName(original.getCenterName(), original.getCenterBody());
+        if (original.getCenter().getName() != null) {
+            copy.setCenter(original.getCenter());
         }
 
         // copy frames

@@ -502,9 +502,11 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
         generator.writeComments(metadata);
 
         // objects
-        generator.writeEntry(AdmMetadataKey.OBJECT_NAME.name(), metadata.getObjectName(), true);
-        generator.writeEntry(AdmMetadataKey.OBJECT_ID.name(),   metadata.getObjectID(),   true);
-        generator.writeEntry(AdmMetadataKey.CENTER_NAME.name(), metadata.getCenterName(), false);
+        generator.writeEntry(AdmMetadataKey.OBJECT_NAME.name(), metadata.getObjectName(),       true);
+        generator.writeEntry(AdmMetadataKey.OBJECT_ID.name(),   metadata.getObjectID(),         true);
+        if (metadata.getCenter() != null) {
+            generator.writeEntry(AdmMetadataKey.CENTER_NAME.name(), metadata.getCenter().getName(), false);
+        }
 
         // frames
         generator.writeEntry(AemMetadataKey.REF_FRAME_A.name(),  metadata.getEndpoints().getFrameA().getName(),     true);
@@ -625,8 +627,8 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
         // copy object
         copy.setObjectName(original.getObjectName());
         copy.setObjectID(original.getObjectID());
-        if (original.getCenterName() != null) {
-            copy.setCenterName(original.getCenterName(), original.getCenterBody());
+        if (original.getCenter() != null) {
+            copy.setCenter(original.getCenter());
         }
 
         // copy frames (we may copy null references here)

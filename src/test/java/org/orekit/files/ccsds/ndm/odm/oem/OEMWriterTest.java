@@ -45,6 +45,7 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
@@ -295,7 +296,7 @@ public class OEMWriterTest {
     private static void compareOemEphemerisBlocksMetadata(OemMetadata meta1, OemMetadata meta2) {
         assertEquals(meta1.getObjectID(),                               meta2.getObjectID());
         assertEquals(meta1.getObjectName(),                             meta2.getObjectName());
-        assertEquals(meta1.getCenterName(),                             meta2.getCenterName());
+        assertEquals(meta1.getCenter().getName(),                       meta2.getCenter().getName());
         assertEquals(meta1.getReferenceFrame().asFrame(),               meta2.getReferenceFrame().asFrame());
         assertEquals(meta1.getReferenceFrame().asCelestialBodyFrame(),  meta2.getReferenceFrame().asCelestialBodyFrame());
         assertEquals(meta1.getReferenceFrame().asOrbitRelativeFrame(),  meta2.getReferenceFrame().asOrbitRelativeFrame());
@@ -366,7 +367,7 @@ public class OEMWriterTest {
         metadata.setTimeSystem(TimeSystem.TT);
         metadata.setObjectID("9999-999ZZZ");
         metadata.setObjectName("transgalactic");
-        metadata.setCenterName("EARTH", CelestialBodyFactory.getCelestialBodies().getEarth());
+        metadata.setCenter(new BodyFacade("EARTH", CelestialBodyFactory.getCelestialBodies().getEarth()));
         metadata.setReferenceFrame(FrameFacade.map(FramesFactory.getEME2000()));
         metadata.setStartTime(AbsoluteDate.J2000_EPOCH.shiftedBy(80 * Constants.JULIAN_CENTURY));
         metadata.setStopTime(metadata.getStartTime().shiftedBy(Constants.JULIAN_YEAR));

@@ -19,8 +19,8 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.util.List;
 
-import org.orekit.bodies.CelestialBody;
 import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.ndm.odm.oem.InterpolationMethod;
@@ -59,10 +59,7 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
     private String orbAveraging;
 
     /** Origin of reference frame. */
-    private String centerName;
-
-    /** Celestial body corresponding to the center name. */
-    private CelestialBody centerBody;
+    private BodyFacade center;
 
     /** Reference frame of the orbit. */
     private FrameFacade orbReferenceFrame;
@@ -95,8 +92,8 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
         interpolationMethod = InterpolationMethod.HERMITE;
         interpolationDegree = 3;
         orbAveraging        = "OSCULATING";
-        centerName          = "EARTH";
-        centerBody          = dataContext.getCelestialBodies().getEarth();
+        center              = new BodyFacade("EARTH",
+                                             dataContext.getCelestialBodies().getEarth());
         orbReferenceFrame   = new FrameFacade(dataContext.getFrames().getICRF(),
                                               CelestialBodyFrame.ICRF, null, null,
                                               CelestialBodyFrame.ICRF.name());
@@ -236,25 +233,16 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
     /** Get the origin of reference frame.
      * @return the origin of reference frame.
      */
-    public String getCenterName() {
-        return centerName;
-    }
-
-    /** Get the {@link CelestialBody} corresponding to the center name.
-     * @return the center body
-     */
-    public CelestialBody getCenterBody() {
-        return centerBody;
+    public BodyFacade getCenter() {
+        return center;
     }
 
     /** Set the origin of reference frame.
-     * @param name the origin of reference frame to be set
-     * @param body corresponding center body (may be null)
+     * @param center origin of reference frame to be set
      */
-    public void setCenterName(final String name, final CelestialBody body) {
+    public void setCenter(final BodyFacade center) {
         refuseFurtherComments();
-        this.centerName = name;
-        this.centerBody = body;
+        this.center = center;
     }
 
     /** Get reference frame of the orbit.

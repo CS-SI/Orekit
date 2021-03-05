@@ -244,7 +244,7 @@ public class OCMParserTest {
         Assert.assertEquals("intervening data records omitted between DT=20.0 and DT=500.0",
                             history.getMetadata().getComments().get(0));
         Assert.assertEquals("OSCULATING", history.getMetadata().getOrbAveraging());
-        Assert.assertEquals("EARTH", history.getMetadata().getCenterName());
+        Assert.assertEquals("EARTH", history.getMetadata().getCenter().getName());
         Assert.assertEquals(CelestialBodyFrame.ITRF2000, history.getMetadata().getOrbReferenceFrame().asCelestialBodyFrame());
         Assert.assertEquals(ElementsType.CARTPV, history.getMetadata().getOrbType());
         Assert.assertEquals(0.0, file.getMetadata().getEpochT0().durationFrom(t0), 1.0e-15);

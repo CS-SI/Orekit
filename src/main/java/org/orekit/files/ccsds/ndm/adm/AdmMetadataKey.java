@@ -33,7 +33,7 @@ public enum AdmMetadataKey {
     OBJECT_ID((token, context, metadata) -> token.processAsNormalizedString(metadata::setObjectID)),
 
     /** Center name entry. */
-    CENTER_NAME((token, context, metadata) -> token.processAsCenter(metadata::setCenterName,
+    CENTER_NAME((token, context, metadata) -> token.processAsCenter(metadata::setCenter,
                                                                     context.getDataContext().getCelestialBodies()));
 
     /** Processing method. */

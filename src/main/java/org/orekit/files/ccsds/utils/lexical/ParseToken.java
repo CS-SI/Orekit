@@ -16,6 +16,7 @@
  */
 package org.orekit.files.ccsds.utils.lexical;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -29,6 +30,7 @@ import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.CenterName;
 import org.orekit.files.ccsds.definitions.FrameFacade;
@@ -450,27 +452,24 @@ public class ParseToken {
      */
     public boolean processAsCenter(final CenterConsumer consumer, final CelestialBodies celestialBodies) {
         if (type == TokenType.ENTRY) {
-
             final String centerName = getContentAsNormalizedString();
-            final String canonicalValue;
-            if (centerName.equals("SOLAR SYSTEM BARYCENTER") || centerName.equals("SSB")) {
-                canonicalValue = "SOLAR_SYSTEM_BARYCENTER";
-            } else if (centerName.equals("EARTH MOON BARYCENTER") || centerName.equals("EARTH-MOON BARYCENTER") ||
-                       centerName.equals("EARTH BARYCENTER") || centerName.equals("EMB")) {
-                canonicalValue = "EARTH_MOON";
-            } else {
-                canonicalValue = centerName;
+            consumer.accept(new BodyFacade(centerName, body(centerName, celestialBodies)));
+        }
+        return true;
+    }
+
+    /** Process the content as a body center list.
+     * @param consumer consumer of the body center list
+     * @param celestialBodies factory for celestial bodies
+     * @return always returns {@code true}
+     */
+    public boolean processAsCenterList(final CenterListConsumer consumer, final CelestialBodies celestialBodies) {
+        if (type == TokenType.ENTRY) {
+            final List<BodyFacade> facades = new ArrayList<>();
+            for (final String centerName : SPLIT_AT_COMMAS.split(getContentAsNormalizedString())) {
+                facades.add(new BodyFacade(centerName, body(centerName, celestialBodies)));
             }
-
-            CelestialBody body = null;
-            try {
-                body = CenterName.valueOf(canonicalValue).getCelestialBody(celestialBodies);
-            } catch (IllegalArgumentException iae) {
-                // ignored, we just let body set to null
-            }
-
-            consumer.accept(centerName, body);
-
+            consumer.accept(facades);
         }
         return true;
     }
@@ -500,6 +499,33 @@ public class ParseToken {
     public OrekitException generateException(final Exception cause) {
         return new OrekitException(cause, OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE,
                                    getName(), getLineNumber(), getFileName());
+    }
+
+    /** Get the body corresponding to a center name.
+     * @param centerName name of the center
+     * @param celestialBodies factory for celestial bodies
+     * @return celestial body corresponding to name, or null
+     */
+    private CelestialBody body(final String centerName, final CelestialBodies celestialBodies) {
+
+        // convert some known names
+        final String canonicalValue;
+        if (centerName.equals("SOLAR SYSTEM BARYCENTER") || centerName.equals("SSB")) {
+            canonicalValue = "SOLAR_SYSTEM_BARYCENTER";
+        } else if (centerName.equals("EARTH MOON BARYCENTER") || centerName.equals("EARTH-MOON BARYCENTER") ||
+                        centerName.equals("EARTH BARYCENTER") || centerName.equals("EMB")) {
+            canonicalValue = "EARTH_MOON";
+        } else {
+            canonicalValue = centerName;
+        }
+
+        try {
+            return CenterName.valueOf(canonicalValue).getCelestialBody(celestialBodies);
+        } catch (IllegalArgumentException iae) {
+            // ignored, we just let body set to null
+            return null;
+        }
+
     }
 
     /** Interface representing instance methods that consume string values. */
@@ -605,10 +631,17 @@ public class ParseToken {
     /** Interface representing instance methods that consume center values. */
     public interface CenterConsumer {
         /** Consume a body center.
-         * @param name center name
-         * @param body center body
+         * @param bodyFacade facade for celestial body name and body
          */
-        void accept(String name, CelestialBody body);
+        void accept(BodyFacade bodyFacade);
+    }
+
+    /** Interface representing instance methods that consume center lists. */
+    public interface CenterListConsumer {
+        /** Consume a body center.
+         * @param bodyFacades facades for celestial bodies name and bodies
+         */
+        void accept(List<BodyFacade> bodyFacades);
     }
 
     /** Interface representing instance methods that consume units lists values. */

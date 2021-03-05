@@ -18,6 +18,7 @@ package org.orekit.files.ccsds.ndm.adm;
 
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
+import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.section.Metadata;
 
 /** This class gathers the meta-data present in the Attitude Data Message (ADM).
@@ -32,11 +33,8 @@ public class AdmMetadata extends Metadata {
     /** Object identifier of the object for which the attitude data are provided. */
     private String objectID;
 
-    /** Origin of reference frame. */
-    private String centerName;
-
-    /** Celestial body corresponding to the center name. */
-    private CelestialBody centerBody;
+    /** Body at origin of reference frame. */
+    private BodyFacade center;
 
     /** Simple constructor.
      */
@@ -107,38 +105,19 @@ public class AdmMetadata extends Metadata {
         return getLaunchPiece(objectID);
     }
 
-    /** Get the origin of reference frame.
-     * @return the origin of reference frame.
+    /** Get the body at origin of reference frame.
+     * @return the body at origin of reference frame.
      */
-    public String getCenterName() {
-        return centerName;
+    public BodyFacade getCenter() {
+        return center;
     }
 
-    /** Set the origin of reference frame.
-     * @param name the origin of reference frame to be set
-     * @param body corresponding center body (may be null)
+    /** Set the body at origin of reference frame.
+     * @param center body at origin of reference frame
      */
-    public void setCenterName(final String name, final CelestialBody body) {
+    public void setCenter(final BodyFacade center) {
         refuseFurtherComments();
-        this.centerName = name;
-        this.centerBody = body;
-    }
-
-    /**
-     * Get the {@link CelestialBody} corresponding to the center name.
-     * @return the center body
-     */
-    public CelestialBody getCenterBody() {
-        return centerBody;
-    }
-
-    /**
-     * Set the {@link CelestialBody} corresponding to the center name.
-     * @param centerBody the {@link CelestialBody} to be set
-     */
-    public void setCenterBody(final CelestialBody centerBody) {
-        refuseFurtherComments();
-        this.centerBody = centerBody;
+        this.center = center;
     }
 
     /**
@@ -148,7 +127,7 @@ public class AdmMetadata extends Metadata {
      *         false otherwise
      */
     public boolean getHasCreatableBody() {
-        return centerBody != null;
+        return center != null && center.getBody() != null;
     }
 
 }

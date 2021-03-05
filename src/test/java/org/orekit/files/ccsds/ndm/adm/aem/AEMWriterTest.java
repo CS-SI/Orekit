@@ -101,7 +101,7 @@ public class AEMWriterTest {
         metadata.setStopTime(s0.getMetadata().getStop());
         metadata.setAttitudeType(s0.getMetadata().getAttitudeType());
         metadata.setIsFirst(s0.getMetadata().isFirst());
-        metadata.setCenterName(s0.getMetadata().getCenterName(), s0.getMetadata().getCenterBody());
+        metadata.setCenter(s0.getMetadata().getCenter());
         metadata.setInterpolationMethod(s0.getMetadata().getInterpolationMethod());
         String tempAEMFilePath = tempFolder.newFile("TestWriteAEM1.aem").toString();
         AemWriter writer = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), header, metadata);
@@ -288,7 +288,7 @@ public class AEMWriterTest {
         AemMetadata meta2 = segment2.getMetadata();
         assertEquals(meta1.getObjectID(),            meta2.getObjectID());
         assertEquals(meta1.getObjectName(),          meta2.getObjectName());
-        assertEquals(meta1.getCenterName(),          meta2.getCenterName());
+        assertEquals(meta1.getCenter().getName(),    meta2.getCenter().getName());
         assertEquals(meta1.getTimeSystem(),          meta2.getTimeSystem());
         assertEquals(meta1.getLaunchYear(),          meta2.getLaunchYear());
         assertEquals(meta1.getLaunchNumber(),        meta2.getLaunchNumber());

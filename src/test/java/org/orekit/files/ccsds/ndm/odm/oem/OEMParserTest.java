@@ -80,12 +80,12 @@ public class OEMParserTest {
         Assert.assertEquals(TimeSystem.UTC, file.getSegments().get(0).getMetadata().getTimeSystem());
         Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getSegments().get(0).getMetadata().getObjectName());
         Assert.assertEquals("1996-062A", file.getSegments().get(0).getMetadata().getObjectID());
-        Assert.assertEquals("MARS BARYCENTER", file.getSegments().get(0).getMetadata().getCenterName());
+        Assert.assertEquals("MARS BARYCENTER", file.getSegments().get(0).getMetadata().getCenter().getName());
         Assert.assertEquals(1996, file.getSegments().get(0).getMetadata().getLaunchYear());
         Assert.assertEquals(62, file.getSegments().get(0).getMetadata().getLaunchNumber());
         Assert.assertEquals("A", file.getSegments().get(0).getMetadata().getLaunchPiece());
-        Assert.assertNull(file.getSegments().get(0).getMetadata().getCenterBody());
-        Assert.assertNull(file.getSegments().get(0).getMetadata().getCenterBody());
+        Assert.assertNull(file.getSegments().get(0).getMetadata().getCenter().getBody());
+        Assert.assertNull(file.getSegments().get(0).getMetadata().getCenter().getBody());
         Assert.assertEquals(new AbsoluteDate(1996, 12, 18, 12, 00, 0.331, TimeScalesFactory.getUTC()),
                             file.getSegments().get(0).getMetadata().getStartTime());
         Assert.assertEquals(new AbsoluteDate(1996, 12, 28, 21, 28, 0.331, TimeScalesFactory.getUTC()),
@@ -179,8 +179,8 @@ public class OEMParserTest {
         final OemSegment segment = (OemSegment) satellite.getSegments().get(0);
         Assert.assertEquals(CelestialBodyFactory.getMars().getGM(), segment.getMu(), 1.0);
         Assert.assertEquals("EME2000", segment.getMetadata().getReferenceFrame().getName());
-        Assert.assertEquals(segment.getMetadata().getCenterName(), "MARS BARYCENTER");
-        Assert.assertNull(segment.getMetadata().getCenterBody());
+        Assert.assertEquals(segment.getMetadata().getCenter().getName(), "MARS BARYCENTER");
+        Assert.assertNull(segment.getMetadata().getCenter().getBody());
         // Frame not creatable since it's center can't be created.
         try {
             segment.getFrame();
@@ -415,7 +415,7 @@ public class OEMParserTest {
         //verify
         Assert.assertEquals(
                 CelestialBodyFactory.getEarth(),
-                actual.getSegments().get(0).getMetadata().getCenterBody());
+                actual.getSegments().get(0).getMetadata().getCenter().getBody());
     }
 
     @Test

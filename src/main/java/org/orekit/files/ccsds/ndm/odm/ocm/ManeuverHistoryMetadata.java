@@ -21,9 +21,9 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
@@ -74,10 +74,7 @@ public class ManeuverHistoryMetadata extends CommentsContainer {
     private String manPredSource;
 
     /** Origin of maneuver gravitational assist body. */
-    private String gravitationalAssistName;
-
-    /** Celestial body corresponding to the gravitational assist name. */
-    private CelestialBody gravitationalAssistBody;
+    private BodyFacade gravitationalAssist;
 
     /** Type of duty cycle. */
     private DutyCycleType dcType;
@@ -379,25 +376,16 @@ public class ManeuverHistoryMetadata extends CommentsContainer {
     /** Get the origin of gravitational assist.
      * @return the origin of gravitational assist.
      */
-    public String getGravitationalAssistName() {
-        return gravitationalAssistName;
+    public BodyFacade getGravitationalAssist() {
+        return gravitationalAssist;
     }
 
     /** Set the origin of gravitational assist.
-     * @param name the origin of gravitational assist to be set
-     * @param body corresponding center body (may be null)
+     * @param gravitationalAssist origin of gravitational assist to be set
      */
-    public void setGravitationalAssistName(final String name, final CelestialBody body) {
+    public void setGravitationalAssist(final BodyFacade gravitationalAssist) {
         refuseFurtherComments();
-        this.gravitationalAssistName = name;
-        this.gravitationalAssistBody = body;
-    }
-
-    /** Get the {@link CelestialBody} corresponding to the gravitional assist name.
-     * @return the gravitional assist
-     */
-    public CelestialBody getGravitationalAssistBody() {
-        return gravitationalAssistBody;
+        this.gravitationalAssist = gravitationalAssist;
     }
 
     /** Get type of duty cycle.

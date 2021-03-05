@@ -77,12 +77,12 @@ public class AEMParserTest {
         Assert.assertEquals(TimeSystem.UTC,     segment0.getMetadata().getTimeSystem());
         Assert.assertEquals("MARS GLOBAL SURVEYOR", segment0.getMetadata().getObjectName());
         Assert.assertEquals("1996-062A",            segment0.getMetadata().getObjectID());
-        Assert.assertEquals("MARS BARYCENTER",      segment0.getMetadata().getCenterName());
+        Assert.assertEquals("MARS BARYCENTER",      segment0.getMetadata().getCenter().getName());
         Assert.assertEquals(1996,                   segment0.getMetadata().getLaunchYear());
         Assert.assertEquals(62,                     segment0.getMetadata().getLaunchNumber());
         Assert.assertEquals("A",                    segment0.getMetadata().getLaunchPiece());
         Assert.assertFalse(segment0.getMetadata().getHasCreatableBody());
-        Assert.assertNull(segment0.getMetadata().getCenterBody());
+        Assert.assertNull(segment0.getMetadata().getCenter().getBody());
         Assert.assertEquals(new AbsoluteDate(1996, 11, 28, 21, 29, 7.2555, TimeScalesFactory.getUTC()),
                             segment0.getMetadata().getStartTime());
         Assert.assertEquals(new AbsoluteDate(1996, 11, 30, 1, 28, 2.5555, TimeScalesFactory.getUTC()),
@@ -126,12 +126,12 @@ public class AEMParserTest {
         Assert.assertEquals(TimeSystem.UTC,         segment1.getMetadata().getTimeSystem());
         Assert.assertEquals("MARS GLOBAL SURVEYOR",     segment1.getMetadata().getObjectName());
         Assert.assertEquals("1996-062A",                segment1.getMetadata().getObjectID());
-        Assert.assertEquals("MARS BARYCENTER",          segment1.getMetadata().getCenterName());
+        Assert.assertEquals("MARS BARYCENTER",          segment1.getMetadata().getCenter().getName());
         Assert.assertEquals(1996,                       segment1.getMetadata().getLaunchYear());
         Assert.assertEquals(62,                         segment1.getMetadata().getLaunchNumber());
         Assert.assertEquals("A",                        segment1.getMetadata().getLaunchPiece());
         Assert.assertFalse(segment1.getMetadata().getHasCreatableBody());
-        Assert.assertNull(segment1.getMetadata().getCenterBody());
+        Assert.assertNull(segment1.getMetadata().getCenter().getBody());
         Assert.assertEquals(new AbsoluteDate(1996, 12, 18, 12, 5, 0.5555, TimeScalesFactory.getUTC()),
                             segment1.getMetadata().getStartTime());
         Assert.assertEquals(new AbsoluteDate(1996, 12, 28, 21, 28, 0.5555, TimeScalesFactory.getUTC()),
@@ -248,14 +248,14 @@ public class AEMParserTest {
         Assert.assertEquals(TimeSystem.UTC,     segment0.getMetadata().getTimeSystem());
         Assert.assertEquals("MARS GLOBAL SURVEYOR", segment0.getMetadata().getObjectName());
         Assert.assertEquals("1996-062A",            segment0.getMetadata().getObjectID());
-        Assert.assertEquals("MARS BARYCENTER",      segment0.getMetadata().getCenterName());
+        Assert.assertEquals("MARS BARYCENTER",      segment0.getMetadata().getCenter().getName());
         Assert.assertEquals(1996,                   segment0.getMetadata().getLaunchYear());
         Assert.assertEquals(62,                     segment0.getMetadata().getLaunchNumber());
         Assert.assertEquals("A",                    segment0.getMetadata().getLaunchPiece());
         Assert.assertEquals(RotationOrder.ZXY,      segment0.getMetadata().getEulerRotSeq());
         Assert.assertTrue(segment0.getMetadata().rateFrameIsA());
         Assert.assertFalse(segment0.getMetadata().getHasCreatableBody());
-        Assert.assertNull(segment0.getMetadata().getCenterBody());
+        Assert.assertNull(segment0.getMetadata().getCenter().getBody());
 
         // Reference values
         final AbsoluteDate refDate = new AbsoluteDate(1996, 11, 28, 21, 29, 7.2555, TimeScalesFactory.getUTC());
@@ -357,7 +357,7 @@ public class AEMParserTest {
         //verify
         Assert.assertEquals(
                 CelestialBodyFactory.getEarth(),
-                actual.getSegments().get(0).getMetadata().getCenterBody());
+                actual.getSegments().get(0).getMetadata().getCenter().getBody());
     }
 
     @Test

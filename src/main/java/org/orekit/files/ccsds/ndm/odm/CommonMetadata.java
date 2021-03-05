@@ -17,10 +17,10 @@
 
 package org.orekit.files.ccsds.ndm.odm;
 
-import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.ModifiedFrame;
@@ -38,10 +38,7 @@ public class CommonMetadata extends OdmMetadata {
     private String objectID;
 
     /** Origin of reference frame. */
-    private String centerName;
-
-    /** Celestial body corresponding to the center name. */
-    private CelestialBody centerBody;
+    private BodyFacade center;
 
     /** Reference frame in which data are given: used for state vector
      * and Keplerian elements data (and for the covariance reference frame if none is given). */
@@ -66,7 +63,7 @@ public class CommonMetadata extends OdmMetadata {
     public void checkMandatoryEntries() {
         super.checkMandatoryEntries();
         checkNotNull(objectID,       CommonMetadataKey.OBJECT_ID);
-        checkNotNull(centerName,     CommonMetadataKey.CENTER_NAME);
+        checkNotNull(center,         CommonMetadataKey.CENTER_NAME);
         checkNotNull(referenceFrame, CommonMetadataKey.REF_FRAME);
     }
 
@@ -123,25 +120,16 @@ public class CommonMetadata extends OdmMetadata {
     /** Get the origin of reference frame.
      * @return the origin of reference frame.
      */
-    public String getCenterName() {
-        return centerName;
+    public BodyFacade getCenter() {
+        return center;
     }
 
     /** Set the origin of reference frame.
-     * @param name the origin of reference frame to be set
-     * @param body corresponding center body (may be null)
+     * @param center origin of reference frame to be set
      */
-    public void setCenterName(final String name, final CelestialBody body) {
+    public void setCenter(final BodyFacade center) {
         refuseFurtherComments();
-        this.centerName = name;
-        this.centerBody = body;
-    }
-
-    /** Get the {@link CelestialBody} corresponding to the center name.
-     * @return the center body
-     */
-    public CelestialBody getCenterBody() {
-        return centerBody;
+        this.center = center;
     }
 
     /**
@@ -151,8 +139,8 @@ public class CommonMetadata extends OdmMetadata {
      * @return the reference frame
      */
     public Frame getFrame() {
-        if (centerBody == null) {
-            throw new OrekitException(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, centerName);
+        if (center.getBody() == null) {
+            throw new OrekitException(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, center.getName());
         }
         if (referenceFrame.asFrame() == null) {
             throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, referenceFrame.getName());
@@ -162,15 +150,15 @@ public class CommonMetadata extends OdmMetadata {
         final boolean isMci  = referenceFrame.asCelestialBodyFrame() == CelestialBodyFrame.MCI;
         final boolean isIcrf = referenceFrame.asCelestialBodyFrame() == CelestialBodyFrame.ICRF;
         final boolean isSolarSystemBarycenter =
-                CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER.equals(centerBody.getName());
-        if ((!(isMci || isIcrf) && CelestialBodyFactory.EARTH.equals(centerBody.getName())) ||
-            (isMci && CelestialBodyFactory.MARS.equals(centerBody.getName())) ||
+                CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER.equals(center.getBody().getName());
+        if ((!(isMci || isIcrf) && CelestialBodyFactory.EARTH.equals(center.getBody().getName())) ||
+            (isMci && CelestialBodyFactory.MARS.equals(center.getBody().getName())) ||
             (isIcrf && isSolarSystemBarycenter)) {
             return referenceFrame.asFrame();
         }
         // else, translate frame to specified center.
         return new ModifiedFrame(referenceFrame.asFrame(), referenceFrame.asCelestialBodyFrame(),
-                                 centerBody, centerName);
+                                 center.getBody(), center.getName());
     }
 
     /**
