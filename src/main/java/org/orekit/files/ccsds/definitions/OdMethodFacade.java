@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 public class OdMethodFacade {
 
     /** Pattern for splitting string specification in OCM files. */
-    private static Pattern SPLITTER = Pattern.compile("\\p{Blank}*:\\p{Blank}*");
+    private static final Pattern SPLITTER = Pattern.compile("\\p{Blank}*:\\p{Blank}*");
 
     /** Name of the method. */
     private final String name;
