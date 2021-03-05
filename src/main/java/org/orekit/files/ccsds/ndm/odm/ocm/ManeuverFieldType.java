@@ -178,6 +178,13 @@ public enum ManeuverFieldType {
         }
     }
 
+    /** Check if a field is a time field.
+     * @return true if field is a time field
+     */
+    public boolean isTime() {
+        return this == TIME_ABSOLUTE || this == TIME_RELATIVE;
+    }
+
     /** Get the value in SI units corresponding to a field.
      * @param field text field
      * @param unit unit to use

@@ -79,6 +79,22 @@ public class OCMParserTest {
     }
 
     @Test
+    public void testMissingManeuverTime() throws URISyntaxException {
+        final String name = "/ccsds/odm/ocm/OCM-missing-maneuver-time.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        try {
+            new ParserBuilder().
+            withMu(Constants.EIGEN5C_EARTH_MU).
+            buildOcmParser().
+            parseMessage(source);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_MANEUVER_MISSING_TIME, oe.getSpecifier());
+            Assert.assertEquals("MAN-45", oe.getParts()[0]);
+        }
+    }
+
+    @Test
     public void testWrongTimeSpan() throws URISyntaxException {
         final String name = "/ccsds/odm/ocm/OCM-wrong-time-span.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));

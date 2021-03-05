@@ -172,27 +172,25 @@ public class ManeuverHistoryMetadata extends CommentsContainer {
         }
 
         checkNotNull(manComposition, ManeuverHistoryMetadataKey.MAN_COMPOSITION);
-        boolean foundTime = false;
-        for (final ManeuverFieldType type : manComposition) {
-            if (type == ManeuverFieldType.TIME_ABSOLUTE || type == ManeuverFieldType.TIME_RELATIVE) {
-                foundTime = true;
-            }
-        }
-        if (!foundTime) {
+        if (!manComposition.get(0).isTime()) {
             throw new OrekitException(OrekitMessages.CCSDS_MANEUVER_MISSING_TIME, manID);
         }
+        final int firstNonTime = (manComposition.size() > 1 && manComposition.get(1).isTime()) ? 2 : 1;
 
         if (manUnits != null) {
-            if (manUnits.size() != manComposition.size()) {
+            if (manUnits.size() != manComposition.size() - firstNonTime) {
                 throw new OrekitException(OrekitMessages.CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS,
                                           manID);
             }
-            for (int i = 0; i < manComposition.size(); ++i) {
-                manComposition.get(i).checkUnit(manUnits.get(i));
+            for (int i = 0; i < manUnits.size(); ++i) {
+                manComposition.get(firstNonTime + i).checkUnit(manUnits.get(i));
             }
         }
     }
 
+    /** Check if a field is a time field.
+     * @param Ma
+     */
     /** Get maneuver identification number.
      * @return maneuver identification number
      */
