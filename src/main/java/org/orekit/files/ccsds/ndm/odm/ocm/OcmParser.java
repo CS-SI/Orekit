@@ -340,7 +340,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
         if (starting) {
             if (perturbationsBlock == null) {
                 // this is the first (and unique) perturbations parameters block, we need to allocate the container
-                perturbationsBlock = new Perturbations();
+                perturbationsBlock = new Perturbations(context.getDataContext().getCelestialBodies());
             }
             setFallback(this::processPerturbationToken);
         }
@@ -582,9 +582,6 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
      * @return true if token was processed, false otherwise
      */
     private boolean processPerturbationToken(final ParseToken token) {
-        if (perturbationsBlock == null) {
-            perturbationsBlock = new Perturbations();
-        }
         setFallback(this::processDataSubStructureToken);
         try {
             return token.getName() != null &&

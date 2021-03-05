@@ -16,6 +16,9 @@
  */
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
@@ -28,10 +31,114 @@ import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 public enum PerturbationsKey {
 
     /** Comment entry. */
-    COMMENT((token, context, metadata) ->
-            token.getType() == TokenType.ENTRY ? metadata.addComment(token.getContent()) : true);
+    COMMENT((token, context, container) ->
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContent()) : true),
 
-    // TODO
+    /** Name of atmospheric model. */
+    ATMOSPHERIC_MODEL((token, context, container) -> token.processAsFreeTextString(container::setAtmosphericModel)),
+
+    /** Gravity model. */
+    GRAVITY_MODEL(new GravityProcessor()),
+
+    /** Oblate spheroid equatorial radius of central body. */
+    EQUATORIAL_RADIUS((token, context, container) -> token.processAsDouble(1.0e3, container::setEquatorialRadius)),
+
+    /** Central body oblate spheroid oblateness. */
+    GM((token, context, container) -> token.processAsDouble(1.0e9, container::setGm)),
+
+    /** N-body perturbation bodies. */
+    N_BODY_PERTURBATIONS((token, context, container) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            // TODO
+        }
+        return true;
+    }),
+
+    /** Central body angular rotation rate. */
+    CENTRAL_BODY_ROTATION((token, context, container) -> token.processAsAngle(container::setCentralBodyRotation)),
+
+    /** Central body oblate spheroid oblateness. */
+    OBLATE_FLATTENING((token, context, container) -> token.processAsDouble(1.0, container::setOblateFlattening)),
+
+    /** Ocean tides model. */
+    OCEAN_TIDES_MODEL((token, context, container) -> token.processAsFreeTextString(container::setOceanTidesModel)),
+
+    /** Solid tides model. */
+    SOLID_TIDES_MODEL((token, context, container) -> token.processAsFreeTextString(container::setSolidTidesModel)),
+
+    /** Reduction theory used for precession and nutation modeling. */
+    REDUCTION_THEORY((token, context, container) -> token.processAsFreeTextString(container::setReductionTheory)),
+
+    /** Albedo model. */
+    ALBEDO_MODEL((token, context, container) -> token.processAsFreeTextString(container::setAlbedoModel)),
+
+    /** Albedo grid size. */
+    ALBEDO_GRID_SIZE((token, context, container) -> token.processAsInteger(container::setAlbedoGridSize)),
+
+    /** Shadow model used for solar radiation pressure. */
+    SHADOW_MODEL((token, context, container) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            try {
+                container.setShadowModel(ShadowModel.valueOf(token.getContentAsNormalizedString()));
+            } catch (IllegalArgumentException iae) {
+                throw token.generateException(iae);
+            }
+        }
+        return true;
+    }),
+
+    /** Names of shadow bodies. */
+    SHADOW_BODIES((token, context, container) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            // TODO
+        }
+        return true;
+    }),
+
+    /** Solar Radiation Pressure model. */
+    SRP_MODEL((token, context, container) -> token.processAsFreeTextString(container::setSrpModel)),
+
+    /** Space Weather data source. */
+    SW_DATA_SOURCE((token, context, container) -> token.processAsFreeTextString(container::setSpaceWeatherSource)),
+
+    /** Epoch of the Space Weather data. */
+    SW_DATA_EPOCH((token, context, container) -> token.processAsDate(container::setSpaceWeatherEpoch, context)),
+
+    /** Interpolation method for Space Weather data. */
+    SW_INTERP_METHOD((token, context, container) -> token.processAsFreeTextString(container::setInterpMethodSW)),
+
+    /** Fixed (time invariant) value of the planetary 3-hour-range geomagnetic index Kₚ. */
+    FIXED_GEOMAG_KP((token, context, container) -> token.processAsDouble(1.0, container::setFixedGeomagneticKp)),
+
+    /** Fixed (time invariant) value of the planetary 3-hour-range geomagnetic index aₚ. */
+    FIXED_GEOMAG_AP((token, context, container) -> token.processAsDouble(1.0, container::setFixedGeomagneticAp)),
+
+    /** Fixed (time invariant) value of the planetary 1-hour-range geomagnetic index Dst. */
+    FIXED_GEOMAG_DST((token, context, container) -> token.processAsDouble(1.0, container::setFixedGeomagneticDst)),
+
+    /** Fixed (time invariant) value of the Solar Flux Unit daily proxy F10.7. */
+    FIXED_F10P7((token, context, container) -> token.processAsDouble(1.0, container::setFixedF10P7)),
+
+    /** Fixed (time invariant) value of the Solar Flux Unit 81-day running center-average proxy F10.7. */
+    FIXED_F10P7_MEAN((token, context, container) -> token.processAsDouble(1.0, container::setFixedF10P7Mean)),
+
+    /** Fixed (time invariant) value of the Solar Flux daily proxy M10.7. */
+    FIXED_M10P7((token, context, container) -> token.processAsDouble(1.0, container::setFixedM10P7)),
+
+    /** Fixed (time invariant) value of the Solar Flux 81-day running center-average proxy M10.7. */
+    FIXED_M10P7_MEAN((token, context, container) -> token.processAsDouble(1.0, container::setFixedM10P7Mean)),
+
+    /** Fixed (time invariant) value of the Solar Flux daily proxy S10.7. */
+    FIXED_S10P7((token, context, container) -> token.processAsDouble(1.0, container::setFixedS10P7)),
+
+    /** Fixed (time invariant) value of the Solar Flux 81-day running center-average proxy S10.7. */
+    FIXED_S10P7_MEAN((token, context, container) -> token.processAsDouble(1.0, container::setFixedS10P7Mean)),
+
+    /** Fixed (time invariant) value of the Solar Flux daily proxy Y10.7. */
+    FIXED_Y10P7((token, context, container) -> token.processAsDouble(1.0, container::setFixedY10P7)),
+
+    /** Fixed (time invariant) value of the Solar Flux 81-day running center-average proxy Y10.7. */
+    FIXED_Y10P7_MEAN((token, context, container) -> token.processAsDouble(1.0, container::setFixedY10P7Mean));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -46,11 +153,11 @@ public enum PerturbationsKey {
     /** Process an token.
      * @param token token to process
      * @param context parsing context
-     * @param data data to fill
+     * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final Perturbations data) {
-        return processor.process(token, context, data);
+    public boolean process(final ParseToken token, final ParsingContext context, final Perturbations container) {
+        return processor.process(token, context, container);
     }
 
     /** Interface for processing one token. */
@@ -58,10 +165,44 @@ public enum PerturbationsKey {
         /** Process one token.
          * @param token token to process
          * @param context parsing context
-         * @param data data to fill
+         * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, Perturbations data);
+        boolean process(ParseToken token, ParsingContext context, Perturbations container);
+    }
+
+    /** Dedicated processor for gravity field. */
+    private static class GravityProcessor implements TokenProcessor {
+
+        /** Pattern for splitting gravity specification. */
+        private static final Pattern GRAVITY_PATTERN =
+                        Pattern.compile("^\\p{Blank}*([-_A-Za-z0-9]+)\\p{Blank}*:" +
+                                        "\\p{Blank}*([0-9]+)D" +
+                                        "\\p{Blank}*([0-9]+)O" +
+                                        "\\p{Blank}*$");
+
+        /** {@inheritDoc} */
+        @Override
+        public boolean process(final ParseToken token, final ParsingContext context, final Perturbations container) {
+            final Matcher matcher = GRAVITY_PATTERN.matcher(token.getContent());
+            if (!matcher.matches()) {
+                throw token.generateException(null);
+            }
+            container.setGravityModel(matcher.group(1),
+                                      Integer.parseInt(matcher.group(2)),
+                                      Integer.parseInt(matcher.group(3)));
+            return true;
+        }
+    }
+
+    /** Dedicated processor for list of {@link CelestialBody}. */
+    private static class CelestialBodyListProcessor implements TokenProcessor {
+        /** {@inheritDoc} */
+        @Override
+        public boolean process(final ParseToken token, final ParsingContext context, final Perturbations container) {
+            // TODO
+            return true;
+        }
     }
 
 }
