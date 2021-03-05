@@ -101,7 +101,7 @@ public class AEMWriterTest {
         metadata.setStopTime(s0.getMetadata().getStop());
         metadata.setAttitudeType(s0.getMetadata().getAttitudeType());
         metadata.setIsFirst(s0.getMetadata().isFirst());
-        metadata.setCenterName(s0.getMetadata().getCenterName(), DataContext.getDefault().getCelestialBodies());
+        metadata.setCenterName(s0.getMetadata().getCenterName(), s0.getMetadata().getCenterBody());
         metadata.setInterpolationMethod(s0.getMetadata().getInterpolationMethod());
         String tempAEMFilePath = tempFolder.newFile("TestWriteAEM1.aem").toString();
         AemWriter writer = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), header, metadata);

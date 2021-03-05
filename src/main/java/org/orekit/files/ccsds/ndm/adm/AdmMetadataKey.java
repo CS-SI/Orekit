@@ -16,9 +16,8 @@
  */
 package org.orekit.files.ccsds.ndm.adm;
 
-import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 
 /** Keys for {@link AdmMetadata ADM metadata} entries.
@@ -34,12 +33,8 @@ public enum AdmMetadataKey {
     OBJECT_ID((token, context, metadata) -> token.processAsNormalizedString(metadata::setObjectID)),
 
     /** Center name entry. */
-    CENTER_NAME((token, context, metadata) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            metadata.setCenterName(token.getContentAsNormalizedString(), context.getDataContext().getCelestialBodies());
-        }
-        return true;
-    });
+    CENTER_NAME((token, context, metadata) -> token.processAsCenter(metadata::setCenterName,
+                                                                    context.getDataContext().getCelestialBodies()));
 
     /** Processing method. */
     private final TokenProcessor processor;

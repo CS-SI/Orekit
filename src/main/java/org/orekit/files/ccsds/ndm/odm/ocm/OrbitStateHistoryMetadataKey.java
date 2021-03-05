@@ -69,12 +69,8 @@ public enum OrbitStateHistoryMetadataKey {
     ORB_AVERAGING((token, context, metadata) -> token.processAsNormalizedString(metadata::setOrbAveraging)),
 
     /** Origin of the reference frame of the orbit. */
-    CENTER_NAME((token, context, metadata) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            metadata.setCenterName(token.getContentAsNormalizedString(), context.getDataContext().getCelestialBodies());
-        }
-        return true;
-    }),
+    CENTER_NAME((token, context, metadata) -> token.processAsCenter(metadata::setCenterName,
+                                                                    context.getDataContext().getCelestialBodies())),
 
     /** Reference frame of the orbit. */
     ORB_REF_FRAME((token, context, metadata) -> token.processAsFrame(metadata::setOrbReferenceFrame, context, true, false, false)),

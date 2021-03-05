@@ -21,11 +21,9 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.CenterName;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
@@ -387,36 +385,12 @@ public class ManeuverHistoryMetadata extends CommentsContainer {
 
     /** Set the origin of gravitational assist.
      * @param name the origin of gravitational assist to be set
-     * @param celestialBodies factory for celestial bodies
+     * @param body corresponding center body (may be null)
      */
-    public void setGravitationalAssistName(final String name, final CelestialBodies celestialBodies) {
-
+    public void setGravitationalAssistName(final String name, final CelestialBody body) {
         refuseFurtherComments();
-
-        // store the name itself
         this.gravitationalAssistName = name;
-
-        // change the name to a canonical one in some cases
-        final String canonicalValue;
-        if ("SOLAR SYSTEM BARYCENTER".equals(gravitationalAssistName) || "SSB".equals(gravitationalAssistName)) {
-            canonicalValue = "SOLAR_SYSTEM_BARYCENTER";
-        } else if ("EARTH MOON BARYCENTER".equals(gravitationalAssistName) || "EARTH-MOON BARYCENTER".equals(gravitationalAssistName) ||
-                   "EARTH BARYCENTER".equals(gravitationalAssistName) || "EMB".equals(gravitationalAssistName)) {
-            canonicalValue = "EARTH_MOON";
-        } else {
-            canonicalValue = gravitationalAssistName;
-        }
-
-        final CenterName c;
-        try {
-            c = CenterName.valueOf(canonicalValue);
-        } catch (IllegalArgumentException iae) {
-            gravitationalAssistBody = null;
-            return;
-        }
-
-        gravitationalAssistBody = c.getCelestialBody(celestialBodies);
-
+        this.gravitationalAssistBody = body;
     }
 
     /** Get the {@link CelestialBody} corresponding to the gravitional assist name.

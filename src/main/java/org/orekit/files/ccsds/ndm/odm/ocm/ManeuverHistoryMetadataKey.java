@@ -70,12 +70,8 @@ public enum ManeuverHistoryMetadataKey {
     MAN_FRAME_EPOCH((token, context, metadata) -> token.processAsDate(metadata::setManFrameEpoch, context)),
 
     /** Origin of maneuver gravitational assist body. */
-    GRAV_ASSIST_NAME((token, context, metadata) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            metadata.setGravitationalAssistName(token.getContentAsNormalizedString(), context.getDataContext().getCelestialBodies());
-        }
-        return true;
-    }),
+    GRAV_ASSIST_NAME((token, context, metadata) -> token.processAsCenter(metadata::setGravitationalAssistName,
+                                                                         context.getDataContext().getCelestialBodies())),
 
     /** Type of duty cycle. */
     DC_TYPE((token, context, metadata) -> {

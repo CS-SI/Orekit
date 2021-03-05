@@ -25,6 +25,8 @@ import java.util.stream.Stream;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.bodies.CelestialBodies;
+import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
@@ -443,26 +445,32 @@ public class ParseToken {
 
     /** Process the content as a body center.
      * @param consumer consumer of the body center
-     * @param complainIfUnknown if true, unknown centers generate an exception, otherwise
-     * they are silently ignored
+     * @param celestialBodies factory for celestial bodies
      * @return always returns {@code true}
      */
-    public boolean processAsCenter(final CenterConsumer consumer, final boolean complainIfUnknown) {
+    public boolean processAsCenter(final CenterConsumer consumer, final CelestialBodies celestialBodies) {
         if (type == TokenType.ENTRY) {
-            String canonicalValue = getContentAsNormalizedString();
-            if (canonicalValue.equals("SOLAR SYSTEM BARYCENTER") || canonicalValue.equals("SSB")) {
+
+            final String centerName = getContentAsNormalizedString();
+            final String canonicalValue;
+            if (centerName.equals("SOLAR SYSTEM BARYCENTER") || centerName.equals("SSB")) {
                 canonicalValue = "SOLAR_SYSTEM_BARYCENTER";
-            } else if (canonicalValue.equals("EARTH MOON BARYCENTER") || canonicalValue.equals("EARTH-MOON BARYCENTER") ||
-                       canonicalValue.equals("EARTH BARYCENTER") || canonicalValue.equals("EMB")) {
+            } else if (centerName.equals("EARTH MOON BARYCENTER") || centerName.equals("EARTH-MOON BARYCENTER") ||
+                       centerName.equals("EARTH BARYCENTER") || centerName.equals("EMB")) {
                 canonicalValue = "EARTH_MOON";
+            } else {
+                canonicalValue = centerName;
             }
+
+            CelestialBody body = null;
             try {
-                consumer.accept(CenterName.valueOf(canonicalValue));
+                body = CenterName.valueOf(canonicalValue).getCelestialBody(celestialBodies);
             } catch (IllegalArgumentException iae) {
-                if (complainIfUnknown) {
-                    throw generateException(iae);
-                }
+                // ignored, we just let body set to null
             }
+
+            consumer.accept(centerName, body);
+
         }
         return true;
     }
@@ -597,9 +605,10 @@ public class ParseToken {
     /** Interface representing instance methods that consume center values. */
     public interface CenterConsumer {
         /** Consume a body center.
-         * @param value value to consume
+         * @param name center name
+         * @param body center body
          */
-        void accept(CenterName value);
+        void accept(String name, CelestialBody body);
     }
 
     /** Interface representing instance methods that consume units lists values. */

@@ -16,9 +16,8 @@
  */
 package org.orekit.files.ccsds.ndm.odm;
 
-import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 
 /** Keys for {@link CommonMetadata common ODM metadata} entries.
@@ -31,12 +30,8 @@ public enum CommonMetadataKey {
     OBJECT_ID((token, context, metadata) -> token.processAsNormalizedString(metadata::setObjectID)),
 
     /** Center name entry. */
-    CENTER_NAME((token, context, metadata) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            metadata.setCenterName(token.getContentAsNormalizedString(), context.getDataContext().getCelestialBodies());
-        }
-        return true;
-    }),
+    CENTER_NAME((token, context, metadata) -> token.processAsCenter(metadata::setCenterName,
+                                                                    context.getDataContext().getCelestialBodies())),
 
     /** Name of the reference frame in which the state vector and optional Keplerian element data are given. */
     REF_FRAME((token, context, metadata) -> token.processAsFrame(metadata::setReferenceFrame, context, true, false, false)),

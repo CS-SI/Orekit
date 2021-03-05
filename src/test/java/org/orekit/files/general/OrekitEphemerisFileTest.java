@@ -138,7 +138,7 @@ public class OrekitEphemerisFileTest {
         template.setTimeSystem(TimeSystem.UTC);
         template.setObjectID(satId);
         template.setObjectName(satId);
-        template.setCenterName("EARTH", CelestialBodyFactory.getCelestialBodies());
+        template.setCenterName("EARTH", CelestialBodyFactory.getCelestialBodies().getEarth());
         template.setReferenceFrame(FrameFacade.map(FramesFactory.getEME2000()));
         new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null, template).
         write(tempOemFile, ephemerisFile);

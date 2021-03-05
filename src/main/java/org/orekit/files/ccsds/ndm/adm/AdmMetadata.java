@@ -18,7 +18,6 @@ package org.orekit.files.ccsds.ndm.adm;
 
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
-import org.orekit.files.ccsds.definitions.CenterName;
 import org.orekit.files.ccsds.section.Metadata;
 
 /** This class gathers the meta-data present in the Attitude Data Message (ADM).
@@ -38,11 +37,6 @@ public class AdmMetadata extends Metadata {
 
     /** Celestial body corresponding to the center name. */
     private CelestialBody centerBody;
-
-    /** Tests whether the body corresponding to the center name can be
-     * created through {@link CelestialBodies} in order to obtain theO
-     * corresponding gravitational coefficient. */
-    private boolean hasCreatableBody;
 
     /** Simple constructor.
      */
@@ -122,38 +116,12 @@ public class AdmMetadata extends Metadata {
 
     /** Set the origin of reference frame.
      * @param name the origin of reference frame to be set
-     * @param celestialBodies factory for celestial bodies
+     * @param body corresponding center body (may be null)
      */
-    public void setCenterName(final String name, final CelestialBodies celestialBodies) {
-
+    public void setCenterName(final String name, final CelestialBody body) {
         refuseFurtherComments();
-
-        // store the name itself
         this.centerName = name;
-
-        // change the name to a canonical one in some cases
-        final String canonicalValue;
-        if ("SOLAR SYSTEM BARYCENTER".equals(centerName) || "SSB".equals(centerName)) {
-            canonicalValue = "SOLAR_SYSTEM_BARYCENTER";
-        } else if ("EARTH MOON BARYCENTER".equals(centerName) || "EARTH-MOON BARYCENTER".equals(centerName) ||
-                   "EARTH BARYCENTER".equals(centerName) || "EMB".equals(centerName)) {
-            canonicalValue = "EARTH_MOON";
-        } else {
-            canonicalValue = centerName;
-        }
-
-        final CenterName c;
-        try {
-            c = CenterName.valueOf(canonicalValue);
-        } catch (IllegalArgumentException iae) {
-            hasCreatableBody = false;
-            centerBody       = null;
-            return;
-        }
-
-        hasCreatableBody = true;
-        centerBody       = c.getCelestialBody(celestialBodies);
-
+        this.centerBody = body;
     }
 
     /**
@@ -180,7 +148,7 @@ public class AdmMetadata extends Metadata {
      *         false otherwise
      */
     public boolean getHasCreatableBody() {
-        return hasCreatableBody;
+        return centerBody != null;
     }
 
 }

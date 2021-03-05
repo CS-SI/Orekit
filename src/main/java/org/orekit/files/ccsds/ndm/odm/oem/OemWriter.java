@@ -685,11 +685,10 @@ public class OemWriter implements EphemerisFileWriter {
         copy.setObjectName(original.getObjectName());
         copy.setObjectID(original.getObjectID());
         if (original.getCenterName() != null) {
-            copy.setCenterName(original.getCenterName(), dataContext.getCelestialBodies());
+            copy.setCenterName(original.getCenterName(), original.getCenterBody());
         }
 
         // copy frames
-        copy.setCenterName(original.getCenterName(), dataContext.getCelestialBodies());
         copy.setFrameEpoch(original.getFrameEpoch());
         copy.setReferenceFrame(original.getReferenceFrame());
 

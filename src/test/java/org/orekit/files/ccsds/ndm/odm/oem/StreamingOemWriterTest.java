@@ -144,7 +144,7 @@ public class StreamingOemWriterTest {
             metadata.setObjectName("will be overwritten");
             metadata.setObjectID(objectID);
             metadata.setTimeSystem(TimeSystem.UTC);
-            metadata.setCenterName(ephemerisBlock.getMetadata().getCenterName(), CelestialBodyFactory.getCelestialBodies());
+            metadata.setCenterName(ephemerisBlock.getMetadata().getCenterName(), ephemerisBlock.getMetadata().getCenterBody());
             metadata.setReferenceFrame(FrameFacade.map(FramesFactory.getEME2000())); // will be overwritten
             metadata.setStartTime(AbsoluteDate.J2000_EPOCH.shiftedBy(80 * Constants.JULIAN_CENTURY));
             metadata.setStopTime(metadata.getStartTime().shiftedBy(Constants.JULIAN_YEAR));

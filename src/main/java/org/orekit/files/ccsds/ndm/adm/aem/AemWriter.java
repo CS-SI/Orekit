@@ -626,7 +626,7 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
         copy.setObjectName(original.getObjectName());
         copy.setObjectID(original.getObjectID());
         if (original.getCenterName() != null) {
-            copy.setCenterName(original.getCenterName(), dataContext.getCelestialBodies());
+            copy.setCenterName(original.getCenterName(), original.getCenterBody());
         }
 
         // copy frames (we may copy null references here)

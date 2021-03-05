@@ -366,7 +366,7 @@ public class OEMWriterTest {
         metadata.setTimeSystem(TimeSystem.TT);
         metadata.setObjectID("9999-999ZZZ");
         metadata.setObjectName("transgalactic");
-        metadata.setCenterName("EARTH", CelestialBodyFactory.getCelestialBodies());
+        metadata.setCenterName("EARTH", CelestialBodyFactory.getCelestialBodies().getEarth());
         metadata.setReferenceFrame(FrameFacade.map(FramesFactory.getEME2000()));
         metadata.setStartTime(AbsoluteDate.J2000_EPOCH.shiftedBy(80 * Constants.JULIAN_CENTURY));
         metadata.setStopTime(metadata.getStartTime().shiftedBy(Constants.JULIAN_YEAR));

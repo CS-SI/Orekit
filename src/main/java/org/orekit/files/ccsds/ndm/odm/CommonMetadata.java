@@ -17,13 +17,11 @@
 
 package org.orekit.files.ccsds.ndm.odm;
 
-import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
-import org.orekit.files.ccsds.definitions.CenterName;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.ModifiedFrame;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
@@ -131,36 +129,12 @@ public class CommonMetadata extends OdmMetadata {
 
     /** Set the origin of reference frame.
      * @param name the origin of reference frame to be set
-     * @param celestialBodies factory for celestial bodies
+     * @param body corresponding center body (may be null)
      */
-    public void setCenterName(final String name, final CelestialBodies celestialBodies) {
-
+    public void setCenterName(final String name, final CelestialBody body) {
         refuseFurtherComments();
-
-        // store the name itself
         this.centerName = name;
-
-        // change the name to a canonical one in some cases
-        final String canonicalValue;
-        if ("SOLAR SYSTEM BARYCENTER".equals(centerName) || "SSB".equals(centerName)) {
-            canonicalValue = "SOLAR_SYSTEM_BARYCENTER";
-        } else if ("EARTH MOON BARYCENTER".equals(centerName) || "EARTH-MOON BARYCENTER".equals(centerName) ||
-                   "EARTH BARYCENTER".equals(centerName) || "EMB".equals(centerName)) {
-            canonicalValue = "EARTH_MOON";
-        } else {
-            canonicalValue = centerName;
-        }
-
-        final CenterName c;
-        try {
-            c = CenterName.valueOf(canonicalValue);
-        } catch (IllegalArgumentException iae) {
-            centerBody = null;
-            return;
-        }
-
-        centerBody = c.getCelestialBody(celestialBodies);
-
+        this.centerBody = body;
     }
 
     /** Get the {@link CelestialBody} corresponding to the center name.
