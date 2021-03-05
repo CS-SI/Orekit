@@ -20,20 +20,20 @@ import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 
-/** Keys for {@link AdmMetadata ADM metadata} entries.
+/** Keys for {@link AdmMetadata ADM container} entries.
  * @author Luc Maisonobe
  * @since 11.0
  */
 public enum AdmMetadataKey {
 
     /** Object name entry. */
-    OBJECT_NAME((token, context, metadata) -> token.processAsNormalizedString(metadata::setObjectName)),
+    OBJECT_NAME((token, context, container) -> token.processAsNormalizedString(container::setObjectName)),
 
     /** Object ID entry. */
-    OBJECT_ID((token, context, metadata) -> token.processAsNormalizedString(metadata::setObjectID)),
+    OBJECT_ID((token, context, container) -> token.processAsNormalizedString(container::setObjectID)),
 
     /** Center name entry. */
-    CENTER_NAME((token, context, metadata) -> token.processAsCenter(metadata::setCenter,
+    CENTER_NAME((token, context, container) -> token.processAsCenter(container::setCenter,
                                                                     context.getDataContext().getCelestialBodies()));
 
     /** Processing method. */
@@ -49,11 +49,11 @@ public enum AdmMetadataKey {
     /** Process one token.
      * @param token token to process
      * @param context parsing context
-     * @param metadata metadata to fill
+     * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final AdmMetadata metadata) {
-        return processor.process(token, context, metadata);
+    public boolean process(final ParseToken token, final ParsingContext context, final AdmMetadata container) {
+        return processor.process(token, context, container);
     }
 
     /** Interface for processing one token. */
@@ -61,10 +61,10 @@ public enum AdmMetadataKey {
         /** Process one token.
          * @param token token to process
          * @param context parsing context
-         * @param metadata metadata to fill
+         * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, AdmMetadata metadata);
+        boolean process(ParseToken token, ParsingContext context, AdmMetadata container);
     }
 
 }

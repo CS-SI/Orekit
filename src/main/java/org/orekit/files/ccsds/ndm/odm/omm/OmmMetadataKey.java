@@ -20,14 +20,14 @@ import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 
-/** Keys for {@link OmmMetadata OMM metadata} entries.
+/** Keys for {@link OmmMetadata OMM container} entries.
  * @author Luc Maisonobe
  * @since 11.0
  */
 public enum OmmMetadataKey {
 
     /** Description of the Mean Element Theory. */
-    MEAN_ELEMENT_THEORY((token, context, metadata) -> token.processAsNormalizedString(metadata::setMeanElementTheory));
+    MEAN_ELEMENT_THEORY((token, context, container) -> token.processAsNormalizedString(container::setMeanElementTheory));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -42,11 +42,11 @@ public enum OmmMetadataKey {
     /** Process one token.
      * @param token token to process
      * @param context parsing context
-     * @param metadata metadata to fill
+     * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final OmmMetadata metadata) {
-        return processor.process(token, context, metadata);
+    public boolean process(final ParseToken token, final ParsingContext context, final OmmMetadata container) {
+        return processor.process(token, context, container);
     }
 
     /** Interface for processing one token. */
@@ -54,10 +54,10 @@ public enum OmmMetadataKey {
         /** Process one token.
          * @param token token to process
          * @param context parsing context
-         * @param metadata metadata to fill
+         * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, OmmMetadata metadata);
+        boolean process(ParseToken token, ParsingContext context, OmmMetadata container);
     }
 
 }

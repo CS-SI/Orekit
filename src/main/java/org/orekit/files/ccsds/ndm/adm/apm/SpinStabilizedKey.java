@@ -27,54 +27,54 @@ import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 public enum SpinStabilizedKey {
 
     /** Block wrapping element in XML files. */
-    eulerElementsSpin((token, context, data) -> true),
+    eulerElementsSpin((token, context, container) -> true),
 
     /** Comment entry. */
-    COMMENT((token, context, data) ->
-            token.getType() == TokenType.ENTRY ? data.addComment(token.getContent()) : true),
+    COMMENT((token, context, container) ->
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContent()) : true),
 
     /** First reference frame entry. */
-    SPIN_FRAME_A((token, context, data) -> token.processAsFrame(data.getEndpoints()::setFrameA, context, true, true, true)),
+    SPIN_FRAME_A((token, context, container) -> token.processAsFrame(container.getEndpoints()::setFrameA, context, true, true, true)),
 
     /** Second reference frame entry. */
-    SPIN_FRAME_B((token, context, data) -> {
+    SPIN_FRAME_B((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
-            data.checkNotNull(data.getEndpoints().getFrameA(), SPIN_FRAME_A);
-            final boolean aIsSpaceraftBody = data.getEndpoints().getFrameA().asSpacecraftBodyFrame() != null;
-            return token.processAsFrame(data.getEndpoints()::setFrameB, context,
+            container.checkNotNull(container.getEndpoints().getFrameA(), SPIN_FRAME_A);
+            final boolean aIsSpaceraftBody = container.getEndpoints().getFrameA().asSpacecraftBodyFrame() != null;
+            return token.processAsFrame(container.getEndpoints()::setFrameB, context,
                                         aIsSpaceraftBody, aIsSpaceraftBody, !aIsSpaceraftBody);
         }
         return true;
     }),
 
     /** Rotation direction entry. */
-    SPIN_DIR((token, context, data) -> {
+    SPIN_DIR((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
-            data.getEndpoints().setA2b(token.getContentAsNormalizedCharacter() == 'A');
+            container.getEndpoints().setA2b(token.getContentAsNormalizedCharacter() == 'A');
         }
         return true;
     }),
 
     /** Spin right ascension entry. */
-    SPIN_ALPHA((token, context, data) -> token.processAsAngle(data::setSpinAlpha)),
+    SPIN_ALPHA((token, context, container) -> token.processAsAngle(container::setSpinAlpha)),
 
     /** Spin declination entry. */
-    SPIN_DELTA((token, context, data) -> token.processAsAngle(data::setSpinDelta)),
+    SPIN_DELTA((token, context, container) -> token.processAsAngle(container::setSpinDelta)),
 
     /** Spin phase entry. */
-    SPIN_ANGLE((token, context, data) -> token.processAsAngle(data::setSpinAngle)),
+    SPIN_ANGLE((token, context, container) -> token.processAsAngle(container::setSpinAngle)),
 
     /** Spin angular velocity entry. */
-    SPIN_ANGLE_VEL((token, context, data) -> token.processAsAngle(data::setSpinAngleVel)),
+    SPIN_ANGLE_VEL((token, context, container) -> token.processAsAngle(container::setSpinAngleVel)),
 
     /** Nutation angle entry. */
-    NUTATION((token, context, data) -> token.processAsAngle(data::setNutation)),
+    NUTATION((token, context, container) -> token.processAsAngle(container::setNutation)),
 
     /** Nutation period entry. */
-    NUTATION_PER((token, context, data) -> token.processAsDouble(1.0, data::setNutationPeriod)),
+    NUTATION_PER((token, context, container) -> token.processAsDouble(1.0, container::setNutationPeriod)),
 
     /** Nutation phase entry. */
-    NUTATION_PHASE((token, context, data) -> token.processAsAngle(data::setNutationPhase));
+    NUTATION_PHASE((token, context, container) -> token.processAsAngle(container::setNutationPhase));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -89,11 +89,11 @@ public enum SpinStabilizedKey {
     /** Process one token.
      * @param token token to process
      * @param context parsing context
-     * @param data data to fill
+     * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final SpinStabilized data) {
-        return processor.process(token, context, data);
+    public boolean process(final ParseToken token, final ParsingContext context, final SpinStabilized container) {
+        return processor.process(token, context, container);
     }
 
     /** Interface for processing one token. */
@@ -101,10 +101,10 @@ public enum SpinStabilizedKey {
         /** Process one token.
          * @param token token to process
          * @param context parsing context
-         * @param data data to fill
+         * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, SpinStabilized data);
+        boolean process(ParseToken token, ParsingContext context, SpinStabilized container);
     }
 
 }

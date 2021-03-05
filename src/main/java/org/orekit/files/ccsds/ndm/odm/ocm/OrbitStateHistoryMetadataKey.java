@@ -24,36 +24,36 @@ import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 
-/** Keys for {@link OrbitStateHistoryMetadata orbit state history metadata} entries.
+/** Keys for {@link OrbitStateHistoryMetadata orbit state history container} entries.
  * @author Luc Maisonobe
  * @since 11.0
  */
 public enum OrbitStateHistoryMetadataKey {
 
     /** Comment entry. */
-    COMMENT((token, context, metadata) ->
-            token.getType() == TokenType.ENTRY ? metadata.addComment(token.getContent()) : true),
+    COMMENT((token, context, container) ->
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContent()) : true),
 
     /** Orbit identification number. */
-    ORB_ID((token, context, metadata) -> token.processAsNormalizedString(metadata::setOrbID)),
+    ORB_ID((token, context, container) -> token.processAsNormalizedString(container::setOrbID)),
 
     /** Identification number of previous orbit. */
-    ORB_PREV_ID((token, context, metadata) -> token.processAsNormalizedString(metadata::setOrbPrevID)),
+    ORB_PREV_ID((token, context, container) -> token.processAsNormalizedString(container::setOrbPrevID)),
 
     /** Identification number of next orbit. */
-    ORB_NEXT_ID((token, context, metadata) -> token.processAsNormalizedString(metadata::setOrbNextID)),
+    ORB_NEXT_ID((token, context, container) -> token.processAsNormalizedString(container::setOrbNextID)),
 
     /** Basis of this orbit state time history data. */
-    ORB_BASIS((token, context, metadata) -> token.processAsNormalizedString(metadata::setOrbBasis)),
+    ORB_BASIS((token, context, container) -> token.processAsNormalizedString(container::setOrbBasis)),
 
     /** Identification number of the orbit determination or simulation upon which this orbit is based.*/
-    ORB_BASIS_ID((token, context, metadata) -> token.processAsNormalizedString(metadata::setOrbBasisID)),
+    ORB_BASIS_ID((token, context, container) -> token.processAsNormalizedString(container::setOrbBasisID)),
 
     /** Interpolation method to be used. */
-    INTERPOLATION((token, context, metadata) -> {
+    INTERPOLATION((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
             try {
-                metadata.setInterpolationMethod(InterpolationMethod.valueOf(token.getContentAsNormalizedString()));
+                container.setInterpolationMethod(InterpolationMethod.valueOf(token.getContentAsNormalizedString()));
             } catch (IllegalArgumentException iae) {
                 throw new OrekitException(iae, OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE,
                                           token.getName(), token.getLineNumber(), token.getFileName());
@@ -63,33 +63,33 @@ public enum OrbitStateHistoryMetadataKey {
     }),
 
     /** Interpolation degree. */
-    INTERPOLATION_DEGREE((token, context, metadata) -> token.processAsInteger(metadata::setInterpolationDegree)),
+    INTERPOLATION_DEGREE((token, context, container) -> token.processAsInteger(container::setInterpolationDegree)),
 
     /** Type of averaging (Osculating, mean Brouwer, other...). */
-    ORB_AVERAGING((token, context, metadata) -> token.processAsNormalizedString(metadata::setOrbAveraging)),
+    ORB_AVERAGING((token, context, container) -> token.processAsNormalizedString(container::setOrbAveraging)),
 
     /** Origin of the reference frame of the orbit. */
-    CENTER_NAME((token, context, metadata) -> token.processAsCenter(metadata::setCenter,
+    CENTER_NAME((token, context, container) -> token.processAsCenter(container::setCenter,
                                                                     context.getDataContext().getCelestialBodies())),
 
     /** Reference frame of the orbit. */
-    ORB_REF_FRAME((token, context, metadata) -> token.processAsFrame(metadata::setOrbReferenceFrame, context, true, false, false)),
+    ORB_REF_FRAME((token, context, container) -> token.processAsFrame(container::setOrbReferenceFrame, context, true, false, false)),
 
     /** Epoch of the {@link #ORB_REF_FRAME orbit reference frame}. */
-    ORB_FRAME_EPOCH((token, context, metadata) -> token.processAsDate(metadata::setOrbFrameEpoch, context)),
+    ORB_FRAME_EPOCH((token, context, container) -> token.processAsDate(container::setOrbFrameEpoch, context)),
 
     /** Useable start time entry. */
-    USEABLE_START_TIME((token, context, metadata) -> token.processAsDate(metadata::setUseableStartTime, context)),
+    USEABLE_START_TIME((token, context, container) -> token.processAsDate(container::setUseableStartTime, context)),
 
     /** Useable stop time entry. */
-    USEABLE_STOP_TIME((token, context, metadata) -> token.processAsDate(metadata::setUseableStopTime, context)),
+    USEABLE_STOP_TIME((token, context, container) -> token.processAsDate(container::setUseableStopTime, context)),
 
     /** Orbit element set type.
      * @see ElementsType
      */
-    ORB_TYPE((token, context, metadata) -> {
+    ORB_TYPE((token, context, container) -> {
         try {
-            metadata.setOrbType(ElementsType.valueOf(token.getContentAsNormalizedString()));
+            container.setOrbType(ElementsType.valueOf(token.getContentAsNormalizedString()));
         } catch (IllegalArgumentException iae) {
             throw token.generateException(iae);
         }
@@ -97,7 +97,7 @@ public enum OrbitStateHistoryMetadataKey {
     }),
 
     /** SI units for each elements of the orbit state. */
-    ORB_UNITS((token, context, metadata) -> token.processAsUnitList(metadata::setOrbUnits));
+    ORB_UNITS((token, context, container) -> token.processAsUnitList(container::setOrbUnits));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -112,11 +112,11 @@ public enum OrbitStateHistoryMetadataKey {
     /** Process an token.
      * @param token token to process
      * @param context parsing context
-     * @param metadata metadata to fill
+     * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final OrbitStateHistoryMetadata metadata) {
-        return processor.process(token, context, metadata);
+    public boolean process(final ParseToken token, final ParsingContext context, final OrbitStateHistoryMetadata container) {
+        return processor.process(token, context, container);
     }
 
     /** Interface for processing one token. */
@@ -124,10 +124,10 @@ public enum OrbitStateHistoryMetadataKey {
         /** Process one token.
          * @param token token to process
          * @param context parsing context
-         * @param metadata metadata to fill
+         * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, OrbitStateHistoryMetadata metadata);
+        boolean process(ParseToken token, ParsingContext context, OrbitStateHistoryMetadata container);
     }
 
 }

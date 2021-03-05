@@ -28,29 +28,29 @@ import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 public enum ManeuverKey {
 
     /** Comment entry. */
-    COMMENT((token, context, data) ->
-            token.getType() == TokenType.ENTRY ? data.addComment(token.getContent()) : true),
+    COMMENT((token, context, container) ->
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContent()) : true),
 
     /** Epoch of ignition. */
-    MAN_EPOCH_IGNITION((token, context, data) -> token.processAsDate(data::setEpochIgnition, context)),
+    MAN_EPOCH_IGNITION((token, context, container) -> token.processAsDate(container::setEpochIgnition, context)),
 
     /** Coordinate system for velocity increment vector. */
-    MAN_REF_FRAME((token, context, data) -> token.processAsFrame(data::setReferenceFrame, context, true, true, false)),
+    MAN_REF_FRAME((token, context, container) -> token.processAsFrame(container::setReferenceFrame, context, true, true, false)),
 
     /** Maneuver duration (0 for impulsive maneuvers). */
-    MAN_DURATION((token, context, data) -> token.processAsDouble(1.0, data::setDuration)),
+    MAN_DURATION((token, context, container) -> token.processAsDouble(1.0, container::setDuration)),
 
     /** Mass change during maneuver (value is &lt; 0). */
-    MAN_DELTA_MASS((token, context, data) -> token.processAsDouble(1.0, data::setDeltaMass)),
+    MAN_DELTA_MASS((token, context, container) -> token.processAsDouble(1.0, container::setDeltaMass)),
 
     /** First component of the velocity increment. */
-    MAN_DV_1((token, context, data) -> token.processAsIndexedDouble(0, 1.0e3, data::setDV)),
+    MAN_DV_1((token, context, container) -> token.processAsIndexedDouble(0, 1.0e3, container::setDV)),
 
     /** Second component of the velocity increment. */
-    MAN_DV_2((token, context, data) -> token.processAsIndexedDouble(1, 1.0e3, data::setDV)),
+    MAN_DV_2((token, context, container) -> token.processAsIndexedDouble(1, 1.0e3, container::setDV)),
 
     /** Third component of the velocity increment. */
-    MAN_DV_3((token, context, data) -> token.processAsIndexedDouble(2, 1.0e3, data::setDV));
+    MAN_DV_3((token, context, container) -> token.processAsIndexedDouble(2, 1.0e3, container::setDV));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -65,11 +65,11 @@ public enum ManeuverKey {
     /** Process one token.
      * @param token token to process
      * @param context parsing context
-     * @param data data to fill
+     * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final Maneuver data) {
-        return processor.process(token, context, data);
+    public boolean process(final ParseToken token, final ParsingContext context, final Maneuver container) {
+        return processor.process(token, context, container);
     }
 
     /** Interface for processing one token. */
@@ -77,10 +77,10 @@ public enum ManeuverKey {
         /** Process one token.
          * @param token token to process
          * @param context parsing context
-         * @param data data to fill
+         * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, Maneuver data);
+        boolean process(ParseToken token, ParsingContext context, Maneuver container);
     }
 
 }

@@ -20,137 +20,137 @@ import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 
-/** Keys for {@link TdmMetadata TDM metadata} entries.
+/** Keys for {@link TdmMetadata TDM container} entries.
  * @author Maxime Journot
  * @since 11.0
  */
 public enum TdmMetadataKey {
 
     /** Start time entry. */
-    START_TIME((token, context, metadata) -> token.processAsDate(metadata::setStartTime, context)),
+    START_TIME((token, context, container) -> token.processAsDate(container::setStartTime, context)),
 
     /** Stop time entry. */
-    STOP_TIME((token, context, metadata) -> token.processAsDate(metadata::setStopTime, context)),
+    STOP_TIME((token, context, container) -> token.processAsDate(container::setStopTime, context)),
 
     /** First participant entry. */
-    PARTICIPANT_1((token, context, metadata) -> token.processAsIndexedFreeTextString(1, metadata::addParticipant)),
+    PARTICIPANT_1((token, context, container) -> token.processAsIndexedFreeTextString(1, container::addParticipant)),
 
     /** Second participant entry. */
-    PARTICIPANT_2((token, context, metadata) -> token.processAsIndexedFreeTextString(2, metadata::addParticipant)),
+    PARTICIPANT_2((token, context, container) -> token.processAsIndexedFreeTextString(2, container::addParticipant)),
 
     /** Third participant entry. */
-    PARTICIPANT_3((token, context, metadata) -> token.processAsIndexedFreeTextString(3, metadata::addParticipant)),
+    PARTICIPANT_3((token, context, container) -> token.processAsIndexedFreeTextString(3, container::addParticipant)),
 
     /** Fourth participant entry. */
-    PARTICIPANT_4((token, context, metadata) -> token.processAsIndexedFreeTextString(4, metadata::addParticipant)),
+    PARTICIPANT_4((token, context, container) -> token.processAsIndexedFreeTextString(4, container::addParticipant)),
 
     /** Fifth participant entry. */
-    PARTICIPANT_5((token, context, metadata) -> token.processAsIndexedFreeTextString(5, metadata::addParticipant)),
+    PARTICIPANT_5((token, context, container) -> token.processAsIndexedFreeTextString(5, container::addParticipant)),
 
     /** Mode entry. */
-    MODE((token, context, metadata) -> token.processAsNormalizedString(metadata::setMode)),
+    MODE((token, context, container) -> token.processAsNormalizedString(container::setMode)),
 
     /** Path entry. */
-    PATH((token, context, metadata) -> token.processAsNormalizedString(metadata::setPath)),
+    PATH((token, context, container) -> token.processAsNormalizedString(container::setPath)),
 
     /** Path 1 entry. */
-    PATH_1((token, context, metadata) -> token.processAsNormalizedString(metadata::setPath1)),
+    PATH_1((token, context, container) -> token.processAsNormalizedString(container::setPath1)),
 
     /** Path 2 entry. */
-    PATH_2((token, context, metadata) -> token.processAsNormalizedString(metadata::setPath2)),
+    PATH_2((token, context, container) -> token.processAsNormalizedString(container::setPath2)),
 
     /** Transmit band entry. */
-    TRANSMIT_BAND((token, context, metadata) -> token.processAsNormalizedString(metadata::setTransmitBand)),
+    TRANSMIT_BAND((token, context, container) -> token.processAsNormalizedString(container::setTransmitBand)),
 
     /** Receive band entry. */
-    RECEIVE_BAND((token, context, metadata) -> token.processAsNormalizedString(metadata::setReceiveBand)),
+    RECEIVE_BAND((token, context, container) -> token.processAsNormalizedString(container::setReceiveBand)),
 
     /** Turnaround numerator entry. */
-    TURNAROUND_NUMERATOR((token, context, metadata) -> token.processAsInteger(metadata::setTurnaroundNumerator)),
+    TURNAROUND_NUMERATOR((token, context, container) -> token.processAsInteger(container::setTurnaroundNumerator)),
 
     /** turnaround denominator entry. */
-    TURNAROUND_DENOMINATOR((token, context, metadata) -> token.processAsInteger(metadata::setTurnaroundDenominator)),
+    TURNAROUND_DENOMINATOR((token, context, container) -> token.processAsInteger(container::setTurnaroundDenominator)),
 
     /** Timetag referene entry. */
-    TIMETAG_REF((token, context, metadata) -> token.processAsNormalizedString(metadata::setTimetagRef)),
+    TIMETAG_REF((token, context, container) -> token.processAsNormalizedString(container::setTimetagRef)),
 
     /** Integration interval entry. */
-    INTEGRATION_INTERVAL((token, context, metadata) -> token.processAsDouble(1.0, metadata::setIntegrationInterval)),
+    INTEGRATION_INTERVAL((token, context, container) -> token.processAsDouble(1.0, container::setIntegrationInterval)),
 
     /** Integration reference entry. */
-    INTEGRATION_REF((token, context, metadata) -> token.processAsNormalizedString(metadata::setIntegrationRef)),
+    INTEGRATION_REF((token, context, container) -> token.processAsNormalizedString(container::setIntegrationRef)),
 
     /** Frequency offset entry. */
-    FREQ_OFFSET((token, context, metadata) -> token.processAsDouble(1.0, metadata::setFreqOffset)),
+    FREQ_OFFSET((token, context, container) -> token.processAsDouble(1.0, container::setFreqOffset)),
 
     /** Range mode entry. */
-    RANGE_MODE((token, context, metadata) -> token.processAsNormalizedString(metadata::setRangeMode)),
+    RANGE_MODE((token, context, container) -> token.processAsNormalizedString(container::setRangeMode)),
 
     /** Range modulus entry. */
-    RANGE_MODULUS((token, context, metadata) -> token.processAsDouble(1.0, metadata::setRangeModulus)),
+    RANGE_MODULUS((token, context, container) -> token.processAsDouble(1.0, container::setRangeModulus)),
 
     /** Range units entry. */
-    RANGE_UNITS((token, context, metadata) -> token.processAsNormalizedString(metadata::setRangeUnits)),
+    RANGE_UNITS((token, context, container) -> token.processAsNormalizedString(container::setRangeUnits)),
 
     /** Angle type entry. */
-    ANGLE_TYPE((token, context, metadata) -> token.processAsNormalizedString(metadata::setAngleType)),
+    ANGLE_TYPE((token, context, container) -> token.processAsNormalizedString(container::setAngleType)),
 
     /** reference frame entry. */
-    REFERENCE_FRAME((token, context, metadata) -> token.processAsFrame(metadata::setReferenceFrame, context, true, false, false)),
+    REFERENCE_FRAME((token, context, container) -> token.processAsFrame(container::setReferenceFrame, context, true, false, false)),
 
     /** First transmit delay entry. */
-    TRANSMIT_DELAY_1((token, context, metadata) -> token.processAsIndexedDouble(1, 1.0, metadata::addTransmitDelay)),
+    TRANSMIT_DELAY_1((token, context, container) -> token.processAsIndexedDouble(1, 1.0, container::addTransmitDelay)),
 
     /** Second transmit delay entry. */
-    TRANSMIT_DELAY_2((token, context, metadata) -> token.processAsIndexedDouble(2, 1.0, metadata::addTransmitDelay)),
+    TRANSMIT_DELAY_2((token, context, container) -> token.processAsIndexedDouble(2, 1.0, container::addTransmitDelay)),
 
     /** Third transmit delay entry. */
-    TRANSMIT_DELAY_3((token, context, metadata) -> token.processAsIndexedDouble(3, 1.0, metadata::addTransmitDelay)),
+    TRANSMIT_DELAY_3((token, context, container) -> token.processAsIndexedDouble(3, 1.0, container::addTransmitDelay)),
 
     /** Fourth transmit delay entry. */
-    TRANSMIT_DELAY_4((token, context, metadata) -> token.processAsIndexedDouble(4, 1.0, metadata::addTransmitDelay)),
+    TRANSMIT_DELAY_4((token, context, container) -> token.processAsIndexedDouble(4, 1.0, container::addTransmitDelay)),
 
     /** Fifth transmit delay entry. */
-    TRANSMIT_DELAY_5((token, context, metadata) -> token.processAsIndexedDouble(5, 1.0, metadata::addTransmitDelay)),
+    TRANSMIT_DELAY_5((token, context, container) -> token.processAsIndexedDouble(5, 1.0, container::addTransmitDelay)),
 
     /** First receive delay entry. */
-    RECEIVE_DELAY_1((token, context, metadata) -> token.processAsIndexedDouble(1, 1.0, metadata::addReceiveDelay)),
+    RECEIVE_DELAY_1((token, context, container) -> token.processAsIndexedDouble(1, 1.0, container::addReceiveDelay)),
 
     /** Second receive delay entry. */
-    RECEIVE_DELAY_2((token, context, metadata) -> token.processAsIndexedDouble(2, 1.0, metadata::addReceiveDelay)),
+    RECEIVE_DELAY_2((token, context, container) -> token.processAsIndexedDouble(2, 1.0, container::addReceiveDelay)),
 
     /** Third receive delay entry. */
-    RECEIVE_DELAY_3((token, context, metadata) -> token.processAsIndexedDouble(3, 1.0, metadata::addReceiveDelay)),
+    RECEIVE_DELAY_3((token, context, container) -> token.processAsIndexedDouble(3, 1.0, container::addReceiveDelay)),
 
     /** Fourth receive delay entry. */
-    RECEIVE_DELAY_4((token, context, metadata) -> token.processAsIndexedDouble(4, 1.0, metadata::addReceiveDelay)),
+    RECEIVE_DELAY_4((token, context, container) -> token.processAsIndexedDouble(4, 1.0, container::addReceiveDelay)),
 
     /** Fifth receive delay entry. */
-    RECEIVE_DELAY_5((token, context, metadata) -> token.processAsIndexedDouble(5, 1.0, metadata::addReceiveDelay)),
+    RECEIVE_DELAY_5((token, context, container) -> token.processAsIndexedDouble(5, 1.0, container::addReceiveDelay)),
 
     /** data quality entry. */
-    DATA_QUALITY((token, context, metadata) -> token.processAsNormalizedString(metadata::setDataQuality)),
+    DATA_QUALITY((token, context, container) -> token.processAsNormalizedString(container::setDataQuality)),
 
     /** Angle 1 correction entry. */
-    CORRECTION_ANGLE_1((token, context, metadata) -> token.processAsDouble(1.0, metadata::setCorrectionAngle1)),
+    CORRECTION_ANGLE_1((token, context, container) -> token.processAsDouble(1.0, container::setCorrectionAngle1)),
 
     /** Angle 2 correction entry. */
-    CORRECTION_ANGLE_2((token, context, metadata) -> token.processAsDouble(1.0, metadata::setCorrectionAngle2)),
+    CORRECTION_ANGLE_2((token, context, container) -> token.processAsDouble(1.0, container::setCorrectionAngle2)),
 
     /** Doppler correction entry. */
-    CORRECTION_DOPPLER((token, context, metadata) -> token.processAsDouble(1.0, metadata::setCorrectionDoppler)),
+    CORRECTION_DOPPLER((token, context, container) -> token.processAsDouble(1.0, container::setCorrectionDoppler)),
 
     /** Range correction entry. */
-    CORRECTION_RANGE((token, context, metadata) -> token.processAsDouble(1.0, metadata::setCorrectionRange)),
+    CORRECTION_RANGE((token, context, container) -> token.processAsDouble(1.0, container::setCorrectionRange)),
 
     /** Recive correction entry. */
-    CORRECTION_RECEIVE((token, context, metadata) -> token.processAsDouble(1.0, metadata::setCorrectionReceive)),
+    CORRECTION_RECEIVE((token, context, container) -> token.processAsDouble(1.0, container::setCorrectionReceive)),
 
     /** Transmit correction entry. */
-    CORRECTION_TRANSMIT((token, context, metadata) -> token.processAsDouble(1.0, metadata::setCorrectionTransmit)),
+    CORRECTION_TRANSMIT((token, context, container) -> token.processAsDouble(1.0, container::setCorrectionTransmit)),
 
     /** Applied correction entry. */
-    CORRECTIONS_APPLIED((token, context, metadata) -> token.processAsNormalizedString(metadata::setCorrectionsApplied));
+    CORRECTIONS_APPLIED((token, context, container) -> token.processAsNormalizedString(container::setCorrectionsApplied));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -165,11 +165,11 @@ public enum TdmMetadataKey {
     /** Process an token.
      * @param token token to process
      * @param context parsing context
-     * @param metadata metadata to fill
+     * @param container container to fill
      * @return true if token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final TdmMetadata metadata) {
-        return processor.process(token, context, metadata);
+    public boolean process(final ParseToken token, final ParsingContext context, final TdmMetadata container) {
+        return processor.process(token, context, container);
     }
 
     /** Interface for processing one token. */
@@ -177,10 +177,10 @@ public enum TdmMetadataKey {
         /** Process one token.
          * @param token token to process
          * @param context parsing context
-         * @param metadata metadata to fill
+         * @param container container to fill
      * @return true if token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, TdmMetadata metadata);
+        boolean process(ParseToken token, ParsingContext context, TdmMetadata container);
     }
 
 }

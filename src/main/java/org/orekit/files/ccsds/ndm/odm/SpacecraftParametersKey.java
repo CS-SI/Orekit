@@ -28,23 +28,23 @@ import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 public enum SpacecraftParametersKey {
 
     /** Comment entry. */
-    COMMENT((token, context, data) ->
-            token.getType() == TokenType.ENTRY ? data.addComment(token.getContent()) : true),
+    COMMENT((token, context, container) ->
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContent()) : true),
 
     /** Spacecraft mass. */
-    MASS((token, context, data) -> token.processAsDouble(1.0, data::setMass)),
+    MASS((token, context, container) -> token.processAsDouble(1.0, container::setMass)),
 
     /** Solar radiation pressure area. */
-    SOLAR_RAD_AREA((token, context, data) -> token.processAsDouble(1.0, data::setSolarRadArea)),
+    SOLAR_RAD_AREA((token, context, container) -> token.processAsDouble(1.0, container::setSolarRadArea)),
 
     /** Solar radiation pressure coefficient. */
-    SOLAR_RAD_COEFF((token, context, data) -> token.processAsDouble(1.0, data::setSolarRadCoeff)),
+    SOLAR_RAD_COEFF((token, context, container) -> token.processAsDouble(1.0, container::setSolarRadCoeff)),
 
     /** Drag area. */
-    DRAG_AREA((token, context, data) -> token.processAsDouble(1.0, data::setDragArea)),
+    DRAG_AREA((token, context, container) -> token.processAsDouble(1.0, container::setDragArea)),
 
     /** Drag coefficient. */
-    DRAG_COEFF((token, context, data) -> token.processAsDouble(1.0, data::setDragCoeff));
+    DRAG_COEFF((token, context, container) -> token.processAsDouble(1.0, container::setDragCoeff));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -59,11 +59,11 @@ public enum SpacecraftParametersKey {
     /** Process one token.
      * @param token token to process
      * @param context parsing context
-     * @param data data to fill
+     * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final SpacecraftParameters data) {
-        return processor.process(token, context, data);
+    public boolean process(final ParseToken token, final ParsingContext context, final SpacecraftParameters container) {
+        return processor.process(token, context, container);
     }
 
     /** Interface for processing one token. */
@@ -71,10 +71,10 @@ public enum SpacecraftParametersKey {
         /** Process one token.
          * @param token token to process
          * @param context parsing context
-         * @param data data to fill
+         * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, SpacecraftParameters data);
+        boolean process(ParseToken token, ParsingContext context, SpacecraftParameters container);
     }
 
 }

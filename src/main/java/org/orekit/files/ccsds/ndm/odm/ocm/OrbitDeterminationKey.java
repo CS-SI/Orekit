@@ -28,8 +28,8 @@ import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 public enum OrbitDeterminationKey {
 
     /** Comment entry. */
-    COMMENT((token, context, metadata) ->
-            token.getType() == TokenType.ENTRY ? metadata.addComment(token.getContent()) : true);
+    COMMENT((token, context, container) ->
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContent()) : true);
 
     // TODO
 

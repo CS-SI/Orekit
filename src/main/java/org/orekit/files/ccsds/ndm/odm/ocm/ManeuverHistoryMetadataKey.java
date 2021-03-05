@@ -23,61 +23,61 @@ import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 
-/** Keys for {@link ManeuverHistoryMetadata maneuver history metadata} entries.
+/** Keys for {@link ManeuverHistoryMetadata maneuver history container} entries.
  * @author Luc Maisonobe
  * @since 11.0
  */
 public enum ManeuverHistoryMetadataKey {
 
     /** Comment entry. */
-    COMMENT((token, context, metadata) ->
-            token.getType() == TokenType.ENTRY ? metadata.addComment(token.getContent()) : true),
+    COMMENT((token, context, container) ->
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContent()) : true),
 
     /** Maneuver identification number. */
-    MAN_ID((token, context, metadata) -> token.processAsFreeTextString(metadata::setManID)),
+    MAN_ID((token, context, container) -> token.processAsFreeTextString(container::setManID)),
 
     /** Identification number of previous maneuver. */
-    MAN_PREV_ID((token, context, metadata) -> token.processAsFreeTextString(metadata::setManPrevID)),
+    MAN_PREV_ID((token, context, container) -> token.processAsFreeTextString(container::setManPrevID)),
 
     /** Identification number of next maneuver. */
-    MAN_NEXT_ID((token, context, metadata) -> token.processAsFreeTextString(metadata::setManNextID)),
+    MAN_NEXT_ID((token, context, container) -> token.processAsFreeTextString(container::setManNextID)),
 
     /** Basis of this maneuver history data. */
-    MAN_BASIS((token, context, metadata) -> token.processAsFreeTextString(metadata::setManBasis)),
+    MAN_BASIS((token, context, container) -> token.processAsFreeTextString(container::setManBasis)),
 
     /** Identification number of the orbit determination or simulation upon which this maneuver is based.*/
-    MAN_BASIS_ID((token, context, metadata) -> token.processAsFreeTextString(metadata::setManBasisID)),
+    MAN_BASIS_ID((token, context, container) -> token.processAsFreeTextString(container::setManBasisID)),
 
     /** Identifier of the device used for this maneuver.*/
-    MAN_DEVICE_ID((token, context, metadata) -> token.processAsFreeTextString(metadata::setManDeviceID)),
+    MAN_DEVICE_ID((token, context, container) -> token.processAsFreeTextString(container::setManDeviceID)),
 
     /** Completion time of previous maneuver. */
-    MAN_PREV_EPOCH((token, context, metadata) -> token.processAsDate(metadata::setManPrevEpoch, context)),
+    MAN_PREV_EPOCH((token, context, container) -> token.processAsDate(container::setManPrevEpoch, context)),
 
     /** Start time of next maneuver. */
-    MAN_NEXT_EPOCH((token, context, metadata) -> token.processAsDate(metadata::setManNextEpoch, context)),
+    MAN_NEXT_EPOCH((token, context, container) -> token.processAsDate(container::setManNextEpoch, context)),
 
     /** Purposes of the maneuver. */
-    MAN_PURPOSE((token, context, metadata) -> token.processAsFreeTextStringList(metadata::setManPurpose)),
+    MAN_PURPOSE((token, context, container) -> token.processAsFreeTextStringList(container::setManPurpose)),
 
     /** Prediction source on which this maneuver is based. */
-    MAN_PRED_SOURCE((token, context, metadata) -> token.processAsFreeTextString(metadata::setManPredSource)),
+    MAN_PRED_SOURCE((token, context, container) -> token.processAsFreeTextString(container::setManPredSource)),
 
     /** Reference frame of the maneuver. */
-    MAN_REF_FRAME((token, context, metadata) -> token.processAsFrame(metadata::setManReferenceFrame, context, true, false, false)),
+    MAN_REF_FRAME((token, context, container) -> token.processAsFrame(container::setManReferenceFrame, context, true, false, false)),
 
     /** Epoch of the {@link #COV_REF_FRAME orbit reference frame}. */
-    MAN_FRAME_EPOCH((token, context, metadata) -> token.processAsDate(metadata::setManFrameEpoch, context)),
+    MAN_FRAME_EPOCH((token, context, container) -> token.processAsDate(container::setManFrameEpoch, context)),
 
     /** Origin of maneuver gravitational assist body. */
-    GRAV_ASSIST_NAME((token, context, metadata) -> token.processAsCenter(metadata::setGravitationalAssist,
+    GRAV_ASSIST_NAME((token, context, container) -> token.processAsCenter(container::setGravitationalAssist,
                                                                          context.getDataContext().getCelestialBodies())),
 
     /** Type of duty cycle. */
-    DC_TYPE((token, context, metadata) -> {
+    DC_TYPE((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
             try {
-                metadata.setDcType(DutyCycleType.valueOf(token.getContentAsNormalizedString()));
+                container.setDcType(DutyCycleType.valueOf(token.getContentAsNormalizedString()));
             } catch (IllegalArgumentException iae) {
                 throw token.generateException(iae);
             }
@@ -86,53 +86,53 @@ public enum ManeuverHistoryMetadataKey {
     }),
 
     /** Start time of duty cycle-based maneuver window. */
-    DC_WIN_OPEN((token, context, metadata) -> token.processAsDate(metadata::setDcWindowOpen, context)),
+    DC_WIN_OPEN((token, context, container) -> token.processAsDate(container::setDcWindowOpen, context)),
 
     /** Start time of duty cycle-based maneuver window. */
-    DC_WIN_CLOSE((token, context, metadata) -> token.processAsDate(metadata::setDcWindowClose, context)),
+    DC_WIN_CLOSE((token, context, container) -> token.processAsDate(container::setDcWindowClose, context)),
 
     /** Minimum number of "ON" duty cycles. */
-    DC_MIN_CYCLES((token, context, metadata) -> token.processAsInteger(metadata::setDcMinCycles)),
+    DC_MIN_CYCLES((token, context, container) -> token.processAsInteger(container::setDcMinCycles)),
 
     /** Maximum number of "ON" duty cycles. */
-    DC_MAX_CYCLES((token, context, metadata) -> token.processAsInteger(metadata::setDcMaxCycles)),
+    DC_MAX_CYCLES((token, context, container) -> token.processAsInteger(container::setDcMaxCycles)),
 
     /** Start time of initial duty cycle-based maneuver execution. */
-    DC_EXEC_START((token, context, metadata) -> token.processAsDate(metadata::setDcExecStart, context)),
+    DC_EXEC_START((token, context, container) -> token.processAsDate(container::setDcExecStart, context)),
 
     /** End time of final duty cycle-based maneuver execution. */
-    DC_EXEC_STOP((token, context, metadata) -> token.processAsDate(metadata::setDcExecStop, context)),
+    DC_EXEC_STOP((token, context, container) -> token.processAsDate(container::setDcExecStop, context)),
 
     /** Duty cycle thrust reference time. */
-    DC_REF_TIME((token, context, metadata) -> token.processAsDate(metadata::setDcRefTime, context)),
+    DC_REF_TIME((token, context, container) -> token.processAsDate(container::setDcRefTime, context)),
 
     /** Duty cycle pulse "ON" duration. */
-    DC_TIME_PULSE_DURATION((token, context, metadata) -> token.processAsDouble(1.0, metadata::setDcTimePulseDuration)),
+    DC_TIME_PULSE_DURATION((token, context, container) -> token.processAsDouble(1.0, container::setDcTimePulseDuration)),
 
     /** Duty cycle elapsed time between start of a pulse and start of next pulse. */
-    DC_TIME_PULSE_PERIOD((token, context, metadata) -> token.processAsDouble(1.0, metadata::setDcTimePulsePeriod)),
+    DC_TIME_PULSE_PERIOD((token, context, container) -> token.processAsDouble(1.0, container::setDcTimePulsePeriod)),
 
     /** Reference direction for triggering duty cycle. */
-    DC_REF_DIR((token, context, metadata) -> token.processAsVector(metadata::setDcRefDir)),
+    DC_REF_DIR((token, context, container) -> token.processAsVector(container::setDcRefDir)),
 
     /** Spacecraft body frame in which {@link #dcBodyTrigger} is specified. */
-    DC_BODY_FRAME((token, context, metadata) -> token.processAsFrame(f -> metadata.setDcBodyFrame(f.asSpacecraftBodyFrame()),
+    DC_BODY_FRAME((token, context, container) -> token.processAsFrame(f -> container.setDcBodyFrame(f.asSpacecraftBodyFrame()),
                                                                      context, false, false, true)),
 
     /** Direction in {@link #dcBodyFrame body frame} for triggering duty cycle. */
-    DC_BODY_TRIGGER((token, context, metadata) -> token.processAsVector(metadata::setDcBodyTrigger)),
+    DC_BODY_TRIGGER((token, context, container) -> token.processAsVector(container::setDcBodyTrigger)),
 
     /** Phase angle of pulse start. */
-    DC_PA_START_ANGLE((token, context, metadata) -> token.processAsAngle(metadata::setDcPhaseStartAngle)),
+    DC_PA_START_ANGLE((token, context, container) -> token.processAsAngle(container::setDcPhaseStartAngle)),
 
     /** Phase angle of pulse stop. */
-    DC_PA_STOP_ANGLE((token, context, metadata) -> token.processAsAngle(metadata::setDcPhaseStopAngle)),
+    DC_PA_STOP_ANGLE((token, context, container) -> token.processAsAngle(container::setDcPhaseStopAngle)),
 
     /** Maneuver elements of information. */
-    MAN_COMPOSITION((token, context, metadata) -> {
+    MAN_COMPOSITION((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
             try {
-                metadata.setManComposition(token.getContentAsNormalizedStringList().
+                container.setManComposition(token.getContentAsNormalizedStringList().
                                            stream().
                                            map(s -> ManeuverFieldType.valueOf(s)).
                                            collect(Collectors.toList()));
@@ -144,7 +144,7 @@ public enum ManeuverHistoryMetadataKey {
     }),
 
     /** SI units for each elements of the maneuver. */
-    MAN_UNITS((token, context, metadata) -> token.processAsUnitList(metadata::setManUnits));
+    MAN_UNITS((token, context, container) -> token.processAsUnitList(container::setManUnits));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -159,11 +159,11 @@ public enum ManeuverHistoryMetadataKey {
     /** Process an token.
      * @param token token to process
      * @param context parsing context
-     * @param metadata metadata to fill
+     * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final ManeuverHistoryMetadata metadata) {
-        return processor.process(token, context, metadata);
+    public boolean process(final ParseToken token, final ParsingContext context, final ManeuverHistoryMetadata container) {
+        return processor.process(token, context, container);
     }
 
     /** Interface for processing one token. */
@@ -171,10 +171,10 @@ public enum ManeuverHistoryMetadataKey {
         /** Process one token.
          * @param token token to process
          * @param context parsing context
-         * @param metadata metadata to fill
+         * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, ManeuverHistoryMetadata metadata);
+        boolean process(ParseToken token, ParsingContext context, ManeuverHistoryMetadata container);
     }
 
 }

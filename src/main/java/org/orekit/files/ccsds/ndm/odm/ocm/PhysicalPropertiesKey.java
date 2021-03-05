@@ -28,158 +28,158 @@ import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 public enum PhysicalPropertiesKey {
 
     /** Comment entry. */
-    COMMENT((token, context, metadata) ->
-            token.getType() == TokenType.ENTRY ? metadata.addComment(token.getContent()) : true),
+    COMMENT((token, context, container) ->
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContent()) : true),
 
     /** Satellite manufacturer name. */
-    MANUFACTURER((token, context, metadata) -> token.processAsFreeTextString(metadata::setManufacturer)),
+    MANUFACTURER((token, context, container) -> token.processAsFreeTextString(container::setManufacturer)),
 
     /** Bus model name. */
-    BUS_MODEL((token, context, metadata) -> token.processAsFreeTextString(metadata::setBusModel)),
+    BUS_MODEL((token, context, container) -> token.processAsFreeTextString(container::setBusModel)),
 
     /** Other space objects this object is docked to. */
-    DOCKED_WITH((token, context, metadata) -> token.processAsFreeTextStringList(metadata::setDockedWith)),
+    DOCKED_WITH((token, context, container) -> token.processAsFreeTextStringList(container::setDockedWith)),
 
     /** Attitude-independent drag cross-sectional area, not already into attitude-dependent area along OEB. */
-    DRAG_CONST_AREA((token, context, metadata) -> token.processAsDouble(1.0, metadata::setDragConstantArea)),
+    DRAG_CONST_AREA((token, context, container) -> token.processAsDouble(1.0, container::setDragConstantArea)),
 
     /** Nominal drag coefficient. */
-    DRAG_COEFF_NOM((token, context, metadata) -> token.processAsDouble(1.0, metadata::setNominalDragCoefficient)),
+    DRAG_COEFF_NOM((token, context, container) -> token.processAsDouble(1.0, container::setNominalDragCoefficient)),
 
     /** Drag coefficient 1σ uncertainty. */
-    DRAG_UNCERTAINTY((token, context, metadata) -> token.processAsDouble(1.0, metadata::setDragUncertainty)),
+    DRAG_UNCERTAINTY((token, context, container) -> token.processAsDouble(1.0, container::setDragUncertainty)),
 
     /** Total mass at beginning of life. */
-    INITIAL_WET_MASS((token, context, metadata) -> token.processAsDouble(1.0, metadata::setInitialWetMass)),
+    INITIAL_WET_MASS((token, context, container) -> token.processAsDouble(1.0, container::setInitialWetMass)),
 
     /** Total mass at T₀. */
-    WET_MASS((token, context, metadata) -> token.processAsDouble(1.0, metadata::setWetMass)),
+    WET_MASS((token, context, container) -> token.processAsDouble(1.0, container::setWetMass)),
 
     /** Mass without propellant. */
-    DRY_MASS((token, context, metadata) -> token.processAsDouble(1.0, metadata::setDryMass)),
+    DRY_MASS((token, context, container) -> token.processAsDouble(1.0, container::setDryMass)),
 
     /** Optimally Enclosing Box parent reference frame. */
-    OEB_PARENT_FRAME((token, context, metadata) -> token.processAsFrame(metadata::setOebParentFrame, context, true, true, false)),
+    OEB_PARENT_FRAME((token, context, container) -> token.processAsFrame(container::setOebParentFrame, context, true, true, false)),
 
     /** Optimally Enclosing Box parent reference frame epoch. */
-    OEB_PARENT_FRAME_EPOCH((token, context, metadata) -> token.processAsDate(metadata::setOebParentFrameEpoch, context)),
+    OEB_PARENT_FRAME_EPOCH((token, context, container) -> token.processAsDate(container::setOebParentFrameEpoch, context)),
 
     /** Quaternion defining Optimally Enclosing Box (first vectorial component). */
-    OEB_Q1((token, context, metadata) -> token.processAsIndexedDouble(1, 1.0, metadata::setOebQ)),
+    OEB_Q1((token, context, container) -> token.processAsIndexedDouble(1, 1.0, container::setOebQ)),
 
     /** Quaternion defining Optimally Enclosing Box (second vectorial component). */
-    OEB_Q2((token, context, metadata) -> token.processAsIndexedDouble(2, 1.0, metadata::setOebQ)),
+    OEB_Q2((token, context, container) -> token.processAsIndexedDouble(2, 1.0, container::setOebQ)),
 
     /** Quaternion defining Optimally Enclosing Box (third vectorial component). */
-    OEB_Q3((token, context, metadata) -> token.processAsIndexedDouble(3, 1.0, metadata::setOebQ)),
+    OEB_Q3((token, context, container) -> token.processAsIndexedDouble(3, 1.0, container::setOebQ)),
 
     /** Quaternion defining Optimally Enclosing Box (scalar component). */
-    OEB_QC((token, context, metadata) -> token.processAsIndexedDouble(0, 1.0, metadata::setOebQ)),
+    OEB_QC((token, context, container) -> token.processAsIndexedDouble(0, 1.0, container::setOebQ)),
 
     /** Dimensions of Optimally Enclosing Box along X-OEB (i.e max). */
-    OEB_MAX((token, context, metadata) -> token.processAsDouble(1.0, metadata::setOebMax)),
+    OEB_MAX((token, context, container) -> token.processAsDouble(1.0, container::setOebMax)),
 
     /** Dimensions of Optimally Enclosing Box along Y-OEB (i.e intermediate). */
-    OEB_INT((token, context, metadata) -> token.processAsDouble(1.0, metadata::setOebIntermediate)),
+    OEB_INT((token, context, container) -> token.processAsDouble(1.0, container::setOebIntermediate)),
 
     /** Dimensions of Optimally Enclosing Box along Z-OEB (i.e min). */
-    OEB_MIN((token, context, metadata) -> token.processAsDouble(1.0, metadata::setOebMin)),
+    OEB_MIN((token, context, container) -> token.processAsDouble(1.0, container::setOebMin)),
 
     /** Cross-sectional area of Optimally Enclosing Box along X-OEB. */
-    AREA_ALONG_OEB_MAX((token, context, metadata) -> token.processAsDouble(1.0, metadata::setOebAreaAlongMax)),
+    AREA_ALONG_OEB_MAX((token, context, container) -> token.processAsDouble(1.0, container::setOebAreaAlongMax)),
 
     /** Cross-sectional area of Optimally Enclosing Box along Y-OEB. */
-    AREA_ALONG_OEB_INT((token, context, metadata) -> token.processAsDouble(1.0, metadata::setOebAreaAlongIntermediate)),
+    AREA_ALONG_OEB_INT((token, context, container) -> token.processAsDouble(1.0, container::setOebAreaAlongIntermediate)),
 
     /** Cross-sectional area of Optimally Enclosing Box along Z-OEB. */
-    AREA_ALONG_OEB_MIN((token, context, metadata) -> token.processAsDouble(1.0, metadata::setOebAreaAlongMin)),
+    AREA_ALONG_OEB_MIN((token, context, container) -> token.processAsDouble(1.0, container::setOebAreaAlongMin)),
 
     /** Minimum cross-sectional area for collision probability estimation purposes. */
-    AREA_MIN_FOR_PC((token, context, metadata) -> token.processAsDouble(1.0, metadata::setMinAreaForCollisionProbability)),
+    AREA_MIN_FOR_PC((token, context, container) -> token.processAsDouble(1.0, container::setMinAreaForCollisionProbability)),
 
     /** Maximum cross-sectional area for collision probability estimation purposes. */
-    AREA_MAX_FOR_PC((token, context, metadata) -> token.processAsDouble(1.0, metadata::setMaxAreaForCollisionProbability)),
+    AREA_MAX_FOR_PC((token, context, container) -> token.processAsDouble(1.0, container::setMaxAreaForCollisionProbability)),
 
     /** Typical (50th percentile) cross-sectional area for collision probability estimation purposes. */
-    AREA_TYP_FOR_PC((token, context, metadata) -> token.processAsDouble(1.0, metadata::setTypAreaForCollisionProbability)),
+    AREA_TYP_FOR_PC((token, context, container) -> token.processAsDouble(1.0, container::setTypAreaForCollisionProbability)),
 
     /** Typical (50th percentile) radar cross-section. */
-    RCS((token, context, metadata) -> token.processAsDouble(1.0, metadata::setRcs)),
+    RCS((token, context, container) -> token.processAsDouble(1.0, container::setRcs)),
 
     /** Minimum radar cross-section. */
-    RCS_MIN((token, context, metadata) -> token.processAsDouble(1.0, metadata::setMinRcs)),
+    RCS_MIN((token, context, container) -> token.processAsDouble(1.0, container::setMinRcs)),
 
     /** Maximum radar cross-section. */
-    RCS_MAX((token, context, metadata) -> token.processAsDouble(1.0, metadata::setMaxRcs)),
+    RCS_MAX((token, context, container) -> token.processAsDouble(1.0, container::setMaxRcs)),
 
     /** Attitude-independent SRP area, not already into attitude-dependent area along OEB. */
-    SRP_CONST_AREA((token, context, metadata) -> token.processAsDouble(1.0, metadata::setSrpConstantArea)),
+    SRP_CONST_AREA((token, context, container) -> token.processAsDouble(1.0, container::setSrpConstantArea)),
 
     /** Nominal SRP coefficient. */
-    SOLAR_RAD_COEFF((token, context, metadata) -> token.processAsDouble(1.0, metadata::setNominalSrpCoefficient)),
+    SOLAR_RAD_COEFF((token, context, container) -> token.processAsDouble(1.0, container::setNominalSrpCoefficient)),
 
     /** SRP coefficient 1σ uncertainty. */
-    SOLAR_RAD_UNCERTAINTY((token, context, metadata) -> token.processAsDouble(1.0, metadata::setSrpUncertainty)),
+    SOLAR_RAD_UNCERTAINTY((token, context, container) -> token.processAsDouble(1.0, container::setSrpUncertainty)),
 
     /** Typical (50th percentile) visual magnitude. */
-    VM_ABSOLUTE((token, context, metadata) -> token.processAsDouble(1.0, metadata::setVmAbsolute)),
+    VM_ABSOLUTE((token, context, container) -> token.processAsDouble(1.0, container::setVmAbsolute)),
 
     /** Minimum apparent visual magnitude. */
-    VM_APPARENT_MIN((token, context, metadata) -> token.processAsDouble(1.0, metadata::setVmApparentMin)),
+    VM_APPARENT_MIN((token, context, container) -> token.processAsDouble(1.0, container::setVmApparentMin)),
 
     /** Typical (50th percentile) apparent visual magnitude. */
-    VM_APPARENT((token, context, metadata) -> token.processAsDouble(1.0, metadata::setVmApparent)),
+    VM_APPARENT((token, context, container) -> token.processAsDouble(1.0, container::setVmApparent)),
 
     /** Maximum apparent visual magnitude. */
-    VM_APPARENT_MAX((token, context, metadata) -> token.processAsDouble(1.0, metadata::setVmApparentMax)),
+    VM_APPARENT_MAX((token, context, container) -> token.processAsDouble(1.0, container::setVmApparentMax)),
 
     /** Typical (50th percentile) coefficient of reflectivity. */
-    REFLECTIVITY((token, context, metadata) -> token.processAsDouble(1.0, metadata::setReflectivity)),
+    REFLECTIVITY((token, context, container) -> token.processAsDouble(1.0, container::setReflectivity)),
 
     /** Attitude control mode. */
-    ATT_CONTROL_MODE((token, context, metadata) -> token.processAsFreeTextString(metadata::setAttitudeControlMode)),
+    ATT_CONTROL_MODE((token, context, container) -> token.processAsFreeTextString(container::setAttitudeControlMode)),
 
     /** Type of actuator for attitude control. */
-    ATT_ACTUATOR_TYPE((token, context, metadata) -> token.processAsFreeTextString(metadata::setAttitudeActuatorType)),
+    ATT_ACTUATOR_TYPE((token, context, container) -> token.processAsFreeTextString(container::setAttitudeActuatorType)),
 
     /** Accuracy of attitude knowledge. */
-    ATT_KNOWLEDGE((token, context, metadata) -> token.processAsAngle(metadata::setAttitudeKnowledgeAccuracy)),
+    ATT_KNOWLEDGE((token, context, container) -> token.processAsAngle(container::setAttitudeKnowledgeAccuracy)),
 
     /** Accuracy of attitude control. */
-    ATT_CONTROL((token, context, metadata) -> token.processAsAngle(metadata::setAttitudeControlAccuracy)),
+    ATT_CONTROL((token, context, container) -> token.processAsAngle(container::setAttitudeControlAccuracy)),
 
     /** Overall accuracy of spacecraft to maintain attitude. */
-    ATT_POINTING((token, context, metadata) -> token.processAsAngle(metadata::setAttitudePointingAccuracy)),
+    ATT_POINTING((token, context, container) -> token.processAsAngle(container::setAttitudePointingAccuracy)),
 
     /** Average number of orbit or attitude maneuvers per year. */
-    AVG_MANEUVER_FREQ((token, context, metadata) -> token.processAsDouble(1.0, metadata::setManeuversPerYear)),
+    AVG_MANEUVER_FREQ((token, context, container) -> token.processAsDouble(1.0, container::setManeuversPerYear)),
 
     /** Maximum composite thrust the spacecraft can accomplish. */
-    MAX_THRUST((token, context, metadata) -> token.processAsDouble(1.0, metadata::setMaxThrust)),
+    MAX_THRUST((token, context, container) -> token.processAsDouble(1.0, container::setMaxThrust)),
 
     /** Total ΔV capability at beginning of life. */
-    DV_BOL((token, context, metadata) -> token.processAsDouble(1000.0, metadata::setBolDv)),
+    DV_BOL((token, context, container) -> token.processAsDouble(1000.0, container::setBolDv)),
 
     /** Total ΔV remaining for spacecraft. */
-    DV_REMAINING((token, context, metadata) -> token.processAsDouble(1000.0, metadata::setRemainingDv)),
+    DV_REMAINING((token, context, container) -> token.processAsDouble(1000.0, container::setRemainingDv)),
 
     /** Moment of inertia about X-axis. */
-    IXX((token, context, metadata) -> token.processAsDoublyIndexedDouble(0, 0, 1.0, metadata::setInertiaMatrixEntry)),
+    IXX((token, context, container) -> token.processAsDoublyIndexedDouble(0, 0, 1.0, container::setInertiaMatrixEntry)),
 
     /** Moment of inertia about Y-axis. */
-    IYY((token, context, metadata) -> token.processAsDoublyIndexedDouble(1, 1, 1.0, metadata::setInertiaMatrixEntry)),
+    IYY((token, context, container) -> token.processAsDoublyIndexedDouble(1, 1, 1.0, container::setInertiaMatrixEntry)),
 
     /** Moment of inertia about Z-axis. */
-    IZZ((token, context, metadata) -> token.processAsDoublyIndexedDouble(2, 2, 1.0, metadata::setInertiaMatrixEntry)),
+    IZZ((token, context, container) -> token.processAsDoublyIndexedDouble(2, 2, 1.0, container::setInertiaMatrixEntry)),
 
     /** Inertia cross product of the X and Y axes. */
-    IXY((token, context, metadata) -> token.processAsDoublyIndexedDouble(0, 1, 1.0, metadata::setInertiaMatrixEntry)),
+    IXY((token, context, container) -> token.processAsDoublyIndexedDouble(0, 1, 1.0, container::setInertiaMatrixEntry)),
 
     /** Inertia cross product of the X and Z axes. */
-    IXZ((token, context, metadata) -> token.processAsDoublyIndexedDouble(0, 2, 1.0, metadata::setInertiaMatrixEntry)),
+    IXZ((token, context, container) -> token.processAsDoublyIndexedDouble(0, 2, 1.0, container::setInertiaMatrixEntry)),
 
     /** Inertia cross product of the Y and Z axes. */
-    IYZ((token, context, metadata) -> token.processAsDoublyIndexedDouble(1, 2, 1.0, metadata::setInertiaMatrixEntry));
+    IYZ((token, context, container) -> token.processAsDoublyIndexedDouble(1, 2, 1.0, container::setInertiaMatrixEntry));
 
     /** Processing method. */
     private final TokenProcessor processor;

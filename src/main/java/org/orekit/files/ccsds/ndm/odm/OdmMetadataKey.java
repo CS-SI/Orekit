@@ -27,7 +27,7 @@ import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 public enum OdmMetadataKey {
 
     /** Object name entry. */
-    OBJECT_NAME((token, context, metadata) -> token.processAsNormalizedString(metadata::setObjectName));
+    OBJECT_NAME((token, context, container) -> token.processAsNormalizedString(container::setObjectName));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -42,11 +42,11 @@ public enum OdmMetadataKey {
     /** Process one token.
      * @param token token to process
      * @param context parsing context
-     * @param metadata metadata to fill
+     * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final OdmMetadata metadata) {
-        return processor.process(token, context, metadata);
+    public boolean process(final ParseToken token, final ParsingContext context, final OdmMetadata container) {
+        return processor.process(token, context, container);
     }
 
     /** Interface for processing one token. */
@@ -54,10 +54,10 @@ public enum OdmMetadataKey {
         /** Process one token.
          * @param token token to process
          * @param context parsing context
-         * @param metadata metadata to fill
+         * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, OdmMetadata metadata);
+        boolean process(ParseToken token, ParsingContext context, OdmMetadata container);
     }
 
 }

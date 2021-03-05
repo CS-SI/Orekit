@@ -23,9 +23,9 @@ import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 
-/** Keys for {@link AemMetadata AEM metadata} entries.
+/** Keys for {@link AemMetadata AEM container} entries.
  * <p>
- * Additional metadata are also listed in {@link AdmMetadataKey}.
+ * Additional container are also listed in {@link AdmMetadataKey}.
  * </p>
  * @author Bryan Cazabonne
  * @since 11.0
@@ -33,44 +33,44 @@ import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 public enum AemMetadataKey {
 
     /** First reference frame. */
-    REF_FRAME_A((token, context, metadata) -> token.processAsFrame(metadata.getEndpoints()::setFrameA, context, true, true, true)),
+    REF_FRAME_A((token, context, container) -> token.processAsFrame(container.getEndpoints()::setFrameA, context, true, true, true)),
 
     /** Second reference frame. */
-    REF_FRAME_B((token, context, metadata) -> {
+    REF_FRAME_B((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
-            metadata.checkNotNull(metadata.getEndpoints().getFrameA(), REF_FRAME_A);
-            final boolean aIsSpaceraftBody = metadata.getEndpoints().getFrameA().asSpacecraftBodyFrame() != null;
-            return token.processAsFrame(metadata.getEndpoints()::setFrameB, context,
+            container.checkNotNull(container.getEndpoints().getFrameA(), REF_FRAME_A);
+            final boolean aIsSpaceraftBody = container.getEndpoints().getFrameA().asSpacecraftBodyFrame() != null;
+            return token.processAsFrame(container.getEndpoints()::setFrameB, context,
                                         aIsSpaceraftBody, aIsSpaceraftBody, !aIsSpaceraftBody);
         }
         return true;
     }),
 
     /** Rotation direction entry. */
-    ATTITUDE_DIR((token, context, metadata) -> {
+    ATTITUDE_DIR((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
-            metadata.getEndpoints().setA2b(token.getContentAsNormalizedCharacter() == 'A');
+            container.getEndpoints().setA2b(token.getContentAsNormalizedCharacter() == 'A');
         }
         return true;
     }),
 
     /** Start time entry. */
-    START_TIME((token, context, metadata) -> token.processAsDate(metadata::setStartTime, context)),
+    START_TIME((token, context, container) -> token.processAsDate(container::setStartTime, context)),
 
     /** Stop time entry. */
-    STOP_TIME((token, context, metadata) -> token.processAsDate(metadata::setStopTime, context)),
+    STOP_TIME((token, context, container) -> token.processAsDate(container::setStopTime, context)),
 
     /** Useable start time entry. */
-    USEABLE_START_TIME((token, context, metadata) -> token.processAsDate(metadata::setUseableStartTime, context)),
+    USEABLE_START_TIME((token, context, container) -> token.processAsDate(container::setUseableStartTime, context)),
 
     /** Useable stop time entry. */
-    USEABLE_STOP_TIME((token, context, metadata) -> token.processAsDate(metadata::setUseableStopTime, context)),
+    USEABLE_STOP_TIME((token, context, container) -> token.processAsDate(container::setUseableStopTime, context)),
 
     /** Format of the data line entry. */
-    ATTITUDE_TYPE((token, context, metadata) -> {
+    ATTITUDE_TYPE((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
             try {
-                metadata.setAttitudeType(AemAttitudeType.parseType(token.getContent()));
+                container.setAttitudeType(AemAttitudeType.parseType(token.getContent()));
                 return true;
             } catch (IllegalArgumentException iae) {
                 return false;
@@ -80,31 +80,31 @@ public enum AemMetadataKey {
     }),
 
     /** Placement of the scalar component in quaternion entry. */
-    QUATERNION_TYPE((token, context, metadata) -> {
+    QUATERNION_TYPE((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
-            metadata.setIsFirst("FIRST".equals(token.getContentAsNormalizedString()));
+            container.setIsFirst("FIRST".equals(token.getContentAsNormalizedString()));
         }
         return true;
     }),
 
     /** Rotation order entry for Euler angles. */
-    EULER_ROT_SEQ((token, context, metadata) -> AdmParser.processRotationOrder(token, metadata::setEulerRotSeq)),
+    EULER_ROT_SEQ((token, context, container) -> AdmParser.processRotationOrder(token, container::setEulerRotSeq)),
 
     /** Reference frame for Euler rates. */
-    RATE_FRAME((token, context, metadata) -> {
+    RATE_FRAME((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
             final String content = token.getContentAsNormalizedString();
             final char   suffix  = content.charAt(content.length() - 1);
-            metadata.setRateFrameIsA(suffix == 'A');
+            container.setRateFrameIsA(suffix == 'A');
         }
         return true;
     }),
 
     /** Interpolation method in ephemeris. */
-    INTERPOLATION_METHOD((token, context, metadata) -> token.processAsNormalizedString(metadata::setInterpolationMethod)),
+    INTERPOLATION_METHOD((token, context, container) -> token.processAsNormalizedString(container::setInterpolationMethod)),
 
     /** Interpolation degree in ephemeris. */
-    INTERPOLATION_DEGREE((token, context, metadata) -> token.processAsInteger(metadata::setInterpolationDegree));
+    INTERPOLATION_DEGREE((token, context, container) -> token.processAsInteger(container::setInterpolationDegree));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -119,11 +119,11 @@ public enum AemMetadataKey {
     /** Process an token.
      * @param token token to process
      * @param context parsing context
-     * @param metadata metadata to fill
+     * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final AemMetadata metadata) {
-        return processor.process(token, context, metadata);
+    public boolean process(final ParseToken token, final ParsingContext context, final AemMetadata container) {
+        return processor.process(token, context, container);
     }
 
     /** Interface for processing one token. */
@@ -131,10 +131,10 @@ public enum AemMetadataKey {
         /** Process one token.
          * @param token token to process
          * @param context parsing context
-         * @param metadata metadata to fill
+         * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, AemMetadata metadata);
+        boolean process(ParseToken token, ParsingContext context, AemMetadata container);
     }
 
 }

@@ -30,51 +30,51 @@ import org.orekit.orbits.PositionAngle;
 public enum KeplerianElementsKey {
 
     /** Comment entry. */
-    COMMENT((token, context, data) ->
-            token.getType() == TokenType.ENTRY ? data.addComment(token.getContent()) : true),
+    COMMENT((token, context, container) ->
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContent()) : true),
 
     /** Epoch of Keplerian elements. */
-    EPOCH((token, context, data) -> token.processAsDate(data::setEpoch, context)),
+    EPOCH((token, context, container) -> token.processAsDate(container::setEpoch, context)),
 
     /** Orbit semi-major axis. */
-    SEMI_MAJOR_AXIS((token, context, data) -> token.processAsDouble(1.0e3, data::setA)),
+    SEMI_MAJOR_AXIS((token, context, container) -> token.processAsDouble(1.0e3, container::setA)),
 
     /** Mean motion. */
-    MEAN_MOTION((token, context, data) ->
-                 token.processAsDouble(FastMath.PI / 43200.0, data::setMeanMotion)),
+    MEAN_MOTION((token, context, container) ->
+                 token.processAsDouble(FastMath.PI / 43200.0, container::setMeanMotion)),
 
     /** Orbit eccentricity. */
-    ECCENTRICITY((token, context, data) -> token.processAsDouble(1.0, data::setE)),
+    ECCENTRICITY((token, context, container) -> token.processAsDouble(1.0, container::setE)),
 
     /** Orbit inclination. */
-    INCLINATION((token, context, data) -> token.processAsAngle(data::setI)),
+    INCLINATION((token, context, container) -> token.processAsAngle(container::setI)),
 
     /** Orbit right ascension of ascending node. */
-    RA_OF_ASC_NODE((token, context, data) -> token.processAsAngle(data::setRaan)),
+    RA_OF_ASC_NODE((token, context, container) -> token.processAsAngle(container::setRaan)),
 
     /** Orbit argument of pericenter. */
-    ARG_OF_PERICENTER((token, context, data) -> token.processAsAngle(data::setPa)),
+    ARG_OF_PERICENTER((token, context, container) -> token.processAsAngle(container::setPa)),
 
     /** Orbit true anomaly. */
-    TRUE_ANOMALY((token, context, data) -> {
+    TRUE_ANOMALY((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
-            data.setAnomaly(token.getContentAsAngle());
-            data.setAnomalyType(PositionAngle.TRUE);
+            container.setAnomaly(token.getContentAsAngle());
+            container.setAnomalyType(PositionAngle.TRUE);
         }
         return true;
     }),
 
     /** Orbit mean anomaly. */
-    MEAN_ANOMALY((token, context, data) -> {
+    MEAN_ANOMALY((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
-            data.setAnomaly(token.getContentAsAngle());
-            data.setAnomalyType(PositionAngle.MEAN);
+            container.setAnomaly(token.getContentAsAngle());
+            container.setAnomalyType(PositionAngle.MEAN);
         }
         return true;
     }),
 
     /** Gravitational coefficient. */
-    GM((token, context, data) -> token.processAsDouble(1.0e9, data::setMu));
+    GM((token, context, container) -> token.processAsDouble(1.0e9, container::setMu));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -89,11 +89,11 @@ public enum KeplerianElementsKey {
     /** Process one token.
      * @param token token to process
      * @param context parsing context
-     * @param data data to fill
+     * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final KeplerianElements data) {
-        return processor.process(token, context, data);
+    public boolean process(final ParseToken token, final ParsingContext context, final KeplerianElements container) {
+        return processor.process(token, context, container);
     }
 
     /** Interface for processing one token. */
@@ -101,10 +101,10 @@ public enum KeplerianElementsKey {
         /** Process one token.
          * @param token token to process
          * @param context parsing context
-         * @param data data to fill
+         * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, KeplerianElements data);
+        boolean process(ParseToken token, ParsingContext context, KeplerianElements container);
     }
 
 }

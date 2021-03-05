@@ -28,30 +28,30 @@ import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 public enum OmmTleKey {
 
     /** Ephemeris Type, only required if MEAN_ELEMENT_THEORY = SGP/SGP4. */
-    EPHEMERIS_TYPE((token, context, data) -> token.processAsInteger(data::setEphemerisType)),
+    EPHEMERIS_TYPE((token, context, container) -> token.processAsInteger(container::setEphemerisType)),
 
     /** Classifiation type. */
-    CLASSIFICATION_TYPE((token, context, data) -> token.processAsNormalizedCharacter(data::setClassificationType)),
+    CLASSIFICATION_TYPE((token, context, container) -> token.processAsNormalizedCharacter(container::setClassificationType)),
 
     /** NORAD Catalog Number. */
-    NORAD_CAT_ID((token, context, data) -> token.processAsInteger(data::setNoradID)),
+    NORAD_CAT_ID((token, context, container) -> token.processAsInteger(container::setNoradID)),
 
     /** Element set number for this satellite. */
-    ELEMENT_SET_NO((token, context, data) -> token.processAsInteger(data::setElementSetNo)),
+    ELEMENT_SET_NO((token, context, container) -> token.processAsInteger(container::setElementSetNo)),
 
     /** Revolution number. */
-    REV_AT_EPOCH((token, context, data) -> token.processAsInteger(data::setRevAtEpoch)),
+    REV_AT_EPOCH((token, context, container) -> token.processAsInteger(container::setRevAtEpoch)),
 
     /** SGP/SGP4 drag-like coefficient. */
-    BSTAR((token, context, data) -> token.processAsDouble(1.0, data::setBStar)),
+    BSTAR((token, context, container) -> token.processAsDouble(1.0, container::setBStar)),
 
     /** First time derivative of mean motion. */
-    MEAN_MOTION_DOT((token, context, data) ->
-                    token.processAsDouble(FastMath.PI / 1.86624e9, data::setMeanMotionDot)),
+    MEAN_MOTION_DOT((token, context, container) ->
+                    token.processAsDouble(FastMath.PI / 1.86624e9, container::setMeanMotionDot)),
 
     /** Second time derivative of mean motion. */
-    MEAN_MOTION_DDOT((token, context, data) ->
-                     token.processAsDouble(FastMath.PI / 5.3747712e13, data::setMeanMotionDotDot));
+    MEAN_MOTION_DDOT((token, context, container) ->
+                     token.processAsDouble(FastMath.PI / 5.3747712e13, container::setMeanMotionDotDot));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -66,11 +66,11 @@ public enum OmmTleKey {
     /** Process one token.
      * @param token token to process
      * @param context parsing context
-     * @param data data to fill
+     * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final OmmTle data) {
-        return processor.process(token, context, data);
+    public boolean process(final ParseToken token, final ParsingContext context, final OmmTle container) {
+        return processor.process(token, context, container);
     }
 
     /** Interface for processing one token. */
@@ -78,10 +78,10 @@ public enum OmmTleKey {
         /** Process one token.
          * @param token token to process
          * @param context parsing context
-         * @param data data to fill
+         * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, OmmTle data);
+        boolean process(ParseToken token, ParsingContext context, OmmTle container);
     }
 
 }

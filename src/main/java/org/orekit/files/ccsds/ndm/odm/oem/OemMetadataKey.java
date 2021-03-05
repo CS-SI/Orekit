@@ -23,29 +23,29 @@ import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 
-/** Keys for {@link OemMetadata OEM metadata} entries.
+/** Keys for {@link OemMetadata OEM container} entries.
  * @author Luc Maisonobe
  * @since 11.0
  */
 public enum OemMetadataKey {
 
     /** Start time entry. */
-    START_TIME((token, context, metadata) -> token.processAsDate(metadata::setStartTime, context)),
+    START_TIME((token, context, container) -> token.processAsDate(container::setStartTime, context)),
 
     /** Stop time entry. */
-    STOP_TIME((token, context, metadata) -> token.processAsDate(metadata::setStopTime, context)),
+    STOP_TIME((token, context, container) -> token.processAsDate(container::setStopTime, context)),
 
     /** Useable start time entry. */
-    USEABLE_START_TIME((token, context, metadata) -> token.processAsDate(metadata::setUseableStartTime, context)),
+    USEABLE_START_TIME((token, context, container) -> token.processAsDate(container::setUseableStartTime, context)),
 
     /** Useable stop time entry. */
-    USEABLE_STOP_TIME((token, context, metadata) -> token.processAsDate(metadata::setUseableStopTime, context)),
+    USEABLE_STOP_TIME((token, context, container) -> token.processAsDate(container::setUseableStopTime, context)),
 
     /** Interpolation method in ephemeris. */
-    INTERPOLATION((token, context, metadata) -> {
+    INTERPOLATION((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
             try {
-                metadata.setInterpolationMethod(InterpolationMethod.valueOf(token.getContentAsNormalizedString()));
+                container.setInterpolationMethod(InterpolationMethod.valueOf(token.getContentAsNormalizedString()));
             } catch (IllegalArgumentException iae) {
                 throw new OrekitException(iae, OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE,
                                           token.getName(), token.getLineNumber(), token.getFileName());
@@ -55,7 +55,7 @@ public enum OemMetadataKey {
     }),
 
     /** Interpolation degree in ephemeris. */
-    INTERPOLATION_DEGREE((token, context, metadata) -> token.processAsInteger(metadata::setInterpolationDegree));
+    INTERPOLATION_DEGREE((token, context, container) -> token.processAsInteger(container::setInterpolationDegree));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -70,11 +70,11 @@ public enum OemMetadataKey {
     /** Process an token.
      * @param token token to process
      * @param context parsing context
-     * @param metadata metadata to fill
+     * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final OemMetadata metadata) {
-        return processor.process(token, context, metadata);
+    public boolean process(final ParseToken token, final ParsingContext context, final OemMetadata container) {
+        return processor.process(token, context, container);
     }
 
     /** Interface for processing one token. */
@@ -82,10 +82,10 @@ public enum OemMetadataKey {
         /** Process one token.
          * @param token token to process
          * @param context parsing context
-         * @param metadata metadata to fill
+         * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, OemMetadata metadata);
+        boolean process(ParseToken token, ParsingContext context, OemMetadata container);
     }
 
 }

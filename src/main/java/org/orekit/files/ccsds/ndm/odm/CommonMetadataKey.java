@@ -20,24 +20,24 @@ import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 
-/** Keys for {@link CommonMetadata common ODM metadata} entries.
+/** Keys for {@link CommonMetadata common ODM container} entries.
  * @author Luc Maisonobe
  * @since 11.0
  */
 public enum CommonMetadataKey {
 
     /** Object ID entry. */
-    OBJECT_ID((token, context, metadata) -> token.processAsNormalizedString(metadata::setObjectID)),
+    OBJECT_ID((token, context, container) -> token.processAsNormalizedString(container::setObjectID)),
 
     /** Center name entry. */
-    CENTER_NAME((token, context, metadata) -> token.processAsCenter(metadata::setCenter,
-                                                                    context.getDataContext().getCelestialBodies())),
+    CENTER_NAME((token, context, container) -> token.processAsCenter(container::setCenter,
+                                                                     context.getDataContext().getCelestialBodies())),
 
     /** Name of the reference frame in which the state vector and optional Keplerian element data are given. */
-    REF_FRAME((token, context, metadata) -> token.processAsFrame(metadata::setReferenceFrame, context, true, false, false)),
+    REF_FRAME((token, context, container) -> token.processAsFrame(container::setReferenceFrame, context, true, false, false)),
 
     /** Epoch of reference frame, if not intrinsic to the definition of the reference frame. */
-    REF_FRAME_EPOCH((token, context, metadata) -> token.processAsNormalizedString(metadata::setFrameEpochString));
+    REF_FRAME_EPOCH((token, context, container) -> token.processAsNormalizedString(container::setFrameEpochString));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -52,11 +52,11 @@ public enum CommonMetadataKey {
     /** Process one token.
      * @param token token to process
      * @param context parsing context
-     * @param metadata metadata to fill
+     * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final CommonMetadata metadata) {
-        return processor.process(token, context, metadata);
+    public boolean process(final ParseToken token, final ParsingContext context, final CommonMetadata container) {
+        return processor.process(token, context, container);
     }
 
     /** Interface for processing one token. */
@@ -64,10 +64,10 @@ public enum CommonMetadataKey {
         /** Process one token.
          * @param token token to process
          * @param context parsing context
-         * @param metadata metadata to fill
+         * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, CommonMetadata metadata);
+        boolean process(ParseToken token, ParsingContext context, CommonMetadata container);
     }
 
 }

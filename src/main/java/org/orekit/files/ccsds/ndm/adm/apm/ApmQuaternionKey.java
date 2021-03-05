@@ -27,66 +27,66 @@ import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 public enum ApmQuaternionKey {
 
     /** Block wrapping element in XML files. */
-    quaternionState((token, context, data) -> true),
+    quaternionState((token, context, container) -> true),
 
     /** Quaternion wrapping element in XML files. */
-    quaternion((token, context, data) -> true),
+    quaternion((token, context, container) -> true),
 
     /** Quaternion wrapping element in XML files. */
-    quaternionRate((token, context, data) -> true),
+    quaternionRate((token, context, container) -> true),
 
     /** Comment entry. */
-    COMMENT((token, context, data) ->
-            token.getType() == TokenType.ENTRY ? data.addComment(token.getContent()) : true),
+    COMMENT((token, context, container) ->
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContent()) : true),
 
     /** Epoch entry. */
-    EPOCH((token, context, data) -> token.processAsDate(data::setEpoch, context)),
+    EPOCH((token, context, container) -> token.processAsDate(container::setEpoch, context)),
 
     /** First reference frame entry. */
-    Q_FRAME_A((token, context, data) -> token.processAsFrame(data.getEndpoints()::setFrameA, context, true, true, true)),
+    Q_FRAME_A((token, context, container) -> token.processAsFrame(container.getEndpoints()::setFrameA, context, true, true, true)),
 
     /** Second reference frame entry. */
-    Q_FRAME_B((token, context, data) -> {
+    Q_FRAME_B((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
-            data.checkNotNull(data.getEndpoints().getFrameA(), Q_FRAME_A);
-            final boolean aIsSpaceraftBody = data.getEndpoints().getFrameA().asSpacecraftBodyFrame() != null;
-            return token.processAsFrame(data.getEndpoints()::setFrameB, context,
+            container.checkNotNull(container.getEndpoints().getFrameA(), Q_FRAME_A);
+            final boolean aIsSpaceraftBody = container.getEndpoints().getFrameA().asSpacecraftBodyFrame() != null;
+            return token.processAsFrame(container.getEndpoints()::setFrameB, context,
                                         aIsSpaceraftBody, aIsSpaceraftBody, !aIsSpaceraftBody);
         }
         return true;
     }),
 
     /** Rotation direction entry. */
-    Q_DIR((token, context, data) -> {
+    Q_DIR((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
-            data.getEndpoints().setA2b(token.getContentAsNormalizedCharacter() == 'A');
+            container.getEndpoints().setA2b(token.getContentAsNormalizedCharacter() == 'A');
         }
         return true;
     }),
 
     /** Scalar part of the quaternion entry. */
-    QC((token, context, data) -> token.processAsIndexedDouble(0, 1.0, data::setQ)),
+    QC((token, context, container) -> token.processAsIndexedDouble(0, 1.0, container::setQ)),
 
     /** First component of the vector part of the quaternion entry. */
-    Q1((token, context, data) -> token.processAsIndexedDouble(1, 1.0, data::setQ)),
+    Q1((token, context, container) -> token.processAsIndexedDouble(1, 1.0, container::setQ)),
 
     /** Second component of the vector part of the quaternion entry. */
-    Q2((token, context, data) -> token.processAsIndexedDouble(2, 1.0, data::setQ)),
+    Q2((token, context, container) -> token.processAsIndexedDouble(2, 1.0, container::setQ)),
 
     /** Third component of the vector part of the quaternion entry. */
-    Q3((token, context, data) -> token.processAsIndexedDouble(3, 1.0, data::setQ)),
+    Q3((token, context, container) -> token.processAsIndexedDouble(3, 1.0, container::setQ)),
 
     /** Scalar part of the quaternion derivative entry. */
-    QC_DOT((token, context, data) -> token.processAsIndexedDouble(0, 1.0, data::setQDot)),
+    QC_DOT((token, context, container) -> token.processAsIndexedDouble(0, 1.0, container::setQDot)),
 
     /** First component of the vector part of the quaternion derivative entry. */
-    Q1_DOT((token, context, data) -> token.processAsIndexedDouble(1, 1.0, data::setQDot)),
+    Q1_DOT((token, context, container) -> token.processAsIndexedDouble(1, 1.0, container::setQDot)),
 
     /** Second component of the vector part of the quaternion derivative entry. */
-    Q2_DOT((token, context, data) -> token.processAsIndexedDouble(2, 1.0, data::setQDot)),
+    Q2_DOT((token, context, container) -> token.processAsIndexedDouble(2, 1.0, container::setQDot)),
 
     /** Third component of the vector part of the quaternion derivative entry. */
-    Q3_DOT((token, context, data) -> token.processAsIndexedDouble(3, 1.0, data::setQDot));
+    Q3_DOT((token, context, container) -> token.processAsIndexedDouble(3, 1.0, container::setQDot));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -101,11 +101,11 @@ public enum ApmQuaternionKey {
     /** Process one token.
      * @param token token to process
      * @param context parsing context
-     * @param data data to fill
+     * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final ApmQuaternion data) {
-        return processor.process(token, context, data);
+    public boolean process(final ParseToken token, final ParsingContext context, final ApmQuaternion container) {
+        return processor.process(token, context, container);
     }
 
     /** Interface for processing one token. */
@@ -113,10 +113,10 @@ public enum ApmQuaternionKey {
         /** Process one token.
          * @param token token to process
          * @param context parsing context
-         * @param data data to fill
+         * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, ApmQuaternion data);
+        boolean process(ParseToken token, ParsingContext context, ApmQuaternion container);
     }
 
 }

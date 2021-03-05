@@ -28,29 +28,29 @@ import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 public enum ManeuverKey {
 
     /** Block wrapping element in XML files. */
-    maneuverParameters((token, context, data) -> true),
+    maneuverParameters((token, context, container) -> true),
 
     /** Comment entry. */
-    COMMENT((token, context, data) ->
-            token.getType() == TokenType.ENTRY ? data.addComment(token.getContent()) : true),
+    COMMENT((token, context, container) ->
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContent()) : true),
 
     /** Epoch start entry. */
-    MAN_EPOCH_START((token, context, data) -> token.processAsDate(data::setEpochStart, context)),
+    MAN_EPOCH_START((token, context, container) -> token.processAsDate(container::setEpochStart, context)),
 
     /** Duration entry. */
-    MAN_DURATION((token, context, data) -> token.processAsDouble(1.0, data::setDuration)),
+    MAN_DURATION((token, context, container) -> token.processAsDouble(1.0, container::setDuration)),
 
     /** Reference frame entry. */
-    MAN_REF_FRAME((token, context, data) -> token.processAsNormalizedString(data::setRefFrameString)),
+    MAN_REF_FRAME((token, context, container) -> token.processAsNormalizedString(container::setRefFrameString)),
 
     /** First torque vector component entry. */
-    MAN_TOR_1((token, context, data) -> token.processAsIndexedDouble(0, 1.0, data::setTorque)),
+    MAN_TOR_1((token, context, container) -> token.processAsIndexedDouble(0, 1.0, container::setTorque)),
 
     /** Second torque vector component entry. */
-    MAN_TOR_2((token, context, data) -> token.processAsIndexedDouble(1, 1.0, data::setTorque)),
+    MAN_TOR_2((token, context, container) -> token.processAsIndexedDouble(1, 1.0, container::setTorque)),
 
     /** Third torque vector component entry. */
-    MAN_TOR_3((token, context, data) -> token.processAsIndexedDouble(2, 1.0, data::setTorque));
+    MAN_TOR_3((token, context, container) -> token.processAsIndexedDouble(2, 1.0, container::setTorque));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -65,11 +65,11 @@ public enum ManeuverKey {
     /** Process one token.
      * @param token token to process
      * @param context parsing context
-     * @param data data to fill
+     * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final Maneuver data) {
-        return processor.process(token, context, data);
+    public boolean process(final ParseToken token, final ParsingContext context, final Maneuver container) {
+        return processor.process(token, context, container);
     }
 
     /** Interface for processing one token. */
@@ -77,10 +77,10 @@ public enum ManeuverKey {
         /** Process one token.
          * @param token token to process
          * @param context parsing context
-         * @param data data to fill
+         * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, Maneuver data);
+        boolean process(ParseToken token, ParsingContext context, Maneuver container);
     }
 
 }

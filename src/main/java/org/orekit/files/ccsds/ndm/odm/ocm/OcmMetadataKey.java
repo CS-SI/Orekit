@@ -22,95 +22,95 @@ import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 import org.orekit.utils.Constants;
 
 
-/** Keys for {@link OcmMetadata OCM metadata} entries.
+/** Keys for {@link OcmMetadata OCM container} entries.
  * @author Luc Maisonobe
  * @since 11.0
  */
 public enum OcmMetadataKey {
 
     /** Classification of this message. */
-    CLASSIFICATION((token, context, metadata) -> token.processAsNormalizedString(metadata::setClassification)),
+    CLASSIFICATION((token, context, container) -> token.processAsNormalizedString(container::setClassification)),
 
     /** International designator for the object as assigned by the UN Committee
      * on Space Research (COSPAR) and the US National Space Science Data Center (NSSDC). */
-    INTERNATIONAL_DESIGNATOR((token, context, metadata) -> token.processAsNormalizedString(metadata::setInternationalDesignator)),
+    INTERNATIONAL_DESIGNATOR((token, context, container) -> token.processAsNormalizedString(container::setInternationalDesignator)),
 
     /** Specification of satellite catalog source. */
-    CATALOG_NAME((token, context, metadata) -> token.processAsNormalizedString(metadata::setCatalogName)),
+    CATALOG_NAME((token, context, container) -> token.processAsNormalizedString(container::setCatalogName)),
 
     /** Unique satellite identification designator for the object. */
-    OBJECT_DESIGNATOR((token, context, metadata) -> token.processAsNormalizedString(metadata::setObjectDesignator)),
+    OBJECT_DESIGNATOR((token, context, container) -> token.processAsNormalizedString(container::setObjectDesignator)),
 
     /** Alternate names fir this space object. */
-    ALTERNATE_NAMES((token, context, metadata) -> token.processAsNormalizedStringList(metadata::setAlternateNames)),
+    ALTERNATE_NAMES((token, context, container) -> token.processAsNormalizedStringList(container::setAlternateNames)),
 
     /** Programmatic Point Of Contact at originator. */
-    ORIGINATOR_POC((token, context, metadata) -> token.processAsNormalizedString(metadata::setOriginatorPOC)),
+    ORIGINATOR_POC((token, context, container) -> token.processAsNormalizedString(container::setOriginatorPOC)),
 
     /** Position of Programmatic Point Of Contact at originator. */
-    ORIGINATOR_POSITION((token, context, metadata) -> token.processAsNormalizedString(metadata::setOriginatorPosition)),
+    ORIGINATOR_POSITION((token, context, container) -> token.processAsNormalizedString(container::setOriginatorPosition)),
 
     /** Phone number of Programmatic Point Of Contact at originator. */
-    ORIGINATOR_PHONE((token, context, metadata) -> token.processAsNormalizedString(metadata::setOriginatorPhone)),
+    ORIGINATOR_PHONE((token, context, container) -> token.processAsNormalizedString(container::setOriginatorPhone)),
 
     /** Address of Programmatic Point Of Contact at originator. */
-    ORIGINATOR_ADDRESS((token, context, metadata) -> token.processAsNormalizedString(metadata::setOriginatorAddress)),
+    ORIGINATOR_ADDRESS((token, context, container) -> token.processAsNormalizedString(container::setOriginatorAddress)),
 
     /** Creating agency or operator. */
-    TECH_ORG((token, context, metadata) -> token.processAsNormalizedString(metadata::setTechOrg)),
+    TECH_ORG((token, context, container) -> token.processAsNormalizedString(container::setTechOrg)),
 
     /** Technical Point Of Contact at originator. */
-    TECH_POC((token, context, metadata) -> token.processAsNormalizedString(metadata::setTechPOC)),
+    TECH_POC((token, context, container) -> token.processAsNormalizedString(container::setTechPOC)),
 
     /** Position of Technical Point Of Contact at originator. */
-    TECH_POSITION((token, context, metadata) -> token.processAsNormalizedString(metadata::setTechPosition)),
+    TECH_POSITION((token, context, container) -> token.processAsNormalizedString(container::setTechPosition)),
 
     /** Phone number of Technical Point Of Contact at originator. */
-    TECH_PHONE((token, context, metadata) -> token.processAsNormalizedString(metadata::setTechPhone)),
+    TECH_PHONE((token, context, container) -> token.processAsNormalizedString(container::setTechPhone)),
 
     /** Address of Technical Point Of Contact at originator. */
-    TECH_ADDRESS((token, context, metadata) -> token.processAsNormalizedString(metadata::setTechAddress)),
+    TECH_ADDRESS((token, context, container) -> token.processAsNormalizedString(container::setTechAddress)),
 
     /** Unique ID identifying previous message from a given originator. */
-    PREVIOUS_MESSAGE_ID((token, context, metadata) -> token.processAsNormalizedString(metadata::setPreviousMessageID)),
+    PREVIOUS_MESSAGE_ID((token, context, container) -> token.processAsNormalizedString(container::setPreviousMessageID)),
 
     /** Unique ID identifying next message from a given originator. */
-    NEXT_MESSAGE_ID((token, context, metadata) -> token.processAsNormalizedString(metadata::setNextMessageID)),
+    NEXT_MESSAGE_ID((token, context, container) -> token.processAsNormalizedString(container::setNextMessageID)),
 
     /** Unique identifier of Attitude Data Message linked to this Orbit Data Message. */
-    ADM_MESSAGE_LINK((token, context, metadata) -> token.processAsNormalizedString(metadata::setAdmMessageLink)),
+    ADM_MESSAGE_LINK((token, context, container) -> token.processAsNormalizedString(container::setAdmMessageLink)),
 
     /** Unique identifier of Conjunction Data Message linked to this Orbit Data Message. */
-    CDM_MESSAGE_LINK((token, context, metadata) -> token.processAsNormalizedString(metadata::setCdmMessageLink)),
+    CDM_MESSAGE_LINK((token, context, container) -> token.processAsNormalizedString(container::setCdmMessageLink)),
 
     /** Unique identifier of Pointing Request Message linked to this Orbit Data Message. */
-    PRM_MESSAGE_LINK((token, context, metadata) -> token.processAsNormalizedString(metadata::setPrmMessageLink)),
+    PRM_MESSAGE_LINK((token, context, container) -> token.processAsNormalizedString(container::setPrmMessageLink)),
 
     /** Unique identifier of Reentry Data Message linked to this Orbit Data Message. */
-    RDM_MESSAGE_LINK((token, context, metadata) -> token.processAsNormalizedString(metadata::setRdmMessageLink)),
+    RDM_MESSAGE_LINK((token, context, container) -> token.processAsNormalizedString(container::setRdmMessageLink)),
 
     /** Unique identifier of Tracking Data Message linked to this Orbit Data Message. */
-    TDM_MESSAGE_LINK((token, context, metadata) -> token.processAsNormalizedString(metadata::setTdmMessageLink)),
+    TDM_MESSAGE_LINK((token, context, container) -> token.processAsNormalizedString(container::setTdmMessageLink)),
 
     /** Operator of the space object. */
-    OPERATOR((token, context, metadata) -> token.processAsNormalizedString(metadata::setOperator)),
+    OPERATOR((token, context, container) -> token.processAsNormalizedString(container::setOperator)),
 
     /** Owner of the space object. */
-    OWNER((token, context, metadata) -> token.processAsNormalizedString(metadata::setOwner)),
+    OWNER((token, context, container) -> token.processAsNormalizedString(container::setOwner)),
 
     /** Name of the country where the space object owner is based. */
-    COUNTRY((token, context, metadata) -> token.processAsNormalizedString(metadata::setCountry)),
+    COUNTRY((token, context, container) -> token.processAsNormalizedString(container::setCountry)),
 
     /** Name of the constellation this space object belongs to. */
-    CONSTELLATION((token, context, metadata) -> token.processAsNormalizedString(metadata::setConstellation)),
+    CONSTELLATION((token, context, container) -> token.processAsNormalizedString(container::setConstellation)),
 
     /** Type of object.
      * @see ObjectType
      */
-    OBJECT_TYPE((token, context, metadata) -> {
+    OBJECT_TYPE((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
             try {
-                metadata.setObjectType(ObjectType.valueOf(token.getContentAsNormalizedString().replace(' ', '_')));
+                container.setObjectType(ObjectType.valueOf(token.getContentAsNormalizedString().replace(' ', '_')));
             } catch (IllegalArgumentException iae) {
                 throw token.generateException(iae);
             }
@@ -120,15 +120,15 @@ public enum OcmMetadataKey {
 
     /** Default epoch to which <em>all</em> relative times are referenced in data blocks,
      * unless overridden by block-specific {@link #EPOCH_TZERO} values. */
-    EPOCH_TZERO((token, context, metadata) -> token.processAsDate(metadata::setEpochT0, context)),
+    EPOCH_TZERO((token, context, container) -> token.processAsDate(container::setEpochT0, context)),
 
     /** Operational status.
      * @see OpsStatus
      */
-    OPS_STATUS((token, context, metadata) -> {
+    OPS_STATUS((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
             try {
-                metadata.setOpsStatus(OpsStatus.valueOf(token.getContentAsNormalizedString().replace(' ', '_')));
+                container.setOpsStatus(OpsStatus.valueOf(token.getContentAsNormalizedString().replace(' ', '_')));
             } catch (IllegalArgumentException iae) {
                 throw token.generateException(iae);
             }
@@ -139,10 +139,10 @@ public enum OcmMetadataKey {
     /** Orbit category.
      * @see OrbitCategory
      */
-    ORBIT_CATEGORY((token, context, metadata) -> {
+    ORBIT_CATEGORY((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
             try {
-                metadata.setOrbitCategory(OrbitCategory.valueOf(token.getContentAsNormalizedString().replace(' ', '_')));
+                container.setOrbitCategory(OrbitCategory.valueOf(token.getContentAsNormalizedString().replace(' ', '_')));
             } catch (IllegalArgumentException iae) {
                 throw token.generateException(iae);
             }
@@ -151,46 +151,46 @@ public enum OcmMetadataKey {
     }),
 
     /** List of elements of information data blocks included in this message. */
-    OCM_DATA_ELEMENTS((token, context, metadata) -> token.processAsNormalizedStringList(metadata::setOcmDataElements)),
+    OCM_DATA_ELEMENTS((token, context, container) -> token.processAsNormalizedStringList(container::setOcmDataElements)),
 
     /** Spacecraft clock count at {@link #EPOCH_TZERO}. */
-    SCLK_OFFSET_AT_EPOCH((token, context, metadata) -> token.processAsDouble(1.0, metadata::setSclkOffsetAtEpoch)),
+    SCLK_OFFSET_AT_EPOCH((token, context, container) -> token.processAsDouble(1.0, container::setSclkOffsetAtEpoch)),
 
     /** Number of clock seconds occurring during one SI second. */
-    SCLK_SEC_PER_SI_SEC((token, context, metadata) -> token.processAsDouble(1.0, metadata::setSclkSecPerSISec)),
+    SCLK_SEC_PER_SI_SEC((token, context, container) -> token.processAsDouble(1.0, container::setSclkSecPerSISec)),
 
     /** Creation date of previous message from a given originator. */
-    PREVIOUS_MESSAGE_EPOCH((token, context, metadata) -> token.processAsDate(metadata::setPreviousMessageEpoch, context)),
+    PREVIOUS_MESSAGE_EPOCH((token, context, container) -> token.processAsDate(container::setPreviousMessageEpoch, context)),
 
     /** Creation date of next message from a given originator. */
-    NEXT_MESSAGE_EPOCH((token, context, metadata) -> token.processAsDate(metadata::setNextMessageEpoch, context)),
+    NEXT_MESSAGE_EPOCH((token, context, container) -> token.processAsDate(container::setNextMessageEpoch, context)),
 
     /** Start time entry. */
-    START_TIME((token, context, metadata) -> token.processAsDate(metadata::setStartTime, context)),
+    START_TIME((token, context, container) -> token.processAsDate(container::setStartTime, context)),
 
     /** Stop time entry. */
-    STOP_TIME((token, context, metadata) -> token.processAsDate(metadata::setStopTime, context)),
+    STOP_TIME((token, context, container) -> token.processAsDate(container::setStopTime, context)),
 
     /** Span of time that the OCM covers. */
-    TIME_SPAN((token, context, metadata) -> token.processAsDouble(Constants.JULIAN_DAY, metadata::setTimeSpan)),
+    TIME_SPAN((token, context, container) -> token.processAsDouble(Constants.JULIAN_DAY, container::setTimeSpan)),
 
     /** Difference (TAI – UTC) in seconds at epoch {@link #EPOCH_TZERO}. */
-    TAIMUTC_AT_TZERO((token, context, metadata) -> token.processAsDouble(1.0, metadata::setTaimutcT0)),
+    TAIMUTC_AT_TZERO((token, context, container) -> token.processAsDouble(1.0, container::setTaimutcT0)),
 
     /** Difference (UT1 – UTC) in seconds at epoch {@link #EPOCH_TZERO}. */
-    UT1MUTC_AT_TZERO((token, context, metadata) -> token.processAsDouble(1.0, metadata::setUt1mutcT0)),
+    UT1MUTC_AT_TZERO((token, context, container) -> token.processAsDouble(1.0, container::setUt1mutcT0)),
 
     /** Source and version of Earth Orientation Parameters. */
-    EOP_SOURCE((token, context, metadata) -> token.processAsNormalizedString(metadata::setEopSource)),
+    EOP_SOURCE((token, context, container) -> token.processAsNormalizedString(container::setEopSource)),
 
     /** Interpolation method for Earth Orientation Parameters. */
-    INTERP_METHOD_EOP((token, context, metadata) -> token.processAsNormalizedString(metadata::setInterpMethodEOP)),
+    INTERP_METHOD_EOP((token, context, container) -> token.processAsNormalizedString(container::setInterpMethodEOP)),
 
     /** Interpolation method for space weather data. */
-    INTERP_METHOD_SW((token, context, metadata) -> token.processAsNormalizedString(metadata::setInterpMethodSW)),
+    INTERP_METHOD_SW((token, context, container) -> token.processAsNormalizedString(container::setInterpMethodSW)),
 
     /** Source and version of celestial body (e.g. Sun/Earth/Planetary). */
-    CELESTIAL_SOURCE((token, context, metadata) -> token.processAsNormalizedString(metadata::setCelestialSource));
+    CELESTIAL_SOURCE((token, context, container) -> token.processAsNormalizedString(container::setCelestialSource));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -205,11 +205,11 @@ public enum OcmMetadataKey {
     /** Process an token.
      * @param token token to process
      * @param context parsing context
-     * @param metadata metadata to fill
+     * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final OcmMetadata metadata) {
-        return processor.process(token, context, metadata);
+    public boolean process(final ParseToken token, final ParsingContext context, final OcmMetadata container) {
+        return processor.process(token, context, container);
     }
 
     /** Interface for processing one token. */
@@ -217,10 +217,10 @@ public enum OcmMetadataKey {
         /** Process one token.
          * @param token token to process
          * @param context parsing context
-         * @param metadata metadata to fill
+         * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, OcmMetadata metadata);
+        boolean process(ParseToken token, ParsingContext context, OcmMetadata container);
     }
 
 }

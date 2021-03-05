@@ -21,36 +21,36 @@ import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 
-/** Keys for {@link StateVector ODM state vector data} entries.
+/** Keys for {@link StateVector ODM state vector container} entries.
  * @author Luc Maisonobe
  * @since 11.0
  */
 public enum StateVectorKey {
 
     /** Comment entry. */
-    COMMENT((token, context, data) ->
-            token.getType() == TokenType.ENTRY ? data.addComment(token.getContent()) : true),
+    COMMENT((token, context, container) ->
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContent()) : true),
 
     /** Epoch of state vector and optional Keplerian elements. */
-    EPOCH((token, context, data) -> token.processAsDate(data::setEpoch, context)),
+    EPOCH((token, context, container) -> token.processAsDate(container::setEpoch, context)),
 
     /** Position vector X-component. */
-    X((token, context, data) -> token.processAsIndexedDouble(0, 1.0e3, data::setP)),
+    X((token, context, container) -> token.processAsIndexedDouble(0, 1.0e3, container::setP)),
 
     /** Position vector Y-component. */
-    Y((token, context, data) -> token.processAsIndexedDouble(1, 1.0e3, data::setP)),
+    Y((token, context, container) -> token.processAsIndexedDouble(1, 1.0e3, container::setP)),
 
     /** Position vector Z-component. */
-    Z((token, context, data) -> token.processAsIndexedDouble(2, 1.0e3, data::setP)),
+    Z((token, context, container) -> token.processAsIndexedDouble(2, 1.0e3, container::setP)),
 
     /** Velocity vector X-component. */
-    X_DOT((token, context, data) -> token.processAsIndexedDouble(0, 1.0e3, data::setV)),
+    X_DOT((token, context, container) -> token.processAsIndexedDouble(0, 1.0e3, container::setV)),
 
     /** Velocity vector Y-component. */
-    Y_DOT((token, context, data) -> token.processAsIndexedDouble(1, 1.0e3, data::setV)),
+    Y_DOT((token, context, container) -> token.processAsIndexedDouble(1, 1.0e3, container::setV)),
 
     /** Velocity vector Z-component. */
-    Z_DOT((token, context, data) -> token.processAsIndexedDouble(2, 1.0e3, data::setV));
+    Z_DOT((token, context, container) -> token.processAsIndexedDouble(2, 1.0e3, container::setV));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -65,11 +65,11 @@ public enum StateVectorKey {
     /** Process one token.
      * @param token token to process
      * @param context parsing context
-     * @param data data to fill
+     * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final StateVector data) {
-        return processor.process(token, context, data);
+    public boolean process(final ParseToken token, final ParsingContext context, final StateVector container) {
+        return processor.process(token, context, container);
     }
 
     /** Interface for processing one token. */
@@ -77,10 +77,10 @@ public enum StateVectorKey {
         /** Process one token.
          * @param token token to process
          * @param context parsing context
-         * @param data data to fill
+         * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, StateVector data);
+        boolean process(ParseToken token, ParsingContext context, StateVector container);
     }
 
 }
