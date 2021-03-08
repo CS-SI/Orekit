@@ -303,7 +303,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final double x = w.getX().getReal();
         final double y = w.getY().getReal();
         final double z = w.getZ().getReal();
-        if (((x * x + y * y) == 0) && z < 0) {
+        if ((x * x + y * y) == 0 && z < 0) {
             return zero.add(Double.NaN);
         }
         return w.getY().negate().divide(w.getZ().add(1));
@@ -319,7 +319,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             final double x = w.getX().getValue().getReal();
             final double y = w.getY().getValue().getReal();
             final double z = w.getZ().getValue().getReal();
-            if (((x * x + y * y) == 0) && z < 0) {
+            if ((x * x + y * y) == 0 && z < 0) {
                 return zero.add(Double.NaN);
             }
             final FieldUnivariateDerivative2<T> hx = w.getY().negate().divide(w.getZ().add(1));
@@ -336,7 +336,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final double x = w.getX().getReal();
         final double y = w.getY().getReal();
         final double z = w.getZ().getReal();
-        if (((x * x + y * y) == 0) && z < 0) {
+        if ((x * x + y * y) == 0 && z < 0) {
             return zero.add(Double.NaN);
         }
         return  w.getX().divide(w.getZ().add(1));
@@ -352,7 +352,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             final double x = w.getX().getValue().getReal();
             final double y = w.getY().getValue().getReal();
             final double z = w.getZ().getValue().getReal();
-            if (((x * x + y * y) == 0) && z < 0) {
+            if ((x * x + y * y) == 0 && z < 0) {
                 return zero.add(Double.NaN);
             }
             final FieldUnivariateDerivative2<T> hy = w.getX().divide(w.getZ().add(1));
@@ -649,7 +649,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         // Initial guess
         T H;
         if (ecc.getReal() < 1.6) {
-            if ((-FastMath.PI < M.getReal() && M.getReal() < 0.) || M.getReal() > FastMath.PI) {
+            if (-FastMath.PI < M.getReal() && M.getReal() < 0. || M.getReal() > FastMath.PI) {
                 H = M.subtract(ecc);
             } else {
                 H = M.add(ecc);

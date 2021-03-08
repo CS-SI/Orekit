@@ -656,7 +656,7 @@ public class PoissonSeriesParser {
 
                         // we have found a degree section header
                         final int nextDegree = Integer.parseInt(headerMatcher.group(1));
-                        if ((nextDegree != degree + 1) && (degree != 0 || nextDegree != 0)) {
+                        if (nextDegree != degree + 1 && (degree != 0 || nextDegree != 0)) {
                             throw new OrekitException(OrekitMessages.MISSING_SERIE_J_IN_FILE,
                                                       degree + 1, name, lineNumber);
                         }

@@ -189,7 +189,7 @@ public class FieldDSSTThirdBodyContext<T extends RealFieldElement <T>> extends F
 
         // Truncation tolerance.
         final T aoR3 = auxiliaryElements.getSma().divide(R3);
-        final double tol = ( aoR3.getReal() > .3 || (aoR3.getReal() > .15  && auxiliaryElements.getEcc().getReal() > .25) ) ? BIG_TRUNCATION_TOLERANCE : SMALL_TRUNCATION_TOLERANCE;
+        final double tol = ( aoR3.getReal() > .3 || aoR3.getReal() > .15  && auxiliaryElements.getEcc().getReal() > .25)  ? BIG_TRUNCATION_TOLERANCE : SMALL_TRUNCATION_TOLERANCE;
 
         // Utilities for truncation
         // Set a lower bound for eccentricity

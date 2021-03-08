@@ -539,18 +539,18 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
             final int row1 = extractInt(record, HEADER_CHEBISHEV_INDICES_OFFSET     + 12 * i);
             final int row2 = extractInt(record, HEADER_CHEBISHEV_INDICES_OFFSET + 4 + 12 * i);
             final int row3 = extractInt(record, HEADER_CHEBISHEV_INDICES_OFFSET + 8 + 12 * i);
-            ok = ok && (row1 >= 0) && (row2 >= 0) && (row3 >= 0);
-            if (((i ==  0) && (loadType == EphemerisType.MERCURY))    ||
-                    ((i ==  1) && (loadType == EphemerisType.VENUS))      ||
-                    ((i ==  2) && (loadType == EphemerisType.EARTH_MOON)) ||
-                    ((i ==  3) && (loadType == EphemerisType.MARS))       ||
-                    ((i ==  4) && (loadType == EphemerisType.JUPITER))    ||
-                    ((i ==  5) && (loadType == EphemerisType.SATURN))     ||
-                    ((i ==  6) && (loadType == EphemerisType.URANUS))     ||
-                    ((i ==  7) && (loadType == EphemerisType.NEPTUNE))    ||
-                    ((i ==  8) && (loadType == EphemerisType.PLUTO))      ||
-                    ((i ==  9) && (loadType == EphemerisType.MOON))       ||
-                    ((i == 10) && (loadType == EphemerisType.SUN))) {
+            ok = ok && row1 >= 0 && row2 >= 0 && row3 >= 0;
+            if (i ==  0 && loadType == EphemerisType.MERCURY    ||
+                    i ==  1 && loadType == EphemerisType.VENUS      ||
+                    i ==  2 && loadType == EphemerisType.EARTH_MOON ||
+                    i ==  3 && loadType == EphemerisType.MARS       ||
+                    i ==  4 && loadType == EphemerisType.JUPITER    ||
+                    i ==  5 && loadType == EphemerisType.SATURN     ||
+                    i ==  6 && loadType == EphemerisType.URANUS     ||
+                    i ==  7 && loadType == EphemerisType.NEPTUNE    ||
+                    i ==  8 && loadType == EphemerisType.PLUTO      ||
+                    i ==  9 && loadType == EphemerisType.MOON       ||
+                    i == 10 && loadType == EphemerisType.SUN) {
                 firstIndex = row1;
                 coeffs     = row2;
                 chunks     = row3;
@@ -559,7 +559,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
 
         // compute chunks duration
         final double timeSpan = extractDouble(record, HEADER_CHUNK_DURATION_OFFSET);
-        ok = ok && (timeSpan > 0) && (timeSpan < 100);
+        ok = ok && timeSpan > 0 && timeSpan < 100;
         chunksDuration = Constants.JULIAN_DAY * (timeSpan / chunks);
         if (Double.isNaN(maxChunksDuration)) {
             maxChunksDuration = chunksDuration;
@@ -944,7 +944,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
 
             // check astronomical unit consistency
             final double au = 1000 * extractDouble(first, HEADER_ASTRONOMICAL_UNIT_OFFSET);
-            if ((au < 1.4e11) || (au > 1.6e11)) {
+            if (au < 1.4e11 || au > 1.6e11) {
                 throw new OrekitException(OrekitMessages.NOT_A_JPL_EPHEMERIDES_BINARY_FILE, name);
             }
             if (FastMath.abs(getLoadedAstronomicalUnit() - au) >= 10.0) {
@@ -954,7 +954,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
 
             // check Earth-Moon mass ratio consistency
             final double emRat = extractDouble(first, HEADER_EM_RATIO_OFFSET);
-            if ((emRat < 80) || (emRat > 82)) {
+            if (emRat < 80 || emRat > 82) {
                 throw new OrekitException(OrekitMessages.NOT_A_JPL_EPHEMERIDES_BINARY_FILE, name);
             }
             if (FastMath.abs(getLoadedEarthMoonMassRatio() - emRat) >= 1.0e-5) {

@@ -66,7 +66,7 @@ public class DynamicOutlierFilter<T extends ObservedMeasurement<T>> extends Outl
 
         // Do not apply the filter if current iteration/measurement is lower than
         // warmup attribute or if the attribute sigma has not been initialized yet
-        if ((estimated.getIteration() > getWarmup()) && (sigma != null)) {
+        if (estimated.getIteration() > getWarmup() && sigma != null) {
 
             final double[] observed    = estimated.getObservedMeasurement().getObservedValue();
             final double[] theoretical = estimated.getEstimatedValue();

@@ -691,7 +691,7 @@ public class HatanakaCompressFilter implements DataFilter {
 
             // extract format version
             final int cVersion100 = (int) FastMath.rint(100 * parseDouble(line1, 0, 9));
-            if ((cVersion100 != 100) && (cVersion100 != 300)) {
+            if (cVersion100 != 100 && cVersion100 != 300) {
                 throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
             }
             if (!CRINEX_VERSION_TYPE.equals(parseString(line1, LABEL_START, CRINEX_VERSION_TYPE.length()))) {

@@ -264,7 +264,7 @@ public class IodLambert {
         final double tol = 1e-13;
         final int maxiter = 50;
         double xnew = 0;
-        while ((err > tol) && (iterations < maxiter)) {
+        while (err > tol && iterations < maxiter) {
             // new x
             xnew = (x1 * y2 - y1 * x2) / (y2 - y1);
 

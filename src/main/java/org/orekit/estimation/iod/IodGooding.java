@@ -280,7 +280,7 @@ public class IodGooding {
 
         int iter = 0;
         double stoppingCriterion = 10 * cvtol;
-        while ((iter < maxIterations) && (FastMath.abs(stoppingCriterion) > cvtol))  {
+        while (iter < maxIterations && FastMath.abs(stoppingCriterion) > cvtol)  {
             facFiniteDiff = ARBF;
 
             // proposed in the original algorithm by Gooding.

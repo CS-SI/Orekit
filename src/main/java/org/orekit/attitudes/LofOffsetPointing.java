@@ -190,8 +190,8 @@ public class LofOffsetPointing extends GroundPointing {
             (gpIntersection == null) ? null : shape.transform(gpIntersection);
 
         // Check there is an intersection and it is not in the reverse pointing direction
-        if ((pIntersection == null) ||
-            (Vector3D.dotProduct(pIntersection.subtract(pBodyFrame), pointingBodyFrame) < 0)) {
+        if (pIntersection == null ||
+            Vector3D.dotProduct(pIntersection.subtract(pBodyFrame), pointingBodyFrame) < 0) {
             throw new OrekitException(OrekitMessages.ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND);
         }
 
@@ -225,8 +225,8 @@ public class LofOffsetPointing extends GroundPointing {
             (gpIntersection == null) ? null : shape.transform(gpIntersection);
 
         // Check there is an intersection and it is not in the reverse pointing direction
-        if ((pIntersection == null) ||
-            (FieldVector3D.dotProduct(pIntersection.subtract(pBodyFrame), pointingBodyFrame).getReal() < 0)) {
+        if (pIntersection == null ||
+            FieldVector3D.dotProduct(pIntersection.subtract(pBodyFrame), pointingBodyFrame).getReal() < 0) {
             throw new OrekitException(OrekitMessages.ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND);
         }
 
