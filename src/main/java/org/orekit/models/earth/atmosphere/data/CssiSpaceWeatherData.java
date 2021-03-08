@@ -132,13 +132,13 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
      * @param date date to bracket
      */
     private void bracketDate(final AbsoluteDate date) {
-        if ((date.durationFrom(firstDate) < 0) || (date.durationFrom(lastDate) > 0)) {
+        if (date.durationFrom(firstDate) < 0 || date.durationFrom(lastDate) > 0) {
             throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, date, firstDate, lastDate);
         }
 
         // don't search if the cached selection is fine
-        if ((previousParam != null) && (date.durationFrom(previousParam.getDate()) > 0) &&
-                        (date.durationFrom(nextParam.getDate()) <= 0)) {
+        if (previousParam != null && date.durationFrom(previousParam.getDate()) > 0 &&
+                        date.durationFrom(nextParam.getDate()) <= 0) {
             return;
         }
 

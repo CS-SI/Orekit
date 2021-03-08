@@ -1221,7 +1221,7 @@ public class AbsoluteDate
             return true;
         }
 
-        if ((date != null) && (date instanceof AbsoluteDate)) {
+        if (date != null && date instanceof AbsoluteDate) {
             return durationFrom((AbsoluteDate) date) == 0;
         }
 

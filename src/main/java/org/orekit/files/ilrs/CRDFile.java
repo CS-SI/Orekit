@@ -570,9 +570,9 @@ public class CRDFile {
         private void bracketDate(final AbsoluteDate date) {
 
             // don't search if the cached selection is fine
-            if ((previousParam != null) &&
-                (date.durationFrom(previousParam.getDate()) > 0) &&
-                (date.durationFrom(nextParam.getDate()) <= 0 )) {
+            if (previousParam != null &&
+                date.durationFrom(previousParam.getDate()) > 0 &&
+                date.durationFrom(nextParam.getDate()) <= 0) {
                 return;
             }
 

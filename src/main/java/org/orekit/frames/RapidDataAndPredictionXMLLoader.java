@@ -131,7 +131,7 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
                 return history;
 
             } catch (SAXException se) {
-                if ((se.getCause() != null) && (se.getCause() instanceof OrekitException)) {
+                if (se.getCause() != null && se.getCause() instanceof OrekitException) {
                     throw (OrekitException) se.getCause();
                 }
                 throw new OrekitException(se, LocalizedCoreFormats.SIMPLE_MESSAGE, se.getMessage());
@@ -318,13 +318,13 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
              * @param qName name of the element
              */
             private void endDailyElement(final String qName) {
-                if (qName.equals(DATE_YEAR_ELT) && (buffer.length() > 0)) {
+                if (qName.equals(DATE_YEAR_ELT) && buffer.length() > 0) {
                     year = Integer.parseInt(buffer.toString());
-                } else if (qName.equals(DATE_MONTH_ELT) && (buffer.length() > 0)) {
+                } else if (qName.equals(DATE_MONTH_ELT) && buffer.length() > 0) {
                     month = Integer.parseInt(buffer.toString());
-                } else if (qName.equals(DATE_DAY_ELT) && (buffer.length() > 0)) {
+                } else if (qName.equals(DATE_DAY_ELT) && buffer.length() > 0) {
                     day = Integer.parseInt(buffer.toString());
-                } else if (qName.equals(MJD_ELT) && (buffer.length() > 0)) {
+                } else if (qName.equals(MJD_ELT) && buffer.length() > 0) {
                     mjd     = Integer.parseInt(buffer.toString());
                     mjdDate = new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
                                                getUtc());
@@ -348,7 +348,7 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
                     inBulletinA = false;
                 } else if (qName.equals(DATA_EOP_ELT)) {
                     checkDates();
-                    if ((!Double.isNaN(dtu1)) && (!Double.isNaN(lod)) && (!Double.isNaN(x)) && (!Double.isNaN(y))) {
+                    if (!Double.isNaN(dtu1) && !Double.isNaN(lod) && !Double.isNaN(x) && !Double.isNaN(y)) {
                         final double[] equinox;
                         final double[] nro;
                         if (Double.isNaN(dpsi)) {
@@ -376,14 +376,14 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
              * @param qName name of the element
              */
             private void endFinalElement(final String qName) {
-                if (qName.equals(DATE_ELT) && (buffer.length() > 0)) {
+                if (qName.equals(DATE_ELT) && buffer.length() > 0) {
                     final String[] fields = buffer.toString().split("-");
                     if (fields.length == 3) {
                         year  = Integer.parseInt(fields[0]);
                         month = Integer.parseInt(fields[1]);
                         day   = Integer.parseInt(fields[2]);
                     }
-                } else if (qName.equals(MJD_ELT) && (buffer.length() > 0)) {
+                } else if (qName.equals(MJD_ELT) && buffer.length() > 0) {
                     mjd     = Integer.parseInt(buffer.toString());
                     mjdDate = new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
                                                getUtc());
@@ -407,7 +407,7 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
                     inBulletinA = false;
                 } else if (qName.equals(EOP_SET_ELT)) {
                     checkDates();
-                    if ((!Double.isNaN(dtu1)) && (!Double.isNaN(lod)) && (!Double.isNaN(x)) && (!Double.isNaN(y))) {
+                    if (!Double.isNaN(dtu1) && !Double.isNaN(lod) && !Double.isNaN(x) && !Double.isNaN(y)) {
                         final double[] equinox;
                         final double[] nro;
                         if (Double.isNaN(dpsi)) {
@@ -440,7 +440,7 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
                 if (buffer.length() == 0) {
                     // there is nothing to overwrite with
                     return oldValue;
-                } else if (inBulletinA && (!Double.isNaN(oldValue))) {
+                } else if (inBulletinA && !Double.isNaN(oldValue)) {
                     // the value is already set and bulletin A values have a low priority
                     return oldValue;
                 } else {

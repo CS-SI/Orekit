@@ -162,7 +162,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
                 // go ahead one step size
                 final FieldSpacecraftState<T> previous = state;
                 FieldAbsoluteDate<T> t = previous.getDate().shiftedBy(stepSize);
-                if ((dt.getReal() == 0) || ((dt.getReal() > 0) ^ (t.compareTo(target) <= 0))) {
+                if (dt.getReal() == 0 || ((dt.getReal() > 0) ^ (t.compareTo(target) <= 0))) {
                     // current step exceeds target
                     t = target;
                 }

@@ -521,12 +521,12 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
                                                                   current.mean.getDate(), mu),
                                   mass, referenceRadius, mu, ck0);
             // check convergence
-            if ((FastMath.abs(deltaA.getReal())      < thresholdA.getReal()) &&
-                (FastMath.abs(deltaEx.getReal())     < thresholdE.getReal()) &&
-                (FastMath.abs(deltaEy.getReal())     < thresholdE.getReal()) &&
-                (FastMath.abs(deltaI.getReal())      < thresholdAngles.getReal()) &&
-                (FastMath.abs(deltaRAAN.getReal())   < thresholdAngles.getReal()) &&
-                (FastMath.abs(deltaAlphaM.getReal()) < thresholdAngles.getReal())) {
+            if (FastMath.abs(deltaA.getReal())      < thresholdA.getReal() &&
+                FastMath.abs(deltaEx.getReal())     < thresholdE.getReal() &&
+                FastMath.abs(deltaEy.getReal())     < thresholdE.getReal() &&
+                FastMath.abs(deltaI.getReal())      < thresholdAngles.getReal() &&
+                FastMath.abs(deltaRAAN.getReal())   < thresholdAngles.getReal() &&
+                FastMath.abs(deltaAlphaM.getReal()) < thresholdAngles.getReal()) {
                 return current;
             }
 
@@ -958,7 +958,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
             cosAlphaE      = alphaE.cos();
             sinAlphaE      = alphaE.sin();
 
-        } while ((++iter < 50) && (FastMath.abs(shift.getValue().getReal()) > 1.0e-12));
+        } while (++iter < 50 && FastMath.abs(shift.getValue().getReal()) > 1.0e-12);
 
         return alphaE;
 

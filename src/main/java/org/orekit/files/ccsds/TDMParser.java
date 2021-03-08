@@ -773,7 +773,7 @@ public class TDMParser extends DefaultHandler {
 
                             default:
                                 // Parse a line that does not display the previous keywords
-                                if ((parseInfo.currentObservationsBlock != null) &&
+                                if (parseInfo.currentObservationsBlock != null &&
                                      (parseInfo.parsingData || parseInfo.parsingMetaData)) {
                                     if (parseInfo.parsingMetaData) {
                                         // Parse a meta-data line
@@ -891,7 +891,7 @@ public class TDMParser extends DefaultHandler {
 
                         default:
                             // Parse a line that does not display the previous keywords
-                            if ((parseInfo.currentObservationsBlock != null) &&
+                            if (parseInfo.currentObservationsBlock != null &&
                                  (parseInfo.parsingData || parseInfo.parsingMetaData)) {
                                 if (parseInfo.parsingMetaData) {
                                     // Call meta-data parsing

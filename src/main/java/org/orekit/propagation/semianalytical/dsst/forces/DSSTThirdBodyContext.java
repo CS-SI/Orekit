@@ -180,7 +180,7 @@ public class DSSTThirdBodyContext extends ForceModelContext {
 
         // Truncation tolerance.
         final double aoR3 = auxiliaryElements.getSma() / R3;
-        final double tol = ( aoR3 > .3 || (aoR3 > .15  && auxiliaryElements.getEcc() > .25) ) ? BIG_TRUNCATION_TOLERANCE : SMALL_TRUNCATION_TOLERANCE;
+        final double tol = ( aoR3 > .3 || aoR3 > .15  && auxiliaryElements.getEcc() > .25 ) ? BIG_TRUNCATION_TOLERANCE : SMALL_TRUNCATION_TOLERANCE;
 
         // Utilities for truncation
         // Set a lower bound for eccentricity

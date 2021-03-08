@@ -147,7 +147,7 @@ public class DataProvidersManager {
 
         // get the path containing all components
         final String path = System.getProperty(OREKIT_DATA_PATH);
-        if ((path != null) && !"".equals(path)) {
+        if (path != null && !"".equals(path)) {
 
             // extract the various components
             for (final String name : path.split(System.getProperty("path.separator"))) {
