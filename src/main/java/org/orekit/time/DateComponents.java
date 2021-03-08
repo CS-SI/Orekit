@@ -391,7 +391,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
         if (year < 1583) {
             if (year < 1) {
                 yFactory = PROLEPTIC_JULIAN_FACTORY;
-            } else if (year < 1582 || month < 10 || (month < 11 && day < 5)) {
+            } else if (year < 1582 || month < 10 || month < 11 && day < 5) {
                 yFactory = JULIAN_FACTORY;
             }
         }
