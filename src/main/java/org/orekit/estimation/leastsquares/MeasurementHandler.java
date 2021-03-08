@@ -73,8 +73,8 @@ class MeasurementHandler implements MultiSatStepHandler {
 
             // Current state date for interpolator 0
             final AbsoluteDate currentDate = interpolators.get(0).getCurrentState().getDate();
-            if (model.isForwardPropagation()  && (next.getDate().compareTo(currentDate) > 0) ||
-                !model.isForwardPropagation() && (next.getDate().compareTo(currentDate) < 0)) {
+            if (model.isForwardPropagation()  && next.getDate().compareTo(currentDate) > 0 ||
+                !model.isForwardPropagation() && next.getDate().compareTo(currentDate) < 0) {
 
                 // The next date is past the end of the interpolator,
                 // it will be picked-up in a future step
