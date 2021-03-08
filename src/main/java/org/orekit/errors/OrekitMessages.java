@@ -332,8 +332,8 @@ public enum OrekitMessages implements Localizable {
             final ResourceBundle bundle = ResourceBundle.getBundle(RESOURCE_BASE_NAME, locale, new UTF8Control());
             if (bundle.getLocale().getLanguage().equals(locale.getLanguage())) {
                 final String translated = bundle.getString(name());
-                if ((translated != null) && (translated.length() > 0) &&
-                        (!translated.toLowerCase().contains("missing translation"))) {
+                if (translated != null && translated.length() > 0 &&
+                        !translated.toLowerCase().contains("missing translation")) {
                     // the value of the resource is the translated format
                     return translated;
                 }

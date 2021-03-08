@@ -1153,8 +1153,8 @@ public class NRLMSISE00 implements Atmosphere {
                              final Frame frame) {
 
         // check if data are available :
-        if ((date.compareTo(inputParams.getMaxDate()) > 0) ||
-            (date.compareTo(inputParams.getMinDate()) < 0)) {
+        if (date.compareTo(inputParams.getMaxDate()) > 0 ||
+            date.compareTo(inputParams.getMinDate()) < 0) {
             throw new OrekitException(OrekitMessages.NO_SOLAR_ACTIVITY_AT_DATE,
                                       date, inputParams.getMinDate(), inputParams.getMaxDate());
         }
@@ -1190,8 +1190,8 @@ public class NRLMSISE00 implements Atmosphere {
                                                         final Frame frame) {
         // check if data are available :
         final AbsoluteDate dateD = date.toAbsoluteDate();
-        if ((dateD.compareTo(inputParams.getMaxDate()) > 0) ||
-            (dateD.compareTo(inputParams.getMinDate()) < 0)) {
+        if (dateD.compareTo(inputParams.getMaxDate()) > 0 ||
+            dateD.compareTo(inputParams.getMinDate()) < 0) {
             throw new OrekitException(OrekitMessages.NO_SOLAR_ACTIVITY_AT_DATE,
                                       dateD, inputParams.getMinDate(), inputParams.getMaxDate());
         }
@@ -2282,9 +2282,9 @@ public class NRLMSISE00 implements Atmosphere {
                              final double h1, final double zh, final double h2) {
             final double e1 = (alt - zh) / h1;
             final double e2 = (alt - zh) / h2;
-            if ((e1 > 70.) || (e2 > 70.)) {
+            if (e1 > 70. || e2 > 70.) {
                 return 1.;
-            } else if ((e1 < -70.) && (e2 < -70.)) {
+            } else if (e1 < -70. && e2 < -70.) {
                 return FastMath.exp(r);
             } else {
                 final double ex1 = FastMath.exp(e1);
@@ -3714,9 +3714,9 @@ public class NRLMSISE00 implements Atmosphere {
         private T ccor2(final T alt, final double r, final double h1, final double zh, final double h2) {
             final T e1 = alt.subtract(zh).divide(h1);
             final T e2 = alt.subtract(zh).divide(h2);
-            if ((e1.getReal() > 70.) || (e2.getReal() > 70.)) {
+            if (e1.getReal() > 70. || e2.getReal() > 70.) {
                 return field.getOne();
-            } else if ((e1.getReal() < -70.) && (e2.getReal() < -70.)) {
+            } else if (e1.getReal() < -70. && e2.getReal() < -70.) {
                 return zero.add(FastMath.exp(r));
             } else {
                 final T ex1 = e1.exp();

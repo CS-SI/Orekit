@@ -805,7 +805,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         // Initial guess
         T H;
         if (e.getReal() < 1.6) {
-            if ((-FastMath.PI < M.getReal() && M.getReal() < 0.) || M.getReal() > FastMath.PI) {
+            if (-FastMath.PI < M.getReal() && M.getReal() < 0. || M.getReal() > FastMath.PI) {
                 H = M.subtract(e);
             } else {
                 H = M.add(e);
@@ -1728,7 +1728,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      */
     private void checkParameterRangeInclusive(final String parameterName, final double parameter,
                                               final double lowerBound, final double upperBound) {
-        if ((parameter < lowerBound) || (parameter > upperBound)) {
+        if (parameter < lowerBound || parameter > upperBound) {
             throw new OrekitException(OrekitMessages.INVALID_PARAMETER_RANGE, parameterName,
                                       parameter, lowerBound, upperBound);
         }

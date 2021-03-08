@@ -470,8 +470,8 @@ public class NewcombOperators {
                 return true;
             }
 
-            if ((couple != null) && (couple instanceof Couple)) {
-                return (rho == ((Couple) couple).rho) && (sigma == ((Couple) couple).sigma);
+            if (couple != null && couple instanceof Couple) {
+                return rho == ((Couple) couple).rho && sigma == ((Couple) couple).sigma;
             }
 
             return false;
@@ -550,11 +550,11 @@ public class NewcombOperators {
                 return true;
             }
 
-            if ((key != null) && (key instanceof NewKey)) {
-                return (n     == ((NewKey) key).n) &&
-                       (s     == ((NewKey) key).s) &&
-                       (rho   == ((NewKey) key).rho) &&
-                       (sigma == ((NewKey) key).sigma);
+            if (key != null && key instanceof NewKey) {
+                return n     == ((NewKey) key).n &&
+                       s     == ((NewKey) key).s &&
+                       rho   == ((NewKey) key).rho &&
+                       sigma == ((NewKey) key).sigma;
             }
 
             return false;

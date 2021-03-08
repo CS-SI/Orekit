@@ -297,10 +297,10 @@ public class RinexLoader {
                 formatVersion = parseDouble(0, 9);
                 final int format100 = (int) FastMath.rint(100 * formatVersion);
 
-                if ((format100 != 200) && (format100 != 210) && (format100 != 211) &&
-                    (format100 != 212) && (format100 != 220) && (format100 != 300) &&
-                    (format100 != 301) && (format100 != 302) && (format100 != 303) &&
-                    (format100 != 304)) {
+                if (format100 != 200 && format100 != 210 && format100 != 211 &&
+                    format100 != 212 && format100 != 220 && format100 != 300 &&
+                    format100 != 301 && format100 != 302 && format100 != 303 &&
+                    format100 != 304) {
                     throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, name);
                 }
 
@@ -485,8 +485,8 @@ public class RinexLoader {
                                         //We make sure that we have read all the mandatory fields inside the header of the Rinex
                                         if (!inRinexVersion || !inRunBy || !inMarkerName ||
                                             !inObserver || !inRecType || !inAntType ||
-                                            (formatVersion < 2.20 && !inAproxPos) ||
-                                            (formatVersion < 2.20 && !inAntDelta) ||
+                                            formatVersion < 2.20 && !inAproxPos ||
+                                            formatVersion < 2.20 && !inAntDelta ||
                                             !inTypesObs || !inFirstObs) {
                                             throw new OrekitException(OrekitMessages.INCOMPLETE_HEADER, name);
                                         }
@@ -949,8 +949,8 @@ public class RinexLoader {
                                         if (!inRinexVersion || !inRunBy || !inMarkerName ||
                                             !inObserver || !inRecType || !inAntType ||
                                             !inAntDelta || !inTypesObs || !inFirstObs ||
-                                            (formatVersion >= 3.01 && !inPhaseShift) ||
-                                            (formatVersion >= 3.03 && (!inGlonassSlot || !inGlonassCOD))) {
+                                            formatVersion >= 3.01 && !inPhaseShift ||
+                                            formatVersion >= 3.03 && (!inGlonassSlot || !inGlonassCOD)) {
                                             throw new OrekitException(OrekitMessages.INCOMPLETE_HEADER, name);
                                         }
 

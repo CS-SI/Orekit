@@ -709,7 +709,7 @@ public class CircularOrbit
             alphaE         = alphaM + alphaEMalphaM;
             scAlphaE       = FastMath.sinCos(alphaE);
 
-        } while ((++iter < 50) && (FastMath.abs(shift) > 1.0e-12));
+        } while (++iter < 50 && FastMath.abs(shift) > 1.0e-12);
 
         return alphaE;
 

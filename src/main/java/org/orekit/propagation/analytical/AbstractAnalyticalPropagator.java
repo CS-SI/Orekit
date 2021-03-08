@@ -154,8 +154,8 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
                 // go ahead one step size
                 final SpacecraftState previous = state;
                 AbsoluteDate t = previous.getDate().shiftedBy(stepSize);
-                if ((dt == 0) || ((dt > 0) ^ (t.compareTo(target) <= 0)) ||
-                        (FastMath.abs(target.durationFrom(t)) <= epsilon)) {
+                if (dt == 0 || ((dt > 0) ^ (t.compareTo(target) <= 0)) ||
+                        FastMath.abs(target.durationFrom(t)) <= epsilon) {
                     // current step exceeds target
                     // or is target to within double precision
                     t = target;

@@ -152,8 +152,8 @@ public class CommonMetadata extends OdmMetadata {
         final boolean isSolarSystemBarycenter =
                 CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER.equals(center.getBody().getName());
         if ((!(isMci || isIcrf) && CelestialBodyFactory.EARTH.equals(center.getBody().getName())) ||
-            (isMci && CelestialBodyFactory.MARS.equals(center.getBody().getName())) ||
-            (isIcrf && isSolarSystemBarycenter)) {
+            isMci && CelestialBodyFactory.MARS.equals(center.getBody().getName()) ||
+            isIcrf && isSolarSystemBarycenter) {
             return referenceFrame.asFrame();
         }
         // else, translate frame to specified center.
