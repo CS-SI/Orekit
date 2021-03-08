@@ -863,12 +863,12 @@ public class TLE implements TimeStamped, Serializable {
             final double deltaLv  = MathUtils.normalizeAngle(equiOrbit.getLv() - recovEquiOrbit.getLv(), 0.0);
 
             // check convergence
-            if ((FastMath.abs(deltaSma) < thrA) &&
-                (FastMath.abs(deltaEx)  < thrE) &&
-                (FastMath.abs(deltaEy)  < thrE) &&
-                (FastMath.abs(deltaHx)  < thrH) &&
-                (FastMath.abs(deltaHy)  < thrH) &&
-                (FastMath.abs(deltaLv)  < thrV)) {
+            if (FastMath.abs(deltaSma) < thrA &&
+                FastMath.abs(deltaEx)  < thrE &&
+                FastMath.abs(deltaEy)  < thrE &&
+                FastMath.abs(deltaHx)  < thrH &&
+                FastMath.abs(deltaHy)  < thrH &&
+                FastMath.abs(deltaLv)  < thrV) {
 
                 return current;
             }
