@@ -65,7 +65,7 @@ public enum ManeuverHistoryMetadataKey {
     MAN_PRED_SOURCE((token, context, container) -> token.processAsNormalizedString(container::setManPredSource)),
 
     /** Reference frame of the maneuver. */
-    MAN_REF_FRAME((token, context, container) -> token.processAsFrame(container::setManReferenceFrame, context, true, false, false)),
+    MAN_REF_FRAME((token, context, container) -> token.processAsFrame(container::setManReferenceFrame, context, true, true, false)),
 
     /** Epoch of the {@link #COV_REF_FRAME orbit reference frame}. */
     MAN_FRAME_EPOCH((token, context, container) -> token.processAsDate(container::setManFrameEpoch, context)),

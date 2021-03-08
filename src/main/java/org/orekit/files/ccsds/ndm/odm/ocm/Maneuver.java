@@ -295,7 +295,7 @@ public class Maneuver implements TimeStamped {
     /** Get velocity increment of deployed "child" object.
      * @return velocity increment of deployed "child" object
      */
-    public Vector3D getdeployDv() {
+    public Vector3D getDeployDv() {
         return new Vector3D(deployDv);
     }
 

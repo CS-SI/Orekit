@@ -444,7 +444,10 @@ public class ParseToken {
                                   final boolean allowSpacecraft) {
         if (type == TokenType.ENTRY) {
             try {
-                consumer.accept(FrameFacade.parse(DASH.matcher(getContentAsUppercaseString()).replaceAll(""),
+                consumer.accept(FrameFacade.parse(DASH.
+                                                  matcher(getContentAsUppercaseString()).
+                                                  replaceAll("").
+                                                  replace(' ', '_'),
                                                   context.getConventions(),
                                                   context.isSimpleEOP(), context.getDataContext(),
                                                   allowCelestial, allowOrbit, allowSpacecraft));

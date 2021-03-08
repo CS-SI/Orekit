@@ -87,12 +87,12 @@ public class OcmData implements Data {
         }
         if (covarianceBlocks != null) {
             for (final CovarianceHistory ch : covarianceBlocks) {
-                ch.checkMandatoryEntries();
+                ch.getMetadata().checkMandatoryEntries();
             }
         }
         if (maneuverBlocks != null) {
             for (final ManeuverHistory mh : maneuverBlocks) {
-                mh.checkMandatoryEntries();
+                mh.getMetadata().checkMandatoryEntries();
             }
         }
         if (perturbationsBlock != null) {
@@ -107,7 +107,7 @@ public class OcmData implements Data {
     }
 
     /** Get orbit state histories logical blocks.
-     * @return orbita state histories logical blocks (may be empty)
+     * @return orbita state histories logical blocks (may be null)
      */
     public List<OrbitStateHistory> getOrbitBlocks() {
         return orbitBlocks;
@@ -121,14 +121,14 @@ public class OcmData implements Data {
     }
 
     /** Get covariance logical blocks.
-     * @return covariance logical blocks (may be empty)
+     * @return covariance logical blocks (may be null)
      */
     public List<CovarianceHistory> getCovarianceBlocks() {
         return covarianceBlocks;
     }
 
     /** Get maneuvers logical blocks.
-     * @return maneuvers logical block (may be empty)
+     * @return maneuvers logical block (may be null)
      */
     public List<ManeuverHistory> getManeuverBlocks() {
         return maneuverBlocks;

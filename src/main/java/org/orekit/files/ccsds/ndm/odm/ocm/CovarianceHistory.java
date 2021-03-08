@@ -20,13 +20,11 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 import java.util.Collections;
 import java.util.List;
 
-import org.orekit.files.ccsds.section.CommentsContainer;
-
 /** Covariance history.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class CovarianceHistory extends CommentsContainer {
+public class CovarianceHistory {
 
     /** Metadata. */
     private final CovarianceHistoryMetadata metadata;

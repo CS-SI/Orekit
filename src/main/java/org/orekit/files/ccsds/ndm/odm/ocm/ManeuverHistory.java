@@ -20,13 +20,11 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 import java.util.Collections;
 import java.util.List;
 
-import org.orekit.files.ccsds.section.CommentsContainer;
-
 /** Maneuver history.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class ManeuverHistory extends CommentsContainer {
+public class ManeuverHistory {
 
     /** Metadata. */
     private final ManeuverHistoryMetadata metadata;
