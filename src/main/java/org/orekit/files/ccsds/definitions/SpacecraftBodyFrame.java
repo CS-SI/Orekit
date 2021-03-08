@@ -103,10 +103,10 @@ public class SpacecraftBodyFrame {
      * @return parsed body frame
      */
     public static SpacecraftBodyFrame parse(final String descriptor) {
-        final int separatorIndex = descriptor.lastIndexOf(' ');
+        final int separatorIndex = descriptor.lastIndexOf('_');
         if (separatorIndex >= 0) {
             try {
-                final String equipmentName = descriptor.substring(0, separatorIndex).replace(' ', '_');
+                final String equipmentName = descriptor.substring(0, separatorIndex);
                 return new SpacecraftBodyFrame(BaseEquipment.valueOf(equipmentName),
                                           descriptor.substring(separatorIndex + 1));
             } catch (IllegalArgumentException iae) {
