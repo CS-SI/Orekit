@@ -36,29 +36,23 @@
 
         interface EphemerisFile.SatelliteEphemeris {
           +getId()
+          +getMu()
           +getSegments()
           +getStart()
           +getStop()
-          +getProvider()
+          +getPropagator()
         }
 
         interface EphemerisFile.EphemerisSegment {
-          +getCenterName()
-          +getRefFrameAString()
-          +getRefFrameBString()
-          +getDirection()
-          +getType()
-          +isFirst()
-          +getRotationOrder()
-          +getTimeScaleString()
-          +getTimeScale()
-          +getInterpolationMethod()
-          +getStart()
-          +getStop()
+          +getMu()
+          +getFrame()
+          +getInertialFrame()
           +getInterpolationSamples()
           +getAvailableDerivatives()
-          +getAngularCoordinates()
-          +getProvider()
+          +getCoordinates()
+          +getStart()
+          +getStop()
+          +getPropagator()
         }
 
         interface EphemerisFileWriter
@@ -68,14 +62,14 @@
 
     package ccsds #DDEBD8 {
 
-      package utils #DDEBD8 {
+      package utils #CBDBC8 {
 
         enum FileFormat {
           +KVN
           +XML
         }
 
-        package generation #CBDBC8 {
+        package generation #CCCCC7 {
           class KvnGenerator
           class XmlGenerator
           interface Generator {

@@ -33,7 +33,7 @@
       class DataSource
     }
 
-    package files.utils.ccsds #DDEBD8 {
+    package files.ccsds #DDEBD8 {
 
       package section #CBDBC8 {
         class HeaderProcessingState
@@ -41,7 +41,8 @@
         class XmlStructureProcessingState
       }
 
-      package lexical #CBDBC8 {
+      package utils #CBDBC8 {
+      package lexical #CCCCC7 {
         interface LexicalAnalyzer
         enum TokenType {
           +START
@@ -66,7 +67,7 @@
         }
       }
 
-      package state #CBDBC8 {
+      package parsing #CCCCC7 {
         abstract class "AbstractMessageParser<T>" as AbstractMessageParser {
           #reset(fileFormat, initialState)
           +prepareHeader()
@@ -89,16 +90,18 @@
         +KVN
         +XML
       }
+      }
 
       package ndm #CBDBC8 {
 
          package odm.opm #CCCCC7 {
           class OpmParser
-          note bottom
-            uses method references to
-            provide multiple implementations
-            of ProcessingState for different
-            logical blocks
+          note right
+            uses method references
+            to provide multiple
+            implementations
+            of ProcessingState for
+            different logical blocks
           end note
           class OpmFile
         }

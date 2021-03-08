@@ -36,7 +36,7 @@
       }
     }
 
-    package files.utils.ccsds #DDEBD8 {
+    package files.ccsds.utils #DDEBD8 {
 
       enum FileFormat {
         +KVN
