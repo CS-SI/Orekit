@@ -542,12 +542,12 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
                                   mass, referenceRadius, mu, ck0);
 
             // check convergence
-            if ((FastMath.abs(deltaA)      < thresholdA) &&
-                (FastMath.abs(deltaEx)     < thresholdE) &&
-                (FastMath.abs(deltaEy)     < thresholdE) &&
-                (FastMath.abs(deltaI)      < thresholdAngles) &&
-                (FastMath.abs(deltaRAAN)   < thresholdAngles) &&
-                (FastMath.abs(deltaAlphaM) < thresholdAngles)) {
+            if (FastMath.abs(deltaA)      < thresholdA &&
+                FastMath.abs(deltaEx)     < thresholdE &&
+                FastMath.abs(deltaEy)     < thresholdE &&
+                FastMath.abs(deltaI)      < thresholdAngles &&
+                FastMath.abs(deltaRAAN)   < thresholdAngles &&
+                FastMath.abs(deltaAlphaM) < thresholdAngles) {
                 return current;
             }
 
@@ -979,7 +979,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
             cosAlphaE      = alphaE.cos();
             sinAlphaE      = alphaE.sin();
 
-        } while ((++iter < 50) && (FastMath.abs(shift.getValue()) > 1.0e-12));
+        } while (++iter < 50 && FastMath.abs(shift.getValue()) > 1.0e-12);
 
         return alphaE;
 

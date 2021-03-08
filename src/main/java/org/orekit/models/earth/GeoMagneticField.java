@@ -322,7 +322,7 @@ public class GeoMagneticField {
      */
     public static double getDecimalYear(final int day, final int month, final int year) {
         final int[] days = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
-        final int leapYear = (((year % 4) == 0) && (((year % 100) != 0) || ((year % 400) == 0))) ? 1 : 0;
+        final int leapYear = ((year % 4) == 0 && ((year % 100) != 0 || (year % 400) == 0)) ? 1 : 0;
 
         final double dayInYear = days[month - 1] + (day - 1) + (month > 2 ? leapYear : 0);
         return (double) year + (dayInYear / (365.0d + leapYear));

@@ -141,7 +141,7 @@ class AlternatingSampler {
      * @return true if current value is within range
      */
     public boolean inRange() {
-        return (min <= current) && (current <= max);
+        return min <= current && current <= max;
     }
 
     /** Generate next value.

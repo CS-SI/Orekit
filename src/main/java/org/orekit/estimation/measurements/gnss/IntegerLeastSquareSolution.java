@@ -62,7 +62,7 @@ public class IntegerLeastSquareSolution implements Comparable<IntegerLeastSquare
      */
     @Override
     public boolean equals(final Object other) {
-        if ((other != null) && (other instanceof IntegerLeastSquareSolution)) {
+        if (other != null && other instanceof IntegerLeastSquareSolution) {
             return getSquaredDistance() == ((IntegerLeastSquareSolution) other).getSquaredDistance();
         }
 

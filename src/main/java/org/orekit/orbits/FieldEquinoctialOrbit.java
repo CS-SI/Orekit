@@ -583,7 +583,7 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
             lE     = lM.add(lEmlM);
             scLE = FastMath.sinCos(lE);
 
-        } while ((++iter < 50) && (FastMath.abs(shift.getReal()) > 1.0e-12));
+        } while (++iter < 50 && FastMath.abs(shift.getReal()) > 1.0e-12);
 
         return lE;
 

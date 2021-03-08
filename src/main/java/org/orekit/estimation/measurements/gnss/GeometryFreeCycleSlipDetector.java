@@ -86,7 +86,7 @@ public class GeometryFreeCycleSlipDetector extends AbstractCycleSlipDetector {
 
         // Loop on observation data to fill lists
         for (final CombinedObservationData cod : cods.getObservationData()) {
-            if (!Double.isNaN(cod.getValue()) && (cod.getMeasurementType() == MeasurementType.CARRIER_PHASE)) {
+            if (!Double.isNaN(cod.getValue()) && cod.getMeasurementType() == MeasurementType.CARRIER_PHASE) {
                 phasesGF.add(cod);
             }
         }

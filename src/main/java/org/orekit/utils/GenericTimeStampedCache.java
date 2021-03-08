@@ -340,7 +340,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
 
                     // we really need to create a new slot in the current thread
                     // (no other threads have created it while we were waiting for the lock)
-                    if ((!slots.isEmpty()) &&
+                    if (!slots.isEmpty() &&
                         slots.get(index).getLatestQuantum() < dateQuantum - newSlotQuantumGap) {
                         ++index;
                     }

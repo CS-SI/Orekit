@@ -264,12 +264,12 @@ public class JacobiPolynomials {
         @Override
         public boolean equals(final Object key) {
 
-            if ((key == null) || !(key instanceof JacobiKey)) {
+            if (key == null || !(key instanceof JacobiKey)) {
                 return false;
             }
 
             final JacobiKey otherK = (JacobiKey) key;
-            return (v == otherK.v) && (w == otherK.w);
+            return v == otherK.v && w == otherK.w;
 
         }
     }
