@@ -257,7 +257,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
         final T zero = ga.getField().getZero();
 
         // check there appears to be a root in [ta, tb]
-        check(ga.getReal() == 0.0 || gb.getReal() == 0.0 || (ga.getReal() > 0.0 && gb.getReal() < 0.0) || (ga.getReal() < 0.0 && gb.getReal() > 0.0));
+        check(ga.getReal() == 0.0 || gb.getReal() == 0.0 || ga.getReal() > 0.0 && gb.getReal() < 0.0 || ga.getReal() < 0.0 && gb.getReal() > 0.0);
         final T convergence = detector.getThreshold();
         final int maxIterationCount = detector.getMaxIterationCount();
         final BracketedUnivariateSolver<UnivariateFunction> solver =
@@ -343,8 +343,8 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
                 afterRootG = g(interpolator.getInterpolatedState(afterRootT));
             }
             // check loop is making some progress
-            check((forward && afterRootT.compareTo(beforeRootT) > 0) ||
-                  (!forward && afterRootT.compareTo(beforeRootT) < 0));
+            check(forward && afterRootT.compareTo(beforeRootT) > 0 ||
+                  !forward && afterRootT.compareTo(beforeRootT) < 0);
             // setup next iteration
             loopT = afterRootT;
             loopG = afterRootG;
@@ -480,7 +480,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
         g0 = afterG;
         g0Positive = increasing;
         // check g0Positive set correctly
-        check(g0.getReal() == 0.0 || g0Positive == (g0.getReal() > 0));
+        check(g0.getReal() == 0.0 || g0Positive == g0.getReal() > 0);
         return new EventOccurrence<T>(action, newState, stopTime);
     }
 

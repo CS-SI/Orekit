@@ -426,7 +426,7 @@ class Mesh {
                 final Node next     = boundary.get((i + 1)     % n);
                 final int  nl       = next.getAlongIndex();
                 final int  nc       = next.getAcrossIndex();
-                if ((pl == cl && cl == nl) || (pc == cc && cc == nc)) {
+                if (pl == cl && cl == nl || pc == cc && cc == nc) {
                     // the current point is a spurious intermediate in a straight line, remove it
                     boundary.remove(i--);
                 }

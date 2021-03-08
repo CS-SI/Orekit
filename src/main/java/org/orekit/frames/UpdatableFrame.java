@@ -146,9 +146,9 @@ public class UpdatableFrame extends Frame {
         Transform fAtoB = f1Tof2;
 
         // make sure f1 is not a child of the instance
-        if (fA.isChildOf(this) || (fA == this)) {
+        if (fA.isChildOf(this) || fA == this) {
 
-            if (fB.isChildOf(this) || (fB == this)) {
+            if (fB.isChildOf(this) || fB == this) {
                 throw new FrameAncestorException(OrekitMessages.FRAME_ANCESTOR_OF_BOTH_FRAMES,
                                                  getName(), fA.getName(), fB.getName());
             }
@@ -159,7 +159,7 @@ public class UpdatableFrame extends Frame {
             fB = tmp;
             fAtoB = fAtoB.getInverse();
 
-        } else  if (!(fB.isChildOf(this) || (fB == this))) {
+        } else  if (!(fB.isChildOf(this) || fB == this)) {
             throw new FrameAncestorException(OrekitMessages.FRAME_ANCESTOR_OF_NEITHER_FRAME,
                                              getName(), fA.getName(), fB.getName());
         }

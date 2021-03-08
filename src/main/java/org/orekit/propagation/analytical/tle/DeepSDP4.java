@@ -339,7 +339,7 @@ public class DeepSDP4 extends SDP4 {
 
         // if mean motion is 1.893053 to 2.117652 revs/day, and eccentricity >= 0.5,
         // start of the 12-hour orbit, e > 0.5 section
-        if ((xnq >= 0.00826) && (xnq <= 0.00924) && (tle.getE() >= 0.5)) {
+        if (xnq >= 0.00826 && xnq <= 0.00924 && tle.getE() >= 0.5) {
 
             final double g201 = -0.306 - (tle.getE() - 0.64) * 0.440;
             final double eoc = tle.getE() * e0sq;
@@ -422,7 +422,7 @@ public class DeepSDP4 extends SDP4 {
             xlamo = tle.getMeanAnomaly() + tle.getRaan() + tle.getRaan() - thgr - thgr;
             bfact = xmdot + xnodot + xnodot - TLEConstants.THDT - TLEConstants.THDT;
             bfact += ssl + ssh + ssh;
-        } else if ((xnq < 0.0052359877) && (xnq > 0.0034906585)) {
+        } else if (xnq < 0.0052359877 && xnq > 0.0034906585) {
             // if mean motion is .8 to 1.2 revs/day : (geosynch)
 
             final double cosio_plus_1 = 1.0 + cosi0;
@@ -531,7 +531,7 @@ public class DeepSDP4 extends SDP4 {
         // However,  the Dundee code _always_ recomputes,  so if
         // we're attempting to replicate its results,  we've gotta
         // recompute everything,  too.
-        if ((FastMath.abs(savtsn - t) >= 30.0) || isDundeeCompliant)  {
+        if (FastMath.abs(savtsn - t) >= 30.0 || isDundeeCompliant)  {
 
             savtsn = t;
 

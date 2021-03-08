@@ -218,7 +218,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
     public boolean equals(final Object other) {
         try {
             final DateTimeComponents otherDateTime = (DateTimeComponents) other;
-            return (otherDateTime != null) &&
+            return otherDateTime != null &&
                    date.equals(otherDateTime.date) && time.equals(otherDateTime.time);
         } catch (ClassCastException cce) {
             return false;

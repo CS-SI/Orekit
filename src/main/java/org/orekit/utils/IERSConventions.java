@@ -3146,7 +3146,7 @@ public enum IERSConventions {
                             }
                             final int n = Integer.parseInt(fields[0]);
                             final int m = Integer.parseInt(fields[1]);
-                            if ((n < 2) || (n > 3) || (m < 0) || (m > n)) {
+                            if (n < 2 || n > 3 || m < 0 || m > n) {
                                 // this should never happen with files embedded within Orekit
                                 throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                           lineNumber, nameLove, line);

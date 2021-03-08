@@ -90,7 +90,7 @@ class PosVelChebyshev implements TimeStamped, Serializable {
      */
     public boolean inRange(final AbsoluteDate date) {
         final double dt = date.offsetFrom(start, timeScale);
-        return (dt >= -0.001) && (dt <= duration + 0.001);
+        return dt >= -0.001 && dt <= duration + 0.001;
     }
 
     /** Get the position-velocity-acceleration at a specified date.

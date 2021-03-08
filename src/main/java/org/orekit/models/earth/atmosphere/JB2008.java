@@ -462,7 +462,7 @@ public class JB2008 implements Atmosphere {
 
         // Compute the high altitude exospheric density correction factor
         double fex = 1.0;
-        if ((altKm >= 1000.0) && (altKm < 1500.0)) {
+        if (altKm >= 1000.0 && altKm < 1500.0) {
             final double zeta = (altKm - 1000.) * 0.002;
             final double f15c = CHT[0] + CHT[1] * f10B + (CHT[2] + CHT[3] * f10B) * 1500.0;
             final double f15cZeta = (CHT[2] + CHT[3] * f10B) * 500.0;
@@ -729,7 +729,7 @@ public class JB2008 implements Atmosphere {
 
         // Compute the high altitude exospheric density correction factor
         T fex = field.getOne();
-        if ((altKm.getReal() >= 1000.0) && (altKm.getReal() < 1500.0)) {
+        if (altKm.getReal() >= 1000.0 && altKm.getReal() < 1500.0) {
             final T zeta = altKm.subtract(1000.).multiply(0.002);
             final double f15c     = CHT[0] + CHT[1] * f10B + (CHT[2] + CHT[3] * f10B) * 1500.0;
             final double f15cZeta = (CHT[2] + CHT[3] * f10B) * 500.0;
@@ -761,17 +761,17 @@ public class JB2008 implements Atmosphere {
         final double fs = (f10 - 100.0) / 100.0;
 
         // Calculates dTc according to height
-        if ((satAlt >= 120) && (satAlt <= 200)) {
+        if (satAlt >= 120 && satAlt <= 200) {
             final double dtc200 = poly2CDTC(fs, st, cs);
             final double dtc200dz = poly1CDTC(fs, st, cs);
             final double cc = 3.0 * dtc200 - dtc200dz;
             final double dd = dtc200 - cc;
             final double zp = (satAlt - 120.0) / 80.0;
             dTc = zp * zp * (cc + dd * zp);
-        } else if ((satAlt > 200.0) && (satAlt <= 240.0)) {
+        } else if (satAlt > 200.0 && satAlt <= 240.0) {
             final double h = (satAlt - 200.0) / 50.0;
             dTc = poly1CDTC(fs, st, cs) * h + poly2CDTC(fs, st, cs);
-        } else if ((satAlt > 240.0) && (satAlt <= 300.0)) {
+        } else if (satAlt > 240.0 && satAlt <= 300.0) {
             final double h = 0.8;
             final double bb = poly1CDTC(fs, st, cs);
             final double aa = bb * h + poly2CDTC(fs, st, cs);
@@ -782,10 +782,10 @@ public class JB2008 implements Atmosphere {
             final double dd = dtc300 - aa - bb - cc;
             final double zp = (satAlt - 240.0) / 60.0;
             dTc = aa + zp * (bb + zp * (cc + zp * dd));
-        } else if ((satAlt > 300.0) && (satAlt <= 600.0)) {
+        } else if (satAlt > 300.0 && satAlt <= 600.0) {
             final double h = satAlt / 100.0;
             dTc = poly1BDTC(fs, st, cs, h * poly2BDTC(st));
-        } else if ((satAlt > 600.0) && (satAlt <= 800.0)) {
+        } else if (satAlt > 600.0 && satAlt <= 800.0) {
             final double poly2 = poly2BDTC(st);
             final double aa = poly1BDTC(fs, st, cs, 6 * poly2);
             final double bb = cs * poly2;
@@ -814,17 +814,17 @@ public class JB2008 implements Atmosphere {
         final double fs = (f10 - 100.0) / 100.0;
 
         // Calculates dTc according to height
-        if ((satAlt.getReal() >= 120) && (satAlt.getReal() <= 200)) {
+        if (satAlt.getReal() >= 120 && satAlt.getReal() <= 200) {
             final T dtc200   = poly2CDTC(fs, st, cs);
             final T dtc200dz = poly1CDTC(fs, st, cs);
             final T cc       = dtc200.multiply(3).subtract(dtc200dz);
             final T dd       = dtc200.subtract(cc);
             final T zp       = satAlt.subtract(120.0).divide(80.0);
             dTc = zp.multiply(zp).multiply(cc.add(dd.multiply(zp)));
-        } else if ((satAlt.getReal() > 200.0) && (satAlt.getReal() <= 240.0)) {
+        } else if (satAlt.getReal() > 200.0 && satAlt.getReal() <= 240.0) {
             final T h = satAlt.subtract(200.0).divide(50.0);
             dTc = poly1CDTC(fs, st, cs).multiply(h).add(poly2CDTC(fs, st, cs));
-        } else if ((satAlt.getReal() > 240.0) && (satAlt.getReal() <= 300.0)) {
+        } else if (satAlt.getReal() > 240.0 && satAlt.getReal() <= 300.0) {
             final T h = solarTime.getField().getZero().add(0.8);
             final T bb = poly1CDTC(fs, st, cs);
             final T aa = bb.multiply(h).add(poly2CDTC(fs, st, cs));
@@ -835,10 +835,10 @@ public class JB2008 implements Atmosphere {
             final T dd = dtc300.subtract(aa).subtract(bb).subtract(cc);
             final T zp = satAlt.subtract(240.0).divide(60.0);
             dTc = aa.add(zp.multiply(bb.add(zp.multiply(cc.add(zp.multiply(dd))))));
-        } else if ((satAlt.getReal() > 300.0) && (satAlt.getReal() <= 600.0)) {
+        } else if (satAlt.getReal() > 300.0 && satAlt.getReal() <= 600.0) {
             final T h = satAlt.divide(100.0);
             dTc = poly1BDTC(fs, st, cs, h.multiply(poly2BDTC(st)));
-        } else if ((satAlt.getReal() > 600.0) && (satAlt.getReal() <= 800.0)) {
+        } else if (satAlt.getReal() > 600.0 && satAlt.getReal() <= 800.0) {
             final T poly2 = poly2BDTC(st);
             final T aa = poly1BDTC(fs, st, cs, poly2.multiply(6));
             final T bb = cs.multiply(poly2);
@@ -1241,8 +1241,8 @@ public class JB2008 implements Atmosphere {
 
         // check if data are available :
         final AbsoluteDate dateD = date.toAbsoluteDate();
-        if ((dateD.compareTo(inputParams.getMaxDate()) > 0) ||
-                        (dateD.compareTo(inputParams.getMinDate()) < 0)) {
+        if (dateD.compareTo(inputParams.getMaxDate()) > 0 ||
+                        dateD.compareTo(inputParams.getMinDate()) < 0) {
             throw new OrekitException(OrekitMessages.NO_SOLAR_ACTIVITY_AT_DATE,
                                       dateD, inputParams.getMinDate(), inputParams.getMaxDate());
         }

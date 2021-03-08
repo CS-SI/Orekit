@@ -270,9 +270,9 @@ public class ODMMetaData {
         final boolean isIcrf = "ICRF".equals(frameString);
         final boolean isSolarSystemBarycenter =
                 CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER.equals(body.getName());
-        if ((!(isMci || isIcrf) && CelestialBodyFactory.EARTH.equals(body.getName())) ||
-                (isMci && CelestialBodyFactory.MARS.equals(body.getName())) ||
-                (isIcrf && isSolarSystemBarycenter)) {
+        if (!(isMci || isIcrf) && CelestialBodyFactory.EARTH.equals(body.getName()) ||
+                isMci && CelestialBodyFactory.MARS.equals(body.getName()) ||
+                isIcrf && isSolarSystemBarycenter) {
             return frame;
         }
         // else, translate frame to specified center.

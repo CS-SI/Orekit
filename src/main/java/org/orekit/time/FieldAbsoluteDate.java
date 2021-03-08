@@ -1402,7 +1402,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
             return true;
         }
 
-        if ((date != null) && (date instanceof FieldAbsoluteDate)) {
+        if (date != null && date instanceof FieldAbsoluteDate) {
             return durationFrom((FieldAbsoluteDate<T>) date).getReal() == 0.0;
         }
 

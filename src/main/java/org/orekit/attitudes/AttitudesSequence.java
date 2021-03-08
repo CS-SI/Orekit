@@ -407,7 +407,7 @@ public class AttitudesSequence implements AttitudeProvider {
 
             final AbsoluteDate date = s.getDate();
             if (activated.get(date) == (forward ? past : future) &&
-                ((increasing && switchOnIncrease) || (!increasing && switchOnDecrease))) {
+                (increasing && switchOnIncrease || !increasing && switchOnDecrease)) {
 
                 if (forward) {
 
