@@ -492,7 +492,7 @@ public class OEMParserTest {
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
             Assert.assertEquals(91, ((Integer) oe.getParts()[0]).intValue());
-            Assert.assertTrue(((String) oe.getParts()[2]).startsWith(" 1.0e-12"));
+            Assert.assertTrue(((String) oe.getParts()[2]).startsWith("1.0e-12"));
         }
     }
 
@@ -529,7 +529,7 @@ public class OEMParserTest {
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
             Assert.assertEquals(51, ((Integer) oe.getParts()[0]).intValue());
-            Assert.assertTrue(((String) oe.getParts()[2]).startsWith(" 3.3313494e-04"));
+            Assert.assertTrue(((String) oe.getParts()[2]).startsWith("3.3313494e-04"));
         }
     }
 

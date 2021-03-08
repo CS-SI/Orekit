@@ -29,7 +29,7 @@ public enum MetadataKey {
 
     /** Comment entry. */
     COMMENT((token, context, metadata) ->
-             token.getType() == TokenType.ENTRY ? metadata.addComment(token.getContent()) : true),
+             token.getType() == TokenType.ENTRY ? metadata.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Time system entry. */
     TIME_SYSTEM((token, context, metadata) -> token.processAsTimeScale(metadata::setTimeSystem));

@@ -35,7 +35,7 @@ public enum TdmDataKey {
 
     /** Comment entry. */
     COMMENT((token, context, data) ->
-            token.getType() == TokenType.ENTRY ? data.addComment(token.getContent()) : true),
+            token.getType() == TokenType.ENTRY ? data.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Epoch entry. */
     EPOCH((token, context, observationsBlock) -> token.processAsDate(observationsBlock::addObservationEpoch, context)),
@@ -220,7 +220,7 @@ public enum TdmDataKey {
             } else {
 
                 // we are parsing a KVN file and need to parse both epoch and measurement
-                final String[] fields = SEPARATOR.split(token.getContent());
+                final String[] fields = SEPARATOR.split(token.getContentAsNormalizedString());
                 if (fields.length != 2) {
                     throw token.generateException(null);
                 }

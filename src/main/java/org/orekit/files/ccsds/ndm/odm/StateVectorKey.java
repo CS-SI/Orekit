@@ -29,7 +29,7 @@ public enum StateVectorKey {
 
     /** Comment entry. */
     COMMENT((token, context, container) ->
-            token.getType() == TokenType.ENTRY ? container.addComment(token.getContent()) : true),
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Epoch of state vector and optional Keplerian elements. */
     EPOCH((token, context, container) -> token.processAsDate(container::setEpoch, context)),

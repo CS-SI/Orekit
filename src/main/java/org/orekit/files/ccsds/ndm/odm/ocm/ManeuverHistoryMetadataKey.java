@@ -32,25 +32,25 @@ public enum ManeuverHistoryMetadataKey {
 
     /** Comment entry. */
     COMMENT((token, context, container) ->
-            token.getType() == TokenType.ENTRY ? container.addComment(token.getContent()) : true),
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Maneuver identification number. */
-    MAN_ID((token, context, container) -> token.processAsFreeTextString(container::setManID)),
+    MAN_ID((token, context, container) -> token.processAsNormalizedString(container::setManID)),
 
     /** Identification number of previous maneuver. */
-    MAN_PREV_ID((token, context, container) -> token.processAsFreeTextString(container::setManPrevID)),
+    MAN_PREV_ID((token, context, container) -> token.processAsNormalizedString(container::setManPrevID)),
 
     /** Identification number of next maneuver. */
-    MAN_NEXT_ID((token, context, container) -> token.processAsFreeTextString(container::setManNextID)),
+    MAN_NEXT_ID((token, context, container) -> token.processAsNormalizedString(container::setManNextID)),
 
     /** Basis of this maneuver history data. */
-    MAN_BASIS((token, context, container) -> token.processAsFreeTextString(container::setManBasis)),
+    MAN_BASIS((token, context, container) -> token.processAsNormalizedString(container::setManBasis)),
 
     /** Identification number of the orbit determination or simulation upon which this maneuver is based.*/
-    MAN_BASIS_ID((token, context, container) -> token.processAsFreeTextString(container::setManBasisID)),
+    MAN_BASIS_ID((token, context, container) -> token.processAsNormalizedString(container::setManBasisID)),
 
     /** Identifier of the device used for this maneuver.*/
-    MAN_DEVICE_ID((token, context, container) -> token.processAsFreeTextString(container::setManDeviceID)),
+    MAN_DEVICE_ID((token, context, container) -> token.processAsNormalizedString(container::setManDeviceID)),
 
     /** Completion time of previous maneuver. */
     MAN_PREV_EPOCH((token, context, container) -> token.processAsDate(container::setManPrevEpoch, context)),
@@ -59,10 +59,10 @@ public enum ManeuverHistoryMetadataKey {
     MAN_NEXT_EPOCH((token, context, container) -> token.processAsDate(container::setManNextEpoch, context)),
 
     /** Purposes of the maneuver. */
-    MAN_PURPOSE((token, context, container) -> token.processAsFreeTextStringList(container::setManPurpose)),
+    MAN_PURPOSE((token, context, container) -> token.processAsNormalizedList(container::setManPurpose)),
 
     /** Prediction source on which this maneuver is based. */
-    MAN_PRED_SOURCE((token, context, container) -> token.processAsFreeTextString(container::setManPredSource)),
+    MAN_PRED_SOURCE((token, context, container) -> token.processAsNormalizedString(container::setManPredSource)),
 
     /** Reference frame of the maneuver. */
     MAN_REF_FRAME((token, context, container) -> token.processAsFrame(container::setManReferenceFrame, context, true, false, false)),
@@ -78,7 +78,7 @@ public enum ManeuverHistoryMetadataKey {
     DC_TYPE((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
             try {
-                container.setDcType(DutyCycleType.valueOf(token.getContentAsNormalizedString()));
+                container.setDcType(DutyCycleType.valueOf(token.getContentAsUppercaseString()));
             } catch (IllegalArgumentException iae) {
                 throw token.generateException(iae);
             }
@@ -133,8 +133,9 @@ public enum ManeuverHistoryMetadataKey {
     MAN_COMPOSITION((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
             try {
-                container.setManComposition(token.getContentAsFreeTextStringList().
+                container.setManComposition(token.getContentAsNormalizedList().
                                            stream().
+                                           map(s -> s.replace(' ', '_')).
                                            map(s -> ManeuverFieldType.valueOf(s)).
                                            collect(Collectors.toList()));
             } catch (IllegalArgumentException iae) {

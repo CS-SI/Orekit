@@ -30,22 +30,22 @@ public enum CovarianceHistoryMetadataKey {
 
     /** Comment entry. */
     COMMENT((token, context, container) ->
-            token.getType() == TokenType.ENTRY ? container.addComment(token.getContent()) : true),
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Covariance identification number. */
-    COV_ID((token, context, container) -> token.processAsNormalizedString(container::setCovID)),
+    COV_ID((token, context, container) -> token.processAsUppercaseString(container::setCovID)),
 
     /** Identification number of previous covariance. */
-    COV_PREV_ID((token, context, container) -> token.processAsNormalizedString(container::setCovPrevID)),
+    COV_PREV_ID((token, context, container) -> token.processAsUppercaseString(container::setCovPrevID)),
 
     /** Identification number of next covariance. */
-    COV_NEXT_ID((token, context, container) -> token.processAsNormalizedString(container::setCovNextID)),
+    COV_NEXT_ID((token, context, container) -> token.processAsUppercaseString(container::setCovNextID)),
 
     /** Basis of this covariance time history data. */
-    COV_BASIS((token, context, container) -> token.processAsNormalizedString(container::setCovBasis)),
+    COV_BASIS((token, context, container) -> token.processAsUppercaseString(container::setCovBasis)),
 
     /** Identification number of the orbit determination or simulation upon which this covariance is based.*/
-    COV_BASIS_ID((token, context, container) -> token.processAsNormalizedString(container::setCovBasisID)),
+    COV_BASIS_ID((token, context, container) -> token.processAsUppercaseString(container::setCovBasisID)),
 
     /** Reference frame of the covariance. */
     COV_REF_FRAME((token, context, container) -> token.processAsFrame(container::setCovReferenceFrame, context, true, false, false)),
@@ -60,14 +60,14 @@ public enum CovarianceHistoryMetadataKey {
     COV_SCALE_MAX((token, context, container) -> token.processAsDouble(1.0, container::setCovScaleMax)),
 
     /** Masure of confidence in covariance error matching reality. */
-    COV_CONFIDENCE((token, context, container) -> token.processAsFreeTextString(container::setCovConfidence)),
+    COV_CONFIDENCE((token, context, container) -> token.processAsNormalizedString(container::setCovConfidence)),
 
     /** Covariance element set type.
      * @see ElementsType
      */
     COV_TYPE((token, context, container) -> {
         try {
-            container.setCovType(ElementsType.valueOf(token.getContentAsNormalizedString()));
+            container.setCovType(ElementsType.valueOf(token.getContentAsUppercaseString()));
         } catch (IllegalArgumentException iae) {
             throw token.generateException(iae);
         }

@@ -45,7 +45,7 @@ public enum OemMetadataKey {
     INTERPOLATION((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
             try {
-                container.setInterpolationMethod(InterpolationMethod.valueOf(token.getContentAsNormalizedString()));
+                container.setInterpolationMethod(InterpolationMethod.valueOf(token.getContentAsUppercaseString()));
             } catch (IllegalArgumentException iae) {
                 throw new OrekitException(iae, OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE,
                                           token.getName(), token.getLineNumber(), token.getFileName());

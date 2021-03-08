@@ -78,7 +78,7 @@ public enum EulerKey {
 
     /** Comment entry. */
     COMMENT((token, context, data) ->
-            token.getType() == TokenType.ENTRY ? data.addComment(token.getContent()) : true),
+            token.getType() == TokenType.ENTRY ? data.addComment(token.getContentAsNormalizedString()) : true),
 
     /** First reference frame entry. */
     EULER_FRAME_A((token, context, data) -> token.processAsFrame(data.getEndpoints()::setFrameA, context, true, true, true)),
@@ -97,7 +97,7 @@ public enum EulerKey {
     /** Rotation direction entry. */
     EULER_DIR((token, context, data) -> {
         if (token.getType() == TokenType.ENTRY) {
-            data.getEndpoints().setA2b(token.getContentAsNormalizedCharacter() == 'A');
+            data.getEndpoints().setA2b(token.getContentAsUppercaseCharacter() == 'A');
         }
         return true;
     }),
@@ -106,7 +106,7 @@ public enum EulerKey {
     EULER_ROT_SEQ((token, context, data) -> AdmParser.processRotationOrder(token, data::setEulerRotSeq)),
 
     /** Reference frame for rate entry. */
-    RATE_FRAME((token, context, data) -> token.processAsNormalizedString(data::setRateFrameString)),
+    RATE_FRAME((token, context, data) -> token.processAsUppercaseString(data::setRateFrameString)),
 
     /** X body rotation angle entry. */
     X_ANGLE((token, context, data) -> token.processAsIndexedAngle(0, data::setRotationAngle)),

@@ -81,13 +81,13 @@ public abstract class AdmParser<T extends NdmFile<?, ?>, P extends AbstractMessa
                                                final RotationOrderConsumer consumer) {
         if (sequence.getType() == TokenType.ENTRY) {
             try {
-                consumer.accept(RotationOrder.valueOf(sequence.getContentAsNormalizedString().
+                consumer.accept(RotationOrder.valueOf(sequence.getContentAsUppercaseString().
                                                       replace('1', 'X').
                                                       replace('2', 'Y').
                                                       replace('3', 'Z')));
             } catch (IllegalArgumentException iae) {
                 throw new OrekitException(OrekitMessages.CCSDS_INVALID_ROTATION_SEQUENCE,
-                                          sequence.getContentAsNormalizedString(),
+                                          sequence.getContentAsUppercaseString(),
                                           sequence.getLineNumber(), sequence.getFileName());
             }
         }

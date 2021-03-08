@@ -243,7 +243,7 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
     private boolean processDataToken(final ParseToken token) {
         inData();
         if ("COMMENT".equals(token.getName())) {
-            return token.getType() == TokenType.ENTRY ? currentBlock.addComment(token.getContent()) : true;
+            return token.getType() == TokenType.ENTRY ? currentBlock.addComment(token.getContentAsNormalizedString()) : true;
         } else if (token.getType() == TokenType.RAW_LINE) {
             try {
                 if (metadata.getAttitudeType() == null) {
@@ -251,11 +251,11 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
                                               AemMetadataKey.ATTITUDE_TYPE.name(), token.getFileName());
                 }
                 return currentBlock.addData(metadata.getAttitudeType().parse(metadata, context,
-                                                                             SPLIT_AT_BLANKS.split(token.getContent().trim()),
+                                                                             SPLIT_AT_BLANKS.split(token.getRawContent().trim()),
                                                                              token.getFileName()));
             } catch (NumberFormatException nfe) {
                 throw new OrekitException(nfe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                          token.getLineNumber(), token.getFileName(), token.getContent());
+                                          token.getLineNumber(), token.getFileName(), token.getRawContent());
             }
         } else {
             // not a raw line, it is most probably the end of the data section

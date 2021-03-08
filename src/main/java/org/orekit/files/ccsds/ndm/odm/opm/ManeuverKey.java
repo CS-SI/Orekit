@@ -29,7 +29,7 @@ public enum ManeuverKey {
 
     /** Comment entry. */
     COMMENT((token, context, container) ->
-            token.getType() == TokenType.ENTRY ? container.addComment(token.getContent()) : true),
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Epoch of ignition. */
     MAN_EPOCH_IGNITION((token, context, container) -> token.processAsDate(container::setEpochIgnition, context)),

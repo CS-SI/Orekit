@@ -455,12 +455,12 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                 setFallback(this::processDataSubStructureToken);
             }
             try {
-                final String[] fields = SPLIT_AT_BLANKS.split(token.getContent().trim());
+                final String[] fields = SPLIT_AT_BLANKS.split(token.getRawContent().trim());
                 // as ORB_UNITS is optional and indeed MUST match type, get them directly from type
                 final List<Unit> units = currentOrbitStateHistoryMetadata.getOrbType().getUnits();
                 if (fields.length != units.size() + 1) {
                     throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                              token.getLineNumber(), token.getFileName(), token.getContent());
+                                              token.getLineNumber(), token.getFileName(), token.getContentAsNormalizedString());
                 }
                 final AbsoluteDate epoch;
                 if (fields[0].indexOf('T') > 0) {
@@ -474,7 +474,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                                                                    epoch, fields, 1, units));
             } catch (NumberFormatException nfe) {
                 throw new OrekitException(nfe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                          token.getLineNumber(), token.getFileName(), token.getContent());
+                                          token.getLineNumber(), token.getFileName(), token.getContentAsNormalizedString());
             }
         }
     }
@@ -519,11 +519,11 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                 setFallback(this::processDataSubStructureToken);
             }
             try {
-                final String[] fields = SPLIT_AT_BLANKS.split(token.getContent().trim());
+                final String[] fields = SPLIT_AT_BLANKS.split(token.getRawContent().trim());
                 final int n = currentCovarianceHistoryMetadata.getCovUnits().size();
                 if (fields.length != 1 + (n * (n + 1) / 2)) {
                     throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                              token.getLineNumber(), token.getFileName(), token.getContent());
+                                              token.getLineNumber(), token.getFileName(), token.getContentAsNormalizedString());
                 }
                 currentCovarianceHistory.add(new Covariance(currentCovarianceHistoryMetadata.getCovType(),
                                                             context.getTimeSystem().parseDate(fields[0], context),
@@ -531,7 +531,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                 return true;
             } catch (NumberFormatException nfe) {
                 throw new OrekitException(nfe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                          token.getLineNumber(), token.getFileName(), token.getContent());
+                                          token.getLineNumber(), token.getFileName(), token.getContentAsNormalizedString());
             }
         }
     }
@@ -558,11 +558,11 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                 setFallback(this::processDataSubStructureToken);
             }
             try {
-                final String[] fields = SPLIT_AT_BLANKS.split(token.getContent().trim());
+                final String[] fields = SPLIT_AT_BLANKS.split(token.getRawContent().trim());
                 final List<ManeuverFieldType> types = currentManeuverHistoryMetadata.getManComposition();
                 if (fields.length != types.size()) {
                     throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                              token.getLineNumber(), token.getFileName(), token.getContent());
+                                              token.getLineNumber(), token.getFileName(), token.getContentAsNormalizedString());
                 }
                 final Maneuver maneuver = new Maneuver();
                 for (int i = 0; i < fields.length; ++i) {
@@ -572,7 +572,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                 return true;
             } catch (NumberFormatException nfe) {
                 throw new OrekitException(nfe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                          token.getLineNumber(), token.getFileName(), token.getContent());
+                                          token.getLineNumber(), token.getFileName(), token.getContentAsNormalizedString());
             }
         }
     }
@@ -620,11 +620,11 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
         }
         setFallback(this::processDataSubStructureToken);
         if ("COMMENT".equals(token.getName())) {
-            return token.getType() == TokenType.ENTRY ? userDefinedBlock.addComment(token.getContent()) : true;
+            return token.getType() == TokenType.ENTRY ? userDefinedBlock.addComment(token.getContentAsNormalizedString()) : true;
         } else if (token.getType() == TokenType.ENTRY &&
             token.getName().startsWith(UserDefined.USER_DEFINED_PREFIX)) {
             userDefinedBlock.addEntry(token.getName().substring(UserDefined.USER_DEFINED_PREFIX.length()),
-                                      token.getContent());
+                                      token.getContentAsNormalizedString());
             return true;
         } else {
             // the token was not processed

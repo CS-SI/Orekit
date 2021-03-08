@@ -37,7 +37,7 @@ public enum ApmQuaternionKey {
 
     /** Comment entry. */
     COMMENT((token, context, container) ->
-            token.getType() == TokenType.ENTRY ? container.addComment(token.getContent()) : true),
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Epoch entry. */
     EPOCH((token, context, container) -> token.processAsDate(container::setEpoch, context)),
@@ -59,7 +59,7 @@ public enum ApmQuaternionKey {
     /** Rotation direction entry. */
     Q_DIR((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
-            container.getEndpoints().setA2b(token.getContentAsNormalizedCharacter() == 'A');
+            container.getEndpoints().setA2b(token.getContentAsUppercaseCharacter() == 'A');
         }
         return true;
     }),

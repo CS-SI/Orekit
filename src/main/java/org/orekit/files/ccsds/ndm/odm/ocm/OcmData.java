@@ -79,7 +79,7 @@ public class OcmData implements Data {
     public void checkMandatoryEntries() {
         if (orbitBlocks != null) {
             for (final OrbitStateHistory osh : orbitBlocks) {
-                osh.checkMandatoryEntries();
+                osh.getMetadata().checkMandatoryEntries();
             }
         }
         if (physicBlock != null) {

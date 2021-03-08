@@ -28,13 +28,13 @@ public enum HeaderKey {
 
     /** Header comment. */
     COMMENT((token, context, header) ->
-            token.getType() == TokenType.ENTRY ? header.addComment(token.getContent()) : true),
+            token.getType() == TokenType.ENTRY ? header.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Creation date. */
     CREATION_DATE((token, context, header) -> token.processAsDate(header::setCreationDate, context)),
 
     /** Creating agency or operator. */
-    ORIGINATOR((token, context, header) -> token.processAsNormalizedString(header::setOriginator));
+    ORIGINATOR((token, context, header) -> token.processAsUppercaseString(header::setOriginator));
 
     /** Processing method. */
     private final TokenProcessor processor;

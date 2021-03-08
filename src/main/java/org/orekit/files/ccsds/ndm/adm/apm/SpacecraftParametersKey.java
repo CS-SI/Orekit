@@ -31,10 +31,10 @@ public enum SpacecraftParametersKey {
 
     /** Comment entry. */
     COMMENT((token, context, container) ->
-            token.getType() == TokenType.ENTRY ? container.addComment(token.getContent()) : true),
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Inertia reference frame entry. */
-    INERTIA_REF_FRAME((token, context, container) -> token.processAsNormalizedString(container::setInertiaRefFrameString)),
+    INERTIA_REF_FRAME((token, context, container) -> token.processAsUppercaseString(container::setInertiaRefFrameString)),
 
     /** 1-axis moment of inertia entry. */
     I11((token, context, container) -> token.processAsDouble(1.0, container::setI11)),

@@ -27,7 +27,7 @@ import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 public enum OmmMetadataKey {
 
     /** Description of the Mean Element Theory. */
-    MEAN_ELEMENT_THEORY((token, context, container) -> token.processAsNormalizedString(container::setMeanElementTheory));
+    MEAN_ELEMENT_THEORY((token, context, container) -> token.processAsUppercaseString(container::setMeanElementTheory));
 
     /** Processing method. */
     private final TokenProcessor processor;

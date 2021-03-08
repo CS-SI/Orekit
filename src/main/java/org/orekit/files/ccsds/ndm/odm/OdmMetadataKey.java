@@ -27,7 +27,7 @@ import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 public enum OdmMetadataKey {
 
     /** Object name entry. */
-    OBJECT_NAME((token, context, container) -> token.processAsNormalizedString(container::setObjectName));
+    OBJECT_NAME((token, context, container) -> token.processAsUppercaseString(container::setObjectName));
 
     /** Processing method. */
     private final TokenProcessor processor;

@@ -29,7 +29,7 @@ public enum SpacecraftParametersKey {
 
     /** Comment entry. */
     COMMENT((token, context, container) ->
-            token.getType() == TokenType.ENTRY ? container.addComment(token.getContent()) : true),
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Spacecraft mass. */
     MASS((token, context, container) -> token.processAsDouble(1.0, container::setMass)),

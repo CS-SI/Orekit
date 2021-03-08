@@ -31,18 +31,18 @@ public enum OrbitDeterminationKey {
 
     /** Comment entry. */
     COMMENT((token, context, container) ->
-            token.getType() == TokenType.ENTRY ? container.addComment(token.getContent()) : true),
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Identification number. */
-    OD_ID((token, context, container) -> token.processAsFreeTextString(container::setId)),
+    OD_ID((token, context, container) -> token.processAsNormalizedString(container::setId)),
 
     /** Identification of previous orbit determination. */
-    OD_PREV_ID((token, context, container) -> token.processAsFreeTextString(container::setPrevId)),
+    OD_PREV_ID((token, context, container) -> token.processAsNormalizedString(container::setPrevId)),
 
     /** Orbit determination method. */
     OD_METHOD((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
-            container.setMethod(OdMethodFacade.parse(token.getContent()));
+            container.setMethod(OdMethodFacade.parse(token.getContentAsNormalizedString()));
         }
         return true;
     }),
@@ -107,25 +107,25 @@ public enum OrbitDeterminationKey {
     SOLVE_N((token, context, container) -> token.processAsInteger(container::setSolveN)),
 
     /** Description of state elements solved-for. */
-    SOLVE_STATES((token, context, container) -> token.processAsFreeTextStringList(container::setSolveStates)),
+    SOLVE_STATES((token, context, container) -> token.processAsNormalizedList(container::setSolveStates)),
 
     /** Number of consider parameters. */
     CONSIDER_N((token, context, container) -> token.processAsInteger(container::setConsiderN)),
 
     /** Description of consider parameters. */
-    CONSIDER_PARAMS((token, context, container) -> token.processAsFreeTextStringList(container::setConsiderParameters)),
+    CONSIDER_PARAMS((token, context, container) -> token.processAsNormalizedList(container::setConsiderParameters)),
 
     /** Number of sensors used. */
     SENSORS_N((token, context, container) -> token.processAsInteger(container::setSensorsN)),
 
     /** Description of sensors used. */
-    SENSORS((token, context, container) -> token.processAsFreeTextStringList(container::setSensors)),
+    SENSORS((token, context, container) -> token.processAsNormalizedList(container::setSensors)),
 
     /** Weighted RMS residual ratio. */
     WEIGHTED_RMS((token, context, container) -> token.processAsDouble(1.0, container::setWeightedRms)),
 
     /** Observation data types used. */
-    DATA_TYPES((token, context, container) -> token.processAsFreeTextStringList(container::setDataTypes));
+    DATA_TYPES((token, context, container) -> token.processAsNormalizedList(container::setDataTypes));
 
     /** Processing method. */
     private final TokenProcessor processor;

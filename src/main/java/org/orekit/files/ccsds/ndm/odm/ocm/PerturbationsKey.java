@@ -32,10 +32,10 @@ public enum PerturbationsKey {
 
     /** Comment entry. */
     COMMENT((token, context, container) ->
-            token.getType() == TokenType.ENTRY ? container.addComment(token.getContent()) : true),
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Name of atmospheric model. */
-    ATMOSPHERIC_MODEL((token, context, container) -> token.processAsFreeTextString(container::setAtmosphericModel)),
+    ATMOSPHERIC_MODEL((token, context, container) -> token.processAsNormalizedString(container::setAtmosphericModel)),
 
     /** Gravity model. */
     GRAVITY_MODEL(new GravityProcessor()),
@@ -57,16 +57,16 @@ public enum PerturbationsKey {
     OBLATE_FLATTENING((token, context, container) -> token.processAsDouble(1.0, container::setOblateFlattening)),
 
     /** Ocean tides model. */
-    OCEAN_TIDES_MODEL((token, context, container) -> token.processAsFreeTextString(container::setOceanTidesModel)),
+    OCEAN_TIDES_MODEL((token, context, container) -> token.processAsNormalizedString(container::setOceanTidesModel)),
 
     /** Solid tides model. */
-    SOLID_TIDES_MODEL((token, context, container) -> token.processAsFreeTextString(container::setSolidTidesModel)),
+    SOLID_TIDES_MODEL((token, context, container) -> token.processAsNormalizedString(container::setSolidTidesModel)),
 
     /** Reduction theory used for precession and nutation modeling. */
-    REDUCTION_THEORY((token, context, container) -> token.processAsFreeTextString(container::setReductionTheory)),
+    REDUCTION_THEORY((token, context, container) -> token.processAsNormalizedString(container::setReductionTheory)),
 
     /** Albedo model. */
-    ALBEDO_MODEL((token, context, container) -> token.processAsFreeTextString(container::setAlbedoModel)),
+    ALBEDO_MODEL((token, context, container) -> token.processAsNormalizedString(container::setAlbedoModel)),
 
     /** Albedo grid size. */
     ALBEDO_GRID_SIZE((token, context, container) -> token.processAsInteger(container::setAlbedoGridSize)),
@@ -75,7 +75,7 @@ public enum PerturbationsKey {
     SHADOW_MODEL((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
             try {
-                container.setShadowModel(ShadowModel.valueOf(token.getContentAsNormalizedString()));
+                container.setShadowModel(ShadowModel.valueOf(token.getContentAsUppercaseString()));
             } catch (IllegalArgumentException iae) {
                 throw token.generateException(iae);
             }
@@ -88,16 +88,16 @@ public enum PerturbationsKey {
                                                                            context.getDataContext().getCelestialBodies())),
 
     /** Solar Radiation Pressure model. */
-    SRP_MODEL((token, context, container) -> token.processAsFreeTextString(container::setSrpModel)),
+    SRP_MODEL((token, context, container) -> token.processAsNormalizedString(container::setSrpModel)),
 
     /** Space Weather data source. */
-    SW_DATA_SOURCE((token, context, container) -> token.processAsFreeTextString(container::setSpaceWeatherSource)),
+    SW_DATA_SOURCE((token, context, container) -> token.processAsNormalizedString(container::setSpaceWeatherSource)),
 
     /** Epoch of the Space Weather data. */
     SW_DATA_EPOCH((token, context, container) -> token.processAsDate(container::setSpaceWeatherEpoch, context)),
 
     /** Interpolation method for Space Weather data. */
-    SW_INTERP_METHOD((token, context, container) -> token.processAsFreeTextString(container::setInterpMethodSW)),
+    SW_INTERP_METHOD((token, context, container) -> token.processAsNormalizedString(container::setInterpMethodSW)),
 
     /** Fixed (time invariant) value of the planetary 3-hour-range geomagnetic index Kₚ. */
     FIXED_GEOMAG_KP((token, context, container) -> token.processAsDouble(1.0, container::setFixedGeomagneticKp)),
@@ -176,7 +176,7 @@ public enum PerturbationsKey {
         /** {@inheritDoc} */
         @Override
         public boolean process(final ParseToken token, final ParsingContext context, final Perturbations container) {
-            final Matcher matcher = GRAVITY_PATTERN.matcher(token.getContent());
+            final Matcher matcher = GRAVITY_PATTERN.matcher(token.getContentAsNormalizedString());
             if (!matcher.matches()) {
                 throw token.generateException(null);
             }

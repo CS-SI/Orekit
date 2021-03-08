@@ -116,37 +116,47 @@ public class ParseToken {
         return name;
     }
 
-    /** Get the content of the entry.
-     * @return entry content
+    /** Get the raw content of the entry.
+     * @return entry raw content
      */
-    public String getContent() {
+    public String getRawContent() {
         return content;
     }
 
-    /** Get the content of the entry as a list of free-text strings.
-     * @return content of the entry as a list of free-test strings
-     */
-    public List<String> getContentAsFreeTextStringList() {
-        return Arrays.asList(SPLIT_AT_COMMAS.split(getContent()));
-    }
-
-    /** Get the normalized content of the entry.
+    /** Get the content of the entry.
      * <p>
-     * Normalized strings are all uppercase,
-     * have '_' characters replaced by spaces,
-     * and have multiple spaces collapsed as one space only.
+     * Free-text strings are normalized by replacing all occurrences
+     * of '_' with space, and collapsing several spaces as one space only.
      * </p>
-     * @return entry normalized content
+     * @return entry content
      */
     public String getContentAsNormalizedString() {
-        return SPACE.matcher(content.replace('_', ' ')).replaceAll(" ").trim().toUpperCase(Locale.US);
+        return SPACE.matcher(content.replace('_', ' ')).replaceAll(" ").trim();
     }
 
-    /** Get the content of the entry as a list of normalized strings.
-     * @return content of the entry as a list of normalized strings
+    /** Get the content of the entry as a list of free-text strings.
+     * <p>
+     * Free-text strings are normalized by replacing all occurrences
+     * of '_' with space, and collapsing several spaces as one space only.
+     * </p>
+     * @return content of the entry as a list of free-test strings
      */
-    public List<String> getContentAsNormalizedStringList() {
+    public List<String> getContentAsNormalizedList() {
         return Arrays.asList(SPLIT_AT_COMMAS.split(getContentAsNormalizedString()));
+    }
+
+    /** Get the content of the entry as normalized and uppercased.
+     * @return entry normalized and uppercased content
+     */
+    public String getContentAsUppercaseString() {
+        return getContentAsNormalizedString().toUpperCase(Locale.US);
+    }
+
+    /** Get the content of the entry as a list of normalized and uppercased strings.
+     * @return content of the entry as a list of normalized and uppercased strings
+     */
+    public List<String> getContentAsUppercaseList() {
+        return Arrays.asList(SPLIT_AT_COMMAS.split(getContentAsUppercaseString()));
     }
 
     /** Get the content of the entry as a double.
@@ -195,12 +205,12 @@ public class ParseToken {
         }
     }
 
-    /** Get the content of the entry as a normalized character.
-     * @return content as a normalized character
+    /** Get the content of the entry as an uppercase character.
+     * @return content as an uppercase character
      */
-    public char getContentAsNormalizedCharacter() {
+    public char getContentAsUppercaseCharacter() {
         try {
-            return getContentAsNormalizedString().charAt(0);
+            return getContentAsUppercaseString().charAt(0);
         } catch (NumberFormatException nfe) {
             throw generateException(nfe);
         }
@@ -230,19 +240,7 @@ public class ParseToken {
     /** Process the content as a normalized string.
      * @param consumer consumer of the normalized string
      * @return always returns {@code true}
-     * @see #processAsNormalizedString(StringConsumer)
-     */
-    public boolean processAsFreeTextString(final StringConsumer consumer) {
-        if (type == TokenType.ENTRY) {
-            consumer.accept(getContent());
-        }
-        return true;
-    }
-
-    /** Process the content as a normalized string.
-     * @param consumer consumer of the normalized string
-     * @return always returns {@code true}
-     * @see #processAsFreeTextString(StringConsumer)
+     * @see #processAsUppercaseString(StringConsumer)
      */
     public boolean processAsNormalizedString(final StringConsumer consumer) {
         if (type == TokenType.ENTRY) {
@@ -251,14 +249,14 @@ public class ParseToken {
         return true;
     }
 
-    /** Process the content as an indexed free text string.
-     * @param index index
-     * @param consumer consumer of the indexed free text string
+    /** Process the content as a normalized uppercase string.
+     * @param consumer consumer of the normalized uppercase string
      * @return always returns {@code true}
+     * @see #processAsNormalizedString(StringConsumer)
      */
-    public boolean processAsIndexedFreeTextString(final int index, final IndexedStringConsumer consumer) {
+    public boolean processAsUppercaseString(final StringConsumer consumer) {
         if (type == TokenType.ENTRY) {
-            consumer.accept(index, getContent());
+            consumer.accept(getContentAsUppercaseString());
         }
         return true;
     }
@@ -275,13 +273,14 @@ public class ParseToken {
         return true;
     }
 
-    /** Process the content as a list of free text strings.
-     * @param consumer consumer of the free text strings list
+    /** Process the content as an indexed normalized uppercase string.
+     * @param index index
+     * @param consumer consumer of the indexed normalized uppercase string
      * @return always returns {@code true}
      */
-    public boolean processAsFreeTextStringList(final StringListConsumer consumer) {
+    public boolean processAsIndexedUppercaseString(final int index, final IndexedStringConsumer consumer) {
         if (type == TokenType.ENTRY) {
-            consumer.accept(getContentAsFreeTextStringList());
+            consumer.accept(index, getContentAsUppercaseString());
         }
         return true;
     }
@@ -290,9 +289,20 @@ public class ParseToken {
      * @param consumer consumer of the normalized strings list
      * @return always returns {@code true}
      */
-    public boolean processAsNormalizedStringList(final StringListConsumer consumer) {
+    public boolean processAsNormalizedList(final StringListConsumer consumer) {
         if (type == TokenType.ENTRY) {
-            consumer.accept(getContentAsNormalizedStringList());
+            consumer.accept(getContentAsNormalizedList());
+        }
+        return true;
+    }
+
+    /** Process the content as a list of normalized uppercase strings.
+     * @param consumer consumer of the normalized uppercase strings list
+     * @return always returns {@code true}
+     */
+    public boolean processAsUppercaseList(final StringListConsumer consumer) {
+        if (type == TokenType.ENTRY) {
+            consumer.accept(getContentAsUppercaseList());
         }
         return true;
     }
@@ -314,7 +324,7 @@ public class ParseToken {
      */
     public boolean processAsNormalizedCharacter(final CharConsumer consumer) {
         if (type == TokenType.ENTRY) {
-            consumer.accept(getContentAsNormalizedCharacter());
+            consumer.accept(getContentAsUppercaseCharacter());
         }
         return true;
     }
@@ -416,7 +426,7 @@ public class ParseToken {
      */
     public boolean processAsTimeScale(final TimeScaleConsumer consumer) {
         if (type == TokenType.ENTRY) {
-            consumer.accept(TimeSystem.parse(content));
+            consumer.accept(TimeSystem.parse(getContentAsUppercaseString()));
         }
         return true;
     }
@@ -434,7 +444,7 @@ public class ParseToken {
                                   final boolean allowSpacecraft) {
         if (type == TokenType.ENTRY) {
             try {
-                consumer.accept(FrameFacade.parse(DASH.matcher(getContentAsNormalizedString()).replaceAll(""),
+                consumer.accept(FrameFacade.parse(DASH.matcher(getContentAsUppercaseString()).replaceAll(""),
                                                   context.getConventions(),
                                                   context.isSimpleEOP(), context.getDataContext(),
                                                   allowCelestial, allowOrbit, allowSpacecraft));
@@ -452,7 +462,7 @@ public class ParseToken {
      */
     public boolean processAsCenter(final CenterConsumer consumer, final CelestialBodies celestialBodies) {
         if (type == TokenType.ENTRY) {
-            final String centerName = getContentAsNormalizedString();
+            final String centerName = getContentAsUppercaseString();
             consumer.accept(new BodyFacade(centerName, body(centerName, celestialBodies)));
         }
         return true;
@@ -466,7 +476,7 @@ public class ParseToken {
     public boolean processAsCenterList(final CenterListConsumer consumer, final CelestialBodies celestialBodies) {
         if (type == TokenType.ENTRY) {
             final List<BodyFacade> facades = new ArrayList<>();
-            for (final String centerName : SPLIT_AT_COMMAS.split(getContentAsNormalizedString())) {
+            for (final String centerName : SPLIT_AT_COMMAS.split(getContentAsUppercaseString())) {
                 facades.add(new BodyFacade(centerName, body(centerName, celestialBodies)));
             }
             consumer.accept(facades);
@@ -480,7 +490,7 @@ public class ParseToken {
      */
     public boolean processAsUnitList(final UnitListConsumer consumer) {
         if (type == TokenType.ENTRY) {
-            final String bracketed = getContent();
+            final String bracketed = getContentAsNormalizedString();
             if (bracketed.charAt(0) != '[' || bracketed.charAt(bracketed.length() - 1) != ']') {
                 throw generateException(null);
             }

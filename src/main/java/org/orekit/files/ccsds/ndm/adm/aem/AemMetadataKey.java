@@ -49,7 +49,7 @@ public enum AemMetadataKey {
     /** Rotation direction entry. */
     ATTITUDE_DIR((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
-            container.getEndpoints().setA2b(token.getContentAsNormalizedCharacter() == 'A');
+            container.getEndpoints().setA2b(token.getContentAsUppercaseCharacter() == 'A');
         }
         return true;
     }),
@@ -70,7 +70,7 @@ public enum AemMetadataKey {
     ATTITUDE_TYPE((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
             try {
-                container.setAttitudeType(AemAttitudeType.parseType(token.getContent()));
+                container.setAttitudeType(AemAttitudeType.parseType(token.getContentAsNormalizedString()));
                 return true;
             } catch (IllegalArgumentException iae) {
                 return false;
@@ -82,7 +82,7 @@ public enum AemMetadataKey {
     /** Placement of the scalar component in quaternion entry. */
     QUATERNION_TYPE((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
-            container.setIsFirst("FIRST".equals(token.getContentAsNormalizedString()));
+            container.setIsFirst("FIRST".equals(token.getContentAsUppercaseString()));
         }
         return true;
     }),
@@ -93,7 +93,7 @@ public enum AemMetadataKey {
     /** Reference frame for Euler rates. */
     RATE_FRAME((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
-            final String content = token.getContentAsNormalizedString();
+            final String content = token.getContentAsUppercaseString();
             final char   suffix  = content.charAt(content.length() - 1);
             container.setRateFrameIsA(suffix == 'A');
         }
@@ -101,7 +101,7 @@ public enum AemMetadataKey {
     }),
 
     /** Interpolation method in ephemeris. */
-    INTERPOLATION_METHOD((token, context, container) -> token.processAsNormalizedString(container::setInterpolationMethod)),
+    INTERPOLATION_METHOD((token, context, container) -> token.processAsUppercaseString(container::setInterpolationMethod)),
 
     /** Interpolation degree in ephemeris. */
     INTERPOLATION_DEGREE((token, context, container) -> token.processAsInteger(container::setInterpolationDegree));

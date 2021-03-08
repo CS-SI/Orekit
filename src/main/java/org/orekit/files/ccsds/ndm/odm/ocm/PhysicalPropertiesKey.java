@@ -29,16 +29,16 @@ public enum PhysicalPropertiesKey {
 
     /** Comment entry. */
     COMMENT((token, context, container) ->
-            token.getType() == TokenType.ENTRY ? container.addComment(token.getContent()) : true),
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Satellite manufacturer name. */
-    MANUFACTURER((token, context, container) -> token.processAsFreeTextString(container::setManufacturer)),
+    MANUFACTURER((token, context, container) -> token.processAsNormalizedString(container::setManufacturer)),
 
     /** Bus model name. */
-    BUS_MODEL((token, context, container) -> token.processAsFreeTextString(container::setBusModel)),
+    BUS_MODEL((token, context, container) -> token.processAsNormalizedString(container::setBusModel)),
 
     /** Other space objects this object is docked to. */
-    DOCKED_WITH((token, context, container) -> token.processAsFreeTextStringList(container::setDockedWith)),
+    DOCKED_WITH((token, context, container) -> token.processAsNormalizedList(container::setDockedWith)),
 
     /** Attitude-independent drag cross-sectional area, not already into attitude-dependent area along OEB. */
     DRAG_CONST_AREA((token, context, container) -> token.processAsDouble(1.0, container::setDragConstantArea)),
@@ -137,10 +137,10 @@ public enum PhysicalPropertiesKey {
     REFLECTIVITY((token, context, container) -> token.processAsDouble(1.0, container::setReflectivity)),
 
     /** Attitude control mode. */
-    ATT_CONTROL_MODE((token, context, container) -> token.processAsFreeTextString(container::setAttitudeControlMode)),
+    ATT_CONTROL_MODE((token, context, container) -> token.processAsNormalizedString(container::setAttitudeControlMode)),
 
     /** Type of actuator for attitude control. */
-    ATT_ACTUATOR_TYPE((token, context, container) -> token.processAsFreeTextString(container::setAttitudeActuatorType)),
+    ATT_ACTUATOR_TYPE((token, context, container) -> token.processAsNormalizedString(container::setAttitudeActuatorType)),
 
     /** Accuracy of attitude knowledge. */
     ATT_KNOWLEDGE((token, context, container) -> token.processAsAngle(container::setAttitudeKnowledgeAccuracy)),

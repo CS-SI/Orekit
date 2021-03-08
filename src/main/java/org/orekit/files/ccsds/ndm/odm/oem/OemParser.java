@@ -285,13 +285,13 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
         }
         inData();
         if ("COMMENT".equals(token.getName())) {
-            return token.getType() == TokenType.ENTRY ? currentBlock.addComment(token.getContent()) : true;
+            return token.getType() == TokenType.ENTRY ? currentBlock.addComment(token.getContentAsNormalizedString()) : true;
         } else if (token.getType() == TokenType.RAW_LINE) {
             try {
-                final String[] fields = SPLIT_AT_BLANKS.split(token.getContent().trim());
+                final String[] fields = SPLIT_AT_BLANKS.split(token.getRawContent().trim());
                 if (fields.length != 7 && fields.length != 10) {
                     throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                              token.getLineNumber(), token.getFileName(), token.getContent());
+                                              token.getLineNumber(), token.getFileName(), token.getContentAsNormalizedString());
                 }
                 final boolean hasAcceleration = fields.length == 10;
                 final AbsoluteDate epoch = context.getTimeSystem().parseDate(fields[0], context);
@@ -310,7 +310,7 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
                                             hasAcceleration);
             } catch (NumberFormatException nfe) {
                 throw new OrekitException(nfe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                          token.getLineNumber(), token.getFileName(), token.getContent());
+                                          token.getLineNumber(), token.getFileName(), token.getRawContent());
             }
         } else {
             // not a raw line, it is most probably either the end of the data section or a covariance section
@@ -361,10 +361,10 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
         } else {
             // this is a raw line
             try {
-                final String[] fields = SPLIT_AT_BLANKS.split(token.getContent().trim());
+                final String[] fields = SPLIT_AT_BLANKS.split(token.getContentAsNormalizedString().trim());
                 if (fields.length != currentRow + 1) {
                     throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                              token.getLineNumber(), token.getFileName(), token.getContent());
+                                              token.getLineNumber(), token.getFileName(), token.getContentAsNormalizedString());
                 }
                 for (int j = 0; j < fields.length; ++j) {
                     currentCovariance.setCovarianceMatrixEntry(currentRow, j, 1.0e6 * Double.parseDouble(fields[j]));
@@ -378,7 +378,7 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
                 return true;
             } catch (NumberFormatException nfe) {
                 throw new OrekitException(nfe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                          token.getLineNumber(), token.getFileName(), token.getContent());
+                                          token.getLineNumber(), token.getFileName(), token.getContentAsNormalizedString());
             }
         }
     }

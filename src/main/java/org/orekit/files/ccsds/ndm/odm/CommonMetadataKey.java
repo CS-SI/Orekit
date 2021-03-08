@@ -27,7 +27,7 @@ import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 public enum CommonMetadataKey {
 
     /** Object ID entry. */
-    OBJECT_ID((token, context, container) -> token.processAsNormalizedString(container::setObjectID)),
+    OBJECT_ID((token, context, container) -> token.processAsUppercaseString(container::setObjectID)),
 
     /** Center name entry. */
     CENTER_NAME((token, context, container) -> token.processAsCenter(container::setCenter,
@@ -37,7 +37,7 @@ public enum CommonMetadataKey {
     REF_FRAME((token, context, container) -> token.processAsFrame(container::setReferenceFrame, context, true, false, false)),
 
     /** Epoch of reference frame, if not intrinsic to the definition of the reference frame. */
-    REF_FRAME_EPOCH((token, context, container) -> token.processAsNormalizedString(container::setFrameEpochString));
+    REF_FRAME_EPOCH((token, context, container) -> token.processAsUppercaseString(container::setFrameEpochString));
 
     /** Processing method. */
     private final TokenProcessor processor;

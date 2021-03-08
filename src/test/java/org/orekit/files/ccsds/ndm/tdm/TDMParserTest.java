@@ -668,7 +668,7 @@ public class TDMParserTest {
         Assert.assertEquals(new AbsoluteDate("2007-08-30T12:01:44.749", utc).durationFrom(file.getHeader().getCreationDate()), 0.0, 0.0);
         Assert.assertEquals("GSOC",file.getHeader().getOriginator());
         final List<String> headerComment = new ArrayList<String>();
-        headerComment.add("GEOSCX_INP");
+        headerComment.add("GEOSCX INP");
         Assert.assertEquals(headerComment, file.getHeader().getComments());
 
         // Meta-Data 1

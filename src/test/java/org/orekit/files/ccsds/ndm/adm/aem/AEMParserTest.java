@@ -119,7 +119,7 @@ public class AEMParserTest {
                                  segment0.getData().getAngularCoordinates().get(2), 1.0e-5);
         ArrayList<String> ephemeridesDataLinesComment = new ArrayList<String>();
         ephemeridesDataLinesComment.add("This file was produced by M.R. Somebody, MSOO NAV/JPL, 2002 OCT 04.");
-        ephemeridesDataLinesComment.add("It is to be used for attitude reconstruction only.  The relative accuracy of these");
+        ephemeridesDataLinesComment.add("It is to be used for attitude reconstruction only. The relative accuracy of these");
         ephemeridesDataLinesComment.add("attitudes is 0.1 degrees per axis.");
         Assert.assertEquals(ephemeridesDataLinesComment, segment0.getMetadata().getComments());
  
@@ -185,7 +185,7 @@ public class AEMParserTest {
         Assert.assertEquals(headerComment, file.getHeader().getComments());
         final List<String> metadataComment = new ArrayList<String>();
         metadataComment.add("This file was produced by M.R. Somebody, MSOO NAV/JPL, 2002 OCT 04.");
-        metadataComment.add("It is to be used for attitude reconstruction only.  The relative accuracy of these");
+        metadataComment.add("It is to be used for attitude reconstruction only. The relative accuracy of these");
         metadataComment.add("attitudes is 0.1 degrees per axis.");
         Assert.assertEquals(metadataComment, segment0.getMetadata().getComments());
         Assert.assertEquals("EME2000",       segment0.getMetadata().getEndpoints().getFrameA().getName());
@@ -242,7 +242,7 @@ public class AEMParserTest {
         Assert.assertEquals(headerComment, file.getHeader().getComments());
         final List<String> metadataComment = new ArrayList<String>();
         metadataComment.add("This file was produced by M.R. Somebody, MSOO NAV/JPL, 2002 OCT 04.");
-        metadataComment.add("It is to be used for attitude reconstruction only.  The relative accuracy of these");
+        metadataComment.add("It is to be used for attitude reconstruction only. The relative accuracy of these");
         metadataComment.add("attitudes is 0.1 degrees per axis.");
         Assert.assertEquals(metadataComment,        segment0.getMetadata().getComments());
         Assert.assertEquals(TimeSystem.UTC,     segment0.getMetadata().getTimeSystem());

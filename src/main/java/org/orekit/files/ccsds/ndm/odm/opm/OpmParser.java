@@ -428,7 +428,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
         if (token.getType() == TokenType.ENTRY &&
             token.getName().startsWith(UserDefined.USER_DEFINED_PREFIX)) {
             userDefinedBlock.addEntry(token.getName().substring(UserDefined.USER_DEFINED_PREFIX.length()),
-                                      token.getContent());
+                                      token.getContentAsNormalizedString());
             return true;
         } else {
             // the token was not processed

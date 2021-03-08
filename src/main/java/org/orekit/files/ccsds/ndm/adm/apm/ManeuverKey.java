@@ -32,7 +32,7 @@ public enum ManeuverKey {
 
     /** Comment entry. */
     COMMENT((token, context, container) ->
-            token.getType() == TokenType.ENTRY ? container.addComment(token.getContent()) : true),
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Epoch start entry. */
     MAN_EPOCH_START((token, context, container) -> token.processAsDate(container::setEpochStart, context)),
@@ -41,7 +41,7 @@ public enum ManeuverKey {
     MAN_DURATION((token, context, container) -> token.processAsDouble(1.0, container::setDuration)),
 
     /** Reference frame entry. */
-    MAN_REF_FRAME((token, context, container) -> token.processAsNormalizedString(container::setRefFrameString)),
+    MAN_REF_FRAME((token, context, container) -> token.processAsUppercaseString(container::setRefFrameString)),
 
     /** First torque vector component entry. */
     MAN_TOR_1((token, context, container) -> token.processAsIndexedDouble(0, 1.0, container::setTorque)),

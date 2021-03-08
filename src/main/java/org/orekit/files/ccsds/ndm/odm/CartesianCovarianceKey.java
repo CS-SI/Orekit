@@ -29,7 +29,7 @@ public enum CartesianCovarianceKey {
 
     /** Comment entry. */
     COMMENT((token, context, container) ->
-            token.getType() == TokenType.ENTRY ? container.addComment(token.getContent()) : true),
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Epoch entry (only for OEM files). */
     EPOCH((token, context, container) -> token.processAsDate(container::setEpoch, context)),

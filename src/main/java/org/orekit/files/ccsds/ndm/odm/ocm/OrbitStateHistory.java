@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -34,8 +33,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OrbitStateHistory extends CommentsContainer
-    implements EphemerisFile.EphemerisSegment<TimeStampedPVCoordinates> {
+public class OrbitStateHistory implements EphemerisFile.EphemerisSegment<TimeStampedPVCoordinates> {
 
     /** Metadata. */
     private final OrbitStateHistoryMetadata metadata;

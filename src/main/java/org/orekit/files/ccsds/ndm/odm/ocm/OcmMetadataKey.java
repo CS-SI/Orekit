@@ -42,7 +42,7 @@ public enum OcmMetadataKey {
     OBJECT_DESIGNATOR((token, context, container) -> token.processAsNormalizedString(container::setObjectDesignator)),
 
     /** Alternate names fir this space object. */
-    ALTERNATE_NAMES((token, context, container) -> token.processAsNormalizedStringList(container::setAlternateNames)),
+    ALTERNATE_NAMES((token, context, container) -> token.processAsNormalizedList(container::setAlternateNames)),
 
     /** Programmatic Point Of Contact at originator. */
     ORIGINATOR_POC((token, context, container) -> token.processAsNormalizedString(container::setOriginatorPOC)),
@@ -110,7 +110,7 @@ public enum OcmMetadataKey {
     OBJECT_TYPE((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
             try {
-                container.setObjectType(ObjectType.valueOf(token.getContentAsNormalizedString().replace(' ', '_')));
+                container.setObjectType(ObjectType.valueOf(token.getContentAsUppercaseString().replace(' ', '_')));
             } catch (IllegalArgumentException iae) {
                 throw token.generateException(iae);
             }
@@ -128,7 +128,7 @@ public enum OcmMetadataKey {
     OPS_STATUS((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
             try {
-                container.setOpsStatus(OpsStatus.valueOf(token.getContentAsNormalizedString().replace(' ', '_')));
+                container.setOpsStatus(OpsStatus.valueOf(token.getContentAsUppercaseString().replace(' ', '_')));
             } catch (IllegalArgumentException iae) {
                 throw token.generateException(iae);
             }
@@ -142,7 +142,7 @@ public enum OcmMetadataKey {
     ORBIT_CATEGORY((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
             try {
-                container.setOrbitCategory(OrbitCategory.valueOf(token.getContentAsNormalizedString().replace(' ', '_')));
+                container.setOrbitCategory(OrbitCategory.valueOf(token.getContentAsUppercaseString().replace(' ', '_')));
             } catch (IllegalArgumentException iae) {
                 throw token.generateException(iae);
             }
@@ -151,7 +151,7 @@ public enum OcmMetadataKey {
     }),
 
     /** List of elements of information data blocks included in this message. */
-    OCM_DATA_ELEMENTS((token, context, container) -> token.processAsNormalizedStringList(container::setOcmDataElements)),
+    OCM_DATA_ELEMENTS((token, context, container) -> token.processAsUppercaseList(container::setOcmDataElements)),
 
     /** Spacecraft clock count at {@link #EPOCH_TZERO}. */
     SCLK_OFFSET_AT_EPOCH((token, context, container) -> token.processAsDouble(1.0, container::setSclkOffsetAtEpoch)),

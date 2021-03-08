@@ -33,28 +33,28 @@ public enum OrbitStateHistoryMetadataKey {
 
     /** Comment entry. */
     COMMENT((token, context, container) ->
-            token.getType() == TokenType.ENTRY ? container.addComment(token.getContent()) : true),
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Orbit identification number. */
-    ORB_ID((token, context, container) -> token.processAsNormalizedString(container::setOrbID)),
+    ORB_ID((token, context, container) -> token.processAsUppercaseString(container::setOrbID)),
 
     /** Identification number of previous orbit. */
-    ORB_PREV_ID((token, context, container) -> token.processAsNormalizedString(container::setOrbPrevID)),
+    ORB_PREV_ID((token, context, container) -> token.processAsUppercaseString(container::setOrbPrevID)),
 
     /** Identification number of next orbit. */
-    ORB_NEXT_ID((token, context, container) -> token.processAsNormalizedString(container::setOrbNextID)),
+    ORB_NEXT_ID((token, context, container) -> token.processAsUppercaseString(container::setOrbNextID)),
 
     /** Basis of this orbit state time history data. */
-    ORB_BASIS((token, context, container) -> token.processAsNormalizedString(container::setOrbBasis)),
+    ORB_BASIS((token, context, container) -> token.processAsUppercaseString(container::setOrbBasis)),
 
     /** Identification number of the orbit determination or simulation upon which this orbit is based.*/
-    ORB_BASIS_ID((token, context, container) -> token.processAsNormalizedString(container::setOrbBasisID)),
+    ORB_BASIS_ID((token, context, container) -> token.processAsUppercaseString(container::setOrbBasisID)),
 
     /** Interpolation method to be used. */
     INTERPOLATION((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
             try {
-                container.setInterpolationMethod(InterpolationMethod.valueOf(token.getContentAsNormalizedString()));
+                container.setInterpolationMethod(InterpolationMethod.valueOf(token.getContentAsUppercaseString()));
             } catch (IllegalArgumentException iae) {
                 throw new OrekitException(iae, OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE,
                                           token.getName(), token.getLineNumber(), token.getFileName());
@@ -67,7 +67,7 @@ public enum OrbitStateHistoryMetadataKey {
     INTERPOLATION_DEGREE((token, context, container) -> token.processAsInteger(container::setInterpolationDegree)),
 
     /** Type of averaging (Osculating, mean Brouwer, other...). */
-    ORB_AVERAGING((token, context, container) -> token.processAsNormalizedString(container::setOrbAveraging)),
+    ORB_AVERAGING((token, context, container) -> token.processAsUppercaseString(container::setOrbAveraging)),
 
     /** Origin of the reference frame of the orbit. */
     CENTER_NAME((token, context, container) -> token.processAsCenter(container::setCenter,
@@ -90,7 +90,7 @@ public enum OrbitStateHistoryMetadataKey {
      */
     ORB_TYPE((token, context, container) -> {
         try {
-            container.setOrbType(ElementsType.valueOf(token.getContentAsNormalizedString()));
+            container.setOrbType(ElementsType.valueOf(token.getContentAsUppercaseString()));
         } catch (IllegalArgumentException iae) {
             throw token.generateException(iae);
         }

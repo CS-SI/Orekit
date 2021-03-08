@@ -33,37 +33,37 @@ public enum TdmMetadataKey {
     STOP_TIME((token, context, container) -> token.processAsDate(container::setStopTime, context)),
 
     /** First participant entry. */
-    PARTICIPANT_1((token, context, container) -> token.processAsIndexedFreeTextString(1, container::addParticipant)),
+    PARTICIPANT_1((token, context, container) -> token.processAsIndexedNormalizedString(1, container::addParticipant)),
 
     /** Second participant entry. */
-    PARTICIPANT_2((token, context, container) -> token.processAsIndexedFreeTextString(2, container::addParticipant)),
+    PARTICIPANT_2((token, context, container) -> token.processAsIndexedNormalizedString(2, container::addParticipant)),
 
     /** Third participant entry. */
-    PARTICIPANT_3((token, context, container) -> token.processAsIndexedFreeTextString(3, container::addParticipant)),
+    PARTICIPANT_3((token, context, container) -> token.processAsIndexedNormalizedString(3, container::addParticipant)),
 
     /** Fourth participant entry. */
-    PARTICIPANT_4((token, context, container) -> token.processAsIndexedFreeTextString(4, container::addParticipant)),
+    PARTICIPANT_4((token, context, container) -> token.processAsIndexedNormalizedString(4, container::addParticipant)),
 
     /** Fifth participant entry. */
-    PARTICIPANT_5((token, context, container) -> token.processAsIndexedFreeTextString(5, container::addParticipant)),
+    PARTICIPANT_5((token, context, container) -> token.processAsIndexedNormalizedString(5, container::addParticipant)),
 
     /** Mode entry. */
-    MODE((token, context, container) -> token.processAsNormalizedString(container::setMode)),
+    MODE((token, context, container) -> token.processAsUppercaseString(container::setMode)),
 
     /** Path entry. */
-    PATH((token, context, container) -> token.processAsNormalizedString(container::setPath)),
+    PATH((token, context, container) -> token.processAsUppercaseString(container::setPath)),
 
     /** Path 1 entry. */
-    PATH_1((token, context, container) -> token.processAsNormalizedString(container::setPath1)),
+    PATH_1((token, context, container) -> token.processAsUppercaseString(container::setPath1)),
 
     /** Path 2 entry. */
-    PATH_2((token, context, container) -> token.processAsNormalizedString(container::setPath2)),
+    PATH_2((token, context, container) -> token.processAsUppercaseString(container::setPath2)),
 
     /** Transmit band entry. */
-    TRANSMIT_BAND((token, context, container) -> token.processAsNormalizedString(container::setTransmitBand)),
+    TRANSMIT_BAND((token, context, container) -> token.processAsUppercaseString(container::setTransmitBand)),
 
     /** Receive band entry. */
-    RECEIVE_BAND((token, context, container) -> token.processAsNormalizedString(container::setReceiveBand)),
+    RECEIVE_BAND((token, context, container) -> token.processAsUppercaseString(container::setReceiveBand)),
 
     /** Turnaround numerator entry. */
     TURNAROUND_NUMERATOR((token, context, container) -> token.processAsInteger(container::setTurnaroundNumerator)),
@@ -72,28 +72,28 @@ public enum TdmMetadataKey {
     TURNAROUND_DENOMINATOR((token, context, container) -> token.processAsInteger(container::setTurnaroundDenominator)),
 
     /** Timetag referene entry. */
-    TIMETAG_REF((token, context, container) -> token.processAsNormalizedString(container::setTimetagRef)),
+    TIMETAG_REF((token, context, container) -> token.processAsUppercaseString(container::setTimetagRef)),
 
     /** Integration interval entry. */
     INTEGRATION_INTERVAL((token, context, container) -> token.processAsDouble(1.0, container::setIntegrationInterval)),
 
     /** Integration reference entry. */
-    INTEGRATION_REF((token, context, container) -> token.processAsNormalizedString(container::setIntegrationRef)),
+    INTEGRATION_REF((token, context, container) -> token.processAsUppercaseString(container::setIntegrationRef)),
 
     /** Frequency offset entry. */
     FREQ_OFFSET((token, context, container) -> token.processAsDouble(1.0, container::setFreqOffset)),
 
     /** Range mode entry. */
-    RANGE_MODE((token, context, container) -> token.processAsNormalizedString(container::setRangeMode)),
+    RANGE_MODE((token, context, container) -> token.processAsUppercaseString(container::setRangeMode)),
 
     /** Range modulus entry. */
     RANGE_MODULUS((token, context, container) -> token.processAsDouble(1.0, container::setRangeModulus)),
 
     /** Range units entry. */
-    RANGE_UNITS((token, context, container) -> token.processAsNormalizedString(container::setRangeUnits)),
+    RANGE_UNITS((token, context, container) -> token.processAsUppercaseString(container::setRangeUnits)),
 
     /** Angle type entry. */
-    ANGLE_TYPE((token, context, container) -> token.processAsNormalizedString(container::setAngleType)),
+    ANGLE_TYPE((token, context, container) -> token.processAsUppercaseString(container::setAngleType)),
 
     /** reference frame entry. */
     REFERENCE_FRAME((token, context, container) -> token.processAsFrame(container::setReferenceFrame, context, true, false, false)),
@@ -129,7 +129,7 @@ public enum TdmMetadataKey {
     RECEIVE_DELAY_5((token, context, container) -> token.processAsIndexedDouble(5, 1.0, container::addReceiveDelay)),
 
     /** data quality entry. */
-    DATA_QUALITY((token, context, container) -> token.processAsNormalizedString(container::setDataQuality)),
+    DATA_QUALITY((token, context, container) -> token.processAsUppercaseString(container::setDataQuality)),
 
     /** Angle 1 correction entry. */
     CORRECTION_ANGLE_1((token, context, container) -> token.processAsDouble(1.0, container::setCorrectionAngle1)),
@@ -150,7 +150,7 @@ public enum TdmMetadataKey {
     CORRECTION_TRANSMIT((token, context, container) -> token.processAsDouble(1.0, container::setCorrectionTransmit)),
 
     /** Applied correction entry. */
-    CORRECTIONS_APPLIED((token, context, container) -> token.processAsNormalizedString(container::setCorrectionsApplied));
+    CORRECTIONS_APPLIED((token, context, container) -> token.processAsUppercaseString(container::setCorrectionsApplied));
 
     /** Processing method. */
     private final TokenProcessor processor;
