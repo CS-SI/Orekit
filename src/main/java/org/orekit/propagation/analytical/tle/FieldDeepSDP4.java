@@ -352,7 +352,7 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
 
         // if mean motion is 1.893053 to 2.117652 revs/day, and eccentricity >= 0.5,
         // start of the 12-hour orbit, e > 0.5 section
-        if ((xnq.getReal() >= 0.00826) && (xnq.getReal() <= 0.00924) && (tle.getE().getReal() >= 0.5)) {
+        if (xnq.getReal() >= 0.00826 && xnq.getReal() <= 0.00924 && tle.getE().getReal() >= 0.5) {
 
             final T g201  = tle.getE().subtract(0.64).negate().multiply(0.440).add(-0.306);
             final T eoc   = tle.getE().multiply(e0sq);
@@ -437,7 +437,7 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
             xlamo   = tle.getMeanAnomaly().add(tle.getRaan()).add(tle.getRaan()).subtract(thgr + thgr);
             bfact   = xmdot.add(xnodot).add(xnodot).subtract(TLEConstants.THDT + TLEConstants.THDT);
             bfact   = bfact.add(ssl).add(ssh).add(ssh);
-        } else if ((xnq.getReal() < 0.0052359877) && (xnq.getReal() > 0.0034906585)) {
+        } else if (xnq.getReal() < 0.0052359877 && xnq.getReal() > 0.0034906585) {
             // if mean motion is .8 to 1.2 revs/day : (geosynch)
 
             final T cosio_plus_1 = cosi0.add(1.0);
@@ -546,7 +546,7 @@ public class FieldDeepSDP4<T extends RealFieldElement<T>> extends FieldSDP4<T> {
         // However,  the Dundee code _always_ recomputes,  so if
         // we're attempting to replicate its results,  we've gotta
         // recompute everything,  too.
-        if ((FastMath.abs(savtsn.subtract(t).getReal()) >= 30.0) || isDundeeCompliant)  {
+        if (FastMath.abs(savtsn.subtract(t).getReal()) >= 30.0 || isDundeeCompliant)  {
 
             savtsn = t;
 

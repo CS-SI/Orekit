@@ -190,7 +190,7 @@ public class AGILeapSecondFilesLoader extends AbstractSelfFeedingLoader
                                                       name, dc1.getYear(), dc1.getMonth(), dc1.getDay(), dc2.getMJD());
                         }
 
-                        if ((lastDate != null) && dc1.compareTo(lastDate) <= 0) {
+                        if (lastDate != null && dc1.compareTo(lastDate) <= 0) {
                             throw new OrekitException(OrekitMessages.NON_CHRONOLOGICAL_DATES_IN_FILE,
                                                       name, lineNumber);
                         }

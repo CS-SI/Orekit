@@ -882,12 +882,12 @@ public class FieldTLE<T extends RealFieldElement<T>> implements FieldTimeStamped
             final T deltaLv  = MathUtils.normalizeAngle(equiOrbit.getLv().subtract(recovEquiOrbit.getLv()), field.getZero());
 
             // check convergence
-            if ((FastMath.abs(deltaSma.getReal()) < thrA.getReal()) &&
-                (FastMath.abs(deltaEx.getReal())  < thrE.getReal()) &&
-                (FastMath.abs(deltaEy.getReal())  < thrE.getReal()) &&
-                (FastMath.abs(deltaHx.getReal())  < thrH.getReal()) &&
-                (FastMath.abs(deltaHy.getReal())  < thrH.getReal()) &&
-                (FastMath.abs(deltaLv.getReal())  < thrV)) {
+            if (FastMath.abs(deltaSma.getReal()) < thrA.getReal() &&
+                FastMath.abs(deltaEx.getReal())  < thrE.getReal() &&
+                FastMath.abs(deltaEy.getReal())  < thrE.getReal() &&
+                FastMath.abs(deltaHx.getReal())  < thrH.getReal() &&
+                FastMath.abs(deltaHy.getReal())  < thrH.getReal() &&
+                FastMath.abs(deltaLv.getReal())  < thrV) {
 
                 return current;
             }
