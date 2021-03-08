@@ -250,7 +250,7 @@ public class EventState<T extends EventDetector> {
                              final AbsoluteDate ta, final double ga,
                              final AbsoluteDate tb, final double gb) {
         // check there appears to be a root in [ta, tb]
-        check(ga == 0.0 || gb == 0.0 || (ga > 0.0 && gb < 0.0) || (ga < 0.0 && gb > 0.0));
+        check(ga == 0.0 || gb == 0.0 || ga > 0.0 && gb < 0.0 || ga < 0.0 && gb > 0.0);
 
         final double convergence = detector.getThreshold();
         final int maxIterationCount = detector.getMaxIterationCount();
@@ -338,8 +338,8 @@ public class EventState<T extends EventDetector> {
                 afterRootG = g(interpolator.getInterpolatedState(afterRootT));
             }
             // check loop is making some progress
-            check((forward && afterRootT.compareTo(beforeRootT) > 0) ||
-                  (!forward && afterRootT.compareTo(beforeRootT) < 0));
+            check(forward && afterRootT.compareTo(beforeRootT) > 0 ||
+                  !forward && afterRootT.compareTo(beforeRootT) < 0);
             // setup next iteration
             loopT = afterRootT;
             loopG = afterRootG;
@@ -474,7 +474,7 @@ public class EventState<T extends EventDetector> {
         g0 = afterG;
         g0Positive = increasing;
         // check g0Positive set correctly
-        check(g0 == 0.0 || g0Positive == (g0 > 0));
+        check(g0 == 0.0 || g0Positive == g0 > 0);
         return new EventOccurrence(action, newState, stopTime);
     }
 

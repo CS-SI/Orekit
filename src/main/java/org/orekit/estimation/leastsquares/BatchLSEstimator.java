@@ -253,7 +253,7 @@ public class BatchLSEstimator {
         final ParameterDriversList parameters =  new ParameterDriversList();
         for (final  ObservedMeasurement<?> measurement : measurements) {
             for (final ParameterDriver driver : measurement.getParametersDrivers()) {
-                if ((!estimatedOnly) || driver.isSelected()) {
+                if (!estimatedOnly || driver.isSelected()) {
                     parameters.add(driver);
                 }
             }

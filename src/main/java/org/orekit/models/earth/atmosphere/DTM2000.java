@@ -346,8 +346,8 @@ public class DTM2000 implements Atmosphere {
                              final Frame frame) {
 
         // check if data are available :
-        if ((date.compareTo(inputParams.getMaxDate()) > 0) ||
-            (date.compareTo(inputParams.getMinDate()) < 0)) {
+        if (date.compareTo(inputParams.getMaxDate()) > 0 ||
+            date.compareTo(inputParams.getMinDate()) < 0) {
             throw new OrekitException(OrekitMessages.NO_SOLAR_ACTIVITY_AT_DATE,
                                       date, inputParams.getMinDate(), inputParams.getMaxDate());
         }
@@ -384,8 +384,8 @@ public class DTM2000 implements Atmosphere {
                    final Frame frame) {
         // check if data are available :
         final AbsoluteDate dateD = date.toAbsoluteDate();
-        if ((dateD.compareTo(inputParams.getMaxDate()) > 0) ||
-            (dateD.compareTo(inputParams.getMinDate()) < 0)) {
+        if (dateD.compareTo(inputParams.getMaxDate()) > 0 ||
+            dateD.compareTo(inputParams.getMinDate()) < 0) {
             throw new OrekitException(OrekitMessages.NO_SOLAR_ACTIVITY_AT_DATE,
                                       dateD, inputParams.getMinDate(), inputParams.getMaxDate());
         }
@@ -591,10 +591,10 @@ public class DTM2000 implements Atmosphere {
 
             kleq = 0; // equinox
 
-            if ((day < 59) || (day > 284)) {
+            if (day < 59 || day > 284) {
                 kleq = -1; // north winter
             }
-            if ((day > 99) && (day < 244)) {
+            if (day > 99 && day < 244) {
                 kleq = 1; // north summer
             }
 
@@ -1055,10 +1055,10 @@ public class DTM2000 implements Atmosphere {
 
             kleq = 0; // equinox
 
-            if ((day < 59) || (day > 284)) {
+            if (day < 59 || day > 284) {
                 kleq = -1; // north winter
             }
-            if ((day > 99) && (day < 244)) {
+            if (day > 99 && day < 244) {
                 kleq = 1; // north summer
             }
 

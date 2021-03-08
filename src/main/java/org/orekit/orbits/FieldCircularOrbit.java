@@ -700,7 +700,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
             alphaEMalphaM  = alphaEMalphaM.subtract(shift);
             alphaE         = alphaM.add(alphaEMalphaM);
             scAlphaE       = FastMath.sinCos(alphaE);
-        } while ((++iter < 50) && (FastMath.abs(shift.getReal()) > 1.0e-12));
+        } while (++iter < 50 && FastMath.abs(shift.getReal()) > 1.0e-12);
         return alphaE;
 
     }

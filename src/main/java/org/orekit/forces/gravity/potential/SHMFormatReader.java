@@ -126,7 +126,7 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
         int lineNumber   = 1;
         try (BufferedReader r = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
             line = r.readLine();
-            if ((line != null) &&
+            if (line != null &&
                 "FIRST ".equals(line.substring(0, 6)) &&
                 "SHM    ".equals(line.substring(49, 56))) {
                 for (line = r.readLine(); line != null; line = r.readLine()) {

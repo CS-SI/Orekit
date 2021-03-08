@@ -190,8 +190,8 @@ public abstract class AbstractDualFrequencyCombination implements MeasurementCom
         final ObservationType obsType1 = data1.getObservationType();
         final ObservationType obsType2 = data2.getObservationType();
         // Dual-frequency combination is possible only if observation code is the same and data frequencies are different
-        return (obsType1.getFrequency(system) != obsType2.getFrequency(system)) &&
-                        (obsType1.getSignalCode() == obsType2.getSignalCode());
+        return obsType1.getFrequency(system) != obsType2.getFrequency(system) &&
+                        obsType1.getSignalCode() == obsType2.getSignalCode();
     }
 
 }

@@ -71,7 +71,7 @@ public abstract class AbstractDragForceModel extends AbstractForceModel {
             // To be in the desired case:
             // Order must be 1 (first order derivatives only)
             // Number of parameters must be 6 (PV), 7 (PV + drag coefficient) or 8 (PV + drag coefficient + lift ratio)
-            if (o != 1 || (p != 6 && p != 7 && p != 8)) {
+            if (o != 1 || p != 6 && p != 7 && p != 8) {
                 return false;
             }
 
