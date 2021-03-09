@@ -152,7 +152,7 @@ public class FrameFacade {
                 }
             } catch (IllegalArgumentException iaeO) {
                 try {
-                    final SpacecraftBodyFrame sbf = SpacecraftBodyFrame.parse(name);
+                    final SpacecraftBodyFrame sbf = SpacecraftBodyFrame.parse(name.replace(' ', '_'));
                     if (allowSpacecraft) {
                         return new FrameFacade(null, null, null, sbf, sbf.toString());
                     }
