@@ -35,7 +35,7 @@ import org.orekit.utils.Constants;
  * @see UTCScale
  * @see UTCTAIHistoryFilesLoader
  */
-class UTCTAIOffset implements TimeStamped, Serializable {
+public class UTCTAIOffset implements TimeStamped, Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 4742190573136348054L;
