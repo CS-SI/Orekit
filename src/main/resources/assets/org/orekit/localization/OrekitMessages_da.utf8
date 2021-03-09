@@ -373,6 +373,9 @@ SP3_UNEXPECTED_END_OF_FILE = uventet ende på fil i sp3 fil (efter linje {0})
 # unsupported clock file version {0}
 CLOCK_FILE_UNSUPPORTED_VERSION = ikke-understøttet urfilversion {0}
 
+# unsupported navigation messages file version {0}
+NAVIGATION_FILE_UNSUPPORTED_VERSION = <MISSING TRANSLATION>
+
 # non-existent geomagnetic model {0} for year {1}
 NON_EXISTENT_GEOMAGNETIC_MODEL = ikke-eksisterende geomagnetisk model {0} for år {1}
 
