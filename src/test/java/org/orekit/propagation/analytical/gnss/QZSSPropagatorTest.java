@@ -31,6 +31,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.QZSSAlmanac;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.gnss.navigation.QZSSNavigationMessage;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScalesFactory;
@@ -142,11 +143,26 @@ public class QZSSPropagatorTest {
     @Test
     public void testPosition() {
         // Initial QZSS orbital elements (Ref: IGS)
-        final QZSSOrbitalElements qoe = new QZSSEphemeris(195, 21, 226800.0, 6493.226968765259, 0.07426900835707784,
-                                                          4.796628370253418E-10, 0.7116940567084221, 4.835915721014987E-10,
-                                                          0.6210371871830609, -8.38963517626603E-10, -1.5781555771543598,
-                                                          1.077008903618136, -8.8568776845932E-6, 1.794286072254181E-5,
-                                                          -344.03125, -305.6875, 1.2032687664031982E-6, -2.6728957891464233E-6);
+        final QZSSNavigationMessage qoe = new QZSSNavigationMessage();
+        qoe.setPRN(195);
+        qoe.setWeek(21);
+        qoe.setToe(226800.0);
+        qoe.setSqrtA(6493.226968765259);
+        qoe.setE(0.07426900835707784);
+        qoe.setDeltaN(4.796628370253418E-10);
+        qoe.setI0(0.7116940567084221);
+        qoe.setIDot(4.835915721014987E-10);
+        qoe.setOmega0(0.6210371871830609);
+        qoe.setOmegaDot(-8.38963517626603E-10);
+        qoe.setPa(-1.5781555771543598);
+        qoe.setM0(1.077008903618136);
+        qoe.setCuc(-8.8568776845932E-6);
+        qoe.setCus(1.794286072254181E-5);
+        qoe.setCrc(-344.03125);
+        qoe.setCrs(-305.6875);
+        qoe.setCic(1.2032687664031982E-6);
+        qoe.setCis(-2.6728957891464233E-6);
+        qoe.setDate(new GNSSDate(qoe.getWeek(), 1000.0 * qoe.getTime(), SatelliteSystem.QZSS).getDate());
         // Date of the QZSS orbital elements
         final AbsoluteDate target = qoe.getDate();
         // Build the QZSS propagator
@@ -172,151 +188,4 @@ public class QZSSPropagatorTest {
         Assert.assertEquals(Vector3D.NaN, pv0.getVelocity());
         
     }
-
-    private class QZSSEphemeris implements QZSSOrbitalElements {
-
-        private int prn;
-        private int week;
-        private double toe;
-        private double sma;
-        private double deltaN;
-        private double ecc;
-        private double inc;
-        private double iDot;
-        private double om0;
-        private double dom;
-        private double aop;
-        private double anom;
-        private double cuc;
-        private double cus;
-        private double crc;
-        private double crs;
-        private double cic;
-        private double cis;
-
-        /**
-         * Build a new instance.
-         */
-        QZSSEphemeris(int prn, int week, double toe, double sqa, double ecc,
-                      double deltaN, double inc, double iDot, double om0,
-                      double dom, double aop, double anom, double cuc,
-                      double cus, double crc, double crs, double cic, double cis) {
-            this.prn    = prn;
-            this.week   = week;
-            this.toe    = toe;
-            this.sma    = sqa * sqa;
-            this.ecc    = ecc;
-            this.deltaN = deltaN;
-            this.inc    = inc;
-            this.iDot   = iDot;
-            this.om0    = om0;
-            this.dom    = dom;
-            this.aop    = aop;
-            this.anom   = anom;
-            this.cuc    = cuc;
-            this.cus    = cus;
-            this.crc    = crc;
-            this.crs    = crs;
-            this.cic    = cic;
-            this.cis    = cis;
-        }
-
-        @Override
-        public int getPRN() {
-            return prn;
-        }
-
-        @Override
-        public int getWeek() {
-            return week;
-        }
-
-        @Override
-        public double getTime() {
-            return toe;
-        }
-
-        @Override
-        public double getSma() {
-            return sma;
-        }
-
-        @Override
-        public double getMeanMotion() {
-            final double absA = FastMath.abs(sma);
-            return FastMath.sqrt(QZSS_MU / absA) / absA + deltaN;
-        }
-
-        @Override
-        public double getE() {
-            return ecc;
-        }
-
-        @Override
-        public double getI0() {
-            return inc;
-        }
-
-        @Override
-        public double getIDot() {
-            return iDot;
-        }
-
-        @Override
-        public double getOmega0() {
-            return om0;
-        }
-
-        @Override
-        public double getOmegaDot() {
-            return dom;
-        }
-
-        @Override
-        public double getPa() {
-            return aop;
-        }
-
-        @Override
-        public double getM0() {
-            return anom;
-        }
-
-        @Override
-        public double getCuc() {
-            return cuc;
-        }
-
-        @Override
-        public double getCus() {
-            return cus;
-        }
-
-        @Override
-        public double getCrc() {
-            return crc;
-        }
-
-        @Override
-        public double getCrs() {
-            return crs;
-        }
-
-        @Override
-        public double getCic() {
-            return cic;
-        }
-
-        @Override
-        public double getCis() {
-            return cis;
-        }
-
-        @Override
-        public AbsoluteDate getDate() {
-            return new GNSSDate(week, toe * 1000., SatelliteSystem.QZSS).getDate();
-        }
-        
-    }
-
 }
