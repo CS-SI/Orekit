@@ -241,7 +241,6 @@ public class OCMParserTest {
         Assert.assertEquals("CSPOC",              file.getMetadata().getCatalogName());
         Assert.assertEquals(1.0,                  file.getMetadata().getSclkSecPerSISec(), 1.0e-15);
         Assert.assertEquals("LINEAR",             file.getMetadata().getInterpMethodEOP());
-        Assert.assertEquals("LINEAR",             file.getMetadata().getInterpMethodSW());
 
         // Check Header Block;
         Assert.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
@@ -721,7 +720,6 @@ public class OCMParserTest {
         Assert.assertEquals(-0.1642060,                            file.getMetadata().getUt1mutcT0(), 1.0e-15);
         Assert.assertEquals("IERS",                                file.getMetadata().getEopSource());
         Assert.assertEquals("LAGRANGE ORDER 5",                    file.getMetadata().getInterpMethodEOP());
-        Assert.assertEquals("NEAREST NEIGHBOR",                    file.getMetadata().getInterpMethodSW());
         Assert.assertEquals("JPL DE 430",                          file.getMetadata().getCelestialSource());
 
         // TODO test orbit data

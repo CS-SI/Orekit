@@ -186,9 +186,6 @@ public enum OcmMetadataKey {
     /** Interpolation method for Earth Orientation Parameters. */
     INTERP_METHOD_EOP((token, context, container) -> token.processAsNormalizedString(container::setInterpMethodEOP)),
 
-    /** Interpolation method for space weather data. */
-    INTERP_METHOD_SW((token, context, container) -> token.processAsNormalizedString(container::setInterpMethodSW)),
-
     /** Source and version of celestial body (e.g. Sun/Earth/Planetary). */
     CELESTIAL_SOURCE((token, context, container) -> token.processAsNormalizedString(container::setCelestialSource));
 

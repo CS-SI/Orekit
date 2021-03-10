@@ -157,9 +157,6 @@ public class OcmMetadata extends OdmMetadata {
     /** Interpolation method for Earth Orientation Parameters. */
     private String interpMethodEOP;
 
-    /** Interpolation method for Space Weather data. */
-    private String interpMethodSW;
-
     /** Source and version of celestial body (e.g. Sun/Earth/Planetary). */
     private String celestialSource;
 
@@ -174,7 +171,6 @@ public class OcmMetadata extends OdmMetadata {
         sclkOffsetAtEpoch = 0.0;
         sclkSecPerSISec   = 1.0;
         interpMethodEOP   = DEFAULT_INTERPOLATION_METHOD;
-        interpMethodSW    = DEFAULT_INTERPOLATION_METHOD;
 
     }
 
@@ -801,21 +797,6 @@ public class OcmMetadata extends OdmMetadata {
     public void setInterpMethodEOP(final String interpMethodEOP) {
         refuseFurtherComments();
         this.interpMethodEOP = interpMethodEOP;
-    }
-
-    /** Get the interpolation method for Space Weather data.
-     * @return interpolation method for Space Weather data
-     */
-    public String getInterpMethodSW() {
-        return interpMethodSW;
-    }
-
-    /** Set the interpolation method for Space Weather data.
-     * @param interpMethodSW interpolation method for Space Weather data
-     */
-    public void setInterpMethodSW(final String interpMethodSW) {
-        refuseFurtherComments();
-        this.interpMethodSW = interpMethodSW;
     }
 
     /** Get the source and version of celestial body (e.g. Sun/Earth/Planetary).
