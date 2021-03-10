@@ -189,12 +189,10 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
         if (metadata != null) {
             return false;
         }
-        metadata  = new OcmMetadata();
-        context   = new ParsingContext(this::getConventions,
-                                       this::isSimpleEOP,
-                                       this::getDataContext,
-                                       metadata::getEpochT0,
-                                       metadata::getTimeSystem);
+        metadata  = new OcmMetadata(getDataContext());
+        context   = new ParsingContext(this::getConventions, this::isSimpleEOP,
+                                       this::getDataContext, metadata::getEpochT0,
+                                       metadata::getTimeSystem, metadata::getSclkOffsetAtEpoch, metadata::getSclkSecPerSISec);
         setFallback(this::processMetadataToken);
         return true;
     }
@@ -465,7 +463,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                 final AbsoluteDate epoch;
                 if (fields[0].indexOf('T') > 0) {
                     // absolute date
-                    epoch = context.getTimeSystem().parseDate(fields[0], context);
+                    epoch = context.getTimeSystem().parse(fields[0]);
                 } else {
                     // relative date
                     epoch = metadata.getEpochT0().shiftedBy(Double.parseDouble(fields[0]));
@@ -526,7 +524,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                                               token.getLineNumber(), token.getFileName(), token.getContentAsNormalizedString());
                 }
                 currentCovarianceHistory.add(new Covariance(currentCovarianceHistoryMetadata.getCovType(),
-                                                            context.getTimeSystem().parseDate(fields[0], context),
+                                                            context.getTimeSystem().parse(fields[0]),
                                                             fields, 1));
                 return true;
             } catch (NumberFormatException nfe) {

@@ -51,11 +51,11 @@ public class SatelliteClockScale implements TimeScale {
      * @param epoch reference epoch
      * @param epochScale time scale in which the {@code epoch} was defined
      * @param countAtEpoch clock count at {@code epoch}
-     * @param drift clock drift rate (i.e. clock count per SI second minus 1.0)
+     * @param drift clock drift rate (i.e. clock count change per SI second minus 1.0)
      */
-    SatelliteClockScale(final String name,
-                        final AbsoluteDate epoch, final TimeScale epochScale,
-                        final double countAtEpoch, final double drift) {
+    public SatelliteClockScale(final String name,
+                               final AbsoluteDate epoch, final TimeScale epochScale,
+                               final double countAtEpoch, final double drift) {
         this.name          = name;
         this.epoch         = epoch;
         this.epochDT       = epoch.getComponents(epochScale);

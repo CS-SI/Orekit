@@ -35,6 +35,7 @@ import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.CenterName;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
+import org.orekit.files.ccsds.definitions.PredefinedTimeSystem;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
@@ -415,18 +416,21 @@ public class ParseToken {
                 throw new OrekitException(OrekitMessages.CCSDS_TIME_SYSTEM_NOT_READ_YET,
                                           getLineNumber(), getFileName());
             }
-            consumer.accept(context.getTimeSystem().parseDate(content, context));
+            consumer.accept(context.getTimeSystem().parse(content));
         }
         return true;
     }
 
     /** Process the content as a time scale.
      * @param consumer consumer of the time scale
+     * @param context parsing context
      * @return always returns {@code true} (or throws an exception)
      */
-    public boolean processAsTimeScale(final TimeScaleConsumer consumer) {
+    public boolean processAsTimeScale(final TimeScaleConsumer consumer, final ParsingContext context) {
         if (type == TokenType.ENTRY) {
-            consumer.accept(TimeSystem.parse(getContentAsUppercaseString()));
+            consumer.accept(PredefinedTimeSystem.
+                            parse(getContentAsUppercaseString()).
+                            getTimeSystem(context));
         }
         return true;
     }

@@ -256,9 +256,9 @@ public class AEMWriterTest {
         final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
         StringBuilder buffer = new StringBuilder();
 
-        AemWriter writer = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
-                                         null, aemFile.getSegments().get(0).getMetadata(),
-                                         "some-name", "%.2f");
+        AemWriter writer = new AemWriter(DataContext.getDefault(), null,
+                                         aemFile.getSegments().get(0).getMetadata(), "some-name",
+                                         "%.2f");
 
         writer.write(buffer, aemFile);
 
@@ -286,15 +286,15 @@ public class AEMWriterTest {
         // compare metadata
         AemMetadata meta1 = segment1.getMetadata();
         AemMetadata meta2 = segment2.getMetadata();
-        assertEquals(meta1.getObjectID(),            meta2.getObjectID());
-        assertEquals(meta1.getObjectName(),          meta2.getObjectName());
-        assertEquals(meta1.getCenter().getName(),    meta2.getCenter().getName());
-        assertEquals(meta1.getTimeSystem(),          meta2.getTimeSystem());
-        assertEquals(meta1.getLaunchYear(),          meta2.getLaunchYear());
-        assertEquals(meta1.getLaunchNumber(),        meta2.getLaunchNumber());
-        assertEquals(meta1.getLaunchPiece(),         meta2.getLaunchPiece());
-        assertEquals(meta1.getHasCreatableBody(),    meta2.getHasCreatableBody());
-        assertEquals(meta1.getInterpolationDegree(), meta2.getInterpolationDegree());
+        assertEquals(meta1.getObjectID(),                            meta2.getObjectID());
+        assertEquals(meta1.getObjectName(),                          meta2.getObjectName());
+        assertEquals(meta1.getCenter().getName(),                    meta2.getCenter().getName());
+        assertEquals(meta1.getTimeSystem().getTimeScale().getName(), meta2.getTimeSystem().getTimeScale().getName());
+        assertEquals(meta1.getLaunchYear(),                          meta2.getLaunchYear());
+        assertEquals(meta1.getLaunchNumber(),                        meta2.getLaunchNumber());
+        assertEquals(meta1.getLaunchPiece(),                         meta2.getLaunchPiece());
+        assertEquals(meta1.getHasCreatableBody(),                    meta2.getHasCreatableBody());
+        assertEquals(meta1.getInterpolationDegree(),                 meta2.getInterpolationDegree());
 
         // compare data
         assertEquals(0.0, segment1.getStart().durationFrom(segment2.getStart()), DATE_PRECISION);
@@ -373,7 +373,7 @@ public class AEMWriterTest {
 
     private AemMetadata dummyMetadata() {
         AemMetadata metadata = new AemMetadata(4);
-        metadata.setTimeSystem(TimeSystem.TT);
+        metadata.setTimeSystem(new TimeSystem(DataContext.getDefault().getTimeScales().getTT()));
         metadata.setObjectID("9999-999ZZZ");
         metadata.setObjectName("transgalactic");
         metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,

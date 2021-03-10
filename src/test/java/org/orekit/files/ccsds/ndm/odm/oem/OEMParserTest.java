@@ -43,7 +43,6 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
-import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.frames.FactoryManagedFrame;
 import org.orekit.frames.Frame;
@@ -77,7 +76,7 @@ public class OEMParserTest {
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getMars().getGM()).buildOemParser();
         final OemFile file = parser.parseMessage(source);
         Assert.assertEquals(3, file.getSegments().size());
-        Assert.assertEquals(TimeSystem.UTC, file.getSegments().get(0).getMetadata().getTimeSystem());
+        Assert.assertEquals("UTC", file.getSegments().get(0).getMetadata().getTimeSystem().getTimeScale().getName());
         Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getSegments().get(0).getMetadata().getObjectName());
         Assert.assertEquals("1996-062A", file.getSegments().get(0).getMetadata().getObjectID());
         Assert.assertEquals("MARS BARYCENTER", file.getSegments().get(0).getMetadata().getCenter().getName());
@@ -161,7 +160,7 @@ public class OEMParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getMars().getGM()).buildOemParser();
         final OemFile file = parser.parse(source); // using the generic API here
-        Assert.assertEquals(TimeSystem.UTC, file.getSegments().get(0).getMetadata().getTimeSystem());
+        Assert.assertEquals("UTC", file.getSegments().get(0).getMetadata().getTimeSystem().getTimeScale().getName());
         Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getSegments().get(0).getMetadata().getObjectName());
         Assert.assertEquals("1996-062A", file.getSegments().get(0).getMetadata().getObjectID());
 
@@ -188,8 +187,8 @@ public class OEMParserTest {
         } catch (OrekitException e){
             Assert.assertEquals(e.getSpecifier(), OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY);
         }
-        Assert.assertEquals(segment.getMetadata().getTimeSystem(), TimeSystem.UTC);
-        Assert.assertEquals(segment.getInterpolationSamples(), 3);
+        Assert.assertEquals("UTC", segment.getMetadata().getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals(3, segment.getInterpolationSamples());
         Assert.assertEquals(segment.getAvailableDerivatives(),
                 CartesianDerivativesFilter.USE_PV);
         // propagator can't be created since frame can't be created
@@ -209,7 +208,7 @@ public class OEMParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getMars().getGM()).buildOemParser();
         final OemFile file = parser.parseMessage(source);
-        Assert.assertEquals(TimeSystem.UTC, file.getSegments().get(0).getMetadata().getTimeSystem());
+        Assert.assertEquals("UTC", file.getSegments().get(0).getMetadata().getTimeSystem().getTimeScale().getName());
         Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getSegments().get(0).getMetadata().getObjectName());
         Assert.assertEquals("1996-062A", file.getSegments().get(0).getMetadata().getObjectID());
 
@@ -245,7 +244,7 @@ public class OEMParserTest {
         Assert.assertEquals(actualTransform.getRotationAcceleration(), Vector3D.ZERO);
         Assert.assertEquals("Mars/EME2000", actualFrame.getName());
         Assert.assertEquals(CelestialBodyFrame.EME2000, segment.getMetadata().getReferenceFrame().asCelestialBodyFrame());
-        Assert.assertEquals(TimeSystem.UTC, segment.getMetadata().getTimeSystem());
+        Assert.assertEquals("UTC", segment.getMetadata().getTimeSystem().getTimeScale().getName());
         Assert.assertEquals(segment.getAvailableDerivatives(),
                 CartesianDerivativesFilter.USE_PV);
         Assert.assertEquals(satellite.getSegments().get(0).getMetadata().getStartTime(), actualStart);
@@ -395,8 +394,8 @@ public class OEMParserTest {
             parseMessage(source);
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_INCONSISTENT_TIME_SYSTEMS, oe.getSpecifier());
-            Assert.assertEquals(TimeSystem.UTC, oe.getParts()[0]);
-            Assert.assertEquals(TimeSystem.TCG, oe.getParts()[1]);
+            Assert.assertEquals("UTC", oe.getParts()[0]);
+            Assert.assertEquals("TCG", oe.getParts()[1]);
         }
     }
 

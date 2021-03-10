@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.util.List;
 
+import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadata;
 import org.orekit.time.AbsoluteDate;
@@ -163,11 +164,12 @@ public class OcmMetadata extends OdmMetadata {
     private String celestialSource;
 
     /** Create a new meta-data.
+     * @param dataContext data context
      */
-    OcmMetadata() {
+    OcmMetadata(final DataContext dataContext) {
 
         // set up the few fields that have default values as per CCSDS standard
-        super(TimeSystem.UTC);
+        super(new TimeSystem(dataContext.getTimeScales().getUTC()));
         catalogName       = "CSPOC";
         sclkOffsetAtEpoch = 0.0;
         sclkSecPerSISec   = 1.0;

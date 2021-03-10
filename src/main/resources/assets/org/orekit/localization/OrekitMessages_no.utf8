@@ -445,9 +445,6 @@ NOT_A_SUPPORTED_YUMA_ALMANAC_FILE = filen {0} er ikke en støttet Yuma almanakkf
 # only {0} GNSS orbits are provided while {1} are needed to compute the DOP
 NOT_ENOUGH_GNSS_FOR_DOP = Bare {0} GNSS baner har blitt presistert mens {1} baner trengs for å regne ut DOP'en
 
-# the CCSDS time system {0} has no corresponding Orekit TimeScale.
-CCSDS_NO_CORRESPONDING_TIME_SCALE = CCSDS-tidssystemet {0} har ingen korresponderene Orekit TimeScale.
-
 # use of time system {0} in CCSDS files requires an additional ICD and is not implemented in Orekit
 CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = Bruk av tidssystemet {0} i CCSDS-filer krever en ytterligere ICD og er ikke støttet av Orekit
 

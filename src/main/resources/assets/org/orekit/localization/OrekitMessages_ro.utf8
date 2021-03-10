@@ -445,9 +445,6 @@ NOT_A_SUPPORTED_YUMA_ALMANAC_FILE = fișierul {0} nu este un fișier Yuma almana
 # only {0} GNSS orbits are provided while {1} are needed to compute the DOP
 NOT_ENOUGH_GNSS_FOR_DOP = numai {0} orbite GNSS sunt oferite în timp ce {1} sunt necesare pentru a calcula DOP-ul
 
-# the CCSDS time system {0} has no corresponding Orekit TimeScale.
-CCSDS_NO_CORRESPONDING_TIME_SCALE = sistemul de timp CCSDS {0} nu are niciun corspondent Orekit TimeScale.
-
 # use of time system {0} in CCSDS files requires an additional ICD and is not implemented in Orekit
 CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = utilizarea sistemului de timp {0} în fișierele CCSDS necesită un ICD adițional și nu este disponibil în Orekit 
 

@@ -33,7 +33,7 @@ public enum ManeuverFieldType {
 
     /** Absolute epoch time. */
     TIME_ABSOLUTE("n/a",
-        (field, u, context, maneuver) -> maneuver.setDate(context.getTimeSystem().parseDate(field, context))),
+        (field, u, context, maneuver) -> maneuver.setDate(context.getTimeSystem().parse(field))),
 
     /** Relative epoch time. */
     TIME_RELATIVE("s",

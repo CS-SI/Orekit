@@ -32,7 +32,7 @@ public enum MetadataKey {
              token.getType() == TokenType.ENTRY ? metadata.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Time system entry. */
-    TIME_SYSTEM((token, context, metadata) -> token.processAsTimeScale(metadata::setTimeSystem));
+    TIME_SYSTEM((token, context, metadata) -> token.processAsTimeScale(metadata::setTimeSystem, context));
 
     /** Processing method. */
     private final TokenProcessor processor;

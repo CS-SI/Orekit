@@ -1,5 +1,5 @@
-/* Contributed in the public domain.
- * Licensed to CS GROUP (CS) under one or more
+/* Copyright 2002-2021 CS GROUP
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,206 +16,48 @@
  */
 package org.orekit.files.ccsds.definitions;
 
-import org.orekit.annotation.DefaultDataContext;
-import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScales;
-import org.orekit.utils.Constants;
-import org.orekit.utils.IERSConventions;
 
-/**
- * The set of time systems defined in CCSDS standards (ADM, ODM, NDM).
+/** Dates reader/writer based on a {@link TimeScale}.
  *
- * @author Evan Ward
+ * @author Luc Maisonobe
+ * @since 11.0
  */
-public enum TimeSystem {
+public class TimeSystem {
 
-    /** Greenwich Mean Sidereal Time. */
-    GMST {
-        @Override
-        public TimeScale getTimeScale(final IERSConventions conventions, final TimeScales timeScales) {
-            return timeScales.getGMST(conventions, false);
-        }
-    },
-    /** Global Positioning System. */
-    GPS {
-        @Override
-        public TimeScale getTimeScale(final IERSConventions conventions, final TimeScales timeScales) {
-            return timeScales.getGPS();
-        }
-    },
-    /** Mission Elapsed Time. */
-    MET {
-        @Override
-        public AbsoluteDate parseDate(final String date, final ParsingContext context) {
-            final DateTimeComponents clock = DateTimeComponents.parseDateTime(date);
-            final double offset = clock.getDate().getYear() * Constants.JULIAN_YEAR +
-                                  clock.getDate().getDayOfYear() * Constants.JULIAN_DAY +
-                                  clock.getTime().getSecondsInUTCDay();
-            return context.getReferenceDate().shiftedBy(offset);
-        }
+    /** Base time scale. */
+    private final TimeScale timeScale;
 
-        @Override
-        public TimeScale getTimeScale(final IERSConventions conventions, final TimeScales timeScales) {
-            throw new OrekitException(
-                    OrekitMessages.CCSDS_NO_CORRESPONDING_TIME_SCALE,
-                    "MET");
-        }
-    },
-    /** Mission Relative Time. */
-    MRT {
-        @Override
-        public AbsoluteDate parseDate(final String date, final ParsingContext context) {
-            final DateTimeComponents clock = DateTimeComponents.parseDateTime(date);
-            final double offset = clock.getDate().getYear() * Constants.JULIAN_YEAR +
-                                  clock.getDate().getDayOfYear() * Constants.JULIAN_DAY +
-                                  clock.getTime().getSecondsInUTCDay();
-            return context.getReferenceDate().shiftedBy(offset);
-        }
-
-        @Override
-        public TimeScale getTimeScale(final IERSConventions conventions, final TimeScales timeScales) {
-            throw new OrekitException(
-                    OrekitMessages.CCSDS_NO_CORRESPONDING_TIME_SCALE,
-                    "MRT");
-        }
-    },
-    /** Spacecraft Clock. Not currently Implemented. */
-    SCLK {
-        @Override
-        public AbsoluteDate parseDate(final String date, final ParsingContext context) {
-            // TODO: implement SCLK, delegating interpretation to user-provided method
-            throw new OrekitException(
-                    OrekitMessages.CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED,
-                    this.name());
-        }
-
-        @Override
-        public TimeScale getTimeScale(final IERSConventions conventions, final TimeScales timeScales) {
-            throw new OrekitException(
-                    OrekitMessages.CCSDS_NO_CORRESPONDING_TIME_SCALE,
-                    this.name());
-        }
-    },
-    /** International Atomic Time. */
-    TAI {
-        @Override
-        public TimeScale getTimeScale(final IERSConventions conventions, final TimeScales timeScales) {
-            return timeScales.getTAI();
-        }
-    },
-    /** Barycentric Coordinate Time. */
-    TCB {
-        @Override
-        public TimeScale getTimeScale(final IERSConventions conventions, final TimeScales timeScales) {
-            return timeScales.getTCB();
-        }
-    },
-    /** Barycentric Dynamical Time. */
-    TDB {
-        @Override
-        public TimeScale getTimeScale(final IERSConventions conventions, final TimeScales timeScales) {
-            return timeScales.getTDB();
-        }
-    },
-    /** Geocentric Coordinate Time. */
-    TCG {
-        @Override
-        public TimeScale getTimeScale(final IERSConventions conventions, final TimeScales timeScales) {
-            return timeScales.getTCG();
-        }
-    },
-    /** Terrestrial Time. */
-    TT {
-        @Override
-        public TimeScale getTimeScale(final IERSConventions conventions, final TimeScales timeScales) {
-            return timeScales.getTT();
-        }
-    },
-    /** Universal Time. */
-    UT1 {
-        @Override
-        public TimeScale getTimeScale(final IERSConventions conventions, final TimeScales timeScales) {
-            return timeScales.getUT1(conventions, false);
-        }
-    },
-    /** Universal Coordinated Time. */
-    UTC {
-        @Override
-        public TimeScale getTimeScale(final IERSConventions conventions, final TimeScales timeScales) {
-            return timeScales.getUTC();
-        }
-    };
-
-    /**
-     * Parse a date in this time scale.
-     *
-     * @param date    a CCSDS date string.
-     * @param context parsing context
-     * @return parsed {@code date}.
-     * @since 10.1
+    /** Build a time sytem from a time scale.
+     * @param timeScale base time scale
      */
-    public AbsoluteDate parseDate(final String date, final ParsingContext context) {
-        return new AbsoluteDate(date,
-                                getTimeScale(context.getConventions(),
-                                             context.getDataContext().getTimeScales()));
+    public TimeSystem(final TimeScale timeScale) {
+        this.timeScale = timeScale;
     }
 
-    /**
-     * Get the corresponding {@link TimeScale}.
-     *
-     * <p>This method uses the {@link DataContext#getDefault() default data context}.
-     *
-     * @param conventions IERS Conventions for the {@link #GMST} and {@link #UT1} scales.
-     * @return the time scale.
+    /** Parse a date.
+     * @param s string to parse
+     * @return parsed date
      */
-    @DefaultDataContext
-    public TimeScale getTimeScale(final IERSConventions conventions) {
-        return getTimeScale(conventions, DataContext.getDefault().getTimeScales());
+    public AbsoluteDate parse(final String s) {
+        return new AbsoluteDate(s, timeScale);
     }
 
-    /**
-     * Get the corresponding {@link TimeScale}.
-     *
-     * @param conventions IERS Conventions for the {@link #GMST} and {@link #UT1} scales.
-     * @param timeScales the set of time scales to use.
-     * @return the time scale.
+    /** Generate calendar components.
+     * @param date date to convert
+     * @return date components
      */
-    public abstract TimeScale getTimeScale(IERSConventions conventions,
-                                           TimeScales timeScales);
-
-    /**
-     * Check if {@code timeScale} is one of the values supported by this enum.
-     *
-     * @param timeScale specifier.
-     * @return {@code true} if {@link #valueOf(String)} will not throw an exception with
-     * the same string.
-     */
-    public static boolean contains(final String timeScale) {
-        for (final TimeSystem scale : values()) {
-            if (scale.name().equals(timeScale)) {
-                return true;
-            }
-        }
-        return false;
+    public DateTimeComponents toComponents(final AbsoluteDate date) {
+        return date.getComponents(timeScale);
     }
 
-    /** Parse a value from a key=value entry.
-     * @param value value to parse
-     * @return CCSDS time system corresponding to the value
+    /** Get the base time scale.
+     * @return base time scale
      */
-    public static TimeSystem parse(final String value) {
-        for (final TimeSystem scale : values()) {
-            if (scale.name().equals(value)) {
-                return scale;
-            }
-        }
-        throw new OrekitException(OrekitMessages.CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED, value);
+    public TimeScale getTimeScale() {
+        return timeScale;
     }
 
 }

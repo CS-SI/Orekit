@@ -43,7 +43,11 @@ public class HeaderProcessingState implements ProcessingState {
      * @param parser parser for the complete message
      */
     public HeaderProcessingState(final DataContext dataContext, final AbstractMessageParser<?, ?> parser) {
-        this.context = new ParsingContext(() -> null, () -> true, () -> dataContext, () -> null, () -> TimeSystem.UTC);
+        this.context = new ParsingContext(
+            () -> null, () -> true,
+            () -> dataContext, () -> null,
+            () -> new TimeSystem(dataContext.getTimeScales().getUTC()),
+            () -> 0.0, () -> 1.0);
         this.parser  = parser;
     }
 

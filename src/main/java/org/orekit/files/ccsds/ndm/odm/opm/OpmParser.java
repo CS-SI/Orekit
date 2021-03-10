@@ -180,11 +180,9 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
             return false;
         }
         metadata  = new CommonMetadata();
-        context   = new ParsingContext(this::getConventions,
-                                       this::isSimpleEOP,
-                                       this::getDataContext,
-                                       this::getMissionReferenceDate,
-                                       metadata::getTimeSystem);
+        context   = new ParsingContext(this::getConventions, this::isSimpleEOP,
+                                       this::getDataContext, this::getMissionReferenceDate,
+                                       metadata::getTimeSystem, () -> 0.0, () -> 1.0);
         setFallback(this::processMetadataToken);
         return true;
     }

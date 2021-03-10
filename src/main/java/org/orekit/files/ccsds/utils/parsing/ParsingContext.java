@@ -17,6 +17,7 @@
 package org.orekit.files.ccsds.utils.parsing;
 
 import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import org.orekit.data.DataContext;
@@ -52,6 +53,12 @@ public class ParsingContext {
     /** Supplier for reference system for interpreting dates. */
     private final Supplier<TimeSystem> timeSystemSupplier;
 
+    /** Supplier for clock count at reference date in spacecraft clock (SCLK) time system. */
+    private final DoubleSupplier clockCountSupplier;
+
+    /** Supplier for clock rate in spacecraft clock (SCLK) time system. */
+    private final DoubleSupplier clockRateSupplier;
+
     /** Create a new context.
      * @param conventionsSupplier supplier for IERS conventions to use
      * @param simpleEOPSupplier supplier for simple or accurate EOP interpolation indicator
@@ -59,17 +66,23 @@ public class ParsingContext {
      * @param referenceDateSupplier supplier for reference date for mission elapsed time (MET),
      * mission relative time (MRT), or spacecraft clock (SCLK) time systems
      * @param timeystemSupplier supplier for reference system for interpreting dates
+     * @param clockCountSupplier supplier for clock count at reference date in spacecraft clock (SCLK) time system
+     * @param clockRateSupplier supplier for clock rate in spacecraft clock (SCLK) time system
      */
     public ParsingContext(final Supplier<IERSConventions> conventionsSupplier,
                           final BooleanSupplier           simpleEOPSupplier,
                           final Supplier<DataContext>     dataContextSupplier,
                           final Supplier<AbsoluteDate>    referenceDateSupplier,
-                          final Supplier<TimeSystem>      timeystemSupplier) {
+                          final Supplier<TimeSystem>      timeystemSupplier,
+                          final DoubleSupplier            clockCountSupplier,
+                          final DoubleSupplier            clockRateSupplier) {
         this.conventionsSupplier   = conventionsSupplier;
         this.simpleEOPSupplier     = simpleEOPSupplier;
         this.dataContextSupplier   = dataContextSupplier;
         this.referenceDateSupplier = referenceDateSupplier;
         this.timeSystemSupplier    = timeystemSupplier;
+        this.clockCountSupplier    = clockCountSupplier;
+        this.clockRateSupplier     = clockRateSupplier;
     }
 
     /** Get IERS conventions.
@@ -105,6 +118,20 @@ public class ParsingContext {
      */
     public TimeSystem getTimeSystem() {
         return timeSystemSupplier.get();
+    }
+
+    /** Get clock count.
+     * @return clock count at reference date
+     */
+    public double getClockCount() {
+        return clockCountSupplier.getAsDouble();
+    }
+
+    /** Get clock rate.
+     * @return clock rate (in clock ticks per SI second)
+     */
+    public double getClockRate() {
+        return clockRateSupplier.getAsDouble();
     }
 
 }

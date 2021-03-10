@@ -45,7 +45,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeComponents;
-import org.orekit.time.TimeScale;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
@@ -229,7 +228,7 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
     public static final String DEFAULT_ORIGINATOR = "OREKIT";
 
     /** Default value for {@link #TIME_SYSTEM}. */
-    public static final TimeSystem DEFAULT_TIME_SYSTEM = TimeSystem.UTC;
+    public static final String DEFAULT_TIME_SYSTEM = "UTC";
 
     /** Default file name for error messages. */
     public static final String DEFAULT_FILE_NAME = "<AEM output>";
@@ -285,9 +284,6 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
     /** Current metadata. */
     private final AemMetadata metadata;
 
-    /** Time scale for all segments. */
-    private final TimeScale timeScale;
-
     /**
      * Standard default constructor that creates a writer with default configurations
      * including {@link #DEFAULT_ATTITUDE_FORMAT Default formatting}
@@ -310,7 +306,7 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
      */
     public AemWriter(final IERSConventions conventions, final DataContext dataContext,
                      final Header header, final AemMetadata template) {
-        this(conventions, dataContext, header, template, DEFAULT_FILE_NAME, DEFAULT_ATTITUDE_FORMAT);
+        this(dataContext, header, template, DEFAULT_FILE_NAME, DEFAULT_ATTITUDE_FORMAT);
     }
 
     /**
@@ -327,7 +323,6 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
      * but some other parts may change too). The {@code template} argument itself is not
      * changed.
      * </>
-     * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param header file header (may be null)
      * @param template template for metadata
@@ -336,9 +331,9 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
      *                       attitude ephemeris data output
      * @since 11.0
      */
-    public AemWriter(final IERSConventions conventions, final DataContext dataContext,
-                     final Header header, final AemMetadata template,
-                     final String fileName, final String attitudeFormat) {
+    public AemWriter(final DataContext dataContext, final Header header,
+                     final AemMetadata template, final String fileName,
+                     final String attitudeFormat) {
 
         this.dataContext    = dataContext;
         this.header         = header;
@@ -350,8 +345,6 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
             throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
                                       MetadataKey.TIME_SYSTEM.name(), fileName);
         }
-
-        this.timeScale = cts.getTimeScale(conventions, dataContext.getTimeScales());
 
     }
 
@@ -514,7 +507,7 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
         generator.writeEntry(AemMetadataKey.ATTITUDE_DIR.name(), metadata.getEndpoints().isA2b() ? A_TO_B : B_TO_A, true);
 
         // time
-        generator.writeEntry(MetadataKey.TIME_SYSTEM.name(), metadata.getTimeSystem().name(), true);
+        generator.writeEntry(MetadataKey.TIME_SYSTEM.name(), metadata.getTimeSystem().getTimeScale().getName(), true);
         generator.writeEntry(AemMetadataKey.START_TIME.name(), dateToString(metadata.getStartTime()), true);
         if (metadata.getUseableStartTime() != null) {
             generator.writeEntry(AemMetadataKey.USEABLE_START_TIME.name(), dateToString(metadata.getUseableStartTime()), false);
@@ -663,7 +656,7 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
      * @return date as a string
      */
     private String dateToString(final AbsoluteDate date) {
-        final DateTimeComponents dt = date.getComponents(timeScale);
+        final DateTimeComponents dt = metadata.getTimeSystem().toComponents(date);
         return String.format(STANDARDIZED_LOCALE, DATE_FORMAT,
                              dt.getDate().getYear(),
                              dt.getDate().getMonth(),

@@ -155,11 +155,9 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
             return false;
         }
         metadata  = new AemMetadata(defaultInterpolationDegree);
-        context   = new ParsingContext(this::getConventions,
-                                       this::isSimpleEOP,
-                                       this::getDataContext,
-                                       this::getMissionReferenceDate,
-                                       metadata::getTimeSystem);
+        context   = new ParsingContext(this::getConventions, this::isSimpleEOP,
+                                       this::getDataContext, this::getMissionReferenceDate,
+                                       metadata::getTimeSystem, () -> 0.0, () -> 1.0);
         setFallback(this::processMetadataToken);
         return true;
     }

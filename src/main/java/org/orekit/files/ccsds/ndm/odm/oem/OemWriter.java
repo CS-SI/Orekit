@@ -214,7 +214,7 @@ public class OemWriter implements EphemerisFileWriter {
     public static final String DEFAULT_ORIGINATOR = "OREKIT";
 
     /** Default value for {@link #TIME_SYSTEM}. */
-    public static final TimeSystem DEFAULT_TIME_SYSTEM = TimeSystem.UTC;
+    public static final String DEFAULT_TIME_SYSTEM = "UTC";
 
     /** Default file name for error messages. */
     public static final String DEFAULT_FILE_NAME = "<OEM output>";
@@ -270,9 +270,6 @@ public class OemWriter implements EphemerisFileWriter {
     /** Current metadata. */
     private final OemMetadata metadata;
 
-    /** Time scale for all segments. */
-    private final TimeScale timeScale;
-
     /** Format for position ephemeris data output. */
     private final String positionFormat;
 
@@ -288,17 +285,15 @@ public class OemWriter implements EphemerisFileWriter {
     /**
      * Standard default constructor that creates a writer with default
      * configurations.
-     * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param header file header (may be null)
      * @param template template for metadata
      * @since 11.0
      */
-    public OemWriter(final IERSConventions conventions, final DataContext dataContext,
-                     final OdmHeader header, final OemMetadata template) {
-        this(conventions, dataContext, header, template,
-             DEFAULT_FILE_NAME, DEFAULT_POSITION_FORMAT,
-             DEFAULT_VELOCITY_FORMAT, DEFAULT_ACCELERATION_FORMAT, DEFAULT_COVARIANCE_FORMAT);
+    public OemWriter(final DataContext dataContext, final OdmHeader header, final OemMetadata template) {
+        this(dataContext, header, template, DEFAULT_FILE_NAME,
+             DEFAULT_POSITION_FORMAT, DEFAULT_VELOCITY_FORMAT,
+             DEFAULT_ACCELERATION_FORMAT, DEFAULT_COVARIANCE_FORMAT);
     }
 
     /**
@@ -315,7 +310,6 @@ public class OemWriter implements EphemerisFileWriter {
      * but some other parts may change too). The {@code template} argument itself is not
      * changed.
      * </>
-     * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param header file header (may be null)
      * @param template template for metadata
@@ -330,16 +324,15 @@ public class OemWriter implements EphemerisFileWriter {
      *                       covariance data output
      * @since 11.0
      */
-    public OemWriter(final IERSConventions conventions, final DataContext dataContext,
-                     final OdmHeader header, final OemMetadata template, final String fileName,
-                     final String positionFormat, final String velocityFormat,
-                     final String accelerationFormat, final String covarianceFormat) {
+    public OemWriter(final DataContext dataContext, final OdmHeader header,
+                     final OemMetadata template, final String fileName, final String positionFormat,
+                     final String velocityFormat, final String accelerationFormat,
+                     final String covarianceFormat) {
 
         this.dataContext        = dataContext;
         this.header             = header;
         this.metadata           = copy(template);
         this.fileName           = fileName;
-        this.timeScale          = metadata.getTimeSystem().getTimeScale(conventions, dataContext.getTimeScales());
         this.positionFormat     = positionFormat;
         this.velocityFormat     = velocityFormat;
         this.accelerationFormat = accelerationFormat;
@@ -562,7 +555,7 @@ public class OemWriter implements EphemerisFileWriter {
         }
 
         // time
-        generator.writeEntry(MetadataKey.TIME_SYSTEM.name(), metadata.getTimeSystem().name(), true);
+        generator.writeEntry(MetadataKey.TIME_SYSTEM.name(), metadata.getTimeSystem().getTimeScale().getName(), true);
         generator.writeEntry(OemMetadataKey.START_TIME.name(), dateToString(metadata.getStartTime()), true);
         if (metadata.getUseableStartTime() != null) {
             generator.writeEntry(OemMetadataKey.USEABLE_START_TIME.name(), dateToString(metadata.getUseableStartTime()), false);
@@ -709,7 +702,7 @@ public class OemWriter implements EphemerisFileWriter {
      * @return date as a string
      */
     private String dateToString(final AbsoluteDate date) {
-        final DateTimeComponents dt = date.getComponents(timeScale);
+        final DateTimeComponents dt = metadata.getTimeSystem().toComponents(date);
         return String.format(STANDARDIZED_LOCALE, DATE_FORMAT,
                              dt.getDate().getYear(),
                              dt.getDate().getMonth(),

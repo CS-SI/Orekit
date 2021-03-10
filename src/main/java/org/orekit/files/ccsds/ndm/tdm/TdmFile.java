@@ -22,7 +22,6 @@ import java.util.List;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.NdmFile;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
@@ -58,9 +57,9 @@ public class TdmFile extends NdmFile<Header, Segment<TdmMetadata, ObservationsBl
     /** Check that, according to the CCSDS standard, every ObservationsBlock has the same time system.
      */
     public void checkTimeSystems() {
-        TimeSystem referenceTimeSystem = null;
+        String referenceTimeSystem = null;
         for (final Segment<TdmMetadata, ObservationsBlock> segment : getSegments()) {
-            final TimeSystem timeSystem = segment.getMetadata().getTimeSystem();
+            final String timeSystem = segment.getMetadata().getTimeSystem().getTimeScale().getName();
             if (referenceTimeSystem == null) {
                 referenceTimeSystem = timeSystem;
             } else if (!referenceTimeSystem.equals(timeSystem)) {

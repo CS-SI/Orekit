@@ -136,12 +136,12 @@ public class OrekitEphemerisFileTest {
 
         String tempOemFile = Files.createTempFile("OrekitEphemerisFileTest", ".oem").toString();
         OemMetadata template = new OemMetadata(2);
-        template.setTimeSystem(TimeSystem.UTC);
+        template.setTimeSystem(new TimeSystem(DataContext.getDefault().getTimeScales().getUTC()));
         template.setObjectID(satId);
         template.setObjectName(satId);
         template.setCenter(new BodyFacade("EARTH", CelestialBodyFactory.getCelestialBodies().getEarth()));
         template.setReferenceFrame(FrameFacade.map(FramesFactory.getEME2000()));
-        new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null, template).
+        new OemWriter(DataContext.getDefault(), null, template).
         write(tempOemFile, ephemerisFile);
 
         OemParser parser = new OemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),

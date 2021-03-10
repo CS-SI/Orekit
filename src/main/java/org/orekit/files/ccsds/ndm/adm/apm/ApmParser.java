@@ -158,11 +158,9 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
             return false;
         }
         metadata  = new AdmMetadata();
-        context   = new ParsingContext(this::getConventions,
-                                       this::isSimpleEOP,
-                                       this::getDataContext,
-                                       this::getMissionReferenceDate,
-                                       metadata::getTimeSystem);
+        context   = new ParsingContext(this::getConventions, this::isSimpleEOP,
+                                       this::getDataContext, this::getMissionReferenceDate,
+                                       metadata::getTimeSystem, () -> 0.0, () -> 1.0);
         setFallback(this::processMetadataToken);
         return true;
     }

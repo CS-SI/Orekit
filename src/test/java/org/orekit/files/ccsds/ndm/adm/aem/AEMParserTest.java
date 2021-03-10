@@ -39,7 +39,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
-import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.frames.FramesFactory;
@@ -74,7 +73,7 @@ public class AEMParserTest {
         Assert.assertEquals(new AbsoluteDate(2002, 11, 4, 17, 22, 31.0, TimeScalesFactory.getUTC()),
                             file.getHeader().getCreationDate());
         Assert.assertEquals("NASA/JPL", file.getHeader().getOriginator());
-        Assert.assertEquals(TimeSystem.UTC,     segment0.getMetadata().getTimeSystem());
+        Assert.assertEquals("UTC",     segment0.getMetadata().getTimeSystem().getTimeScale().getName());
         Assert.assertEquals("MARS GLOBAL SURVEYOR", segment0.getMetadata().getObjectName());
         Assert.assertEquals("1996-062A",            segment0.getMetadata().getObjectID());
         Assert.assertEquals("MARS BARYCENTER",      segment0.getMetadata().getCenter().getName());
@@ -123,7 +122,7 @@ public class AEMParserTest {
         ephemeridesDataLinesComment.add("attitudes is 0.1 degrees per axis.");
         Assert.assertEquals(ephemeridesDataLinesComment, segment0.getMetadata().getComments());
  
-        Assert.assertEquals(TimeSystem.UTC,         segment1.getMetadata().getTimeSystem());
+        Assert.assertEquals("UTC",                      segment1.getMetadata().getTimeSystem().getTimeScale().getName());
         Assert.assertEquals("MARS GLOBAL SURVEYOR",     segment1.getMetadata().getObjectName());
         Assert.assertEquals("1996-062A",                segment1.getMetadata().getObjectID());
         Assert.assertEquals("MARS BARYCENTER",          segment1.getMetadata().getCenter().getName());
@@ -245,7 +244,7 @@ public class AEMParserTest {
         metadataComment.add("It is to be used for attitude reconstruction only. The relative accuracy of these");
         metadataComment.add("attitudes is 0.1 degrees per axis.");
         Assert.assertEquals(metadataComment,        segment0.getMetadata().getComments());
-        Assert.assertEquals(TimeSystem.UTC,     segment0.getMetadata().getTimeSystem());
+        Assert.assertEquals("UTC",                  segment0.getMetadata().getTimeSystem().getTimeScale().getName());
         Assert.assertEquals("MARS GLOBAL SURVEYOR", segment0.getMetadata().getObjectName());
         Assert.assertEquals("1996-062A",            segment0.getMetadata().getObjectID());
         Assert.assertEquals("MARS BARYCENTER",      segment0.getMetadata().getCenter().getName());
@@ -340,8 +339,8 @@ public class AEMParserTest {
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS, oe.getSpecifier());
-            Assert.assertEquals(TimeSystem.UTC, oe.getParts()[0]);
-            Assert.assertEquals(TimeSystem.TCG, oe.getParts()[1]);
+            Assert.assertEquals("UTC", oe.getParts()[0]);
+            Assert.assertEquals("TCG", oe.getParts()[1]);
         }
     }
 

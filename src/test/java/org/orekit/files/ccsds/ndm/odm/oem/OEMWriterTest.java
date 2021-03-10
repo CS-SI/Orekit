@@ -74,7 +74,7 @@ public class OEMWriterTest {
 
     @Test
     public void testOEMWriter() {
-        assertNotNull(new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null, dummyMetadata()));
+        assertNotNull(new OemWriter(DataContext.getDefault(), null, dummyMetadata()));
     }
 
     @Test
@@ -85,8 +85,8 @@ public class OEMWriterTest {
         final OemFile oemFile = parser.parseMessage(source);
 
         String tempOEMFilePath = tempFolder.newFile("TestWriteOEM1.oem").toString();
-        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
-                                         oemFile.getHeader(), oemFile.getSegments().get(0).getMetadata());
+        OemWriter writer = new OemWriter(DataContext.getDefault(), oemFile.getHeader(),
+                                         oemFile.getSegments().get(0).getMetadata());
         writer.write(tempOEMFilePath, oemFile);
 
         final OemFile generatedOemFile = new OemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
@@ -103,8 +103,8 @@ public class OEMWriterTest {
         final OemFile oemFile = parser.parseMessage(source);
 
         String tempOEMFilePath = tempFolder.newFile("TestOEMUnfoundSpaceId.oem").toString();
-        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
-                                         oemFile.getHeader(), dummyMetadata());
+        OemWriter writer = new OemWriter(DataContext.getDefault(), oemFile.getHeader(),
+                                         dummyMetadata());
         try {
             writer.write(tempOEMFilePath, oemFile);
             fail("an exception should have been thrown");
@@ -121,8 +121,8 @@ public class OEMWriterTest {
         final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOemParser();
         final OemFile oemFile = parser.parseMessage(source);
-        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
-                                         oemFile.getHeader(), oemFile.getSegments().get(0).getMetadata());
+        OemWriter writer = new OemWriter(DataContext.getDefault(), oemFile.getHeader(),
+                                         oemFile.getSegments().get(0).getMetadata());
         try {
             writer.write((BufferedWriter) null, oemFile);
             fail("an exception should have been thrown");
@@ -135,8 +135,8 @@ public class OEMWriterTest {
     @Test
     public void testNullEphemeris() throws IOException {
         File tempOEMFile = tempFolder.newFile("TestNullEphemeris.oem");
-        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
-                                         null, dummyMetadata());
+        OemWriter writer = new OemWriter(DataContext.getDefault(), null,
+                                         dummyMetadata());
         writer.write(tempOEMFile.toString(), null);
         assertTrue(tempOEMFile.exists());
         try (FileInputStream   fis = new FileInputStream(tempOEMFile);
@@ -158,8 +158,8 @@ public class OEMWriterTest {
         final OemFile oemFile = parser.parseMessage(source);
 
         String tempOEMFilePath = tempFolder.newFile("TestOEMUnisatelliteWithDefault.oem").toString();
-        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
-                                         oemFile.getHeader(), oemFile.getSegments().get(0).getMetadata());
+        OemWriter writer = new OemWriter(DataContext.getDefault(), oemFile.getHeader(),
+                                         oemFile.getSegments().get(0).getMetadata());
         writer.write(tempOEMFilePath, oemFile);
 
         final OemFile generatedOemFile = new OemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
@@ -177,8 +177,8 @@ public class OEMWriterTest {
         final OemFile oemFile = parser.parseMessage(source);
 
         String tempOEMFilePath = tempFolder.newFile("TestOEMIssue723.aem").toString();
-        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
-                                         oemFile.getHeader(), oemFile.getSegments().get(0).getMetadata());
+        OemWriter writer = new OemWriter(DataContext.getDefault(), oemFile.getHeader(),
+                                         oemFile.getSegments().get(0).getMetadata());
         writer.write(tempOEMFilePath, oemFile);
 
         final OemFile generatedOemFile = new OemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
@@ -201,9 +201,9 @@ public class OEMWriterTest {
         OemFile oemFile = parser.parseMessage(source);
         StringBuilder buffer = new StringBuilder();
 
-        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
-                                         oemFile.getHeader(), oemFile.getSegments().get(0).getMetadata(),
-                                         "", "%.2f", "%.3f", "%.4f", "%.6e");
+        OemWriter writer = new OemWriter(DataContext.getDefault(), oemFile.getHeader(),
+                                         oemFile.getSegments().get(0).getMetadata(), "",
+                                         "%.2f", "%.3f", "%.4f", "%.6e");
 
         writer.write(buffer, oemFile);
 
@@ -215,8 +215,8 @@ public class OEMWriterTest {
 
         // Default format
         
-        writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
-                               oemFile.getHeader(), oemFile.getSegments().get(0).getMetadata());
+        writer = new OemWriter(DataContext.getDefault(), oemFile.getHeader(),
+                               oemFile.getSegments().get(0).getMetadata());
         buffer = new StringBuilder();
         writer.write(buffer, oemFile);
 
@@ -249,7 +249,7 @@ public class OEMWriterTest {
 
         OemMetadata metadata = dummyMetadata();
         metadata.setObjectID(id2);
-        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, context, null, metadata);
+        OemWriter writer = new OemWriter(context, null, metadata);
         writer.write(written.getAbsolutePath(), file);
 
         int count = 0;
@@ -301,7 +301,7 @@ public class OEMWriterTest {
         assertEquals(meta1.getReferenceFrame().asCelestialBodyFrame(),  meta2.getReferenceFrame().asCelestialBodyFrame());
         assertEquals(meta1.getReferenceFrame().asOrbitRelativeFrame(),  meta2.getReferenceFrame().asOrbitRelativeFrame());
         assertEquals(meta1.getReferenceFrame().asSpacecraftBodyFrame(), meta2.getReferenceFrame().asSpacecraftBodyFrame());
-        assertEquals(meta1.getTimeSystem(),                             meta2.getTimeSystem());
+        assertEquals(meta1.getTimeSystem().getTimeScale().getName(),    meta2.getTimeSystem().getTimeScale().getName());
     }
 
     static void compareOemFiles(OemFile file1, OemFile file2) {
@@ -364,7 +364,7 @@ public class OEMWriterTest {
 
     private OemMetadata dummyMetadata() {
         OemMetadata metadata = new OemMetadata(4);
-        metadata.setTimeSystem(TimeSystem.TT);
+        metadata.setTimeSystem(new TimeSystem(DataContext.getDefault().getTimeScales().getTT()));
         metadata.setObjectID("9999-999ZZZ");
         metadata.setObjectName("transgalactic");
         metadata.setCenter(new BodyFacade("EARTH", CelestialBodyFactory.getCelestialBodies().getEarth()));

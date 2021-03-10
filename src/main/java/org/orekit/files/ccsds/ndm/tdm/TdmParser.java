@@ -146,7 +146,9 @@ public class TdmParser extends AbstractMessageParser<TdmFile, TdmParser> {
             return false;
         }
         metadata  = new TdmMetadata();
-        context   = new ParsingContext(this::getConventions, this::isSimpleEOP, this::getDataContext, () -> null, metadata::getTimeSystem);
+        context   = new ParsingContext(this::getConventions, this::isSimpleEOP,
+                                       this::getDataContext, () -> null,
+                                       metadata::getTimeSystem, () -> 0.0, () -> 1.0);
         setFallback(this::processMetadataToken);
         return true;
     }

@@ -134,10 +134,10 @@ public enum ManeuverHistoryMetadataKey {
         if (token.getType() == TokenType.ENTRY) {
             try {
                 container.setManComposition(token.getContentAsNormalizedList().
-                                           stream().
-                                           map(s -> s.replace(' ', '_')).
-                                           map(s -> ManeuverFieldType.valueOf(s)).
-                                           collect(Collectors.toList()));
+                                            stream().
+                                            map(s -> s.replace(' ', '_')).
+                                            map(s -> ManeuverFieldType.valueOf(s)).
+                                            collect(Collectors.toList()));
             } catch (IllegalArgumentException iae) {
                 throw token.generateException(iae);
             }

@@ -179,11 +179,9 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
             finalizeData();
         }
         metadata = new OemMetadata(defaultInterpolationDegree);
-        context  = new ParsingContext(this::getConventions,
-                                      this::isSimpleEOP,
-                                      this::getDataContext,
-                                      this::getMissionReferenceDate,
-                                      metadata::getTimeSystem);
+        context  = new ParsingContext(this::getConventions, this::isSimpleEOP,
+                                      this::getDataContext, this::getMissionReferenceDate,
+                                      metadata::getTimeSystem, () -> 0.0, () -> 1.0);
         setFallback(this::processMetadataToken);
         return true;
     }
@@ -294,7 +292,7 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
                                               token.getLineNumber(), token.getFileName(), token.getContentAsNormalizedString());
                 }
                 final boolean hasAcceleration = fields.length == 10;
-                final AbsoluteDate epoch = context.getTimeSystem().parseDate(fields[0], context);
+                final AbsoluteDate epoch = context.getTimeSystem().parse(fields[0]);
                 final Vector3D position = new Vector3D(Double.parseDouble(fields[1]) * 1000,
                                                        Double.parseDouble(fields[2]) * 1000,
                                                        Double.parseDouble(fields[3]) * 1000);

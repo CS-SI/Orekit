@@ -56,12 +56,10 @@ public class AEMAttitudeTypeTest {
         throws Exception {
         Utils.setDataRoot("regular-data");
         metadata = new AemMetadata(4);
-        context  =  new ParsingContext(() -> IERSConventions.IERS_2010,
-                                       () -> true,
-                                       () -> DataContext.getDefault(),
-                                       () -> null,
-                                       metadata::getTimeSystem);
-        metadata.setTimeSystem(TimeSystem.TAI);
+        context  =  new ParsingContext(() -> IERSConventions.IERS_2010, () -> true,
+                                       () -> DataContext.getDefault(), () -> null,
+                                       metadata::getTimeSystem, () -> 0.0, () -> 1.0);
+        metadata.setTimeSystem(new TimeSystem(DataContext.getDefault().getTimeScales().getTAI()));
         metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
                                                           null, null, "GCRF"));
         metadata.getEndpoints().setFrameB(new FrameFacade(null, null, null,
@@ -290,7 +288,7 @@ public class AEMAttitudeTypeTest {
         final AemAttitudeType eulerAngleRate = AemAttitudeType.parseType("EULER ANGLE/RATE");
 
         AemMetadata mdWithoutRateFrame = new AemMetadata(4);
-        mdWithoutRateFrame.setTimeSystem(TimeSystem.TAI);
+        mdWithoutRateFrame.setTimeSystem(new TimeSystem(DataContext.getDefault().getTimeScales().getTAI()));
         mdWithoutRateFrame.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
                                                                     null, null, "GCRF"));
         mdWithoutRateFrame.getEndpoints().setFrameB(new FrameFacade(null, null, null,
@@ -406,11 +404,12 @@ public class AEMAttitudeTypeTest {
     private void checkSymmetry(AemAttitudeType type, TimeStampedAngularCoordinates tac,
                                boolean rateFrameIsA, boolean isFirst, RotationOrder order, boolean a2b,
                                double tolAngle, double tolRate) {
-        ParsingContext context = new ParsingContext(() -> IERSConventions.IERS_2010,
-                                                    () -> true,
-                                                    () -> DataContext.getDefault(),
-                                                    () -> null,
-                                                    () -> TimeSystem.UTC);
+        ParsingContext context = new ParsingContext(() -> IERSConventions.IERS_2010, () -> true,
+                                                    () -> DataContext.getDefault(), () -> null,
+                                                    () -> new TimeSystem(DataContext.getDefault().
+                                                                                   getTimeScales().
+                                                                                   getUTC()),
+                                                    () -> 0.0, () -> 1.0);
         AemMetadata metadata = new AemMetadata(3);
         metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
                                                           null, null, "GCRF"));
@@ -425,10 +424,7 @@ public class AEMAttitudeTypeTest {
         metadata.getEndpoints().setA2b(a2b);
         double[] dData = type.getAttitudeData(tac, metadata);
         String[] sData = new String[1 + dData.length];
-        sData[0] = tac.getDate().toString(context.
-                                          getTimeSystem().
-                                          getTimeScale(context.getConventions(),
-                                                       context.getDataContext().getTimeScales()));
+        sData[0] = tac.getDate().toString(context.getTimeSystem().getTimeScale());
         for (int i = 0; i < dData.length; ++i) {
             sData[i + 1] = String.format(Locale.US, "%21.15e", dData[i]);
         }

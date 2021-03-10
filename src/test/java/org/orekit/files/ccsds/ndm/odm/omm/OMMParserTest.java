@@ -27,10 +27,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
@@ -80,7 +80,7 @@ public class OMMParserTest {
         Assert.assertNotNull(file.getMetadata().getCenter().getBody());
         Assert.assertEquals(CelestialBodyFactory.getEarth(), file.getMetadata().getCenter().getBody());
         Assert.assertEquals(FramesFactory.getTEME(), file.getMetadata().getFrame());
-        Assert.assertEquals(TimeSystem.UTC, file.getMetadata().getTimeSystem());
+        Assert.assertEquals("UTC",      file.getMetadata().getTimeSystem().getTimeScale().getName());
         Assert.assertEquals("SGP/SGP4", file.getMetadata().getMeanElementTheory());
         Assert.assertEquals("TEME", file.getMetadata().getFrame().toString());
         Assert.assertTrue(file.getData().getTLEBlock().getComments().isEmpty());
@@ -160,7 +160,7 @@ public class OMMParserTest {
         // data.
         final String name = "/ccsds/odm/omm/OMMExample3.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-        final AbsoluteDate missionReferenceDate = new AbsoluteDate();
+        final AbsoluteDate missionReferenceDate = new AbsoluteDate(2000, 1, 1, DataContext.getDefault().getTimeScales().getUTC());
         final OmmParser parser = new ParserBuilder().
                                  withMu(Constants.EIGEN5C_EARTH_MU).
                                  withMissionReferenceDate(missionReferenceDate).
