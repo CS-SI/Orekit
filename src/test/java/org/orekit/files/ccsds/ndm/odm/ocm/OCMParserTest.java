@@ -25,6 +25,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -32,12 +33,14 @@ import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.ElementsType;
 import org.orekit.files.ccsds.definitions.OdMethodType;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
+import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class OCMParserTest {
@@ -254,7 +257,7 @@ public class OCMParserTest {
 
         final AbsoluteDate t0 = new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172, TimeScalesFactory.getUTC());
         Assert.assertEquals(t0, file.getMetadata().getEpochT0());
-        Assert.assertEquals(TimeScalesFactory.getUTC(), file.getMetadata().getTimeSystem().getTimeScale());
+        Assert.assertEquals(TimeSystem.UTC, file.getMetadata().getTimeSystem());
 
         // orbit data
         Assert.assertEquals(1, file.getData().getOrbitBlocks().size());
@@ -336,8 +339,8 @@ public class OCMParserTest {
         Assert.assertEquals("Mr. Rodgers",                         file.getMetadata().getTechPOC());
         Assert.assertEquals("(719)555-1234",                       file.getMetadata().getTechPhone());
         Assert.assertEquals("email@email.XXX",                     file.getMetadata().getTechAddress());
-        final TimeScale ts = file.getMetadata().getTimeSystem().getTimeScale();
-        Assert.assertEquals("UT1", ts.getName());
+        Assert.assertEquals(TimeSystem.UT1, file.getMetadata().getTimeSystem());
+        TimeScale ts = DataContext.getDefault().getTimeScales().getUT1(IERSConventions.IERS_2010, false);
         Assert.assertEquals(0.0,
                             file.getMetadata().getEpochT0().durationFrom(new AbsoluteDate(1998, 12, 18, ts)),
                             1.0e-10);
@@ -440,7 +443,7 @@ public class OCMParserTest {
 
         final AbsoluteDate t0 = new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172, utc);
         Assert.assertEquals(t0, file.getMetadata().getEpochT0());
-        Assert.assertEquals("UTC", file.getMetadata().getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("UTC", file.getMetadata().getTimeSystem().name());
 
         // check orbit data
         Assert.assertEquals(1, file.getData().getOrbitBlocks().size());
@@ -702,7 +705,7 @@ public class OCMParserTest {
         Assert.assertEquals("PERTURBATIONS",                       file.getMetadata().getOcmDataElements().get(4));
         Assert.assertEquals("OD",                                  file.getMetadata().getOcmDataElements().get(5));
         Assert.assertEquals("USER",                                file.getMetadata().getOcmDataElements().get(6));
-        Assert.assertEquals("UTC",                                 file.getMetadata().getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("UTC",                                 file.getMetadata().getTimeSystem().name());
         Assert.assertEquals(new AbsoluteDate(2019, 7, 23,  0, 0, 0.0, TimeScalesFactory.getUTC()),
                             file.getMetadata().getEpochT0());
         Assert.assertEquals(28800.0, file.getMetadata().getSclkOffsetAtEpoch(), 1.0e-10);

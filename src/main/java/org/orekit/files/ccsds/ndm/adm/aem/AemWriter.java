@@ -28,7 +28,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
-import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderKey;
@@ -38,6 +38,7 @@ import org.orekit.files.ccsds.section.XmlStructureKey;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
+import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.files.general.AttitudeEphemerisFile.SatelliteAttitudeEphemeris;
 import org.orekit.files.general.AttitudeEphemerisFileWriter;
@@ -207,7 +208,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  *
  * <p> The {@link MetadataKey#TIME_SYSTEM} must be constant for the whole file and is used
  * to interpret all dates except {@link HeaderKey#CREATION_DATE} which is always in {@link
- * TimeSystem#UTC UTC}. The guessing algorithm is not guaranteed to work so it is recommended
+ * TimeConverter#UTC UTC}. The guessing algorithm is not guaranteed to work so it is recommended
  * to provide values for {@link AdmMetadataKey#CENTER_NAME} and {@link MetadataKey#TIME_SYSTEM}
  * to avoid any bugs associated with incorrect guesses.
  *
@@ -284,6 +285,9 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
     /** Current metadata. */
     private final AemMetadata metadata;
 
+    /** Converter for dates. */
+    private final TimeConverter converter;
+
     /**
      * Standard default constructor that creates a writer with default configurations
      * including {@link #DEFAULT_ATTITUDE_FORMAT Default formatting}
@@ -306,7 +310,7 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
      */
     public AemWriter(final IERSConventions conventions, final DataContext dataContext,
                      final Header header, final AemMetadata template) {
-        this(dataContext, header, template, DEFAULT_FILE_NAME, DEFAULT_ATTITUDE_FORMAT);
+        this(conventions, dataContext, header, template, DEFAULT_FILE_NAME, DEFAULT_ATTITUDE_FORMAT);
     }
 
     /**
@@ -323,6 +327,7 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
      * but some other parts may change too). The {@code template} argument itself is not
      * changed.
      * </>
+     * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param header file header (may be null)
      * @param template template for metadata
@@ -331,20 +336,20 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
      *                       attitude ephemeris data output
      * @since 11.0
      */
-    public AemWriter(final DataContext dataContext, final Header header,
-                     final AemMetadata template, final String fileName,
-                     final String attitudeFormat) {
+    public AemWriter(final IERSConventions conventions, final DataContext dataContext,
+                     final Header header, final AemMetadata template,
+                     final String fileName, final String attitudeFormat) {
 
         this.dataContext    = dataContext;
         this.header         = header;
         this.metadata       = copy(template);
         this.fileName       = fileName;
         this.attitudeFormat = attitudeFormat;
-        final TimeSystem cts = metadata.getTimeSystem();
-        if (cts == null) {
-            throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
-                                      MetadataKey.TIME_SYSTEM.name(), fileName);
-        }
+        final ParsingContext context =
+                        new ParsingContext(
+                            () -> conventions, () -> true, () -> dataContext,
+                            () -> null, metadata::getTimeSystem, () -> 0.0, () -> 1.0);
+        this.converter      = metadata.getTimeSystem().getConverter(context);
 
     }
 
@@ -507,7 +512,7 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
         generator.writeEntry(AemMetadataKey.ATTITUDE_DIR.name(), metadata.getEndpoints().isA2b() ? A_TO_B : B_TO_A, true);
 
         // time
-        generator.writeEntry(MetadataKey.TIME_SYSTEM.name(), metadata.getTimeSystem().getTimeScale().getName(), true);
+        generator.writeEntry(MetadataKey.TIME_SYSTEM.name(), metadata.getTimeSystem().name(), true);
         generator.writeEntry(AemMetadataKey.START_TIME.name(), dateToString(metadata.getStartTime()), true);
         if (metadata.getUseableStartTime() != null) {
             generator.writeEntry(AemMetadataKey.USEABLE_START_TIME.name(), dateToString(metadata.getUseableStartTime()), false);
@@ -656,7 +661,7 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
      * @return date as a string
      */
     private String dateToString(final AbsoluteDate date) {
-        final DateTimeComponents dt = metadata.getTimeSystem().toComponents(date);
+        final DateTimeComponents dt = converter.components(date);
         return String.format(STANDARDIZED_LOCALE, DATE_FORMAT,
                              dt.getDate().getYear(),
                              dt.getDate().getMonth(),

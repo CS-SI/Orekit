@@ -30,7 +30,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
-import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
@@ -45,6 +45,7 @@ import org.orekit.files.ccsds.section.XmlStructureKey;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
+import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.files.general.EphemerisFile.SatelliteEphemeris;
 import org.orekit.files.general.EphemerisFileWriter;
@@ -187,7 +188,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *
  * <p> The {@link MetadataKey#TIME_SYSTEM} must be constant for the whole file and is used
  * to interpret all dates except {@link HeaderKey#CREATION_DATE} which is always in {@link
- * TimeSystem#UTC UTC}. The guessing algorithm is not guaranteed to work so it is recommended
+ * TimeConverter#UTC UTC}. The guessing algorithm is not guaranteed to work so it is recommended
  * to provide values for {@link AdmMetadataKey#CENTER_NAME} and {@link MetadataKey#TIME_SYSTEM}
  * to avoid any bugs associated with incorrect guesses.
  *
@@ -282,16 +283,21 @@ public class OemWriter implements EphemerisFileWriter {
     /** Format for acovariance data output. */
     private final String covarianceFormat;
 
+    /** Converter for dates. */
+    private final TimeConverter converter;
+
     /**
      * Standard default constructor that creates a writer with default
      * configurations.
+     * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param header file header (may be null)
      * @param template template for metadata
      * @since 11.0
      */
-    public OemWriter(final DataContext dataContext, final OdmHeader header, final OemMetadata template) {
-        this(dataContext, header, template, DEFAULT_FILE_NAME,
+    public OemWriter(final IERSConventions conventions, final DataContext dataContext,
+                     final OdmHeader header, final OemMetadata template) {
+        this(conventions, dataContext, header, template, DEFAULT_FILE_NAME,
              DEFAULT_POSITION_FORMAT, DEFAULT_VELOCITY_FORMAT,
              DEFAULT_ACCELERATION_FORMAT, DEFAULT_COVARIANCE_FORMAT);
     }
@@ -310,6 +316,7 @@ public class OemWriter implements EphemerisFileWriter {
      * but some other parts may change too). The {@code template} argument itself is not
      * changed.
      * </>
+     * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param header file header (may be null)
      * @param template template for metadata
@@ -324,8 +331,9 @@ public class OemWriter implements EphemerisFileWriter {
      *                       covariance data output
      * @since 11.0
      */
-    public OemWriter(final DataContext dataContext, final OdmHeader header,
-                     final OemMetadata template, final String fileName, final String positionFormat,
+    public OemWriter(final IERSConventions conventions, final DataContext dataContext,
+                     final OdmHeader header, final OemMetadata template,
+                     final String fileName, final String positionFormat,
                      final String velocityFormat, final String accelerationFormat,
                      final String covarianceFormat) {
 
@@ -337,6 +345,12 @@ public class OemWriter implements EphemerisFileWriter {
         this.velocityFormat     = velocityFormat;
         this.accelerationFormat = accelerationFormat;
         this.covarianceFormat   = covarianceFormat;
+
+        final ParsingContext context =
+                        new ParsingContext(
+                            () -> conventions, () -> true, () -> dataContext,
+                            () -> null, metadata::getTimeSystem, () -> 0.0, () -> 1.0);
+        this.converter      = metadata.getTimeSystem().getConverter(context);
 
     }
 
@@ -555,7 +569,7 @@ public class OemWriter implements EphemerisFileWriter {
         }
 
         // time
-        generator.writeEntry(MetadataKey.TIME_SYSTEM.name(), metadata.getTimeSystem().getTimeScale().getName(), true);
+        generator.writeEntry(MetadataKey.TIME_SYSTEM.name(), metadata.getTimeSystem().name(), true);
         generator.writeEntry(OemMetadataKey.START_TIME.name(), dateToString(metadata.getStartTime()), true);
         if (metadata.getUseableStartTime() != null) {
             generator.writeEntry(OemMetadataKey.USEABLE_START_TIME.name(), dateToString(metadata.getUseableStartTime()), false);
@@ -702,7 +716,7 @@ public class OemWriter implements EphemerisFileWriter {
      * @return date as a string
      */
     private String dateToString(final AbsoluteDate date) {
-        final DateTimeComponents dt = metadata.getTimeSystem().toComponents(date);
+        final DateTimeComponents dt = converter.components(date);
         return String.format(STANDARDIZED_LOCALE, DATE_FORMAT,
                              dt.getDate().getYear(),
                              dt.getDate().getMonth(),

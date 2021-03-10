@@ -37,10 +37,10 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
-import org.orekit.files.ccsds.definitions.ModifiedFrame;
-import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.definitions.CenterName;
 import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.ModifiedFrame;
+import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.utils.generation.Generator;
@@ -143,13 +143,13 @@ public class StreamingOemWriterTest {
             OemMetadata metadata = new OemMetadata(1);
             metadata.setObjectName("will be overwritten");
             metadata.setObjectID(objectID);
-            metadata.setTimeSystem(new TimeSystem(DataContext.getDefault().getTimeScales().getUTC()));
+            metadata.setTimeSystem(TimeSystem.UTC);
             metadata.setCenter(ephemerisBlock.getMetadata().getCenter());
             metadata.setReferenceFrame(FrameFacade.map(FramesFactory.getEME2000())); // will be overwritten
             metadata.setStartTime(AbsoluteDate.J2000_EPOCH.shiftedBy(80 * Constants.JULIAN_CENTURY));
             metadata.setStopTime(metadata.getStartTime().shiftedBy(Constants.JULIAN_YEAR));
-            OemWriter oemWriter = new OemWriter(DataContext.getDefault(), header,
-                                                metadata);
+            OemWriter oemWriter = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
+                                                header, metadata);
 
             // check using the Propagator / StepHandler interface
             final StringBuilder buffer1 = new StringBuilder();
@@ -169,8 +169,8 @@ public class StreamingOemWriterTest {
 
             // check calling the methods directly
             final StringBuilder buffer2 = new StringBuilder();
-            oemWriter = new OemWriter(DataContext.getDefault(), header,
-                                      metadata);
+            oemWriter = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
+                                      header, metadata);
             try (Generator generator = new KvnGenerator(buffer2, "another-name")) {
                 oemWriter.writeHeader(generator);
                 oemWriter.getMetadata().setObjectName(objectName);
@@ -224,7 +224,7 @@ public class StreamingOemWriterTest {
         assertEquals(meta1.getReferenceFrame().asCelestialBodyFrame(),  meta2.getReferenceFrame().asCelestialBodyFrame());
         assertEquals(meta1.getReferenceFrame().asOrbitRelativeFrame(),  meta2.getReferenceFrame().asOrbitRelativeFrame());
         assertEquals(meta1.getReferenceFrame().asSpacecraftBodyFrame(), meta2.getReferenceFrame().asSpacecraftBodyFrame());
-        assertEquals(meta1.getTimeSystem().getTimeScale().getName(),    meta2.getTimeSystem().getTimeScale().getName());
+        assertEquals(meta1.getTimeSystem().name(),    meta2.getTimeSystem().name());
     }
 
     static void compareOemFiles(OemFile file1, OemFile file2, double p_tol, double v_tol) {

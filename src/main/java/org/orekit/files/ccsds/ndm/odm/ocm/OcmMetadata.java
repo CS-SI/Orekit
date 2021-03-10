@@ -166,7 +166,7 @@ public class OcmMetadata extends OdmMetadata {
     OcmMetadata(final DataContext dataContext) {
 
         // set up the few fields that have default values as per CCSDS standard
-        super(new TimeSystem(dataContext.getTimeScales().getUTC()));
+        super(TimeSystem.UTC);
         catalogName       = "CSPOC";
         sclkOffsetAtEpoch = 0.0;
         sclkSecPerSISec   = 1.0;

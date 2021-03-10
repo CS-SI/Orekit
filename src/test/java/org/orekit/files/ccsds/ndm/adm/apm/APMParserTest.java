@@ -97,7 +97,7 @@ public class APMParserTest {
         Assert.assertEquals("EARTH",      segment.getMetadata().getCenter().getName());
         Assert.assertTrue(segment.getMetadata().getHasCreatableBody());
         Assert.assertEquals(CelestialBodyFactory.getEarth(), segment.getMetadata().getCenter().getBody());
-        Assert.assertEquals("UTC",        segment.getMetadata().getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("UTC",        segment.getMetadata().getTimeSystem().name());
 
         // Check data block
         Assert.assertFalse(segment.getData().hasManeuvers());
@@ -168,7 +168,7 @@ public class APMParserTest {
         Assert.assertTrue(segment.getMetadata().getHasCreatableBody());
         Assert.assertTrue(segment.getMetadata().getComments().isEmpty());
         Assert.assertEquals(CelestialBodyFactory.getEarth(), segment.getMetadata().getCenter().getBody());
-        Assert.assertEquals("UTC",         segment.getMetadata().getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("UTC",         segment.getMetadata().getTimeSystem().name());
 
         // Check data block: QUATERNION
         ArrayList<String> epochComment = new ArrayList<String>();
@@ -286,7 +286,7 @@ public class APMParserTest {
         Assert.assertEquals("EARTH",      segment.getMetadata().getCenter().getName());
         Assert.assertTrue(segment.getMetadata().getHasCreatableBody());
         Assert.assertEquals(CelestialBodyFactory.getEarth(), segment.getMetadata().getCenter().getBody());
-        Assert.assertEquals("UTC",        segment.getMetadata().getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("UTC",        segment.getMetadata().getTimeSystem().name());
 
         // Check data block: QUATERNION
         Assert.assertFalse(segment.getData().hasManeuvers());
@@ -365,7 +365,7 @@ public class APMParserTest {
         Assert.assertEquals("EARTH",      segment.getMetadata().getCenter().getName());
         Assert.assertTrue(segment.getMetadata().getHasCreatableBody());
         Assert.assertEquals(CelestialBodyFactory.getEarth(), segment.getMetadata().getCenter().getBody());
-        Assert.assertEquals("UTC",        segment.getMetadata().getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("UTC",        segment.getMetadata().getTimeSystem().name());
 
         // Check data block
         Assert.assertFalse(segment.getData().hasManeuvers());
@@ -427,7 +427,7 @@ public class APMParserTest {
         Assert.assertEquals("JUPITER",    segment.getMetadata().getCenter().getName());
         Assert.assertTrue(segment.getMetadata().getHasCreatableBody());
         Assert.assertEquals(CelestialBodyFactory.getJupiter(), segment.getMetadata().getCenter().getBody());
-        Assert.assertEquals("TDB",        segment.getMetadata().getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("TDB",        segment.getMetadata().getTimeSystem().name());
 
         // Check data block
         Assert.assertFalse(segment.getData().hasManeuvers());
@@ -492,7 +492,7 @@ public class APMParserTest {
         Assert.assertEquals("JUPITER",    segment.getMetadata().getCenter().getName());
         Assert.assertTrue(segment.getMetadata().getHasCreatableBody());
         Assert.assertEquals(CelestialBodyFactory.getJupiter(), segment.getMetadata().getCenter().getBody());
-        Assert.assertEquals("TDB",        segment.getMetadata().getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("TDB",        segment.getMetadata().getTimeSystem().name());
 
         // Check data block
         Assert.assertFalse(segment.getData().hasManeuvers());
@@ -557,7 +557,7 @@ public class APMParserTest {
         Assert.assertEquals("JUPITER",    segment.getMetadata().getCenter().getName());
         Assert.assertTrue(segment.getMetadata().getHasCreatableBody());
         Assert.assertEquals(CelestialBodyFactory.getJupiter(), segment.getMetadata().getCenter().getBody());
-        Assert.assertEquals("TDB",        segment.getMetadata().getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("TDB",        segment.getMetadata().getTimeSystem().name());
 
         // Check data block
         Assert.assertFalse(segment.getData().hasManeuvers());
@@ -621,7 +621,7 @@ public class APMParserTest {
         Assert.assertEquals("JUPITER",    segment.getMetadata().getCenter().getName());
         Assert.assertTrue(segment.getMetadata().getHasCreatableBody());
         Assert.assertEquals(CelestialBodyFactory.getJupiter(), segment.getMetadata().getCenter().getBody());
-        Assert.assertEquals("TDB",        segment.getMetadata().getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("TDB",        segment.getMetadata().getTimeSystem().name());
 
         // Check data block
         Assert.assertFalse(segment.getData().hasManeuvers());

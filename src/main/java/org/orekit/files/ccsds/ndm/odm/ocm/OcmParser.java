@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.odm.CommonParser;
 import org.orekit.files.ccsds.ndm.odm.OdmHeader;
@@ -460,18 +461,11 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                     throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                               token.getLineNumber(), token.getFileName(), token.getContentAsNormalizedString());
                 }
-                final AbsoluteDate epoch;
-                if (fields[0].indexOf('T') > 0) {
-                    // absolute date
-                    epoch = context.getTimeSystem().parse(fields[0]);
-                } else {
-                    // relative date
-                    epoch = metadata.getEpochT0().shiftedBy(Double.parseDouble(fields[0]));
-                }
+                final AbsoluteDate epoch = context.getTimeSystem().getConverter(context).parse(fields[0]);
                 return currentOrbitStateHistory.add(new OrbitState(currentOrbitStateHistoryMetadata.getOrbType(),
                                                                    epoch, fields, 1, units));
-            } catch (NumberFormatException nfe) {
-                throw new OrekitException(nfe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+            } catch (NumberFormatException | OrekitIllegalArgumentException e) {
+                throw new OrekitException(e, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                           token.getLineNumber(), token.getFileName(), token.getContentAsNormalizedString());
             }
         }
@@ -524,7 +518,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                                               token.getLineNumber(), token.getFileName(), token.getContentAsNormalizedString());
                 }
                 currentCovarianceHistory.add(new Covariance(currentCovarianceHistoryMetadata.getCovType(),
-                                                            context.getTimeSystem().parse(fields[0]),
+                                                            context.getTimeSystem().getConverter(context).parse(fields[0]),
                                                             fields, 1));
                 return true;
             } catch (NumberFormatException nfe) {

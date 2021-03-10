@@ -87,7 +87,7 @@ public class OPMParserTest {
         Assert.assertNotNull(file.getMetadata().getCenter().getBody());
         Assert.assertEquals(CelestialBodyFactory.getEarth(), file.getMetadata().getCenter().getBody());
         Assert.assertEquals(CelestialBodyFrame.ITRF2000, CelestialBodyFrame.map(file.getMetadata().getFrame()));
-        Assert.assertEquals("UTC", file.getMetadata().getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("UTC", file.getMetadata().getTimeSystem().name());
         Assert.assertNull(file.getData().getCovarianceBlock());
 
         // Check State Vector data Block;
@@ -153,7 +153,7 @@ public class OPMParserTest {
         Assert.assertEquals(CelestialBodyFactory.getEarth(), file.getMetadata().getCenter().getBody());
         Assert.assertEquals(FramesFactory.getTOD(IERSConventions.IERS_2010, true),
                             file.getMetadata().getFrame());
-        Assert.assertEquals("UTC", file.getMetadata().getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("UTC", file.getMetadata().getTimeSystem().name());
         Assert.assertEquals(0, file.getMetadata().getComments().size());
 
         // Check Data State Vector block
@@ -267,7 +267,7 @@ public class OPMParserTest {
         Assert.assertNotNull(file.getMetadata().getCenter().getBody());
         Assert.assertEquals(CelestialBodyFactory.getEarth(), file.getMetadata().getCenter().getBody());
         Assert.assertEquals(FramesFactory.getGCRF(), file.getMetadata().getFrame());
-        Assert.assertEquals("GPS", file.getMetadata().getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("GPS", file.getMetadata().getTimeSystem().name());
         Assert.assertEquals(0, file.getMetadata().getComments().size());
 
         // Check Data State Vector block
@@ -570,37 +570,37 @@ public class OPMParserTest {
         final String name1 = "/ccsds/odm/opm/OPM-dummy-solar-system-barycenter.txt";
         final DataSource source1 = new DataSource(name1, () -> getClass().getResourceAsStream(name1));
         OpmFile file1 = parser.parseMessage(source1);
-        Assert.assertEquals("TDB", file1.getMetadata().getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("TDB", file1.getMetadata().getTimeSystem().name());
         Assert.assertEquals("solar system barycenter", file1.getMetadata().getCenter().getBody().getName());
 
         final String name2 = "/ccsds/odm/opm/OPM-dummy-ssb.txt";
         final DataSource source2 = new DataSource(name2, () -> getClass().getResourceAsStream(name2));
         OpmFile file2 = parser.parseMessage(source2);
-        Assert.assertEquals("TCB", file2.getMetadata().getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("TCB", file2.getMetadata().getTimeSystem().name());
         Assert.assertEquals("solar system barycenter", file2.getMetadata().getCenter().getBody().getName());
 
         final String name3 = "/ccsds/odm/opm/OPM-dummy-earth-barycenter.txt";
         final DataSource source3 = new DataSource(name3, () -> getClass().getResourceAsStream(name3));
         OpmFile file3 = parser.parseMessage(source3);
-        Assert.assertEquals("TDB", file3.getMetadata().getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("TDB", file3.getMetadata().getTimeSystem().name());
         Assert.assertEquals("Earth-Moon barycenter", file3.getMetadata().getCenter().getBody().getName());
 
         final String name4 = "/ccsds/odm/opm/OPM-dummy-earth-dash-moon-barycenter.txt";
         final DataSource source4 = new DataSource(name4, () -> getClass().getResourceAsStream(name4));
         OpmFile file4 = parser.parseMessage(source4);
-        Assert.assertEquals("TDB", file4.getMetadata().getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("TDB", file4.getMetadata().getTimeSystem().name());
         Assert.assertEquals("Earth-Moon barycenter", file4.getMetadata().getCenter().getBody().getName());
 
         final String name5 = "/ccsds/odm/opm/OPM-dummy-earth-moon-barycenter.txt";
         final DataSource source5 = new DataSource(name5, () -> getClass().getResourceAsStream(name5));
         OpmFile file5 = parser.parseMessage(source5);
-        Assert.assertEquals("UT1", file5.getMetadata().getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("UT1", file5.getMetadata().getTimeSystem().name());
         Assert.assertEquals("Earth-Moon barycenter", file5.getMetadata().getCenter().getBody().getName());
 
         final String name6 = "/ccsds/odm/opm/OPM-dummy-emb.txt";
         final DataSource source6 = new DataSource(name6, () -> getClass().getResourceAsStream(name6));
         OpmFile file6 = parser.parseMessage(source6);
-        Assert.assertEquals("TT", file6.getMetadata().getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("TT", file6.getMetadata().getTimeSystem().name());
         Assert.assertEquals("Earth-Moon barycenter", file6.getMetadata().getCenter().getBody().getName());
 
     }

@@ -475,7 +475,7 @@ public class TDMParserTest {
         // Meta-Data
         final TdmMetadata metadata = file.getSegments().get(0).getMetadata();
 
-        Assert.assertEquals("UTC", metadata.getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("UTC", metadata.getTimeSystem().name());
         Assert.assertEquals(new AbsoluteDate("2005-159T17:41:00", utc).durationFrom(metadata.getStartTime()), 0.0, 0.0);
         Assert.assertEquals(new AbsoluteDate("2005-159T17:41:40", utc).durationFrom(metadata.getStopTime()), 0.0, 0.0);
         Assert.assertEquals("DSS-25", metadata.getParticipants().get(1));
@@ -536,7 +536,7 @@ public class TDMParserTest {
         // Meta-Data
         final TdmMetadata metadata = file.getSegments().get(0).getMetadata();
 
-        Assert.assertEquals("UTC", metadata.getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("UTC", metadata.getTimeSystem().name());
         Assert.assertEquals("DSS-24", metadata.getParticipants().get(1));
         Assert.assertEquals("yyyy-nnnA", metadata.getParticipants().get(2));
         Assert.assertEquals("SEQUENTIAL", metadata.getMode());
@@ -609,7 +609,7 @@ public class TDMParserTest {
         // Meta-Data
         final TdmMetadata metadata = file.getSegments().get(0).getMetadata();
 
-        Assert.assertEquals("UTC", metadata.getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("UTC", metadata.getTimeSystem().name());
         Assert.assertEquals(new AbsoluteDate("1998-06-10T00:57:37", utc).durationFrom(metadata.getStartTime()), 0.0, 0.0);
         Assert.assertEquals(new AbsoluteDate("1998-06-10T00:57:44", utc).durationFrom(metadata.getStopTime()), 0.0, 0.0);
         Assert.assertEquals("NORTH", metadata.getParticipants().get(1));
@@ -673,7 +673,7 @@ public class TDMParserTest {
         // Meta-Data 1
         final TdmMetadata metadata = file.getSegments().get(0).getMetadata();
 
-        Assert.assertEquals("UTC", metadata.getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("UTC", metadata.getTimeSystem().name());
         Assert.assertEquals(new AbsoluteDate("2007-08-29T07:00:02.000", utc).durationFrom(metadata.getStartTime()), 0.0, 0.0);
         Assert.assertEquals(new AbsoluteDate("2007-08-29T14:00:02.000", utc).durationFrom(metadata.getStopTime()), 0.0, 0.0);
         Assert.assertEquals("HBSTK", metadata.getParticipants().get(1));
@@ -717,7 +717,7 @@ public class TDMParserTest {
         // Meta-Data 2
         final TdmMetadata metadata2 = file.getSegments().get(1).getMetadata();
 
-        Assert.assertEquals("UTC", metadata.getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("UTC", metadata.getTimeSystem().name());
         Assert.assertEquals(new AbsoluteDate("2007-08-29T06:00:02.000", utc).durationFrom(metadata2.getStartTime()), 0.0, 0.0);
         Assert.assertEquals(new AbsoluteDate("2007-08-29T13:00:02.000", utc).durationFrom(metadata2.getStopTime()), 0.0, 0.0);
         Assert.assertEquals("WHM1", metadata2.getParticipants().get(1));
@@ -782,7 +782,7 @@ public class TDMParserTest {
         // Meta-Data 1
         final TdmMetadata metadata = file.getSegments().get(0).getMetadata();
 
-        Assert.assertEquals("UTC", metadata.getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("UTC", metadata.getTimeSystem().name());
         Assert.assertEquals(new AbsoluteDate("2005-142T12:00:00", utc).durationFrom(metadata.getStartTime()), 0.0, 0.0);
         Assert.assertEquals(new AbsoluteDate("2005-145T12:00:00", utc).durationFrom(metadata.getStopTime()), 0.0, 0.0);
         Assert.assertEquals("DSS-10", metadata.getParticipants().get(1));
@@ -824,7 +824,7 @@ public class TDMParserTest {
         // Meta-Data 2
         final TdmMetadata metadata2 = file.getSegments().get(1).getMetadata();
 
-        Assert.assertEquals("UTC", metadata2.getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("UTC", metadata2.getTimeSystem().name());
         Assert.assertEquals(new AbsoluteDate("2005-142T12:00:00", utc).durationFrom(metadata2.getStartTime()), 0.0, 0.0);
         Assert.assertEquals(new AbsoluteDate("2005-145T12:00:00", utc).durationFrom(metadata2.getStopTime()), 0.0, 0.0);
         Assert.assertEquals("DSS-40", metadata2.getParticipants().get(1));
@@ -857,7 +857,7 @@ public class TDMParserTest {
         // Meta-Data 3
         final TdmMetadata metadata3 = file.getSegments().get(2).getMetadata();
 
-        Assert.assertEquals("UTC", metadata3.getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("UTC", metadata3.getTimeSystem().name());
         Assert.assertEquals(new AbsoluteDate("2005-142T12:00:00", utc).durationFrom(metadata3.getStartTime()), 0.0, 0.0);
         Assert.assertEquals(new AbsoluteDate("2005-145T12:00:00", utc).durationFrom(metadata3.getStopTime()), 0.0, 0.0);
         Assert.assertEquals("DSS-60", metadata3.getParticipants().get(1));
@@ -907,7 +907,7 @@ public class TDMParserTest {
         // Meta-Data
         final TdmMetadata metadata = file.getSegments().get(0).getMetadata();
 
-        Assert.assertEquals("UTC", metadata.getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("UTC", metadata.getTimeSystem().name());
         Assert.assertEquals(new AbsoluteDate("2017-06-14T10:53:00.000", utc).durationFrom(metadata.getStartTime()), 0.0, 0.0);
         Assert.assertEquals(new AbsoluteDate("2017-06-15T10:53:00.000", utc).durationFrom(metadata.getStopTime()), 0.0, 0.0);
         Assert.assertEquals("DSS-25", metadata.getParticipants().get(1));

@@ -93,7 +93,7 @@ public class StreamingAemWriterTest {
             header.addComment(headerCmt);
 
             AemMetadata metadata = new AemMetadata(1);
-            metadata.setTimeSystem(new TimeSystem(DataContext.getDefault().getTimeScales().getUTC()));
+            metadata.setTimeSystem(TimeSystem.UTC);
             metadata.setObjectID(objectID);
             metadata.setObjectName("will be overwritten");
             metadata.setAttitudeType(attitudeType);

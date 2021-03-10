@@ -76,7 +76,7 @@ public class OEMParserTest {
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getMars().getGM()).buildOemParser();
         final OemFile file = parser.parseMessage(source);
         Assert.assertEquals(3, file.getSegments().size());
-        Assert.assertEquals("UTC", file.getSegments().get(0).getMetadata().getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("UTC", file.getSegments().get(0).getMetadata().getTimeSystem().name());
         Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getSegments().get(0).getMetadata().getObjectName());
         Assert.assertEquals("1996-062A", file.getSegments().get(0).getMetadata().getObjectID());
         Assert.assertEquals("MARS BARYCENTER", file.getSegments().get(0).getMetadata().getCenter().getName());
@@ -160,7 +160,7 @@ public class OEMParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getMars().getGM()).buildOemParser();
         final OemFile file = parser.parse(source); // using the generic API here
-        Assert.assertEquals("UTC", file.getSegments().get(0).getMetadata().getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("UTC", file.getSegments().get(0).getMetadata().getTimeSystem().name());
         Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getSegments().get(0).getMetadata().getObjectName());
         Assert.assertEquals("1996-062A", file.getSegments().get(0).getMetadata().getObjectID());
 
@@ -187,7 +187,7 @@ public class OEMParserTest {
         } catch (OrekitException e){
             Assert.assertEquals(e.getSpecifier(), OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY);
         }
-        Assert.assertEquals("UTC", segment.getMetadata().getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("UTC", segment.getMetadata().getTimeSystem().name());
         Assert.assertEquals(3, segment.getInterpolationSamples());
         Assert.assertEquals(segment.getAvailableDerivatives(),
                 CartesianDerivativesFilter.USE_PV);
@@ -208,7 +208,7 @@ public class OEMParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getMars().getGM()).buildOemParser();
         final OemFile file = parser.parseMessage(source);
-        Assert.assertEquals("UTC", file.getSegments().get(0).getMetadata().getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("UTC", file.getSegments().get(0).getMetadata().getTimeSystem().name());
         Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getSegments().get(0).getMetadata().getObjectName());
         Assert.assertEquals("1996-062A", file.getSegments().get(0).getMetadata().getObjectID());
 
@@ -244,7 +244,7 @@ public class OEMParserTest {
         Assert.assertEquals(actualTransform.getRotationAcceleration(), Vector3D.ZERO);
         Assert.assertEquals("Mars/EME2000", actualFrame.getName());
         Assert.assertEquals(CelestialBodyFrame.EME2000, segment.getMetadata().getReferenceFrame().asCelestialBodyFrame());
-        Assert.assertEquals("UTC", segment.getMetadata().getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("UTC", segment.getMetadata().getTimeSystem().name());
         Assert.assertEquals(segment.getAvailableDerivatives(),
                 CartesianDerivativesFilter.USE_PV);
         Assert.assertEquals(satellite.getSegments().get(0).getMetadata().getStartTime(), actualStart);

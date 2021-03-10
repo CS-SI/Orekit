@@ -80,7 +80,7 @@ public class OMMParserTest {
         Assert.assertNotNull(file.getMetadata().getCenter().getBody());
         Assert.assertEquals(CelestialBodyFactory.getEarth(), file.getMetadata().getCenter().getBody());
         Assert.assertEquals(FramesFactory.getTEME(), file.getMetadata().getFrame());
-        Assert.assertEquals("UTC",      file.getMetadata().getTimeSystem().getTimeScale().getName());
+        Assert.assertEquals("UTC",      file.getMetadata().getTimeSystem().name());
         Assert.assertEquals("SGP/SGP4", file.getMetadata().getMeanElementTheory());
         Assert.assertEquals("TEME", file.getMetadata().getFrame().toString());
         Assert.assertTrue(file.getData().getTLEBlock().getComments().isEmpty());

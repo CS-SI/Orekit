@@ -228,7 +228,7 @@ public class OrekitAttitudeEphemerisFileTest {
 
     private AemMetadata dummyMetadata() {
         AemMetadata metadata = new AemMetadata(4);
-        metadata.setTimeSystem(new TimeSystem(DataContext.getDefault().getTimeScales().getTT()));
+        metadata.setTimeSystem(TimeSystem.TT);
         metadata.setObjectID("SATELLITE1");
         metadata.setObjectName("transgalactic");
         metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,

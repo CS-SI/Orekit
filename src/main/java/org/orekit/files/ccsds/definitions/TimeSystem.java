@@ -1,5 +1,5 @@
-/* Copyright 2002-2021 CS GROUP
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Contributed in the public domain.
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,48 +16,154 @@
  */
 package org.orekit.files.ccsds.definitions;
 
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateTimeComponents;
-import org.orekit.time.TimeScale;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.utils.parsing.ParsingContext;
+import org.orekit.time.SatelliteClockScale;
 
-/** Dates reader/writer based on a {@link TimeScale}.
+/**
+ * The set of time systems defined in CCSDS standards (ADM, ODM, NDM).
  *
- * @author Luc Maisonobe
- * @since 11.0
+ * @author Evan Ward
  */
-public class TimeSystem {
+public enum TimeSystem {
 
-    /** Base time scale. */
-    private final TimeScale timeScale;
+    /** Greenwich Mean Sidereal Time. */
+    GMST {
+        /** {@inheritDoc} */
+        public TimeConverter getConverter(final ParsingContext context) {
+            return new TimeConverter(context.getDataContext().getTimeScales().getGMST(context.getConventions(), false),
+                                     context.getReferenceDate());
+        }
+    },
 
-    /** Build a time sytem from a time scale.
-     * @param timeScale base time scale
+    /** Global Positioning System. */
+    GPS {
+        /** {@inheritDoc} */
+        public TimeConverter getConverter(final ParsingContext context) {
+            return new TimeConverter(context.getDataContext().getTimeScales().getGPS(),
+                                     context.getReferenceDate());
+        }
+    },
+
+    /** Mission Elapsed Time. */
+    MET {
+        /** {@inheritDoc} */
+        public TimeConverter getConverter(final ParsingContext context) {
+            return new TimeConverter(new SatelliteClockScale("MET",
+                                                          context.getReferenceDate(),
+                                                          context.getDataContext().getTimeScales().getUTC(),
+                                                          0.0, 0.0),
+                                     context.getReferenceDate());
+        }
+    },
+
+    /** Mission Relative Time. */
+    MRT {
+        /** {@inheritDoc} */
+        public TimeConverter getConverter(final ParsingContext context) {
+            return new TimeConverter(new SatelliteClockScale("MRT",
+                                                          context.getReferenceDate(),
+                                                          context.getDataContext().getTimeScales().getUTC(),
+                                                          0.0, 0.0),
+                                     context.getReferenceDate());
+        }
+    },
+
+    /** Spacecraft Clock. Not currently Implemented. */
+    SCLK {
+        /** {@inheritDoc} */
+        public TimeConverter getConverter(final ParsingContext context) {
+            return new TimeConverter(new SatelliteClockScale("SCLK",
+                                                          context.getReferenceDate(),
+                                                          context.getDataContext().getTimeScales().getUTC(),
+                                                          context.getClockCount(),
+                                                          context.getClockRate() - 1.0),
+                                     context.getReferenceDate());
+        }
+    },
+
+    /** International Atomic Time. */
+    TAI {
+        /** {@inheritDoc} */
+        public TimeConverter getConverter(final ParsingContext context) {
+            return new TimeConverter(context.getDataContext().getTimeScales().getTAI(),
+                                     context.getReferenceDate());
+        }
+    },
+
+    /** Barycentric Coordinate Time. */
+    TCB {
+        /** {@inheritDoc} */
+        public TimeConverter getConverter(final ParsingContext context) {
+            return new TimeConverter(context.getDataContext().getTimeScales().getTCB(),
+                                     context.getReferenceDate());
+        }
+    },
+
+    /** Barycentric Dynamical Time. */
+    TDB {
+        /** {@inheritDoc} */
+        public TimeConverter getConverter(final ParsingContext context) {
+            return new TimeConverter(context.getDataContext().getTimeScales().getTDB(),
+                                     context.getReferenceDate());
+        }
+    },
+
+    /** Geocentric Coordinate Time. */
+    TCG {
+        /** {@inheritDoc} */
+        public TimeConverter getConverter(final ParsingContext context) {
+            return new TimeConverter(context.getDataContext().getTimeScales().getTCG(),
+                                     context.getReferenceDate());
+        }
+    },
+
+    /** Terrestrial Time. */
+    TT {
+        /** {@inheritDoc} */
+        public TimeConverter getConverter(final ParsingContext context) {
+            return new TimeConverter(context.getDataContext().getTimeScales().getTT(),
+                                     context.getReferenceDate());
+        }
+    },
+
+    /** Universal Time. */
+    UT1 {
+        /** {@inheritDoc} */
+        public TimeConverter getConverter(final ParsingContext context) {
+            return new TimeConverter(context.getDataContext().getTimeScales().getUT1(context.getConventions(), false),
+                                     context.getReferenceDate());
+        }
+    },
+
+    /** Universal Coordinated Time. */
+    UTC {
+        /** {@inheritDoc} */
+        public TimeConverter getConverter(final ParsingContext context) {
+            return new TimeConverter(context.getDataContext().getTimeScales().getUTC(),
+                                     context.getReferenceDate());
+        }
+    };
+
+    /** Get associated {@link TimeConverter}.
+     * @param context parsing context
+     * @return time system for reading/writing date
+     * @since 11.0
      */
-    public TimeSystem(final TimeScale timeScale) {
-        this.timeScale = timeScale;
-    }
+    public abstract TimeConverter getConverter(ParsingContext context);
 
-    /** Parse a date.
-     * @param s string to parse
-     * @return parsed date
+    /** Parse a value from a key=value entry.
+     * @param value value to parse
+     * @return CCSDS time system corresponding to the value
      */
-    public AbsoluteDate parse(final String s) {
-        return new AbsoluteDate(s, timeScale);
-    }
-
-    /** Generate calendar components.
-     * @param date date to convert
-     * @return date components
-     */
-    public DateTimeComponents toComponents(final AbsoluteDate date) {
-        return date.getComponents(timeScale);
-    }
-
-    /** Get the base time scale.
-     * @return base time scale
-     */
-    public TimeScale getTimeScale() {
-        return timeScale;
+    public static TimeSystem parse(final String value) {
+        for (final TimeSystem scale : values()) {
+            if (scale.name().equals(value)) {
+                return scale;
+            }
+        }
+        throw new OrekitException(OrekitMessages.CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED, value);
     }
 
 }

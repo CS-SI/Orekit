@@ -28,8 +28,8 @@ import org.orekit.utils.IERSConventions;
 /** Context for parsing Navigation Data Message.
  * <p>
  * This class is a facade providing late binding access to data used during parsing.
- * Late binding allow some data to be set up during parsing itself. This is
- * used for example to access {@link #getTimeSystem() time scale} that is generally
+ * Late binding allows some data to be set up during parsing itself. This is
+ * used for example to access {@link #getTimeSystem() time system} that is generally
  * parsed from metadata block, and used later on within the same metadata block.
  * </p>
  * @author Luc Maisonobe
@@ -65,7 +65,7 @@ public class ParsingContext {
      * @param dataContextSupplier supplier for data context to use
      * @param referenceDateSupplier supplier for reference date for mission elapsed time (MET),
      * mission relative time (MRT), or spacecraft clock (SCLK) time systems
-     * @param timeystemSupplier supplier for reference system for interpreting dates
+     * @param timeSystemSupplier supplier for reference system for interpreting dates
      * @param clockCountSupplier supplier for clock count at reference date in spacecraft clock (SCLK) time system
      * @param clockRateSupplier supplier for clock rate in spacecraft clock (SCLK) time system
      */
@@ -73,14 +73,14 @@ public class ParsingContext {
                           final BooleanSupplier           simpleEOPSupplier,
                           final Supplier<DataContext>     dataContextSupplier,
                           final Supplier<AbsoluteDate>    referenceDateSupplier,
-                          final Supplier<TimeSystem>      timeystemSupplier,
+                          final Supplier<TimeSystem>      timeSystemSupplier,
                           final DoubleSupplier            clockCountSupplier,
                           final DoubleSupplier            clockRateSupplier) {
         this.conventionsSupplier   = conventionsSupplier;
         this.simpleEOPSupplier     = simpleEOPSupplier;
         this.dataContextSupplier   = dataContextSupplier;
         this.referenceDateSupplier = referenceDateSupplier;
-        this.timeSystemSupplier    = timeystemSupplier;
+        this.timeSystemSupplier    = timeSystemSupplier;
         this.clockCountSupplier    = clockCountSupplier;
         this.clockRateSupplier     = clockRateSupplier;
     }

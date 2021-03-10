@@ -61,7 +61,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
 
 public class AEMWriterTest {
 
-    // The default format writes 5 digits after the decimal point hence the quaternion precision
+    // The default format writes 5O digits after the decimal point hence the quaternion precision
     private static final double QUATERNION_PRECISION = 1e-5;
     private static final double DATE_PRECISION = 1e-3;
 
@@ -256,7 +256,7 @@ public class AEMWriterTest {
         final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
         StringBuilder buffer = new StringBuilder();
 
-        AemWriter writer = new AemWriter(DataContext.getDefault(), null,
+        AemWriter writer = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null,
                                          aemFile.getSegments().get(0).getMetadata(), "some-name",
                                          "%.2f");
 
@@ -289,7 +289,7 @@ public class AEMWriterTest {
         assertEquals(meta1.getObjectID(),                            meta2.getObjectID());
         assertEquals(meta1.getObjectName(),                          meta2.getObjectName());
         assertEquals(meta1.getCenter().getName(),                    meta2.getCenter().getName());
-        assertEquals(meta1.getTimeSystem().getTimeScale().getName(), meta2.getTimeSystem().getTimeScale().getName());
+        assertEquals(meta1.getTimeSystem().name(), meta2.getTimeSystem().name());
         assertEquals(meta1.getLaunchYear(),                          meta2.getLaunchYear());
         assertEquals(meta1.getLaunchNumber(),                        meta2.getLaunchNumber());
         assertEquals(meta1.getLaunchPiece(),                         meta2.getLaunchPiece());
@@ -373,7 +373,7 @@ public class AEMWriterTest {
 
     private AemMetadata dummyMetadata() {
         AemMetadata metadata = new AemMetadata(4);
-        metadata.setTimeSystem(new TimeSystem(DataContext.getDefault().getTimeScales().getTT()));
+        metadata.setTimeSystem(TimeSystem.TT);
         metadata.setObjectID("9999-999ZZZ");
         metadata.setObjectName("transgalactic");
         metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,

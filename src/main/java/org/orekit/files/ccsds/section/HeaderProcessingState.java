@@ -46,7 +46,7 @@ public class HeaderProcessingState implements ProcessingState {
         this.context = new ParsingContext(
             () -> null, () -> true,
             () -> dataContext, () -> null,
-            () -> new TimeSystem(dataContext.getTimeScales().getUTC()),
+            () -> TimeSystem.UTC,
             () -> 0.0, () -> 1.0);
         this.parser  = parser;
     }
