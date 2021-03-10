@@ -373,6 +373,9 @@ SP3_UNEXPECTED_END_OF_FILE = final inesperado dun ficheiro sp3 (despois da liña
 # unsupported clock file version {0}
 CLOCK_FILE_UNSUPPORTED_VERSION = versión de ficheiro de reloxo {0} non incluída
 
+# unsupported navigation messages file version {0}
+NAVIGATION_FILE_UNSUPPORTED_VERSION = <MISSING TRANSLATION>
+
 # non-existent geomagnetic model {0} for year {1}
 NON_EXISTENT_GEOMAGNETIC_MODEL = ficheiro de modelo xeomagnético {0} ausente do ano {1}
 

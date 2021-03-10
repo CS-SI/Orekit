@@ -35,6 +35,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.GPSAlmanac;
 import org.orekit.gnss.SEMParser;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.gnss.navigation.GPSNavigationMessage;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
@@ -296,12 +297,26 @@ public class GPSPropagatorTest {
     @Test
     public void testPosition() {
         // Initial GPS orbital elements (Ref: IGS)
-        GPSOrbitalElements goe = new GPSEphemeris(7, 0, 288000, 5153.599830627441,
-                                                  0.012442796607501805, 4.419469802942352E-9,0.9558937988021613,
-                                                  -2.4608167886110235E-10, 1.0479401362158658, -7.967117576712062E-9,
-                                                  -2.4719019944000538, -1.0899023379614294, 4.3995678424835205E-6,
-                                                  1.002475619316101E-5, 183.40625, 87.03125, 3.203749656677246E-7,
-                                                  4.0978193283081055E-8);
+        final GPSNavigationMessage goe = new GPSNavigationMessage();
+        goe.setPRN(7);
+        goe.setWeek(0);
+        goe.setToe(288000);
+        goe.setSqrtA(5153.599830627441);
+        goe.setE(0.012442796607501805);
+        goe.setDeltaN(4.419469802942352E-9);
+        goe.setI0(0.9558937988021613);
+        goe.setIDot(-2.4608167886110235E-10);
+        goe.setOmega0(1.0479401362158658);
+        goe.setOmegaDot(-7.967117576712062E-9);
+        goe.setPa(-2.4719019944000538);
+        goe.setM0(-1.0899023379614294);
+        goe.setCuc(4.3995678424835205E-6);
+        goe.setCus(1.002475619316101E-5);
+        goe.setCrc(183.40625);
+        goe.setCrs(87.03125);
+        goe.setCic(3.203749656677246E-7);
+        goe.setCis(4.0978193283081055E-8);
+        goe.setDate(new GNSSDate(goe.getWeek(), 1000.0 * goe.getTime(), SatelliteSystem.GPS).getDate());
 
         // Date of the GPS orbital elements
         final AbsoluteDate target = goe.getDate();
@@ -327,152 +342,6 @@ public class GPSPropagatorTest {
         // Verify that an infinite loop did not occur
         Assert.assertEquals(Vector3D.NaN, pv0.getPosition());
         Assert.assertEquals(Vector3D.NaN, pv0.getVelocity());
-        
-    }
-
-    private class GPSEphemeris implements GPSOrbitalElements {
-
-        private int prn;
-        private int week;
-        private double toe;
-        private double sma;
-        private double deltaN;
-        private double ecc;
-        private double inc;
-        private double iDot;
-        private double om0;
-        private double dom;
-        private double aop;
-        private double anom;
-        private double cuc;
-        private double cus;
-        private double crc;
-        private double crs;
-        private double cic;
-        private double cis;
-
-        /**
-         * Build a new instance.
-         */
-        GPSEphemeris(int prn, int week, double toe, double sqa, double ecc,
-                     double deltaN, double inc, double iDot, double om0,
-                     double dom, double aop, double anom, double cuc,
-                     double cus, double crc, double crs, double cic, double cis) {
-            this.prn    = prn;
-            this.week   = week;
-            this.toe    = toe;
-            this.sma    = sqa * sqa;
-            this.ecc    = ecc;
-            this.deltaN = deltaN;
-            this.inc    = inc;
-            this.iDot   = iDot;
-            this.om0    = om0;
-            this.dom    = dom;
-            this.aop    = aop;
-            this.anom   = anom;
-            this.cuc    = cuc;
-            this.cus    = cus;
-            this.crc    = crc;
-            this.crs    = crs;
-            this.cic    = cic;
-            this.cis    = cis;
-        }
-
-        @Override
-        public int getPRN() {
-            return prn;
-        }
-
-        @Override
-        public int getWeek() {
-            return week;
-        }
-
-        @Override
-        public double getTime() {
-            return toe;
-        }
-
-        @Override
-        public double getSma() {
-            return sma;
-        }
-
-        @Override
-        public double getMeanMotion() {
-            final double absA = FastMath.abs(sma);
-            return FastMath.sqrt(GPS_MU / absA) / absA + deltaN;
-        }
-
-        @Override
-        public double getE() {
-            return ecc;
-        }
-
-        @Override
-        public double getI0() {
-            return inc;
-        }
-
-        @Override
-        public double getIDot() {
-            return iDot;
-        }
-
-        @Override
-        public double getOmega0() {
-            return om0;
-        }
-
-        @Override
-        public double getOmegaDot() {
-            return dom;
-        }
-
-        @Override
-        public double getPa() {
-            return aop;
-        }
-
-        @Override
-        public double getM0() {
-            return anom;
-        }
-
-        @Override
-        public double getCuc() {
-            return cuc;
-        }
-
-        @Override
-        public double getCus() {
-            return cus;
-        }
-
-        @Override
-        public double getCrc() {
-            return crc;
-        }
-
-        @Override
-        public double getCrs() {
-            return crs;
-        }
-
-        @Override
-        public double getCic() {
-            return cic;
-        }
-
-        @Override
-        public double getCis() {
-            return cis;
-        }
-
-        @Override
-        public AbsoluteDate getDate() {
-            return new GNSSDate(week, toe * 1000., SatelliteSystem.GPS).getDate();
-        }
         
     }
 

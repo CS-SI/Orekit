@@ -101,9 +101,9 @@ public interface GLONASSOrbitalElements extends TimeStamped {
     }
 
     /**
-     * Get the correction to the mean value of inlination.
+     * Get the correction to the mean value of inclination.
      *
-     * @return the correction to the mean value of inlination (rad)
+     * @return the correction to the mean value of inclination (rad)
      */
     default double getDeltaI() {
         return 0.0;
