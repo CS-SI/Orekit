@@ -46,7 +46,35 @@ public class SatelliteClockScale implements TimeScale {
     /** Clock drift (i.e. clock count per SI second minus 1.0). */
     private final double drift;
 
+    /** Clock rate. */
+    private final double rate;
+
     /** Create a linear model for satellite clock.
+     * <p>
+     * Beware that we specify the model using its drift with respect to
+     * flow of time. For a perfect clock without any drift, the clock
+     * count would be one tick every SI second. A clock that is fast, say
+     * for example it generates 1000001 ticks every 1000000 SI second, would
+     * have a rate of 1.000001 tick per SI second and hence a drift of
+     * 1.0e-6 tick per SI second. In this constructor we use the drift
+     * (1.0e-6 in the previous example) rather than the rate (1.000001
+     * in the previous example) to specify the clock. The rationale is
+     * that for clocks that are intended to be used for representing absolute
+     * time, the drift is expected to be small (much smaller that 1.0e-6
+     * for a good clock), so using drift is numerically more stable than
+     * using rate and risking catastrophic cancellation when subtracting
+     * 1.0 in the internal computation.
+     * </p>
+     * <p>
+     * Despite what is explained in the previous paragraph, this class can
+     * handle spacecraft clocks that are not intended to be synchronized with
+     * SI seconds, for example clocks that ticks at 10 Hz. In such cases the
+     * drift would need to be set at 10.0 - 1.0 = 9.0, which is not intuitive.
+     * For these clocks, the methods {@link #countAtDate(AbsoluteDate)} and
+     * {@link #dateAtCount(double)} and perhaps {@link #offsetFromTAI(AbsoluteDate)}
+     * are still useful, whereas {@link #offsetToTAI(DateComponents, TimeComponents)}
+     * is probably not really meaningful.
+     * </p>
      * @param name of the scale
      * @param epoch reference epoch
      * @param epochScale time scale in which the {@code epoch} was defined
@@ -62,6 +90,7 @@ public class SatelliteClockScale implements TimeScale {
         this.offsetAtEpoch = epochScale.offsetFromTAI(epoch) + countAtEpoch;
         this.countAtEpoch  = countAtEpoch;
         this.drift         = drift;
+        this.rate          = 1.0 + drift;
     }
 
     /** {@inheritDoc} */
@@ -75,8 +104,24 @@ public class SatelliteClockScale implements TimeScale {
     public double offsetToTAI(final DateComponents date, final TimeComponents time) {
         final double delta          = Constants.JULIAN_DAY * (date.getJ2000Day() - epochDT.getDate().getJ2000Day()) +
                                       time.getSecondsInUTCDay() - epochDT.getTime().getSecondsInUTCDay();
-        final double timeSinceEpoch = (delta - countAtEpoch) / (1 + drift);
+        final double timeSinceEpoch = (delta - countAtEpoch) / rate;
         return -(offsetAtEpoch + drift * timeSinceEpoch);
+    }
+
+    /** Compute date corresponding to some clock count.
+     * @param count clock count
+     * @return date at {@code count}
+     */
+    public AbsoluteDate dateAtCount(final double count) {
+        return epoch.shiftedBy((count - countAtEpoch) / rate);
+    }
+
+    /** Compute clock count corresponding to some date.
+     * @param date date
+     * @return clock count at {@code date}
+     */
+    public double countAtDate(final AbsoluteDate date) {
+        return countAtEpoch + rate * date.durationFrom(epoch);
     }
 
     /** {@inheritDoc} */

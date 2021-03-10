@@ -16,6 +16,8 @@
  */
 package org.orekit.time;
 
+import org.hipparchus.random.RandomGenerator;
+import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.Decimal64;
 import org.junit.Assert;
 import org.junit.Before;
@@ -92,6 +94,35 @@ public class SatelliteClockScaleTest {
             AbsoluteDate ref     = epoch.shiftedBy(dt);
             AbsoluteDate rebuilt = new AbsoluteDate(ref.getComponents(sclk), sclk);
             Assert.assertEquals(0.0, rebuilt.durationFrom(ref), 6.0e-12);
+        }
+    }
+
+    @Test
+    public void testCountSymmetry() {
+        final double              offset = 325.0;
+        final double              drift  = 10.002;
+        final SatelliteClockScale sclk   = new SatelliteClockScale("SCLK", epoch, utc, offset, drift);
+        for (double count = -1000; count < 1000; count += 0.01) {
+            double rebuilt = sclk.countAtDate(sclk.dateAtCount(count));
+            Assert.assertEquals(count, rebuilt, 2.0e-13);
+        }
+    }
+
+    @Test
+    public void testCount() {
+        final double              offset = 325.0;
+        final double              drift  = 10.002;
+        final SatelliteClockScale sclk   = new SatelliteClockScale("SCLK", epoch, utc, offset, drift);
+        Assert.assertEquals(0.0,    sclk.dateAtCount(offset).durationFrom(epoch), 1.0e-15);
+        Assert.assertEquals(offset, sclk.countAtDate(epoch),                      1.0e-15);
+        RandomGenerator random = new Well19937a(0xc7607abceb6835bdl);
+        AbsoluteDate previous = epoch;
+        for (int i = 0; i < 100; ++i) {
+            AbsoluteDate current = epoch.shiftedBy((random.nextDouble() * 10000) - 5000);
+            double deltaT     = current.durationFrom(previous);
+            double deltaCount = sclk.countAtDate(current) - sclk.countAtDate(previous);
+            Assert.assertEquals(drift, deltaCount / deltaT - 1.0, 2.0e-12);
+            previous = current;
         }
     }
 
