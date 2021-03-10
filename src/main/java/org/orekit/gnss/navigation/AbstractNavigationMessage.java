@@ -17,7 +17,6 @@
 package org.orekit.gnss.navigation;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.propagation.analytical.gnss.GNSSOrbitalElements;
 import org.orekit.time.AbsoluteDate;
 
 /**
@@ -31,7 +30,7 @@ import org.orekit.time.AbsoluteDate;
  * @see QZSSNavigationMessage
  * @see IRNSSNavigationMessage
  */
-public abstract class AbstractNavigationMessage implements GNSSOrbitalElements {
+public abstract class AbstractNavigationMessage {
 
     /** Ephemeris reference epoch. */
     private AbsoluteDate date;
@@ -113,14 +112,18 @@ public abstract class AbstractNavigationMessage implements GNSSOrbitalElements {
         this.mu = mu;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /**
+     * Getter for the ephemeris reference date.
+     * @return the ephemeris reference date
+     */
     public AbsoluteDate getDate() {
         return date;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /**
+     * Getter for the PRN number of the satellite.
+     * @return the PRN number of the satellite
+     */
     public int getPRN() {
         return prn;
     }
@@ -133,8 +136,10 @@ public abstract class AbstractNavigationMessage implements GNSSOrbitalElements {
         this.prn = number;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /**
+     * Getter for the reference week of the GNSS orbit.
+     * @return the reference week of the GNSS orbit
+     */
     public int getWeek() {
         return week;
     }
@@ -147,8 +152,10 @@ public abstract class AbstractNavigationMessage implements GNSSOrbitalElements {
         this.week = week;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /**
+     * Getter for the semi-major axis.
+     * @return the semi-major axis in meters
+     */
     public double getSma() {
         return sqrtA * sqrtA;
     }
@@ -161,8 +168,10 @@ public abstract class AbstractNavigationMessage implements GNSSOrbitalElements {
         this.sqrtA = sqrtA;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /**
+     * Getter for the mean motion.
+     * @return the mean motion
+     */
     public double getMeanMotion() {
         final double absA = FastMath.abs(getSma());
         return FastMath.sqrt(mu / absA) / absA + deltaN;
@@ -176,8 +185,10 @@ public abstract class AbstractNavigationMessage implements GNSSOrbitalElements {
         this.deltaN = deltaN;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /**
+     * Getter for the longitude of ascending node of orbit plane at weekly epoch.
+     * @return the longitude of ascending node of orbit plane at weekly epoch in radians
+     */
     public double getOmega0() {
         return om0;
     }
@@ -190,8 +201,10 @@ public abstract class AbstractNavigationMessage implements GNSSOrbitalElements {
         this.om0 = omega0;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /**
+     * Getter for the rate of right ascension.
+     * @return the rate of right ascension in rad/s
+     */
     public double getOmegaDot() {
         return dom;
     }
@@ -204,8 +217,10 @@ public abstract class AbstractNavigationMessage implements GNSSOrbitalElements {
         this.dom = omegaDot;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /**
+     * Getter for the argument of perigee.
+     * @return the argument of perigee in radians
+     */
     public double getPa() {
         return aop;
     }
@@ -218,8 +233,10 @@ public abstract class AbstractNavigationMessage implements GNSSOrbitalElements {
         this.aop = omega;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /**
+     * Getter for the mean anomaly at reference time.
+     * @return the mean anomaly at reference time in radians
+     */
     public double getM0() {
         return anom;
     }
@@ -232,8 +249,10 @@ public abstract class AbstractNavigationMessage implements GNSSOrbitalElements {
         this.anom = m0;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /**
+     * Getter for the eccentricity.
+     * @return the eccentricity
+     */
     public double getE() {
         return ecc;
     }
@@ -246,8 +265,10 @@ public abstract class AbstractNavigationMessage implements GNSSOrbitalElements {
         this.ecc = e;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /**
+     * Getter for the inclination angle at reference time.
+     * @return the inclination angle at reference time in radians
+     */
     public double getI0() {
         return i0;
     }
@@ -260,8 +281,10 @@ public abstract class AbstractNavigationMessage implements GNSSOrbitalElements {
         this.i0 = i0;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /**
+     * Getter for the rate of inclination angle.
+     * @return the rate of inclination angle in rad/s
+     */
     public double getIDot() {
         return iDot;
     }
@@ -274,8 +297,10 @@ public abstract class AbstractNavigationMessage implements GNSSOrbitalElements {
         this.iDot = iRate;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /**
+     * Getter for the reference time of the GNSS orbit as a duration from week start.
+     * @return the reference time in seconds
+     */
     public double getTime() {
         return toe;
     }
@@ -296,8 +321,10 @@ public abstract class AbstractNavigationMessage implements GNSSOrbitalElements {
         this.date = date;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /**
+     * Getter for the the SV Clock Bias Correction Coefficient.
+     * @return the SV Clock Bias Correction Coefficient (s).
+     */
     public double getAf0() {
         return af0;
     }
@@ -310,8 +337,10 @@ public abstract class AbstractNavigationMessage implements GNSSOrbitalElements {
         this.af0 = af0;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /**
+     * Getter for the SV Clock Drift Correction Coefficient.
+     * @return the SV Clock Drift Correction Coefficient (s/s).
+     */
     public double getAf1() {
         return af1;
     }
@@ -324,8 +353,10 @@ public abstract class AbstractNavigationMessage implements GNSSOrbitalElements {
         this.af1 = af1;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /**
+     * Getter for the Drift Rate Correction Coefficient.
+     * @return the Drift Rate Correction Coefficient (s/s²).
+     */
     public double getAf2() {
         return af2;
     }
@@ -354,8 +385,10 @@ public abstract class AbstractNavigationMessage implements GNSSOrbitalElements {
         this.epochToc = epochToc;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /**
+     * Getter for the Cuc parameter.
+     * @return the Cuc parameter
+     */
     public double getCuc() {
         return cuc;
     }
@@ -368,8 +401,10 @@ public abstract class AbstractNavigationMessage implements GNSSOrbitalElements {
         this.cuc = cuc;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /**
+     * Getter for the Cus parameter.
+     * @return the Cus parameter
+     */
     public double getCus() {
         return cus;
     }
@@ -382,8 +417,10 @@ public abstract class AbstractNavigationMessage implements GNSSOrbitalElements {
         this.cus = cus;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /**
+     * Getter for the Crc parameter.
+     * @return the Crc parameter
+     */
     public double getCrc() {
         return crc;
     }
@@ -396,8 +433,10 @@ public abstract class AbstractNavigationMessage implements GNSSOrbitalElements {
         this.crc = crc;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /**
+     * Getter for the Crs parameter.
+     * @return the Crs parameter
+     */
     public double getCrs() {
         return crs;
     }
@@ -410,8 +449,10 @@ public abstract class AbstractNavigationMessage implements GNSSOrbitalElements {
         this.crs = crs;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /**
+     * Getter for the Cic parameter.
+     * @return the Cic parameter
+     */
     public double getCic() {
         return cic;
     }
@@ -424,8 +465,10 @@ public abstract class AbstractNavigationMessage implements GNSSOrbitalElements {
         this.cic = cic;
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /**
+     * Getter for the Cis parameter.
+     * @return the Cis parameter
+     */
     public double getCis() {
         return cis;
     }
