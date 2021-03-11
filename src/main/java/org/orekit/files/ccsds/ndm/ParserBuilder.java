@@ -28,11 +28,11 @@ import org.orekit.files.ccsds.ndm.tdm.TdmParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
-/** Build for all {@link NdmFile CCSDS Message} files.
+/** Builder for all {@link NdmFile CCSDS Message} files.
  * <p>
  * This builder can be used for building all CCSDS Messages parsers types.
  * It is particularly useful in multi-threaded context as parsers cannot
- * be shared between threads and thus several independant parsers must be
+ * be shared between threads and thus several independent parsers must be
  * built in this case.
  * </p>
  * @author Luc Maisonobe
