@@ -51,124 +51,129 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 
 public class FieldTLETest {
- 
-    
-    
+
+
+
     @Test
     public void testTLEFormat() {
         doTestTLEFormat(Decimal64Field.getInstance());
     }
-    
+
     @Test
     public void TestIssue196() {
         doTestIssue196(Decimal64Field.getInstance());
     }
-    
+
     @Test
     public void testSymmetry() {
         doTestSymmetry(Decimal64Field.getInstance());
     }
-    
+
     @Test
     public void testBug74() {
         doTestBug74(Decimal64Field.getInstance());
     }
-    
+
     @Test
     public void testBug77() {
         doTestBug77(Decimal64Field.getInstance());
     }
-    
+
     @Test
     public void testDirectConstruction() {
         doTestDirectConstruction(Decimal64Field.getInstance());
     }
-    
+
+    @Test
+    public void testGenerateAlpha5() {
+        doTestGenerateAlpha5(Decimal64Field.getInstance());
+    }
+
     @Test
     public void testBug77TooLargeSecondDerivative() {
         doTestBug77TooLargeSecondDerivative(Decimal64Field.getInstance());
     }
-    
+
     @Test
     public void testBug77TooLargeBStar() {
         doTestBug77TooLargeBStar(Decimal64Field.getInstance());
     }
-    
+
     @Test
     public void testBug77TooLargeEccentricity() {
         doTestBug77TooLargeEccentricity(Decimal64Field.getInstance());
     }
-    
+
     @Test
     public void testBug77TooLargeSatelliteNumber1() {
         doTestBug77TooLargeSatelliteNumber1(Decimal64Field.getInstance());
     }
-    
+
     @Test
     public void testBug77TooLargeSatelliteNumber2() {
         doTestBug77TooLargeSatelliteNumber2(Decimal64Field.getInstance());
     }
-    
+
     @Test(expected=OrekitException.class)
     public void testDifferentSatNumbers() {
         doTestDifferentSatNumbers(Decimal64Field.getInstance());
     }
-    
+
     @Test
     public void testChecksumOK() {
         doTestChecksumOK();
     }
-    
+
     @Test
     public void testWrongChecksum1() {
         doTestWrongChecksum1();
     }
-    
+
     @Test
     public void testWrongChecksum2() {
         doTestWrongChecksum2();
     }
-    
+
     @Test
     public void testSatCodeCompliance() throws IOException, OrekitException, ParseException {
         doTestSatCodeCompliance(Decimal64Field.getInstance());
     }
-    
+
     @Test
     public void testZeroInclination() {
         doTestZeroInclination(Decimal64Field.getInstance());
     }
-    
+
     @Test
     public void testSymmetryAfterLeapSecondIntroduction() {
         doTestSymmetryAfterLeapSecondIntroduction(Decimal64Field.getInstance());
     }
-    
+
     @Test
     public void testOldTLE() {
         doTestOldTLE(Decimal64Field.getInstance());
     }
-    
+
     @Test
     public void testEqualTLE() {
         doTestEqualTLE(Decimal64Field.getInstance());
     }
-    
+
     @Test
     public void testNonEqualTLE() {
         doTestNonEqualTLE(Decimal64Field.getInstance());
     }
-    
+
     @Test
     public void testIssue388() {
         doTestIssue388(Decimal64Field.getInstance());
     }
-    
+
     @Test
     public void testIssue664NegativeRaanPa() {
         doTestIssue664NegativeRaanPa(Decimal64Field.getInstance());
     }
-    
+
     @Test
     public void testDifferentFields() {
         String line1 = "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20";
@@ -181,9 +186,9 @@ public class FieldTLETest {
             fail("an exception should have been thrown");
         } catch (Exception e) {
             // nothing to do
-        }    
+        }
     }
-    
+
     public <T extends RealFieldElement<T>> void doTestTLEFormat(Field<T> field) {
 
         String line1 = "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20";
@@ -214,6 +219,16 @@ public class FieldTLETest {
         tle = new FieldTLE<T>(field, line1, line2);
         Assert.assertEquals(277421, tle.getSatelliteNumber(), 0);
 
+        line1 = "1 I7421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    28";
+        line2 = "2 I7421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    60";
+        Assert.assertFalse(TLE.isFormatOK(line1, line2));
+        try {
+            new FieldTLE<T>(field, line1, line2);
+            Assert.fail("an exception should have been thrown");
+        } catch (NumberFormatException nfe) {
+            // expected
+        }
+
         line1 = "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20";
         line2 = "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14*26113993    62";
         Assert.assertFalse(TLE.isFormatOK(line1, line2));
@@ -231,7 +246,7 @@ public class FieldTLETest {
         Assert.assertFalse(TLE.isFormatOK(line1, line2));
     }
 
-  
+
     public <T extends RealFieldElement<T>> void doTestIssue196(Field<T> field) {
 
         String line1A = "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20";
@@ -316,6 +331,24 @@ public class FieldTLETest {
         Assert.assertEquals(tleA.getMeanMotion().getReal(),      tleB.getMeanMotion().getReal(), 0);
         Assert.assertEquals(tleA.getRevolutionNumberAtEpoch(),   tleB.getRevolutionNumberAtEpoch(), 0);
         Assert.assertEquals(tleA.getElementNumber(),             tleB.getElementNumber(), 0);
+    }
+
+    public <T extends RealFieldElement<T>> void doTestGenerateAlpha5(Field<T> field) {
+        final T T_zero = field.getZero();
+        FieldTLE<T> tle = new FieldTLE<T>(339999, 'U', 1971, 86, "J", 0, 908,
+                          new FieldAbsoluteDate<T>(field, new DateComponents(2012, 26),
+                                                   new TimeComponents(0.96078249 * Constants.JULIAN_DAY),
+                                                   TimeScalesFactory.getUTC()),
+                          T_zero.add(taylorConvert(12.26882470, 1)),
+                          T_zero.add(taylorConvert(-0.00000004, 2)),
+                          T_zero.add(taylorConvert(0.00001e-9, 3)),
+                          T_zero.add(0.0075476), T_zero.add(FastMath.toRadians(74.0161)),
+                          T_zero.add(FastMath.toRadians(328.9888)),
+                          T_zero.add(FastMath.toRadians(228.9750)),
+                          T_zero.add(FastMath.toRadians(30.6709)),
+                          80454, 0.01234e-9);
+        Assert.assertEquals("1 Z9999U 71086J   12026.96078249 -.00000004  00001-9  01234-9 0  9088", tle.getLine1());
+        Assert.assertEquals("2 Z9999  74.0161 228.9750 0075476 328.9888  30.6709 12.26882470804541", tle.getLine2());
     }
 
     public <T extends RealFieldElement<T>> void doTestBug77TooLargeSecondDerivative(Field<T> field) {
@@ -417,7 +450,7 @@ public class FieldTLETest {
         // convert one term of TLE mean motion Taylor series
         return  m * 2 * FastMath.PI * CombinatoricsUtils.factorial(n) / FastMath.pow(Constants.JULIAN_DAY, n);
     }
-    
+
     public <T extends RealFieldElement<T>> void doTestDifferentSatNumbers(Field<T> field) {
         new FieldTLE<T>(field, "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
                                "2 27422  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
