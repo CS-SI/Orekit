@@ -83,17 +83,17 @@ segments, header and finally file.
 ### Parsing
 
 Parsing a text message to build some kind of `NdmFile` object is performed
-by setting up a parser. Each message type has its own parser. Once created,
-its `parseMessage` method is called with a data source. It will return the
-parsed file as a hierarchical container as depicted in the previous
-section.
+by setting up a parser. Each message type has its own parser, but a single
+`ParserBuilder` can build all of them. Once created, the parser `parseMessage`
+method is called with a data source. It will return the parsed file as a
+hierarchical container as depicted in the previous section.
 
 The Orekit-specific data that are mandatory for building some objects but are
-not present in the CCSDS messages are set up when building the parser. This
-includes for example IERS conventions, data context, and gravitational
+not present in the CCSDS messages are set up when building the `ParserBuilder`.
+This includes for example IERS conventions, data context, and gravitational
 coefficient for ODM files as it is sometimes optional in these messages.
 One change introduced in Orekit 11.0 is that the progressive set up of
-parsers using the fluent API (methods `withXxx()`) has been moved to a common
+parsers using the fluent API (methods `withXxx()`) has been moved to the top-level
 `ParserBuilder` that can build the parsers for all CCSDS messages. Another change
 is that the parsers are mutable objects that gather the data during the parsing.
 They can therefore not be used in multi-threaded environment. The recommended way
@@ -105,13 +105,14 @@ builder is simple.
 
 Parsers automatically recognize if the file is in Key-Value Notation (KVN) or in
 eXtended Markup Language (XML) format and adapt accordingly. This is
-transparent for users and works with all CCSDS message types. The data to
-be parsed is provided using a `DataSource` object, which combines a name
-and a stream opener and can be built directly from these elements, from a file name,
-or from a `File` instance. The `DataSource` object delays
-the real opening of the file until the `parseMessage` method is called and
-takes care to close it properly after parsing, even if parsing is interrupted
-due to some parse error.
+transparent for users and works with all CCSDS message types.
+
+The data to be parsed is provided using a `DataSource` object, which combines
+a name and a stream opener and can be built directly from these elements, from
+a file name, or from a `File` instance. The `DataSource` object delays the real
+opening of the file until the `parseMessage` method is called and takes care to
+close it properly after parsing, even if parsing is interrupted due to some parse
+error.
 
 The `OemParser` and `OcmParser` have an additional feature: they also implement
 the generic `EphemerisFileParser` interface, so they can be used in a more
@@ -120,8 +121,8 @@ The `EphemerisFileParser` interface defines a `parse(dataSource)` method that
 is similar to the CCSDS-specific `parseMessage(dataSource)` method.
 
 As the parsers are parameterized with the type of the parsed file, the `parseMessage`
-and `parse` methods in all parsers already have the specific type, there is no need
-to cast the returned value.
+and `parse` methods in all parsers already have the specific type. There is no need
+to cast the returned value as in pre-11.0 versions of Orekit.
 
 The following code snippet shows how to parse an OEM file, in this case using a
 file name to create the data source, and using the default values for the parser builder:
@@ -162,10 +163,8 @@ All segments will be gathered properly in the generated CCSDS file. Using the sa
 propagator and same event handler would not work as expected. The propagator would run
 just fine through the discrete event that would reset the state, but the ephemeris would
 not be aware of the change and would just continue the same segment. Upon reading the
-file produces this way, the reader would not be aware that interpolation should not be
+file produced this way, the reader would not be aware that interpolation should not be
 used around this maneuver as the event would not appear in the file.
-
-TODO: describe CCSDS-specific API
 
 ## Developers point of view
 
@@ -182,17 +181,19 @@ stream of characters from the data source and to generate a stream of
 for Key-Value Notation and `XmlLexicalAnalyzer` for eXtended Markup Language.
 The `LexicalAnalyzerSelector` utility class selects one or the other of these lexical
 analyzers depending on the first few bytes read from the data source. If the
-start of the XML declaration ("<?xml ...>") which is mandatory in all XML documents
-is found, then `XmlLexicalAnalyzer` is selected, otherwise `KvnLexicalAnalyzer`
-is selected. Detection works for UCS-4, UTF-16 and UTF-8 encodings, with or
-without a Byte Order Mark, and regardless of endianness. After the first few bytes
-allowing selection have been read, the characters stream is reset to beginning so
-the selected lexical analyzer will see these characters again. Once the lexical
-analyzer has been created, the message parser registers itself to this analyzer by calling
-its `accept` method, and wait for the lexical analyzer to call it back for processing
-the tokens it will generate from the characters stream. This is akin to the visitor
-design pattern with the parser visiting the tokens as they are produced by the lexical
-analyzer.
+start of the XML declaration ("<?xml ...>") is found, then `XmlLexicalAnalyzer` is
+selected, otherwise `KvnLexicalAnalyzer` is selected. Detection works for UCS-4,
+UTF-16 and UTF-8 encodings, with or without a Byte Order Mark, and regardless of
+endianness. This XML declaration is optional in general-purpose XML documents
+(at least for XML 1.0) but CCSDS messages and XML 1.1 spec both require it to be
+present. After the first few bytes allowing selection have been read, the characters
+stream is reset to beginning so the selected lexical analyzer will see these
+characters again. This works even if the `DataSource` is a network stream, thanks to
+some internal buffering. Once the lexical analyzer has been created, the message
+parser registers itself to this analyzer by calling its `accept` method, and wait
+for the lexical analyzer to call it back for processing the tokens it will generate
+from the characters stream. This is akin to the visitor design pattern with the
+parser visiting the tokens as they are produced by the lexical analyzer.
 
 The following class diagram presents the static structure of lexical analysis:
 
@@ -201,17 +202,17 @@ The following class diagram presents the static structure of lexical analysis:
 The dynamic view of lexical analysis is depicted in the following sequence diagram:
 ![general parsing sequence diagram diagram](../images/design/ccsds-lexical-analysis-sequence-diagram.png)
 
-The second level of parsing is message parsing is syntax analysis. Its aim is
+The second level of parsing is message parsing is semantic analysis. Its aim is
 to read the stream of `ParseToken` objects and to progressively build the CCSDS message
-from them. Syntax analysis of primitive entries like `EPOCH_TZERO = 1998-12-18T14:28:15.1172`
-in KVN or `<EPOCH_TZERO>1998-12-18T00:00:00.0000</EPOCH_TZERO>` in XML is independent
+from them. Semantic analysis of primitive entries like `EPOCH_TZERO = 1998-12-18T14:28:15.1172`
+in KVN or `<EPOCH_TZERO>1998-12-18T14:28:15.1172</EPOCH_TZERO>` in XML is independent
 of the file format: both lexical analyzers will generate a `ParseToken` with type set
-to `TokenType.ENTRY`, name set to `EPOCH_TZERO` and content set to `1998-12-18T00:00:00.0000`.
+to `TokenType.ENTRY`, name set to `EPOCH_TZERO` and content set to `1998-12-18T14:28:15.1172`.
 This token will be passed to the message parser for processing and the parser may ignore
 that the token was extracted from a KVN or a XML file. This simplifies a lot parsing of both
-formats and avoids code duplication. This is unfortunately not true for higher level structures
-like header, segments, metadata, data or logical blocks. For all these cases, the parser must
-know if the file is in Key-Value Notation or in eXtended Markup Language. The lexical
+formats and avoids code duplication. This is unfortunately not true anymore for higher level
+structures like header, segments, metadata, data or logical blocks. For all these cases, the
+parser must know if the file is in Key-Value Notation or in eXtended Markup Language. The lexical
 analyzer therefore starts parsing by calling the parser `reset` method with the file format as
 an argument, so the parser is aware of the format and knows how to handle the higher level structures.
 
@@ -225,12 +226,12 @@ whole (header, metadata, state vector, covariance...). Parsing can be performed 
 parser switching between a small number of well-known states. When one state is active,
 say metadata parsing, then lookup is limited to the keys allowed in metadata. If an
 unknown token arrives, then the parser assumes the current section is finished, and
-it switches into another state, say data parsing, that is the fallback to use after
-metadata. This is an implementation of the State design pattern. Parsers always have
-one current `ProcessingState` that remains active as long as it can process the tokens
-provided to it by the lexical analyzer, and they have a fallback `ProcessingState` to
-switch to when a token could not be handled by the current one. The following class
-diagram shows this design:
+it switches into another state that was declared as the fallback to use after metadata.
+In this case, it may be a state dedicated to data parsing. This is an implementation of
+the State design pattern. Parsers always have one current `ProcessingState` that remains
+active as long as it can process the tokens provided to it by the lexical analyzer, and
+they have a fallback `ProcessingState` to switch to when a token could not be handled by
+the current one. The following class diagram shows this design:
 
 ![parsing class diagram](../images/design/ccsds-parsing-class-diagram.png)
 
@@ -239,8 +240,8 @@ by the lexical analyzer at the beginning of the message, and they manage the fal
 processing state by anticipating what the next state could be when one state is
 activated. This is highly specific for each message type, and unfortunately also
 depends on file format (KVN vs. XML). As an example, in KVN files, the initial
-processing state is already the `HeaderProcessingState`, but in XML file it is
-rather `XmlStructureProcessingState` and `HeaderProcessingState` is triggered only
+processing state is `HeaderProcessingState`, but in XML file it is rather
+`XmlStructureProcessingState` and `HeaderProcessingState` is triggered only
 when the XML `<header>` start element is processed. CCSDS messages type are also not
 very consistent, which makes implementation more complex. As an example, APM files
 don't have `META_START`, `META_STOP`, `DATA_START` or `DATA_STOP` keys in the
@@ -248,35 +249,51 @@ KVN version, whereas AEM file have both, and OEM have `META_START`, `META_STOP`
 but have neither `DATA_START` nor `DATA_STOP`. All parsers extend the `AbstractMessageParser`
 abstract class from which declares several hooks (`prepareHeader`, `inHeader`,
 `finalizeHeader`, `prepareMetadata`...) which can be called by various states
-so the parser knows where it is and prepare the fallback processing state. The
-`prepareMetadata` hook for example is called by `KvnStructureProcessingState`
-when it sees a `META_START` key, and by `XmlStructureProcessingState` when it
-sees a `metadata` start element. The parser then knows that metadata parsing is
-going to start an set up the fallback state for it.
+so the parser keeps track of where it is and prepares the fallback processing
+state accordingly. The `prepareMetadata` hook for example is called by
+`KvnStructureProcessingState` when it sees a `META_START` key, and by
+`XmlStructureProcessingState` when it sees a `metadata` start element. The parser
+then knows that metadata parsing is going to start an set up the fallback state for it.
+Unfortunately, as APM files in KVN format don't have a `META_START` key,
+`prepareMetadata` will not be called automatically so the parse itself must take
+care of it by itself (it does it when the first metadata token is detected).
 
 When the parser is not switching states, one state is active and processes all
-upcoming token one after the other. Each processing state may adopt a different
+upcoming tokens one after the other. Each processing state may adopt a different
 strategy for this, depending on the section it handles. Processing states are
 always quite small. Some processing states that can be reused from message type
 to message type (like `HeaderProcessingState`, `KvnStructureProcessingState` or
-`XmlStructureProcessingstate`) are implemented as classes. Other processing
+`XmlStructureProcessingstate`) are implemented as separate classes. Other processing
 states that are specific to one message type (and hence to one parser), are
-implemented as a single private method within the parser and method references
-are used to point directly to the method. This allows one parser class to
+implemented as a single private method within the parser. Method references
+are used to point directly to these methods. This allows one parser class to
 provide simultaneously several implementations of the `ProcessingState` interface.
+The following example is extracted from the `TdmParser`, it shows that when a
+`DATA_START` key is seen in a KVN file or when a `<data>` start element is
+seen in an XML file, then `prepareData` is called and an `ObservationsBlock`
+is allocated to hold the upcoming observations, and the fallback processing
+state is set to the private method `processDataToken` so that the next token,
+which at this stage is expected to be a data token representing an observation,
+can be processed properly:
+
+    public boolean prepareData() {
+        observationsBlock = new ObservationsBlock();
+        setFallback(this::processDataToken);
+        return true;
+    }
 
 In many cases, the keys that are allowed in a section are fixed so they are defined
 in an enumerate. The processing state (in this case often a private method within
-the parser) then simply selects the enum constant using the standard `valueOf` method
-from the enumerate class and delegates token processing to it. The enum constant
-then just call one of the `processAs` method from the token, pointing it to the
-metadata/data/logical block setter to call for storing the token content. For
-sections that both reuse some keys from a more general section and add their
-own keys, several enumerate types can be checked in row. A typical example of this
-design is the `processMetadataToken` method in `OemParser`, which is a single
+the parser) then simply selects the constant corresponding to the token name using
+the standard `valueOf` method from the enumerate class and delegates to it the processing
+of the token content. The enum constant usually just calls one of the `processAs` method
+from the token, pointing it to the metadata/data/logical block setter to call for
+storing the token content. For sections that both reuse some keys from a more general
+section and add their own keys, several enumerate types can be checked in row. A typical
+example of this design is the `processMetadataToken` method in `OemParser`, which is a single
 private method acting as a `ProcessingState` and tries the enumerates `MetadataKey`,
-`OdmMetadataKey`, `CommonMetadataKey` and finally `OemMetadataKey` to fill up
-the metadata section.
+`OdmMetadataKey`, `CommonMetadataKey` and finally `OemMetadataKey` to fill up the metadata
+section.
 
 Adding a new message type (lets name it XYZ message) involves:
 
@@ -294,7 +311,7 @@ for the global structure and header, and private methods `processSection1Token`,
 `processSection2Token`... for processing the tokens from each logical block.
 
 Adding a new key to an existing message when a new version of the message format
-is published by CCSDS generally consist in adding one field in the data container
+is published by CCSDS generally consists in adding one field in the data container
 with a setter and a getter, and one enum constant that will be recognized by
 the existing processing state and that will call one of the `processAs` method from
 the token, asking it to call the new setter.
@@ -305,4 +322,19 @@ The following class diagram presents the implementation of writing:
 
 ![writing class diagram](../images/design/ccsds-writing-class-diagram.png)
 
-TODO explain diagram
+In this diagram, only `OpmWrite` and `OemWriter` are shown, but other writers
+exist for the remaining formats, with similar structures.
+
+When the top level writers are built, they are configured with references to
+header and metadata containers. This is what allows `OemWriter` to implement
+`EphemerisFileWriter` and thus to be able to write any ephemeris as an OEM
+file, even if the ephemeris itself has none of the CCSDS specific metadata and
+header. The ephemeris can be created from scratch using a propagator (and it
+can even be written on the fly as it is computed, if one embeds an `OemWriter`
+in a `StreamingOemWriter`.
+
+The writers do not write the data by themselves, they delegate it to some
+implementation of the `Generator` interface, which is the counterpart of the
+`LexicalAnalyzer` seen in the parsing section. There are two implementations
+of `Generator`, one generating Key-Value Notation and the other one generating
+eXtended Markup Language (XML).

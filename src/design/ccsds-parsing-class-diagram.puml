@@ -54,10 +54,10 @@
           +getName()
           +getType()
           +getContent()
-          +processAsDouble(doubleConsumer)
-          +processAsDate(dateConsumer)
-          +processAsFrame(frameConsumer)
-          +processAs...(...Consumer)
+          +processAsDouble(scaling, doubleConsumer)
+          +processAsDate(dateConsumer, parsingContext)
+          +processAsTimeSystem(timeSystemConsumer)
+          +processAs...(...Consumer, extraParams)
         }
         interface "MessageParser<T>" as MessageParser {
           +parseMessage(Datasource)

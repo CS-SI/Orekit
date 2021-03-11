@@ -30,17 +30,9 @@
   package org.orekit.files #ECEBD8 {
 
     package general #DDEBD8 {
+
         interface EphemerisFile {
           +getSatellites()
-        }
-
-        interface EphemerisFile.SatelliteEphemeris {
-          +getId()
-          +getMu()
-          +getSegments()
-          +getStart()
-          +getStop()
-          +getPropagator()
         }
 
         interface EphemerisFile.EphemerisSegment {
@@ -55,8 +47,17 @@
           +getPropagator()
         }
 
+        interface EphemerisFile.SatelliteEphemeris {
+          +getId()
+          +getMu()
+          +getSegments()
+          +getStart()
+          +getStop()
+          +getPropagator()
+        }
+
+
         interface EphemerisFileWriter
-        class OrekitEphemerisFile
 
     }
 
@@ -74,6 +75,14 @@
           class XmlGenerator
           interface Generator {
             +FileFormat getFileFormat()
+            +startMessage(messageTypeKey, version)
+            +writeComments(commentsContainer)
+            +writeEntry(key, value, mandatory)
+            +writeEmptyLine()
+            +writeRawData(data)
+            +enterSection(name)
+            +exitSection()
+            +close()
           }
         }
 
@@ -81,40 +90,43 @@
 
       package ndm.odm #CBDBC8 {
 
-        package oem #CCCCC7 {
-          class OemWriter
-          class OemFile
+        package opm #CCCCC7 {
+          class OpmWriter {
+            +write(orbitParameters)
+          }
         }
 
-        package opm #CCCCC7 {
-          class OpmWriter
-          class OpmFile
+        package oem #CCCCC7 {
+          class OemMetadata
+          class StreamingOemWriter
+          class OemWriter {
+            +write(orbitEphemeris)
+          }
         }
+
+        class CommonMetadata
+        class OdmHeader
 
       }
-      note bottom
-        only OEM and OPM are shown here,
-        similar constructions exist
-        for other messages types:
-        OMM, OCM, AEM, APM, TDM...
-      end note
 
     }
 
   }
 
-  Generator <|.. KvnGenerator
-  Generator <|.. XmlGenerator
-  FileFormat <-- Generator
-  EphemerisFile *--> EphemerisFile.SatelliteEphemeris
-  EphemerisFile.SatelliteEphemeris o--> EphemerisFile.EphemerisSegment
-  OrekitEphemerisFile ..|> EphemerisFile
-  EphemerisFileWriter --> EphemerisFile
-  EphemerisFileWriter <|.. OemWriter
-  EphemerisFile       <|.. OemFile
-  OemWriter --> OemFile
-  OemWriter --> Generator
-  OpmWriter --> OemFile
-  OpmWriter --> Generator
+  KvnGenerator ..|> Generator
+  XmlGenerator ..|> Generator
+  Generator --> FileFormat
+  Generator <-- OemWriter
+  OpmWriter -right-> Generator
+  EphemerisFile.EphemerisSegment <--o EphemerisFile.SatelliteEphemeris
+  EphemerisFile.SatelliteEphemeris <--* EphemerisFile
+  EphemerisFile <-- EphemerisFileWriter
+  OemWriter .right.|> EphemerisFileWriter
+  OdmHeader <--o OemWriter
+  OemMetadata <-right-o OemWriter
+  CommonMetadata <|-- OemMetadata
+  OemWriter <--o StreamingOemWriter
+  OpmWriter o--> OdmHeader
+  OpmWriter o--> CommonMetadata
 
 @enduml
