@@ -185,7 +185,7 @@ public enum CelestialBodyFrame {
     },
 
     /** International Terrestrial Reference Frame 1997. */
-    ITRF97 {
+    ITRF1997 {
 
         /** {@inheritDoc} */
         @Override
@@ -195,13 +195,13 @@ public enum CelestialBodyFrame {
             if (conventions == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
             }
-            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_97, conventions, simpleEOP);
+            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_1997, conventions, simpleEOP);
         }
 
     },
 
     /** International Terrestrial Reference Frame 1996. */
-    ITRF96 {
+    ITRF1996 {
 
         /** {@inheritDoc} */
         @Override
@@ -211,13 +211,13 @@ public enum CelestialBodyFrame {
             if (conventions == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
             }
-            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_96, conventions, simpleEOP);
+            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_1996, conventions, simpleEOP);
         }
 
     },
 
     /** International Terrestrial Reference Frame 1994. */
-    ITRF94 {
+    ITRF1994 {
 
         /** {@inheritDoc} */
         @Override
@@ -227,13 +227,13 @@ public enum CelestialBodyFrame {
             if (conventions == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
             }
-            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_94, conventions, simpleEOP);
+            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_1994, conventions, simpleEOP);
         }
 
     },
 
     /** International Terrestrial Reference Frame 1993. */
-    ITRF93 {
+    ITRF1993 {
 
         /** {@inheritDoc} */
         @Override
@@ -243,13 +243,13 @@ public enum CelestialBodyFrame {
             if (conventions == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
             }
-            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_93, conventions, simpleEOP);
+            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_1993, conventions, simpleEOP);
         }
 
     },
 
     /** International Terrestrial Reference Frame 1992. */
-    ITRF92 {
+    ITRF1992 {
 
         /** {@inheritDoc} */
         @Override
@@ -259,13 +259,13 @@ public enum CelestialBodyFrame {
             if (conventions == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
             }
-            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_92, conventions, simpleEOP);
+            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_1992, conventions, simpleEOP);
         }
 
     },
 
     /** International Terrestrial Reference Frame 1991. */
-    ITRF91 {
+    ITRF1991 {
 
         /** {@inheritDoc} */
         @Override
@@ -275,13 +275,13 @@ public enum CelestialBodyFrame {
             if (conventions == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
             }
-            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_91, conventions, simpleEOP);
+            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_1991, conventions, simpleEOP);
         }
 
     },
 
     /** International Terrestrial Reference Frame 1990. */
-    ITRF90 {
+    ITRF1990 {
 
         /** {@inheritDoc} */
         @Override
@@ -291,13 +291,13 @@ public enum CelestialBodyFrame {
             if (conventions == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
             }
-            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_90, conventions, simpleEOP);
+            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_1990, conventions, simpleEOP);
         }
 
     },
 
     /** International Terrestrial Reference Frame 1989. */
-    ITRF89 {
+    ITRF1989 {
 
         /** {@inheritDoc} */
         @Override
@@ -307,13 +307,13 @@ public enum CelestialBodyFrame {
             if (conventions == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
             }
-            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_89, conventions, simpleEOP);
+            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_1989, conventions, simpleEOP);
         }
 
     },
 
     /** International Terrestrial Reference Frame 1988. */
-    ITRF88 {
+    ITRF1988 {
 
         /** {@inheritDoc} */
         @Override
@@ -323,7 +323,7 @@ public enum CelestialBodyFrame {
             if (conventions == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
             }
-            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_88, conventions, simpleEOP);
+            return dataContext.getFrames().getITRF(ITRFVersion.ITRF_1988, conventions, simpleEOP);
         }
 
     },
@@ -419,7 +419,15 @@ public enum CelestialBodyFrame {
      * @return CCSDS frame corresponding to the name
      */
     public static CelestialBodyFrame parse(final String frameName) {
-        return CelestialBodyFrame.valueOf(DASH.matcher(frameName).replaceAll(""));
+        String canonicalized = DASH.matcher(frameName).replaceAll("");
+        if (canonicalized.startsWith(ITRF_SUBSTRING) && canonicalized.length() > 4) {
+            final int year = Integer.parseInt(canonicalized.substring(4));
+            if (year > 87 && year < 100) {
+                // convert two-digits specifications like ITRF97 into ITRF1997
+                canonicalized = ITRF_SUBSTRING + (year + 1900);
+            }
+        }
+        return CelestialBodyFrame.valueOf(canonicalized);
     }
 
     /**

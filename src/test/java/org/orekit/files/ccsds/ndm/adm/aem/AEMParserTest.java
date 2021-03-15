@@ -510,7 +510,7 @@ public class AEMParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemFile file = new ParserBuilder().buildAemParser().parseMessage(source);
         final AemSegment segment0 = file.getSegments().get(0);
-        Assert.assertEquals(FramesFactory.getITRF(ITRFVersion.ITRF_93, IERSConventions.IERS_2010, true),
+        Assert.assertEquals(FramesFactory.getITRF(ITRFVersion.ITRF_1993, IERSConventions.IERS_2010, true),
                             segment0.getMetadata().getEndpoints().getFrameA().asFrame());
 
         final BoundedAttitudeProvider provider = segment0.getAttitudeProvider();
