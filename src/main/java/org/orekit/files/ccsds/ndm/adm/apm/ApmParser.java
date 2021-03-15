@@ -31,6 +31,7 @@ import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.section.XmlStructureProcessingState;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.parsing.ErrorState;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 import org.orekit.files.ccsds.utils.parsing.ProcessingState;
@@ -67,6 +68,9 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
 
     /** Parsing context valid for current metadata. */
     private ParsingContext context;
+
+    /** APM general comments block being read. */
+    private CommentsContainer commentsBlock;
 
     /** APM quaternion logical block being read. */
     private ApmQuaternion quaternionBlock;
@@ -168,7 +172,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
     /** {@inheritDoc} */
     @Override
     public boolean inMetadata() {
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processQuaternionToken);
+        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processGeneralCommentToken);
         return true;
     }
 
@@ -182,8 +186,8 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
     /** {@inheritDoc} */
     @Override
     public boolean prepareData() {
-        quaternionBlock = new ApmQuaternion();
-        setFallback(this::processQuaternionToken);
+        commentsBlock = new CommentsContainer();
+        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processGeneralCommentToken);
         return true;
     }
 
@@ -197,7 +201,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
     @Override
     public boolean finalizeData() {
         if (metadata != null) {
-            final ApmData data = new ApmData(quaternionBlock, eulerBlock,
+            final ApmData data = new ApmData(commentsBlock, quaternionBlock, eulerBlock,
                                              spinStabilizedBlock, spacecraftParametersBlock);
             for (final Maneuver maneuver : maneuvers) {
                 data.addManeuver(maneuver);
@@ -225,6 +229,64 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
         return file;
     }
 
+    /** Add a general comment.
+     * @param comment comment to add
+     * @return always return true
+     */
+    boolean addGeneralComment(final String comment) {
+        return commentsBlock.addComment(comment);
+    }
+
+    /** Manage quaternion section.
+     * @param starting if true, parser is entering the section
+     * otherwise it is leaving the section
+     * @return always return true
+     */
+    boolean manageQuaternionSection(final boolean starting) {
+        setFallback(starting ? this::processQuaternionToken : structureProcessor);
+        return true;
+    }
+
+    /** Manage Euler elements / three axis stabilized section.
+     * @param starting if true, parser is entering the section
+     * otherwise it is leaving the section
+     * @return always return true
+     */
+    boolean manageEulerElementsThreeSection(final boolean starting) {
+        setFallback(starting ? this::processEulerToken : structureProcessor);
+        return true;
+    }
+
+    /** Manage Euler elements /spin stabilized section.
+     * @param starting if true, parser is entering the section
+     * otherwise it is leaving the section
+     * @return always return true
+     */
+    boolean manageEulerElementsSpinSection(final boolean starting) {
+        setFallback(starting ? this::processEulerToken : structureProcessor);
+        return true;
+    }
+
+    /** Manage spacecraft parameters section.
+     * @param starting if true, parser is entering the section
+     * otherwise it is leaving the section
+     * @return always return true
+     */
+    boolean manageSpacecraftParametersSection(final boolean starting) {
+        setFallback(starting ? this::processSpacecraftParametersToken : structureProcessor);
+        return true;
+    }
+
+    /** Manage maneuver parameters section.
+     * @param starting if true, parser is entering the section
+     * otherwise it is leaving the section
+     * @return always return true
+     */
+    boolean manageManeuverParametersSection(final boolean starting) {
+        setFallback(starting ? this::processManeuverToken : structureProcessor);
+        return true;
+    }
+
     /** Process one metadata token.
      * @param token token to process
      * @return true if token was processed, false otherwise
@@ -249,12 +311,26 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
         }
     }
 
-    /** Process one quaternion data token.
+    /** Process one XML data substructure token.
      * @param token token to process
      * @return true if token was processed, false otherwise
      */
-    private boolean processQuaternionToken(final ParseToken token) {
-        if (quaternionBlock == null) {
+    private boolean processXmlSubStructureToken(final ParseToken token) {
+        try {
+            return token.getName() != null &&
+                   XmlSubStructureKey.valueOf(token.getName()).process(token, this);
+        } catch (IllegalArgumentException iae) {
+            // token has not been recognized
+            return false;
+        }
+    }
+
+    /** Process one comment token.
+     * @param token token to process
+     * @return true if token was processed, false otherwise
+     */
+    private boolean processGeneralCommentToken(final ParseToken token) {
+        if (commentsBlock == null) {
             // APM KVN file lack a META_STOP keyword, hence we can't call finalizeMetadata()
             // automatically before the first data token arrives
             finalizeMetadata();
@@ -262,7 +338,27 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
             // automatically before the first data token arrives
             prepareData();
         }
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processEulerToken);
+        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processQuaternionToken);
+        if ("COMMENT".equals(token.getName())) {
+            if (token.getType() == TokenType.ENTRY) {
+                commentsBlock.addComment(token.getContentAsNormalizedString());
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /** Process one quaternion data token.
+     * @param token token to process
+     * @return true if token was processed, false otherwise
+     */
+    private boolean processQuaternionToken(final ParseToken token) {
+        commentsBlock.refuseFurtherComments();
+        if (quaternionBlock == null) {
+            quaternionBlock = new ApmQuaternion();
+        }
+        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processEulerToken);
         try {
             return token.getName() != null &&
                    ApmQuaternionKey.valueOf(token.getName()).process(token, context, quaternionBlock);
@@ -280,7 +376,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
         if (eulerBlock == null) {
             eulerBlock = new Euler();
         }
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processSpinStabilizedToken);
+        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processSpinStabilizedToken);
         try {
             return token.getName() != null &&
                    EulerKey.valueOf(token.getName()).process(token, context, eulerBlock);
@@ -302,7 +398,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
                 eulerBlock = null;
             }
         }
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processSpacecraftParametersToken);
+        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processSpacecraftParametersToken);
         try {
             return token.getName() != null &&
                    SpinStabilizedKey.valueOf(token.getName()).process(token, context, spinStabilizedBlock);
@@ -324,7 +420,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
                 spinStabilizedBlock = null;
             }
         }
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processManeuverToken);
+        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processManeuverToken);
         try {
             return token.getName() != null &&
                    SpacecraftParametersKey.valueOf(token.getName()).process(token, context, spacecraftParametersBlock);
@@ -346,7 +442,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
                 spacecraftParametersBlock = null;
             }
         }
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : new ErrorState());
+        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : new ErrorState());
         try {
             if (token.getName() != null &&
                 ManeuverKey.valueOf(token.getName()).process(token, context, currentManeuver)) {
@@ -371,7 +467,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
      * @return true if origin block was empty
      */
     private boolean moveCommentsIfEmpty(final CommentsContainer origin, final CommentsContainer destination) {
-        if (origin.acceptComments()) {
+        if (origin != null && origin.acceptComments()) {
             // origin block is empty, move the existing comments
             for (final String comment : origin.getComments()) {
                 destination.addComment(comment);

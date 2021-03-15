@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Data;
 
 /**
@@ -28,6 +29,9 @@ import org.orekit.files.ccsds.section.Data;
  * @since 10.2
  */
 public class ApmData implements Data {
+
+    /** General comments block. */
+    private final CommentsContainer commentsBlock;
 
     /** Quaternion block. */
     private final ApmQuaternion quaternionBlock;
@@ -45,15 +49,18 @@ public class ApmData implements Data {
     private final List<Maneuver> maneuvers;
 
     /** Simple constructor.
+     * @param commentsBlock general comments block
      * @param quaternionBlock quaternion logical block
      * @param eulerBlock Euler angles logicial block (may be null)
      * @param spinStabilizedBlock spin-stabilized logical block (may be null)
      * @param spacecraftParameters spacecraft parameters logical block (may be null)
      */
-    public ApmData(final ApmQuaternion quaternionBlock,
+    public ApmData(final CommentsContainer commentsBlock,
+                   final ApmQuaternion quaternionBlock,
                    final Euler eulerBlock,
                    final SpinStabilized spinStabilizedBlock,
                    final SpacecraftParameters spacecraftParameters) {
+        this.commentsBlock        = commentsBlock;
         this.quaternionBlock      = quaternionBlock;
         this.eulerBlock           = eulerBlock;
         this.spinStabilizedBlock  = spinStabilizedBlock;
@@ -77,6 +84,13 @@ public class ApmData implements Data {
         for (final Maneuver maneuver : maneuvers) {
             maneuver.checkMandatoryEntries();
         }
+    }
+
+    /** Get the comments.
+     * @return comments
+     */
+    public List<String> getComments() {
+        return commentsBlock.getComments();
     }
 
     /** Get the quaternion logical block.

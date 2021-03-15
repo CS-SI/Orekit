@@ -142,6 +142,17 @@ public class Euler extends CommentsContainer {
     }
 
     /**
+     * Set the Euler angle about (rad).
+     * @param axis rotation axis
+     * @param angle angle to set
+     * @return true if value was set, false if axis is already set
+     */
+    public boolean setRotationAngle(final char axis, final double angle) {
+        refuseFurtherComments();
+        return setAngleOrRate(rotationAngles, axis, angle);
+    }
+
+    /**
      * Get the rates of the Euler angles (rad/s).
      * @return rotation rates
      */
@@ -150,13 +161,24 @@ public class Euler extends CommentsContainer {
     }
 
     /**
-     * Set the rates of an Euler angle (rad/s).
+     * Set the rate of an Euler angle (rad/s).
      * @param index angle index (counting from 0)
      * @param rate angle rate to set
      */
     public void setRotationRate(final int index, final double rate) {
         refuseFurtherComments();
         rotationRates[index] = rate;
+    }
+
+    /**
+     * Set the rate of Euler angle (rad/s).
+     * @param axis rotation axis
+     * @param rate angle rate to set
+     * @return true if value was set, false if axis is already set
+     */
+    public boolean setRotationRate(final char axis, final double rate) {
+        refuseFurtherComments();
+        return setAngleOrRate(rotationRates, axis, rate);
     }
 
     /** Check if we are in the rotationAngles part of XML files.
@@ -174,4 +196,24 @@ public class Euler extends CommentsContainer {
         this.inRotationAngles = inRotationAngles;
     }
 
+    /** Set an angle or rate in an array.
+     * @param array angle or rate array
+     * @param axis axis name
+     * @param value angle or rate to set
+     * @return true if value was set, false if axis is already set
+     */
+    private boolean setAngleOrRate(final double[] array, final char axis, final double value) {
+        if (eulerRotSeq.name().charAt(0) == axis && Double.isNaN(array[0])) {
+            array[0] = value;
+            return true;
+        } else if (eulerRotSeq.name().charAt(1) == axis && Double.isNaN(array[1])) {
+            array[1] = value;
+            return true;
+        } else if (eulerRotSeq.name().charAt(2) == axis && Double.isNaN(array[2])) {
+            array[2] = value;
+            return true;
+        } else {
+            return false;
+        }
+    }
 }

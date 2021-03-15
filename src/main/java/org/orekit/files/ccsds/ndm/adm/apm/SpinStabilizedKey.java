@@ -26,9 +26,6 @@ import org.orekit.files.ccsds.utils.parsing.ParsingContext;
  */
 public enum SpinStabilizedKey {
 
-    /** Block wrapping element in XML files. */
-    eulerElementsSpin((token, context, container) -> true),
-
     /** Comment entry. */
     COMMENT((token, context, container) ->
             token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),

@@ -27,9 +27,6 @@ import org.orekit.files.ccsds.utils.parsing.ParsingContext;
  */
 public enum ManeuverKey {
 
-    /** Block wrapping element in XML files. */
-    maneuverParameters((token, context, container) -> true),
-
     /** Comment entry. */
     COMMENT((token, context, container) ->
             token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),

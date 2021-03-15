@@ -28,9 +28,6 @@ import org.orekit.files.ccsds.utils.parsing.ParsingContext;
  */
 public enum EulerKey {
 
-    /** Block wrapping element in XML files. */
-    eulerElementsThree((token, context, data) -> true),
-
     /** Rotation angles wrapping element in XML files. */
     rotationAngles((token, context, data) -> {
         data.setInRotationAngles(token.getType() == TokenType.START);
@@ -109,22 +106,22 @@ public enum EulerKey {
     RATE_FRAME((token, context, data) -> token.processAsUppercaseString(data::setRateFrameString)),
 
     /** X body rotation angle entry. */
-    X_ANGLE((token, context, data) -> token.processAsIndexedAngle(0, data::setRotationAngle)),
+    X_ANGLE((token, context, data) -> (token.getType() == TokenType.ENTRY) ? data.setRotationAngle('X', token.getContentAsAngle()) : true),
 
     /** Y body rotation angle entry. */
-    Y_ANGLE((token, context, data) -> token.processAsIndexedAngle(1, data::setRotationAngle)),
+    Y_ANGLE((token, context, data) -> (token.getType() == TokenType.ENTRY) ? data.setRotationAngle('Y', token.getContentAsAngle()) : true),
 
     /** Z body rotation angle entry. */
-    Z_ANGLE((token, context, data) -> token.processAsIndexedAngle(2, data::setRotationAngle)),
+    Z_ANGLE((token, context, data) -> (token.getType() == TokenType.ENTRY) ? data.setRotationAngle('Z', token.getContentAsAngle()) : true),
 
     /** X body rotation rate entry. */
-    X_RATE((token, context, data) -> token.processAsIndexedAngle(0, data::setRotationRate)),
+    X_RATE((token, context, data) -> (token.getType() == TokenType.ENTRY) ? data.setRotationRate('X', token.getContentAsAngle()) : true),
 
     /** Y body rotation rate entry. */
-    Y_RATE((token, context, data) -> token.processAsIndexedAngle(1, data::setRotationRate)),
+    Y_RATE((token, context, data) -> (token.getType() == TokenType.ENTRY) ? data.setRotationRate('Y', token.getContentAsAngle()) : true),
 
     /** Z body rotation rate entry. */
-    Z_RATE((token, context, data) -> token.processAsIndexedAngle(2, data::setRotationRate));
+    Z_RATE((token, context, data) -> (token.getType() == TokenType.ENTRY) ? data.setRotationRate('Z', token.getContentAsAngle()) : true);
 
     /** Processing method. */
     private final TokenProcessor processor;

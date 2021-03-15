@@ -26,15 +26,13 @@ import org.orekit.files.ccsds.utils.parsing.ParsingContext;
  */
 public enum SpacecraftParametersKey {
 
-    /** Block wrapping element in XML files. */
-    spacecraftParameters((token, context, container) -> true),
-
     /** Comment entry. */
     COMMENT((token, context, container) ->
             token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Inertia reference frame entry. */
-    INERTIA_REF_FRAME((token, context, container) -> token.processAsUppercaseString(container::setInertiaRefFrameString)),
+    INERTIA_REF_FRAME((token, context, container) -> token.processAsFrame(container::setInertiaReferenceFrame,
+                                                                          context, false, false, true)),
 
     /** 1-axis moment of inertia entry. */
     I11((token, context, container) -> token.processAsDouble(1.0, container::setI11)),

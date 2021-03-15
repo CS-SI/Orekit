@@ -25,7 +25,7 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndoints;
-import org.orekit.files.ccsds.section.CommentsContainer;
+import org.orekit.files.ccsds.section.Section;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -36,7 +36,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class ApmQuaternion extends CommentsContainer {
+public class ApmQuaternion implements Section {
 
     /** Epoch of the data. */
     private AbsoluteDate epoch;
@@ -62,7 +62,6 @@ public class ApmQuaternion extends CommentsContainer {
     /** {@inheritDoc} */
     @Override
     public void checkMandatoryEntries() {
-        super.checkMandatoryEntries();
         endpoints.checkMandatoryEntriesExceptExternalFrame(ApmQuaternionKey.Q_FRAME_A,
                                                            ApmQuaternionKey.Q_FRAME_B,
                                                            ApmQuaternionKey.Q_DIR);
@@ -85,7 +84,6 @@ public class ApmQuaternion extends CommentsContainer {
      * @param epoch the epoch to be set
      */
     public void setEpoch(final AbsoluteDate epoch) {
-        refuseFurtherComments();
         this.epoch = epoch;
     }
 
@@ -110,7 +108,6 @@ public class ApmQuaternion extends CommentsContainer {
      * @param value quaternion component
      */
     public void setQ(final int index, final double value) {
-        refuseFurtherComments();
         this.q[index] = value;
     }
 
@@ -128,7 +125,6 @@ public class ApmQuaternion extends CommentsContainer {
      * @param derivative quaternion derivative component
      */
     public void setQDot(final int index, final double derivative) {
-        refuseFurtherComments();
         this.qDot[index] = derivative;
     }
 

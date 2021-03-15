@@ -16,6 +16,8 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
@@ -26,18 +28,11 @@ import org.orekit.files.ccsds.utils.parsing.ParsingContext;
  */
 public enum ApmQuaternionKey {
 
-    /** Block wrapping element in XML files. */
-    quaternionState((token, context, container) -> true),
-
     /** Quaternion wrapping element in XML files. */
     quaternion((token, context, container) -> true),
 
     /** Quaternion wrapping element in XML files. */
     quaternionRate((token, context, container) -> true),
-
-    /** Comment entry. */
-    COMMENT((token, context, container) ->
-            token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Epoch entry. */
     EPOCH((token, context, container) -> token.processAsDate(container::setEpoch, context)),
@@ -48,7 +43,9 @@ public enum ApmQuaternionKey {
     /** Second reference frame entry. */
     Q_FRAME_B((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
-            container.checkNotNull(container.getEndpoints().getFrameA(), Q_FRAME_A);
+            if (container.getEndpoints().getFrameA() == null) {
+                throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, Q_FRAME_A.name());
+            }
             final boolean aIsSpaceraftBody = container.getEndpoints().getFrameA().asSpacecraftBodyFrame() != null;
             return token.processAsFrame(container.getEndpoints()::setFrameB, context,
                                         aIsSpaceraftBody, aIsSpaceraftBody, !aIsSpaceraftBody);

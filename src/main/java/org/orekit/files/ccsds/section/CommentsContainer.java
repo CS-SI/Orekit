@@ -102,7 +102,7 @@ public class CommentsContainer implements Section {
 
     /** Set flag to refuse further comments.
      */
-    protected void refuseFurtherComments() {
+    public void refuseFurtherComments() {
         acceptComments = false;
     }
 

@@ -16,6 +16,7 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
+import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.section.CommentsContainer;
 
 /**
@@ -26,7 +27,7 @@ import org.orekit.files.ccsds.section.CommentsContainer;
 public class SpacecraftParameters extends CommentsContainer {
 
     /** Coordinate system for the inertia tensor. */
-    private String inertiaRefFrame;
+    private FrameFacade inertiaReferenceFrame;
 
     /** Moment of Inertia about the 1-axis (kg.m²). */
     private double i11;
@@ -49,7 +50,7 @@ public class SpacecraftParameters extends CommentsContainer {
     /** Simple constructor.
      */
     public SpacecraftParameters() {
-        inertiaRefFrame = null;
+        inertiaReferenceFrame = null;
         i11             = Double.NaN;
         i22             = Double.NaN;
         i33             = Double.NaN;
@@ -62,30 +63,29 @@ public class SpacecraftParameters extends CommentsContainer {
     @Override
     public void checkMandatoryEntries() {
         super.checkMandatoryEntries();
-        checkNotNull(inertiaRefFrame, SpacecraftParametersKey.INERTIA_REF_FRAME);
-        checkNotNaN(i11,              SpacecraftParametersKey.I11);
-        checkNotNaN(i22,              SpacecraftParametersKey.I22);
-        checkNotNaN(i33,              SpacecraftParametersKey.I33);
-        checkNotNaN(i12,              SpacecraftParametersKey.I12);
-        checkNotNaN(i13,              SpacecraftParametersKey.I13);
-        checkNotNaN(i23,              SpacecraftParametersKey.I23);
+        checkNotNaN(i11, SpacecraftParametersKey.I11);
+        checkNotNaN(i22, SpacecraftParametersKey.I22);
+        checkNotNaN(i33, SpacecraftParametersKey.I33);
+        checkNotNaN(i12, SpacecraftParametersKey.I12);
+        checkNotNaN(i13, SpacecraftParametersKey.I13);
+        checkNotNaN(i23, SpacecraftParametersKey.I23);
     }
 
     /**
      * Get the coordinate system for the inertia tensor.
      * @return the coordinate system for the inertia tensor
      */
-    public String getInertiaRefFrameString() {
-        return inertiaRefFrame;
+    public FrameFacade getInertiaReferenceFrame() {
+        return inertiaReferenceFrame;
     }
 
     /**
      * Set the coordinate system for the inertia tensor.
-     * @param frame frame to be set
+     * @param inertiaReferenceFrame frame to be set
      */
-    public void setInertiaRefFrameString(final String frame) {
+    public void setInertiaReferenceFrame(final FrameFacade inertiaReferenceFrame) {
         refuseFurtherComments();
-        this.inertiaRefFrame = frame;
+        this.inertiaReferenceFrame = inertiaReferenceFrame;
     }
 
     /**
