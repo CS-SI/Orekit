@@ -141,13 +141,20 @@ class XmlLexicalAnalyzer implements LexicalAnalyzer {
         /** {@inheritDoc} */
         @Override
         public void characters(final char[] ch, final int start, final int length) throws SAXException {
+            // we are only interested in leaf elements between one start and one end tag
+            // when nested elements occur, this method is called with the spurious whitespace
+            // characters (space, tab, end of line) that occur between two successive start
+            // tags, two successive end tags, or one end tag and the following start tag of
+            // next element at same level.
+            // We need to identify the characters we want and the characters we drop.
+
+            // check if we are after a start tag (thus already dropping the characters
+            // between and end tag and a following start or end tag)
             if (currentElementName != null) {
-                // we are only interested in leaf elements between one start and one end tag
-                // when nested elements occur, this method is called with the spurious whitespace
-                // characters (space, tab, end of line) that occur between two successive start tags.
-                // We don't want these characters, so we delay the processing of the content until
-                // the closing tag is found, thus allowing to drop them by resetting content
-                // each time a start tag is found
+                // we are after a start tag, we don't know yet if the next tag will be
+                // another start tag (in which case we ignore the characters) or if
+                // it is the end tag of a leaf element, so we just store the characters
+                // and will either use them or drop them when this next tag is seen
                 currentLineNumber = locator.getLineNumber();
                 currentContent    = new String(ch, start, length);
             }

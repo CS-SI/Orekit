@@ -19,7 +19,6 @@ package org.orekit.files.ccsds.ndm.odm;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
-import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.parsing.AbstractMessageParser;
 import org.orekit.files.ccsds.utils.parsing.ProcessingState;
 
@@ -52,8 +51,8 @@ public class OdmHeaderProcessingState extends HeaderProcessingState {
             return true;
         }
 
-        if (token.getType() == TokenType.ENTRY && OdmHeader.MESSAGE_ID.equals(token.getName())) {
-            return token.processAsUppercaseString(header::setMessageId);
+        if (OdmHeader.MESSAGE_ID.equals(token.getName())) {
+            return token.processAsNormalizedString(header::setMessageId);
         }
 
         // this was not an ODM header token

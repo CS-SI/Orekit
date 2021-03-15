@@ -58,7 +58,7 @@ public class OPMParserTest {
     }
 
     @Test
-    public void testParseOPM1() {
+    public void testParseOPM1KVN() {
         // simple test for OPM file, contains p/v entries and other mandatory
         // data.
         final String ex = "/ccsds/odm/opm/OPMExample1.txt";
@@ -365,13 +365,15 @@ public class OPMParserTest {
     }
 
     @Test
-    public void testParseOPM3() throws URISyntaxException {
+    public void testParseOPM3KVN() throws URISyntaxException {
         // simple test for OPM file, contains all mandatory information plus
         // Spacecraft parameters and the position/velocity Covariance Matrix.
         final String name = "/ccsds/odm/opm/OPMExample3.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         OpmParser parser = new ParserBuilder().withDefaultMass(1000.0).buildOpmParser();
         final OpmFile file = parser.parseMessage(source);
+        Assert.assertEquals("OPM 201113719185", file.getHeader().getMessageId());
+        Assert.assertEquals(CelestialBodyFrame.TOD, file.getMetadata().getReferenceFrame().asCelestialBodyFrame());
         Assert.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
                                              TimeScalesFactory.getUTC()),
                             file.getMetadata().getFrameEpoch());
@@ -414,6 +416,64 @@ public class OPMParserTest {
             -0.3041346050686871, -0.4989496988610662,
             0.3540310904497689, 0.0001869263192954590,
             0.0001008862586240695, 0.0006224444338635500
+        };
+        covMatrix.setColumn(0, column1);
+        covMatrix.setColumn(1, column2);
+        covMatrix.setColumn(2, column3);
+        covMatrix.setColumn(3, column4);
+        covMatrix.setColumn(4, column5);
+        covMatrix.setColumn(5, column6);
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < 6; j++) {
+                Assert.assertEquals(covMatrix.getEntry(i, j),
+                                    covariance.getCovarianceMatrix().getEntry(i, j),
+                                    1e-15);
+            }
+        }
+
+    }
+
+    @Test
+    public void testParseOPM3XML() throws URISyntaxException {
+        // simple test for OPM file, contains all mandatory information plus
+        // Spacecraft parameters and the position/velocity Covariance Matrix.
+        // the content of the file is slightly different from the KVN file in the covariance section
+        final String name = "/ccsds/odm/opm/OPMExample3.xml";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        OpmParser parser = new ParserBuilder().withDefaultMass(1000.0).buildOpmParser();
+        final OpmFile file = parser.parseMessage(source);
+        Assert.assertEquals("OPM 201113719185", file.getHeader().getMessageId());
+        Assert.assertEquals(CelestialBodyFrame.TOD, file.getMetadata().getReferenceFrame().asCelestialBodyFrame());
+        Assert.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
+                                             TimeScalesFactory.getUTC()),
+                            file.getMetadata().getFrameEpoch());
+        Assert.assertEquals(1, file.getMetadata().getComments().size());
+        Assert.assertEquals("GEOCENTRIC, CARTESIAN, EARTH FIXED", file.getMetadata().getComments().get(0));
+        Assert.assertEquals(15951238.3495, file.generateKeplerianOrbit().getA(), 0.001);
+        Assert.assertEquals(0.5914452565, file.generateKeplerianOrbit().getE(), 1.0e-10);
+        // Check Data Covariance matrix Block
+        CartesianCovariance covariance = file.getData().getCovarianceBlock();
+        Assert.assertNotNull(covariance);
+        Assert.assertEquals(CelestialBodyFrame.ITRF97, covariance.getReferenceFrame().asCelestialBodyFrame());
+
+        Array2DRowRealMatrix covMatrix = new Array2DRowRealMatrix(6, 6);
+        double[] column1 = {
+            316000.0, 722000.0, 202000.0, 912000.0, 562000.0, 245000.0
+        };
+        double[] column2 = {
+            722000.0, 518000.0, 715000.0, 306000.0, 899000.0, 965000.0
+        };
+        double[] column3 = {
+            202000.0, 715000.0, 002000.0, 276000.0, 022000.0, 950000.0
+        };
+        double[] column4 = {
+            912000.0, 306000.0, 276000.0, 797000.0, 079000.0, 435000.0
+        };
+        double[] column5 = {
+            562000.0, 899000.0, 022000.0, 079000.0, 415000.0, 621000.0
+        };
+        double[] column6 = {
+            245000.0, 965000.0, 950000.0, 435000.0, 621000.0, 991000.0
         };
         covMatrix.setColumn(0, column1);
         covMatrix.setColumn(1, column2);

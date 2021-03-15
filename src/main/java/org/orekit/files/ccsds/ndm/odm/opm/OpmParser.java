@@ -20,15 +20,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
+import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.CommonParser;
-import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
-import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
-import org.orekit.files.ccsds.ndm.odm.OdmHeader;
-import org.orekit.files.ccsds.ndm.odm.OdmHeaderProcessingState;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElementsKey;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
+import org.orekit.files.ccsds.ndm.odm.OdmHeaderProcessingState;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.SpacecraftParameters;
 import org.orekit.files.ccsds.ndm.odm.SpacecraftParametersKey;
@@ -208,8 +208,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
     /** {@inheritDoc} */
     @Override
     public boolean prepareData() {
-        stateVectorBlock = new StateVector();
-        setFallback(this::processStateVectorToken);
+        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processStateVectorToken);
         return true;
     }
 
@@ -264,6 +263,66 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
         return new OpmFile(header, segments, getConventions(), getDataContext(), getSelectedMu());
     }
 
+    /** Manage state vector section.
+     * @param starting if true, parser is entering the section
+     * otherwise it is leaving the section
+     * @return always return true
+     */
+    boolean manageStateVectorSection(final boolean starting) {
+        setFallback(starting ? this::processStateVectorToken : structureProcessor);
+        return true;
+    }
+
+    /** Manage Keplerian elements section.
+     * @param starting if true, parser is entering the section
+     * otherwise it is leaving the section
+     * @return always return true
+     */
+    boolean manageKeplerianElementsSection(final boolean starting) {
+        setFallback(starting ? this::processKeplerianElementsToken : structureProcessor);
+        return true;
+    }
+
+    /** Manage spacecraft parameters section.
+     * @param starting if true, parser is entering the section
+     * otherwise it is leaving the section
+     * @return always return true
+     */
+    boolean manageSpacecraftParametersSection(final boolean starting) {
+        setFallback(starting ? this::processSpacecraftParametersToken : structureProcessor);
+        return true;
+    }
+
+    /** Manage covariance matrix section.
+     * @param starting if true, parser is entering the section
+     * otherwise it is leaving the section
+     * @return always return true
+     */
+    boolean manageCovarianceSection(final boolean starting) {
+        setFallback(starting ? this::processCovarianceToken : structureProcessor);
+        return true;
+    }
+
+    /** Manage maneuvers section.
+     * @param starting if true, parser is entering the section
+     * otherwise it is leaving the section
+     * @return always return true
+     */
+    boolean manageManeuversSection(final boolean starting) {
+        setFallback(starting ? this::processManeuverToken : structureProcessor);
+        return true;
+    }
+
+    /** Manage user-defined parameters section.
+     * @param starting if true, parser is entering the section
+     * otherwise it is leaving the section
+     * @return always return true
+     */
+    boolean manageUserDefinedParametersSection(final boolean starting) {
+        setFallback(starting ? this::processUserDefinedToken : structureProcessor);
+        return true;
+    }
+
     /** Process one metadata token.
      * @param token token to process
      * @return true if token was processed, false otherwise
@@ -292,6 +351,20 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
         }
     }
 
+    /** Process one XML data substructure token.
+     * @param token token to process
+     * @return true if token was processed, false otherwise
+     */
+    private boolean processXmlSubStructureToken(final ParseToken token) {
+        try {
+            return token.getName() != null &&
+                   XmlSubStructureKey.valueOf(token.getName()).process(token, this);
+        } catch (IllegalArgumentException iae) {
+            // token has not been recognized
+            return false;
+        }
+    }
+
     /** Process one state vector data token.
      * @param token token to process
      * @return true if token was processed, false otherwise
@@ -304,8 +377,9 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
             // OPM KVN file lack a DATA_START keyword, hence we can't call prepareData()
             // automatically before the first data token arrives
             prepareData();
+            stateVectorBlock = new StateVector();
         }
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processKeplerianElementsToken);
+        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processKeplerianElementsToken);
         try {
             return token.getName() != null &&
                    StateVectorKey.valueOf(token.getName()).process(token, context, stateVectorBlock);
@@ -323,7 +397,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
         if (keplerianElementsBlock == null) {
             keplerianElementsBlock = new KeplerianElements();
         }
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processSpacecraftParametersToken);
+        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processSpacecraftParametersToken);
         try {
             return token.getName() != null &&
                    KeplerianElementsKey.valueOf(token.getName()).process(token, context, keplerianElementsBlock);
@@ -345,7 +419,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
                 keplerianElementsBlock = null;
             }
         }
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processCovarianceToken);
+        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processCovarianceToken);
         try {
             return token.getName() != null &&
                    SpacecraftParametersKey.valueOf(token.getName()).process(token, context, spacecraftParametersBlock);
@@ -369,7 +443,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
                 spacecraftParametersBlock = null;
             }
         }
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processManeuverToken);
+        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processManeuverToken);
         try {
             return token.getName() != null &&
                    CartesianCovarianceKey.valueOf(token.getName()).process(token, context, covarianceBlock);
@@ -391,7 +465,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
                 covarianceBlock = null;
             }
         }
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processUserDefinedToken);
+        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processUserDefinedToken);
         try {
             if (token.getName() != null &&
                 ManeuverKey.valueOf(token.getName()).process(token, context, currentManeuver)) {
@@ -422,7 +496,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
                 currentManeuver = null;
             }
         }
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : new ErrorState());
+        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : new ErrorState());
         if (token.getType() == TokenType.ENTRY &&
             token.getName().startsWith(UserDefined.USER_DEFINED_PREFIX)) {
             userDefinedBlock.addEntry(token.getName().substring(UserDefined.USER_DEFINED_PREFIX.length()),
@@ -440,7 +514,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
      * @return true if origin block was empty
      */
     private boolean moveCommentsIfEmpty(final CommentsContainer origin, final CommentsContainer destination) {
-        if (origin.acceptComments()) {
+        if (origin != null && origin.acceptComments()) {
             // origin block is empty, move the existing comments
             for (final String comment : origin.getComments()) {
                 destination.addComment(comment);
