@@ -20,6 +20,7 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.Assert;
@@ -53,8 +54,7 @@ public class OMMParserTest {
     }
 
     @Test
-    public void testParseOMM1()
-        {
+    public void testParseOMM1() {
         // simple test for OMM file, contains p/v entries and other mandatory
         // data.
         final String ex = "/ccsds/odm/omm/OMMExample1.txt";
@@ -121,7 +121,6 @@ public class OMMParserTest {
             file.generateSpacecraftState();
         } catch (OrekitException orekitException) {
             Assert.assertEquals(OrekitMessages.CCSDS_UNKNOWN_SPACECRAFT_MASS, orekitException.getSpecifier());
-        } finally {
         }
         TLE generated = file.generateTLE();
         Assert.assertEquals("1 23581U 95025A   07064.44075725 -.00000113  00000-0  10000-3 0  9250", generated.getLine1());
@@ -129,11 +128,18 @@ public class OMMParserTest {
     }
 
     @Test
-    public void testParseOMM2()
-        throws URISyntaxException {
+    public void testParseOMM2KVN() throws URISyntaxException {
+        doTestParseOMM2("/ccsds/odm/omm/OMMExample2.txt");
+    }
+
+    @Test
+    public void testParseOMM2XML() throws URISyntaxException {
+        doTestParseOMM2("/ccsds/odm/omm/OMMExample2.xml");
+    }
+
+    private void doTestParseOMM2(final String name) throws URISyntaxException {
         // simple test for OMM file, contains p/v entries and other mandatory
-        // data.
-        final String name = "/ccsds/odm/omm/OMMExample2.txt";
+            // data.
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final OmmParser parser = new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).buildOmmParser();
 
@@ -151,11 +157,55 @@ public class OMMParserTest {
         Assert.assertEquals("A", file.getMetadata().getLaunchPiece());
         file.generateKeplerianOrbit();
 
+        Array2DRowRealMatrix covMatrix = new Array2DRowRealMatrix(6, 6);
+        double[] column1 = {
+            333.1349476038534, 461.8927349220216,
+            -307.0007847730449, -0.3349365033922630,
+            -0.2211832501084875, -0.3041346050686871
+        };
+        double[] column2 = {
+            461.8927349220216, 678.2421679971363,
+            -422.1234189514228, -0.4686084221046758,
+            -0.2864186892102733, -0.4989496988610662
+        };
+        double[] column3 = {
+            -307.0007847730449, -422.1234189514228,
+            323.1931992380369, 0.2484949578400095,
+            0.1798098699846038, 0.3540310904497689
+        };
+        double[] column4 = {
+            -0.3349365033922630, -0.4686084221046758,
+            0.2484949578400095, 0.0004296022805587290,
+            0.0002608899201686016, 0.0001869263192954590
+        };
+        double[] column5 = {
+            -0.2211832501084875, -0.2864186892102733,
+            0.1798098699846038, 0.0002608899201686016,
+            0.0001767514756338532, 0.0001008862586240695
+        };
+        double[] column6 = {
+            -0.3041346050686871, -0.4989496988610662,
+            0.3540310904497689, 0.0001869263192954590,
+            0.0001008862586240695, 0.0006224444338635500
+        };
+        covMatrix.setColumn(0, column1);
+        covMatrix.setColumn(1, column2);
+        covMatrix.setColumn(2, column3);
+        covMatrix.setColumn(3, column4);
+        covMatrix.setColumn(4, column5);
+        covMatrix.setColumn(5, column6);
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < 6; j++) {
+                Assert.assertEquals(covMatrix.getEntry(i, j),
+                                    covariance.getCovarianceMatrix().getEntry(i, j),
+                                    1e-15);
+            }
+        }
+
     }
 
     @Test
-    public void testParseOMM3()
-        throws URISyntaxException {
+    public void testParseOMM3() throws URISyntaxException {
         // simple test for OMM file, contains p/v entries and other mandatory
         // data.
         final String name = "/ccsds/odm/omm/OMMExample3.txt";
@@ -206,8 +256,7 @@ public class OMMParserTest {
     }
 
     @Test
-    public void testWrongKeyword()
-        throws URISyntaxException {
+    public void testWrongKeyword() throws URISyntaxException {
         // simple test for OMM file, contains p/v entries and other mandatory
         // data.
         final String name = "/ccsds/odm/omm/OMM-wrong-keyword.txt";

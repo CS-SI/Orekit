@@ -21,15 +21,15 @@ import java.util.List;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
+import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.CommonParser;
-import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
-import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
-import org.orekit.files.ccsds.ndm.odm.OdmHeader;
-import org.orekit.files.ccsds.ndm.odm.OdmHeaderProcessingState;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElementsKey;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
+import org.orekit.files.ccsds.ndm.odm.OdmHeaderProcessingState;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.SpacecraftParameters;
 import org.orekit.files.ccsds.ndm.odm.SpacecraftParametersKey;
@@ -199,7 +199,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
     @Override
     public boolean prepareData() {
         keplerianElementsBlock = new KeplerianElements();
-        setFallback(this::processKeplerianElementsToken);
+        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processKeplerianElementsToken);
         return true;
     }
 
@@ -251,6 +251,56 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
         return new OmmFile(header, segments, getConventions(), getDataContext());
     }
 
+    /** Manage Keplerian elements section.
+     * @param starting if true, parser is entering the section
+     * otherwise it is leaving the section
+     * @return always return true
+     */
+    boolean manageKeplerianElementsSection(final boolean starting) {
+        setFallback(starting ? this::processKeplerianElementsToken : structureProcessor);
+        return true;
+    }
+
+    /** Manage spacecraft parameters section.
+     * @param starting if true, parser is entering the section
+     * otherwise it is leaving the section
+     * @return always return true
+     */
+    boolean manageSpacecraftParametersSection(final boolean starting) {
+        setFallback(starting ? this::processSpacecraftParametersToken : structureProcessor);
+        return true;
+    }
+
+    /** Manage TLE parameters section.
+     * @param starting if true, parser is entering the section
+     * otherwise it is leaving the section
+     * @return always return true
+     */
+    boolean manageTleParametersSection(final boolean starting) {
+        setFallback(starting ? this::processTLEToken : structureProcessor);
+        return true;
+    }
+
+        /** Manage covariance matrix section.
+     * @param starting if true, parser is entering the section
+     * otherwise it is leaving the section
+     * @return always return true
+     */
+    boolean manageCovarianceSection(final boolean starting) {
+        setFallback(starting ? this::processCovarianceToken : structureProcessor);
+        return true;
+    }
+
+    /** Manage user-defined parameters section.
+     * @param starting if true, parser is entering the section
+     * otherwise it is leaving the section
+     * @return always return true
+     */
+    boolean manageUserDefinedParametersSection(final boolean starting) {
+        setFallback(starting ? this::processUserDefinedToken : structureProcessor);
+        return true;
+    }
+
     /** Process one metadata token.
      * @param token token to process
      * @return true if token was processed, false otherwise
@@ -283,7 +333,21 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
         }
     }
 
-    /** Process one Keplerian elements data token.
+    /** Process one XML data substructure token.
+     * @param token token to process
+     * @return true if token was processed, false otherwise
+     */
+    private boolean processXmlSubStructureToken(final ParseToken token) {
+        try {
+            return token.getName() != null &&
+                   XmlSubStructureKey.valueOf(token.getName()).process(token, this);
+        } catch (IllegalArgumentException iae) {
+            // token has not been recognized
+            return false;
+        }
+    }
+
+    /** Process one mean Keplerian elements data token.
      * @param token token to process
      * @return true if token was processed, false otherwise
      */
@@ -296,7 +360,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
             // automatically before the first data token arrives
             prepareData();
         }
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processSpacecraftParametersToken);
+        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processSpacecraftParametersToken);
         try {
             return token.getName() != null &&
                    KeplerianElementsKey.valueOf(token.getName()).process(token, context, keplerianElementsBlock);
@@ -318,7 +382,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
                 keplerianElementsBlock = null;
             }
         }
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processTLEToken);
+        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processTLEToken);
         try {
             return token.getName() != null &&
                    SpacecraftParametersKey.valueOf(token.getName()).process(token, context, spacecraftParametersBlock);
@@ -340,7 +404,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
                 spacecraftParametersBlock = null;
             }
         }
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processCovarianceToken);
+        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processCovarianceToken);
         try {
             return token.getName() != null &&
                    OmmTleKey.valueOf(token.getName()).process(token, context, tleBlock);
@@ -364,7 +428,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
                 tleBlock = null;
             }
         }
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processUserDefinedToken);
+        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processUserDefinedToken);
         try {
             return token.getName() != null &&
                    CartesianCovarianceKey.valueOf(token.getName()).process(token, context, covarianceBlock);
@@ -386,7 +450,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
                 covarianceBlock = null;
             }
         }
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : new ErrorState());
+        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : new ErrorState());
         if (token.getType() == TokenType.ENTRY &&
             token.getName().startsWith(UserDefined.USER_DEFINED_PREFIX)) {
             userDefinedBlock.addEntry(token.getName().substring(UserDefined.USER_DEFINED_PREFIX.length()),
@@ -404,7 +468,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
      * @return true if origin block was empty
      */
     private boolean moveCommentsIfEmpty(final CommentsContainer origin, final CommentsContainer destination) {
-        if (origin.acceptComments()) {
+        if (origin != null && origin.acceptComments()) {
             // origin block is empty, move the existing comments
             for (final String comment : origin.getComments()) {
                 destination.addComment(comment);

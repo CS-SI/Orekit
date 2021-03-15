@@ -14,31 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.ccsds.ndm.odm.opm;
+package org.orekit.files.ccsds.ndm.odm.omm;
 
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 
-/** Keywords for OPM data sub-structure in XML files.
+/** Keywords for OMM data sub-structure in XML files.
  * @author Luc Maisonobe
  * @since 11.0
  */
 enum XmlSubStructureKey {
 
-    /** State vector section. */
-    stateVector((token, parser) -> parser.manageStateVectorSection(token.getType() == TokenType.START)),
-
-    /** Keplerian elements section. */
-    keplerianElements((token, parser) -> parser.manageKeplerianElementsSection(token.getType() == TokenType.START)),
+    /** Mean Keplerian elements section. */
+    meanElements((token, parser) -> parser.manageKeplerianElementsSection(token.getType() == TokenType.START)),
 
     /** Spacecraft parameters section. */
     spacecraftParameters((token, parser) -> parser.manageSpacecraftParametersSection(token.getType() == TokenType.START)),
 
+    /** TLE parameters section. */
+    tleParameters((token, parser) -> parser.manageTleParametersSection(token.getType() == TokenType.START)),
+
     /** Covariance matrix section. */
     covarianceMatrix((token, parser) -> parser.manageCovarianceSection(token.getType() == TokenType.START)),
-
-    /** Maneuvers section. */
-    maneuvers((token, parser) -> parser.manageManeuversSection(token.getType() == TokenType.START)),
 
     /** User-defined parameters section. */
     userDefinedParameters((token, parser) -> parser.manageUserDefinedParametersSection(token.getType() == TokenType.START));
@@ -55,10 +52,10 @@ enum XmlSubStructureKey {
 
     /** Process one token.
      * @param token token to process
-     * @param parser OPM file parser
+     * @param parser OMM file parser
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final OpmParser parser) {
+    public boolean process(final ParseToken token, final OmmParser parser) {
         return processor.process(token, parser);
     }
 
@@ -66,10 +63,10 @@ enum XmlSubStructureKey {
     interface TokenProcessor {
         /** Process one token.
          * @param token token to process
-         * @param parser OPM file parser
+         * @param parser OMM file parser
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, OpmParser parser);
+        boolean process(ParseToken token, OmmParser parser);
     }
 
 }
