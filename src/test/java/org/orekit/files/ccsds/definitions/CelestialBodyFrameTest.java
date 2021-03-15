@@ -140,8 +140,8 @@ public class CelestialBodyFrameTest {
     @Test
     public void testGuessFrame() {
 
-        Frame itrf89 = FramesFactory.getITRF(ITRFVersion.ITRF_89, IERSConventions.IERS_1996, true);
-        Assert.assertEquals("ITRF89", CelestialBodyFrame.guessFrame(itrf89));
+        Frame itrf89 = FramesFactory.getITRF(ITRFVersion.ITRF_1989, IERSConventions.IERS_1996, true);
+        Assert.assertEquals("ITRF1989", CelestialBodyFrame.guessFrame(itrf89));
 
         Frame topo = new TopocentricFrame(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                                Constants.WGS84_EARTH_FLATTENING,

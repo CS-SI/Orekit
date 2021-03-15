@@ -454,7 +454,7 @@ public class OPMParserTest {
         // Check Data Covariance matrix Block
         CartesianCovariance covariance = file.getData().getCovarianceBlock();
         Assert.assertNotNull(covariance);
-        Assert.assertEquals(CelestialBodyFrame.ITRF97, covariance.getReferenceFrame().asCelestialBodyFrame());
+        Assert.assertEquals(CelestialBodyFrame.ITRF1997, covariance.getReferenceFrame().asCelestialBodyFrame());
 
         Array2DRowRealMatrix covMatrix = new Array2DRowRealMatrix(6, 6);
         double[] column1 = {

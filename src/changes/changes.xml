@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="luc" type="upfate" issue="768">
+        Allow parsing several variations of ITRF specifications (like itrf-97, ITRF2000, ITRF_2014…).
+      </action>
       <action dev="luc" type="add" >
         Added a time scale for drifting on-board clocks.
       </action>

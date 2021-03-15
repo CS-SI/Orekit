@@ -38,7 +38,7 @@
           <DRAG_COEFF>2.500000</DRAG_COEFF>
         </spacecraftParameters>
         <covarianceMatrix>
-          <COV_REF_FRAME>ITRF97</COV_REF_FRAME>
+          <COV_REF_FRAME>ITRF1997</COV_REF_FRAME>
           <CX_X>0.316</CX_X>
           <CY_X>0.722</CY_X>
           <CY_Y>0.518</CY_Y>
