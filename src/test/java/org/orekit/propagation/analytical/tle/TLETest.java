@@ -43,7 +43,7 @@ import org.orekit.utils.PVCoordinates;
 
 
 public class TLETest {
-    
+
     private TLE geoTLE;
 
     private TLE leoTLE;
@@ -71,6 +71,23 @@ public class TLETest {
         Assert.assertEquals(14.26113993, tle.getMeanMotion() * Constants.JULIAN_DAY / (2 * FastMath.PI), 0);
         Assert.assertEquals(tle.getRevolutionNumberAtEpoch(), 6, 0);
         Assert.assertEquals(tle.getElementNumber(), 2 , 0);
+
+        line1 = "1 T7421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    28";
+        line2 = "2 T7421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    60";
+        Assert.assertTrue(TLE.isFormatOK(line1, line2));
+
+        tle = new TLE(line1, line2);
+        Assert.assertEquals(277421, tle.getSatelliteNumber(), 0);
+
+        line1 = "1 I7421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    28";
+        line2 = "2 I7421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    60";
+        Assert.assertFalse(TLE.isFormatOK(line1, line2));
+        try {
+            new TLE(line1, line2);
+            Assert.fail("an exception should have been thrown");
+        } catch (NumberFormatException nfe) {
+            // expected
+        }
 
         line1 = "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20";
         line2 = "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14*26113993    62";
@@ -123,6 +140,8 @@ public class TLETest {
                       "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
         checkSymmetry("1 31928U 98067BA  08269.84884916  .00114257  17652-4  13615-3 0  4412",
                       "2 31928  51.6257 175.4142 0001703  41.9031 318.2112 16.08175249 68368");
+        checkSymmetry("1 T7421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    28",
+                      "2 T7421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    60");
     }
 
     private void checkSymmetry(String line1, String line2) {
@@ -175,6 +194,19 @@ public class TLETest {
         Assert.assertEquals(tleA.getMeanMotion(),              tleB.getMeanMotion(), 0);
         Assert.assertEquals(tleA.getRevolutionNumberAtEpoch(), tleB.getRevolutionNumberAtEpoch(), 0);
         Assert.assertEquals(tleA.getElementNumber(),           tleB.getElementNumber(), 0);
+    }
+
+    @Test
+    public void testGenerateAlpha5() {
+        TLE tle = new TLE(339999, 'U', 1971, 86, "J", 0, 908,
+                          new AbsoluteDate(new DateComponents(2012, 26),
+                                           new TimeComponents(0.96078249 * Constants.JULIAN_DAY),
+                                           TimeScalesFactory.getUTC()),
+                          taylorConvert(12.26882470, 1), taylorConvert(-0.00000004, 2), taylorConvert(0.00001e-9, 3),
+                          0.0075476, FastMath.toRadians(74.0161), FastMath.toRadians(328.9888),
+                          FastMath.toRadians(228.9750), FastMath.toRadians(30.6709), 80454, 0.01234e-9);
+        Assert.assertEquals("1 Z9999U 71086J   12026.96078249 -.00000004  00001-9  01234-9 0  9088", tle.getLine1());
+        Assert.assertEquals("2 Z9999  74.0161 228.9750 0075476 328.9888  30.6709 12.26882470804541", tle.getLine2());
     }
 
     @Test
@@ -237,7 +269,7 @@ public class TLETest {
     @Test
     public void testBug77TooLargeSatelliteNumber1() {
         try {
-            TLE tle = new TLE(1000000, 'U', 1971, 86, "J", 0, 908,
+            TLE tle = new TLE(340000, 'U', 1971, 86, "J", 0, 908,
                               new AbsoluteDate(new DateComponents(2012, 26),
                                                new TimeComponents(0.96078249 * Constants.JULIAN_DAY),
                                                TimeScalesFactory.getUTC()),
@@ -248,7 +280,7 @@ public class TLETest {
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.TLE_INVALID_PARAMETER, oe.getSpecifier());
-            Assert.assertEquals(1000000, ((Integer) oe.getParts()[0]).intValue());
+            Assert.assertEquals(340000, ((Integer) oe.getParts()[0]).intValue());
             Assert.assertEquals("satelliteNumber-1", oe.getParts()[1]);
         }
     }
@@ -488,7 +520,7 @@ public class TLETest {
         Assert.assertEquals(tle.getLine1(), "1 99999X 20042F   20001.04166667  .00000000  00000-0  10000-4 0  9997");
         Assert.assertEquals(tle.getLine2(), "2 99999  97.3982 239.8686 0016311 175.5448 123.6195 15.14038717    18");
     }
-    
+
     @Test
     public void testOneMoreRevolution() {
         final TLEPropagator propagator = TLEPropagator.selectExtrapolator(leoTLE);
@@ -500,7 +532,7 @@ public class TLETest {
         final int endRevolutionNumber = endLEOTLE.getRevolutionNumberAtEpoch();
         Assert.assertEquals(initRevolutionNumber + 1 , endRevolutionNumber);
     }
-    
+
     @Test
     public void testOneLessRevolution() {
         final TLEPropagator propagator = TLEPropagator.selectExtrapolator(leoTLE);
@@ -512,7 +544,7 @@ public class TLETest {
         final int endRevolutionNumber = endLEOTLE.getRevolutionNumberAtEpoch();
         Assert.assertEquals(initRevolutionNumber - 1 , endRevolutionNumber);
     }
-    
+
     @Test
     public void testConversionLeo() {
         checkConversion(leoTLE);

@@ -14,27 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.utils;
-
-/** Enumerate for selecting which Lagrangian Point to consider in different classes.
- * @author Vincent Mouraux
- * @since 10.2
+/**
+ *
+ * This package provides classes related to RINEX navigation files.
+ *
+ * @author Bryan Cazabonne
+ * @since 11.0
+ *
  */
-public enum LagrangianPoints {
-
-    /** Lagrangian Point L1. */
-    L1,
-
-    /** Lagrangian Point L2. */
-    L2,
-
-    /** Lagrangian Point L3. */
-    L3,
-
-    /** Lagrangian Point L4. */
-    L4,
-
-    /** Lagrangian Point L5. */
-    L5;
-
-}
+package org.orekit.gnss.navigation;

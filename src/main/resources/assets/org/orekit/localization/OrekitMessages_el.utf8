@@ -370,6 +370,9 @@ SP3_UNEXPECTED_END_OF_FILE = μη αναμενόμενο τέλος αρχείο
 # unsupported clock file version {0}
 CLOCK_FILE_UNSUPPORTED_VERSION = μη υποστηριζόμενη έκδοση αρχείου ρολογιού {0}
 
+# unsupported navigation messages file version {0}
+NAVIGATION_FILE_UNSUPPORTED_VERSION = <MISSING TRANSLATION>
+
 # non-existent geomagnetic model {0} for year {1}
 NON_EXISTENT_GEOMAGNETIC_MODEL = ανύπαρκτο γεωμαγνητικό μοντέλο {0} για το έτος {1}
 

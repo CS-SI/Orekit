@@ -30,7 +30,7 @@ public class OrekitMessagesTest {
 
     @Test
     public void testMessageNumber() {
-        Assert.assertEquals(222, OrekitMessages.values().length);
+        Assert.assertEquals(223, OrekitMessages.values().length);
     }
 
     @Test

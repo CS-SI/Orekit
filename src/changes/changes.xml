@@ -27,6 +27,9 @@
       <action dev="luc" type="add" >
         Added a time scale for drifting on-board clocks.
       </action>
+      <action dev="bryan" type="add" issue="523">
+        Added support for RINEX 3.X navigation files.
+      </action>
       <action dev="bryan" type="update" issue="691">
         Improved consistency between getParametersDrivers() method signatures.
       </action>

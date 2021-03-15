@@ -26,14 +26,15 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.data.DataContext;
 import org.orekit.attitudes.InertialProvider;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
 import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.gnss.navigation.SBASNavigationMessage;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScalesFactory;
@@ -50,16 +51,25 @@ public class SBASPropagatorTest {
     private static double eps = 1.0e-15;
 
     /** SBAS orbital elements. */
-    private SBASNavigationData soe;
+    private SBASNavigationMessage soe;
     private Frames frames;
     
     @Before
     public void setUp() {
         // Reference data are taken from IGS file brdm0370.17p
-        soe = new SBASNavigationData(127, 1935, 1.23303e+05,
-                                     2.406022248000e+07, -2.712500000000e-01, 3.250000000000e-04,
-                                     3.460922568000e+07, 3.063125000000e-00, -1.500000000000e-04,
-                                     1.964040000000e+04, 1.012000000000e-00, -1.250000000000e-04);
+        soe = new SBASNavigationMessage();
+        soe.setPRN(127);
+        soe.setTime(1.23303e+05);;
+        soe.setDate(new GNSSDate(1935, 1.23303e+05 * 1000.0, SatelliteSystem.SBAS).getDate());
+        soe.setX(2.406022248000e+07);
+        soe.setXDot(-2.712500000000e-01);
+        soe.setXDotDot(3.250000000000e-04);
+        soe.setY(3.460922568000e+07);
+        soe.setYDot(3.063125000000e-00);
+        soe.setYDotDot(-1.500000000000e-04);
+        soe.setZ(1.964040000000e+04);
+        soe.setZDot(1.012000000000e-00);
+        soe.setZDotDot(-1.250000000000e-04);
         frames = DataContext.getDefault().getFrames();
     }
 
@@ -147,7 +157,7 @@ public class SBASPropagatorTest {
         double errorA = 0;
         final SBASPropagator propagator = new SBASPropagator.Builder(soe, frames).build();
         SBASOrbitalElements elements = propagator.getSBASOrbitalElements();
-        AbsoluteDate t0 = new GNSSDate(elements.getWeek(), 0.001 * elements.getTime(), SatelliteSystem.SBAS).getDate();
+        AbsoluteDate t0 = new GNSSDate(elements.getWeek(), 1000.0 * elements.getTime(), SatelliteSystem.SBAS).getDate();
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
             final AbsoluteDate central = t0.shiftedBy(dt);
             final PVCoordinates pv = propagator.getPVCoordinates(central, eme2000);
@@ -165,8 +175,8 @@ public class SBASPropagatorTest {
             errorA = FastMath.max(errorA, Vector3D.distance(pv.getAcceleration(), interpolated.getAcceleration()));
         }
         Assert.assertEquals(0.0, errorP, 1.5e-11);
-        Assert.assertEquals(0.0, errorV, 6.7e-8);
-        Assert.assertEquals(0.0, errorA, 1.8e-8);
+        Assert.assertEquals(0.0, errorV, 7.2e-3);
+        Assert.assertEquals(0.0, errorA, 1.7e-3);
 
     }
 
@@ -186,121 +196,5 @@ public class SBASPropagatorTest {
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
-    }
-
-    /** SBAS orbital elements as read from navigation data files. */
-    private class SBASNavigationData implements SBASOrbitalElements {
-
-        private int prn;
-        private int week;
-        private double time;
-        private double x;
-        private double xDot;
-        private double xDotDot;
-        private double y;
-        private double yDot;
-        private double yDotDot;
-        private double z;
-        private double zDot;
-        private double zDotDot;
-        
-        /**
-         * Constructor.
-         * @param prn prn code of the satellote
-         * @param week week number
-         * @param time reference time (s)
-         * @param x ECEF-X component of satellite coordinates (m)
-         * @param xDot ECEF-X component of satellite velocity (m/s)
-         * @param xDotDot ECEF-X component of satellite acceleration (m/s²)
-         * @param y ECEF-Y component of satellite coordinates (m)
-         * @param yDot ECEF-Y component of satellite velocity (m/s)
-         * @param yDotDot ECEF-Y component of satellite acceleration (m/s²)
-         * @param z ECEF-Z component of satellite coordinates (m)
-         * @param zDot ECEF-Z component of satellite velocity (m/s)
-         * @param zDotDot ECEF-Z component of satellite acceleration (m/s²)
-         */
-        public SBASNavigationData(final int prn, final int week, final double time,
-                                  final double x, final double xDot, final double xDotDot,
-                                  final double y, final double yDot, final double yDotDot,
-                                  final double z, final double zDot, final double zDotDot) {
-            this.prn = prn;
-            this.week = week;
-            this.time = time;
-            this.x = x;
-            this.xDot = xDot;
-            this.xDotDot = xDotDot;
-            this.y = y;
-            this.yDot = yDot;
-            this.yDotDot = yDotDot;
-            this.z = z;
-            this.zDot = zDot;
-            this.zDotDot = zDotDot;
-        }
-
-        @Override
-        public AbsoluteDate getDate() {
-            return new GNSSDate(week, time * 1000.0, SatelliteSystem.SBAS).getDate();
-        }
-
-        @Override
-        public int getPRN() {
-            return prn;
-        }
-
-        @Override
-        public int getWeek() {
-            return week;
-        }
-
-        @Override
-        public double getTime() {
-            return time;
-        }
-
-        @Override
-        public double getX() {
-            return x;
-        }
-
-        @Override
-        public double getXDot() {
-            return xDot;
-        }
-
-        @Override
-        public double getXDotDot() {
-            return xDotDot;
-        }
-
-        @Override
-        public double getY() {
-            return y;
-        }
-
-        @Override
-        public double getYDot() {
-            return yDot;
-        }
-
-        @Override
-        public double getYDotDot() {
-            return yDotDot;
-        }
-
-        @Override
-        public double getZ() {
-            return z;
-        }
-
-        @Override
-        public double getZDot() {
-            return zDot;
-        }
-
-        @Override
-        public double getZDotDot() {
-            return zDotDot;
-        }
-        
     }
 }
