@@ -20,20 +20,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
+import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.CommonParser;
-import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
-import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
 import org.orekit.files.ccsds.ndm.odm.OdmHeader;
+import org.orekit.files.ccsds.ndm.odm.OdmHeaderProcessingState;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
+import org.orekit.files.ccsds.ndm.odm.StateVector;
+import org.orekit.files.ccsds.ndm.odm.StateVectorKey;
 import org.orekit.files.ccsds.section.Header;
-import org.orekit.files.ccsds.section.HeaderProcessingState;
 import org.orekit.files.ccsds.section.KvnStructureProcessingState;
 import org.orekit.files.ccsds.section.MetadataKey;
 import org.orekit.files.ccsds.section.XmlStructureProcessingState;
@@ -45,7 +46,6 @@ import org.orekit.files.ccsds.utils.parsing.ProcessingState;
 import org.orekit.files.general.EphemerisFileParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * A parser for the CCSDS OEM (Orbit Ephemeris Message).
@@ -66,8 +66,14 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
     /** Root element for XML files. */
     private static final String ROOT = "oem";
 
-    /** Pattern for splitting strings at blanks. */
+    /** Comment marker. */
+    private static final String COMMENT = "COMMENT";
+
+                    /** Pattern for splitting strings at blanks. */
     private static final Pattern SPLIT_AT_BLANKS = Pattern.compile("\\s+");
+
+    /** Conversion factor from kilometers to meters. */
+    private static final double KM_TO_M = 1000.0;
 
     /** File header. */
     private OdmHeader header;
@@ -98,6 +104,9 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
 
     /** Processor for global message structure. */
     private ProcessingState structureProcessor;
+
+    /** State vector logical block being read. */
+    private StateVector stateVectorBlock;
 
     /**
      * Complete constructor.
@@ -146,14 +155,14 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new KvnStructureProcessingState(this);
-            reset(fileFormat, new HeaderProcessingState(getDataContext(), this));
+            reset(fileFormat, new OdmHeaderProcessingState(getDataContext(), this, header));
         }
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean prepareHeader() {
-        setFallback(new HeaderProcessingState(getDataContext(), this));
+        setFallback(new OdmHeaderProcessingState(getDataContext(), this, header));
         return true;
     }
 
@@ -198,7 +207,7 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
     public boolean finalizeMetadata() {
         metadata.finalizeMetadata(context);
         metadata.checkMandatoryEntries();
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processDataToken);
+        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processKvnDataToken);
         return true;
     }
 
@@ -206,14 +215,14 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
     @Override
     public boolean prepareData() {
         currentBlock = new OemData();
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processMetadataToken);
+        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processMetadataToken);
         return true;
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean inData() {
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processCovarianceToken);
+        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processKvnCovarianceToken);
         return true;
     }
 
@@ -244,6 +253,43 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
         return file;
     }
 
+    /** Manage state vector section in a XML message.
+     * @param starting if true, parser is entering the section
+     * otherwise it is leaving the section
+     * @return always return true
+     */
+    boolean manageXmlStateVectorSection(final boolean starting) {
+        if (starting) {
+            stateVectorBlock = new StateVector();
+            setFallback(this::processXmlStateVectorToken);
+        } else {
+            currentBlock.addData(stateVectorBlock.toTimeStampedPVCoordinates(),
+                                 stateVectorBlock.hasAcceleration());
+            stateVectorBlock = null;
+            setFallback(structureProcessor);
+        }
+        return true;
+    }
+
+    /** Manage covariance matrix section in a XML message.
+     * @param starting if true, parser is entering the section
+     * otherwise it is leaving the section
+     * @return always return true
+     */
+    boolean manageXmlCovarianceSection(final boolean starting) {
+        if (starting) {
+            // save the current metadata for later retrieval of reference frame
+            final CommonMetadata savedMetadata = metadata;
+            currentCovariance = new CartesianCovariance(() -> savedMetadata.getReferenceFrame());
+            setFallback(this::processXmlCovarianceToken);
+        } else {
+            currentBlock.addCovarianceMatrix(currentCovariance);
+            currentCovariance = null;
+            setFallback(structureProcessor);
+        }
+        return true;
+    }
+
     /** Process one metadata token.
      * @param token token to process
      * @return true if token was processed, false otherwise
@@ -271,18 +317,36 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
         }
     }
 
-    /** Process one data token.
+    /** Process one XML data substructure token.
      * @param token token to process
      * @return true if token was processed, false otherwise
      */
-    private boolean processDataToken(final ParseToken token) {
+    private boolean processXmlSubStructureToken(final ParseToken token) {
+        if (COMMENT.equals(token.getName())) {
+            return token.getType() == TokenType.ENTRY ? currentBlock.addComment(token.getContentAsNormalizedString()) : true;
+        } else {
+            try {
+                return token.getName() != null &&
+                                XmlSubStructureKey.valueOf(token.getName()).process(token, this);
+            } catch (IllegalArgumentException iae) {
+                // token has not been recognized
+                return false;
+            }
+        }
+    }
+
+    /** Process one data token in a KVN message.
+     * @param token token to process
+     * @return true if token was processed, false otherwise
+     */
+    private boolean processKvnDataToken(final ParseToken token) {
         if (currentBlock == null) {
             // OEM KVN file lack a DATA_START keyword, hence we can't call prepareData()
             // automatically before the first data token arrives
             prepareData();
         }
         inData();
-        if ("COMMENT".equals(token.getName())) {
+        if (COMMENT.equals(token.getName())) {
             return token.getType() == TokenType.ENTRY ? currentBlock.addComment(token.getContentAsNormalizedString()) : true;
         } else if (token.getType() == TokenType.RAW_LINE) {
             try {
@@ -291,21 +355,21 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
                     throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                               token.getLineNumber(), token.getFileName(), token.getContentAsNormalizedString());
                 }
-                final boolean hasAcceleration = fields.length == 10;
-                final AbsoluteDate epoch = context.getTimeSystem().getConverter(context).parse(fields[0]);
-                final Vector3D position = new Vector3D(Double.parseDouble(fields[1]) * 1000,
-                                                       Double.parseDouble(fields[2]) * 1000,
-                                                       Double.parseDouble(fields[3]) * 1000);
-                final Vector3D velocity = new Vector3D(Double.parseDouble(fields[4]) * 1000,
-                                                       Double.parseDouble(fields[5]) * 1000,
-                                                       Double.parseDouble(fields[6]) * 1000);
-                final Vector3D acceleration = hasAcceleration ?
-                                              new Vector3D(Double.parseDouble(fields[7]) * 1000,
-                                                           Double.parseDouble(fields[8]) * 1000,
-                                                           Double.parseDouble(fields[9]) * 1000) :
-                                              Vector3D.ZERO;
-                return currentBlock.addData(new TimeStampedPVCoordinates(epoch, position, velocity, acceleration),
-                                            hasAcceleration);
+                stateVectorBlock = new StateVector();
+                stateVectorBlock.setEpoch(context.getTimeSystem().getConverter(context).parse(fields[0]));
+                stateVectorBlock.setP(0, Double.parseDouble(fields[1]) * KM_TO_M);
+                stateVectorBlock.setP(1, Double.parseDouble(fields[2]) * KM_TO_M);
+                stateVectorBlock.setP(2, Double.parseDouble(fields[3]) * KM_TO_M);
+                stateVectorBlock.setV(0, Double.parseDouble(fields[4]) * KM_TO_M);
+                stateVectorBlock.setV(1, Double.parseDouble(fields[5]) * KM_TO_M);
+                stateVectorBlock.setV(2, Double.parseDouble(fields[6]) * KM_TO_M);
+                if (fields.length == 10) {
+                    stateVectorBlock.setA(0, Double.parseDouble(fields[7]) * KM_TO_M);
+                    stateVectorBlock.setA(1, Double.parseDouble(fields[8]) * KM_TO_M);
+                    stateVectorBlock.setA(2, Double.parseDouble(fields[9]) * KM_TO_M);
+                }
+                return currentBlock.addData(stateVectorBlock.toTimeStampedPVCoordinates(),
+                                            stateVectorBlock.hasAcceleration());
             } catch (NumberFormatException nfe) {
                 throw new OrekitException(nfe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                           token.getLineNumber(), token.getFileName(), token.getRawContent());
@@ -316,11 +380,26 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
         }
     }
 
-    /** Process one covariance token.
+    /** Process one state vector data token in a XML message.
      * @param token token to process
      * @return true if token was processed, false otherwise
      */
-    private boolean processCovarianceToken(final ParseToken token) {
+    private boolean processXmlStateVectorToken(final ParseToken token) {
+        setFallback(this::processXmlSubStructureToken);
+        try {
+            return token.getName() != null &&
+                   StateVectorKey.valueOf(token.getName()).process(token, context, stateVectorBlock);
+        } catch (IllegalArgumentException iae) {
+            // token has not been recognized
+            return false;
+        }
+    }
+
+    /** Process one covariance token in a KVN message.
+     * @param token token to process
+     * @return true if token was processed, false otherwise
+     */
+    private boolean processKvnCovarianceToken(final ParseToken token) {
         setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processMetadataToken);
         if (token.getName() != null) {
             if (OemFile.COVARIANCE_KVN.equals(token.getName()) ||
@@ -378,6 +457,21 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
                 throw new OrekitException(nfe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                           token.getLineNumber(), token.getFileName(), token.getContentAsNormalizedString());
             }
+        }
+    }
+
+    /** Process one covariance matrix data token in a XML message.
+     * @param token token to process
+     * @return true if token was processed, false otherwise
+     */
+    private boolean processXmlCovarianceToken(final ParseToken token) {
+        setFallback(this::processXmlSubStructureToken);
+        try {
+            return token.getName() != null &&
+                   CartesianCovarianceKey.valueOf(token.getName()).process(token, context, currentCovariance);
+        } catch (IllegalArgumentException iae) {
+            // token has not been recognized
+            return false;
         }
     }
 

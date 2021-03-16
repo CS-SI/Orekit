@@ -22,9 +22,8 @@ import java.util.List;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.NdmFile;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
-import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
-import org.orekit.files.ccsds.ndm.odm.StateVector;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -32,7 +31,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** This class gathers the informations present in the Orbital Parameter Message (OPM).
  * @author sports
@@ -112,9 +111,8 @@ public class OpmFile extends NdmFile<OdmHeader, Segment<CommonMetadata, OpmData>
     /** Get the position/velocity coordinates contained in the OPM.
      * @return the position/velocity coordinates contained in the OPM
      */
-    public PVCoordinates getPVCoordinates() {
-        final StateVector stateVector = getData().getStateVectorBlock();
-        return new PVCoordinates(stateVector.getPosition(), stateVector.getVelocity());
+    public TimeStampedPVCoordinates getPVCoordinates() {
+        return getData().getStateVectorBlock().toTimeStampedPVCoordinates();
     }
 
     /** Generate a Cartesian orbit.
@@ -131,7 +129,7 @@ public class OpmFile extends NdmFile<OdmHeader, Segment<CommonMetadata, OpmData>
      */
     public KeplerianOrbit generateKeplerianOrbit() {
         final CommonMetadata metadata = getMetadata();
-        final OpmData         data     = getData();
+        final OpmData        data     = getData();
         final KeplerianElements keplerianElements = data.getKeplerianElementsBlock();
         if (keplerianElements != null) {
             return keplerianElements.generateKeplerianOrbit(metadata.getFrame());

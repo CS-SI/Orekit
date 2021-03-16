@@ -24,6 +24,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Container for state vector data.
  * @author Luc Maisonobe
@@ -40,13 +41,18 @@ public class StateVector extends CommentsContainer {
     /** Velocity vector (m/s). */
     private double[] velocity;
 
+    /** Accekeration vector (m/s²). */
+    private double[] acceleration;
+
     /** Create an empty data set.
      */
     public StateVector() {
-        position = new double[3];
-        velocity = new double[3];
-        Arrays.fill(position, Double.NaN);
-        Arrays.fill(velocity, Double.NaN);
+        position     = new double[3];
+        velocity     = new double[3];
+        acceleration = new double[3];
+        Arrays.fill(position,     Double.NaN);
+        Arrays.fill(velocity,     Double.NaN);
+        Arrays.fill(acceleration, Double.NaN);
     }
 
     /** {@inheritDoc} */
@@ -77,13 +83,6 @@ public class StateVector extends CommentsContainer {
         this.epoch = epoch;
     }
 
-    /** Get position vector.
-     * @return the position vector
-     */
-    public Vector3D getPosition() {
-        return new Vector3D(position);
-    }
-
     /**
      * Set position component.
      * @param index component index (counting from 0)
@@ -94,13 +93,6 @@ public class StateVector extends CommentsContainer {
         position[index] = value;
     }
 
-    /** Get velocity vector.
-     * @return the velocity vector
-     */
-    public Vector3D getVelocity() {
-        return new Vector3D(velocity);
-    }
-
     /**
      * Set velocity component.
      * @param index component index (counting from 0)
@@ -109,6 +101,33 @@ public class StateVector extends CommentsContainer {
     public void setV(final int index, final double value) {
         refuseFurtherComments();
         velocity[index] = value;
+    }
+
+    /**
+     * Set acceleration component.
+     * @param index component index (counting from 0)
+     * @param value acceleration component
+     */
+    public void setA(final int index, final double value) {
+        refuseFurtherComments();
+        acceleration[index] = value;
+    }
+
+    /** Check if state contains acceleration data.
+     * @return true is state contains acceleration data
+     */
+    public boolean hasAcceleration() {
+        return !Double.isNaN(acceleration[0] + acceleration[1] + acceleration[2]);
+    }
+
+    /** Convert to {@link TimeStampedPVCoordinates}.
+     * @return a new {@link TimeStampedPVCoordinates}
+     */
+    public TimeStampedPVCoordinates toTimeStampedPVCoordinates() {
+        return new TimeStampedPVCoordinates(epoch,
+                                            new Vector3D(position),
+                                            new Vector3D(velocity),
+                                            hasAcceleration() ? new Vector3D(acceleration) : Vector3D.ZERO);
     }
 
 }

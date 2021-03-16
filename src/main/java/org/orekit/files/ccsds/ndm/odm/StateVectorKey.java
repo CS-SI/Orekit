@@ -50,7 +50,16 @@ public enum StateVectorKey {
     Y_DOT((token, context, container) -> token.processAsIndexedDouble(1, 1.0e3, container::setV)),
 
     /** Velocity vector Z-component. */
-    Z_DOT((token, context, container) -> token.processAsIndexedDouble(2, 1.0e3, container::setV));
+    Z_DOT((token, context, container) -> token.processAsIndexedDouble(2, 1.0e3, container::setV)),
+
+    /** Acceleration vector X-component. */
+    X_DDOT((token, context, container) -> token.processAsIndexedDouble(0, 1.0e3, container::setA)),
+
+    /** Acceleration vector Y-component. */
+    Y_DDOT((token, context, container) -> token.processAsIndexedDouble(1, 1.0e3, container::setA)),
+
+    /** Acceleration vector Z-component. */
+    Z_DDOT((token, context, container) -> token.processAsIndexedDouble(2, 1.0e3, container::setA));
 
     /** Processing method. */
     private final TokenProcessor processor;
