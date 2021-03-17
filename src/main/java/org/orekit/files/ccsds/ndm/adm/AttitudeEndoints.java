@@ -186,6 +186,20 @@ public class AttitudeEndoints implements AttitudeBuilder {
         return a2b ^ frameB.asSpacecraftBodyFrame() == null;
     }
 
+    /** Check if a endpoint is compatible with another one.
+     * <p>
+     * Endpoins are compatible if they refer o the same frame names,
+     * in the same order and in the same direction.
+     * </p>
+     * @param other other endpoints to check against
+     * @return true if both endpoints are compatible with each other
+     */
+    public boolean isCompatibleWith(final AttitudeEndoints other) {
+        return frameA.getName().equals(other.frameA.getName()) &&
+               frameB.getName().equals(other.frameB.getName()) &&
+               a2b.equals(other.a2b);
+    }
+
     /**  {@inheritDoc} */
     @Override
     public Attitude build(final Frame frame, final PVCoordinatesProvider pvProv,
@@ -265,6 +279,12 @@ public class AttitudeEndoints implements AttitudeBuilder {
             return frame == null ? attitude : attitude.withReferenceFrame(frame);
         }
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String toString() {
+        return frameA.getName() + (isA2b() ? " → " : " ← ") + frameB.getName();
     }
 
 }

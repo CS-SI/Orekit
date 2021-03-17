@@ -18,6 +18,7 @@ package org.orekit.files.ccsds.ndm.adm.aem;
 
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
+import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndoints;
 import org.orekit.time.AbsoluteDate;
 
@@ -43,7 +44,7 @@ public class AemMetadata extends AdmMetadata {
     private AbsoluteDate useableStopTime;
 
     /** The format of the data lines in the message. */
-    private AemAttitudeType attitudeType;
+    private AttitudeType attitudeType;
 
     /** The placement of the scalar portion of the quaternion (QC) in the attitude data. */
     private Boolean isFirst;
@@ -98,16 +99,16 @@ public class AemMetadata extends AdmMetadata {
                                                            AemMetadataKey.ATTITUDE_DIR);
 
         checkNotNull(attitudeType, AemMetadataKey.ATTITUDE_TYPE);
-        if (attitudeType == AemAttitudeType.QUATERNION ||
-            attitudeType == AemAttitudeType.QUATERNION_DERIVATIVE) {
+        if (attitudeType == AttitudeType.QUATERNION ||
+            attitudeType == AttitudeType.QUATERNION_DERIVATIVE) {
             checkNotNull(isFirst, AemMetadataKey.QUATERNION_TYPE);
         }
-        if (attitudeType == AemAttitudeType.EULER_ANGLE ||
-            attitudeType == AemAttitudeType.EULER_ANGLE_RATE) {
+        if (attitudeType == AttitudeType.EULER_ANGLE ||
+            attitudeType == AttitudeType.EULER_ANGLE_RATE) {
             checkNotNull(eulerRotSeq, AemMetadataKey.EULER_ROT_SEQ);
         }
-        if (attitudeType == AemAttitudeType.QUATERNION_RATE ||
-            attitudeType == AemAttitudeType.EULER_ANGLE_RATE) {
+        if (attitudeType == AttitudeType.QUATERNION_RATE ||
+            attitudeType == AttitudeType.EULER_ANGLE_RATE) {
             checkNotNull(rateFrameIsA, AemMetadataKey.RATE_FRAME);
         }
 
@@ -141,10 +142,10 @@ public class AemMetadata extends AdmMetadata {
      * initialized properly to non-null values before this method is called,
      * otherwise {@code NullPointerException} will be thrown.
      * </p>
-     * @return true if if rates are specified in spacecraft body frame
+     * @return true if rates are specified in spacecraft body frame
      */
     public boolean isSpacecraftBodyRate() {
-        return rateFrameIsA ^ endpoints.getFrameA().asSpacecraftBodyFrame() == null;
+        return rateFrameIsA() ^ endpoints.getFrameA().asSpacecraftBodyFrame() == null;
     }
 
     /**
@@ -152,7 +153,7 @@ public class AemMetadata extends AdmMetadata {
      *
      * @return the format of the data lines in the message
      */
-    public AemAttitudeType getAttitudeType() {
+    public AttitudeType getAttitudeType() {
         return attitudeType;
     }
 
@@ -160,7 +161,7 @@ public class AemMetadata extends AdmMetadata {
      * Set the format of the data lines in the message.
      * @param type format to be set
      */
-    public void setAttitudeType(final AemAttitudeType type) {
+    public void setAttitudeType(final AttitudeType type) {
         refuseFurtherComments();
         this.attitudeType = type;
     }
@@ -172,7 +173,7 @@ public class AemMetadata extends AdmMetadata {
      * null if not initialized
      */
     public Boolean isFirst() {
-        return isFirst;
+        return isFirst == null ? true : isFirst;
     }
 
     /**

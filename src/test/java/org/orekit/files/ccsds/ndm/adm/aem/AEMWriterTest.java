@@ -50,6 +50,7 @@ import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
+import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.frames.Frame;
@@ -80,7 +81,7 @@ public class AEMWriterTest {
 
     @Test
     public void testWriteAEM1() throws IOException {
-        final String ex = "/ccsds/adm/aem/AEMExample.txt";
+        final String ex = "/ccsds/adm/aem/AEMExample01.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
 
@@ -114,7 +115,7 @@ public class AEMWriterTest {
 
     @Test
     public void testUnfoundSpaceId() throws IOException {
-        final String ex = "/ccsds/adm/aem/AEMExample.txt";
+        final String ex = "/ccsds/adm/aem/AEMExample01.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
 
@@ -133,7 +134,7 @@ public class AEMWriterTest {
 
     @Test
     public void testNullFile() throws IOException {
-        final String ex = "/ccsds/adm/aem/AEMExample.txt";
+        final String ex = "/ccsds/adm/aem/AEMExample01.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
         AemWriter writer = new AemWriter(aemFile.getConventions(), aemFile.getDataContext(),
@@ -171,7 +172,7 @@ public class AEMWriterTest {
 
     @Test
     public void testUnisatelliteFileWithDefault() throws IOException {
-        final String ex = "/ccsds/adm/aem/AEMExample.txt";
+        final String ex = "/ccsds/adm/aem/AEMExample01.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
 
@@ -193,14 +194,14 @@ public class AEMWriterTest {
         final String id1 = "1999-012A";
         final String id2 = "1999-012B";
         StandAloneEphemerisFile file = new StandAloneEphemerisFile();
-        file.generate(id1, id1 + "-name", AemAttitudeType.QUATERNION_RATE,
+        file.generate(id1, id1 + "-name", AttitudeType.QUATERNION_RATE,
                       context.getFrames().getEME2000(),
                       new TimeStampedAngularCoordinates(AbsoluteDate.GALILEO_EPOCH,
                                                         Rotation.IDENTITY,
                                                         new Vector3D(0.000, 0.010, 0.000),
                                                         new Vector3D(0.000, 0.000, 0.001)),
                       900.0, 60.0);
-        file.generate(id2, id2 + "-name", AemAttitudeType.QUATERNION_RATE,
+        file.generate(id2, id2 + "-name", AttitudeType.QUATERNION_RATE,
                       context.getFrames().getEME2000(),
                       new TimeStampedAngularCoordinates(AbsoluteDate.GALILEO_EPOCH,
                                                         Rotation.IDENTITY,
@@ -229,7 +230,7 @@ public class AEMWriterTest {
 
     @Test
     public void testIssue723() throws IOException {
-        final String ex = "/ccsds/adm/aem/AEMExample2.txt";
+        final String ex = "/ccsds/adm/aem/AEMExample02.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
 
@@ -251,7 +252,7 @@ public class AEMWriterTest {
     @Test
     public void testWriteAemFormat() throws IOException {
         // setup
-        String exampleFile = "/ccsds/adm/aem/AEMExample7.txt";
+        String exampleFile = "/ccsds/adm/aem/AEMExample07.txt";
         final DataSource source = new DataSource(exampleFile, () -> getClass().getResourceAsStream(exampleFile));
         final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
         StringBuilder buffer = new StringBuilder();
@@ -331,7 +332,7 @@ public class AEMWriterTest {
         }
 
         private void generate(final String objectID, final String objectName,
-                              final AemAttitudeType type, final Frame referenceFrame,
+                              final AttitudeType type, final Frame referenceFrame,
                               final TimeStampedAngularCoordinates ac0,
                               final double duration, final double step) {
 
@@ -384,7 +385,7 @@ public class AEMWriterTest {
         metadata.getEndpoints().setA2b(true);
         metadata.setStartTime(AbsoluteDate.J2000_EPOCH.shiftedBy(80 * Constants.JULIAN_CENTURY));
         metadata.setStopTime(metadata.getStartTime().shiftedBy(Constants.JULIAN_YEAR));
-        metadata.setAttitudeType(AemAttitudeType.QUATERNION_DERIVATIVE);
+        metadata.setAttitudeType(AttitudeType.QUATERNION_DERIVATIVE);
         metadata.setIsFirst(true);
         return metadata;
     }

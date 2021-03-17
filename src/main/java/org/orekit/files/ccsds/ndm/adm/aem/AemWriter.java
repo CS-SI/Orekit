@@ -30,6 +30,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
+import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderKey;
 import org.orekit.files.ccsds.section.KvnStructureKey;
@@ -176,7 +177,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  *        <tr>
  *            <td>{@link AemMetadataKey#ATTITUDE_TYPE}</td>
  *            <td>Yes</td>
- *            <td>{@link AemAttitudeType#QUATERNION_RATE QUATERNION/RATE}</td>
+ *            <td>{@link AttitudeType#QUATERNION_RATE QUATERNION/RATE}</td>
  *        </tr>
  *        <tr>
  *            <td>{@link AemMetadataKey#QUATERNION_TYPE}</td>
@@ -523,16 +524,16 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
         generator.writeEntry(AemMetadataKey.STOP_TIME.name(), dateToString(metadata.getStopTime()), true);
 
         // types
-        final AemAttitudeType attitudeType = metadata.getAttitudeType();
+        final AttitudeType attitudeType = metadata.getAttitudeType();
         generator.writeEntry(AemMetadataKey.ATTITUDE_TYPE.name(), attitudeType.toString(), true);
-        if (attitudeType == AemAttitudeType.QUATERNION ||
-            attitudeType == AemAttitudeType.QUATERNION_DERIVATIVE ||
-            attitudeType == AemAttitudeType.QUATERNION_RATE) {
+        if (attitudeType == AttitudeType.QUATERNION ||
+            attitudeType == AttitudeType.QUATERNION_DERIVATIVE ||
+            attitudeType == AttitudeType.QUATERNION_RATE) {
             generator.writeEntry(AemMetadataKey.QUATERNION_TYPE.name(), metadata.isFirst() ? FIRST : LAST, false);
         }
 
-        if (attitudeType == AemAttitudeType.EULER_ANGLE ||
-            attitudeType == AemAttitudeType.EULER_ANGLE_RATE) {
+        if (attitudeType == AttitudeType.EULER_ANGLE ||
+            attitudeType == AttitudeType.EULER_ANGLE_RATE) {
             if (metadata.getEulerRotSeq() == null) {
                 // the keyword *will* be missing because we cannot set it
                 throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
@@ -543,8 +544,8 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
                                  false);
         }
 
-        if (attitudeType == AemAttitudeType.QUATERNION_RATE ||
-            attitudeType == AemAttitudeType.EULER_ANGLE_RATE) {
+        if (attitudeType == AttitudeType.QUATERNION_RATE ||
+            attitudeType == AttitudeType.EULER_ANGLE_RATE) {
             generator.writeEntry(AemMetadataKey.RATE_FRAME.name(),
                                  metadata.rateFrameIsA() ? REF_FRAME_A : REF_FRAME_B,
                                  false);
@@ -576,7 +577,11 @@ public class AemWriter implements AttitudeEphemerisFileWriter {
         generator.writeRawData(dateToString(attitude.getDate()));
 
         // Attitude data in degrees
-        final double[] data = metadata.getAttitudeType().getAttitudeData(attitude, metadata);
+        final double[] data = metadata.getAttitudeType().getAttitudeData(metadata.isFirst(),
+                                                                         metadata.getEndpoints().isExternal2SpacecraftBody(),
+                                                                         metadata.getEulerRotSeq(),
+                                                                         metadata.isSpacecraftBodyRate(),
+                                                                         attitude);
         final int      size = data.length;
         for (int index = 0; index < size; index++) {
             generator.writeRawData(' ');

@@ -29,99 +29,106 @@ import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 public enum EulerKey {
 
     /** Rotation angles wrapping element in XML files. */
-    rotationAngles((token, context, data) -> {
-        data.setInRotationAngles(token.getType() == TokenType.START);
+    rotationAngles((token, context, container) -> {
+        container.setInRotationAngles(token.getType() == TokenType.START);
         return true;
     }),
 
     /** Rotation rates wrapping element in XML files. */
-    rotationRates((token, context, data) -> true),
+    rotationRates((token, context, container) -> true),
 
     /** First rotation angle or first rotation rate. */
-    rotation1((token, context, data) -> {
+    rotation1((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
-            if (data.inRotationAngles()) {
-                data.setRotationAngle(0, FastMath.toRadians(token.getContentAsDouble()));
+            if (container.inRotationAngles()) {
+                container.setRotationAngle(0, FastMath.toRadians(token.getContentAsDouble()));
             } else {
-                data.setRotationRate(0, FastMath.toRadians(token.getContentAsDouble()));
+                container.setRotationRate(0, FastMath.toRadians(token.getContentAsDouble()));
             }
         }
         return true;
     }),
 
     /** Second rotation angle or second rotation rate. */
-    rotation2((token, context, data) -> {
+    rotation2((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
-            if (data.inRotationAngles()) {
-                data.setRotationAngle(1, FastMath.toRadians(token.getContentAsDouble()));
+            if (container.inRotationAngles()) {
+                container.setRotationAngle(1, FastMath.toRadians(token.getContentAsDouble()));
             } else {
-                data.setRotationRate(1, FastMath.toRadians(token.getContentAsDouble()));
+                container.setRotationRate(1, FastMath.toRadians(token.getContentAsDouble()));
             }
         }
         return true;
     }),
 
     /** Third rotation angle or third rotation rate. */
-    rotation3((token, context, data) -> {
+    rotation3((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
-            if (data.inRotationAngles()) {
-                data.setRotationAngle(2, FastMath.toRadians(token.getContentAsDouble()));
+            if (container.inRotationAngles()) {
+                container.setRotationAngle(2, FastMath.toRadians(token.getContentAsDouble()));
             } else {
-                data.setRotationRate(2, FastMath.toRadians(token.getContentAsDouble()));
+                container.setRotationRate(2, FastMath.toRadians(token.getContentAsDouble()));
             }
         }
         return true;
     }),
 
     /** Comment entry. */
-    COMMENT((token, context, data) ->
-            token.getType() == TokenType.ENTRY ? data.addComment(token.getContentAsNormalizedString()) : true),
+    COMMENT((token, context, container) ->
+            token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
     /** First reference frame entry. */
-    EULER_FRAME_A((token, context, data) -> token.processAsFrame(data.getEndpoints()::setFrameA, context, true, true, true)),
+    EULER_FRAME_A((token, context, container) -> token.processAsFrame(container.getEndpoints()::setFrameA, context, true, true, true)),
 
     /** Second reference frame entry. */
-    EULER_FRAME_B((token, context, data) -> {
+    EULER_FRAME_B((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
-            data.checkNotNull(data.getEndpoints().getFrameA(), EULER_FRAME_A);
-            final boolean aIsSpaceraftBody = data.getEndpoints().getFrameA().asSpacecraftBodyFrame() != null;
-            return token.processAsFrame(data.getEndpoints()::setFrameB, context,
+            container.checkNotNull(container.getEndpoints().getFrameA(), EULER_FRAME_A);
+            final boolean aIsSpaceraftBody = container.getEndpoints().getFrameA().asSpacecraftBodyFrame() != null;
+            return token.processAsFrame(container.getEndpoints()::setFrameB, context,
                                         aIsSpaceraftBody, aIsSpaceraftBody, !aIsSpaceraftBody);
         }
         return true;
     }),
 
     /** Rotation direction entry. */
-    EULER_DIR((token, context, data) -> {
+    EULER_DIR((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
-            data.getEndpoints().setA2b(token.getContentAsUppercaseCharacter() == 'A');
+            container.getEndpoints().setA2b(token.getContentAsUppercaseCharacter() == 'A');
         }
         return true;
     }),
 
     /** Rotation sequence entry. */
-    EULER_ROT_SEQ((token, context, data) -> AdmParser.processRotationOrder(token, data::setEulerRotSeq)),
+    EULER_ROT_SEQ((token, context, container) -> AdmParser.processRotationOrder(token, container::setEulerRotSeq)),
 
     /** Reference frame for rate entry. */
-    RATE_FRAME((token, context, data) -> token.processAsUppercaseString(data::setRateFrameString)),
+    RATE_FRAME((token, context, container) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            final String content = token.getContentAsUppercaseString();
+            final char   suffix  = content.charAt(content.length() - 1);
+            container.setRateFrameIsA(suffix == 'A');
+        }
+        return true;
+    }),
 
     /** X body rotation angle entry. */
-    X_ANGLE((token, context, data) -> (token.getType() == TokenType.ENTRY) ? data.setRotationAngle('X', token.getContentAsAngle()) : true),
+    X_ANGLE((token, context, container) -> (token.getType() == TokenType.ENTRY) ? container.setRotationAngle('X', token.getContentAsAngle()) : true),
 
     /** Y body rotation angle entry. */
-    Y_ANGLE((token, context, data) -> (token.getType() == TokenType.ENTRY) ? data.setRotationAngle('Y', token.getContentAsAngle()) : true),
+    Y_ANGLE((token, context, container) -> (token.getType() == TokenType.ENTRY) ? container.setRotationAngle('Y', token.getContentAsAngle()) : true),
 
     /** Z body rotation angle entry. */
-    Z_ANGLE((token, context, data) -> (token.getType() == TokenType.ENTRY) ? data.setRotationAngle('Z', token.getContentAsAngle()) : true),
+    Z_ANGLE((token, context, container) -> (token.getType() == TokenType.ENTRY) ? container.setRotationAngle('Z', token.getContentAsAngle()) : true),
 
     /** X body rotation rate entry. */
-    X_RATE((token, context, data) -> (token.getType() == TokenType.ENTRY) ? data.setRotationRate('X', token.getContentAsAngle()) : true),
+    X_RATE((token, context, container) -> (token.getType() == TokenType.ENTRY) ? container.setRotationRate('X', token.getContentAsAngle()) : true),
 
     /** Y body rotation rate entry. */
-    Y_RATE((token, context, data) -> (token.getType() == TokenType.ENTRY) ? data.setRotationRate('Y', token.getContentAsAngle()) : true),
+    Y_RATE((token, context, container) -> (token.getType() == TokenType.ENTRY) ? container.setRotationRate('Y', token.getContentAsAngle()) : true),
 
     /** Z body rotation rate entry. */
-    Z_RATE((token, context, data) -> (token.getType() == TokenType.ENTRY) ? data.setRotationRate('Z', token.getContentAsAngle()) : true);
+    Z_RATE((token, context, container) -> (token.getType() == TokenType.ENTRY) ? container.setRotationRate('Z', token.getContentAsAngle()) : true);
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -136,11 +143,11 @@ public enum EulerKey {
     /** Process one token.
      * @param token token to process
      * @param context parsing context
-     * @param data data to fill
+     * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final Euler data) {
-        return processor.process(token, context, data);
+    public boolean process(final ParseToken token, final ParsingContext context, final Euler container) {
+        return processor.process(token, context, container);
     }
 
     /** Interface for processing one token. */
@@ -148,10 +155,10 @@ public enum EulerKey {
         /** Process one token.
          * @param token token to process
          * @param context parsing context
-         * @param data data to fill
+         * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, Euler data);
+        boolean process(ParseToken token, ParsingContext context, Euler container);
     }
 
 }

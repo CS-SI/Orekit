@@ -34,6 +34,7 @@ import org.orekit.data.DataSource;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
+import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.frames.FramesFactory;
@@ -64,7 +65,7 @@ public class StreamingAemWriterTest {
     public void testWriteAemStepHandler() throws Exception {
 
         // Create a list of files
-        List<String> files = Arrays.asList("/ccsds/adm/aem/AEMExample7.txt");
+        List<String> files = Arrays.asList("/ccsds/adm/aem/AEMExample07.txt");
         for (final String ex : files) {
 
             // Reference AEM file
@@ -83,7 +84,7 @@ public class StreamingAemWriterTest {
             FrameFacade       frameA       = ephemerisBlock.getMetadata().getEndpoints().getFrameA();
             FrameFacade       frameB       = ephemerisBlock.getMetadata().getEndpoints().getFrameB();
             boolean           a2b          = ephemerisBlock.getMetadata().getEndpoints().isA2b();
-            AemAttitudeType   attitudeType = ephemerisBlock.getMetadata().getAttitudeType();
+            AttitudeType   attitudeType = ephemerisBlock.getMetadata().getAttitudeType();
             boolean           isFirst      = ephemerisBlock.getMetadata().isFirst();
 
             // Initialize the header and metadata

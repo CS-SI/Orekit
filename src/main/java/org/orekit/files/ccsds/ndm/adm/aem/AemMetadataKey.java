@@ -18,6 +18,7 @@ package org.orekit.files.ccsds.ndm.adm.aem;
 
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.AdmParser;
+import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
@@ -70,7 +71,7 @@ public enum AemMetadataKey {
     ATTITUDE_TYPE((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
             try {
-                container.setAttitudeType(AemAttitudeType.parseType(token.getContentAsNormalizedString()));
+                container.setAttitudeType(AttitudeType.parseType(token.getContentAsNormalizedString()));
                 return true;
             } catch (IllegalArgumentException iae) {
                 return false;

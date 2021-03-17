@@ -45,7 +45,7 @@ import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
-import org.orekit.files.ccsds.ndm.adm.aem.AemAttitudeType;
+import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.ndm.adm.aem.AemMetadata;
 import org.orekit.files.ccsds.ndm.adm.aem.AemParser;
 import org.orekit.files.ccsds.ndm.adm.aem.AemSegment;
@@ -239,7 +239,7 @@ public class OrekitAttitudeEphemerisFileTest {
         metadata.getEndpoints().setA2b(true);
         metadata.setStartTime(AbsoluteDate.J2000_EPOCH.shiftedBy(80 * Constants.JULIAN_CENTURY));
         metadata.setStopTime(metadata.getStartTime().shiftedBy(Constants.JULIAN_YEAR));
-        metadata.setAttitudeType(AemAttitudeType.QUATERNION_DERIVATIVE);
+        metadata.setAttitudeType(AttitudeType.QUATERNION_DERIVATIVE);
         metadata.setIsFirst(true);
         return metadata;
     }

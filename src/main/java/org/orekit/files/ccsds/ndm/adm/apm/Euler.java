@@ -37,8 +37,8 @@ public class Euler extends CommentsContainer {
     /** Rotation order of the Euler angles. */
     private RotationOrder eulerRotSeq;
 
-    /** Frame of reference in which the {@link #rotationAngles} derivatives are expressed. */
-    private String rateFrame;
+    /** The frame in which rates are specified. */
+    private Boolean rateFrameIsA;
 
     /** Euler angles [rad]. */
     private double[] rotationAngles;
@@ -123,21 +123,31 @@ public class Euler extends CommentsContainer {
         this.eulerRotSeq = eulerRotSeq;
     }
 
-    /**
-     * Get the frame of reference in which the Euler angles are expressed.
-     * @return the frame of reference
+    /** Check if rates are specified in {@link AttitudeEndoints#getFrameA() frame A}.
+     * @return true if rates are specified in {@link AttitudeEndoints#getFrameA() frame A}
      */
-    public String getRateFrameString() {
-        return rateFrame;
+    public boolean rateFrameIsA() {
+        return rateFrameIsA == null ? false : rateFrameIsA;
     }
 
-    /**
-     * Set the frame of reference in which the Euler angles are expressed.
-     * @param frame frame to be set
+    /** Set the frame in which rates are specified.
+     * @param rateFrameIsA if true, rates are specified in {@link AttitudeEndoints#getFrameA() frame A}
      */
-    public void setRateFrameString(final String frame) {
+    public void setRateFrameIsA(final boolean rateFrameIsA) {
         refuseFurtherComments();
-        this.rateFrame = frame;
+        this.rateFrameIsA = rateFrameIsA;
+    }
+
+    /** Check if rates are specified in spacecraft body frame.
+     * <p>
+     * {@link #checkMandatoryEntries() Mandatory entries} must have been
+     * initialized properly to non-null values before this method is called,
+     * otherwise {@code NullPointerException} will be thrown.
+     * </p>
+     * @return true if rates are specified in spacecraft body frame
+     */
+    public boolean isSpacecraftBodyRate() {
+        return rateFrameIsA ^ endpoints.getFrameA().asSpacecraftBodyFrame() == null;
     }
 
     /**
@@ -213,6 +223,13 @@ public class Euler extends CommentsContainer {
         this.inRotationAngles = inRotationAngles;
     }
 
+    /** Check if the logical block includes rates.
+     * @return true if logical block includes rates
+     */
+    public boolean hasRates() {
+        return !Double.isNaN(rotationRates[0] + rotationRates[1] + rotationRates[2]);
+    }
+
     /** Set an angle or rate in an array.
      * @param array angle or rate array
      * @param axis axis name
@@ -220,17 +237,19 @@ public class Euler extends CommentsContainer {
      * @return true if value was set, false if axis is already set
      */
     private boolean setAngleOrRate(final double[] array, final char axis, final double value) {
-        if (eulerRotSeq.name().charAt(0) == axis && Double.isNaN(array[0])) {
-            array[0] = value;
-            return true;
-        } else if (eulerRotSeq.name().charAt(1) == axis && Double.isNaN(array[1])) {
-            array[1] = value;
-            return true;
-        } else if (eulerRotSeq.name().charAt(2) == axis && Double.isNaN(array[2])) {
-            array[2] = value;
-            return true;
-        } else {
-            return false;
+        refuseFurtherComments();
+        if (eulerRotSeq != null) {
+            if (eulerRotSeq.name().charAt(0) == axis && Double.isNaN(array[0])) {
+                array[0] = value;
+                return true;
+            } else if (eulerRotSeq.name().charAt(1) == axis && Double.isNaN(array[1])) {
+                array[1] = value;
+                return true;
+            } else if (eulerRotSeq.name().charAt(2) == axis && Double.isNaN(array[2])) {
+                array[2] = value;
+                return true;
+            }
         }
+        return false;
     }
 }

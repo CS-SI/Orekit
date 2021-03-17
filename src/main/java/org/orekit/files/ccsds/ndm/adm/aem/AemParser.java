@@ -83,6 +83,9 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
     /** Processor for global message structure. */
     private ProcessingState structureProcessor;
 
+    /** Current attitude entry. */
+    private AttitudeEntry currentEntry;
+
     /**
      * Complete constructor.
      * @param conventions IERS Conventions
@@ -218,12 +221,11 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
      */
     boolean manageXmlAttitudeStateSection(final boolean starting) {
         if (starting) {
-            stateVectorBlock = new StateVector();
-            setFallback(this::processXmlStateVectorToken);
+            currentEntry = new AttitudeEntry(metadata);
+            setFallback(this::processXmlDataToken);
         } else {
-            currentBlock.addData(stateVectorBlock.toTimeStampedPVCoordinates(),
-                                 stateVectorBlock.hasAcceleration());
-            stateVectorBlock = null;
+            currentBlock.addData(currentEntry.getCoordinates());
+            currentEntry = null;
             setFallback(structureProcessor);
         }
         return true;
@@ -280,9 +282,12 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
                     throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
                                               AemMetadataKey.ATTITUDE_TYPE.name(), token.getFileName());
                 }
-                return currentBlock.addData(metadata.getAttitudeType().parse(metadata, context,
-                                                                             SPLIT_AT_BLANKS.split(token.getRawContent().trim()),
-                                                                             token.getFileName()));
+                return currentBlock.addData(metadata.getAttitudeType().parse(metadata.isFirst(),
+                                                                             metadata.getEndpoints().isExternal2SpacecraftBody(),
+                                                                             metadata.getEulerRotSeq(),
+                                                                             metadata.isSpacecraftBodyRate(),
+                                                                             context,
+                                                                             SPLIT_AT_BLANKS.split(token.getRawContent().trim())));
             } catch (NumberFormatException nfe) {
                 throw new OrekitException(nfe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                           token.getLineNumber(), token.getFileName(), token.getRawContent());
@@ -293,15 +298,15 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
         }
     }
 
-    /** Process one attitude state data token in a XML message.
+    /** Process one data token in a XML message.
      * @param token token to process
      * @return true if token was processed, false otherwise
      */
-    private boolean processXmlAttitudeStateToken(final ParseToken token) {
+    private boolean processXmlDataToken(final ParseToken token) {
         setFallback(this::processXmlSubStructureToken);
         try {
             return token.getName() != null &&
-                   StateVectorKey.valueOf(token.getName()).process(token, context, stateVectorBlock);
+                   AttitudeEntryKey.valueOf(token.getName()).process(token, context, currentEntry);
         } catch (IllegalArgumentException iae) {
             // token has not been recognized
             return false;
