@@ -34,6 +34,9 @@ public class Header extends CommentsContainer {
     /** Creating agency or operator. */
     private String originator;
 
+    /** ID that uniquely identifies a message from a given originator. */
+    private String messageId;
+
     /**
      * Constructor.
      */
@@ -97,6 +100,22 @@ public class Header extends CommentsContainer {
     public void setOriginator(final String originator) {
         refuseFurtherComments();
         this.originator = originator;
+    }
+
+    /**
+     * Get the ID that uniquely identifies a message from a given originator.
+     * @return ID that uniquely identifies a message from a given originator
+     */
+    public String getMessageId() {
+        return messageId;
+    }
+
+    /**
+     * Set the ID that uniquely identifies a message from a given originator.
+     * @param messageId ID that uniquely identifies a message from a given originator
+     */
+    public void setMessageId(final String messageId) {
+        this.messageId = messageId;
     }
 
 }

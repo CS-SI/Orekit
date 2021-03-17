@@ -22,8 +22,8 @@ import java.util.List;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.NdmFile;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
-import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
+import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -38,7 +38,7 @@ import org.orekit.utils.IERSConventions;
  * @author sports
  * @since 6.1
  */
-public class OmmFile extends NdmFile<OdmHeader, Segment<OmmMetadata, OmmData>> implements TimeStamped {
+public class OmmFile extends NdmFile<Header, Segment<OmmMetadata, OmmData>> implements TimeStamped {
 
     /** Key for format version. */
     public static final String FORMAT_VERSION_KEY = "CCSDS_OMM_VERS";
@@ -49,7 +49,7 @@ public class OmmFile extends NdmFile<OdmHeader, Segment<OmmMetadata, OmmData>> i
      * @param conventions IERS conventions
      * @param dataContext used for creating frames, time scales, etc.
      */
-    public OmmFile(final OdmHeader header, final List<Segment<OmmMetadata, OmmData>> segments,
+    public OmmFile(final Header header, final List<Segment<OmmMetadata, OmmData>> segments,
                    final IERSConventions conventions, final DataContext dataContext) {
         super(header, segments, conventions, dataContext);
     }

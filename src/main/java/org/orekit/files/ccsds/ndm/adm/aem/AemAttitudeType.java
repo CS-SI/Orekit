@@ -213,8 +213,8 @@ public enum AemAttitudeType {
                                                    Double.parseDouble(fields[3]),
                                                    true);
             final Vector3D rotationRate = orekitRate(new Vector3D(FastMath.toRadians(Double.parseDouble(fields[5])),
-                                                                 FastMath.toRadians(Double.parseDouble(fields[6])),
-                                                                 FastMath.toRadians(Double.parseDouble(fields[7]))),
+                                                                  FastMath.toRadians(Double.parseDouble(fields[6])),
+                                                                  FastMath.toRadians(Double.parseDouble(fields[7]))),
                                                     rotation, metadata);
 
             // Return
@@ -325,8 +325,8 @@ public enum AemAttitudeType {
                                                    FastMath.toRadians(Double.parseDouble(fields[2])),
                                                    FastMath.toRadians(Double.parseDouble(fields[3])));
             final Vector3D rotationRate = orekitRate(new Vector3D(FastMath.toRadians(Double.parseDouble(fields[4])),
-                                                                 FastMath.toRadians(Double.parseDouble(fields[5])),
-                                                                 FastMath.toRadians(Double.parseDouble(fields[6]))),
+                                                                  FastMath.toRadians(Double.parseDouble(fields[5])),
+                                                                  FastMath.toRadians(Double.parseDouble(fields[6]))),
                                                     rotation, metadata);
             // Return
             final TimeStampedAngularCoordinates ac =

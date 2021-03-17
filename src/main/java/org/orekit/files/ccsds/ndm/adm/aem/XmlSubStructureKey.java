@@ -14,30 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.ccsds.section;
+package org.orekit.files.ccsds.ndm.adm.aem;
 
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
-/** Keywords allowed in {@link Header}.
+/** Keywords for AEM data sub-structure in XML files.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public enum HeaderKey {
+enum XmlSubStructureKey {
 
-    /** Header comment. */
-    COMMENT((token, context, header) ->
-            token.getType() == TokenType.ENTRY ? header.addComment(token.getContentAsNormalizedString()) : true),
-
-    /** Creation date. */
-    CREATION_DATE((token, context, header) -> token.processAsDate(header::setCreationDate, context)),
-
-    /** Creating agency or operator. */
-    ORIGINATOR((token, context, header) -> token.processAsUppercaseString(header::setOriginator)),
-
-    /** ID that uniquely identifies a message from a given originator. */
-    MESSAGE_ID((token, context, header) -> token.processAsUppercaseString(header::setMessageId));
+    /** Attitude state section. */
+    attitudeState((token, parser) -> parser.manageXmlAttitudeStateSection(token.getType() == TokenType.START));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -45,29 +34,27 @@ public enum HeaderKey {
     /** Simple constructor.
      * @param processor processing method
      */
-    HeaderKey(final TokenProcessor processor) {
+    XmlSubStructureKey(final TokenProcessor processor) {
         this.processor = processor;
     }
 
-    /** Process an token.
+    /** Process one token.
      * @param token token to process
-     * @param context parsing context
-     * @param header header to fill
+     * @param parser AEM file parser
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final Header header) {
-        return processor.process(token, context, header);
+    public boolean process(final ParseToken token, final AemParser parser) {
+        return processor.process(token, parser);
     }
 
     /** Interface for processing one token. */
     interface TokenProcessor {
         /** Process one token.
          * @param token token to process
-         * @param context parsing context
-         * @param header header to fill
+         * @param parser AEM file parser
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, Header header);
+        boolean process(ParseToken token, AemParser parser);
     }
 
 }

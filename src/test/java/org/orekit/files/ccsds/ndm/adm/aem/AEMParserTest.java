@@ -39,6 +39,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
+import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.frames.FramesFactory;
@@ -58,8 +59,8 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testParseAEM1() throws IOException {
-        final String ex = "/ccsds/adm/aem/AEMExample.txt";
+    public void testParseAEM01() throws IOException {
+        final String ex = "/ccsds/adm/aem/AEMExample01.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemFile file = new ParserBuilder().buildAemParser().parseMessage(source);
         final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
@@ -169,8 +170,8 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testParseAEM2() throws URISyntaxException {
-        final String name = "/ccsds/adm/aem/AEMExample2.txt";
+    public void testParseAEM02() throws URISyntaxException {
+        final String name = "/ccsds/adm/aem/AEMExample02.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         AemParser parser = new ParserBuilder().
                            withMissionReferenceDate(new AbsoluteDate("1996-12-17T00:00:00.000",
@@ -204,8 +205,8 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testParseAEM3() throws URISyntaxException {
-        final String ex = "/ccsds/adm/aem/AEMExample3.txt";
+    public void testParseAEM03() throws URISyntaxException {
+        final String ex = "/ccsds/adm/aem/AEMExample03.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
         
@@ -218,8 +219,8 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testParseAEM4() throws URISyntaxException {
-        final String ex = "/ccsds/adm/aem/AEMExample4.txt";
+    public void testParseAEM04() throws URISyntaxException {
+        final String ex = "/ccsds/adm/aem/AEMExample04.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
         final AemFile file = parser.parseMessage(source);
@@ -230,8 +231,8 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testParseAEM5() throws URISyntaxException {
-        final String ex = "/ccsds/adm/aem/AEMExample5.txt";
+    public void testParseAEM05() throws URISyntaxException {
+        final String ex = "/ccsds/adm/aem/AEMExample05.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
         final AemFile file = parser.parseMessage(source);
@@ -276,8 +277,8 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testParseAEM6() throws URISyntaxException {
-        final String ex = "/ccsds/adm/aem/AEMExample6.txt";
+    public void testParseAEM06() throws URISyntaxException {
+        final String ex = "/ccsds/adm/aem/AEMExample06.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
         
@@ -288,6 +289,123 @@ public class AEMParserTest {
             Assert.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
             Assert.assertEquals(AemAttitudeType.SPIN_NUTATION.name(), oe.getParts()[0]);
         }
+    }
+
+    @Test
+    public void testParseAEM07() throws URISyntaxException {
+        final String ex = "/ccsds/adm/aem/AEMExample07.txt";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final AemParser parser  = new ParserBuilder().buildAemParser();
+        final AemFile file = parser.parseMessage(source);
+        final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
+        final List<String> headerComment = new ArrayList<String>();
+        headerComment.add("comment");
+        Assert.assertEquals(headerComment, file.getHeader().getComments());
+        final List<String> metadataComment = new ArrayList<String>();
+        metadataComment.add("This file was produced by M.R. Somebody, MSOO NAV/JPL, 2002 OCT 04.");
+        metadataComment.add("It is to be used for attitude reconstruction only. The relative accuracy of these");
+        metadataComment.add("attitudes is 0.1 degrees per axis.");
+        Assert.assertEquals(metadataComment,        segment0.getMetadata().getComments());
+        Assert.assertEquals(TimeSystem.UTC,         segment0.getMetadata().getTimeSystem());
+        Assert.assertEquals("MARS GLOBAL SURVEYOR", segment0.getMetadata().getObjectName());
+        Assert.assertEquals("1996-062A",            segment0.getMetadata().getObjectID());
+        Assert.assertEquals("MARS BARYCENTER",      segment0.getMetadata().getCenter().getName());
+        Assert.assertEquals(1996,                   segment0.getMetadata().getLaunchYear());
+        Assert.assertEquals(62,                     segment0.getMetadata().getLaunchNumber());
+        Assert.assertEquals("A",                    segment0.getMetadata().getLaunchPiece());
+        Assert.assertFalse(segment0.getMetadata().getHasCreatableBody());
+        Assert.assertNull(segment0.getMetadata().getCenter().getBody());
+        Assert.assertEquals(CelestialBodyFrame.EME2000, segment0.getMetadata().getEndpoints().getFrameA().asCelestialBodyFrame());
+        Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY, segment0.getMetadata().getEndpoints().getFrameB().asSpacecraftBodyFrame().getBaseEquipment());
+        Assert.assertEquals("1", segment0.getMetadata().getEndpoints().getFrameB().asSpacecraftBodyFrame().getLabel());
+        Assert.assertTrue(segment0.getMetadata().getEndpoints().isA2b());
+        Assert.assertEquals(new AbsoluteDate("2002-12-18T12:00:00.331", TimeScalesFactory.getUTC()),
+                            segment0.getMetadata().getStartTime());
+        Assert.assertEquals(new AbsoluteDate("2002-12-18T12:00:00.331", TimeScalesFactory.getUTC()),
+                            segment0.getMetadata().getUseableStartTime());
+        Assert.assertEquals(new AbsoluteDate("2002-12-18T12:02:00.331", TimeScalesFactory.getUTC()),
+                            segment0.getMetadata().getUseableStopTime());
+        Assert.assertEquals(new AbsoluteDate("2002-12-18T12:02:00.331", TimeScalesFactory.getUTC()),
+                            segment0.getMetadata().getStopTime());
+        Assert.assertEquals(AemAttitudeType.QUATERNION, segment0.getMetadata().getAttitudeType());
+        Assert.assertFalse(segment0.getMetadata().isFirst());
+        Assert.assertEquals("HERMITE", segment0.getMetadata().getInterpolationMethod());
+        Assert.assertEquals(7, segment0.getMetadata().getInterpolationDegree());
+
+        final AbsoluteDate refDate = new AbsoluteDate("2002-12-18T12:00:00.331", TimeScalesFactory.getUTC());
+
+        Assert.assertEquals(3, segment0.getData().getAngularCoordinates().size());
+        final TimeStampedAngularCoordinates ac0 = segment0.getData().getAngularCoordinates().get(0);
+        Assert.assertEquals(0.0, ac0.getDate().durationFrom(refDate), 1.0e-5);
+        Assert.assertEquals(0.0,
+                            Rotation.distance(new Rotation(0.68427, 0.56748, 0.03146, 0.45689, true),
+                                              ac0.getRotation()), 
+                            1.0e-10);
+        final TimeStampedAngularCoordinates ac1 = segment0.getData().getAngularCoordinates().get(1);
+        Assert.assertEquals(60.0, ac1.getDate().durationFrom(refDate), 1.0e-5);
+        Assert.assertEquals(0.0,
+                            Rotation.distance(new Rotation(0.74533, 0.42319, -0.45697, 0.23784, true),
+                                              ac1.getRotation()), 
+                            1.0e-10);
+        final TimeStampedAngularCoordinates ac2 = segment0.getData().getAngularCoordinates().get(2);
+        Assert.assertEquals(120.0, ac2.getDate().durationFrom(refDate), 1.0e-5);
+        Assert.assertEquals(0.0,
+                            Rotation.distance(new Rotation(0.45652, -0.84532, 0.26974, -0.06532, true),
+                                              ac2.getRotation()), 
+                            1.0e-10);
+
+    }
+
+    @Test
+    public void testParseAEM11() throws URISyntaxException {
+        final String ex = "/ccsds/adm/aem/AEMExample11.xml";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final AemParser parser  = new ParserBuilder().buildAemParser();
+        final AemFile file = parser.parseMessage(source);
+        final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
+        final List<String> headerComment = new ArrayList<String>();
+        headerComment.add("This example shows an AEM with a rotation");
+        Assert.assertEquals(headerComment, file.getHeader().getComments());
+        final List<String> metadataComment = new ArrayList<String>();
+        metadataComment.add("The relative accuracy of these");
+        metadataComment.add("attitudes is 0.1 degrees per axis.");
+        Assert.assertEquals(metadataComment, segment0.getMetadata().getComments());
+        Assert.assertEquals(TimeSystem.UTC,  segment0.getMetadata().getTimeSystem());
+        Assert.assertEquals("FICTITIOUS",    segment0.getMetadata().getObjectName());
+        Assert.assertEquals("2020-224A",     segment0.getMetadata().getObjectID());
+        Assert.assertEquals("EARTH",         segment0.getMetadata().getCenter().getName());
+        Assert.assertEquals(CelestialBodyFrame.EME2000, segment0.getMetadata().getEndpoints().getFrameA().asCelestialBodyFrame());
+        Assert.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY, segment0.getMetadata().getEndpoints().getFrameB().asSpacecraftBodyFrame().getBaseEquipment());
+        Assert.assertEquals("1", segment0.getMetadata().getEndpoints().getFrameB().asSpacecraftBodyFrame().getLabel());
+        Assert.assertTrue(segment0.getMetadata().getEndpoints().isA2b());
+        Assert.assertEquals(new AbsoluteDate("2020-090T05:00:00.071", TimeScalesFactory.getUTC()),
+                            segment0.getMetadata().getStartTime());
+        Assert.assertEquals(new AbsoluteDate("2020-090T05:00:00.946", TimeScalesFactory.getUTC()),
+                            segment0.getMetadata().getStopTime());
+        Assert.assertEquals(AemAttitudeType.EULER_ANGLE_RATE, segment0.getMetadata().getAttitudeType());
+
+        final AbsoluteDate refDate = new AbsoluteDate("2020-090T05:00:00.071", TimeScalesFactory.getUTC());
+
+        Assert.assertEquals(3, segment0.getData().getAngularCoordinates().size());
+        final TimeStampedAngularCoordinates ac0 = segment0.getData().getAngularCoordinates().get(0);
+        Assert.assertEquals(0.0, ac0.getDate().durationFrom(refDate), 1.0e-5);
+        Assert.assertEquals(0.0,
+                            Rotation.distance(new Rotation(0.68427, 0.56748, 0.03146, 0.45689, true),
+                                              ac0.getRotation()), 
+                            1.0e-10);
+        final TimeStampedAngularCoordinates ac1 = segment0.getData().getAngularCoordinates().get(1);
+        Assert.assertEquals(60.0, ac1.getDate().durationFrom(refDate), 1.0e-5);
+        Assert.assertEquals(0.0,
+                            Rotation.distance(new Rotation(0.74533, 0.42319, -0.45697, 0.23784, true),
+                                              ac1.getRotation()), 
+                            1.0e-10);
+        final TimeStampedAngularCoordinates ac2 = segment0.getData().getAngularCoordinates().get(2);
+        Assert.assertEquals(120.0, ac2.getDate().durationFrom(refDate), 1.0e-5);
+        Assert.assertEquals(0.0,
+                            Rotation.distance(new Rotation(0.45652, -0.84532, 0.26974, -0.06532, true),
+                                              ac2.getRotation()), 
+                            1.0e-10);
+
     }
 
     @Test
@@ -305,7 +423,7 @@ public class AEMParserTest {
 
     @Test
     public void testNonExistentFile() throws URISyntaxException {
-        final String realName = getClass().getResource("/ccsds/adm/aem/AEMExample.txt").toURI().getPath();
+        final String realName = getClass().getResource("/ccsds/adm/aem/AEMExample01.txt").toURI().getPath();
         final String wrongName = realName + "xxxxx";
         final DataSource source =  new DataSource(wrongName, () -> getClass().getResourceAsStream(wrongName));
         try {
@@ -437,7 +555,7 @@ public class AEMParserTest {
 
     @Test
     public void testMissingConvention() throws URISyntaxException {
-        final String ex = "/ccsds/adm/aem/AEMExample.txt";
+        final String ex = "/ccsds/adm/aem/AEMExample01.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemFile file = new ParserBuilder().buildAemParser().parseMessage(source);
         try {
@@ -470,7 +588,7 @@ public class AEMParserTest {
     public void testDefaultInterpolationDegree()
         throws URISyntaxException {
 
-        final String name = "/ccsds/adm/aem/AEMExample.txt";
+        final String name = "/ccsds/adm/aem/AEMExample01.txt";
         ParserBuilder builder = new ParserBuilder();
 
         final DataSource source1 = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -486,7 +604,7 @@ public class AEMParserTest {
 
     @Test
     public void testIssue739() {
-        final String ex = "/ccsds/adm/aem/AEMExample8.txt";
+        final String ex = "/ccsds/adm/aem/AEMExample08.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemFile file = new ParserBuilder().buildAemParser().parseMessage(source);
         final AemSegment segment0 = file.getSegments().get(0);
@@ -506,7 +624,7 @@ public class AEMParserTest {
 
     @Test
     public void testIssue739_2() {
-        final String ex = "/ccsds/adm/aem/AEMExample9.txt";
+        final String ex = "/ccsds/adm/aem/AEMExample09.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemFile file = new ParserBuilder().buildAemParser().parseMessage(source);
         final AemSegment segment0 = file.getSegments().get(0);

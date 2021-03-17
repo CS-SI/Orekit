@@ -27,11 +27,10 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.odm.CommonParser;
-import org.orekit.files.ccsds.ndm.odm.OdmHeader;
-import org.orekit.files.ccsds.ndm.odm.OdmHeaderProcessingState;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.section.HeaderProcessingState;
 import org.orekit.files.ccsds.section.KvnStructureProcessingState;
 import org.orekit.files.ccsds.section.MetadataKey;
 import org.orekit.files.ccsds.section.Segment;
@@ -68,7 +67,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
     private static final Pattern SPLIT_AT_BLANKS = Pattern.compile("\\s+");
 
     /** File header. */
-    private OdmHeader header;
+    private Header header;
 
     /** Metadata for current observation block. */
     private OcmMetadata metadata;
@@ -144,7 +143,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header                  = new OdmHeader();
+        header                  = new Header();
         metadata                = null;
         context                 = null;
         orbitBlocks             = null;
@@ -159,14 +158,14 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new KvnStructureProcessingState(this);
-            reset(fileFormat, new OdmHeaderProcessingState(getDataContext(), this, header));
+            reset(fileFormat, new HeaderProcessingState(getDataContext(), this));
         }
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean prepareHeader() {
-        setFallback(new OdmHeaderProcessingState(getDataContext(), this, header));
+        setFallback(new HeaderProcessingState(getDataContext(), this));
         return true;
     }
 

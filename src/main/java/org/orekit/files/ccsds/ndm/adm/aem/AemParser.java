@@ -165,7 +165,7 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
     /** {@inheritDoc} */
     @Override
     public boolean inMetadata() {
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processDataToken);
+        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processKvnDataToken);
         return true;
     }
 
@@ -180,7 +180,7 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
     @Override
     public boolean prepareData() {
         currentBlock = new AemData();
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processMetadataToken);
+        setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : this::processMetadataToken);
         return true;
     }
 
@@ -211,6 +211,24 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
         return file;
     }
 
+    /** Manage attitude state section in a XML message.
+     * @param starting if true, parser is entering the section
+     * otherwise it is leaving the section
+     * @return always return true
+     */
+    boolean manageXmlAttitudeStateSection(final boolean starting) {
+        if (starting) {
+            stateVectorBlock = new StateVector();
+            setFallback(this::processXmlStateVectorToken);
+        } else {
+            currentBlock.addData(stateVectorBlock.toTimeStampedPVCoordinates(),
+                                 stateVectorBlock.hasAcceleration());
+            stateVectorBlock = null;
+            setFallback(structureProcessor);
+        }
+        return true;
+    }
+
     /** Process one metadata token.
      * @param token token to process
      * @return true if token was processed, false otherwise
@@ -234,11 +252,25 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
         }
     }
 
-    /** Process one data token.
+    /** Process one XML data substructure token.
      * @param token token to process
      * @return true if token was processed, false otherwise
      */
-    private boolean processDataToken(final ParseToken token) {
+    private boolean processXmlSubStructureToken(final ParseToken token) {
+        try {
+            return token.getName() != null &&
+                   XmlSubStructureKey.valueOf(token.getName()).process(token, this);
+        } catch (IllegalArgumentException iae) {
+            // token has not been recognized
+            return false;
+        }
+    }
+
+    /** Process one data token in a KVN message.
+     * @param token token to process
+     * @return true if token was processed, false otherwise
+     */
+    private boolean processKvnDataToken(final ParseToken token) {
         inData();
         if ("COMMENT".equals(token.getName())) {
             return token.getType() == TokenType.ENTRY ? currentBlock.addComment(token.getContentAsNormalizedString()) : true;
@@ -257,6 +289,21 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
             }
         } else {
             // not a raw line, it is most probably the end of the data section
+            return false;
+        }
+    }
+
+    /** Process one attitude state data token in a XML message.
+     * @param token token to process
+     * @return true if token was processed, false otherwise
+     */
+    private boolean processXmlAttitudeStateToken(final ParseToken token) {
+        setFallback(this::processXmlSubStructureToken);
+        try {
+            return token.getName() != null &&
+                   StateVectorKey.valueOf(token.getName()).process(token, context, stateVectorBlock);
+        } catch (IllegalArgumentException iae) {
+            // token has not been recognized
             return false;
         }
     }

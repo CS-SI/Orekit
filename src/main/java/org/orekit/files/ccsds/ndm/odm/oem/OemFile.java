@@ -27,7 +27,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.NdmFile;
-import org.orekit.files.ccsds.ndm.odm.OdmHeader;
+import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -42,7 +42,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Evan Ward
  * @since 6.1
  */
-public class OemFile extends NdmFile<OdmHeader, OemSegment>
+public class OemFile extends NdmFile<Header, OemSegment>
     implements EphemerisFile<TimeStampedPVCoordinates, OemSegment> {
 
     /** Key for format version. */
@@ -64,7 +64,7 @@ public class OemFile extends NdmFile<OdmHeader, OemSegment>
      * @param dataContext used for creating frames, time scales, etc.
      * @param mu gravitational coefficient
      */
-    public OemFile(final OdmHeader header, final List<OemSegment> segments,
+    public OemFile(final Header header, final List<OemSegment> segments,
                    final IERSConventions conventions, final DataContext dataContext,
                    final double mu) {
         super(header, segments, conventions, dataContext);

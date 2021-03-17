@@ -23,7 +23,7 @@ import java.util.Map;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.NdmFile;
-import org.orekit.files.ccsds.ndm.odm.OdmHeader;
+import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.utils.IERSConventions;
@@ -33,7 +33,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OcmFile extends NdmFile<OdmHeader, Segment<OcmMetadata, OcmData>>
+public class OcmFile extends NdmFile<Header, Segment<OcmMetadata, OcmData>>
     implements EphemerisFile<TimeStampedPVCoordinates, OrbitStateHistory> {
 
     /** Key for format version. */
@@ -49,7 +49,7 @@ public class OcmFile extends NdmFile<OdmHeader, Segment<OcmMetadata, OcmData>>
      * @param dataContext used for creating frames, time scales, etc.
      * @param mu Gravitational coefficient to use for building Cartesian/Keplerian orbits.
      */
-    public OcmFile(final OdmHeader header, final List<Segment<OcmMetadata, OcmData>> segments,
+    public OcmFile(final Header header, final List<Segment<OcmMetadata, OcmData>> segments,
                    final IERSConventions conventions, final DataContext dataContext,
                    final double mu) {
         super(header, segments, conventions, dataContext);

@@ -32,10 +32,9 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
-import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
-import org.orekit.files.ccsds.ndm.odm.OdmHeader;
+import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderKey;
@@ -266,7 +265,7 @@ public class OemWriter implements EphemerisFileWriter {
     private final String fileName;
 
     /** File header. */
-    private final OdmHeader header;
+    private final Header header;
 
     /** Current metadata. */
     private final OemMetadata metadata;
@@ -296,7 +295,7 @@ public class OemWriter implements EphemerisFileWriter {
      * @since 11.0
      */
     public OemWriter(final IERSConventions conventions, final DataContext dataContext,
-                     final OdmHeader header, final OemMetadata template) {
+                     final Header header, final OemMetadata template) {
         this(conventions, dataContext, header, template, DEFAULT_FILE_NAME,
              DEFAULT_POSITION_FORMAT, DEFAULT_VELOCITY_FORMAT,
              DEFAULT_ACCELERATION_FORMAT, DEFAULT_COVARIANCE_FORMAT);
@@ -332,7 +331,7 @@ public class OemWriter implements EphemerisFileWriter {
      * @since 11.0
      */
     public OemWriter(final IERSConventions conventions, final DataContext dataContext,
-                     final OdmHeader header, final OemMetadata template,
+                     final Header header, final OemMetadata template,
                      final String fileName, final String positionFormat,
                      final String velocityFormat, final String accelerationFormat,
                      final String covarianceFormat) {
@@ -530,7 +529,7 @@ public class OemWriter implements EphemerisFileWriter {
                              true);
 
         if (header != null) {
-            generator.writeEntry(OdmHeader.MESSAGE_ID, header.getMessageId(), false);
+            generator.writeEntry(HeaderKey.MESSAGE_ID.name(), header.getMessageId(), false);
         }
 
         // add an empty line for presentation

@@ -27,8 +27,6 @@ import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.CommonParser;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElementsKey;
-import org.orekit.files.ccsds.ndm.odm.OdmHeader;
-import org.orekit.files.ccsds.ndm.odm.OdmHeaderProcessingState;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.SpacecraftParameters;
 import org.orekit.files.ccsds.ndm.odm.SpacecraftParametersKey;
@@ -37,6 +35,7 @@ import org.orekit.files.ccsds.ndm.odm.StateVectorKey;
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.section.HeaderProcessingState;
 import org.orekit.files.ccsds.section.MetadataKey;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.section.XmlStructureProcessingState;
@@ -72,7 +71,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
     private final double defaultMass;
 
     /** File header. */
-    private OdmHeader header;
+    private Header header;
 
     /** File segments. */
     private List<Segment<CommonMetadata, OpmData>> segments;
@@ -132,7 +131,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header                    = new OdmHeader();
+        header                    = new Header();
         segments                  = new ArrayList<>();
         metadata                  = null;
         context                   = null;
@@ -148,14 +147,14 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new ErrorState(); // should never be called
-            reset(fileFormat, new OdmHeaderProcessingState(getDataContext(), this, header));
+            reset(fileFormat, new HeaderProcessingState(getDataContext(), this));
         }
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean prepareHeader() {
-        setFallback(new OdmHeaderProcessingState(getDataContext(), this, header));
+        setFallback(new HeaderProcessingState(getDataContext(), this));
         return true;
     }
 

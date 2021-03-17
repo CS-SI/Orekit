@@ -42,7 +42,7 @@ import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.ModifiedFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
-import org.orekit.files.ccsds.ndm.odm.OdmHeader;
+import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.frames.Frame;
@@ -138,7 +138,7 @@ public class StreamingOemWriterTest {
             String objectName = block.getMetadata().getObjectName();
             String objectID = block.getMetadata().getObjectID();
 
-            OdmHeader header = new OdmHeader();
+            Header header = new Header();
             header.setOriginator(originator);
             OemMetadata metadata = new OemMetadata(1);
             metadata.setObjectName("will be overwritten");

@@ -29,12 +29,11 @@ import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.CommonParser;
-import org.orekit.files.ccsds.ndm.odm.OdmHeader;
-import org.orekit.files.ccsds.ndm.odm.OdmHeaderProcessingState;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.StateVector;
 import org.orekit.files.ccsds.ndm.odm.StateVectorKey;
 import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.section.HeaderProcessingState;
 import org.orekit.files.ccsds.section.KvnStructureProcessingState;
 import org.orekit.files.ccsds.section.MetadataKey;
 import org.orekit.files.ccsds.section.XmlStructureProcessingState;
@@ -76,7 +75,7 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
     private static final double KM_TO_M = 1000.0;
 
     /** File header. */
-    private OdmHeader header;
+    private Header header;
 
     /** File segments. */
     private List<OemSegment> segments;
@@ -142,7 +141,7 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header            = new OdmHeader();
+        header            = new Header();
         segments          = new ArrayList<>();
         metadata          = null;
         context           = null;
@@ -155,14 +154,14 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new KvnStructureProcessingState(this);
-            reset(fileFormat, new OdmHeaderProcessingState(getDataContext(), this, header));
+            reset(fileFormat, new HeaderProcessingState(getDataContext(), this));
         }
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean prepareHeader() {
-        setFallback(new OdmHeaderProcessingState(getDataContext(), this, header));
+        setFallback(new HeaderProcessingState(getDataContext(), this));
         return true;
     }
 
