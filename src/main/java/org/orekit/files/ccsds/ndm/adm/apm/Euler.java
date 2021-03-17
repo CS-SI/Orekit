@@ -63,16 +63,26 @@ public class Euler extends CommentsContainer {
     /** {@inheritDoc} */
     @Override
     public void checkMandatoryEntries() {
+
         super.checkMandatoryEntries();
         endpoints.checkMandatoryEntriesExceptExternalFrame(EulerKey.EULER_FRAME_A,
                                                            EulerKey.EULER_FRAME_B,
                                                            EulerKey.EULER_DIR);
         endpoints.checkExternalFrame(EulerKey.EULER_FRAME_A, EulerKey.EULER_FRAME_B);
         checkNotNull(eulerRotSeq, EulerKey.EULER_ROT_SEQ);
-        if (Double.isNaN(rotationAngles[0] + rotationAngles[1] + rotationAngles[2])) {
-            throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, "{X|Y|Z}_ANGLE");
+
+        final boolean missingAngle = Double.isNaN(rotationAngles[0] + rotationAngles[1] + rotationAngles[2]);
+        if (missingAngle) {
+            // if at least one is NaN, all must be NaN (i.e. not initialized)
+            for (final double ra : rotationAngles) {
+                if (!Double.isNaN(ra)) {
+                    throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, "{X|Y|Z}_ANGLE");
+                }
+            }
         }
-        if (Double.isNaN(rotationRates[0] + rotationRates[1] + rotationRates[2])) {
+
+        final boolean missingRate = Double.isNaN(rotationRates[0] + rotationRates[1] + rotationRates[2]);
+        if (missingRate) {
             // if at least one is NaN, all must be NaN (i.e. not initialized)
             for (final double rr : rotationRates) {
                 if (!Double.isNaN(rr)) {
@@ -80,6 +90,13 @@ public class Euler extends CommentsContainer {
                 }
             }
         }
+
+        // either angles or rates must be specified
+        // (angles may be missing in the quaternion/Euler rate case)
+        if (missingAngle && missingRate) {
+            throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, "{X|Y|Z}_{ANGLE|RATE}");
+        }
+
     }
 
     /** Get the endpoints (i.e. frames A, B and their relationship).
