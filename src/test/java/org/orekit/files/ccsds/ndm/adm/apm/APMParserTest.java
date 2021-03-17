@@ -676,7 +676,7 @@ public class APMParserTest {
 
     @Test
     public void testWrongADMType() {
-        final String name = "/ccsds/adm/aem/AEMExample.txt";
+        final String name = "/ccsds/adm/aem/AEMExample01.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
             new ParserBuilder().
