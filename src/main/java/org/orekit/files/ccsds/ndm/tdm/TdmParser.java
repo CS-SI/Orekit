@@ -84,7 +84,7 @@ public class TdmParser extends AbstractMessageParser<TdmFile, TdmParser> {
     public TdmParser(final IERSConventions conventions,
                      final boolean simpleEOP,
                      final DataContext dataContext) {
-        super(TdmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext);
+        super(ROOT, TdmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext);
     }
 
     /** {@inheritDoc} */

@@ -89,10 +89,12 @@ public enum OrbitStateHistoryMetadataKey {
      * @see ElementsType
      */
     ORB_TYPE((token, context, container) -> {
-        try {
-            container.setOrbType(ElementsType.valueOf(token.getContentAsUppercaseString()));
-        } catch (IllegalArgumentException iae) {
-            throw token.generateException(iae);
+        if (token.getType() == TokenType.ENTRY) {
+            try {
+                container.setOrbType(ElementsType.valueOf(token.getContentAsUppercaseString()));
+            } catch (IllegalArgumentException iae) {
+                throw token.generateException(iae);
+            }
         }
         return true;
     }),

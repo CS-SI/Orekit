@@ -16,6 +16,8 @@
  */
 package org.orekit.files.ccsds.ndm.adm;
 
+import java.util.Map;
+
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -23,6 +25,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NdmFile;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.files.ccsds.utils.lexical.XmlTokenBuilder;
 import org.orekit.files.ccsds.utils.parsing.AbstractMessageParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
@@ -46,10 +49,20 @@ import org.orekit.utils.IERSConventions;
 public abstract class AdmParser<T extends NdmFile<?, ?>, P extends AbstractMessageParser<T, ?>>
     extends AbstractMessageParser<T, P> {
 
+    /** Index rotation element name. */
+    private static final String ROTATION_1 = "rotation1";
+
+    /** Index rotation element name. */
+    private static final String ROTATION_2 = "rotation2";
+
+    /** Index rotation element name. */
+    private static final String ROTATION_3 = "rotation3";
+
     /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
     private final AbsoluteDate missionReferenceDate;
 
     /** Complete constructor.
+     * @param root root element for XML files
      * @param formatVersionKey key for format version
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
@@ -57,11 +70,26 @@ public abstract class AdmParser<T extends NdmFile<?, ?>, P extends AbstractMessa
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * (may be null if time system is absolute)
      */
-    protected AdmParser(final String formatVersionKey,
+    protected AdmParser(final String root, final String formatVersionKey,
                         final IERSConventions conventions, final boolean simpleEOP,
                         final DataContext dataContext, final AbsoluteDate missionReferenceDate) {
-        super(formatVersionKey, conventions, simpleEOP, dataContext);
+        super(root, formatVersionKey, conventions, simpleEOP, dataContext);
         this.missionReferenceDate = missionReferenceDate;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Map<String, XmlTokenBuilder> getSpecialXmlElementsBuilders() {
+
+        final Map<String, XmlTokenBuilder> builders = super.getSpecialXmlElementsBuilders();
+
+        // special handling of rotation elements
+        builders.put(ROTATION_1, new RotationXmlTokenBuilder());
+        builders.put(ROTATION_2, new RotationXmlTokenBuilder());
+        builders.put(ROTATION_3, new RotationXmlTokenBuilder());
+
+        return builders;
+
     }
 
     /**

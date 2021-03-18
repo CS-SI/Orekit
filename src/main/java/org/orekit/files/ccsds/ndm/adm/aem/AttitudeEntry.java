@@ -35,16 +35,12 @@ class AttitudeEntry {
     /** Attitude components. */
     private double[] components;
 
-    /** Indicator for rotation angles. */
-    private boolean inRotationAngles;
-
     /** Build an uninitialized entry.
      * @param metadata metadata used to interpret the data fields
      */
     AttitudeEntry(final AemMetadata metadata) {
-        this.metadata         = metadata;
-        this.components       = new double[8];
-        this.inRotationAngles = false;
+        this.metadata   = metadata;
+        this.components = new double[8];
     }
 
     /** Get the metadata.
@@ -73,14 +69,7 @@ class AttitudeEntry {
      * @return component index of first rotation
      */
     int firstRotationIndex() {
-        return inRotationAngles ? 0 : (metadata.getAttitudeType() == AttitudeType.QUATERNION_RATE ? 4 : 3);
-    }
-
-    /** Set flag for rotation angle parsing.
-     * @param inRotationAngles if true, we are in the rotationAngles part of XML files
-     */
-    public void setInRotationAngles(final boolean inRotationAngles) {
-        this.inRotationAngles = inRotationAngles;
+        return metadata.getAttitudeType() == AttitudeType.QUATERNION_RATE ? 4 : 3;
     }
 
     /** Get the angular coordinates entry.

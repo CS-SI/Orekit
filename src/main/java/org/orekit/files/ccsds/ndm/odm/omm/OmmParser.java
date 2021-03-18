@@ -18,6 +18,7 @@ package org.orekit.files.ccsds.ndm.odm.omm;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.data.DataContext;
@@ -41,6 +42,8 @@ import org.orekit.files.ccsds.section.XmlStructureProcessingState;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.files.ccsds.utils.lexical.UserDefinedXmlTokenBuilder;
+import org.orekit.files.ccsds.utils.lexical.XmlTokenBuilder;
 import org.orekit.files.ccsds.utils.parsing.ErrorState;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 import org.orekit.files.ccsds.utils.parsing.ProcessingState;
@@ -65,6 +68,9 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
 
     /** Root element for XML files. */
     private static final String ROOT = "omm";
+
+    /** User-defined element. */
+    private static final String USER_DEFINED = "USER_DEFINED";
 
     /** Default mass to use if there are no spacecraft parameters block logical block in the file. */
     private final double defaultMass;
@@ -110,8 +116,21 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
     public OmmParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext, final AbsoluteDate missionReferenceDate,
                      final double mu, final double defaultMass) {
-        super(OmmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate, mu);
+        super(ROOT, OmmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate, mu);
         this.defaultMass = defaultMass;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Map<String, XmlTokenBuilder> getSpecialXmlElementsBuilders() {
+
+        final Map<String, XmlTokenBuilder> builders = super.getSpecialXmlElementsBuilders();
+
+        // special handling of user-defined parameters
+        builders.put(USER_DEFINED, new UserDefinedXmlTokenBuilder());
+
+        return builders;
+
     }
 
     /** {@inheritDoc} */
@@ -450,10 +469,11 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
             }
         }
         setFallback(getFileFormat() == FileFormat.XML ? this::processXmlSubStructureToken : new ErrorState());
-        if (token.getType() == TokenType.ENTRY &&
-            token.getName().startsWith(UserDefined.USER_DEFINED_PREFIX)) {
-            userDefinedBlock.addEntry(token.getName().substring(UserDefined.USER_DEFINED_PREFIX.length()),
-                                      token.getContentAsNormalizedString());
+        if (token.getName().startsWith(UserDefined.USER_DEFINED_PREFIX)) {
+            if (token.getType() == TokenType.ENTRY) {
+                userDefinedBlock.addEntry(token.getName().substring(UserDefined.USER_DEFINED_PREFIX.length()),
+                                          token.getContentAsNormalizedString());
+            }
             return true;
         } else {
             // the token was not processed

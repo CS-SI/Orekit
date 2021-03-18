@@ -92,8 +92,8 @@ public class ParseToken {
      * @param lineNumber number of the line in the CCSDS data message
      * @param fileName name of the file
      */
-    protected ParseToken(final TokenType type, final String name, final String content, final String units,
-                         final int lineNumber, final String fileName) {
+    public ParseToken(final TokenType type, final String name, final String content, final String units,
+                      final int lineNumber, final String fileName) {
         this.type       = type;
         this.name       = name;
         this.content    = content;

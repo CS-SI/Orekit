@@ -98,7 +98,7 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
     public AemParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate, final int defaultInterpolationDegree) {
-        super(AemFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate);
+        super(ROOT, AemFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate);
         this.defaultInterpolationDegree  = defaultInterpolationDegree;
     }
 

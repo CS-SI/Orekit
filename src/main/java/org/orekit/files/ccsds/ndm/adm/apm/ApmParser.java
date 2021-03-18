@@ -103,7 +103,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
     public ApmParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate) {
-        super(ApmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate);
+        super(ROOT, ApmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate);
     }
 
     /** {@inheritDoc} */

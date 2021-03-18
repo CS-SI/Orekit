@@ -121,7 +121,7 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
                      final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate, final double mu,
                      final int defaultInterpolationDegree) {
-        super(OemFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
+        super(ROOT, OemFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
               missionReferenceDate, mu);
         this.defaultInterpolationDegree  = defaultInterpolationDegree;
     }

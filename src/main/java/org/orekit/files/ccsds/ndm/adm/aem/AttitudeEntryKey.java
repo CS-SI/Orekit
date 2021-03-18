@@ -17,7 +17,6 @@
 package org.orekit.files.ccsds.ndm.adm.aem;
 
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
-import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 
@@ -52,10 +51,7 @@ public enum AttitudeEntryKey {
     quaternion((token, context, container) -> true),
 
     /** Rotation angles sub-sub-section. */
-    rotationAngles((token, context, container) -> {
-        container.setInRotationAngles(token.getType() == TokenType.START);
-        return true;
-    }),
+    rotationAngles((token, context, container) -> true),
 
     /** Rotation rates sub-sub-section. */
     rotationRates((token, context, container) -> true),
@@ -95,17 +91,26 @@ public enum AttitudeEntryKey {
     QC_DOT((token, context, container) -> token.processAsIndexedDouble(container.getMetadata().isFirst() ? 0 : 3,
                                                                        1.0, container::setComponent)),
 
-    /** First rotation component. */
-    rotation1((token, context, container) -> token.processAsIndexedDouble(container.firstRotationIndex(),
-                                                                          1.0, container::setComponent)),
+    /** Rotation about X axis. */
+    X_ANGLE((token, context, container) -> token.processAsIndexedDouble(0, 1.0, container::setComponent)),
 
-    /** Second rotation component. */
-    rotation2((token, context, container) -> token.processAsIndexedDouble(container.firstRotationIndex() + 1,
-                                                                          1.0, container::setComponent)),
+    /** Rotation about Y axis. */
+    Y_ANGLE((token, context, container) -> token.processAsIndexedDouble(1, 1.0, container::setComponent)),
 
-    /** Third rotation component. */
-    rotation3((token, context, container) -> token.processAsIndexedDouble(container.firstRotationIndex() + 2,
-                                                                          1.0, container::setComponent));
+    /** Rotation about Z axis. */
+    Z_ANGLE((token, context, container) -> token.processAsIndexedDouble(2, 1.0, container::setComponent)),
+
+    /** Rotation about X axis. */
+    X_RATE((token, context, container) -> token.processAsIndexedDouble(container.firstRotationIndex(),
+                                                                       1.0, container::setComponent)),
+
+    /** Rotation about Y axis. */
+    Y_RATE((token, context, container) -> token.processAsIndexedDouble(container.firstRotationIndex() + 1,
+                                                                       1.0, container::setComponent)),
+
+    /** Rotation about Z axis. */
+    Z_RATE((token, context, container) -> token.processAsIndexedDouble(container.firstRotationIndex() + 2,
+                                                                       1.0, container::setComponent));
 
     /** Processing method. */
     private final TokenProcessor processor;

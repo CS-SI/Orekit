@@ -16,13 +16,23 @@
  */
 package org.orekit.files.ccsds.utils.parsing;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.data.DataContext;
+import org.orekit.data.DataSource;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.files.ccsds.ndm.NdmFile;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.FileFormat;
+import org.orekit.files.ccsds.utils.lexical.LexicalAnalyzerSelector;
 import org.orekit.files.ccsds.utils.lexical.MessageParser;
+import org.orekit.files.ccsds.utils.lexical.MessageVersionXmlTokenBuilder;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.lexical.XmlTokenBuilder;
 import org.orekit.utils.IERSConventions;
 
 /** Parser for CCSDS messages.
@@ -46,6 +56,9 @@ public abstract class AbstractMessageParser<T extends NdmFile<?, ?>, P extends A
     /** Safety limit for loop over processing states. */
     private static final int MAX_LOOP = 100;
 
+    /** Root element for XML files. */
+    private final String root;
+
     /** Key for format version. */
     private final String formatVersionKey;
 
@@ -68,15 +81,18 @@ public abstract class AbstractMessageParser<T extends NdmFile<?, ?>, P extends A
     private ProcessingState current;
 
     /** Complete constructor.
+     * @param root root element for XML files
      * @param formatVersionKey key for format version
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames and time scales.
      */
-    protected AbstractMessageParser(final String formatVersionKey,
+    protected AbstractMessageParser(final String root,
+                                    final String formatVersionKey,
                                     final IERSConventions conventions,
                                     final boolean simpleEOP,
                                     final DataContext dataContext) {
+        this.root             = root;
         this.formatVersionKey = formatVersionKey;
         this.conventions      = conventions;
         this.simpleEOP        = simpleEOP;
@@ -86,8 +102,32 @@ public abstract class AbstractMessageParser<T extends NdmFile<?, ?>, P extends A
 
     /** {@inheritDoc} */
     @Override
+    public T parseMessage(final DataSource source) {
+        try {
+            return LexicalAnalyzerSelector.select(source).accept(this);
+        } catch (IOException ioe) {
+            throw new OrekitException(ioe, LocalizedCoreFormats.SIMPLE_MESSAGE,
+                                      ioe.getLocalizedMessage());
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public String getFormatVersionKey() {
         return formatVersionKey;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Map<String, XmlTokenBuilder> getSpecialXmlElementsBuilders() {
+
+        final HashMap<String, XmlTokenBuilder> builders = new HashMap<>();
+
+        // special handling of root tag that contains the format version
+        builders.put(root, new MessageVersionXmlTokenBuilder());
+
+        return builders;
+
     }
 
     /** Get IERS conventions.

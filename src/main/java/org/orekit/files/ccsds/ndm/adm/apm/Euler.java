@@ -159,16 +159,6 @@ public class Euler extends CommentsContainer {
     }
 
     /**
-     * Set an Euler angle (rad).
-     * @param index angle index (counting from 0)
-     * @param angle angle to set
-     */
-    public void setRotationAngle(final int index, final double angle) {
-        refuseFurtherComments();
-        rotationAngles[index] = angle;
-    }
-
-    /**
      * Set the Euler angle about (rad).
      * @param axis rotation axis
      * @param angle angle to set
@@ -185,16 +175,6 @@ public class Euler extends CommentsContainer {
      */
     public double[] getRotationRates() {
         return rotationRates.clone();
-    }
-
-    /**
-     * Set the rate of an Euler angle (rad/s).
-     * @param index angle index (counting from 0)
-     * @param rate angle rate to set
-     */
-    public void setRotationRate(final int index, final double rate) {
-        refuseFurtherComments();
-        rotationRates[index] = rate;
     }
 
     /**

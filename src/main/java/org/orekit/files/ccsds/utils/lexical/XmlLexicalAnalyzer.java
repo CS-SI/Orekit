@@ -18,6 +18,7 @@ package org.orekit.files.ccsds.utils.lexical;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -41,15 +42,6 @@ import org.xml.sax.helpers.DefaultHandler;
  * @since 11.0
  */
 class XmlLexicalAnalyzer implements LexicalAnalyzer {
-
-    /** Attribute name for id. */
-    private static final String ID = "id";
-
-    /** Attribute name for version. */
-    private static final String VERSION = "version";
-
-    /** Attribute name for units. */
-    private static final String UNITS = "units";
 
     /** Source providing the data to analyze. */
     private final DataSource source;
@@ -106,8 +98,11 @@ class XmlLexicalAnalyzer implements LexicalAnalyzer {
         /** CCSDS Message parser to use. */
         private final MessageParser<?> messageParser;
 
-        /** Flag for special processing of first element. */
-        private boolean first;
+        /** Builder for regular elements. */
+        private final XmlTokenBuilder regularBuilder;
+
+        /** Builders for special elements. */
+        private Map<String, XmlTokenBuilder> specialElements;
 
         /** Locator used to get current line number. */
         private Locator locator;
@@ -121,15 +116,25 @@ class XmlLexicalAnalyzer implements LexicalAnalyzer {
         /** Content of the current entry. */
         private String currentContent;
 
-        /** Units of the current element, if any. */
-        private String currentUnits;
+        /** Attributes of the current element. */
+        private Attributes currentAttributes;
 
         /** Simple constructor.
          * @param messageParser CCSDS Message parser to use
          */
         XMLHandler(final MessageParser<?> messageParser) {
-            this.messageParser = messageParser;
-            this.first         = true;
+            this.messageParser   = messageParser;
+            this.regularBuilder  = new RegularXmlTokenBuilder();
+            this.specialElements = messageParser.getSpecialXmlElementsBuilders();
+        }
+
+        /** Get a builder for the current element.
+         * @param qName XML element ualified name
+         * @return builder for this element
+         */
+        private XmlTokenBuilder getBuilder(final String qName) {
+            final XmlTokenBuilder specialBuilder = specialElements.get(qName);
+            return (specialBuilder != null) ? specialBuilder : regularBuilder;
         }
 
         /** {@inheritDoc} */
@@ -164,30 +169,14 @@ class XmlLexicalAnalyzer implements LexicalAnalyzer {
         @Override
         public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) {
 
-            // process start tag
-            messageParser.process(new ParseToken(TokenType.START,
-                                                 qName, null, null,
-                                                 locator.getLineNumber(), source.getName()));
-
-            if (first) {
-                // this is the first element in the file, it must contains the format file version
-                if (messageParser.getFormatVersionKey().equals(attributes.getValue(ID))) {
-                    // generate a parse token for the file format version
-                    messageParser.process(new ParseToken(TokenType.ENTRY,
-                                                         messageParser.getFormatVersionKey(),
-                                                         attributes.getValue(VERSION),
-                                                         null,
-                                                         locator.getLineNumber(), source.getName()));
-                    first = false;
-                } else {
-                    throw new OrekitException(OrekitMessages.UNSUPPORTED_FILE_FORMAT, source.getName());
-                }
-            }
-
             currentElementName = qName;
-            currentUnits       = attributes.getValue(UNITS);
-            currentLineNumber  = -1;
+            currentAttributes  = attributes;
+            currentLineNumber  = locator.getLineNumber();
             currentContent     = null;
+
+            messageParser.process(getBuilder(qName).
+                                  buildToken(true, qName, currentContent, currentAttributes,
+                                             currentLineNumber, source.getName()));
 
         }
 
@@ -195,22 +184,15 @@ class XmlLexicalAnalyzer implements LexicalAnalyzer {
         @Override
         public void endElement(final String uri, final String localName, final String qName) {
 
-            if (currentContent != null) {
-                // we have found in succession a start tag, some content, and an end tag
-                // we are sure we have found a leaf element, so we can now process its content
-                // which was delayed until now
-                messageParser.process(new ParseToken(TokenType.ENTRY,
-                                                     currentElementName, currentContent, currentUnits,
-                                                     currentLineNumber, source.getName()));
+            if (currentContent == null) {
+                // for an end tag without content, we keep the line number of the end tag itself
+                currentLineNumber = locator.getLineNumber();
             }
-
-            // process end tag
-            messageParser.process(new ParseToken(TokenType.STOP,
-                                                 qName, null, null,
-                                                 locator.getLineNumber(), source.getName()));
+            messageParser.process(getBuilder(qName).
+                                  buildToken(false, qName, currentContent, currentAttributes,
+                                             currentLineNumber, source.getName()));
 
             currentElementName = null;
-            currentUnits       = null;
             currentLineNumber  = -1;
             currentContent     = null;
 

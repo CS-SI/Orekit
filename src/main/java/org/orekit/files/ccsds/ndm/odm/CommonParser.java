@@ -54,6 +54,7 @@ public abstract class CommonParser<T extends NdmFile<?, ?>, P extends CommonPars
     private double muCreated;
 
     /** Complete constructor.
+     * @param root root element for XML files
      * @param formatVersionKey key for format version
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
@@ -61,11 +62,11 @@ public abstract class CommonParser<T extends NdmFile<?, ?>, P extends CommonPars
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @param mu gravitational coefficient
      */
-    protected CommonParser(final String formatVersionKey,
-                            final IERSConventions conventions, final boolean simpleEOP,
-                            final DataContext dataContext,
-                            final AbsoluteDate missionReferenceDate, final double mu) {
-        super(formatVersionKey, conventions, simpleEOP, dataContext);
+    protected CommonParser(final String root, final String formatVersionKey,
+                           final IERSConventions conventions, final boolean simpleEOP,
+                           final DataContext dataContext,
+                           final AbsoluteDate missionReferenceDate, final double mu) {
+        super(root, formatVersionKey, conventions, simpleEOP, dataContext);
         this.missionReferenceDate = missionReferenceDate;
         this.muSet                = mu;
         this.muParsed             = Double.NaN;

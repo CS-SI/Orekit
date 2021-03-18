@@ -16,7 +16,6 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
-import org.hipparchus.util.FastMath;
 import org.orekit.files.ccsds.ndm.adm.AdmParser;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
@@ -29,49 +28,10 @@ import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 public enum EulerKey {
 
     /** Rotation angles wrapping element in XML files. */
-    rotationAngles((token, context, container) -> {
-        container.setInRotationAngles(token.getType() == TokenType.START);
-        return true;
-    }),
+    rotationAngles((token, context, container) -> true),
 
     /** Rotation rates wrapping element in XML files. */
     rotationRates((token, context, container) -> true),
-
-    /** First rotation angle or first rotation rate. */
-    rotation1((token, context, container) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            if (container.inRotationAngles()) {
-                container.setRotationAngle(0, FastMath.toRadians(token.getContentAsDouble()));
-            } else {
-                container.setRotationRate(0, FastMath.toRadians(token.getContentAsDouble()));
-            }
-        }
-        return true;
-    }),
-
-    /** Second rotation angle or second rotation rate. */
-    rotation2((token, context, container) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            if (container.inRotationAngles()) {
-                container.setRotationAngle(1, FastMath.toRadians(token.getContentAsDouble()));
-            } else {
-                container.setRotationRate(1, FastMath.toRadians(token.getContentAsDouble()));
-            }
-        }
-        return true;
-    }),
-
-    /** Third rotation angle or third rotation rate. */
-    rotation3((token, context, container) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            if (container.inRotationAngles()) {
-                container.setRotationAngle(2, FastMath.toRadians(token.getContentAsDouble()));
-            } else {
-                container.setRotationRate(2, FastMath.toRadians(token.getContentAsDouble()));
-            }
-        }
-        return true;
-    }),
 
     /** Comment entry. */
     COMMENT((token, context, container) ->

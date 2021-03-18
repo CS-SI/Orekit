@@ -176,13 +176,15 @@ public enum PerturbationsKey {
         /** {@inheritDoc} */
         @Override
         public boolean process(final ParseToken token, final ParsingContext context, final Perturbations container) {
-            final Matcher matcher = GRAVITY_PATTERN.matcher(token.getContentAsNormalizedString());
-            if (!matcher.matches()) {
-                throw token.generateException(null);
+            if (token.getType() == TokenType.ENTRY) {
+                final Matcher matcher = GRAVITY_PATTERN.matcher(token.getContentAsNormalizedString());
+                if (!matcher.matches()) {
+                    throw token.generateException(null);
+                }
+                container.setGravityModel(matcher.group(1),
+                                          Integer.parseInt(matcher.group(2)),
+                                          Integer.parseInt(matcher.group(3)));
             }
-            container.setGravityModel(matcher.group(1),
-                                      Integer.parseInt(matcher.group(2)),
-                                      Integer.parseInt(matcher.group(3)));
             return true;
         }
     }

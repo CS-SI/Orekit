@@ -33,7 +33,7 @@ import org.orekit.files.ccsds.ndm.NdmFile;
  * @author Luc Maisonobe
  * @since 11.0
  */
-interface LexicalAnalyzer {
+public interface LexicalAnalyzer {
 
     /** Parse a CCSDS Message file.
      * @param messageParser CCSDS Message parser to use
