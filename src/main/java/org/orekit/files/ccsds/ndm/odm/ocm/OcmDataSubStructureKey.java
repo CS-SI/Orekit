@@ -28,23 +28,44 @@ public enum OcmDataSubStructureKey {
     /** Orbit state time history section. */
     ORB((token, parser) -> parser.manageOrbitStateSection(token.getType() == TokenType.START)),
 
+    /** Orbit state time history section. */
+    orb((token, parser) -> parser.manageOrbitStateSection(token.getType() == TokenType.START)),
+
     /** Physical properties section. */
     PHYS((token, parser) -> parser.managePhysicalPropertiesSection(token.getType() == TokenType.START)),
+
+    /** Physical properties section. */
+    phys((token, parser) -> parser.managePhysicalPropertiesSection(token.getType() == TokenType.START)),
 
     /** Covariance time history section. */
     COV((token, parser) -> parser.manageCovarianceHistorySection(token.getType() == TokenType.START)),
 
+    /** Covariance time history section. */
+    covar((token, parser) -> parser.manageCovarianceHistorySection(token.getType() == TokenType.START)),
+
     /** Maneuvers section. */
     MAN((token, parser) -> parser.manageManeuversSection(token.getType() == TokenType.START)),
+
+    /** Maneuvers section. */
+    man((token, parser) -> parser.manageManeuversSection(token.getType() == TokenType.START)),
 
     /** Perturbations parameters section. */
     PERT((token, parser) -> parser.managePerturbationParametersSection(token.getType() == TokenType.START)),
 
+    /** Perturbations parameters section. */
+    pert((token, parser) -> parser.managePerturbationParametersSection(token.getType() == TokenType.START)),
+
     /** Orbit determination section. */
     OD((token, parser) -> parser.manageOrbitDeterminationSection(token.getType() == TokenType.START)),
 
+    /** Orbit determination section. */
+    od((token, parser) -> parser.manageOrbitDeterminationSection(token.getType() == TokenType.START)),
+
     /** User-defined parameters section. */
-    USER((token, parser) -> parser.manageUserDefinedParametersSection(token.getType() == TokenType.START));
+    USER((token, parser) -> parser.manageUserDefinedParametersSection(token.getType() == TokenType.START)),
+
+    /** User-defined parameters section. */
+    userDef((token, parser) -> parser.manageUserDefinedParametersSection(token.getType() == TokenType.START));
 
     /** Processing method. */
     private final TokenProcessor processor;

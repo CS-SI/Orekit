@@ -311,7 +311,7 @@ public class OCMParserTest {
     }
 
     @Test
-    public void testParseOCM2() {
+    public void testParseOCM2KVN() {
         final String  name = "/ccsds/odm/ocm/OCMExample2.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final OcmFile file = new ParserBuilder().
@@ -422,6 +422,123 @@ public class OCMParserTest {
         Assert.assertTrue(user.getComments().isEmpty());
         Assert.assertEquals(1, user.getParameters().size());
         Assert.assertEquals("MAXWELL RAFERTY", user.getParameters().get("CONSOLE_POC"));
+
+    }
+
+    @Test
+    public void testParseOCM2XML() {
+        final String  name = "/ccsds/odm/ocm/OCMExample2.xml";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        final OcmFile file = new ParserBuilder().
+                             withMu(Constants.EIGEN5C_EARTH_MU).
+                             buildOcmParser().
+                             parseMessage(source);
+
+        // Check Header Block;
+        Assert.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
+        Assert.assertEquals("ODM V.3 Example G-2",
+                            file.getHeader().getComments().get(0));
+        Assert.assertEquals("OCM example with space object characteristics and perturbations.",
+                            file.getHeader().getComments().get(1));
+        Assert.assertEquals("This OCM reflects the latest conditions post-maneuver A67Z",
+                            file.getHeader().getComments().get(2));
+        Assert.assertEquals("This example shows the specification of multiple comment lines",
+                            file.getHeader().getComments().get(3));
+        Assert.assertEquals(new AbsoluteDate(1998, 11, 06, 9, 23, 57, TimeScalesFactory.getUTC()),
+                            file.getHeader().getCreationDate());
+        Assert.assertEquals("JAXA", file.getHeader().getOriginator());
+        Assert.assertEquals("OCM 201113719185", file.getHeader().getMessageId());
+
+        // Check metadata
+        Assert.assertEquals("OSPREY 5",                            file.getMetadata().getObjectName());
+        Assert.assertEquals("1998-999A",                           file.getMetadata().getInternationalDesignator());
+        Assert.assertEquals("R. Rabbit",                           file.getMetadata().getOriginatorPOC());
+        Assert.assertEquals("Flight Dynamics Mission Design Lead", file.getMetadata().getOriginatorPosition());
+        Assert.assertEquals("(719)555-1234",                       file.getMetadata().getOriginatorPhone());
+        Assert.assertEquals("Mr. Rodgers",                         file.getMetadata().getTechPOC());
+        Assert.assertEquals("(719)555-1234",                       file.getMetadata().getTechPhone());
+        Assert.assertEquals("email@email.XXX",                     file.getMetadata().getTechAddress());
+        Assert.assertEquals(TimeSystem.UT1, file.getMetadata().getTimeSystem());
+        TimeScale ts = DataContext.getDefault().getTimeScales().getUT1(IERSConventions.IERS_2010, false);
+        Assert.assertEquals(0.0,
+                            file.getMetadata().getEpochT0().durationFrom(new AbsoluteDate(1998, 12, 18, ts)),
+                            1.0e-10);
+        Assert.assertEquals(36.0,                                  file.getMetadata().getTaimutcT0(), 1.0e-15);
+        Assert.assertEquals(0.357,                                 file.getMetadata().getUt1mutcT0(), 1.0e-15);
+
+        // check orbit data
+        Assert.assertEquals(1, file.getData().getOrbitBlocks().size());
+        final OrbitStateHistory orb = file.getData().getOrbitBlocks().get(0);
+        Assert.assertEquals(2, orb.getMetadata().getComments().size());
+        Assert.assertEquals("GEOCENTRIC, CARTESIAN, EARTH FIXED", orb.getMetadata().getComments().get(0));
+        Assert.assertEquals("THIS IS MY SECOND COMMENT LINE",     orb.getMetadata().getComments().get(1));
+        Assert.assertEquals("PREDICTED", orb.getMetadata().getOrbBasis());
+        Assert.assertEquals("EFG", orb.getMetadata().getOrbReferenceFrame().getName());
+        Assert.assertNull(orb.getMetadata().getOrbReferenceFrame().asFrame());
+        Assert.assertNull(orb.getMetadata().getOrbReferenceFrame().asCelestialBodyFrame());
+        Assert.assertNull(orb.getMetadata().getOrbReferenceFrame().asOrbitRelativeFrame());
+        Assert.assertNull(orb.getMetadata().getOrbReferenceFrame().asSpacecraftBodyFrame());
+        Assert.assertEquals(ElementsType.CARTPVA, orb.getMetadata().getOrbType());
+        Assert.assertNull(orb.getMetadata().getOrbUnits());
+        Assert.assertEquals(1, orb.getOrbitalStates().size());
+        Assert.assertEquals(new AbsoluteDate(1998, 12, 18, 0, 0, 0.0, ts),
+                            orb.getOrbitalStates().get(0).getDate());
+        Assert.assertEquals( 2854500.0, orb.getOrbitalStates().get(0).getElements()[0], 1.0e-10);
+        Assert.assertEquals(-2916200.0, orb.getOrbitalStates().get(0).getElements()[1], 1.0e-10);
+        Assert.assertEquals(-5360700.0, orb.getOrbitalStates().get(0).getElements()[2], 1.0e-10);
+        Assert.assertEquals(    5900.0, orb.getOrbitalStates().get(0).getElements()[3], 1.0e-10);
+        Assert.assertEquals(    4860.0, orb.getOrbitalStates().get(0).getElements()[4], 1.0e-10);
+        Assert.assertEquals(     520.0, orb.getOrbitalStates().get(0).getElements()[5], 1.0e-10);
+        Assert.assertEquals(       3.7, orb.getOrbitalStates().get(0).getElements()[6], 1.0e-10);
+        Assert.assertEquals(      -3.8, orb.getOrbitalStates().get(0).getElements()[7], 1.0e-10);
+        Assert.assertEquals(      -7.0, orb.getOrbitalStates().get(0).getElements()[8], 1.0e-10);
+
+        // check physical data
+        PhysicalProperties phys = file.getData().getPhysicBlock();
+        Assert.assertEquals(1, phys.getComments().size());
+        Assert.assertEquals("Spacecraft Physical Characteristics", phys.getComments().get(0));
+        Assert.assertEquals(100.0,   phys.getWetMass(),                  1.0e-10);
+        Assert.assertEquals(0.03123, phys.getOebQ().getQ1(),             1.0e-10);
+        Assert.assertEquals(0.78543, phys.getOebQ().getQ2(),             1.0e-10);
+        Assert.assertEquals(0.39158, phys.getOebQ().getQ3(),             1.0e-10);
+        Assert.assertEquals(0.47832, phys.getOebQ().getQ0(),             1.0e-10);
+        Assert.assertEquals(2.0,     phys.getOebMax(),                   1.0e-10);
+        Assert.assertEquals(1.0,     phys.getOebIntermediate(),          1.0e-10);
+        Assert.assertEquals(0.5,     phys.getOebMin(),                   1.0e-10);
+        Assert.assertEquals(0.15,    phys.getOebAreaAlongMax(),          1.0e-10);
+        Assert.assertEquals(0.30,    phys.getOebAreaAlongIntermediate(), 1.0e-10);
+        Assert.assertEquals(0.50,    phys.getOebAreaAlongMin(),          1.0e-10);
+
+        // check no covariance
+        Assert.assertNull(file.getData().getCovarianceBlocks());
+
+        // check no maneuvers
+        Assert.assertNull(file.getData().getManeuverBlocks());
+
+        // check perturbation data
+        Perturbations perts = file.getData().getPerturbationsBlock();
+        Assert.assertEquals(1, perts.getComments().size());
+        Assert.assertEquals("Perturbations Specification", perts.getComments().get(0));
+        Assert.assertEquals("NRLMSIS00", perts.getAtmosphericModel());
+        Assert.assertEquals("EGM-96", perts.getGravityModel());
+        Assert.assertEquals(36, perts.getGravityDegree());
+        Assert.assertEquals(36, perts.getGravityOrder());
+        Assert.assertEquals(36, perts.getGravityOrder());
+        Assert.assertEquals(3.986004415e14, perts.getGm(), 1.0);
+        Assert.assertEquals("MOON", perts.getNBodyPerturbations().get(0).getName());
+        Assert.assertEquals("SUN",  perts.getNBodyPerturbations().get(1).getName());
+        Assert.assertEquals( 12.0, perts.getFixedGeomagneticKp(), 1.0e-10);
+        Assert.assertEquals(105.0, perts.getFixedF10P7(),         1.0e-10);
+        Assert.assertEquals(120.0, perts.getFixedF10P7Mean(),     1.0e-10);
+
+        // check no orbit determination
+        Assert.assertNull(file.getData().getOrbitDeterminationBlock());
+
+        // check user data
+        UserDefined user = file.getData().getUserDefinedBlock();
+        Assert.assertTrue(user.getComments().isEmpty());
+        Assert.assertEquals(1, user.getParameters().size());
+        Assert.assertEquals("WGS-84", user.getParameters().get("EARTH_MODEL"));
 
     }
 

@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.orekit.data.DataContext;
@@ -38,6 +39,8 @@ import org.orekit.files.ccsds.section.XmlStructureProcessingState;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.files.ccsds.utils.lexical.UserDefinedXmlTokenBuilder;
+import org.orekit.files.ccsds.utils.lexical.XmlTokenBuilder;
 import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 import org.orekit.files.ccsds.utils.parsing.ProcessingState;
 import org.orekit.files.general.EphemerisFileParser;
@@ -60,8 +63,14 @@ import org.orekit.utils.units.Unit;
  */
 public class OcmParser extends CommonParser<OcmFile, OcmParser> implements EphemerisFileParser<OcmFile> {
 
-    /** Root element for XML files. */
+    /** Root element for XML messages. */
     private static final String ROOT = "ocm";
+
+    /** Orbit line element for XML messages. */
+    private static final String ORB_LINE = "orbLine";
+
+    /** User-defined element. */
+    private static final String USER_DEFINED = "USER_DEFINED";
 
     /** Pattern for splitting strings at blanks. */
     private static final Pattern SPLIT_AT_BLANKS = Pattern.compile("\\s+");
@@ -113,6 +122,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
 
     /** User defined parameters logical block. */
     private UserDefined userDefinedBlock;
+
     /** Processor for global message structure. */
     private ProcessingState structureProcessor;
 
@@ -125,7 +135,20 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
      */
     public OcmParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext, final double mu) {
-        super(OcmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, null, mu);
+        super(ROOT, OcmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, null, mu);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Map<String, XmlTokenBuilder> getSpecialXmlElementsBuilders() {
+
+        final Map<String, XmlTokenBuilder> builders = super.getSpecialXmlElementsBuilders();
+
+        // special handling of user-defined parameters
+        builders.put(USER_DEFINED, new UserDefinedXmlTokenBuilder());
+
+        return builders;
+
     }
 
     /** {@inheritDoc} */
@@ -208,7 +231,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
     @Override
     public boolean finalizeMetadata() {
         metadata.checkMandatoryEntries();
-        setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processDataSubStructureToken);
+        setFallback(this::processDataSubStructureToken);
         return true;
     }
 
@@ -373,6 +396,8 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                 userDefinedBlock = new UserDefined();
             }
             setFallback(this::processUserDefinedToken);
+        } else {
+            setFallback(structureProcessor);
         }
         return true;
     }
@@ -436,7 +461,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
      * @return true if token was processed, false otherwise
      */
     private boolean processOrbitStateToken(final ParseToken token) {
-        if (token.getName() != null) {
+        if (token.getName() != null && !token.getName().equals(ORB_LINE)) {
             // we are in the section metadata part
             try {
                 return OrbitStateHistoryMetadataKey.valueOf(token.getName()).
@@ -451,6 +476,9 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                 // we are starting the real data section, we can now check metadata is complete
                 currentOrbitStateHistoryMetadata.checkMandatoryEntries();
                 setFallback(this::processDataSubStructureToken);
+            }
+            if (token.getType() == TokenType.START || token.getType() == TokenType.STOP) {
+                return true;
             }
             try {
                 final String[] fields = SPLIT_AT_BLANKS.split(token.getRawContent().trim());
@@ -612,10 +640,11 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
         setFallback(this::processDataSubStructureToken);
         if ("COMMENT".equals(token.getName())) {
             return token.getType() == TokenType.ENTRY ? userDefinedBlock.addComment(token.getContentAsNormalizedString()) : true;
-        } else if (token.getType() == TokenType.ENTRY &&
-            token.getName().startsWith(UserDefined.USER_DEFINED_PREFIX)) {
-            userDefinedBlock.addEntry(token.getName().substring(UserDefined.USER_DEFINED_PREFIX.length()),
-                                      token.getContentAsNormalizedString());
+        } else if (token.getName().startsWith(UserDefined.USER_DEFINED_PREFIX)) {
+            if (token.getType() == TokenType.ENTRY) {
+                userDefinedBlock.addEntry(token.getName().substring(UserDefined.USER_DEFINED_PREFIX.length()),
+                                          token.getContentAsNormalizedString());
+            }
             return true;
         } else {
             // the token was not processed
