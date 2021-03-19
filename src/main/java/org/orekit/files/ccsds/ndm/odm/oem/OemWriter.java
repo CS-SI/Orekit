@@ -17,11 +17,8 @@
 package org.orekit.files.ccsds.ndm.odm.oem;
 
 import java.io.IOException;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import org.hipparchus.linear.RealMatrix;
@@ -41,18 +38,15 @@ import org.orekit.files.ccsds.section.HeaderKey;
 import org.orekit.files.ccsds.section.KvnStructureKey;
 import org.orekit.files.ccsds.section.MetadataKey;
 import org.orekit.files.ccsds.section.XmlStructureKey;
+import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.FileFormat;
+import org.orekit.files.ccsds.utils.generation.AbstractMessageWriter;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
-import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.files.general.EphemerisFile.SatelliteEphemeris;
 import org.orekit.files.general.EphemerisFileWriter;
 import org.orekit.frames.Frame;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateComponents;
-import org.orekit.time.DateTimeComponents;
-import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.IERSConventions;
@@ -205,16 +199,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *      Data Definitions and Conventions</a>
  * @see StreamingOemWriter
  */
-public class OemWriter implements EphemerisFileWriter {
+public class OemWriter extends AbstractMessageWriter implements EphemerisFileWriter {
 
     /** Version number implemented. **/
     public static final double CCSDS_OEM_VERS = 3.0;
-
-    /** Default value for {@link HeaderKey#ORIGINATOR}. */
-    public static final String DEFAULT_ORIGINATOR = "OREKIT";
-
-    /** Default value for {@link #TIME_SYSTEM}. */
-    public static final String DEFAULT_TIME_SYSTEM = "UTC";
 
     /** Default file name for error messages. */
     public static final String DEFAULT_FILE_NAME = "<OEM output>";
@@ -243,29 +231,8 @@ public class OemWriter implements EphemerisFileWriter {
      */
     public static final String DEFAULT_COVARIANCE_FORMAT = "% .7e";
 
-    /** New line separator for output file. */
-    private static final char NEW_LINE = '\n';
-
-    /**
-     * Standardized locale to use, to ensure files can be exchanged without
-     * internationalization issues.
-     */
-    private static final Locale STANDARDIZED_LOCALE = Locale.US;
-
-    /** String format used for dates. **/
-    private static final String DATE_FORMAT = "%04d-%02d-%02dT%02d:%02d:%012.9f";
-
     /** Conversion factor from meters to kilometers. */
     private static final double M_TO_KM = 1.0e-3;
-
-    /** Data context used for obtain frames and time scales. */
-    private final DataContext dataContext;
-
-    /** File name for error messages. */
-    private final String fileName;
-
-    /** File header. */
-    private final Header header;
 
     /** Current metadata. */
     private final OemMetadata metadata;
@@ -281,9 +248,6 @@ public class OemWriter implements EphemerisFileWriter {
 
     /** Format for acovariance data output. */
     private final String covarianceFormat;
-
-    /** Converter for dates. */
-    private final TimeConverter converter;
 
     /**
      * Standard default constructor that creates a writer with default
@@ -335,36 +299,23 @@ public class OemWriter implements EphemerisFileWriter {
                      final String fileName, final String positionFormat,
                      final String velocityFormat, final String accelerationFormat,
                      final String covarianceFormat) {
-
-        this.dataContext        = dataContext;
-        this.header             = header;
+        super(OemFile.FORMAT_VERSION_KEY, CCSDS_OEM_VERS,
+              header,
+              new ContextBinding(
+                  () -> conventions, () -> true, () -> dataContext,
+                  () -> null, template::getTimeSystem, () -> 0.0, () -> 1.0),
+              fileName);
         this.metadata           = copy(template);
-        this.fileName           = fileName;
         this.positionFormat     = positionFormat;
         this.velocityFormat     = velocityFormat;
         this.accelerationFormat = accelerationFormat;
         this.covarianceFormat   = covarianceFormat;
-
-        final ParsingContext context =
-                        new ParsingContext(
-                            () -> conventions, () -> true, () -> dataContext,
-                            () -> null, metadata::getTimeSystem, () -> 0.0, () -> 1.0);
-        this.converter      = metadata.getTimeSystem().getConverter(context);
-
     }
 
-    /** Get the local copy of the template metadata.
-     * <p>
-     * The content of this copy should generally be updated before
-     * {@link #writeMetadata(Appendable) writeMetadata} is called,
-     * at least in order to update {@link OemMetadata#setStartTime(AbsoluteDate)
-     * start time} and {@link OemMetadata#setStopTime(AbsoluteDate) stop time}
-     * for the upcoming {@link #writeOrbitEphemerisLine(Appendable, TimeStampedPVCoordinates)
-     * ephemeris data lines}.
-     * </p>
-     * @return local copy of the template metadata
+    /** Get current metadata.
+     * @return current metadata
      */
-    public OemMetadata getMetadata() {
+    OemMetadata getMetadata() {
         return metadata;
     }
 
@@ -404,7 +355,7 @@ public class OemWriter implements EphemerisFileWriter {
             return;
         }
 
-        try (Generator generator = new KvnGenerator(appendable, fileName)) {
+        try (Generator generator = new KvnGenerator(appendable, getFileName())) {
             writeHeader(generator);
 
             // Loop on segments
@@ -469,7 +420,7 @@ public class OemWriter implements EphemerisFileWriter {
                                     }
 
                                     // end the line
-                                    generator.writeRawData(NEW_LINE);
+                                    generator.writeEmptyLine();
 
                                 }
                                 continuation = true;
@@ -483,57 +434,6 @@ public class OemWriter implements EphemerisFileWriter {
 
             }
         }
-
-    }
-
-    /** Writes the standard OEM header for the file.
-     * @param generator generator to use for producing output
-     * @throws IOException if the stream cannot write to stream
-     */
-    void writeHeader(final Generator generator) throws IOException {
-
-        // Use built-in default if mandatory version not present
-        final double version = header == null || Double.isNaN(header.getFormatVersion()) ?
-                               CCSDS_OEM_VERS : header.getFormatVersion();
-        generator.startMessage(OemFile.FORMAT_VERSION_KEY, version);
-
-        // comments are optional
-        if (header != null) {
-            generator.writeComments(header);
-        }
-
-        // creation date is informational only, but mandatory and always in UTC
-        if (header == null || header.getCreationDate() == null) {
-            final ZonedDateTime zdt = ZonedDateTime.now(ZoneOffset.UTC);
-            generator.writeEntry(HeaderKey.CREATION_DATE.name(),
-                                 String.format(STANDARDIZED_LOCALE, DATE_FORMAT,
-                                               zdt.getYear(), zdt.getMonthValue(), zdt.getDayOfMonth(),
-                                               zdt.getHour(), zdt.getMinute(), (double) zdt.getSecond()),
-                                 true);
-        } else {
-            final DateTimeComponents creationDate =
-                            header.getCreationDate().getComponents(dataContext.getTimeScales().getUTC());
-            final DateComponents dc = creationDate.getDate();
-            final TimeComponents tc = creationDate.getTime();
-            generator.writeEntry(HeaderKey.CREATION_DATE.name(),
-                                 String.format(STANDARDIZED_LOCALE, DATE_FORMAT,
-                                               dc.getYear(), dc.getMonth(), dc.getDay(),
-                                               tc.getHour(), tc.getMinute(), tc.getSecond()),
-                                 true);
-        }
-
-
-        // Use built-in default if mandatory originator not present
-        generator.writeEntry(HeaderKey.ORIGINATOR.name(),
-                             (header == null || header.getOriginator() == null) ? DEFAULT_ORIGINATOR : header.getOriginator(),
-                             true);
-
-        if (header != null) {
-            generator.writeEntry(HeaderKey.MESSAGE_ID.name(), header.getMessageId(), false);
-        }
-
-        // add an empty line for presentation
-        generator.writeEmptyLine();
 
     }
 
@@ -647,7 +547,7 @@ public class OemWriter implements EphemerisFileWriter {
         }
 
         // end the line
-        generator.writeRawData(NEW_LINE);
+        generator.writeEmptyLine();
 
     }
 
@@ -671,7 +571,7 @@ public class OemWriter implements EphemerisFileWriter {
         }
     }
 
-    /** Copy a metadata object (excluding times), making sure mandatory fields have been initialized.
+    /** Copy a metadata object, making sure mandatory fields have been initialized.
      * @param original original object
      * @return a new copy
      */
@@ -708,21 +608,6 @@ public class OemWriter implements EphemerisFileWriter {
 
         return copy;
 
-    }
-
-    /** Convert a date to string value with high precision.
-     * @param date date to write
-     * @return date as a string
-     */
-    private String dateToString(final AbsoluteDate date) {
-        final DateTimeComponents dt = converter.components(date);
-        return String.format(STANDARDIZED_LOCALE, DATE_FORMAT,
-                             dt.getDate().getYear(),
-                             dt.getDate().getMonth(),
-                             dt.getDate().getDay(),
-                             dt.getTime().getHour(),
-                             dt.getTime().getMinute(),
-                             dt.getTime().getSecond());
     }
 
 }
