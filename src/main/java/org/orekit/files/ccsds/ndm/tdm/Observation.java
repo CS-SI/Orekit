@@ -21,11 +21,24 @@ import org.orekit.time.AbsoluteDate;
 
 
 /** The Observation class contains the data from an observation line.<p>
- * It is not an Orekit object yet.<p>
- * It is a simple container holding:<p>
- *  - a keyword, the type of the observation;<p>
- *  - a timetag, the epoch of the observation;<p>
- *  - a measurement, the value of the observation.<p>
+ * <p>
+ * It is not an Orekit object yet. It is a simple container holding:
+ * </p>
+ * <ul>
+ *  <li>a keyword, the type of the observation;</li>
+ *  <li>a timetag, the epoch of the observation;</li>
+ *  <li>a measurement, the value of the observation.</li>
+ * </ul>
+ * <p>
+ * WARNING. As the same class can handle many different measurements
+ * types (range, Doppler, clocks, pressure, power to noise ratio…) and
+ * more importantly as one measurement (range) can be given in incompatible
+ * units (kilometers, seconds, or "Range Units" to be specified in an ICD),
+ * the measurements stored in the class have no units conversions, they are
+ * stored exactly as read/written in the TDM message. The caller is
+ * responsible to convert to SI units. This is a major difference with
+ * almost all other Orekit classes that work only in SI units.
+ * </p>
  * @author Maxime Journot
  */
 public class Observation {
@@ -79,14 +92,14 @@ public class Observation {
     }
 
     /** Getter for the measurement.
-     * @return the measurement
+     * @return the measurement (in TDM units, without conversion)
      */
     public double getMeasurement() {
         return measurement;
     }
 
     /** Setter for the measurement.
-     * @param measurement the measurement to set
+     * @param measurement the measurement to set (in TDM units, without conversion)
      */
     public void setMeasurement(final double measurement) {
         this.measurement = measurement;
