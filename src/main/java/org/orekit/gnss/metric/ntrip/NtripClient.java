@@ -360,7 +360,7 @@ public class NtripClient {
                     }
                 }
 
-                //sourceTable = table;
+                sourceTable = table;
                 return table;
 
             } catch (IOException ioe) {
