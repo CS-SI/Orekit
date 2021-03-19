@@ -662,3 +662,45 @@ TOO_LARGE_DATA_TYPE = too large data type ({0} bits)
 
 # unknown encoded message number {0}
 UNKNOWN_ENCODED_MESSAGE_NUMBER = unknown encoded message number {0}
+
+# unknown authentication method: {0}
+UNKNOWN_AUTHENTICATION_METHOD = unknown authentication method: {0}
+
+# unknown carrier phase code: {0}
+UNKNOWN_CARRIER_PHASE_CODE = unknown carrier phase code: {0}
+
+# unknown data format: {0}
+UNKNOWN_DATA_FORMAT = unknown data format: {0}
+
+# unknown navigation system: {0}
+UNKNOWN_NAVIGATION_SYSTEM = unknown navigation system: {0}
+
+# data stream {0} requires a NMEA fix data
+STREAM_REQUIRES_NMEA_FIX = data stream {0} requires a NMEA fix data
+
+# failed authentication for mountpoint {0}
+FAILED_AUTHENTICATION = failed authentication for mountpoint {0}
+
+# error connecting to {0}: {1}
+CONNECTION_ERROR = error connecting to {0}: {1}
+
+# unexpected content type {0}
+UNEXPECTED_CONTENT_TYPE = unexpected content type {0}
+
+# cannot parse GNSS data from {0}
+CANNOT_PARSE_GNSS_DATA = cannot parse GNSS data from {0}
+
+# unknown host {0}
+UNKNOWN_HOST = unknown host {0}
+
+# error parsing sourcetable line {0} from {1}: {2}
+SOURCETABLE_PARSE_ERROR = error parsing sourcetable line {0} from {1}: {2}
+
+# cannot parse sourcetable from {0}
+CANNOT_PARSE_SOURCETABLE = cannot parse sourcetable from {0}
+
+# mount point {0} is already connected
+MOUNPOINT_ALREADY_CONNECTED = mount point {0} is already connected
+
+# missing header from {0}: {1}
+MISSING_HEADER = missing header from {0}: {1}

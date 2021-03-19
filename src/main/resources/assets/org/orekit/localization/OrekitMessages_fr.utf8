@@ -662,3 +662,46 @@ TOO_LARGE_DATA_TYPE = type de données trop grand ({0} bits)
 
 # unknown encoded message number {0}
 UNKNOWN_ENCODED_MESSAGE_NUMBER = le numéro de message codé {0} est inconnu
+
+
+# unknown authentication method: {0}
+UNKNOWN_AUTHENTICATION_METHOD = la méthode d''authentification {0} est inconnue
+
+# unknown carrier phase code: {0}
+UNKNOWN_CARRIER_PHASE_CODE = le code de phase {0} est inconnu
+
+# unknown data format: {0}
+UNKNOWN_DATA_FORMAT = le format de données {0} est inconnu
+
+# unknown navigation system: {0}
+UNKNOWN_NAVIGATION_SYSTEM = le système de navigation {0} est inconnu
+
+# data stream {0} requires a NMEA fix data
+STREAM_REQUIRES_NMEA_FIX = le flux de données {0} nécessite une donnée fixe NMEA
+
+# failed authentication for mountpoint {0}
+FAILED_AUTHENTICATION = échec de l''authentification pour le point de montage {0}
+
+# error connecting to {0}: {1}
+CONNECTION_ERROR = erreur de connexion à {0} : {1}
+
+# unexpected content type {0}
+UNEXPECTED_CONTENT_TYPE = type de contenu {0} imprévu
+
+# cannot parse GNSS data from {0}
+CANNOT_PARSE_GNSS_DATA = les données GNSS de {0} ne peuvent pas être analysées
+
+# unknown host {0}
+UNKNOWN_HOST = hôte {0} inconnu
+
+# error parsing sourcetable line {0} from {1}: {2}
+SOURCETABLE_PARSE_ERROR = erreur d''analyse de la ligne {0} de la table des sources {1} : {2}
+
+# cannot parse sourcetable from {0}
+CANNOT_PARSE_SOURCETABLE = la table des sources issue de {0} ne peut pas être analysée
+
+# mount point {0} is already connected
+MOUNPOINT_ALREADY_CONNECTED = le point de montage {0} est déjà connecté
+
+# missing header from {0}: {1}
+MISSING_HEADER = en-tête manquant de {0} : {1}

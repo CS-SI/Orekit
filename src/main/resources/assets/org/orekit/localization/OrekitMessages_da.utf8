@@ -662,3 +662,45 @@ TOO_LARGE_DATA_TYPE = <MISSING TRANSLATION>
 
 # unknown encoded message number {0}
 UNKNOWN_ENCODED_MESSAGE_NUMBER = <MISSING TRANSLATION>
+
+# unknown authentication method: {0}
+UNKNOWN_AUTHENTICATION_METHOD = <MISSING TRANSLATION>
+
+# unknown carrier phase code: {0}
+UNKNOWN_CARRIER_PHASE_CODE = <MISSING TRANSLATION>
+
+# unknown data format: {0}
+UNKNOWN_DATA_FORMAT = <MISSING TRANSLATION>
+
+# unknown navigation system: {0}
+UNKNOWN_NAVIGATION_SYSTEM = <MISSING TRANSLATION>
+
+# data stream {0} requires a NMEA fix data
+STREAM_REQUIRES_NMEA_FIX = <MISSING TRANSLATION>
+
+# failed authentication for mountpoint {0}
+FAILED_AUTHENTICATION = <MISSING TRANSLATION>
+
+# error connecting to {0}: {1}
+CONNECTION_ERROR = <MISSING TRANSLATION>
+
+# unexpected content type {0}
+UNEXPECTED_CONTENT_TYPE = <MISSING TRANSLATION>
+
+# cannot parse GNSS data from {0}
+CANNOT_PARSE_GNSS_DATA = <MISSING TRANSLATION>
+
+# unknown host {0}
+UNKNOWN_HOST = <MISSING TRANSLATION>
+
+# error parsing sourcetable line {0} from {1}: {2}
+SOURCETABLE_PARSE_ERROR = <MISSING TRANSLATION>
+
+# cannot parse sourcetable from {0}
+CANNOT_PARSE_SOURCETABLE = <MISSING TRANSLATION>
+
+# mount point {0} is already connected
+MOUNPOINT_ALREADY_CONNECTED = <MISSING TRANSLATION>
+
+# missing header from {0}: {1}
+MISSING_HEADER = <MISSING TRANSLATION>
