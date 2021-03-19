@@ -18,6 +18,7 @@ package org.orekit.files.ccsds.ndm.tdm;
 
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
 
 
 /** Keys for {@link TdmMetadata TDM container} entries.
@@ -48,16 +49,26 @@ public enum TdmMetadataKey {
     PARTICIPANT_5((token, context, container) -> token.processAsIndexedNormalizedString(5, container::addParticipant)),
 
     /** Mode entry. */
-    MODE((token, context, container) -> token.processAsUppercaseString(container::setMode)),
+    MODE((token, context, container) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            try {
+                container.setMode(TrackingMode.valueOf(token.getContentAsUppercaseString()));
+                return true;
+            } catch (IllegalArgumentException iae) {
+                throw token.generateException(iae);
+            }
+        }
+        return true;
+    }),
 
     /** Path entry. */
-    PATH((token, context, container) -> token.processAsUppercaseString(container::setPath)),
+    PATH((token, context, container) -> token.processAsIntegerArray(container::setPath)),
 
     /** Path 1 entry. */
-    PATH_1((token, context, container) -> token.processAsUppercaseString(container::setPath1)),
+    PATH_1((token, context, container) -> token.processAsIntegerArray(container::setPath1)),
 
     /** Path 2 entry. */
-    PATH_2((token, context, container) -> token.processAsUppercaseString(container::setPath2)),
+    PATH_2((token, context, container) -> token.processAsIntegerArray(container::setPath2)),
 
     /** Transmit band entry. */
     TRANSMIT_BAND((token, context, container) -> token.processAsUppercaseString(container::setTransmitBand)),
@@ -71,29 +82,79 @@ public enum TdmMetadataKey {
     /** turnaround denominator entry. */
     TURNAROUND_DENOMINATOR((token, context, container) -> token.processAsInteger(container::setTurnaroundDenominator)),
 
-    /** Timetag referene entry. */
-    TIMETAG_REF((token, context, container) -> token.processAsUppercaseString(container::setTimetagRef)),
+    /** Timetag reference entry. */
+    TIMETAG_REF((token, context, container) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            try {
+                container.setTimetagRef(TimetagReference.valueOf(token.getContentAsUppercaseString()));
+                return true;
+            } catch (IllegalArgumentException iae) {
+                throw token.generateException(iae);
+            }
+        }
+        return true;
+    }),
 
     /** Integration interval entry. */
     INTEGRATION_INTERVAL((token, context, container) -> token.processAsDouble(1.0, container::setIntegrationInterval)),
 
     /** Integration reference entry. */
-    INTEGRATION_REF((token, context, container) -> token.processAsUppercaseString(container::setIntegrationRef)),
+    INTEGRATION_REF((token, context, container) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            try {
+                container.setIntegrationRef(IntegrationReference.valueOf(token.getContentAsUppercaseString()));
+                return true;
+            } catch (IllegalArgumentException iae) {
+                throw token.generateException(iae);
+            }
+        }
+        return true;
+    }),
 
     /** Frequency offset entry. */
     FREQ_OFFSET((token, context, container) -> token.processAsDouble(1.0, container::setFreqOffset)),
 
     /** Range mode entry. */
-    RANGE_MODE((token, context, container) -> token.processAsUppercaseString(container::setRangeMode)),
+    RANGE_MODE((token, context, container) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            try {
+                container.setRangeMode(RangeMode.valueOf(token.getContentAsUppercaseString()));
+                return true;
+            } catch (IllegalArgumentException iae) {
+                throw token.generateException(iae);
+            }
+        }
+        return true;
+    }),
 
     /** Range modulus entry. */
     RANGE_MODULUS((token, context, container) -> token.processAsDouble(1.0, container::setRangeModulus)),
 
     /** Range units entry. */
-    RANGE_UNITS((token, context, container) -> token.processAsUppercaseString(container::setRangeUnits)),
+    RANGE_UNITS((token, context, container) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            try {
+                container.setRangeUnits(RangeUnits.valueOf(token.getContentAsNormalizedString()));
+                return true;
+            } catch (IllegalArgumentException iae) {
+                throw token.generateException(iae);
+            }
+        }
+        return true;
+    }),
 
     /** Angle type entry. */
-    ANGLE_TYPE((token, context, container) -> token.processAsUppercaseString(container::setAngleType)),
+    ANGLE_TYPE((token, context, container) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            try {
+                container.setAngleType(AngleType.valueOf(token.getContentAsUppercaseString()));
+                return true;
+            } catch (IllegalArgumentException iae) {
+                throw token.generateException(iae);
+            }
+        }
+        return true;
+    }),
 
     /** reference frame entry. */
     REFERENCE_FRAME((token, context, container) -> token.processAsFrame(container::setReferenceFrame, context, true, false, false)),
@@ -129,7 +190,17 @@ public enum TdmMetadataKey {
     RECEIVE_DELAY_5((token, context, container) -> token.processAsIndexedDouble(5, 1.0, container::addReceiveDelay)),
 
     /** data quality entry. */
-    DATA_QUALITY((token, context, container) -> token.processAsUppercaseString(container::setDataQuality)),
+    DATA_QUALITY((token, context, container) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            try {
+                container.setDataQuality(DataQuality.valueOf(token.getContentAsUppercaseString()));
+                return true;
+            } catch (IllegalArgumentException iae) {
+                throw token.generateException(iae);
+            }
+        }
+        return true;
+    }),
 
     /** Angle 1 correction entry. */
     CORRECTION_ANGLE_1((token, context, container) -> token.processAsDouble(1.0, container::setCorrectionAngle1)),
@@ -150,7 +221,17 @@ public enum TdmMetadataKey {
     CORRECTION_TRANSMIT((token, context, container) -> token.processAsDouble(1.0, container::setCorrectionTransmit)),
 
     /** Applied correction entry. */
-    CORRECTIONS_APPLIED((token, context, container) -> token.processAsUppercaseString(container::setCorrectionsApplied));
+    CORRECTIONS_APPLIED((token, context, container) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            try {
+                container.setCorrectionsApplied(CorrectionApplied.valueOf(token.getContentAsUppercaseString()));
+                return true;
+            } catch (IllegalArgumentException iae) {
+                throw token.generateException(iae);
+            }
+        }
+        return true;
+    });
 
     /** Processing method. */
     private final TokenProcessor processor;

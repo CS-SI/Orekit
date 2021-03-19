@@ -48,11 +48,8 @@ public class TdmMetadata extends Metadata {
      */
     private Map<Integer, String> participants;
 
-    /** Tracking mode associated with the Data Section of the segment.<p>
-     *  - SEQUENTIAL : Sequential signal path between participants (range, Doppler, angles and line of sight ionosphere calibration);<p>
-     *  - SINGLE_DIFF: Differenced data.
-     */
-    private String mode;
+    /** Tracking mode. */
+    private TrackingMode mode;
 
     /** The path shall reflect the signal path by listing the index of each participant
      *  in order, separated by commas, with no inserted white space.<p>
@@ -62,13 +59,13 @@ public class TdmMetadata extends Metadata {
      *  The non-indexed ‘PATH’ keyword shall be used if the MODE is ‘SEQUENTIAL’.<p>
      *  The indexed ‘PATH_1’ and ‘PATH_2’ keywords shall be used where the MODE is ‘SINGLE_DIFF’.
      */
-    private String path;
+    private int[] path;
 
     /** Path 1 (see above). */
-    private String path1;
+    private int[] path1;
 
     /** Path 2 (see above). */
-    private String path2;
+    private int[] path2;
 
     /** Frequency band for transmitted frequencies. */
     private String transmitBand;
@@ -88,7 +85,7 @@ public class TdmMetadata extends Metadata {
      *  Provides a reference for time tags in the tracking data.<p>
      *  It indicates whether the timetag associated with the data is the transmit time or the receive time.
      */
-    private String timetagRef;
+    private TimetagReference timetagRef;
 
     /** Integration interval. <p>
      *  Provides the Doppler count time in seconds for Doppler data or for the creation
@@ -100,37 +97,26 @@ public class TdmMetadata extends Metadata {
      *  Used in conjunction with timetag reference and integration interval.<p>
      *  Indicates whether the timetag represents the start, middle or end of the integration interval.
      */
-    private String integrationRef;
+    private IntegrationReference integrationRef;
 
     /** Frequency offset.<p>
      *  A frequency in Hz that must be added to every RECEIVE_FREQ to reconstruct it.
      */
     private double freqOffset;
 
-    /** Range mode.<p>
-     *  COHERENT, CONSTANT or ONE_WAY.
-     */
-    private String rangeMode;
+    /** Range mode. */
+    private RangeMode rangeMode;
 
     /** Range modulus.<p>
      *  Modulus of the range observable in the units as specified by the RANGE_UNITS keyword.
      */
     private double rangeModulus;
 
-    /** Range units.<p>
-     *  The units for the range observable: 'km', 's' or 'RU' (for 'range units').
-     */
-    private String rangeUnits;
+    /** Range units. */
+    private RangeUnits rangeUnits;
 
-    /** Angle type.<p>
-     *  Type of the antenna geometry represented in the angle data ANGLE_1 and ANGLE_2.<p>
-     *  – AZEL for azimuth, elevation (local horizontal);<p>
-     *  – RADEC for right ascension, declination or hour angle, declination (needs to be referenced to an inertial frame);<p>
-     *  – XEYN for x-east, y-north;<p>
-     *  – XSYE for x-south, y-east.<p>
-     *  Note: Angle units are always degrees
-     */
-    private String angleType;
+    /** Angle type. */
+    private AngleType angleType;
 
     /** Reference frame in which data are given: used in combination with ANGLE_TYPE=RADEC. */
     private FrameFacade referenceFrame;
@@ -147,10 +133,8 @@ public class TdmMetadata extends Metadata {
      */
     private Map<Integer, Double> receiveDelays;
 
-    /** Data quality.<p>
-     *  Estimate of the quality of the data: RAW, DEGRADED or VALIDATED.
-     */
-    private String dataQuality;
+    /** Data quality. */
+    private DataQuality dataQuality;
 
     /** Correction angle 1.<p>
      *  Angle correction that has been added or should be added to the ANGLE_1 data.
@@ -186,7 +170,7 @@ public class TdmMetadata extends Metadata {
      *  Indicate whethers or not the values associated with the CORRECTION_* keywords have been
      *  applied to the tracking data.
      */
-    private String correctionsApplied;
+    private CorrectionApplied correctionsApplied;
 
     /** Create a new TDM meta-data.
      */
@@ -264,14 +248,14 @@ public class TdmMetadata extends Metadata {
     /** Getter for the mode.
      * @return the mode
      */
-    public String getMode() {
+    public TrackingMode getMode() {
         return mode;
     }
 
     /** Setter for the mode.
      * @param mode the mode to set
      */
-    public void setMode(final String mode) {
+    public void setMode(final TrackingMode mode) {
         refuseFurtherComments();
         this.mode = mode;
     }
@@ -279,46 +263,46 @@ public class TdmMetadata extends Metadata {
     /** Getter for the path.
      * @return the path
      */
-    public String getPath() {
-        return path;
+    public int[] getPath() {
+        return path.clone();
     }
 
     /** Setter for the path.
      * @param path the path to set
      */
-    public void setPath(final String path) {
+    public void setPath(final int[] path) {
         refuseFurtherComments();
-        this.path = path;
+        this.path = path.clone();
     }
 
     /** Getter for the path1.
      * @return the path1
      */
-    public String getPath1() {
-        return path1;
+    public int[] getPath1() {
+        return path1.clone();
     }
 
     /** Setter for the path1.
      * @param path1 the path1 to set
      */
-    public void setPath1(final String path1) {
+    public void setPath1(final int[] path1) {
         refuseFurtherComments();
-        this.path1 = path1;
+        this.path1 = path1.clone();
     }
 
     /** Getter for the path2.
      * @return the path2
      */
-    public String getPath2() {
-        return path2;
+    public int[] getPath2() {
+        return path2.clone();
     }
 
     /** Setter for the path2.
      * @param path2 the path2 to set
      */
-    public void setPath2(final String path2) {
+    public void setPath2(final int[] path2) {
         refuseFurtherComments();
-        this.path2 = path2;
+        this.path2 = path2.clone();
     }
 
     /** Getter for the transmitBand.
@@ -384,14 +368,14 @@ public class TdmMetadata extends Metadata {
     /** Getter for the timetagRef.
      * @return the timetagRef
      */
-    public String getTimetagRef() {
+    public TimetagReference getTimetagRef() {
         return timetagRef;
     }
 
     /** Setter for the timetagRef.
      * @param timetagRef the timetagRef to set
      */
-    public void setTimetagRef(final String timetagRef) {
+    public void setTimetagRef(final TimetagReference timetagRef) {
         refuseFurtherComments();
         this.timetagRef = timetagRef;
     }
@@ -414,14 +398,14 @@ public class TdmMetadata extends Metadata {
     /** Getter for the integrationRef.
      * @return the integrationRef
      */
-    public String getIntegrationRef() {
+    public IntegrationReference getIntegrationRef() {
         return integrationRef;
     }
 
     /** Setter for the integrationRef.
      * @param integrationRef the integrationRef to set
      */
-    public void setIntegrationRef(final String integrationRef) {
+    public void setIntegrationRef(final IntegrationReference integrationRef) {
         refuseFurtherComments();
         this.integrationRef = integrationRef;
     }
@@ -444,14 +428,14 @@ public class TdmMetadata extends Metadata {
     /** Getter for the rangeMode.
      * @return the rangeMode
      */
-    public String getRangeMode() {
+    public RangeMode getRangeMode() {
         return rangeMode;
     }
 
     /** Setter for the rangeMode.
      * @param rangeMode the rangeMode to set
      */
-    public void setRangeMode(final String rangeMode) {
+    public void setRangeMode(final RangeMode rangeMode) {
         refuseFurtherComments();
         this.rangeMode = rangeMode;
     }
@@ -474,14 +458,14 @@ public class TdmMetadata extends Metadata {
     /** Getter for the rangeUnits.
      * @return the rangeUnits
      */
-    public String getRangeUnits() {
+    public RangeUnits getRangeUnits() {
         return rangeUnits;
     }
 
     /** Setter for the rangeUnits.
      * @param rangeUnits the rangeUnits to set
      */
-    public void setRangeUnits(final String rangeUnits) {
+    public void setRangeUnits(final RangeUnits rangeUnits) {
         refuseFurtherComments();
         this.rangeUnits = rangeUnits;
     }
@@ -489,14 +473,14 @@ public class TdmMetadata extends Metadata {
     /** Getter for angleType.
      * @return the angleType
      */
-    public String getAngleType() {
+    public AngleType getAngleType() {
         return angleType;
     }
 
     /** Setter for the angleType.
      * @param angleType the angleType to set
      */
-    public void setAngleType(final String angleType) {
+    public void setAngleType(final AngleType angleType) {
         refuseFurtherComments();
         this.angleType = angleType;
     }
@@ -568,27 +552,27 @@ public class TdmMetadata extends Metadata {
     /** Getter for the dataQuality.
      * @return the dataQuality
      */
-    public String getDataQuality() {
+    public DataQuality getDataQuality() {
         return dataQuality;
     }
 
     /** Setter for the dataQuality.
      * @param dataQuality the dataQuality to set
      */
-    public void setDataQuality(final String dataQuality) {
+    public void setDataQuality(final DataQuality dataQuality) {
         refuseFurtherComments();
         this.dataQuality = dataQuality;
     }
 
     /** Getter for the correctionAngle1.
-     * @return the correctionAngle1
+     * @return the correctionAngle1 (in TDM units, without conversion)
      */
     public double getCorrectionAngle1() {
         return correctionAngle1;
     }
 
     /** Setter for the correctionAngle1.
-     * @param correctionAngle1 the correctionAngle1 to set
+     * @param correctionAngle1 the correctionAngle1 to set (in TDM units, without conversion)
      */
     public void setCorrectionAngle1(final double correctionAngle1) {
         refuseFurtherComments();
@@ -596,14 +580,14 @@ public class TdmMetadata extends Metadata {
     }
 
     /** Getter for the correctionAngle2.
-     * @return the correctionAngle2
+     * @return the correctionAngle2 (in TDM units, without conversion)
      */
     public double getCorrectionAngle2() {
         return correctionAngle2;
     }
 
     /** Setter for the correctionAngle2.
-     * @param correctionAngle2 the correctionAngle2 to set
+     * @param correctionAngle2 the correctionAngle2 to set (in TDM units, without conversion)
      */
     public void setCorrectionAngle2(final double correctionAngle2) {
         refuseFurtherComments();
@@ -611,14 +595,14 @@ public class TdmMetadata extends Metadata {
     }
 
     /** Getter for the correctionDoppler.
-     * @return the correctionDoppler
+     * @return the correctionDoppler (in TDM units, without conversion)
      */
     public double getCorrectionDoppler() {
         return correctionDoppler;
     }
 
     /** Setter for the correctionDoppler.
-     * @param correctionDoppler the correctionDoppler to set
+     * @param correctionDoppler the correctionDoppler to set (in TDM units, without conversion)
      */
     public void setCorrectionDoppler(final double correctionDoppler) {
         refuseFurtherComments();
@@ -626,14 +610,14 @@ public class TdmMetadata extends Metadata {
     }
 
     /** Getter for the correctionRange.
-     * @return the correctionRange
+     * @return the correctionRange (in TDM units, without conversion)
      */
     public double getCorrectionRange() {
         return correctionRange;
     }
 
     /** Setter for the correctionRange.
-     * @param correctionRange the correctionRange to set
+     * @param correctionRange the correctionRange to set (in TDM units, without conversion)
      */
     public void setCorrectionRange(final double correctionRange) {
         refuseFurtherComments();
@@ -641,14 +625,14 @@ public class TdmMetadata extends Metadata {
     }
 
     /** Getter for the correctionReceive.
-     * @return the correctionReceive
+     * @return the correctionReceive (in TDM units, without conversion)
      */
     public double getCorrectionReceive() {
         return correctionReceive;
     }
 
     /** Setter for the correctionReceive.
-     * @param correctionReceive the correctionReceive to set
+     * @param correctionReceive the correctionReceive to set (in TDM units, without conversion)
      */
     public void setCorrectionReceive(final double correctionReceive) {
         refuseFurtherComments();
@@ -656,14 +640,14 @@ public class TdmMetadata extends Metadata {
     }
 
     /** Getter for the correctionTransmit.
-     * @return the correctionTransmit
+     * @return the correctionTransmit (in TDM units, without conversion)
      */
     public double getCorrectionTransmit() {
         return correctionTransmit;
     }
 
     /** Setter for the correctionTransmit.
-     * @param correctionTransmit the correctionTransmit to set
+     * @param correctionTransmit the correctionTransmit to set (in TDM units, without conversion)
      */
     public void setCorrectionTransmit(final double correctionTransmit) {
         refuseFurtherComments();
@@ -671,16 +655,16 @@ public class TdmMetadata extends Metadata {
     }
 
     /** Getter for the correctionApplied.
-     * @return the correctionApplied
+     * @return the correctionApplied (in TDM units, without conversion)
      */
-    public String getCorrectionsApplied() {
+    public CorrectionApplied getCorrectionsApplied() {
         return correctionsApplied;
     }
 
     /** Setter for the correctionApplied.
-     * @param correctionsApplied the correctionApplied to set
+     * @param correctionsApplied the correctionApplied to set (in TDM units, without conversion)
      */
-    public void setCorrectionsApplied(final String correctionsApplied) {
+    public void setCorrectionsApplied(final CorrectionApplied correctionsApplied) {
         refuseFurtherComments();
         this.correctionsApplied = correctionsApplied;
     }

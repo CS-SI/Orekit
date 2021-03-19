@@ -318,6 +318,26 @@ public class ParseToken {
         return true;
     }
 
+    /** Process the content as an array of integers.
+     * @param consumer consumer of the array
+     * @return always returns {@code true}
+     */
+    public boolean processAsIntegerArray(final IntegerArrayConsumer consumer) {
+        try {
+            if (type == TokenType.ENTRY) {
+                final String[] fields = SPLIT_AT_COMMAS.split(getRawContent());
+                final int[] integers = new int[fields.length];
+                for (int i = 0; i < fields.length; ++i) {
+                    integers[i] = Integer.parseInt(fields[i]);
+                }
+                consumer.accept(integers);
+            }
+            return true;
+        } catch (NumberFormatException nfe) {
+            throw generateException(nfe);
+        }
+    }
+
     /** Process the content as a normalized character.
      * @param consumer consumer of the normalized character
      * @return always returns {@code true}
@@ -577,6 +597,14 @@ public class ParseToken {
          * @param value value to consume
          */
         void accept(int value);
+    }
+
+    /** Interface representing instance methods that consume integer array. */
+    public interface IntegerArrayConsumer {
+        /** Consume an array of integers.
+         * @param integers array of integers
+         */
+        void accept(int[] integers);
     }
 
     /** Interface representing instance methods that consume character values. */

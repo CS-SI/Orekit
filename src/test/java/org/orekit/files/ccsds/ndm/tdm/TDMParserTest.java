@@ -16,8 +16,13 @@
  */
 package org.orekit.files.ccsds.ndm.tdm;
 
+import java.io.ByteArrayInputStream;
+import java.io.CharArrayWriter;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,15 +32,20 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
+import org.orekit.files.ccsds.section.Segment;
+import org.orekit.files.ccsds.utils.generation.Generator;
+import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.IERSConventions;
 
 /**
  * Test class for CCSDS Tracking Data Message parsing.<p>
@@ -150,6 +160,34 @@ public class TDMParserTest {
         final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
         final TdmFile file = new ParserBuilder().buildTdmParser().parseMessage(source);
         validateTDMExample2(file);
+    }
+
+    @Test
+    public void testWriteTdmXmlExample2() throws IOException {
+
+        // Example 2 of [1]
+        // See Figure D-2: TDM Example: One-Way Data w/Frequency Offset
+        // Data lines number was cut down to 7
+        final String name = "/ccsds/tdm/xml/TDMExample2.xml";
+        final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final TdmFile original = new ParserBuilder().buildTdmParser().parseMessage(source);
+
+        // write the parsed file back to a characters array
+        final CharArrayWriter caw = new CharArrayWriter();
+        TdmWriter tdmw = new TdmWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
+                                       original.getHeader(), "dummy");
+        Generator generator = new KvnGenerator(caw, TdmWriter.KEY_WIDTH, tdmw.getFileName());
+        tdmw.writeHeader(generator);
+        for (final Segment<TdmMetadata, ObservationsBlock> segment : original.getSegments()) {
+            tdmw.writeSegment(generator, segment);
+        }
+
+        // reparse the written file
+        final ByteBuffer bb      = StandardCharsets.UTF_8.encode(caw.toString());
+        final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(bb.array()));
+        final TdmFile    rebuilt = new ParserBuilder().buildTdmParser().parseMessage(source2);
+        validateTDMExample2(rebuilt);
+
     }
 
     @Test
@@ -476,18 +514,18 @@ public class TDMParserTest {
         final TdmMetadata metadata = file.getSegments().get(0).getMetadata();
 
         Assert.assertEquals("UTC", metadata.getTimeSystem().name());
-        Assert.assertEquals(new AbsoluteDate("2005-159T17:41:00", utc).durationFrom(metadata.getStartTime()), 0.0, 0.0);
-        Assert.assertEquals(new AbsoluteDate("2005-159T17:41:40", utc).durationFrom(metadata.getStopTime()), 0.0, 0.0);
+        Assert.assertEquals(0.0, new AbsoluteDate("2005-159T17:41:00", utc).durationFrom(metadata.getStartTime()), 0.0);
+        Assert.assertEquals(0.0, new AbsoluteDate("2005-159T17:41:40", utc).durationFrom(metadata.getStopTime()), 0.0);
         Assert.assertEquals("DSS-25", metadata.getParticipants().get(1));
         Assert.assertEquals("yyyy-nnnA", metadata.getParticipants().get(2));
-        Assert.assertEquals("SEQUENTIAL", metadata.getMode());
-        Assert.assertEquals("2,1", metadata.getPath());
+        Assert.assertEquals(TrackingMode.SEQUENTIAL, metadata.getMode());
+        Assert.assertArrayEquals(new int[] { 2, 1 }, metadata.getPath());
         Assert.assertEquals(1.0, metadata.getIntegrationInterval(), 0.0);
-        Assert.assertEquals("MIDDLE", metadata.getIntegrationRef());
+        Assert.assertEquals(IntegrationReference.MIDDLE, metadata.getIntegrationRef());
         Assert.assertEquals(32021035200.0, metadata.getFreqOffset(), 0.0);
         Assert.assertEquals(0.000077, metadata.getTransmitDelays().get(1), 0.0);
         Assert.assertEquals(0.000077, metadata.getReceiveDelays().get(1), 0.0);
-        Assert.assertEquals("RAW", metadata.getDataQuality());
+        Assert.assertEquals(DataQuality.RAW, metadata.getDataQuality());
         final List<String> metaDataComment = new ArrayList<String>();
         metaDataComment.add("This is a meta-data comment");
         Assert.assertEquals(metaDataComment, metadata.getComments());
@@ -539,18 +577,18 @@ public class TDMParserTest {
         Assert.assertEquals("UTC", metadata.getTimeSystem().name());
         Assert.assertEquals("DSS-24", metadata.getParticipants().get(1));
         Assert.assertEquals("yyyy-nnnA", metadata.getParticipants().get(2));
-        Assert.assertEquals("SEQUENTIAL", metadata.getMode());
-        Assert.assertEquals("1,2,1", metadata.getPath());
-        Assert.assertEquals("START", metadata.getIntegrationRef());
-        Assert.assertEquals("COHERENT", metadata.getRangeMode());
+        Assert.assertEquals(TrackingMode.SEQUENTIAL, metadata.getMode());
+        Assert.assertArrayEquals(new int[] { 1, 2, 1 }, metadata.getPath());
+        Assert.assertEquals(IntegrationReference.START, metadata.getIntegrationRef());
+        Assert.assertEquals(RangeMode.COHERENT, metadata.getRangeMode());
         Assert.assertEquals(2.0e+26, metadata.getRangeModulus(), 0.0);
-        Assert.assertEquals("RU", metadata.getRangeUnits());
+        Assert.assertEquals(RangeUnits.RU, metadata.getRangeUnits());
         Assert.assertEquals(7.7e-5, metadata.getTransmitDelays().get(1), 0.0);
         Assert.assertEquals(0.0, metadata.getTransmitDelays().get(2), 0.0);
         Assert.assertEquals(7.7e-5, metadata.getReceiveDelays().get(1), 0.0);
         Assert.assertEquals(0.0, metadata.getReceiveDelays().get(2), 0.0);
         Assert.assertEquals(46.7741, metadata.getCorrectionRange(), 0.0);
-        Assert.assertEquals("YES", metadata.getCorrectionsApplied());
+        Assert.assertEquals(CorrectionApplied.YES, metadata.getCorrectionsApplied());
         final List<String> metaDataComment = new ArrayList<String>();
         metaDataComment.add("Range correction applied is range calibration to DSS-24.");
         metaDataComment.add("Estimated RTLT at begin of pass = 950 seconds");
@@ -615,14 +653,14 @@ public class TDMParserTest {
         Assert.assertEquals("NORTH", metadata.getParticipants().get(1));
         Assert.assertEquals("F07R07", metadata.getParticipants().get(2));
         Assert.assertEquals("E7", metadata.getParticipants().get(3));
-        Assert.assertEquals("SEQUENTIAL", metadata.getMode());
-        Assert.assertEquals("1,2,3,2,1", metadata.getPath());
+        Assert.assertEquals(TrackingMode.SEQUENTIAL, metadata.getMode());
+        Assert.assertArrayEquals(new int[] { 1, 2, 3, 2, 1 }, metadata.getPath());
         Assert.assertEquals(1.0, metadata.getIntegrationInterval(), 0.0);
-        Assert.assertEquals("MIDDLE", metadata.getIntegrationRef());
-        Assert.assertEquals("CONSTANT", metadata.getRangeMode());
+        Assert.assertEquals(IntegrationReference.MIDDLE, metadata.getIntegrationRef());
+        Assert.assertEquals(RangeMode.CONSTANT, metadata.getRangeMode());
         Assert.assertEquals(0.0, metadata.getRangeModulus(), 0.0);
-        Assert.assertEquals("KM", metadata.getRangeUnits());
-        Assert.assertEquals("AZEL", metadata.getAngleType());
+        Assert.assertEquals(RangeUnits.km, metadata.getRangeUnits());
+        Assert.assertEquals(AngleType.AZEL, metadata.getAngleType());
 
         // Data
         final List<Observation> observations = file.getSegments().get(0).getData().getObservations();
@@ -678,12 +716,12 @@ public class TDMParserTest {
         Assert.assertEquals(new AbsoluteDate("2007-08-29T14:00:02.000", utc).durationFrom(metadata.getStopTime()), 0.0, 0.0);
         Assert.assertEquals("HBSTK", metadata.getParticipants().get(1));
         Assert.assertEquals("SAT", metadata.getParticipants().get(2));
-        Assert.assertEquals("SEQUENTIAL", metadata.getMode());
-        Assert.assertEquals("1,2,1", metadata.getPath());
+        Assert.assertEquals(TrackingMode.SEQUENTIAL, metadata.getMode());
+        Assert.assertArrayEquals(new int[] { 1, 2, 1 }, metadata.getPath());
         Assert.assertEquals(1.0, metadata.getIntegrationInterval(), 0.0);
-        Assert.assertEquals("END", metadata.getIntegrationRef());
-        Assert.assertEquals("XSYE", metadata.getAngleType());
-        Assert.assertEquals("RAW", metadata.getDataQuality());
+        Assert.assertEquals(IntegrationReference.END, metadata.getIntegrationRef());
+        Assert.assertEquals(AngleType.XSYE, metadata.getAngleType());
+        Assert.assertEquals(DataQuality.RAW, metadata.getDataQuality());
         final List<String> metaDataComment = new ArrayList<String>();
         metaDataComment.add("This is a meta-data comment");
         Assert.assertEquals(metaDataComment, metadata.getComments());
@@ -722,12 +760,12 @@ public class TDMParserTest {
         Assert.assertEquals(new AbsoluteDate("2007-08-29T13:00:02.000", utc).durationFrom(metadata2.getStopTime()), 0.0, 0.0);
         Assert.assertEquals("WHM1", metadata2.getParticipants().get(1));
         Assert.assertEquals("SAT", metadata2.getParticipants().get(2));
-        Assert.assertEquals("SEQUENTIAL", metadata2.getMode());
-        Assert.assertEquals("1,2,1", metadata2.getPath());
+        Assert.assertEquals(TrackingMode.SEQUENTIAL, metadata2.getMode());
+        Assert.assertArrayEquals(new int[] { 1, 2, 1 }, metadata2.getPath());
         Assert.assertEquals(1.0, metadata2.getIntegrationInterval(), 0.0);
-        Assert.assertEquals("END", metadata2.getIntegrationRef());
-        Assert.assertEquals("AZEL", metadata2.getAngleType());
-        Assert.assertEquals("RAW", metadata2.getDataQuality());
+        Assert.assertEquals(IntegrationReference.END, metadata2.getIntegrationRef());
+        Assert.assertEquals(AngleType.AZEL, metadata2.getAngleType());
+        Assert.assertEquals(DataQuality.RAW, metadata2.getDataQuality());
         final List<String> metaDataComment2 = new ArrayList<String>();
         metaDataComment2.add("This is a meta-data comment");
         Assert.assertEquals(metaDataComment2, metadata2.getComments());
@@ -915,22 +953,22 @@ public class TDMParserTest {
         Assert.assertEquals("P3", metadata.getParticipants().get(3));
         Assert.assertEquals("P4", metadata.getParticipants().get(4));
         Assert.assertEquals("P5", metadata.getParticipants().get(5));
-        Assert.assertEquals("SEQUENTIAL", metadata.getMode());
-        Assert.assertEquals("2,1", metadata.getPath());
-        Assert.assertEquals("4,5", metadata.getPath1());
-        Assert.assertEquals("3,2", metadata.getPath2());
+        Assert.assertEquals(TrackingMode.SEQUENTIAL, metadata.getMode());
+        Assert.assertArrayEquals(new int[] { 2, 1 }, metadata.getPath());
+        Assert.assertArrayEquals(new int[] { 4, 5 }, metadata.getPath1());
+        Assert.assertArrayEquals(new int[] { 3, 2 }, metadata.getPath2());
         Assert.assertEquals("S", metadata.getTransmitBand());
         Assert.assertEquals("L", metadata.getReceiveBand());
         Assert.assertEquals(240, metadata.getTurnaroundNumerator(), 0);
         Assert.assertEquals(221, metadata.getTurnaroundDenominator(), 0);
-        Assert.assertEquals("TRANSMIT", metadata.getTimetagRef());
+        Assert.assertEquals(TimetagReference.TRANSMIT, metadata.getTimetagRef());
         Assert.assertEquals(1.0, metadata.getIntegrationInterval(), 0.0);
-        Assert.assertEquals("MIDDLE", metadata.getIntegrationRef());
+        Assert.assertEquals(IntegrationReference.MIDDLE, metadata.getIntegrationRef());
         Assert.assertEquals(32021035200.0, metadata.getFreqOffset(), 0.0);
-        Assert.assertEquals("COHERENT", metadata.getRangeMode());
+        Assert.assertEquals(RangeMode.COHERENT, metadata.getRangeMode());
         Assert.assertEquals(32768.0, metadata.getRangeModulus(), 0.0);
-        Assert.assertEquals("RU", metadata.getRangeUnits());
-        Assert.assertEquals("RADEC", metadata.getAngleType());
+        Assert.assertEquals(RangeUnits.RU, metadata.getRangeUnits());
+        Assert.assertEquals(AngleType.RADEC, metadata.getAngleType());
         Assert.assertEquals("EME2000", metadata.getReferenceFrame().getName());
         Assert.assertEquals(CelestialBodyFrame.EME2000, metadata.getReferenceFrame().asCelestialBodyFrame());
         Assert.assertEquals(FramesFactory.getEME2000(), metadata.getReferenceFrame().asFrame());
@@ -944,14 +982,14 @@ public class TDMParserTest {
         Assert.assertEquals(0.000077, metadata.getReceiveDelays().get(3), 0.0);
         Assert.assertEquals(0.000077, metadata.getReceiveDelays().get(4), 0.0);
         Assert.assertEquals(0.000077, metadata.getReceiveDelays().get(5), 0.0);
-        Assert.assertEquals("RAW", metadata.getDataQuality());
+        Assert.assertEquals(DataQuality.RAW, metadata.getDataQuality());
         Assert.assertEquals(1.0, metadata.getCorrectionAngle1(), 0.0);
         Assert.assertEquals(2.0, metadata.getCorrectionAngle2(), 0.0);
         Assert.assertEquals(3.0, metadata.getCorrectionDoppler(), 0.0);
         Assert.assertEquals(4.0, metadata.getCorrectionRange(), 0.0);
         Assert.assertEquals(5.0, metadata.getCorrectionReceive(), 0.0);
         Assert.assertEquals(6.0, metadata.getCorrectionTransmit(), 0.0);
-        Assert.assertEquals("YES", metadata.getCorrectionsApplied());
+        Assert.assertEquals(CorrectionApplied.YES, metadata.getCorrectionsApplied());
 
         final List<String> metaDataComment = new ArrayList<String>();
         metaDataComment.add("All known meta-data keywords displayed");
