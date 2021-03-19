@@ -654,3 +654,12 @@ INVALID_RANGE_INDICATOR_IN_CRD_FILE = <MISSING TRANSLATION>
 
 # Unexpected end of CRD file (after line {0})
 CRD_UNEXPECTED_END_OF_FILE = <MISSING TRANSLATION>
+
+# end of encoded message reached
+END_OF_ENCODED_MESSAGE = <MISSING TRANSLATION>
+
+# too large data type ({0} bits)
+TOO_LARGE_DATA_TYPE = <MISSING TRANSLATION>
+
+# unknown encoded message number {0}
+UNKNOWN_ENCODED_MESSAGE_NUMBER = <MISSING TRANSLATION>
