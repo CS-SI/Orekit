@@ -295,7 +295,21 @@ public enum OrekitMessages implements Localizable {
     INVALID_RANGE_INDICATOR_IN_CRD_FILE("Invalid range indicator {0} in CRD file header"),
     END_OF_ENCODED_MESSAGE("end of encoded message reached"),
     TOO_LARGE_DATA_TYPE("too large data type ({0} bits)"),
-    UNKNOWN_ENCODED_MESSAGE_NUMBER("unknown encoded message number {0}");
+    UNKNOWN_ENCODED_MESSAGE_NUMBER("unknown encoded message number {0}"),
+    UNKNOWN_AUTHENTICATION_METHOD("unknown authentication method: {0}"),
+    UNKNOWN_CARRIER_PHASE_CODE("unknown carrier phase code: {0}"),
+    UNKNOWN_DATA_FORMAT("unknown data format: {0}"),
+    UNKNOWN_NAVIGATION_SYSTEM("unknown navigation system: {0}"),
+    STREAM_REQUIRES_NMEA_FIX("data stream {0} requires a NMEA fix data"),
+    FAILED_AUTHENTICATION("failed authentication for mountpoint {0}"),
+    CONNECTION_ERROR("error connecting to {0}: {1}"),
+    UNEXPECTED_CONTENT_TYPE("unexpected content type {0}"),
+    CANNOT_PARSE_GNSS_DATA("cannot parse GNSS data from {0}"),
+    UNKNOWN_HOST("unknown host {0}"),
+    SOURCETABLE_PARSE_ERROR("error parsing sourcetable line {0} from {1}: {2}"),
+    CANNOT_PARSE_SOURCETABLE("cannot parse sourcetable from {0}"),
+    MOUNPOINT_ALREADY_CONNECTED("mount point {0} is already connected"),
+    MISSING_HEADER("missing header from {0}: {1}");
 
     // CHECKSTYLE: resume JavadocVariable check
 

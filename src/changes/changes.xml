@@ -21,6 +21,12 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="bryan" type="add" issue="763">
+        Added support for Ntrip protocol.
+      </action>
+      <action dev="bryan" type="add" issue="763">
+        Added support for IGS SSR messages.
+      </action>
       <action dev="bryan" type="add" issue="523">
         Added support for RINEX 3.X navigation files.
       </action>
