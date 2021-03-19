@@ -653,3 +653,12 @@ INVALID_RANGE_INDICATOR_IN_CRD_FILE = Indicateur de Range {0} est invalide dans 
 
 # Unexpected end of CRD file (after line {0})
 CRD_UNEXPECTED_END_OF_FILE = Fin de fichier CRD inattendue (après la ligne {0})
+
+# end of encoded message reached
+END_OF_ENCODED_MESSAGE = fin du message codé atteinte
+
+# too large data type ({0} bits)
+TOO_LARGE_DATA_TYPE = type de données trop grand ({0} bits)
+
+# unknown encoded message number {0}
+UNKNOWN_ENCODED_MESSAGE_NUMBER = le numéro de message codé {0} est inconnu

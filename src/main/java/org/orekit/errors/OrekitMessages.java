@@ -292,7 +292,10 @@ public enum OrekitMessages implements Localizable {
     CPF_UNEXPECTED_END_OF_FILE("Unexpected end of CPF file (after line {0})"),
     UNEXPECTED_FORMAT_FOR_ILRS_FILE("Unexpected file format. Must be {0} but is {1}"),
     CRD_UNEXPECTED_END_OF_FILE("Unexpected end of CRD file (after line {0})"),
-    INVALID_RANGE_INDICATOR_IN_CRD_FILE("Invalid range indicator {0} in CRD file header");
+    INVALID_RANGE_INDICATOR_IN_CRD_FILE("Invalid range indicator {0} in CRD file header"),
+    END_OF_ENCODED_MESSAGE("end of encoded message reached"),
+    TOO_LARGE_DATA_TYPE("too large data type ({0} bits)"),
+    UNKNOWN_ENCODED_MESSAGE_NUMBER("unknown encoded message number {0}");
 
     // CHECKSTYLE: resume JavadocVariable check
 
