@@ -19,7 +19,7 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.utils.parsing.ParsingContext;
+import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.utils.units.PredefinedUnit;
 import org.orekit.utils.units.Unit;
 
@@ -196,10 +196,10 @@ public enum ManeuverFieldType {
 
     /** Process one field.
      * @param field field to process
-     * @param context parsing context
+     * @param context context binding
      * @param maneuver maneuver to fill
      */
-    public void process(final String field, final ParsingContext context, final Maneuver maneuver) {
+    public void process(final String field, final ContextBinding context, final Maneuver maneuver) {
         processor.process(field, unit, context, maneuver);
     }
 
@@ -208,10 +208,10 @@ public enum ManeuverFieldType {
         /** Process one field.
          * @param field field to process
          * @param unit unit to use
-         * @param context parsing context
+         * @param context context binding
          * @param maneuver maneuver to fill
          */
-        void process(String field, Unit unit, ParsingContext context, Maneuver maneuver);
+        void process(String field, Unit unit, ContextBinding context, Maneuver maneuver);
     }
 
 }

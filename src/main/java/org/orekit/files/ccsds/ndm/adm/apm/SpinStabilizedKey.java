@@ -16,9 +16,9 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
+import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 /** Keys for {@link SpinStabilized APM spin-stabilized} entries.
  * @author Bryan Cazabonne
@@ -85,11 +85,11 @@ public enum SpinStabilizedKey {
 
     /** Process one token.
      * @param token token to process
-     * @param context parsing context
+     * @param context context binding
      * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final SpinStabilized container) {
+    public boolean process(final ParseToken token, final ContextBinding context, final SpinStabilized container) {
         return processor.process(token, context, container);
     }
 
@@ -97,11 +97,11 @@ public enum SpinStabilizedKey {
     interface TokenProcessor {
         /** Process one token.
          * @param token token to process
-         * @param context parsing context
+         * @param context context binding
          * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, SpinStabilized container);
+        boolean process(ParseToken token, ContextBinding context, SpinStabilized container);
     }
 
 }

@@ -37,7 +37,7 @@ import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
-import org.orekit.files.ccsds.utils.parsing.ParsingContext;
+import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
@@ -50,14 +50,14 @@ public class AEMAttitudeTypeTest {
     private static final double ANGLE_PRECISION = 1.0e-3;
 
     AemMetadata metadata;
-    ParsingContext context;
+    ContextBinding context;
 
     @Before
     public void setUp()
         throws Exception {
         Utils.setDataRoot("regular-data");
         metadata = new AemMetadata(4);
-        context  =  new ParsingContext(() -> IERSConventions.IERS_2010, () -> true,
+        context  =  new ContextBinding(() -> IERSConventions.IERS_2010, () -> true,
                                        () -> DataContext.getDefault(), () -> null,
                                        metadata::getTimeSystem, () -> 0.0, () -> 1.0);
         metadata.setTimeSystem(TimeSystem.TAI);
@@ -456,7 +456,7 @@ public class AEMAttitudeTypeTest {
     private void checkSymmetry(AttitudeType type, TimeStampedAngularCoordinates tac,
                                boolean rateFrameIsA, boolean isFirst, RotationOrder order, boolean a2b,
                                double tolAngle, double tolRate) {
-        ParsingContext context = new ParsingContext(() -> IERSConventions.IERS_2010, () -> true,
+        ContextBinding context = new ContextBinding(() -> IERSConventions.IERS_2010, () -> true,
                                                     () -> DataContext.getDefault(), () -> null,
                                                     () -> TimeSystem.UTC,
                                                     () -> 0.0, () -> 1.0);

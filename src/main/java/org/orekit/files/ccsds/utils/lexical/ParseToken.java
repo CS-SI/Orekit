@@ -36,8 +36,8 @@ import org.orekit.files.ccsds.definitions.CenterName;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
-import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.units.Unit;
 
@@ -406,10 +406,10 @@ public class ParseToken {
 
     /** Process the content as a date.
      * @param consumer consumer of the date
-     * @param context parsing context
+     * @param context context binding
      * @return always returns {@code true} (or throws an exception)
      */
-    public boolean processAsDate(final DateConsumer consumer, final ParsingContext context) {
+    public boolean processAsDate(final DateConsumer consumer, final ContextBinding context) {
         if (type == TokenType.ENTRY) {
             if (context.getTimeSystem() == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_TIME_SYSTEM_NOT_READ_YET,
@@ -433,13 +433,13 @@ public class ParseToken {
 
     /** Process the content as a frame.
      * @param consumer consumer of the frame
-     * @param context parsing context
+     * @param context context binding
      * @param allowCelestial if true, {@link CelestialBodyFrame} are allowed
      * @param allowOrbit if true, {@link OrbitRelativeFrame} are allowed
      * @param allowSpacecraft if true, {@link SpacecraftBodyFrame} are allowed
      * @return always returns {@code true}
      */
-    public boolean processAsFrame(final FrameConsumer consumer, final ParsingContext context,
+    public boolean processAsFrame(final FrameConsumer consumer, final ContextBinding context,
                                   final boolean allowCelestial, final boolean allowOrbit,
                                   final boolean allowSpacecraft) {
         if (type == TokenType.ENTRY) {

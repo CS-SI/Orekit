@@ -55,7 +55,7 @@
           +getType()
           +getContent()
           +processAsDouble(scaling, doubleConsumer)
-          +processAsDate(dateConsumer, parsingContext)
+          +processAsDate(dateConsumer, contextBinding)
           +processAsTimeSystem(timeSystemConsumer)
           +processAs...(...Consumer, extraParams)
         }

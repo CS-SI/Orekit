@@ -20,9 +20,9 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.ElementsType;
 import org.orekit.files.ccsds.ndm.odm.oem.InterpolationMethod;
+import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 
 /** Keys for {@link OrbitStateHistoryMetadata orbit state history container} entries.
@@ -114,11 +114,11 @@ public enum OrbitStateHistoryMetadataKey {
 
     /** Process an token.
      * @param token token to process
-     * @param context parsing context
+     * @param context context binding
      * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final OrbitStateHistoryMetadata container) {
+    public boolean process(final ParseToken token, final ContextBinding context, final OrbitStateHistoryMetadata container) {
         return processor.process(token, context, container);
     }
 
@@ -126,11 +126,11 @@ public enum OrbitStateHistoryMetadataKey {
     interface TokenProcessor {
         /** Process one token.
          * @param token token to process
-         * @param context parsing context
+         * @param context context binding
          * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, OrbitStateHistoryMetadata container);
+        boolean process(ParseToken token, ContextBinding context, OrbitStateHistoryMetadata container);
     }
 
 }

@@ -16,8 +16,8 @@
  */
 package org.orekit.files.ccsds.ndm.adm;
 
+import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
-import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 
 /** Keys for {@link AdmMetadata ADM container} entries.
@@ -48,11 +48,11 @@ public enum AdmMetadataKey {
 
     /** Process one token.
      * @param token token to process
-     * @param context parsing context
+     * @param context context binding
      * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final AdmMetadata container) {
+    public boolean process(final ParseToken token, final ContextBinding context, final AdmMetadata container) {
         return processor.process(token, context, container);
     }
 
@@ -60,11 +60,11 @@ public enum AdmMetadataKey {
     interface TokenProcessor {
         /** Process one token.
          * @param token token to process
-         * @param context parsing context
+         * @param context context binding
          * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, AdmMetadata container);
+        boolean process(ParseToken token, ContextBinding context, AdmMetadata container);
     }
 
 }

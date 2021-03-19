@@ -36,12 +36,12 @@ import org.orekit.files.ccsds.section.KvnStructureProcessingState;
 import org.orekit.files.ccsds.section.MetadataKey;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.section.XmlStructureProcessingState;
+import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.lexical.UserDefinedXmlTokenBuilder;
 import org.orekit.files.ccsds.utils.lexical.XmlTokenBuilder;
-import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 import org.orekit.files.ccsds.utils.parsing.ProcessingState;
 import org.orekit.files.general.EphemerisFileParser;
 import org.orekit.time.AbsoluteDate;
@@ -81,8 +81,8 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
     /** Metadata for current observation block. */
     private OcmMetadata metadata;
 
-    /** Parsing context valid for current metadata. */
-    private ParsingContext context;
+    /** Context binding valid for current metadata. */
+    private ContextBinding context;
 
     /** Orbital state histories logical blocks. */
     private List<OrbitStateHistory> orbitBlocks;
@@ -213,7 +213,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
             return false;
         }
         metadata  = new OcmMetadata(getDataContext());
-        context   = new ParsingContext(this::getConventions, this::isSimpleEOP,
+        context   = new ContextBinding(this::getConventions, this::isSimpleEOP,
                                        this::getDataContext, metadata::getEpochT0,
                                        metadata::getTimeSystem, metadata::getSclkOffsetAtEpoch, metadata::getSclkSecPerSISec);
         setFallback(this::processMetadataToken);

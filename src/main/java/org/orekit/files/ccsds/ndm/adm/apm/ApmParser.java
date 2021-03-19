@@ -29,11 +29,11 @@ import org.orekit.files.ccsds.section.HeaderProcessingState;
 import org.orekit.files.ccsds.section.MetadataKey;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.section.XmlStructureProcessingState;
+import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.parsing.ErrorState;
-import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 import org.orekit.files.ccsds.utils.parsing.ProcessingState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
@@ -66,8 +66,8 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
     /** APM metadata being read. */
     private AdmMetadata metadata;
 
-    /** Parsing context valid for current metadata. */
-    private ParsingContext context;
+    /** Context binding valid for current metadata. */
+    private ContextBinding context;
 
     /** APM general comments block being read. */
     private CommentsContainer commentsBlock;
@@ -162,7 +162,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
             return false;
         }
         metadata  = new AdmMetadata();
-        context   = new ParsingContext(this::getConventions, this::isSimpleEOP,
+        context   = new ContextBinding(this::getConventions, this::isSimpleEOP,
                                        this::getDataContext, this::getMissionReferenceDate,
                                        metadata::getTimeSystem, () -> 0.0, () -> 1.0);
         setFallback(this::processMetadataToken);

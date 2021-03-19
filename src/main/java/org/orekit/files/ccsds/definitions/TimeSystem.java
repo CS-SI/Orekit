@@ -18,7 +18,7 @@ package org.orekit.files.ccsds.definitions;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.utils.parsing.ParsingContext;
+import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.time.SatelliteClockScale;
 
 /**
@@ -31,7 +31,7 @@ public enum TimeSystem {
     /** Greenwich Mean Sidereal Time. */
     GMST {
         /** {@inheritDoc} */
-        public TimeConverter getConverter(final ParsingContext context) {
+        public TimeConverter getConverter(final ContextBinding context) {
             return new TimeConverter(context.getDataContext().getTimeScales().getGMST(context.getConventions(), false),
                                      context.getReferenceDate());
         }
@@ -40,7 +40,7 @@ public enum TimeSystem {
     /** Global Positioning System. */
     GPS {
         /** {@inheritDoc} */
-        public TimeConverter getConverter(final ParsingContext context) {
+        public TimeConverter getConverter(final ContextBinding context) {
             return new TimeConverter(context.getDataContext().getTimeScales().getGPS(),
                                      context.getReferenceDate());
         }
@@ -49,7 +49,7 @@ public enum TimeSystem {
     /** Mission Elapsed Time. */
     MET {
         /** {@inheritDoc} */
-        public TimeConverter getConverter(final ParsingContext context) {
+        public TimeConverter getConverter(final ContextBinding context) {
             return new TimeConverter(new SatelliteClockScale("MET",
                                                           context.getReferenceDate(),
                                                           context.getDataContext().getTimeScales().getUTC(),
@@ -61,7 +61,7 @@ public enum TimeSystem {
     /** Mission Relative Time. */
     MRT {
         /** {@inheritDoc} */
-        public TimeConverter getConverter(final ParsingContext context) {
+        public TimeConverter getConverter(final ContextBinding context) {
             return new TimeConverter(new SatelliteClockScale("MRT",
                                                           context.getReferenceDate(),
                                                           context.getDataContext().getTimeScales().getUTC(),
@@ -73,7 +73,7 @@ public enum TimeSystem {
     /** Spacecraft Clock. Not currently Implemented. */
     SCLK {
         /** {@inheritDoc} */
-        public TimeConverter getConverter(final ParsingContext context) {
+        public TimeConverter getConverter(final ContextBinding context) {
             return new TimeConverter(new SatelliteClockScale("SCLK",
                                                           context.getReferenceDate(),
                                                           context.getDataContext().getTimeScales().getUTC(),
@@ -86,7 +86,7 @@ public enum TimeSystem {
     /** International Atomic Time. */
     TAI {
         /** {@inheritDoc} */
-        public TimeConverter getConverter(final ParsingContext context) {
+        public TimeConverter getConverter(final ContextBinding context) {
             return new TimeConverter(context.getDataContext().getTimeScales().getTAI(),
                                      context.getReferenceDate());
         }
@@ -95,7 +95,7 @@ public enum TimeSystem {
     /** Barycentric Coordinate Time. */
     TCB {
         /** {@inheritDoc} */
-        public TimeConverter getConverter(final ParsingContext context) {
+        public TimeConverter getConverter(final ContextBinding context) {
             return new TimeConverter(context.getDataContext().getTimeScales().getTCB(),
                                      context.getReferenceDate());
         }
@@ -104,7 +104,7 @@ public enum TimeSystem {
     /** Barycentric Dynamical Time. */
     TDB {
         /** {@inheritDoc} */
-        public TimeConverter getConverter(final ParsingContext context) {
+        public TimeConverter getConverter(final ContextBinding context) {
             return new TimeConverter(context.getDataContext().getTimeScales().getTDB(),
                                      context.getReferenceDate());
         }
@@ -113,7 +113,7 @@ public enum TimeSystem {
     /** Geocentric Coordinate Time. */
     TCG {
         /** {@inheritDoc} */
-        public TimeConverter getConverter(final ParsingContext context) {
+        public TimeConverter getConverter(final ContextBinding context) {
             return new TimeConverter(context.getDataContext().getTimeScales().getTCG(),
                                      context.getReferenceDate());
         }
@@ -122,7 +122,7 @@ public enum TimeSystem {
     /** Terrestrial Time. */
     TT {
         /** {@inheritDoc} */
-        public TimeConverter getConverter(final ParsingContext context) {
+        public TimeConverter getConverter(final ContextBinding context) {
             return new TimeConverter(context.getDataContext().getTimeScales().getTT(),
                                      context.getReferenceDate());
         }
@@ -131,7 +131,7 @@ public enum TimeSystem {
     /** Universal Time. */
     UT1 {
         /** {@inheritDoc} */
-        public TimeConverter getConverter(final ParsingContext context) {
+        public TimeConverter getConverter(final ContextBinding context) {
             return new TimeConverter(context.getDataContext().getTimeScales().getUT1(context.getConventions(), false),
                                      context.getReferenceDate());
         }
@@ -140,18 +140,18 @@ public enum TimeSystem {
     /** Universal Coordinated Time. */
     UTC {
         /** {@inheritDoc} */
-        public TimeConverter getConverter(final ParsingContext context) {
+        public TimeConverter getConverter(final ContextBinding context) {
             return new TimeConverter(context.getDataContext().getTimeScales().getUTC(),
                                      context.getReferenceDate());
         }
     };
 
     /** Get associated {@link TimeConverter}.
-     * @param context parsing context
+     * @param context context binding
      * @return time system for reading/writing date
      * @since 11.0
      */
-    public abstract TimeConverter getConverter(ParsingContext context);
+    public abstract TimeConverter getConverter(ContextBinding context);
 
     /** Parse a value from a key=value entry.
      * @param value value to parse

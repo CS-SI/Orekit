@@ -19,9 +19,9 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 
 /** Keys for {@link Perturbations perturbations data} entries.
@@ -144,11 +144,11 @@ public enum PerturbationsKey {
 
     /** Process an token.
      * @param token token to process
-     * @param context parsing context
+     * @param context context binding
      * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final Perturbations container) {
+    public boolean process(final ParseToken token, final ContextBinding context, final Perturbations container) {
         return processor.process(token, context, container);
     }
 
@@ -156,11 +156,11 @@ public enum PerturbationsKey {
     interface TokenProcessor {
         /** Process one token.
          * @param token token to process
-         * @param context parsing context
+         * @param context context binding
          * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, Perturbations container);
+        boolean process(ParseToken token, ContextBinding context, Perturbations container);
     }
 
     /** Dedicated processor for gravity field. */
@@ -175,7 +175,7 @@ public enum PerturbationsKey {
 
         /** {@inheritDoc} */
         @Override
-        public boolean process(final ParseToken token, final ParsingContext context, final Perturbations container) {
+        public boolean process(final ParseToken token, final ContextBinding context, final Perturbations container) {
             if (token.getType() == TokenType.ENTRY) {
                 final Matcher matcher = GRAVITY_PATTERN.matcher(token.getContentAsNormalizedString());
                 if (!matcher.matches()) {

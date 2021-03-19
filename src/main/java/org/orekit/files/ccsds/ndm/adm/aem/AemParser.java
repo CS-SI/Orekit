@@ -31,10 +31,10 @@ import org.orekit.files.ccsds.section.HeaderProcessingState;
 import org.orekit.files.ccsds.section.KvnStructureProcessingState;
 import org.orekit.files.ccsds.section.MetadataKey;
 import org.orekit.files.ccsds.section.XmlStructureProcessingState;
+import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 import org.orekit.files.ccsds.utils.parsing.ProcessingState;
 import org.orekit.files.general.AttitudeEphemerisFileParser;
 import org.orekit.time.AbsoluteDate;
@@ -71,8 +71,8 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
     /** Metadata for current observation block. */
     private AemMetadata metadata;
 
-    /** Parsing context valid for current metadata. */
-    private ParsingContext context;
+    /** Context binding valid for current metadata. */
+    private ContextBinding context;
 
     /** Current Ephemerides block being parsed. */
     private AemData currentBlock;
@@ -158,7 +158,7 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
             return false;
         }
         metadata  = new AemMetadata(defaultInterpolationDegree);
-        context   = new ParsingContext(this::getConventions, this::isSimpleEOP,
+        context   = new ContextBinding(this::getConventions, this::isSimpleEOP,
                                        this::getDataContext, this::getMissionReferenceDate,
                                        metadata::getTimeSystem, () -> 0.0, () -> 1.0);
         setFallback(this::processMetadataToken);

@@ -28,7 +28,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.utils.parsing.ParsingContext;
+import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.TimeStampedAngularCoordinates;
@@ -442,14 +442,14 @@ public enum AttitudeType {
      * @param isExternal2SpacecraftBody true attitude is from external frame to spacecraft body frame
      * @param eulerRotSequence sequance of Euler angles
      * @param isSpacecraftBodyRate if true Euler rates are specified in spacecraft body frame
-     * @param context parsing context
+     * @param context context binding
      * @param fields raw data fields
      * @return the angular coordinates, using {@link Attitude Attitude} convention
      * (i.e. from inertial frame to spacecraft frame)
      */
     public TimeStampedAngularCoordinates parse(final boolean isFirst, final boolean isExternal2SpacecraftBody,
                                                final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
-                                               final ParsingContext context,
+                                               final ContextBinding context,
                                                final String[] fields) {
 
         // parse the text fields

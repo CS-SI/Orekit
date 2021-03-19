@@ -17,9 +17,9 @@
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import org.orekit.files.ccsds.definitions.ElementsType;
+import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 
 /** Keys for {@link CovarianceHistoryMetadata covariance history container} entries.
@@ -89,11 +89,11 @@ public enum CovarianceHistoryMetadataKey {
 
     /** Process an token.
      * @param token token to process
-     * @param context parsing context
+     * @param context context binding
      * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final CovarianceHistoryMetadata container) {
+    public boolean process(final ParseToken token, final ContextBinding context, final CovarianceHistoryMetadata container) {
         return processor.process(token, context, container);
     }
 
@@ -101,11 +101,11 @@ public enum CovarianceHistoryMetadataKey {
     interface TokenProcessor {
         /** Process one token.
          * @param token token to process
-         * @param context parsing context
+         * @param context context binding
          * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, CovarianceHistoryMetadata container);
+        boolean process(ParseToken token, ContextBinding context, CovarianceHistoryMetadata container);
     }
 
 }

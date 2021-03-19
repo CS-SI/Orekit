@@ -16,8 +16,8 @@
  */
 package org.orekit.files.ccsds.ndm.tdm;
 
+import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
-import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 
 /** Keys for {@link TdmMetadata TDM container} entries.
@@ -164,11 +164,11 @@ public enum TdmMetadataKey {
 
     /** Process an token.
      * @param token token to process
-     * @param context parsing context
+     * @param context context binding
      * @param container container to fill
      * @return true if token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final TdmMetadata container) {
+    public boolean process(final ParseToken token, final ContextBinding context, final TdmMetadata container) {
         return processor.process(token, context, container);
     }
 
@@ -176,11 +176,11 @@ public enum TdmMetadataKey {
     interface TokenProcessor {
         /** Process one token.
          * @param token token to process
-         * @param context parsing context
+         * @param context context binding
          * @param container container to fill
      * @return true if token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, TdmMetadata container);
+        boolean process(ParseToken token, ContextBinding context, TdmMetadata container);
     }
 
 }

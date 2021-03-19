@@ -20,10 +20,10 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.parsing.AbstractMessageParser;
-import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 import org.orekit.files.ccsds.utils.parsing.ProcessingState;
 
 /** {@link ProcessingState} for {@link Header NDM header}.
@@ -32,8 +32,8 @@ import org.orekit.files.ccsds.utils.parsing.ProcessingState;
  */
 public class HeaderProcessingState implements ProcessingState {
 
-    /** Parsing context for header. */
-    private final ParsingContext context;
+    /** Context binding for header. */
+    private final ContextBinding context;
 
     /** Parser for the complete message. */
     private final AbstractMessageParser<?, ?> parser;
@@ -43,7 +43,7 @@ public class HeaderProcessingState implements ProcessingState {
      * @param parser parser for the complete message
      */
     public HeaderProcessingState(final DataContext dataContext, final AbstractMessageParser<?, ?> parser) {
-        this.context = new ParsingContext(
+        this.context = new ContextBinding(
             () -> null, () -> true,
             () -> dataContext, () -> null,
             () -> TimeSystem.UTC,

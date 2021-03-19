@@ -17,9 +17,9 @@
 package org.orekit.files.ccsds.ndm.adm.apm;
 
 import org.orekit.files.ccsds.ndm.adm.AdmParser;
+import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 /** Keys for {@link ApmData APM Euler angles} entries.
  * @author Bryan Cazabonne
@@ -102,11 +102,11 @@ public enum EulerKey {
 
     /** Process one token.
      * @param token token to process
-     * @param context parsing context
+     * @param context context binding
      * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final Euler container) {
+    public boolean process(final ParseToken token, final ContextBinding context, final Euler container) {
         return processor.process(token, context, container);
     }
 
@@ -114,11 +114,11 @@ public enum EulerKey {
     interface TokenProcessor {
         /** Process one token.
          * @param token token to process
-         * @param context parsing context
+         * @param context context binding
          * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, Euler container);
+        boolean process(ParseToken token, ContextBinding context, Euler container);
     }
 
 }

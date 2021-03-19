@@ -17,9 +17,9 @@
 package org.orekit.files.ccsds.ndm.odm;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 import org.orekit.orbits.PositionAngle;
 
 
@@ -88,11 +88,11 @@ public enum KeplerianElementsKey {
 
     /** Process one token.
      * @param token token to process
-     * @param context parsing context
+     * @param context context binding
      * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final KeplerianElements container) {
+    public boolean process(final ParseToken token, final ContextBinding context, final KeplerianElements container) {
         return processor.process(token, context, container);
     }
 
@@ -100,11 +100,11 @@ public enum KeplerianElementsKey {
     interface TokenProcessor {
         /** Process one token.
          * @param token token to process
-         * @param context parsing context
+         * @param context context binding
          * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, KeplerianElements container);
+        boolean process(ParseToken token, ContextBinding context, KeplerianElements container);
     }
 
 }

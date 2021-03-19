@@ -16,9 +16,9 @@
  */
 package org.orekit.files.ccsds.ndm.odm;
 
+import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 
 /** Keys for {@link StateVector ODM state vector container} entries.
@@ -73,11 +73,11 @@ public enum StateVectorKey {
 
     /** Process one token.
      * @param token token to process
-     * @param context parsing context
+     * @param context context binding
      * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final StateVector container) {
+    public boolean process(final ParseToken token, final ContextBinding context, final StateVector container) {
         return processor.process(token, context, container);
     }
 
@@ -85,11 +85,11 @@ public enum StateVectorKey {
     interface TokenProcessor {
         /** Process one token.
          * @param token token to process
-         * @param context parsing context
+         * @param context context binding
          * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, StateVector container);
+        boolean process(ParseToken token, ContextBinding context, StateVector container);
     }
 
 }

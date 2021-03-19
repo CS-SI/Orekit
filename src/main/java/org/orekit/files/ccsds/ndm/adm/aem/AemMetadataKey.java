@@ -19,9 +19,9 @@ package org.orekit.files.ccsds.ndm.adm.aem;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.AdmParser;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
+import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 
 /** Keys for {@link AemMetadata AEM container} entries.
@@ -119,11 +119,11 @@ public enum AemMetadataKey {
 
     /** Process an token.
      * @param token token to process
-     * @param context parsing context
+     * @param context context binding
      * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final AemMetadata container) {
+    public boolean process(final ParseToken token, final ContextBinding context, final AemMetadata container) {
         return processor.process(token, context, container);
     }
 
@@ -131,11 +131,11 @@ public enum AemMetadataKey {
     interface TokenProcessor {
         /** Process one token.
          * @param token token to process
-         * @param context parsing context
+         * @param context context binding
          * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, AemMetadata container);
+        boolean process(ParseToken token, ContextBinding context, AemMetadata container);
     }
 
 }

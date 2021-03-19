@@ -24,7 +24,7 @@ import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.ModifiedFrame;
-import org.orekit.files.ccsds.utils.parsing.ParsingContext;
+import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
@@ -73,9 +73,9 @@ public class CommonMetadata extends OdmMetadata {
      * {@code REF_FRAME_EPOCH}, despite it is needed to interpret it.
      * We have to wait until parsing end to finalize this date.
      * <p>
-     * @param context parsing context
+     * @param context context binding
      */
-    public void finalizeMetadata(final ParsingContext context) {
+    public void finalizeMetadata(final ContextBinding context) {
         if (frameEpochString != null) {
             frameEpoch = context.getTimeSystem().getConverter(context).parse(frameEpochString);
         }

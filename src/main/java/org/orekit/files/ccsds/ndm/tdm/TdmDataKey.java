@@ -19,7 +19,7 @@ package org.orekit.files.ccsds.ndm.tdm;
 import java.util.regex.Pattern;
 
 import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.files.ccsds.utils.parsing.ParsingContext;
+import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.time.AbsoluteDate;
 
@@ -202,11 +202,11 @@ public enum TdmDataKey {
 
     /** Process an observation line.
      * @param token parse token
-     * @param context parsing context
+     * @param context context binding
      * @param observationsBlock observation block to fill
      * @return true if token was accepted
      */
-    private boolean processObservationToken(final ParseToken token, final ParsingContext context,
+    private boolean processObservationToken(final ParseToken token, final ContextBinding context,
                                             final ObservationsBlock observationsBlock) {
 
         if (token.getType() == TokenType.ENTRY) {
@@ -243,11 +243,11 @@ public enum TdmDataKey {
 
     /** Process one token.
      * @param token token to process
-     * @param context parsing context
+     * @param context context binding
      * @param observationsBlock observation block to fill
      * @return true if token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context,
+    public boolean process(final ParseToken token, final ContextBinding context,
                         final ObservationsBlock observationsBlock) {
         return processor.process(token, context, observationsBlock);
     }
@@ -256,11 +256,11 @@ public enum TdmDataKey {
     interface TokenbProcessor {
         /** Process one token.
          * @param token token to process
-         * @param context parsing context
+         * @param context context binding
          * @param observationsBlock observation block to fill
          * @return true if token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, ObservationsBlock observationsBlock);
+        boolean process(ParseToken token, ContextBinding context, ObservationsBlock observationsBlock);
     }
 
 }

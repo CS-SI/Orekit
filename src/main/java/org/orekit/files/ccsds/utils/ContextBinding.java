@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.ccsds.utils.parsing;
+package org.orekit.files.ccsds.utils;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -25,17 +25,18 @@ import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
-/** Context for parsing Navigation Data Message.
+/** Context for parsing/writing Navigation Data Message.
  * <p>
- * This class is a facade providing late binding access to data used during parsing.
- * Late binding allows some data to be set up during parsing itself. This is
- * used for example to access {@link #getTimeSystem() time system} that is generally
- * parsed from metadata block, and used later on within the same metadata block.
+ * This class is a facade providing late binding access to data.
+ * Late binding is mainly useful at parse time as it allows some data to be set up
+ * during parsing itself. This is used for example to access {@link #getTimeSystem()
+ * time system} that is generally parsed from metadata block, and used later on
+ * within the same metadata block.
  * </p>
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class ParsingContext {
+public class ContextBinding {
 
     /** Supplier for IERS conventions to use. */
     private final Supplier<IERSConventions> conventionsSupplier;
@@ -69,7 +70,7 @@ public class ParsingContext {
      * @param clockCountSupplier supplier for clock count at reference date in spacecraft clock (SCLK) time system
      * @param clockRateSupplier supplier for clock rate in spacecraft clock (SCLK) time system
      */
-    public ParsingContext(final Supplier<IERSConventions> conventionsSupplier,
+    public ContextBinding(final Supplier<IERSConventions> conventionsSupplier,
                           final BooleanSupplier           simpleEOPSupplier,
                           final Supplier<DataContext>     dataContextSupplier,
                           final Supplier<AbsoluteDate>    referenceDateSupplier,

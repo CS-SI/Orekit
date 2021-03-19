@@ -16,9 +16,9 @@
  */
 package org.orekit.files.ccsds.section;
 
+import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 /** Keywords allowed in {@link Header}.
  * @author Luc Maisonobe
@@ -51,11 +51,11 @@ public enum HeaderKey {
 
     /** Process an token.
      * @param token token to process
-     * @param context parsing context
+     * @param context context binding
      * @param header header to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final Header header) {
+    public boolean process(final ParseToken token, final ContextBinding context, final Header header) {
         return processor.process(token, context, header);
     }
 
@@ -63,11 +63,11 @@ public enum HeaderKey {
     interface TokenProcessor {
         /** Process one token.
          * @param token token to process
-         * @param context parsing context
+         * @param context context binding
          * @param header header to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, Header header);
+        boolean process(ParseToken token, ContextBinding context, Header header);
     }
 
 }

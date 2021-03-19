@@ -16,8 +16,8 @@
  */
 package org.orekit.files.ccsds.ndm.odm.omm;
 
+import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
-import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 
 /** Keys for {@link OmmMetadata OMM container} entries.
@@ -41,11 +41,11 @@ public enum OmmMetadataKey {
 
     /** Process one token.
      * @param token token to process
-     * @param context parsing context
+     * @param context context binding
      * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final OmmMetadata container) {
+    public boolean process(final ParseToken token, final ContextBinding context, final OmmMetadata container) {
         return processor.process(token, context, container);
     }
 
@@ -53,11 +53,11 @@ public enum OmmMetadataKey {
     interface TokenProcessor {
         /** Process one token.
          * @param token token to process
-         * @param context parsing context
+         * @param context context binding
          * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, OmmMetadata container);
+        boolean process(ParseToken token, ContextBinding context, OmmMetadata container);
     }
 
 }

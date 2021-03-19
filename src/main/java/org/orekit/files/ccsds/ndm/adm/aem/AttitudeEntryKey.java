@@ -16,8 +16,8 @@
  */
 package org.orekit.files.ccsds.ndm.adm.aem;
 
+import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
-import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 
 /** Keys for {@link AttitudeEntry attitude entries} in XML messages.
@@ -124,11 +124,11 @@ public enum AttitudeEntryKey {
 
     /** Process an token.
      * @param token token to process
-     * @param context parsing context
+     * @param context context binding
      * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final AttitudeEntry container) {
+    public boolean process(final ParseToken token, final ContextBinding context, final AttitudeEntry container) {
         return processor.process(token, context, container);
     }
 
@@ -136,11 +136,11 @@ public enum AttitudeEntryKey {
     interface TokenProcessor {
         /** Process one token.
          * @param token token to process
-         * @param context parsing context
+         * @param context context binding
          * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, AttitudeEntry container);
+        boolean process(ParseToken token, ContextBinding context, AttitudeEntry container);
     }
 
 }

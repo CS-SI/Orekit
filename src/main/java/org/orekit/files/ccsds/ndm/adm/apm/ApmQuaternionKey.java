@@ -18,9 +18,9 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.files.ccsds.utils.parsing.ParsingContext;
 
 /** Keys for {@link ApmQuaternion APM quaternion} entries.
  * @author Bryan Cazabonne
@@ -97,11 +97,11 @@ public enum ApmQuaternionKey {
 
     /** Process one token.
      * @param token token to process
-     * @param context parsing context
+     * @param context context binding
      * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ParsingContext context, final ApmQuaternion container) {
+    public boolean process(final ParseToken token, final ContextBinding context, final ApmQuaternion container) {
         return processor.process(token, context, container);
     }
 
@@ -109,11 +109,11 @@ public enum ApmQuaternionKey {
     interface TokenProcessor {
         /** Process one token.
          * @param token token to process
-         * @param context parsing context
+         * @param context context binding
          * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ParsingContext context, ApmQuaternion container);
+        boolean process(ParseToken token, ContextBinding context, ApmQuaternion container);
     }
 
 }
