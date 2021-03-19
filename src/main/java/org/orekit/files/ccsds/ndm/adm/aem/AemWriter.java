@@ -230,6 +230,9 @@ public class AemWriter extends AbstractMessageWriter implements AttitudeEphemeri
      */
     public static final String DEFAULT_ATTITUDE_FORMAT = "% .9f";
 
+    /** Key width for aligning the '=' sign. */
+    public static final int KEY_WIDTH = 20;
+
     /**
      * Standardized locale to use, to ensure files can be exchanged without
      * internationalization issues.
@@ -366,7 +369,7 @@ public class AemWriter extends AbstractMessageWriter implements AttitudeEphemeri
             return;
         }
 
-        try (Generator generator = new KvnGenerator(appendable, getFileName())) {
+        try (Generator generator = new KvnGenerator(appendable, KEY_WIDTH, getFileName())) {
             writeHeader(generator);
 
             // Loop on segments
@@ -427,7 +430,7 @@ public class AemWriter extends AbstractMessageWriter implements AttitudeEphemeri
         generator.writeEntry(AemMetadataKey.ATTITUDE_DIR.name(), metadata.getEndpoints().isA2b() ? A_TO_B : B_TO_A, true);
 
         // time
-        generator.writeEntry(MetadataKey.TIME_SYSTEM.name(), metadata.getTimeSystem().name(), true);
+        generator.writeEntry(MetadataKey.TIME_SYSTEM.name(), metadata.getTimeSystem(), true);
         generator.writeEntry(AemMetadataKey.START_TIME.name(), dateToString(metadata.getStartTime()), true);
         if (metadata.getUseableStartTime() != null) {
             generator.writeEntry(AemMetadataKey.USEABLE_START_TIME.name(), dateToString(metadata.getUseableStartTime()), false);
@@ -503,7 +506,7 @@ public class AemWriter extends AbstractMessageWriter implements AttitudeEphemeri
         }
 
         // end the line
-        generator.writeEmptyLine();
+        generator.newLine();
 
     }
 

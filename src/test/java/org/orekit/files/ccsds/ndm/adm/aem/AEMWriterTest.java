@@ -265,9 +265,9 @@ public class AEMWriterTest {
 
         String[] lines = buffer.toString().split("\n");
 
-        assertEquals(lines[23], "2002-12-18T12:00:00.331000000 0.57 0.03 0.46 0.68");
-        assertEquals(lines[24], "2002-12-18T12:01:00.331000000 0.42 -0.46 0.24 0.75");
-        assertEquals(lines[25], "2002-12-18T12:02:00.331000000 -0.85 0.27 -0.07 0.46");
+        assertEquals(lines[23], "2002-12-18T12:00:00.331 0.57 0.03 0.46 0.68");
+        assertEquals(lines[24], "2002-12-18T12:01:00.331 0.42 -0.46 0.24 0.75");
+        assertEquals(lines[25], "2002-12-18T12:02:00.331 -0.85 0.27 -0.07 0.46");
 
         // Default format
         writer = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
@@ -277,9 +277,9 @@ public class AEMWriterTest {
 
         String[] lines2 = buffer.toString().split("\n");
 
-        assertEquals(lines2[23], "2002-12-18T12:00:00.331000000  0.567480798  0.031460044  0.456890643  0.684270962");
-        assertEquals(lines2[24], "2002-12-18T12:01:00.331000000  0.423190840 -0.456970907  0.237840472  0.745331479");
-        assertEquals(lines2[25], "2002-12-18T12:02:00.331000000 -0.845318824  0.269739625 -0.065319909  0.456519365");
+        assertEquals(lines2[23], "2002-12-18T12:00:00.331  0.567480798  0.031460044  0.456890643  0.684270962");
+        assertEquals(lines2[24], "2002-12-18T12:01:00.331  0.423190840 -0.456970907  0.237840472  0.745331479");
+        assertEquals(lines2[25], "2002-12-18T12:02:00.331 -0.845318824  0.269739625 -0.065319909  0.456519365");
     }
 
     private static void compareAemAttitudeBlocks(AemSegment segment1, AemSegment segment2) {

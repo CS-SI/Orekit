@@ -17,12 +17,7 @@
 package org.orekit.files.ccsds.utils.generation;
 
 import java.io.IOException;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.Locale;
 
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.utils.FileFormat;
 
@@ -30,19 +25,10 @@ import org.orekit.files.ccsds.utils.FileFormat;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class KvnGenerator implements Generator {
+public class KvnGenerator extends AbstractGenerator {
 
-    /**
-     * Standardized locale to use, to ensure files can be exchanged without
-     * internationalization issues.
-     */
-    private static final Locale STANDARDIZED_LOCALE = Locale.US;
-
-    /** String format used for all key/value pair lines. **/
-    private static final String KV_FORMAT = "%s = %s%n";
-
-    /** String format used for all comment lines. **/
-    private static final String COMMENT_FORMAT = "COMMENT %s%n";
+    /** Comment keyword. */
+    private static final String COMMENT = "COMMENT";
 
     /** Start suffix for sections. */
     private static final String START = "_START";
@@ -50,26 +36,28 @@ public class KvnGenerator implements Generator {
     /** Stop suffix for sections. */
     private static final String STOP = "_STOP";
 
-    /** New line separator for output file. */
-    private static final char NEW_LINE = '\n';
+    /** String format used for all key/value pair lines. **/
+    private final String kvFormat;
 
-    /** Destination of generated output. */
-    private final Appendable output;
-
-    /** File name for error messages. */
-    private final String fileName;
-
-    /** Sections stack. */
-    private final Deque<String> sections;
+    /** String format used for all comment lines. **/
+    private final String commentFormat;
 
     /** Simple constructor.
      * @param output destination of generated output
+     * @param keyWidth minimum width of the key (can be used for aligning the '=' sign),
+     * TDM needs 25 characters for its longest key, other messages need 20 characters at most
      * @param fileName file name for error messages
      */
-    public KvnGenerator(final Appendable output, final String fileName) {
-        this.output   = output;
-        this.fileName = fileName;
-        this.sections = new ArrayDeque<>();
+    public KvnGenerator(final Appendable output, final int keyWidth, final String fileName) {
+        super(output, fileName);
+        kvFormat = "%-" + keyWidth + "s = %s%n";
+        final StringBuilder builder = new StringBuilder(COMMENT);
+        builder.append(' ');
+        while (builder.length() < keyWidth + 3) {
+            builder.append(' ');
+        }
+        builder.append("%s%n");
+        commentFormat = builder.toString();
     }
 
     /** {@inheritDoc} */
@@ -86,15 +74,9 @@ public class KvnGenerator implements Generator {
 
     /** {@inheritDoc} */
     @Override
-    public void close() throws IOException {
-        // nothing to do
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public void writeComments(final CommentsContainer comments) throws IOException {
         for (final String comment : comments.getComments()) {
-            output.append(String.format(STANDARDIZED_LOCALE, COMMENT_FORMAT, comment));
+            append(String.format(STANDARDIZED_LOCALE, commentFormat, comment));
         }
     }
 
@@ -102,43 +84,25 @@ public class KvnGenerator implements Generator {
     @Override
     public void writeEntry(final String key, final String value, final boolean mandatory) throws IOException {
         if (value == null) {
-            if (mandatory) {
-                throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, key, fileName);
-            }
+            complain(key, mandatory);
         } else {
-            output.append(String.format(STANDARDIZED_LOCALE, KV_FORMAT, key, value));
+            append(String.format(STANDARDIZED_LOCALE, kvFormat, key, value));
         }
     }
 
     /** {@inheritDoc} */
     @Override
-    public void writeEmptyLine() throws IOException {
-        output.append(NEW_LINE);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void writeRawData(final char data) throws IOException {
-        output.append(data);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void writeRawData(final CharSequence data) throws IOException {
-        output.append(data);
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public void enterSection(final String name) throws IOException {
-        output.append(name).append(START).append(NEW_LINE);
-        sections.offerLast(name);
+        append(name).append(START).newLine();
+        super.enterSection(name);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void exitSection() throws IOException {
-        output.append(sections.pollLast()).append(STOP).append(NEW_LINE);
+    public String exitSection() throws IOException {
+        final String name = super.exitSection();
+        append(name).append(STOP).newLine();
+        return name;
     }
 
 }

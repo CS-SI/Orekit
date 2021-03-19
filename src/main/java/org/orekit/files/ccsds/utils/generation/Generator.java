@@ -53,10 +53,26 @@ public interface Generator extends AutoCloseable {
      */
     void writeEntry(String key, String value, boolean mandatory) throws IOException;
 
-    /** Write an empty line.
+    /** Write a single key/value entry.
+     * @param key   the keyword to write
+     * @param value the value to write
+     * @param mandatory if true, null values triggers exception, otherwise they are silently ignored
      * @throws IOException if an I/O error occurs.
      */
-    void writeEmptyLine() throws IOException;
+    void writeEntry(String key, Enum<?> value, boolean mandatory) throws IOException;
+
+    /** Write a single key/value entry.
+     * @param key   the keyword to write
+     * @param value the value to write
+     * @param mandatory if true, null values triggers exception, otherwise they are silently ignored
+     * @throws IOException if an I/O error occurs.
+     */
+    void writeEntry(String key, int value, boolean mandatory) throws IOException;
+
+    /** Finish current line.
+     * @throws IOException if an I/O error occurs.
+     */
+    void newLine() throws IOException;
 
     /** Write raw data.
      * @param data raw data to write
@@ -77,9 +93,10 @@ public interface Generator extends AutoCloseable {
     void enterSection(String name) throws IOException;
 
     /** Exit last section.
+     * @return section name
      * @throws IOException if an I/O error occurs.
      */
-    void exitSection() throws IOException;
+    String exitSection() throws IOException;
 
     /** Close the generator.
      * @throws IOException if an I/O error occurs.

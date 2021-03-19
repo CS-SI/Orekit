@@ -25,6 +25,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.TimeConverter;
@@ -231,6 +232,9 @@ public class OemWriter extends AbstractMessageWriter implements EphemerisFileWri
      */
     public static final String DEFAULT_COVARIANCE_FORMAT = "% .7e";
 
+    /** Key width for aligning the '=' sign. */
+    public static final int KEY_WIDTH = 20;
+
     /** Conversion factor from meters to kilometers. */
     private static final double M_TO_KM = 1.0e-3;
 
@@ -355,7 +359,7 @@ public class OemWriter extends AbstractMessageWriter implements EphemerisFileWri
             return;
         }
 
-        try (Generator generator = new KvnGenerator(appendable, getFileName())) {
+        try (Generator generator = new KvnGenerator(appendable, KEY_WIDTH, getFileName())) {
             writeHeader(generator);
 
             // Loop on segments
@@ -397,7 +401,7 @@ public class OemWriter extends AbstractMessageWriter implements EphemerisFileWri
                             generator.enterSection(OemFile.COVARIANCE_KVN);
                             for (final CartesianCovariance covariance : covariances) {
                                 if (continuation) {
-                                    generator.writeEmptyLine();
+                                    generator.newLine();
                                 }
                                 generator.writeEntry(CartesianCovarianceKey.EPOCH.name(),
                                                      dateToString(covariance.getEpoch()),
@@ -420,7 +424,7 @@ public class OemWriter extends AbstractMessageWriter implements EphemerisFileWri
                                     }
 
                                     // end the line
-                                    generator.writeEmptyLine();
+                                    generator.newLine();
 
                                 }
                                 continuation = true;
@@ -428,6 +432,7 @@ public class OemWriter extends AbstractMessageWriter implements EphemerisFileWri
                             generator.exitSection();
                         } else {
                             // TODO: write covariance in OEM XML files
+                            throw new OrekitInternalError(null);
                         }
                     }
                 }
@@ -445,7 +450,7 @@ public class OemWriter extends AbstractMessageWriter implements EphemerisFileWri
         throws IOException {
 
         // add an empty line for presentation
-        generator.writeEmptyLine();
+        generator.newLine();
 
         // Start metadata
         generator.enterSection(generator.getFormat() == FileFormat.KVN ?
@@ -468,7 +473,7 @@ public class OemWriter extends AbstractMessageWriter implements EphemerisFileWri
         }
 
         // time
-        generator.writeEntry(MetadataKey.TIME_SYSTEM.name(), metadata.getTimeSystem().name(), true);
+        generator.writeEntry(MetadataKey.TIME_SYSTEM.name(), metadata.getTimeSystem(), true);
         generator.writeEntry(OemMetadataKey.START_TIME.name(), dateToString(metadata.getStartTime()), true);
         if (metadata.getUseableStartTime() != null) {
             generator.writeEntry(OemMetadataKey.USEABLE_START_TIME.name(), dateToString(metadata.getUseableStartTime()), false);
@@ -479,11 +484,7 @@ public class OemWriter extends AbstractMessageWriter implements EphemerisFileWri
         generator.writeEntry(OemMetadataKey.STOP_TIME.name(), dateToString(metadata.getStopTime()), true);
 
         // interpolation
-        if (metadata.getInterpolationMethod() != null) {
-            generator.writeEntry(OemMetadataKey.INTERPOLATION.name(),
-                                 metadata.getInterpolationMethod().name(),
-                                 false);
-        }
+        generator.writeEntry(OemMetadataKey.INTERPOLATION.name(), metadata.getInterpolationMethod(), false);
         generator.writeEntry(OemMetadataKey.INTERPOLATION_DEGREE.name(),
                              Integer.toString(metadata.getInterpolationDegree()),
                              false);
@@ -492,7 +493,7 @@ public class OemWriter extends AbstractMessageWriter implements EphemerisFileWri
         generator.exitSection();
 
         // add an empty line for presentation
-        generator.writeEmptyLine();
+        generator.newLine();
 
     }
 
@@ -547,7 +548,7 @@ public class OemWriter extends AbstractMessageWriter implements EphemerisFileWri
         }
 
         // end the line
-        generator.writeEmptyLine();
+        generator.newLine();
 
     }
 

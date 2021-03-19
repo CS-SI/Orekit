@@ -153,7 +153,7 @@ public class StreamingOemWriterTest {
 
             // check using the Propagator / StepHandler interface
             final StringBuilder buffer1 = new StringBuilder();
-            StreamingOemWriter writer = new StreamingOemWriter(new KvnGenerator(buffer1, "some-name"), oemWriter);
+            StreamingOemWriter writer = new StreamingOemWriter(new KvnGenerator(buffer1, OemWriter.KEY_WIDTH, "some-name"), oemWriter);
             oemWriter.getMetadata().setObjectName(objectName);
             BoundedPropagator propagator = satellite.getPropagator();
             propagator.setMasterMode(step, writer.newSegment());
@@ -171,7 +171,7 @@ public class StreamingOemWriterTest {
             final StringBuilder buffer2 = new StringBuilder();
             oemWriter = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
                                       header, metadata);
-            try (Generator generator = new KvnGenerator(buffer2, "another-name")) {
+            try (Generator generator = new KvnGenerator(buffer2, OemWriter.KEY_WIDTH, "another-name")) {
                 oemWriter.writeHeader(generator);
                 oemWriter.getMetadata().setObjectName(objectName);
                 oemWriter.getMetadata().setStartTime(block.getStart());

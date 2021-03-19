@@ -107,7 +107,7 @@ public class StreamingAemWriterTest {
             final AemWriter aemWriter = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), header, metadata);
 
             StringBuilder buffer = new StringBuilder();
-            StreamingAemWriter writer = new StreamingAemWriter(new KvnGenerator(buffer, AemWriter.DEFAULT_FILE_NAME),
+            StreamingAemWriter writer = new StreamingAemWriter(new KvnGenerator(buffer, AemWriter.KEY_WIDTH, AemWriter.DEFAULT_FILE_NAME),
                                                                aemWriter);
             aemWriter.getMetadata().setObjectName(objectName);
 
