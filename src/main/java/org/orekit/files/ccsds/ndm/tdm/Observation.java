@@ -30,51 +30,44 @@ import org.orekit.time.AbsoluteDate;
  *  <li>a measurement, the value of the observation.</li>
  * </ul>
  * <p>
- * WARNING. As the same class can handle many different measurements
- * types (range, Doppler, clocks, pressure, power to noise ratio…) and
- * more importantly as one measurement (range) can be given in incompatible
- * units (kilometers, seconds, or "Range Units" to be specified in an ICD),
- * the measurements stored in the class have no units conversions, they are
- * stored exactly as read/written in the TDM message. The caller is
- * responsible to convert to SI units. This is a major difference with
- * almost all other Orekit classes that work only in SI units.
+ * WARNING. The same class handles many different measurements
+ * types (range, Doppler, clocks, pressure, power to noise ratio…).
+ * Since Orekit 11.0, it uses only SI units, so angular measurements
+ * have already been converted in radians, range has been converted
+ * in meters (according to the {@link TdmMetadata#getRangeUnits()
+ * range units}, Doppler has been converted to meters per second.
+ * Up to Orekit 10.x, the measurements were raw measurements as read
+ * in the TDM.
  * </p>
  * @author Maxime Journot
  */
 public class Observation {
 
-    /** CCSDS Keyword: the type of the observation. */
-    private String keyword;
+    /** Type of the observation. */
+    private final Observationtype type;
 
     /** Epoch: the timetag of the observation. */
-    private AbsoluteDate epoch;
+    private final AbsoluteDate epoch;
 
     /** Measurement: the value of the observation. */
-    private double measurement;
+    private final double measurement;
 
     /** Simple constructor.
-     * @param keyword the keyword
+     * @param type type of the observation
      * @param epoch the timetag
-     * @param measurement the measurement
+     * @param measurement the measurement (in SI units, converted from TDM)
      */
-    Observation(final String keyword, final AbsoluteDate epoch, final double measurement) {
-        this.keyword = keyword;
-        this.epoch = epoch;
+    public Observation(final Observationtype type, final AbsoluteDate epoch, final double measurement) {
+        this.type        = type;
+        this.epoch       = epoch;
         this.measurement = measurement;
     }
 
-    /** Getter for the keyword.
-     * @return the keyword
+    /** Get the type of observation.
+     * @return type of observation
      */
-    public String getKeyword() {
-        return keyword;
-    }
-
-    /** Setter for the keyword.
-     * @param keyword the keyword to set
-     */
-    public void setKeyword(final String keyword) {
-        this.keyword = keyword;
+    public Observationtype getType() {
+        return type;
     }
 
     /** Getter for the epoch.
@@ -84,25 +77,11 @@ public class Observation {
         return epoch;
     }
 
-    /** Setter for the epoch.
-     * @param epoch the epoch to set
-     */
-    public void setEpoch(final AbsoluteDate epoch) {
-        this.epoch = epoch;
-    }
-
     /** Getter for the measurement.
-     * @return the measurement (in TDM units, without conversion)
+     * @return the measurement (in SI units, converted from TDM)
      */
     public double getMeasurement() {
         return measurement;
-    }
-
-    /** Setter for the measurement.
-     * @param measurement the measurement to set (in TDM units, without conversion)
-     */
-    public void setMeasurement(final double measurement) {
-        this.measurement = measurement;
     }
 
 }

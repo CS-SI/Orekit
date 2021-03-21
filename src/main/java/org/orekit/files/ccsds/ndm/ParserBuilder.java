@@ -24,6 +24,8 @@ import org.orekit.files.ccsds.ndm.odm.ocm.OcmParser;
 import org.orekit.files.ccsds.ndm.odm.oem.OemParser;
 import org.orekit.files.ccsds.ndm.odm.omm.OmmParser;
 import org.orekit.files.ccsds.ndm.odm.opm.OpmParser;
+import org.orekit.files.ccsds.ndm.tdm.RangeUnits;
+import org.orekit.files.ccsds.ndm.tdm.RangeUnitsConverter;
 import org.orekit.files.ccsds.ndm.tdm.TdmParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
@@ -301,10 +303,12 @@ public class ParserBuilder {
     }
 
     /** Build a parser for {@link org.orekit.files.ccsds.ndm.tdm.TdmFile Tracking Data Messages}.
+     * @param converter converter for {@link RangeUnits#RU Range Units} (may be null if there
+     * are no range observations in {@link RangeUnits#RU Range Units})
      * @return a new parser
      */
-    public TdmParser buildTdmParser() {
-        return new TdmParser(getConventions(), isSimpleEOP(), getDataContext());
+    public TdmParser buildTdmParser(final RangeUnitsConverter converter) {
+        return new TdmParser(getConventions(), isSimpleEOP(), getDataContext(), converter);
     }
 
 }

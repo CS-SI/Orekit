@@ -57,19 +57,19 @@ public class ObservationsBlock extends CommentsContainer implements Data {
         return true;
     }
 
-    /** Check if observation epoch has been set.
-     * @return true if observation epoch has been set
+    /** Get current observation epoch if set.
+     * @return current observation epoch, or null if not set
      */
-    boolean hasObservationEpoch() {
-        return currentObservationEpoch != null;
+    AbsoluteDate getCurrentObservationEpoch() {
+        return currentObservationEpoch;
     }
 
     /** Add the value of current observation.
-     * @param keyword keyword of the observation
+     * @param type type of the observation
      * @param measurement measurement of the observation
      */
-    void addObservationValue(final String keyword, final double measurement) {
-        addObservation(keyword, currentObservationEpoch, measurement);
+    void addObservationValue(final Observationtype type, final double measurement) {
+        addObservation(type, currentObservationEpoch, measurement);
         currentObservationEpoch = null;
     }
 
@@ -97,14 +97,14 @@ public class ObservationsBlock extends CommentsContainer implements Data {
     }
 
     /** Adds an observation data line.
-     * @param keyword the keyword
+     * @param type type of the observation
      * @param epoch the timetag
      * @param measurement the measurement
      */
-    public void addObservation(final String keyword,
+    public void addObservation(final Observationtype type,
                                final AbsoluteDate epoch,
                                final double measurement) {
-        this.addObservation(new Observation(keyword, epoch, measurement));
+        this.addObservation(new Observation(type, epoch, measurement));
     }
 
 }

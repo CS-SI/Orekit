@@ -128,7 +128,7 @@ public enum TdmMetadataKey {
     }),
 
     /** Range modulus entry. */
-    RANGE_MODULUS((token, context, container) -> token.processAsDouble(1.0, container::setRangeModulus)),
+    RANGE_MODULUS((token, context, container) -> token.processAsDouble(1.0, container::setRawRangeModulus)),
 
     /** Range units entry. */
     RANGE_UNITS((token, context, container) -> {
@@ -203,16 +203,16 @@ public enum TdmMetadataKey {
     }),
 
     /** Angle 1 correction entry. */
-    CORRECTION_ANGLE_1((token, context, container) -> token.processAsDouble(1.0, container::setCorrectionAngle1)),
+    CORRECTION_ANGLE_1((token, context, container) -> token.processAsAngle(container::setCorrectionAngle1)),
 
     /** Angle 2 correction entry. */
-    CORRECTION_ANGLE_2((token, context, container) -> token.processAsDouble(1.0, container::setCorrectionAngle2)),
+    CORRECTION_ANGLE_2((token, context, container) -> token.processAsAngle(container::setCorrectionAngle2)),
 
     /** Doppler correction entry. */
-    CORRECTION_DOPPLER((token, context, container) -> token.processAsDouble(1.0, container::setCorrectionDoppler)),
+    CORRECTION_DOPPLER((token, context, container) -> token.processAsDouble(1000.0, container::setCorrectionDoppler)),
 
     /** Range correction entry. */
-    CORRECTION_RANGE((token, context, container) -> token.processAsDouble(1.0, container::setCorrectionRange)),
+    CORRECTION_RANGE((token, context, container) -> token.processAsDouble(1.0, container::setRawCorrectionRange)),
 
     /** Recive correction entry. */
     CORRECTION_RECEIVE((token, context, container) -> token.processAsDouble(1.0, container::setCorrectionReceive)),

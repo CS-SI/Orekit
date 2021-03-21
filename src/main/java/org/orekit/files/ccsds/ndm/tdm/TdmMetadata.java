@@ -26,6 +26,7 @@ import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.section.Metadata;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 
 /** The TDMMetadata class gathers the meta-data present in the Tracking Data Message (TDM).<p>
  *  References:<p>
@@ -107,10 +108,8 @@ public class TdmMetadata extends Metadata {
     /** Range mode. */
     private RangeMode rangeMode;
 
-    /** Range modulus.<p>
-     *  Modulus of the range observable in the units as specified by the RANGE_UNITS keyword.
-     */
-    private double rangeModulus;
+    /** Raw range modulus (in RangeUnits). */
+    private double rawRangeModulus;
 
     /** Range units. */
     private RangeUnits rangeUnits;
@@ -151,10 +150,10 @@ public class TdmMetadata extends Metadata {
      */
     private double correctionDoppler;
 
-    /** Correction Range.<p>
+    /** Raw correction Range in {@link #getRangeUnits()}.<p>
      *  Range correction that has been added or should be added to the RANGE data.
      */
-    private double correctionRange;
+    private double rawCorrectionRange;
 
     /** Correction receive.<p>
      *  Receive correction that has been added or should be added to the RECEIVE data.
@@ -440,19 +439,34 @@ public class TdmMetadata extends Metadata {
         this.rangeMode = rangeMode;
     }
 
-    /** Getter for the rangeModulus.
-     * @return the rangeModulus
+    /** Getter for the range modulus in meters.
+     * @param converter converter to use if {@link #getRangeUnits() range units}
+     * are set to {@link RangeUnits#RU}
+     * @return the range modulus in meters
      */
-    public double getRangeModulus() {
-        return rangeModulus;
+    public double getRangeModulus(final RangeUnitsConverter converter) {
+        if (rangeUnits == RangeUnits.km) {
+            return rawRangeModulus * 1000;
+        } else if (rangeUnits == RangeUnits.s) {
+            return rawRangeModulus * Constants.SPEED_OF_LIGHT;
+        } else {
+            return converter.ruToMeters(this, startTime, rawRangeModulus);
+        }
     }
 
-    /** Setter for the rangeModulus.
-     * @param rangeModulus the rangeModulus to set
+    /** Getter for the raw range modulus.
+     * @return the raw range modulus in range units
      */
-    public void setRangeModulus(final double rangeModulus) {
+    public double getRawRangeModulus() {
+        return rawRangeModulus;
+    }
+
+    /** Setter for the raw range modulus.
+     * @param rawRangeModulus the raw range modulus to set
+     */
+    public void setRawRangeModulus(final double rawRangeModulus) {
         refuseFurtherComments();
-        this.rangeModulus = rangeModulus;
+        this.rawRangeModulus = rawRangeModulus;
     }
 
     /** Getter for the rangeUnits.
@@ -565,14 +579,14 @@ public class TdmMetadata extends Metadata {
     }
 
     /** Getter for the correctionAngle1.
-     * @return the correctionAngle1 (in TDM units, without conversion)
+     * @return the correctionAngle1 (in radians)
      */
     public double getCorrectionAngle1() {
         return correctionAngle1;
     }
 
     /** Setter for the correctionAngle1.
-     * @param correctionAngle1 the correctionAngle1 to set (in TDM units, without conversion)
+     * @param correctionAngle1 the correctionAngle1 to set (in radians)
      */
     public void setCorrectionAngle1(final double correctionAngle1) {
         refuseFurtherComments();
@@ -580,14 +594,14 @@ public class TdmMetadata extends Metadata {
     }
 
     /** Getter for the correctionAngle2.
-     * @return the correctionAngle2 (in TDM units, without conversion)
+     * @return the correctionAngle2 (in radians)
      */
     public double getCorrectionAngle2() {
         return correctionAngle2;
     }
 
     /** Setter for the correctionAngle2.
-     * @param correctionAngle2 the correctionAngle2 to set (in TDM units, without conversion)
+     * @param correctionAngle2 the correctionAngle2 to set (in radians)
      */
     public void setCorrectionAngle2(final double correctionAngle2) {
         refuseFurtherComments();
@@ -595,33 +609,48 @@ public class TdmMetadata extends Metadata {
     }
 
     /** Getter for the correctionDoppler.
-     * @return the correctionDoppler (in TDM units, without conversion)
+     * @return the correctionDoppler (in m/s)
      */
     public double getCorrectionDoppler() {
         return correctionDoppler;
     }
 
     /** Setter for the correctionDoppler.
-     * @param correctionDoppler the correctionDoppler to set (in TDM units, without conversion)
+     * @param correctionDoppler the correctionDoppler to set (in m/s)
      */
     public void setCorrectionDoppler(final double correctionDoppler) {
         refuseFurtherComments();
         this.correctionDoppler = correctionDoppler;
     }
 
-    /** Getter for the correctionRange.
-     * @return the correctionRange (in TDM units, without conversion)
+    /** Getter for the raw correction for range in meters.
+     * @param converter converter to use if {@link #getRangeUnits() range units}
+     * are set to {@link RangeUnits#RU}
+     * @return the raw correction for range in meters
      */
-    public double getCorrectionRange() {
-        return correctionRange;
+    public double getCorrectionRange(final RangeUnitsConverter converter) {
+        if (rangeUnits == RangeUnits.km) {
+            return rawCorrectionRange * 1000;
+        } else if (rangeUnits == RangeUnits.s) {
+            return rawCorrectionRange * Constants.SPEED_OF_LIGHT;
+        } else {
+            return converter.ruToMeters(this, startTime, rawCorrectionRange);
+        }
     }
 
-    /** Setter for the correctionRange.
-     * @param correctionRange the correctionRange to set (in TDM units, without conversion)
+    /** Getter for the raw correction for range.
+     * @return the raw correction for range (in {@link #getRangeUnits()})
      */
-    public void setCorrectionRange(final double correctionRange) {
+    public double getRawCorrectionRange() {
+        return rawCorrectionRange;
+    }
+
+    /** Setter for the raw correction for range.
+     * @param rawCorrectionRange the raw correction for range to set (in {@link #getRangeUnits()})
+     */
+    public void setRawCorrectionRange(final double rawCorrectionRange) {
         refuseFurtherComments();
-        this.correctionRange = correctionRange;
+        this.rawCorrectionRange = rawCorrectionRange;
     }
 
     /** Getter for the correctionReceive.

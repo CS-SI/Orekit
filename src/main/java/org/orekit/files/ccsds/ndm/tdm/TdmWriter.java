@@ -138,7 +138,7 @@ public class TdmWriter extends AbstractMessageWriter {
         generator.writeEntry(TdmMetadataKey.INTEGRATION_REF.name(),        metadata.getIntegrationRef(),                false);
         generator.writeEntry(TdmMetadataKey.FREQ_OFFSET.name(),            format(metadata.getFreqOffset()),            false);
         generator.writeEntry(TdmMetadataKey.RANGE_MODE.name(),             metadata.getRangeMode(),                     false);
-        generator.writeEntry(TdmMetadataKey.RANGE_MODULUS.name(),          format(metadata.getRangeModulus()),          false);
+        generator.writeEntry(TdmMetadataKey.RANGE_MODULUS.name(),          format(metadata.getRawRangeModulus()),       false);
         generator.writeEntry(TdmMetadataKey.RANGE_UNITS.name(),            metadata.getRangeUnits(),                    false);
         generator.writeEntry(TdmMetadataKey.ANGLE_TYPE.name(),             metadata.getAngleType(),                     false);
         if (metadata.getReferenceFrame() != null) {
@@ -158,7 +158,7 @@ public class TdmWriter extends AbstractMessageWriter {
         generator.writeEntry(TdmMetadataKey.CORRECTION_ANGLE_1.name(),     format(metadata.getCorrectionAngle1()),      false);
         generator.writeEntry(TdmMetadataKey.CORRECTION_ANGLE_2.name(),     format(metadata.getCorrectionAngle2()),      false);
         generator.writeEntry(TdmMetadataKey.CORRECTION_DOPPLER.name(),     format(metadata.getCorrectionDoppler()),     false);
-        generator.writeEntry(TdmMetadataKey.CORRECTION_RANGE.name(),       format(metadata.getCorrectionRange()),       false);
+        generator.writeEntry(TdmMetadataKey.CORRECTION_RANGE.name(),       format(metadata.getRawCorrectionRange()),    false);
         generator.writeEntry(TdmMetadataKey.CORRECTION_RECEIVE.name(),     format(metadata.getCorrectionReceive()),     false);
         generator.writeEntry(TdmMetadataKey.CORRECTION_TRANSMIT.name(),    format(metadata.getCorrectionTransmit()),    false);
         generator.writeEntry(TdmMetadataKey.CORRECTIONS_APPLIED.name(),    metadata.getCorrectionsApplied(),            false);
@@ -185,7 +185,7 @@ public class TdmWriter extends AbstractMessageWriter {
         // write the data
         for (final Observation observation : observationsBlock.getObservations()) {
             if (generator.getFormat() == FileFormat.KVN) {
-                generator.writeEntry(observation.getKeyword(),
+                generator.writeEntry(observation.getType().name(),
                                      dateToString(observation.getEpoch()) + " " + format(observation.getMeasurement()),
                                      false);
             } else {

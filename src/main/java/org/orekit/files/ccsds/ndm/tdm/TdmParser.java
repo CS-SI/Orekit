@@ -58,6 +58,9 @@ public class TdmParser extends AbstractMessageParser<TdmFile, TdmParser> {
     /** Root element for XML files. */
     private static final String ROOT = "tdm";
 
+    /** Converter for {@link RangeUnits#RU Range Units} (may be null). */
+    private final RangeUnitsConverter converter;
+
     /** Metadata for current observation block. */
     private TdmMetadata metadata;
 
@@ -80,11 +83,13 @@ public class TdmParser extends AbstractMessageParser<TdmFile, TdmParser> {
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
+     * @param converter converter for {@link RangeUnits#RU Range Units} (may be null if there
+     * are no range observations in {@link RangeUnits#RU Range Units})
      */
-    public TdmParser(final IERSConventions conventions,
-                     final boolean simpleEOP,
-                     final DataContext dataContext) {
+    public TdmParser(final IERSConventions conventions, final boolean simpleEOP,
+                     final DataContext dataContext, final RangeUnitsConverter converter) {
         super(ROOT, TdmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext);
+        this.converter = converter;
     }
 
     /** {@inheritDoc} */
@@ -218,8 +223,14 @@ public class TdmParser extends AbstractMessageParser<TdmFile, TdmParser> {
     private boolean processDataToken(final ParseToken token) {
         try {
             inData();
-            return token.getName() != null &&
-                   TdmDataKey.valueOf(token.getName()).process(token, context, observationsBlock);
+            try {
+                // global tokens (observation wrapper, comments, epoch in XML)
+                return token.getName() != null &&
+                       TdmDataKey.valueOf(token.getName()).process(token, context, observationsBlock);
+            } catch (IllegalArgumentException iae) {
+                // observation
+                return Observationtype.valueOf(token.getName()).process(token, context, converter, metadata, observationsBlock);
+            }
         } catch (IllegalArgumentException iae) {
             // token has not been recognized
             return false;

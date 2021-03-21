@@ -64,11 +64,11 @@
         </observation>
         <observation>
           <EPOCH>2017-06-14T10:53:02.000</EPOCH>
-          <DOPPLER_INSTANTANEOUS>2.0</DOPPLER_INSTANTANEOUS>
+          <DOPPLER_INSTANTANEOUS>0.002</DOPPLER_INSTANTANEOUS>
         </observation>
         <observation>
           <EPOCH>2017-06-14T10:53:03.000</EPOCH>
-          <DOPPLER_INTEGRATED>3.0</DOPPLER_INTEGRATED>
+          <DOPPLER_INTEGRATED>0.003</DOPPLER_INTEGRATED>
         </observation>
         <observation>
           <EPOCH>2017-06-14T10:53:04.000</EPOCH>
@@ -158,11 +158,11 @@
         
         <observation>
           <EPOCH>2017-06-14T10:53:25.000</EPOCH>
-          <ANGLE_1>25.0</ANGLE_1>
+          <ANGLE_1>1432.3944878270580219</ANGLE_1>
         </observation>
         <observation>
           <EPOCH>2017-06-14T10:53:26.000</EPOCH>
-          <ANGLE_2>26.0</ANGLE_2>
+          <ANGLE_2>1489.6902673401403428</ANGLE_2>
         </observation>
         
         <observation>

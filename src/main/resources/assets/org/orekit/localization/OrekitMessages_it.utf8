@@ -337,6 +337,9 @@ CCSDS_INCONSISTENT_TIME_SYSTEMS = sistemi temporali incoerenti: {0} ≠ {1}
 # No CCSDS TDM keyword was found at line {0} of file {1}:\n{2}
 CCSDS_TDM_KEYWORD_NOT_FOUND = nessuna parola chiave CCSDS TDM trovata alla linea {0} del file {1}:\n{2}
 
+# no Range Units converter configured for parsing Tracking Data Message
+CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER = <MISSING TRANSLATION>
+
 # Time system should have already been set before line {0} of file {1}
 CCSDS_TIME_SYSTEM_NOT_READ_YET = Nel file {1}, il sistema temporale deve essere impostato prima della linea {0} 
 
