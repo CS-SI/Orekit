@@ -45,6 +45,8 @@ import org.orekit.files.ccsds.utils.parsing.ProcessingState;
 import org.orekit.files.general.EphemerisFileParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.units.PredefinedUnit;
+import org.orekit.utils.units.Unit;
 
 /**
  * A parser for the CCSDS OEM (Orbit Ephemeris Message).
@@ -71,8 +73,8 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
                     /** Pattern for splitting strings at blanks. */
     private static final Pattern SPLIT_AT_BLANKS = Pattern.compile("\\s+");
 
-    /** Conversion factor from kilometers to meters. */
-    private static final double KM_TO_M = 1000.0;
+    /** Kilometers units. */
+    private static final Unit KM = PredefinedUnit.KILOMETRE.toUnit();
 
     /** File header. */
     private Header header;
@@ -356,16 +358,16 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
                 }
                 stateVectorBlock = new StateVector();
                 stateVectorBlock.setEpoch(context.getTimeSystem().getConverter(context).parse(fields[0]));
-                stateVectorBlock.setP(0, Double.parseDouble(fields[1]) * KM_TO_M);
-                stateVectorBlock.setP(1, Double.parseDouble(fields[2]) * KM_TO_M);
-                stateVectorBlock.setP(2, Double.parseDouble(fields[3]) * KM_TO_M);
-                stateVectorBlock.setV(0, Double.parseDouble(fields[4]) * KM_TO_M);
-                stateVectorBlock.setV(1, Double.parseDouble(fields[5]) * KM_TO_M);
-                stateVectorBlock.setV(2, Double.parseDouble(fields[6]) * KM_TO_M);
+                stateVectorBlock.setP(0, KM.toSI(Double.parseDouble(fields[1])));
+                stateVectorBlock.setP(1, KM.toSI(Double.parseDouble(fields[2])));
+                stateVectorBlock.setP(2, KM.toSI(Double.parseDouble(fields[3])));
+                stateVectorBlock.setV(0, KM.toSI(Double.parseDouble(fields[4])));
+                stateVectorBlock.setV(1, KM.toSI(Double.parseDouble(fields[5])));
+                stateVectorBlock.setV(2, KM.toSI(Double.parseDouble(fields[6])));
                 if (fields.length == 10) {
-                    stateVectorBlock.setA(0, Double.parseDouble(fields[7]) * KM_TO_M);
-                    stateVectorBlock.setA(1, Double.parseDouble(fields[8]) * KM_TO_M);
-                    stateVectorBlock.setA(2, Double.parseDouble(fields[9]) * KM_TO_M);
+                    stateVectorBlock.setA(0, KM.toSI(Double.parseDouble(fields[7])));
+                    stateVectorBlock.setA(1, KM.toSI(Double.parseDouble(fields[8])));
+                    stateVectorBlock.setA(2, KM.toSI(Double.parseDouble(fields[9])));
                 }
                 return currentBlock.addData(stateVectorBlock.toTimeStampedPVCoordinates(),
                                             stateVectorBlock.hasAcceleration());
