@@ -199,8 +199,8 @@ public class NtripClient {
 
     /** Set proxy parameters.
      * @param type proxy type
-     * @param proxyHost host name of the proxy (ignored if {@code type} is {@link Proxy.Type#DIRECT})
-     * @param proxyPort port number of the proxy (ignored if {@code type} is {@link Proxy.Type#DIRECT})
+     * @param proxyHost host name of the proxy (ignored if {@code type} is {@code Proxy.Type.DIRECT})
+     * @param proxyPort port number of the proxy (ignored if {@code type} is {@code Proxy.Type.DIRECT})
      */
     public void setProxy(final Proxy.Type type, final String proxyHost, final int proxyPort) {
         try {
@@ -378,7 +378,7 @@ public class NtripClient {
      * monitoring data incoming from a mount point. When new complete
      * {@link ParsedMessage parsed messages} becomes available, the
      * {@link MessageObserver observers} that have been registered
-     * using {@link #addObserver(int, MessageObserver) addObserver()}
+     * using {@link #addObserver(int, String, MessageObserver) addObserver()}
      * method will be notified about the message.
      * </p>
      * <p>
@@ -400,7 +400,7 @@ public class NtripClient {
      * monitoring data incoming from a mount point. When new complete
      * {@link ParsedMessage parsed messages} becomes available, the
      * {@link MessageObserver observers} that have been registered
-     * using {@link #addObserver(int, MessageObserver) addObserver()}
+     * using {@link #addObserver(int, String, MessageObserver) addObserver()}
      * method will be notified about the message.
      * </p>
      * <p>
