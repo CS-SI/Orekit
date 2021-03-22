@@ -19,6 +19,7 @@ package org.orekit.utils;
 import java.util.stream.Stream;
 
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FieldDerivative;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
