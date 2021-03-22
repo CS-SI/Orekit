@@ -173,7 +173,7 @@ public class AemMetadata extends AdmMetadata {
      * null if not initialized
      */
     public Boolean isFirst() {
-        return isFirst == null ? true : isFirst;
+        return isFirst == null ? Boolean.TRUE : isFirst;
     }
 
     /**
