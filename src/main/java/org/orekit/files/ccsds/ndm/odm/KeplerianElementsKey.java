@@ -16,11 +16,12 @@
  */
 package org.orekit.files.ccsds.ndm.odm;
 
-import org.hipparchus.util.FastMath;
+import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.utils.units.Unit;
 
 
 /** Keys for {@link KeplerianElements Keplerian elements} entries.
@@ -37,14 +38,13 @@ public enum KeplerianElementsKey {
     EPOCH((token, context, container) -> token.processAsDate(container::setEpoch, context)),
 
     /** Orbit semi-major axis. */
-    SEMI_MAJOR_AXIS((token, context, container) -> token.processAsDouble(1.0e3, container::setA)),
+    SEMI_MAJOR_AXIS((token, context, container) -> token.processAsDouble(Unit.KILOMETRE, container::setA)),
 
     /** Mean motion. */
-    MEAN_MOTION((token, context, container) ->
-                 token.processAsDouble(FastMath.PI / 43200.0, container::setMeanMotion)),
+    MEAN_MOTION((token, context, container) -> token.processAsDouble(Units.REV_PER_DAY, container::setMeanMotion)),
 
     /** Orbit eccentricity. */
-    ECCENTRICITY((token, context, container) -> token.processAsDouble(1.0, container::setE)),
+    ECCENTRICITY((token, context, container) -> token.processAsDouble(Unit.ONE, container::setE)),
 
     /** Orbit inclination. */
     INCLINATION((token, context, container) -> token.processAsAngle(container::setI)),
@@ -74,7 +74,7 @@ public enum KeplerianElementsKey {
     }),
 
     /** Gravitational coefficient. */
-    GM((token, context, container) -> token.processAsDouble(1.0e9, container::setMu));
+    GM((token, context, container) -> token.processAsDouble(Units.KM3_PER_S2, container::setMu));
 
     /** Processing method. */
     private final TokenProcessor processor;

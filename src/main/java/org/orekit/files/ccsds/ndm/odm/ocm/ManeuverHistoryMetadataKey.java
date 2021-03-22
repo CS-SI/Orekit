@@ -22,6 +22,7 @@ import org.orekit.files.ccsds.definitions.DutyCycleType;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.utils.units.Unit;
 
 
 /** Keys for {@link ManeuverHistoryMetadata maneuver history container} entries.
@@ -108,10 +109,10 @@ public enum ManeuverHistoryMetadataKey {
     DC_REF_TIME((token, context, container) -> token.processAsDate(container::setDcRefTime, context)),
 
     /** Duty cycle pulse "ON" duration. */
-    DC_TIME_PULSE_DURATION((token, context, container) -> token.processAsDouble(1.0, container::setDcTimePulseDuration)),
+    DC_TIME_PULSE_DURATION((token, context, container) -> token.processAsDouble(Unit.SECOND, container::setDcTimePulseDuration)),
 
     /** Duty cycle elapsed time between start of a pulse and start of next pulse. */
-    DC_TIME_PULSE_PERIOD((token, context, container) -> token.processAsDouble(1.0, container::setDcTimePulsePeriod)),
+    DC_TIME_PULSE_PERIOD((token, context, container) -> token.processAsDouble(Unit.SECOND, container::setDcTimePulsePeriod)),
 
     /** Reference direction for triggering duty cycle. */
     DC_REF_DIR((token, context, container) -> token.processAsVector(container::setDcRefDir)),

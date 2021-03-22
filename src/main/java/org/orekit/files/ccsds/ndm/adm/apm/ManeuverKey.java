@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.utils.units.Unit;
 
 /** Keys for {@link Maneuver APM maneuver} entries.
  * @author Bryan Cazabonne
@@ -35,19 +36,19 @@ public enum ManeuverKey {
     MAN_EPOCH_START((token, context, container) -> token.processAsDate(container::setEpochStart, context)),
 
     /** Duration entry. */
-    MAN_DURATION((token, context, container) -> token.processAsDouble(1.0, container::setDuration)),
+    MAN_DURATION((token, context, container) -> token.processAsDouble(Unit.SECOND, container::setDuration)),
 
     /** Reference frame entry. */
     MAN_REF_FRAME((token, context, container) -> token.processAsUppercaseString(container::setRefFrameString)),
 
     /** First torque vector component entry. */
-    MAN_TOR_1((token, context, container) -> token.processAsIndexedDouble(0, 1.0, container::setTorque)),
+    MAN_TOR_1((token, context, container) -> token.processAsIndexedDouble(0, Unit.NEWTON, container::setTorque)),
 
     /** Second torque vector component entry. */
-    MAN_TOR_2((token, context, container) -> token.processAsIndexedDouble(1, 1.0, container::setTorque)),
+    MAN_TOR_2((token, context, container) -> token.processAsIndexedDouble(1, Unit.NEWTON, container::setTorque)),
 
     /** Third torque vector component entry. */
-    MAN_TOR_3((token, context, container) -> token.processAsIndexedDouble(2, 1.0, container::setTorque));
+    MAN_TOR_3((token, context, container) -> token.processAsIndexedDouble(2, Unit.NEWTON, container::setTorque));
 
     /** Processing method. */
     private final TokenProcessor processor;

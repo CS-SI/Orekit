@@ -30,9 +30,19 @@ public class UnitsConverterTest {
 
     @Test
     public void testTime() {
-        final UnitsConverter day2second = new UnitsConverter(PredefinedUnit.DAY.toUnit(),
-                                                           PredefinedUnit.SECOND.toUnit());
+        final UnitsConverter day2second = new UnitsConverter(Unit.DAY, Unit.SECOND);
         Assert.assertEquals(388800.0, day2second.convert(4.5), 1.0e-9);
+    }
+
+    @Test
+    public void testAngle() {
+        final UnitsConverter rev2deg = new UnitsConverter(Unit.REVOLUTION, Unit.DEGREE);
+        Assert.assertEquals(360.0, rev2deg.convert(1.0), 1.0e-12);
+    }
+
+    @Test
+    public void testRotationRate() {
+        
     }
 
     @Test

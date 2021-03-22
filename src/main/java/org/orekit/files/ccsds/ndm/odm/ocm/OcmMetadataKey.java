@@ -19,7 +19,7 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.utils.Constants;
+import org.orekit.utils.units.Unit;
 
 
 /** Keys for {@link OcmMetadata OCM container} entries.
@@ -154,10 +154,10 @@ public enum OcmMetadataKey {
     OCM_DATA_ELEMENTS((token, context, container) -> token.processAsUppercaseList(container::setOcmDataElements)),
 
     /** Spacecraft clock count at {@link #EPOCH_TZERO}. */
-    SCLK_OFFSET_AT_EPOCH((token, context, container) -> token.processAsDouble(1.0, container::setSclkOffsetAtEpoch)),
+    SCLK_OFFSET_AT_EPOCH((token, context, container) -> token.processAsDouble(Unit.SECOND, container::setSclkOffsetAtEpoch)),
 
     /** Number of clock seconds occurring during one SI second. */
-    SCLK_SEC_PER_SI_SEC((token, context, container) -> token.processAsDouble(1.0, container::setSclkSecPerSISec)),
+    SCLK_SEC_PER_SI_SEC((token, context, container) -> token.processAsDouble(Unit.ONE, container::setSclkSecPerSISec)),
 
     /** Creation date of previous message from a given originator. */
     PREVIOUS_MESSAGE_EPOCH((token, context, container) -> token.processAsDate(container::setPreviousMessageEpoch, context)),
@@ -172,13 +172,13 @@ public enum OcmMetadataKey {
     STOP_TIME((token, context, container) -> token.processAsDate(container::setStopTime, context)),
 
     /** Span of time that the OCM covers. */
-    TIME_SPAN((token, context, container) -> token.processAsDouble(Constants.JULIAN_DAY, container::setTimeSpan)),
+    TIME_SPAN((token, context, container) -> token.processAsDouble(Unit.DAY, container::setTimeSpan)),
 
     /** Difference (TAI – UTC) in seconds at epoch {@link #EPOCH_TZERO}. */
-    TAIMUTC_AT_TZERO((token, context, container) -> token.processAsDouble(1.0, container::setTaimutcT0)),
+    TAIMUTC_AT_TZERO((token, context, container) -> token.processAsDouble(Unit.SECOND, container::setTaimutcT0)),
 
     /** Difference (UT1 – UTC) in seconds at epoch {@link #EPOCH_TZERO}. */
-    UT1MUTC_AT_TZERO((token, context, container) -> token.processAsDouble(1.0, container::setUt1mutcT0)),
+    UT1MUTC_AT_TZERO((token, context, container) -> token.processAsDouble(Unit.SECOND, container::setUt1mutcT0)),
 
     /** Source and version of Earth Orientation Parameters. */
     EOP_SOURCE((token, context, container) -> token.processAsNormalizedString(container::setEopSource)),

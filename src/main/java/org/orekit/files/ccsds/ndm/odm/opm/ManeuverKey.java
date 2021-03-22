@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm.odm.opm;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.utils.units.Unit;
 
 
 /** Keys for {@link Maneuver OPM maneuver} entries.
@@ -38,19 +39,19 @@ public enum ManeuverKey {
     MAN_REF_FRAME((token, context, container) -> token.processAsFrame(container::setReferenceFrame, context, true, true, false)),
 
     /** Maneuver duration (0 for impulsive maneuvers). */
-    MAN_DURATION((token, context, container) -> token.processAsDouble(1.0, container::setDuration)),
+    MAN_DURATION((token, context, container) -> token.processAsDouble(Unit.SECOND, container::setDuration)),
 
     /** Mass change during maneuver (value is &lt; 0). */
-    MAN_DELTA_MASS((token, context, container) -> token.processAsDouble(1.0, container::setDeltaMass)),
+    MAN_DELTA_MASS((token, context, container) -> token.processAsDouble(Unit.KILOGRAM, container::setDeltaMass)),
 
     /** First component of the velocity increment. */
-    MAN_DV_1((token, context, container) -> token.processAsIndexedDouble(0, 1.0e3, container::setDV)),
+    MAN_DV_1((token, context, container) -> token.processAsIndexedDouble(0, Unit.KILOMETRE, container::setDV)),
 
     /** Second component of the velocity increment. */
-    MAN_DV_2((token, context, container) -> token.processAsIndexedDouble(1, 1.0e3, container::setDV)),
+    MAN_DV_2((token, context, container) -> token.processAsIndexedDouble(1, Unit.KILOMETRE, container::setDV)),
 
     /** Third component of the velocity increment. */
-    MAN_DV_3((token, context, container) -> token.processAsIndexedDouble(2, 1.0e3, container::setDV));
+    MAN_DV_3((token, context, container) -> token.processAsIndexedDouble(2, Unit.KILOMETRE, container::setDV));
 
     /** Processing method. */
     private final TokenProcessor processor;

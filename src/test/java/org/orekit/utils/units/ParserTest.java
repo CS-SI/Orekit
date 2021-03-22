@@ -33,7 +33,7 @@ public class ParserTest {
 
     @Test
     public void testNotAUnit() {
-        Assert.assertSame(PredefinedUnit.NONE.toUnit(), Parser.parse("n/a"));
+        Assert.assertSame(Unit.NONE, Parser.parse("n/a"));
     }
 
     @Test

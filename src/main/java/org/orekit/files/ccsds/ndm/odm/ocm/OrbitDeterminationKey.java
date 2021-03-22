@@ -20,7 +20,7 @@ import org.orekit.files.ccsds.definitions.OdMethodFacade;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.utils.Constants;
+import org.orekit.utils.units.Unit;
 
 
 /** Keys for {@link OrbitDetermination orbit determination data} entries.
@@ -51,19 +51,19 @@ public enum OrbitDeterminationKey {
     OD_EPOCH((token, context, container) -> token.processAsDate(container::setEpoch, context)),
 
     /** Time elapsed between first accepted observation on epoch. */
-    DAYS_SINCE_FIRST_OBS((token, context, container) -> token.processAsDouble(Constants.JULIAN_DAY,
+    DAYS_SINCE_FIRST_OBS((token, context, container) -> token.processAsDouble(Unit.DAY,
                                                                               container::setTimeSinceFirstObservation)),
 
     /** Time elapsed between last accepted observation on epoch. */
-    DAYS_SINCE_LAST_OBS((token, context, container) -> token.processAsDouble(Constants.JULIAN_DAY,
+    DAYS_SINCE_LAST_OBS((token, context, container) -> token.processAsDouble(Unit.DAY,
                                                                              container::setTimeSinceLastObservation)),
 
     /** Sime span of observation recommended for the OD of the object. */
-    RECOMMENDED_OD_SPAN((token, context, container) -> token.processAsDouble(Constants.JULIAN_DAY,
+    RECOMMENDED_OD_SPAN((token, context, container) -> token.processAsDouble(Unit.DAY,
                                                                              container::setRecommendedOdSpan)),
 
     /** Actual time span used for the OD of the object. */
-    ACTUAL_OD_SPAN((token, context, container) -> token.processAsDouble(Constants.JULIAN_DAY,
+    ACTUAL_OD_SPAN((token, context, container) -> token.processAsDouble(Unit.DAY,
                                                                         container::setActualOdSpan)),
 
     /** Number of observations available within the actual OD span. */
@@ -79,29 +79,29 @@ public enum OrbitDeterminationKey {
     TRACKS_USED((token, context, container) -> token.processAsInteger(container::setTracksUsed)),
 
     /** Maximum time between observations in the OD of the object. */
-    MAXIMUM_OBS_GAP((token, context, container) -> token.processAsDouble(Constants.JULIAN_DAY,
+    MAXIMUM_OBS_GAP((token, context, container) -> token.processAsDouble(Unit.DAY,
                                                                          container::setMaximumObsGap)),
 
     /** Positional error ellipsoid 1σ major eigenvalue at the epoch of OD. */
-    OD_EPOCH_EIGMAJ((token, context, container) -> token.processAsDouble(1.0, container::setEpochEigenMaj)),
+    OD_EPOCH_EIGMAJ((token, context, container) -> token.processAsDouble(Unit.METRE, container::setEpochEigenMaj)),
 
     /** Positional error ellipsoid 1σ intermediate eigenvalue at the epoch of OD. */
-    OD_EPOCH_EIGMED((token, context, container) -> token.processAsDouble(1.0, container::setEpochEigenMed)),
+    OD_EPOCH_EIGMED((token, context, container) -> token.processAsDouble(Unit.METRE, container::setEpochEigenMed)),
 
     /** Positional error ellipsoid 1σ minor eigenvalue at the epoch of OD. */
-    OD_EPOCH_EIGMIN((token, context, container) -> token.processAsDouble(1.0, container::setEpochEigenMin)),
+    OD_EPOCH_EIGMIN((token, context, container) -> token.processAsDouble(Unit.METRE, container::setEpochEigenMin)),
 
     /** Maximum predicted major eigenvalue of 1σ positional error ellipsoid over entire time span of the OCM. */
-    OD_MAX_PRED_EIGMAJ((token, context, container) -> token.processAsDouble(1.0, container::setMaxPredictedEigenMaj)),
+    OD_MAX_PRED_EIGMAJ((token, context, container) -> token.processAsDouble(Unit.METRE, container::setMaxPredictedEigenMaj)),
 
     /** Minimum predicted major eigenvalue of 1σ positional error ellipsoid over entire time span of the OCM. */
-    OD_MIN_PRED_EIGMIN((token, context, container) -> token.processAsDouble(1.0, container::setMinPredictedEigenMaj)),
+    OD_MIN_PRED_EIGMIN((token, context, container) -> token.processAsDouble(Unit.METRE, container::setMinPredictedEigenMaj)),
 
     /** Confidence metric. */
-    OD_CONFIDENCE((token, context, container) -> token.processAsDouble(0.01, container::setConfidence)),
+    OD_CONFIDENCE((token, context, container) -> token.processAsDouble(Unit.PERCENT, container::setConfidence)),
 
     /** Generalize Dilution Of Precision. */
-    GDOP((token, context, container) -> token.processAsDouble(1.0, container::setGdop)),
+    GDOP((token, context, container) -> token.processAsDouble(Unit.ONE, container::setGdop)),
 
     /** Number of solved-for states. */
     SOLVE_N((token, context, container) -> token.processAsInteger(container::setSolveN)),
@@ -122,7 +122,7 @@ public enum OrbitDeterminationKey {
     SENSORS((token, context, container) -> token.processAsNormalizedList(container::setSensors)),
 
     /** Weighted RMS residual ratio. */
-    WEIGHTED_RMS((token, context, container) -> token.processAsDouble(1.0, container::setWeightedRms)),
+    WEIGHTED_RMS((token, context, container) -> token.processAsDouble(Unit.ONE, container::setWeightedRms)),
 
     /** Observation data types used. */
     DATA_TYPES((token, context, container) -> token.processAsNormalizedList(container::setDataTypes));

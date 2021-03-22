@@ -43,6 +43,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.units.Unit;
 
 public class AEMAttitudeTypeTest {
 
@@ -268,13 +269,14 @@ public class AEMAttitudeTypeTest {
         metadata.setIsFirst(false);
         metadata.setRateFrameIsA(true);
         metadata.getEndpoints().setA2b(true);
+        final Unit[] units = quaternionRate.getCcsdsUnits();
         final double[] attitudeDataBis = quaternionRate.getAttitudeData(metadata.isFirst(),
                                                                         metadata.getEndpoints().isExternal2SpacecraftBody(),
                                                                         metadata.getEulerRotSeq(),
                                                                         metadata.isSpacecraftBodyRate(),
                                                                         tsac);
         for (int i = 0; i < attitudeDataBis.length; i++) {
-            Assert.assertEquals(Double.parseDouble(attitudeData[i + 1]), attitudeDataBis[i], QUATERNION_PRECISION);
+            Assert.assertEquals(Double.parseDouble(attitudeData[i + 1]), units[i].fromSI(attitudeDataBis[i]), QUATERNION_PRECISION);
         }
 
         // Verify angular derivative filter
@@ -312,13 +314,14 @@ public class AEMAttitudeTypeTest {
         metadata.setRateFrameIsA(false);
         metadata.getEndpoints().setA2b(true);
         metadata.setEulerRotSeq(RotationOrder.XYZ);
+        final Unit[] units = eulerAngle.getCcsdsUnits();
         final double[] attitudeDataBis = eulerAngle.getAttitudeData(metadata.isFirst(),
                                                                     metadata.getEndpoints().isExternal2SpacecraftBody(),
                                                                     metadata.getEulerRotSeq(),
                                                                     metadata.isSpacecraftBodyRate(),
                                                                     tsac);
         for (int i = 0; i < attitudeDataBis.length; i++) {
-            Assert.assertEquals(Double.parseDouble(attitudeData[i + 1]), attitudeDataBis[i], ANGLE_PRECISION);
+            Assert.assertEquals(Double.parseDouble(attitudeData[i + 1]), units[i].fromSI(attitudeDataBis[i]), ANGLE_PRECISION);
         }
 
         // Verify angular derivative filter
@@ -387,13 +390,14 @@ public class AEMAttitudeTypeTest {
         metadata.setRateFrameIsA(false);
         metadata.getEndpoints().setA2b(true);
         metadata.setEulerRotSeq(RotationOrder.ZXZ);
+        final Unit[] units = eulerAngleRate.getCcsdsUnits();
         final double[] attitudeDataBis = eulerAngleRate.getAttitudeData(metadata.isFirst(),
                                                                         metadata.getEndpoints().isExternal2SpacecraftBody(),
                                                                         metadata.getEulerRotSeq(),
                                                                         metadata.isSpacecraftBodyRate(),
                                                                         tsac);
         for (int i = 0; i < attitudeDataBis.length; i++) {
-            Assert.assertEquals(Double.parseDouble(attitudeData[i + 1]), attitudeDataBis[i], ANGLE_PRECISION);
+            Assert.assertEquals(Double.parseDouble(attitudeData[i + 1]), units[i].fromSI(attitudeDataBis[i]), ANGLE_PRECISION);
         }
 
         // Verify angular derivative filter
@@ -472,6 +476,7 @@ public class AEMAttitudeTypeTest {
         metadata.setIsFirst(isFirst);
         metadata.setEulerRotSeq(order);
         metadata.getEndpoints().setA2b(a2b);
+        final Unit[] units = type.getCcsdsUnits();
         double[] dData = type.getAttitudeData(metadata.isFirst(),
                                               metadata.getEndpoints().isExternal2SpacecraftBody(),
                                               metadata.getEulerRotSeq(),
@@ -480,7 +485,7 @@ public class AEMAttitudeTypeTest {
         String[] sData = new String[1 + dData.length];
         sData[0] = tac.getDate().toString(context.getTimeSystem().getConverter(context).getTimeScale());
         for (int i = 0; i < dData.length; ++i) {
-            sData[i + 1] = String.format(Locale.US, "%21.15e", dData[i]);
+            sData[i + 1] = String.format(Locale.US, "%21.15e", units[i].fromSI(dData[i]));
         }
         TimeStampedAngularCoordinates rebuilt = type.parse(metadata.isFirst(),
                                                            metadata.getEndpoints().isExternal2SpacecraftBody(),

@@ -16,6 +16,7 @@
  */
 package org.orekit.files.ccsds.ndm.odm;
 
+import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
@@ -38,67 +39,67 @@ public enum CartesianCovarianceKey {
     COV_REF_FRAME((token, context, container) -> token.processAsFrame(container::setReferenceFrame, context, true, true, true)),
 
     /** Covariance matrix [1, 1] element. */
-    CX_X((token, context, container) -> token.processAsDoublyIndexedDouble(0, 0, 1.0e6, container::setCovarianceMatrixEntry)),
+    CX_X((token, context, container) -> token.processAsDoublyIndexedDouble(0, 0, Units.KM2, container::setCovarianceMatrixEntry)),
 
     /** Covariance matrix [2, 1] element. */
-    CY_X((token, context, container) -> token.processAsDoublyIndexedDouble(1, 0, 1.0e6, container::setCovarianceMatrixEntry)),
+    CY_X((token, context, container) -> token.processAsDoublyIndexedDouble(1, 0, Units.KM2, container::setCovarianceMatrixEntry)),
 
     /** Covariance matrix [2, 2] element. */
-    CY_Y((token, context, container) -> token.processAsDoublyIndexedDouble(1, 1, 1.0e6, container::setCovarianceMatrixEntry)),
+    CY_Y((token, context, container) -> token.processAsDoublyIndexedDouble(1, 1, Units.KM2, container::setCovarianceMatrixEntry)),
 
     /** Covariance matrix [3, 1] element. */
-    CZ_X((token, context, container) -> token.processAsDoublyIndexedDouble(2, 0, 1.0e6, container::setCovarianceMatrixEntry)),
+    CZ_X((token, context, container) -> token.processAsDoublyIndexedDouble(2, 0, Units.KM2, container::setCovarianceMatrixEntry)),
 
     /** Covariance matrix [3, 2] element. */
-    CZ_Y((token, context, container) -> token.processAsDoublyIndexedDouble(2, 1, 1.0e6, container::setCovarianceMatrixEntry)),
+    CZ_Y((token, context, container) -> token.processAsDoublyIndexedDouble(2, 1, Units.KM2, container::setCovarianceMatrixEntry)),
 
     /** Covariance matrix [3, 3] element. */
-    CZ_Z((token, context, container) -> token.processAsDoublyIndexedDouble(2, 2, 1.0e6, container::setCovarianceMatrixEntry)),
+    CZ_Z((token, context, container) -> token.processAsDoublyIndexedDouble(2, 2, Units.KM2, container::setCovarianceMatrixEntry)),
 
     /** Covariance matrix [4, 1] element. */
-    CX_DOT_X((token, context, container) -> token.processAsDoublyIndexedDouble(3, 0, 1.0e6, container::setCovarianceMatrixEntry)),
+    CX_DOT_X((token, context, container) -> token.processAsDoublyIndexedDouble(3, 0, Units.KM2_PER_S, container::setCovarianceMatrixEntry)),
 
     /** Covariance matrix [4, 2] element. */
-    CX_DOT_Y((token, context, container) -> token.processAsDoublyIndexedDouble(3, 1, 1.0e6, container::setCovarianceMatrixEntry)),
+    CX_DOT_Y((token, context, container) -> token.processAsDoublyIndexedDouble(3, 1, Units.KM2_PER_S, container::setCovarianceMatrixEntry)),
 
     /** Covariance matrix [4, 3] element. */
-    CX_DOT_Z((token, context, container) -> token.processAsDoublyIndexedDouble(3, 2, 1.0e6, container::setCovarianceMatrixEntry)),
+    CX_DOT_Z((token, context, container) -> token.processAsDoublyIndexedDouble(3, 2, Units.KM2_PER_S, container::setCovarianceMatrixEntry)),
 
     /** Covariance matrix [4, 4] element. */
-    CX_DOT_X_DOT((token, context, container) -> token.processAsDoublyIndexedDouble(3, 3, 1.0e6, container::setCovarianceMatrixEntry)),
+    CX_DOT_X_DOT((token, context, container) -> token.processAsDoublyIndexedDouble(3, 3, Units.KM2_PER_S2, container::setCovarianceMatrixEntry)),
 
     /** Covariance matrix [5, 1] element. */
-    CY_DOT_X((token, context, container) -> token.processAsDoublyIndexedDouble(4, 0, 1.0e6, container::setCovarianceMatrixEntry)),
+    CY_DOT_X((token, context, container) -> token.processAsDoublyIndexedDouble(4, 0, Units.KM2_PER_S, container::setCovarianceMatrixEntry)),
 
     /** Covariance matrix [5, 2] element. */
-    CY_DOT_Y((token, context, container) -> token.processAsDoublyIndexedDouble(4, 1, 1.0e6, container::setCovarianceMatrixEntry)),
+    CY_DOT_Y((token, context, container) -> token.processAsDoublyIndexedDouble(4, 1, Units.KM2_PER_S, container::setCovarianceMatrixEntry)),
 
     /** Covariance matrix [5, 3] element. */
-    CY_DOT_Z((token, context, container) -> token.processAsDoublyIndexedDouble(4, 2, 1.0e6, container::setCovarianceMatrixEntry)),
+    CY_DOT_Z((token, context, container) -> token.processAsDoublyIndexedDouble(4, 2, Units.KM2_PER_S, container::setCovarianceMatrixEntry)),
 
     /** Covariance matrix [5, 4] element. */
-    CY_DOT_X_DOT((token, context, container) -> token.processAsDoublyIndexedDouble(4, 3, 1.0e6, container::setCovarianceMatrixEntry)),
+    CY_DOT_X_DOT((token, context, container) -> token.processAsDoublyIndexedDouble(4, 3, Units.KM2_PER_S2, container::setCovarianceMatrixEntry)),
 
     /** Covariance matrix [5, 5] element. */
-    CY_DOT_Y_DOT((token, context, container) -> token.processAsDoublyIndexedDouble(4, 4, 1.0e6, container::setCovarianceMatrixEntry)),
+    CY_DOT_Y_DOT((token, context, container) -> token.processAsDoublyIndexedDouble(4, 4, Units.KM2_PER_S2, container::setCovarianceMatrixEntry)),
 
     /** Covariance matrix [6, 1] element. */
-    CZ_DOT_X((token, context, container) -> token.processAsDoublyIndexedDouble(5, 0, 1.0e6, container::setCovarianceMatrixEntry)),
+    CZ_DOT_X((token, context, container) -> token.processAsDoublyIndexedDouble(5, 0, Units.KM2_PER_S, container::setCovarianceMatrixEntry)),
 
     /** Covariance matrix [6, 2] element. */
-    CZ_DOT_Y((token, context, container) -> token.processAsDoublyIndexedDouble(5, 1, 1.0e6, container::setCovarianceMatrixEntry)),
+    CZ_DOT_Y((token, context, container) -> token.processAsDoublyIndexedDouble(5, 1, Units.KM2_PER_S, container::setCovarianceMatrixEntry)),
 
     /** Covariance matrix [6, 3] element. */
-    CZ_DOT_Z((token, context, container) -> token.processAsDoublyIndexedDouble(5, 2, 1.0e6, container::setCovarianceMatrixEntry)),
+    CZ_DOT_Z((token, context, container) -> token.processAsDoublyIndexedDouble(5, 2, Units.KM2_PER_S, container::setCovarianceMatrixEntry)),
 
     /** Covariance matrix [6, 4] element. */
-    CZ_DOT_X_DOT((token, context, container) -> token.processAsDoublyIndexedDouble(5, 3, 1.0e6, container::setCovarianceMatrixEntry)),
+    CZ_DOT_X_DOT((token, context, container) -> token.processAsDoublyIndexedDouble(5, 3, Units.KM2_PER_S2, container::setCovarianceMatrixEntry)),
 
     /** Covariance matrix [6, 5] element. */
-    CZ_DOT_Y_DOT((token, context, container) -> token.processAsDoublyIndexedDouble(5, 4, 1.0e6, container::setCovarianceMatrixEntry)),
+    CZ_DOT_Y_DOT((token, context, container) -> token.processAsDoublyIndexedDouble(5, 4, Units.KM2_PER_S2, container::setCovarianceMatrixEntry)),
 
     /** Covariance matrix [6, 6] element. */
-    CZ_DOT_Z_DOT((token, context, container) -> token.processAsDoublyIndexedDouble(5, 5, 1.0e6, container::setCovarianceMatrixEntry));
+    CZ_DOT_Z_DOT((token, context, container) -> token.processAsDoublyIndexedDouble(5, 5, Units.KM2_PER_S2, container::setCovarianceMatrixEntry));
 
     /** Processing method. */
     private final TokenProcessor processor;

@@ -35,9 +35,9 @@ import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.CenterName;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
+import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.utils.ContextBinding;
-import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.units.Unit;
 
@@ -350,27 +350,27 @@ public class ParseToken {
     }
 
     /** Process the content as a double.
-     * @param scalingFactor scaling factor to apply
+     * @param unit units of parsed content
      * @param consumer consumer of the double
      * @return always returns {@code true}
      */
-    public boolean processAsDouble(final double scalingFactor, final DoubleConsumer consumer) {
+    public boolean processAsDouble(final Unit unit, final DoubleConsumer consumer) {
         if (type == TokenType.ENTRY) {
-            consumer.accept(scalingFactor * getContentAsDouble());
+            consumer.accept(unit.toSI(getContentAsDouble()));
         }
         return true;
     }
 
     /** Process the content as an indexed double.
      * @param i index
-     * @param scalingFactor scaling factor to apply
+     * @param unit units of parsed content
      * @param consumer consumer of the indexed double
      * @return always returns {@code true}
      */
-    public boolean processAsIndexedDouble(final int i, final double scalingFactor,
+    public boolean processAsIndexedDouble(final int i, final Unit unit,
                                           final IndexedDoubleConsumer consumer) {
         if (type == TokenType.ENTRY) {
-            consumer.accept(i, scalingFactor * getContentAsDouble());
+            consumer.accept(i, unit.toSI(getContentAsDouble()));
         }
         return true;
     }
@@ -378,14 +378,14 @@ public class ParseToken {
     /** Process the content as a doubly-indexed double.
      * @param i first index
      * @param j second index
-     * @param scalingFactor scaling factor to apply
+     * @param unit units of parsed content
      * @param consumer consumer of the doubly-indexed double
      * @return always returns {@code true}
      */
-    public boolean processAsDoublyIndexedDouble(final int i, final int j, final double scalingFactor,
+    public boolean processAsDoublyIndexedDouble(final int i, final int j, final Unit unit,
                                                 final DoublyIndexedDoubleConsumer consumer) {
         if (type == TokenType.ENTRY) {
-            consumer.accept(i, j, scalingFactor * getContentAsDouble());
+            consumer.accept(i, j, unit.toSI(getContentAsDouble()));
         }
         return true;
     }

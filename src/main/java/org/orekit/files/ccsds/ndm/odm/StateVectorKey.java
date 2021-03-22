@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm.odm;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.utils.units.Unit;
 
 
 /** Keys for {@link StateVector ODM state vector container} entries.
@@ -35,31 +36,31 @@ public enum StateVectorKey {
     EPOCH((token, context, container) -> token.processAsDate(container::setEpoch, context)),
 
     /** Position vector X-component. */
-    X((token, context, container) -> token.processAsIndexedDouble(0, 1.0e3, container::setP)),
+    X((token, context, container) -> token.processAsIndexedDouble(0, Unit.KILOMETRE, container::setP)),
 
     /** Position vector Y-component. */
-    Y((token, context, container) -> token.processAsIndexedDouble(1, 1.0e3, container::setP)),
+    Y((token, context, container) -> token.processAsIndexedDouble(1, Unit.KILOMETRE, container::setP)),
 
     /** Position vector Z-component. */
-    Z((token, context, container) -> token.processAsIndexedDouble(2, 1.0e3, container::setP)),
+    Z((token, context, container) -> token.processAsIndexedDouble(2, Unit.KILOMETRE, container::setP)),
 
     /** Velocity vector X-component. */
-    X_DOT((token, context, container) -> token.processAsIndexedDouble(0, 1.0e3, container::setV)),
+    X_DOT((token, context, container) -> token.processAsIndexedDouble(0, Unit.KILOMETRE, container::setV)),
 
     /** Velocity vector Y-component. */
-    Y_DOT((token, context, container) -> token.processAsIndexedDouble(1, 1.0e3, container::setV)),
+    Y_DOT((token, context, container) -> token.processAsIndexedDouble(1, Unit.KILOMETRE, container::setV)),
 
     /** Velocity vector Z-component. */
-    Z_DOT((token, context, container) -> token.processAsIndexedDouble(2, 1.0e3, container::setV)),
+    Z_DOT((token, context, container) -> token.processAsIndexedDouble(2, Unit.KILOMETRE, container::setV)),
 
     /** Acceleration vector X-component. */
-    X_DDOT((token, context, container) -> token.processAsIndexedDouble(0, 1.0e3, container::setA)),
+    X_DDOT((token, context, container) -> token.processAsIndexedDouble(0, Unit.KILOMETRE, container::setA)),
 
     /** Acceleration vector Y-component. */
-    Y_DDOT((token, context, container) -> token.processAsIndexedDouble(1, 1.0e3, container::setA)),
+    Y_DDOT((token, context, container) -> token.processAsIndexedDouble(1, Unit.KILOMETRE, container::setA)),
 
     /** Acceleration vector Z-component. */
-    Z_DDOT((token, context, container) -> token.processAsIndexedDouble(2, 1.0e3, container::setA));
+    Z_DDOT((token, context, container) -> token.processAsIndexedDouble(2, Unit.KILOMETRE, container::setA));
 
     /** Processing method. */
     private final TokenProcessor processor;

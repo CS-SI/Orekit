@@ -24,14 +24,15 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.units.Unit;
 
 /** Enumerate for ADM attitude type.
  * @author Bryan Cazabonne
@@ -40,7 +41,8 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
 public enum AttitudeType {
 
     /** Quaternion. */
-    QUATERNION("QUATERNION", AngularDerivativesFilter.USE_R) {
+    QUATERNION("QUATERNION", AngularDerivativesFilter.USE_R,
+               Unit.ONE, Unit.ONE, Unit.ONE, Unit.ONE) {
 
         /** {@inheritDoc} */
         @Override
@@ -91,7 +93,9 @@ public enum AttitudeType {
     },
 
     /** Quaternion and derivatives. */
-    QUATERNION_DERIVATIVE("QUATERNION/DERIVATIVE", AngularDerivativesFilter.USE_RR) {
+    QUATERNION_DERIVATIVE("QUATERNION/DERIVATIVE", AngularDerivativesFilter.USE_RR,
+                          Unit.ONE, Unit.ONE, Unit.ONE, Unit.ONE,
+                          Units.ONE_PER_S, Units.ONE_PER_S, Units.ONE_PER_S, Units.ONE_PER_S) {
 
         /** {@inheritDoc} */
         @Override
@@ -156,7 +160,9 @@ public enum AttitudeType {
     },
 
     /** Quaternion and rotation rate. */
-    QUATERNION_RATE("QUATERNION/RATE", AngularDerivativesFilter.USE_RR) {
+    QUATERNION_RATE("QUATERNION/RATE", AngularDerivativesFilter.USE_RR,
+                    Unit.ONE, Unit.ONE, Unit.ONE, Unit.ONE,
+                    Units.DEG_PER_S, Units.DEG_PER_S, Units.DEG_PER_S) {
 
         /** {@inheritDoc} */
         @Override
@@ -178,9 +184,9 @@ public enum AttitudeType {
             data[quaternionIndex[1]] = c.getRotation().getQ1();
             data[quaternionIndex[2]] = c.getRotation().getQ2();
             data[quaternionIndex[3]] = c.getRotation().getQ3();
-            data[4] = FastMath.toDegrees(rotationRate.getX());
-            data[5] = FastMath.toDegrees(rotationRate.getY());
-            data[6] = FastMath.toDegrees(rotationRate.getZ());
+            data[4] = rotationRate.getX();
+            data[5] = rotationRate.getY();
+            data[6] = rotationRate.getZ();
 
             // Return
             return data;
@@ -199,9 +205,9 @@ public enum AttitudeType {
                                       new Rotation(components[0], components[1], components[2], components[3], true) :
                                       new Rotation(components[3], components[0], components[1], components[2], true);
             final Vector3D rotationRate = orekitRate(isSpacecraftBodyRate,
-                                                     new Vector3D(FastMath.toRadians(components[4]),
-                                                                  FastMath.toRadians(components[5]),
-                                                                  FastMath.toRadians(components[6])),
+                                                     new Vector3D(components[4],
+                                                                  components[5],
+                                                                  components[6]),
                                                      rotation);
 
             // Return
@@ -214,30 +220,22 @@ public enum AttitudeType {
     },
 
     /** Euler angles. */
-    EULER_ANGLE("EULER ANGLE", AngularDerivativesFilter.USE_R) {
+    EULER_ANGLE("EULER ANGLE", AngularDerivativesFilter.USE_R,
+                Unit.DEGREE, Unit.DEGREE, Unit.DEGREE) {
 
         /** {@inheritDoc} */
         @Override
         public double[] getAttitudeData(final boolean isFirst, final boolean isExternal2SpacecraftBody,
                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
                                         final TimeStampedAngularCoordinates coordinates) {
-            // Initialize the array of attitude data
-            final double[] data = new double[3];
 
             // Attitude
             Rotation rotation = coordinates.getRotation();
             if (!isExternal2SpacecraftBody) {
                 rotation = rotation.revert();
             }
-            final double[] angles = rotation.getAngles(eulerRotSequence, RotationConvention.FRAME_TRANSFORM);
+            return rotation.getAngles(eulerRotSequence, RotationConvention.FRAME_TRANSFORM);
 
-            // Fill the array
-            data[0] = FastMath.toDegrees(angles[0]);
-            data[1] = FastMath.toDegrees(angles[1]);
-            data[2] = FastMath.toDegrees(angles[2]);
-
-            // Return
-            return data;
         }
 
         /** {@inheritDoc} */
@@ -250,11 +248,8 @@ public enum AttitudeType {
                                                    final double...components) {
 
             // Build the needed objects
-            Rotation rotation = new Rotation(eulerRotSequence,
-                                             RotationConvention.FRAME_TRANSFORM,
-                                             FastMath.toRadians(components[0]),
-                                             FastMath.toRadians(components[1]),
-                                             FastMath.toRadians(components[2]));
+            Rotation rotation = new Rotation(eulerRotSequence, RotationConvention.FRAME_TRANSFORM,
+                                             components[0], components[1], components[2]);
             if (!isExternal2SpacecraftBody) {
                 rotation = rotation.revert();
             }
@@ -266,7 +261,9 @@ public enum AttitudeType {
     },
 
     /** Euler angles and rotation rate. */
-    EULER_ANGLE_RATE("EULER ANGLE/RATE", AngularDerivativesFilter.USE_RR) {
+    EULER_ANGLE_RATE("EULER ANGLE/RATE", AngularDerivativesFilter.USE_RR,
+                     Unit.DEGREE, Unit.DEGREE, Unit.DEGREE,
+                     Units.DEG_PER_S, Units.DEG_PER_S, Units.DEG_PER_S) {
 
         /** {@inheritDoc} */
         @Override
@@ -282,12 +279,12 @@ public enum AttitudeType {
             final double[] angles       = c.getRotation().getAngles(eulerRotSequence, RotationConvention.FRAME_TRANSFORM);
 
             // Fill the array
-            data[0] = FastMath.toDegrees(angles[0]);
-            data[1] = FastMath.toDegrees(angles[1]);
-            data[2] = FastMath.toDegrees(angles[2]);
-            data[3] = FastMath.toDegrees(rotationRate.getX());
-            data[4] = FastMath.toDegrees(rotationRate.getY());
-            data[5] = FastMath.toDegrees(rotationRate.getZ());
+            data[0] = angles[0];
+            data[1] = angles[1];
+            data[2] = angles[2];
+            data[3] = rotationRate.getX();
+            data[4] = rotationRate.getY();
+            data[5] = rotationRate.getZ();
 
             // Return
             return data;
@@ -305,13 +302,11 @@ public enum AttitudeType {
             // Build the needed objects
             final Rotation rotation = new Rotation(eulerRotSequence,
                                                    RotationConvention.FRAME_TRANSFORM,
-                                                   FastMath.toRadians(components[0]),
-                                                   FastMath.toRadians(components[1]),
-                                                   FastMath.toRadians(components[2]));
+                                                   components[0],
+                                                   components[1],
+                                                   components[2]);
             final Vector3D rotationRate = orekitRate(isSpacecraftBodyRate,
-                                                     new Vector3D(FastMath.toRadians(components[3]),
-                                                                  FastMath.toRadians(components[4]),
-                                                                  FastMath.toRadians(components[5])),
+                                                     new Vector3D(components[3], components[4], components[5]),
                                                      rotation);
             // Return
             final TimeStampedAngularCoordinates ac =
@@ -323,7 +318,8 @@ public enum AttitudeType {
     },
 
     /** Spin. */
-    SPIN("SPIN", AngularDerivativesFilter.USE_RR) {
+    SPIN("SPIN", AngularDerivativesFilter.USE_RR,
+         Unit.DEGREE, Unit.DEGREE, Unit.DEGREE, Units.DEG_PER_S) {
 
         /** {@inheritDoc} */
         @Override
@@ -353,7 +349,9 @@ public enum AttitudeType {
     },
 
     /** Spin and nutation. */
-    SPIN_NUTATION("SPIN/NUTATION", AngularDerivativesFilter.USE_RR) {
+    SPIN_NUTATION("SPIN/NUTATION", AngularDerivativesFilter.USE_RR,
+                  Unit.DEGREE, Unit.DEGREE, Unit.DEGREE, Units.DEG_PER_S,
+                  Unit.DEGREE, Unit.SECOND, Unit.DEGREE) {
 
         /** {@inheritDoc} */
         @Override
@@ -391,13 +389,25 @@ public enum AttitudeType {
     /** Derivatives filter. */
     private final AngularDerivativesFilter filter;
 
+    /** Components units (used only for parsing). */
+    private final Unit[] units;
+
     /** Private constructor.
      * @param ccsdsName CCSDS name of the attitude type
      * @param filter derivative filter
+     * @param units components units (used only for parsing)
      */
-    AttitudeType(final String ccsdsName, final AngularDerivativesFilter filter) {
+    AttitudeType(final String ccsdsName, final AngularDerivativesFilter filter, final Unit... units) {
         this.ccsdsName = ccsdsName;
         this.filter    = filter;
+        this.units     = units.clone();
+    }
+
+    /** Get the components CCSDS units.
+     * @return components CCSDS units (i.e. <em>not</em> the units used in {@link #getAttitudeData()})
+     */
+    public Unit[] getCcsdsUnits() {
+        return units.clone();
     }
 
     /** {@inheritDoc} */
@@ -417,8 +427,9 @@ public enum AttitudeType {
     /**
      * Get the attitude data corresponding to the attitude type.
      * <p>
-     * Note that, according to the CCSDS ADM documentation, angles values
-     * are given in degrees.
+     * This method returns the components in SI units (i.e. degrees converted to radians),
+     * if order to get them in CCSDS units, one have to call {@link #getCcsdsUnits()} and
+     * apply the {@link Unit#fromSI(double)} method to each component
      * </p>
      * @param isFirst if true the first quaternion component is the scalar component
      * @param isExternal2SpacecraftBody true attitude is from external frame to spacecraft body frame
@@ -426,7 +437,7 @@ public enum AttitudeType {
      * @param isSpacecraftBodyRate if true Euler rates are specified in spacecraft body frame
      * @param attitude angular coordinates, using {@link Attitude Attitude} convention
      * (i.e. from inertial frame to spacecraft frame)
-     * @return the attitude data (see ADM standard table 4-4)
+     * @return the attitude data in SI units
      */
     public abstract double[] getAttitudeData(boolean isFirst, boolean isExternal2SpacecraftBody,
                                              RotationOrder eulerRotSequence, boolean isSpacecraftBodyRate,
@@ -435,8 +446,7 @@ public enum AttitudeType {
     /**
      * Get the angular coordinates corresponding to the attitude data.
      * <p>
-     * Note that, according to the CCSDS ADM documentation, angles values
-     * must be given in degrees.
+     * This method assumes the text fields are in CCSDS units and will convert to SI units.
      * </p>
      * @param isFirst if true the first quaternion component is the scalar component
      * @param isExternal2SpacecraftBody true attitude is from external frame to spacecraft body frame
@@ -456,7 +466,7 @@ public enum AttitudeType {
         final AbsoluteDate date = context.getTimeSystem().getConverter(context).parse(fields[0]);
         final double[] components = new double[fields.length - 1];
         for (int i = 0; i < components.length; ++i) {
-            components[i] = Double.parseDouble(fields[i + 1]);
+            components[i] = units[i].toSI(Double.parseDouble(fields[i + 1]));
         }
 
         // build the coordinates

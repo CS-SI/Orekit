@@ -32,9 +32,9 @@ public class LexerTest {
     public void testAllTypes() {
         final Lexer lexer = new Lexer("√kg*km**  (3/2) /(µs^2*Ω⁻⁷)");
         expect(lexer, "√",    TokenType.SQUARE_ROOT, null, null, 0);
-        expect(lexer, "kg",   TokenType.PREFIXED_UNIT, null, PredefinedUnit.KILOGRAM.toUnit(), 0);
+        expect(lexer, "kg",   TokenType.PREFIXED_UNIT, null, Unit.KILOGRAM, 0);
         expect(lexer, "*",    TokenType.MULTIPLICATION, null, null, 0);
-        expect(lexer, "km",   TokenType.PREFIXED_UNIT, Prefix.KILO, PredefinedUnit.METRE.toUnit(), 0);
+        expect(lexer, "km",   TokenType.PREFIXED_UNIT, Prefix.KILO, Unit.METRE, 0);
         expect(lexer, "**",   TokenType.POWER, null, null, 0);
         expect(lexer, "(",    TokenType.OPEN, null, null, 0);
         expect(lexer, "3",    TokenType.INTEGER, null, null, 3);
@@ -43,11 +43,11 @@ public class LexerTest {
         expect(lexer, ")",    TokenType.CLOSE, null, null, 0);
         expect(lexer, "/",    TokenType.DIVISION, null, null, 0);
         expect(lexer, "(",    TokenType.OPEN, null, null, 0);
-        expect(lexer, "µs",   TokenType.PREFIXED_UNIT, Prefix.MICRO, PredefinedUnit.SECOND.toUnit(), 0);
+        expect(lexer, "µs",   TokenType.PREFIXED_UNIT, Prefix.MICRO, Unit.SECOND, 0);
         expect(lexer, "^",    TokenType.POWER, null, null, 0);
         expect(lexer, "2",    TokenType.INTEGER, null, null, 2);
         expect(lexer, "*",    TokenType.MULTIPLICATION, null, null, 0);
-        expect(lexer, "Ω",    TokenType.PREFIXED_UNIT, null, PredefinedUnit.OHM.toUnit(), 0);
+        expect(lexer, "Ω",    TokenType.PREFIXED_UNIT, null, Unit.OHM, 0);
         expect(lexer, "",     TokenType.POWER, null, null, 0);
         expect(lexer, "⁻⁷",   TokenType.INTEGER, null, null, -7);
         expect(lexer, ")",    TokenType.CLOSE, null, null, 0);
@@ -57,11 +57,11 @@ public class LexerTest {
     @Test
     public void testRegularExponent() {
         final Lexer lexer = new Lexer("N^123450 × MHz^-98765");
-        expect(lexer, "N",      TokenType.PREFIXED_UNIT, null, PredefinedUnit.NEWTON.toUnit(), 0);
+        expect(lexer, "N",      TokenType.PREFIXED_UNIT, null, Unit.NEWTON, 0);
         expect(lexer, "^",      TokenType.POWER, null, null, 0);
         expect(lexer, "123450", TokenType.INTEGER, null, null, 123450);
         expect(lexer, "×",      TokenType.MULTIPLICATION, null, null, 0);
-        expect(lexer, "MHz",    TokenType.PREFIXED_UNIT, Prefix.MEGA, PredefinedUnit.HERTZ.toUnit(), 0);
+        expect(lexer, "MHz",    TokenType.PREFIXED_UNIT, Prefix.MEGA, Unit.HERTZ, 0);
         expect(lexer, "^",      TokenType.POWER, null, null, 0);
         expect(lexer, "-98765", TokenType.INTEGER, null, null, -98765);
         Assert.assertNull(lexer.next());
@@ -70,11 +70,11 @@ public class LexerTest {
     @Test
     public void testSuperscriptExponent() {
         final Lexer lexer = new Lexer("SFU⁺¹²³⁴⁵⁰ ⁄ mas⁻⁹⁸⁷⁶⁵");
-        expect(lexer, "SFU",     TokenType.PREFIXED_UNIT, null, PredefinedUnit.SOLAR_FLUX_UNIT.toUnit(), 0);
+        expect(lexer, "SFU",     TokenType.PREFIXED_UNIT, null, Unit.SOLAR_FLUX_UNIT, 0);
         expect(lexer, "",        TokenType.POWER, null, null, 0);
         expect(lexer, "⁺¹²³⁴⁵⁰", TokenType.INTEGER, null, null, 123450);
         expect(lexer, "⁄",       TokenType.DIVISION, null, null, 0);
-        expect(lexer, "mas",     TokenType.PREFIXED_UNIT, Prefix.MILLI, PredefinedUnit.ARC_SECOND.toUnit(), 0);
+        expect(lexer, "mas",     TokenType.PREFIXED_UNIT, Prefix.MILLI, Unit.ARC_SECOND, 0);
         expect(lexer, "",        TokenType.POWER, null, null, 0);
         expect(lexer, "⁻⁹⁸⁷⁶⁵",  TokenType.INTEGER, null, null, -98765);
         Assert.assertNull(lexer.next());
@@ -83,7 +83,7 @@ public class LexerTest {
     @Test
     public void testSignWithoutDigits() {
         final Lexer lexer = new Lexer("Pa⁻");
-        expect(lexer, "Pa", TokenType.PREFIXED_UNIT, null, PredefinedUnit.PASCAL.toUnit(), 0);
+        expect(lexer, "Pa", TokenType.PREFIXED_UNIT, null, Unit.PASCAL, 0);
         expect(lexer, "",  TokenType.POWER, null, null, 0);
         expectFailure(lexer);
     }
@@ -91,7 +91,7 @@ public class LexerTest {
     @Test
     public void testMultipleSigns() {
         final Lexer lexer = new Lexer("MJ⁻⁺²");
-        expect(lexer, "MJ", TokenType.PREFIXED_UNIT, Prefix.MEGA, PredefinedUnit.JOULE.toUnit(), 0);
+        expect(lexer, "MJ", TokenType.PREFIXED_UNIT, Prefix.MEGA, Unit.JOULE, 0);
         expect(lexer, "",  TokenType.POWER, null, null, 0);
         expectFailure(lexer);
     }
@@ -99,7 +99,7 @@ public class LexerTest {
     @Test
     public void testUnknownCharacter() {
         final Lexer lexer = new Lexer("pW^2#");
-        expect(lexer, "pW", TokenType.PREFIXED_UNIT, Prefix.PICO, PredefinedUnit.WATT.toUnit(), 0);
+        expect(lexer, "pW", TokenType.PREFIXED_UNIT, Prefix.PICO, Unit.WATT, 0);
         expect(lexer, "^",  TokenType.POWER, null, null, 0);
         expect(lexer, "2",  TokenType.INTEGER, null, null, 2);
         expectFailure(lexer); 
@@ -108,7 +108,7 @@ public class LexerTest {
     @Test
     public void testPercentageCharacter() {
         final Lexer lexer = new Lexer("%");
-        expect(lexer, "%", TokenType.PREFIXED_UNIT, null, PredefinedUnit.PERCENT.toUnit(), 0);
+        expect(lexer, "%", TokenType.PREFIXED_UNIT, null, Unit.PERCENT, 0);
         Assert.assertNull(lexer.next());
     }
 
@@ -134,88 +134,88 @@ public class LexerTest {
     @Test
     public void testCharacters() {
         final Lexer lexer = new Lexer("d*°*min*◦*deg*′*hh*'*ad*″*a*\"*µ''");
-        expect(lexer, "d",   TokenType.PREFIXED_UNIT, null, PredefinedUnit.DAY.toUnit(), 0);
+        expect(lexer, "d",   TokenType.PREFIXED_UNIT, null, Unit.DAY, 0);
         expect(lexer, "*",   TokenType.MULTIPLICATION, null, null, 0);
-        expect(lexer, "°",   TokenType.PREFIXED_UNIT, null, PredefinedUnit.DEGREE.toUnit(), 0);
+        expect(lexer, "°",   TokenType.PREFIXED_UNIT, null, Unit.DEGREE, 0);
         expect(lexer, "*",   TokenType.MULTIPLICATION, null, null, 0);
-        expect(lexer, "min", TokenType.PREFIXED_UNIT, null, PredefinedUnit.MINUTE.toUnit(), 0);
+        expect(lexer, "min", TokenType.PREFIXED_UNIT, null, Unit.MINUTE, 0);
         expect(lexer, "*",   TokenType.MULTIPLICATION, null, null, 0);
-        expect(lexer, "◦",   TokenType.PREFIXED_UNIT, null, PredefinedUnit.DEGREE.toUnit(), 0);
+        expect(lexer, "◦",   TokenType.PREFIXED_UNIT, null, Unit.DEGREE, 0);
         expect(lexer, "*",   TokenType.MULTIPLICATION, null, null, 0);
-        expect(lexer, "deg", TokenType.PREFIXED_UNIT, null, PredefinedUnit.DEGREE.toUnit(), 0);
+        expect(lexer, "deg", TokenType.PREFIXED_UNIT, null, Unit.DEGREE, 0);
         expect(lexer, "*",   TokenType.MULTIPLICATION, null, null, 0);
-        expect(lexer, "′",   TokenType.PREFIXED_UNIT, null, PredefinedUnit.ARC_MINUTE.toUnit(), 0);
+        expect(lexer, "′",   TokenType.PREFIXED_UNIT, null, Unit.ARC_MINUTE, 0);
         expect(lexer, "*",   TokenType.MULTIPLICATION, null, null, 0);
-        expect(lexer, "hh",  TokenType.PREFIXED_UNIT, Prefix.HECTO, PredefinedUnit.HOUR.toUnit(), 0);
+        expect(lexer, "hh",  TokenType.PREFIXED_UNIT, Prefix.HECTO, Unit.HOUR, 0);
         expect(lexer, "*",   TokenType.MULTIPLICATION, null, null, 0);
-        expect(lexer, "'",   TokenType.PREFIXED_UNIT, null, PredefinedUnit.ARC_MINUTE.toUnit(), 0);
+        expect(lexer, "'",   TokenType.PREFIXED_UNIT, null, Unit.ARC_MINUTE, 0);
         expect(lexer, "*",   TokenType.MULTIPLICATION, null, null, 0);
-        expect(lexer, "ad",  TokenType.PREFIXED_UNIT, Prefix.ATTO, PredefinedUnit.DAY.toUnit(), 0);
+        expect(lexer, "ad",  TokenType.PREFIXED_UNIT, Prefix.ATTO, Unit.DAY, 0);
         expect(lexer, "*",   TokenType.MULTIPLICATION, null, null, 0);
-        expect(lexer, "″",   TokenType.PREFIXED_UNIT, null, PredefinedUnit.ARC_SECOND.toUnit(), 0);
+        expect(lexer, "″",   TokenType.PREFIXED_UNIT, null, Unit.ARC_SECOND, 0);
         expect(lexer, "*",   TokenType.MULTIPLICATION, null, null, 0);
-        expect(lexer, "a",   TokenType.PREFIXED_UNIT, null, PredefinedUnit.YEAR.toUnit(), 0);
+        expect(lexer, "a",   TokenType.PREFIXED_UNIT, null, Unit.YEAR, 0);
         expect(lexer, "*",   TokenType.MULTIPLICATION, null, null, 0);
-        expect(lexer, "\"",  TokenType.PREFIXED_UNIT, null, PredefinedUnit.ARC_SECOND.toUnit(), 0);
+        expect(lexer, "\"",  TokenType.PREFIXED_UNIT, null, Unit.ARC_SECOND, 0);
         expect(lexer, "*",   TokenType.MULTIPLICATION, null, null, 0);
-        expect(lexer, "µ''", TokenType.PREFIXED_UNIT, Prefix.MICRO, PredefinedUnit.ARC_SECOND.toUnit(), 0);
+        expect(lexer, "µ''", TokenType.PREFIXED_UNIT, Prefix.MICRO, Unit.ARC_SECOND, 0);
         Assert.assertNull(lexer.next());
     }
 
     @Test
     public void testPushBack() {
         final Lexer lexer = new Lexer("m/s");
-        expect(lexer, "m",   TokenType.PREFIXED_UNIT, null, PredefinedUnit.METRE.toUnit(), 0);
+        expect(lexer, "m",   TokenType.PREFIXED_UNIT, null, Unit.METRE, 0);
         expect(lexer, "/",   TokenType.DIVISION, null, null, 0);
         lexer.pushBack();
         expect(lexer, "/",   TokenType.DIVISION, null, null, 0);
-        expect(lexer, "s",   TokenType.PREFIXED_UNIT, null, PredefinedUnit.SECOND.toUnit(), 0);
+        expect(lexer, "s",   TokenType.PREFIXED_UNIT, null, Unit.SECOND, 0);
     }
 
     @Test
     public void testPushBackBeforeVirtualExponent() {
         final Lexer lexer = new Lexer("m²/s");
-        expect(lexer, "m",   TokenType.PREFIXED_UNIT, null, PredefinedUnit.METRE.toUnit(), 0);
+        expect(lexer, "m",   TokenType.PREFIXED_UNIT, null, Unit.METRE, 0);
         lexer.pushBack();
-        expect(lexer, "m",   TokenType.PREFIXED_UNIT, null, PredefinedUnit.METRE.toUnit(), 0);
+        expect(lexer, "m",   TokenType.PREFIXED_UNIT, null, Unit.METRE, 0);
         expect(lexer, "",    TokenType.POWER, null, null, 0);
         expect(lexer, "²",   TokenType.INTEGER, null, null, 2);
         expect(lexer, "/",   TokenType.DIVISION, null, null, 0);
-        expect(lexer, "s",   TokenType.PREFIXED_UNIT, null, PredefinedUnit.SECOND.toUnit(), 0);
+        expect(lexer, "s",   TokenType.PREFIXED_UNIT, null, Unit.SECOND, 0);
     }
 
     @Test
     public void testPushBackAtVirtualExponent() {
         final Lexer lexer = new Lexer("m²/s");
-        expect(lexer, "m",   TokenType.PREFIXED_UNIT, null, PredefinedUnit.METRE.toUnit(), 0);
+        expect(lexer, "m",   TokenType.PREFIXED_UNIT, null, Unit.METRE, 0);
         expect(lexer, "",    TokenType.POWER, null, null, 0);
         lexer.pushBack();
         expect(lexer, "",    TokenType.POWER, null, null, 0);
         expect(lexer, "²",   TokenType.INTEGER, null, null, 2);
         expect(lexer, "/",   TokenType.DIVISION, null, null, 0);
-        expect(lexer, "s",   TokenType.PREFIXED_UNIT, null, PredefinedUnit.SECOND.toUnit(), 0);
+        expect(lexer, "s",   TokenType.PREFIXED_UNIT, null, Unit.SECOND, 0);
     }
 
     @Test
     public void testPushBackAfterVirtualExponent() {
         final Lexer lexer = new Lexer("m²/s");
-        expect(lexer, "m",   TokenType.PREFIXED_UNIT, null, PredefinedUnit.METRE.toUnit(), 0);
+        expect(lexer, "m",   TokenType.PREFIXED_UNIT, null, Unit.METRE, 0);
         expect(lexer, "",    TokenType.POWER, null, null, 0);
         expect(lexer, "²",   TokenType.INTEGER, null, null, 2);
         lexer.pushBack();
         expect(lexer, "²",   TokenType.INTEGER, null, null, 2);
         expect(lexer, "/",   TokenType.DIVISION, null, null, 0);
-        expect(lexer, "s",   TokenType.PREFIXED_UNIT, null, PredefinedUnit.SECOND.toUnit(), 0);
+        expect(lexer, "s",   TokenType.PREFIXED_UNIT, null, Unit.SECOND, 0);
     }
 
     @Test
     public void testPushBackAtEnd() {
         final Lexer lexer = new Lexer("m²/s");
-        expect(lexer, "m",   TokenType.PREFIXED_UNIT, null, PredefinedUnit.METRE.toUnit(), 0);
+        expect(lexer, "m",   TokenType.PREFIXED_UNIT, null, Unit.METRE, 0);
         expect(lexer, "",    TokenType.POWER, null, null, 0);
         expect(lexer, "²",   TokenType.INTEGER, null, null, 2);
         expect(lexer, "/",   TokenType.DIVISION, null, null, 0);
-        expect(lexer, "s",   TokenType.PREFIXED_UNIT, null, PredefinedUnit.SECOND.toUnit(), 0);
+        expect(lexer, "s",   TokenType.PREFIXED_UNIT, null, Unit.SECOND, 0);
         Assert.assertNull(lexer.next());
         lexer.pushBack();
         Assert.assertNull(lexer.next());

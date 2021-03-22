@@ -16,9 +16,11 @@
  */
 package org.orekit.files.ccsds.ndm.odm;
 
+import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.utils.units.Unit;
 
 
 /** Keys for {@link SpacecraftParameters ODM spacecraft parameters} entries.
@@ -32,19 +34,19 @@ public enum SpacecraftParametersKey {
             token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Spacecraft mass. */
-    MASS((token, context, container) -> token.processAsDouble(1.0, container::setMass)),
+    MASS((token, context, container) -> token.processAsDouble(Unit.KILOGRAM, container::setMass)),
 
     /** Solar radiation pressure area. */
-    SOLAR_RAD_AREA((token, context, container) -> token.processAsDouble(1.0, container::setSolarRadArea)),
+    SOLAR_RAD_AREA((token, context, container) -> token.processAsDouble(Units.M2, container::setSolarRadArea)),
 
     /** Solar radiation pressure coefficient. */
-    SOLAR_RAD_COEFF((token, context, container) -> token.processAsDouble(1.0, container::setSolarRadCoeff)),
+    SOLAR_RAD_COEFF((token, context, container) -> token.processAsDouble(Unit.ONE, container::setSolarRadCoeff)),
 
     /** Drag area. */
-    DRAG_AREA((token, context, container) -> token.processAsDouble(1.0, container::setDragArea)),
+    DRAG_AREA((token, context, container) -> token.processAsDouble(Units.M2, container::setDragArea)),
 
     /** Drag coefficient. */
-    DRAG_COEFF((token, context, container) -> token.processAsDouble(1.0, container::setDragCoeff));
+    DRAG_COEFF((token, context, container) -> token.processAsDouble(Unit.ONE, container::setDragCoeff));
 
     /** Processing method. */
     private final TokenProcessor processor;

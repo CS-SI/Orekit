@@ -28,6 +28,42 @@ import org.orekit.errors.OrekitMessages;
  */
 public class UnitsConverter {
 
+    /** Identity converter. */
+    public static final UnitsConverter IDENTITY =
+                    new UnitsConverter(Unit.ONE, Unit.ONE);
+
+    /** Percents to units converter. */
+    public static final UnitsConverter PERCENTS_TO_UNIT =
+                    new UnitsConverter(Unit.PERCENT, Unit.ONE);
+
+    /** Arcseconds to radians converter. */
+    public static final UnitsConverter ARC_SECONDS_TO_RADIANS =
+                    new UnitsConverter(Unit.parse("as"), Unit.RADIAN);
+
+    /** Milli arcseconds to radians converter. */
+    public static final UnitsConverter MILLI_ARC_SECONDS_TO_RADIANS =
+                    new UnitsConverter(Unit.parse("mas"), Unit.RADIAN);
+
+    /** Milli seconds to seconds converter. */
+    public static final UnitsConverter MILLI_SECONDS_TO_SECONDS =
+                    new UnitsConverter(Unit.parse("ms"), Unit.SECOND);
+
+    /** Days to seconds converter. */
+    public static final UnitsConverter DAYS_TO_SECONDS =
+                    new UnitsConverter(Unit.DAY, Unit.SECOND);
+
+    /** Kilometres to metres converter. */
+    public static final UnitsConverter KILOMETRES_TO_METRES =
+                    new UnitsConverter(Unit.KILOMETRE, Unit.METRE);
+
+    /** Square kilometres to square metres converter. */
+    public static final UnitsConverter KILOMETRES_2_TO_METRES_2 =
+                    new UnitsConverter(Unit.parse("km²"), Unit.parse("m²"));
+
+    /** km³/s² to m³/s² converter. */
+    public static final UnitsConverter KM3_P_S2_TO_M3_P_S2 =
+                    new UnitsConverter(Unit.parse("km³/s²"), Unit.parse("m³/s²"));
+
     /** Source unit. */
     private final Unit from;
 

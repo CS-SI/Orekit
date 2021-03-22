@@ -35,6 +35,98 @@ import org.hipparchus.util.FastMath;
  */
 public class Unit {
 
+    /** No unit. */
+    public static final Unit NONE = new Unit("n/a", 1.0, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO);
+
+    /** Dimensionless unit. */
+    public static final Unit ONE = new Unit("1", 1.0, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO);
+
+    /** Percentage unit. */
+    public static final Unit PERCENT = new Unit("%", 1.0e-2, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO);
+
+    /** Second unit. */
+    public static final Unit SECOND = new Unit("s", 1.0, Fraction.ZERO, Fraction.ZERO, Fraction.ONE, Fraction.ZERO, Fraction.ZERO);
+
+    /** Minute unit. */
+    public static final Unit MINUTE = SECOND.scale("min", 60.0);
+
+    /** Hour unit. */
+    public static final Unit HOUR = MINUTE.scale("h", 60);
+
+    /** Day unit. */
+    public static final Unit DAY = HOUR.scale("d", 24.0);
+
+    /** Julian year unit.
+     * @see <a href="https://www.iau.org/publications/proceedings_rules/units/">SI Units</a> at IAU
+     */
+    public static final Unit YEAR = DAY.scale("a", 365.25);
+
+    /** Hertz unit. */
+    public static final Unit HERTZ = SECOND.power("Hz", Fraction.MINUS_ONE);
+
+    /** Metre unit. */
+    public static final Unit METRE = new Unit("m", 1.0, Fraction.ZERO, Fraction.ONE, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO);
+
+    /** Kilometre unit. */
+    public static final Unit KILOMETRE = METRE.scale("km", 1000.0);
+
+    /** Kilogram unit. */
+    public static final Unit KILOGRAM = new Unit("kg", 1.0, Fraction.ONE, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO);
+
+    /** Gram unit. */
+    public static final Unit GRAM = KILOGRAM.scale("g", 1.0e-3);
+
+    /** Ampere unit. */
+    public static final Unit AMPERE = new Unit("A", 1.0, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ONE, Fraction.ZERO);
+
+    /** Radian unit. */
+    public static final Unit RADIAN = new Unit("rad", 1.0, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ONE);
+
+    /** Degree unit. */
+    public static final Unit DEGREE = RADIAN.scale("°", FastMath.toRadians(1.0));
+
+    /** Arc minute unit. */
+    public static final Unit ARC_MINUTE = DEGREE.scale("′", 1.0 / 60.0);
+
+    /** Arc second unit. */
+    public static final Unit ARC_SECOND = ARC_MINUTE.scale("″", 1.0 / 60.0);
+
+    /** Revolution unit. */
+    public static final Unit REVOLUTION = RADIAN.scale("rev", 2.0 * FastMath.PI);
+
+    /** Newton unit. */
+    public static final Unit NEWTON = KILOGRAM.multiply(null, METRE).divide("N", SECOND.power(null, Fraction.TWO));
+
+    /** Pascal unit. */
+    public static final Unit PASCAL = NEWTON.divide("Pa", METRE.power(null, Fraction.TWO));
+
+    /** Bar unit. */
+    public static final Unit BAR = PASCAL.scale("bar", 100000.0);
+
+    /** Joule unit. */
+    public static final Unit JOULE = NEWTON.multiply("J", METRE);
+
+    /** Watt unit. */
+    public static final Unit WATT = JOULE.divide("W", SECOND);
+
+    /** Coulomb unit. */
+    public static final Unit COULOMB = SECOND.multiply("C", AMPERE);
+
+    /** Volt unit. */
+    public static final Unit VOLT = WATT.divide("V", AMPERE);
+
+    /** Ohm unit. */
+    public static final Unit OHM = VOLT.divide("Ω", AMPERE);
+
+    /** tesla unit. */
+    public static final Unit TESLA = VOLT.multiply(null, SECOND).divide("T", METRE.power(null, Fraction.TWO));
+
+    /** Solar Flux Unit. */
+    public static final Unit SOLAR_FLUX_UNIT = WATT.divide(null, METRE.power(null, Fraction.TWO).multiply(null, HERTZ)).scale("sfu", 1.0e-22);
+
+    /** Total Electron Content Unit. */
+    public static final Unit TOTAL_ELECTRON_CONTENT_UNIT = METRE.power(null, new Fraction(-2)).scale("TECU", 1.0e+16);
+
     /** Name name of the unit. */
     private final String name;
 
@@ -135,6 +227,59 @@ public class Unit {
         return time.equals(other.time) && length.equals(other.length)   &&
                mass.equals(other.mass) && current.equals(other.current) &&
                angle.equals(other.angle);
+    }
+
+    /** Create the SI unit with same dimension.
+     * @return a new unit, with same dimension as instance and scaling factor set to 1.0
+     */
+    public Unit sameDimensionSI() {
+        final StringBuilder builder = new StringBuilder();
+        append(builder, KILOGRAM.name, mass);
+        append(builder, METRE.name,    length);
+        append(builder, SECOND.name,   time);
+        append(builder, AMPERE.name,   current);
+        append(builder, RADIAN.name,   angle);
+        if (builder.length() == 0) {
+            builder.append('1');
+        }
+        return new Unit(builder.toString(), 1.0, mass, length, time, current, angle);
+    }
+
+    /** Append a dimension contribution to a unit name.
+     * @param builder builder for unit name
+     * @param dim name of the dimension
+     * @param exp exponent of the dimension
+     */
+    private void append(final StringBuilder builder, final String dim, final Fraction exp) {
+        if (!exp.isZero()) {
+            if (builder.length() > 0) {
+                builder.append('.');
+            }
+            builder.append(dim);
+            if (exp.getDenominator() == 1) {
+                if (exp.getNumerator() != 1) {
+                    builder.append(Integer.toString(exp.getNumerator()).
+                                   replace('-', '⁻').
+                                   replace('0', '⁰').
+                                   replace('1', '¹').
+                                   replace('2', '²').
+                                   replace('3', '³').
+                                   replace('4', '⁴').
+                                   replace('5', '⁵').
+                                   replace('6', '⁶').
+                                   replace('7', '⁷').
+                                   replace('8', '⁸').
+                                   replace('9', '⁹'));
+                }
+            } else {
+                builder.
+                    append("^(").
+                    append(exp.getNumerator()).
+                    append('/').
+                    append(exp.getDenominator()).
+                    append(')');
+            }
+        }
     }
 
     /** Create an alias for a unit.

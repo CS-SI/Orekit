@@ -16,9 +16,10 @@
  */
 package org.orekit.files.ccsds.ndm.odm.omm;
 
-import org.hipparchus.util.FastMath;
+import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.utils.units.Unit;
 
 
 /** Keys for {@link OmmTle TLE} entries.
@@ -43,15 +44,13 @@ public enum OmmTleKey {
     REV_AT_EPOCH((token, context, container) -> token.processAsInteger(container::setRevAtEpoch)),
 
     /** SGP/SGP4 drag-like coefficient. */
-    BSTAR((token, context, container) -> token.processAsDouble(1.0, container::setBStar)),
+    BSTAR((token, context, container) -> token.processAsDouble(Unit.ONE, container::setBStar)),
 
     /** First time derivative of mean motion. */
-    MEAN_MOTION_DOT((token, context, container) ->
-                    token.processAsDouble(FastMath.PI / 1.86624e9, container::setMeanMotionDot)),
+    MEAN_MOTION_DOT((token, context, container) -> token.processAsDouble(Units.REV_PER_DAY2_SCALED, container::setMeanMotionDot)),
 
     /** Second time derivative of mean motion. */
-    MEAN_MOTION_DDOT((token, context, container) ->
-                     token.processAsDouble(FastMath.PI / 5.3747712e13, container::setMeanMotionDotDot));
+    MEAN_MOTION_DDOT((token, context, container) -> token.processAsDouble(Units.REV_PER_DAY3_SCALED, container::setMeanMotionDotDot));
 
     /** Processing method. */
     private final TokenProcessor processor;

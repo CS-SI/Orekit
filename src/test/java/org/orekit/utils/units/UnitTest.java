@@ -30,50 +30,60 @@ public class UnitTest {
 
     @Test
     public void testTime() {
-        Assert.assertEquals(       1.0, PredefinedUnit.SECOND.toUnit().toSI(1.0), 1.0e-10);
-        Assert.assertEquals(      60.0, PredefinedUnit.MINUTE.toUnit().toSI(1.0), 1.0e-10);
-        Assert.assertEquals(    3600.0, PredefinedUnit.HOUR.toUnit().toSI(1.0),   1.0e-10);
-        Assert.assertEquals(   86400.0, PredefinedUnit.DAY.toUnit().toSI(1.0),    1.0e-10);
-        Assert.assertEquals(31557600.0, PredefinedUnit.YEAR.toUnit().toSI(1.0),   1.0e-10);
-        Assert.assertEquals(1.0,        PredefinedUnit.SECOND.toUnit().fromSI(     1.0), 1.0e-10);
-        Assert.assertEquals(1.0,        PredefinedUnit.MINUTE.toUnit().fromSI(    60.0), 1.0e-10);
-        Assert.assertEquals(1.0,        PredefinedUnit.HOUR.toUnit().fromSI(    3600.0), 1.0e-10);
-        Assert.assertEquals(1.0,        PredefinedUnit.DAY.toUnit().fromSI(    86400.0), 1.0e-10);
-        Assert.assertEquals(1.0,        PredefinedUnit.YEAR.toUnit().fromSI(31557600.0), 1.0e-10);
-        Assert.assertEquals(365.25,     PredefinedUnit.DAY.toUnit().fromSI(PredefinedUnit.YEAR.toUnit().toSI(1.0)), 1.0e-10);
+        Assert.assertEquals(       1.0, Unit.SECOND.toSI(1.0), 1.0e-10);
+        Assert.assertEquals(      60.0, Unit.MINUTE.toSI(1.0), 1.0e-10);
+        Assert.assertEquals(    3600.0, Unit.HOUR.toSI(1.0),   1.0e-10);
+        Assert.assertEquals(   86400.0, Unit.DAY.toSI(1.0),    1.0e-10);
+        Assert.assertEquals(31557600.0, Unit.YEAR.toSI(1.0),   1.0e-10);
+        Assert.assertEquals(1.0,        Unit.SECOND.fromSI(     1.0), 1.0e-10);
+        Assert.assertEquals(1.0,        Unit.MINUTE.fromSI(    60.0), 1.0e-10);
+        Assert.assertEquals(1.0,        Unit.HOUR.fromSI(    3600.0), 1.0e-10);
+        Assert.assertEquals(1.0,        Unit.DAY.fromSI(    86400.0), 1.0e-10);
+        Assert.assertEquals(1.0,        Unit.YEAR.fromSI(31557600.0), 1.0e-10);
+        Assert.assertEquals(365.25,     Unit.DAY.fromSI(Unit.YEAR.toSI(1.0)), 1.0e-10);
+    }
+
+    @Test
+    public void testSI() {
+        Assert.assertTrue(Unit.PERCENT.sameDimensionSI().sameDimension(Unit.ONE));
+        Assert.assertEquals("1", Unit.PERCENT.sameDimensionSI().getName());
+        Assert.assertEquals("m³.s⁻²", Unit.parse("km**3/s**2").sameDimensionSI().getName());
+        Assert.assertEquals("m⁻³.s⁻⁶.rad^(2/5)", Unit.parse("µas^(2/5)/(h**(2)×m)³").sameDimensionSI().getName());
+        
     }
 
     @Test
     public void testReference() {                                
-        checkReference(PredefinedUnit.NONE.toUnit(),                        "n/a",                     1.0,  0,  0,  0,  0, 0);
-        checkReference(PredefinedUnit.ONE.toUnit(),                           "1",                     1.0,  0,  0,  0,  0, 0);
-        checkReference(PredefinedUnit.PERCENT.toUnit(),                       "%",                    0.01,  0,  0,  0,  0, 0);
-        checkReference(PredefinedUnit.SECOND.toUnit(),                        "s",                     1.0,  0,  0,  1,  0, 0);
-        checkReference(PredefinedUnit.MINUTE.toUnit(),                      "min",                    60.0,  0,  0,  1,  0, 0);
-        checkReference(PredefinedUnit.HOUR.toUnit(),                          "h",                  3600.0,  0,  0,  1,  0, 0);
-        checkReference(PredefinedUnit.DAY.toUnit(),                           "d",                 86400.0,  0,  0,  1,  0, 0);
-        checkReference(PredefinedUnit.YEAR.toUnit(),                          "a",              31557600.0,  0,  0,  1,  0, 0);
-        checkReference(PredefinedUnit.HERTZ.toUnit(),                        "Hz",                     1.0,  0,  0, -1,  0, 0);
-        checkReference(PredefinedUnit.METRE.toUnit(),                         "m",                     1.0,  0,  1,  0,  0, 0);
-        checkReference(PredefinedUnit.KILOMETRE.toUnit(),                    "km",                  1000.0,  0,  1,  0,  0, 0);
-        checkReference(PredefinedUnit.KILOGRAM.toUnit(),                     "kg",                     1.0,  1,  0,  0,  0, 0);
-        checkReference(PredefinedUnit.GRAM.toUnit(),                          "g",                   0.001,  1,  0,  0,  0, 0);
-        checkReference(PredefinedUnit.AMPERE.toUnit(),                        "A",                     1.0,  0,  0,  0,  1, 0);
-        checkReference(PredefinedUnit.RADIAN.toUnit(),                      "rad",                     1.0,  0,  0,  0,  0, 1);
-        checkReference(PredefinedUnit.DEGREE.toUnit(),                        "°",  FastMath.PI /    180.0,  0,  0,  0,  0, 1);
-        checkReference(PredefinedUnit.ARC_MINUTE.toUnit(),                    "′",  FastMath.PI /  10800.0,  0,  0,  0,  0, 1);
-        checkReference(PredefinedUnit.ARC_SECOND.toUnit(),                    "″",  FastMath.PI / 648000.0,  0,  0,  0,  0, 1);
-        checkReference(PredefinedUnit.NEWTON.toUnit(),                        "N",                     1.0,  1,  1, -2,  0, 0);
-        checkReference(PredefinedUnit.PASCAL.toUnit(),                       "Pa",                     1.0,  1, -1, -2,  0, 0);
-        checkReference(PredefinedUnit.BAR.toUnit(),                         "bar",                100000.0,  1, -1, -2,  0, 0);
-        checkReference(PredefinedUnit.JOULE.toUnit(),                         "J",                     1.0,  1,  2, -2,  0, 0);
-        checkReference(PredefinedUnit.WATT.toUnit(),                          "W",                     1.0,  1,  2, -3,  0, 0);
-        checkReference(PredefinedUnit.COULOMB.toUnit(),                       "C",                     1.0,  0,  0,  1,  1, 0);
-        checkReference(PredefinedUnit.VOLT.toUnit(),                          "V",                     1.0,  1,  2, -3, -1, 0);
-        checkReference(PredefinedUnit.OHM.toUnit(),                           "Ω",                     1.0,  1,  2, -3, -2, 0);
-        checkReference(PredefinedUnit.TESLA.toUnit(),                         "T",                     1.0,  1,  0, -2, -1, 0);
-        checkReference(PredefinedUnit.SOLAR_FLUX_UNIT.toUnit(),              "sfu",                1.0e-22,  1,  0, -2,  0, 0);
-        checkReference(PredefinedUnit.TOTAL_ELECTRON_CONTENT_UNIT.toUnit(), "TECU",                 1.0e16,  0, -2,  0,  0, 0);
+        checkReference(Unit.NONE,                        "n/a",                     1.0,  0,  0,  0,  0, 0);
+        checkReference(Unit.ONE,                           "1",                     1.0,  0,  0,  0,  0, 0);
+        checkReference(Unit.PERCENT,                       "%",                    0.01,  0,  0,  0,  0, 0);
+        checkReference(Unit.SECOND,                        "s",                     1.0,  0,  0,  1,  0, 0);
+        checkReference(Unit.MINUTE,                      "min",                    60.0,  0,  0,  1,  0, 0);
+        checkReference(Unit.HOUR,                          "h",                  3600.0,  0,  0,  1,  0, 0);
+        checkReference(Unit.DAY,                           "d",                 86400.0,  0,  0,  1,  0, 0);
+        checkReference(Unit.YEAR,                          "a",              31557600.0,  0,  0,  1,  0, 0);
+        checkReference(Unit.HERTZ,                        "Hz",                     1.0,  0,  0, -1,  0, 0);
+        checkReference(Unit.METRE,                         "m",                     1.0,  0,  1,  0,  0, 0);
+        checkReference(Unit.KILOMETRE,                    "km",                  1000.0,  0,  1,  0,  0, 0);
+        checkReference(Unit.KILOGRAM,                     "kg",                     1.0,  1,  0,  0,  0, 0);
+        checkReference(Unit.GRAM,                          "g",                   0.001,  1,  0,  0,  0, 0);
+        checkReference(Unit.AMPERE,                        "A",                     1.0,  0,  0,  0,  1, 0);
+        checkReference(Unit.RADIAN,                      "rad",                     1.0,  0,  0,  0,  0, 1);
+        checkReference(Unit.DEGREE,                        "°",  FastMath.PI /    180.0,  0,  0,  0,  0, 1);
+        checkReference(Unit.ARC_MINUTE,                    "′",  FastMath.PI /  10800.0,  0,  0,  0,  0, 1);
+        checkReference(Unit.ARC_SECOND,                    "″",  FastMath.PI / 648000.0,  0,  0,  0,  0, 1);
+        checkReference(Unit.REVOLUTION,                   "rev",      2.0 * FastMath.PI,  0,  0,  0,  0, 1);
+        checkReference(Unit.NEWTON,                        "N",                     1.0,  1,  1, -2,  0, 0);
+        checkReference(Unit.PASCAL,                       "Pa",                     1.0,  1, -1, -2,  0, 0);
+        checkReference(Unit.BAR,                         "bar",                100000.0,  1, -1, -2,  0, 0);
+        checkReference(Unit.JOULE,                         "J",                     1.0,  1,  2, -2,  0, 0);
+        checkReference(Unit.WATT,                          "W",                     1.0,  1,  2, -3,  0, 0);
+        checkReference(Unit.COULOMB,                       "C",                     1.0,  0,  0,  1,  1, 0);
+        checkReference(Unit.VOLT,                          "V",                     1.0,  1,  2, -3, -1, 0);
+        checkReference(Unit.OHM,                           "Ω",                     1.0,  1,  2, -3, -2, 0);
+        checkReference(Unit.TESLA,                         "T",                     1.0,  1,  0, -2, -1, 0);
+        checkReference(Unit.SOLAR_FLUX_UNIT,              "sfu",                1.0e-22,  1,  0, -2,  0, 0);
+        checkReference(Unit.TOTAL_ELECTRON_CONTENT_UNIT, "TECU",                 1.0e16,  0, -2,  0,  0, 0);
 
     }
 

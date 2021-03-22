@@ -20,6 +20,7 @@ import org.orekit.files.ccsds.definitions.ElementsType;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.utils.units.Unit;
 
 
 /** Keys for {@link CovarianceHistoryMetadata covariance history container} entries.
@@ -54,10 +55,10 @@ public enum CovarianceHistoryMetadataKey {
     COV_FRAME_EPOCH((token, context, container) -> token.processAsDate(container::setCovFrameEpoch, context)),
 
     /** Minimum scale factor to apply to achieve realism. */
-    COV_SCALE_MIN((token, context, container) -> token.processAsDouble(1.0, container::setCovScaleMin)),
+    COV_SCALE_MIN((token, context, container) -> token.processAsDouble(Unit.ONE, container::setCovScaleMin)),
 
     /** Maximum scale factor to apply to achieve realism. */
-    COV_SCALE_MAX((token, context, container) -> token.processAsDouble(1.0, container::setCovScaleMax)),
+    COV_SCALE_MAX((token, context, container) -> token.processAsDouble(Unit.ONE, container::setCovScaleMax)),
 
     /** Masure of confidence in covariance error matching reality. */
     COV_CONFIDENCE((token, context, container) -> token.processAsNormalizedString(container::setCovConfidence)),

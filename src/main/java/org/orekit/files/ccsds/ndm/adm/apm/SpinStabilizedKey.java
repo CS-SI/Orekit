@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.utils.units.Unit;
 
 /** Keys for {@link SpinStabilized APM spin-stabilized} entries.
  * @author Bryan Cazabonne
@@ -68,7 +69,7 @@ public enum SpinStabilizedKey {
     NUTATION((token, context, container) -> token.processAsAngle(container::setNutation)),
 
     /** Nutation period entry. */
-    NUTATION_PER((token, context, container) -> token.processAsDouble(1.0, container::setNutationPeriod)),
+    NUTATION_PER((token, context, container) -> token.processAsDouble(Unit.SECOND, container::setNutationPeriod)),
 
     /** Nutation phase entry. */
     NUTATION_PHASE((token, context, container) -> token.processAsAngle(container::setNutationPhase));

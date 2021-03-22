@@ -20,7 +20,6 @@ import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.utils.ContextBinding;
-import org.orekit.utils.units.PredefinedUnit;
 import org.orekit.utils.units.Unit;
 
 /** Maneuver field type used in CCSDS {@link OcmFile Orbit Comprehensive Messages}.
@@ -171,7 +170,7 @@ public enum ManeuverFieldType {
      * @param parsedUnit unit to check
      */
     public void checkUnit(final Unit parsedUnit) {
-        if ((unit == PredefinedUnit.NONE.toUnit()) ^ (parsedUnit == PredefinedUnit.NONE.toUnit()) ||
+        if ((unit == Unit.NONE) ^ (parsedUnit == Unit.NONE) ||
             (!(unit.sameDimension(parsedUnit) && Precision.equals(unit.getScale(), parsedUnit.getScale(), 1)))) {
             throw new OrekitException(OrekitMessages.INCOMPATIBLE_UNITS,
                                       unit.getName(), parsedUnit.getName());

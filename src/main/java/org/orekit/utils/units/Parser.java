@@ -54,9 +54,9 @@ class Parser {
      * @return parsed unit
      */
     public static Unit parse(final String unitSpecification) {
-        if (PredefinedUnit.NONE.toUnit().getName().equals(unitSpecification)) {
+        if (Unit.NONE.getName().equals(unitSpecification)) {
             // special case
-            return PredefinedUnit.NONE.toUnit();
+            return Unit.NONE;
         } else {
             final Lexer lexer = new Lexer(unitSpecification);
             final Unit parsed = chain(lexer);

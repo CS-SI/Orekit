@@ -36,8 +36,8 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScale;
-import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.units.Unit;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -63,11 +63,11 @@ import org.xml.sax.helpers.DefaultHandler;
 class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
         implements EOPHistoryLoader {
 
-    /** Conversion factor for milli-arc seconds entries. */
-    private static final double MILLI_ARC_SECONDS_TO_RADIANS = Constants.ARC_SECONDS_TO_RADIANS / 1000.0;
+    /** Millisecond unit. */
+    private static final Unit MILLI_SECOND = Unit.parse("ms");
 
-    /** Conversion factor for milli seconds entries. */
-    private static final double MILLI_SECONDS_TO_SECONDS = 1.0 / 1000.0;
+    /** Milli arcsecond unit. */
+    private static final Unit MILLI_ARC_SECOND = Unit.parse("mas");
 
     /**
      * Build a loader for IERS XML EOP files.
@@ -329,21 +329,21 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
                     mjdDate = new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
                                                getUtc());
                 } else if (qName.equals(UT1_M_UTC_ELT)) {
-                    dtu1 = overwrite(dtu1, 1.0);
+                    dtu1 = overwrite(dtu1, Unit.SECOND);
                 } else if (qName.equals(LOD_ELT)) {
-                    lod = overwrite(lod, MILLI_SECONDS_TO_SECONDS);
+                    lod = overwrite(lod, MILLI_SECOND);
                 } else if (qName.equals(X_ELT)) {
-                    x = overwrite(x, Constants.ARC_SECONDS_TO_RADIANS);
+                    x = overwrite(x, Unit.ARC_SECOND);
                 } else if (qName.equals(Y_ELT)) {
-                    y = overwrite(y, Constants.ARC_SECONDS_TO_RADIANS);
+                    y = overwrite(y, Unit.ARC_SECOND);
                 } else if (qName.equals(DPSI_ELT)) {
-                    dpsi = overwrite(dpsi, MILLI_ARC_SECONDS_TO_RADIANS);
+                    dpsi = overwrite(dpsi, MILLI_ARC_SECOND);
                 } else if (qName.equals(DEPSILON_ELT)) {
-                    deps = overwrite(deps, MILLI_ARC_SECONDS_TO_RADIANS);
+                    deps = overwrite(deps, MILLI_ARC_SECOND);
                 } else if (qName.equals(DX_ELT)) {
-                    dx   = overwrite(dx, MILLI_ARC_SECONDS_TO_RADIANS);
+                    dx   = overwrite(dx, MILLI_ARC_SECOND);
                 } else if (qName.equals(DY_ELT)) {
-                    dy   = overwrite(dy, MILLI_ARC_SECONDS_TO_RADIANS);
+                    dy   = overwrite(dy, MILLI_ARC_SECOND);
                 } else if (qName.equals(POLE_ELT) || qName.equals(UT_ELT) || qName.equals(NUTATION_ELT)) {
                     inBulletinA = false;
                 } else if (qName.equals(DATA_EOP_ELT)) {
@@ -388,21 +388,21 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
                     mjdDate = new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
                                                getUtc());
                 } else if (qName.equals(UT1_U_UTC_ELT)) {
-                    dtu1 = overwrite(dtu1, 1.0);
+                    dtu1 = overwrite(dtu1, Unit.SECOND);
                 } else if (qName.equals(LOD_ELT)) {
-                    lod = overwrite(lod, MILLI_SECONDS_TO_SECONDS);
+                    lod = overwrite(lod, MILLI_SECOND);
                 } else if (qName.equals(X_ELT)) {
-                    x = overwrite(x, Constants.ARC_SECONDS_TO_RADIANS);
+                    x = overwrite(x, Unit.ARC_SECOND);
                 } else if (qName.equals(Y_ELT)) {
-                    y = overwrite(y, Constants.ARC_SECONDS_TO_RADIANS);
+                    y = overwrite(y, Unit.ARC_SECOND);
                 } else if (qName.equals(DPSI_ELT)) {
-                    dpsi = overwrite(dpsi, MILLI_ARC_SECONDS_TO_RADIANS);
+                    dpsi = overwrite(dpsi, MILLI_ARC_SECOND);
                 } else if (qName.equals(DEPSILON_ELT)) {
-                    deps = overwrite(deps, MILLI_ARC_SECONDS_TO_RADIANS);
+                    deps = overwrite(deps, MILLI_ARC_SECOND);
                 } else if (qName.equals(DX_ELT)) {
-                    dx   = overwrite(dx, MILLI_ARC_SECONDS_TO_RADIANS);
+                    dx   = overwrite(dx, MILLI_ARC_SECOND);
                 } else if (qName.equals(DY_ELT)) {
-                    dy   = overwrite(dy, MILLI_ARC_SECONDS_TO_RADIANS);
+                    dy   = overwrite(dy, MILLI_ARC_SECOND);
                 } else if (qName.equals(BULLETIN_A_ELT)) {
                     inBulletinA = false;
                 } else if (qName.equals(EOP_SET_ELT)) {
@@ -433,10 +433,10 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
 
             /** Overwrite a value if it is not set or if we are in a bulletinB.
              * @param oldValue old value to overwrite (may be NaN)
-             * @param factor multiplicative factor to apply to raw read data
+             * @param units units of raw data
              * @return a new value
              */
-            private double overwrite(final double oldValue, final double factor) {
+            private double overwrite(final double oldValue, final Unit units) {
                 if (buffer.length() == 0) {
                     // there is nothing to overwrite with
                     return oldValue;
@@ -445,7 +445,7 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
                     return oldValue;
                 } else {
                     // either the value is not set or it is a high priority bulletin B value
-                    return Double.parseDouble(buffer.toString()) * factor;
+                    return units.toSI(Double.parseDouble(buffer.toString()));
                 }
             }
 

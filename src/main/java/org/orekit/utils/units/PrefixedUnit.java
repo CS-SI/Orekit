@@ -34,40 +34,41 @@ class PrefixedUnit extends Unit {
     private static final Map<String, PrefixedUnit> ALLOWED;
 
     static {
-        final List<Unit> base = Arrays.asList(PredefinedUnit.SECOND.toUnit(),
-                                              PredefinedUnit.MINUTE.toUnit(),
-                                              PredefinedUnit.HOUR.toUnit(),
-                                              PredefinedUnit.DAY.toUnit(),
-                                              PredefinedUnit.YEAR.toUnit(),
-                                              PredefinedUnit.YEAR.toUnit().alias("y"),
-                                              PredefinedUnit.HERTZ.toUnit(),
-                                              PredefinedUnit.METRE.toUnit(),
-                                              PredefinedUnit.GRAM.toUnit(), // only case were we must use a derived unit
-                                              PredefinedUnit.AMPERE.toUnit(),
-                                              PredefinedUnit.RADIAN.toUnit(),
-                                              PredefinedUnit.DEGREE.toUnit(),
-                                              PredefinedUnit.DEGREE.toUnit().alias("◦"),
-                                              PredefinedUnit.DEGREE.toUnit().alias("deg"),
-                                              PredefinedUnit.ARC_MINUTE.toUnit(),
-                                              PredefinedUnit.ARC_MINUTE.toUnit().alias("'"),
-                                              PredefinedUnit.ARC_SECOND.toUnit(),
-                                              PredefinedUnit.ARC_SECOND.toUnit().alias("''"),
-                                              PredefinedUnit.ARC_SECOND.toUnit().alias("\""),
-                                              PredefinedUnit.ARC_SECOND.toUnit().alias("as"), // must be after second to override atto-seconds
-                                              PredefinedUnit.NEWTON.toUnit(),
-                                              PredefinedUnit.PASCAL.toUnit(), // must be after year to override peta-years
-                                              PredefinedUnit.BAR.toUnit(),
-                                              PredefinedUnit.JOULE.toUnit(),
-                                              PredefinedUnit.WATT.toUnit(),
-                                              PredefinedUnit.COULOMB.toUnit(),
-                                              PredefinedUnit.VOLT.toUnit(),
-                                              PredefinedUnit.OHM.toUnit(),
-                                              PredefinedUnit.TESLA.toUnit(),
-                                              PredefinedUnit.SOLAR_FLUX_UNIT.toUnit(),
-                                              PredefinedUnit.SOLAR_FLUX_UNIT.toUnit().alias("SFU"),
-                                              PredefinedUnit.TOTAL_ELECTRON_CONTENT_UNIT.toUnit(),
-                                              PredefinedUnit.TOTAL_ELECTRON_CONTENT_UNIT.toUnit().alias("tecu"),
-                                              PredefinedUnit.PERCENT.toUnit());
+        final List<Unit> base = Arrays.asList(Unit.SECOND,
+                                              Unit.MINUTE,
+                                              Unit.HOUR,
+                                              Unit.DAY,
+                                              Unit.YEAR,
+                                              Unit.YEAR.alias("y"),
+                                              Unit.HERTZ,
+                                              Unit.METRE,
+                                              Unit.GRAM, // only case were we must use a derived unit
+                                              Unit.AMPERE,
+                                              Unit.RADIAN,
+                                              Unit.DEGREE,
+                                              Unit.DEGREE.alias("◦"),
+                                              Unit.DEGREE.alias("deg"),
+                                              Unit.ARC_MINUTE,
+                                              Unit.ARC_MINUTE.alias("'"),
+                                              Unit.ARC_SECOND,
+                                              Unit.ARC_SECOND.alias("''"),
+                                              Unit.ARC_SECOND.alias("\""),
+                                              Unit.ARC_SECOND.alias("as"), // must be after second to override atto-seconds
+                                              Unit.REVOLUTION,
+                                              Unit.NEWTON,
+                                              Unit.PASCAL, // must be after year to override peta-years
+                                              Unit.BAR,
+                                              Unit.JOULE,
+                                              Unit.WATT,
+                                              Unit.COULOMB,
+                                              Unit.VOLT,
+                                              Unit.OHM,
+                                              Unit.TESLA,
+                                              Unit.SOLAR_FLUX_UNIT,
+                                              Unit.SOLAR_FLUX_UNIT.alias("SFU"),
+                                              Unit.TOTAL_ELECTRON_CONTENT_UNIT,
+                                              Unit.TOTAL_ELECTRON_CONTENT_UNIT.alias("tecu"),
+                                              Unit.PERCENT);
         ALLOWED = new HashMap<>(base.size() * Prefix.values().length);
         for (final Unit unit : base) {
             ALLOWED.put(unit.getName(), new PrefixedUnit(null, unit));

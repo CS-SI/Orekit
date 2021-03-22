@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm.tdm;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
+import org.orekit.utils.units.Unit;
 
 
 /** Keys for {@link TdmMetadata TDM container} entries.
@@ -96,7 +97,7 @@ public enum TdmMetadataKey {
     }),
 
     /** Integration interval entry. */
-    INTEGRATION_INTERVAL((token, context, container) -> token.processAsDouble(1.0, container::setIntegrationInterval)),
+    INTEGRATION_INTERVAL((token, context, container) -> token.processAsDouble(Unit.SECOND, container::setIntegrationInterval)),
 
     /** Integration reference entry. */
     INTEGRATION_REF((token, context, container) -> {
@@ -112,7 +113,7 @@ public enum TdmMetadataKey {
     }),
 
     /** Frequency offset entry. */
-    FREQ_OFFSET((token, context, container) -> token.processAsDouble(1.0, container::setFreqOffset)),
+    FREQ_OFFSET((token, context, container) -> token.processAsDouble(Unit.HERTZ, container::setFreqOffset)),
 
     /** Range mode entry. */
     RANGE_MODE((token, context, container) -> {
@@ -127,8 +128,8 @@ public enum TdmMetadataKey {
         return true;
     }),
 
-    /** Range modulus entry. */
-    RANGE_MODULUS((token, context, container) -> token.processAsDouble(1.0, container::setRawRangeModulus)),
+    /** Range modulus entry (beware the unit is Range Units here). */
+    RANGE_MODULUS((token, context, container) -> token.processAsDouble(Unit.ONE, container::setRawRangeModulus)),
 
     /** Range units entry. */
     RANGE_UNITS((token, context, container) -> {
@@ -160,34 +161,34 @@ public enum TdmMetadataKey {
     REFERENCE_FRAME((token, context, container) -> token.processAsFrame(container::setReferenceFrame, context, true, false, false)),
 
     /** First transmit delay entry. */
-    TRANSMIT_DELAY_1((token, context, container) -> token.processAsIndexedDouble(1, 1.0, container::addTransmitDelay)),
+    TRANSMIT_DELAY_1((token, context, container) -> token.processAsIndexedDouble(1, Unit.SECOND, container::addTransmitDelay)),
 
     /** Second transmit delay entry. */
-    TRANSMIT_DELAY_2((token, context, container) -> token.processAsIndexedDouble(2, 1.0, container::addTransmitDelay)),
+    TRANSMIT_DELAY_2((token, context, container) -> token.processAsIndexedDouble(2, Unit.SECOND, container::addTransmitDelay)),
 
     /** Third transmit delay entry. */
-    TRANSMIT_DELAY_3((token, context, container) -> token.processAsIndexedDouble(3, 1.0, container::addTransmitDelay)),
+    TRANSMIT_DELAY_3((token, context, container) -> token.processAsIndexedDouble(3, Unit.SECOND, container::addTransmitDelay)),
 
     /** Fourth transmit delay entry. */
-    TRANSMIT_DELAY_4((token, context, container) -> token.processAsIndexedDouble(4, 1.0, container::addTransmitDelay)),
+    TRANSMIT_DELAY_4((token, context, container) -> token.processAsIndexedDouble(4, Unit.SECOND, container::addTransmitDelay)),
 
     /** Fifth transmit delay entry. */
-    TRANSMIT_DELAY_5((token, context, container) -> token.processAsIndexedDouble(5, 1.0, container::addTransmitDelay)),
+    TRANSMIT_DELAY_5((token, context, container) -> token.processAsIndexedDouble(5, Unit.SECOND, container::addTransmitDelay)),
 
     /** First receive delay entry. */
-    RECEIVE_DELAY_1((token, context, container) -> token.processAsIndexedDouble(1, 1.0, container::addReceiveDelay)),
+    RECEIVE_DELAY_1((token, context, container) -> token.processAsIndexedDouble(1, Unit.SECOND, container::addReceiveDelay)),
 
     /** Second receive delay entry. */
-    RECEIVE_DELAY_2((token, context, container) -> token.processAsIndexedDouble(2, 1.0, container::addReceiveDelay)),
+    RECEIVE_DELAY_2((token, context, container) -> token.processAsIndexedDouble(2, Unit.SECOND, container::addReceiveDelay)),
 
     /** Third receive delay entry. */
-    RECEIVE_DELAY_3((token, context, container) -> token.processAsIndexedDouble(3, 1.0, container::addReceiveDelay)),
+    RECEIVE_DELAY_3((token, context, container) -> token.processAsIndexedDouble(3, Unit.SECOND, container::addReceiveDelay)),
 
     /** Fourth receive delay entry. */
-    RECEIVE_DELAY_4((token, context, container) -> token.processAsIndexedDouble(4, 1.0, container::addReceiveDelay)),
+    RECEIVE_DELAY_4((token, context, container) -> token.processAsIndexedDouble(4, Unit.SECOND, container::addReceiveDelay)),
 
     /** Fifth receive delay entry. */
-    RECEIVE_DELAY_5((token, context, container) -> token.processAsIndexedDouble(5, 1.0, container::addReceiveDelay)),
+    RECEIVE_DELAY_5((token, context, container) -> token.processAsIndexedDouble(5, Unit.SECOND, container::addReceiveDelay)),
 
     /** data quality entry. */
     DATA_QUALITY((token, context, container) -> {
@@ -209,16 +210,16 @@ public enum TdmMetadataKey {
     CORRECTION_ANGLE_2((token, context, container) -> token.processAsAngle(container::setCorrectionAngle2)),
 
     /** Doppler correction entry. */
-    CORRECTION_DOPPLER((token, context, container) -> token.processAsDouble(1000.0, container::setCorrectionDoppler)),
+    CORRECTION_DOPPLER((token, context, container) -> token.processAsDouble(Unit.KILOMETRE, container::setCorrectionDoppler)),
 
-    /** Range correction entry. */
-    CORRECTION_RANGE((token, context, container) -> token.processAsDouble(1.0, container::setRawCorrectionRange)),
+    /** Range correction entry (beware the unit is Range Units here). */
+    CORRECTION_RANGE((token, context, container) -> token.processAsDouble(Unit.ONE, container::setRawCorrectionRange)),
 
-    /** Recive correction entry. */
-    CORRECTION_RECEIVE((token, context, container) -> token.processAsDouble(1.0, container::setCorrectionReceive)),
+    /** Receive correction entry. */
+    CORRECTION_RECEIVE((token, context, container) -> token.processAsDouble(Unit.HERTZ, container::setCorrectionReceive)),
 
     /** Transmit correction entry. */
-    CORRECTION_TRANSMIT((token, context, container) -> token.processAsDouble(1.0, container::setCorrectionTransmit)),
+    CORRECTION_TRANSMIT((token, context, container) -> token.processAsDouble(Unit.HERTZ, container::setCorrectionTransmit)),
 
     /** Applied correction entry. */
     CORRECTIONS_APPLIED((token, context, container) -> {
