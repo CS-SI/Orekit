@@ -31,7 +31,7 @@ public class GnssData {
      * @param data data bytes
      * @param len length of the data (may be smaller than {@code data.length}
      */
-    GnssData(final byte[] data, final int len) {
+    public GnssData(final byte[] data, final int len) {
         this.data = Arrays.copyOf(data, len);
     }
 
