@@ -87,42 +87,4 @@ public class SsrIgm05Data extends SsrIgmData {
         return biases.get(signalID);
     }
 
-    /** Container for code bias data. */
-    public static class CodeBias {
-
-        /** GNSS Signal and Tracking Mode Identifier. */
-        private final int signalID;
-
-        /** Code bias for the corresponding signal identifier. */
-        private final double codeBias;
-
-        /**
-         * Constructor.
-         * @param signalID GNSS signal and tracking mode identifier
-         * @param codeBias code bias associated to the signal ID in meters
-         */
-        public CodeBias(final int signalID, final double codeBias) {
-            // Initialize fields
-            this.signalID = signalID;
-            this.codeBias = codeBias;
-        }
-
-        /**
-         * Get the GNSS signal and tracking mode identifier.
-         * @return the GNSS signal and tracking mode identifier
-         */
-        public int getSignalID() {
-            return signalID;
-        }
-
-        /**
-         * Get the code bias associated to the signal ID.
-         * @return the code bias in meters
-         */
-        public double getCodeBias() {
-            return codeBias;
-        }
-
-    }
-
 }

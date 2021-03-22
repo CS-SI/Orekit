@@ -86,15 +86,15 @@ public class SsrIgm03Test {
         final SsrIgm03Data e12 = igm03.getSsrIgm03Data().get("E12").get(0);
         Assert.assertEquals(12,                           e12.getSatelliteID());
         Assert.assertEquals(132,                          e12.getGnssIod());
-        Assert.assertEquals(18.0095,                      e12.getDeltaOrbitRadial(),        eps);
-        Assert.assertEquals(122.8668,                     e12.getDeltaOrbitAlongTrack(),    eps);
-        Assert.assertEquals(122.8668,                     e12.getDeltaOrbitCrossTrack(),    eps);
-        Assert.assertEquals(0.090047,                     e12.getDotOrbitDeltaRadial(),     eps);
-        Assert.assertEquals(0.614332,                     e12.getDotOrbitDeltaAlongTrack(), eps);
-        Assert.assertEquals(0.614332,                     e12.getDotOrbitDeltaCrossTrack(), eps);
-        Assert.assertEquals(96.6527,                      e12.getDeltaClockC0(),            eps);
-        Assert.assertEquals(0.483263,                     e12.getDeltaClockC1(),            eps);
-        Assert.assertEquals(0.61857734,                   e12.getDeltaClockC2(),            eps);
+        Assert.assertEquals(18.0095,                      e12.getOrbitCorrection().getDeltaOrbitRadial(),        eps);
+        Assert.assertEquals(122.8668,                     e12.getOrbitCorrection().getDeltaOrbitAlongTrack(),    eps);
+        Assert.assertEquals(122.8668,                     e12.getOrbitCorrection().getDeltaOrbitCrossTrack(),    eps);
+        Assert.assertEquals(0.090047,                     e12.getOrbitCorrection().getDotOrbitDeltaRadial(),     eps);
+        Assert.assertEquals(0.614332,                     e12.getOrbitCorrection().getDotOrbitDeltaAlongTrack(), eps);
+        Assert.assertEquals(0.614332,                     e12.getOrbitCorrection().getDotOrbitDeltaCrossTrack(), eps);
+        Assert.assertEquals(96.6527,                      e12.getClockCorrection().getDeltaClockC0(),            eps);
+        Assert.assertEquals(0.483263,                     e12.getClockCorrection().getDeltaClockC1(),            eps);
+        Assert.assertEquals(0.61857734,                   e12.getClockCorrection().getDeltaClockC2(),            eps);
 
     }
 

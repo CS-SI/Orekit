@@ -76,9 +76,9 @@ public class SsrIgm02Test {
         // Verify data for satellite G12
         final SsrIgm02Data r12 = igm02.getSsrIgm02Data().get("R12").get(0);
         Assert.assertEquals(12,                           r12.getSatelliteID());
-        Assert.assertEquals(96.6527,                      r12.getDeltaClockC0(), eps);
-        Assert.assertEquals(0.483263,                     r12.getDeltaClockC1(), eps);
-        Assert.assertEquals(0.61857734,                   r12.getDeltaClockC2(), eps);
+        Assert.assertEquals(96.6527,                      r12.getClockCorrection().getDeltaClockC0(), eps);
+        Assert.assertEquals(0.483263,                     r12.getClockCorrection().getDeltaClockC1(), eps);
+        Assert.assertEquals(0.61857734,                   r12.getClockCorrection().getDeltaClockC2(), eps);
 
     }
 

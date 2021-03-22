@@ -17,34 +17,43 @@
 package org.orekit.gnss.metric.messages.ssr.igm;
 
 /**
- * Container for SSR IGM02 data.
+ * Container for code bias data.
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public class SsrIgm02Data extends SsrIgmData {
+public class CodeBias {
 
-    /** Container for clock correction data. */
-    private ClockCorrection clockCorrection;
+    /** GNSS Signal and Tracking Mode Identifier. */
+    private final int signalID;
 
-    /** Constructor. */
-    public SsrIgm02Data() {
-        // Nothing to do ...
+    /** Code bias for the corresponding signal identifier. */
+    private final double codeBias;
+
+    /**
+     * Constructor.
+     * @param signalID GNSS signal and tracking mode identifier
+     * @param codeBias code bias associated to the signal ID in meters
+     */
+    public CodeBias(final int signalID, final double codeBias) {
+        // Initialize fields
+        this.signalID = signalID;
+        this.codeBias = codeBias;
     }
 
     /**
-     * Get the clock correction data.
-     * @return the clock correction data
+     * Get the GNSS signal and tracking mode identifier.
+     * @return the GNSS signal and tracking mode identifier
      */
-    public ClockCorrection getClockCorrection() {
-        return clockCorrection;
+    public int getSignalID() {
+        return signalID;
     }
 
     /**
-     * Set the clock correction data.
-     * @param clockCorrection the data to set
+     * Get the code bias associated to the signal ID.
+     * @return the code bias in meters
      */
-    public void setClockCorrection(final ClockCorrection clockCorrection) {
-        this.clockCorrection = clockCorrection;
+    public double getCodeBias() {
+        return codeBias;
     }
 
 }

@@ -84,12 +84,12 @@ public class SsrIgm01Test {
         final SsrIgm01Data g12 = igm01.getSsrIgm01Data().get("G12").get(0);
         Assert.assertEquals(12,                           g12.getSatelliteID());
         Assert.assertEquals(132,                          g12.getGnssIod());
-        Assert.assertEquals(18.0095,                      g12.getDeltaOrbitRadial(),        eps);
-        Assert.assertEquals(122.8668,                     g12.getDeltaOrbitAlongTrack(),    eps);
-        Assert.assertEquals(122.8668,                     g12.getDeltaOrbitCrossTrack(),    eps);
-        Assert.assertEquals(0.090047,                     g12.getDotOrbitDeltaRadial(),     eps);
-        Assert.assertEquals(0.614332,                     g12.getDotOrbitDeltaAlongTrack(), eps);
-        Assert.assertEquals(0.614332,                     g12.getDotOrbitDeltaCrossTrack(), eps);
+        Assert.assertEquals(18.0095,                      g12.getOrbitCorrection().getDeltaOrbitRadial(),        eps);
+        Assert.assertEquals(122.8668,                     g12.getOrbitCorrection().getDeltaOrbitAlongTrack(),    eps);
+        Assert.assertEquals(122.8668,                     g12.getOrbitCorrection().getDeltaOrbitCrossTrack(),    eps);
+        Assert.assertEquals(0.090047,                     g12.getOrbitCorrection().getDotOrbitDeltaRadial(),     eps);
+        Assert.assertEquals(0.614332,                     g12.getOrbitCorrection().getDotOrbitDeltaAlongTrack(), eps);
+        Assert.assertEquals(0.614332,                     g12.getOrbitCorrection().getDotOrbitDeltaCrossTrack(), eps);
 
     }
 

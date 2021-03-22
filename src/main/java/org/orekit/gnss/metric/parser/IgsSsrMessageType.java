@@ -28,6 +28,10 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.metric.messages.ParsedMessage;
+import org.orekit.gnss.metric.messages.ssr.igm.ClockCorrection;
+import org.orekit.gnss.metric.messages.ssr.igm.CodeBias;
+import org.orekit.gnss.metric.messages.ssr.igm.OrbitCorrection;
+import org.orekit.gnss.metric.messages.ssr.igm.PhaseBias;
 import org.orekit.gnss.metric.messages.ssr.igm.SsrIgm01;
 import org.orekit.gnss.metric.messages.ssr.igm.SsrIgm01Data;
 import org.orekit.gnss.metric.messages.ssr.igm.SsrIgm01Header;
@@ -49,8 +53,6 @@ import org.orekit.gnss.metric.messages.ssr.igm.SsrIgm06Header;
 import org.orekit.gnss.metric.messages.ssr.igm.SsrIgm07;
 import org.orekit.gnss.metric.messages.ssr.igm.SsrIgm07Data;
 import org.orekit.gnss.metric.messages.ssr.igm.SsrIgm07Header;
-import org.orekit.gnss.metric.messages.ssr.igm.SsrIgm05Data.CodeBias;
-import org.orekit.gnss.metric.messages.ssr.igm.SsrIgm06Data.PhaseBias;
 import org.orekit.gnss.metric.messages.ssr.subtype.SsrIm201;
 import org.orekit.gnss.metric.messages.ssr.subtype.SsrIm201Data;
 import org.orekit.gnss.metric.messages.ssr.subtype.SsrIm201Header;
@@ -96,16 +98,26 @@ public enum IgsSsrMessageType implements MessageType {
             // Loop on satellites and fill data
             for (int index = 0; index < satNumber; index++) {
 
-                // Initialize a new container
+                // Satellite ID
+                final int igm01SatId = getSatelliteId(system, DataField.IDF011.intValue(encodedMessage));
+
+                // GNSS IOD
+                final int igm01Iod = DataField.IDF012.intValue(encodedMessage);
+
+                // Orbit correction
+                final OrbitCorrection igm01OrbitCorr =
+                                new OrbitCorrection(DataField.IDF013.doubleValue(encodedMessage),   // IGM01 dRadial
+                                                    DataField.IDF014.doubleValue(encodedMessage),   // IGM01 dAlongTrack
+                                                    DataField.IDF015.doubleValue(encodedMessage),   // IGM01 dCrossTrack
+                                                    DataField.IDF016.doubleValue(encodedMessage),   // IGM01 dRadialDot
+                                                    DataField.IDF017.doubleValue(encodedMessage),   // IGM01 dAlongTrackDot
+                                                    DataField.IDF018.doubleValue(encodedMessage));  // IGM01 dCrossTrackDot
+
+                // Initialize a new container and fill data
                 final SsrIgm01Data currentIgm01Data = new SsrIgm01Data();
-                currentIgm01Data.setSatelliteID(getSatelliteId(system, DataField.IDF011.intValue(encodedMessage)));
-                currentIgm01Data.setGnssIod(DataField.IDF012.intValue(encodedMessage));
-                currentIgm01Data.setDeltaOrbitRadial(DataField.IDF013.doubleValue(encodedMessage));
-                currentIgm01Data.setDeltaOrbitAlongTrack(DataField.IDF014.doubleValue(encodedMessage));
-                currentIgm01Data.setDeltaOrbitCrossTrack(DataField.IDF015.doubleValue(encodedMessage));
-                currentIgm01Data.setDotOrbitDeltaRadial(DataField.IDF016.doubleValue(encodedMessage));
-                currentIgm01Data.setDotOrbitDeltaAlongTrack(DataField.IDF017.doubleValue(encodedMessage));
-                currentIgm01Data.setDotOrbitDeltaCrossTrack(DataField.IDF018.doubleValue(encodedMessage));
+                currentIgm01Data.setSatelliteID(igm01SatId);
+                currentIgm01Data.setGnssIod(igm01Iod);
+                currentIgm01Data.setOrbitCorrection(igm01OrbitCorr);
 
                 // Update the list
                 igm01Data.add(currentIgm01Data);
@@ -148,12 +160,19 @@ public enum IgsSsrMessageType implements MessageType {
             // Loop on satellites and fill data
             for (int index = 0; index < satNumber; index++) {
 
-                // Initialize a new container
+                // Satellite ID
+                final int igm02SatId = getSatelliteId(system, DataField.IDF011.intValue(encodedMessage));
+
+                // Clock correction
+                final ClockCorrection igm02ClockCorr =
+                                new ClockCorrection(DataField.IDF019.doubleValue(encodedMessage),  // IGM02 C0
+                                                    DataField.IDF020.doubleValue(encodedMessage),  // IGM02 C1
+                                                    DataField.IDF021.doubleValue(encodedMessage)); // IGM02 C2
+
+                // Initialize a new container and fill data
                 final SsrIgm02Data currentIgm02Data = new SsrIgm02Data();
-                currentIgm02Data.setSatelliteID(getSatelliteId(system, DataField.IDF011.intValue(encodedMessage)));
-                currentIgm02Data.setDeltaClockC0(DataField.IDF019.doubleValue(encodedMessage));
-                currentIgm02Data.setDeltaClockC1(DataField.IDF020.doubleValue(encodedMessage));
-                currentIgm02Data.setDeltaClockC2(DataField.IDF021.doubleValue(encodedMessage));
+                currentIgm02Data.setSatelliteID(igm02SatId);
+                currentIgm02Data.setClockCorrection(igm02ClockCorr);
 
                 // Update the list
                 igm02Data.add(currentIgm02Data);
@@ -197,19 +216,33 @@ public enum IgsSsrMessageType implements MessageType {
             // Loop on satellites and fill data
             for (int index = 0; index < satNumber; index++) {
 
-                // Initialize a new container
+                // Satellite ID
+                final int igm03SatId = getSatelliteId(system, DataField.IDF011.intValue(encodedMessage));
+
+                // GNSS IOD
+                final int igm03Iod = DataField.IDF012.intValue(encodedMessage);
+
+                // Orbit correction
+                final OrbitCorrection igm03OrbitCorr =
+                                new OrbitCorrection(DataField.IDF013.doubleValue(encodedMessage),   // IGM03 dRadial
+                                                    DataField.IDF014.doubleValue(encodedMessage),   // IGM03 dAlongTrack
+                                                    DataField.IDF015.doubleValue(encodedMessage),   // IGM03 dCrossTrack
+                                                    DataField.IDF016.doubleValue(encodedMessage),   // IGM03 dRadialDot
+                                                    DataField.IDF017.doubleValue(encodedMessage),   // IGM03 dAlongTrackDot
+                                                    DataField.IDF018.doubleValue(encodedMessage));  // IGM03 dCrossTrackDot
+
+                // Clock correction
+                final ClockCorrection igm03ClockCorr =
+                                new ClockCorrection(DataField.IDF019.doubleValue(encodedMessage),  // IGM03 C0
+                                                    DataField.IDF020.doubleValue(encodedMessage),  // IGM03 C1
+                                                    DataField.IDF021.doubleValue(encodedMessage)); // IGM03 C2
+
+                // Initialize a new container and fill data
                 final SsrIgm03Data currentIgm03Data = new SsrIgm03Data();
-                currentIgm03Data.setSatelliteID(getSatelliteId(system, DataField.IDF011.intValue(encodedMessage)));
-                currentIgm03Data.setGnssIod(DataField.IDF012.intValue(encodedMessage));
-                currentIgm03Data.setDeltaOrbitRadial(DataField.IDF013.doubleValue(encodedMessage));
-                currentIgm03Data.setDeltaOrbitAlongTrack(DataField.IDF014.doubleValue(encodedMessage));
-                currentIgm03Data.setDeltaOrbitCrossTrack(DataField.IDF015.doubleValue(encodedMessage));
-                currentIgm03Data.setDotOrbitDeltaRadial(DataField.IDF016.doubleValue(encodedMessage));
-                currentIgm03Data.setDotOrbitDeltaAlongTrack(DataField.IDF017.doubleValue(encodedMessage));
-                currentIgm03Data.setDotOrbitDeltaCrossTrack(DataField.IDF018.doubleValue(encodedMessage));
-                currentIgm03Data.setDeltaClockC0(DataField.IDF019.doubleValue(encodedMessage));
-                currentIgm03Data.setDeltaClockC1(DataField.IDF020.doubleValue(encodedMessage));
-                currentIgm03Data.setDeltaClockC2(DataField.IDF021.doubleValue(encodedMessage));
+                currentIgm03Data.setSatelliteID(igm03SatId);
+                currentIgm03Data.setGnssIod(igm03Iod);
+                currentIgm03Data.setOrbitCorrection(igm03OrbitCorr);
+                currentIgm03Data.setClockCorrection(igm03ClockCorr);
 
                 // Update the list
                 igm03Data.add(currentIgm03Data);
