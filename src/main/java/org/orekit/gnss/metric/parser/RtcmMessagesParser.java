@@ -14,48 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss.metric.ntrip;
+package org.orekit.gnss.metric.parser;
 
 import java.util.List;
 
-import org.orekit.gnss.metric.parser.IgsSsrMessagesParser;
-import org.orekit.gnss.metric.parser.MessagesParser;
-import org.orekit.gnss.metric.parser.RtcmMessagesParser;
-
-/**
- * Enumerate for messages type.
+/** Parser for RTCM encoded messages.
+ * @author Luc Maisonobe
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public enum Type {
-
-    /** RTCM. */
-    RTCM() {
-
-        /** {@inheritDoc} */
-        @Override
-        public MessagesParser getParser(final List<Integer> messages) {
-            return new RtcmMessagesParser(messages);
-        }
-
-    },
-
-    /** IGS SSR. */
-    IGS_SSR() {
-
-        /** {@inheritDoc} */
-        @Override
-        public MessagesParser getParser(final List<Integer> messages) {
-            return new IgsSsrMessagesParser(messages);
-        }
-
-    };
+public class RtcmMessagesParser extends MessagesParser {
 
     /**
-     * Get the message parser associated to the SSR type.
+     * Constructor.
      * @param messages list of needed messages
-     * @return a configured message parser
      */
-    public abstract MessagesParser getParser(List<Integer> messages);
+    public RtcmMessagesParser(final List<Integer> messages) {
+        super(messages);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected String parseMessageNumber(final EncodedMessage message) {
+        // RTCM Message number
+        return DataField.DF002.stringValue(message, 0);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected MessageType getMessageType(final String messageNumber) {
+        return RtcmMessageType.getMessageType(messageNumber);
+    }
 
 }
