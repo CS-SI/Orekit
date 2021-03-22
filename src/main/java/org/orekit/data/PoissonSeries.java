@@ -21,6 +21,8 @@ import java.util.Map;
 
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.MathArrays;
+import org.orekit.utils.TwoSum;
+import org.orekit.utils.TwoSum.SumAndResidual;
 
 /**
  * Class representing a Poisson series for nutation or ephemeris computations.
@@ -77,20 +79,14 @@ public class PoissonSeries {
         final double p = polynomial.value(elements.getTC());
 
         // non-polynomial part
-        // compute sum accurately, using Møller-Knuth TwoSum algorithm without branching
-        // the following statements must NOT be simplified, they rely on floating point
-        // arithmetic properties (rounding and representable numbers)
         double npHigh = 0;
         double npLow  = 0;
         for (final Map.Entry<Long, SeriesTerm> entry : series.entrySet()) {
             final double v       = entry.getValue().value(elements)[0];
-            final double sum     = npHigh + v;
-            final double sPrime  = sum - v;
-            final double tPrime  = sum - sPrime;
-            final double deltaS  = npHigh  - sPrime;
-            final double deltaT  = v - tPrime;
-            npLow  += deltaS   + deltaT;
-            npHigh  = sum;
+            // Use TwoSum algorithm for high precision.
+            final SumAndResidual sumAndResidual = TwoSum.twoSum(npHigh, v);
+            npHigh = sumAndResidual.getSum();
+            npLow += sumAndResidual.getResidual();
         }
 
         // add the polynomial and the non-polynomial parts
@@ -220,22 +216,15 @@ public class PoissonSeries {
             public double[] value(final BodiesElements elements) {
 
                 // non-polynomial part
-                // compute sum accurately, using Møller-Knuth TwoSum algorithm without branching
-                // the following statements must NOT be simplified, they rely on floating point
-                // arithmetic properties (rounding and representable numbers)
                 final double[] npHigh = new double[polynomials.length];
                 final double[] npLow  = new double[polynomials.length];
                 for (final SeriesTerm term : joinedTerms) {
                     final double[] termValue = term.value(elements);
                     for (int i = 0; i < termValue.length; ++i) {
-                        final double v       = termValue[i];
-                        final double sum     = npHigh[i] + v;
-                        final double sPrime  = sum - v;
-                        final double tPrime  = sum - sPrime;
-                        final double deltaS  = npHigh[i]  - sPrime;
-                        final double deltaT  = v - tPrime;
-                        npLow[i]  += deltaS   + deltaT;
-                        npHigh[i]  = sum;
+                        // Use TwoSum algorithm for high precision.
+                        final SumAndResidual sumAndResidual = TwoSum.twoSum(npHigh[i], termValue[i]);
+                        npHigh[i] = sumAndResidual.getSum();
+                        npLow[i] += sumAndResidual.getResidual();
                     }
                 }
 
