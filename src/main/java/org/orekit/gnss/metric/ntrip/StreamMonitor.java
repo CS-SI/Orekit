@@ -16,12 +16,8 @@
  */
 package org.orekit.gnss.metric.ntrip;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
@@ -32,7 +28,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -107,9 +102,6 @@ public class StreamMonitor extends AbstractEncodedMessages implements Runnable {
     /** Indicator for ignoring unknown messages. */
     private final boolean ignoreUnknownMessageTypes;
 
-    /** File to log data, can be null. */
-    private final File logFile;
-
     /** Delay before we reconnect after connection close. */
     private final double reconnectDelay;
 
@@ -152,14 +144,12 @@ public class StreamMonitor extends AbstractEncodedMessages implements Runnable {
      * @param reconnectDelay delay before we reconnect after connection close
      * @param reconnectDelayFactor factor by which reconnection delay is multiplied after each attempt
      * @param maxRetries max number of reconnect a attempts without reading any data
-     * @param logFile file to log the result of stream, null if log not needed
      */
     public StreamMonitor(final NtripClient client,
                          final String mountPoint, final Type type,
                          final boolean requiresNMEA, final boolean ignoreUnknownMessageTypes,
                          final double reconnectDelay, final double reconnectDelayFactor,
-                         final int maxRetries,
-                         final File logFile) {
+                         final int maxRetries) {
         this.client                    = client;
         this.mountPoint                = mountPoint;
         this.type                      = type;
@@ -168,7 +158,6 @@ public class StreamMonitor extends AbstractEncodedMessages implements Runnable {
         this.reconnectDelay            = reconnectDelay;
         this.reconnectDelayFactor      = reconnectDelayFactor;
         this.maxRetries                = maxRetries;
-        this.logFile                   = logFile;
         this.stop                      = new AtomicBoolean(false);
         this.observers                 = new HashMap<>();
         this.lastMessages              = new HashMap<>();
@@ -222,8 +211,8 @@ public class StreamMonitor extends AbstractEncodedMessages implements Runnable {
     /** {@inheritDoc} */
     @Override
     public void run() {
-        try (OutputStream       os  = (logFile == null) ? null : new FileOutputStream(logFile);
-             ObjectOutputStream oos = (os == null)      ? null : new ObjectOutputStream(os)) {
+
+        try {
 
             final MessagesParser parser = type.getParser(extractUsedMessages());
             int nbAttempts = 0;
@@ -262,13 +251,6 @@ public class StreamMonitor extends AbstractEncodedMessages implements Runnable {
                     try (InputStream is = connection.getInputStream()) {
 
                         for (int r = fillUp(is); r >= 0; r = fillUp(is)) {
-                            //write to log file if present
-                            if (oos != null) {
-                                oos.writeLong(System.nanoTime());
-                                oos.writeInt(r);
-                                final int startIndex = (writeIndex + BUFFER_SIZE - r) % BUFFER_SIZE;
-                                oos.write(buffer, startIndex, r);
-                            }
 
                             // we have read something, reset reconnection attempts counters
                             nbAttempts = 0;
@@ -339,18 +321,9 @@ public class StreamMonitor extends AbstractEncodedMessages implements Runnable {
 
             }
 
-            if (oos != null) {
-                // notify stream has ended
-                oos.writeLong(0l);
-                oos.writeInt(0);
-            }
-
-        } catch (OrekitException me) {
+        } catch (OrekitException oe) {
             // store the exception so it can be retrieved by Ntrip client
-            exception.set(me);
-        } catch (IOException ioe) {
-            exception.set(new OrekitException(ioe, LocalizedCoreFormats.SIMPLE_MESSAGE,
-                                              ioe.getLocalizedMessage()));
+            exception.set(oe);
         }
 
     }

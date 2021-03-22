@@ -17,7 +17,6 @@
 package org.orekit.gnss.metric.ntrip;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -391,30 +390,6 @@ public class NtripClient {
      */
     public void startStreaming(final String mountPoint, final org.orekit.gnss.metric.ntrip.Type type,
                                final boolean requiresNMEA, final boolean ignoreUnknownMessageTypes) {
-        startStreaming(mountPoint, type, requiresNMEA, ignoreUnknownMessageTypes, null);
-    }
-
-    /** Connect to a mount point and start streaming data from it.
-     * <p>
-     * This method sets up an internal dedicated thread for continuously
-     * monitoring data incoming from a mount point. When new complete
-     * {@link ParsedMessage parsed messages} becomes available, the
-     * {@link MessageObserver observers} that have been registered
-     * using {@link #addObserver(int, String, MessageObserver) addObserver()}
-     * method will be notified about the message.
-     * </p>
-     * <p>
-     * This method must be called once for each stream to monitor.
-     * </p>
-     * @param mountPoint mount point providing the stream
-     * @param type messages type of the mount point
-     * @param requiresNMEA if true, the mount point requires a NMEA GGA sentence in the request
-     * @param ignoreUnknownMessageTypes if true, unknown messages types are silently ignored
-     * @param logFile file to log the result of stream, null if log not needed
-     */
-    public void startStreaming(final String mountPoint, final org.orekit.gnss.metric.ntrip.Type type,
-                               final boolean requiresNMEA, final boolean ignoreUnknownMessageTypes,
-                               final File logFile) {
 
         if (executorService == null) {
             // lazy creation of executor service, with one thread for each possible data stream
@@ -428,7 +403,7 @@ public class NtripClient {
 
         // create the monitor
         final StreamMonitor monitor = new StreamMonitor(this, mountPoint, type, requiresNMEA, ignoreUnknownMessageTypes,
-                                                        reconnectDelay, reconnectDelayFactor, maxRetries, logFile);
+                                                        reconnectDelay, reconnectDelayFactor, maxRetries);
         monitors.put(mountPoint, monitor);
 
         // set up the already known observers

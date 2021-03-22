@@ -108,7 +108,7 @@ public class NtripClientTest {
         client.setReconnectParameters(0.001, 2.0, 2);
         CountingObserver observer = new CountingObserver(m -> true);
         client.addObserver(0, "RTCM3EPH01", observer);
-        client.startStreaming("RTCM3EPH01", Type.RTCM, false, false, null);
+        client.startStreaming("RTCM3EPH01", Type.RTCM, false, false);
         try {
             Thread.sleep(400);
         } catch (InterruptedException ie) {
