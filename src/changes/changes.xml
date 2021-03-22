@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="luc" type="add" >
+        Added a units converter.
+      </action>
       <action dev="luc" type="update" >
         INCOMPATIBLE CHANGE! Now observations parsed from TDM files are in SI units.
       </action>
