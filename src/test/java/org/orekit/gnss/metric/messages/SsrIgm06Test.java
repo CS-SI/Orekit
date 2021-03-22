@@ -99,6 +99,70 @@ public class SsrIgm06Test {
     }
 
     @Test
+    public void testPerfectValueGalileo() {
+
+        final String m = "010000100100" +                     // RTCM Message number: 1060
+                         "001" +                              // IGS SSR version
+                         "01000010" +                         // IGS Message number: 66 (Galileo)
+                         "01111110011000111111" +             // Epoch Time 1s
+                         "1100" +                             // SSR Update Interval
+                         "0" +                                // Multiple Message Indicator
+                         "0111" +                             // IOD SSR
+                         "0000111101101111" +                 // SSR Provider ID
+                         "0001" +                             // SSR Solution ID
+                         "1" +                                // Dispersive Bias Consistency Indicator
+                         "1" +                                // MW Consistency Indicator
+                         "000001" +                           // No. of Satellites: 1
+                         "000001" +                           // Satellite ID
+                         "00001" +                            // No. of Biases Processed
+                         "001100010" +                        // Yaw Angle
+                         "01001010"+                          // Yaw Rate 
+                         "00001" +                            // GNSS Signal and Tracking Mode Identifier
+                         "0" +                                // Signal Integer Indicator
+                         "10" +                               // Signals Wide-Lane Integer Indicator
+                         "0000" +                             // Signal Discontinuity Counter
+                         "001110101110100110100000";          // Phase Bias
+
+        final EncodedMessage message = new ByteArrayEncodedMessages(byteArrayFromBinary(m));
+        message.start();
+
+        ArrayList<Integer> messages = new ArrayList<>();
+        messages.add(66);
+
+        final SsrIgm06 igm06 = (SsrIgm06) new IgsSsrMessagesParser(messages).parse(message, false);
+
+        // Verify size
+        Assert.assertEquals(1,                            igm06.getData().size());
+        Assert.assertEquals(SatelliteSystem.GALILEO,      igm06.getSatelliteSystem());
+
+        // Verify header
+        Assert.assertEquals(66,                           igm06.getTypeCode());
+        Assert.assertEquals(517695.0,                     igm06.getHeader().getSsrEpoch1s(), eps);
+        Assert.assertEquals(1800.0,                       igm06.getHeader().getSsrUpdateInterval(), eps);
+        Assert.assertEquals(0,                            igm06.getHeader().getSsrMultipleMessageIndicator());
+        Assert.assertEquals(7,                            igm06.getHeader().getIodSsr());
+        Assert.assertEquals(3951,                         igm06.getHeader().getSsrProviderId());
+        Assert.assertEquals(1,                            igm06.getHeader().getSsrSolutionId());
+        Assert.assertEquals(1,                            igm06.getHeader().getNumberOfSatellites());
+        Assert.assertTrue(igm06.getHeader().isMelbourneWubbenaConsistencyMaintained());
+        Assert.assertTrue(igm06.getHeader().isConsistencyMaintained());
+
+        // Verify data for satellite E01
+        final SsrIgm06Data e01 = igm06.getSsrIgm06Data().get("E01").get(0);
+        Assert.assertEquals(1,                          e01.getSatelliteID());
+        Assert.assertEquals(1,                          e01.getNumberOfBiasesProcessed());
+        Assert.assertEquals(1,                          e01.getPhaseBiases().size());
+        Assert.assertEquals(98.0,                       e01.getYawAngle() * 256.0 / FastMath.PI, eps);
+        Assert.assertEquals(74.0,                       e01.getYawRate() * 8192.0 / FastMath.PI, eps);
+        Assert.assertEquals(1,                          e01.getPhaseBias(1).getSignalID(), eps);
+        Assert.assertEquals(2,                          e01.getPhaseBias(1).getSignalWideLaneIntegerIndicator());
+        Assert.assertEquals(0,                          e01.getPhaseBias(1).getDiscontinuityCounter());
+        Assert.assertEquals(24.1306,                    e01.getPhaseBias(1).getPhaseBias(), eps);
+        Assert.assertFalse(e01.getPhaseBias(1).isSignalInteger());
+
+    }
+
+    @Test
     public void testNullMessage() {
 
         final String m = "010000100100" +                     // RTCM Message number: 1060

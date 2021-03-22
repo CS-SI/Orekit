@@ -118,6 +118,93 @@ public class SsrIm201Test {
         Assert.assertEquals(135.860,           snm[2][2], eps);
         Assert.assertEquals(64.225,            snm[3][2], eps);
 
+    }
+
+    @Test
+    public void testPerfectValue2() {
+
+        final String m = "010000100100" +                     // RTCM Message number: 1060
+                         "001" +                              // IGS SSR version
+                         "11001001" +                         // IGS Message number: 201 (VTEC)
+                         "01111110011000111111" +             // Epoch Time 1s
+                         "1110" +                             // SSR Update Interval
+                         "0" +                                // Multiple Message Indicator
+                         "0111" +                             // IOD SSR
+                         "0000111101101111" +                 // SSR Provider ID
+                         "0001" +                             // SSR Solution ID
+                         "000000001" +                        // VTEC Quality Indicator
+                         "00" +                               // Number of Ionospheric Layers: 1
+                         "01000001" +                         // Height of ionospheric layer
+                         "0010" +                             // Spherical Harmonics Degree
+                         "0001" +                             // Spherical Harmonics Order
+                         "0100101000101101"+                  // C00
+                         "0101011001101101"+                  // C10
+                         "0110101010001100"+                  // C20
+                         "0100001100101111"+                  // C30
+                         "0100101011101101"+                  // C11
+                         "0100101000111110"+                  // C21
+                         "0010100110101101"+                  // C31
+                         "0000111101101101"+                  // C22
+                         "0111101000101100"+                  // C32
+                         "0111101110101101"+                  // S11
+                         "0000101000101100"+                  // S21
+                         "0110101000101001"+                  // S31
+                         "0110101000100100"+                  // S22
+                         "001100100010110100000";             // S32
+
+        final EncodedMessage message = new ByteArrayEncodedMessages(byteArrayFromBinary(m));
+        message.start();
+
+        ArrayList<Integer> messages = new ArrayList<>();
+        messages.add(201);
+
+        final SsrIm201 im201 = (SsrIm201) new IgsSsrMessagesParser(messages).parse(message, false);
+
+        // Verify size
+        Assert.assertEquals(1,                            im201.getData().size());
+
+        // Verify header
+        Assert.assertEquals(201,                          im201.getTypeCode());
+        Assert.assertEquals(517695.0,                     im201.getHeader().getSsrEpoch1s(), eps);
+        Assert.assertEquals(7200.0,                       im201.getHeader().getSsrUpdateInterval(), eps);
+        Assert.assertEquals(0,                            im201.getHeader().getSsrMultipleMessageIndicator());
+        Assert.assertEquals(7,                            im201.getHeader().getIodSsr());
+        Assert.assertEquals(3951,                         im201.getHeader().getSsrProviderId());
+        Assert.assertEquals(1,                            im201.getHeader().getSsrSolutionId());
+        Assert.assertEquals(0.05,                         im201.getHeader().getVtecQualityIndicator(), eps);
+        Assert.assertEquals(1,                            im201.getHeader().getNumberOfIonosphericLayers());
+
+        // Verify data
+        final SsrIm201Data data = im201.getData().get(0);
+        final double[][] cnm = data.getCnm();
+        final double[][] snm = data.getSnm();
+        Assert.assertEquals(650000,            data.getHeightIonosphericLayer(), eps);
+        Assert.assertEquals(3,                 data.getSphericalHarmonicsDegree());
+        Assert.assertEquals(2,                 data.getSphericalHarmonicsOrder());
+        Assert.assertEquals(94.945,            cnm[0][0], eps);
+        Assert.assertEquals(110.625,           cnm[1][0], eps);
+        Assert.assertEquals(136.380,           cnm[2][0], eps);
+        Assert.assertEquals(85.995,            cnm[3][0], eps);
+        Assert.assertEquals(0.0,               cnm[0][1], eps);
+        Assert.assertEquals(95.905,            cnm[1][1], eps);
+        Assert.assertEquals(95.030,            cnm[2][1], eps);
+        Assert.assertEquals(53.345,            cnm[3][1], eps);
+        Assert.assertEquals(0.0,               cnm[0][2], eps);
+        Assert.assertEquals(0.0,               cnm[1][2], eps);
+        Assert.assertEquals(19.745,            cnm[2][2], eps);
+        Assert.assertEquals(156.380,           cnm[3][2], eps);
+        Assert.assertEquals(0.0,               snm[0][0], eps);
+        Assert.assertEquals(0.0,               snm[1][0], eps);
+        Assert.assertEquals(0.0,               snm[2][0], eps);
+        Assert.assertEquals(0.0,               snm[3][0], eps);
+        Assert.assertEquals(0.0,               snm[0][1], eps);
+        Assert.assertEquals(158.305,           snm[1][1], eps);
+        Assert.assertEquals(13.020,            snm[2][1], eps);
+        Assert.assertEquals(135.885,           snm[3][1], eps);
+        Assert.assertEquals(0.0,               snm[0][2], eps);
+        Assert.assertEquals(0.0,               snm[1][2], eps);
+        Assert.assertEquals(135.860,           snm[2][2], eps);
+        Assert.assertEquals(64.225,            snm[3][2], eps);
 
     }
 

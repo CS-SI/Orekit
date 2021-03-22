@@ -99,6 +99,71 @@ public class SsrIgm03Test {
     }
 
     @Test
+    public void testPerfectValueGPS() {
+
+        final String m = "010000100100" +                     // RTCM Message number: 1060
+                         "001" +                              // IGS SSR version
+                         "00010111" +                         // IGS Message number: 23 (GPS)
+                         "01111110011000111111" +             // Epoch Time 1s
+                         "1001" +                             // SSR Update Interval
+                         "0" +                                // Multiple Message Indicator
+                         "0111" +                             // IOD SSR
+                         "0000111101101111" +                 // SSR Provider ID
+                         "0001" +                             // SSR Solution ID
+                         "0" +                                // Global/Regional CRS Indicator
+                         "000001" +                           // No. of Satellites
+                         "000001" +                           // Satellite ID
+                         "10000100" +                         // GNSS IOD
+                         "0000101011111101111111" +           // Delta Radial
+                         "01001010111111011111" +             // Delta Along-Track
+                         "01001010111111011111" +             // Delta Cross-Track
+                         "000010101111110111111" +            // Dot Delta Radial
+                         "0100101011111101111" +              // Dot Delta Along-Track
+                         "0100101011111101111" +              // Dot Delta Cross-Track
+                         "0011101011111101111111" +           // Delta Clock C0
+                         "001110101111110111111" +            // Delta Clock C1
+                         "0011101011111101111111000110000";   // Delta Clock C2
+
+        final EncodedMessage message = new ByteArrayEncodedMessages(byteArrayFromBinary(m));
+        message.start();
+
+        ArrayList<Integer> messages = new ArrayList<>();
+        messages.add(23);
+
+        final SsrIgm03 igm03 = (SsrIgm03) new IgsSsrMessagesParser(messages).parse(message, false);
+
+        // Verify size
+        Assert.assertEquals(1,                            igm03.getData().size());
+        Assert.assertEquals(SatelliteSystem.GPS,          igm03.getSatelliteSystem());
+
+        // Verify header
+        Assert.assertEquals(23,                           igm03.getTypeCode());
+        Assert.assertEquals(517695.0,                     igm03.getHeader().getSsrEpoch1s(), eps);
+        Assert.assertEquals(300.0,                        igm03.getHeader().getSsrUpdateInterval(), eps);
+        Assert.assertEquals(0,                            igm03.getHeader().getSsrMultipleMessageIndicator());
+        Assert.assertEquals(7,                            igm03.getHeader().getIodSsr());
+        Assert.assertEquals(3951,                         igm03.getHeader().getSsrProviderId());
+        Assert.assertEquals(1,                            igm03.getHeader().getSsrSolutionId());
+        Assert.assertEquals(0,                            igm03.getHeader().getCrsIndicator());
+        Assert.assertEquals(1,                            igm03.getHeader().getNumberOfSatellites());
+
+        // Verify data for satellite G01
+        final SsrIgm03Data g01 = igm03.getSsrIgm03Data().get("G01").get(0);
+        Assert.assertEquals(1,                            g01.getSatelliteID());
+        Assert.assertEquals(132,                          g01.getGnssIod());
+        Assert.assertEquals(18.0095,                      g01.getOrbitCorrection().getDeltaOrbitRadial(),         eps);
+        Assert.assertEquals(122.8668,                     g01.getOrbitCorrection().getDeltaOrbitAlongTrack(),    eps);
+        Assert.assertEquals(122.8668,                     g01.getOrbitCorrection().getDeltaOrbitCrossTrack(),    eps);
+        Assert.assertEquals(0.090047,                     g01.getOrbitCorrection().getDotOrbitDeltaRadial(),     eps);
+        Assert.assertEquals(0.614332,                     g01.getOrbitCorrection().getDotOrbitDeltaAlongTrack(), eps);
+        Assert.assertEquals(0.614332,                     g01.getOrbitCorrection().getDotOrbitDeltaCrossTrack(), eps);
+        Assert.assertEquals(96.6527,                      g01.getClockCorrection().getDeltaClockC0(),            eps);
+        Assert.assertEquals(0.483263,                     g01.getClockCorrection().getDeltaClockC1(),            eps);
+        Assert.assertEquals(0.61857734,                   g01.getClockCorrection().getDeltaClockC2(),            eps);
+
+    }
+
+    @Test
     public void testNullMessage() {
 
         final String m = "010000100100" +                     // RTCM Message number: 1060

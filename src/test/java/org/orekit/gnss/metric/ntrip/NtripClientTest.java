@@ -92,15 +92,41 @@ public class NtripClientTest {
         Assert.assertEquals("localhost", client.getHost());
         Assert.assertEquals(server.getServerPort(), client.getPort());
         SourceTable table = client.getSourceTable();
+        Assert.assertEquals("st_filter,st_auth,st_match,st_strict,rtsp,plain_rtp", table.getNtripFlags());
         Assert.assertEquals( 2, table.getCasters().size());
         Assert.assertEquals( 2, table.getNetworks().size());
         Assert.assertEquals(42, table.getDataStreams().size());
     }
 
     @Test
+    public void testUnknownMessage() {
+        DummyServer server = prepareServer("/gnss/ntrip/sourcetable-products.igs-ip.net.txt",
+                                           "/gnss/ntrip/RTCM3EPH01.dat");
+        server.run();
+        NtripClient client = new NtripClient("localhost", server.getServerPort());
+        client.setTimeout(100);
+        client.setReconnectParameters(0.001, 2.0, 2);
+        CountingObserver observer = new CountingObserver(m -> true);
+        client.addObserver(0, "RTCM3EPH01", observer);
+        client.startStreaming("RTCM3EPH01", Type.RTCM, false, false, null);
+        try {
+            Thread.sleep(400);
+        } catch (InterruptedException ie) {
+            // ignored
+        }
+        try {
+            client.stopStreaming(100);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNKNOWN_ENCODED_MESSAGE_NUMBER, oe.getSpecifier());
+            Assert.assertEquals("1042", oe.getParts()[0]);
+        }
+    }
+
+    @Test
     public void testGGA() {
-        DummyServer server = prepareServer("/gnss/ntrip//sourcetable-products.igs-ip.net.txt",
-                                           "/gnss/ntrip//zero-length-response.txt");
+        DummyServer server = prepareServer("/gnss/ntrip/sourcetable-products.igs-ip.net.txt",
+                                           "/gnss/ntrip/zero-length-response.txt");
         server.run();
         NtripClient client = new NtripClient("localhost", server.getServerPort());
         client.setTimeout(100);

@@ -83,6 +83,55 @@ public class SsrIgm02Test {
     }
 
     @Test
+    public void testPerfectValueGalileo() {
+
+        final String m = "010000100100" +                     // RTCM Message number: 1060
+                         "001" +                              // IGS SSR version
+                         "00111110" +                         // IGS Message number: 62 (Galileo)
+                         "01111110011000111111" +             // Epoch Time 1s
+                         "1000" +                             // SSR Update Interval
+                         "0" +                                // Multiple Message Indicator
+                         "0111" +                             // IOD SSR
+                         "0000111101101111" +                 // SSR Provider ID
+                         "0001" +                             // SSR Solution ID
+                         "000001" +                           // No. of Satellites
+                         "000001" +                           // Satellite ID
+                         "0011101011111101111111" +           // Delta Clock C0
+                         "001110101111110111111" +            // Delta Clock C1
+                         "001110101111110111111100011000000"; // Delta Clock C2
+
+        final EncodedMessage message = new ByteArrayEncodedMessages(byteArrayFromBinary(m));
+        message.start();
+
+        ArrayList<Integer> messages = new ArrayList<>();
+        messages.add(62);
+
+        final SsrIgm02 igm02 = (SsrIgm02) new IgsSsrMessagesParser(messages).parse(message, false);
+
+        // Verify size
+        Assert.assertEquals(1,                            igm02.getData().size());
+        Assert.assertEquals(SatelliteSystem.GALILEO,      igm02.getSatelliteSystem());
+
+        // Verify header
+        Assert.assertEquals(62,                           igm02.getTypeCode());
+        Assert.assertEquals(517695.0,                     igm02.getHeader().getSsrEpoch1s(), eps);
+        Assert.assertEquals(240.0,                        igm02.getHeader().getSsrUpdateInterval(), eps);
+        Assert.assertEquals(0,                            igm02.getHeader().getSsrMultipleMessageIndicator());
+        Assert.assertEquals(7,                            igm02.getHeader().getIodSsr());
+        Assert.assertEquals(3951,                         igm02.getHeader().getSsrProviderId());
+        Assert.assertEquals(1,                            igm02.getHeader().getSsrSolutionId());
+        Assert.assertEquals(1,                            igm02.getHeader().getNumberOfSatellites());
+
+        // Verify data for satellite E01
+        final SsrIgm02Data e01 = igm02.getSsrIgm02Data().get("E01").get(0);
+        Assert.assertEquals(1,                            e01.getSatelliteID());
+        Assert.assertEquals(96.6527,                      e01.getClockCorrection().getDeltaClockC0(), eps);
+        Assert.assertEquals(0.483263,                     e01.getClockCorrection().getDeltaClockC1(), eps);
+        Assert.assertEquals(0.61857734,                   e01.getClockCorrection().getDeltaClockC2(), eps);
+
+    }
+
+    @Test
     public void testNullMessage() {
 
        final String m = "010000100100" +                     // RTCM Message number: 1060
