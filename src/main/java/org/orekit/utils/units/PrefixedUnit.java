@@ -56,6 +56,7 @@ class PrefixedUnit extends Unit {
                                               PredefinedUnit.ARC_SECOND.toUnit().alias("as"), // must be after second to override atto-seconds
                                               PredefinedUnit.NEWTON.toUnit(),
                                               PredefinedUnit.PASCAL.toUnit(), // must be after year to override peta-years
+                                              PredefinedUnit.BAR.toUnit(),
                                               PredefinedUnit.JOULE.toUnit(),
                                               PredefinedUnit.WATT.toUnit(),
                                               PredefinedUnit.COULOMB.toUnit(),

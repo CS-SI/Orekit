@@ -87,6 +87,9 @@ public enum PredefinedUnit {
     /** Pascal unit. */
     PASCAL(NEWTON.unit.divide("Pa", METRE.unit.power(null, Fraction.TWO))),
 
+    /** Bar unit. */
+    BAR(PASCAL.unit.scale("bar", 100000.0)),
+
     /** Joule unit. */
     JOULE(NEWTON.unit.multiply("J", METRE.unit)),
 

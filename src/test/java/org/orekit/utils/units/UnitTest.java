@@ -65,6 +65,7 @@ public class UnitTest {
         checkReference(PredefinedUnit.ARC_SECOND.toUnit(),                    "″",  FastMath.PI / 648000.0,  0,  0,  0,  0, 1);
         checkReference(PredefinedUnit.NEWTON.toUnit(),                        "N",                     1.0,  1,  1, -2,  0, 0);
         checkReference(PredefinedUnit.PASCAL.toUnit(),                       "Pa",                     1.0,  1, -1, -2,  0, 0);
+        checkReference(PredefinedUnit.BAR.toUnit(),                         "bar",                100000.0,  1, -1, -2,  0, 0);
         checkReference(PredefinedUnit.JOULE.toUnit(),                         "J",                     1.0,  1,  2, -2,  0, 0);
         checkReference(PredefinedUnit.WATT.toUnit(),                          "W",                     1.0,  1,  2, -3,  0, 0);
         checkReference(PredefinedUnit.COULOMB.toUnit(),                       "C",                     1.0,  0,  0,  1,  1, 0);
