@@ -41,6 +41,7 @@ import org.orekit.files.ccsds.section.MetadataKey;
 import org.orekit.files.ccsds.section.XmlStructureKey;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.FileFormat;
+import org.orekit.files.ccsds.utils.generation.AbstractGenerator;
 import org.orekit.files.ccsds.utils.generation.AbstractMessageWriter;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
@@ -52,6 +53,8 @@ import org.orekit.time.TimeScale;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.units.PredefinedUnit;
+import org.orekit.utils.units.Unit;
 
 /**
  * An OEM Writer class that can take in a general {@link EphemerisFile} object
@@ -235,8 +238,11 @@ public class OemWriter extends AbstractMessageWriter implements EphemerisFileWri
     /** Key width for aligning the '=' sign. */
     public static final int KEY_WIDTH = 20;
 
-    /** Conversion factor from meters to kilometers. */
-    private static final double M_TO_KM = 1.0e-3;
+    /** Kilometers units. */
+    private static final Unit KM = PredefinedUnit.KILOMETRE.toUnit();
+
+    /** Square kilometers units. */
+    private static final Unit KM2 = KM.multiply("km²", KM);
 
     /** Current metadata. */
     private final OemMetadata metadata;
@@ -404,7 +410,7 @@ public class OemWriter extends AbstractMessageWriter implements EphemerisFileWri
                                     generator.newLine();
                                 }
                                 generator.writeEntry(CartesianCovarianceKey.EPOCH.name(),
-                                                     dateToString(covariance.getEpoch()),
+                                                     getTimeConverter(), covariance.getEpoch(),
                                                      true);
                                 if (covariance.getReferenceFrame() != metadata.getReferenceFrame()) {
                                     generator.writeEntry(CartesianCovarianceKey.COV_REF_FRAME.name(),
@@ -419,8 +425,9 @@ public class OemWriter extends AbstractMessageWriter implements EphemerisFileWri
                                         if (j > 0) {
                                             generator.writeRawData(' ');
                                         }
-                                        generator.writeRawData(String.format(STANDARDIZED_LOCALE, covarianceFormat,
-                                                                             m.getEntry(i, j) * M_TO_KM * M_TO_KM));
+                                        generator.writeRawData(String.format(AbstractGenerator.STANDARDIZED_LOCALE,
+                                                                             covarianceFormat,
+                                                                             KM2.fromSI(m.getEntry(i, j))));
                                     }
 
                                     // end the line
@@ -468,20 +475,20 @@ public class OemWriter extends AbstractMessageWriter implements EphemerisFileWri
         generator.writeEntry(CommonMetadataKey.REF_FRAME.name(), metadata.getReferenceFrame().getName(), true);
         if (metadata.getFrameEpoch() != null) {
             generator.writeEntry(CommonMetadataKey.REF_FRAME_EPOCH.name(),
-                                 dateToString(metadata.getFrameEpoch()),
+                                 getTimeConverter(), metadata.getFrameEpoch(),
                                  false);
         }
 
         // time
         generator.writeEntry(MetadataKey.TIME_SYSTEM.name(), metadata.getTimeSystem(), true);
-        generator.writeEntry(OemMetadataKey.START_TIME.name(), dateToString(metadata.getStartTime()), true);
+        generator.writeEntry(OemMetadataKey.START_TIME.name(), getTimeConverter(), metadata.getStartTime(), true);
         if (metadata.getUseableStartTime() != null) {
-            generator.writeEntry(OemMetadataKey.USEABLE_START_TIME.name(), dateToString(metadata.getUseableStartTime()), false);
+            generator.writeEntry(OemMetadataKey.USEABLE_START_TIME.name(), getTimeConverter(), metadata.getUseableStartTime(), false);
         }
         if (metadata.getUseableStopTime() != null) {
-            generator.writeEntry(OemMetadataKey.USEABLE_STOP_TIME.name(), dateToString(metadata.getUseableStopTime()), false);
+            generator.writeEntry(OemMetadataKey.USEABLE_STOP_TIME.name(), getTimeConverter(), metadata.getUseableStopTime(), false);
         }
-        generator.writeEntry(OemMetadataKey.STOP_TIME.name(), dateToString(metadata.getStopTime()), true);
+        generator.writeEntry(OemMetadataKey.STOP_TIME.name(), getTimeConverter(), metadata.getStopTime(), true);
 
         // interpolation
         generator.writeEntry(OemMetadataKey.INTERPOLATION.name(), metadata.getInterpolationMethod(), false);
@@ -510,41 +517,41 @@ public class OemWriter extends AbstractMessageWriter implements EphemerisFileWri
         throws IOException {
 
         // Epoch
-        generator.writeRawData(dateToString(coordinates.getDate()));
+        generator.writeRawData(generator.dateToString(getTimeConverter(), coordinates.getDate()));
 
         // Position data in km
         generator.writeRawData(' ');
-        generator.writeRawData(String.format(STANDARDIZED_LOCALE, positionFormat,
-                                             coordinates.getPosition().getX() * M_TO_KM));
+        generator.writeRawData(String.format(AbstractGenerator.STANDARDIZED_LOCALE, positionFormat,
+                                             KM.fromSI(coordinates.getPosition().getX())));
         generator.writeRawData(' ');
-        generator.writeRawData(String.format(STANDARDIZED_LOCALE, positionFormat,
-                                             coordinates.getPosition().getY() * M_TO_KM));
+        generator.writeRawData(String.format(AbstractGenerator.STANDARDIZED_LOCALE, positionFormat,
+                                             KM.fromSI(coordinates.getPosition().getY())));
         generator.writeRawData(' ');
-        generator.writeRawData(String.format(STANDARDIZED_LOCALE, positionFormat,
-                                             coordinates.getPosition().getZ() * M_TO_KM));
+        generator.writeRawData(String.format(AbstractGenerator.STANDARDIZED_LOCALE, positionFormat,
+                                             KM.fromSI(coordinates.getPosition().getZ())));
 
         // Velocity data in km/s
         generator.writeRawData(' ');
-        generator.writeRawData(String.format(STANDARDIZED_LOCALE, velocityFormat,
-                                             coordinates.getVelocity().getX() * M_TO_KM));
+        generator.writeRawData(String.format(AbstractGenerator.STANDARDIZED_LOCALE, velocityFormat,
+                                             KM.fromSI(coordinates.getVelocity().getX())));
         generator.writeRawData(' ');
-        generator.writeRawData(String.format(STANDARDIZED_LOCALE, velocityFormat,
-                                             coordinates.getVelocity().getY() * M_TO_KM));
+        generator.writeRawData(String.format(AbstractGenerator.STANDARDIZED_LOCALE, velocityFormat,
+                                             KM.fromSI(coordinates.getVelocity().getY())));
         generator.writeRawData(' ');
-        generator.writeRawData(String.format(STANDARDIZED_LOCALE, velocityFormat,
-                                             coordinates.getVelocity().getZ() * M_TO_KM));
+        generator.writeRawData(String.format(AbstractGenerator.STANDARDIZED_LOCALE, velocityFormat,
+                                             KM.fromSI(coordinates.getVelocity().getZ())));
 
-        // Acceleration data in km²/s²
+        // Acceleration data in km/s²
         if (useAcceleration) {
             generator.writeRawData(' ');
-            generator.writeRawData(String.format(STANDARDIZED_LOCALE, accelerationFormat,
-                                                 coordinates.getAcceleration().getX() * M_TO_KM));
+            generator.writeRawData(String.format(AbstractGenerator.STANDARDIZED_LOCALE, accelerationFormat,
+                                                 KM.fromSI(coordinates.getAcceleration().getX())));
             generator.writeRawData(' ');
-            generator.writeRawData(String.format(STANDARDIZED_LOCALE, accelerationFormat,
-                                                 coordinates.getAcceleration().getY() * M_TO_KM));
+            generator.writeRawData(String.format(AbstractGenerator.STANDARDIZED_LOCALE, accelerationFormat,
+                                                 KM.fromSI(coordinates.getAcceleration().getY())));
             generator.writeRawData(' ');
-            generator.writeRawData(String.format(STANDARDIZED_LOCALE, accelerationFormat,
-                                                 coordinates.getAcceleration().getZ() * M_TO_KM));
+            generator.writeRawData(String.format(AbstractGenerator.STANDARDIZED_LOCALE, accelerationFormat,
+                                                 KM.fromSI(coordinates.getAcceleration().getZ())));
         }
 
         // end the line

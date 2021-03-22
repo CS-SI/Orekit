@@ -431,14 +431,14 @@ public class AemWriter extends AbstractMessageWriter implements AttitudeEphemeri
 
         // time
         generator.writeEntry(MetadataKey.TIME_SYSTEM.name(), metadata.getTimeSystem(), true);
-        generator.writeEntry(AemMetadataKey.START_TIME.name(), dateToString(metadata.getStartTime()), true);
+        generator.writeEntry(AemMetadataKey.START_TIME.name(), getTimeConverter(), metadata.getStartTime(), true);
         if (metadata.getUseableStartTime() != null) {
-            generator.writeEntry(AemMetadataKey.USEABLE_START_TIME.name(), dateToString(metadata.getUseableStartTime()), false);
+            generator.writeEntry(AemMetadataKey.USEABLE_START_TIME.name(), getTimeConverter(), metadata.getUseableStartTime(), false);
         }
         if (metadata.getUseableStopTime() != null) {
-            generator.writeEntry(AemMetadataKey.USEABLE_STOP_TIME.name(), dateToString(metadata.getUseableStopTime()), false);
+            generator.writeEntry(AemMetadataKey.USEABLE_STOP_TIME.name(), getTimeConverter(), metadata.getUseableStopTime(), false);
         }
-        generator.writeEntry(AemMetadataKey.STOP_TIME.name(), dateToString(metadata.getStopTime()), true);
+        generator.writeEntry(AemMetadataKey.STOP_TIME.name(), getTimeConverter(), metadata.getStopTime(), true);
 
         // types
         final AttitudeType attitudeType = metadata.getAttitudeType();
@@ -491,7 +491,7 @@ public class AemWriter extends AbstractMessageWriter implements AttitudeEphemeri
         throws IOException {
 
         // Epoch
-        generator.writeRawData(dateToString(attitude.getDate()));
+        generator.writeRawData(generator.dateToString(getTimeConverter(), attitude.getDate()));
 
         // Attitude data in degrees
         final double[] data = metadata.getAttitudeType().getAttitudeData(metadata.isFirst(),
