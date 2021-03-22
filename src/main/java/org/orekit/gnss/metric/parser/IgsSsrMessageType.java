@@ -607,24 +607,24 @@ public enum IgsSsrMessageType implements MessageType {
      * @param subTypeMessage message umber
      * @return the corresponding satellite system
      */
-    private static SatelliteSystem messageNumberToSatelliteSystem(final int subTypeMessage) {
+    public static SatelliteSystem messageNumberToSatelliteSystem(final int subTypeMessage) {
 
         if (subTypeMessage > 20 && subTypeMessage <= 40) {
             // GPS messages
             return SatelliteSystem.GPS;
-        } else if (subTypeMessage > 40 && subTypeMessage <= 60) {
+        } else if (subTypeMessage <= 60) {
             // GLONASS messages
             return SatelliteSystem.GLONASS;
-        } else if (subTypeMessage > 60 && subTypeMessage <= 80) {
+        } else if (subTypeMessage <= 80) {
             // Galileo messages
             return SatelliteSystem.GALILEO;
-        } else if (subTypeMessage > 80 && subTypeMessage <= 100) {
+        } else if (subTypeMessage <= 100) {
             // QZSS messages
             return SatelliteSystem.QZSS;
-        } else if (subTypeMessage > 100 && subTypeMessage <= 120) {
+        } else if (subTypeMessage <= 120) {
             // Beidou messages
             return SatelliteSystem.BEIDOU;
-        } else if (subTypeMessage > 120 && subTypeMessage <= 140) {
+        } else if (subTypeMessage <= 140) {
             // SBAS messages
             return SatelliteSystem.SBAS;
         } else {
@@ -640,7 +640,7 @@ public enum IgsSsrMessageType implements MessageType {
      * @param id the parsed satellite ID
      * @return the real satellite ID
      */
-    private static int getSatelliteId(final SatelliteSystem system, final int id) {
+    public static int getSatelliteId(final SatelliteSystem system, final int id) {
 
         // Switch on satellite systems
         switch (system) {

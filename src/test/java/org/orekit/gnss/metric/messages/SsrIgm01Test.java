@@ -26,6 +26,7 @@ import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.metric.messages.ssr.igm.SsrIgm01;
 import org.orekit.gnss.metric.messages.ssr.igm.SsrIgm01Data;
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessages;
+import org.orekit.gnss.metric.parser.DataField;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.IgsSsrMessagesParser;
 
@@ -120,7 +121,7 @@ public class SsrIgm01Test {
         message.start();
 
         ArrayList<Integer> messages = new ArrayList<>();
-        messages.add(61);
+        messages.add(0);
 
         final SsrIgm01 igm01 = (SsrIgm01) new IgsSsrMessagesParser(messages).parse(message, false);
 
@@ -156,7 +157,7 @@ public class SsrIgm01Test {
     public void testNullMessage() {
         final String m = "010000100100" +                 // RTCM Message number: 1060
                         "001" +                          // IGS SSR version
-                        "00010101" +                     // IGS Message number: 21 (GPS)
+                        "11111111" +                     // IGS Message number: 21 (GPS)
                         "01111110011000111111" +         // Epoch Time 1s
                         "0101" +                         // SSR Update Interval
                         "0" +                            // Multiple Message Indicator
@@ -180,7 +181,7 @@ public class SsrIgm01Test {
        ArrayList<Integer> messages = new ArrayList<>();
        messages.add(9999999);
 
-       final SsrIgm01 igm01 = (SsrIgm01) new IgsSsrMessagesParser(messages).parse(message, false);
+       final SsrIgm01 igm01 = (SsrIgm01) new IgsSsrMessagesParser(messages).parse(message, true);
 
        Assert.assertNull(igm01);
     }
@@ -196,6 +197,12 @@ public class SsrIgm01Test {
             Assert.assertEquals(OrekitMessages.END_OF_ENCODED_MESSAGE, oe.getSpecifier());
         }
 
+    }
+
+    @Test
+    public void testDefaultSsrUpdateInterval() {
+        final EncodedMessage message = new ByteArrayEncodedMessages(byteArrayFromBinary("1111111111111111"));
+        Assert.assertEquals(10800, DataField.IDF004.intValue(message));
     }
 
     private byte[] byteArrayFromBinary(String radix2Value) {

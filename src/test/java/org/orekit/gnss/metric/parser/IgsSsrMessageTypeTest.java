@@ -20,6 +20,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.gnss.SatelliteSystem;
 
 public class IgsSsrMessageTypeTest {
 
@@ -32,6 +33,11 @@ public class IgsSsrMessageTypeTest {
             Assert.assertEquals(OrekitMessages.UNKNOWN_ENCODED_MESSAGE_NUMBER, re.getSpecifier());
             Assert.assertEquals("-1", re.getParts()[0]);
         }
+    }
+
+    @Test
+    public void testIrnssMessage() {
+        Assert.assertEquals(SatelliteSystem.IRNSS, IgsSsrMessageType.messageNumberToSatelliteSystem(141));
     }
 
 }

@@ -175,6 +175,15 @@ public class DataTypeTest {
     }
 
     @Test
+    public void testInt15() {
+        check(DataType.INT_15,  0l,               0l);
+        check(DataType.INT_15,  1l,               0l);
+        check(DataType.INT_15, -1l,              -1l);
+        check(DataType.INT_15, 0x1l << 63,      null);
+        check(DataType.INT_15, Long.MAX_VALUE, 16383l);
+    }
+
+    @Test
     public void testInt16() {
         check(DataType.INT_16,  0l,                0l);
         check(DataType.INT_16,  1l,                0l);

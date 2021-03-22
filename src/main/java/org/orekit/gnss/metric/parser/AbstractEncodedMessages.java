@@ -82,9 +82,4 @@ public abstract class AbstractEncodedMessages implements EncodedMessage {
 
     }
 
-    /** Drop the final bits remaining in the last byte. */
-    protected void dropFinalBits() {
-        remaining = 0;
-    }
-
 }
