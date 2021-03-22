@@ -18,6 +18,7 @@ package org.orekit.gnss.metric.ntrip;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /** Record in source table.
  * @author Luc Maisonobe
@@ -25,8 +26,8 @@ import java.util.List;
  */
 public abstract class Record {
 
-    /** Fields separator. */
-    private static final String SEPARATOR = ";";
+    /** Pattern for delimiting fields. */
+    private static final Pattern SEPARATOR = Pattern.compile(";");
 
     /** Quoting character. */
     private static final String QUOTE = "\"";
@@ -41,7 +42,7 @@ public abstract class Record {
 
 
         // split the line, taking care of possible quoted separators ";"
-        final String[] chunks = line.split(SEPARATOR);
+        final String[] chunks = SEPARATOR.split(line);
 
         // prepare storage
         fields = new ArrayList<>(chunks.length);

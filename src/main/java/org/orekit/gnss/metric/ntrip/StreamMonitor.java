@@ -391,6 +391,7 @@ public class StreamMonitor extends AbstractEncodedMessages implements Runnable {
     /** Extract data from input stream.
      * @param is input stream to extract data from
      * @return number of byes read or -1
+     * @throws IOException if data cannot be extracted properly
      */
     private int fillUp(final InputStream is) throws IOException {
         final int max = bufferMaxWrite();

@@ -487,6 +487,7 @@ public class NtripClient {
     /** Connect to caster.
      * @param mountPoint mount point (empty for getting sourcetable)
      * @return performed connection
+     * @throws IOException if an I/O exception occurs during connection
      */
     HttpURLConnection connect(final String mountPoint)
         throws IOException {

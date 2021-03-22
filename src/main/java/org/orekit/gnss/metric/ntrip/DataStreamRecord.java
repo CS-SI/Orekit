@@ -29,8 +29,8 @@ import java.util.stream.Stream;
  */
 public class DataStreamRecord extends Record {
 
-    /** Messages separator. */
-    private static final String SEPARATOR = ",";
+    /** Pattern for delimiting messages. */
+    private static final Pattern SEPARATOR = Pattern.compile(",");
 
     /** Message pattern. */
     private static final Pattern PATTERN = Pattern.compile("^([^()]+)(?:\\(([0-9]+)\\))?$");
@@ -75,7 +75,7 @@ public class DataStreamRecord extends Record {
         super(line);
         this.format         = DataFormat.getDataFormat(getField(3));
 
-        final String[] detailsFields = getField(4).split(SEPARATOR);
+        final String[] detailsFields = SEPARATOR.split(getField(4));
         this.formatDetails           = new ArrayList<>(detailsFields.length);
         for (final String field : detailsFields) {
             if (!field.isEmpty()) {
