@@ -46,6 +46,9 @@ public class Units {
     /** Kilometers par second units. */
     public static final Unit KM_PER_S = Unit.parse("km/s");
 
+    /** Kilometers par square second units. */
+    public static final Unit KM_PER_S2 = Unit.parse("km/s²");
+
     /** Square kilometers par second units. */
     public static final Unit KM2_PER_S = Unit.parse("km²/s");
 

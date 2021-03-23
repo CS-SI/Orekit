@@ -16,6 +16,7 @@
  */
 package org.orekit.files.ccsds.ndm.tdm;
 
+import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
@@ -210,7 +211,7 @@ public enum TdmMetadataKey {
     CORRECTION_ANGLE_2((token, context, container) -> token.processAsAngle(container::setCorrectionAngle2)),
 
     /** Doppler correction entry. */
-    CORRECTION_DOPPLER((token, context, container) -> token.processAsDouble(Unit.KILOMETRE, container::setCorrectionDoppler)),
+    CORRECTION_DOPPLER((token, context, container) -> token.processAsDouble(Units.KM_PER_S, container::setCorrectionDoppler)),
 
     /** Range correction entry (beware the unit is Range Units here). */
     CORRECTION_RANGE((token, context, container) -> token.processAsDouble(Unit.ONE, container::setRawCorrectionRange)),

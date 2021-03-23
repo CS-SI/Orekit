@@ -16,6 +16,7 @@
  */
 package org.orekit.files.ccsds.ndm.odm;
 
+import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
@@ -45,22 +46,22 @@ public enum StateVectorKey {
     Z((token, context, container) -> token.processAsIndexedDouble(2, Unit.KILOMETRE, container::setP)),
 
     /** Velocity vector X-component. */
-    X_DOT((token, context, container) -> token.processAsIndexedDouble(0, Unit.KILOMETRE, container::setV)),
+    X_DOT((token, context, container) -> token.processAsIndexedDouble(0, Units.KM_PER_S, container::setV)),
 
     /** Velocity vector Y-component. */
-    Y_DOT((token, context, container) -> token.processAsIndexedDouble(1, Unit.KILOMETRE, container::setV)),
+    Y_DOT((token, context, container) -> token.processAsIndexedDouble(1, Units.KM_PER_S, container::setV)),
 
     /** Velocity vector Z-component. */
-    Z_DOT((token, context, container) -> token.processAsIndexedDouble(2, Unit.KILOMETRE, container::setV)),
+    Z_DOT((token, context, container) -> token.processAsIndexedDouble(2, Units.KM_PER_S, container::setV)),
 
     /** Acceleration vector X-component. */
-    X_DDOT((token, context, container) -> token.processAsIndexedDouble(0, Unit.KILOMETRE, container::setA)),
+    X_DDOT((token, context, container) -> token.processAsIndexedDouble(0, Units.KM_PER_S2, container::setA)),
 
     /** Acceleration vector Y-component. */
-    Y_DDOT((token, context, container) -> token.processAsIndexedDouble(1, Unit.KILOMETRE, container::setA)),
+    Y_DDOT((token, context, container) -> token.processAsIndexedDouble(1, Units.KM_PER_S2, container::setA)),
 
     /** Acceleration vector Z-component. */
-    Z_DDOT((token, context, container) -> token.processAsIndexedDouble(2, Unit.KILOMETRE, container::setA));
+    Z_DDOT((token, context, container) -> token.processAsIndexedDouble(2, Units.KM_PER_S2, container::setA));
 
     /** Processing method. */
     private final TokenProcessor processor;

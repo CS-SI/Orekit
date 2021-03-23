@@ -42,7 +42,6 @@ import org.orekit.files.ccsds.section.MetadataKey;
 import org.orekit.files.ccsds.section.XmlStructureKey;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.FileFormat;
-import org.orekit.files.ccsds.utils.generation.AbstractGenerator;
 import org.orekit.files.ccsds.utils.generation.AbstractMessageWriter;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
@@ -51,6 +50,7 @@ import org.orekit.files.general.EphemerisFile.SatelliteEphemeris;
 import org.orekit.files.general.EphemerisFileWriter;
 import org.orekit.frames.Frame;
 import org.orekit.time.TimeScale;
+import org.orekit.utils.AccurateFormatter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -419,7 +419,7 @@ public class OemWriter extends AbstractMessageWriter implements EphemerisFileWri
                                         if (j > 0) {
                                             generator.writeRawData(' ');
                                         }
-                                        generator.writeRawData(String.format(AbstractGenerator.STANDARDIZED_LOCALE,
+                                        generator.writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE,
                                                                              covarianceFormat,
                                                                              Units.KM2.fromSI(m.getEntry(i, j))));
                                     }
@@ -515,37 +515,37 @@ public class OemWriter extends AbstractMessageWriter implements EphemerisFileWri
 
         // Position data in km
         generator.writeRawData(' ');
-        generator.writeRawData(String.format(AbstractGenerator.STANDARDIZED_LOCALE, positionFormat,
+        generator.writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, positionFormat,
                                              Unit.KILOMETRE.fromSI(coordinates.getPosition().getX())));
         generator.writeRawData(' ');
-        generator.writeRawData(String.format(AbstractGenerator.STANDARDIZED_LOCALE, positionFormat,
+        generator.writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, positionFormat,
                                              Unit.KILOMETRE.fromSI(coordinates.getPosition().getY())));
         generator.writeRawData(' ');
-        generator.writeRawData(String.format(AbstractGenerator.STANDARDIZED_LOCALE, positionFormat,
+        generator.writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, positionFormat,
                                              Unit.KILOMETRE.fromSI(coordinates.getPosition().getZ())));
 
         // Velocity data in km/s
         generator.writeRawData(' ');
-        generator.writeRawData(String.format(AbstractGenerator.STANDARDIZED_LOCALE, velocityFormat,
-                                             Unit.KILOMETRE.fromSI(coordinates.getVelocity().getX())));
+        generator.writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, velocityFormat,
+                                             Units.KM_PER_S.fromSI(coordinates.getVelocity().getX())));
         generator.writeRawData(' ');
-        generator.writeRawData(String.format(AbstractGenerator.STANDARDIZED_LOCALE, velocityFormat,
-                                             Unit.KILOMETRE.fromSI(coordinates.getVelocity().getY())));
+        generator.writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, velocityFormat,
+                                             Units.KM_PER_S.fromSI(coordinates.getVelocity().getY())));
         generator.writeRawData(' ');
-        generator.writeRawData(String.format(AbstractGenerator.STANDARDIZED_LOCALE, velocityFormat,
-                                             Unit.KILOMETRE.fromSI(coordinates.getVelocity().getZ())));
+        generator.writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, velocityFormat,
+                                             Units.KM_PER_S.fromSI(coordinates.getVelocity().getZ())));
 
         // Acceleration data in km/s²
         if (useAcceleration) {
             generator.writeRawData(' ');
-            generator.writeRawData(String.format(AbstractGenerator.STANDARDIZED_LOCALE, accelerationFormat,
-                                                 Unit.KILOMETRE.fromSI(coordinates.getAcceleration().getX())));
+            generator.writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, accelerationFormat,
+                                                 Units.KM_PER_S2.fromSI(coordinates.getAcceleration().getX())));
             generator.writeRawData(' ');
-            generator.writeRawData(String.format(AbstractGenerator.STANDARDIZED_LOCALE, accelerationFormat,
-                                                 Unit.KILOMETRE.fromSI(coordinates.getAcceleration().getY())));
+            generator.writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, accelerationFormat,
+                                                 Units.KM_PER_S2.fromSI(coordinates.getAcceleration().getY())));
             generator.writeRawData(' ');
-            generator.writeRawData(String.format(AbstractGenerator.STANDARDIZED_LOCALE, accelerationFormat,
-                                                 Unit.KILOMETRE.fromSI(coordinates.getAcceleration().getZ())));
+            generator.writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, accelerationFormat,
+                                                 Units.KM_PER_S2.fromSI(coordinates.getAcceleration().getZ())));
         }
 
         // end the line

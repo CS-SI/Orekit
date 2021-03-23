@@ -160,10 +160,10 @@ public enum PhysicalPropertiesKey {
     MAX_THRUST((token, context, container) -> token.processAsDouble(Unit.NEWTON, container::setMaxThrust)),
 
     /** Total ΔV capability at beginning of life. */
-    DV_BOL((token, context, container) -> token.processAsDouble(Unit.KILOMETRE, container::setBolDv)),
+    DV_BOL((token, context, container) -> token.processAsDouble(Units.KM_PER_S, container::setBolDv)),
 
     /** Total ΔV remaining for spacecraft. */
-    DV_REMAINING((token, context, container) -> token.processAsDouble(Unit.KILOMETRE, container::setRemainingDv)),
+    DV_REMAINING((token, context, container) -> token.processAsDouble(Units.KM_PER_S, container::setRemainingDv)),
 
     /** Moment of inertia about X-axis. */
     IXX((token, context, container) -> token.processAsDoublyIndexedDouble(0, 0, Units.KG_PER_M2, container::setInertiaMatrixEntry)),
