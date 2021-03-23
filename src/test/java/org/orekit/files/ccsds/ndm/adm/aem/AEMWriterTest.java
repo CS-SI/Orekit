@@ -244,11 +244,6 @@ public class AEMWriterTest {
         assertEquals(aemFile.getHeader().getComments().get(0), generatedAemFile.getHeader().getComments().get(0));
     }
 
-    /**
-     * Check writing an AEM with format parameters for attitude.
-     *
-     * @throws IOException on error
-     */
     @Test
     public void testWriteAemFormat() throws IOException {
         // setup
@@ -257,29 +252,16 @@ public class AEMWriterTest {
         final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
         StringBuilder buffer = new StringBuilder();
 
-        AemWriter writer = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null,
-                                         aemFile.getSegments().get(0).getMetadata(), "some-name",
-                                         "%.2f");
-
-        writer.write(buffer, aemFile);
-
-        String[] lines = buffer.toString().split("\n");
-
-        assertEquals(lines[23], "2002-12-18T12:00:00.331 0.57 0.03 0.46 0.68");
-        assertEquals(lines[24], "2002-12-18T12:01:00.331 0.42 -0.46 0.24 0.75");
-        assertEquals(lines[25], "2002-12-18T12:02:00.331 -0.85 0.27 -0.07 0.46");
-
-        // Default format
-        writer = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
-                               null, aemFile.getSegments().get(0).getMetadata());
+        AemWriter writer = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
+                                         null, aemFile.getSegments().get(0).getMetadata());
         buffer = new StringBuilder();
         writer.write(buffer, aemFile);
 
         String[] lines2 = buffer.toString().split("\n");
 
-        assertEquals(lines2[23], "2002-12-18T12:00:00.331  0.567480798  0.031460044  0.456890643  0.684270962");
-        assertEquals(lines2[24], "2002-12-18T12:01:00.331  0.423190840 -0.456970907  0.237840472  0.745331479");
-        assertEquals(lines2[25], "2002-12-18T12:02:00.331 -0.845318824  0.269739625 -0.065319909  0.456519365");
+        assertEquals("2002-12-18T12:00:00.331  5.674807981623039e-01  3.146004424858336e-02  4.568906426171408e-01  6.842709624277855e-01", lines2[23]);
+        assertEquals("2002-12-18T12:01:00.331  4.231908397172568e-01 -4.569709067454213e-01  2.378404719354246e-01  7.453314789254544e-01", lines2[24]);
+        assertEquals("2002-12-18T12:02:00.331 -8.453188238242068e-01  2.697396246845473e-01 -6.531990911394170e-02  4.565193647993977e-01", lines2[25]);
     }
 
     private static void compareAemAttitudeBlocks(AemSegment segment1, AemSegment segment2) {

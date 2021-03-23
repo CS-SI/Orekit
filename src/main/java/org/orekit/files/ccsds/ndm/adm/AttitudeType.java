@@ -30,6 +30,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.AccurateFormatter;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.units.Unit;
@@ -46,7 +47,7 @@ public enum AttitudeType {
 
         /** {@inheritDoc} */
         @Override
-        public double[] getAttitudeData(final boolean isFirst, final boolean isExternal2SpacecraftBody,
+        public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
                                         final TimeStampedAngularCoordinates coordinates) {
             // Initialize the array of attitude data
@@ -65,8 +66,9 @@ public enum AttitudeType {
             data[quaternionIndex[2]] = rotation.getQ2();
             data[quaternionIndex[3]] = rotation.getQ3();
 
-            // Return
-            return data;
+            // Convert units and format
+            return QUATERNION.formatData(data);
+
         }
 
         /** {@inheritDoc} */
@@ -99,7 +101,7 @@ public enum AttitudeType {
 
         /** {@inheritDoc} */
         @Override
-        public double[] getAttitudeData(final boolean isFirst, final boolean isExternal2SpacecraftBody,
+        public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
                                         final TimeStampedAngularCoordinates coordinates) {
             // Initialize the array of attitude data
@@ -125,8 +127,9 @@ public enum AttitudeType {
             data[quaternionIndex[6]] = rotation.getQ2().getFirstDerivative();
             data[quaternionIndex[7]] = rotation.getQ3().getFirstDerivative();
 
-            // Return
-            return data;
+            // Convert units and format
+            return QUATERNION_DERIVATIVE.formatData(data);
+
         }
 
         /** {@inheritDoc} */
@@ -166,7 +169,7 @@ public enum AttitudeType {
 
         /** {@inheritDoc} */
         @Override
-        public double[] getAttitudeData(final boolean isFirst, final boolean isExternal2SpacecraftBody,
+        public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
                                         final TimeStampedAngularCoordinates coordinates) {
             // Initialize the array of attitude data
@@ -177,7 +180,7 @@ public enum AttitudeType {
 
             // Attitude
             final TimeStampedAngularCoordinates c = isExternal2SpacecraftBody ? coordinates : coordinates.revert();
-            final Vector3D rotationRate = metadataRate(isSpacecraftBodyRate, c.getRotationRate(), c.getRotation());
+            final Vector3D rotationRate = QUATERNION_RATE.metadataRate(isSpacecraftBodyRate, c.getRotationRate(), c.getRotation());
 
             // Fill the array
             data[quaternionIndex[0]] = c.getRotation().getQ0();
@@ -188,8 +191,9 @@ public enum AttitudeType {
             data[5] = rotationRate.getY();
             data[6] = rotationRate.getZ();
 
-            // Return
-            return data;
+            // Convert units and format
+            return QUATERNION_RATE.formatData(data);
+
         }
 
         /** {@inheritDoc} */
@@ -204,11 +208,11 @@ public enum AttitudeType {
             final Rotation rotation = isFirst ?
                                       new Rotation(components[0], components[1], components[2], components[3], true) :
                                       new Rotation(components[3], components[0], components[1], components[2], true);
-            final Vector3D rotationRate = orekitRate(isSpacecraftBodyRate,
-                                                     new Vector3D(components[4],
-                                                                  components[5],
-                                                                  components[6]),
-                                                     rotation);
+            final Vector3D rotationRate = QUATERNION_RATE.orekitRate(isSpacecraftBodyRate,
+                                                                     new Vector3D(components[4],
+                                                                                  components[5],
+                                                                                  components[6]),
+                                                                     rotation);
 
             // Return
             final TimeStampedAngularCoordinates ac =
@@ -225,7 +229,7 @@ public enum AttitudeType {
 
         /** {@inheritDoc} */
         @Override
-        public double[] getAttitudeData(final boolean isFirst, final boolean isExternal2SpacecraftBody,
+        public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
                                         final TimeStampedAngularCoordinates coordinates) {
 
@@ -234,7 +238,11 @@ public enum AttitudeType {
             if (!isExternal2SpacecraftBody) {
                 rotation = rotation.revert();
             }
-            return rotation.getAngles(eulerRotSequence, RotationConvention.FRAME_TRANSFORM);
+
+            final double[] data = rotation.getAngles(eulerRotSequence, RotationConvention.FRAME_TRANSFORM);
+
+            // Convert units and format
+            return EULER_ANGLE.formatData(data);
 
         }
 
@@ -267,7 +275,7 @@ public enum AttitudeType {
 
         /** {@inheritDoc} */
         @Override
-        public double[] getAttitudeData(final boolean isFirst, final boolean isExternal2SpacecraftBody,
+        public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
                                         final TimeStampedAngularCoordinates coordinates) {
             // Initialize the array of attitude data
@@ -275,7 +283,7 @@ public enum AttitudeType {
 
             // Attitude
             final TimeStampedAngularCoordinates c = isExternal2SpacecraftBody ? coordinates : coordinates.revert();
-            final Vector3D rotationRate = metadataRate(isSpacecraftBodyRate, c.getRotationRate(), c.getRotation());
+            final Vector3D rotationRate = EULER_ANGLE_RATE.metadataRate(isSpacecraftBodyRate, c.getRotationRate(), c.getRotation());
             final double[] angles       = c.getRotation().getAngles(eulerRotSequence, RotationConvention.FRAME_TRANSFORM);
 
             // Fill the array
@@ -286,8 +294,9 @@ public enum AttitudeType {
             data[4] = rotationRate.getY();
             data[5] = rotationRate.getZ();
 
-            // Return
-            return data;
+            // Convert units and format
+            return EULER_ANGLE_RATE.formatData(data);
+
         }
 
         /** {@inheritDoc} */
@@ -305,9 +314,9 @@ public enum AttitudeType {
                                                    components[0],
                                                    components[1],
                                                    components[2]);
-            final Vector3D rotationRate = orekitRate(isSpacecraftBodyRate,
-                                                     new Vector3D(components[3], components[4], components[5]),
-                                                     rotation);
+            final Vector3D rotationRate = EULER_ANGLE_RATE.orekitRate(isSpacecraftBodyRate,
+                                                                      new Vector3D(components[3], components[4], components[5]),
+                                                                      rotation);
             // Return
             final TimeStampedAngularCoordinates ac =
                             new TimeStampedAngularCoordinates(date, rotation, rotationRate, Vector3D.ZERO);
@@ -323,7 +332,7 @@ public enum AttitudeType {
 
         /** {@inheritDoc} */
         @Override
-        public double[] getAttitudeData(final boolean isFirst, final boolean isExternal2SpacecraftBody,
+        public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
                                         final TimeStampedAngularCoordinates coordinates) {
             // Attitude parameters in the Specified Reference Frame for a Spin Stabilized Satellite
@@ -355,7 +364,7 @@ public enum AttitudeType {
 
         /** {@inheritDoc} */
         @Override
-        public double[] getAttitudeData(final boolean isFirst, final boolean isExternal2SpacecraftBody,
+        public String[] createDataFields(final boolean isFirst, final boolean isExternal2SpacecraftBody,
                                         final RotationOrder eulerRotSequence, final boolean isSpacecraftBodyRate,
                                         final TimeStampedAngularCoordinates coordinates) {
             // Attitude parameters in the Specified Reference Frame for a Spin Stabilized Satellite
@@ -403,13 +412,6 @@ public enum AttitudeType {
         this.units     = units.clone();
     }
 
-    /** Get the components CCSDS units.
-     * @return components CCSDS units (i.e. <em>not</em> the units used in {@link #getAttitudeData()})
-     */
-    public Unit[] getCcsdsUnits() {
-        return units.clone();
-    }
-
     /** {@inheritDoc} */
     @Override
     public String toString() {
@@ -425,11 +427,9 @@ public enum AttitudeType {
     }
 
     /**
-     * Get the attitude data corresponding to the attitude type.
+     * Get the attitude data fields corresponding to the attitude type.
      * <p>
-     * This method returns the components in SI units (i.e. degrees converted to radians),
-     * if order to get them in CCSDS units, one have to call {@link #getCcsdsUnits()} and
-     * apply the {@link Unit#fromSI(double)} method to each component
+     * This method returns the components in CCSDS units (i.e. degrees, degrees per seconds…).
      * </p>
      * @param isFirst if true the first quaternion component is the scalar component
      * @param isExternal2SpacecraftBody true attitude is from external frame to spacecraft body frame
@@ -437,11 +437,11 @@ public enum AttitudeType {
      * @param isSpacecraftBodyRate if true Euler rates are specified in spacecraft body frame
      * @param attitude angular coordinates, using {@link Attitude Attitude} convention
      * (i.e. from inertial frame to spacecraft frame)
-     * @return the attitude data in SI units
+     * @return the attitude data in CCSDS units
      */
-    public abstract double[] getAttitudeData(boolean isFirst, boolean isExternal2SpacecraftBody,
-                                             RotationOrder eulerRotSequence, boolean isSpacecraftBodyRate,
-                                             TimeStampedAngularCoordinates attitude);
+    public abstract String[] createDataFields(boolean isFirst, boolean isExternal2SpacecraftBody,
+                                              RotationOrder eulerRotSequence, boolean isSpacecraftBodyRate,
+                                              TimeStampedAngularCoordinates attitude);
 
     /**
      * Get the angular coordinates corresponding to the attitude data.
@@ -498,13 +498,21 @@ public enum AttitudeType {
         return filter;
     }
 
+    private String[] formatData(final double[] data) {
+        final String[] fields = new String[data.length];
+        for (int i = 0; i < data.length; ++i) {
+            fields[i] = AccurateFormatter.format(units[i].fromSI(data[i]));
+        }
+        return fields;
+    }
+
     /** Convert a rotation rate for Orekit convention to metadata convention.
      * @param isSpacecraftBodyRate if true Euler rates are specified in spacecraft body frame
      * @param rate rotation rate from Orekit attitude
      * @param rotation corresponding rotation
      * @return rotation rate in metadata convention
      */
-    private static Vector3D metadataRate(final boolean isSpacecraftBodyRate, final Vector3D rate, final Rotation rotation) {
+    private Vector3D metadataRate(final boolean isSpacecraftBodyRate, final Vector3D rate, final Rotation rotation) {
         return isSpacecraftBodyRate ? rate : rotation.applyInverseTo(rate);
     }
 
@@ -514,7 +522,7 @@ public enum AttitudeType {
      * @param rotation corresponding rotation
      * @return rotation rate in Orekit convention (i.e. in spacecraft body local frame)
      */
-    private static Vector3D orekitRate(final boolean isSpacecraftBodyRate, final Vector3D rate, final Rotation rotation) {
+    private Vector3D orekitRate(final boolean isSpacecraftBodyRate, final Vector3D rate, final Rotation rotation) {
         return isSpacecraftBodyRate ? rate : rotation.applyTo(rate);
     }
 

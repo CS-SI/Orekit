@@ -19,7 +19,6 @@ package org.orekit.files.ccsds.ndm.adm.aem;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -233,12 +232,6 @@ public class AemWriter extends AbstractMessageWriter implements AttitudeEphemeri
     /** Key width for aligning the '=' sign. */
     public static final int KEY_WIDTH = 20;
 
-    /**
-     * Standardized locale to use, to ensure files can be exchanged without
-     * internationalization issues.
-     */
-    private static final Locale STANDARDIZED_LOCALE = Locale.US;
-
     /** Constant for frame A to frame B attitude. */
     private static final String A_TO_B = "A2B";
 
@@ -259,9 +252,6 @@ public class AemWriter extends AbstractMessageWriter implements AttitudeEphemeri
 
     /** Current metadata. */
     private final AemMetadata metadata;
-
-    /** Format for attitude ephemeris data output. */
-    private final String attitudeFormat;
 
     /**
      * Standard default constructor that creates a writer with default configurations
@@ -285,7 +275,7 @@ public class AemWriter extends AbstractMessageWriter implements AttitudeEphemeri
      */
     public AemWriter(final IERSConventions conventions, final DataContext dataContext,
                      final Header header, final AemMetadata template) {
-        this(conventions, dataContext, header, template, DEFAULT_FILE_NAME, DEFAULT_ATTITUDE_FORMAT);
+        this(conventions, dataContext, header, template, DEFAULT_FILE_NAME);
     }
 
     /**
@@ -307,13 +297,11 @@ public class AemWriter extends AbstractMessageWriter implements AttitudeEphemeri
      * @param header file header (may be null)
      * @param template template for metadata
      * @param fileName file name for error messages
-     * @param attitudeFormat {@link java.util.Formatter format parameters} for
-     *                       attitude ephemeris data output
      * @since 11.0
      */
     public AemWriter(final IERSConventions conventions, final DataContext dataContext,
                      final Header header, final AemMetadata template,
-                     final String fileName, final String attitudeFormat) {
+                     final String fileName) {
         super(AemFile.FORMAT_VERSION_KEY, CCSDS_AEM_VERS,
               header,
               new ContextBinding(
@@ -321,8 +309,7 @@ public class AemWriter extends AbstractMessageWriter implements AttitudeEphemeri
                   () -> null, template::getTimeSystem,
                   () -> 0.0, () -> 1.0),
               fileName);
-        this.metadata       = copy(template);
-        this.attitudeFormat = attitudeFormat;
+        this.metadata = copy(template);
     }
 
     /** Get current metadata.
@@ -493,16 +480,16 @@ public class AemWriter extends AbstractMessageWriter implements AttitudeEphemeri
         // Epoch
         generator.writeRawData(generator.dateToString(getTimeConverter(), attitude.getDate()));
 
-        // Attitude data in degrees
-        final double[] data = metadata.getAttitudeType().getAttitudeData(metadata.isFirst(),
-                                                                         metadata.getEndpoints().isExternal2SpacecraftBody(),
-                                                                         metadata.getEulerRotSeq(),
-                                                                         metadata.isSpacecraftBodyRate(),
-                                                                         attitude);
+        // Attitude data in CCSDS units
+        final String[] data = metadata.getAttitudeType().createDataFields(metadata.isFirst(),
+                                                                          metadata.getEndpoints().isExternal2SpacecraftBody(),
+                                                                          metadata.getEulerRotSeq(),
+                                                                          metadata.isSpacecraftBodyRate(),
+                                                                          attitude);
         final int      size = data.length;
         for (int index = 0; index < size; index++) {
             generator.writeRawData(' ');
-            generator.writeRawData(String.format(STANDARDIZED_LOCALE, attitudeFormat, data[index]));
+            generator.writeRawData(data[index]);
         }
 
         // end the line
