@@ -80,16 +80,16 @@ public enum IgsSsrMessageType implements MessageType {
 
             // Header data
             final SsrIgm01Header igm01Header = new SsrIgm01Header();
-            igm01Header.setSsrEpoch1s(DataField.IDF003.intValue(encodedMessage));
-            igm01Header.setSsrUpdateInterval(DataField.IDF004.intValue(encodedMessage));
-            igm01Header.setSsrMultipleMessageIndicator(DataField.IDF005.intValue(encodedMessage));
-            igm01Header.setIodSsr(DataField.IDF007.intValue(encodedMessage));
-            igm01Header.setSsrProviderId(DataField.IDF008.intValue(encodedMessage));
-            igm01Header.setSsrSolutionId(DataField.IDF009.intValue(encodedMessage));
-            igm01Header.setCrsIndicator(DataField.IDF006.intValue(encodedMessage));
+            igm01Header.setSsrEpoch1s(IgsSsrDataField.IDF003.intValue(encodedMessage));
+            igm01Header.setSsrUpdateInterval(IgsSsrDataField.IDF004.intValue(encodedMessage));
+            igm01Header.setSsrMultipleMessageIndicator(IgsSsrDataField.IDF005.intValue(encodedMessage));
+            igm01Header.setIodSsr(IgsSsrDataField.IDF007.intValue(encodedMessage));
+            igm01Header.setSsrProviderId(IgsSsrDataField.IDF008.intValue(encodedMessage));
+            igm01Header.setSsrSolutionId(IgsSsrDataField.IDF009.intValue(encodedMessage));
+            igm01Header.setCrsIndicator(IgsSsrDataField.IDF006.intValue(encodedMessage));
 
             // Number of satellites
-            final int satNumber = DataField.IDF010.intValue(encodedMessage);
+            final int satNumber = IgsSsrDataField.IDF010.intValue(encodedMessage);
             igm01Header.setNumberOfSatellites(satNumber);
 
             // Initialize list of data
@@ -99,19 +99,19 @@ public enum IgsSsrMessageType implements MessageType {
             for (int index = 0; index < satNumber; index++) {
 
                 // Satellite ID
-                final int igm01SatId = getSatelliteId(system, DataField.IDF011.intValue(encodedMessage));
+                final int igm01SatId = getSatelliteId(system, IgsSsrDataField.IDF011.intValue(encodedMessage));
 
                 // GNSS IOD
-                final int igm01Iod = DataField.IDF012.intValue(encodedMessage);
+                final int igm01Iod = IgsSsrDataField.IDF012.intValue(encodedMessage);
 
                 // Orbit correction
                 final OrbitCorrection igm01OrbitCorr =
-                                new OrbitCorrection(DataField.IDF013.doubleValue(encodedMessage),   // IGM01 dRadial
-                                                    DataField.IDF014.doubleValue(encodedMessage),   // IGM01 dAlongTrack
-                                                    DataField.IDF015.doubleValue(encodedMessage),   // IGM01 dCrossTrack
-                                                    DataField.IDF016.doubleValue(encodedMessage),   // IGM01 dRadialDot
-                                                    DataField.IDF017.doubleValue(encodedMessage),   // IGM01 dAlongTrackDot
-                                                    DataField.IDF018.doubleValue(encodedMessage));  // IGM01 dCrossTrackDot
+                                new OrbitCorrection(IgsSsrDataField.IDF013.doubleValue(encodedMessage),   // IGM01 dRadial
+                                                    IgsSsrDataField.IDF014.doubleValue(encodedMessage),   // IGM01 dAlongTrack
+                                                    IgsSsrDataField.IDF015.doubleValue(encodedMessage),   // IGM01 dCrossTrack
+                                                    IgsSsrDataField.IDF016.doubleValue(encodedMessage),   // IGM01 dRadialDot
+                                                    IgsSsrDataField.IDF017.doubleValue(encodedMessage),   // IGM01 dAlongTrackDot
+                                                    IgsSsrDataField.IDF018.doubleValue(encodedMessage));  // IGM01 dCrossTrackDot
 
                 // Initialize a new container and fill data
                 final SsrIgm01Data currentIgm01Data = new SsrIgm01Data();
@@ -143,15 +143,15 @@ public enum IgsSsrMessageType implements MessageType {
 
             // Header data
             final SsrIgm02Header igm02Header = new SsrIgm02Header();
-            igm02Header.setSsrEpoch1s(DataField.IDF003.intValue(encodedMessage));
-            igm02Header.setSsrUpdateInterval(DataField.IDF004.intValue(encodedMessage));
-            igm02Header.setSsrMultipleMessageIndicator(DataField.IDF005.intValue(encodedMessage));
-            igm02Header.setIodSsr(DataField.IDF007.intValue(encodedMessage));
-            igm02Header.setSsrProviderId(DataField.IDF008.intValue(encodedMessage));
-            igm02Header.setSsrSolutionId(DataField.IDF009.intValue(encodedMessage));
+            igm02Header.setSsrEpoch1s(IgsSsrDataField.IDF003.intValue(encodedMessage));
+            igm02Header.setSsrUpdateInterval(IgsSsrDataField.IDF004.intValue(encodedMessage));
+            igm02Header.setSsrMultipleMessageIndicator(IgsSsrDataField.IDF005.intValue(encodedMessage));
+            igm02Header.setIodSsr(IgsSsrDataField.IDF007.intValue(encodedMessage));
+            igm02Header.setSsrProviderId(IgsSsrDataField.IDF008.intValue(encodedMessage));
+            igm02Header.setSsrSolutionId(IgsSsrDataField.IDF009.intValue(encodedMessage));
 
             // Number of satellites
-            final int satNumber = DataField.IDF010.intValue(encodedMessage);
+            final int satNumber = IgsSsrDataField.IDF010.intValue(encodedMessage);
             igm02Header.setNumberOfSatellites(satNumber);
 
             // Initialize list of data
@@ -161,13 +161,13 @@ public enum IgsSsrMessageType implements MessageType {
             for (int index = 0; index < satNumber; index++) {
 
                 // Satellite ID
-                final int igm02SatId = getSatelliteId(system, DataField.IDF011.intValue(encodedMessage));
+                final int igm02SatId = getSatelliteId(system, IgsSsrDataField.IDF011.intValue(encodedMessage));
 
                 // Clock correction
                 final ClockCorrection igm02ClockCorr =
-                                new ClockCorrection(DataField.IDF019.doubleValue(encodedMessage),  // IGM02 C0
-                                                    DataField.IDF020.doubleValue(encodedMessage),  // IGM02 C1
-                                                    DataField.IDF021.doubleValue(encodedMessage)); // IGM02 C2
+                                new ClockCorrection(IgsSsrDataField.IDF019.doubleValue(encodedMessage),  // IGM02 C0
+                                                    IgsSsrDataField.IDF020.doubleValue(encodedMessage),  // IGM02 C1
+                                                    IgsSsrDataField.IDF021.doubleValue(encodedMessage)); // IGM02 C2
 
                 // Initialize a new container and fill data
                 final SsrIgm02Data currentIgm02Data = new SsrIgm02Data();
@@ -198,16 +198,16 @@ public enum IgsSsrMessageType implements MessageType {
 
             // Header data
             final SsrIgm03Header igm03Header = new SsrIgm03Header();
-            igm03Header.setSsrEpoch1s(DataField.IDF003.intValue(encodedMessage));
-            igm03Header.setSsrUpdateInterval(DataField.IDF004.intValue(encodedMessage));
-            igm03Header.setSsrMultipleMessageIndicator(DataField.IDF005.intValue(encodedMessage));
-            igm03Header.setIodSsr(DataField.IDF007.intValue(encodedMessage));
-            igm03Header.setSsrProviderId(DataField.IDF008.intValue(encodedMessage));
-            igm03Header.setSsrSolutionId(DataField.IDF009.intValue(encodedMessage));
-            igm03Header.setCrsIndicator(DataField.IDF006.intValue(encodedMessage));
+            igm03Header.setSsrEpoch1s(IgsSsrDataField.IDF003.intValue(encodedMessage));
+            igm03Header.setSsrUpdateInterval(IgsSsrDataField.IDF004.intValue(encodedMessage));
+            igm03Header.setSsrMultipleMessageIndicator(IgsSsrDataField.IDF005.intValue(encodedMessage));
+            igm03Header.setIodSsr(IgsSsrDataField.IDF007.intValue(encodedMessage));
+            igm03Header.setSsrProviderId(IgsSsrDataField.IDF008.intValue(encodedMessage));
+            igm03Header.setSsrSolutionId(IgsSsrDataField.IDF009.intValue(encodedMessage));
+            igm03Header.setCrsIndicator(IgsSsrDataField.IDF006.intValue(encodedMessage));
 
             // Number of satellites
-            final int satNumber = DataField.IDF010.intValue(encodedMessage);
+            final int satNumber = IgsSsrDataField.IDF010.intValue(encodedMessage);
             igm03Header.setNumberOfSatellites(satNumber);
 
             // Initialize list of data
@@ -217,25 +217,25 @@ public enum IgsSsrMessageType implements MessageType {
             for (int index = 0; index < satNumber; index++) {
 
                 // Satellite ID
-                final int igm03SatId = getSatelliteId(system, DataField.IDF011.intValue(encodedMessage));
+                final int igm03SatId = getSatelliteId(system, IgsSsrDataField.IDF011.intValue(encodedMessage));
 
                 // GNSS IOD
-                final int igm03Iod = DataField.IDF012.intValue(encodedMessage);
+                final int igm03Iod = IgsSsrDataField.IDF012.intValue(encodedMessage);
 
                 // Orbit correction
                 final OrbitCorrection igm03OrbitCorr =
-                                new OrbitCorrection(DataField.IDF013.doubleValue(encodedMessage),   // IGM03 dRadial
-                                                    DataField.IDF014.doubleValue(encodedMessage),   // IGM03 dAlongTrack
-                                                    DataField.IDF015.doubleValue(encodedMessage),   // IGM03 dCrossTrack
-                                                    DataField.IDF016.doubleValue(encodedMessage),   // IGM03 dRadialDot
-                                                    DataField.IDF017.doubleValue(encodedMessage),   // IGM03 dAlongTrackDot
-                                                    DataField.IDF018.doubleValue(encodedMessage));  // IGM03 dCrossTrackDot
+                                new OrbitCorrection(IgsSsrDataField.IDF013.doubleValue(encodedMessage),   // IGM03 dRadial
+                                                    IgsSsrDataField.IDF014.doubleValue(encodedMessage),   // IGM03 dAlongTrack
+                                                    IgsSsrDataField.IDF015.doubleValue(encodedMessage),   // IGM03 dCrossTrack
+                                                    IgsSsrDataField.IDF016.doubleValue(encodedMessage),   // IGM03 dRadialDot
+                                                    IgsSsrDataField.IDF017.doubleValue(encodedMessage),   // IGM03 dAlongTrackDot
+                                                    IgsSsrDataField.IDF018.doubleValue(encodedMessage));  // IGM03 dCrossTrackDot
 
                 // Clock correction
                 final ClockCorrection igm03ClockCorr =
-                                new ClockCorrection(DataField.IDF019.doubleValue(encodedMessage),  // IGM03 C0
-                                                    DataField.IDF020.doubleValue(encodedMessage),  // IGM03 C1
-                                                    DataField.IDF021.doubleValue(encodedMessage)); // IGM03 C2
+                                new ClockCorrection(IgsSsrDataField.IDF019.doubleValue(encodedMessage),  // IGM03 C0
+                                                    IgsSsrDataField.IDF020.doubleValue(encodedMessage),  // IGM03 C1
+                                                    IgsSsrDataField.IDF021.doubleValue(encodedMessage)); // IGM03 C2
 
                 // Initialize a new container and fill data
                 final SsrIgm03Data currentIgm03Data = new SsrIgm03Data();
@@ -268,15 +268,15 @@ public enum IgsSsrMessageType implements MessageType {
 
             // Header data
             final SsrIgm04Header igm04Header = new SsrIgm04Header();
-            igm04Header.setSsrEpoch1s(DataField.IDF003.intValue(encodedMessage));
-            igm04Header.setSsrUpdateInterval(DataField.IDF004.intValue(encodedMessage));
-            igm04Header.setSsrMultipleMessageIndicator(DataField.IDF005.intValue(encodedMessage));
-            igm04Header.setIodSsr(DataField.IDF007.intValue(encodedMessage));
-            igm04Header.setSsrProviderId(DataField.IDF008.intValue(encodedMessage));
-            igm04Header.setSsrSolutionId(DataField.IDF009.intValue(encodedMessage));
+            igm04Header.setSsrEpoch1s(IgsSsrDataField.IDF003.intValue(encodedMessage));
+            igm04Header.setSsrUpdateInterval(IgsSsrDataField.IDF004.intValue(encodedMessage));
+            igm04Header.setSsrMultipleMessageIndicator(IgsSsrDataField.IDF005.intValue(encodedMessage));
+            igm04Header.setIodSsr(IgsSsrDataField.IDF007.intValue(encodedMessage));
+            igm04Header.setSsrProviderId(IgsSsrDataField.IDF008.intValue(encodedMessage));
+            igm04Header.setSsrSolutionId(IgsSsrDataField.IDF009.intValue(encodedMessage));
 
             // Number of satellites
-            final int satNumber = DataField.IDF010.intValue(encodedMessage);
+            final int satNumber = IgsSsrDataField.IDF010.intValue(encodedMessage);
             igm04Header.setNumberOfSatellites(satNumber);
 
             // Initialize list of data
@@ -287,8 +287,8 @@ public enum IgsSsrMessageType implements MessageType {
 
                 // Initialize a new container
                 final SsrIgm04Data currentIgm04Data = new SsrIgm04Data();
-                currentIgm04Data.setSatelliteID(getSatelliteId(system, DataField.IDF011.intValue(encodedMessage)));
-                currentIgm04Data.setHighRateClockCorrection(DataField.IDF022.doubleValue(encodedMessage));
+                currentIgm04Data.setSatelliteID(getSatelliteId(system, IgsSsrDataField.IDF011.intValue(encodedMessage)));
+                currentIgm04Data.setHighRateClockCorrection(IgsSsrDataField.IDF022.doubleValue(encodedMessage));
 
                 // Update the list
                 igm04Data.add(currentIgm04Data);
@@ -314,15 +314,15 @@ public enum IgsSsrMessageType implements MessageType {
 
             // Header data
             final SsrIgm05Header igm05Header = new SsrIgm05Header();
-            igm05Header.setSsrEpoch1s(DataField.IDF003.intValue(encodedMessage));
-            igm05Header.setSsrUpdateInterval(DataField.IDF004.intValue(encodedMessage));
-            igm05Header.setSsrMultipleMessageIndicator(DataField.IDF005.intValue(encodedMessage));
-            igm05Header.setIodSsr(DataField.IDF007.intValue(encodedMessage));
-            igm05Header.setSsrProviderId(DataField.IDF008.intValue(encodedMessage));
-            igm05Header.setSsrSolutionId(DataField.IDF009.intValue(encodedMessage));
+            igm05Header.setSsrEpoch1s(IgsSsrDataField.IDF003.intValue(encodedMessage));
+            igm05Header.setSsrUpdateInterval(IgsSsrDataField.IDF004.intValue(encodedMessage));
+            igm05Header.setSsrMultipleMessageIndicator(IgsSsrDataField.IDF005.intValue(encodedMessage));
+            igm05Header.setIodSsr(IgsSsrDataField.IDF007.intValue(encodedMessage));
+            igm05Header.setSsrProviderId(IgsSsrDataField.IDF008.intValue(encodedMessage));
+            igm05Header.setSsrSolutionId(IgsSsrDataField.IDF009.intValue(encodedMessage));
 
             // Number of satellites
-            final int satNumber = DataField.IDF010.intValue(encodedMessage);
+            final int satNumber = IgsSsrDataField.IDF010.intValue(encodedMessage);
             igm05Header.setNumberOfSatellites(satNumber);
 
             // Initialize list of data
@@ -333,17 +333,17 @@ public enum IgsSsrMessageType implements MessageType {
 
                 // Initialize a new container
                 final SsrIgm05Data currentIgm05Data = new SsrIgm05Data();
-                currentIgm05Data.setSatelliteID(getSatelliteId(system, DataField.IDF011.intValue(encodedMessage)));
+                currentIgm05Data.setSatelliteID(getSatelliteId(system, IgsSsrDataField.IDF011.intValue(encodedMessage)));
 
                 // Number of biases
-                final int biasesNumber = DataField.IDF023.intValue(encodedMessage);
+                final int biasesNumber = IgsSsrDataField.IDF023.intValue(encodedMessage);
                 currentIgm05Data.setNumberOfBiasesProcessed(biasesNumber);
 
                 // Loop on biases
                 for (int biasIndex = 0; biasIndex < biasesNumber; biasIndex++) {
                     // Initialize a new code bias
-                    final CodeBias codeBias = new CodeBias(DataField.IDF024.intValue(encodedMessage),
-                                                           DataField.IDF025.doubleValue(encodedMessage));
+                    final CodeBias codeBias = new CodeBias(IgsSsrDataField.IDF024.intValue(encodedMessage),
+                                                           IgsSsrDataField.IDF025.doubleValue(encodedMessage));
                     // Add the codeBias to the container
                     currentIgm05Data.addCodeBias(codeBias);
                 }
@@ -372,17 +372,17 @@ public enum IgsSsrMessageType implements MessageType {
 
             // Header data
             final SsrIgm06Header igm06Header = new SsrIgm06Header();
-            igm06Header.setSsrEpoch1s(DataField.IDF003.intValue(encodedMessage));
-            igm06Header.setSsrUpdateInterval(DataField.IDF004.intValue(encodedMessage));
-            igm06Header.setSsrMultipleMessageIndicator(DataField.IDF005.intValue(encodedMessage));
-            igm06Header.setIodSsr(DataField.IDF007.intValue(encodedMessage));
-            igm06Header.setSsrProviderId(DataField.IDF008.intValue(encodedMessage));
-            igm06Header.setSsrSolutionId(DataField.IDF009.intValue(encodedMessage));
-            igm06Header.setIsConsistencyMaintained(DataField.IDF032.booleanValue(encodedMessage));
-            igm06Header.setIsMelbourneWubbenaConsistencyMaintained(DataField.IDF033.booleanValue(encodedMessage));
+            igm06Header.setSsrEpoch1s(IgsSsrDataField.IDF003.intValue(encodedMessage));
+            igm06Header.setSsrUpdateInterval(IgsSsrDataField.IDF004.intValue(encodedMessage));
+            igm06Header.setSsrMultipleMessageIndicator(IgsSsrDataField.IDF005.intValue(encodedMessage));
+            igm06Header.setIodSsr(IgsSsrDataField.IDF007.intValue(encodedMessage));
+            igm06Header.setSsrProviderId(IgsSsrDataField.IDF008.intValue(encodedMessage));
+            igm06Header.setSsrSolutionId(IgsSsrDataField.IDF009.intValue(encodedMessage));
+            igm06Header.setIsConsistencyMaintained(IgsSsrDataField.IDF032.booleanValue(encodedMessage));
+            igm06Header.setIsMelbourneWubbenaConsistencyMaintained(IgsSsrDataField.IDF033.booleanValue(encodedMessage));
 
             // Number of satellites
-            final int satNumber = DataField.IDF010.intValue(encodedMessage);
+            final int satNumber = IgsSsrDataField.IDF010.intValue(encodedMessage);
             igm06Header.setNumberOfSatellites(satNumber);
 
             // Initialize list of data
@@ -393,24 +393,24 @@ public enum IgsSsrMessageType implements MessageType {
 
                 // Initialize a new container
                 final SsrIgm06Data currentIgm06Data = new SsrIgm06Data();
-                currentIgm06Data.setSatelliteID(getSatelliteId(system, DataField.IDF011.intValue(encodedMessage)));
+                currentIgm06Data.setSatelliteID(getSatelliteId(system, IgsSsrDataField.IDF011.intValue(encodedMessage)));
 
                 // Number of biases
-                final int biasesNumber = DataField.IDF023.intValue(encodedMessage);
+                final int biasesNumber = IgsSsrDataField.IDF023.intValue(encodedMessage);
                 currentIgm06Data.setNumberOfBiasesProcessed(biasesNumber);
 
                 // Yaw angle and rate
-                currentIgm06Data.setYawAngle(DataField.IDF026.doubleValue(encodedMessage) * FastMath.PI);
-                currentIgm06Data.setYawRate(DataField.IDF027.doubleValue(encodedMessage) * FastMath.PI);
+                currentIgm06Data.setYawAngle(IgsSsrDataField.IDF026.doubleValue(encodedMessage) * FastMath.PI);
+                currentIgm06Data.setYawRate(IgsSsrDataField.IDF027.doubleValue(encodedMessage) * FastMath.PI);
 
                 // Loop on biases
                 for (int biasIndex = 0; biasIndex < biasesNumber; biasIndex++) {
                     // Initialize a new phase bias
-                    final PhaseBias phaseBias = new PhaseBias(DataField.IDF024.intValue(encodedMessage),
-                                                              DataField.IDF029.booleanValue(encodedMessage),
-                                                              DataField.IDF030.intValue(encodedMessage),
-                                                              DataField.IDF031.intValue(encodedMessage),
-                                                              DataField.IDF028.doubleValue(encodedMessage));
+                    final PhaseBias phaseBias = new PhaseBias(IgsSsrDataField.IDF024.intValue(encodedMessage),
+                                                              IgsSsrDataField.IDF029.booleanValue(encodedMessage),
+                                                              IgsSsrDataField.IDF030.intValue(encodedMessage),
+                                                              IgsSsrDataField.IDF031.intValue(encodedMessage),
+                                                              IgsSsrDataField.IDF028.doubleValue(encodedMessage));
                     // Add the codeBias to the container
                     currentIgm06Data.addPhaseBias(phaseBias);
                 }
@@ -439,15 +439,15 @@ public enum IgsSsrMessageType implements MessageType {
 
             // Header data
             final SsrIgm07Header igm07Header = new SsrIgm07Header();
-            igm07Header.setSsrEpoch1s(DataField.IDF003.intValue(encodedMessage));
-            igm07Header.setSsrUpdateInterval(DataField.IDF004.intValue(encodedMessage));
-            igm07Header.setSsrMultipleMessageIndicator(DataField.IDF005.intValue(encodedMessage));
-            igm07Header.setIodSsr(DataField.IDF007.intValue(encodedMessage));
-            igm07Header.setSsrProviderId(DataField.IDF008.intValue(encodedMessage));
-            igm07Header.setSsrSolutionId(DataField.IDF009.intValue(encodedMessage));
+            igm07Header.setSsrEpoch1s(IgsSsrDataField.IDF003.intValue(encodedMessage));
+            igm07Header.setSsrUpdateInterval(IgsSsrDataField.IDF004.intValue(encodedMessage));
+            igm07Header.setSsrMultipleMessageIndicator(IgsSsrDataField.IDF005.intValue(encodedMessage));
+            igm07Header.setIodSsr(IgsSsrDataField.IDF007.intValue(encodedMessage));
+            igm07Header.setSsrProviderId(IgsSsrDataField.IDF008.intValue(encodedMessage));
+            igm07Header.setSsrSolutionId(IgsSsrDataField.IDF009.intValue(encodedMessage));
 
             // Number of satellites
-            final int satNumber = DataField.IDF010.intValue(encodedMessage);
+            final int satNumber = IgsSsrDataField.IDF010.intValue(encodedMessage);
             igm07Header.setNumberOfSatellites(satNumber);
 
             // Initialize list of data
@@ -458,8 +458,8 @@ public enum IgsSsrMessageType implements MessageType {
 
                 // Initialize a new container
                 final SsrIgm07Data currentIgm07Data = new SsrIgm07Data();
-                currentIgm07Data.setSatelliteID(getSatelliteId(system, DataField.IDF011.intValue(encodedMessage)));
-                currentIgm07Data.setSsrUra(DataField.IDF034.intValue(encodedMessage));
+                currentIgm07Data.setSatelliteID(getSatelliteId(system, IgsSsrDataField.IDF011.intValue(encodedMessage)));
+                currentIgm07Data.setSsrUra(IgsSsrDataField.IDF034.intValue(encodedMessage));
 
                 // Update the list
                 igm07Data.add(currentIgm07Data);
@@ -482,16 +482,16 @@ public enum IgsSsrMessageType implements MessageType {
 
             // Header data
             final SsrIm201Header im201Header = new SsrIm201Header();
-            im201Header.setSsrEpoch1s(DataField.IDF003.intValue(encodedMessage));
-            im201Header.setSsrUpdateInterval(DataField.IDF004.intValue(encodedMessage));
-            im201Header.setSsrMultipleMessageIndicator(DataField.IDF005.intValue(encodedMessage));
-            im201Header.setIodSsr(DataField.IDF007.intValue(encodedMessage));
-            im201Header.setSsrProviderId(DataField.IDF008.intValue(encodedMessage));
-            im201Header.setSsrSolutionId(DataField.IDF009.intValue(encodedMessage));
-            im201Header.setVtecQualityIndicator(DataField.IDF041.doubleValue(encodedMessage));
+            im201Header.setSsrEpoch1s(IgsSsrDataField.IDF003.intValue(encodedMessage));
+            im201Header.setSsrUpdateInterval(IgsSsrDataField.IDF004.intValue(encodedMessage));
+            im201Header.setSsrMultipleMessageIndicator(IgsSsrDataField.IDF005.intValue(encodedMessage));
+            im201Header.setIodSsr(IgsSsrDataField.IDF007.intValue(encodedMessage));
+            im201Header.setSsrProviderId(IgsSsrDataField.IDF008.intValue(encodedMessage));
+            im201Header.setSsrSolutionId(IgsSsrDataField.IDF009.intValue(encodedMessage));
+            im201Header.setVtecQualityIndicator(IgsSsrDataField.IDF041.doubleValue(encodedMessage));
 
             // Number of ionospheric layers
-            final int numberOfIonosphericLayers = DataField.IDF035.intValue(encodedMessage);
+            final int numberOfIonosphericLayers = IgsSsrDataField.IDF035.intValue(encodedMessage);
             im201Header.setNumberOfIonosphericLayers(numberOfIonosphericLayers);
 
             // Initialize list of data
@@ -504,11 +504,11 @@ public enum IgsSsrMessageType implements MessageType {
                 final SsrIm201Data currentIm201Data = new SsrIm201Data();
 
                 // Height of the ionospheric layer
-                currentIm201Data.setHeightIonosphericLayer(DataField.IDF036.doubleValue(encodedMessage));
+                currentIm201Data.setHeightIonosphericLayer(IgsSsrDataField.IDF036.doubleValue(encodedMessage));
 
                 // Degree and order of spherical harmonics
-                final int n = DataField.IDF037.intValue(encodedMessage);
-                final int m = DataField.IDF038.intValue(encodedMessage);
+                final int n = IgsSsrDataField.IDF037.intValue(encodedMessage);
+                final int m = IgsSsrDataField.IDF038.intValue(encodedMessage);
 
                 // Initialize arrays
                 final double[][] cnm = new double[n + 1][m + 1];
@@ -522,7 +522,7 @@ public enum IgsSsrMessageType implements MessageType {
                 for (int order = 0; order <= m; order++) {
                     // Loop on order
                     for (int degree = order; degree <= n; degree++) {
-                        cnm[degree][order] = DataField.IDF039.doubleValue(encodedMessage);
+                        cnm[degree][order] = IgsSsrDataField.IDF039.doubleValue(encodedMessage);
                     }
                 }
 
@@ -534,7 +534,7 @@ public enum IgsSsrMessageType implements MessageType {
                 for (int order = 1; order <= m; order++) {
                     // Loop on order
                     for (int degree = order; degree <= n; degree++) {
-                        snm[degree][order] = DataField.IDF040.doubleValue(encodedMessage);
+                        snm[degree][order] = IgsSsrDataField.IDF040.doubleValue(encodedMessage);
                     }
                 }
 

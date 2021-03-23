@@ -38,13 +38,13 @@ public class IgsSsrMessagesParser extends MessagesParser {
     protected String parseMessageNumber(final EncodedMessage message) {
 
         // RTCM Message number
-        DataField.DF002.stringValue(message, 0);
+        RtcmDataField.DF002.stringValue(message, 0);
 
         // IGS SSR Version
-        DataField.IDF001.intValue(message);
+        IgsSsrDataField.IDF001.intValue(message);
 
         // IGS Message number
-        return DataField.IDF002.stringValue(message, 0);
+        return IgsSsrDataField.IDF002.stringValue(message, 0);
 
     }
 

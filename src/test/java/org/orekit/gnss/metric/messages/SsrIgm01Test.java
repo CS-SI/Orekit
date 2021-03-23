@@ -26,7 +26,7 @@ import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.metric.messages.ssr.igm.SsrIgm01;
 import org.orekit.gnss.metric.messages.ssr.igm.SsrIgm01Data;
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessages;
-import org.orekit.gnss.metric.parser.DataField;
+import org.orekit.gnss.metric.parser.IgsSsrDataField;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.IgsSsrMessagesParser;
 
@@ -202,7 +202,7 @@ public class SsrIgm01Test {
     @Test
     public void testDefaultSsrUpdateInterval() {
         final EncodedMessage message = new ByteArrayEncodedMessages(byteArrayFromBinary("1111111111111111"));
-        Assert.assertEquals(10800, DataField.IDF004.intValue(message));
+        Assert.assertEquals(10800, IgsSsrDataField.IDF004.intValue(message));
     }
 
     private byte[] byteArrayFromBinary(String radix2Value) {

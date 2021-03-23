@@ -16,34 +16,23 @@
  */
 package org.orekit.gnss.metric.parser;
 
-import java.util.List;
+import java.util.Locale;
 
-/** Parser for RTCM encoded messages.
- * @author Luc Maisonobe
+
+/** Enum containing all intermediate level data fields that can be parsed
+ * to build a RTCM message.
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public class RtcmMessagesParser extends MessagesParser {
+public enum RtcmDataField implements DataField {
 
-    /**
-     * Constructor.
-     * @param messages list of needed messages
-     */
-    public RtcmMessagesParser(final List<Integer> messages) {
-        super(messages);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected String parseMessageNumber(final EncodedMessage message) {
-        // RTCM Message number
-        return RtcmDataField.DF002.stringValue(message, 0);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected MessageType getMessageType(final String messageNumber) {
-        return RtcmMessageType.getMessageType(messageNumber);
-    }
+    /** RTCM Message number. */
+    DF002 {
+        /** {@inheritDoc} */
+        @Override
+        public String stringValue(final EncodedMessage message, final int n) {
+            return String.format(Locale.US, "%4s", DataType.U_INT_12.decode(message).intValue()).trim();
+        }
+    };
 
 }
