@@ -22,6 +22,10 @@
   <body>
     <release version="11.0" date="TBD" description="TBD">
       <action dev="luc" type="add" >
+        Added AccurateFormatter to output double numbers and dates
+        with adaptive number of digits, preserving one ULP accuracy.
+      </action>
+      <action dev="luc" type="add" >
         Added a units converter.
       </action>
       <action dev="luc" type="update" >
