@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.utils.FileFormat;
+import org.orekit.utils.AccurateFormatter;
 
 /** Generator for Key-Value Notation CCSDS messages.
  * @author Luc Maisonobe
@@ -69,14 +70,14 @@ public class KvnGenerator extends AbstractGenerator {
     /** {@inheritDoc} */
     @Override
     public void startMessage(final String messageTypeKey, final double version) throws IOException {
-        writeEntry(messageTypeKey, String.format(STANDARDIZED_LOCALE, "%.1f", version), true);
+        writeEntry(messageTypeKey, String.format(AccurateFormatter.STANDARDIZED_LOCALE, "%.1f", version), true);
     }
 
     /** {@inheritDoc} */
     @Override
     public void writeComments(final CommentsContainer comments) throws IOException {
         for (final String comment : comments.getComments()) {
-            append(String.format(STANDARDIZED_LOCALE, commentFormat, comment));
+            append(String.format(AccurateFormatter.STANDARDIZED_LOCALE, commentFormat, comment));
         }
     }
 
@@ -86,7 +87,7 @@ public class KvnGenerator extends AbstractGenerator {
         if (value == null) {
             complain(key, mandatory);
         } else {
-            append(String.format(STANDARDIZED_LOCALE, kvFormat, key, value));
+            append(String.format(AccurateFormatter.STANDARDIZED_LOCALE, kvFormat, key, value));
         }
     }
 
