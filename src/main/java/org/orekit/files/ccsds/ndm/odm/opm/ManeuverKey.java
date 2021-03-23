@@ -16,6 +16,7 @@
  */
 package org.orekit.files.ccsds.ndm.odm.opm;
 
+import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
@@ -45,13 +46,13 @@ public enum ManeuverKey {
     MAN_DELTA_MASS((token, context, container) -> token.processAsDouble(Unit.KILOGRAM, container::setDeltaMass)),
 
     /** First component of the velocity increment. */
-    MAN_DV_1((token, context, container) -> token.processAsIndexedDouble(0, Unit.KILOMETRE, container::setDV)),
+    MAN_DV_1((token, context, container) -> token.processAsIndexedDouble(0, Units.KM_PER_S, container::setDV)),
 
     /** Second component of the velocity increment. */
-    MAN_DV_2((token, context, container) -> token.processAsIndexedDouble(1, Unit.KILOMETRE, container::setDV)),
+    MAN_DV_2((token, context, container) -> token.processAsIndexedDouble(1, Units.KM_PER_S, container::setDV)),
 
     /** Third component of the velocity increment. */
-    MAN_DV_3((token, context, container) -> token.processAsIndexedDouble(2, Unit.KILOMETRE, container::setDV));
+    MAN_DV_3((token, context, container) -> token.processAsIndexedDouble(2, Units.KM_PER_S, container::setDV));
 
     /** Processing method. */
     private final TokenProcessor processor;
