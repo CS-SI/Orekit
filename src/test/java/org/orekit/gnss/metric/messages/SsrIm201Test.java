@@ -72,6 +72,9 @@ public class SsrIm201Test {
 
         final SsrIm201 im201 = (SsrIm201) new IgsSsrMessagesParser(messages).parse(message, false);
 
+        // Ionospheric model
+        Assert.assertNotNull(im201.getIonosphericModel());
+
         // Verify size
         Assert.assertEquals(1,                            im201.getData().size());
 

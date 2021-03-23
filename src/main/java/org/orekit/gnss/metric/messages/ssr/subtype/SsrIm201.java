@@ -19,6 +19,7 @@ package org.orekit.gnss.metric.messages.ssr.subtype;
 import java.util.List;
 
 import org.orekit.gnss.metric.messages.ssr.SsrMessage;
+import org.orekit.models.earth.ionosphere.SsrVtecIonosphericModel;
 
 /**
  * SSR Ionosphere VTEC Spherical Harmonics Message.
@@ -36,6 +37,14 @@ public class SsrIm201 extends SsrMessage<SsrIm201Header, SsrIm201Data> {
     public SsrIm201(final int typeCode, final SsrIm201Header header,
                     final List<SsrIm201Data> data) {
         super(typeCode, header, data);
+    }
+
+    /**
+     * Get the ionospheric model adapted to the current IM201 message.
+     * @return the ionospheric model
+     */
+    public SsrVtecIonosphericModel getIonosphericModel() {
+        return new SsrVtecIonosphericModel(this);
     }
 
 }
