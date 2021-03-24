@@ -178,28 +178,28 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
                           STORED_REAL_FIELD + IGNORED_REAL_FIELD +
                           LINE_END_REGEXP),
 
-       /** Earth Orientation Parameters final values. */
-       // the first bulletin A of each month also includes final values for the
-       // period covering from day 2 of month m-2 to day 1 of month m-1.
-       //                                IERS Final Values
-       //                                 MJD        x        y      UT1-UTC
-       //                                            "        "         s
-       //             13  7  2           56475    0.1441   0.3901   0.05717
-       //             13  7  3           56476    0.1457   0.3895   0.05716
-       //             13  7  4           56477    0.1467   0.3887   0.05728
-       //             13  7  5           56478    0.1477   0.3875   0.05755
-       //             13  7  6           56479    0.1490   0.3862   0.05793
-       //             13  7  7           56480    0.1504   0.3849   0.05832
-       //             13  7  8           56481    0.1516   0.3835   0.05858
-       //             13  7  9           56482    0.1530   0.3822   0.05877
-       EOP_FINAL_VALUES("^ *IERS Final Values *$",
-                        LINE_START_REGEXP +
-                        STORED_INTEGER_FIELD + STORED_INTEGER_FIELD + STORED_INTEGER_FIELD +
-                        STORED_MJD_FIELD +
-                        STORED_REAL_FIELD +
-                        STORED_REAL_FIELD +
-                        STORED_REAL_FIELD +
-                        LINE_END_REGEXP),
+        /** Earth Orientation Parameters final values. */
+        // the first bulletin A of each month also includes final values for the
+        // period covering from day 2 of month m-2 to day 1 of month m-1.
+        //                                IERS Final Values
+        //                                 MJD        x        y      UT1-UTC
+        //                                            "        "         s
+        //             13  7  2           56475    0.1441   0.3901   0.05717
+        //             13  7  3           56476    0.1457   0.3895   0.05716
+        //             13  7  4           56477    0.1467   0.3887   0.05728
+        //             13  7  5           56478    0.1477   0.3875   0.05755
+        //             13  7  6           56479    0.1490   0.3862   0.05793
+        //             13  7  7           56480    0.1504   0.3849   0.05832
+        //             13  7  8           56481    0.1516   0.3835   0.05858
+        //             13  7  9           56482    0.1530   0.3822   0.05877
+        EOP_FINAL_VALUES("^ *IERS Final Values *$",
+                         LINE_START_REGEXP +
+                         STORED_INTEGER_FIELD + STORED_INTEGER_FIELD + STORED_INTEGER_FIELD +
+                         STORED_MJD_FIELD +
+                         STORED_REAL_FIELD +
+                         STORED_REAL_FIELD +
+                         STORED_REAL_FIELD +
+                         LINE_END_REGEXP),
 
         /** Earth Orientation Parameters prediction. */
         // section 3 always contain prediction data without error fields
