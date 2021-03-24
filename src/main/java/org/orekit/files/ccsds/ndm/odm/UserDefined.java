@@ -18,7 +18,7 @@
 package org.orekit.files.ccsds.ndm.odm;
 
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.orekit.files.ccsds.section.CommentsContainer;
@@ -38,7 +38,8 @@ public class UserDefined extends CommentsContainer {
     /** Create an empty data set.
      */
     public UserDefined() {
-        map = new HashMap<>();
+        // we use a LinkedHashMap so we retrieve the parameters in the same order they are put in
+        map = new LinkedHashMap<>();
     }
 
     /** Get all user defined parameters.

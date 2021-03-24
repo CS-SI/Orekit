@@ -16,7 +16,12 @@
  */
 package org.orekit.files.ccsds.ndm.odm.opm;
 
+import java.io.ByteArrayInputStream;
+import java.io.CharArrayWriter;
+import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -31,6 +36,7 @@ import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -38,8 +44,12 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
+import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
 import org.orekit.files.ccsds.ndm.odm.SpacecraftParameters;
+import org.orekit.files.ccsds.section.Segment;
+import org.orekit.files.ccsds.utils.generation.Generator;
+import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
@@ -441,7 +451,38 @@ public class OPMParserTest {
         final String name = "/ccsds/odm/opm/OPMExample3.xml";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         OpmParser parser = new ParserBuilder().withDefaultMass(1000.0).buildOpmParser();
-        final OpmFile file = parser.parseMessage(source);
+        validateOPM3XML(parser.parseMessage(source));
+    }
+
+    @Test
+    public void testWriteOPM3XML() throws URISyntaxException, IOException {
+        // simple test for OPM file, contains all mandatory information plus
+        // Spacecraft parameters and the position/velocity Covariance Matrix.
+        // the content of the file is slightly different from the KVN file in the covariance section
+        final String name = "/ccsds/odm/opm/OPMExample3.xml";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        OpmParser parser = new ParserBuilder().withDefaultMass(1000.0).buildOpmParser();
+        final OpmFile original = parser.parseMessage(source);
+
+        // write the parsed file back to a characters array
+        final CharArrayWriter caw = new CharArrayWriter();
+        OpmWriter opmw = new OpmWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null,
+                                       original.getHeader(), "dummy");
+        Generator generator = new KvnGenerator(caw, OpmWriter.KEY_WIDTH, opmw.getFileName());
+        opmw.writeHeader(generator);
+        for (final Segment<CommonMetadata, OpmData> segment : original.getSegments()) {
+            opmw.writeSegment(generator, segment);
+        }
+
+        // reparse the written file
+        final ByteBuffer bb      = StandardCharsets.UTF_8.encode(caw.toString());
+        final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(bb.array()));
+        final OpmFile    rebuilt = new ParserBuilder().buildOpmParser().parseMessage(source2);
+        validateOPM3XML(rebuilt);
+
+    }
+
+    private void validateOPM3XML(final OpmFile file) {
         Assert.assertEquals("OPM 201113719185", file.getHeader().getMessageId());
         Assert.assertEquals(CelestialBodyFrame.TOD, file.getMetadata().getReferenceFrame().asCelestialBodyFrame());
         Assert.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,

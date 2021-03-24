@@ -38,7 +38,7 @@ enum XmlSubStructureKey {
     covarianceMatrix((token, parser) -> parser.manageCovarianceSection(token.getType() == TokenType.START)),
 
     /** Maneuvers section. */
-    maneuvers((token, parser) -> parser.manageManeuversSection(token.getType() == TokenType.START)),
+    maneuverParameters((token, parser) -> parser.manageManeuversSection(token.getType() == TokenType.START)),
 
     /** User-defined parameters section. */
     userDefinedParameters((token, parser) -> parser.manageUserDefinedParametersSection(token.getType() == TokenType.START));

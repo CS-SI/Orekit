@@ -20,13 +20,14 @@ import java.io.IOException;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceWriter;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
-import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
-import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
-import org.orekit.files.ccsds.ndm.odm.StateVectorKey;
+import org.orekit.files.ccsds.ndm.odm.CommonMetadataWriter;
+import org.orekit.files.ccsds.ndm.odm.KeplerianElementsWriter;
+import org.orekit.files.ccsds.ndm.odm.SpacecraftParametersWriter;
+import org.orekit.files.ccsds.ndm.odm.StateVectorWriter;
+import org.orekit.files.ccsds.ndm.odm.UserDefinedWriter;
 import org.orekit.files.ccsds.section.Header;
-import org.orekit.files.ccsds.section.KvnStructureKey;
-import org.orekit.files.ccsds.section.MetadataKey;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.section.XmlStructureKey;
 import org.orekit.files.ccsds.utils.ContextBinding;
@@ -35,8 +36,6 @@ import org.orekit.files.ccsds.utils.generation.AbstractMessageWriter;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.TimeStampedPVCoordinates;
-import org.orekit.utils.units.Unit;
 
 
 /**
@@ -80,70 +79,58 @@ public class OpmWriter extends AbstractMessageWriter {
         throws IOException {
 
         // write the metadata
-        writeMetadata(generator, segment.getMetadata());
+        new CommonMetadataWriter(segment.getMetadata(), getTimeConverter()).
+        write(generator);
 
-        // write the data
-        writeData(generator, segment.getData());
+        // start data block
+        if (generator.getFormat() == FileFormat.XML) {
+            generator.enterSection(XmlStructureKey.data.name());
+        }
 
-    }
+        // write mandatory state vector block
+        new StateVectorWriter(XmlSubStructureKey.stateVector.name(), null,
+                              segment.getData().getStateVectorBlock(), getTimeConverter()).
+        write(generator);
 
-    /** Write one segment metadata.
-     * @param generator generator to use for producing output
-     * @param metadata metadata to write
-     * @throws IOException if any buffer writing operations fails
-     */
-    private void writeMetadata(final Generator generator, final CommonMetadata metadata) throws IOException {
+        if (segment.getData().getKeplerianElementsBlock() != null) {
+            // write optional Keplerian elements block
+            new KeplerianElementsWriter(XmlSubStructureKey.keplerianElements.name(), null,
+                                        segment.getData().getKeplerianElementsBlock()).
+            write(generator);
+        }
 
-        // Start metadata
-        generator.enterSection(generator.getFormat() == FileFormat.KVN ?
-                               KvnStructureKey.META.name() :
-                               XmlStructureKey.metadata.name());
+        if (segment.getData().getSpacecraftParametersBlock() != null) {
+            // write optional spacecraft parameters block
+            new SpacecraftParametersWriter(XmlSubStructureKey.spacecraftParameters.name(), null,
+                                           segment.getData().getSpacecraftParametersBlock()).
+            write(generator);
+        }
 
-        generator.writeComments(metadata);
+        if (segment.getData().getCovarianceBlock() != null) {
+            // write optional spacecraft parameters block
+            new CartesianCovarianceWriter(XmlSubStructureKey.covarianceMatrix.name(), null,
+                                          segment.getData().getCovarianceBlock()).
+            write(generator);
+        }
 
-        // object
-        generator.writeEntry(OdmMetadataKey.OBJECT_NAME.name(),  metadata.getObjectName(), true);
-        generator.writeEntry(CommonMetadataKey.OBJECT_ID.name(), metadata.getObjectID(),   true);
+        if (!segment.getData().getManeuvers().isEmpty()) {
+            for (final Maneuver maneuver : segment.getData().getManeuvers()) {
+                // write optional maneuver block
+                new ManeuverWriter(maneuver, getTimeConverter()).write(generator);
+            }
+        }
 
-        // frames
-        generator.writeEntry(CommonMetadataKey.CENTER_NAME.name(),     metadata.getCenter().getName(),               true);
-        generator.writeEntry(CommonMetadataKey.REF_FRAME.name(),       metadata.getReferenceFrame().getName(),       true);
-        generator.writeEntry(CommonMetadataKey.REF_FRAME_EPOCH.name(), getTimeConverter(), metadata.getFrameEpoch(), false);
+        if (segment.getData().getUserDefinedBlock() != null) {
+            // write optional uder defined parameters block
+            new UserDefinedWriter(XmlSubStructureKey.userDefinedParameters.name(), null,
+                                  segment.getData().getUserDefinedBlock()).
+            write(generator);
+        }
 
-        // time
-        generator.writeEntry(MetadataKey.TIME_SYSTEM.name(),   metadata.getTimeSystem(), true);
-
-        // Stop metadata
-        generator.exitSection();
-
-    }
-
-    /** Write one segment data.
-     * @param generator generator to use for producing output
-     * @param data data
-     * @throws IOException if any buffer writing operations fails
-     */
-    private void writeData(final Generator generator, final OpmData data) throws IOException {
-
-        // Start block
-        generator.enterSection(generator.getFormat() == FileFormat.KVN ?
-                               KvnStructureKey.DATA.name() :
-                               XmlStructureKey.data.name());
-
-        // state vector block
-        final TimeStampedPVCoordinates pv = data.getStateVectorBlock().toTimeStampedPVCoordinates();
-        generator.writeComments(data.getStateVectorBlock());
-        generator.writeEntry(StateVectorKey.EPOCH.name(), getTimeConverter(), pv.getDate(), true);
-        generator.writeEntry(StateVectorKey.X.name(),     Unit.KILOMETRE.fromSI(pv.getPosition().getX()), true);
-        generator.writeEntry(StateVectorKey.Y.name(),     Unit.KILOMETRE.fromSI(pv.getPosition().getY()), true);
-        generator.writeEntry(StateVectorKey.Z.name(),     Unit.KILOMETRE.fromSI(pv.getPosition().getZ()), true);
-        generator.writeEntry(StateVectorKey.X_DOT.name(), Unit.KILOMETRE.fromSI(pv.getVelocity().getX()), true);
-        generator.writeEntry(StateVectorKey.Y_DOT.name(), Unit.KILOMETRE.fromSI(pv.getVelocity().getY()), true);
-        generator.writeEntry(StateVectorKey.Z_DOT.name(), Unit.KILOMETRE.fromSI(pv.getVelocity().getZ()), true);
-        // note that OPM format does not use X_DDOT, Y_DDOT, Z_DDOT, they are used only in OEM format
-
-        // Stop block
-        generator.exitSection();
+        // stop data block
+        if (generator.getFormat() == FileFormat.XML) {
+            generator.exitSection();
+        }
 
     }
 
