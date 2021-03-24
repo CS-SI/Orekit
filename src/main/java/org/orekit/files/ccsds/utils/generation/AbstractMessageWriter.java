@@ -157,19 +157,4 @@ public abstract class AbstractMessageWriter {
 
     }
 
-    /** Convert an array of integer to a comma-separated list.
-     * @param integers integers to write
-     * @return arrays as a string
-     */
-    protected String intArrayToString(final int[] integers) {
-        final StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < integers.length; ++i) {
-            if (i > 0) {
-                builder.append(',');
-            }
-            builder.append(integers[i]);
-        }
-        return builder.toString();
-    }
-
 }
