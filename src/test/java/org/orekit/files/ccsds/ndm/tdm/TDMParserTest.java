@@ -38,6 +38,7 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
+import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.utils.generation.Generator;
@@ -330,31 +331,25 @@ public class TDMParserTest {
     @Test
     public void testInconsistentTimeSystemsKeyValue() {
         // Inconsistent time systems between two sets of data
-        try {
-            final String name = "/ccsds/tdm/kvn/TDM-inconsistent-time-systems.txt";
-            final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
-            new ParserBuilder().buildTdmParser(null).parseMessage(source);
-            Assert.fail("An exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_INCONSISTENT_TIME_SYSTEMS, oe.getSpecifier());
-            Assert.assertEquals("UTC", oe.getParts()[0]);
-            Assert.assertEquals("TCG", oe.getParts()[1]);
-        }
+        final String name = "/ccsds/tdm/kvn/TDM-inconsistent-time-systems.txt";
+        final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        TdmFile file = new ParserBuilder().buildTdmParser(null).parseMessage(source);
+        Assert.assertEquals(3, file.getSegments().size());
+        Assert.assertEquals(TimeSystem.UTC, file.getSegments().get(0).getMetadata().getTimeSystem());
+        Assert.assertEquals(TimeSystem.TCG, file.getSegments().get(1).getMetadata().getTimeSystem());
+        Assert.assertEquals(TimeSystem.UTC, file.getSegments().get(2).getMetadata().getTimeSystem());
     }
 
     @Test
     public void testInconsistentTimeSystemsXml() {
         // Inconsistent time systems between two sets of data
-        try {
-            final String name = "/ccsds/tdm/xml/TDM-inconsistent-time-systems.xml";
-            final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
-            new ParserBuilder().buildTdmParser(null).parseMessage(source);
-            Assert.fail("An exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_INCONSISTENT_TIME_SYSTEMS, oe.getSpecifier());
-            Assert.assertEquals("UTC", oe.getParts()[0]);
-            Assert.assertEquals("TCG", oe.getParts()[1]);
-        }
+        final String name = "/ccsds/tdm/xml/TDM-inconsistent-time-systems.xml";
+        final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        TdmFile file = new ParserBuilder().buildTdmParser(null).parseMessage(source);
+        Assert.assertEquals(3, file.getSegments().size());
+        Assert.assertEquals(TimeSystem.UTC, file.getSegments().get(0).getMetadata().getTimeSystem());
+        Assert.assertEquals(TimeSystem.TCG, file.getSegments().get(1).getMetadata().getTimeSystem());
+        Assert.assertEquals(TimeSystem.UTC, file.getSegments().get(2).getMetadata().getTimeSystem());
     }
 
     @Test

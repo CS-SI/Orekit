@@ -118,9 +118,7 @@ public class TdmParser extends AbstractMessageParser<TdmFile, TdmParser> {
     /** {@inheritDoc} */
     @Override
     public TdmFile build() {
-        final TdmFile file = new TdmFile(header, segments, getConventions(), getDataContext());
-        file.checkTimeSystems();
-        return file;
+        return new TdmFile(header, segments, getConventions(), getDataContext());
     }
 
     /** {@inheritDoc} */

@@ -20,9 +20,6 @@ package org.orekit.files.ccsds.ndm.tdm;
 import java.util.List;
 
 import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.NdmFile;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
@@ -53,21 +50,6 @@ public class TdmFile extends NdmFile<Header, Segment<TdmMetadata, ObservationsBl
     public TdmFile(final Header header, final List<Segment<TdmMetadata, ObservationsBlock>> segments,
                    final IERSConventions conventions, final DataContext dataContext) {
         super(header, segments, conventions, dataContext);
-    }
-
-    /** Check that, according to the CCSDS standard, every ObservationsBlock has the same time system.
-     */
-    public void checkTimeSystems() {
-        TimeSystem referenceTimeSystem = null;
-        for (final Segment<TdmMetadata, ObservationsBlock> segment : getSegments()) {
-            final TimeSystem timeSystem = segment.getMetadata().getTimeSystem();
-            if (referenceTimeSystem == null) {
-                referenceTimeSystem = timeSystem;
-            } else if (!referenceTimeSystem.equals(timeSystem)) {
-                throw new OrekitException(OrekitMessages.CCSDS_INCONSISTENT_TIME_SYSTEMS,
-                                          referenceTimeSystem.name(), timeSystem.name());
-            }
-        }
     }
 
 }
