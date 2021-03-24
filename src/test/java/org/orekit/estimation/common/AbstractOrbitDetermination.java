@@ -56,7 +56,7 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataFilter;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.data.GzipFilter;
-import org.orekit.data.NamedData;
+import org.orekit.data.DataSource;
 import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -94,7 +94,7 @@ import org.orekit.files.ilrs.CRDFile.RangeMeasurement;
 import org.orekit.files.ilrs.CRDHeader;
 import org.orekit.files.ilrs.CRDHeader.RangeType;
 import org.orekit.files.ilrs.CRDParser;
-import org.orekit.files.sinex.SINEXLoader;
+import org.orekit.files.sinex.SinexLoader;
 import org.orekit.files.sinex.Station;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.drag.IsotropicDrag;
@@ -351,8 +351,8 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
         
 
         // read sinex files
-        final SINEXLoader                 stationPositionData      = readSinexFile(input, parser, ParameterKey.SINEX_POSITION_FILE);
-        final SINEXLoader                 stationEccData           = readSinexFile(input, parser, ParameterKey.SINEX_ECC_FILE);
+        final SinexLoader                 stationPositionData      = readSinexFile(input, parser, ParameterKey.SINEX_POSITION_FILE);
+        final SinexLoader                 stationEccData           = readSinexFile(input, parser, ParameterKey.SINEX_ECC_FILE);
         
         // use measurement types flags
         useRangeMeasurements                                       = parser.getBoolean(ParameterKey.USE_RANGE_MEASUREMENTS);
@@ -375,7 +375,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
         for (final String fileName : parser.getStringsList(ParameterKey.MEASUREMENTS_FILES, ',')) {
 
             // set up filtering for measurements files
-            NamedData nd = new NamedData(fileName, () -> new FileInputStream(new File(input.getParentFile(), fileName)));
+            DataSource nd = new DataSource(fileName, () -> new FileInputStream(new File(input.getParentFile(), fileName)));
             for (final DataFilter filter : Arrays.asList(new GzipFilter(),
                                                          new UnixCompressFilter(),
                                                          new HatanakaCompressFilter())) {
@@ -534,8 +534,8 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                         configurePropagatorBuilder(parser, conventions, body, initialGuess);
 
         // read sinex files
-        final SINEXLoader                 stationPositionData      = readSinexFile(input, parser, ParameterKey.SINEX_POSITION_FILE);
-        final SINEXLoader                 stationEccData           = readSinexFile(input, parser, ParameterKey.SINEX_ECC_FILE);
+        final SinexLoader                 stationPositionData      = readSinexFile(input, parser, ParameterKey.SINEX_POSITION_FILE);
+        final SinexLoader                 stationEccData           = readSinexFile(input, parser, ParameterKey.SINEX_ECC_FILE);
         
         // use measurement types flags
         useRangeMeasurements                                       = parser.getBoolean(ParameterKey.USE_RANGE_MEASUREMENTS);
@@ -558,7 +558,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
         for (final String fileName : parser.getStringsList(ParameterKey.MEASUREMENTS_FILES, ',')) {
 
             // set up filtering for measurements files
-            NamedData nd = new NamedData(fileName,
+            DataSource nd = new DataSource(fileName,
                                          () -> new FileInputStream(new File(input.getParentFile(), fileName)));
             for (final DataFilter filter : Arrays.asList(new GzipFilter(),
                                                          new UnixCompressFilter(),
@@ -1307,8 +1307,8 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
      * @throws NoSuchElementException if input parameters are missing
      */
     private Map<String, StationData> createStationsData(final KeyValueFileParser<ParameterKey> parser,
-                                                        final SINEXLoader sinexPosition,
-                                                        final SINEXLoader sinexEcc,
+                                                        final SinexLoader sinexPosition,
+                                                        final SinexLoader sinexEcc,
                                                         final IERSConventions conventions,
                                                         final OneAxisEllipsoid body)
         throws NoSuchElementException {
@@ -1828,7 +1828,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
      * @return container for sinex data or null if key does not exist
      * @throws IOException if file is not read properly
      */
-    private SINEXLoader readSinexFile(final File input,
+    private SinexLoader readSinexFile(final File input,
                                       final KeyValueFileParser<ParameterKey> parser,
                                       final ParameterKey key)
         throws IOException {
@@ -1840,7 +1840,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             final String fileName = parser.getString(key);
 
             // Read the file
-            NamedData nd = new NamedData(fileName, () -> new FileInputStream(new File(input.getParentFile(), fileName)));
+            DataSource nd = new DataSource(fileName, () -> new FileInputStream(new File(input.getParentFile(), fileName)));
             for (final DataFilter filter : Arrays.asList(new GzipFilter(),
                                                          new UnixCompressFilter(),
                                                          new HatanakaCompressFilter())) {
@@ -1848,7 +1848,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             }
 
             // Return a configured SINEX file
-            return new SINEXLoader(nd.getStreamOpener().openStream(), nd.getName());
+            return new SinexLoader(nd);
 
         } else {
 
@@ -1860,7 +1860,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
     }
 
     /** Read a measurements file.
-     * @param nd named data containing measurements
+     * @param source data source containing measurements
      * @param stations name to stations data map
      * @param pvData PV measurements data
      * @param satellite satellite reference
@@ -1874,7 +1874,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
      * @return measurements list
      * @exception IOException if measurement file cannot be read
      */
-    private List<ObservedMeasurement<?>> readMeasurements(final NamedData nd,
+    private List<ObservedMeasurement<?>> readMeasurements(final DataSource source,
                                                           final Map<String, StationData> stations,
                                                           final PVData pvData,
                                                           final ObservableSatellite satellite,
@@ -1888,7 +1888,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
         throws IOException {
 
         final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
-        try (InputStream is = nd.getStreamOpener().openStream();
+        try (InputStream is = source.getStreamOpener().openOnce();
              InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
              BufferedReader br = new BufferedReader(isr)) {
             int lineNumber = 0;
@@ -1899,14 +1899,14 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                     final String[] fields = line.split("\\s+");
                     if (fields.length < 2) {
                         throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                  lineNumber, nd.getName(), line);
+                                                  lineNumber, source.getName(), line);
                     }
                     switch (fields[1]) {
                         case "RANGE" :
                             if (useRangeMeasurements) {
                                 final Range range = new RangeParser().parseFields(fields, stations, pvData, satellite,
                                                                                   satRangeBias, weights,
-                                                                                  line, lineNumber, nd.getName());
+                                                                                  line, lineNumber, source.getName());
                                 if (satAntennaRangeModifier != null) {
                                     range.addModifier(satAntennaRangeModifier);
                                 }
@@ -1920,7 +1920,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                             if (useRangeRateMeasurements) {
                                 final RangeRate rangeRate = new RangeRateParser().parseFields(fields, stations, pvData, satellite,
                                                                                               satRangeBias, weights,
-                                                                                              line, lineNumber, nd.getName());
+                                                                                              line, lineNumber, source.getName());
                                 if (rangeRateOutliersManager != null) {
                                     rangeRate.addModifier(rangeRateOutliersManager);
                                 }
@@ -1930,7 +1930,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                         case "AZ_EL" :
                             final AngularAzEl angular = new AzElParser().parseFields(fields, stations, pvData, satellite,
                                                                                      satRangeBias, weights,
-                                                                                     line, lineNumber, nd.getName());
+                                                                                     line, lineNumber, source.getName());
                             if (azElOutliersManager != null) {
                                 angular.addModifier(azElOutliersManager);
                             }
@@ -1939,7 +1939,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                         case "PV" :
                             final PV pv = new PVParser().parseFields(fields, stations, pvData, satellite,
                                                                      satRangeBias, weights,
-                                                                     line, lineNumber, nd.getName());
+                                                                     line, lineNumber, source.getName());
                             if (pvOutliersManager != null) {
                                 pv.addModifier(pvOutliersManager);
                             }
@@ -1949,7 +1949,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                             throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                                                       "unknown measurement type " + fields[1] +
                                                       " at line " + lineNumber +
-                                                      " in file " + nd.getName() +
+                                                      " in file " + source.getName() +
                                                       "\n" + line);
                     }
                 }
@@ -1958,7 +1958,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
 
         if (measurements.isEmpty()) {
             throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
-                                      "not measurements read from file " + nd.getName());
+                                      "not measurements read from file " + source.getName());
         }
 
         return measurements;
@@ -1966,7 +1966,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
     }
 
     /** Read a RINEX measurements file.
-     * @param nd named data containing measurements
+     * @param source data source containing measurements
      * @param satId satellite we are interested in
      * @param stations name to stations data map
      * @param satellite satellite reference
@@ -1979,7 +1979,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
      * @return measurements list
      * @exception IOException if measurement file cannot be read
      */
-    private List<ObservedMeasurement<?>> readRinex(final NamedData nd, final String satId,
+    private List<ObservedMeasurement<?>> readRinex(final DataSource source, final String satId,
                                                    final Map<String, StationData> stations,
                                                    final ObservableSatellite satellite,
                                                    final Bias<Range> satRangeBias,
@@ -2005,7 +2005,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             default:
                 prnNumber = -1;
         }
-        final RinexLoader loader = new RinexLoader(nd.getStreamOpener().openStream(), nd.getName());
+        final RinexLoader loader = new RinexLoader(source);
         for (final ObservationDataSet observationDataSet : loader.getObservationDataSets()) {
             if (observationDataSet.getSatelliteSystem() == system    &&
                 observationDataSet.getPrnNumber()       == prnNumber) {
@@ -2077,7 +2077,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
     }
 
     /** Read a Consolidated Ranging Data measurements file.
-     * @param nd named data containing measurements
+     * @param source data source containing measurements
      * @param stations name to stations data map
      * @param kvParser input file parser
      * @param satellite observable satellite
@@ -2088,7 +2088,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
      * @return a list of observable measurements
      * @throws IOException if measurement file cannot be read
      */
-    private List<ObservedMeasurement<?>> readCrd(final NamedData nd,
+    private List<ObservedMeasurement<?>> readCrd(final DataSource source,
                                                  final Map<String, StationData> stations,
                                                  final KeyValueFileParser<ParameterKey> kvParser,
                                                  final ObservableSatellite satellite,
@@ -2103,7 +2103,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
 
         // Initialise parser and read file
         final CRDParser parser =  new CRDParser();
-        final CRDFile   file   = parser.parse(nd.getStreamOpener().openStream());
+        final CRDFile   file   = parser.parse(source.getStreamOpener().openOnce());
 
         // Loop on data block
         for (final CRDDataBlock block : file.getDataBlocks()) {

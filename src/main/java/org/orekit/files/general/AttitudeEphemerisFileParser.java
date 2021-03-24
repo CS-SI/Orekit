@@ -16,45 +16,23 @@
  */
 package org.orekit.files.general;
 
-import java.io.BufferedReader;
-import java.io.IOException;
+import org.orekit.data.DataSource;
 
 /**
- * Parse an attitude ephemeris file.
+ * Parse an ephemeris file.
  *
+ * @param <T> type of the parsed file
  * @author Raphaël Fermé
  * @since 10.3
  */
-public interface AttitudeEphemerisFileParser {
+public interface AttitudeEphemerisFileParser<T extends AttitudeEphemerisFile<?, ?>> {
 
     /**
-     * Parse an attitude ephemeris file from a stream.
+     * Parse an attitude ephemeris file from a data source.
      *
-     * @param reader containing the ephemeris file.
-     * @param fileName to use in error messages.
-     * @return a parsed ephemeris file.
-     * @throws IOException if {@code reader} throws one.
+     * @param source source providing the data to parse
+     * @return a parsed attitude ephemeris file.
      */
-    AttitudeEphemerisFile parse(BufferedReader reader, String fileName)
-            throws IOException;
-
-    /**
-     * Parse an attitude ephemeris file from a file on the local file system.
-     *
-     * <p> For Implementors: Most subclasses should implement this method as follows, but
-     * there is no default implementation because most subclasses should use a specialized
-     * return type.
-     *
-     * <pre>
-     * try (BufferedReader reader = Files.newBufferedReader(Paths.get(fileName))) {
-     *     return parse(reader, fileName);
-     * }
-     * </pre>
-     *
-     * @param fileName path to the ephemeris file.
-     * @return parsed ephemeris file.
-     * @throws IOException if one is thrown while opening or reading from {@code fileName}
-     */
-    AttitudeEphemerisFile parse(String fileName) throws IOException;
+    T parse(DataSource source);
 
 }

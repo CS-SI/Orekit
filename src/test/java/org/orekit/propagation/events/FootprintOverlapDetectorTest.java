@@ -91,7 +91,7 @@ public class FootprintOverlapDetectorTest {
     @Test
     public void testRightForwardView() throws IOException {
 
-        propagator.setAttitudeProvider(new LofOffset(initialOrbit.getFrame(), LOFType.VVLH,
+        propagator.setAttitudeProvider(new LofOffset(initialOrbit.getFrame(), LOFType.LVLH_CCSDS,
                                                       RotationOrder.XYZ,
                                                       FastMath.toRadians(-20.0),
                                                       FastMath.toRadians(+20.0),
@@ -172,7 +172,7 @@ public class FootprintOverlapDetectorTest {
     @Test
     public void testRightForwardViewDeprecated() throws IOException {
 
-        propagator.setAttitudeProvider(new LofOffset(initialOrbit.getFrame(), LOFType.VVLH,
+        propagator.setAttitudeProvider(new LofOffset(initialOrbit.getFrame(), LOFType.LVLH_CCSDS,
                                                       RotationOrder.XYZ,
                                                       FastMath.toRadians(-20.0),
                                                       FastMath.toRadians(+20.0),

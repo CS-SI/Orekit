@@ -40,8 +40,8 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScale;
-import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.units.UnitsConverter;
 
 /** Loader for bulletin A files.
  * <p>Bulletin A files contain {@link EOPEntry
@@ -120,9 +120,6 @@ import org.orekit.utils.IERSConventions;
  * @since 7.0
  */
 class BulletinAFilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
-
-    /** Conversion factor. */
-    private static final double MILLI_ARC_SECONDS_TO_RADIANS = Constants.ARC_SECONDS_TO_RADIANS / 1000;
 
     /** Regular expression matching blanks at start of line. */
     private static final String LINE_START_REGEXP     = "^\\p{Blank}+";
@@ -501,10 +498,10 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
                         }
                         history.add(new EOPEntry(mjd,
                                                  0.0, 0.0, 0.0, 0.0,
-                                                 currentPole[1] * MILLI_ARC_SECONDS_TO_RADIANS,
-                                                 currentPole[2] * MILLI_ARC_SECONDS_TO_RADIANS,
-                                                 currentPole[3] * MILLI_ARC_SECONDS_TO_RADIANS,
-                                                 currentPole[4] * MILLI_ARC_SECONDS_TO_RADIANS,
+                                                 UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[1]),
+                                                 UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[2]),
+                                                 UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[3]),
+                                                 UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[4]),
                                                  configuration.getVersion(),
                                                  mjdDate));
                     }
@@ -538,8 +535,8 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
                         // we have only EOP for this date
                         history.add(new EOPEntry(mjd,
                                                  currentEOP[3], lod,
-                                                 currentEOP[1] * Constants.ARC_SECONDS_TO_RADIANS,
-                                                 currentEOP[2] * Constants.ARC_SECONDS_TO_RADIANS,
+                                                 UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(currentEOP[1]),
+                                                 UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(currentEOP[2]),
                                                  0.0, 0.0, 0.0, 0.0,
                                                  configuration.getVersion(),
                                                  mjdDate));
@@ -547,12 +544,12 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
                         // we have complete data
                         history.add(new EOPEntry(mjd,
                                                  currentEOP[3], lod,
-                                                 currentEOP[1]  * Constants.ARC_SECONDS_TO_RADIANS,
-                                                 currentEOP[2]  * Constants.ARC_SECONDS_TO_RADIANS,
-                                                 currentPole[1] * MILLI_ARC_SECONDS_TO_RADIANS,
-                                                 currentPole[2] * MILLI_ARC_SECONDS_TO_RADIANS,
-                                                 currentPole[3] * MILLI_ARC_SECONDS_TO_RADIANS,
-                                                 currentPole[4] * MILLI_ARC_SECONDS_TO_RADIANS,
+                                                 UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(currentEOP[1] ),
+                                                 UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(currentEOP[2] ),
+                                                 UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[1]),
+                                                 UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[2]),
+                                                 UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[3]),
+                                                 UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[4]),
                                                  configuration.getVersion(),
                                                  mjdDate));
                     }

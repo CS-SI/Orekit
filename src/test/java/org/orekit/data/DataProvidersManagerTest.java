@@ -243,20 +243,20 @@ public class DataProvidersManagerTest {
     }
 
     private static class CountingFilter implements DataFilter {
-        private Map<NamedData, NamedData> filtered;
+        private Map<DataSource, DataSource> filtered;
         private int opened;
         public CountingFilter() {
             filtered = new IdentityHashMap<>();
             opened   = 0;
         }
-        public NamedData filter(NamedData original) {
+        public DataSource filter(DataSource original) {
             if (filtered.containsKey(original)) {
                 return original;
             } else {
-                NamedData f = new NamedData(original.getName(),
+                DataSource f = new DataSource(original.getName(),
                                             () -> {
                                                 ++opened;
-                                                return original.getStreamOpener().openStream();
+                                                return original.getStreamOpener().openOnce();
                                             });
                 filtered.put(f, f);
                 return f;
@@ -279,7 +279,7 @@ public class DataProvidersManagerTest {
             this.layers = layers;
             this.opened = 0;
         }
-        public NamedData filter(final NamedData original) {
+        public DataSource filter(final DataSource original) {
             Matcher matcher = PATTERN.matcher(original.getName());
             int level = 0;
             String baseName = original.getName();
@@ -289,10 +289,10 @@ public class DataProvidersManagerTest {
             }
             if (level++ < layers) {
                 // add one filtering layer
-                return new NamedData(PREFIX + level + "-" + baseName,
+                return new DataSource(PREFIX + level + "-" + baseName,
                                      () -> {
                                          ++opened;
-                                         return original.getStreamOpener().openStream();
+                                         return original.getStreamOpener().openOnce();
                                      });
             } else {
                 // final layer, don't filter anymore

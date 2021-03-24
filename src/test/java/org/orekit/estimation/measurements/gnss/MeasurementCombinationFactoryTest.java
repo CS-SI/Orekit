@@ -25,6 +25,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.CombinedObservationData;
@@ -385,7 +386,7 @@ public class MeasurementCombinationFactoryTest {
     }
 
     private RinexLoader load(final String name) {
-        return new RinexLoader(Utils.class.getClassLoader().getResourceAsStream(name), name);
+        return new RinexLoader(new DataSource(name, () -> Utils.class.getClassLoader().getResourceAsStream(name)));
     }
 
     @Test

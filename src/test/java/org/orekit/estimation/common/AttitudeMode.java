@@ -75,6 +75,17 @@ enum AttitudeMode {
         }
     },
 
+    /** Aligned with Local Vertical, Local Horizontal frame, CCSDS definition.
+     * @since 11.0
+     */
+    LOF_ALIGNED_LVLH_CCSDS {
+        /** {@inheritDoc} */
+        @Override
+        public AttitudeProvider getProvider(final Frame inertialFrame, final OneAxisEllipsoid body) {
+            return new LofOffset(inertialFrame, LOFType.LVLH_CCSDS);
+        }
+    },
+
     /** Aligned with QSW frame. */
     LOF_ALIGNED_QSW {
         /** {@inheritDoc} */
@@ -102,12 +113,25 @@ enum AttitudeMode {
         }
     },
 
-    /** Aligned with Vehicle Velocity, Local Horizontal frame. */
-    LOF_ALIGNED_VVLH {
+    /** aligned with Equinoctial Coordinate System.
+     * @since 11.0
+     */
+    LOF_ALIGNED_EQW {
         /** {@inheritDoc} */
         @Override
         public AttitudeProvider getProvider(final Frame inertialFrame, final OneAxisEllipsoid body) {
-            return new LofOffset(inertialFrame, LOFType.VVLH);
+            return new LofOffset(inertialFrame, LOFType.EQW);
+        }
+    },
+
+    /** aligned with Transverse Velocity Normal coordinate system.
+     * @since 11.0
+     */
+    LOF_ALIGNED_NTW {
+        /** {@inheritDoc} */
+        @Override
+        public AttitudeProvider getProvider(final Frame inertialFrame, final OneAxisEllipsoid body) {
+            return new LofOffset(inertialFrame, LOFType.NTW);
         }
     };
 

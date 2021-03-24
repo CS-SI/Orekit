@@ -32,12 +32,12 @@ import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
- * This class stocks all the information of the Consolidated laser ranging Prediction File (CPF) parsed
+ * This class stores all the information of the Consolidated laser ranging Prediction File (CPF) parsed
  * by CPFParser. It contains the header and a list of ephemeris entry.
  * @author Bryan Cazabonne
  * @since 10.3
  */
-public class CPFFile implements EphemerisFile {
+public class CPFFile implements EphemerisFile<CPFFile.CPFCoordinate, CPFFile.CPFEphemeris> {
 
     /** Gravitational coefficient. */
     private double mu;
@@ -148,7 +148,9 @@ public class CPFFile implements EphemerisFile {
     }
 
     /** An ephemeris entry  for a single satellite contains in a CPF file. */
-    public class CPFEphemeris implements SatelliteEphemeris, EphemerisSegment {
+    public class CPFEphemeris
+        implements EphemerisFile.SatelliteEphemeris<CPFCoordinate, CPFEphemeris>,
+                   EphemerisFile.EphemerisSegment<CPFCoordinate> {
 
         /** Ephemeris Data. */
         private final List<CPFCoordinate> coordinates;
@@ -160,35 +162,8 @@ public class CPFFile implements EphemerisFile {
 
         /** {@inheritDoc} */
         @Override
-        public String getFrameCenterString() {
-            // Unused by CPF files
-            return null;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public String getFrameString() {
-            // Unused by CPF files
-            return null;
-        }
-
-        /** {@inheritDoc} */
-        @Override
         public Frame getFrame() {
             return header.getRefFrame();
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public String getTimeScaleString() {
-            // Unused by CPF files
-            return null;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public TimeScale getTimeScale() {
-            return timeScale;
         }
 
         /** {@inheritDoc} */

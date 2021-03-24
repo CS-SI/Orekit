@@ -151,7 +151,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         final Orbit orbit =
             new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), initDate, mu);
-        final AttitudeProvider law = new LofOffset(orbit.getFrame(), LOFType.VVLH);
+        final AttitudeProvider law = new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS);
        final SpacecraftState initialState =
             new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
 
@@ -192,7 +192,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         final Orbit orbit =
             new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), initDate, mu);
-        final AttitudeProvider law = new LofOffset(orbit.getFrame(), LOFType.VVLH);
+        final AttitudeProvider law = new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS);
        final SpacecraftState initialState =
             new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
 

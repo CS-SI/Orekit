@@ -96,9 +96,9 @@ public class AttitudesSequenceTest {
         // Attitudes sequence definition
         EventsLogger logger = new EventsLogger();
         final AttitudesSequence attitudesSequence = new AttitudesSequence();
-        final AttitudeProvider dayObservationLaw = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH,
+        final AttitudeProvider dayObservationLaw = new LofOffset(initialOrbit.getFrame(), LOFType.LVLH_CCSDS,
                                                                  RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
-        final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH);
+        final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.LVLH_CCSDS);
         final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         final EclipseDetector ed =
                         new EclipseDetector(sun, 696000000.,
@@ -204,9 +204,9 @@ public class AttitudesSequenceTest {
         // Attitudes sequence definition
         EventsLogger logger = new EventsLogger();
         final AttitudesSequence attitudesSequence = new AttitudesSequence();
-        final AttitudeProvider dayObservationLaw = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH,
+        final AttitudeProvider dayObservationLaw = new LofOffset(initialOrbit.getFrame(), LOFType.LVLH_CCSDS,
                                                                  RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
-        final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH);
+        final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.LVLH_CCSDS);
         final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         final EclipseDetector ed =
                 new EclipseDetector(sun, 696000000.,

@@ -35,14 +35,17 @@ public enum LOFType {
     /** Constant for TNW frame
      * (X axis aligned with velocity, Z axis aligned with orbital momentum).
      * <p>
-     * The axes of this frame are parallel to the axes of the {@link #VNC} frame:
+     * The axes of this frame are parallel to the axes of the {@link #VNC}
+     * and {@link #NTW} frames:
      * <ul>
-     *   <li>X<sub>TNW</sub> =  X<sub>VNC</sub></li>
-     *   <li>Y<sub>TNW</sub> = -Z<sub>VNC</sub></li>
-     *   <li>Z<sub>TNW</sub> =  Y<sub>VNC</sub></li>
+     *   <li>X<sub>TNW</sub> =  X<sub>VNC</sub> =  Y<sub>NTW</sub></li>
+     *   <li>Y<sub>TNW</sub> = -Z<sub>VNC</sub> = -X<sub>NTW</sub></li>
+     *   <li>Z<sub>TNW</sub> =  Y<sub>VNC</sub> =  Z<sub>NTW</sub></li>
      * </ul>
+     * </p>
      *
      * @see #VNC
+     * @see #NTW
      */
     TNW {
 
@@ -74,6 +77,7 @@ public enum LOFType {
      *   <li>Y<sub>QSW/LVLH</sub> =  X<sub>VVLH</sub></li>
      *   <li>Z<sub>QSW/LVLH</sub> = -Y<sub>VVLH</sub></li>
      * </ul>
+     * </p>
      *
      * @see #LVLH
      * @see #VVLH
@@ -99,15 +103,22 @@ public enum LOFType {
     /** Constant for Local Vertical, Local Horizontal frame
      * (X axis aligned with position, Z axis aligned with orbital momentum).
      * <p>
+     * BEWARE! Depending on the background (software used, textbook, community),
+     * different incompatible definitions for LVLH are used. This one is consistent
+     * with Vallado's book and with AGI's STK. However CCSDS standard, Wertz, and
+     * a.i. solutions' FreeFlyer use another definition (see {@link #LVLH_CCSDS}).
+     * </p>
+     * <p>
      * This frame is also known as the {@link #QSW} frame, both constants are equivalent.
      * </p>
      * <p>
-     * The axes of these frames are parallel to the axes of the {@link #VVLH} frame:
+     * The axes of these frames are parallel to the axes of the {@link #LVLH_CCSDS} frame:
      * <ul>
-     *   <li>X<sub>LVLH/QSW</sub> = -Z<sub>VVLH</sub></li>
-     *   <li>Y<sub>LVLH/QSW</sub> =  X<sub>VVLH</sub></li>
-     *   <li>Z<sub>LVLH/QSW</sub> = -Y<sub>VVLH</sub></li>
+     *   <li>X<sub>LVLH/QSW</sub> = -Z<sub>LVLH_CCSDS</sub></li>
+     *   <li>Y<sub>LVLH/QSW</sub> =  X<sub>LVLH_CCSDS</sub></li>
+     *   <li>Z<sub>LVLH/QSW</sub> = -Y<sub>LVLH_CCSDS</sub></li>
      * </ul>
+     * </p>
      *
      * @see #QSW
      * @see #VVLH
@@ -130,20 +141,28 @@ public enum LOFType {
 
     },
 
-    /** Constant for Vehicle Velocity, Local Horizontal frame
+    /** Constant for Local Vertical, Local Horizontal frame as defined by CCSDS
      * (Z axis aligned with opposite of position, Y axis aligned with opposite of orbital momentum).
+     * <p>
+     * BEWARE! Depending on the background (software used, textbook, community),
+     * different incompatible definitions for LVLH are used. This one is consistent
+     * with CCSDS standard, Wertz, and a.i. solutions' FreeFlyer. However Vallado's
+     * book and with AGI's STK use another definition (see {@link #LVLH}).
+     * </p>
      * <p>
      * The axes of this frame are parallel to the axes of both the {@link #QSW} and {@link #LVLH} frames:
      * <ul>
-     *   <li>X<sub>VVLH</sub> =  Y<sub>QSW/LVLH</sub></li>
-     *   <li>Y<sub>VVLH</sub> = -Z<sub>QSW/LVLH</sub></li>
-     *   <li>Z<sub>VVLH</sub> = -X<sub>QSW/LVLH</sub></li>
+     *   <li>X<sub>LVLH_CCSDS/VVLH</sub> =  Y<sub>QSW/LVLH</sub></li>
+     *   <li>Y<sub>LVLH_CCSDS/VVLH</sub> = -Z<sub>QSW/LVLH</sub></li>
+     *   <li>Z<sub>LVLH_CCSDS/VVLH</sub> = -X<sub>QSW/LVLH</sub></li>
      * </ul>
+     * </p>
      *
      * @see #QSW
      * @see #LVLH
+     * @since 11.0
      */
-    VVLH {
+    LVLH_CCSDS {
 
         /** {@inheritDoc} */
         public Rotation rotationFromInertial(final PVCoordinates pv) {
@@ -161,17 +180,54 @@ public enum LOFType {
 
     },
 
+    /** Constant for Vehicle Velocity, Local Horizontal frame
+     * (Z axis aligned with opposite of position, Y axis aligned with opposite of orbital momentum).
+     * <p>
+     * This is another name for {@link #LVLH_CCSDS}, kept here for compatibility with STK.
+     * </p>
+     * <p>
+     * Beware that the name is misleading: in the general case (i.e. not perfectly circular),
+     * none of the axes is perfectly aligned with velocity! The preferred name for this
+     * should be {@link #LVLH_CCSDS}.
+     * </p>
+     * <p>
+     * The axes of this frame are parallel to the axes of both the {@link #QSW} and {@link #LVLH} frames:
+     * <ul>
+     *   <li>X<sub>LVLH_CCSDS/VVLH</sub> =  Y<sub>QSW/LVLH</sub></li>
+     *   <li>Y<sub>LVLH_CCSDS/VVLH</sub> = -Z<sub>QSW/LVLH</sub></li>
+     *   <li>Z<sub>LVLH_CCSDS/VVLH</sub> = -X<sub>QSW/LVLH</sub></li>
+     * </ul>
+     * @see #LVLH_CCSDS
+     */
+    VVLH {
+
+        /** {@inheritDoc} */
+        public Rotation rotationFromInertial(final PVCoordinates pv) {
+            return LVLH_CCSDS.rotationFromInertial(pv);
+        }
+
+        /** {@inheritDoc} */
+        public <T extends RealFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
+                                                                                     final FieldPVCoordinates<T> pv) {
+            return LVLH_CCSDS.rotationFromInertial(field, pv);
+        }
+
+    },
+
     /** Constant for Velocity - Normal - Co-normal frame
      * (X axis aligned with velocity, Y axis aligned with orbital momentum).
      * <p>
-     * The axes of this frame are parallel to the axes of the {@link #TNW} frame:
+     * The axes of this frame are parallel to the axes of the {@link #TNW}
+     * and {@link #NTW} frames:
      * <ul>
-     *   <li>X<sub>VNC</sub> =  X<sub>TNW</sub></li>
-     *   <li>Y<sub>VNC</sub> =  Z<sub>TNW</sub></li>
-     *   <li>Z<sub>VNC</sub> = -Y<sub>TNW</sub></li>
+     *   <li>X<sub>VNC</sub> =  X<sub>TNW</sub> = Y<sub>NTW</sub></li>
+     *   <li>Y<sub>VNC</sub> =  Z<sub>TNW</sub> = Z<sub>NTW</sub></li>
+     *   <li>Z<sub>VNC</sub> = -Y<sub>TNW</sub> = X<sub>NTW</sub></li>
      * </ul>
+     * </p>
      *
      * @see #TNW
+     * @see #NTW
      */
     VNC {
 
@@ -185,6 +241,67 @@ public enum LOFType {
         public <T extends RealFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
                                                                                      final FieldPVCoordinates<T> pv) {
             return new FieldRotation<>(pv.getVelocity(), pv.getMomentum(),
+                                       new FieldVector3D<>(field, Vector3D.PLUS_I),
+                                       new FieldVector3D<>(field, Vector3D.PLUS_J));
+        }
+
+    },
+
+    /** Constant for Equinoctial Coordinate System
+     * (X axis aligned with ascending node, Z axis aligned with orbital momentum).
+     * @since 11.0
+     */
+    EQW {
+
+        /** {@inheritDoc} */
+        public Rotation rotationFromInertial(final PVCoordinates pv) {
+            final Vector3D m = pv.getMomentum();
+            return new Rotation(new Vector3D(-m.getY(), m.getX(), 0), m,
+                                Vector3D.PLUS_I, Vector3D.PLUS_J);
+        }
+
+        @Override
+        public <T extends RealFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
+                                                                                     final FieldPVCoordinates<T> pv) {
+            final FieldVector3D<T> m = pv.getMomentum();
+            return new FieldRotation<>(new FieldVector3D<>(m.getY().negate(), m.getX(), field.getZero()),
+                                       m,
+                                       new FieldVector3D<>(field, Vector3D.PLUS_I),
+                                       new FieldVector3D<>(field, Vector3D.PLUS_J));
+        }
+
+    },
+
+    /** Constant for Transverse Velocity Normal coordinate system
+     * (Y axis aligned with velocity, Z axis aligned with orbital momentum).
+     * <p>
+     * The axes of this frame are parallel to the axes of the {@link #TNW}
+     * and {@link #VNC} frames:
+     * <ul>
+     *   <li>X<sub>NTW</sub> = -Y<sub>TNW</sub> = Z<sub>VNC</sub></li>
+     *   <li>Y<sub>NTW</sub> =  X<sub>TNW</sub> = X<sub>VNC</sub></li>
+     *   <li>Z<sub>NTW</sub> =  Z<sub>TNW</sub> = Y<sub>VNC</sub></li>
+     * </ul>
+     * </p>
+     * @see #TNW
+     * @see #VNC
+     * @since 11.0
+     */
+    NTW {
+
+        /** {@inheritDoc} */
+        public Rotation rotationFromInertial(final PVCoordinates pv) {
+            final Vector3D m = pv.getMomentum();
+            return new Rotation(new Vector3D(-m.getY(), m.getX(), 0), m,
+                                Vector3D.PLUS_I, Vector3D.PLUS_J);
+        }
+
+        @Override
+        public <T extends RealFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
+                                                                                     final FieldPVCoordinates<T> pv) {
+            final FieldVector3D<T> m = pv.getMomentum();
+            return new FieldRotation<>(new FieldVector3D<>(m.getY().negate(), m.getX(), field.getZero()),
+                                       m,
                                        new FieldVector3D<>(field, Vector3D.PLUS_I),
                                        new FieldVector3D<>(field, Vector3D.PLUS_J));
         }

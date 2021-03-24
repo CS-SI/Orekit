@@ -217,12 +217,12 @@ public class ZipJarCrawler implements DataProvider {
                         }
 
                         // apply all registered filters
-                        NamedData data = new NamedData(entryName, () -> entry);
+                        DataSource data = new DataSource(entryName, () -> entry);
                         data = manager.applyAllFilters(data);
 
                         if (supported.matcher(data.getName()).matches()) {
                             // visit the current file
-                            try (InputStream input = data.getStreamOpener().openStream()) {
+                            try (InputStream input = data.getStreamOpener().openOnce()) {
                                 visitor.loadData(input, fullName);
                                 loaded = true;
                             }

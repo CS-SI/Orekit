@@ -30,7 +30,6 @@ import org.orekit.frames.Frame;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScale;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -39,7 +38,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Thomas Neidhart
  * @author Evan Ward
  */
-public class SP3File implements EphemerisFile {
+public class SP3File
+    implements EphemerisFile<SP3File.SP3Coordinate, SP3File.SP3Ephemeris> {
     /** String representation of the center of ephemeris coordinate system. **/
     public static final String SP3_FRAME_CENTER_STRING = "EARTH";
 
@@ -152,12 +152,6 @@ public class SP3File implements EphemerisFile {
     /** Indicates if data contains velocity or not. */
     private CartesianDerivativesFilter filter;
 
-    /** Time scale of dates in the ephemeris file. */
-    private TimeScale timeScale;
-
-    /** Time scale, as specified in the file. */
-    private String timeScaleString;
-
     /** Standard gravitational parameter in m^3 / s^2. */
     private final double mu;
 
@@ -194,24 +188,6 @@ public class SP3File implements EphemerisFile {
      */
     void setFilter(final CartesianDerivativesFilter filter) {
         this.filter = filter;
-    }
-
-    /**
-     * Set the time scale.
-     *
-     * @param timeScale use to parse dates in this file.
-     */
-    void setTimeScale(final TimeScale timeScale) {
-        this.timeScale = timeScale;
-    }
-
-    /**
-     * Set the string used to define the time scale.
-     *
-     * @param timeScaleString the time scale identifier used in the file.
-     */
-    void setTimeScaleString(final String timeScaleString) {
-        this.timeScaleString = timeScaleString;
     }
 
     /** Returns the {@link SP3FileType} associated with this SP3 file.
@@ -482,7 +458,9 @@ public class SP3File implements EphemerisFile {
     }
 
     /** An ephemeris for a single satellite in a SP3 file. */
-    public class SP3Ephemeris implements SatelliteEphemeris, EphemerisSegment {
+    public class SP3Ephemeris
+        implements  EphemerisFile.SatelliteEphemeris<SP3Coordinate, SP3Ephemeris>,
+                    EphemerisFile.EphemerisSegment<SP3Coordinate> {
 
         /** Satellite ID. */
         private final String id;
@@ -512,28 +490,8 @@ public class SP3File implements EphemerisFile {
         }
 
         @Override
-        public String getFrameCenterString() {
-            return SP3_FRAME_CENTER_STRING;
-        }
-
-        @Override
-        public String getFrameString() {
-            return getCoordinateSystem();
-        }
-
-        @Override
         public Frame getFrame() {
-            return frameBuilder.apply(getFrameString());
-        }
-
-        @Override
-        public String getTimeScaleString() {
-            return timeScaleString;
-        }
-
-        @Override
-        public TimeScale getTimeScale() {
-            return timeScale;
+            return frameBuilder.apply(SP3_FRAME_CENTER_STRING);
         }
 
         @Override

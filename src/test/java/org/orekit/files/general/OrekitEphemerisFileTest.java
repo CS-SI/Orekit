@@ -36,9 +36,16 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataContext;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
-import org.orekit.files.ccsds.OEMParser;
-import org.orekit.files.ccsds.OEMWriter;
+import org.orekit.files.ccsds.definitions.BodyFacade;
+import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.ndm.odm.oem.OemMetadata;
+import org.orekit.files.ccsds.ndm.odm.oem.OemParser;
+import org.orekit.files.ccsds.ndm.odm.oem.OemSegment;
+import org.orekit.files.ccsds.ndm.odm.oem.OemWriter;
 import org.orekit.files.general.EphemerisFile.EphemerisSegment;
 import org.orekit.files.general.OrekitEphemerisFile.OrekitSatelliteEphemeris;
 import org.orekit.frames.Frame;
@@ -128,17 +135,25 @@ public class OrekitEphemerisFileTest {
                      satellite.getSegments().get(0).getMu(), muTolerance);
 
         String tempOemFile = Files.createTempFile("OrekitEphemerisFileTest", ".oem").toString();
-        new OEMWriter().write(tempOemFile, ephemerisFile);
+        OemMetadata template = new OemMetadata(2);
+        template.setTimeSystem(TimeSystem.UTC);
+        template.setObjectID(satId);
+        template.setObjectName(satId);
+        template.setCenter(new BodyFacade("EARTH", CelestialBodyFactory.getCelestialBodies().getEarth()));
+        template.setReferenceFrame(FrameFacade.map(FramesFactory.getEME2000()));
+        new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null, template).
+        write(tempOemFile, ephemerisFile);
 
-        EphemerisFile ephemerisFromFile = new OEMParser().parse(tempOemFile);
+        OemParser parser = new OemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
+                                         null, body.getGM(), 2);
+        EphemerisFile<TimeStampedPVCoordinates, OemSegment> ephemerisFromFile = parser.parse(new DataSource(tempOemFile));
         Files.delete(Paths.get(tempOemFile));
         
-        EphemerisSegment segment = ephemerisFromFile.getSatellites().get(satId).getSegments().get(0);
+        EphemerisSegment<TimeStampedPVCoordinates> segment = ephemerisFromFile.getSatellites().get(satId).getSegments().get(0);
         assertEquals(states.get(0).getDate(), segment.getStart());
         assertEquals(states.get(states.size() - 1).getDate(), segment.getStop());
         assertEquals(states.size(), segment.getCoordinates().size());
         assertEquals(frame, segment.getFrame());
-        assertEquals(body.getName().toUpperCase(), segment.getFrameCenterString());
         assertEquals(body.getGM(), segment.getMu(), muTolerance);
         assertEquals(CartesianDerivativesFilter.USE_PV, segment.getAvailableDerivatives());
         assertEquals("GCRF", segment.getFrame().getName());
@@ -159,7 +174,8 @@ public class OrekitEphemerisFileTest {
         final GeodeticPoint point = new GeodeticPoint(latitude, longitude, altitude);
         final TopocentricFrame topo = new TopocentricFrame(parentShape, point, "testPoint1");
         final ElevationDetector elevationDetector = new ElevationDetector(topo);
-        final EphemerisSegmentPropagator ephemerisSegmentPropagator = new EphemerisSegmentPropagator(segment);
+        final EphemerisSegmentPropagator<TimeStampedPVCoordinates> ephemerisSegmentPropagator =
+                        new EphemerisSegmentPropagator<>(segment);
         final EventsLogger lookupLogger = new EventsLogger();
         ephemerisSegmentPropagator.addEventDetector(lookupLogger.monitorDetector(elevationDetector));
 

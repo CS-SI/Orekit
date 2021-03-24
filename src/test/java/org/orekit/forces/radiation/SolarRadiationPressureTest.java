@@ -290,7 +290,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                            new IsotropicRadiationClassicalConvention(2.5, 0.7, 0.2));
 
         checkStateJacobianVs80Implementation(new SpacecraftState(orbit), forceModel,
-                                             new LofOffset(orbit.getFrame(), LOFType.VVLH),
+                                             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS),
                                              1.0e-15, false);
 
     }
@@ -314,7 +314,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                            new IsotropicRadiationClassicalConvention(2.5, 0.7, 0.2));
 
         checkStateJacobianVs80ImplementationGradient(new SpacecraftState(orbit), forceModel,
-                                             new LofOffset(orbit.getFrame(), LOFType.VVLH),
+                                             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS),
                                              1.0e-15, false);
 
     }

@@ -469,7 +469,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         final CelestialBody moon = CelestialBodyFactory.getMoon();
         final ThirdBodyAttraction forceModel = new ThirdBodyAttraction(moon);
         checkStateJacobianVs80Implementation(new SpacecraftState(orbit), forceModel,
-                                             new LofOffset(orbit.getFrame(), LOFType.VVLH),
+                                             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS),
                                              1.0e-50, false);
     }
 
@@ -488,7 +488,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         final CelestialBody moon = CelestialBodyFactory.getMoon();
         final ThirdBodyAttraction forceModel = new ThirdBodyAttraction(moon);
         checkStateJacobianVs80ImplementationGradient(new SpacecraftState(orbit), forceModel,
-                                             new LofOffset(orbit.getFrame(), LOFType.VVLH),
+                                             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS),
                                              1.0e-15, false);
     }
 

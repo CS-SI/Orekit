@@ -996,7 +996,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         SpacecraftState state = new SpacecraftState(orbit,
                                                     Propagator.DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
         checkStateJacobianVs80Implementation(state, forceModel,
-                                             new LofOffset(state.getFrame(), LOFType.VVLH),
+                                             new LofOffset(state.getFrame(), LOFType.LVLH_CCSDS),
                                              5e-6, false);
         
         // Check state derivatives inside 2nd box model
@@ -1004,7 +1004,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         state = new SpacecraftState(orbit,
                                     Propagator.DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
         checkStateJacobianVs80Implementation(state, forceModel,
-                                             new LofOffset(state.getFrame(), LOFType.VVLH),
+                                             new LofOffset(state.getFrame(), LOFType.LVLH_CCSDS),
                                              5e-6, false);
 
         // Check state derivatives inside 3rd box model
@@ -1012,7 +1012,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         state = new SpacecraftState(orbit,
                                     Propagator.DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
         checkStateJacobianVs80Implementation(state, forceModel,
-                                             new LofOffset(state.getFrame(), LOFType.VVLH),
+                                             new LofOffset(state.getFrame(), LOFType.LVLH_CCSDS),
                                              5e-6, false);
 
     }
@@ -1067,7 +1067,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         SpacecraftState state = new SpacecraftState(orbit,
                                                     Propagator.DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
         checkStateJacobianVs80ImplementationGradient(state, forceModel,
-                                             new LofOffset(state.getFrame(), LOFType.VVLH),
+                                             new LofOffset(state.getFrame(), LOFType.LVLH_CCSDS),
                                              5e-6, false);
         
         // Check state derivatives inside 2nd box model
@@ -1075,7 +1075,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         state = new SpacecraftState(orbit,
                                     Propagator.DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
         checkStateJacobianVs80ImplementationGradient(state, forceModel,
-                                             new LofOffset(state.getFrame(), LOFType.VVLH),
+                                             new LofOffset(state.getFrame(), LOFType.LVLH_CCSDS),
                                              5e-6, false);
 
         // Check state derivatives inside 3rd box model
@@ -1083,7 +1083,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         state = new SpacecraftState(orbit,
                                     Propagator.DEFAULT_LAW.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
         checkStateJacobianVs80ImplementationGradient(state, forceModel,
-                                             new LofOffset(state.getFrame(), LOFType.VVLH),
+                                             new LofOffset(state.getFrame(), LOFType.LVLH_CCSDS),
                                              5e-6, false);
 
     }
