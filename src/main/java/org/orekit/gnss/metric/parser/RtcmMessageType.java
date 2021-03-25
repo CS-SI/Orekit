@@ -24,6 +24,12 @@ import java.util.regex.Pattern;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.metric.messages.ParsedMessage;
+import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1019;
+import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1019Data;
+import org.orekit.gnss.metric.messages.rtcm.ephemeris.utils.AccuracyProvider;
+import org.orekit.gnss.metric.messages.rtcm.ephemeris.utils.UserRangeAccuracy;
+import org.orekit.gnss.navigation.GPSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.GPSOrbitalElements;
 
 /** Enum containing the supported RTCM messages types.
 *
@@ -36,8 +42,74 @@ import org.orekit.gnss.metric.messages.ParsedMessage;
 */
 public enum RtcmMessageType implements MessageType {
 
-    // RTCM messages are not currently supported in Orekit
-    // Contributions are welcome
+    /** GPS Ephemeris message. */
+    RTCM_1019("1019") {
+
+        /** {@inheritDoc} */
+        @Override
+        public ParsedMessage parse(final EncodedMessage encodedMessage,
+                                   final int messageNumber) {
+
+            // Initialize data container and navigation message
+            final Rtcm1019Data         rtcm1019Data  = new Rtcm1019Data();
+            final GPSNavigationMessage gpsNavMessage = new GPSNavigationMessage();
+
+            // Set the satellite ID
+            final int gpsId = RtcmDataField.DF009.intValue(encodedMessage);
+            rtcm1019Data.setSatelliteID(gpsId);
+
+            // Week number
+            final int gpsWeekNumber = RtcmDataField.DF076.intValue(encodedMessage);
+            gpsNavMessage.setWeek(gpsWeekNumber);
+
+            // Accuracy provider
+            final AccuracyProvider gpsProvider = new UserRangeAccuracy(RtcmDataField.DF077.intValue(encodedMessage));
+            rtcm1019Data.setAccuracyProvider(gpsProvider);
+            gpsNavMessage.setSvAccuracy(gpsProvider.getAccuracy());
+
+            // GPS Code on L2
+            rtcm1019Data.setGpsCodeOnL2(RtcmDataField.DF078.intValue(encodedMessage));
+
+            // Fill navigation message
+            gpsNavMessage.setPRN(gpsId);
+            gpsNavMessage.setIDot(RtcmDataField.DF079.doubleValue(encodedMessage) * GPSOrbitalElements.GPS_PI);
+            gpsNavMessage.setIODE(RtcmDataField.DF071.intValue(encodedMessage));
+            rtcm1019Data.setGpsToc(RtcmDataField.DF081.doubleValue(encodedMessage));
+            gpsNavMessage.setAf2(RtcmDataField.DF082.doubleValue(encodedMessage));
+            gpsNavMessage.setAf1(RtcmDataField.DF083.doubleValue(encodedMessage));
+            gpsNavMessage.setAf0(RtcmDataField.DF084.doubleValue(encodedMessage));
+            gpsNavMessage.setIODC(RtcmDataField.DF085.intValue(encodedMessage));
+            gpsNavMessage.setCrs(RtcmDataField.DF086.doubleValue(encodedMessage));
+            gpsNavMessage.setDeltaN(RtcmDataField.DF087.doubleValue(encodedMessage) * GPSOrbitalElements.GPS_PI);
+            gpsNavMessage.setM0(RtcmDataField.DF088.doubleValue(encodedMessage) * GPSOrbitalElements.GPS_PI);
+            gpsNavMessage.setCuc(RtcmDataField.DF089.doubleValue(encodedMessage));
+            gpsNavMessage.setE(RtcmDataField.DF090.doubleValue(encodedMessage));
+            gpsNavMessage.setCus(RtcmDataField.DF091.doubleValue(encodedMessage));
+            gpsNavMessage.setSqrtA(RtcmDataField.DF092.doubleValue(encodedMessage));
+            gpsNavMessage.setToe(RtcmDataField.DF093.doubleValue(encodedMessage));
+            gpsNavMessage.setCic(RtcmDataField.DF094.doubleValue(encodedMessage));
+            gpsNavMessage.setOmega0(RtcmDataField.DF095.doubleValue(encodedMessage) * GPSOrbitalElements.GPS_PI);
+            gpsNavMessage.setCis(RtcmDataField.DF096.doubleValue(encodedMessage));
+            gpsNavMessage.setI0(RtcmDataField.DF097.doubleValue(encodedMessage) * GPSOrbitalElements.GPS_PI);
+            gpsNavMessage.setCrc(RtcmDataField.DF098.doubleValue(encodedMessage));
+            gpsNavMessage.setPa(RtcmDataField.DF099.doubleValue(encodedMessage) * GPSOrbitalElements.GPS_PI);
+            gpsNavMessage.setOmegaDot(RtcmDataField.DF100.doubleValue(encodedMessage) * GPSOrbitalElements.GPS_PI);
+            gpsNavMessage.setTGD(RtcmDataField.DF101.doubleValue(encodedMessage));
+            gpsNavMessage.setSvHealth(RtcmDataField.DF102.intValue(encodedMessage));
+
+            // Set the navigation message
+            rtcm1019Data.setGpsNavigationMessage(gpsNavMessage);
+
+            // L2 P data flag and fit interval
+            rtcm1019Data.setGpsL2PDataFlag(RtcmDataField.DF103.booleanValue(encodedMessage));
+            rtcm1019Data.setGpsFitInterval(RtcmDataField.DF137.intValue(encodedMessage));
+
+            // Return the parsed message
+            return new Rtcm1019(1019, rtcm1019Data);
+
+        }
+
+    },
 
     /** Null message. */
     NULL_MESSAGE("9999") {
