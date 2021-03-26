@@ -18,20 +18,18 @@ package org.orekit.utils;
 
 import java.util.Locale;
 
-import org.hipparchus.util.FastMath;
-import org.hipparchus.util.Precision;
+import org.hipparchus.util.RyuDouble;
 
 /** Formatter used to produce strings from data with high accuracy.
  * <p>
- * When producing test output from coputed data, we don't want to loose
- * internal accuracy when writing doubles so when we parse the output
- * again in another application we recover similar data. We also don't
- * want to have awkward representations like STEP = 1.25000000000000000.
+ * When producing test output from computed data, we want the shortest
+ * decimal representation of a floating point number that maintains
+ * round-trip safety. That is, a correct parser can recover the exact
+ * original number.
  * </p>
  * <p>
- * This class attempts do this by using adaptive format with the fewer
- * numbers of decimals that allows to preserve the full accuracy (down
- * to one ULP).
+ * For efficiency, this class uses the {@link RyuDouble Ryū} algorithm
+ * for producing shortest string representation with round-trip safety.
  * </p>
  * @author Luc Maisonobe
  * @since 11.0
@@ -47,6 +45,12 @@ public class AccurateFormatter {
     /** String format used for dates. **/
     private static final String DATE_FORMAT = "%04d-%02d-%02dT%02d:%02d:%s";
 
+    /** Low switch level for exponential format in dates (will never be reached due to {@link #LOW_TRUNCATION}). */
+    private static final int LOW_EXP = -18;
+
+    /** Truncation level for seconds, to avoid scientific format). */
+    private static final double LOW_TRUNCATION = 1.0e-15;
+
     /** Private constructor for a utility class.
      */
     private AccurateFormatter() {
@@ -58,7 +62,7 @@ public class AccurateFormatter {
      * @return number formatted to full accuracy
      */
     public static String format(final double value) {
-        return format(value, 1, "%22.15e");
+        return RyuDouble.doubleToString(value);
     }
 
     /** Format a date.
@@ -72,43 +76,11 @@ public class AccurateFormatter {
      */
     public static String format(final int year, final int month, final int day,
                                 final int hour, final int minute, final double seconds) {
+        final double truncated = seconds < LOW_TRUNCATION ? 0.0 : seconds;
+        final String s = RyuDouble.doubleToString(truncated, LOW_EXP, RyuDouble.DEFAULT_HIGH_EXP);
         return String.format(STANDARDIZED_LOCALE, DATE_FORMAT,
-                             year, month, day, hour, minute,
-                             format(seconds, 2, "%012.9f"));
-    }
-
-    /** Format a double to string value with high precision.
-     * @param value value to format
-     * @param minDigitsBeforeSeparator minimum number of digits before decimal separator
-     * @param fallbackFormat format to use if simple formats don't work
-     * @return formatted value, with all original value accuracy preserved, or null
-     * if value is {@code Double.NaN}
-     */
-    private static String format(final double value, final int minDigitsBeforeSeparator,
-                                 final String fallbackFormat) {
-
-        // first try decimal formats with increasing number of digits
-        int scale = 1;
-        for (int n = 1; n < 15; ++n) {
-            scale *= 10;
-            final double scaled  = value * scale;
-            final long   rounded = (long) FastMath.rint(scaled);
-            if (Precision.equals(scaled, rounded, 1)) {
-                // the current number of digits is well suited for the value
-                final int firstDigit = rounded < 0 ? 1 : 0;
-                final StringBuilder builder = new StringBuilder();
-                builder.append(rounded);
-                while (builder.length() < n + firstDigit + minDigitsBeforeSeparator) {
-                    builder.insert(firstDigit, '0');
-                }
-                builder.insert(builder.length() - n, '.');
-                return builder.toString();
-            }
-        }
-
-        // none of the simple formats worked, fallback to specified format
-        return String.format(STANDARDIZED_LOCALE, fallbackFormat, value);
-
+                             year, month, day,
+                             hour, minute, s.charAt(1) == '.' ? "0" + s : s);
     }
 
 }
