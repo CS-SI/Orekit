@@ -585,7 +585,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                 }
                 final Maneuver maneuver = new Maneuver();
                 for (int i = 0; i < fields.length; ++i) {
-                    types.get(i).process(fields[i], context, maneuver);
+                    types.get(i).process(fields[i], context, maneuver, token.getLineNumber(), token.getFileName());
                 }
                 currentManeuverHistory.add(maneuver);
                 return true;

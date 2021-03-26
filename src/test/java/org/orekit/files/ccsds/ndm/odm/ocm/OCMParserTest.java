@@ -32,6 +32,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.ElementsType;
 import org.orekit.files.ccsds.definitions.OdMethodType;
+import org.orekit.files.ccsds.definitions.OnOff;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
@@ -734,7 +735,8 @@ public class OCMParserTest {
         Assert.assertEquals(  0.0,        man.get(1).getManeuvers().get(0).getThrust().getX(),    1.0e-10);
         Assert.assertEquals(  0.5,        man.get(1).getManeuvers().get(0).getThrust().getY(),    1.0e-10);
         Assert.assertEquals( 0.05,        man.get(1).getManeuvers().get(0).getThrustSigma(),      1.0e-10);
-        Assert.assertEquals("ON",         man.get(1).getManeuvers().get(0).getThrustInterpolation());
+        Assert.assertEquals(OnOff.ON,     man.get(1).getManeuvers().get(0).getThrustInterpolation());
+        Assert.assertTrue(man.get(1).getManeuvers().get(0).getThrustInterpolation().isOn());
         Assert.assertEquals(300.0,        man.get(1).getManeuvers().get(0).getThrustIsp(),        1.0e-10);
         Assert.assertEquals(0.95,         man.get(1).getManeuvers().get(0).getThrustEfficiency(), 1.0e-10);
 
@@ -748,8 +750,8 @@ public class OCMParserTest {
         OrbitDetermination od = file.getData().getOrbitDeterminationBlock();
         Assert.assertEquals(1, od.getComments().size());
         Assert.assertEquals("Orbit Determination information", od.getComments().get(0));
-        Assert.assertEquals("OOD #10059", od.getId());
-        Assert.assertEquals("OOD #10058", od.getPrevId());
+        Assert.assertEquals("OOD #10059",    od.getId());
+        Assert.assertEquals("OOD #10058",    od.getPrevId());
         Assert.assertEquals(OdMethodType.SF, od.getMethod().getType());
         Assert.assertEquals("ODTK",          od.getMethod().getTool());
         Assert.assertEquals(new AbsoluteDate(2001, 11, 6, 11, 17, 33.0, utc), od.getEpoch());
