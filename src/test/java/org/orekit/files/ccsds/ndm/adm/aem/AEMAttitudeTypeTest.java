@@ -417,7 +417,7 @@ public class AEMAttitudeTypeTest {
     @Test
     public void testSymmetryQuaternionDerivative() {
         doTestSymmetry(AttitudeType.QUATERNION_DERIVATIVE, 0.1, 0.2, 0.3, -0.7, 0.02, -0.05, 0.1, -0.04,
-                       2.0e-16, 8.0e-17);
+                       2.0e-16, 1.0e-16);
     }
 
     @Test
