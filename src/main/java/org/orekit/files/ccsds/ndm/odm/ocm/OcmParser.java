@@ -128,6 +128,11 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
 
     /**
      * Complete constructor.
+     * <p>
+     * Calling this constructor directly is not recommended. Users should rather use
+     * {@link org.orekit.files.ccsds.ndm.ParserBuilder#buildOcmParser()
+     * parserBuilder.buildOcmParser()}.
+     * </p>
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.

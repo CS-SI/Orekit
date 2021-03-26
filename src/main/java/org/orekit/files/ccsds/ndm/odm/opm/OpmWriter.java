@@ -53,6 +53,11 @@ public class OpmWriter extends AbstractMessageWriter {
     public static final int KEY_WIDTH = 18;
 
     /** Complete constructor.
+     * <p>
+     * Calling this constructor directly is not recommended. Users should rather use
+     * {@link org.orekit.files.ccsds.ndm.WriterBuilder#buildOpmWriter(Header, String)
+     * writerBuilder.buildOpmWriter(header, fileName)}.
+     * </p>
      * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems

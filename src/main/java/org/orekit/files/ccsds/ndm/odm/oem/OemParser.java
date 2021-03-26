@@ -107,6 +107,11 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
 
     /**
      * Complete constructor.
+     * <p>
+     * Calling this constructor directly is not recommended. Users should rather use
+     * {@link org.orekit.files.ccsds.ndm.ParserBuilder#buildOemParser()
+     * parserBuilder.buildOemParser()}.
+     * </p>
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.

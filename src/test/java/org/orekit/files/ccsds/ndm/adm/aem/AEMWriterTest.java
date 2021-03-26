@@ -50,6 +50,7 @@ import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
+import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.general.AttitudeEphemerisFile;
@@ -76,7 +77,7 @@ public class AEMWriterTest {
 
     @Test
     public void testAEMWriter() {
-        assertNotNull(new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null, dummyMetadata()));
+        assertNotNull(new WriterBuilder().buildAemWriter(null, dummyMetadata(), null));
     }
 
     @Test
@@ -105,7 +106,10 @@ public class AEMWriterTest {
         metadata.setCenter(s0.getMetadata().getCenter());
         metadata.setInterpolationMethod(s0.getMetadata().getInterpolationMethod());
         String tempAEMFilePath = tempFolder.newFile("TestWriteAEM1.aem").toString();
-        AemWriter writer = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), header, metadata);
+        AemWriter writer = new WriterBuilder().
+                           withConventions(IERSConventions.IERS_2010).
+                           withDataContext(DataContext.getDefault()).
+                           buildAemWriter(header, metadata, "TestWriteAEM1.aem");
         writer.write(tempAEMFilePath, aemFile);
 
         final AemFile generatedOemFile = new AemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1).
@@ -122,7 +126,7 @@ public class AEMWriterTest {
         AemMetadata metadata = dummyMetadata();
         metadata.setObjectID("12345");
         String tempOEMFilePath = tempFolder.newFile("TestAEMUnfoundSpaceId.aem").toString();
-        AemWriter writer = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null, metadata);
+        AemWriter writer = new WriterBuilder().buildAemWriter(null, metadata, tempOEMFilePath);
         try {
             writer.write(tempOEMFilePath, aemFile);
             fail("an exception should have been thrown");
@@ -137,8 +141,10 @@ public class AEMWriterTest {
         final String ex = "/ccsds/adm/aem/AEMExample01.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
-        AemWriter writer = new AemWriter(aemFile.getConventions(), aemFile.getDataContext(),
-                                         aemFile.getHeader(), aemFile.getSegments().get(0).getMetadata());
+        AemWriter writer = new WriterBuilder().
+                        withConventions(aemFile.getConventions()).
+                        withDataContext(aemFile.getDataContext()).
+                        buildAemWriter(aemFile.getHeader(), aemFile.getSegments().get(0).getMetadata(), "dummy");
         try {
             writer.write((BufferedWriter) null, aemFile);
             fail("an exception should have been thrown");
@@ -156,7 +162,7 @@ public class AEMWriterTest {
         AemMetadata metadata = dummyMetadata();
         metadata.setObjectID("1996-062A");
         metadata.setObjectName("MARS GLOBAL SURVEYOR");
-        AemWriter writer = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), header, metadata);
+        AemWriter writer = new WriterBuilder().buildAemWriter(header, metadata, "TestNullEphemeris.aem");
         writer.write(tempAEMFile.toString(), null);
         assertTrue(tempAEMFile.exists());
         try (FileInputStream   fis = new FileInputStream(tempAEMFile);
@@ -177,8 +183,8 @@ public class AEMWriterTest {
         final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
 
         String tempAEMFilePath = tempFolder.newFile("TestOEMUnisatelliteWithDefault.oem").toString();
-        AemWriter writer = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
-                                         null, aemFile.getSegments().get(0).getMetadata());
+        AemWriter writer = new WriterBuilder().
+                        buildAemWriter(null, aemFile.getSegments().get(0).getMetadata(), tempAEMFilePath);
         writer.write(tempAEMFilePath, aemFile);
 
         final AemFile generatedAemFile = new AemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1).
@@ -213,7 +219,7 @@ public class AEMWriterTest {
 
         AemMetadata metadata = dummyMetadata();
         metadata.setObjectID(id2);
-        AemWriter writer = new AemWriter(IERSConventions.IERS_2010, context, null, metadata);
+        AemWriter writer = new WriterBuilder().buildAemWriter(null, metadata, "");
         writer.write(written.getAbsolutePath(), file);
 
         int count = 0;
@@ -235,8 +241,8 @@ public class AEMWriterTest {
         final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
 
         String tempAEMFilePath = tempFolder.newFile("TestAEMIssue723.aem").toString();
-        AemWriter writer = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
-                                         aemFile.getHeader(), aemFile.getSegments().get(0).getMetadata());
+        AemWriter writer = new WriterBuilder().
+                           buildAemWriter(aemFile.getHeader(), aemFile.getSegments().get(0).getMetadata(), "TestAEMIssue723.aem");
         writer.write(tempAEMFilePath, aemFile);
 
         final AemFile generatedAemFile = new AemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1).
@@ -252,8 +258,7 @@ public class AEMWriterTest {
         final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
         StringBuilder buffer = new StringBuilder();
 
-        AemWriter writer = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
-                                         null, aemFile.getSegments().get(0).getMetadata());
+        AemWriter writer = new WriterBuilder().buildAemWriter(null, aemFile.getSegments().get(0).getMetadata(), "");
         buffer = new StringBuilder();
         writer.write(buffer, aemFile);
 

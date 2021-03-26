@@ -30,7 +30,7 @@ import org.orekit.files.ccsds.ndm.tdm.TdmParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
-/** Builder for all {@link NdmFile CCSDS Message} files.
+/** Builder for all {@link NdmFile CCSDS Message} files parsers.
  * <p>
  * This builder can be used for building all CCSDS Messages parsers types.
  * It is particularly useful in multi-threaded context as parsers cannot
@@ -40,19 +40,10 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class ParserBuilder {
-
-    /** IERS conventions used. */
-    private final IERSConventions conventions;
+public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
 
     /** Indicator for simple or accurate EOP interpolation. */
     private final  boolean simpleEOP;
-
-    /** Data context. */
-    private final DataContext dataContext;
-
-    /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
-    private final AbsoluteDate missionReferenceDate;
 
     /** Gravitational coefficient. */
     private final double mu;
@@ -99,46 +90,35 @@ public class ParserBuilder {
      * @param dataContext data context used to retrieve frames, time scales, etc.
      */
     public ParserBuilder(final DataContext dataContext) {
-        this(IERSConventions.IERS_2010, true, dataContext, null, Double.NaN, Double.NaN, 1);
+        this(IERSConventions.IERS_2010, dataContext, null, true, Double.NaN, Double.NaN, 1);
     }
 
-    /**
-     * Complete constructor.
+    /** Complete constructor.
      * @param conventions IERS Conventions
-     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param mu gravitational coefficient
      * @param defaultMass default mass
      * @param defaultInterpolationDegree default interpolation degree
      */
-    private ParserBuilder(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
-                          final AbsoluteDate missionReferenceDate, final double mu, final double defaultMass,
+    private ParserBuilder(final IERSConventions conventions, final DataContext dataContext,
+                          final AbsoluteDate missionReferenceDate, final boolean simpleEOP,
+                          final double mu, final double defaultMass,
                           final int defaultInterpolationDegree) {
-        this.conventions                = conventions;
+        super(conventions, dataContext, missionReferenceDate);
         this.simpleEOP                  = simpleEOP;
-        this.dataContext                = dataContext;
-        this.missionReferenceDate       = missionReferenceDate;
         this.mu                         = mu;
         this.defaultMass                = defaultMass;
         this.defaultInterpolationDegree = defaultInterpolationDegree;
     }
 
-    /** Set up IERS conventions.
-     * @param newConventions IERS Conventions
-     * @return a new builder with updated configuration (the instance is not changed)
-     */
-    public ParserBuilder withConventions(final IERSConventions newConventions) {
-        return new ParserBuilder(newConventions, isSimpleEOP(), getDataContext(),
-                                 getMissionReferenceDate(), getMu(), getDefaultMass(),
-                                 getDefaultInterpolationDegree());
-    }
-
-    /** Get the IERS conventions.
-     * @return IERS conventions
-     */
-    public IERSConventions getConventions() {
-        return conventions;
+    /** {@inheritDoc} */
+    @Override
+    protected ParserBuilder create(final IERSConventions newConventions, final DataContext newDataContext,
+                                   final AbsoluteDate newMissionReferenceDate) {
+        return new ParserBuilder(newConventions, newDataContext, newMissionReferenceDate,
+                                 simpleEOP, mu, defaultMass, defaultInterpolationDegree);
     }
 
     /** Set up flag for ignoring tidal effects when interpolating EOP.
@@ -146,9 +126,8 @@ public class ParserBuilder {
      * @return a new builder with updated configuration (the instance is not changed)
      */
     public ParserBuilder withSimpleEOP(final boolean newSimpleEOP) {
-        return new ParserBuilder(getConventions(), newSimpleEOP, getDataContext(),
-                                 getMissionReferenceDate(), getMu(), getDefaultMass(),
-                                 getDefaultInterpolationDegree());
+        return new ParserBuilder(getConventions(), getDataContext(), getMissionReferenceDate(),
+                                 newSimpleEOP, getMu(), getDefaultMass(), getDefaultInterpolationDegree());
     }
 
     /** Check if tidal effects are ignored when interpolating EOP.
@@ -158,53 +137,13 @@ public class ParserBuilder {
         return simpleEOP;
     }
 
-    /** Set up data context used to retrieve frames, time scales, etc..
-     * @param newDataContext data context used to retrieve frames, time scales, etc.
-     * @return a new builder with updated configuration (the instance is not changed)
-     */
-    public ParserBuilder withDataContext(final DataContext newDataContext) {
-        return new ParserBuilder(getConventions(), isSimpleEOP(), newDataContext,
-                                 getMissionReferenceDate(), getMu(), getDefaultMass(),
-                                 getDefaultInterpolationDegree());
-    }
-
-    /** Get the data context.
-     * @return data context used to retrieve frames, time scales, etc.
-     */
-    public DataContext getDataContext() {
-        return dataContext;
-    }
-
-    /** Set up mission reference date or Mission Elapsed Time or Mission Relative Time time systems.
-     * <p>
-     * The mission reference date is used only by {@link AemParser} and {@link ApmParser},
-     * and by {@link OpmParser}, {@link OmmParser} and {@link OemParser} up to version 2.0
-     * of ODM (starting with version 3.0of ODM, both MET and MRT time system have been
-     * withdrawn from the standard).
-     * </p>
-     * @param newMissionReferenceDate mission reference date or Mission Elapsed Time or Mission Relative Time time systems
-     * @return a new builder with updated configuration (the instance is not changed)
-     */
-    public ParserBuilder withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
-        return new ParserBuilder(getConventions(), isSimpleEOP(), getDataContext(),
-                                 newMissionReferenceDate, getMu(), getDefaultMass(),
-                                 getDefaultInterpolationDegree());
-    }
-
-    /** Get the mission reference date or Mission Elapsed Time or Mission Relative Time time systems.
-     * @return mission reference date
-     */
-    public AbsoluteDate getMissionReferenceDate() {
-        return missionReferenceDate;
-    }
-
     /** Set up the gravitational coefficient.
      * @param newMu gravitational coefficient
      * @return a new builder with updated configuration (the instance is not changed)
      */
     public ParserBuilder withMu(final double newMu) {
-        return new ParserBuilder(getConventions(), isSimpleEOP(), getDataContext(),
-                                 getMissionReferenceDate(), newMu, getDefaultMass(),
+        return new ParserBuilder(getConventions(), getDataContext(), getMissionReferenceDate(),
+                                 isSimpleEOP(), newMu, getDefaultMass(),
                                  getDefaultInterpolationDegree());
     }
 
@@ -223,8 +162,8 @@ public class ParserBuilder {
      * @return a new builder with updated configuration (the instance is not changed)
      */
     public ParserBuilder withDefaultMass(final double newDefaultMass) {
-        return new ParserBuilder(getConventions(), isSimpleEOP(), getDataContext(),
-                                 getMissionReferenceDate(), getMu(), newDefaultMass,
+        return new ParserBuilder(getConventions(), getDataContext(), getMissionReferenceDate(),
+                                 isSimpleEOP(), getMu(), newDefaultMass,
                                  getDefaultInterpolationDegree());
     }
 
@@ -244,8 +183,8 @@ public class ParserBuilder {
      * @return a new builder with updated configuration (the instance is not changed)
      */
     public ParserBuilder withDefaultInterpolationDegree(final int newDefaultInterpolationDegree) {
-        return new ParserBuilder(getConventions(), isSimpleEOP(), getDataContext(),
-                                 getMissionReferenceDate(), getMu(), getDefaultMass(),
+        return new ParserBuilder(getConventions(), getDataContext(), getMissionReferenceDate(),
+                                 isSimpleEOP(), getMu(), getDefaultMass(),
                                  newDefaultInterpolationDegree);
     }
 

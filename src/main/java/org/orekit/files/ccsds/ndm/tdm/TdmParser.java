@@ -80,6 +80,11 @@ public class TdmParser extends AbstractMessageParser<TdmFile, TdmParser> {
     private ProcessingState structureProcessor;
 
     /** Complete constructor.
+     * <p>
+     * Calling this constructor directly is not recommended. Users should rather use
+     * {@link org.orekit.files.ccsds.ndm.ParserBuilder#buildTdmParser(RangeUnitsConverter)
+     * parserBuilder.buildTdmParser(converter)}.
+     * </p>
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.

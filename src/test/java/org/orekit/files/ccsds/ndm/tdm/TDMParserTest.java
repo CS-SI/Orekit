@@ -33,13 +33,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
+import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
@@ -47,7 +47,6 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.IERSConventions;
 
 /**
  * Test class for CCSDS Tracking Data Message parsing.<p>
@@ -176,8 +175,7 @@ public class TDMParserTest {
 
         // write the parsed file back to a characters array
         final CharArrayWriter caw = new CharArrayWriter();
-        TdmWriter tdmw = new TdmWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
-                                       original.getHeader(), "dummy");
+        TdmWriter tdmw = new WriterBuilder().buildTdmWriter(original.getHeader(), "dummy", null);
         Generator generator = new KvnGenerator(caw, TdmWriter.KEY_WIDTH, tdmw.getFileName());
         tdmw.writeHeader(generator);
         for (final Segment<TdmMetadata, ObservationsBlock> segment : original.getSegments()) {

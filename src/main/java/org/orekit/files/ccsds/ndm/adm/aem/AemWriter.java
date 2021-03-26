@@ -220,9 +220,6 @@ public class AemWriter extends AbstractMessageWriter implements AttitudeEphemeri
     /** Version number implemented. **/
     public static final double CCSDS_AEM_VERS = 1.0;
 
-    /** Default file name for error messages. */
-    public static final String DEFAULT_FILE_NAME = "<AEM output>";
-
     /**
      * Default format used for attitude ephemeris data output: 9 digits
      * after the decimal point and leading space for positive values.
@@ -254,31 +251,6 @@ public class AemWriter extends AbstractMessageWriter implements AttitudeEphemeri
     private final AemMetadata metadata;
 
     /**
-     * Standard default constructor that creates a writer with default configurations
-     * including {@link #DEFAULT_ATTITUDE_FORMAT Default formatting}
-     * and {@link #DEFAULT_FILE_NAME default file name} for error messages.
-     * <p>
-     * If the mandatory header entries are not present (or if header is null),
-     * built-in defaults will be used
-     * </p>
-     * <p>
-     * The writer is built from the complete header and partial metadata. The template
-     * metadata is used to initialize and independent internal copy, that will be updated
-     * as new segments are written (with at least the segment start and stop will change,
-     * but some other parts may change too). The {@code template} object itself is not changed.
-     * </>
-     * @param conventions IERS Conventions
-     * @param dataContext used to retrieve frames, time scales, etc.
-     * @param header file header (may be null)
-     * @param template template for metadata
-     * @since 11.0
-     */
-    public AemWriter(final IERSConventions conventions, final DataContext dataContext,
-                     final Header header, final AemMetadata template) {
-        this(conventions, dataContext, header, template, DEFAULT_FILE_NAME);
-    }
-
-    /**
      * Constructor used to create a new AEM writer configured with the necessary parameters
      * to successfully fill in all required fields that aren't part of a standard object.
      * <p>
@@ -292,6 +264,11 @@ public class AemWriter extends AbstractMessageWriter implements AttitudeEphemeri
      * but some other parts may change too). The {@code template} argument itself is not
      * changed.
      * </>
+     * <p>
+     * Calling this constructor directly is not recommended. Users should rather use
+     * {@link org.orekit.files.ccsds.ndm.WriterBuilder#buildAemWriter(AemMetadata, String)
+     * writerBuilder.buildAemWriter(template, fileName)}.
+     * </p>
      * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param header file header (may be null)
