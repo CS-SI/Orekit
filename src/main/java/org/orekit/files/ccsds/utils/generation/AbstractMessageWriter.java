@@ -122,7 +122,7 @@ public abstract class AbstractMessageWriter {
 
         // comments are optional
         if (header != null) {
-            generator.writeComments(header);
+            generator.writeComments(header.getComments());
         }
 
         // creation date is informational only, but mandatory and always in UTC

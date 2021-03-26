@@ -17,8 +17,8 @@
 package org.orekit.files.ccsds.utils.generation;
 
 import java.io.IOException;
+import java.util.List;
 
-import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.utils.AccurateFormatter;
 
@@ -75,8 +75,8 @@ public class KvnGenerator extends AbstractGenerator {
 
     /** {@inheritDoc} */
     @Override
-    public void writeComments(final CommentsContainer comments) throws IOException {
-        for (final String comment : comments.getComments()) {
+    public void writeComments(final List<String> comments) throws IOException {
+        for (final String comment : comments) {
             append(String.format(AccurateFormatter.STANDARDIZED_LOCALE, commentFormat, comment));
         }
     }

@@ -54,7 +54,7 @@ class TdmMetadataWriter extends AbstractWriter {
     @Override
     protected void writeContent(final Generator generator) throws IOException {
 
-        generator.writeComments(metadata);
+        generator.writeComments(metadata.getComments());
 
         // time
         generator.writeEntry(MetadataKey.TIME_SYSTEM.name(),                  metadata.getTimeSystem(), true);

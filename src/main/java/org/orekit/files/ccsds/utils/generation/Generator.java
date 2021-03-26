@@ -17,9 +17,9 @@
 package org.orekit.files.ccsds.utils.generation;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.orekit.files.ccsds.definitions.TimeConverter;
-import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.time.AbsoluteDate;
 
@@ -45,7 +45,7 @@ public interface Generator extends AutoCloseable {
      * @param comments comments to write
      * @throws IOException if an I/O error occurs.
      */
-    void writeComments(CommentsContainer comments) throws IOException;
+    void writeComments(List<String> comments) throws IOException;
 
     /** Write a single key/value entry.
      * @param key   the keyword to write

@@ -14,19 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.ccsds.ndm.odm.opm;
+package org.orekit.files.ccsds.ndm.adm.apm;
 
 import java.io.IOException;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.TimeSystem;
-import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceWriter;
-import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
-import org.orekit.files.ccsds.ndm.odm.CommonMetadataWriter;
-import org.orekit.files.ccsds.ndm.odm.KeplerianElementsWriter;
-import org.orekit.files.ccsds.ndm.odm.SpacecraftParametersWriter;
-import org.orekit.files.ccsds.ndm.odm.StateVectorWriter;
-import org.orekit.files.ccsds.ndm.odm.UserDefinedWriter;
+import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
+import org.orekit.files.ccsds.ndm.adm.AdmMetadataWriter;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.section.XmlStructureKey;
@@ -44,18 +39,18 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OpmWriter extends AbstractMessageWriter {
+public class ApmWriter extends AbstractMessageWriter {
 
     /** Version number implemented. **/
-    public static final double CCSDS_OPM_VERS = 3.0;
+    public static final double CCSDS_APM_VERS = 1.0;
 
     /** Key width for aligning the '=' sign. */
-    public static final int KEY_WIDTH = 18;
+    public static final int KEY_WIDTH = 17;
 
     /** Complete constructor.
      * <p>
      * Calling this constructor directly is not recommended. Users should rather use
-     * {@link org.orekit.files.ccsds.ndm.WriterBuilder#buildOpmWriter(Header, String)
+     * {@link org.orekit.files.ccsds.ndm.WriterBuilder#buildApmWriter(Header, String)
      * writerBuilder.buildOpmWriter(header, fileName)}.
      * </p>
      * @param conventions IERS Conventions
@@ -64,10 +59,10 @@ public class OpmWriter extends AbstractMessageWriter {
      * @param header file header (may be null)
      * @param fileName file name for error messages
      */
-    public OpmWriter(final IERSConventions conventions, final DataContext dataContext,
+    public ApmWriter(final IERSConventions conventions, final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate,
                      final Header header, final String fileName) {
-        super(OpmFile.FORMAT_VERSION_KEY, CCSDS_OPM_VERS, header,
+        super(ApmFile.FORMAT_VERSION_KEY, CCSDS_APM_VERS, header,
               new ContextBinding(
                   () -> conventions, () -> false, () -> dataContext,
                   () -> missionReferenceDate, () -> TimeSystem.UTC,
@@ -80,11 +75,11 @@ public class OpmWriter extends AbstractMessageWriter {
      * @param segment segment to write
      * @throws IOException if any buffer writing operations fails
      */
-    public void writeSegment(final Generator generator, final Segment<CommonMetadata, OpmData> segment)
+    public void writeSegment(final Generator generator, final Segment<AdmMetadata, ApmData> segment)
         throws IOException {
 
         // write the metadata
-        new CommonMetadataWriter(segment.getMetadata(), getTimeConverter()).
+        new AdmMetadataWriter(segment.getMetadata()).
         write(generator);
 
         // start data block
@@ -92,15 +87,24 @@ public class OpmWriter extends AbstractMessageWriter {
             generator.enterSection(XmlStructureKey.data.name());
         }
 
-        // write mandatory state vector block
-        new StateVectorWriter(XmlSubStructureKey.stateVector.name(), null,
-                              segment.getData().getStateVectorBlock(), getTimeConverter()).
+        generator.writeComments(segment.getData().getComments());
+
+        // write mandatory quaternion block
+        new ApmQuaternionWriter(XmlSubStructureKey.quaternionState.name(), null,
+                                segment.getData().getQuaternionBlock(), getTimeConverter()).
         write(generator);
 
-        if (segment.getData().getKeplerianElementsBlock() != null) {
-            // write optional Keplerian elements block
-            new KeplerianElementsWriter(XmlSubStructureKey.keplerianElements.name(), null,
-                                        segment.getData().getKeplerianElementsBlock()).
+        if (segment.getData().getEulerBlock() != null) {
+            // write optional Euler block for three axis stabilized satellites
+            new EulerWriter(XmlSubStructureKey.eulerElementsThree.name(), null,
+                            segment.getData().getEulerBlock()).
+            write(generator);
+        }
+
+        if (segment.getData().getSpinStabilizedBlock() != null) {
+            // write optional Euler block for spin stabilized satellites
+            new SpinStabilizedWriter(XmlSubStructureKey.eulerElementsSpin.name(), null,
+                                     segment.getData().getSpinStabilizedBlock()).
             write(generator);
         }
 
@@ -111,25 +115,12 @@ public class OpmWriter extends AbstractMessageWriter {
             write(generator);
         }
 
-        if (segment.getData().getCovarianceBlock() != null) {
-            // write optional spacecraft parameters block
-            new CartesianCovarianceWriter(XmlSubStructureKey.covarianceMatrix.name(), null,
-                                          segment.getData().getCovarianceBlock()).
-            write(generator);
-        }
-
         if (!segment.getData().getManeuvers().isEmpty()) {
             for (final Maneuver maneuver : segment.getData().getManeuvers()) {
                 // write optional maneuver block
-                new ManeuverWriter(maneuver, getTimeConverter()).write(generator);
+                new ManeuverWriter(XmlSubStructureKey.maneuverParameters.name(), null,
+                                   maneuver, getTimeConverter()).write(generator);
             }
-        }
-
-        if (segment.getData().getUserDefinedBlock() != null) {
-            // write optional user defined parameters block
-            new UserDefinedWriter(XmlSubStructureKey.userDefinedParameters.name(), null,
-                                  segment.getData().getUserDefinedBlock()).
-            write(generator);
         }
 
         // stop data block

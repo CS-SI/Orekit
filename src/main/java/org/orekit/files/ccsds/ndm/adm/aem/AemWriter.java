@@ -357,7 +357,7 @@ public class AemWriter extends AbstractMessageWriter implements AttitudeEphemeri
                 // Loop on attitude data
                 startAttitudeBlock(generator);
                 if (segment instanceof AemSegment) {
-                    generator.writeComments(((AemSegment) segment).getData());
+                    generator.writeComments(((AemSegment) segment).getData().getComments());
                 }
                 for (final TimeStampedAngularCoordinates coordinates : segment.getAngularCoordinates()) {
                     writeAttitudeEphemerisLine(generator, coordinates);
@@ -379,7 +379,7 @@ public class AemWriter extends AbstractMessageWriter implements AttitudeEphemeri
                                KvnStructureKey.META.name() :
                                XmlStructureKey.metadata.name());
 
-        generator.writeComments(metadata);
+        generator.writeComments(metadata.getComments());
 
         // objects
         generator.writeEntry(AdmMetadataKey.OBJECT_NAME.name(), metadata.getObjectName(),       true);

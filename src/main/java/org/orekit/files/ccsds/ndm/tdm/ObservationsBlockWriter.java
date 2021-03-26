@@ -67,7 +67,7 @@ class ObservationsBlockWriter extends AbstractWriter {
     @Override
     protected void writeContent(final Generator generator) throws IOException {
 
-        generator.writeComments(observationsBlock);
+        generator.writeComments(observationsBlock.getComments());
 
         // write the data
         for (final Observation observation : observationsBlock.getObservations()) {

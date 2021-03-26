@@ -37,8 +37,8 @@ public class Units {
     /** m² unit. */
     public static final Unit M2 = Unit.parse("m²");
 
-    /** #/yr unit. */
-    public static final Unit NB_PER_Y = Unit.parse("y⁻¹");
+    /** #/year unit. */
+    public static final Unit NB_PER_Y = Unit.parse("a⁻¹");
 
     /** Square kilometers units. */
     public static final Unit KM2 = Unit.parse("km²");
@@ -66,6 +66,9 @@ public class Units {
 
     /** Degree per second unit. */
     public static final Unit DEG_PER_S = Unit.parse("°/s");
+
+    /**Newton metre unit. */
+    public static final Unit N_M = Unit.parse("N.m");
 
     /** Private constructor for a utility class.
      */

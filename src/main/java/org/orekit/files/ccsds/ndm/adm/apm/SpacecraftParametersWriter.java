@@ -15,20 +15,19 @@
  * limitations under the License.
  */
 
-package org.orekit.files.ccsds.ndm.odm;
+package org.orekit.files.ccsds.ndm.adm.apm;
 
 import java.io.IOException;
 
 import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.section.AbstractWriter;
 import org.orekit.files.ccsds.utils.generation.Generator;
-import org.orekit.utils.units.Unit;
 
 /** Writer for spacecraft parameters data.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class SpacecraftParametersWriter extends AbstractWriter {
+class SpacecraftParametersWriter extends AbstractWriter {
 
     /** Spacecraft parameters block. */
     private final SpacecraftParameters spacecraftParameters;
@@ -36,10 +35,10 @@ public class SpacecraftParametersWriter extends AbstractWriter {
     /** Create a writer.
      * @param xmlTag name of the XML tag surrounding the section
      * @param kvnTag name of the KVN tag surrounding the section (may be null)
-     * @param spacecraftParameters spacecraft parameters to write
+     * @param spacecraftParameters spacecraft parameters data to write
      */
-    public SpacecraftParametersWriter(final String xmlTag, final String kvnTag,
-                                      final SpacecraftParameters spacecraftParameters) {
+    SpacecraftParametersWriter(final String xmlTag, final String kvnTag,
+                               final SpacecraftParameters spacecraftParameters) {
         super(xmlTag, kvnTag);
         this.spacecraftParameters = spacecraftParameters;
     }
@@ -48,29 +47,22 @@ public class SpacecraftParametersWriter extends AbstractWriter {
     @Override
     protected void writeContent(final Generator generator) throws IOException {
 
-        // spacecraft parameters block
         generator.writeComments(spacecraftParameters.getComments());
 
-        // mass
-        generator.writeEntry(SpacecraftParametersKey.MASS.name(),
-                             Unit.KILOGRAM.fromSI(spacecraftParameters.getMass()),
-                             false);
+        // frame
+        if (spacecraftParameters.getInertiaReferenceFrame() != null) {
+            generator.writeEntry(SpacecraftParametersKey.INERTIA_REF_FRAME.name(),
+                                 spacecraftParameters.getInertiaReferenceFrame().getName(),
+                                 false);
+        }
 
-        // solar parameters
-        generator.writeEntry(SpacecraftParametersKey.SOLAR_RAD_AREA.name(),
-                             Units.M2.fromSI(spacecraftParameters.getSolarRadArea()),
-                             false);
-        generator.writeEntry(SpacecraftParametersKey.SOLAR_RAD_COEFF.name(),
-                             Unit.ONE.fromSI(spacecraftParameters.getSolarRadCoeff()),
-                             false);
-
-        // drag parameters
-        generator.writeEntry(SpacecraftParametersKey.DRAG_AREA.name(),
-                             Units.M2.fromSI(spacecraftParameters.getDragArea()),
-                             false);
-        generator.writeEntry(SpacecraftParametersKey.DRAG_COEFF.name(),
-                             Unit.ONE.fromSI(spacecraftParameters.getDragCoeff()),
-                             false);
+        // inertia matrix
+        generator.writeEntry(SpacecraftParametersKey.I11.name(), Units.KG_PER_M2.fromSI(spacecraftParameters.getI11()), true);
+        generator.writeEntry(SpacecraftParametersKey.I22.name(), Units.KG_PER_M2.fromSI(spacecraftParameters.getI22()), true);
+        generator.writeEntry(SpacecraftParametersKey.I33.name(), Units.KG_PER_M2.fromSI(spacecraftParameters.getI33()), true);
+        generator.writeEntry(SpacecraftParametersKey.I12.name(), Units.KG_PER_M2.fromSI(spacecraftParameters.getI12()), true);
+        generator.writeEntry(SpacecraftParametersKey.I13.name(), Units.KG_PER_M2.fromSI(spacecraftParameters.getI13()), true);
+        generator.writeEntry(SpacecraftParametersKey.I23.name(), Units.KG_PER_M2.fromSI(spacecraftParameters.getI23()), true);
 
     }
 

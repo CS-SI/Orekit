@@ -14,38 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.ccsds.ndm.odm;
+package org.orekit.files.ccsds.ndm.adm;
 
 import java.io.IOException;
 
-import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.section.AbstractWriter;
 import org.orekit.files.ccsds.section.MetadataKey;
 import org.orekit.files.ccsds.section.XmlStructureKey;
 import org.orekit.files.ccsds.utils.generation.Generator;
 
 /**
- * Writer for Common metadata for CCSDS Orbit Parameter/Ephemeris/Mean Message files.
+ * Writer for Common metadata for CCSDS Attitude Parameter/Ephemeris Message files.
  *
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class CommonMetadataWriter extends AbstractWriter {
+public class AdmMetadataWriter extends AbstractWriter {
 
     /** Metadata. */
-    private final CommonMetadata metadata;
-
-    /** Converter for dates. */
-    private final TimeConverter timeConverter;
+    private final AdmMetadata metadata;
 
     /** Simple constructor.
      * @param metadata metadata to write
-     * @param timeConverter converter for dates
      */
-    public CommonMetadataWriter(final CommonMetadata metadata, final TimeConverter timeConverter) {
+    public AdmMetadataWriter(final AdmMetadata metadata) {
         super(XmlStructureKey.metadata.name(), null);
         this.metadata      = metadata;
-        this.timeConverter = timeConverter;
     }
 
     /** {@inheritDoc} */
@@ -55,16 +49,14 @@ public class CommonMetadataWriter extends AbstractWriter {
         generator.writeComments(metadata.getComments());
 
         // object
-        generator.writeEntry(OdmMetadataKey.OBJECT_NAME.name(),  metadata.getObjectName(), true);
-        generator.writeEntry(CommonMetadataKey.OBJECT_ID.name(), metadata.getObjectID(),   true);
+        generator.writeEntry(AdmMetadataKey.OBJECT_NAME.name(), metadata.getObjectName(), true);
+        generator.writeEntry(AdmMetadataKey.OBJECT_ID.name(),   metadata.getObjectID(),   true);
 
-        // frames
-        generator.writeEntry(CommonMetadataKey.CENTER_NAME.name(),     metadata.getCenter().getName(),          true);
-        generator.writeEntry(CommonMetadataKey.REF_FRAME.name(),       metadata.getReferenceFrame().getName(),  true);
-        generator.writeEntry(CommonMetadataKey.REF_FRAME_EPOCH.name(), timeConverter, metadata.getFrameEpoch(), false);
+        // center
+        generator.writeEntry(AdmMetadataKey.CENTER_NAME.name(), metadata.getCenter().getName(), true);
 
         // time
-        generator.writeEntry(MetadataKey.TIME_SYSTEM.name(),   metadata.getTimeSystem(), true);
+        generator.writeEntry(MetadataKey.TIME_SYSTEM.name(),    metadata.getTimeSystem(), true);
 
     }
 

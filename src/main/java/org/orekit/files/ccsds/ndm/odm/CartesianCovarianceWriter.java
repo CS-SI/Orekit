@@ -51,7 +51,7 @@ public class CartesianCovarianceWriter extends AbstractWriter {
         final RealMatrix matrix = covariance.getCovarianceMatrix();
 
         // covariance block
-        generator.writeComments(covariance);
+        generator.writeComments(covariance.getComments());
         // note that there are no epochs in the OPM/OMM covariance matrices (but there are epochs in OEM covariance matrices)
         generator.writeEntry(CartesianCovarianceKey.COV_REF_FRAME.name(), covariance.getReferenceFrame().getName(),       false);
         generator.writeEntry(CartesianCovarianceKey.CX_X.name(),          Units.KM2.fromSI(matrix.getEntry(0, 0)),        true);

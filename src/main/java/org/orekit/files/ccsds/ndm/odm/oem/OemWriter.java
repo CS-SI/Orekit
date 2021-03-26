@@ -379,7 +379,7 @@ public class OemWriter extends AbstractMessageWriter implements EphemerisFileWri
 
                 if (segment instanceof OemSegment) {
                     // write data comments
-                    generator.writeComments(((OemSegment) segment).getData());
+                    generator.writeComments(((OemSegment) segment).getData().getComments());
                 }
 
                 // Loop on orbit data
@@ -458,7 +458,7 @@ public class OemWriter extends AbstractMessageWriter implements EphemerisFileWri
                                KvnStructureKey.META.name() :
                                XmlStructureKey.metadata.name());
 
-        generator.writeComments(metadata);
+        generator.writeComments(metadata.getComments());
 
         // objects
         generator.writeEntry(OdmMetadataKey.OBJECT_NAME.name(),    metadata.getObjectName(), true);

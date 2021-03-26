@@ -50,7 +50,7 @@ public class KeplerianElementsWriter extends AbstractWriter {
     protected void writeContent(final Generator generator) throws IOException {
 
         // Keplerian elements block
-        generator.writeComments(keplerianElements);
+        generator.writeComments(keplerianElements.getComments());
         generator.writeEntry(KeplerianElementsKey.SEMI_MAJOR_AXIS.name(), Unit.KILOMETRE.fromSI(keplerianElements.getA()), true);
         generator.writeEntry(KeplerianElementsKey.ECCENTRICITY.name(),    Unit.ONE.fromSI(keplerianElements.getE()),       true);
         generator.writeEntry(KeplerianElementsKey.INCLINATION.name(),     Unit.DEGREE.fromSI(keplerianElements.getI()),    true);

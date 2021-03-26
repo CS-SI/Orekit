@@ -15,34 +15,38 @@
  * limitations under the License.
  */
 
-package org.orekit.files.ccsds.ndm.odm.opm;
+package org.orekit.files.ccsds.ndm.adm.apm;
 
 import java.io.IOException;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.section.AbstractWriter;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.utils.units.Unit;
 
-/** Writer for maneuver parameters data.
+/** Writer for maneuver data.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class ManeuverWriter extends AbstractWriter {
+class ManeuverWriter extends AbstractWriter {
 
-    /** Maneuver parameters block. */
+    /** Maneuver block. */
     private final Maneuver maneuver;
 
     /** Converter for dates. */
     private final TimeConverter timeConverter;
 
     /** Create a writer.
-     * @param maneuver maneuver to write
+     * @param xmlTag name of the XML tag surrounding the section
+     * @param kvnTag name of the KVN tag surrounding the section (may be null)
+     * @param maneuver maneuver data to write
      * @param timeConverter converter for dates
      */
-    public ManeuverWriter(final Maneuver maneuver, final TimeConverter timeConverter) {
-        super(XmlSubStructureKey.maneuverParameters.name(), null);
+    ManeuverWriter(final String xmlTag, final String kvnTag,
+                   final Maneuver maneuver, final TimeConverter timeConverter) {
+        super(xmlTag, kvnTag);
         this.maneuver      = maneuver;
         this.timeConverter = timeConverter;
     }
@@ -51,16 +55,20 @@ public class ManeuverWriter extends AbstractWriter {
     @Override
     protected void writeContent(final Generator generator) throws IOException {
 
-        // maneuver block
         generator.writeComments(maneuver.getComments());
 
-        generator.writeEntry(ManeuverKey.MAN_EPOCH_IGNITION.name(), timeConverter, maneuver.getEpochIgnition(),     true);
-        generator.writeEntry(ManeuverKey.MAN_DURATION.name(),       Unit.SECOND.fromSI(maneuver.getDuration()),     true);
-        generator.writeEntry(ManeuverKey.MAN_DELTA_MASS.name(),     Unit.KILOGRAM.fromSI(maneuver.getDeltaMass()),  true);
-        generator.writeEntry(ManeuverKey.MAN_REF_FRAME.name(),      maneuver.getReferenceFrame().getName(),         true);
-        generator.writeEntry(ManeuverKey.MAN_DV_1.name(),           Units.KM_PER_S.fromSI(maneuver.getDV().getX()), true);
-        generator.writeEntry(ManeuverKey.MAN_DV_2.name(),           Units.KM_PER_S.fromSI(maneuver.getDV().getY()), true);
-        generator.writeEntry(ManeuverKey.MAN_DV_3.name(),           Units.KM_PER_S.fromSI(maneuver.getDV().getZ()), true);
+        // time
+        generator.writeEntry(ManeuverKey.MAN_EPOCH_START.name(), timeConverter, maneuver.getEpochStart(), true);
+        generator.writeEntry(ManeuverKey.MAN_DURATION.name(),    Unit.SECOND.fromSI(maneuver.getDuration()),        true);
+
+        // frame
+        generator.writeEntry(ManeuverKey.MAN_REF_FRAME.name(), maneuver.getRefFrameString(), false);
+
+        // torque
+        final Vector3D torque = maneuver.getTorque();
+        generator.writeEntry(ManeuverKey.MAN_TOR_1.name(), Units.N_M.fromSI(torque.getX()), true);
+        generator.writeEntry(ManeuverKey.MAN_TOR_2.name(), Units.N_M.fromSI(torque.getY()), true);
+        generator.writeEntry(ManeuverKey.MAN_TOR_3.name(), Units.N_M.fromSI(torque.getZ()), true);
 
     }
 
