@@ -78,6 +78,14 @@ public interface Generator extends AutoCloseable {
      * @param mandatory if true, null values triggers exception, otherwise they are silently ignored
      * @throws IOException if an I/O error occurs.
      */
+    void writeEntry(String key, char value, boolean mandatory) throws IOException;
+
+    /** Write a single key/value entry.
+     * @param key   the keyword to write
+     * @param value the value to write
+     * @param mandatory if true, null values triggers exception, otherwise they are silently ignored
+     * @throws IOException if an I/O error occurs.
+     */
     void writeEntry(String key, int value, boolean mandatory) throws IOException;
 
     /** Write a single key/value entry.

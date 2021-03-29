@@ -21,6 +21,7 @@ import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.adm.aem.AemMetadata;
 import org.orekit.files.ccsds.ndm.adm.aem.AemWriter;
 import org.orekit.files.ccsds.ndm.adm.apm.ApmWriter;
+import org.orekit.files.ccsds.ndm.odm.omm.OmmWriter;
 import org.orekit.files.ccsds.ndm.odm.opm.OpmWriter;
 import org.orekit.files.ccsds.ndm.tdm.RangeUnits;
 import org.orekit.files.ccsds.ndm.tdm.RangeUnitsConverter;
@@ -98,15 +99,15 @@ public class WriterBuilder extends AbstractBuilder<WriterBuilder> {
         return new OpmWriter(getConventions(), getDataContext(), getMissionReferenceDate(), header, fileName);
     }
 
-//    /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.opm.OmmFile Orbit Mean elements Messages}.
-//     * @param header file header to used
-//     * @param fileName file name for error messages
-//     * @return a new writer
-//     */
-//    public OmmWriter buildOmmWriter(final Header header, final String fileName) {
-//        return new OmmWriter(getConventions(), getDataContext(), getMissionReferenceDate(), fileName);
-//    }
-//
+    /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.opm.OmmFile Orbit Mean elements Messages}.
+     * @param header file header to used
+     * @param fileName file name for error messages
+     * @return a new writer
+     */
+    public OmmWriter buildOmmWriter(final Header header, final String fileName) {
+        return new OmmWriter(getConventions(), getDataContext(), getMissionReferenceDate(), header, fileName);
+    }
+
 //    /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.oem.OemFile Orbit Ephemeris Messages}.
 //     * @param header file header to used
 //     * @param template template for metadata

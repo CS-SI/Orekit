@@ -455,7 +455,7 @@ public class OPMParserTest {
     }
 
     @Test
-    public void testWriteOPM3XML() throws URISyntaxException, IOException {
+    public void testWriteOPM3() throws URISyntaxException, IOException {
         // simple test for OPM file, contains all mandatory information plus
         // Spacecraft parameters and the position/velocity Covariance Matrix.
         // the content of the file is slightly different from the KVN file in the covariance section

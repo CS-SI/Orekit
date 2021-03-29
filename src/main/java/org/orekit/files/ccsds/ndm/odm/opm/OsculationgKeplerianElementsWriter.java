@@ -15,21 +15,23 @@
  * limitations under the License.
  */
 
-package org.orekit.files.ccsds.ndm.odm;
+package org.orekit.files.ccsds.ndm.odm.opm;
 
 import java.io.IOException;
 
 import org.orekit.files.ccsds.definitions.Units;
+import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
+import org.orekit.files.ccsds.ndm.odm.KeplerianElementsKey;
 import org.orekit.files.ccsds.section.AbstractWriter;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.utils.units.Unit;
 
-/** Writer for Keplerian elements data.
+/** Writer for Keplerian elements data in OPM files.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class KeplerianElementsWriter extends AbstractWriter {
+class OsculationgKeplerianElementsWriter extends AbstractWriter {
 
     /** Keplerian elements block. */
     private final KeplerianElements keplerianElements;
@@ -39,8 +41,8 @@ public class KeplerianElementsWriter extends AbstractWriter {
      * @param kvnTag name of the KVN tag surrounding the section (may be null)
      * @param keplerianElements Keplerian elements to write
      */
-    public KeplerianElementsWriter(final String xmlTag, final String kvnTag,
-                                   final KeplerianElements keplerianElements) {
+    OsculationgKeplerianElementsWriter(final String xmlTag, final String kvnTag,
+                                       final KeplerianElements keplerianElements) {
         super(xmlTag, kvnTag);
         this.keplerianElements = keplerianElements;
     }
@@ -51,14 +53,15 @@ public class KeplerianElementsWriter extends AbstractWriter {
 
         // Keplerian elements block
         generator.writeComments(keplerianElements.getComments());
-        generator.writeEntry(KeplerianElementsKey.SEMI_MAJOR_AXIS.name(), Unit.KILOMETRE.fromSI(keplerianElements.getA()), true);
-        generator.writeEntry(KeplerianElementsKey.ECCENTRICITY.name(),    Unit.ONE.fromSI(keplerianElements.getE()),       true);
-        generator.writeEntry(KeplerianElementsKey.INCLINATION.name(),     Unit.DEGREE.fromSI(keplerianElements.getI()),    true);
-        generator.writeEntry(KeplerianElementsKey.RA_OF_ASC_NODE.name(),  Unit.DEGREE.fromSI(keplerianElements.getRaan()), true);
+        generator.writeEntry(KeplerianElementsKey.SEMI_MAJOR_AXIS.name(),   Unit.KILOMETRE.fromSI(keplerianElements.getA()), true);
+        generator.writeEntry(KeplerianElementsKey.ECCENTRICITY.name(),      Unit.ONE.fromSI(keplerianElements.getE()),       true);
+        generator.writeEntry(KeplerianElementsKey.INCLINATION.name(),       Unit.DEGREE.fromSI(keplerianElements.getI()),    true);
+        generator.writeEntry(KeplerianElementsKey.RA_OF_ASC_NODE.name(),    Unit.DEGREE.fromSI(keplerianElements.getRaan()), true);
+        generator.writeEntry(KeplerianElementsKey.ARG_OF_PERICENTER.name(), Unit.DEGREE.fromSI(keplerianElements.getPa()),   true);
         generator.writeEntry(keplerianElements.getAnomalyType() == PositionAngle.TRUE ?
-                             KeplerianElementsKey.TRUE_ANOMALY.name() : KeplerianElementsKey.MEAN_ANOMALY.name(),
-                             Unit.DEGREE.fromSI(keplerianElements.getAnomaly()),
-                             true);
+                                                                   KeplerianElementsKey.TRUE_ANOMALY.name() : KeplerianElementsKey.MEAN_ANOMALY.name(),
+                                                                   Unit.DEGREE.fromSI(keplerianElements.getAnomaly()),
+                                                                   true);
         generator.writeEntry(KeplerianElementsKey.GM.name(), Units.KM3_PER_S2.fromSI(keplerianElements.getMu()), true);
 
     }

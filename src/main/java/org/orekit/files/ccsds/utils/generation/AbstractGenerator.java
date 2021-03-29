@@ -104,6 +104,12 @@ public abstract class AbstractGenerator implements Generator {
 
     /** {@inheritDoc} */
     @Override
+    public void writeEntry(final String key, final char value, final boolean mandatory) throws IOException {
+        writeEntry(key, Character.toString(value), mandatory);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void writeEntry(final String key, final int value, final boolean mandatory) throws IOException {
         writeEntry(key, Integer.toString(value), mandatory);
     }
