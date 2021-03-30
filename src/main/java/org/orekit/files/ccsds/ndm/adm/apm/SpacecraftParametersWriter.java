@@ -57,12 +57,12 @@ class SpacecraftParametersWriter extends AbstractWriter {
         }
 
         // inertia matrix
-        generator.writeEntry(SpacecraftParametersKey.I11.name(), Units.KG_PER_M2.fromSI(spacecraftParameters.getI11()), true);
-        generator.writeEntry(SpacecraftParametersKey.I22.name(), Units.KG_PER_M2.fromSI(spacecraftParameters.getI22()), true);
-        generator.writeEntry(SpacecraftParametersKey.I33.name(), Units.KG_PER_M2.fromSI(spacecraftParameters.getI33()), true);
-        generator.writeEntry(SpacecraftParametersKey.I12.name(), Units.KG_PER_M2.fromSI(spacecraftParameters.getI12()), true);
-        generator.writeEntry(SpacecraftParametersKey.I13.name(), Units.KG_PER_M2.fromSI(spacecraftParameters.getI13()), true);
-        generator.writeEntry(SpacecraftParametersKey.I23.name(), Units.KG_PER_M2.fromSI(spacecraftParameters.getI23()), true);
+        generator.writeEntry(SpacecraftParametersKey.I11.name(), Units.KG_M2.fromSI(spacecraftParameters.getI11()), true);
+        generator.writeEntry(SpacecraftParametersKey.I22.name(), Units.KG_M2.fromSI(spacecraftParameters.getI22()), true);
+        generator.writeEntry(SpacecraftParametersKey.I33.name(), Units.KG_M2.fromSI(spacecraftParameters.getI33()), true);
+        generator.writeEntry(SpacecraftParametersKey.I12.name(), Units.KG_M2.fromSI(spacecraftParameters.getI12()), true);
+        generator.writeEntry(SpacecraftParametersKey.I13.name(), Units.KG_M2.fromSI(spacecraftParameters.getI13()), true);
+        generator.writeEntry(SpacecraftParametersKey.I23.name(), Units.KG_M2.fromSI(spacecraftParameters.getI23()), true);
 
     }
 

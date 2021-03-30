@@ -28,8 +28,8 @@ public class Units {
     /** Seconds reciprocal unit. */
     public static final Unit ONE_PER_S = Unit.parse("s⁻¹");
 
-    /** kg/m² unit. */
-    public static final Unit KG_PER_M2 = Unit.parse("kg/m²");
+    /** kg.m² unit. */
+    public static final Unit KG_M2 = Unit.parse("kg.m²");
 
     /** km³/s² unit. */
     public static final Unit KM3_PER_S2 = Unit.parse("km³/s²");
