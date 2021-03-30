@@ -74,7 +74,8 @@ public class OEMWriterTest {
 
     @Test
     public void testOEMWriter() {
-        assertNotNull(new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null, dummyMetadata()));
+        assertNotNull(new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
+                                    null, dummyMetadata(), OemWriter.DEFAULT_FILE_NAME));
     }
 
     @Test
@@ -85,8 +86,10 @@ public class OEMWriterTest {
         final OemFile oemFile = parser.parseMessage(source);
 
         String tempOEMFilePath = tempFolder.newFile("TestWriteOEM1.oem").toString();
-        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), oemFile.getHeader(),
-                                         oemFile.getSegments().get(0).getMetadata());
+        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
+                                         oemFile.getHeader(),
+                                         oemFile.getSegments().get(0).getMetadata(),
+                                         tempOEMFilePath);
         writer.write(tempOEMFilePath, oemFile);
 
         final OemFile generatedOemFile = new OemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
@@ -103,8 +106,8 @@ public class OEMWriterTest {
         final OemFile oemFile = parser.parseMessage(source);
 
         String tempOEMFilePath = tempFolder.newFile("TestOEMUnfoundSpaceId.oem").toString();
-        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), oemFile.getHeader(),
-                                         dummyMetadata());
+        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
+                                         oemFile.getHeader(), dummyMetadata(), tempOEMFilePath);
         try {
             writer.write(tempOEMFilePath, oemFile);
             fail("an exception should have been thrown");
@@ -121,8 +124,10 @@ public class OEMWriterTest {
         final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOemParser();
         final OemFile oemFile = parser.parseMessage(source);
-        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), oemFile.getHeader(),
-                                         oemFile.getSegments().get(0).getMetadata());
+        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
+                                         oemFile.getHeader(),
+                                         oemFile.getSegments().get(0).getMetadata(),
+                                         OemWriter.DEFAULT_FILE_NAME);
         try {
             writer.write((BufferedWriter) null, oemFile);
             fail("an exception should have been thrown");
@@ -135,8 +140,8 @@ public class OEMWriterTest {
     @Test
     public void testNullEphemeris() throws IOException {
         File tempOEMFile = tempFolder.newFile("TestNullEphemeris.oem");
-        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null,
-                                         dummyMetadata());
+        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
+                                         null, dummyMetadata(), tempOEMFile.getName());
         writer.write(tempOEMFile.toString(), null);
         assertTrue(tempOEMFile.exists());
         try (FileInputStream   fis = new FileInputStream(tempOEMFile);
@@ -158,8 +163,10 @@ public class OEMWriterTest {
         final OemFile oemFile = parser.parseMessage(source);
 
         String tempOEMFilePath = tempFolder.newFile("TestOEMUnisatelliteWithDefault.oem").toString();
-        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), oemFile.getHeader(),
-                                         oemFile.getSegments().get(0).getMetadata());
+        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
+                                         oemFile.getHeader(),
+                                         oemFile.getSegments().get(0).getMetadata(),
+                                         tempOEMFilePath);
         writer.write(tempOEMFilePath, oemFile);
 
         final OemFile generatedOemFile = new OemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
@@ -177,8 +184,10 @@ public class OEMWriterTest {
         final OemFile oemFile = parser.parseMessage(source);
 
         String tempOEMFilePath = tempFolder.newFile("TestOEMIssue723.aem").toString();
-        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), oemFile.getHeader(),
-                                         oemFile.getSegments().get(0).getMetadata());
+        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
+                                         oemFile.getHeader(),
+                                         oemFile.getSegments().get(0).getMetadata(), 
+                                         tempOEMFilePath);
         writer.write(tempOEMFilePath, oemFile);
 
         final OemFile generatedOemFile = new OemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
@@ -201,30 +210,18 @@ public class OEMWriterTest {
         OemFile oemFile = parser.parseMessage(source);
         StringBuilder buffer = new StringBuilder();
 
-        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), oemFile.getHeader(),
-                                         oemFile.getSegments().get(0).getMetadata(), "",
-                                         "%.2f", "%.3f", "%.4f", "%.6e");
-
-        writer.write(buffer, oemFile);
-
-        String[] lines = buffer.toString().split("\n");
-
-        assertEquals(lines[19], "2002-12-18T12:00:00.331 2789.62 -280.05 -1746.76 4.734 -2.496 -1.042");
-        assertEquals(lines[20], "2002-12-18T12:01:00.331 2783.42 -308.14 -1877.07 5.186 -2.421 -1.996");
-        assertEquals(lines[21], "2002-12-18T12:02:00.331 2776.03 -336.86 -2008.68 5.637 -2.340 -1.947");
-
-        // Default format
-        
-        writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), oemFile.getHeader(),
-                               oemFile.getSegments().get(0).getMetadata());
+        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
+                               oemFile.getHeader(),
+                               oemFile.getSegments().get(0).getMetadata(),
+                               OemWriter.DEFAULT_FILE_NAME);
         buffer = new StringBuilder();
         writer.write(buffer, oemFile);
 
         String[] lines2 = buffer.toString().split("\n");
+        assertEquals("2002-12-18T12:00:00.331 2789.619 -280.045 -1746.755 4.73372 -2.49586 -1.0419499999999997", lines2[19]);
+        assertEquals("2002-12-18T12:01:00.331 2783.419 -308.143 -1877.071 5.18604 -2.42124 -1.99608", lines2[20]);
+        assertEquals("2002-12-18T12:02:00.331 2776.033 -336.859 -2008.682 5.63678 -2.33951 -1.94687", lines2[21]);
 
-        assertEquals(lines2[19], "2002-12-18T12:00:00.331  2789.619000 -280.045000 -1746.755000  4.733720000 -2.495860000 -1.041950000");
-        assertEquals(lines2[20], "2002-12-18T12:01:00.331  2783.419000 -308.143000 -1877.071000  5.186040000 -2.421240000 -1.996080000");
-        assertEquals(lines2[21], "2002-12-18T12:02:00.331  2776.033000 -336.859000 -2008.682000  5.636780000 -2.339510000 -1.946870000");
     }
 
     @Test
@@ -249,7 +246,8 @@ public class OEMWriterTest {
 
         OemMetadata metadata = dummyMetadata();
         metadata.setObjectID(id2);
-        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, context, null, metadata);
+        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, context,
+                                         null, metadata, written.getName());
         writer.write(written.getAbsolutePath(), file);
 
         int count = 0;

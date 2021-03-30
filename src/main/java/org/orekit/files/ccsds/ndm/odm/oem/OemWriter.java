@@ -211,63 +211,11 @@ public class OemWriter extends AbstractMessageWriter implements EphemerisFileWri
     /** Default file name for error messages. */
     public static final String DEFAULT_FILE_NAME = "<OEM output>";
 
-    /**
-     * Default format used for position data output: 6 digits
-     * after the decimal point and leading space for positive values.
-     */
-    public static final String DEFAULT_POSITION_FORMAT = "% .6f";
-
-    /**
-     * Default format used for velocity data output: 9 digits
-     * after the decimal point and leading space for positive values.
-     */
-    public static final String DEFAULT_VELOCITY_FORMAT = "% .9f";
-
-    /**
-     * Default format used for acceleration data output: 12 significant digits
-     * and leading space for positive values.
-     */
-    public static final String DEFAULT_ACCELERATION_FORMAT = "% .12e";
-
-    /**
-     * Default format used for covariance data output: 7 significant digits
-     * and leading space for positive values.
-     */
-    public static final String DEFAULT_COVARIANCE_FORMAT = "% .7e";
-
     /** Key width for aligning the '=' sign. */
     public static final int KEY_WIDTH = 20;
 
     /** Current metadata. */
     private final OemMetadata metadata;
-
-    /** Format for position ephemeris data output. */
-    private final String positionFormat;
-
-    /** Format for velocity ephemeris data output. */
-    private final String velocityFormat;
-
-    /** Format for acceleration ephemeris data output. */
-    private final String accelerationFormat;
-
-    /** Format for acovariance data output. */
-    private final String covarianceFormat;
-
-    /**
-     * Standard default constructor that creates a writer with default
-     * configurations.
-     * @param conventions IERS Conventions
-     * @param dataContext used to retrieve frames, time scales, etc.
-     * @param header file header (may be null)
-     * @param template template for metadata
-     * @since 11.0
-     */
-    public OemWriter(final IERSConventions conventions, final DataContext dataContext,
-                     final Header header, final OemMetadata template) {
-        this(conventions, dataContext, header, template, DEFAULT_FILE_NAME,
-             DEFAULT_POSITION_FORMAT, DEFAULT_VELOCITY_FORMAT,
-             DEFAULT_ACCELERATION_FORMAT, DEFAULT_COVARIANCE_FORMAT);
-    }
 
     /**
      * Constructor used to create a new OEM writer configured with the necessary parameters
@@ -288,32 +236,19 @@ public class OemWriter extends AbstractMessageWriter implements EphemerisFileWri
      * @param header file header (may be null)
      * @param template template for metadata
      * @param fileName file name for error messages
-     * @param positionFormat {@link java.util.Formatter format parameters} for
-     *                       position ephemeris data output
-     * @param velocityFormat {@link java.util.Formatter format parameters} for
-     *                       velocity ephemeris data output
-     * @param accelerationFormat {@link java.util.Formatter format parameters} for
-     *                       acceleration ephemeris data output
-     * @param covarianceFormat {@link java.util.Formatter format parameters} for
-     *                       covariance data output
      * @since 11.0
+     * @see #DEFAULT_FILE_NAME
      */
     public OemWriter(final IERSConventions conventions, final DataContext dataContext,
                      final Header header, final OemMetadata template,
-                     final String fileName, final String positionFormat,
-                     final String velocityFormat, final String accelerationFormat,
-                     final String covarianceFormat) {
+                     final String fileName) {
         super(OemFile.FORMAT_VERSION_KEY, CCSDS_OEM_VERS,
               header,
               new ContextBinding(
                   () -> conventions, () -> true, () -> dataContext,
                   () -> null, template::getTimeSystem, () -> 0.0, () -> 1.0),
               fileName);
-        this.metadata           = copy(template);
-        this.positionFormat     = positionFormat;
-        this.velocityFormat     = velocityFormat;
-        this.accelerationFormat = accelerationFormat;
-        this.covarianceFormat   = covarianceFormat;
+        this.metadata = copy(template);
     }
 
     /** Get current metadata.
@@ -419,9 +354,7 @@ public class OemWriter extends AbstractMessageWriter implements EphemerisFileWri
                                         if (j > 0) {
                                             generator.writeRawData(' ');
                                         }
-                                        generator.writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE,
-                                                                             covarianceFormat,
-                                                                             Units.KM2.fromSI(m.getEntry(i, j))));
+                                        generator.writeRawData(AccurateFormatter.format(Units.KM2.fromSI(m.getEntry(i, j))));
                                     }
 
                                     // end the line
@@ -515,37 +448,28 @@ public class OemWriter extends AbstractMessageWriter implements EphemerisFileWri
 
         // Position data in km
         generator.writeRawData(' ');
-        generator.writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, positionFormat,
-                                             Unit.KILOMETRE.fromSI(coordinates.getPosition().getX())));
+        generator.writeRawData(String.format(AccurateFormatter.format(Unit.KILOMETRE.fromSI(coordinates.getPosition().getX()))));
         generator.writeRawData(' ');
-        generator.writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, positionFormat,
-                                             Unit.KILOMETRE.fromSI(coordinates.getPosition().getY())));
+        generator.writeRawData(String.format(AccurateFormatter.format(Unit.KILOMETRE.fromSI(coordinates.getPosition().getY()))));
         generator.writeRawData(' ');
-        generator.writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, positionFormat,
-                                             Unit.KILOMETRE.fromSI(coordinates.getPosition().getZ())));
+        generator.writeRawData(String.format(AccurateFormatter.format(Unit.KILOMETRE.fromSI(coordinates.getPosition().getZ()))));
 
         // Velocity data in km/s
         generator.writeRawData(' ');
-        generator.writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, velocityFormat,
-                                             Units.KM_PER_S.fromSI(coordinates.getVelocity().getX())));
+        generator.writeRawData(String.format(AccurateFormatter.format(Units.KM_PER_S.fromSI(coordinates.getVelocity().getX()))));
         generator.writeRawData(' ');
-        generator.writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, velocityFormat,
-                                             Units.KM_PER_S.fromSI(coordinates.getVelocity().getY())));
+        generator.writeRawData(String.format(AccurateFormatter.format(Units.KM_PER_S.fromSI(coordinates.getVelocity().getY()))));
         generator.writeRawData(' ');
-        generator.writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, velocityFormat,
-                                             Units.KM_PER_S.fromSI(coordinates.getVelocity().getZ())));
+        generator.writeRawData(String.format(AccurateFormatter.format(Units.KM_PER_S.fromSI(coordinates.getVelocity().getZ()))));
 
         // Acceleration data in km/s²
         if (useAcceleration) {
             generator.writeRawData(' ');
-            generator.writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, accelerationFormat,
-                                                 Units.KM_PER_S2.fromSI(coordinates.getAcceleration().getX())));
+            generator.writeRawData(String.format(AccurateFormatter.format(Units.KM_PER_S2.fromSI(coordinates.getAcceleration().getX()))));
             generator.writeRawData(' ');
-            generator.writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, accelerationFormat,
-                                                 Units.KM_PER_S2.fromSI(coordinates.getAcceleration().getY())));
+            generator.writeRawData(String.format(AccurateFormatter.format(Units.KM_PER_S2.fromSI(coordinates.getAcceleration().getY()))));
             generator.writeRawData(' ');
-            generator.writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, accelerationFormat,
-                                                 Units.KM_PER_S2.fromSI(coordinates.getAcceleration().getZ())));
+            generator.writeRawData(String.format(AccurateFormatter.format(Units.KM_PER_S2.fromSI(coordinates.getAcceleration().getZ()))));
         }
 
         // end the line

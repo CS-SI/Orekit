@@ -220,12 +220,6 @@ public class AemWriter extends AbstractMessageWriter implements AttitudeEphemeri
     /** Version number implemented. **/
     public static final double CCSDS_AEM_VERS = 1.0;
 
-    /**
-     * Default format used for attitude ephemeris data output: 9 digits
-     * after the decimal point and leading space for positive values.
-     */
-    public static final String DEFAULT_ATTITUDE_FORMAT = "% .9f";
-
     /** Key width for aligning the '=' sign. */
     public static final int KEY_WIDTH = 20;
 
