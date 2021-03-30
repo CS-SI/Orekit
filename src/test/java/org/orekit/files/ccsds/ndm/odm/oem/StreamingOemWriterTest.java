@@ -149,7 +149,7 @@ public class StreamingOemWriterTest {
             metadata.setStartTime(AbsoluteDate.J2000_EPOCH.shiftedBy(80 * Constants.JULIAN_CENTURY));
             metadata.setStopTime(metadata.getStartTime().shiftedBy(Constants.JULIAN_YEAR));
             OemWriter oemWriter = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
-                                                header, metadata);
+                                                header, metadata, OemWriter.DEFAULT_FILE_NAME);
 
             // check using the Propagator / StepHandler interface
             final StringBuilder buffer1 = new StringBuilder();
@@ -170,7 +170,7 @@ public class StreamingOemWriterTest {
             // check calling the methods directly
             final StringBuilder buffer2 = new StringBuilder();
             oemWriter = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
-                                      header, metadata);
+                                      header, metadata, OemWriter.DEFAULT_FILE_NAME);
             try (Generator generator = new KvnGenerator(buffer2, OemWriter.KEY_WIDTH, "another-name")) {
                 oemWriter.writeHeader(generator);
                 oemWriter.getMetadata().setObjectName(objectName);
