@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="afossa" type="fix" issue="772">
+        Fixed computation of velocity derivative in FieldNumericalPropagator.Main.addKeplerContribution()
+        with superGetOrbitType() == null.
+      </action>
       <action dev="luc" type="add" >
         Added AccurateFormatter to output double numbers and dates
         with adaptive number of digits, preserving one ULP accuracy.
