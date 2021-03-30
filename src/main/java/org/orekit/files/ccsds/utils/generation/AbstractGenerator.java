@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.utils.generation;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.List;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -75,6 +76,25 @@ public abstract class AbstractGenerator implements Generator {
     @Override
     public void newLine() throws IOException {
         output.append(NEW_LINE);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void writeEntry(final String key, final List<String> value, final boolean mandatory) throws IOException {
+        if (value == null || value.isEmpty()) {
+            complain(key, mandatory);
+        } else {
+            final StringBuilder builder = new StringBuilder();
+            boolean first = true;
+            for (final String v : value) {
+                if (!first) {
+                    builder.append(',');
+                }
+                builder.append(v);
+                first = false;
+            }
+            writeEntry(key, builder.toString(), mandatory);
+        }
     }
 
     /** {@inheritDoc} */
