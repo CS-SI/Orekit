@@ -60,7 +60,7 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
     private double covScaleMax;
 
     /** Measure of confidence in covariance error matching reality. */
-    private String covConfidence;
+    private double covConfidence;
 
     /** Covariance element set type. */
     private ElementsType covType;
@@ -229,14 +229,14 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
     /** Set the measure of confidence in covariance error matching reality.
      * @param covConfidence measure of confidence in covariance error matching reality
      */
-    public void setCovConfidence(final String covConfidence) {
+    public void setCovConfidence(final double covConfidence) {
         this.covConfidence = covConfidence;
     }
 
     /** Get the measure of confidence in covariance error matching reality.
      * @return measure of confidence in covariance error matching reality
      */
-    public String getCovConfidence() {
+    public double getCovConfidence() {
         return covConfidence;
     }
 

@@ -83,8 +83,16 @@ public class OpmWriter extends AbstractMessageWriter {
         throws IOException {
 
         // write the metadata
-        new CommonMetadataWriter(segment.getMetadata(), getTimeConverter()).
-        write(generator);
+        final ContextBinding oldContext = getContext();
+        final CommonMetadata metadata   = segment.getMetadata();
+        setContext(new ContextBinding(oldContext::getConventions,
+                                      oldContext::isSimpleEOP,
+                                      oldContext::getDataContext,
+                                      oldContext::getReferenceDate,
+                                      metadata::getTimeSystem,
+                                      oldContext::getClockCount,
+                                      oldContext::getClockRate));
+        new CommonMetadataWriter(metadata, getTimeConverter()).write(generator);
 
         // start data block
         if (generator.getFormat() == FileFormat.XML) {

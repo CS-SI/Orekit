@@ -21,6 +21,9 @@ import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.adm.aem.AemMetadata;
 import org.orekit.files.ccsds.ndm.adm.aem.AemWriter;
 import org.orekit.files.ccsds.ndm.adm.apm.ApmWriter;
+import org.orekit.files.ccsds.ndm.odm.ocm.OcmWriter;
+import org.orekit.files.ccsds.ndm.odm.oem.OemMetadata;
+import org.orekit.files.ccsds.ndm.odm.oem.OemWriter;
 import org.orekit.files.ccsds.ndm.odm.omm.OmmWriter;
 import org.orekit.files.ccsds.ndm.odm.opm.OpmWriter;
 import org.orekit.files.ccsds.ndm.tdm.RangeUnits;
@@ -108,24 +111,24 @@ public class WriterBuilder extends AbstractBuilder<WriterBuilder> {
         return new OmmWriter(getConventions(), getDataContext(), getMissionReferenceDate(), header, fileName);
     }
 
-//    /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.oem.OemFile Orbit Ephemeris Messages}.
-//     * @param header file header to used
-//     * @param template template for metadata
-//     * @param fileName file name for error messages
-//     * @return a new writer
-//     */
-//    public OemWriter buildOemWriter(final Header header, final OemMetadata template, final String fileName) {
-//        return new OemWriter(getConventions(), getDataContext(), header, template, fileName);
-//    }
-//
-//    /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.ocm.OcmFile Orbit Comprehensive Messages}.
-//     * @param header file header to used
-//     * @param fileName file name for error messages
-//     * @return a new writer
-//     */
-//    public OcmWriter buildOcmWriter(final Header header, final String fileName) {
-//        return new OcmWriter(getConventions(), getDataContext(), fileName);
-//    }
+    /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.oem.OemFile Orbit Ephemeris Messages}.
+     * @param header file header to used
+     * @param template template for metadata
+     * @param fileName file name for error messages
+     * @return a new writer
+     */
+    public OemWriter buildOemWriter(final Header header, final OemMetadata template, final String fileName) {
+        return new OemWriter(getConventions(), getDataContext(), header, template, fileName);
+    }
+
+    /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.ocm.OcmFile Orbit Comprehensive Messages}.
+     * @param header file header to used
+     * @param fileName file name for error messages
+     * @return a new writer
+     */
+    public OcmWriter buildOcmWriter(final Header header, final String fileName) {
+        return new OcmWriter(getConventions(), getDataContext(), header, fileName);
+    }
 
     /** Build a writer for {@link org.orekit.files.ccsds.ndm.adm.apm.ApmFile Attitude Parameters Messages}.
      * @param header file header to used

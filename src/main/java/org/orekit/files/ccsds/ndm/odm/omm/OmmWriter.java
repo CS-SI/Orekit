@@ -80,8 +80,16 @@ public class OmmWriter extends AbstractMessageWriter {
         throws IOException {
 
         // write the metadata
-        new OmmMetadataWriter(segment.getMetadata(), getTimeConverter()).
-        write(generator);
+        final ContextBinding oldContext = getContext();
+        final OmmMetadata    metadata   = segment.getMetadata();
+        setContext(new ContextBinding(oldContext::getConventions,
+                                      oldContext::isSimpleEOP,
+                                      oldContext::getDataContext,
+                                      oldContext::getReferenceDate,
+                                      metadata::getTimeSystem,
+                                      oldContext::getClockCount,
+                                      oldContext::getClockRate));
+        new OmmMetadataWriter(metadata, getTimeConverter()).write(generator);
 
         // start data block
         if (generator.getFormat() == FileFormat.XML) {

@@ -25,7 +25,6 @@ import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.generation.AbstractMessageWriter;
 import org.orekit.files.ccsds.utils.generation.Generator;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
 /**
@@ -77,20 +76,17 @@ public class TdmWriter extends AbstractMessageWriter {
     public void writeSegment(final Generator generator, final Segment<TdmMetadata, ObservationsBlock> segment)
         throws IOException {
 
-        // prepare time converter
-        final IERSConventions conventions   = getContext().getConventions();
-        final boolean         simpleEOP     = getContext().isSimpleEOP();
-        final DataContext     dataContext   = getContext().getDataContext();
-        final AbsoluteDate    referenceDate = getContext().getReferenceDate();
-        final double          clockCount    = getContext().getClockCount();
-        final double          clockRate     = getContext().getClockRate();
-        setContext(new ContextBinding(
-            () -> conventions, () -> simpleEOP, () -> dataContext,
-            () -> referenceDate, segment.getMetadata()::getTimeSystem,
-            () -> clockCount, () -> clockRate));
-
         // write the metadata
-        new TdmMetadataWriter(segment.getMetadata(), getTimeConverter()).
+        final ContextBinding oldContext = getContext();
+        final TdmMetadata    metadata   = segment.getMetadata();
+        setContext(new ContextBinding(oldContext::getConventions,
+                                      oldContext::isSimpleEOP,
+                                      oldContext::getDataContext,
+                                      oldContext::getReferenceDate,
+                                      metadata::getTimeSystem,
+                                      oldContext::getClockCount,
+                                      oldContext::getClockRate));
+        new TdmMetadataWriter(metadata, getTimeConverter()).
         write(generator);
 
         // write the observations block

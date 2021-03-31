@@ -16,8 +16,12 @@
  */
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
+import java.io.ByteArrayInputStream;
+import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
 
@@ -35,14 +39,20 @@ import org.orekit.files.ccsds.definitions.OdMethodType;
 import org.orekit.files.ccsds.definitions.OnOff;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
+import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
+import org.orekit.files.ccsds.section.Segment;
+import org.orekit.files.ccsds.utils.generation.Generator;
+import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.units.Unit;
 
 public class OCMParserTest {
 
@@ -411,9 +421,9 @@ public class OCMParserTest {
         Assert.assertEquals(2, perts.getNBodyPerturbations().size());
         Assert.assertEquals("MOON", perts.getNBodyPerturbations().get(0).getName());
         Assert.assertEquals("SUN",  perts.getNBodyPerturbations().get(1).getName());
-        Assert.assertEquals( 12.0, perts.getFixedGeomagneticKp(), 1.0e-10);
-        Assert.assertEquals(105.0, perts.getFixedF10P7(),         1.0e-10);
-        Assert.assertEquals(120.0, perts.getFixedF10P7Mean(),     1.0e-10);
+        Assert.assertEquals( 12.0, Units.NANO_TESLA.fromSI(perts.getFixedGeomagneticKp()), 1.0e-10);
+        Assert.assertEquals(105.0, Unit.SOLAR_FLUX_UNIT.fromSI(perts.getFixedF10P7()),     1.0e-10);
+        Assert.assertEquals(120.0, Unit.SOLAR_FLUX_UNIT.fromSI(perts.getFixedF10P7Mean()), 1.0e-10);
 
         // check no orbit determination
         Assert.assertNull(file.getData().getOrbitDeterminationBlock());
@@ -430,10 +440,37 @@ public class OCMParserTest {
     public void testParseOCM2XML() {
         final String  name = "/ccsds/odm/ocm/OCMExample2.xml";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-        final OcmFile file = new ParserBuilder().
-                             withMu(Constants.EIGEN5C_EARTH_MU).
-                             buildOcmParser().
-                             parseMessage(source);
+        validateOCM2XML(new ParserBuilder().
+                        withMu(Constants.EIGEN5C_EARTH_MU).
+                        buildOcmParser().
+                        parseMessage(source));
+    }
+
+    @Test
+    public void testWriteOCM2() throws URISyntaxException, IOException {
+        final String name = "/ccsds/odm/ocm/OCMExample2.xml";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        OcmParser parser = new ParserBuilder(). withMu(Constants.EIGEN5C_EARTH_MU).buildOcmParser();
+        final OcmFile original = parser.parseMessage(source);
+
+        // write the parsed file back to a characters array
+        final CharArrayWriter caw = new CharArrayWriter();
+        OcmWriter ocmw = new WriterBuilder().buildOcmWriter(original.getHeader(), "dummy");
+        Generator generator = new KvnGenerator(caw, OcmWriter.KEY_WIDTH, ocmw.getFileName());
+        ocmw.writeHeader(generator);
+        for (final Segment<OcmMetadata, OcmData> segment : original.getSegments()) {
+            ocmw.writeSegment(generator, segment);
+        }
+
+        // reparse the written file
+        final ByteBuffer bb      = StandardCharsets.UTF_8.encode(caw.toString());
+        final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(bb.array()));
+        final OcmFile    rebuilt = new ParserBuilder().buildOcmParser().parseMessage(source2);
+        validateOCM2XML(rebuilt);
+
+    }
+
+    private void validateOCM2XML(final OcmFile file) {
 
         // Check Header Block;
         Assert.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
@@ -528,9 +565,9 @@ public class OCMParserTest {
         Assert.assertEquals(3.986004415e14, perts.getGm(), 1.0);
         Assert.assertEquals("MOON", perts.getNBodyPerturbations().get(0).getName());
         Assert.assertEquals("SUN",  perts.getNBodyPerturbations().get(1).getName());
-        Assert.assertEquals( 12.0, perts.getFixedGeomagneticKp(), 1.0e-10);
-        Assert.assertEquals(105.0, perts.getFixedF10P7(),         1.0e-10);
-        Assert.assertEquals(120.0, perts.getFixedF10P7Mean(),     1.0e-10);
+        Assert.assertEquals( 12.0, Units.NANO_TESLA.fromSI(perts.getFixedGeomagneticKp()), 1.0e-10);
+        Assert.assertEquals(105.0, Unit.SOLAR_FLUX_UNIT.fromSI(perts.getFixedF10P7()),     1.0e-10);
+        Assert.assertEquals(120.0, Unit.SOLAR_FLUX_UNIT.fromSI(perts.getFixedF10P7Mean()), 1.0e-10);
 
         // check no orbit determination
         Assert.assertNull(file.getData().getOrbitDeterminationBlock());

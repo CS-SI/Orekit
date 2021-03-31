@@ -16,6 +16,8 @@
  */
 package org.orekit.files.ccsds.definitions;
 
+import java.util.List;
+
 import org.orekit.utils.units.Unit;
 
 /**
@@ -77,6 +79,32 @@ public class Units {
      */
     private Units() {
         // nothing to do
+    }
+
+    /** Convert a list of units to a bracketed string.
+     * @param units lists to output (may be null or empty)
+     * @return bracketed string (null if units list is null or empty)
+     */
+    public static String outputBracketed(final List<Unit> units) {
+
+        if (units == null || units.isEmpty()) {
+            // nothing to output
+            return null;
+        }
+
+        final StringBuilder builder = new StringBuilder();
+        builder.append('[');
+        boolean first = true;
+        for (final Unit unit : units) {
+            if (!first) {
+                builder.append(',');
+            }
+            builder.append(unit.getName());
+            first = false;
+        }
+        builder.append(']');
+        return builder.toString();
+
     }
 
 }

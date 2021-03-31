@@ -79,8 +79,16 @@ public class ApmWriter extends AbstractMessageWriter {
         throws IOException {
 
         // write the metadata
-        new AdmMetadataWriter(segment.getMetadata()).
-        write(generator);
+        final ContextBinding oldContext = getContext();
+        final AdmMetadata    metadata   = segment.getMetadata();
+        setContext(new ContextBinding(oldContext::getConventions,
+                                      oldContext::isSimpleEOP,
+                                      oldContext::getDataContext,
+                                      oldContext::getReferenceDate,
+                                      metadata::getTimeSystem,
+                                      oldContext::getClockCount,
+                                      oldContext::getClockRate));
+        new AdmMetadataWriter(metadata).write(generator);
 
         // start data block
         if (generator.getFormat() == FileFormat.XML) {

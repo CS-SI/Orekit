@@ -130,6 +130,21 @@ public class Perturbations extends CommentsContainer {
     public Perturbations(final CelestialBodies celestialBodies) {
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
+        equatorialRadius    = Double.NaN;
+        gm                  = Double.NaN;
+        centralBodyRotation = Double.NaN;
+        oblateFlattening    = Double.NaN;
+        fixedGeomagneticKp  = Double.NaN;
+        fixedGeomagneticAp  = Double.NaN;
+        fixedGeomagneticDst = Double.NaN;
+        fixedF10P7          = Double.NaN;
+        fixedF10P7Mean      = Double.NaN;
+        fixedM10P7          = Double.NaN;
+        fixedM10P7Mean      = Double.NaN;
+        fixedS10P7          = Double.NaN;
+        fixedS10P7Mean      = Double.NaN;
+        fixedY10P7          = Double.NaN;
+        fixedY10P7Mean      = Double.NaN;
         shadowBodies = Collections.singletonList(new BodyFacade(celestialBodies.getEarth().getName(),
                                                                 celestialBodies.getEarth()));
     }

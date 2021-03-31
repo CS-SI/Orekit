@@ -166,22 +166,22 @@ public enum PhysicalPropertiesKey {
     DV_REMAINING((token, context, container) -> token.processAsDouble(Units.KM_PER_S, container::setRemainingDv)),
 
     /** Moment of inertia about X-axis. */
-    IXX((token, context, container) -> token.processAsDoublyIndexedDouble(0, 0, Units.KG_PER_M2, container::setInertiaMatrixEntry)),
+    IXX((token, context, container) -> token.processAsDoublyIndexedDouble(0, 0, Units.KG_M2, container::setInertiaMatrixEntry)),
 
     /** Moment of inertia about Y-axis. */
-    IYY((token, context, container) -> token.processAsDoublyIndexedDouble(1, 1, Units.KG_PER_M2, container::setInertiaMatrixEntry)),
+    IYY((token, context, container) -> token.processAsDoublyIndexedDouble(1, 1, Units.KG_M2, container::setInertiaMatrixEntry)),
 
     /** Moment of inertia about Z-axis. */
-    IZZ((token, context, container) -> token.processAsDoublyIndexedDouble(2, 2, Units.KG_PER_M2, container::setInertiaMatrixEntry)),
+    IZZ((token, context, container) -> token.processAsDoublyIndexedDouble(2, 2, Units.KG_M2, container::setInertiaMatrixEntry)),
 
     /** Inertia cross product of the X and Y axes. */
-    IXY((token, context, container) -> token.processAsDoublyIndexedDouble(0, 1, Units.KG_PER_M2, container::setInertiaMatrixEntry)),
+    IXY((token, context, container) -> token.processAsDoublyIndexedDouble(0, 1, Units.KG_M2, container::setInertiaMatrixEntry)),
 
     /** Inertia cross product of the X and Z axes. */
-    IXZ((token, context, container) -> token.processAsDoublyIndexedDouble(0, 2, Units.KG_PER_M2, container::setInertiaMatrixEntry)),
+    IXZ((token, context, container) -> token.processAsDoublyIndexedDouble(0, 2, Units.KG_M2, container::setInertiaMatrixEntry)),
 
     /** Inertia cross product of the Y and Z axes. */
-    IYZ((token, context, container) -> token.processAsDoublyIndexedDouble(1, 2, Units.KG_PER_M2, container::setInertiaMatrixEntry));
+    IYZ((token, context, container) -> token.processAsDoublyIndexedDouble(1, 2, Units.KG_M2, container::setInertiaMatrixEntry));
 
     /** Processing method. */
     private final TokenProcessor processor;
