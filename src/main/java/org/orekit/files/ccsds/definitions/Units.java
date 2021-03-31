@@ -67,8 +67,11 @@ public class Units {
     /** Degree per second unit. */
     public static final Unit DEG_PER_S = Unit.parse("°/s");
 
-    /**Newton metre unit. */
+    /** Newton metre unit. */
     public static final Unit N_M = Unit.parse("N.m");
+
+    /** Nano Tesla unit. */
+    public static final Unit NANO_TESLA = Unit.parse("nT");
 
     /** Private constructor for a utility class.
      */
