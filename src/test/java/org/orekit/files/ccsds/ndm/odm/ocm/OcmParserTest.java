@@ -454,7 +454,7 @@ public class OcmParserTest {
 
         // write the parsed file back to a characters array
         final CharArrayWriter caw = new CharArrayWriter();
-        final Generator generator = new KvnGenerator(caw, OcmWriter.KEY_WIDTH, "dummy");
+        final Generator generator = new KvnGenerator(caw, OcmWriter.KVN_PADDING_WIDTH, "dummy");
         new WriterBuilder().buildOcmWriter().writeMessage(generator, original);
 
         // reparse the written file

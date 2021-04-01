@@ -30,7 +30,6 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.definitions.Units;
-import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
@@ -186,7 +185,7 @@ import org.orekit.utils.units.Unit;
  * <p> The {@link MetadataKey#TIME_SYSTEM} must be constant for the whole file and is used
  * to interpret all dates except {@link HeaderKey#CREATION_DATE} which is always in {@link
  * TimeConverter#UTC UTC}. The guessing algorithm is not guaranteed to work so it is recommended
- * to provide values for {@link AdmMetadataKey#CENTER_NAME} and {@link MetadataKey#TIME_SYSTEM}
+ * to provide values for {@link CommonMetadataKey#CENTER_NAME} and {@link MetadataKey#TIME_SYSTEM}
  * to avoid any bugs associated with incorrect guesses.
  *
  * <p> Standardized values for {@link MetadataKey#TIME_SYSTEM} are GMST, GPS, MET, MRT, SCLK,
@@ -211,8 +210,8 @@ public class OemWriter extends AbstractMessageWriter<Header, OemSegment> impleme
     /** Default file name for error messages. */
     public static final String DEFAULT_FILE_NAME = "<OEM output>";
 
-    /** Key width for aligning the '=' sign. */
-    public static final int KEY_WIDTH = 20;
+    /** Padding width for aligning the '=' sign. */
+    public static final int KVN_PADDING_WIDTH = 20;
 
     /** Header. */
     private final Header header;
@@ -307,7 +306,7 @@ public class OemWriter extends AbstractMessageWriter<Header, OemSegment> impleme
             return;
         }
 
-        try (Generator generator = new KvnGenerator(appendable, KEY_WIDTH, outputName)) {
+        try (Generator generator = new KvnGenerator(appendable, KVN_PADDING_WIDTH, outputName)) {
             writeHeader(generator, header);
 
             // Loop on segments

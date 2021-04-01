@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.utils.generation;
 import java.io.IOException;
 import java.util.List;
 
+import org.hipparchus.util.FastMath;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.utils.AccurateFormatter;
 
@@ -45,16 +46,22 @@ public class KvnGenerator extends AbstractGenerator {
 
     /** Simple constructor.
      * @param output destination of generated output
-     * @param keyWidth minimum width of the key (can be used for aligning the '=' sign),
-     * TDM needs 25 characters for its longest key, other messages need 20 characters at most
+     * @param paddingWidth padding width for aligning the '=' sign
      * @param outputName output name for error messages
+     * @see org.orekit.files.ccsds.ndm.tdm.TdmWriter#KVN_PADDING_WIDTH     TdmWriter.KVN_PADDING_WIDTH
+     * @see org.orekit.files.ccsds.ndm.adm.aem.AemWriter#KVN_PADDING_WIDTH AemWriter.KVN_PADDING_WIDTH
+     * @see org.orekit.files.ccsds.ndm.adm.apm.ApmWriter#KVN_PADDING_WIDTH ApmWriter.KVN_PADDING_WIDTH
+     * @see org.orekit.files.ccsds.ndm.odm.opm.OpmWriter#KVN_PADDING_WIDTH OpmWriter.KVN_PADDING_WIDTH
+     * @see org.orekit.files.ccsds.ndm.odm.omm.OmmWriter#KVN_PADDING_WIDTH OmmWriter.KVN_PADDING_WIDTH
+     * @see org.orekit.files.ccsds.ndm.odm.oem.OemWriter#KVN_PADDING_WIDTH OemWriter.KVN_PADDING_WIDTH
+     * @see org.orekit.files.ccsds.ndm.odm.ocm.OcmWriter#KVN_PADDING_WIDTH OcmWriter.KVN_PADDING_WIDTH
      */
-    public KvnGenerator(final Appendable output, final int keyWidth, final String outputName) {
+    public KvnGenerator(final Appendable output, final int paddingWidth, final String outputName) {
         super(output, outputName);
-        kvFormat = "%-" + keyWidth + "s = %s%n";
+        kvFormat = "%-" + FastMath.max(1, paddingWidth) + "s = %s%n";
         final StringBuilder builder = new StringBuilder(COMMENT);
         builder.append(' ');
-        while (builder.length() < keyWidth + 3) {
+        while (builder.length() < paddingWidth + 3) {
             builder.append(' ');
         }
         builder.append("%s%n");

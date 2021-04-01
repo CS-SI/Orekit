@@ -22,6 +22,7 @@ import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -37,9 +38,9 @@ import org.orekit.time.AbsoluteDate;
  *
  * <pre>{@code
  * Propagator propagator = ...; // pre-configured propagator
- * AEMWriter  aemWriter  = ...; // pre-configured writer with header and metadata
+ * AEMWriter  aemWriter  = ...; // pre-configured writer
  *   try (Generator out = ...;) { // set-up output stream
- *     propagator.setMasterMode(step, new StreamingAemWriter(out, oemWriter).newSegment());
+ *     propagator.setMasterMode(step, new StreamingAemWriter(out, aemWriter).newSegment());
  *     propagator.propagate(startDate, stopDate);
  *   }
  * }</pre>
@@ -55,19 +56,30 @@ public class StreamingAemWriter {
     private final Generator generator;
 
     /** Writer for the AEM message format. */
-    private final AemWriter aemWriter;
+    private final AemWriter writer;
+
+    /** Header. */
+    private final Header header;
+
+    /** Current metadata. */
+    private final AemMetadata metadata;
 
     /** Indicator for writing header. */
     private boolean headerWritePending;
 
     /** Simple constructor.
      * @param generator generator for AEM output
-     * @param aemWriter writer for the AEM message format
-     * @since 10.3
+     * @param writer writer for the AEM message format
+     * @param header file header (may be null)
+     * @param template template for metadata
+     * @since 11.0
      */
-    public StreamingAemWriter(final Generator generator, final AemWriter aemWriter) {
+    public StreamingAemWriter(final Generator generator, final AemWriter writer,
+                              final Header header, final AemMetadata template) {
         this.generator          = generator;
-        this.aemWriter          = aemWriter;
+        this.writer             = writer;
+        this.header             = header;
+        this.metadata           = template.copy();
         this.headerWritePending = true;
     }
 
@@ -100,11 +112,10 @@ public class StreamingAemWriter {
 
                 if (headerWritePending) {
                     // we write the header only for the first segment
-                    aemWriter.writeHeader(generator, aemWriter.getHeader());
+                    writer.writeHeader(generator, header);
                     headerWritePending = false;
                 }
 
-                final AemMetadata metadata = aemWriter.getMetadata();
                 metadata.setStartTime(s0.getDate());
                 metadata.setUseableStartTime(null);
                 metadata.setUseableStopTime(null);
@@ -117,8 +128,8 @@ public class StreamingAemWriter {
                     // the external frame must be frame B
                     metadata.getEndpoints().setFrameB(FrameFacade.map(s0.getAttitude().getReferenceFrame()));
                 }
-                aemWriter.writeMetadata(generator);
-                aemWriter.startAttitudeBlock(generator);
+                writer.writeMetadata(generator, metadata);
+                writer.startAttitudeBlock(generator);
             } catch (IOException e) {
                 throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE, e.getLocalizedMessage());
             }
@@ -128,9 +139,9 @@ public class StreamingAemWriter {
         @Override
         public void handleStep(final SpacecraftState currentState, final boolean isLast) {
             try {
-                aemWriter.writeAttitudeEphemerisLine(generator, currentState.getAttitude().getOrientation());
+                writer.writeAttitudeEphemerisLine(generator, metadata, currentState.getAttitude().getOrientation());
                 if (isLast) {
-                    aemWriter.endAttitudeBlock(generator);
+                    writer.endAttitudeBlock(generator);
                 }
             } catch (IOException e) {
                 throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE, e.getLocalizedMessage());

@@ -44,14 +44,14 @@ public class ApmWriter extends AbstractMessageWriter<Header, Segment<AdmMetadata
     /** Version number implemented. **/
     public static final double CCSDS_APM_VERS = 1.0;
 
-    /** Key width for aligning the '=' sign. */
-    public static final int KEY_WIDTH = 17;
+    /** Padding width for aligning the '=' sign. */
+    public static final int KVN_PADDING_WIDTH = 17;
 
     /** Complete constructor.
      * <p>
      * Calling this constructor directly is not recommended. Users should rather use
-     * {@link org.orekit.files.ccsds.ndm.WriterBuilder#buildApmWriter(Header, String)
-     * writerBuilder.buildOpmWriter(header, fileName)}.
+     * {@link org.orekit.files.ccsds.ndm.WriterBuilder#buildApmWriter()
+     * writerBuilder.buildOpmWriter()}.
      * </p>
      * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.

@@ -38,8 +38,8 @@ public class TdmWriter extends AbstractMessageWriter<Header, Segment<TdmMetadata
     /** Version number implemented. **/
     public static final double CCSDS_TDM_VERS = 1.0;
 
-    /** Key width for aligning the '=' sign. */
-    public static final int KEY_WIDTH = 25;
+    /** Padding width for aligning the '=' sign. */
+    public static final int KVN_PADDING_WIDTH = 25;
 
     /** Converter for {@link RangeUnits#RU Range Units}. */
     private final RangeUnitsConverter converter;
@@ -47,8 +47,8 @@ public class TdmWriter extends AbstractMessageWriter<Header, Segment<TdmMetadata
     /** Complete constructor.
      * <p>
      * Calling this constructor directly is not recommended. Users should rather use
-     * {@link org.orekit.files.ccsds.ndm.WriterBuilder#buildTdmWriter(Header, String, RangeUnitsConverter)
-     * writerBuilder.buildTdmWriter(header, fileName, converter)}.
+     * {@link org.orekit.files.ccsds.ndm.WriterBuilder#buildTdmWriter(RangeUnitsConverter)
+     * writerBuilder.buildTdmWriter(converter)}.
      * </p>
      * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.

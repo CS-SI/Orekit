@@ -48,14 +48,14 @@ public class OpmWriter extends AbstractMessageWriter<Header, Segment<CommonMetad
     /** Version number implemented. **/
     public static final double CCSDS_OPM_VERS = 3.0;
 
-    /** Key width for aligning the '=' sign. */
-    public static final int KEY_WIDTH = 18;
+    /** Padding width for aligning the '=' sign. */
+    public static final int KVN_PADDING_WIDTH = 18;
 
     /** Complete constructor.
      * <p>
      * Calling this constructor directly is not recommended. Users should rather use
-     * {@link org.orekit.files.ccsds.ndm.WriterBuilder#buildOpmWriter(Header, String)
-     * writerBuilder.buildOpmWriter(header, fileName)}.
+     * {@link org.orekit.files.ccsds.ndm.WriterBuilder#buildOpmWriter()
+     * writerBuilder.buildOpmWriter()}.
      * </p>
      * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.

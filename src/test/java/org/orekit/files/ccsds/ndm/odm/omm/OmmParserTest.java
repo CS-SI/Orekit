@@ -162,7 +162,7 @@ public class OmmParserTest {
 
         // write the parsed file back to a characters array
         final CharArrayWriter caw = new CharArrayWriter();
-        final Generator generator = new KvnGenerator(caw, OmmWriter.KEY_WIDTH, "dummy");
+        final Generator generator = new KvnGenerator(caw, OmmWriter.KVN_PADDING_WIDTH, "dummy");
         new WriterBuilder().buildOmmWriter().writeMessage(generator, original);
 
         // reparse the written file

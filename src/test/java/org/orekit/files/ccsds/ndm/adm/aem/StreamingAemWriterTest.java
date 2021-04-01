@@ -95,7 +95,7 @@ public class StreamingAemWriterTest {
             AemMetadata metadata = new AemMetadata(1);
             metadata.setTimeSystem(TimeSystem.UTC);
             metadata.setObjectID(objectID);
-            metadata.setObjectName("will be overwritten");
+            metadata.setObjectName(objectName);
             metadata.setAttitudeType(attitudeType);
             metadata.setIsFirst(isFirst);
             metadata.getEndpoints().setFrameA(frameA);
@@ -103,11 +103,12 @@ public class StreamingAemWriterTest {
             metadata.getEndpoints().setA2b(a2b);
             metadata.setStartTime(AbsoluteDate.PAST_INFINITY);  // will be overwritten at propagation start
             metadata.setStopTime(AbsoluteDate.FUTURE_INFINITY); // will be overwritten at propagation start
-            final AemWriter aemWriter = new WriterBuilder(). buildAemWriter(header, metadata, ex + "-new");
 
             StringBuilder buffer = new StringBuilder();
-            StreamingAemWriter writer = new StreamingAemWriter(new KvnGenerator(buffer, AemWriter.KEY_WIDTH, ""), aemWriter);
-            aemWriter.getMetadata().setObjectName(objectName);
+            StreamingAemWriter writer =
+                            new StreamingAemWriter(new KvnGenerator(buffer, AemWriter.KVN_PADDING_WIDTH, ex + "-new"),
+                                                   new WriterBuilder(). buildAemWriter(),
+                                                   header, metadata);
 
             // Initialize a Keplerian propagator with an Inertial attitude provider
             // It is expected that all attitude data lines will have the same value
