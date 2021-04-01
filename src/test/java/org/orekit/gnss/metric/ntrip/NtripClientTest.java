@@ -118,64 +118,8 @@ public class NtripClientTest {
             client.stopStreaming(100);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNKNOWN_ENCODED_MESSAGE_NUMBER, oe.getSpecifier());
-            Assert.assertEquals("1046", oe.getParts()[0]);
-        }
-    }
-
-    @Test
-    public void testLocalEphemerisData() {
-        DummyServer server = prepareServer("/gnss/ntrip/sourcetable-products.igs-ip.net.txt",
-                                           "/gnss/ntrip/RTCM3EPH01.dat");
-        server.run();
-        NtripClient client = new NtripClient("localhost", server.getServerPort());
-        client.setTimeout(100);
-        client.setReconnectParameters(0.001, 2.0, 2);
-        CountingObserver observerAll            = new CountingObserver(m -> true);
-        CountingObserver observerAllButFiltered = new CountingObserver(m -> m.getTypeCode() == 1042);
-        CountingObserver observer1042           = new CountingObserver(m -> true);
-        LoggingObserver  logging                = new LoggingObserver();
-        client.addObserver(0,    "RTCM3EPH01", observerAll);
-        client.addObserver(0,    "RTCM3EPH01", observerAllButFiltered);
-        client.addObserver(1042, "RTCM3EPH01", observer1042);
-        client.addObserver(0,    "RTCM3EPH01", logging);
-        client.startStreaming("RTCM3EPH01", Type.RTCM, false, true);
-        try {
-            Thread.sleep(400);
-        } catch (InterruptedException ie) {
             // ignored
         }
-        client.stopStreaming(100);
-        Assert.assertEquals(122, observer1042.getCount());
-        Assert.assertEquals(122, observerAllButFiltered.getCount());
-        Assert.assertEquals(368, observerAll.getCount());
-        Assert.assertEquals(1,   logging.getCountByMountPoint().size());
-        Assert.assertEquals(5,   logging.getCountByMessageType().size());
-        Assert.assertEquals(122, logging.getCountByMessageType().get(1042).intValue());
-        Assert.assertEquals(  3, logging.getCountByMessageType().get(1044).intValue());
-        Assert.assertEquals( 72, logging.getCountByMessageType().get(1045).intValue());
-        Assert.assertEquals( 96, logging.getCountByMessageType().get(1019).intValue());
-        Assert.assertEquals( 75, logging.getCountByMessageType().get(1020).intValue());
-    }
-
-    @Test
-    public void testBasicAuthentication() throws URISyntaxException, IOException {
-        DummyServer server = prepareServer("/gnss/ntrip/sourcetable-products.igs-ip.net.txt",
-                                           "/gnss/ntrip/requires-basic-authentication.txt",
-                                           "/gnss/ntrip/RTCM3EPH01.dat");
-        server.run();
-        NtripClient client = new NtripClient("localhost", server.getServerPort());
-        client.setTimeout(100);
-        CountingObserver observer = new CountingObserver(m -> true);
-        client.addObserver(1042, "RTCM3EPH01", observer);
-        client.startStreaming("RTCM3EPH01", Type.RTCM, false, true);
-        try {
-            Thread.sleep(400);
-        } catch (InterruptedException ie) {
-            // ignored
-        }
-        client.stopStreaming(100);
-        Assert.assertEquals(122, observer.getCount());
     }
 
     @Test
