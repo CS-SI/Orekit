@@ -22,6 +22,7 @@ import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -59,19 +60,30 @@ public class StreamingOemWriter {
     private final Generator generator;
 
     /** Writer for the OEM message format. */
-    private final OemWriter oemWriter;
+    private final OemWriter writer;
+
+    /** Header. */
+    private final Header header;
+
+    /** Current metadata. */
+    private final OemMetadata metadata;
 
     /** Indicator for writing header. */
     private boolean headerWritePending;
 
     /** Simple constructor.
      * @param generator generator for OEM output
-     * @param oemWriter writer for the OEM message format
+     * @param writer writer for the AEM message format
+     * @param header file header (may be null)
+     * @param template template for metadata
      * @since 11.0
      */
-    public StreamingOemWriter(final Generator generator, final OemWriter oemWriter) {
+    public StreamingOemWriter(final Generator generator, final OemWriter writer,
+                              final Header header, final OemMetadata template) {
         this.generator          = generator;
-        this.oemWriter          = oemWriter;
+        this.writer             = writer;
+        this.header             = header;
+        this.metadata           = template.copy();
         this.headerWritePending = true;
     }
 
@@ -104,18 +116,17 @@ public class StreamingOemWriter {
 
                 if (headerWritePending) {
                     // we write the header only for the first segment
-                    oemWriter.writeHeader(generator, oemWriter.getHeader());
+                    writer.writeHeader(generator, header);
                     headerWritePending = false;
                 }
 
-                final OemMetadata metadata = oemWriter.getMetadata();
                 metadata.setStartTime(s0.getDate());
                 metadata.setUseableStartTime(null);
                 metadata.setUseableStopTime(null);
                 metadata.setStopTime(t);
                 metadata.setReferenceFrame(FrameFacade.map(s0.getAttitude().getReferenceFrame()));
-                oemWriter.writeMetadata(generator);
-                oemWriter.startData(generator);
+                writer.writeMetadata(generator, metadata);
+                writer.startData(generator);
             } catch (IOException e) {
                 throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE, e.getLocalizedMessage());
             }
@@ -125,9 +136,9 @@ public class StreamingOemWriter {
         @Override
         public void handleStep(final SpacecraftState currentState, final boolean isLast) {
             try {
-                oemWriter.writeOrbitEphemerisLine(generator, currentState.getPVCoordinates(), true);
+                writer.writeOrbitEphemerisLine(generator, metadata, currentState.getPVCoordinates(), true);
                 if (isLast) {
-                    oemWriter.endData(generator);
+                    writer.endData(generator);
                 }
             } catch (IOException e) {
                 throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE, e.getLocalizedMessage());

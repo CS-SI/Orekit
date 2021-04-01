@@ -18,20 +18,15 @@ package org.orekit.files.ccsds.ndm;
 
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
-import org.orekit.files.ccsds.ndm.adm.aem.AemMetadata;
 import org.orekit.files.ccsds.ndm.adm.aem.AemWriter;
-import org.orekit.files.ccsds.ndm.adm.aem.AttitudeWriter;
 import org.orekit.files.ccsds.ndm.adm.apm.ApmWriter;
 import org.orekit.files.ccsds.ndm.odm.ocm.OcmWriter;
-import org.orekit.files.ccsds.ndm.odm.oem.OemMetadata;
 import org.orekit.files.ccsds.ndm.odm.oem.OemWriter;
 import org.orekit.files.ccsds.ndm.odm.omm.OmmWriter;
 import org.orekit.files.ccsds.ndm.odm.opm.OpmWriter;
 import org.orekit.files.ccsds.ndm.tdm.RangeUnits;
 import org.orekit.files.ccsds.ndm.tdm.RangeUnitsConverter;
 import org.orekit.files.ccsds.ndm.tdm.TdmWriter;
-import org.orekit.files.ccsds.section.Header;
-import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -110,13 +105,10 @@ public class WriterBuilder extends AbstractBuilder<WriterBuilder> {
     }
 
     /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.oem.OemFile Orbit Ephemeris Messages}.
-     * @param header file header to used
-     * @param template template for metadata
-     * @param fileName file name for error messages
      * @return a new writer
      */
-    public OemWriter buildOemWriter(final Header header, final OemMetadata template, final String fileName) {
-        return new OemWriter(getConventions(), getDataContext(), header, template, fileName);
+    public OemWriter buildOemWriter() {
+        return new OemWriter(getConventions(), getDataContext(), getMissionReferenceDate());
     }
 
     /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.ocm.OcmFile Orbit Comprehensive Messages}.
@@ -131,18 +123,6 @@ public class WriterBuilder extends AbstractBuilder<WriterBuilder> {
      */
     public ApmWriter buildApmWriter() {
         return new ApmWriter(getConventions(), getDataContext(), getMissionReferenceDate());
-    }
-
-    /** Build a writer for general {@link org.orekit.files.general AttitudeEphemerisFile attitude ephemeris}.
-     * @param header file header to used
-     * @param template template for metadata
-     * @param fileFormat file format to use
-     * @param outputName output name for error messages
-     * @return a new writer
-     */
-    public AttitudeWriter buildAttitudeWriter(final Header header, final AemMetadata template,
-                                              final FileFormat fileFormat, final String outputName) {
-        return new AttitudeWriter(buildAemWriter(), header, template, fileFormat, outputName);
     }
 
     /** Build a writer for {@link org.orekit.files.ccsds.ndm.adm.aem.AemFile Attitude Ephemeris Messages}.

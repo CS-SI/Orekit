@@ -273,17 +273,19 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
         return true;
     }
 
-    /** Manage covariance matrix section in a XML message.
+    /** Manage covariance matrix section.
      * @param starting if true, parser is entering the section
      * otherwise it is leaving the section
      * @return always return true
      */
-    boolean manageXmlCovarianceSection(final boolean starting) {
+    boolean manageCovarianceSection(final boolean starting) {
         if (starting) {
             // save the current metadata for later retrieval of reference frame
             final CommonMetadata savedMetadata = metadata;
             currentCovariance = new CartesianCovariance(() -> savedMetadata.getReferenceFrame());
-            setFallback(this::processXmlCovarianceToken);
+            setFallback(getFileFormat() == FileFormat.XML ?
+                        this::processXmlCovarianceToken :
+                        this::processKvnCovarianceToken);
         } else {
             currentBlock.addCovarianceMatrix(currentCovariance);
             currentCovariance = null;
@@ -329,7 +331,7 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
         } else {
             try {
                 return token.getName() != null &&
-                                XmlSubStructureKey.valueOf(token.getName()).process(token, this);
+                                OemDataSubStructureKey.valueOf(token.getName()).process(token, this);
             } catch (IllegalArgumentException iae) {
                 // token has not been recognized
                 return false;
@@ -404,8 +406,8 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
     private boolean processKvnCovarianceToken(final ParseToken token) {
         setFallback(getFileFormat() == FileFormat.XML ? structureProcessor : this::processMetadataToken);
         if (token.getName() != null) {
-            if (OemFile.COVARIANCE_KVN.equals(token.getName()) ||
-                OemFile.COVARIANCE_XML.equals(token.getName())) {
+            if (OemDataSubStructureKey.COVARIANCE.name().equals(token.getName()) ||
+                OemDataSubStructureKey.covarianceMatrix.name().equals(token.getName())) {
                 // we are entering/leaving covariance section
                 inCovariance = token.getType() == TokenType.START;
                 return true;
