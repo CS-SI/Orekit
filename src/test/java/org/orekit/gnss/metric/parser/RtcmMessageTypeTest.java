@@ -34,10 +34,4 @@ public class RtcmMessageTypeTest {
         }
     }
 
-    @Test
-    public void testNullMessage() {
-        final RtcmMessageType type = RtcmMessageType.getMessageType("9999");
-        Assert.assertNull(type.parse(new ByteArrayEncodedMessages(new byte[] {0,1,0,1}), 9999));
-    }
-
 }
