@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="bryan" type="add" issue="763">
+        Added support for RTCM ephemeris messages.
+      </action>
       <action dev="bryan" type="add" issue="769">
         Added ionospheric model based on IM201 SSR message.
       </action>

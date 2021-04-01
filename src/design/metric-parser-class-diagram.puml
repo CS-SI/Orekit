@@ -48,6 +48,21 @@
           + SsrHeader getHeader()
           + List<SsrData> getData()
         }
+
+      }
+      
+      package rtcm #F3EFEB {
+      
+        package ephemeris #DDEBD8 {
+          class Rtcm1019
+          class Rtcm1020
+          class RtcmXXXX
+          class RtcmEphemerisMessage
+        }
+
+        class RtcmMessage {
+          + List<RtcmData> getData()
+        }
         
       }
 
@@ -61,6 +76,11 @@
       SsrIgm02 --|> SsrIgmMessage
       SsrIgmXX --|> SsrIgmMessage
       SsrIm201 --|> SsrMessage
+      RtcmMessage --|> ParsedMessage
+      RtcmEphemerisMessage --|> RtcmMessage
+      Rtcm1019 --|> RtcmEphemerisMessage
+      Rtcm1020 --|> RtcmEphemerisMessage
+      RtcmXXXX --|> RtcmEphemerisMessage
 
     }
 
@@ -80,7 +100,11 @@
       }
 
       enum RtcmMessageType {
-        +NULL_MESSAGE
+        +RTCM_1019
+        +RTCM_1020
+        +RTCM_1042
+        +RTCM_1044
+        +RTCM_1045
         {static} +MessageType getMessageType(String messageNumber)
       }
 
