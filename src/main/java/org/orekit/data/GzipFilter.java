@@ -29,13 +29,13 @@ public class GzipFilter implements DataFilter {
 
     /** {@inheritDoc} */
     @Override
-    public NamedData filter(final NamedData original) {
+    public DataSource filter(final DataSource original) {
         final String                 oName   = original.getName();
-        final NamedData.StreamOpener oOpener = original.getStreamOpener();
+        final DataSource.StreamOpener oOpener = original.getStreamOpener();
         if (oName.endsWith(SUFFIX)) {
             final String                 fName   = oName.substring(0, oName.length() - SUFFIX.length());
-            final NamedData.StreamOpener fOpener = () -> new GZIPInputStream(oOpener.openStream());
-            return new NamedData(fName, fOpener);
+            final DataSource.StreamOpener fOpener = () -> new GZIPInputStream(oOpener.openOnce());
+            return new DataSource(fName, fOpener);
         } else {
             return original;
         }

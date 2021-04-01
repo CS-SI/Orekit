@@ -869,7 +869,7 @@ public class BoxAndSolarArraySpacecraftTest {
                                    FramesFactory.getEME2000(), date, mu);
         propagator =
             new EcksteinHechlerPropagator(circ,
-                                          new LofOffset(circ.getFrame(), LOFType.VVLH),
+                                          new LofOffset(circ.getFrame(), LOFType.LVLH_CCSDS),
                                           ae, mu, c20, c30, c40, c50, c60);
         } catch (OrekitException oe) {
             Assert.fail(oe.getLocalizedMessage());

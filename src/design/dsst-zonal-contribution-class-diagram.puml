@@ -25,12 +25,13 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
+  skinparam linetype              ortho
 
   package org.orekit #ECEBD8 {
 
     package propagation.semianalytical.dsst #DDEBD8 {
 
-      Package forces #CEEBD8 {
+      Package forces #CBDBC8 {
         interface DSSTForceModel
         interface ShortPeriodTerms
         DSSTForceModel <|-- DSSTZonal
@@ -38,8 +39,8 @@
         ShortPeriodTerms <|-- ZonalShortPeriodicCoefficients
       }
 
-      package utilities #CEEBD8 {
-        package hansen #EAECE6 {
+      package utilities #CBDBC8 {
+        package hansen #CCCCC7 {
           class HansenZonalLinear
         }
           ZonalShortPeriodicCoefficients *--> "*" ShortPeriodicsInterpolatedCoefficient

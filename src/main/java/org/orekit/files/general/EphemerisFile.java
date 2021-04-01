@@ -41,11 +41,14 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * via this interface. In those cases it is recommended that the parser return a subclass
  * of this interface to provide access to the additional information.
  *
+ * @param <C> type of the Cartesian coordinates
+ * @param <S> type of the segment
  * @author Evan Ward
  * @see SatelliteEphemeris
  * @see EphemerisSegment
  */
-public interface EphemerisFile {
+public interface EphemerisFile<C extends TimeStampedPVCoordinates,
+                               S extends EphemerisFile.EphemerisSegment<C>> {
 
     /**
      * Get the loaded ephemeris for each satellite in the file.
@@ -53,7 +56,7 @@ public interface EphemerisFile {
      * @return a map from the satellite's ID to the information about that satellite
      * contained in the file.
      */
-    Map<String, ? extends SatelliteEphemeris> getSatellites();
+    Map<String, ? extends SatelliteEphemeris<C, S>> getSatellites();
 
     /**
      * Contains the information about a single satellite from an {@link EphemerisFile}.
@@ -61,12 +64,14 @@ public interface EphemerisFile {
      * <p> A satellite ephemeris consists of one or more {@link EphemerisSegment}s.
      * Segments are typically used to split up an ephemeris at discontinuous events, such
      * as a maneuver.
-     *
+     * @param <C> type of the Cartesian coordinates
+     * @param <S> type of the segment
      * @author Evan Ward
      * @see EphemerisFile
      * @see EphemerisSegment
      */
-    interface SatelliteEphemeris {
+    interface SatelliteEphemeris<C extends TimeStampedPVCoordinates,
+                                 S extends EphemerisSegment<C>> {
 
         /**
          * Get the satellite ID. The satellite ID is unique only within the same ephemeris
@@ -79,8 +84,7 @@ public interface EphemerisFile {
         /**
          * Get the standard gravitational parameter for the satellite.
          *
-         * @return the gravitational parameter use in {@link #getPropagator()}, in m^3 /
-         * s^2.
+         * @return the gravitational parameter used in {@link #getPropagator()}, in m³/s².
          */
         double getMu();
 
@@ -92,7 +96,7 @@ public interface EphemerisFile {
          *
          * @return the segments contained in the ephemeris file for this satellite.
          */
-        List<? extends EphemerisSegment> getSegments();
+        List<S> getSegments();
 
         /**
          * Get the start date of the ephemeris.
@@ -107,8 +111,7 @@ public interface EphemerisFile {
         /**
          * Get the end date of the ephemeris.
          *
-         * <p> The date returned by this method is equivalent to {@code
-         * getPropagator().getMaxDate()}.
+         * <p> The date returned by this method is equivalent to {@code getPropagator().getMaxDate()}.
          *
          * @return ephemeris end date.
          */
@@ -122,7 +125,7 @@ public interface EphemerisFile {
          * several conditions must be met. An Orekit {@link Frame} and {@link TimeScale}
          * must be constructable from the frame and time scale specification in the
          * ephemeris file. This condition is met when {@link EphemerisSegment#getFrame()}
-         * and {@link EphemerisSegment#getTimeScale()} return normally for all {@link
+         * and {@link EphemerisSegment#getTimeSystem()} return normally for all {@link
          * #getSegments() segments}. If there are multiple segments they must be adjacent
          * such that there are no duplicates or gaps in the ephemeris. The definition of
          * adjacent depends on the ephemeris format as some formats define usable start
@@ -136,7 +139,7 @@ public interface EphemerisFile {
          */
         default BoundedPropagator getPropagator() {
             final List<BoundedPropagator> propagators = new ArrayList<>();
-            for (final EphemerisSegment segment : this.getSegments()) {
+            for (final EphemerisSegment<C> segment : this.getSegments()) {
                 propagators.add(segment.getPropagator());
             }
             return new AggregateBoundedPropagator(propagators);
@@ -150,36 +153,19 @@ public interface EphemerisFile {
      * <p> Segments are typically used to split an ephemeris around discontinuous events
      * such as maneuvers.
      *
+     * @param <C> type of the Cartesian coordinates
      * @author Evan Ward
      * @see EphemerisFile
      * @see SatelliteEphemeris
      */
-    interface EphemerisSegment {
+    interface EphemerisSegment<C extends TimeStampedPVCoordinates> {
 
         /**
          * Get the standard gravitational parameter for the satellite.
          *
-         * @return the gravitational parameter use in {@link #getPropagator()}, in m^3 /
-         * s^2.
+         * @return the gravitational parameter used in {@link #getPropagator()}, in m³/s².
          */
         double getMu();
-
-        /**
-         * Get the name of the center of the coordinate system the ephemeris is provided
-         * in. This may be a natural origin, such as the center of the Earth, another
-         * satellite, etc.
-         *
-         * @return the name of the frame center
-         */
-        String getFrameCenterString();
-
-        /**
-         * Get the defining frame for this ephemeris segment.
-         *
-         * @return the frame identifier, as specified in the ephemeris file, or {@code
-         * null} if the ephemeris file does not specify a frame.
-         */
-        String getFrameString();
 
         /**
          * Get the reference frame for this ephemeris segment. The defining frame for
@@ -211,21 +197,6 @@ public interface EphemerisFile {
         }
 
         /**
-         * Get the time scale for this ephemeris segment.
-         *
-         * @return the time scale identifier, as specified in the ephemeris file, or
-         * {@code null} if the ephemeris file does not specify a time scale.
-         */
-        String getTimeScaleString();
-
-        /**
-         * Get the time scale for this ephemeris segment.
-         *
-         * @return the time scale for this segment. Never {@code null}.
-         */
-        TimeScale getTimeScale();
-
-        /**
          * Get the number of samples to use in interpolation.
          *
          * @return the number of points to use for interpolation.
@@ -253,7 +224,7 @@ public interface EphemerisFile {
          * specified in the file. Any position, velocity, or acceleration coordinates that
          * are not specified in the ephemeris file are zero in the returned values.
          */
-        List<? extends TimeStampedPVCoordinates> getCoordinates();
+        List<C> getCoordinates();
 
         /**
          * Get the start date of this ephemeris segment.
@@ -282,7 +253,7 @@ public interface EphemerisFile {
          * several conditions must be met. An Orekit {@link Frame} and {@link TimeScale}
          * must be constructable from the frame and time scale specification in the
          * ephemeris file. This condition is met when {@link EphemerisSegment#getFrame()}
-         * and {@link EphemerisSegment#getTimeScale()} return normally. Additionally,
+         * and {@link EphemerisSegment#getTimeSystem()} return normally. Additionally,
          * {@link #getMu()} must return a valid value. If these conditions are not met an
          * {@link OrekitException} may be thrown by this method or by one of the methods
          * of the returned {@link Propagator}.
@@ -292,7 +263,7 @@ public interface EphemerisFile {
          * @return a propagator for this ephemeris segment.
          */
         default BoundedPropagator getPropagator() {
-            return new EphemerisSegmentPropagator(this);
+            return new EphemerisSegmentPropagator<>(this);
         }
 
     }

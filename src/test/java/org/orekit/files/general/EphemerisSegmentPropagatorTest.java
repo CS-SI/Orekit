@@ -37,7 +37,6 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScale;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
@@ -71,35 +70,15 @@ public class EphemerisSegmentPropagatorTest {
                 new TimeStampedPVCoordinates(start, new Vector3D(6778137, 0, 0), new Vector3D(0, 7.5e3, 0)),
                 new TimeStampedPVCoordinates(start.shiftedBy(30), new Vector3D(6778137 + 1, 0, 0), new Vector3D(0, 7.5e3, 0)),
                 new TimeStampedPVCoordinates(end, new Vector3D(6778137 + 3, 0, 0), new Vector3D(0, 7.5e3, 0)));
-        EphemerisSegment ephemeris = new EphemerisSegment() {
+        EphemerisSegment<TimeStampedPVCoordinates> ephemeris = new EphemerisSegment<TimeStampedPVCoordinates>() {
             @Override
             public double getMu() {
                 return Constants.EGM96_EARTH_MU;
             }
 
             @Override
-            public String getFrameCenterString() {
-                return null;
-            }
-
-            @Override
-            public String getFrameString() {
-                return null;
-            }
-
-            @Override
             public Frame getFrame() {
                 return frame;
-            }
-
-            @Override
-            public String getTimeScaleString() {
-                return null;
-            }
-
-            @Override
-            public TimeScale getTimeScale() {
-                return null;
             }
 
             @Override

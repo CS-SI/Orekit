@@ -480,7 +480,7 @@ class GNSSAttitudeContext implements TimeStamped {
      * @return Orbit Normal yaw, using inertial frame as reference
      */
     public TimeStampedAngularCoordinates orbitNormalYaw() {
-        final Transform t = LOFType.VVLH.transformFromInertial(date, pvProv.getPVCoordinates(date, inertialFrame));
+        final Transform t = LOFType.LVLH_CCSDS.transformFromInertial(date, pvProv.getPVCoordinates(date, inertialFrame));
         return new TimeStampedAngularCoordinates(date,
                                                  t.getRotation(),
                                                  t.getRotationRate(),

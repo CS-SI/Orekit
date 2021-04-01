@@ -358,7 +358,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
         final CelestialBody moon = CelestialBodyFactory.getMoon();
         final SingleBodyRelativeAttraction forceModel = new SingleBodyRelativeAttraction(moon);
         checkStateJacobianVs80Implementation(new SpacecraftState(orbit), forceModel,
-                                             new LofOffset(orbit.getFrame(), LOFType.VVLH),
+                                             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS),
                                              1.0e-16, false);
     }
 
@@ -377,7 +377,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
         final CelestialBody moon = CelestialBodyFactory.getMoon();
         final SingleBodyRelativeAttraction forceModel = new SingleBodyRelativeAttraction(moon);
         checkStateJacobianVs80ImplementationGradient(new SpacecraftState(orbit), forceModel,
-                                             new LofOffset(orbit.getFrame(), LOFType.VVLH),
+                                             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS),
                                              1.0e-16, false);
     }
 

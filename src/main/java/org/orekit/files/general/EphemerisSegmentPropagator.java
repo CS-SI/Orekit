@@ -41,10 +41,11 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * {@link #propagate(AbsoluteDate)} methods so using this class as a {@link
  * org.orekit.utils.PVCoordinatesProvider} still behaves as expected when the ephemeris
  * file did not have a valid gravitational parameter.
+ * @param <C> type of the Cartesian coordinates
  *
  * @author Evan Ward
  */
-class EphemerisSegmentPropagator extends AbstractAnalyticalPropagator
+class EphemerisSegmentPropagator<C extends TimeStampedPVCoordinates> extends AbstractAnalyticalPropagator
         implements BoundedPropagator {
 
     /**
@@ -52,9 +53,9 @@ class EphemerisSegmentPropagator extends AbstractAnalyticalPropagator
      * #ephemeris} that could be avoided by duplicating the logic of {@link
      * ImmutableTimeStampedCache#getNeighbors(AbsoluteDate)} for a general {@link List}.
      */
-    private final ImmutableTimeStampedCache<TimeStampedPVCoordinates> cache;
+    private final ImmutableTimeStampedCache<C> cache;
     /** Tabular data from which this propagator is built. */
-    private final EphemerisSegment ephemeris;
+    private final EphemerisSegment<C> ephemeris;
     /** Inertial frame used for creating orbits. */
     private final Frame inertialFrame;
     /** Frame of the ephemeris data. */
@@ -65,7 +66,7 @@ class EphemerisSegmentPropagator extends AbstractAnalyticalPropagator
      *
      * @param ephemeris segment containing the data for this propagator.
      */
-    EphemerisSegmentPropagator(final EphemerisSegment ephemeris) {
+    EphemerisSegmentPropagator(final EphemerisSegment<C> ephemeris) {
         super(new InertialProvider(ephemeris.getInertialFrame()));
         this.cache = new ImmutableTimeStampedCache<>(
                 ephemeris.getInterpolationSamples(),
@@ -93,9 +94,8 @@ class EphemerisSegmentPropagator extends AbstractAnalyticalPropagator
     }
 
     @Override
-    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date,
-                                                     final Frame frame) {
-        final Stream<TimeStampedPVCoordinates> neighbors = this.cache.getNeighbors(date);
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
+        final Stream<C> neighbors = this.cache.getNeighbors(date);
         final TimeStampedPVCoordinates point =
                 TimeStampedPVCoordinates.interpolate(date, ephemeris.getAvailableDerivatives(), neighbors);
         return ephemerisFrame.getTransformTo(frame, date).transformPVCoordinates(point);

@@ -25,6 +25,7 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
+  skinparam linetype              ortho
 
   package org.orekit #ECEBD8 {
 
@@ -66,7 +67,7 @@
       Propagator            <|.. AbstractPropagator
       Propagator            <|.. BoundedPropagator
 
-      package analytical #ECEBD8 {
+      package analytical #CBDBC8 {
 
         abstract class AbstractAnalyticalPropagator {
           +PVCoordinatesProvider getPvProvider()
@@ -81,17 +82,17 @@
         AbstractAnalyticalPropagator <|-- Ephemeris
         BoundedPropagator            <|.. Ephemeris
 
-        package tle #DDEBD8 {
+        package tle #CCCCC7 {
           AbstractAnalyticalPropagator <|-- TLEPropagator
         }
 
-        package gnss #DDEBD8 {
+        package gnss #CCCCC7 {
           AbstractAnalyticalPropagator <|-- GPSPropagator
         }
 
      }
 
-     package integration #ECEBD8 {
+     package integration #CBDBC8 {
 
        abstract class AbstractIntegratedPropagator {
          +void setIntegrator(FirstOrderIntegrator integrator)
@@ -106,15 +107,15 @@
 
      }
 
-     package semianalytical #ECEBD8 {
+     package semianalytical #CBDBC8 {
 
-       package dsst #DDEBD8 {
+       package dsst #CCCCC7 {
          DSSTPropagator --|> AbstractIntegratedPropagator
        }
 
      }
 
-     package numerical #ECEBD8 {
+     package numerical #CBDBC8 {
        NumericalPropagator --|> AbstractIntegratedPropagator
      }
 

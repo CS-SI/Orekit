@@ -43,7 +43,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @since 9.0
  *
  */
-public class OrekitEphemerisFile implements EphemerisFile {
+public class OrekitEphemerisFile
+    implements EphemerisFile<TimeStampedPVCoordinates, OrekitEphemerisFile.OrekitEphemerisSegment> {
 
     /** Hashmap of satellite ephemeris. **/
     private final Map<String, OrekitSatelliteEphemeris> satellites;
@@ -78,13 +79,14 @@ public class OrekitEphemerisFile implements EphemerisFile {
      * Inner class of {@link OrekitEphemerisFile} that defines the
      * {@link OrekitSatelliteEphemeris} corresponding object for this ephemeris type.
      */
-    public static class OrekitSatelliteEphemeris implements SatelliteEphemeris {
+    public static class OrekitSatelliteEphemeris
+        implements EphemerisFile.SatelliteEphemeris<TimeStampedPVCoordinates, OrekitEphemerisSegment> {
 
         /**
          * Defines the default interpolation sample size if it is not specified
          * on a segment.
          **/
-        public static final int DEFAULT_INTERPOLATION_SIZE = 7; // TODO change default interpolation size to 2 in 11.0 to be consistent with default interpolation degree in OEMParser
+        public static final int DEFAULT_INTERPOLATION_SIZE = 2;
 
         /** ID of the space object encapsulated here. **/
         private final String id;
@@ -106,7 +108,7 @@ public class OrekitEphemerisFile implements EphemerisFile {
          */
         public OrekitSatelliteEphemeris(final String id) {
             this.id = id;
-            this.segments = new ArrayList<OrekitEphemerisSegment>();
+            this.segments = new ArrayList<>();
         }
 
         /** {@inheritDoc} */
@@ -127,7 +129,7 @@ public class OrekitEphemerisFile implements EphemerisFile {
 
         /** {@inheritDoc} */
         @Override
-        public List<? extends EphemerisSegment> getSegments() {
+        public List<OrekitEphemerisSegment> getSegments() {
             return Collections.unmodifiableList(this.segments);
         }
 
@@ -255,22 +257,23 @@ public class OrekitEphemerisFile implements EphemerisFile {
                 this.stopDate = stop;
             }
 
-            final List<TimeStampedPVCoordinates> coordinates = new ArrayList<TimeStampedPVCoordinates>();
+            final List<TimeStampedPVCoordinates> coordinates = new ArrayList<>();
             for (SpacecraftState state : states) {
                 coordinates.add(state.getPVCoordinates());
             }
 
             final Frame frame = states.get(0).getFrame();
 
-            final OrekitEphemerisSegment newSeg = new OrekitEphemerisSegment(coordinates, frame, body.getName(),
-                    body.getGM(), timeScale, interpolationSampleSize);
+            final OrekitEphemerisSegment newSeg =
+                            new OrekitEphemerisSegment(coordinates, frame, body.getGM(), interpolationSampleSize);
             this.segments.add(newSeg);
 
             return newSeg;
         }
     }
 
-    public static class OrekitEphemerisSegment implements EphemerisSegment {
+    public static class OrekitEphemerisSegment
+        implements EphemerisFile.EphemerisSegment<TimeStampedPVCoordinates> {
 
         /** Coordinates for this ephemeris segment. **/
         private final List<TimeStampedPVCoordinates> coordinates;
@@ -278,17 +281,8 @@ public class OrekitEphemerisFile implements EphemerisFile {
         /** The reference frame for this ephemeris segment. **/
         private final Frame frame;
 
-        /** The name of the frame center. **/
-        private final String frameCenterString;
-
         /** Standard gravitational parameter for the satellite. **/
         private final double mu;
-
-        /** The time scale identifier, as specified in the ephemeris file. **/
-        private final String timeScaleString;
-
-        /** The time scale for this segment. **/
-        private final TimeScale timeScale;
 
         /** The number of interpolation samples. */
         private final int interpolationSamples;
@@ -300,24 +294,16 @@ public class OrekitEphemerisFile implements EphemerisFile {
          *            coordinates making up the ephemeris for this segment
          * @param frame
          *            the frame the coordinates are in
-         * @param frameCenterString
-         *            the name of celestial body the frame is attached to
          * @param mu
          *            the gravitational constant used in force model evaluations
-         * @param timeScale
-         *            the time scale of these ephemeris points
          * @param interpolationSamples
          *            the number of samples to use during interpolation
          */
         public OrekitEphemerisSegment(final List<TimeStampedPVCoordinates> coordinates, final Frame frame,
-                final String frameCenterString, final double mu, final TimeScale timeScale, final int interpolationSamples) {
-            super();
-            this.coordinates = coordinates;
-            this.frame = frame;
-            this.frameCenterString = frameCenterString;
-            this.mu = mu;
-            this.timeScale = timeScale;
-            this.timeScaleString = timeScale.getName();
+                                      final double mu, final int interpolationSamples) {
+            this.coordinates          = coordinates;
+            this.frame                = frame;
+            this.mu                   = mu;
             this.interpolationSamples = interpolationSamples;
         }
 
@@ -325,18 +311,6 @@ public class OrekitEphemerisFile implements EphemerisFile {
         @Override
         public double getMu() {
             return mu;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public String getFrameCenterString() {
-            return frameCenterString;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public String getFrameString() {
-            return frame.getName();
         }
 
         /** {@inheritDoc} */
@@ -349,18 +323,6 @@ public class OrekitEphemerisFile implements EphemerisFile {
         @Override
         public Frame getInertialFrame() {
             return frame;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public String getTimeScaleString() {
-            return timeScaleString;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public TimeScale getTimeScale() {
-            return timeScale;
         }
 
         /** {@inheritDoc} */

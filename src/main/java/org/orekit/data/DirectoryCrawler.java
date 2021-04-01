@@ -126,12 +126,12 @@ public class DirectoryCrawler implements DataProvider {
                     } else {
 
                         // apply all registered filters
-                        NamedData data = new NamedData(file.getName(), () -> new FileInputStream(file));
+                        DataSource data = new DataSource(file.getName(), () -> new FileInputStream(file));
                         data = manager.applyAllFilters(data);
 
                         if (supported.matcher(data.getName()).matches()) {
                             // visit the current file
-                            try (InputStream input = data.getStreamOpener().openStream()) {
+                            try (InputStream input = data.getStreamOpener().openOnce()) {
                                 visitor.loadData(input, file.getPath());
                                 loaded = true;
                             }

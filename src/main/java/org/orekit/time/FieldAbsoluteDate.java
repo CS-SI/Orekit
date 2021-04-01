@@ -22,6 +22,9 @@ import java.util.TimeZone;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.MathUtils.FieldSumAndResidual;
+import org.hipparchus.util.MathUtils.SumAndResidual;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -151,25 +154,15 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      */
     public FieldAbsoluteDate(final FieldAbsoluteDate<T> since, final T elapsedDuration) {
         this.field = since.field;
-        final T sum = since.offset.add(elapsedDuration);
-        if (Double.isInfinite(sum.getReal())) {
-            offset = sum;
-            epoch  = (sum.getReal() < 0) ? Long.MIN_VALUE : Long.MAX_VALUE;
+        // Use 2Sum for high precision.
+        final FieldSumAndResidual<T> sumAndResidual = MathUtils.twoSum(since.offset, elapsedDuration);
+        if (Double.isInfinite(sumAndResidual.getSum().getReal())) {
+            offset = sumAndResidual.getSum();
+            epoch = (sumAndResidual.getSum().getReal() < 0) ? Long.MIN_VALUE : Long.MAX_VALUE;
         } else {
-            // compute sum exactly, using Møller-Knuth TwoSum algorithm without branching
-            // the following statements must NOT be simplified, they rely on floating point
-            // arithmetic properties (rounding and representable numbers)
-            // at the end, the EXACT result of addition since.offset + elapsedDuration
-            // is sum + residual, where sum is the closest representable number to the exact
-            // result and residual is the missing part that does not fit in the first number
-            final double oPrime   = sum.getReal() - elapsedDuration.getReal();
-            final double dPrime   = sum.getReal() - oPrime;
-            final double deltaO   = since.offset.getReal() - oPrime;
-            final double deltaD   = elapsedDuration.getReal() - dPrime;
-            final double residual = deltaO + deltaD;
-            final long   dl       = (long) FastMath.floor(sum.getReal());
-            offset = sum.subtract(dl).add(residual);
-            epoch  = since.epoch + dl;
+            final long dl = (long) FastMath.floor(sumAndResidual.getSum().getReal());
+            offset = sumAndResidual.getSum().subtract(dl).add(sumAndResidual.getResidual());
+            epoch = since.epoch + dl;
         }
     }
 
@@ -212,21 +205,11 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
         final double seconds  = time.getSecond();
         final double tsOffset = timeScale.offsetToTAI(date, time);
 
-        // compute sum exactly, using Møller-Knuth TwoSum algorithm without branching
-        // the following statements must NOT be simplified, they rely on floating point
-        // arithmetic properties (rounding and representable numbers)
-        // at the end, the EXACT result of addition seconds + tsOffset
-        // is sum + residual, where sum is the closest representable number to the exact
-        // result and residual is the missing part that does not fit in the first number
-        final double sum      = seconds + tsOffset;
-        final double sPrime   = sum - tsOffset;
-        final double tPrime   = sum - sPrime;
-        final double deltaS   = seconds  - sPrime;
-        final double deltaT   = tsOffset - tPrime;
-        final double residual = deltaS   + deltaT;
-        final long   dl       = (long) FastMath.floor(sum);
+        // Use 2Sum for high precision.
+        final SumAndResidual sumAndResidual = MathUtils.twoSum(seconds, tsOffset);
+        final long dl = (long) FastMath.floor(sumAndResidual.getSum());
 
-        offset = field.getZero().add((sum - dl) + residual);
+        offset = field.getZero().add((sumAndResidual.getSum() - dl) + sumAndResidual.getResidual());
 
         epoch  = 60l * ((date.getJ2000Day() * 24l + time.getHour()) * 60l +
                         time.getMinute() - time.getMinutesFromUTC() - 720l) + dl;
@@ -379,25 +362,15 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      */
     private FieldAbsoluteDate(final long epoch, final double tA, final T tB) {
         this.field = tB.getField();
-        final T sum = tB.add(tA);
-        if (Double.isInfinite(sum.getReal())) {
-            this.offset = sum;
-            this.epoch  = (sum.getReal() < 0) ? Long.MIN_VALUE : Long.MAX_VALUE;
+        // Use 2Sum for high precision.
+        final FieldSumAndResidual<T> sumAndResidual = MathUtils.twoSum(field.getZero().add(tA), tB);
+        if (Double.isInfinite(sumAndResidual.getSum().getReal())) {
+            this.offset = sumAndResidual.getSum();
+            this.epoch = (sumAndResidual.getSum().getReal() < 0) ? Long.MIN_VALUE : Long.MAX_VALUE;
         } else {
-            // compute sum exactly, using Møller-Knuth TwoSum algorithm without branching
-            // the following statements must NOT be simplified, they rely on floating point
-            // arithmetic properties (rounding and representable numbers)
-            // at the end, the EXACT result of addition tA + tB
-            // is sum + residual, where sum is the closest representable number to the exact
-            // result and residual is the missing part that does not fit in the first number
-            final double oPrime   = sum.getReal() - tA;
-            final double dPrime   = sum.getReal() - oPrime;
-            final double deltaO   = tB.getReal() - oPrime;
-            final double deltaD   = tA - dPrime;
-            final double residual = deltaO + deltaD;
-            final long   dl       = (long) FastMath.floor(sum.getReal());
-            this.offset = sum.subtract(dl).add(residual);
-            this.epoch  = epoch + dl;
+            final long dl = (long) FastMath.floor(sumAndResidual.getSum().getReal());
+            this.offset = sumAndResidual.getSum().subtract(dl).add(sumAndResidual.getResidual());
+            this.epoch = epoch + dl;
         }
     }
 
@@ -1239,24 +1212,14 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
             }
         }
 
-        // compute offset from 2000-01-01T00:00:00 in specified time scale exactly,
-        // using Møller-Knuth TwoSum algorithm without branching
-        // the following statements must NOT be simplified, they rely on floating point
-        // arithmetic properties (rounding and representable numbers)
-        // at the end, the EXACT result of addition offset + timeScale.offsetFromTAI(this)
-        // is sum + residual, where sum is the closest representable number to the exact
-        // result and residual is the missing part that does not fit in the first number
+        // Compute offset from 2000-01-01T00:00:00 in specified time scale.
+        // Use 2Sum for high accuracy.
         final double taiOffset = timeScale.offsetFromTAI(this).getReal();
-        final double sum       = offset.getReal() + taiOffset;
-        final double oPrime    = sum - taiOffset;
-        final double dPrime    = sum - oPrime;
-        final double deltaO    = offset.getReal() - oPrime;
-        final double deltaD    = taiOffset - dPrime;
-        final double residual  = deltaO + deltaD;
+        final SumAndResidual sumAndResidual = MathUtils.twoSum(offset.getReal(), taiOffset);
 
         // split date and time
-        final long   carry = (long) FastMath.floor(sum);
-        double offset2000B = (sum - carry) + residual;
+        final long   carry = (long) FastMath.floor(sumAndResidual.getSum());
+        double offset2000B = (sumAndResidual.getSum() - carry) + sumAndResidual.getResidual();
         long   offset2000A = epoch + carry + 43200l;
         if (offset2000B < 0) {
             offset2000A -= 1;

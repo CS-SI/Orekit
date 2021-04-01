@@ -111,12 +111,12 @@ public class TLE implements TimeStamped, Serializable {
 
     /** Pattern for line 1. */
     private static final Pattern LINE_1_PATTERN =
-        Pattern.compile("1 [ 0-9]{5}[A-Z] [ 0-9]{5}[ A-Z]{3} [ 0-9]{5}[.][ 0-9]{8} (?:(?:[ 0+-][.][ 0-9]{8})|(?: [ +-][.][ 0-9]{7})) " +
+        Pattern.compile("1 [ 0-9A-Z&&[^IO]][ 0-9]{4}[A-Z] [ 0-9]{5}[ A-Z]{3} [ 0-9]{5}[.][ 0-9]{8} (?:(?:[ 0+-][.][ 0-9]{8})|(?: [ +-][.][ 0-9]{7})) " +
                         "[ +-][ 0-9]{5}[+-][ 0-9] [ +-][ 0-9]{5}[+-][ 0-9] [ 0-9] [ 0-9]{4}[ 0-9]");
 
     /** Pattern for line 2. */
     private static final Pattern LINE_2_PATTERN =
-        Pattern.compile("2 [ 0-9]{5} [ 0-9]{3}[.][ 0-9]{4} [ 0-9]{3}[.][ 0-9]{4} [ 0-9]{7} " +
+        Pattern.compile("2 [ 0-9A-Z&&[^IO]][ 0-9]{4} [ 0-9]{3}[.][ 0-9]{4} [ 0-9]{3}[.][ 0-9]{4} [ 0-9]{7} " +
                         "[ 0-9]{3}[.][ 0-9]{4} [ 0-9]{3}[.][ 0-9]{4} [ 0-9]{2}[.][ 0-9]{13}[ 0-9]");
 
     /** International symbols for parsing. */
@@ -189,6 +189,7 @@ public class TLE implements TimeStamped, Serializable {
     /** Driver for ballistic coefficient parameter. */
     private final transient ParameterDriver bStarParameterDriver;
 
+
     /** Simple constructor from unparsed two lines. This constructor uses the {@link
      * DataContext#getDefault() default data context}.
      *
@@ -215,23 +216,23 @@ public class TLE implements TimeStamped, Serializable {
     public TLE(final String line1, final String line2, final TimeScale utc) {
 
         // identification
-        satelliteNumber = parseInteger(line1, 2, 5);
-        final int satNum2 = parseInteger(line2, 2, 5);
+        satelliteNumber = ParseUtils.parseSatelliteNumber(line1, 2, 5);
+        final int satNum2 = ParseUtils.parseSatelliteNumber(line2, 2, 5);
         if (satelliteNumber != satNum2) {
             throw new OrekitException(OrekitMessages.TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT,
                                       line1, line2);
         }
         classification  = line1.charAt(7);
-        launchYear      = parseYear(line1, 9);
-        launchNumber    = parseInteger(line1, 11, 3);
+        launchYear      = ParseUtils.parseYear(line1, 9);
+        launchNumber    = ParseUtils.parseInteger(line1, 11, 3);
         launchPiece     = line1.substring(14, 17).trim();
-        ephemerisType   = parseInteger(line1, 62, 1);
-        elementNumber   = parseInteger(line1, 64, 4);
+        ephemerisType   = ParseUtils.parseInteger(line1, 62, 1);
+        elementNumber   = ParseUtils.parseInteger(line1, 64, 4);
 
         // Date format transform (nota: 27/31250 == 86400/100000000)
-        final int    year      = parseYear(line1, 18);
-        final int    dayInYear = parseInteger(line1, 20, 3);
-        final long   df        = 27l * parseInteger(line1, 24, 8);
+        final int    year      = ParseUtils.parseYear(line1, 18);
+        final int    dayInYear = ParseUtils.parseInteger(line1, 20, 3);
+        final long   df        = 27l * ParseUtils.parseInteger(line1, 24, 8);
         final int    secondsA  = (int) (df / 31250l);
         final double secondsB  = (df % 31250l) / 31250.0;
         epoch = new AbsoluteDate(new DateComponents(year, dayInYear),
@@ -240,20 +241,20 @@ public class TLE implements TimeStamped, Serializable {
 
         // mean motion development
         // converted from rev/day, 2 * rev/day^2 and 6 * rev/day^3 to rad/s, rad/s^2 and rad/s^3
-        meanMotion                 = parseDouble(line2, 52, 11) * FastMath.PI / 43200.0;
-        meanMotionFirstDerivative  = parseDouble(line1, 33, 10) * FastMath.PI / 1.86624e9;
+        meanMotion                 = ParseUtils.parseDouble(line2, 52, 11) * FastMath.PI / 43200.0;
+        meanMotionFirstDerivative  = ParseUtils.parseDouble(line1, 33, 10) * FastMath.PI / 1.86624e9;
         meanMotionSecondDerivative = Double.parseDouble((line1.substring(44, 45) + '.' +
                                                          line1.substring(45, 50) + 'e' +
                                                          line1.substring(50, 52)).replace(' ', '0')) *
                                      FastMath.PI / 5.3747712e13;
 
         eccentricity = Double.parseDouble("." + line2.substring(26, 33).replace(' ', '0'));
-        inclination  = FastMath.toRadians(parseDouble(line2, 8, 8));
-        pa           = FastMath.toRadians(parseDouble(line2, 34, 8));
+        inclination  = FastMath.toRadians(ParseUtils.parseDouble(line2, 8, 8));
+        pa           = FastMath.toRadians(ParseUtils.parseDouble(line2, 34, 8));
         raan         = FastMath.toRadians(Double.parseDouble(line2.substring(17, 25).replace(' ', '0')));
-        meanAnomaly  = FastMath.toRadians(parseDouble(line2, 43, 8));
+        meanAnomaly  = FastMath.toRadians(ParseUtils.parseDouble(line2, 43, 8));
 
-        revolutionNumberAtEpoch = parseInteger(line2, 63, 5);
+        revolutionNumberAtEpoch = ParseUtils.parseInteger(line2, 63, 5);
         final double bStarValue = Double.parseDouble((line1.substring(53, 54) + '.' +
                                     line1.substring(54, 59) + 'e' +
                                     line1.substring(59, 61)).replace(' ', '0'));
@@ -460,27 +461,28 @@ public class TLE implements TimeStamped, Serializable {
         buffer.append('1');
 
         buffer.append(' ');
-        buffer.append(addPadding("satelliteNumber-1", satelliteNumber, '0', 5, true));
+        buffer.append(ParseUtils.buildSatelliteNumber(satelliteNumber, "satelliteNumber-1"));
         buffer.append(classification);
 
         buffer.append(' ');
-        buffer.append(addPadding("launchYear",   launchYear % 100, '0', 2, true));
-        buffer.append(addPadding("launchNumber", launchNumber, '0', 3, true));
-        buffer.append(addPadding("launchPiece",  launchPiece, ' ', 3, false));
+        buffer.append(ParseUtils.addPadding("launchYear",   launchYear % 100, '0', 2, true, satelliteNumber));
+        buffer.append(ParseUtils.addPadding("launchNumber", launchNumber, '0', 3, true, satelliteNumber));
+        buffer.append(ParseUtils.addPadding("launchPiece",  launchPiece, ' ', 3, false, satelliteNumber));
 
         buffer.append(' ');
         final DateTimeComponents dtc = epoch.getComponents(utc);
-        buffer.append(addPadding("year", dtc.getDate().getYear() % 100, '0', 2, true));
-        buffer.append(addPadding("day",  dtc.getDate().getDayOfYear(),  '0', 3, true));
+        buffer.append(ParseUtils.addPadding("year", dtc.getDate().getYear() % 100, '0', 2, true, satelliteNumber));
+        buffer.append(ParseUtils.addPadding("day",  dtc.getDate().getDayOfYear(),  '0', 3, true, satelliteNumber));
         buffer.append('.');
         // nota: 31250/27 == 100000000/86400
         final int fraction = (int) FastMath.rint(31250 * dtc.getTime().getSecondsInUTCDay() / 27.0);
-        buffer.append(addPadding("fraction", fraction,  '0', 8, true));
+        buffer.append(ParseUtils.addPadding("fraction", fraction,  '0', 8, true, satelliteNumber));
 
         buffer.append(' ');
         final double n1 = meanMotionFirstDerivative * 1.86624e9 / FastMath.PI;
-        final String sn1 = addPadding("meanMotionFirstDerivative",
-                                      new DecimalFormat(".00000000", SYMBOLS).format(n1), ' ', 10, true);
+        final String sn1 = ParseUtils.addPadding("meanMotionFirstDerivative",
+                                                 new DecimalFormat(".00000000", SYMBOLS).format(n1),
+                                                 ' ', 10, true, satelliteNumber);
         buffer.append(sn1);
 
         buffer.append(' ');
@@ -494,7 +496,7 @@ public class TLE implements TimeStamped, Serializable {
         buffer.append(ephemerisType);
 
         buffer.append(' ');
-        buffer.append(addPadding("elementNumber", elementNumber, ' ', 4, true));
+        buffer.append(ParseUtils.addPadding("elementNumber", elementNumber, ' ', 4, true, satelliteNumber));
 
         buffer.append(Integer.toString(checksum(buffer)));
 
@@ -526,11 +528,11 @@ public class TLE implements TimeStamped, Serializable {
             exponent++;
             mantissa = FastMath.round(dAbs * FastMath.pow(10.0, mantissaSize - exponent));
         }
-        final String sMantissa = addPadding(name, (int) mantissa, '0', mantissaSize, true);
+        final String sMantissa = ParseUtils.addPadding(name, (int) mantissa, '0', mantissaSize, true, satelliteNumber);
         final String sExponent = Integer.toString(FastMath.abs(exponent));
         final String formatted = (d <  0 ? '-' : ' ') + sMantissa + (exponent <= 0 ? '-' : '+') + sExponent;
 
-        return addPadding(name, formatted, c, size, rightJustified);
+        return ParseUtils.addPadding(name, formatted, c, size, rightJustified, satelliteNumber);
 
     }
 
@@ -545,105 +547,27 @@ public class TLE implements TimeStamped, Serializable {
         buffer.append('2');
 
         buffer.append(' ');
-        buffer.append(addPadding("satelliteNumber-2", satelliteNumber, '0', 5, true));
+        buffer.append(ParseUtils.buildSatelliteNumber(satelliteNumber, "satelliteNumber-2"));
 
         buffer.append(' ');
-        buffer.append(addPadding(INCLINATION, f34.format(FastMath.toDegrees(inclination)), ' ', 8, true));
+        buffer.append(ParseUtils.addPadding(INCLINATION, f34.format(FastMath.toDegrees(inclination)), ' ', 8, true, satelliteNumber));
         buffer.append(' ');
-        buffer.append(addPadding("raan", f34.format(FastMath.toDegrees(raan)), ' ', 8, true));
+        buffer.append(ParseUtils.addPadding("raan", f34.format(FastMath.toDegrees(raan)), ' ', 8, true, satelliteNumber));
         buffer.append(' ');
-        buffer.append(addPadding(ECCENTRICITY, (int) FastMath.rint(eccentricity * 1.0e7), '0', 7, true));
+        buffer.append(ParseUtils.addPadding(ECCENTRICITY, (int) FastMath.rint(eccentricity * 1.0e7), '0', 7, true, satelliteNumber));
         buffer.append(' ');
-        buffer.append(addPadding("pa", f34.format(FastMath.toDegrees(pa)), ' ', 8, true));
+        buffer.append(ParseUtils.addPadding("pa", f34.format(FastMath.toDegrees(pa)), ' ', 8, true, satelliteNumber));
         buffer.append(' ');
-        buffer.append(addPadding("meanAnomaly", f34.format(FastMath.toDegrees(meanAnomaly)), ' ', 8, true));
+        buffer.append(ParseUtils.addPadding("meanAnomaly", f34.format(FastMath.toDegrees(meanAnomaly)), ' ', 8, true, satelliteNumber));
 
         buffer.append(' ');
-        buffer.append(addPadding(MEAN_MOTION, f211.format(meanMotion * 43200.0 / FastMath.PI), ' ', 11, true));
-        buffer.append(addPadding("revolutionNumberAtEpoch", revolutionNumberAtEpoch, ' ', 5, true));
+        buffer.append(ParseUtils.addPadding(MEAN_MOTION, f211.format(meanMotion * 43200.0 / FastMath.PI), ' ', 11, true, satelliteNumber));
+        buffer.append(ParseUtils.addPadding("revolutionNumberAtEpoch", revolutionNumberAtEpoch, ' ', 5, true, satelliteNumber));
 
         buffer.append(Integer.toString(checksum(buffer)));
 
         line2 = buffer.toString();
 
-    }
-
-    /** Add padding characters before an integer.
-     * @param name parameter name
-     * @param k integer to pad
-     * @param c padding character
-     * @param size desired size
-     * @param rightJustified if true, the resulting string is
-     * right justified (i.e. space are added to the left)
-     * @return padded string
-     */
-    private String addPadding(final String name, final int k, final char c,
-                              final int size, final boolean rightJustified) {
-        return addPadding(name, Integer.toString(k), c, size, rightJustified);
-    }
-
-    /** Add padding characters to a string.
-     * @param name parameter name
-     * @param string string to pad
-     * @param c padding character
-     * @param size desired size
-     * @param rightJustified if true, the resulting string is
-     * right justified (i.e. space are added to the left)
-     * @return padded string
-     */
-    private String addPadding(final String name, final String string, final char c,
-                              final int size, final boolean rightJustified) {
-
-        if (string.length() > size) {
-            throw new OrekitException(OrekitMessages.TLE_INVALID_PARAMETER,
-                                      satelliteNumber, name, string);
-        }
-
-        final StringBuffer padding = new StringBuffer();
-        for (int i = 0; i < size; ++i) {
-            padding.append(c);
-        }
-
-        if (rightJustified) {
-            final String concatenated = padding + string;
-            final int l = concatenated.length();
-            return concatenated.substring(l - size, l);
-        }
-
-        return (string + padding).substring(0, size);
-
-    }
-
-    /** Parse a double.
-     * @param line line to parse
-     * @param start start index of the first character
-     * @param length length of the string
-     * @return value of the double
-     */
-    private double parseDouble(final String line, final int start, final int length) {
-        final String field = line.substring(start, start + length).trim();
-        return field.length() > 0 ? Double.parseDouble(field.replace(' ', '0')) : 0;
-    }
-
-    /** Parse an integer.
-     * @param line line to parse
-     * @param start start index of the first character
-     * @param length length of the string
-     * @return value of the integer
-     */
-    private int parseInteger(final String line, final int start, final int length) {
-        final String field = line.substring(start, start + length).trim();
-        return field.length() > 0 ? Integer.parseInt(field.replace(' ', '0')) : 0;
-    }
-
-    /** Parse a year written on 2 digits.
-     * @param line line to parse
-     * @param start start index of the first character
-     * @return value of the year
-     */
-    private int parseYear(final String line, final int start) {
-        final int year = 2000 + parseInteger(line, start, 2);
-        return (year > 2056) ? (year - 100) : year;
     }
 
     /** Get the satellite id.
