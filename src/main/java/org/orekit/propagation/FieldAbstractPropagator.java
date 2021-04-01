@@ -70,7 +70,7 @@ public abstract class FieldAbstractPropagator<T extends RealFieldElement<T>> imp
     private final Map<String, TimeSpanMap<T[]>> unmanagedStates;
 
     /** Field used.*/
-    private final Field<T> field;
+    public final Field<T> field;
 
     /** Initial state. */
     private FieldSpacecraftState<T> initialState;

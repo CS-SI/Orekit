@@ -40,6 +40,7 @@ import org.orekit.utils.PVCoordinates;
  * </p>
  * @author Pascal Parraud
  */
+
 public abstract class AbstractGNSSPropagator extends AbstractAnalyticalPropagator {
 
     // Data used to solve Kepler's equation
