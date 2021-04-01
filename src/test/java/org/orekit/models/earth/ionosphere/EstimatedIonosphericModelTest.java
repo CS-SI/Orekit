@@ -217,7 +217,7 @@ public class EstimatedIonosphericModelTest {
                                              Frequency.G01.getMHzFrequency() * 1.0e6,
                                              model.getParameters());
 
-        Assert.assertEquals(delayMetersR, delayMetersF.getReal(), 1.0e15);
+        Assert.assertEquals(delayMetersR, delayMetersF.getReal(), 1.0e-15);
     }
 
     @Test
