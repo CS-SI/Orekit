@@ -168,14 +168,12 @@ public class APMParserTest {
 
         // write the parsed file back to a characters array
         final CharArrayWriter caw = new CharArrayWriter();
-        ApmWriter apmw = new WriterBuilder().buildApmWriter(original.getHeader(), "dummy");
-        Generator generator = new KvnGenerator(caw, ApmWriter.KEY_WIDTH, apmw.getFileName());
-        apmw.writeHeader(generator);
-        apmw.writeSegment(generator, original.getSegments().get(0));
+        final Generator generator = new KvnGenerator(caw, ApmWriter.KEY_WIDTH, "dummy");
+        new WriterBuilder().buildApmWriter().writeMessage(generator, original);
 
         // reparse the written file
-        final ByteBuffer bb      = StandardCharsets.UTF_8.encode(caw.toString());
-        final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(bb.array()));
+        final ByteBuffer buffer  = StandardCharsets.UTF_8.encode(caw.toString());
+        final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(buffer.array()));
         final ApmFile    rebuilt = new ParserBuilder().buildApmParser().parseMessage(source2);
         validateAPM2(rebuilt);
     }

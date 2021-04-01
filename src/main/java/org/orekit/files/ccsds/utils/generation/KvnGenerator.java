@@ -47,10 +47,10 @@ public class KvnGenerator extends AbstractGenerator {
      * @param output destination of generated output
      * @param keyWidth minimum width of the key (can be used for aligning the '=' sign),
      * TDM needs 25 characters for its longest key, other messages need 20 characters at most
-     * @param fileName file name for error messages
+     * @param outputName output name for error messages
      */
-    public KvnGenerator(final Appendable output, final int keyWidth, final String fileName) {
-        super(output, fileName);
+    public KvnGenerator(final Appendable output, final int keyWidth, final String outputName) {
+        super(output, outputName);
         kvFormat = "%-" + keyWidth + "s = %s%n";
         final StringBuilder builder = new StringBuilder(COMMENT);
         builder.append(' ');

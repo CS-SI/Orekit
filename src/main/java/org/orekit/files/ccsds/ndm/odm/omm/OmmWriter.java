@@ -40,7 +40,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OmmWriter extends AbstractMessageWriter {
+public class OmmWriter extends AbstractMessageWriter<Header, Segment<OmmMetadata, OmmData>> {
 
     /** Version number implemented. **/
     public static final double CCSDS_OMM_VERS = 3.0;
@@ -57,18 +57,14 @@ public class OmmWriter extends AbstractMessageWriter {
      * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
-     * @param header file header (may be null)
-     * @param fileName file name for error messages
      */
     public OmmWriter(final IERSConventions conventions, final DataContext dataContext,
-                     final AbsoluteDate missionReferenceDate,
-                     final Header header, final String fileName) {
-        super(OmmFile.FORMAT_VERSION_KEY, CCSDS_OMM_VERS, header,
+                     final AbsoluteDate missionReferenceDate) {
+        super(OmmFile.FORMAT_VERSION_KEY, CCSDS_OMM_VERS,
               new ContextBinding(
                   () -> conventions, () -> false, () -> dataContext,
                   () -> missionReferenceDate, () -> TimeSystem.UTC,
-                  () -> 0.0, () -> 1.0),
-              fileName);
+                  () -> 0.0, () -> 1.0));
     }
 
     /** Write one segment.

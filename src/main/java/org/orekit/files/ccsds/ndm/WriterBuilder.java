@@ -94,21 +94,17 @@ public class WriterBuilder extends AbstractBuilder<WriterBuilder> {
     }
 
     /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.opm.OpmFile Orbit Parameters Messages}.
-     * @param header file header to used
-     * @param fileName file name for error messages
      * @return a new writer
      */
-    public OpmWriter buildOpmWriter(final Header header, final String fileName) {
-        return new OpmWriter(getConventions(), getDataContext(), getMissionReferenceDate(), header, fileName);
+    public OpmWriter buildOpmWriter() {
+        return new OpmWriter(getConventions(), getDataContext(), getMissionReferenceDate());
     }
 
     /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.opm.OmmFile Orbit Mean elements Messages}.
-     * @param header file header to used
-     * @param fileName file name for error messages
      * @return a new writer
      */
-    public OmmWriter buildOmmWriter(final Header header, final String fileName) {
-        return new OmmWriter(getConventions(), getDataContext(), getMissionReferenceDate(), header, fileName);
+    public OmmWriter buildOmmWriter() {
+        return new OmmWriter(getConventions(), getDataContext(), getMissionReferenceDate());
     }
 
     /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.oem.OemFile Orbit Ephemeris Messages}.
@@ -122,21 +118,17 @@ public class WriterBuilder extends AbstractBuilder<WriterBuilder> {
     }
 
     /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.ocm.OcmFile Orbit Comprehensive Messages}.
-     * @param header file header to used
-     * @param fileName file name for error messages
      * @return a new writer
      */
-    public OcmWriter buildOcmWriter(final Header header, final String fileName) {
-        return new OcmWriter(getConventions(), getDataContext(), header, fileName);
+    public OcmWriter buildOcmWriter() {
+        return new OcmWriter(getConventions(), getDataContext());
     }
 
     /** Build a writer for {@link org.orekit.files.ccsds.ndm.adm.apm.ApmFile Attitude Parameters Messages}.
-     * @param header file header to used
-     * @param fileName file name for error messages
      * @return a new writer
      */
-    public ApmWriter buildApmWriter(final Header header, final String fileName) {
-        return new ApmWriter(getConventions(), getDataContext(), getMissionReferenceDate(), header, fileName);
+    public ApmWriter buildApmWriter() {
+        return new ApmWriter(getConventions(), getDataContext(), getMissionReferenceDate());
     }
 
     /** Build a writer for {@link org.orekit.files.ccsds.ndm.adm.aem.AemFile Attitude Ephemeris Messages}.
@@ -150,14 +142,12 @@ public class WriterBuilder extends AbstractBuilder<WriterBuilder> {
     }
 
     /** Build a writer for {@link org.orekit.files.ccsds.ndm.tdm.TdmFile Tracking Data Messages}.
-     * @param header file header to used
-     * @param fileName file name for error messages
      * @param converter converter for {@link RangeUnits#RU Range Units} (may be null if there
      * are no range observations in {@link RangeUnits#RU Range Units})
      * @return a new writer
      */
-    public TdmWriter buildTdmWriter(final Header header, final String fileName, final RangeUnitsConverter converter) {
-        return new TdmWriter(getConventions(), getDataContext(), converter, header, fileName);
+    public TdmWriter buildTdmWriter(final RangeUnitsConverter converter) {
+        return new TdmWriter(getConventions(), getDataContext(), converter);
     }
 
 }

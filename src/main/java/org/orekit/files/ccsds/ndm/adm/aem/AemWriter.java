@@ -215,7 +215,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class AemWriter extends AbstractMessageWriter implements AttitudeEphemerisFileWriter {
+public class AemWriter extends AbstractMessageWriter<Header, AemSegment> implements AttitudeEphemerisFileWriter {
 
     /** Version number implemented. **/
     public static final double CCSDS_AEM_VERS = 1.0;
@@ -241,8 +241,14 @@ public class AemWriter extends AbstractMessageWriter implements AttitudeEphemeri
     /** Constant for angular rates in frame B. */
     private static final String REF_FRAME_B = "REF_FRAME_B";
 
+    /** Header. */
+    private final Header header;
+
     /** Current metadata. */
     private final AemMetadata metadata;
+
+    /** Output name for error messages. */
+    private final String outputName;
 
     /**
      * Constructor used to create a new AEM writer configured with the necessary parameters
@@ -267,20 +273,27 @@ public class AemWriter extends AbstractMessageWriter implements AttitudeEphemeri
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param header file header (may be null)
      * @param template template for metadata
-     * @param fileName file name for error messages
+     * @param outputName output name for error messages
      * @since 11.0
      */
     public AemWriter(final IERSConventions conventions, final DataContext dataContext,
                      final Header header, final AemMetadata template,
-                     final String fileName) {
+                     final String outputName) {
         super(AemFile.FORMAT_VERSION_KEY, CCSDS_AEM_VERS,
-              header,
               new ContextBinding(
                   () -> conventions, () -> true, () -> dataContext,
                   () -> null, template::getTimeSystem,
-                  () -> 0.0, () -> 1.0),
-              fileName);
-        this.metadata = copy(template);
+                  () -> 0.0, () -> 1.0));
+        this.header     = header;
+        this.metadata   = copy(template);
+        this.outputName = outputName;
+    }
+
+    /** Get header.
+     * @return header
+     */
+    Header getHeader() {
+        return header;
     }
 
     /** Get current metadata.
@@ -327,38 +340,58 @@ public class AemWriter extends AbstractMessageWriter implements AttitudeEphemeri
             return;
         }
 
-        try (Generator generator = new KvnGenerator(appendable, KEY_WIDTH, getFileName())) {
-            writeHeader(generator);
+        try (Generator generator = new KvnGenerator(appendable, KEY_WIDTH, outputName)) {
+            writeHeader(generator, header);
 
             // Loop on segments
             for (final S segment : segments) {
-
-                // override template metadata with segment values
-                metadata.setStartTime(segment.getStart());
-                metadata.setStopTime(segment.getStop());
-                if (metadata.getEndpoints().getFrameA() == null ||
-                    metadata.getEndpoints().getFrameA().asSpacecraftBodyFrame() == null) {
-                    // the external frame must be frame A
-                    metadata.getEndpoints().setFrameA(FrameFacade.map(segment.getReferenceFrame()));
-                } else {
-                    // the external frame must be frame B
-                    metadata.getEndpoints().setFrameB(FrameFacade.map(segment.getReferenceFrame()));
-                }
-                metadata.setInterpolationMethod(segment.getInterpolationMethod());
-                metadata.setInterpolationDegree(segment.getInterpolationSamples() - 1);
-                writeMetadata(generator);
-
-                // Loop on attitude data
-                startAttitudeBlock(generator);
-                if (segment instanceof AemSegment) {
-                    generator.writeComments(((AemSegment) segment).getData().getComments());
-                }
-                for (final TimeStampedAngularCoordinates coordinates : segment.getAngularCoordinates()) {
-                    writeAttitudeEphemerisLine(generator, coordinates);
-                }
-                endAttitudeBlock(generator);
+                writeSegment(generator, segment);
             }
         }
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void writeSegment(final Generator generator, final AemSegment segment) throws IOException {
+        writeSegment(generator,
+                     (AttitudeEphemerisFile.AttitudeEphemerisSegment<TimeStampedAngularCoordinates>) segment);
+    }
+
+    /** Write one segment.
+     * @param generator generator to use for producing output
+     * @param segment segment to write
+     * @param <C> type of the angular coordinates
+     * @param <S> type of the segment
+     * @throws IOException if any buffer writing operations fails
+     */
+    public <C extends TimeStampedAngularCoordinates, S extends AttitudeEphemerisFile.AttitudeEphemerisSegment<C>>
+        void writeSegment(final Generator generator, final S segment) throws IOException {
+
+        // override template metadata with segment values
+        metadata.setStartTime(segment.getStart());
+        metadata.setStopTime(segment.getStop());
+        if (metadata.getEndpoints().getFrameA() == null ||
+            metadata.getEndpoints().getFrameA().asSpacecraftBodyFrame() == null) {
+            // the external frame must be frame A
+            metadata.getEndpoints().setFrameA(FrameFacade.map(segment.getReferenceFrame()));
+        } else {
+            // the external frame must be frame B
+            metadata.getEndpoints().setFrameB(FrameFacade.map(segment.getReferenceFrame()));
+        }
+        metadata.setInterpolationMethod(segment.getInterpolationMethod());
+        metadata.setInterpolationDegree(segment.getInterpolationSamples() - 1);
+        writeMetadata(generator);
+
+        // Loop on attitude data
+        startAttitudeBlock(generator);
+        if (segment instanceof AemSegment) {
+            generator.writeComments(((AemSegment) segment).getData().getComments());
+        }
+        for (final TimeStampedAngularCoordinates coordinates : segment.getAngularCoordinates()) {
+            writeAttitudeEphemerisLine(generator, coordinates);
+        }
+        endAttitudeBlock(generator);
 
     }
 
@@ -412,7 +445,7 @@ public class AemWriter extends AbstractMessageWriter implements AttitudeEphemeri
             if (metadata.getEulerRotSeq() == null) {
                 // the keyword *will* be missing because we cannot set it
                 throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD,
-                                          AemMetadataKey.EULER_ROT_SEQ.name(), getFileName());
+                                          AemMetadataKey.EULER_ROT_SEQ.name(), generator.getOutputName());
             }
             generator.writeEntry(AemMetadataKey.EULER_ROT_SEQ.name(),
                                  metadata.getEulerRotSeq().name().replace('X', '1').replace('Y', '2').replace('Z', '3'),

@@ -33,7 +33,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class TdmWriter extends AbstractMessageWriter {
+public class TdmWriter extends AbstractMessageWriter<Header, Segment<TdmMetadata, ObservationsBlock>> {
 
     /** Version number implemented. **/
     public static final double CCSDS_TDM_VERS = 1.0;
@@ -54,17 +54,14 @@ public class TdmWriter extends AbstractMessageWriter {
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param converter converter for {@link RangeUnits#RU Range Units} (may be null if there
      * are no range observations in {@link RangeUnits#RU Range Units})
-     * @param header file header (may be null)
-     * @param fileName file name for error messages
      */
     public TdmWriter(final IERSConventions conventions, final DataContext dataContext,
-                     final RangeUnitsConverter converter, final Header header, final String fileName) {
-        super(TdmFile.FORMAT_VERSION_KEY, CCSDS_TDM_VERS, header,
+                     final RangeUnitsConverter converter) {
+        super(TdmFile.FORMAT_VERSION_KEY, CCSDS_TDM_VERS,
               new ContextBinding(
                   () -> conventions, () -> false, () -> dataContext,
                   () -> null, () -> TimeSystem.UTC,
-                  () -> 0.0, () -> 1.0),
-              fileName);
+                  () -> 0.0, () -> 1.0));
         this.converter = converter;
     }
 

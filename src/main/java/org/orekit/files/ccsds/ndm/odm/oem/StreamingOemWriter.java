@@ -104,7 +104,7 @@ public class StreamingOemWriter {
 
                 if (headerWritePending) {
                     // we write the header only for the first segment
-                    oemWriter.writeHeader(generator);
+                    oemWriter.writeHeader(generator, oemWriter.getHeader());
                     headerWritePending = false;
                 }
 

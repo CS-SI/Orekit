@@ -63,6 +63,10 @@
 
     package ccsds #DDEBD8 {
 
+      package section #CBDBC8 {
+        interface Header
+        class Segment
+      }
       package utils #CBDBC8 {
 
         enum FileFormat {
@@ -71,8 +75,11 @@
         }
 
         package generation #CCCCC7 {
-          class KvnGenerator
-          class XmlGenerator
+          interface MessageWriter {
+            +writeMessage(generator, message)
+            +writeHeader(generator, header)
+            +writeSegment(generator, segment)
+          }
           interface Generator {
             +FileFormat getFileFormat()
             +startMessage(messageTypeKey, version)
@@ -84,28 +91,22 @@
             +exitSection()
             +close()
           }
+          class KvnGenerator
+          class XmlGenerator
         }
 
       }
 
       package ndm.odm #CBDBC8 {
 
-        package opm #CCCCC7 {
-          class OpmWriter {
-            +write(orbitParameters)
-          }
-        }
-
         package oem #CCCCC7 {
-          class OemMetadata
           class StreamingOemWriter
-          class OemWriter {
-            +write(orbitEphemeris)
-          }
+          class OemWriter
         }
 
-        class CommonMetadata
-        class OdmHeader
+        package opm #CCCCC7 {
+          class OpmWriter
+        }
 
       }
 
@@ -113,20 +114,18 @@
 
   }
 
-  KvnGenerator ..|> Generator
-  XmlGenerator ..|> Generator
-  Generator --> FileFormat
-  Generator <-- OemWriter
-  OpmWriter -right-> Generator
+  Header <-- MessageWriter
+  Segment <-- MessageWriter
+  Generator <|.. KvnGenerator
+  Generator <|.. XmlGenerator
+  MessageWriter --> Generator
+  FileFormat <-left- Generator
+  MessageWriter <|.. OpmWriter
+  MessageWriter <|.. OemWriter
   EphemerisFile.EphemerisSegment <--o EphemerisFile.SatelliteEphemeris
   EphemerisFile.SatelliteEphemeris <--* EphemerisFile
   EphemerisFile <-- EphemerisFileWriter
-  OemWriter .right.|> EphemerisFileWriter
-  OdmHeader <--o OemWriter
-  OemMetadata <-right-o OemWriter
-  CommonMetadata <|-- OemMetadata
-  OemWriter <--o StreamingOemWriter
-  OpmWriter o--> OdmHeader
-  OpmWriter o--> CommonMetadata
+  OemWriter ..|> EphemerisFileWriter
+  StreamingOemWriter o-right-> OemWriter
 
 @enduml

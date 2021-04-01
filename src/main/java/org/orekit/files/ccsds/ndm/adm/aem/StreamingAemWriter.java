@@ -100,7 +100,7 @@ public class StreamingAemWriter {
 
                 if (headerWritePending) {
                     // we write the header only for the first segment
-                    aemWriter.writeHeader(generator);
+                    aemWriter.writeHeader(generator, aemWriter.getHeader());
                     headerWritePending = false;
                 }
 

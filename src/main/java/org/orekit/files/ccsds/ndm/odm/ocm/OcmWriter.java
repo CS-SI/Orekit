@@ -37,7 +37,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OcmWriter extends AbstractMessageWriter {
+public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata, OcmData>> {
 
     /** Version number implemented. **/
     public static final double CCSDS_OCM_VERS = 3.0;
@@ -53,17 +53,13 @@ public class OcmWriter extends AbstractMessageWriter {
      * </p>
      * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.
-     * @param header file header (may be null)
-     * @param fileName file name for error messages
      */
-    public OcmWriter(final IERSConventions conventions, final DataContext dataContext,
-                     final Header header, final String fileName) {
-        super(OcmFile.FORMAT_VERSION_KEY, CCSDS_OCM_VERS, header,
+    public OcmWriter(final IERSConventions conventions, final DataContext dataContext) {
+        super(OcmFile.FORMAT_VERSION_KEY, CCSDS_OCM_VERS,
               new ContextBinding(
                   () -> conventions, () -> false, () -> dataContext,
                   () -> null, () -> TimeSystem.UTC,
-                  () -> 0.0, () -> 1.0),
-              fileName);
+                  () -> 0.0, () -> 1.0));
     }
 
     /** Write one segment.

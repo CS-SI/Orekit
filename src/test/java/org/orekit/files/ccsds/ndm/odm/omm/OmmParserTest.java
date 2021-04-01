@@ -38,11 +38,11 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
+import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
 import org.orekit.files.ccsds.ndm.odm.SpacecraftParameters;
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
-import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.frames.FramesFactory;
@@ -53,7 +53,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
-public class OMMParserTest {
+public class OmmParserTest {
 
     @Before
     public void setUp()
@@ -162,13 +162,8 @@ public class OMMParserTest {
 
         // write the parsed file back to a characters array
         final CharArrayWriter caw = new CharArrayWriter();
-        OmmWriter ommw = new OmmWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null,
-                                       original.getHeader(), "dummy");
-        Generator generator = new KvnGenerator(caw, OmmWriter.KEY_WIDTH, ommw.getFileName());
-        ommw.writeHeader(generator);
-        for (final Segment<OmmMetadata, OmmData> segment : original.getSegments()) {
-            ommw.writeSegment(generator, segment);
-        }
+        final Generator generator = new KvnGenerator(caw, OmmWriter.KEY_WIDTH, "dummy");
+        new WriterBuilder().buildOmmWriter().writeMessage(generator, original);
 
         // reparse the written file
         final ByteBuffer bb      = StandardCharsets.UTF_8.encode(caw.toString());

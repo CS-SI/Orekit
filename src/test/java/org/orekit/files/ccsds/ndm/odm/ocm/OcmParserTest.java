@@ -43,7 +43,6 @@ import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
-import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.time.AbsoluteDate;
@@ -54,7 +53,7 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.units.Unit;
 
-public class OCMParserTest {
+public class OcmParserTest {
 
     @Before
     public void setUp() {
@@ -455,12 +454,8 @@ public class OCMParserTest {
 
         // write the parsed file back to a characters array
         final CharArrayWriter caw = new CharArrayWriter();
-        OcmWriter ocmw = new WriterBuilder().buildOcmWriter(original.getHeader(), "dummy");
-        Generator generator = new KvnGenerator(caw, OcmWriter.KEY_WIDTH, ocmw.getFileName());
-        ocmw.writeHeader(generator);
-        for (final Segment<OcmMetadata, OcmData> segment : original.getSegments()) {
-            ocmw.writeSegment(generator, segment);
-        }
+        final Generator generator = new KvnGenerator(caw, OcmWriter.KEY_WIDTH, "dummy");
+        new WriterBuilder().buildOcmWriter().writeMessage(generator, original);
 
         // reparse the written file
         final ByteBuffer bb      = StandardCharsets.UTF_8.encode(caw.toString());

@@ -40,20 +40,20 @@ public abstract class AbstractGenerator implements Generator {
     /** Destination of generated output. */
     private final Appendable output;
 
-    /** File name for error messages. */
-    private final String fileName;
+    /** Output name for error messages. */
+    private final String outputName;
 
     /** Sections stack. */
     private final Deque<String> sections;
 
     /** Simple constructor.
      * @param output destination of generated output
-     * @param fileName file name for error messages
+     * @param outputName output name for error messages
      */
-    public AbstractGenerator(final Appendable output, final String fileName) {
-        this.output   = output;
-        this.fileName = fileName;
-        this.sections = new ArrayDeque<>();
+    public AbstractGenerator(final Appendable output, final String outputName) {
+        this.output     = output;
+        this.outputName = outputName;
+        this.sections   = new ArrayDeque<>();
     }
 
     /** Append a character sequence to output stream.
@@ -64,6 +64,12 @@ public abstract class AbstractGenerator implements Generator {
     protected AbstractGenerator append(final CharSequence cs) throws IOException {
         output.append(cs);
         return this;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getOutputName() {
+        return outputName;
     }
 
     /** {@inheritDoc} */
@@ -164,7 +170,7 @@ public abstract class AbstractGenerator implements Generator {
      */
     protected void complain(final String key, final boolean mandatory) {
         if (mandatory) {
-            throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, key, fileName);
+            throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, key, outputName);
         }
     }
 

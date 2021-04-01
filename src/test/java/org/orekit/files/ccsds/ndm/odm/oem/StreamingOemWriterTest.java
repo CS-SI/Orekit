@@ -172,7 +172,7 @@ public class StreamingOemWriterTest {
             oemWriter = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
                                       header, metadata, OemWriter.DEFAULT_FILE_NAME);
             try (Generator generator = new KvnGenerator(buffer2, OemWriter.KEY_WIDTH, "another-name")) {
-                oemWriter.writeHeader(generator);
+                oemWriter.writeHeader(generator, header);
                 oemWriter.getMetadata().setObjectName(objectName);
                 oemWriter.getMetadata().setStartTime(block.getStart());
                 oemWriter.getMetadata().setStopTime(block.getStop());

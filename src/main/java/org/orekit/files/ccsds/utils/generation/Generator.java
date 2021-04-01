@@ -29,6 +29,11 @@ import org.orekit.time.AbsoluteDate;
  */
 public interface Generator extends AutoCloseable {
 
+    /** Get the name of the output (for error messages).
+     * @return name of the output
+     */
+    String getOutputName();
+
     /** Get the generated file format.
      * @return generated file format
      */
