@@ -28,6 +28,7 @@ import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
+import org.orekit.files.ccsds.utils.generation.XmlGenerator;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.files.general.EphemerisFile.SatelliteEphemeris;
 import org.orekit.files.general.EphemerisFileWriter;
@@ -139,7 +140,7 @@ public class EphemerisWriter implements EphemerisFileWriter {
 
         try (Generator generator = fileFormat == FileFormat.KVN ?
                                    new KvnGenerator(appendable, OemWriter.KVN_PADDING_WIDTH, outputName) :
-                                   null) {
+                                   new XmlGenerator(appendable, XmlGenerator.DEFAULT_INDENT, outputName)) {
             writer.writeHeader(generator, header);
 
             // Loop on segments

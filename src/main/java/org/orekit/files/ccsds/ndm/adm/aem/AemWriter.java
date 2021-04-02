@@ -273,9 +273,7 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, AemFile
 
         // Loop on attitude data
         startAttitudeBlock(generator);
-        if (segment instanceof AemSegment) {
-            generator.writeComments(((AemSegment) segment).getData().getComments());
-        }
+        generator.writeComments(((AemSegment) segment).getData().getComments());
         for (final TimeStampedAngularCoordinates coordinates : segment.getAngularCoordinates()) {
             writeAttitudeEphemerisLine(generator, metadata, coordinates);
         }
