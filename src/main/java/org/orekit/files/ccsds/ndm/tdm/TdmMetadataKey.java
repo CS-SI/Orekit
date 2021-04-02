@@ -54,7 +54,7 @@ public enum TdmMetadataKey {
     MODE((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
             try {
-                container.setMode(TrackingMode.valueOf(token.getContentAsUppercaseString()));
+                container.setMode(TrackingMode.valueOf(token.getContentAsUppercaseString().replace(' ', '_')));
                 return true;
             } catch (IllegalArgumentException iae) {
                 throw token.generateException(iae);
