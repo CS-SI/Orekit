@@ -25,6 +25,9 @@ import org.orekit.time.TimeStamped;
 */
 public interface GNSSOrbitalElements extends TimeStamped {
 
+    /** Value of Pi for conversion from semicircles to radian. */
+    double GNSS_PI = 3.1415926535898;
+
     /**
      * Gets the PRN number of the GNSS satellite.
      *
