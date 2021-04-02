@@ -30,6 +30,7 @@ import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1019;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1019Data;
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessages;
 import org.orekit.gnss.metric.parser.EncodedMessage;
+import org.orekit.gnss.metric.parser.RtcmDataField;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
 import org.orekit.gnss.navigation.GPSNavigationMessage;
 import org.orekit.propagation.analytical.gnss.GPSPropagator;
@@ -180,6 +181,13 @@ public class Rtcm1019Test {
        final Rtcm1019 rtcm1019 = (Rtcm1019) new RtcmMessagesParser(messages).parse(message, false);
 
        Assert.assertNull(rtcm1019);
+    }
+
+    @Test
+    public void testDF103() {
+        final String m = "1111111111111111";
+        final EncodedMessage message = new ByteArrayEncodedMessages(byteArrayFromBinary(m));
+        Assert.assertFalse(RtcmDataField.DF103.booleanValue(message));
     }
 
     @Test

@@ -27,6 +27,7 @@ import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1020;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1020Data;
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessages;
 import org.orekit.gnss.metric.parser.EncodedMessage;
+import org.orekit.gnss.metric.parser.RtcmDataField;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
 import org.orekit.gnss.navigation.GLONASSNavigationMessage;
 import org.orekit.propagation.numerical.GLONASSNumericalPropagator;
@@ -183,6 +184,18 @@ public class Rtcm1020Test {
        Assert.assertNull(rtcm1020);
     }
 
+    @Test
+    public void testAdditionalDataFields() {
+        String m = "11111111111111111";
+        EncodedMessage message = new ByteArrayEncodedMessages(byteArrayFromBinary(m));
+        Assert.assertTrue(RtcmDataField.DF105.booleanValue(message));
+        m = "11111111111111111";
+        message = new ByteArrayEncodedMessages(byteArrayFromBinary(m));
+        Assert.assertEquals(5, RtcmDataField.DF120.intValue(message));
+        m = "00000000000000000";
+        message = new ByteArrayEncodedMessages(byteArrayFromBinary(m));
+        Assert.assertFalse(RtcmDataField.DF131.booleanValue(message));
+    }
 
     private byte[] byteArrayFromBinary(String radix2Value) {
         final byte[] array = new byte[radix2Value.length() / 8];

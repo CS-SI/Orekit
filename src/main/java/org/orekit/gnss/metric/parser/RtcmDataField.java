@@ -652,33 +652,6 @@ public enum RtcmDataField implements DataField {
         }
     },
 
-    /** Galileo SISA (E1,E5b). */
-    DF286 {
-        /** {@inheritDoc} */
-        @Override
-        public int intValue(final EncodedMessage message) {
-            return DataType.U_INT_8.decode(message).intValue();
-        }
-    },
-
-    /** Galileo E1-B Signal Health Status. */
-    DF287 {
-        /** {@inheritDoc} */
-        @Override
-        public int intValue(final EncodedMessage message) {
-            return DataType.BIT_2.decode(message).intValue();
-        }
-    },
-
-    /** Galileo E1-B Data Validity Status. */
-    DF288 {
-        /** {@inheritDoc} */
-        @Override
-        public int intValue(final EncodedMessage message) {
-            return DataType.BIT_1.decode(message).intValue();
-        }
-    },
-
     /** Galileo Week Number (WN). */
     DF289 {
         /** {@inheritDoc} */

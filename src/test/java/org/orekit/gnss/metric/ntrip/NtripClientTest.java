@@ -71,7 +71,7 @@ public class NtripClientTest {
     @Test
     public void testWrongContentType() {
         try {
-            DummyServer server = prepareServer("/gnss/ntrip//wrong-content-type.txt");
+            DummyServer server = prepareServer("/gnss/ntrip/wrong-content-type.txt");
             server.run();
             NtripClient client = new NtripClient("localhost", server.getServerPort());
             client.setTimeout(500);
@@ -80,6 +80,23 @@ public class NtripClientTest {
         } catch (OrekitException me) {
             Assert.assertEquals(OrekitMessages.UNEXPECTED_CONTENT_TYPE, me.getSpecifier());
             Assert.assertEquals("text/html", me.getParts()[0]);
+        }
+    }
+
+    @Test
+    public void testWrongRecordType() {
+        try {
+            DummyServer server = prepareServer("/gnss/ntrip/wrong-record-type.txt");
+            server.run();
+            NtripClient client = new NtripClient("localhost", server.getServerPort());
+            client.setTimeout(500);
+            client.getSourceTable();
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException me) {
+            Assert.assertEquals(OrekitMessages.SOURCETABLE_PARSE_ERROR, me.getSpecifier());
+            Assert.assertEquals("localhost", me.getParts()[0]);
+            Assert.assertEquals(7,           me.getParts()[1]);
+            Assert.assertEquals("BCE;CLK01;BRDC_CoM_ITRF;RTCM 3.1;1057(60),1058(5),1059(5),1063(60),1064(5);0;GPS+GLO;MISC;DEU;50.09;8.66;0;1;RTNet;none;B;N;1400;BKG",       me.getParts()[2]);
         }
     }
 
@@ -106,8 +123,8 @@ public class NtripClientTest {
         NtripClient client = new NtripClient("localhost", server.getServerPort());
         client.setTimeout(100);
         client.setReconnectParameters(0.001, 2.0, 2);
-        CountingObserver observer = new CountingObserver(m -> true);
-        client.addObserver(1042, "RTCM3EPH01", observer);
+        client.addObserver(1042, "RTCM3EPH01", new CountingObserver(m -> true));
+        client.addObserver(1042, "RTCM3EPH01", new LoggingObserver());
         client.startStreaming("RTCM3EPH01", Type.RTCM, false, false);
         try {
             Thread.sleep(400);
@@ -119,6 +136,24 @@ public class NtripClientTest {
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             // ignored
+        }
+    }
+
+    @Test
+    public void testMountPointAlreadyConnected() {
+        DummyServer server = prepareServer("/gnss/ntrip/sourcetable-products.igs-ip.net.txt",
+                                           "/gnss/ntrip/RTCM3EPH01.dat");
+        server.run();
+        NtripClient client = new NtripClient("localhost", server.getServerPort());
+        client.setTimeout(100);
+        client.setReconnectParameters(0.001, 2.0, 2);
+        client.startStreaming("RTCM3EPH01", Type.RTCM, false, false);
+        try {
+            client.startStreaming("RTCM3EPH01", Type.RTCM, false, false);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.MOUNPOINT_ALREADY_CONNECTED, oe.getSpecifier());
+            Assert.assertEquals("RTCM3EPH01", oe.getParts()[0]);
         }
     }
 
@@ -139,6 +174,45 @@ public class NtripClientTest {
         client.stopStreaming(100);
         Assert.assertEquals("$GPGGA,024213.456,4330.0000,N,0115.0000,W,1,04,1.0,317.5,M,12.2,M,,*7A",
                             server.getRequestProperty("Ntrip-GGA"));
+    }
+
+    @Test
+    public void testGGA2() {
+        DummyServer server = prepareServer("/gnss/ntrip/sourcetable-products.igs-ip.net.txt",
+                                           "/gnss/ntrip/zero-length-response.txt");
+        server.run();
+        NtripClient client = new NtripClient("localhost", server.getServerPort());
+        client.setTimeout(100);
+        client.setFix(2, 42, 13.456, Math.toRadians(-43.5), Math.toRadians(1.25), 317.5, 12.2);
+        client.startStreaming("", Type.IGS_SSR, true, true);
+        try {
+            Thread.sleep(400);
+        } catch (InterruptedException ie) {
+            // ignored
+        }
+        client.stopStreaming(100);
+        Assert.assertEquals("$GPGGA,024213.456,4330.0000,S,0115.0000,E,1,04,1.0,317.5,M,12.2,M,,*75",
+                            server.getRequestProperty("Ntrip-GGA"));
+    }
+
+    @Test
+    public void testNullGGA() {
+        DummyServer server = prepareServer("/gnss/ntrip/sourcetable-products.igs-ip.net.txt",
+                                           "/gnss/ntrip/zero-length-response.txt");
+        server.run();
+        NtripClient client = new NtripClient("localhost", server.getServerPort());
+        client.setTimeout(100);
+        try {
+            client.startStreaming("", Type.IGS_SSR, true, true);
+            try {
+                Thread.sleep(400);
+            } catch (InterruptedException ie) {
+                // ignored
+            }
+            client.stopStreaming(100);
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.STREAM_REQUIRES_NMEA_FIX, oe.getSpecifier());
+        }
     }
 
     @Before
