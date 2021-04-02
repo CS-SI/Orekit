@@ -24,8 +24,8 @@
     <orekit.jacoco-maven-plugin.version>0.8.6</orekit.jacoco-maven-plugin.version>
     <orekit.maven-bundle-plugin.version>5.1.1</orekit.maven-bundle-plugin.version>
     <orekit.maven-changes-plugin.version>2.12.1</orekit.maven-changes-plugin.version>
-    <orekit.maven-checkstyle-plugin.version>3.1.1</orekit.maven-checkstyle-plugin.version>
-    <orekit.checkstyle.version>8.38</orekit.checkstyle.version>
+    <orekit.maven-checkstyle-plugin.version>3.1.2</orekit.maven-checkstyle-plugin.version>
+    <orekit.checkstyle.version>8.41</orekit.checkstyle.version>
     <orekit.maven-clean-plugin.version>3.1.0</orekit.maven-clean-plugin.version>
     <orekit.maven-compiler-plugin.version>3.8.1</orekit.maven-compiler-plugin.version>
     <orekit.maven-javadoc-plugin.version>3.2.0</orekit.maven-javadoc-plugin.version>

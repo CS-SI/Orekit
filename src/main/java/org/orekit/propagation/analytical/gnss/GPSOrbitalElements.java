@@ -29,9 +29,6 @@ public interface GPSOrbitalElements extends GNSSOrbitalElements {
     /** WGS 84 value of the Earth's universal gravitational parameter for GPS user in m³/s². */
     double GPS_MU = 3.986005e+14;
 
-    /** Value of Pi for conversion from semicircles to radian. */
-    double GPS_PI = 3.1415926535898;
-
     /** Duration of the GPS week in seconds. */
     double GPS_WEEK_IN_SECONDS = 604800.;
 

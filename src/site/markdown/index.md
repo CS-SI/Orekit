@@ -235,6 +235,8 @@
     * support for Hatanaka compact RINEX format
     * loading of SINEX station file
     * loading of RINEX clock files (version 2 and version 3)
+    * parsing of IGS SSR messages for all constellations (version 1)
+    * implementation of Ntrip protocol
 
   * Orbit file handling
   
