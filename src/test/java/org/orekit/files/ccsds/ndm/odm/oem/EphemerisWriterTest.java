@@ -245,7 +245,7 @@ public class EphemerisWriterTest {
                 ++count;
             }
         }
-        assertEquals(80, count);
+        assertEquals(79, count);
 
     }
 
