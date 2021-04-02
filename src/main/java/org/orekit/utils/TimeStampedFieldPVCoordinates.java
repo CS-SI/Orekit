@@ -29,6 +29,7 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
 
@@ -39,7 +40,7 @@ import org.orekit.time.TimeStamped;
  * @since 7.0
  */
 public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
-    extends FieldPVCoordinates<T> {
+    extends FieldPVCoordinates<T> implements FieldTimeStamped<T> {
 
     /** The date. */
     private final FieldAbsoluteDate<T> date;
@@ -587,9 +588,8 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
         this.date = date;
     }
 
-    /** Get the date.
-     * @return date
-     */
+    /** {@inheritDoc} */
+    @Override
     public FieldAbsoluteDate<T> getDate() {
         return date;
     }
