@@ -18,15 +18,15 @@ package org.orekit.files.ccsds.ndm.odm.oem;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,9 +36,7 @@ import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
@@ -49,7 +47,10 @@ import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
+import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
+import org.orekit.files.ccsds.utils.FileFormat;
+import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -58,14 +59,12 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-public class OEMWriterTest {
+public class EphemerisWriterTest {
+
     // As the default format for position is 3 digits after decimal point in km the max precision in m is 1
     private static final double POSITION_PRECISION = 1; // in m
     // As the default format for velocity is 5 digits after decimal point in km/s the max precision in m/s is 1e-2
     private static final double VELOCITY_PRECISION = 1e-2; //in m/s
-
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
 
     @Before
     public void setUp() throws Exception {
@@ -74,7 +73,7 @@ public class OEMWriterTest {
 
     @Test
     public void testOEMWriter() {
-        assertNotNull(new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null, dummyMetadata()));
+        assertNotNull(new WriterBuilder().buildOemWriter());
     }
 
     @Test
@@ -84,14 +83,17 @@ public class OEMWriterTest {
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getMars().getGM()).buildOemParser();
         final OemFile oemFile = parser.parseMessage(source);
 
-        String tempOEMFilePath = tempFolder.newFile("TestWriteOEM1.oem").toString();
-        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), oemFile.getHeader(),
-                                         oemFile.getSegments().get(0).getMetadata());
-        writer.write(tempOEMFilePath, oemFile);
+        OemWriter writer = new WriterBuilder().
+                        withConventions(IERSConventions.IERS_2010).
+                        withDataContext(DataContext.getDefault()).
+                        buildOemWriter();
+        final CharArrayWriter caw = new CharArrayWriter();
+        writer.writeMessage(new KvnGenerator(caw, 0, ""), oemFile);
+        final ByteBuffer buffer  = StandardCharsets.UTF_8.encode(caw.toString());
 
         final OemFile generatedOemFile = new OemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                        null, CelestialBodyFactory.getMars().getGM(), 1).
-                                         parseMessage(new DataSource(tempOEMFilePath));
+                        parseMessage(new DataSource("", () -> new ByteArrayInputStream(buffer.array())));
         compareOemFiles(oemFile, generatedOemFile);
     }
 
@@ -102,11 +104,10 @@ public class OEMWriterTest {
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOemParser();
         final OemFile oemFile = parser.parseMessage(source);
 
-        String tempOEMFilePath = tempFolder.newFile("TestOEMUnfoundSpaceId.oem").toString();
-        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), oemFile.getHeader(),
-                                         dummyMetadata());
+        EphemerisWriter writer = new EphemerisWriter(new WriterBuilder().buildOemWriter(),
+                                                     oemFile.getHeader(), dummyMetadata(), FileFormat.KVN, "");
         try {
-            writer.write(tempOEMFilePath, oemFile);
+            writer.write(new CharArrayWriter(), oemFile);
             fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oiae) {
             assertEquals(OrekitMessages.VALUE_NOT_FOUND, oiae.getSpecifier());
@@ -121,8 +122,11 @@ public class OEMWriterTest {
         final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOemParser();
         final OemFile oemFile = parser.parseMessage(source);
-        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), oemFile.getHeader(),
-                                         oemFile.getSegments().get(0).getMetadata());
+        EphemerisWriter writer = new EphemerisWriter(new WriterBuilder().buildOemWriter(),
+                                                     oemFile.getHeader(),
+                                                     oemFile.getSegments().get(0).getMetadata(),
+                                                     FileFormat.KVN,
+                                                     "dummy");
         try {
             writer.write((BufferedWriter) null, oemFile);
             fail("an exception should have been thrown");
@@ -134,20 +138,11 @@ public class OEMWriterTest {
 
     @Test
     public void testNullEphemeris() throws IOException {
-        File tempOEMFile = tempFolder.newFile("TestNullEphemeris.oem");
-        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null,
-                                         dummyMetadata());
-        writer.write(tempOEMFile.toString(), null);
-        assertTrue(tempOEMFile.exists());
-        try (FileInputStream   fis = new FileInputStream(tempOEMFile);
-             InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
-             BufferedReader    br  = new BufferedReader(isr)) {
-            int count = 0;
-            for (String line = br.readLine(); line != null; line = br.readLine()) {
-                ++count;
-            }
-            assertEquals(0, count);
-        }
+        EphemerisWriter writer = new EphemerisWriter(new WriterBuilder().buildOemWriter(),
+                                                     null, dummyMetadata(), FileFormat.KVN, "nullEphemeris");
+        CharArrayWriter caw = new CharArrayWriter();
+        writer.write(caw, null);
+        assertEquals(0, caw.size());
     }
 
     @Test
@@ -157,14 +152,15 @@ public class OEMWriterTest {
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOemParser();
         final OemFile oemFile = parser.parseMessage(source);
 
-        String tempOEMFilePath = tempFolder.newFile("TestOEMUnisatelliteWithDefault.oem").toString();
-        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), oemFile.getHeader(),
-                                         oemFile.getSegments().get(0).getMetadata());
-        writer.write(tempOEMFilePath, oemFile);
+        OemWriter writer = new WriterBuilder().buildOemWriter();
+        final CharArrayWriter caw = new CharArrayWriter();
+        writer.writeMessage(new KvnGenerator(caw, 0, ""), oemFile);
+        final ByteBuffer buffer  = StandardCharsets.UTF_8.encode(caw.toString());
 
-        final OemFile generatedOemFile = new OemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                                       null, CelestialBodyFactory.getEarth().getGM(), 1).
-                                         parseMessage(new DataSource(tempOEMFilePath));
+        final OemFile generatedOemFile = new ParserBuilder().
+                                         withMu(CelestialBodyFactory.getEarth().getGM()).
+                                         buildOemParser().
+                                         parseMessage(new DataSource("", () -> new ByteArrayInputStream(buffer.array())));
         assertEquals(oemFile.getSegments().get(0).getMetadata().getObjectID(),
                 generatedOemFile.getSegments().get(0).getMetadata().getObjectID());
     }
@@ -176,14 +172,18 @@ public class OEMWriterTest {
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOemParser();
         final OemFile oemFile = parser.parseMessage(source);
 
-        String tempOEMFilePath = tempFolder.newFile("TestOEMIssue723.aem").toString();
-        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), oemFile.getHeader(),
-                                         oemFile.getSegments().get(0).getMetadata());
-        writer.write(tempOEMFilePath, oemFile);
+        EphemerisWriter writer = new EphemerisWriter(new WriterBuilder().buildOemWriter(),
+                                                     oemFile.getHeader(),
+                                                     oemFile.getSegments().get(0).getMetadata(), 
+                                                     FileFormat.KVN, "TestOEMIssue723.aem");
+        final CharArrayWriter caw = new CharArrayWriter();
+        writer.write(caw, oemFile);
+        final ByteBuffer buffer  = StandardCharsets.UTF_8.encode(caw.toString());
 
-        final OemFile generatedOemFile = new OemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                                       null, CelestialBodyFactory.getEarth().getGM(), 1).
-                                         parseMessage(new DataSource(tempOEMFilePath));
+        final OemFile generatedOemFile = new ParserBuilder().
+                                         withMu(CelestialBodyFactory.getEarth().getGM()).
+                                         buildOemParser().
+                                         parseMessage(new DataSource("", () -> new ByteArrayInputStream(buffer.array())));
         assertEquals(oemFile.getHeader().getComments().get(0), generatedOemFile.getHeader().getComments().get(0));
     }
 
@@ -199,32 +199,16 @@ public class OEMWriterTest {
         final DataSource source =  new DataSource(exampleFile, () -> getClass().getResourceAsStream(exampleFile));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOemParser();
         OemFile oemFile = parser.parseMessage(source);
-        StringBuilder buffer = new StringBuilder();
 
-        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), oemFile.getHeader(),
-                                         oemFile.getSegments().get(0).getMetadata(), "",
-                                         "%.2f", "%.3f", "%.4f", "%.6e");
+        OemWriter writer = new WriterBuilder().buildOemWriter();
+        final CharArrayWriter caw = new CharArrayWriter();
+        writer.writeMessage(new KvnGenerator(caw, 0, ""), oemFile);
 
-        writer.write(buffer, oemFile);
+        String[] lines2 = caw.toString().split("\n");
+        assertEquals("2002-12-18T12:00:00.331 2789.619 -280.045 -1746.755 4.73372 -2.49586 -1.0419499999999997", lines2[21]);
+        assertEquals("2002-12-18T12:01:00.331 2783.419 -308.143 -1877.071 5.18604 -2.42124 -1.99608", lines2[22]);
+        assertEquals("2002-12-18T12:02:00.331 2776.033 -336.859 -2008.682 5.63678 -2.33951 -1.94687", lines2[23]);
 
-        String[] lines = buffer.toString().split("\n");
-
-        assertEquals(lines[19], "2002-12-18T12:00:00.331 2789.62 -280.05 -1746.76 4.734 -2.496 -1.042");
-        assertEquals(lines[20], "2002-12-18T12:01:00.331 2783.42 -308.14 -1877.07 5.186 -2.421 -1.996");
-        assertEquals(lines[21], "2002-12-18T12:02:00.331 2776.03 -336.86 -2008.68 5.637 -2.340 -1.947");
-
-        // Default format
-        
-        writer = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), oemFile.getHeader(),
-                               oemFile.getSegments().get(0).getMetadata());
-        buffer = new StringBuilder();
-        writer.write(buffer, oemFile);
-
-        String[] lines2 = buffer.toString().split("\n");
-
-        assertEquals(lines2[19], "2002-12-18T12:00:00.331  2789.619000 -280.045000 -1746.755000  4.733720000 -2.495860000 -1.041950000");
-        assertEquals(lines2[20], "2002-12-18T12:01:00.331  2783.419000 -308.143000 -1877.071000  5.186040000 -2.421240000 -1.996080000");
-        assertEquals(lines2[21], "2002-12-18T12:02:00.331  2776.033000 -336.859000 -2008.682000  5.636780000 -2.339510000 -1.946870000");
     }
 
     @Test
@@ -245,22 +229,24 @@ public class OEMWriterTest {
                                                    new Vector3D(-17, -20, 150)),
                       600.0, 10.0);
 
-       File written = tempFolder.newFile("TestAEMMultisatellite.aem");
 
         OemMetadata metadata = dummyMetadata();
         metadata.setObjectID(id2);
-        OemWriter writer = new OemWriter(IERSConventions.IERS_2010, context, null, metadata);
-        writer.write(written.getAbsolutePath(), file);
+        EphemerisWriter writer = new EphemerisWriter(new WriterBuilder().withDataContext(context).buildOemWriter(),
+                                                     null, metadata, FileFormat.KVN, "");
+        final CharArrayWriter caw = new CharArrayWriter();
+        writer.write(caw, file);
+        final ByteBuffer buffer  = StandardCharsets.UTF_8.encode(caw.toString());
 
         int count = 0;
-        try (FileInputStream   fis = new FileInputStream(written);
-             InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
-             BufferedReader    br  = new BufferedReader(isr)) {
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(buffer.array());
+             InputStreamReader    isr  = new InputStreamReader(bais, StandardCharsets.UTF_8);
+             BufferedReader       br   = new BufferedReader(isr)) {
             for (String line = br.readLine(); line != null; line = br.readLine()) {
                 ++count;
             }
         }
-        assertEquals(79, count);
+        assertEquals(80, count);
 
     }
 

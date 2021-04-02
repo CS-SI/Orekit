@@ -37,6 +37,14 @@ public class ParserTest {
     }
 
     @Test
+    public void testND() {
+        // nd does not mean "not defined", but nano-day…
+        checkReference("nd",
+                       Prefix.NANO.getFactor() * Constants.JULIAN_DAY,
+                       Fraction.ZERO, Fraction.ZERO, Fraction.ONE, Fraction.ZERO);
+    }
+
+    @Test
     public void testPredefinedUnit() {
         checkReference("MHz",
                        1.0e6,
@@ -109,6 +117,13 @@ public class ParserTest {
     @Test
     public void testRootAndPower() {
         expectFailure("km/√d³");
+    }
+
+    @Test
+    public void testRootAndParenthesisedPower() {
+        checkReference("km/√(d³)",
+                       1000.0 / (Constants.JULIAN_DAY * FastMath.sqrt(Constants.JULIAN_DAY)),
+                       Fraction.ZERO, Fraction.ONE, new Fraction(-3, 2), Fraction.ZERO);
     }
 
     private void checkReference(final String unitSpecification, final double scale,

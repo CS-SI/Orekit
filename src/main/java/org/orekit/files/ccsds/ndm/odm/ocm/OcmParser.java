@@ -1,5 +1,5 @@
 /* Copyright 2002-2021 CS GROUP
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -128,6 +128,11 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
 
     /**
      * Complete constructor.
+     * <p>
+     * Calling this constructor directly is not recommended. Users should rather use
+     * {@link org.orekit.files.ccsds.ndm.ParserBuilder#buildOcmParser()
+     * parserBuilder.buildOcmParser()}.
+     * </p>
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
@@ -585,7 +590,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                 }
                 final Maneuver maneuver = new Maneuver();
                 for (int i = 0; i < fields.length; ++i) {
-                    types.get(i).process(fields[i], context, maneuver);
+                    types.get(i).process(fields[i], context, maneuver, token.getLineNumber(), token.getFileName());
                 }
                 currentManeuverHistory.add(maneuver);
                 return true;

@@ -33,21 +33,19 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
-import org.orekit.files.ccsds.section.Segment;
+import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.IERSConventions;
 
 /**
  * Test class for CCSDS Tracking Data Message parsing.<p>
@@ -57,7 +55,7 @@ import org.orekit.utils.IERSConventions;
  * @author mjournot
  *
  */
-public class TDMParserTest {
+public class TdmParserTest {
 
     @Before
     public void setUp() {
@@ -68,7 +66,7 @@ public class TDMParserTest {
     public void testParseTdmExternalResourceIssue368() {
         // setup
         final String name = "/ccsds/tdm/xml/TDM-external-doctype.xml";
-        final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
 
         try {
             // action
@@ -90,7 +88,7 @@ public class TDMParserTest {
         // See Figure D-2: TDM Example: One-Way Data w/Frequency Offset
         // Data lines number was cut down to 7
         final String name = "/ccsds/tdm/kvn/TDMExample2.txt";
-        final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
         final TdmFile file = new ParserBuilder().buildTdmParser(null).parseMessage(source);
         validateTDMExample2(file);
     }
@@ -102,7 +100,7 @@ public class TDMParserTest {
         // See Figure D-4: TDM Example: Two-Way Ranging Data Only
         // Data lines number was cut down to 20
         final String name = "/ccsds/tdm/kvn/TDMExample4.txt";
-        final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
         final TdmFile file = new ParserBuilder().buildTdmParser(new IdentityConverter()).parseMessage(source);
         validateTDMExample4(file);
     }
@@ -114,7 +112,7 @@ public class TDMParserTest {
         // See Figure D-6: TDM Example: Four-Way Data
         // Data lines number was cut down to 16
         final String name = "/ccsds/tdm/kvn/TDMExample6.txt";
-        final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
         final TdmFile file = new ParserBuilder().buildTdmParser(null).parseMessage(source);
         validateTDMExample6(file);
     }
@@ -126,7 +124,7 @@ public class TDMParserTest {
         // See Figure D-8: TDM Example: Angles, Range, Doppler Combined in Single TDM
         // Data lines number was cut down to 18
         final String name = "/ccsds/tdm/kvn/TDMExample8.txt";
-        final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
         final TdmFile file = new ParserBuilder().buildTdmParser(new IdentityConverter()).parseMessage(source);
         validateTDMExample8(file);
     }
@@ -137,19 +135,29 @@ public class TDMParserTest {
         // Example 15 of [1]
         // See Figure D-15: TDM Example: Clock Bias/Drift Only
         final String name = "/ccsds/tdm/kvn/TDMExample15.txt";
-        final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
         final TdmFile file = new ParserBuilder().buildTdmParser(null).parseMessage(source);
         validateTDMExample15(file);
     }
 
     @Test
-    public void testParseTdmKeyValueExampleAllKeywords() {
+    public void testParseTdmKeyValueExampleAllKeywordsSequential() {
 
         // Testing all TDM keywords
-        final String name = "/ccsds/tdm/kvn/TDMExampleAllKeywords.txt";
-        final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final String name = "/ccsds/tdm/kvn/TDMExampleAllKeywordsSequential.txt";
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
         final TdmFile file = new ParserBuilder().buildTdmParser(new IdentityConverter()).parseMessage(source);
-        validateTDMExampleAllKeywords(file);
+        validateTDMExampleAllKeywordsSequential(file);
+    }
+
+    @Test
+    public void testParseTdmKeyValueExampleAllKeywordsSingleDiff() {
+
+        // Testing all TDM keywords
+        final String name = "/ccsds/tdm/kvn/TDMExampleAllKeywordsSingleDiff.txt";
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
+        final TdmFile file = new ParserBuilder().buildTdmParser(new IdentityConverter()).parseMessage(source);
+        validateTDMExampleAllKeywordsSingleDiff(file);
     }
 
     @Test
@@ -159,7 +167,7 @@ public class TDMParserTest {
         // See Figure D-2: TDM Example: One-Way Data w/Frequency Offset
         // Data lines number was cut down to 7
         final String name = "/ccsds/tdm/xml/TDMExample2.xml";
-        final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
         final TdmFile file = new ParserBuilder().buildTdmParser(null).parseMessage(source);
         validateTDMExample2(file);
     }
@@ -171,18 +179,13 @@ public class TDMParserTest {
         // See Figure D-2: TDM Example: One-Way Data w/Frequency Offset
         // Data lines number was cut down to 7
         final String name = "/ccsds/tdm/xml/TDMExample2.xml";
-        final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
         final TdmFile original = new ParserBuilder().buildTdmParser(null).parseMessage(source);
 
         // write the parsed file back to a characters array
         final CharArrayWriter caw = new CharArrayWriter();
-        TdmWriter tdmw = new TdmWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
-                                       original.getHeader(), "dummy");
-        Generator generator = new KvnGenerator(caw, TdmWriter.KEY_WIDTH, tdmw.getFileName());
-        tdmw.writeHeader(generator);
-        for (final Segment<TdmMetadata, ObservationsBlock> segment : original.getSegments()) {
-            tdmw.writeSegment(generator, segment);
-        }
+        final Generator generator = new KvnGenerator(caw, TdmWriter.KVN_PADDING_WIDTH, "dummy");
+        new WriterBuilder().buildTdmWriter(null).writeMessage(generator, original);
 
         // reparse the written file
         final ByteBuffer bb      = StandardCharsets.UTF_8.encode(caw.toString());
@@ -199,7 +202,7 @@ public class TDMParserTest {
         // See Figure D-4: TDM Example: Two-Way Ranging Data Only
         // Data lines number was cut down to 20
         final String name = "/ccsds/tdm/xml/TDMExample4.xml";
-        final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
         final TdmFile file = new ParserBuilder().buildTdmParser(new IdentityConverter()).parseMessage(source);
         validateTDMExample4(file);
     }
@@ -211,7 +214,7 @@ public class TDMParserTest {
         // See Figure D-6: TDM Example: Four-Way Data
         // Data lines number was cut down to 16
         final String name = "/ccsds/tdm/xml/TDMExample6.xml";
-        final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
         final TdmFile file = new ParserBuilder().buildTdmParser(null).parseMessage(source);
         validateTDMExample6(file);
     }
@@ -223,7 +226,7 @@ public class TDMParserTest {
         // See Figure D-8: TDM Example: Angles, Range, Doppler Combined in Single TDM
         // Data lines number was cut down to 18
         final String name = "/ccsds/tdm/xml/TDMExample8.xml";
-        final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
         final TdmFile file = new ParserBuilder().buildTdmParser(new IdentityConverter()).parseMessage(source);
         validateTDMExample8(file);
     }
@@ -234,25 +237,35 @@ public class TDMParserTest {
         // Example 15 of [1]
         // See Figure D-15: TDM Example: Clock Bias/Drift Only
         final String name = "/ccsds/tdm/xml/TDMExample15.xml";
-        final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
         final TdmFile file = new ParserBuilder().buildTdmParser(null).parseMessage(source);
         validateTDMExample15(file);
     }
 
     @Test
-    public void testParseTdmXmlExampleAllKeywords() {
+    public void testParseTdmXmlExampleAllKeywordsSequential() {
 
         // Testing all TDM keywords
-        final String name = "/ccsds/tdm/xml/TDMExampleAllKeywords.xml";
-        final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final String name = "/ccsds/tdm/xml/TDMExampleAllKeywordsSequential.xml";
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
         final TdmFile file = new ParserBuilder().buildTdmParser(new IdentityConverter()).parseMessage(source);
-        validateTDMExampleAllKeywords(file);
+        validateTDMExampleAllKeywordsSequential(file);
+    }
+
+    @Test
+    public void testParseTdmXmlExampleAllKeywordsSingleDiff() {
+
+        // Testing all TDM keywords
+        final String name = "/ccsds/tdm/xml/TDMExampleAllKeywordsSingleDiff.xml";
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
+        final TdmFile file = new ParserBuilder().buildTdmParser(new IdentityConverter()).parseMessage(source);
+        validateTDMExampleAllKeywordsSingleDiff(file);
     }
 
     @Test
     public void testDataNumberFormatErrorTypeKeyValue() {
         final String name = "/ccsds/tdm/kvn/TDM-data-number-format-error.txt";
-        final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
         try {
             // Number format exception in data part
             new ParserBuilder().buildTdmParser(null).parseMessage(source);
@@ -270,7 +283,7 @@ public class TDMParserTest {
         try {
             // Number format exception in data part
             final String name = "/ccsds/tdm/xml/TDM-data-number-format-error.xml";
-            final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+            final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
             new ParserBuilder().buildTdmParser(null).parseMessage(source);
             Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
@@ -286,7 +299,7 @@ public class TDMParserTest {
         try {
             // Number format exception in metadata part
             final String name = "/ccsds/tdm/kvn/TDM-metadata-number-format-error.txt";
-            final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+            final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
             new ParserBuilder().buildTdmParser(null).parseMessage(source);
             Assert.fail("An Orekit Exception \"UNABLE_TO_PARSE_LINE_IN_FILE\" should have been thrown");
         } catch (OrekitException oe) {
@@ -302,7 +315,7 @@ public class TDMParserTest {
         try {
             // Number format exception in metadata part
             final String name = "/ccsds/tdm/xml/TDM-metadata-number-format-error.xml";
-            final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+            final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
             new ParserBuilder().buildTdmParser(null).parseMessage(source);
             Assert.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
@@ -318,7 +331,7 @@ public class TDMParserTest {
         // Try parsing a file that does not exist
         final String realName = "/ccsds/odm/oem/OEMExample2.txt";
         final String wrongName = realName + "xxxxx";
-        final DataSource source = new DataSource(wrongName, () -> TDMParserTest.class.getResourceAsStream(wrongName));
+        final DataSource source = new DataSource(wrongName, () -> TdmParserTest.class.getResourceAsStream(wrongName));
         try {
             new ParserBuilder().buildTdmParser(null).parseMessage(source);
             Assert.fail("An exception should have been thrown");
@@ -332,7 +345,7 @@ public class TDMParserTest {
     public void testInconsistentTimeSystemsKeyValue() {
         // Inconsistent time systems between two sets of data
         final String name = "/ccsds/tdm/kvn/TDM-inconsistent-time-systems.txt";
-        final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
         TdmFile file = new ParserBuilder().buildTdmParser(null).parseMessage(source);
         Assert.assertEquals(3, file.getSegments().size());
         Assert.assertEquals(TimeSystem.UTC, file.getSegments().get(0).getMetadata().getTimeSystem());
@@ -344,7 +357,7 @@ public class TDMParserTest {
     public void testInconsistentTimeSystemsXml() {
         // Inconsistent time systems between two sets of data
         final String name = "/ccsds/tdm/xml/TDM-inconsistent-time-systems.xml";
-        final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
         TdmFile file = new ParserBuilder().buildTdmParser(null).parseMessage(source);
         Assert.assertEquals(3, file.getSegments().size());
         Assert.assertEquals(TimeSystem.UTC, file.getSegments().get(0).getMetadata().getTimeSystem());
@@ -356,7 +369,7 @@ public class TDMParserTest {
     public void testWrongDataKeywordKeyValue() throws URISyntaxException {
         // Unknown CCSDS keyword was read in data part
         final String name = "/ccsds/tdm/kvn/TDM-data-wrong-keyword.txt";
-        final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
         try {
             new ParserBuilder().buildTdmParser(null).parseMessage(source);
             Assert.fail("An exception should have been thrown");
@@ -372,7 +385,7 @@ public class TDMParserTest {
     public void testWrongDataKeywordXml() throws URISyntaxException {
         // Unknown CCSDS keyword was read in data part
         final String name = "/ccsds/tdm/xml/TDM-data-wrong-keyword.xml";
-        final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
         try {
             new ParserBuilder().buildTdmParser(null).parseMessage(source);
             Assert.fail("An exception should have been thrown");
@@ -388,7 +401,7 @@ public class TDMParserTest {
     public void testWrongMetaDataKeywordKeyValue() throws URISyntaxException {
         // Unknown CCSDS keyword was read in data part
         final String name = "/ccsds/tdm/kvn/TDM-metadata-wrong-keyword.txt";
-        final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
         try {
             new ParserBuilder().buildTdmParser(null).parseMessage(source);
             Assert.fail("An exception should have been thrown");
@@ -404,7 +417,7 @@ public class TDMParserTest {
     public void testWrongMetaDataKeywordXml() throws URISyntaxException {
         // Unknown CCSDS keyword was read in data part
         final String name = "/ccsds/tdm/xml/TDM-metadata-wrong-keyword.xml";
-        final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
         try {
             new ParserBuilder().buildTdmParser(null).parseMessage(source);
             Assert.fail("An exception should have been thrown");
@@ -420,7 +433,7 @@ public class TDMParserTest {
     public void testWrongTimeSystemKeyValue() {
         // Time system not implemented CCSDS keyword was read in data part
         final String name = "/ccsds/tdm/kvn/TDM-metadata-timesystem-not-implemented.txt";
-        final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
         try {
             new ParserBuilder().buildTdmParser(null).parseMessage(source);
             Assert.fail("An exception should have been thrown");
@@ -434,7 +447,7 @@ public class TDMParserTest {
     public void testWrongTimeSystemXml() {
         // Time system not implemented CCSDS keyword was read in data part
         final String name = "/ccsds/tdm/xml/TDM-metadata-timesystem-not-implemented.xml";
-        final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
         try {
             new ParserBuilder().buildTdmParser(null).parseMessage(source);
             Assert.fail("An exception should have been thrown");
@@ -448,7 +461,7 @@ public class TDMParserTest {
     public void testMissingTimeSystemXml() {
         // Time system not implemented CCSDS keyword was read in data part
         final String name = "/ccsds/tdm/xml/TDM-missing-timesystem.xml";
-        final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
         try {
             new ParserBuilder().buildTdmParser(null).parseMessage(source);
             Assert.fail("An exception should have been thrown");
@@ -462,7 +475,7 @@ public class TDMParserTest {
     public void testInconsistentDataLineKeyValue() {
         // Inconsistent data line in KeyValue file (3 fields after keyword instead of 2)
         final String name = "/ccsds/tdm/kvn/TDM-data-inconsistent-line.txt";
-        final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
         try {
             new ParserBuilder().buildTdmParser(null).parseMessage(source);
             Assert.fail("An exception should have been thrown");
@@ -478,7 +491,7 @@ public class TDMParserTest {
     public void testInconsistentDataBlockXml() {
         // Inconsistent data block in XML file
         final String name = "/ccsds/tdm/xml/TDM-data-inconsistent-block.xml";
-        final DataSource source = new DataSource(name, () -> TDMParserTest.class.getResourceAsStream(name));
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
         try {
             new ParserBuilder().buildTdmParser(null).parseMessage(source);
             Assert.fail("An exception should have been thrown");
@@ -494,7 +507,7 @@ public class TDMParserTest {
      * Validation function for example 2.
      * @param file Parsed TDMFile to validate
      */
-    public static void validateTDMExample2(TdmFile file) {
+    private void validateTDMExample2(TdmFile file) {
         final TimeScale utc = TimeScalesFactory.getUTC();
 
         // Header
@@ -555,7 +568,7 @@ public class TDMParserTest {
      * Validation function for example 4.
      * @param file Parsed TDMFile to validate
      */
-    public static void validateTDMExample4(TdmFile file) {
+    private void validateTDMExample4(TdmFile file) {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
 
@@ -628,7 +641,7 @@ public class TDMParserTest {
      * Validation function for example 6.
      * @param file Parsed TDMFile to validate
      */
-    public static void validateTDMExample6(TdmFile file) {
+    private void validateTDMExample6(TdmFile file) {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
 
@@ -692,7 +705,7 @@ public class TDMParserTest {
      * Validation function for example 8.
      * @param file Parsed TDMFile to validate
      */
-    public static void validateTDMExample8(TdmFile file) {
+    private void validateTDMExample8(TdmFile file) {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
 
@@ -797,7 +810,7 @@ public class TDMParserTest {
      * Validation function for example 15.
      * @param file Parsed TDMFile to validate
      */
-    public static void validateTDMExample15(TdmFile file) {
+    private void validateTDMExample15(TdmFile file) {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
 
@@ -925,16 +938,39 @@ public class TDMParserTest {
      * Validation function for example displaying all keywords.
      * @param file Parsed TDMFile to validate
      */
-    public static void validateTDMExampleAllKeywords(TdmFile file) {
+    private void validateTDMExampleAllKeywordsSequential(TdmFile file) {
+        validateTDMExampleAllKeywordsCommon(file);
+        final TdmMetadata metadata = file.getSegments().get(0).getMetadata();
+        Assert.assertEquals(TrackingMode.SEQUENTIAL, metadata.getMode());
+        Assert.assertArrayEquals(new int[] { 2, 1 }, metadata.getPath());
+    }
+
+    /**
+     * Validation function for example displaying all keywords.
+     * @param file Parsed TDMFile to validate
+     */
+    private void validateTDMExampleAllKeywordsSingleDiff(TdmFile file) {
+        validateTDMExampleAllKeywordsCommon(file);
+        final TdmMetadata metadata = file.getSegments().get(0).getMetadata();
+        Assert.assertEquals(TrackingMode.SINGLE_DIFF, metadata.getMode());
+        Assert.assertArrayEquals(new int[] { 4, 5 }, metadata.getPath1());
+        Assert.assertArrayEquals(new int[] { 3, 2 }, metadata.getPath2());
+    }
+
+    /**
+     * Validation function for example displaying all keywords.
+     * @param file Parsed TDMFile to validate
+     */
+    private void validateTDMExampleAllKeywordsCommon(TdmFile file) {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
 
         // Header
         Assert.assertEquals(1.0, file.getHeader().getFormatVersion(), 0.0);
         Assert.assertEquals(new AbsoluteDate("2017-06-14T10:53:00.000", utc).durationFrom(file.getHeader().getCreationDate()), 0.0, 0.0);
-        Assert.assertEquals("CSSI",file.getHeader().getOriginator());
+        Assert.assertEquals("CS GROUP",file.getHeader().getOriginator());
         final List<String> headerComment = new ArrayList<String>();
-        headerComment.add("TDM example created by CSSI");
+        headerComment.add("TDM example created by CS GROUP");
         headerComment.add("Testing all TDM known meta-data and data keywords");
         Assert.assertEquals(headerComment, file.getHeader().getComments());
 
@@ -949,10 +985,6 @@ public class TDMParserTest {
         Assert.assertEquals("P3", metadata.getParticipants().get(3));
         Assert.assertEquals("P4", metadata.getParticipants().get(4));
         Assert.assertEquals("P5", metadata.getParticipants().get(5));
-        Assert.assertEquals(TrackingMode.SEQUENTIAL, metadata.getMode());
-        Assert.assertArrayEquals(new int[] { 2, 1 }, metadata.getPath());
-        Assert.assertArrayEquals(new int[] { 4, 5 }, metadata.getPath1());
-        Assert.assertArrayEquals(new int[] { 3, 2 }, metadata.getPath2());
         Assert.assertEquals("S", metadata.getTransmitBand());
         Assert.assertEquals("L", metadata.getReceiveBand());
         Assert.assertEquals(240, metadata.getTurnaroundNumerator(), 0);
@@ -1017,22 +1049,6 @@ public class TDMParserTest {
         final List<String> dataComment = new ArrayList<String>();
         dataComment.add("Data Related Keywords");
         Assert.assertEquals(dataComment, file.getSegments().get(0).getData().getComments());
-    }
-
-    private static class IdentityConverter implements RangeUnitsConverter {
-
-        /** {@inheritDoc} */
-        @Override
-        public double ruToMeters(final TdmMetadata metadata, final AbsoluteDate date, final double range) {
-            return range;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public double metersToRu(final TdmMetadata metadata, final AbsoluteDate date, final double range) {
-            return range;
-        }
-        
     }
 
 }

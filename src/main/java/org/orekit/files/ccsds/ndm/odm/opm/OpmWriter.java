@@ -23,7 +23,6 @@ import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceWriter;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataWriter;
-import org.orekit.files.ccsds.ndm.odm.KeplerianElementsWriter;
 import org.orekit.files.ccsds.ndm.odm.SpacecraftParametersWriter;
 import org.orekit.files.ccsds.ndm.odm.StateVectorWriter;
 import org.orekit.files.ccsds.ndm.odm.UserDefinedWriter;
@@ -39,35 +38,36 @@ import org.orekit.utils.IERSConventions;
 
 
 /**
- * Writer for CCSDS Orit Parameter Message.
+ * Writer for CCSDS Orbit Parameter Message.
  *
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OpmWriter extends AbstractMessageWriter {
+public class OpmWriter extends AbstractMessageWriter<Header, Segment<CommonMetadata, OpmData>, OpmFile> {
 
     /** Version number implemented. **/
     public static final double CCSDS_OPM_VERS = 3.0;
 
-    /** Key width for aligning the '=' sign. */
-    public static final int KEY_WIDTH = 18;
+    /** Padding width for aligning the '=' sign. */
+    public static final int KVN_PADDING_WIDTH = 18;
 
     /** Complete constructor.
+     * <p>
+     * Calling this constructor directly is not recommended. Users should rather use
+     * {@link org.orekit.files.ccsds.ndm.WriterBuilder#buildOpmWriter()
+     * writerBuilder.buildOpmWriter()}.
+     * </p>
      * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
-     * @param header file header (may be null)
-     * @param fileName file name for error messages
      */
     public OpmWriter(final IERSConventions conventions, final DataContext dataContext,
-                     final AbsoluteDate missionReferenceDate,
-                     final Header header, final String fileName) {
-        super(OpmFile.FORMAT_VERSION_KEY, CCSDS_OPM_VERS, header,
+                     final AbsoluteDate missionReferenceDate) {
+        super(OpmFile.FORMAT_VERSION_KEY, CCSDS_OPM_VERS,
               new ContextBinding(
                   () -> conventions, () -> false, () -> dataContext,
                   () -> missionReferenceDate, () -> TimeSystem.UTC,
-                  () -> 0.0, () -> 1.0),
-              fileName);
+                  () -> 0.0, () -> 1.0));
     }
 
     /** Write one segment.
@@ -79,8 +79,16 @@ public class OpmWriter extends AbstractMessageWriter {
         throws IOException {
 
         // write the metadata
-        new CommonMetadataWriter(segment.getMetadata(), getTimeConverter()).
-        write(generator);
+        final ContextBinding oldContext = getContext();
+        final CommonMetadata metadata   = segment.getMetadata();
+        setContext(new ContextBinding(oldContext::getConventions,
+                                      oldContext::isSimpleEOP,
+                                      oldContext::getDataContext,
+                                      oldContext::getReferenceDate,
+                                      metadata::getTimeSystem,
+                                      oldContext::getClockCount,
+                                      oldContext::getClockRate));
+        new CommonMetadataWriter(metadata, getTimeConverter()).write(generator);
 
         // start data block
         if (generator.getFormat() == FileFormat.XML) {
@@ -94,8 +102,8 @@ public class OpmWriter extends AbstractMessageWriter {
 
         if (segment.getData().getKeplerianElementsBlock() != null) {
             // write optional Keplerian elements block
-            new KeplerianElementsWriter(XmlSubStructureKey.keplerianElements.name(), null,
-                                        segment.getData().getKeplerianElementsBlock()).
+            new OsculationgKeplerianElementsWriter(XmlSubStructureKey.keplerianElements.name(), null,
+                                                   segment.getData().getKeplerianElementsBlock()).
             write(generator);
         }
 
@@ -121,7 +129,7 @@ public class OpmWriter extends AbstractMessageWriter {
         }
 
         if (segment.getData().getUserDefinedBlock() != null) {
-            // write optional uder defined parameters block
+            // write optional user defined parameters block
             new UserDefinedWriter(XmlSubStructureKey.userDefinedParameters.name(), null,
                                   segment.getData().getUserDefinedBlock()).
             write(generator);

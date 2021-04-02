@@ -16,8 +16,12 @@
  */
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
+import java.io.ByteArrayInputStream;
+import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
 
@@ -32,18 +36,24 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.ElementsType;
 import org.orekit.files.ccsds.definitions.OdMethodType;
+import org.orekit.files.ccsds.definitions.OnOff;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
+import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
+import org.orekit.files.ccsds.utils.generation.Generator;
+import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.units.Unit;
 
-public class OCMParserTest {
+public class OcmParserTest {
 
     @Before
     public void setUp() {
@@ -410,9 +420,9 @@ public class OCMParserTest {
         Assert.assertEquals(2, perts.getNBodyPerturbations().size());
         Assert.assertEquals("MOON", perts.getNBodyPerturbations().get(0).getName());
         Assert.assertEquals("SUN",  perts.getNBodyPerturbations().get(1).getName());
-        Assert.assertEquals( 12.0, perts.getFixedGeomagneticKp(), 1.0e-10);
-        Assert.assertEquals(105.0, perts.getFixedF10P7(),         1.0e-10);
-        Assert.assertEquals(120.0, perts.getFixedF10P7Mean(),     1.0e-10);
+        Assert.assertEquals( 12.0, Units.NANO_TESLA.fromSI(perts.getFixedGeomagneticKp()), 1.0e-10);
+        Assert.assertEquals(105.0, Unit.SOLAR_FLUX_UNIT.fromSI(perts.getFixedF10P7()),     1.0e-10);
+        Assert.assertEquals(120.0, Unit.SOLAR_FLUX_UNIT.fromSI(perts.getFixedF10P7Mean()), 1.0e-10);
 
         // check no orbit determination
         Assert.assertNull(file.getData().getOrbitDeterminationBlock());
@@ -429,10 +439,33 @@ public class OCMParserTest {
     public void testParseOCM2XML() {
         final String  name = "/ccsds/odm/ocm/OCMExample2.xml";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
-        final OcmFile file = new ParserBuilder().
-                             withMu(Constants.EIGEN5C_EARTH_MU).
-                             buildOcmParser().
-                             parseMessage(source);
+        validateOCM2XML(new ParserBuilder().
+                        withMu(Constants.EIGEN5C_EARTH_MU).
+                        buildOcmParser().
+                        parseMessage(source));
+    }
+
+    @Test
+    public void testWriteOCM2() throws URISyntaxException, IOException {
+        final String name = "/ccsds/odm/ocm/OCMExample2.xml";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        OcmParser parser = new ParserBuilder(). withMu(Constants.EIGEN5C_EARTH_MU).buildOcmParser();
+        final OcmFile original = parser.parseMessage(source);
+
+        // write the parsed file back to a characters array
+        final CharArrayWriter caw = new CharArrayWriter();
+        final Generator generator = new KvnGenerator(caw, OcmWriter.KVN_PADDING_WIDTH, "dummy");
+        new WriterBuilder().buildOcmWriter().writeMessage(generator, original);
+
+        // reparse the written file
+        final ByteBuffer bb      = StandardCharsets.UTF_8.encode(caw.toString());
+        final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(bb.array()));
+        final OcmFile    rebuilt = new ParserBuilder().buildOcmParser().parseMessage(source2);
+        validateOCM2XML(rebuilt);
+
+    }
+
+    private void validateOCM2XML(final OcmFile file) {
 
         // Check Header Block;
         Assert.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
@@ -527,9 +560,9 @@ public class OCMParserTest {
         Assert.assertEquals(3.986004415e14, perts.getGm(), 1.0);
         Assert.assertEquals("MOON", perts.getNBodyPerturbations().get(0).getName());
         Assert.assertEquals("SUN",  perts.getNBodyPerturbations().get(1).getName());
-        Assert.assertEquals( 12.0, perts.getFixedGeomagneticKp(), 1.0e-10);
-        Assert.assertEquals(105.0, perts.getFixedF10P7(),         1.0e-10);
-        Assert.assertEquals(120.0, perts.getFixedF10P7Mean(),     1.0e-10);
+        Assert.assertEquals( 12.0, Units.NANO_TESLA.fromSI(perts.getFixedGeomagneticKp()), 1.0e-10);
+        Assert.assertEquals(105.0, Unit.SOLAR_FLUX_UNIT.fromSI(perts.getFixedF10P7()),     1.0e-10);
+        Assert.assertEquals(120.0, Unit.SOLAR_FLUX_UNIT.fromSI(perts.getFixedF10P7Mean()), 1.0e-10);
 
         // check no orbit determination
         Assert.assertNull(file.getData().getOrbitDeterminationBlock());
@@ -649,11 +682,11 @@ public class OCMParserTest {
         Assert.assertEquals("Ten 1kg objects deployed from 200kg host over 100 s timespan", man.get(0).getMetadata().getComments().get(0));
         Assert.assertEquals("20 deg off of back-track direction", man.get(0).getMetadata().getComments().get(1));
         Assert.assertEquals("CUBESAT DEPLOY", man.get(0).getMetadata().getManID());
-        Assert.assertEquals("CANDIDATE",      man.get(0).getMetadata().getManBasis());
-        Assert.assertEquals("DEPLOY",         man.get(0).getMetadata().getManDeviceID());
-        Assert.assertEquals(1,                man.get(0).getMetadata().getManPurpose().size());
-        Assert.assertEquals("DEPLOY",         man.get(0).getMetadata().getManPurpose().get(0));
-        Assert.assertEquals("RSW_ROTATING",   man.get(0).getMetadata().getManReferenceFrame().getName());
+        Assert.assertEquals(ManBasis.CANDIDATE, man.get(0).getMetadata().getManBasis());
+        Assert.assertEquals("DEPLOY",           man.get(0).getMetadata().getManDeviceID());
+        Assert.assertEquals(1,                  man.get(0).getMetadata().getManPurpose().size());
+        Assert.assertEquals("DEPLOY",           man.get(0).getMetadata().getManPurpose().get(0));
+        Assert.assertEquals("RSW_ROTATING",     man.get(0).getMetadata().getManReferenceFrame().getName());
         Assert.assertNull(man.get(0).getMetadata().getManReferenceFrame().asFrame());
         Assert.assertNull(man.get(0).getMetadata().getManReferenceFrame().asCelestialBodyFrame());
         Assert.assertEquals(OrbitRelativeFrame.RSW_ROTATING, man.get(0).getMetadata().getManReferenceFrame().asOrbitRelativeFrame());
@@ -699,16 +732,16 @@ public class OCMParserTest {
         
         Assert.assertEquals(1, man.get(1).getMetadata().getComments().size());
         Assert.assertEquals("100 s of 0.5N +in-track thrust w/effic η=0.95, Isp=300s, 5% 1-sigma error", man.get(1).getMetadata().getComments().get(0));
-        Assert.assertEquals("E W 20160305B", man.get(1).getMetadata().getManID());
-        Assert.assertEquals("CANDIDATE",     man.get(1).getMetadata().getManBasis());
-        Assert.assertEquals("THR 01",        man.get(1).getMetadata().getManDeviceID());
-        Assert.assertEquals(1,               man.get(1).getMetadata().getManPurpose().size());
-        Assert.assertEquals("ORBIT",         man.get(1).getMetadata().getManPurpose().get(0));
-        Assert.assertEquals("RSW_ROTATING",  man.get(1).getMetadata().getManReferenceFrame().getName());
+        Assert.assertEquals("E W 20160305B",    man.get(1).getMetadata().getManID());
+        Assert.assertEquals(ManBasis.CANDIDATE, man.get(1).getMetadata().getManBasis());
+        Assert.assertEquals("THR 01",           man.get(1).getMetadata().getManDeviceID());
+        Assert.assertEquals(1,                  man.get(1).getMetadata().getManPurpose().size());
+        Assert.assertEquals("ORBIT",            man.get(1).getMetadata().getManPurpose().get(0));
+        Assert.assertEquals("RSW_ROTATING",     man.get(1).getMetadata().getManReferenceFrame().getName());
         Assert.assertNull(man.get(1).getMetadata().getManReferenceFrame().asFrame());
         Assert.assertNull(man.get(1).getMetadata().getManReferenceFrame().asCelestialBodyFrame());
         Assert.assertEquals(OrbitRelativeFrame.RSW_ROTATING, man.get(1).getMetadata().getManReferenceFrame().asOrbitRelativeFrame());
-        Assert.assertEquals(10, man.get(1).getMetadata().getManComposition().size());
+        Assert.assertEquals(10,                              man.get(1).getMetadata().getManComposition().size());
         Assert.assertEquals(ManeuverFieldType.TIME_ABSOLUTE, man.get(1).getMetadata().getManComposition().get(0));
         Assert.assertEquals(ManeuverFieldType.TIME_RELATIVE, man.get(1).getMetadata().getManComposition().get(1));
         Assert.assertEquals(ManeuverFieldType.MAN_DURA,      man.get(1).getMetadata().getManComposition().get(2));
@@ -734,7 +767,8 @@ public class OCMParserTest {
         Assert.assertEquals(  0.0,        man.get(1).getManeuvers().get(0).getThrust().getX(),    1.0e-10);
         Assert.assertEquals(  0.5,        man.get(1).getManeuvers().get(0).getThrust().getY(),    1.0e-10);
         Assert.assertEquals( 0.05,        man.get(1).getManeuvers().get(0).getThrustSigma(),      1.0e-10);
-        Assert.assertEquals("ON",         man.get(1).getManeuvers().get(0).getThrustInterpolation());
+        Assert.assertEquals(OnOff.ON,     man.get(1).getManeuvers().get(0).getThrustInterpolation());
+        Assert.assertTrue(man.get(1).getManeuvers().get(0).getThrustInterpolation().isOn());
         Assert.assertEquals(300.0,        man.get(1).getManeuvers().get(0).getThrustIsp(),        1.0e-10);
         Assert.assertEquals(0.95,         man.get(1).getManeuvers().get(0).getThrustEfficiency(), 1.0e-10);
 
@@ -748,8 +782,8 @@ public class OCMParserTest {
         OrbitDetermination od = file.getData().getOrbitDeterminationBlock();
         Assert.assertEquals(1, od.getComments().size());
         Assert.assertEquals("Orbit Determination information", od.getComments().get(0));
-        Assert.assertEquals("OOD #10059", od.getId());
-        Assert.assertEquals("OOD #10058", od.getPrevId());
+        Assert.assertEquals("OOD #10059",    od.getId());
+        Assert.assertEquals("OOD #10058",    od.getPrevId());
         Assert.assertEquals(OdMethodType.SF, od.getMethod().getType());
         Assert.assertEquals("ODTK",          od.getMethod().getTool());
         Assert.assertEquals(new AbsoluteDate(2001, 11, 6, 11, 17, 33.0, utc), od.getEpoch());

@@ -45,7 +45,16 @@ public enum ManeuverHistoryMetadataKey {
     MAN_NEXT_ID((token, context, container) -> token.processAsNormalizedString(container::setManNextID)),
 
     /** Basis of this maneuver history data. */
-    MAN_BASIS((token, context, container) -> token.processAsNormalizedString(container::setManBasis)),
+    MAN_BASIS((token, context, container) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            try {
+                container.setManBasis(ManBasis.valueOf(token.getContentAsUppercaseString()));
+            } catch (IllegalArgumentException iae) {
+                throw token.generateException(iae);
+            }
+        }
+        return true;
+    }),
 
     /** Identification number of the orbit determination or simulation upon which this maneuver is based.*/
     MAN_BASIS_ID((token, context, container) -> token.processAsNormalizedString(container::setManBasisID)),

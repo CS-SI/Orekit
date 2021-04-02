@@ -3,10 +3,10 @@
      xsi:noNamespaceSchemaLocation="fdsxml-1.0-master.xsd"
      id="CCSDS_TDM_VERS" version="1.0">
   <header>
-    <COMMENT>TDM example created by CSSI</COMMENT>
+    <COMMENT>TDM example created by CS GROUP</COMMENT>
     <COMMENT>Testing all TDM known meta-data and data keywords</COMMENT>
     <CREATION_DATE>2017-06-14T10:53:00.000</CREATION_DATE>
-    <ORIGINATOR>CSSI</ORIGINATOR>
+    <ORIGINATOR>CS GROUP</ORIGINATOR>
   </header>
   <body>
     <segment>
@@ -20,8 +20,7 @@
         <PARTICIPANT_3>P3</PARTICIPANT_3>
         <PARTICIPANT_4>P4</PARTICIPANT_4>
         <PARTICIPANT_5>P5</PARTICIPANT_5>
-        <MODE>SEQUENTIAL</MODE>
-        <PATH>2,1</PATH>
+        <MODE>SINGLE_DIFF</MODE>
         <PATH_1>4,5</PATH_1>
         <PATH_2>3,2</PATH_2>
         <TRANSMIT_BAND>S</TRANSMIT_BAND>
@@ -176,7 +175,7 @@
         
         <observation>
           <EPOCH>2017-06-14T10:53:29.000</EPOCH>
-          <STEC>29.0</STEC>
+          <STEC>29.0e-16</STEC>
         </observation>
         <observation>
           <EPOCH>2017-06-14T10:53:30.000</EPOCH>
@@ -189,11 +188,11 @@
         
         <observation>
           <EPOCH>2017-06-14T10:53:32.000</EPOCH>
-          <PRESSURE>32.0</PRESSURE>
+          <PRESSURE>0.32</PRESSURE>
         </observation>
         <observation>
           <EPOCH>2017-06-14T10:53:33.000</EPOCH>
-          <RHUMIDITY>33.0</RHUMIDITY>
+          <RHUMIDITY>3300.0</RHUMIDITY>
         </observation>
         <observation>
           <EPOCH>2017-06-14T10:53:34.000</EPOCH>

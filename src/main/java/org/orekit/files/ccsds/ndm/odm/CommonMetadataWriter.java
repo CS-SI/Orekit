@@ -52,7 +52,7 @@ public class CommonMetadataWriter extends AbstractWriter {
     @Override
     protected void writeContent(final Generator generator) throws IOException {
 
-        generator.writeComments(metadata);
+        generator.writeComments(metadata.getComments());
 
         // object
         generator.writeEntry(OdmMetadataKey.OBJECT_NAME.name(),  metadata.getObjectName(), true);

@@ -23,13 +23,16 @@ import org.orekit.files.ccsds.utils.lexical.TokenType;
  * @author Luc Maisonobe
  * @since 11.0
  */
-enum XmlSubStructureKey {
+enum OemDataSubStructureKey {
 
     /** State vector section. */
     stateVector((token, parser) -> parser.manageXmlStateVectorSection(token.getType() == TokenType.START)),
 
     /** Covariance matrix section. */
-    covarianceMatrix((token, parser) -> parser.manageXmlCovarianceSection(token.getType() == TokenType.START));
+    covarianceMatrix((token, parser) -> parser.manageCovarianceSection(token.getType() == TokenType.START)),
+
+    /** Covariance matrix section. */
+    COVARIANCE((token, parser) -> parser.manageCovarianceSection(token.getType() == TokenType.START));
 
     /** Processing method. */
     private final TokenProcessor processor;
@@ -37,7 +40,7 @@ enum XmlSubStructureKey {
     /** Simple constructor.
      * @param processor processing method
      */
-    XmlSubStructureKey(final TokenProcessor processor) {
+    OemDataSubStructureKey(final TokenProcessor processor) {
         this.processor = processor;
     }
 

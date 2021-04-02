@@ -29,11 +29,11 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
-import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
+import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
@@ -41,7 +41,6 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
@@ -96,7 +95,7 @@ public class StreamingAemWriterTest {
             AemMetadata metadata = new AemMetadata(1);
             metadata.setTimeSystem(TimeSystem.UTC);
             metadata.setObjectID(objectID);
-            metadata.setObjectName("will be overwritten");
+            metadata.setObjectName(objectName);
             metadata.setAttitudeType(attitudeType);
             metadata.setIsFirst(isFirst);
             metadata.getEndpoints().setFrameA(frameA);
@@ -104,12 +103,12 @@ public class StreamingAemWriterTest {
             metadata.getEndpoints().setA2b(a2b);
             metadata.setStartTime(AbsoluteDate.PAST_INFINITY);  // will be overwritten at propagation start
             metadata.setStopTime(AbsoluteDate.FUTURE_INFINITY); // will be overwritten at propagation start
-            final AemWriter aemWriter = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), header, metadata);
 
             StringBuilder buffer = new StringBuilder();
-            StreamingAemWriter writer = new StreamingAemWriter(new KvnGenerator(buffer, AemWriter.KEY_WIDTH, AemWriter.DEFAULT_FILE_NAME),
-                                                               aemWriter);
-            aemWriter.getMetadata().setObjectName(objectName);
+            StreamingAemWriter writer =
+                            new StreamingAemWriter(new KvnGenerator(buffer, AemWriter.KVN_PADDING_WIDTH, ex + "-new"),
+                                                   new WriterBuilder(). buildAemWriter(),
+                                                   header, metadata);
 
             // Initialize a Keplerian propagator with an Inertial attitude provider
             // It is expected that all attitude data lines will have the same value

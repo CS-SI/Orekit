@@ -61,7 +61,7 @@ public enum CovarianceHistoryMetadataKey {
     COV_SCALE_MAX((token, context, container) -> token.processAsDouble(Unit.ONE, container::setCovScaleMax)),
 
     /** Masure of confidence in covariance error matching reality. */
-    COV_CONFIDENCE((token, context, container) -> token.processAsNormalizedString(container::setCovConfidence)),
+    COV_CONFIDENCE((token, context, container) -> token.processAsDouble(Unit.PERCENT, container::setCovConfidence)),
 
     /** Covariance element set type.
      * @see ElementsType

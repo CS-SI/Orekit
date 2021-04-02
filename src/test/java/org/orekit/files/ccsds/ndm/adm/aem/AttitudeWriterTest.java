@@ -18,15 +18,15 @@ package org.orekit.files.ccsds.ndm.adm.aem;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,9 +37,7 @@ import java.util.Map;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
@@ -50,8 +48,11 @@ import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
+import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.utils.FileFormat;
+import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -60,14 +61,11 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
-public class AEMWriterTest {
+public class AttitudeWriterTest {
 
     // The default format writes 5O digits after the decimal point hence the quaternion precision
     private static final double QUATERNION_PRECISION = 1e-5;
     private static final double DATE_PRECISION = 1e-3;
-
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
 
     @Before
     public void setUp() throws Exception {
@@ -76,7 +74,7 @@ public class AEMWriterTest {
 
     @Test
     public void testAEMWriter() {
-        assertNotNull(new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null, dummyMetadata()));
+        assertNotNull(new WriterBuilder().buildAemWriter());
     }
 
     @Test
@@ -104,12 +102,16 @@ public class AEMWriterTest {
         metadata.setIsFirst(s0.getMetadata().isFirst());
         metadata.setCenter(s0.getMetadata().getCenter());
         metadata.setInterpolationMethod(s0.getMetadata().getInterpolationMethod());
-        String tempAEMFilePath = tempFolder.newFile("TestWriteAEM1.aem").toString();
-        AemWriter writer = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), header, metadata);
-        writer.write(tempAEMFilePath, aemFile);
+        AemWriter writer = new WriterBuilder().
+                           withConventions(IERSConventions.IERS_2010).
+                           withDataContext(DataContext.getDefault()).
+                           buildAemWriter();
+        final CharArrayWriter caw = new CharArrayWriter();
+        writer.writeMessage(new KvnGenerator(caw, 0, ""), aemFile);
+        final ByteBuffer buffer  = StandardCharsets.UTF_8.encode(caw.toString());
 
-        final AemFile generatedOemFile = new AemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1).
-                                         parseMessage(new DataSource(tempAEMFilePath));
+        final AemFile generatedOemFile = new ParserBuilder().buildAemParser().
+                        parseMessage(new DataSource("", () -> new ByteArrayInputStream(buffer.array())));
         compareAemFiles(aemFile, generatedOemFile);
     }
 
@@ -121,10 +123,9 @@ public class AEMWriterTest {
 
         AemMetadata metadata = dummyMetadata();
         metadata.setObjectID("12345");
-        String tempOEMFilePath = tempFolder.newFile("TestAEMUnfoundSpaceId.aem").toString();
-        AemWriter writer = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null, metadata);
+        AttitudeWriter writer = new AttitudeWriter(new WriterBuilder().buildAemWriter(), null, metadata, FileFormat.KVN, "");
         try {
-            writer.write(tempOEMFilePath, aemFile);
+            writer.write(new CharArrayWriter(), aemFile);
             fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oiae) {
             assertEquals(OrekitMessages.VALUE_NOT_FOUND, oiae.getSpecifier());
@@ -137,8 +138,14 @@ public class AEMWriterTest {
         final String ex = "/ccsds/adm/aem/AEMExample01.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
-        AemWriter writer = new AemWriter(aemFile.getConventions(), aemFile.getDataContext(),
-                                         aemFile.getHeader(), aemFile.getSegments().get(0).getMetadata());
+        AttitudeWriter writer = new AttitudeWriter(new WriterBuilder().
+                                                   withConventions(aemFile.getConventions()).
+                                                   withDataContext(aemFile.getDataContext()).
+                                                   buildAemWriter(),
+                                                   aemFile.getHeader(),
+                                                   aemFile.getSegments().get(0).getMetadata(),
+                                                   FileFormat.KVN,
+                                                   "dummy");
         try {
             writer.write((BufferedWriter) null, aemFile);
             fail("an exception should have been thrown");
@@ -150,24 +157,16 @@ public class AEMWriterTest {
 
     @Test
     public void testNullEphemeris() throws IOException {
-        File tempAEMFile = tempFolder.newFile("TestNullEphemeris.aem");
         Header header = new Header();
         header.setOriginator("NASA/JPL");
         AemMetadata metadata = dummyMetadata();
         metadata.setObjectID("1996-062A");
         metadata.setObjectName("MARS GLOBAL SURVEYOR");
-        AemWriter writer = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), header, metadata);
-        writer.write(tempAEMFile.toString(), null);
-        assertTrue(tempAEMFile.exists());
-        try (FileInputStream   fis = new FileInputStream(tempAEMFile);
-             InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
-             BufferedReader    br  = new BufferedReader(isr)) {
-            int count = 0;
-            for (String line = br.readLine(); line != null; line = br.readLine()) {
-                ++count;
-            }
-            assertEquals(0, count);
-        }
+        AttitudeWriter writer = new AttitudeWriter(new WriterBuilder().buildAemWriter(),
+                                                   header, metadata, FileFormat.KVN, "TestNullEphemeris.aem");
+        CharArrayWriter caw = new CharArrayWriter();
+        writer.write(caw, null);
+        assertEquals(0, caw.size());
     }
 
     @Test
@@ -176,13 +175,13 @@ public class AEMWriterTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
 
-        String tempAEMFilePath = tempFolder.newFile("TestOEMUnisatelliteWithDefault.oem").toString();
-        AemWriter writer = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
-                                         null, aemFile.getSegments().get(0).getMetadata());
-        writer.write(tempAEMFilePath, aemFile);
+        AemWriter writer = new WriterBuilder().buildAemWriter();
+        final CharArrayWriter caw = new CharArrayWriter();
+        writer.writeMessage(new KvnGenerator(caw, 0, ""), aemFile);
+        final ByteBuffer buffer  = StandardCharsets.UTF_8.encode(caw.toString());
 
-        final AemFile generatedAemFile = new AemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1).
-                                         parseMessage(new DataSource(tempAEMFilePath));
+        final AemFile generatedAemFile = new ParserBuilder().buildAemParser().
+                        parseMessage(new DataSource("", () -> new ByteArrayInputStream(buffer.array())));
         assertEquals(aemFile.getSegments().get(0).getMetadata().getObjectID(),
                      generatedAemFile.getSegments().get(0).getMetadata().getObjectID());
     }
@@ -209,22 +208,23 @@ public class AEMWriterTest {
                                                         new Vector3D(0.000, 0.000, 0.003)),
                       600.0, 10.0);
 
-       File written = tempFolder.newFile("TestAEMMultisatellite.aem");
-
         AemMetadata metadata = dummyMetadata();
         metadata.setObjectID(id2);
-        AemWriter writer = new AemWriter(IERSConventions.IERS_2010, context, null, metadata);
-        writer.write(written.getAbsolutePath(), file);
+        AttitudeWriter writer = new AttitudeWriter(new WriterBuilder().buildAemWriter(),
+                                                   null, metadata, FileFormat.KVN, "");
+        final CharArrayWriter caw = new CharArrayWriter();
+        writer.write(caw, file);
+        final ByteBuffer buffer  = StandardCharsets.UTF_8.encode(caw.toString());
 
         int count = 0;
-        try (FileInputStream   fis = new FileInputStream(written);
-             InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
-             BufferedReader    br  = new BufferedReader(isr)) {
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(buffer.array());
+             InputStreamReader    isr  = new InputStreamReader(bais, StandardCharsets.UTF_8);
+             BufferedReader       br   = new BufferedReader(isr)) {
             for (String line = br.readLine(); line != null; line = br.readLine()) {
                 ++count;
             }
         }
-        assertEquals(82, count);
+        assertEquals(83, count);
 
     }
 
@@ -234,13 +234,15 @@ public class AEMWriterTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
 
-        String tempAEMFilePath = tempFolder.newFile("TestAEMIssue723.aem").toString();
-        AemWriter writer = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
-                                         aemFile.getHeader(), aemFile.getSegments().get(0).getMetadata());
-        writer.write(tempAEMFilePath, aemFile);
+        AttitudeWriter writer = new AttitudeWriter(new WriterBuilder().buildAemWriter(),
+                                                   aemFile.getHeader(), aemFile.getSegments().get(0).getMetadata(),
+                                                   FileFormat.KVN, "TestAEMIssue723.aem");
+        final CharArrayWriter caw = new CharArrayWriter();
+        writer.write(caw, aemFile);
+        final ByteBuffer buffer  = StandardCharsets.UTF_8.encode(caw.toString());
 
-        final AemFile generatedAemFile = new AemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1).
-                                         parseMessage(new DataSource(tempAEMFilePath));
+        final AemFile generatedAemFile = new ParserBuilder().buildAemParser().
+                        parseMessage(new DataSource("", () -> new ByteArrayInputStream(buffer.array())));
         assertEquals(aemFile.getHeader().getComments().get(0), generatedAemFile.getHeader().getComments().get(0));
     }
 
@@ -250,18 +252,16 @@ public class AEMWriterTest {
         String exampleFile = "/ccsds/adm/aem/AEMExample07.txt";
         final DataSource source = new DataSource(exampleFile, () -> getClass().getResourceAsStream(exampleFile));
         final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
-        StringBuilder buffer = new StringBuilder();
 
-        AemWriter writer = new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
-                                         null, aemFile.getSegments().get(0).getMetadata());
-        buffer = new StringBuilder();
-        writer.write(buffer, aemFile);
+        AemWriter writer = new WriterBuilder().buildAemWriter();
+        final CharArrayWriter caw = new CharArrayWriter();
+        writer.writeMessage(new KvnGenerator(caw, 0, ""), aemFile);
 
-        String[] lines2 = buffer.toString().split("\n");
+        String[] lines2 = caw.toString().split("\n");
 
-        assertEquals("2002-12-18T12:00:00.331  5.674807981623039e-01  3.146004424858336e-02  4.568906426171408e-01  6.842709624277855e-01", lines2[23]);
-        assertEquals("2002-12-18T12:01:00.331  4.231908397172568e-01 -4.569709067454213e-01  2.378404719354246e-01  7.453314789254544e-01", lines2[24]);
-        assertEquals("2002-12-18T12:02:00.331 -8.453188238242068e-01  2.697396246845473e-01 -6.531990911394170e-02  4.565193647993977e-01", lines2[25]);
+        assertEquals("2002-12-18T12:00:00.331 0.5674807981623039 0.031460044248583355 0.4568906426171408 0.6842709624277855", lines2[26]);
+        assertEquals("2002-12-18T12:01:00.331 0.4231908397172568 -0.4569709067454213 0.23784047193542462 0.7453314789254544", lines2[27]);
+        assertEquals("2002-12-18T12:02:00.331 -0.8453188238242068 0.2697396246845473 -0.0653199091139417 0.4565193647993977", lines2[28]);
     }
 
     private static void compareAemAttitudeBlocks(AemSegment segment1, AemSegment segment2) {

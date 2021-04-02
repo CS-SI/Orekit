@@ -94,6 +94,11 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
     private ProcessingState structureProcessor;
 
     /** Complete constructor.
+     * <p>
+     * Calling this constructor directly is not recommended. Users should rather use
+     * {@link org.orekit.files.ccsds.ndm.ParserBuilder#buildApmParser()
+     * parserBuilder.buildApmParser()}.
+     * </p>
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.

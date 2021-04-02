@@ -20,7 +20,7 @@ import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.section.CommentsContainer;
 
 /**
- * Container for Attitude Parameter Message data.
+ * Container for spacecraft parameters data.
  * @author Bryan Cazabonne
  * @since 10.2
  */

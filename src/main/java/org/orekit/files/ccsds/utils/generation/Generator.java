@@ -17,9 +17,9 @@
 package org.orekit.files.ccsds.utils.generation;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.orekit.files.ccsds.definitions.TimeConverter;
-import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.time.AbsoluteDate;
 
@@ -28,6 +28,11 @@ import org.orekit.time.AbsoluteDate;
  * @since 11.0
  */
 public interface Generator extends AutoCloseable {
+
+    /** Get the name of the output (for error messages).
+     * @return name of the output
+     */
+    String getOutputName();
 
     /** Get the generated file format.
      * @return generated file format
@@ -45,7 +50,7 @@ public interface Generator extends AutoCloseable {
      * @param comments comments to write
      * @throws IOException if an I/O error occurs.
      */
-    void writeComments(CommentsContainer comments) throws IOException;
+    void writeComments(List<String> comments) throws IOException;
 
     /** Write a single key/value entry.
      * @param key   the keyword to write
@@ -54,6 +59,14 @@ public interface Generator extends AutoCloseable {
      * @throws IOException if an I/O error occurs.
      */
     void writeEntry(String key, String value, boolean mandatory) throws IOException;
+
+    /** Write a single key/value entry.
+     * @param key   the keyword to write
+     * @param value the value to write
+     * @param mandatory if true, null values triggers exception, otherwise they are silently ignored
+     * @throws IOException if an I/O error occurs.
+     */
+    void writeEntry(String key, List<String> value, boolean mandatory) throws IOException;
 
     /** Write a single key/value entry.
      * @param key   the keyword to write
@@ -71,6 +84,14 @@ public interface Generator extends AutoCloseable {
      * @throws IOException if an I/O error occurs.
      */
     void writeEntry(String key, TimeConverter converter, AbsoluteDate date, boolean mandatory) throws IOException;
+
+    /** Write a single key/value entry.
+     * @param key   the keyword to write
+     * @param value the value to write
+     * @param mandatory if true, null values triggers exception, otherwise they are silently ignored
+     * @throws IOException if an I/O error occurs.
+     */
+    void writeEntry(String key, char value, boolean mandatory) throws IOException;
 
     /** Write a single key/value entry.
      * @param key   the keyword to write

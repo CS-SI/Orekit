@@ -16,7 +16,12 @@
  */
 package org.orekit.files.ccsds.ndm.odm.omm;
 
+import java.io.ByteArrayInputStream;
+import java.io.CharArrayWriter;
+import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -33,10 +38,13 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
+import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
 import org.orekit.files.ccsds.ndm.odm.SpacecraftParameters;
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
+import org.orekit.files.ccsds.utils.generation.Generator;
+import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.propagation.analytical.tle.TLE;
@@ -45,7 +53,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
-public class OMMParserTest {
+public class OmmParserTest {
 
     @Before
     public void setUp()
@@ -129,22 +137,45 @@ public class OMMParserTest {
 
     @Test
     public void testParseOMM2KVN() throws URISyntaxException {
-        doTestParseOMM2("/ccsds/odm/omm/OMMExample2.txt");
+        String name = "/ccsds/odm/omm/OMMExample2.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        final OmmParser parser = new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).buildOmmParser();
+
+        validateOMM2(parser.parseMessage(source));
     }
 
     @Test
     public void testParseOMM2XML() throws URISyntaxException {
-        doTestParseOMM2("/ccsds/odm/omm/OMMExample2.xml");
-    }
-
-    private void doTestParseOMM2(final String name) throws URISyntaxException {
-        // simple test for OMM file, contains p/v entries and other mandatory
-            // data.
+        String name = "/ccsds/odm/omm/OMMExample2.xml";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final OmmParser parser = new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).buildOmmParser();
 
-        final OmmFile file = parser.parseMessage(source);
+        validateOMM2(parser.parseMessage(source));
+    }
+
+    @Test
+    public void testWriteOMM3() throws URISyntaxException, IOException {
+        final String name = "/ccsds/odm/omm/OMMExample2.xml";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        OmmParser parser = new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).buildOmmParser();
+        final OmmFile original = parser.parseMessage(source);
+
+        // write the parsed file back to a characters array
+        final CharArrayWriter caw = new CharArrayWriter();
+        final Generator generator = new KvnGenerator(caw, OmmWriter.KVN_PADDING_WIDTH, "dummy");
+        new WriterBuilder().buildOmmWriter().writeMessage(generator, original);
+
+        // reparse the written file
+        final ByteBuffer bb      = StandardCharsets.UTF_8.encode(caw.toString());
+        final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(bb.array()));
+        final OmmFile    rebuilt = new ParserBuilder().buildOmmParser().parseMessage(source2);
+        validateOMM2(rebuilt);
+
+    }
+
+    private void validateOMM2(final OmmFile file) throws URISyntaxException {
         Assert.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
+        Assert.assertEquals("SGP/SGP4", file.getMetadata().getMeanElementTheory());
         final KeplerianElements kep = file.getData().getKeplerianElementsBlock();
         Assert.assertEquals(1.00273272, Constants.JULIAN_DAY * kep.getMeanMotion() / MathUtils.TWO_PI, 1e-10);
         Assert.assertTrue(Double.isNaN(file.getData().getMass()));

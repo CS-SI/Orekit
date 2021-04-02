@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.definitions;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.utils.ContextBinding;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.SatelliteClockScale;
 
 /**
@@ -51,9 +52,9 @@ public enum TimeSystem {
         /** {@inheritDoc} */
         public TimeConverter getConverter(final ContextBinding context) {
             return new TimeConverter(new SatelliteClockScale("MET",
-                                                          context.getReferenceDate(),
-                                                          context.getDataContext().getTimeScales().getUTC(),
-                                                          0.0, 0.0),
+                                                             context.getReferenceDate(),
+                                                             context.getDataContext().getTimeScales().getUTC(),
+                                                             0.0, 0.0),
                                      context.getReferenceDate());
         }
     },
@@ -63,23 +64,33 @@ public enum TimeSystem {
         /** {@inheritDoc} */
         public TimeConverter getConverter(final ContextBinding context) {
             return new TimeConverter(new SatelliteClockScale("MRT",
-                                                          context.getReferenceDate(),
-                                                          context.getDataContext().getTimeScales().getUTC(),
-                                                          0.0, 0.0),
+                                                             context.getReferenceDate(),
+                                                             context.getDataContext().getTimeScales().getUTC(),
+                                                             0.0, 0.0),
                                      context.getReferenceDate());
         }
     },
 
-    /** Spacecraft Clock. Not currently Implemented. */
+    /** Spacecraft Clock. */
     SCLK {
         /** {@inheritDoc} */
         public TimeConverter getConverter(final ContextBinding context) {
             return new TimeConverter(new SatelliteClockScale("SCLK",
-                                                          context.getReferenceDate(),
-                                                          context.getDataContext().getTimeScales().getUTC(),
-                                                          context.getClockCount(),
-                                                          context.getClockRate() - 1.0),
-                                     context.getReferenceDate());
+                                                             context.getReferenceDate(),
+                                                             context.getDataContext().getTimeScales().getUTC(),
+                                                             context.getClockCount(),
+                                                             context.getClockRate() - 1.0),
+                                     context.getReferenceDate()) {
+                /** {@inheritDoc}
+                 * <p>
+                 * Special implementation: the offset is a clock count rather than a duration
+                 * </p>
+                 */
+                @Override
+                public double offset(final AbsoluteDate date) {
+                    return ((SatelliteClockScale) getTimeScale()).countAtDate(date);
+                }
+            };
         }
     },
 

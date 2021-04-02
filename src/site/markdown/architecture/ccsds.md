@@ -135,11 +135,15 @@ Writing a CCSDS message is done by using a specific writer class for the message
 type and using a low level generator corresponding to the desired file format,
 `KvnGenerator` for Key-Value Notation or `XmlGenerator` for eXtended Markup Language.
 
+All CCSDS messages have a corresponding writer that implements the CCSDS-specific
+`MessageWriter` interface. This interface allows to writer either an already built
+message, or separately the header first and then looping to write the segments.
+
 Ephemeris-type messages (AEM, OEM and OCM) implement the generic ephemeris writer
 interfaces (`AttitudeEphemerisFileWriter` and `EphemerisFileWriter`) in addition
-to the CCSDS-specific API, so they can be used in a more general way when ephemerides
-data was built from non-CCSDS data. The generic `write` methods in these interfaces
-take as arguments objects that implement the generic
+to the CCSDS-specific interface, so they can be used in a more general
+way when ephemerides data is built from non-CCSDS data. The generic `write` methods
+in these interfaces take as arguments objects that implement the generic
 `AttitudeEphemerisFile.AttitudeEphemerisSegment` and `EphemerisFile.EphemerisSegment`
 interfaces. As these interfaces do not provide access to header and metadata informations
 that CCSDS writers need, these informations must be provided beforehand to the

@@ -24,13 +24,11 @@ import java.util.Map;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.TimeConverter;
+import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.definitions.Units;
-import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
@@ -44,11 +42,8 @@ import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.AbstractMessageWriter;
 import org.orekit.files.ccsds.utils.generation.Generator;
-import org.orekit.files.ccsds.utils.generation.KvnGenerator;
-import org.orekit.files.general.EphemerisFile;
-import org.orekit.files.general.EphemerisFile.SatelliteEphemeris;
-import org.orekit.files.general.EphemerisFileWriter;
 import org.orekit.frames.Frame;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.AccurateFormatter;
 import org.orekit.utils.CartesianDerivativesFilter;
@@ -57,8 +52,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.units.Unit;
 
 /**
- * An OEM Writer class that can take in a general {@link EphemerisFile} object
- * and export it as a valid OEM file.
+ * A writer for Orbit Ephemeris Message (OEM) files.
  *
  * <h2> Metadata </h2>
  *
@@ -186,7 +180,7 @@ import org.orekit.utils.units.Unit;
  * <p> The {@link MetadataKey#TIME_SYSTEM} must be constant for the whole file and is used
  * to interpret all dates except {@link HeaderKey#CREATION_DATE} which is always in {@link
  * TimeConverter#UTC UTC}. The guessing algorithm is not guaranteed to work so it is recommended
- * to provide values for {@link AdmMetadataKey#CENTER_NAME} and {@link MetadataKey#TIME_SYSTEM}
+ * to provide values for {@link CommonMetadataKey#CENTER_NAME} and {@link MetadataKey#TIME_SYSTEM}
  * to avoid any bugs associated with incorrect guesses.
  *
  * <p> Standardized values for {@link MetadataKey#TIME_SYSTEM} are GMST, GPS, MET, MRT, SCLK,
@@ -203,7 +197,7 @@ import org.orekit.utils.units.Unit;
  *      Data Definitions and Conventions</a>
  * @see StreamingOemWriter
  */
-public class OemWriter extends AbstractMessageWriter implements EphemerisFileWriter {
+public class OemWriter extends AbstractMessageWriter<Header, OemSegment, OemFile> {
 
     /** Version number implemented. **/
     public static final double CCSDS_OEM_VERS = 3.0;
@@ -211,63 +205,8 @@ public class OemWriter extends AbstractMessageWriter implements EphemerisFileWri
     /** Default file name for error messages. */
     public static final String DEFAULT_FILE_NAME = "<OEM output>";
 
-    /**
-     * Default format used for position data output: 6 digits
-     * after the decimal point and leading space for positive values.
-     */
-    public static final String DEFAULT_POSITION_FORMAT = "% .6f";
-
-    /**
-     * Default format used for velocity data output: 9 digits
-     * after the decimal point and leading space for positive values.
-     */
-    public static final String DEFAULT_VELOCITY_FORMAT = "% .9f";
-
-    /**
-     * Default format used for acceleration data output: 12 significant digits
-     * and leading space for positive values.
-     */
-    public static final String DEFAULT_ACCELERATION_FORMAT = "% .12e";
-
-    /**
-     * Default format used for covariance data output: 7 significant digits
-     * and leading space for positive values.
-     */
-    public static final String DEFAULT_COVARIANCE_FORMAT = "% .7e";
-
-    /** Key width for aligning the '=' sign. */
-    public static final int KEY_WIDTH = 20;
-
-    /** Current metadata. */
-    private final OemMetadata metadata;
-
-    /** Format for position ephemeris data output. */
-    private final String positionFormat;
-
-    /** Format for velocity ephemeris data output. */
-    private final String velocityFormat;
-
-    /** Format for acceleration ephemeris data output. */
-    private final String accelerationFormat;
-
-    /** Format for acovariance data output. */
-    private final String covarianceFormat;
-
-    /**
-     * Standard default constructor that creates a writer with default
-     * configurations.
-     * @param conventions IERS Conventions
-     * @param dataContext used to retrieve frames, time scales, etc.
-     * @param header file header (may be null)
-     * @param template template for metadata
-     * @since 11.0
-     */
-    public OemWriter(final IERSConventions conventions, final DataContext dataContext,
-                     final Header header, final OemMetadata template) {
-        this(conventions, dataContext, header, template, DEFAULT_FILE_NAME,
-             DEFAULT_POSITION_FORMAT, DEFAULT_VELOCITY_FORMAT,
-             DEFAULT_ACCELERATION_FORMAT, DEFAULT_COVARIANCE_FORMAT);
-    }
+    /** Padding width for aligning the '=' sign. */
+    public static final int KVN_PADDING_WIDTH = 20;
 
     /**
      * Constructor used to create a new OEM writer configured with the necessary parameters
@@ -283,171 +222,56 @@ public class OemWriter extends AbstractMessageWriter implements EphemerisFileWri
      * but some other parts may change too). The {@code template} argument itself is not
      * changed.
      * </>
+     * <p>
+     * Calling this constructor directly is not recommended. Users should rather use
+     * {@link org.orekit.files.ccsds.ndm.WriterBuilder#buildOemWriter()
+     * writerBuilder.buildOemWriter()}.
+     * </p>
      * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.
-     * @param header file header (may be null)
-     * @param template template for metadata
-     * @param fileName file name for error messages
-     * @param positionFormat {@link java.util.Formatter format parameters} for
-     *                       position ephemeris data output
-     * @param velocityFormat {@link java.util.Formatter format parameters} for
-     *                       velocity ephemeris data output
-     * @param accelerationFormat {@link java.util.Formatter format parameters} for
-     *                       acceleration ephemeris data output
-     * @param covarianceFormat {@link java.util.Formatter format parameters} for
-     *                       covariance data output
+     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @since 11.0
+     * @see #DEFAULT_FILE_NAME
      */
     public OemWriter(final IERSConventions conventions, final DataContext dataContext,
-                     final Header header, final OemMetadata template,
-                     final String fileName, final String positionFormat,
-                     final String velocityFormat, final String accelerationFormat,
-                     final String covarianceFormat) {
+                     final AbsoluteDate missionReferenceDate) {
         super(OemFile.FORMAT_VERSION_KEY, CCSDS_OEM_VERS,
-              header,
               new ContextBinding(
                   () -> conventions, () -> true, () -> dataContext,
-                  () -> null, template::getTimeSystem, () -> 0.0, () -> 1.0),
-              fileName);
-        this.metadata           = copy(template);
-        this.positionFormat     = positionFormat;
-        this.velocityFormat     = velocityFormat;
-        this.accelerationFormat = accelerationFormat;
-        this.covarianceFormat   = covarianceFormat;
+                  () -> missionReferenceDate, () -> TimeSystem.UTC, () -> 0.0, () -> 1.0));
     }
 
-    /** Get current metadata.
-     * @return current metadata
-     */
-    OemMetadata getMetadata() {
-        return metadata;
-    }
-
-    /** {@inheritDoc}
-     * <p>
-     * As {@link EphemerisFile.SatelliteEphemeris} does not have all the entries
-     * from {@link OemMetadata}, the only values that will be extracted from the
-     * {@code ephemerisFile} will be the start time, stop time, reference frame, interpolation
-     * method and interpolation degree. The missing values (like object name, local spacecraft
-     * body frame...) will be inherited from the template  metadata set at writer
-     * {@link #OEMWriter(IERSConventions, DataContext, Header, OemMetadata, String, String) construction}.
-     * </p>
-     */
+    /** {@inheritDoc} */
     @Override
-    public <C extends TimeStampedPVCoordinates, S extends EphemerisFile.EphemerisSegment<C>>
-        void write(final Appendable appendable, final EphemerisFile<C, S> ephemerisFile)
-        throws IOException {
+    public void writeSegment(final Generator generator, final OemSegment segment) throws IOException {
 
-        if (appendable == null) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.NULL_ARGUMENT, "writer");
+        final OemMetadata metadata = segment.getMetadata();
+        writeMetadata(generator, metadata);
+
+        // write data comments
+        generator.writeComments(segment.getData().getComments());
+
+        // Loop on orbit data
+        final CartesianDerivativesFilter filter = segment.getAvailableDerivatives();
+        if (filter == CartesianDerivativesFilter.USE_P) {
+            throw new OrekitException(OrekitMessages.MISSING_VELOCITY);
+        }
+        final boolean useAcceleration = filter.equals(CartesianDerivativesFilter.USE_PVA);
+        for (final TimeStampedPVCoordinates coordinates : segment.getCoordinates()) {
+            writeOrbitEphemerisLine(generator, metadata, coordinates, useAcceleration);
         }
 
-        if (ephemerisFile == null) {
-            return;
-        }
-
-        final SatelliteEphemeris<C, S> satEphem = ephemerisFile.getSatellites().get(metadata.getObjectID());
-        if (satEphem == null) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.VALUE_NOT_FOUND,
-                                                     metadata.getObjectID(), "ephemerisFile");
-        }
-
-        // Get attitude ephemeris segments to output.
-        final List<S> segments = satEphem.getSegments();
-        if (segments.isEmpty()) {
-            // No data -> No output
-            return;
-        }
-
-        try (Generator generator = new KvnGenerator(appendable, KEY_WIDTH, getFileName())) {
-            writeHeader(generator);
-
-            // Loop on segments
-            for (final S segment : segments) {
-
-                // override template metadata with segment values
-                if (segment instanceof OemSegment) {
-                    final OemSegment oemSegment = (OemSegment) segment;
-                    metadata.setReferenceFrame(oemSegment.getMetadata().getReferenceFrame());
-                } else {
-                    metadata.setReferenceFrame(FrameFacade.map(segment.getFrame()));
-                }
-                metadata.setStartTime(segment.getStart());
-                metadata.setStopTime(segment.getStop());
-                metadata.setInterpolationDegree(segment.getInterpolationSamples() - 1);
-                writeMetadata(generator);
-
-                if (segment instanceof OemSegment) {
-                    // write data comments
-                    generator.writeComments(((OemSegment) segment).getData());
-                }
-
-                // Loop on orbit data
-                final CartesianDerivativesFilter filter = segment.getAvailableDerivatives();
-                if (filter == CartesianDerivativesFilter.USE_P) {
-                    throw new OrekitException(OrekitMessages.MISSING_VELOCITY);
-                }
-                final boolean useAcceleration = filter.equals(CartesianDerivativesFilter.USE_PVA);
-                for (final TimeStampedPVCoordinates coordinates : segment.getCoordinates()) {
-                    writeOrbitEphemerisLine(generator, coordinates, useAcceleration);
-                }
-
-                if (segment instanceof OemSegment) {
-                    // output covariance data
-                    final List<CartesianCovariance> covariances = ((OemSegment) segment).getCovarianceMatrices();
-                    boolean continuation = false;
-                    if (!covariances.isEmpty()) {
-                        if (generator.getFormat() == FileFormat.KVN) {
-                            generator.enterSection(OemFile.COVARIANCE_KVN);
-                            for (final CartesianCovariance covariance : covariances) {
-                                if (continuation) {
-                                    generator.newLine();
-                                }
-                                generator.writeEntry(CartesianCovarianceKey.EPOCH.name(),
-                                                     getTimeConverter(), covariance.getEpoch(),
-                                                     true);
-                                if (covariance.getReferenceFrame() != metadata.getReferenceFrame()) {
-                                    generator.writeEntry(CartesianCovarianceKey.COV_REF_FRAME.name(),
-                                                         covariance.getReferenceFrame().getName(),
-                                                         false);
-                                }
-                                final RealMatrix m = covariance.getCovarianceMatrix();
-                                for (int i = 0; i < m.getRowDimension(); ++i) {
-
-                                    // write triangular matrix entries
-                                    for (int j = 0; j <= i; ++j) {
-                                        if (j > 0) {
-                                            generator.writeRawData(' ');
-                                        }
-                                        generator.writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE,
-                                                                             covarianceFormat,
-                                                                             Units.KM2.fromSI(m.getEntry(i, j))));
-                                    }
-
-                                    // end the line
-                                    generator.newLine();
-
-                                }
-                                continuation = true;
-                            }
-                            generator.exitSection();
-                        } else {
-                            // TODO: write covariance in OEM XML files
-                            throw new OrekitInternalError(null);
-                        }
-                    }
-                }
-
-            }
-        }
+        // output covariance data
+        writeCovariances(generator, segment.getMetadata(), segment.getData().getCovarianceMatrices());
 
     }
 
     /** Write an ephemeris segment metadata.
      * @param generator generator to use for producing output
+     * @param metadata metadata to write
      * @throws IOException if the output stream throws one while writing.
      */
-    void writeMetadata(final Generator generator)
+    void writeMetadata(final Generator generator, final OemMetadata metadata)
         throws IOException {
 
         // add an empty line for presentation
@@ -458,7 +282,7 @@ public class OemWriter extends AbstractMessageWriter implements EphemerisFileWri
                                KvnStructureKey.META.name() :
                                XmlStructureKey.metadata.name());
 
-        generator.writeComments(metadata);
+        generator.writeComments(metadata.getComments());
 
         // objects
         generator.writeEntry(OdmMetadataKey.OBJECT_NAME.name(),    metadata.getObjectName(), true);
@@ -501,11 +325,12 @@ public class OemWriter extends AbstractMessageWriter implements EphemerisFileWri
     /**
      * Write a single orbit ephemeris line .
      * @param generator generator to use for producing output
+     * @param metadata metadata to use for interpreting data
      * @param coordinates orbit information for a given date
      * @param useAcceleration is true, the acceleration data must be used
      * @throws IOException if the output stream throws one while writing.
      */
-    void writeOrbitEphemerisLine(final Generator generator,
+    void writeOrbitEphemerisLine(final Generator generator, final OemMetadata metadata,
                                  final TimeStampedPVCoordinates coordinates,
                                  final boolean useAcceleration)
         throws IOException {
@@ -515,42 +340,107 @@ public class OemWriter extends AbstractMessageWriter implements EphemerisFileWri
 
         // Position data in km
         generator.writeRawData(' ');
-        generator.writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, positionFormat,
-                                             Unit.KILOMETRE.fromSI(coordinates.getPosition().getX())));
+        generator.writeRawData(String.format(AccurateFormatter.format(Unit.KILOMETRE.fromSI(coordinates.getPosition().getX()))));
         generator.writeRawData(' ');
-        generator.writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, positionFormat,
-                                             Unit.KILOMETRE.fromSI(coordinates.getPosition().getY())));
+        generator.writeRawData(String.format(AccurateFormatter.format(Unit.KILOMETRE.fromSI(coordinates.getPosition().getY()))));
         generator.writeRawData(' ');
-        generator.writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, positionFormat,
-                                             Unit.KILOMETRE.fromSI(coordinates.getPosition().getZ())));
+        generator.writeRawData(String.format(AccurateFormatter.format(Unit.KILOMETRE.fromSI(coordinates.getPosition().getZ()))));
 
         // Velocity data in km/s
         generator.writeRawData(' ');
-        generator.writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, velocityFormat,
-                                             Units.KM_PER_S.fromSI(coordinates.getVelocity().getX())));
+        generator.writeRawData(String.format(AccurateFormatter.format(Units.KM_PER_S.fromSI(coordinates.getVelocity().getX()))));
         generator.writeRawData(' ');
-        generator.writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, velocityFormat,
-                                             Units.KM_PER_S.fromSI(coordinates.getVelocity().getY())));
+        generator.writeRawData(String.format(AccurateFormatter.format(Units.KM_PER_S.fromSI(coordinates.getVelocity().getY()))));
         generator.writeRawData(' ');
-        generator.writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, velocityFormat,
-                                             Units.KM_PER_S.fromSI(coordinates.getVelocity().getZ())));
+        generator.writeRawData(String.format(AccurateFormatter.format(Units.KM_PER_S.fromSI(coordinates.getVelocity().getZ()))));
 
         // Acceleration data in km/s²
         if (useAcceleration) {
             generator.writeRawData(' ');
-            generator.writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, accelerationFormat,
-                                                 Units.KM_PER_S2.fromSI(coordinates.getAcceleration().getX())));
+            generator.writeRawData(String.format(AccurateFormatter.format(Units.KM_PER_S2.fromSI(coordinates.getAcceleration().getX()))));
             generator.writeRawData(' ');
-            generator.writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, accelerationFormat,
-                                                 Units.KM_PER_S2.fromSI(coordinates.getAcceleration().getY())));
+            generator.writeRawData(String.format(AccurateFormatter.format(Units.KM_PER_S2.fromSI(coordinates.getAcceleration().getY()))));
             generator.writeRawData(' ');
-            generator.writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, accelerationFormat,
-                                                 Units.KM_PER_S2.fromSI(coordinates.getAcceleration().getZ())));
+            generator.writeRawData(String.format(AccurateFormatter.format(Units.KM_PER_S2.fromSI(coordinates.getAcceleration().getZ()))));
         }
 
         // end the line
         generator.newLine();
 
+    }
+
+    /**
+     * Write a covariance matrices.
+     * @param generator generator to use for producing output
+     * @param metadata metadata to use for interpreting data
+     * @param covariances covariances to write
+     * @throws IOException if the output stream throws one while writing.
+     */
+    void writeCovariances(final Generator generator, final OemMetadata metadata,
+                          final List<CartesianCovariance> covariances)
+        throws IOException {
+        if (covariances != null && !covariances.isEmpty()) {
+
+            // enter the section
+            if (generator.getFormat() == FileFormat.XML) {
+                generator.enterSection(OemDataSubStructureKey.covarianceMatrix.name());
+            } else {
+                generator.enterSection(OemDataSubStructureKey.COVARIANCE.name());
+            }
+
+            boolean continuation = false;
+            for (final CartesianCovariance covariance : covariances) {
+                if (continuation) {
+                    generator.newLine();
+                }
+                writeCovariance(generator, metadata, covariance);
+                continuation = true;
+            }
+
+            // exit the section
+            generator.exitSection();
+
+        }
+    }
+
+    /**
+     * Write a single covariance matrix.
+     * @param generator generator to use for producing output
+     * @param metadata metadata to use for interpreting data
+     * @param covariance covariance to write
+     * @throws IOException if the output stream throws one while writing.
+     */
+    private void writeCovariance(final Generator generator, final OemMetadata metadata,
+                                 final CartesianCovariance covariance)
+        throws IOException {
+        if (generator.getFormat() == FileFormat.KVN) {
+            generator.writeEntry(CartesianCovarianceKey.EPOCH.name(),
+                                 getTimeConverter(), covariance.getEpoch(),
+                                 true);
+            if (covariance.getReferenceFrame() != metadata.getReferenceFrame()) {
+                generator.writeEntry(CartesianCovarianceKey.COV_REF_FRAME.name(),
+                                     covariance.getReferenceFrame().getName(),
+                                     false);
+            }
+            final RealMatrix m = covariance.getCovarianceMatrix();
+            for (int i = 0; i < m.getRowDimension(); ++i) {
+
+                // write triangular matrix entries
+                for (int j = 0; j <= i; ++j) {
+                    if (j > 0) {
+                        generator.writeRawData(' ');
+                    }
+                    generator.writeRawData(AccurateFormatter.format(Units.KM2.fromSI(m.getEntry(i, j))));
+                }
+
+                // end the line
+                generator.newLine();
+
+            }
+        } else {
+            // TODO: write covariance in OEM XML files
+            throw new OrekitInternalError(null);
+        }
     }
 
     /** Start of a data block.
@@ -563,7 +453,7 @@ public class OemWriter extends AbstractMessageWriter implements EphemerisFileWri
         }
     }
 
-    /** End of an attitude block.
+    /** End of a data block.
      * @param generator generator to use for producing output
      * @throws IOException if the output stream throws one while writing.
      */
@@ -571,45 +461,6 @@ public class OemWriter extends AbstractMessageWriter implements EphemerisFileWri
         if (generator.getFormat() == FileFormat.XML) {
             generator.exitSection();
         }
-    }
-
-    /** Copy a metadata object, making sure mandatory fields have been initialized.
-     * @param original original object
-     * @return a new copy
-     */
-    private OemMetadata copy(final OemMetadata original) {
-
-        original.checkMandatoryEntriesExceptDates();
-
-        // allocate new instance
-        final OemMetadata copy = new OemMetadata(original.getInterpolationDegree());
-
-        // copy comments
-        for (String comment : original.getComments()) {
-            copy.addComment(comment);
-        }
-
-        // copy object
-        copy.setObjectName(original.getObjectName());
-        copy.setObjectID(original.getObjectID());
-        if (original.getCenter().getName() != null) {
-            copy.setCenter(original.getCenter());
-        }
-
-        // copy frames
-        copy.setFrameEpoch(original.getFrameEpoch());
-        copy.setReferenceFrame(original.getReferenceFrame());
-
-        // copy time system only (ignore times themselves)
-        copy.setTimeSystem(original.getTimeSystem());
-
-        // copy interpolation (degree has already been set up at construction)
-        if (original.getInterpolationMethod() != null) {
-            copy.setInterpolationMethod(original.getInterpolationMethod());
-        }
-
-        return copy;
-
     }
 
 }

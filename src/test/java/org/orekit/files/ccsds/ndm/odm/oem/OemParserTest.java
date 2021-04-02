@@ -62,7 +62,7 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 
-public class OEMParserTest {
+public class OemParserTest {
 
     @Before
     public void setUp()
@@ -819,9 +819,9 @@ public class OEMParserTest {
         for (Pair<String, Frame> frame : frames) {
             final String frameName = frame.getFirst();
 
-            InputStream pre    = OEMParserTest.class.getResourceAsStream("/ccsds/odm/oem/OEMExample7.txt.pre");
+            InputStream pre    = OemParserTest.class.getResourceAsStream("/ccsds/odm/oem/OEMExample7.txt.pre");
             InputStream middle = new ByteArrayInputStream(("REF_FRAME = " + frameName).getBytes(utf8));
-            InputStream post   = OEMParserTest.class.getResourceAsStream("/ccsds/odm/oem/OEMExample7.txt.post");
+            InputStream post   = OemParserTest.class.getResourceAsStream("/ccsds/odm/oem/OEMExample7.txt.post");
             DataSource   source = new DataSource("<patched>", () -> new SequenceInputStream(pre, new SequenceInputStream(middle, post)));
 
             // action

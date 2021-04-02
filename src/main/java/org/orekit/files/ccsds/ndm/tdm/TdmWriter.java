@@ -25,7 +25,6 @@ import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.generation.AbstractMessageWriter;
 import org.orekit.files.ccsds.utils.generation.Generator;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
 /**
@@ -34,28 +33,36 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class TdmWriter extends AbstractMessageWriter {
+public class TdmWriter extends AbstractMessageWriter<Header, Segment<TdmMetadata, ObservationsBlock>, TdmFile> {
 
     /** Version number implemented. **/
     public static final double CCSDS_TDM_VERS = 1.0;
 
-    /** Key width for aligning the '=' sign. */
-    public static final int KEY_WIDTH = 25;
+    /** Padding width for aligning the '=' sign. */
+    public static final int KVN_PADDING_WIDTH = 25;
+
+    /** Converter for {@link RangeUnits#RU Range Units}. */
+    private final RangeUnitsConverter converter;
 
     /** Complete constructor.
+     * <p>
+     * Calling this constructor directly is not recommended. Users should rather use
+     * {@link org.orekit.files.ccsds.ndm.WriterBuilder#buildTdmWriter(RangeUnitsConverter)
+     * writerBuilder.buildTdmWriter(converter)}.
+     * </p>
      * @param conventions IERS Conventions
      * @param dataContext used to retrieve frames, time scales, etc.
-     * @param header file header (may be null)
-     * @param fileName file name for error messages
+     * @param converter converter for {@link RangeUnits#RU Range Units} (may be null if there
+     * are no range observations in {@link RangeUnits#RU Range Units})
      */
     public TdmWriter(final IERSConventions conventions, final DataContext dataContext,
-                     final Header header, final String fileName) {
-        super(TdmFile.FORMAT_VERSION_KEY, CCSDS_TDM_VERS, header,
+                     final RangeUnitsConverter converter) {
+        super(TdmFile.FORMAT_VERSION_KEY, CCSDS_TDM_VERS,
               new ContextBinding(
                   () -> conventions, () -> false, () -> dataContext,
                   () -> null, () -> TimeSystem.UTC,
-                  () -> 0.0, () -> 1.0),
-              fileName);
+                  () -> 0.0, () -> 1.0));
+        this.converter = converter;
     }
 
     /** Write one segment.
@@ -66,23 +73,22 @@ public class TdmWriter extends AbstractMessageWriter {
     public void writeSegment(final Generator generator, final Segment<TdmMetadata, ObservationsBlock> segment)
         throws IOException {
 
-        // prepare time converter
-        final IERSConventions conventions   = getContext().getConventions();
-        final boolean         simpleEOP     = getContext().isSimpleEOP();
-        final DataContext     dataContext   = getContext().getDataContext();
-        final AbsoluteDate    referenceDate = getContext().getReferenceDate();
-        final double          clockCount    = getContext().getClockCount();
-        final double          clockRate     = getContext().getClockRate();
-        setContext(new ContextBinding(
-            () -> conventions, () -> simpleEOP, () -> dataContext,
-            () -> referenceDate, segment.getMetadata()::getTimeSystem,
-            () -> clockCount, () -> clockRate));
-
         // write the metadata
-        new TdmMetadataWriter(segment.getMetadata(), getTimeConverter()).write(generator);
+        final ContextBinding oldContext = getContext();
+        final TdmMetadata    metadata   = segment.getMetadata();
+        setContext(new ContextBinding(oldContext::getConventions,
+                                      oldContext::isSimpleEOP,
+                                      oldContext::getDataContext,
+                                      oldContext::getReferenceDate,
+                                      metadata::getTimeSystem,
+                                      oldContext::getClockCount,
+                                      oldContext::getClockRate));
+        new TdmMetadataWriter(metadata, getTimeConverter()).
+        write(generator);
 
         // write the observations block
-        new ObservationsBlockWriter(segment.getData(), getTimeConverter()).write(generator);
+        new ObservationsBlockWriter(segment.getData(), getTimeConverter(), segment.getMetadata(), converter).
+        write(generator);
 
     }
 

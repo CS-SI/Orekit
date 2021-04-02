@@ -49,7 +49,7 @@ public class SpacecraftParametersWriter extends AbstractWriter {
     protected void writeContent(final Generator generator) throws IOException {
 
         // spacecraft parameters block
-        generator.writeComments(spacecraftParameters);
+        generator.writeComments(spacecraftParameters.getComments());
 
         // mass
         generator.writeEntry(SpacecraftParametersKey.MASS.name(),

@@ -29,7 +29,7 @@ import org.orekit.utils.units.Unit;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class ManeuverWriter extends AbstractWriter {
+class ManeuverWriter extends AbstractWriter {
 
     /** Maneuver parameters block. */
     private final Maneuver maneuver;
@@ -41,7 +41,7 @@ public class ManeuverWriter extends AbstractWriter {
      * @param maneuver maneuver to write
      * @param timeConverter converter for dates
      */
-    public ManeuverWriter(final Maneuver maneuver, final TimeConverter timeConverter) {
+    ManeuverWriter(final Maneuver maneuver, final TimeConverter timeConverter) {
         super(XmlSubStructureKey.maneuverParameters.name(), null);
         this.maneuver      = maneuver;
         this.timeConverter = timeConverter;
@@ -52,7 +52,7 @@ public class ManeuverWriter extends AbstractWriter {
     protected void writeContent(final Generator generator) throws IOException {
 
         // maneuver block
-        generator.writeComments(maneuver);
+        generator.writeComments(maneuver.getComments());
 
         generator.writeEntry(ManeuverKey.MAN_EPOCH_IGNITION.name(), timeConverter, maneuver.getEpochIgnition(),     true);
         generator.writeEntry(ManeuverKey.MAN_DURATION.name(),       Unit.SECOND.fromSI(maneuver.getDuration()),     true);

@@ -36,18 +36,16 @@ import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
+import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
-import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
 import org.orekit.files.ccsds.ndm.odm.SpacecraftParameters;
-import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.frames.Frame;
@@ -60,7 +58,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-public class OPMParserTest {
+public class OpmParserTest {
 
     @Before
     public void setUp() {
@@ -455,7 +453,7 @@ public class OPMParserTest {
     }
 
     @Test
-    public void testWriteOPM3XML() throws URISyntaxException, IOException {
+    public void testWriteOPM3() throws URISyntaxException, IOException {
         // simple test for OPM file, contains all mandatory information plus
         // Spacecraft parameters and the position/velocity Covariance Matrix.
         // the content of the file is slightly different from the KVN file in the covariance section
@@ -466,13 +464,8 @@ public class OPMParserTest {
 
         // write the parsed file back to a characters array
         final CharArrayWriter caw = new CharArrayWriter();
-        OpmWriter opmw = new OpmWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null,
-                                       original.getHeader(), "dummy");
-        Generator generator = new KvnGenerator(caw, OpmWriter.KEY_WIDTH, opmw.getFileName());
-        opmw.writeHeader(generator);
-        for (final Segment<CommonMetadata, OpmData> segment : original.getSegments()) {
-            opmw.writeSegment(generator, segment);
-        }
+        final Generator generator = new KvnGenerator(caw, OpmWriter.KVN_PADDING_WIDTH, "dummy");
+        new WriterBuilder().buildOpmWriter().writeMessage(generator, original);
 
         // reparse the written file
         final ByteBuffer bb      = StandardCharsets.UTF_8.encode(caw.toString());

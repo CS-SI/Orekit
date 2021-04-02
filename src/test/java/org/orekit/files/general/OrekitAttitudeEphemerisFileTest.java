@@ -45,11 +45,13 @@ import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.ndm.adm.aem.AemMetadata;
 import org.orekit.files.ccsds.ndm.adm.aem.AemParser;
 import org.orekit.files.ccsds.ndm.adm.aem.AemSegment;
-import org.orekit.files.ccsds.ndm.adm.aem.AemWriter;
+import org.orekit.files.ccsds.ndm.adm.aem.AttitudeWriter;
+import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.general.AttitudeEphemerisFile.AttitudeEphemerisSegment;
 import org.orekit.files.general.OrekitAttitudeEphemerisFile.OrekitSatelliteAttitudeEphemeris;
 import org.orekit.frames.Frame;
@@ -143,8 +145,8 @@ public class OrekitAttitudeEphemerisFileTest {
 
         String tempAemFile = Files.createTempFile("OrekitAttitudeEphemerisFileTest", ".aem").toString();
         try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(tempAemFile), StandardCharsets.UTF_8)) {
-            new AemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null, dummyMetadata()).
-            write(writer, ephemerisFile);
+            new AttitudeWriter(new WriterBuilder().buildAemWriter(),
+                               null, dummyMetadata(), FileFormat.KVN, "").write(writer, ephemerisFile);
         }
 
         AttitudeEphemerisFile<TimeStampedAngularCoordinates, AemSegment> ephemerisFromFile =

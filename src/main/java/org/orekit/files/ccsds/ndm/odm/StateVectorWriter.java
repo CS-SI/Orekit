@@ -56,7 +56,7 @@ public class StateVectorWriter extends AbstractWriter {
 
         // state vector block
         final TimeStampedPVCoordinates pv = stateVector.toTimeStampedPVCoordinates();
-        generator.writeComments(stateVector);
+        generator.writeComments(stateVector.getComments());
         generator.writeEntry(StateVectorKey.EPOCH.name(), timeConverter, pv.getDate(), true);
         generator.writeEntry(StateVectorKey.X.name(),     Unit.KILOMETRE.fromSI(pv.getPosition().getX()), true);
         generator.writeEntry(StateVectorKey.Y.name(),     Unit.KILOMETRE.fromSI(pv.getPosition().getY()), true);
