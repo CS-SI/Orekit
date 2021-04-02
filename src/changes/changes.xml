@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="bryan" type="update" issue="774">
+        TimeStampedFieldPVCoordinates now implements FieldTimeStamped.
+      </action>
       <action dev="nfialton" type="fix" issue="775">
         Fixed NullPointerException in FieldSpacecraftState when orbit is not defined.
       </action>
