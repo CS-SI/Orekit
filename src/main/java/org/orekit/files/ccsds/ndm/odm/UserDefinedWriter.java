@@ -20,9 +20,7 @@ package org.orekit.files.ccsds.ndm.odm;
 import java.io.IOException;
 import java.util.Map;
 
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.files.ccsds.section.AbstractWriter;
-import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
 
 /** Writer for user defined parameters data.
@@ -48,12 +46,7 @@ public class UserDefinedWriter extends AbstractWriter {
     @Override
     protected void writeContent(final Generator generator) throws IOException {
         for (Map.Entry<String, String> entry : userDefined.getParameters().entrySet()) {
-            if (generator.getFormat() == FileFormat.XML) {
-                // TODO
-                throw new OrekitInternalError(null);
-            } else {
-                generator.writeEntry(UserDefined.USER_DEFINED_PREFIX + entry.getKey(), entry.getValue(), false);
-            }
+            generator.writeUserDefined(entry.getKey(), entry.getValue());
         }
     }
 

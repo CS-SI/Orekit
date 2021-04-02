@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.utils.generation;
 import java.io.IOException;
 import java.util.List;
 
+import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.utils.AccurateFormatter;
 
@@ -45,6 +46,9 @@ public class XmlGenerator extends AbstractGenerator {
 
     /** Leaf element format. */
     private static final String LEAF = "<%s>%s</%s>%n";
+
+    /** User defined parameter element format. */
+    private static final String USER_DEFINED = "<%s %s=\"%s\">%s</%s>%n";
 
     /** Comment key. */
     private static final String COMMENT = "COMMENT";
@@ -98,6 +102,18 @@ public class XmlGenerator extends AbstractGenerator {
         for (final String comment : comments) {
             writeEntry(COMMENT, comment, false);
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void writeUserDefined(final String parameter, final String value) throws IOException {
+        indent();
+        append(String.format(AccurateFormatter.STANDARDIZED_LOCALE, USER_DEFINED,
+                             UserDefined.USER_DEFINED_XML_TAG,
+                             UserDefined.USER_DEFINED_XML_ATTRIBUTE,
+                             parameter,
+                             value,
+                             UserDefined.USER_DEFINED_XML_TAG));
     }
 
     /** {@inheritDoc} */

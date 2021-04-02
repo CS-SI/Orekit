@@ -21,7 +21,6 @@ import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -188,8 +187,8 @@ public class TdmParserTest {
         new WriterBuilder().buildTdmWriter(null).writeMessage(generator, original);
 
         // reparse the written file
-        final ByteBuffer bb      = StandardCharsets.UTF_8.encode(caw.toString());
-        final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(bb.array()));
+        final byte[]     bytes   = caw.toString().getBytes(StandardCharsets.UTF_8);
+        final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(bytes));
         final TdmFile    rebuilt = new ParserBuilder().buildTdmParser(null).parseMessage(source2);
         validateTDMExample2(rebuilt);
 

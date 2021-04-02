@@ -20,7 +20,6 @@ import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -166,8 +165,8 @@ public class OmmParserTest {
         new WriterBuilder().buildOmmWriter().writeMessage(generator, original);
 
         // reparse the written file
-        final ByteBuffer bb      = StandardCharsets.UTF_8.encode(caw.toString());
-        final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(bb.array()));
+        final byte[]     bytes = caw.toString().getBytes(StandardCharsets.UTF_8);
+        final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(bytes));
         final OmmFile    rebuilt = new ParserBuilder().buildOmmParser().parseMessage(source2);
         validateOMM2(rebuilt);
 

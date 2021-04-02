@@ -16,6 +16,7 @@
  */
 package org.orekit.files.ccsds.utils.lexical;
 
+import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.xml.sax.Attributes;
 
 /** Builder for user-defined parameters.
@@ -26,12 +27,6 @@ import org.xml.sax.Attributes;
  * @since 11.0
  */
 public class UserDefinedXmlTokenBuilder implements XmlTokenBuilder {
-
-    /** Prefix for user defined parameters keys. */
-    public static final String USER_DEFINED_PREFIX = "USER_DEFINED_";
-
-    /** Attribute for user defined parameters. */
-    public static final String PARAMETER = "parameter";
 
     /** {@inheritDoc} */
     @Override
@@ -45,7 +40,9 @@ public class UserDefinedXmlTokenBuilder implements XmlTokenBuilder {
                                     TokenType.ENTRY;
 
         // final build
-        return new ParseToken(tokenType, USER_DEFINED_PREFIX + attributes.getValue(PARAMETER),
+        final String name = attributes.getValue(UserDefined.USER_DEFINED_XML_ATTRIBUTE);
+        return new ParseToken(tokenType,
+                              UserDefined.USER_DEFINED_PREFIX + name,
                               content, null,
                               lineNumber, fileName);
 

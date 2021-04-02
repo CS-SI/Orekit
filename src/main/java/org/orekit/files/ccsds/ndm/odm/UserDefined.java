@@ -29,6 +29,12 @@ import org.orekit.files.ccsds.section.CommentsContainer;
  */
 public class UserDefined extends CommentsContainer {
 
+    /** Tag name for user defined parameters keys. */
+    public static final String USER_DEFINED_XML_TAG = "USER_DEFINED";
+
+    /** Attribute name for user defined parameters keys. */
+    public static final String USER_DEFINED_XML_ATTRIBUTE = "parameter";
+
     /** Prefix for user defined parameters keys. */
     public static final String USER_DEFINED_PREFIX = "USER_DEFINED_";
 

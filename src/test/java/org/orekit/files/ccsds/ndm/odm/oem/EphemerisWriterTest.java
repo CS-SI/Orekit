@@ -26,7 +26,6 @@ import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -89,11 +88,11 @@ public class EphemerisWriterTest {
                         buildOemWriter();
         final CharArrayWriter caw = new CharArrayWriter();
         writer.writeMessage(new KvnGenerator(caw, 0, ""), oemFile);
-        final ByteBuffer buffer  = StandardCharsets.UTF_8.encode(caw.toString());
+        final byte[] bytes = caw.toString().getBytes(StandardCharsets.UTF_8);
 
         final OemFile generatedOemFile = new OemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                        null, CelestialBodyFactory.getMars().getGM(), 1).
-                        parseMessage(new DataSource("", () -> new ByteArrayInputStream(buffer.array())));
+                        parseMessage(new DataSource("", () -> new ByteArrayInputStream(bytes)));
         compareOemFiles(oemFile, generatedOemFile);
     }
 
@@ -155,12 +154,12 @@ public class EphemerisWriterTest {
         OemWriter writer = new WriterBuilder().buildOemWriter();
         final CharArrayWriter caw = new CharArrayWriter();
         writer.writeMessage(new KvnGenerator(caw, 0, ""), oemFile);
-        final ByteBuffer buffer  = StandardCharsets.UTF_8.encode(caw.toString());
+        final byte[] bytes = caw.toString().getBytes(StandardCharsets.UTF_8);
 
         final OemFile generatedOemFile = new ParserBuilder().
                                          withMu(CelestialBodyFactory.getEarth().getGM()).
                                          buildOemParser().
-                                         parseMessage(new DataSource("", () -> new ByteArrayInputStream(buffer.array())));
+                                         parseMessage(new DataSource("", () -> new ByteArrayInputStream(bytes)));
         assertEquals(oemFile.getSegments().get(0).getMetadata().getObjectID(),
                 generatedOemFile.getSegments().get(0).getMetadata().getObjectID());
     }
@@ -178,12 +177,12 @@ public class EphemerisWriterTest {
                                                      FileFormat.KVN, "TestOEMIssue723.aem");
         final CharArrayWriter caw = new CharArrayWriter();
         writer.write(caw, oemFile);
-        final ByteBuffer buffer  = StandardCharsets.UTF_8.encode(caw.toString());
+        final byte[] bytes = caw.toString().getBytes(StandardCharsets.UTF_8);
 
         final OemFile generatedOemFile = new ParserBuilder().
                                          withMu(CelestialBodyFactory.getEarth().getGM()).
                                          buildOemParser().
-                                         parseMessage(new DataSource("", () -> new ByteArrayInputStream(buffer.array())));
+                                         parseMessage(new DataSource("", () -> new ByteArrayInputStream(bytes)));
         assertEquals(oemFile.getHeader().getComments().get(0), generatedOemFile.getHeader().getComments().get(0));
     }
 
@@ -236,10 +235,10 @@ public class EphemerisWriterTest {
                                                      null, metadata, FileFormat.KVN, "");
         final CharArrayWriter caw = new CharArrayWriter();
         writer.write(caw, file);
-        final ByteBuffer buffer  = StandardCharsets.UTF_8.encode(caw.toString());
+        final byte[] bytes = caw.toString().getBytes(StandardCharsets.UTF_8);
 
         int count = 0;
-        try (ByteArrayInputStream bais = new ByteArrayInputStream(buffer.array());
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
              InputStreamReader    isr  = new InputStreamReader(bais, StandardCharsets.UTF_8);
              BufferedReader       br   = new BufferedReader(isr)) {
             for (String line = br.readLine(); line != null; line = br.readLine()) {

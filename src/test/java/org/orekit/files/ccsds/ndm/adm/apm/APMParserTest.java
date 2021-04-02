@@ -20,7 +20,6 @@ import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
@@ -172,8 +171,8 @@ public class APMParserTest {
         new WriterBuilder().buildApmWriter().writeMessage(generator, original);
 
         // reparse the written file
-        final ByteBuffer buffer  = StandardCharsets.UTF_8.encode(caw.toString());
-        final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(buffer.array()));
+        final byte[]     bytes   = caw.toString().getBytes(StandardCharsets.UTF_8);
+        final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(bytes));
         final ApmFile    rebuilt = new ParserBuilder().buildApmParser().parseMessage(source2);
         validateAPM2(rebuilt);
     }

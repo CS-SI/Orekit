@@ -59,6 +59,13 @@ public interface Generator extends AutoCloseable {
      */
     void writeComments(List<String> comments) throws IOException;
 
+    /** Write a user defined entry.
+     * @param parameter name of the user defined parameter
+     * @param value the value to write
+     * @throws IOException if an I/O error occurs.
+     */
+    void writeUserDefined(String parameter, String value) throws IOException;
+
     /** Write a single key/value entry.
      * @param key   the keyword to write
      * @param value the value to write

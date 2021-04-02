@@ -20,7 +20,6 @@ import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -74,13 +73,10 @@ public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<
                                               new KvnGenerator(caw, 25, "dummy.kvn") :
                                               new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml");
             getWriter().writeMessage(generator, original);
-            if (format == FileFormat.XML) {
-                System.out.println(caw);
-            }
 
             // reparse the written file
-            final ByteBuffer buffer  = StandardCharsets.UTF_8.encode(caw.toString());
-            final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(buffer.array()));
+            final byte[]      bytes  = caw.toString().getBytes(StandardCharsets.UTF_8);
+            final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(bytes));
             final F          rebuilt = getParser().parseMessage(source2);
 
             checkEquals(original, rebuilt);
