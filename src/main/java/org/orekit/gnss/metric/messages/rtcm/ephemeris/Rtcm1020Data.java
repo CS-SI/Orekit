@@ -364,7 +364,7 @@ public class Rtcm1020Data extends RtcmEphemerisData {
      * <p>
      * It characterises the "age" of a current information.
      * </p>
-     * @return the GLONASS E<sub>n</sub> Word
+     * @return the GLONASS E<sub>n</sub> Word in days
      */
     public int getEn() {
         return eN;

@@ -18,6 +18,8 @@ package org.orekit.gnss.metric.parser;
 
 import java.util.Locale;
 
+import org.orekit.utils.units.Unit;
+
 /** Enum containing all intermediate level data fields that can be parsed
  * to build an IGS SSR message.
  * @author Bryan Cazabonne
@@ -155,7 +157,7 @@ public enum IgsSsrDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return DataType.INT_22.decode(message).intValue() * 0.0001;
+            return Units.MM.toSI(DataType.INT_22.decode(message).intValue() * 0.1);
         }
     },
 
@@ -164,7 +166,7 @@ public enum IgsSsrDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return DataType.INT_20.decode(message).intValue() * 0.0004;
+            return Units.MM.toSI(DataType.INT_20.decode(message).intValue() * 0.4);
         }
     },
 
@@ -173,7 +175,7 @@ public enum IgsSsrDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return DataType.INT_20.decode(message).intValue() * 0.0004;
+            return Units.MM.toSI(DataType.INT_20.decode(message).intValue() * 0.4);
         }
     },
 
@@ -182,7 +184,7 @@ public enum IgsSsrDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return DataType.INT_21.decode(message).intValue() * 0.000001;
+            return Units.MM_PER_S.toSI(DataType.INT_21.decode(message).intValue() * 0.001);
         }
     },
 
@@ -191,7 +193,7 @@ public enum IgsSsrDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return DataType.INT_19.decode(message).intValue() * 0.000004;
+            return Units.MM_PER_S.toSI(DataType.INT_19.decode(message).intValue() * 0.004);
         }
     },
 
@@ -200,7 +202,7 @@ public enum IgsSsrDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return DataType.INT_19.decode(message).intValue() * 0.000004;
+            return Units.MM_PER_S.toSI(DataType.INT_19.decode(message).intValue() * 0.004);
         }
     },
 
@@ -209,7 +211,7 @@ public enum IgsSsrDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return DataType.INT_22.decode(message).intValue() * 0.0001;
+            return Units.MM.toSI(DataType.INT_22.decode(message).intValue() * 0.1);
         }
     },
 
@@ -218,7 +220,7 @@ public enum IgsSsrDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return DataType.INT_21.decode(message).intValue() * 0.000001;
+            return Units.MM_PER_S.toSI(DataType.INT_21.decode(message).intValue() * 0.001);
         }
     },
 
@@ -227,7 +229,7 @@ public enum IgsSsrDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return DataType.INT_27.decode(message).intValue() * 2.0e-8;
+            return Units.MM_PER_S2.toSI(DataType.INT_27.decode(message).intValue() * 0.00002);
         }
     },
 
@@ -236,7 +238,7 @@ public enum IgsSsrDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return DataType.INT_22.decode(message).intValue() * 0.0001;
+            return Units.MM.toSI(DataType.INT_22.decode(message).intValue() * 0.1);
         }
     },
 
@@ -272,8 +274,7 @@ public enum IgsSsrDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            // Returned value is in semi-circles
-            return DataType.U_INT_9.decode(message).intValue() / 256.0;
+            return Units.SEMI_CIRCLE.toSI(DataType.U_INT_9.decode(message).intValue() / 256.0);
         }
     },
 
@@ -282,8 +283,7 @@ public enum IgsSsrDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            // Returned value is in semi-circles per second
-            return DataType.INT_8.decode(message).intValue() / 8192.0;
+            return Units.SEMI_CIRCLE.toSI(DataType.INT_8.decode(message).intValue() / 8192.0);
         }
     },
 
@@ -366,7 +366,7 @@ public enum IgsSsrDataField implements DataField {
         @Override
         public double doubleValue(final EncodedMessage message) {
             // 10 km resolution
-            return DataType.U_INT_8.decode(message).intValue() * 10000;
+            return Unit.KILOMETRE.toSI(DataType.U_INT_8.decode(message).intValue() * 10.0);
         }
     },
 
@@ -395,7 +395,6 @@ public enum IgsSsrDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            // 10 km resolution
             return DataType.INT_16.decode(message).intValue() * 0.005;
         }
     },
@@ -405,7 +404,6 @@ public enum IgsSsrDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            // 10 km resolution
             return DataType.INT_16.decode(message).intValue() * 0.005;
         }
     },

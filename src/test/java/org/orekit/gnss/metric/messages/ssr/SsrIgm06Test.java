@@ -18,7 +18,6 @@ package org.orekit.gnss.metric.messages.ssr;
 
 import java.util.ArrayList;
 
-import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
@@ -29,6 +28,7 @@ import org.orekit.gnss.metric.messages.ssr.igm.SsrIgm06Data;
 import org.orekit.gnss.metric.parser.ByteArrayEncodedMessages;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.IgsSsrMessagesParser;
+import org.orekit.propagation.analytical.gnss.GNSSOrbitalElements;
 
 public class SsrIgm06Test {
 
@@ -88,8 +88,8 @@ public class SsrIgm06Test {
         Assert.assertEquals(120,                        s120.getSatelliteID());
         Assert.assertEquals(1,                          s120.getNumberOfBiasesProcessed());
         Assert.assertEquals(1,                          s120.getPhaseBiases().size());
-        Assert.assertEquals(98.0,                       s120.getYawAngle() * 256.0 / FastMath.PI, eps);
-        Assert.assertEquals(74.0,                       s120.getYawRate() * 8192.0 / FastMath.PI, eps);
+        Assert.assertEquals(98.0,                       s120.getYawAngle() * 256.0 / GNSSOrbitalElements.GNSS_PI, eps);
+        Assert.assertEquals(74.0,                       s120.getYawRate() * 8192.0 / GNSSOrbitalElements.GNSS_PI, eps);
         Assert.assertEquals(1,                          s120.getPhaseBias(1).getSignalID(), eps);
         Assert.assertEquals(2,                          s120.getPhaseBias(1).getSignalWideLaneIntegerIndicator());
         Assert.assertEquals(0,                          s120.getPhaseBias(1).getDiscontinuityCounter());
@@ -152,8 +152,8 @@ public class SsrIgm06Test {
         Assert.assertEquals(1,                          e01.getSatelliteID());
         Assert.assertEquals(1,                          e01.getNumberOfBiasesProcessed());
         Assert.assertEquals(1,                          e01.getPhaseBiases().size());
-        Assert.assertEquals(98.0,                       e01.getYawAngle() * 256.0 / FastMath.PI, eps);
-        Assert.assertEquals(74.0,                       e01.getYawRate() * 8192.0 / FastMath.PI, eps);
+        Assert.assertEquals(98.0,                       e01.getYawAngle() * 256.0 / GNSSOrbitalElements.GNSS_PI, eps);
+        Assert.assertEquals(74.0,                       e01.getYawRate() * 8192.0 / GNSSOrbitalElements.GNSS_PI, eps);
         Assert.assertEquals(1,                          e01.getPhaseBias(1).getSignalID(), eps);
         Assert.assertEquals(2,                          e01.getPhaseBias(1).getSignalWideLaneIntegerIndicator());
         Assert.assertEquals(0,                          e01.getPhaseBias(1).getDiscontinuityCounter());

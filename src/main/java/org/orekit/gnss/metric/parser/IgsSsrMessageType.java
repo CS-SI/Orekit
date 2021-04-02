@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.SatelliteSystem;
@@ -400,8 +399,8 @@ public enum IgsSsrMessageType implements MessageType {
                 currentIgm06Data.setNumberOfBiasesProcessed(biasesNumber);
 
                 // Yaw angle and rate
-                currentIgm06Data.setYawAngle(IgsSsrDataField.IDF026.doubleValue(encodedMessage) * FastMath.PI);
-                currentIgm06Data.setYawRate(IgsSsrDataField.IDF027.doubleValue(encodedMessage) * FastMath.PI);
+                currentIgm06Data.setYawAngle(IgsSsrDataField.IDF026.doubleValue(encodedMessage));
+                currentIgm06Data.setYawRate(IgsSsrDataField.IDF027.doubleValue(encodedMessage));
 
                 // Loop on biases
                 for (int biasIndex = 0; biasIndex < biasesNumber; biasIndex++) {

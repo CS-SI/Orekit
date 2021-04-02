@@ -109,13 +109,13 @@ public class Rtcm1020Test {
         Assert.assertEquals(26100.0,                        glonassMessage.getTime(), eps);
         Assert.assertEquals(242.42592,                      glonassMessage.getXDot(),          2.0e-6);
         Assert.assertEquals(1.21071935E-5,                  glonassMessage.getXDotDot(),       2.0e-6);
-        Assert.assertEquals(4064977.5,                      glonassMessage.getX(),             eps);
+        Assert.assertEquals(4064977.5390625,                glonassMessage.getX(),             eps);
         Assert.assertEquals(-242.42592,                     glonassMessage.getYDot(),          2.0e-6);
         Assert.assertEquals(-1.21071935E-5,                 glonassMessage.getYDotDot(),       2.0e-6);
-        Assert.assertEquals(-4064977.5,                     glonassMessage.getY(),             eps);
+        Assert.assertEquals(-4064977.5390625,               glonassMessage.getY(),             eps);
         Assert.assertEquals(-4242.426,                      glonassMessage.getZDot(),          2.5e-4);
         Assert.assertEquals(1.21071935E-5,                  glonassMessage.getZDotDot(),       2.0e-6);
-        Assert.assertEquals(-1.2256978E7,                   glonassMessage.getZ(),             eps);
+        Assert.assertEquals(-1.22569775390625E7,            glonassMessage.getZ(),             eps);
         Assert.assertEquals(4,                              ephemerisData.getP3());
         Assert.assertEquals(3,                              ephemerisData.getP());
         Assert.assertEquals(0,                              ephemerisData.getLNThirdString());

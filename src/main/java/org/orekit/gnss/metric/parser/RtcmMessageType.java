@@ -43,10 +43,6 @@ import org.orekit.gnss.navigation.GLONASSNavigationMessage;
 import org.orekit.gnss.navigation.GPSNavigationMessage;
 import org.orekit.gnss.navigation.GalileoNavigationMessage;
 import org.orekit.gnss.navigation.QZSSNavigationMessage;
-import org.orekit.propagation.analytical.gnss.BeidouOrbitalElements;
-import org.orekit.propagation.analytical.gnss.GPSOrbitalElements;
-import org.orekit.propagation.analytical.gnss.GalileoOrbitalElements;
-import org.orekit.propagation.analytical.gnss.QZSSOrbitalElements;
 
 /** Enum containing the supported RTCM messages types.
 *
@@ -89,7 +85,7 @@ public enum RtcmMessageType implements MessageType {
 
             // Fill navigation message
             gpsNavMessage.setPRN(gpsId);
-            gpsNavMessage.setIDot(RtcmDataField.DF079.doubleValue(encodedMessage) * GPSOrbitalElements.GPS_PI);
+            gpsNavMessage.setIDot(RtcmDataField.DF079.doubleValue(encodedMessage));
             gpsNavMessage.setIODE(RtcmDataField.DF071.intValue(encodedMessage));
             rtcm1019Data.setGpsToc(RtcmDataField.DF081.doubleValue(encodedMessage));
             gpsNavMessage.setAf2(RtcmDataField.DF082.doubleValue(encodedMessage));
@@ -97,20 +93,20 @@ public enum RtcmMessageType implements MessageType {
             gpsNavMessage.setAf0(RtcmDataField.DF084.doubleValue(encodedMessage));
             gpsNavMessage.setIODC(RtcmDataField.DF085.intValue(encodedMessage));
             gpsNavMessage.setCrs(RtcmDataField.DF086.doubleValue(encodedMessage));
-            gpsNavMessage.setDeltaN(RtcmDataField.DF087.doubleValue(encodedMessage) * GPSOrbitalElements.GPS_PI);
-            gpsNavMessage.setM0(RtcmDataField.DF088.doubleValue(encodedMessage) * GPSOrbitalElements.GPS_PI);
+            gpsNavMessage.setDeltaN(RtcmDataField.DF087.doubleValue(encodedMessage));
+            gpsNavMessage.setM0(RtcmDataField.DF088.doubleValue(encodedMessage));
             gpsNavMessage.setCuc(RtcmDataField.DF089.doubleValue(encodedMessage));
             gpsNavMessage.setE(RtcmDataField.DF090.doubleValue(encodedMessage));
             gpsNavMessage.setCus(RtcmDataField.DF091.doubleValue(encodedMessage));
             gpsNavMessage.setSqrtA(RtcmDataField.DF092.doubleValue(encodedMessage));
             gpsNavMessage.setToe(RtcmDataField.DF093.doubleValue(encodedMessage));
             gpsNavMessage.setCic(RtcmDataField.DF094.doubleValue(encodedMessage));
-            gpsNavMessage.setOmega0(RtcmDataField.DF095.doubleValue(encodedMessage) * GPSOrbitalElements.GPS_PI);
+            gpsNavMessage.setOmega0(RtcmDataField.DF095.doubleValue(encodedMessage));
             gpsNavMessage.setCis(RtcmDataField.DF096.doubleValue(encodedMessage));
-            gpsNavMessage.setI0(RtcmDataField.DF097.doubleValue(encodedMessage) * GPSOrbitalElements.GPS_PI);
+            gpsNavMessage.setI0(RtcmDataField.DF097.doubleValue(encodedMessage));
             gpsNavMessage.setCrc(RtcmDataField.DF098.doubleValue(encodedMessage));
-            gpsNavMessage.setPa(RtcmDataField.DF099.doubleValue(encodedMessage) * GPSOrbitalElements.GPS_PI);
-            gpsNavMessage.setOmegaDot(RtcmDataField.DF100.doubleValue(encodedMessage) * GPSOrbitalElements.GPS_PI);
+            gpsNavMessage.setPa(RtcmDataField.DF099.doubleValue(encodedMessage));
+            gpsNavMessage.setOmegaDot(RtcmDataField.DF100.doubleValue(encodedMessage));
             gpsNavMessage.setTGD(RtcmDataField.DF101.doubleValue(encodedMessage));
             gpsNavMessage.setSvHealth(RtcmDataField.DF102.intValue(encodedMessage));
 
@@ -224,7 +220,7 @@ public enum RtcmMessageType implements MessageType {
 
             // Fill navigation message
             beidouNavMessage.setPRN(beidouId);
-            beidouNavMessage.setIDot(RtcmDataField.DF491.doubleValue(encodedMessage) * BeidouOrbitalElements.BEIDOU_PI);
+            beidouNavMessage.setIDot(RtcmDataField.DF491.doubleValue(encodedMessage));
             beidouNavMessage.setAODE(RtcmDataField.DF492.intValue(encodedMessage));
             rtcm1042Data.setBeidouToc(RtcmDataField.DF493.doubleValue(encodedMessage));
             beidouNavMessage.setAf2(RtcmDataField.DF494.doubleValue(encodedMessage));
@@ -232,20 +228,20 @@ public enum RtcmMessageType implements MessageType {
             beidouNavMessage.setAf0(RtcmDataField.DF496.doubleValue(encodedMessage));
             beidouNavMessage.setAODC(RtcmDataField.DF497.intValue(encodedMessage));
             beidouNavMessage.setCrs(RtcmDataField.DF498.doubleValue(encodedMessage));
-            beidouNavMessage.setDeltaN(RtcmDataField.DF499.doubleValue(encodedMessage) * BeidouOrbitalElements.BEIDOU_PI);
-            beidouNavMessage.setM0(RtcmDataField.DF500.doubleValue(encodedMessage) * BeidouOrbitalElements.BEIDOU_PI);
+            beidouNavMessage.setDeltaN(RtcmDataField.DF499.doubleValue(encodedMessage));
+            beidouNavMessage.setM0(RtcmDataField.DF500.doubleValue(encodedMessage));
             beidouNavMessage.setCuc(RtcmDataField.DF501.doubleValue(encodedMessage));
             beidouNavMessage.setE(RtcmDataField.DF502.doubleValue(encodedMessage));
             beidouNavMessage.setCus(RtcmDataField.DF503.doubleValue(encodedMessage));
             beidouNavMessage.setSqrtA(RtcmDataField.DF504.doubleValue(encodedMessage));
             beidouNavMessage.setToe(RtcmDataField.DF505.doubleValue(encodedMessage));
             beidouNavMessage.setCic(RtcmDataField.DF506.doubleValue(encodedMessage));
-            beidouNavMessage.setOmega0(RtcmDataField.DF507.doubleValue(encodedMessage) * BeidouOrbitalElements.BEIDOU_PI);
+            beidouNavMessage.setOmega0(RtcmDataField.DF507.doubleValue(encodedMessage));
             beidouNavMessage.setCis(RtcmDataField.DF508.doubleValue(encodedMessage));
-            beidouNavMessage.setI0(RtcmDataField.DF509.doubleValue(encodedMessage) * BeidouOrbitalElements.BEIDOU_PI);
+            beidouNavMessage.setI0(RtcmDataField.DF509.doubleValue(encodedMessage));
             beidouNavMessage.setCrc(RtcmDataField.DF510.doubleValue(encodedMessage));
-            beidouNavMessage.setPa(RtcmDataField.DF511.doubleValue(encodedMessage) * BeidouOrbitalElements.BEIDOU_PI);
-            beidouNavMessage.setOmegaDot(RtcmDataField.DF512.doubleValue(encodedMessage) * BeidouOrbitalElements.BEIDOU_PI);
+            beidouNavMessage.setPa(RtcmDataField.DF511.doubleValue(encodedMessage));
+            beidouNavMessage.setOmegaDot(RtcmDataField.DF512.doubleValue(encodedMessage));
             beidouNavMessage.setTGD1(RtcmDataField.DF513.doubleValue(encodedMessage));
             beidouNavMessage.setTGD2(RtcmDataField.DF514.doubleValue(encodedMessage));
             rtcm1042Data.setSvHealth(RtcmDataField.DF515.intValue(encodedMessage));
@@ -284,21 +280,21 @@ public enum RtcmMessageType implements MessageType {
             qzssNavMessage.setAf0(RtcmDataField.DF433.doubleValue(encodedMessage));
             qzssNavMessage.setIODE(RtcmDataField.DF434.intValue(encodedMessage));
             qzssNavMessage.setCrs(RtcmDataField.DF435.doubleValue(encodedMessage));
-            qzssNavMessage.setDeltaN(RtcmDataField.DF436.doubleValue(encodedMessage) * QZSSOrbitalElements.QZSS_PI);
-            qzssNavMessage.setM0(RtcmDataField.DF437.doubleValue(encodedMessage) * QZSSOrbitalElements.QZSS_PI);
+            qzssNavMessage.setDeltaN(RtcmDataField.DF436.doubleValue(encodedMessage));
+            qzssNavMessage.setM0(RtcmDataField.DF437.doubleValue(encodedMessage));
             qzssNavMessage.setCuc(RtcmDataField.DF438.doubleValue(encodedMessage));
             qzssNavMessage.setE(RtcmDataField.DF439.doubleValue(encodedMessage));
             qzssNavMessage.setCus(RtcmDataField.DF440.doubleValue(encodedMessage));
             qzssNavMessage.setSqrtA(RtcmDataField.DF441.doubleValue(encodedMessage));
             qzssNavMessage.setToe(RtcmDataField.DF442.doubleValue(encodedMessage));
             qzssNavMessage.setCic(RtcmDataField.DF443.doubleValue(encodedMessage));
-            qzssNavMessage.setOmega0(RtcmDataField.DF444.doubleValue(encodedMessage) * QZSSOrbitalElements.QZSS_PI);
+            qzssNavMessage.setOmega0(RtcmDataField.DF444.doubleValue(encodedMessage));
             qzssNavMessage.setCis(RtcmDataField.DF445.doubleValue(encodedMessage));
-            qzssNavMessage.setI0(RtcmDataField.DF446.doubleValue(encodedMessage) * QZSSOrbitalElements.QZSS_PI);
+            qzssNavMessage.setI0(RtcmDataField.DF446.doubleValue(encodedMessage));
             qzssNavMessage.setCrc(RtcmDataField.DF447.doubleValue(encodedMessage));
-            qzssNavMessage.setPa(RtcmDataField.DF448.doubleValue(encodedMessage) * QZSSOrbitalElements.QZSS_PI);
-            qzssNavMessage.setOmegaDot(RtcmDataField.DF449.doubleValue(encodedMessage) * QZSSOrbitalElements.QZSS_PI);
-            qzssNavMessage.setIDot(RtcmDataField.DF450.doubleValue(encodedMessage) * QZSSOrbitalElements.QZSS_PI);
+            qzssNavMessage.setPa(RtcmDataField.DF448.doubleValue(encodedMessage));
+            qzssNavMessage.setOmegaDot(RtcmDataField.DF449.doubleValue(encodedMessage));
+            qzssNavMessage.setIDot(RtcmDataField.DF450.doubleValue(encodedMessage));
 
             // QZSS Code on L2
             rtcm1044Data.setQzssCodeOnL2(RtcmDataField.DF451.intValue(encodedMessage));
@@ -359,26 +355,26 @@ public enum RtcmMessageType implements MessageType {
 
             // Fill navigation message
             galileoNavMessage.setPRN(galileoId);
-            galileoNavMessage.setIDot(RtcmDataField.DF292.doubleValue(encodedMessage) * GalileoOrbitalElements.GALILEO_PI);
+            galileoNavMessage.setIDot(RtcmDataField.DF292.doubleValue(encodedMessage));
             rtcm1045Data.setGalileoToc(RtcmDataField.DF293.doubleValue(encodedMessage));
             galileoNavMessage.setAf2(RtcmDataField.DF294.doubleValue(encodedMessage));
             galileoNavMessage.setAf1(RtcmDataField.DF295.doubleValue(encodedMessage));
             galileoNavMessage.setAf0(RtcmDataField.DF296.doubleValue(encodedMessage));
             galileoNavMessage.setCrs(RtcmDataField.DF297.doubleValue(encodedMessage));
-            galileoNavMessage.setDeltaN(RtcmDataField.DF298.doubleValue(encodedMessage) * GalileoOrbitalElements.GALILEO_PI);
-            galileoNavMessage.setM0(RtcmDataField.DF299.doubleValue(encodedMessage) * GalileoOrbitalElements.GALILEO_PI);
+            galileoNavMessage.setDeltaN(RtcmDataField.DF298.doubleValue(encodedMessage));
+            galileoNavMessage.setM0(RtcmDataField.DF299.doubleValue(encodedMessage));
             galileoNavMessage.setCuc(RtcmDataField.DF300.doubleValue(encodedMessage));
             galileoNavMessage.setE(RtcmDataField.DF301.doubleValue(encodedMessage));
             galileoNavMessage.setCus(RtcmDataField.DF302.doubleValue(encodedMessage));
             galileoNavMessage.setSqrtA(RtcmDataField.DF303.doubleValue(encodedMessage));
             galileoNavMessage.setToe(RtcmDataField.DF304.doubleValue(encodedMessage));
             galileoNavMessage.setCic(RtcmDataField.DF305.doubleValue(encodedMessage));
-            galileoNavMessage.setOmega0(RtcmDataField.DF306.doubleValue(encodedMessage) * GalileoOrbitalElements.GALILEO_PI);
+            galileoNavMessage.setOmega0(RtcmDataField.DF306.doubleValue(encodedMessage));
             galileoNavMessage.setCis(RtcmDataField.DF307.doubleValue(encodedMessage));
-            galileoNavMessage.setI0(RtcmDataField.DF308.doubleValue(encodedMessage) * GalileoOrbitalElements.GALILEO_PI);
+            galileoNavMessage.setI0(RtcmDataField.DF308.doubleValue(encodedMessage));
             galileoNavMessage.setCrc(RtcmDataField.DF309.doubleValue(encodedMessage));
-            galileoNavMessage.setPa(RtcmDataField.DF310.doubleValue(encodedMessage) * GalileoOrbitalElements.GALILEO_PI);
-            galileoNavMessage.setOmegaDot(RtcmDataField.DF311.doubleValue(encodedMessage) * GalileoOrbitalElements.GALILEO_PI);
+            galileoNavMessage.setPa(RtcmDataField.DF310.doubleValue(encodedMessage));
+            galileoNavMessage.setOmegaDot(RtcmDataField.DF311.doubleValue(encodedMessage));
             galileoNavMessage.setBGDE1E5a(RtcmDataField.DF312.doubleValue(encodedMessage));
             galileoNavMessage.setSvHealth(RtcmDataField.DF314.intValue(encodedMessage));
 
