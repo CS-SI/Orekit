@@ -16,6 +16,8 @@
  */
 package org.orekit.utils.units;
 
+import java.io.Serializable;
+
 import org.hipparchus.fraction.Fraction;
 import org.hipparchus.util.FastMath;
 
@@ -33,7 +35,7 @@ import org.hipparchus.util.FastMath;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class Unit {
+public class Unit implements Serializable {
 
     /** No unit. */
     public static final Unit NONE = new Unit("n/a", 1.0, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO);
@@ -126,6 +128,9 @@ public class Unit {
 
     /** Total Electron Content Unit. */
     public static final Unit TOTAL_ELECTRON_CONTENT_UNIT = METRE.power(null, new Fraction(-2)).scale("TECU", 1.0e+16);
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = 20210402L;
 
     /** Name name of the unit. */
     private final String name;
