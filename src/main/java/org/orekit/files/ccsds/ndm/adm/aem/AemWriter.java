@@ -210,7 +210,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class AemWriter extends AbstractMessageWriter<Header, AemSegment> {
+public class AemWriter extends AbstractMessageWriter<Header, AemSegment, AemFile> {
 
     /** Version number implemented. **/
     public static final double CCSDS_AEM_VERS = 1.0;

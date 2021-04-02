@@ -37,7 +37,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata, OcmData>> {
+public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata, OcmData>, OcmFile> {
 
     /** Version number implemented. **/
     public static final double CCSDS_OCM_VERS = 3.0;

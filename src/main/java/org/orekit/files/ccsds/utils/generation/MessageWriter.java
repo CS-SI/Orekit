@@ -29,14 +29,14 @@ import org.orekit.files.ccsds.section.Segment;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public interface MessageWriter<H extends Header, S extends Segment<?, ?>> {
+public interface MessageWriter<H extends Header, S extends Segment<?, ?>, F extends NdmFile<H, S>> {
 
     /** Write one complete message.
      * @param generator generator to use for producing output
      * @param message message to write
      * @throws IOException if the stream cannot write to stream
      */
-    default void writeMessage(final Generator generator, final NdmFile<H, S> message)
+    default void writeMessage(final Generator generator, final F message)
         throws IOException {
         writeHeader(generator, message.getHeader());
         for (final S segment : message.getSegments()) {

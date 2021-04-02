@@ -33,7 +33,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class TdmWriter extends AbstractMessageWriter<Header, Segment<TdmMetadata, ObservationsBlock>> {
+public class TdmWriter extends AbstractMessageWriter<Header, Segment<TdmMetadata, ObservationsBlock>, TdmFile> {
 
     /** Version number implemented. **/
     public static final double CCSDS_TDM_VERS = 1.0;

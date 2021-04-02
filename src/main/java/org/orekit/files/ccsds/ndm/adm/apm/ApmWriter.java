@@ -39,7 +39,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class ApmWriter extends AbstractMessageWriter<Header, Segment<AdmMetadata, ApmData>> {
+public class ApmWriter extends AbstractMessageWriter<Header, Segment<AdmMetadata, ApmData>, ApmFile> {
 
     /** Version number implemented. **/
     public static final double CCSDS_APM_VERS = 1.0;

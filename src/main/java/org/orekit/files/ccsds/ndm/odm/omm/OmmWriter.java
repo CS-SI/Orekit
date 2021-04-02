@@ -40,7 +40,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OmmWriter extends AbstractMessageWriter<Header, Segment<OmmMetadata, OmmData>> {
+public class OmmWriter extends AbstractMessageWriter<Header, Segment<OmmMetadata, OmmData>, OmmFile> {
 
     /** Version number implemented. **/
     public static final double CCSDS_OMM_VERS = 3.0;

@@ -197,7 +197,7 @@ import org.orekit.utils.units.Unit;
  *      Data Definitions and Conventions</a>
  * @see StreamingOemWriter
  */
-public class OemWriter extends AbstractMessageWriter<Header, OemSegment> {
+public class OemWriter extends AbstractMessageWriter<Header, OemSegment, OemFile> {
 
     /** Version number implemented. **/
     public static final double CCSDS_OEM_VERS = 3.0;
