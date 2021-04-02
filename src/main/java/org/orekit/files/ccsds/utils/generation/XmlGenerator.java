@@ -134,6 +134,7 @@ public class XmlGenerator extends AbstractGenerator {
     }
 
     /** Indent line.
+     * @throws IOException if an I/O error occurs.
      */
     private void indent() throws IOException {
         for (int i = 0; i < level * indentation; ++i) {
