@@ -19,11 +19,13 @@ package org.orekit.files.ccsds.ndm.tdm;
 import java.io.IOException;
 
 import org.orekit.files.ccsds.definitions.TimeConverter;
+import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.section.AbstractWriter;
 import org.orekit.files.ccsds.section.KvnStructureKey;
 import org.orekit.files.ccsds.section.MetadataKey;
 import org.orekit.files.ccsds.section.XmlStructureKey;
 import org.orekit.files.ccsds.utils.generation.Generator;
+import org.orekit.utils.units.Unit;
 
 
 /**
@@ -92,24 +94,24 @@ class TdmMetadataWriter extends AbstractWriter {
         if (metadata.getReferenceFrame() != null) {
             generator.writeEntry(TdmMetadataKey.REFERENCE_FRAME.name(),    metadata.getReferenceFrame().getName(), false);
         }
-        generator.writeEntry(TdmMetadataKey.TRANSMIT_DELAY_1.name(),       metadata.getTransmitDelays().get(1), false);
-        generator.writeEntry(TdmMetadataKey.TRANSMIT_DELAY_2.name(),       metadata.getTransmitDelays().get(2), false);
-        generator.writeEntry(TdmMetadataKey.TRANSMIT_DELAY_3.name(),       metadata.getTransmitDelays().get(3), false);
-        generator.writeEntry(TdmMetadataKey.TRANSMIT_DELAY_4.name(),       metadata.getTransmitDelays().get(4), false);
-        generator.writeEntry(TdmMetadataKey.TRANSMIT_DELAY_5.name(),       metadata.getTransmitDelays().get(5), false);
-        generator.writeEntry(TdmMetadataKey.RECEIVE_DELAY_1.name(),        metadata.getReceiveDelays().get(1),  false);
-        generator.writeEntry(TdmMetadataKey.RECEIVE_DELAY_2.name(),        metadata.getReceiveDelays().get(2),  false);
-        generator.writeEntry(TdmMetadataKey.RECEIVE_DELAY_3.name(),        metadata.getReceiveDelays().get(3),  false);
-        generator.writeEntry(TdmMetadataKey.RECEIVE_DELAY_4.name(),        metadata.getReceiveDelays().get(4),  false);
-        generator.writeEntry(TdmMetadataKey.RECEIVE_DELAY_5.name(),        metadata.getReceiveDelays().get(5),  false);
-        generator.writeEntry(TdmMetadataKey.DATA_QUALITY.name(),           metadata.getDataQuality(),           false);
-        generator.writeEntry(TdmMetadataKey.CORRECTION_ANGLE_1.name(),     metadata.getCorrectionAngle1(),      false);
-        generator.writeEntry(TdmMetadataKey.CORRECTION_ANGLE_2.name(),     metadata.getCorrectionAngle2(),      false);
-        generator.writeEntry(TdmMetadataKey.CORRECTION_DOPPLER.name(),     metadata.getCorrectionDoppler(),     false);
-        generator.writeEntry(TdmMetadataKey.CORRECTION_RANGE.name(),       metadata.getRawCorrectionRange(),    false);
-        generator.writeEntry(TdmMetadataKey.CORRECTION_RECEIVE.name(),     metadata.getCorrectionReceive(),     false);
-        generator.writeEntry(TdmMetadataKey.CORRECTION_TRANSMIT.name(),    metadata.getCorrectionTransmit(),    false);
-        generator.writeEntry(TdmMetadataKey.CORRECTIONS_APPLIED.name(),    metadata.getCorrectionsApplied(),    false);
+        generator.writeEntry(TdmMetadataKey.TRANSMIT_DELAY_1.name(),       Unit.SECOND.fromSI(metadata.getTransmitDelays().get(1)), false);
+        generator.writeEntry(TdmMetadataKey.TRANSMIT_DELAY_2.name(),       Unit.SECOND.fromSI(metadata.getTransmitDelays().get(2)), false);
+        generator.writeEntry(TdmMetadataKey.TRANSMIT_DELAY_3.name(),       Unit.SECOND.fromSI(metadata.getTransmitDelays().get(3)), false);
+        generator.writeEntry(TdmMetadataKey.TRANSMIT_DELAY_4.name(),       Unit.SECOND.fromSI(metadata.getTransmitDelays().get(4)), false);
+        generator.writeEntry(TdmMetadataKey.TRANSMIT_DELAY_5.name(),       Unit.SECOND.fromSI(metadata.getTransmitDelays().get(5)), false);
+        generator.writeEntry(TdmMetadataKey.RECEIVE_DELAY_1.name(),        Unit.SECOND.fromSI(metadata.getReceiveDelays().get(1)),  false);
+        generator.writeEntry(TdmMetadataKey.RECEIVE_DELAY_2.name(),        Unit.SECOND.fromSI(metadata.getReceiveDelays().get(2)),  false);
+        generator.writeEntry(TdmMetadataKey.RECEIVE_DELAY_3.name(),        Unit.SECOND.fromSI(metadata.getReceiveDelays().get(3)),  false);
+        generator.writeEntry(TdmMetadataKey.RECEIVE_DELAY_4.name(),        Unit.SECOND.fromSI(metadata.getReceiveDelays().get(4)),  false);
+        generator.writeEntry(TdmMetadataKey.RECEIVE_DELAY_5.name(),        Unit.SECOND.fromSI(metadata.getReceiveDelays().get(5)),  false);
+        generator.writeEntry(TdmMetadataKey.DATA_QUALITY.name(),           metadata.getDataQuality(),                               false);
+        generator.writeEntry(TdmMetadataKey.CORRECTION_ANGLE_1.name(),     Unit.DEGREE.fromSI(metadata.getCorrectionAngle1()),      false);
+        generator.writeEntry(TdmMetadataKey.CORRECTION_ANGLE_2.name(),     Unit.DEGREE.fromSI(metadata.getCorrectionAngle2()),      false);
+        generator.writeEntry(TdmMetadataKey.CORRECTION_DOPPLER.name(),     Units.KM_PER_S.fromSI(metadata.getCorrectionDoppler()),  false);
+        generator.writeEntry(TdmMetadataKey.CORRECTION_RANGE.name(),       Unit.ONE.fromSI(metadata.getRawCorrectionRange()),       false);
+        generator.writeEntry(TdmMetadataKey.CORRECTION_RECEIVE.name(),     Unit.HERTZ.fromSI(metadata.getCorrectionReceive()),      false);
+        generator.writeEntry(TdmMetadataKey.CORRECTION_TRANSMIT.name(),    Unit.HERTZ.fromSI(metadata.getCorrectionTransmit()),     false);
+        generator.writeEntry(TdmMetadataKey.CORRECTIONS_APPLIED.name(),    metadata.getCorrectionsApplied(),                        false);
 
     }
 

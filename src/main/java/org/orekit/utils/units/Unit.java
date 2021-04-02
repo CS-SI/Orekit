@@ -368,12 +368,28 @@ public class Unit {
         return value * scale;
     }
 
+    /** Convert a value to SI units.
+     * @param value value instance unit
+     * @return value in SI units
+     */
+    public double toSI(final Double value) {
+        return value == null ? Double.NaN : value.doubleValue() * scale;
+    }
+
     /** Convert a value from SI units.
      * @param value value SI unit
      * @return value in instance units
      */
     public double fromSI(final double value) {
         return value / scale;
+    }
+
+    /** Convert a value from SI units.
+     * @param value value SI unit
+     * @return value in instance units
+     */
+    public double fromSI(final Double value) {
+        return value == null ? Double.NaN : value.doubleValue() / scale;
     }
 
     /** Parse a unit.
