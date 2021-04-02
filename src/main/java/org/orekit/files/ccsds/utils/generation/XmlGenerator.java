@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.utils.generation;
 import java.io.IOException;
 import java.util.List;
 
+import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.utils.AccurateFormatter;
 
@@ -32,19 +33,22 @@ public class XmlGenerator extends AbstractGenerator {
     public static final int DEFAULT_INDENT = 2;
 
     /** XML prolog. */
-    private static final String PROLOG = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+    private static final String PROLOG = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>%n";
 
     /** Root element start tag. */
-    private static final String ROOT_START = "<%s id=\"%s\" version=\"%.1f\">";
+    private static final String ROOT_START = "<%s id=\"%s\" version=\"%.1f\">%n";
 
     /** Element end tag. */
-    private static final String START_TAG = "<%s>";
+    private static final String START_TAG = "<%s>%n";
 
     /** Element end tag. */
-    private static final String END_TAG = "</%s>";
+    private static final String END_TAG = "</%s>%n";
 
     /** Leaf element format. */
-    private static final String LEAF = "<%s>%s</%s>";
+    private static final String LEAF = "<%s>%s</%s>%n";
+
+    /** User defined parameter element format. */
+    private static final String USER_DEFINED = "<%s %s=\"%s\">%s</%s>%n";
 
     /** Comment key. */
     private static final String COMMENT = "COMMENT";
@@ -75,24 +79,21 @@ public class XmlGenerator extends AbstractGenerator {
 
     /** {@inheritDoc} */
     @Override
-    public void startMessage(final String messageTypeKey, final double version) throws IOException {
-        writeRawData(PROLOG);
-        newLine();
+    public void startMessage(final String root, final String messageTypeKey, final double version) throws IOException {
+        writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, PROLOG));
         indent();
         writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, ROOT_START,
-                                   messageTypeKey, messageTypeKey, version));
-        newLine();
+                                   root, messageTypeKey, version));
         ++level;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void endMessage(final String messageTypeKey) throws IOException {
+    public void endMessage(final String root) throws IOException {
         --level;
         indent();
         writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, END_TAG,
-                                   messageTypeKey));
-        newLine();
+                                   root));
     }
 
     /** {@inheritDoc} */
@@ -101,6 +102,18 @@ public class XmlGenerator extends AbstractGenerator {
         for (final String comment : comments) {
             writeEntry(COMMENT, comment, false);
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void writeUserDefined(final String parameter, final String value) throws IOException {
+        indent();
+        append(String.format(AccurateFormatter.STANDARDIZED_LOCALE, USER_DEFINED,
+                             UserDefined.USER_DEFINED_XML_TAG,
+                             UserDefined.USER_DEFINED_XML_ATTRIBUTE,
+                             parameter,
+                             value,
+                             UserDefined.USER_DEFINED_XML_TAG));
     }
 
     /** {@inheritDoc} */
@@ -134,6 +147,7 @@ public class XmlGenerator extends AbstractGenerator {
     }
 
     /** Indent line.
+     * @throws IOException if an I/O error occurs.
      */
     private void indent() throws IOException {
         for (int i = 0; i < level * indentation; ++i) {

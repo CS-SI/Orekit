@@ -41,22 +41,30 @@ public interface Generator extends AutoCloseable {
 
     /** Start CCSDS message.
      * @param messageTypeKey key for message type
+     * @param root root element for XML files
      * @param version format version
      * @throws IOException if an I/O error occurs.
      */
-    void startMessage(String messageTypeKey, double version) throws IOException;
+    void startMessage(String root, String messageTypeKey, double version) throws IOException;
 
     /** End CCSDS message.
-     * @param messageTypeKey key for message type
+     * @param root root element for XML files
      * @throws IOException if an I/O error occurs.
      */
-    void endMessage(String messageTypeKey) throws IOException;
+    void endMessage(String root) throws IOException;
 
     /** Write comment lines.
      * @param comments comments to write
      * @throws IOException if an I/O error occurs.
      */
     void writeComments(List<String> comments) throws IOException;
+
+    /** Write a user defined entry.
+     * @param parameter name of the user defined parameter
+     * @param value the value to write
+     * @throws IOException if an I/O error occurs.
+     */
+    void writeUserDefined(String parameter, String value) throws IOException;
 
     /** Write a single key/value entry.
      * @param key   the keyword to write

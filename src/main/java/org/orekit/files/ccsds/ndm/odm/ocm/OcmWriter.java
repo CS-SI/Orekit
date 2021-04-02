@@ -55,7 +55,7 @@ public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata
      * @param dataContext used to retrieve frames, time scales, etc.
      */
     public OcmWriter(final IERSConventions conventions, final DataContext dataContext) {
-        super(OcmFile.FORMAT_VERSION_KEY, CCSDS_OCM_VERS,
+        super(OcmFile.ROOT, OcmFile.FORMAT_VERSION_KEY, CCSDS_OCM_VERS,
               new ContextBinding(
                   () -> conventions, () -> false, () -> dataContext,
                   () -> null, () -> TimeSystem.UTC,
@@ -67,7 +67,7 @@ public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata
      * @param segment segment to write
      * @throws IOException if any buffer writing operations fails
      */
-    public void writeSegment(final Generator generator, final Segment<OcmMetadata, OcmData> segment)
+    public void writeSegmentContent(final Generator generator, final Segment<OcmMetadata, OcmData> segment)
         throws IOException {
 
         // write the metadata

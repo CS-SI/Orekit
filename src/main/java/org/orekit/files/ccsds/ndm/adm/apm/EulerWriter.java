@@ -73,9 +73,13 @@ class EulerWriter extends AbstractWriter {
         generator.writeEntry(EulerKey.RATE_FRAME.name(),
                              euler.rateFrameIsA() ? EulerKey.EULER_FRAME_A.name() : EulerKey.EULER_FRAME_B.name(),
                              true);
-        generator.writeEntry(seq.charAt(0) + ANGLE, Unit.DEGREE.fromSI(angles[0]), true);
-        generator.writeEntry(seq.charAt(1) + ANGLE, Unit.DEGREE.fromSI(angles[1]), true);
-        generator.writeEntry(seq.charAt(2) + ANGLE, Unit.DEGREE.fromSI(angles[2]), true);
+
+        // if we don't have rates, at least we need angles
+        // (we may have only rates, as orientation is already given by mandatory quaternion)
+        final boolean needsAngles = !euler.hasRates();
+        generator.writeEntry(seq.charAt(0) + ANGLE, Unit.DEGREE.fromSI(angles[0]), needsAngles);
+        generator.writeEntry(seq.charAt(1) + ANGLE, Unit.DEGREE.fromSI(angles[1]), needsAngles);
+        generator.writeEntry(seq.charAt(2) + ANGLE, Unit.DEGREE.fromSI(angles[2]), needsAngles);
 
         // rates
         if (euler.hasRates()) {

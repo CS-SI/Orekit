@@ -235,7 +235,7 @@ public class OemWriter extends AbstractMessageWriter<Header, OemSegment, OemFile
      */
     public OemWriter(final IERSConventions conventions, final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate) {
-        super(OemFile.FORMAT_VERSION_KEY, CCSDS_OEM_VERS,
+        super(OemFile.ROOT, OemFile.FORMAT_VERSION_KEY, CCSDS_OEM_VERS,
               new ContextBinding(
                   () -> conventions, () -> true, () -> dataContext,
                   () -> missionReferenceDate, () -> TimeSystem.UTC, () -> 0.0, () -> 1.0));
@@ -243,7 +243,7 @@ public class OemWriter extends AbstractMessageWriter<Header, OemSegment, OemFile
 
     /** {@inheritDoc} */
     @Override
-    public void writeSegment(final Generator generator, final OemSegment segment) throws IOException {
+    public void writeSegmentContent(final Generator generator, final OemSegment segment) throws IOException {
 
         final OemMetadata metadata = segment.getMetadata();
         writeMetadata(generator, metadata);

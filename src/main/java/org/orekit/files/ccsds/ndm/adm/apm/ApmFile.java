@@ -41,6 +41,9 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  */
 public class ApmFile extends NdmFile<Header, Segment<AdmMetadata, ApmData>> {
 
+    /** Root element for XML files. */
+    public static final String ROOT = "apm";
+
     /** Key for format version. */
     public static final String FORMAT_VERSION_KEY = "CCSDS_APM_VERS";
 

@@ -41,6 +41,9 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
 public class AemFile extends NdmFile<Header, AemSegment>
     implements AttitudeEphemerisFile<TimeStampedAngularCoordinates, AemSegment> {
 
+    /** Root element for XML files. */
+    public static final String ROOT = "aem";
+
     /** Key for format version. */
     public static final String FORMAT_VERSION_KEY = "CCSDS_AEM_VERS";
 

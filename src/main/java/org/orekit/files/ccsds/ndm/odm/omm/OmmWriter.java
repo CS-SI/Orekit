@@ -60,7 +60,7 @@ public class OmmWriter extends AbstractMessageWriter<Header, Segment<OmmMetadata
      */
     public OmmWriter(final IERSConventions conventions, final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate) {
-        super(OmmFile.FORMAT_VERSION_KEY, CCSDS_OMM_VERS,
+        super(OmmFile.ROOT, OmmFile.FORMAT_VERSION_KEY, CCSDS_OMM_VERS,
               new ContextBinding(
                   () -> conventions, () -> false, () -> dataContext,
                   () -> missionReferenceDate, () -> TimeSystem.UTC,
@@ -72,7 +72,7 @@ public class OmmWriter extends AbstractMessageWriter<Header, Segment<OmmMetadata
      * @param segment segment to write
      * @throws IOException if any buffer writing operations fails
      */
-    public void writeSegment(final Generator generator, final Segment<OmmMetadata, OmmData> segment)
+    public void writeSegmentContent(final Generator generator, final Segment<OmmMetadata, OmmData> segment)
         throws IOException {
 
         // write the metadata

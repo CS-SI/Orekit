@@ -39,6 +39,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class OpmFile extends NdmFile<Header, Segment<CommonMetadata, OpmData>> implements TimeStamped {
 
+    /** Root element for XML files. */
+    public static final String ROOT = "opm";
+
     /** Key for format version. */
     public static final String FORMAT_VERSION_KEY = "CCSDS_OPM_VERS";
 

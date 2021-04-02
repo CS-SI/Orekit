@@ -26,7 +26,6 @@ import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -108,10 +107,10 @@ public class AttitudeWriterTest {
                            buildAemWriter();
         final CharArrayWriter caw = new CharArrayWriter();
         writer.writeMessage(new KvnGenerator(caw, 0, ""), aemFile);
-        final ByteBuffer buffer  = StandardCharsets.UTF_8.encode(caw.toString());
+        final byte[] bytes = caw.toString().getBytes(StandardCharsets.UTF_8);
 
         final AemFile generatedOemFile = new ParserBuilder().buildAemParser().
-                        parseMessage(new DataSource("", () -> new ByteArrayInputStream(buffer.array())));
+                        parseMessage(new DataSource("", () -> new ByteArrayInputStream(bytes)));
         compareAemFiles(aemFile, generatedOemFile);
     }
 
@@ -178,10 +177,10 @@ public class AttitudeWriterTest {
         AemWriter writer = new WriterBuilder().buildAemWriter();
         final CharArrayWriter caw = new CharArrayWriter();
         writer.writeMessage(new KvnGenerator(caw, 0, ""), aemFile);
-        final ByteBuffer buffer  = StandardCharsets.UTF_8.encode(caw.toString());
+        final byte[] bytes = caw.toString().getBytes(StandardCharsets.UTF_8);
 
         final AemFile generatedAemFile = new ParserBuilder().buildAemParser().
-                        parseMessage(new DataSource("", () -> new ByteArrayInputStream(buffer.array())));
+                        parseMessage(new DataSource("", () -> new ByteArrayInputStream(bytes)));
         assertEquals(aemFile.getSegments().get(0).getMetadata().getObjectID(),
                      generatedAemFile.getSegments().get(0).getMetadata().getObjectID());
     }
@@ -214,17 +213,17 @@ public class AttitudeWriterTest {
                                                    null, metadata, FileFormat.KVN, "");
         final CharArrayWriter caw = new CharArrayWriter();
         writer.write(caw, file);
-        final ByteBuffer buffer  = StandardCharsets.UTF_8.encode(caw.toString());
+        final byte[] bytes = caw.toString().getBytes(StandardCharsets.UTF_8);
 
         int count = 0;
-        try (ByteArrayInputStream bais = new ByteArrayInputStream(buffer.array());
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
              InputStreamReader    isr  = new InputStreamReader(bais, StandardCharsets.UTF_8);
              BufferedReader       br   = new BufferedReader(isr)) {
             for (String line = br.readLine(); line != null; line = br.readLine()) {
                 ++count;
             }
         }
-        assertEquals(83, count);
+        assertEquals(82, count);
 
     }
 
@@ -239,10 +238,10 @@ public class AttitudeWriterTest {
                                                    FileFormat.KVN, "TestAEMIssue723.aem");
         final CharArrayWriter caw = new CharArrayWriter();
         writer.write(caw, aemFile);
-        final ByteBuffer buffer  = StandardCharsets.UTF_8.encode(caw.toString());
+        final byte[] bytes = caw.toString().getBytes(StandardCharsets.UTF_8);
 
         final AemFile generatedAemFile = new ParserBuilder().buildAemParser().
-                        parseMessage(new DataSource("", () -> new ByteArrayInputStream(buffer.array())));
+                        parseMessage(new DataSource("", () -> new ByteArrayInputStream(bytes)));
         assertEquals(aemFile.getHeader().getComments().get(0), generatedAemFile.getHeader().getComments().get(0));
     }
 

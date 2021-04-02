@@ -38,6 +38,9 @@ import org.orekit.utils.IERSConventions;
  */
 public class TdmFile extends NdmFile<Header, Segment<TdmMetadata, ObservationsBlock>> {
 
+    /** Root element for XML files. */
+    public static final String ROOT = "tdm";
+
     /** Key for format version. */
     public static final String FORMAT_VERSION_KEY = "CCSDS_TDM_VERS";
 

@@ -20,12 +20,12 @@ import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import org.hipparchus.complex.Quaternion;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.Precision;
@@ -35,6 +35,8 @@ import org.orekit.Utils;
 import org.orekit.data.DataSource;
 import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.ndm.adm.AttitudeEndoints;
+import org.orekit.files.ccsds.ndm.adm.apm.ApmQuaternion;
 import org.orekit.files.ccsds.ndm.tdm.Observation;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Header;
@@ -60,7 +62,7 @@ public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<
 
     protected  void doTest(final String name) {
         doTest(name, FileFormat.KVN);
-        // doTest(name, FileFormat.XML);
+        doTest(name, FileFormat.XML);
     }
 
     protected  void doTest(final String name, final FileFormat format) {
@@ -76,8 +78,8 @@ public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<
             getWriter().writeMessage(generator, original);
 
             // reparse the written file
-            final ByteBuffer buffer  = StandardCharsets.UTF_8.encode(caw.toString());
-            final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(buffer.array()));
+            final byte[]      bytes  = caw.toString().getBytes(StandardCharsets.UTF_8);
+            final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(bytes));
             final F          rebuilt = getParser().parseMessage(source2);
 
             checkEquals(original, rebuilt);
@@ -124,6 +126,12 @@ public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<
         } else if (original instanceof CommentsContainer) {
             checkContainer(original, rebuilt);
             return true;
+        } else if (original instanceof ApmQuaternion) {
+            checkContainer(original, rebuilt);
+            return true;
+        } else if (original instanceof AttitudeEndoints) {
+            checkContainer(original, rebuilt);
+            return true;
         } else if (original instanceof FrameFacade) {
             checkFrameFacade((FrameFacade) original, (FrameFacade) rebuilt);
             return true;
@@ -141,6 +149,9 @@ public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<
             return true;
         } else if (original instanceof Vector3D) {
             checkVector3D((Vector3D) original, (Vector3D) rebuilt);
+            return true;
+        } else if (original instanceof Quaternion) {
+            checkQuaternion((Quaternion) original, (Quaternion) rebuilt);
             return true;
         } else if (original instanceof RealMatrix) {
             checkRealMatrix((RealMatrix) original, (RealMatrix) rebuilt);
@@ -181,7 +192,7 @@ public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<
     private void checkDoubleArray(final double[] original, final double[] rebuilt) {
         Assert.assertEquals(original.length, rebuilt.length);
         for (int i = 0; i < original.length; ++i) {
-            Assert.assertTrue(Precision.equals(original[i], rebuilt[i], 1));
+            Assert.assertTrue(Precision.equalsIncludingNaN(original[i], rebuilt[i], 1));
         }
     }
 
@@ -248,6 +259,13 @@ public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<
         Assert.assertTrue(Precision.equalsIncludingNaN(original.getX(), rebuilt.getX(), 1));
         Assert.assertTrue(Precision.equalsIncludingNaN(original.getY(), rebuilt.getY(), 1));
         Assert.assertTrue(Precision.equalsIncludingNaN(original.getZ(), rebuilt.getZ(), 1));
+    }
+
+    private void checkQuaternion(final Quaternion original, final Quaternion rebuilt) {
+        Assert.assertTrue(Precision.equalsIncludingNaN(original.getQ0(), rebuilt.getQ0(), 1));
+        Assert.assertTrue(Precision.equalsIncludingNaN(original.getQ1(), rebuilt.getQ1(), 1));
+        Assert.assertTrue(Precision.equalsIncludingNaN(original.getQ2(), rebuilt.getQ2(), 1));
+        Assert.assertTrue(Precision.equalsIncludingNaN(original.getQ3(), rebuilt.getQ3(), 1));
     }
 
     private void checkRealMatrix(final RealMatrix original, final RealMatrix rebuilt) {

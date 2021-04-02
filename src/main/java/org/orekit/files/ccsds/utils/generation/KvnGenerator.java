@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.utils.AccurateFormatter;
 
@@ -76,13 +77,13 @@ public class KvnGenerator extends AbstractGenerator {
 
     /** {@inheritDoc} */
     @Override
-    public void startMessage(final String messageTypeKey, final double version) throws IOException {
+    public void startMessage(final String root, final String messageTypeKey, final double version) throws IOException {
         writeEntry(messageTypeKey, String.format(AccurateFormatter.STANDARDIZED_LOCALE, "%.1f", version), true);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void endMessage(final String messageTypeKey) throws IOException {
+    public void endMessage(final String root) throws IOException {
         // nothing to do
     }
 
@@ -92,6 +93,12 @@ public class KvnGenerator extends AbstractGenerator {
         for (final String comment : comments) {
             append(String.format(AccurateFormatter.STANDARDIZED_LOCALE, commentFormat, comment));
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void writeUserDefined(final String parameter, final String value) throws IOException {
+        writeEntry(UserDefined.USER_DEFINED_PREFIX + parameter, value, false);
     }
 
     /** {@inheritDoc} */
