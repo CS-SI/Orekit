@@ -622,7 +622,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
                 absPvas.add(state.getAbsPVA());
             }
             attitudes.add(state.getAttitude());
-            final T[] mm = MathArrays.buildArray(orbit.getA().getField(), 1);
+            final T[] mm = MathArrays.buildArray(date.getField(), 1);
             mm[0] = state.getMass();
             massInterpolator.addSamplePoint(deltaT,
                                             mm);

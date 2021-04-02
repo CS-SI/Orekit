@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
@@ -45,16 +46,19 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.BodyCenterPointing;
 import org.orekit.attitudes.FieldAttitude;
+import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.analytical.Ephemeris;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.events.FieldDateDetector;
@@ -65,11 +69,13 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 public class FieldSpacecraftStateTest {
@@ -142,6 +148,11 @@ public class FieldSpacecraftStateTest {
     @Test
     public void testResetOnEventNumerical() {
         doTestAdditionalTestResetOnEventNumerical(Decimal64Field.getInstance());
+    }
+    
+    @Test
+    public void testIssue775() {
+        doTestIssue775(Decimal64Field.getInstance());
     }
 
     private <T extends RealFieldElement<T>> void doTestFieldVsReal(final Field<T> field) {
@@ -924,7 +935,70 @@ public class FieldSpacecraftStateTest {
         Assert.assertEquals(+1, finalState.getAdditionalState(name)[0].getReal(), 1.0e-15);
 
     }
+    
+    
+    
+    private <T extends RealFieldElement<T>> void doTestIssue775(final Field<T> field) {
+ 
+    	final List<FieldSpacecraftState<T>> states = new ArrayList<FieldSpacecraftState<T>>();
+    	
+    	states.add(new FieldSpacecraftState<>( new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(), 
+    			new FieldAbsoluteDate<>(field, new AbsoluteDate()),
+    			new FieldVector3D<>(field, new Vector3D(1, 0, 0)),
+    			new FieldVector3D<>(field, new Vector3D(1, 0, 0)))));
+    	
+    	states.add(new FieldSpacecraftState<>( new FieldAbsolutePVCoordinates<>(FramesFactory.getEME2000(),
+    			new FieldAbsoluteDate<>(field, new AbsoluteDate()),
+    			new FieldVector3D<>(field, new Vector3D(2, 0, 0)),
+    			new FieldVector3D<>(field, new Vector3D(2, 0, 0)))));
+    	
+    	states.get(0).interpolate(states.get(0).getDate(), Stream<FieldSpacecraftState<T>> states);
+    	
+    	Assert.assertNotNull(states);
+    	
+    	
+    	
+    	//
+    	// Initial PV coordinates
+        AbsolutePVCoordinates initPV = new AbsolutePVCoordinates(inertialFrame,
+                                                                 new TimeStampedPVCoordinates(initDate,
+                                                                                              new PVCoordinates(new Vector3D(-29536113.0, 30329259.0, -100125.0),
+                                                                                                                new Vector3D(-2194.0, -2141.0, -8.0))));
+        // Input parameters
+        int numberOfInterals = 1440;
+        double deltaT = finalDate.durationFrom(initDate)/((double)numberOfInterals);
 
+        // Build the list of spacecraft states
+        List<SpacecraftState> states = new ArrayList<SpacecraftState>(numberOfInterals + 1);
+        for (int j = 0; j<= numberOfInterals; j++) {
+            states.add(new SpacecraftState(initPV).shiftedBy(j * deltaT));
+        }
+
+        // Build the epemeris propagator
+        Ephemeris ephemPropagator = new Ephemeris(states, 2);
+
+        // Get initial state without attitude provider
+        SpacecraftState withoutAttitudeProvider = ephemPropagator.getInitialState();
+        Assert.assertEquals(0.0, Vector3D.distance(withoutAttitudeProvider.getAbsPVA().getPosition(), initPV.getPosition()), 1.0e-10);
+        Assert.assertEquals(0.0, Vector3D.distance(withoutAttitudeProvider.getAbsPVA().getVelocity(), initPV.getVelocity()), 1.0e-10);
+
+        // Set an attitude provider
+        ephemPropagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.LVLH_CCSDS));
+
+        // Get initial state with attitude provider
+        SpacecraftState withAttitudeProvider = ephemPropagator.getInitialState();
+        Assert.assertEquals(0.0, Vector3D.distance(withAttitudeProvider.getAbsPVA().getPosition(), initPV.getPosition()), 1.0e-10);
+        Assert.assertEquals(0.0, Vector3D.distance(withAttitudeProvider.getAbsPVA().getVelocity(), initPV.getVelocity()), 1.0e-10);
+    
+    
+    }
+
+    
+    
+    
+    
+    
+    
     @Before
     public void setUp(){
         try {
