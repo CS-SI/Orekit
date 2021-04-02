@@ -138,12 +138,16 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
         try (Generator generator = fileFormat == FileFormat.KVN ?
                                    new KvnGenerator(appendable, AemWriter.KVN_PADDING_WIDTH, outputName) :
                                    new XmlGenerator(appendable, XmlGenerator.DEFAULT_INDENT, outputName)) {
+
             writer.writeHeader(generator, header);
 
             // Loop on segments
             for (final S segment : segments) {
                 writeSegment(generator, segment);
             }
+
+            writer.writeFooter(generator);
+
         }
 
     }

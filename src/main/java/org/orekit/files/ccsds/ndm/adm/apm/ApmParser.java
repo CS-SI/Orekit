@@ -54,9 +54,6 @@ import org.orekit.utils.IERSConventions;
  */
 public class ApmParser extends AdmParser<ApmFile, ApmParser> {
 
-    /** Root element for XML files. */
-    private static final String ROOT = "apm";
-
     /** File header. */
     private Header header;
 
@@ -108,7 +105,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
     public ApmParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate) {
-        super(ROOT, ApmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate);
+        super(ApmFile.ROOT, ApmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate);
     }
 
     /** {@inheritDoc} */
@@ -131,7 +128,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
         currentManeuver           = null;
         maneuvers                 = new ArrayList<>();
         if (fileFormat == FileFormat.XML) {
-            structureProcessor = new XmlStructureProcessingState(ROOT, this);
+            structureProcessor = new XmlStructureProcessingState(ApmFile.ROOT, this);
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new ErrorState(); // should never be called

@@ -60,7 +60,7 @@ public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<
 
     protected  void doTest(final String name) {
         doTest(name, FileFormat.KVN);
-        // doTest(name, FileFormat.XML);
+        doTest(name, FileFormat.XML);
     }
 
     protected  void doTest(final String name, final FileFormat format) {
@@ -74,6 +74,9 @@ public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<
                                               new KvnGenerator(caw, 25, "dummy.kvn") :
                                               new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml");
             getWriter().writeMessage(generator, original);
+            if (format == FileFormat.XML) {
+                System.out.println(caw);
+            }
 
             // reparse the written file
             final ByteBuffer buffer  = StandardCharsets.UTF_8.encode(caw.toString());

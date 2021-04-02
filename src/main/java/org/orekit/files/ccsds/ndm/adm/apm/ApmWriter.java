@@ -59,7 +59,7 @@ public class ApmWriter extends AbstractMessageWriter<Header, Segment<AdmMetadata
      */
     public ApmWriter(final IERSConventions conventions, final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate) {
-        super(ApmFile.FORMAT_VERSION_KEY, CCSDS_APM_VERS,
+        super(ApmFile.ROOT, ApmFile.FORMAT_VERSION_KEY, CCSDS_APM_VERS,
               new ContextBinding(
                   () -> conventions, () -> false, () -> dataContext,
                   () -> missionReferenceDate, () -> TimeSystem.UTC,
@@ -68,7 +68,7 @@ public class ApmWriter extends AbstractMessageWriter<Header, Segment<AdmMetadata
 
     /** {@inheritDoc} */
     @Override
-    public void writeSegment(final Generator generator, final Segment<AdmMetadata, ApmData> segment)
+    public void writeSegmentContent(final Generator generator, final Segment<AdmMetadata, ApmData> segment)
         throws IOException {
 
         // write the metadata

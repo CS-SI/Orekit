@@ -63,7 +63,7 @@ public class OpmWriter extends AbstractMessageWriter<Header, Segment<CommonMetad
      */
     public OpmWriter(final IERSConventions conventions, final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate) {
-        super(OpmFile.FORMAT_VERSION_KEY, CCSDS_OPM_VERS,
+        super(OpmFile.ROOT, OpmFile.FORMAT_VERSION_KEY, CCSDS_OPM_VERS,
               new ContextBinding(
                   () -> conventions, () -> false, () -> dataContext,
                   () -> missionReferenceDate, () -> TimeSystem.UTC,
@@ -75,7 +75,7 @@ public class OpmWriter extends AbstractMessageWriter<Header, Segment<CommonMetad
      * @param segment segment to write
      * @throws IOException if any buffer writing operations fails
      */
-    public void writeSegment(final Generator generator, final Segment<CommonMetadata, OpmData> segment)
+    public void writeSegmentContent(final Generator generator, final Segment<CommonMetadata, OpmData> segment)
         throws IOException {
 
         // write the metadata

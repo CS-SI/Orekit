@@ -56,9 +56,6 @@ import org.orekit.utils.IERSConventions;
  */
 public class AemParser extends AdmParser<AemFile, AemParser> implements AttitudeEphemerisFileParser<AemFile> {
 
-    /** Root element for XML files. */
-    private static final String ROOT = "aem";
-
     /** Pattern for splitting strings at blanks. */
     private static final Pattern SPLIT_AT_BLANKS = Pattern.compile("\\s+");
 
@@ -102,7 +99,7 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
     public AemParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate, final int defaultInterpolationDegree) {
-        super(ROOT, AemFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate);
+        super(AemFile.ROOT, AemFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate);
         this.defaultInterpolationDegree  = defaultInterpolationDegree;
     }
 
@@ -126,7 +123,7 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
         metadata = null;
         context  = null;
         if (fileFormat == FileFormat.XML) {
-            structureProcessor = new XmlStructureProcessingState(ROOT, this);
+            structureProcessor = new XmlStructureProcessingState(AemFile.ROOT, this);
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new KvnStructureProcessingState(this);

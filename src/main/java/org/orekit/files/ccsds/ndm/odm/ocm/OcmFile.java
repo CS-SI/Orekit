@@ -36,6 +36,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class OcmFile extends NdmFile<Header, Segment<OcmMetadata, OcmData>>
     implements EphemerisFile<TimeStampedPVCoordinates, OrbitStateHistory> {
 
+    /** Root element for XML messages. */
+    public static final String ROOT = "ocm";
+
     /** Key for format version. */
     public static final String FORMAT_VERSION_KEY = "CCSDS_OCM_VERS";
 

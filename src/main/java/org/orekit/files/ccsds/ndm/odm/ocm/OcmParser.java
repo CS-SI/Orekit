@@ -63,9 +63,6 @@ import org.orekit.utils.units.Unit;
  */
 public class OcmParser extends CommonParser<OcmFile, OcmParser> implements EphemerisFileParser<OcmFile> {
 
-    /** Root element for XML messages. */
-    private static final String ROOT = "ocm";
-
     /** Orbit line element for XML messages. */
     private static final String ORB_LINE = "orbLine";
 
@@ -140,7 +137,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
      */
     public OcmParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext, final double mu) {
-        super(ROOT, OcmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, null, mu);
+        super(OcmFile.ROOT, OcmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, null, mu);
     }
 
     /** {@inheritDoc} */
@@ -182,7 +179,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
         orbitDeterminationBlock = null;
         userDefinedBlock        = null;
         if (fileFormat == FileFormat.XML) {
-            structureProcessor = new XmlStructureProcessingState(ROOT, this);
+            structureProcessor = new XmlStructureProcessingState(OcmFile.ROOT, this);
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new KvnStructureProcessingState(this);

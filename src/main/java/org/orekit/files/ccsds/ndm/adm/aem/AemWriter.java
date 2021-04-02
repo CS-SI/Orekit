@@ -257,7 +257,7 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, AemFile
      */
     public AemWriter(final IERSConventions conventions, final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate) {
-        super(AemFile.FORMAT_VERSION_KEY, CCSDS_AEM_VERS,
+        super(AemFile.ROOT, AemFile.FORMAT_VERSION_KEY, CCSDS_AEM_VERS,
               new ContextBinding(
                   () -> conventions, () -> true, () -> dataContext,
                   () -> missionReferenceDate, () -> TimeSystem.UTC,
@@ -266,7 +266,7 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, AemFile
 
     /** {@inheritDoc} */
     @Override
-    public void writeSegment(final Generator generator, final AemSegment segment) throws IOException {
+    public void writeSegmentContent(final Generator generator, final AemSegment segment) throws IOException {
 
         final AemMetadata metadata = segment.getMetadata();
         writeMetadata(generator, metadata);

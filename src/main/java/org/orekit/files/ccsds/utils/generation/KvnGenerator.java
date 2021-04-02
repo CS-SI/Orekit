@@ -76,13 +76,13 @@ public class KvnGenerator extends AbstractGenerator {
 
     /** {@inheritDoc} */
     @Override
-    public void startMessage(final String messageTypeKey, final double version) throws IOException {
+    public void startMessage(final String root, final String messageTypeKey, final double version) throws IOException {
         writeEntry(messageTypeKey, String.format(AccurateFormatter.STANDARDIZED_LOCALE, "%.1f", version), true);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void endMessage(final String messageTypeKey) throws IOException {
+    public void endMessage(final String root) throws IOException {
         // nothing to do
     }
 

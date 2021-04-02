@@ -42,6 +42,7 @@ public interface MessageWriter<H extends Header, S extends Segment<?, ?>, F exte
         for (final S segment : message.getSegments()) {
             writeSegment(generator, segment);
         }
+        writeFooter(generator);
     }
 
     /** Write header for the file.
@@ -57,5 +58,11 @@ public interface MessageWriter<H extends Header, S extends Segment<?, ?>, F exte
      * @throws IOException if any buffer writing operations fails
      */
     void writeSegment(Generator generator, S segment) throws IOException;
+
+    /** Write footer for the file.
+     * @param generator generator to use for producing output
+     * @throws IOException if the stream cannot write to stream
+     */
+    void writeFooter(Generator generator) throws IOException;
 
 }

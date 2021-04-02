@@ -57,7 +57,7 @@ public class TdmWriter extends AbstractMessageWriter<Header, Segment<TdmMetadata
      */
     public TdmWriter(final IERSConventions conventions, final DataContext dataContext,
                      final RangeUnitsConverter converter) {
-        super(TdmFile.FORMAT_VERSION_KEY, CCSDS_TDM_VERS,
+        super(TdmFile.ROOT, TdmFile.FORMAT_VERSION_KEY, CCSDS_TDM_VERS,
               new ContextBinding(
                   () -> conventions, () -> false, () -> dataContext,
                   () -> null, () -> TimeSystem.UTC,
@@ -70,7 +70,7 @@ public class TdmWriter extends AbstractMessageWriter<Header, Segment<TdmMetadata
      * @param segment segment to write
      * @throws IOException if any buffer writing operations fails
      */
-    public void writeSegment(final Generator generator, final Segment<TdmMetadata, ObservationsBlock> segment)
+    public void writeSegmentContent(final Generator generator, final Segment<TdmMetadata, ObservationsBlock> segment)
         throws IOException {
 
         // write the metadata

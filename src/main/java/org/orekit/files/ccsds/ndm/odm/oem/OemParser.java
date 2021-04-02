@@ -63,9 +63,6 @@ import org.orekit.utils.units.Unit;
  */
 public class OemParser extends CommonParser<OemFile, OemParser> implements EphemerisFileParser<OemFile> {
 
-    /** Root element for XML files. */
-    private static final String ROOT = "oem";
-
     /** Comment marker. */
     private static final String COMMENT = "COMMENT";
 
@@ -124,7 +121,7 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
                      final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate, final double mu,
                      final int defaultInterpolationDegree) {
-        super(ROOT, OemFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
+        super(OemFile.ROOT, OemFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
               missionReferenceDate, mu);
         this.defaultInterpolationDegree  = defaultInterpolationDegree;
     }
@@ -153,7 +150,7 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
         currentCovariance = null;
         currentRow        = -1;
         if (fileFormat == FileFormat.XML) {
-            structureProcessor = new XmlStructureProcessingState(ROOT, this);
+            structureProcessor = new XmlStructureProcessingState(OemFile.ROOT, this);
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new KvnStructureProcessingState(this);

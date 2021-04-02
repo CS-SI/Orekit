@@ -67,9 +67,6 @@ import org.orekit.utils.IERSConventions;
  */
 public class OpmParser extends CommonParser<OpmFile, OpmParser> {
 
-    /** Root element for XML files. */
-    private static final String ROOT = "opm";
-
     /** User-defined element. */
     private static final String USER_DEFINED = "USER_DEFINED";
 
@@ -129,7 +126,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
                      final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate, final double mu,
                      final double defaultMass) {
-        super(ROOT, OpmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate, mu);
+        super(OpmFile.ROOT, OpmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate, mu);
         this.defaultMass = defaultMass;
     }
 
@@ -167,7 +164,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
         maneuverBlocks            = new ArrayList<>();
         userDefinedBlock          = null;
         if (fileFormat == FileFormat.XML) {
-            structureProcessor = new XmlStructureProcessingState(ROOT, this);
+            structureProcessor = new XmlStructureProcessingState(OpmFile.ROOT, this);
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new ErrorState(); // should never be called

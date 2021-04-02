@@ -18,7 +18,6 @@ package org.orekit.files.ccsds.ndm.tdm;
 
 import java.io.IOException;
 
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.section.AbstractWriter;
 import org.orekit.files.ccsds.section.KvnStructureKey;
@@ -74,17 +73,19 @@ class ObservationsBlockWriter extends AbstractWriter {
         for (final Observation observation : observationsBlock.getObservations()) {
             final Observationtype type     = observation.getType();
             final AbsoluteDate    date     = observation.getEpoch();
-            final double          rawValue = observation.getMeasurement();
-            final double          siValue  = type.siToRaw(converter, metadata, date, rawValue);
+            final double          siValue  = observation.getMeasurement();
+            final double          rawValue = type.siToRaw(converter, metadata, date, siValue);
             if (generator.getFormat() == FileFormat.KVN) {
                 final StringBuilder builder = new StringBuilder();
                 builder.append(generator.dateToString(timeConverter, date));
                 builder.append(' ');
-                builder.append(generator.doubleToString(siValue));
+                builder.append(generator.doubleToString(rawValue));
                 generator.writeEntry(observation.getType().name(), builder.toString(), false);
             } else {
-                // TODO
-                throw new OrekitInternalError(null);
+                generator.enterSection(TdmDataKey.observation.name());
+                generator.writeEntry(TdmDataKey.EPOCH.name(), timeConverter, date, true);
+                generator.writeEntry(type.name(), rawValue, true);
+                generator.exitSection();
             }
         }
 

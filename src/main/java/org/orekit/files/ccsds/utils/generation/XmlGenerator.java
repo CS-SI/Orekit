@@ -32,19 +32,19 @@ public class XmlGenerator extends AbstractGenerator {
     public static final int DEFAULT_INDENT = 2;
 
     /** XML prolog. */
-    private static final String PROLOG = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+    private static final String PROLOG = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>%n";
 
     /** Root element start tag. */
-    private static final String ROOT_START = "<%s id=\"%s\" version=\"%.1f\">";
+    private static final String ROOT_START = "<%s id=\"%s\" version=\"%.1f\">%n";
 
     /** Element end tag. */
-    private static final String START_TAG = "<%s>";
+    private static final String START_TAG = "<%s>%n";
 
     /** Element end tag. */
-    private static final String END_TAG = "</%s>";
+    private static final String END_TAG = "</%s>%n";
 
     /** Leaf element format. */
-    private static final String LEAF = "<%s>%s</%s>";
+    private static final String LEAF = "<%s>%s</%s>%n";
 
     /** Comment key. */
     private static final String COMMENT = "COMMENT";
@@ -75,24 +75,21 @@ public class XmlGenerator extends AbstractGenerator {
 
     /** {@inheritDoc} */
     @Override
-    public void startMessage(final String messageTypeKey, final double version) throws IOException {
-        writeRawData(PROLOG);
-        newLine();
+    public void startMessage(final String root, final String messageTypeKey, final double version) throws IOException {
+        writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, PROLOG));
         indent();
         writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, ROOT_START,
-                                   messageTypeKey, messageTypeKey, version));
-        newLine();
+                                   root, messageTypeKey, version));
         ++level;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void endMessage(final String messageTypeKey) throws IOException {
+    public void endMessage(final String root) throws IOException {
         --level;
         indent();
         writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, END_TAG,
-                                   messageTypeKey));
-        newLine();
+                                   root));
     }
 
     /** {@inheritDoc} */
