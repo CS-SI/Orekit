@@ -75,6 +75,12 @@ public class Units {
     /** Nano Tesla unit. */
     public static final Unit NANO_TESLA = Unit.parse("nT");
 
+    /** HectoPascal unit. */
+    public static final Unit HECTO_PASCAL = Unit.parse("hPa");
+
+    /** Hertz per second unit. */
+    public static final Unit HZ_PER_S = Unit.parse("Hz/s");
+
     /** Private constructor for a utility class.
      */
     private Units() {

@@ -25,6 +25,7 @@ import org.orekit.files.ccsds.section.KvnStructureKey;
 import org.orekit.files.ccsds.section.XmlStructureKey;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
+import org.orekit.time.AbsoluteDate;
 
 
 /**
@@ -71,17 +72,16 @@ class ObservationsBlockWriter extends AbstractWriter {
 
         // write the data
         for (final Observation observation : observationsBlock.getObservations()) {
+            final Observationtype type     = observation.getType();
+            final AbsoluteDate    date     = observation.getEpoch();
+            final double          rawValue = observation.getMeasurement();
+            final double          siValue  = type.siToRaw(converter, metadata, date, rawValue);
             if (generator.getFormat() == FileFormat.KVN) {
-                double value = observation.getMeasurement();
-                if (observation.getType() == Observationtype.RANGE) {
-                    // convert range values according to range units
-                    value = converter.metersToRu(metadata, observation.getEpoch(), value);
-                }
-                generator.writeEntry(observation.getType().name(),
-                                     generator.dateToString(timeConverter, observation.getEpoch()) +
-                                     " " +
-                                     generator.doubleToString(value),
-                                     false);
+                final StringBuilder builder = new StringBuilder();
+                builder.append(generator.dateToString(timeConverter, date));
+                builder.append(' ');
+                builder.append(generator.doubleToString(siValue));
+                generator.writeEntry(observation.getType().name(), builder.toString(), false);
             } else {
                 // TODO
                 throw new OrekitInternalError(null);

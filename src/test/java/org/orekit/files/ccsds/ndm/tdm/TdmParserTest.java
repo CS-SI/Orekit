@@ -141,13 +141,23 @@ public class TdmParserTest {
     }
 
     @Test
-    public void testParseTdmKeyValueExampleAllKeywords() {
+    public void testParseTdmKeyValueExampleAllKeywordsSequential() {
 
         // Testing all TDM keywords
-        final String name = "/ccsds/tdm/kvn/TDMExampleAllKeywords.txt";
+        final String name = "/ccsds/tdm/kvn/TDMExampleAllKeywordsSequential.txt";
         final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
         final TdmFile file = new ParserBuilder().buildTdmParser(new IdentityConverter()).parseMessage(source);
-        validateTDMExampleAllKeywords(file);
+        validateTDMExampleAllKeywordsSequential(file);
+    }
+
+    @Test
+    public void testParseTdmKeyValueExampleAllKeywordsSingleDiff() {
+
+        // Testing all TDM keywords
+        final String name = "/ccsds/tdm/kvn/TDMExampleAllKeywordsSingleDiff.txt";
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
+        final TdmFile file = new ParserBuilder().buildTdmParser(new IdentityConverter()).parseMessage(source);
+        validateTDMExampleAllKeywordsSingleDiff(file);
     }
 
     @Test
@@ -233,13 +243,23 @@ public class TdmParserTest {
     }
 
     @Test
-    public void testParseTdmXmlExampleAllKeywords() {
+    public void testParseTdmXmlExampleAllKeywordsSequential() {
 
         // Testing all TDM keywords
-        final String name = "/ccsds/tdm/xml/TDMExampleAllKeywords.xml";
+        final String name = "/ccsds/tdm/xml/TDMExampleAllKeywordsSequential.xml";
         final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
         final TdmFile file = new ParserBuilder().buildTdmParser(new IdentityConverter()).parseMessage(source);
-        validateTDMExampleAllKeywords(file);
+        validateTDMExampleAllKeywordsSequential(file);
+    }
+
+    @Test
+    public void testParseTdmXmlExampleAllKeywordsSingleDiff() {
+
+        // Testing all TDM keywords
+        final String name = "/ccsds/tdm/xml/TDMExampleAllKeywordsSingleDiff.xml";
+        final DataSource source = new DataSource(name, () -> TdmParserTest.class.getResourceAsStream(name));
+        final TdmFile file = new ParserBuilder().buildTdmParser(new IdentityConverter()).parseMessage(source);
+        validateTDMExampleAllKeywordsSingleDiff(file);
     }
 
     @Test
@@ -487,7 +507,7 @@ public class TdmParserTest {
      * Validation function for example 2.
      * @param file Parsed TDMFile to validate
      */
-    public static void validateTDMExample2(TdmFile file) {
+    private void validateTDMExample2(TdmFile file) {
         final TimeScale utc = TimeScalesFactory.getUTC();
 
         // Header
@@ -548,7 +568,7 @@ public class TdmParserTest {
      * Validation function for example 4.
      * @param file Parsed TDMFile to validate
      */
-    public static void validateTDMExample4(TdmFile file) {
+    private void validateTDMExample4(TdmFile file) {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
 
@@ -621,7 +641,7 @@ public class TdmParserTest {
      * Validation function for example 6.
      * @param file Parsed TDMFile to validate
      */
-    public static void validateTDMExample6(TdmFile file) {
+    private void validateTDMExample6(TdmFile file) {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
 
@@ -685,7 +705,7 @@ public class TdmParserTest {
      * Validation function for example 8.
      * @param file Parsed TDMFile to validate
      */
-    public static void validateTDMExample8(TdmFile file) {
+    private void validateTDMExample8(TdmFile file) {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
 
@@ -790,7 +810,7 @@ public class TdmParserTest {
      * Validation function for example 15.
      * @param file Parsed TDMFile to validate
      */
-    public static void validateTDMExample15(TdmFile file) {
+    private void validateTDMExample15(TdmFile file) {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
 
@@ -918,16 +938,39 @@ public class TdmParserTest {
      * Validation function for example displaying all keywords.
      * @param file Parsed TDMFile to validate
      */
-    public static void validateTDMExampleAllKeywords(TdmFile file) {
+    private void validateTDMExampleAllKeywordsSequential(TdmFile file) {
+        validateTDMExampleAllKeywordsCommon(file);
+        final TdmMetadata metadata = file.getSegments().get(0).getMetadata();
+        Assert.assertEquals(TrackingMode.SEQUENTIAL, metadata.getMode());
+        Assert.assertArrayEquals(new int[] { 2, 1 }, metadata.getPath());
+    }
+
+    /**
+     * Validation function for example displaying all keywords.
+     * @param file Parsed TDMFile to validate
+     */
+    private void validateTDMExampleAllKeywordsSingleDiff(TdmFile file) {
+        validateTDMExampleAllKeywordsCommon(file);
+        final TdmMetadata metadata = file.getSegments().get(0).getMetadata();
+        Assert.assertEquals(TrackingMode.SINGLE_DIFF, metadata.getMode());
+        Assert.assertArrayEquals(new int[] { 4, 5 }, metadata.getPath1());
+        Assert.assertArrayEquals(new int[] { 3, 2 }, metadata.getPath2());
+    }
+
+    /**
+     * Validation function for example displaying all keywords.
+     * @param file Parsed TDMFile to validate
+     */
+    private void validateTDMExampleAllKeywordsCommon(TdmFile file) {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
 
         // Header
         Assert.assertEquals(1.0, file.getHeader().getFormatVersion(), 0.0);
         Assert.assertEquals(new AbsoluteDate("2017-06-14T10:53:00.000", utc).durationFrom(file.getHeader().getCreationDate()), 0.0, 0.0);
-        Assert.assertEquals("CSSI",file.getHeader().getOriginator());
+        Assert.assertEquals("CS GROUP",file.getHeader().getOriginator());
         final List<String> headerComment = new ArrayList<String>();
-        headerComment.add("TDM example created by CSSI");
+        headerComment.add("TDM example created by CS GROUP");
         headerComment.add("Testing all TDM known meta-data and data keywords");
         Assert.assertEquals(headerComment, file.getHeader().getComments());
 
@@ -942,10 +985,6 @@ public class TdmParserTest {
         Assert.assertEquals("P3", metadata.getParticipants().get(3));
         Assert.assertEquals("P4", metadata.getParticipants().get(4));
         Assert.assertEquals("P5", metadata.getParticipants().get(5));
-        Assert.assertEquals(TrackingMode.SEQUENTIAL, metadata.getMode());
-        Assert.assertArrayEquals(new int[] { 2, 1 }, metadata.getPath());
-        Assert.assertArrayEquals(new int[] { 4, 5 }, metadata.getPath1());
-        Assert.assertArrayEquals(new int[] { 3, 2 }, metadata.getPath2());
         Assert.assertEquals("S", metadata.getTransmitBand());
         Assert.assertEquals("L", metadata.getReceiveBand());
         Assert.assertEquals(240, metadata.getTurnaroundNumerator(), 0);
