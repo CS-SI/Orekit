@@ -642,14 +642,14 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>>
             interpolatedAbsPva = absPva.interpolate(date, absPvas);
         }
         final FieldAttitude<T> interpolatedAttitude = attitude.interpolate(date, attitudes);
-        final T interpolatedMass       = massInterpolator.value(orbit.getA().getField().getZero())[0];
+        final T interpolatedMass       = massInterpolator.value(date.getField().getZero())[0];
         final Map<String, T[]> interpolatedAdditional;
         if (additional.isEmpty()) {
             interpolatedAdditional = null;
         } else {
             interpolatedAdditional = new HashMap<String, T[]>(additional.size());
             for (final Map.Entry<String, FieldHermiteInterpolator<T>> entry : additionalInterpolators.entrySet()) {
-                interpolatedAdditional.put(entry.getKey(), entry.getValue().value(orbit.getA().getField().getZero()));
+                interpolatedAdditional.put(entry.getKey(), entry.getValue().value(date.getField().getZero()));
             }
         }
 
