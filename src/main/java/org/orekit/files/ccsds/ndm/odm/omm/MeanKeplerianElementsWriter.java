@@ -78,7 +78,7 @@ class MeanKeplerianElementsWriter extends AbstractWriter {
         generator.writeEntry(KeplerianElementsKey.ECCENTRICITY.name(),      Unit.ONE.fromSI(keplerianElements.getE()),          true);
         generator.writeEntry(KeplerianElementsKey.INCLINATION.name(),       Unit.DEGREE.fromSI(keplerianElements.getI()),       true);
         generator.writeEntry(KeplerianElementsKey.RA_OF_ASC_NODE.name(),    Unit.DEGREE.fromSI(keplerianElements.getRaan()),    true);
-        generator.writeEntry(KeplerianElementsKey.ARG_OF_PERICENTER.name(), Unit.DEGREE.fromSI(keplerianElements.getPa()),   true);
+        generator.writeEntry(KeplerianElementsKey.ARG_OF_PERICENTER.name(), Unit.DEGREE.fromSI(keplerianElements.getPa()),      true);
         generator.writeEntry(KeplerianElementsKey.MEAN_ANOMALY.name(),      Unit.DEGREE.fromSI(keplerianElements.getAnomaly()), true);
         generator.writeEntry(KeplerianElementsKey.GM.name(),                Units.KM3_PER_S2.fromSI(keplerianElements.getMu()), false);
 
