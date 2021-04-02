@@ -19,78 +19,87 @@ package org.orekit.files.ccsds.utils.generation;
 import java.io.IOException;
 import java.util.List;
 
-import org.hipparchus.util.FastMath;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.utils.AccurateFormatter;
 
-/** Generator for Key-Value Notation CCSDS messages.
+/** Generator for eXtended Markup Language CCSDS messages.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class KvnGenerator extends AbstractGenerator {
+public class XmlGenerator extends AbstractGenerator {
 
-    /** Comment keyword. */
+    /** Default number of space for each indentation level. */
+    public static final int DEFAULT_INDENT = 2;
+
+    /** XML prolog. */
+    private static final String PROLOG = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+
+    /** Root element start tag. */
+    private static final String ROOT_START = "<%s id=\"%s\" version=\"%.1f\">";
+
+    /** Element end tag. */
+    private static final String START_TAG = "<%s>";
+
+    /** Element end tag. */
+    private static final String END_TAG = "</%s>";
+
+    /** Leaf element format. */
+    private static final String LEAF = "<%s>%s</%s>";
+
+    /** Comment key. */
     private static final String COMMENT = "COMMENT";
 
-    /** Start suffix for sections. */
-    private static final String START = "_START";
+    /** Indentation size. */
+    private final int indentation;
 
-    /** Stop suffix for sections. */
-    private static final String STOP = "_STOP";
-
-    /** String format used for all key/value pair lines. **/
-    private final String kvFormat;
-
-    /** String format used for all comment lines. **/
-    private final String commentFormat;
+    /** Nesting level. */
+    private int level;
 
     /** Simple constructor.
      * @param output destination of generated output
-     * @param paddingWidth padding width for aligning the '=' sign
+     * @param indentation number of space for each indentation level
      * @param outputName output name for error messages
-     * @see org.orekit.files.ccsds.ndm.tdm.TdmWriter#KVN_PADDING_WIDTH     TdmWriter.KVN_PADDING_WIDTH
-     * @see org.orekit.files.ccsds.ndm.adm.aem.AemWriter#KVN_PADDING_WIDTH AemWriter.KVN_PADDING_WIDTH
-     * @see org.orekit.files.ccsds.ndm.adm.apm.ApmWriter#KVN_PADDING_WIDTH ApmWriter.KVN_PADDING_WIDTH
-     * @see org.orekit.files.ccsds.ndm.odm.opm.OpmWriter#KVN_PADDING_WIDTH OpmWriter.KVN_PADDING_WIDTH
-     * @see org.orekit.files.ccsds.ndm.odm.omm.OmmWriter#KVN_PADDING_WIDTH OmmWriter.KVN_PADDING_WIDTH
-     * @see org.orekit.files.ccsds.ndm.odm.oem.OemWriter#KVN_PADDING_WIDTH OemWriter.KVN_PADDING_WIDTH
-     * @see org.orekit.files.ccsds.ndm.odm.ocm.OcmWriter#KVN_PADDING_WIDTH OcmWriter.KVN_PADDING_WIDTH
+     * @see #DEFAULT_INDENT
      */
-    public KvnGenerator(final Appendable output, final int paddingWidth, final String outputName) {
+    public XmlGenerator(final Appendable output, final int indentation, final String outputName) {
         super(output, outputName);
-        kvFormat = "%-" + FastMath.max(1, paddingWidth) + "s = %s%n";
-        final StringBuilder builder = new StringBuilder(COMMENT);
-        builder.append(' ');
-        while (builder.length() < paddingWidth + 3) {
-            builder.append(' ');
-        }
-        builder.append("%s%n");
-        commentFormat = builder.toString();
+        this.indentation = indentation;
+        this.level       = 0;
     }
 
     /** {@inheritDoc} */
     @Override
     public FileFormat getFormat() {
-        return FileFormat.KVN;
+        return FileFormat.XML;
     }
 
     /** {@inheritDoc} */
     @Override
     public void startMessage(final String messageTypeKey, final double version) throws IOException {
-        writeEntry(messageTypeKey, String.format(AccurateFormatter.STANDARDIZED_LOCALE, "%.1f", version), true);
+        writeRawData(PROLOG);
+        newLine();
+        indent();
+        writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, ROOT_START,
+                                   messageTypeKey, messageTypeKey, version));
+        newLine();
+        ++level;
     }
 
     /** {@inheritDoc} */
     @Override
     public void endMessage(final String messageTypeKey) throws IOException {
-        // nothing to do
+        --level;
+        indent();
+        writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, END_TAG,
+                                   messageTypeKey));
+        newLine();
     }
 
     /** {@inheritDoc} */
     @Override
     public void writeComments(final List<String> comments) throws IOException {
         for (final String comment : comments) {
-            append(String.format(AccurateFormatter.STANDARDIZED_LOCALE, commentFormat, comment));
+            writeEntry(COMMENT, comment, false);
         }
     }
 
@@ -100,14 +109,17 @@ public class KvnGenerator extends AbstractGenerator {
         if (value == null) {
             complain(key, mandatory);
         } else {
-            append(String.format(AccurateFormatter.STANDARDIZED_LOCALE, kvFormat, key, value));
+            indent();
+            append(String.format(AccurateFormatter.STANDARDIZED_LOCALE, LEAF, key, value, key));
         }
     }
 
     /** {@inheritDoc} */
     @Override
     public void enterSection(final String name) throws IOException {
-        append(name).append(START).newLine();
+        indent();
+        append(String.format(AccurateFormatter.STANDARDIZED_LOCALE, START_TAG, name));
+        ++level;
         super.enterSection(name);
     }
 
@@ -115,8 +127,18 @@ public class KvnGenerator extends AbstractGenerator {
     @Override
     public String exitSection() throws IOException {
         final String name = super.exitSection();
-        append(name).append(STOP).newLine();
+        --level;
+        indent();
+        append(String.format(AccurateFormatter.STANDARDIZED_LOCALE, END_TAG, name));
         return name;
+    }
+
+    /** Indent line.
+     */
+    private void indent() throws IOException {
+        for (int i = 0; i < level * indentation; ++i) {
+            writeRawData(' ');
+        }
     }
 
 }

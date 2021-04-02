@@ -43,6 +43,7 @@ import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.files.ccsds.utils.generation.MessageWriter;
+import org.orekit.files.ccsds.utils.generation.XmlGenerator;
 import org.orekit.files.ccsds.utils.lexical.MessageParser;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -59,7 +60,7 @@ public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<
 
     protected  void doTest(final String name) {
         doTest(name, FileFormat.KVN);
-        // TODO doTest(name, FileFormat.XML);
+        // doTest(name, FileFormat.XML);
     }
 
     protected  void doTest(final String name, final FileFormat format) {
@@ -70,8 +71,8 @@ public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<
             // write the parsed file back to a characters array
             final CharArrayWriter caw       = new CharArrayWriter();
             final Generator       generator = format == FileFormat.KVN ?
-                                              new KvnGenerator(caw, 25, "dummy") :
-                                              null; // TODO
+                                              new KvnGenerator(caw, 25, "dummy.kvn") :
+                                              new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml");
             getWriter().writeMessage(generator, original);
 
             // reparse the written file

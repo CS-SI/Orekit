@@ -95,7 +95,7 @@ public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata
             }
         }
 
-        if (segment.getData().getPhysicBlock() != null && segment.getData().getPhysicBlock() != null) {
+        if (segment.getData().getPhysicBlock() != null) {
             // write optional physical properties block
             new PhysicalPropertiesWriter(segment.getData().getPhysicBlock(),
                                          getTimeConverter()).
@@ -117,21 +117,21 @@ public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata
             }
         }
 
-        if (segment.getData().getPerturbationsBlock() != null && segment.getData().getPerturbationsBlock() != null) {
+        if (segment.getData().getPerturbationsBlock() != null) {
             // write optional perturbation parameters block
             new PerturbationsWriter(segment.getData().getPerturbationsBlock(),
                                     getTimeConverter()).
             write(generator);
         }
 
-        if (segment.getData().getOrbitDeterminationBlock() != null && segment.getData().getOrbitDeterminationBlock() != null) {
+        if (segment.getData().getOrbitDeterminationBlock() != null) {
             // write optional orbit determination block
             new OrbitDeterminationWriter(segment.getData().getOrbitDeterminationBlock(),
                                          getTimeConverter()).
             write(generator);
         }
 
-        if (segment.getData().getUserDefinedBlock() != null && segment.getData().getUserDefinedBlock() != null) {
+        if (segment.getData().getUserDefinedBlock() != null) {
             // write optional user defined parameters block
             new UserDefinedWriter(OcmDataSubStructureKey.userDef.name(),
                                   OcmDataSubStructureKey.USER.name(),

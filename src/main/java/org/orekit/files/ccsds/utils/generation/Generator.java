@@ -46,6 +46,12 @@ public interface Generator extends AutoCloseable {
      */
     void startMessage(String messageTypeKey, double version) throws IOException;
 
+    /** End CCSDS message.
+     * @param messageTypeKey key for message type
+     * @throws IOException if an I/O error occurs.
+     */
+    void endMessage(String messageTypeKey) throws IOException;
+
     /** Write comment lines.
      * @param comments comments to write
      * @throws IOException if an I/O error occurs.
