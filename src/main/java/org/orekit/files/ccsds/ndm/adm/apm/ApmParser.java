@@ -265,7 +265,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
      * @return always return true
      */
     boolean manageEulerElementsSpinSection(final boolean starting) {
-        setFallback(starting ? this::processEulerToken : structureProcessor);
+        setFallback(starting ? this::processSpinStabilizedToken : structureProcessor);
         return true;
     }
 
