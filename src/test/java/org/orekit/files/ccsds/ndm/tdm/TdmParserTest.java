@@ -1012,20 +1012,4 @@ public class TdmParserTest {
         Assert.assertEquals(dataComment, file.getSegments().get(0).getData().getComments());
     }
 
-    private static class IdentityConverter implements RangeUnitsConverter {
-
-        /** {@inheritDoc} */
-        @Override
-        public double ruToMeters(final TdmMetadata metadata, final AbsoluteDate date, final double range) {
-            return range;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public double metersToRu(final TdmMetadata metadata, final AbsoluteDate date, final double range) {
-            return range;
-        }
-        
-    }
-
 }
