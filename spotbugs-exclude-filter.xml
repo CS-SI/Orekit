@@ -192,6 +192,10 @@
     <Class name="~.*\.SEMParser$"/>
     <Bug pattern="CNT_ROUGH_CONSTANT_VALUE" />
   </Match>
+  <Match>
+    <Class name="~.*\.Units$"/>
+    <Bug pattern="CNT_ROUGH_CONSTANT_VALUE" />
+  </Match>
   
   <!-- The following is a false positive from SpotBugs -->
   <Match>

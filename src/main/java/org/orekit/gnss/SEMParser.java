@@ -33,7 +33,7 @@ import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.propagation.analytical.gnss.GPSOrbitalElements;
+import org.orekit.propagation.analytical.gnss.GNSSOrbitalElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
@@ -307,7 +307,7 @@ public class SEMParser extends AbstractSelfFeedingLoader implements DataLoader {
      * @return the angular value in radians
      */
     private double toRadians(final double semicircles) {
-        return GPSOrbitalElements.GPS_PI * semicircles;
+        return GNSSOrbitalElements.GNSS_PI * semicircles;
     }
 
 }

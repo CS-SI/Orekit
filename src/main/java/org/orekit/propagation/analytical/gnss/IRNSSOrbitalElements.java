@@ -30,9 +30,6 @@ public interface IRNSSOrbitalElements extends GNSSOrbitalElements {
     /** WGS 84 value of the Earth's universal gravitational parameter for IRNSS user in m³/s². */
     double IRNSS_MU = 3.986005e+14;
 
-    /** Value of Pi for conversion from semicircles to radian. */
-    double IRNSS_PI = 3.1415926535898;
-
     /** Duration of the IRNSS week in seconds. */
     double IRNSS_WEEK_IN_SECONDS = 604800.;
 

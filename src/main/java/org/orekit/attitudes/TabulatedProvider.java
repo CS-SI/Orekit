@@ -63,7 +63,7 @@ public class TabulatedProvider implements BoundedAttitudeProvider {
      * @param table tabulated attitudes
      * @param n number of attitude to use for interpolation
      * @param filter filter for derivatives from the sample to use in interpolation
-     * @see #TabulatedProvider(Frame, List, int, AngularDerivativesFilter, AbsoluteDate, AbsoluteDate)
+     * @see #TabulatedProvider(List, int, AngularDerivativesFilter, AbsoluteDate, AbsoluteDate, AttitudeBuilder)
      */
     public TabulatedProvider(final Frame referenceFrame, final List<? extends TimeStampedAngularCoordinates> table,
                              final int n, final AngularDerivativesFilter filter) {
