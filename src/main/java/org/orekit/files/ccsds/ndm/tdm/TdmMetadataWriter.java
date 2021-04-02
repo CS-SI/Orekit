@@ -81,14 +81,18 @@ class TdmMetadataWriter extends AbstractWriter {
 
         generator.writeEntry(TdmMetadataKey.TRANSMIT_BAND.name(),          metadata.getTransmitBand(),          false);
         generator.writeEntry(TdmMetadataKey.RECEIVE_BAND.name(),           metadata.getReceiveBand(),           false);
-        generator.writeEntry(TdmMetadataKey.TURNAROUND_NUMERATOR.name(),   metadata.getTurnaroundNumerator(),   false);
-        generator.writeEntry(TdmMetadataKey.TURNAROUND_DENOMINATOR.name(), metadata.getTurnaroundDenominator(), false);
+        if (metadata.getTurnaroundNumerator() != 0 || metadata.getTurnaroundDenominator() != 0) {
+            generator.writeEntry(TdmMetadataKey.TURNAROUND_NUMERATOR.name(),   metadata.getTurnaroundNumerator(),   false);
+            generator.writeEntry(TdmMetadataKey.TURNAROUND_DENOMINATOR.name(), metadata.getTurnaroundDenominator(), false);
+        }
         generator.writeEntry(TdmMetadataKey.TIMETAG_REF.name(),            metadata.getTimetagRef(),            false);
         generator.writeEntry(TdmMetadataKey.INTEGRATION_INTERVAL.name(),   metadata.getIntegrationInterval(),   false);
         generator.writeEntry(TdmMetadataKey.INTEGRATION_REF.name(),        metadata.getIntegrationRef(),        false);
         generator.writeEntry(TdmMetadataKey.FREQ_OFFSET.name(),            metadata.getFreqOffset(),            false);
         generator.writeEntry(TdmMetadataKey.RANGE_MODE.name(),             metadata.getRangeMode(),             false);
-        generator.writeEntry(TdmMetadataKey.RANGE_MODULUS.name(),          metadata.getRawRangeModulus(),       false);
+        if (metadata.getRawRangeModulus() != 0) {
+            generator.writeEntry(TdmMetadataKey.RANGE_MODULUS.name(),      metadata.getRawRangeModulus(),       false);
+        }
         generator.writeEntry(TdmMetadataKey.RANGE_UNITS.name(),            metadata.getRangeUnits(),            false);
         generator.writeEntry(TdmMetadataKey.ANGLE_TYPE.name(),             metadata.getAngleType(),             false);
         if (metadata.getReferenceFrame() != null) {
@@ -105,12 +109,24 @@ class TdmMetadataWriter extends AbstractWriter {
         generator.writeEntry(TdmMetadataKey.RECEIVE_DELAY_4.name(),        Unit.SECOND.fromSI(metadata.getReceiveDelays().get(4)),  false);
         generator.writeEntry(TdmMetadataKey.RECEIVE_DELAY_5.name(),        Unit.SECOND.fromSI(metadata.getReceiveDelays().get(5)),  false);
         generator.writeEntry(TdmMetadataKey.DATA_QUALITY.name(),           metadata.getDataQuality(),                               false);
-        generator.writeEntry(TdmMetadataKey.CORRECTION_ANGLE_1.name(),     Unit.DEGREE.fromSI(metadata.getCorrectionAngle1()),      false);
-        generator.writeEntry(TdmMetadataKey.CORRECTION_ANGLE_2.name(),     Unit.DEGREE.fromSI(metadata.getCorrectionAngle2()),      false);
-        generator.writeEntry(TdmMetadataKey.CORRECTION_DOPPLER.name(),     Units.KM_PER_S.fromSI(metadata.getCorrectionDoppler()),  false);
-        generator.writeEntry(TdmMetadataKey.CORRECTION_RANGE.name(),       Unit.ONE.fromSI(metadata.getRawCorrectionRange()),       false);
-        generator.writeEntry(TdmMetadataKey.CORRECTION_RECEIVE.name(),     Unit.HERTZ.fromSI(metadata.getCorrectionReceive()),      false);
-        generator.writeEntry(TdmMetadataKey.CORRECTION_TRANSMIT.name(),    Unit.HERTZ.fromSI(metadata.getCorrectionTransmit()),     false);
+        if (metadata.getCorrectionAngle1() != 0) {
+            generator.writeEntry(TdmMetadataKey.CORRECTION_ANGLE_1.name(),     Unit.DEGREE.fromSI(metadata.getCorrectionAngle1()),      false);
+        }
+        if (metadata.getCorrectionAngle2() != 0) {
+            generator.writeEntry(TdmMetadataKey.CORRECTION_ANGLE_2.name(),     Unit.DEGREE.fromSI(metadata.getCorrectionAngle2()),      false);
+        }
+        if (metadata.getCorrectionDoppler() != 0) {
+            generator.writeEntry(TdmMetadataKey.CORRECTION_DOPPLER.name(),     Units.KM_PER_S.fromSI(metadata.getCorrectionDoppler()),  false);
+        }
+        if (metadata.getRawCorrectionRange() != 0) {
+            generator.writeEntry(TdmMetadataKey.CORRECTION_RANGE.name(),       Unit.ONE.fromSI(metadata.getRawCorrectionRange()),       false);
+        }
+        if (metadata.getCorrectionReceive() != 0) {
+            generator.writeEntry(TdmMetadataKey.CORRECTION_RECEIVE.name(),     Unit.HERTZ.fromSI(metadata.getCorrectionReceive()),      false);
+        }
+        if (metadata.getCorrectionTransmit() != 0) {
+            generator.writeEntry(TdmMetadataKey.CORRECTION_TRANSMIT.name(),    Unit.HERTZ.fromSI(metadata.getCorrectionTransmit()),     false);
+        }
         generator.writeEntry(TdmMetadataKey.CORRECTIONS_APPLIED.name(),    metadata.getCorrectionsApplied(),                        false);
 
     }
