@@ -960,35 +960,6 @@ public class FieldSpacecraftStateTest {
          // Interpolation
           withoutOrbit = withoutOrbit.interpolate(states.get(10).getDate(), states.stream());
           Assert.assertEquals(0.0, FieldVector3D.distance(withoutOrbit.getAbsPVA().getPosition(), states.get(10).getAbsPVA().getPosition()).getReal(), 1.0e-10);
-      
-    /*
-        //TEST Elie
-  		FieldOrbit<T> o = new FieldOrbit<>(new TimeStampedFieldPVCoordinates<>(initDate,
-                new FieldPVCoordinates<>(new FieldVector3D<>(zero.add(-29536113.0), zero.add(30329259.0), zero.add(-100125.0)),
-                        new FieldVector3D<>(zero.add(-2194.0), zero.add(-2141.0), zero.add(-8.0)))) , inertialFrame , zero.add(3.986004419E14));
-  	   */ 
-         
-         /*
- 		// Build the epemeris propagator
- 		FieldEphemeris<T> ephemPropagator = new FieldEphemeris<>(field, states, 2);
-
- 		// Get initial state without attitude provider
- 		FieldSpacecraftState<T> withoutAttitudeProvider = ephemPropagator.getInitialState();
- 		Assert.assertEquals(0.0,
- 				FieldVector3D.distance(withoutAttitudeProvider.getAbsPVA().getPosition(), initPV.getPosition()).getReal(), 1.0e-10);
- 		Assert.assertEquals(0.0,
- 				FieldVector3D.distance(withoutAttitudeProvider.getAbsPVA().getVelocity(), initPV.getVelocity()).getReal(), 1.0e-10);
-
- 		// Set an attitude provider
- 		ephemPropagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.VVLH));
-
- 		// Get initial state with attitude provider
- 		FieldSpacecraftState<T> withAttitudeProvider = ephemPropagator.getInitialState();
- 		Assert.assertEquals(0.0,
- 				FieldVector3D.distance(withAttitudeProvider.getAbsPVA().getPosition(), initPV.getPosition()).getReal(), 1.0e-10);
- 		Assert.assertEquals(0.0,
- 				FieldVector3D.distance(withAttitudeProvider.getAbsPVA().getVelocity(), initPV.getVelocity()).getReal(), 1.0e-10);
-    */
     }
 
     
