@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -35,9 +36,12 @@ import org.orekit.Utils;
 import org.orekit.data.DataSource;
 import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.OdMethodFacade;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndoints;
 import org.orekit.files.ccsds.ndm.adm.apm.ApmQuaternion;
+import org.orekit.files.ccsds.ndm.odm.ocm.Covariance;
 import org.orekit.files.ccsds.ndm.odm.ocm.CovarianceHistory;
+import org.orekit.files.ccsds.ndm.odm.ocm.Maneuver;
 import org.orekit.files.ccsds.ndm.odm.ocm.ManeuverHistory;
 import org.orekit.files.ccsds.ndm.odm.ocm.OrbitState;
 import org.orekit.files.ccsds.ndm.odm.ocm.OrbitStateHistory;
@@ -82,9 +86,6 @@ public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<
                                               new KvnGenerator(caw, 25, "dummy.kvn") :
                                               new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml");
             getWriter().writeMessage(generator, original);
-            if (format == FileFormat.XML) {
-                System.out.println(caw);
-            }
 
             // reparse the written file
             final byte[]      bytes  = caw.toString().getBytes(StandardCharsets.UTF_8);
@@ -135,10 +136,11 @@ public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<
         } else if (original instanceof CommentsContainer ||
                    original instanceof ApmQuaternion     ||
                    original instanceof AttitudeEndoints  ||
-                   original instanceof OrbitStateHistory ||
                    original instanceof CovarianceHistory ||
                    original instanceof ManeuverHistory   ||
                    original instanceof OrbitState        ||
+                   original instanceof Covariance        ||
+                   original instanceof Maneuver          ||
                    original instanceof Observation       ||
                    original instanceof PVCoordinates) {
             checkContainer(original, rebuilt);
@@ -148,6 +150,12 @@ public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<
             return true;
         } else if (original instanceof BodyFacade) {
             checkBodyFacade((BodyFacade) original, (BodyFacade) rebuilt);
+            return true;
+        } else if (original instanceof OdMethodFacade) {
+            checkOdMethodFacade((OdMethodFacade) original, (OdMethodFacade) rebuilt);
+            return true;
+        } else if (original instanceof OrbitStateHistory) {
+            checkOrbitStateHistory((OrbitStateHistory) original, (OrbitStateHistory) rebuilt);
             return true;
         } else if (original instanceof Frame) {
             checkFrame((Frame) original, (Frame) rebuilt);
@@ -189,6 +197,7 @@ public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<
                                 ", rebuilt → "  + getter.invoke(rebuilt));
                 }
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                e.printStackTrace();
                 Assert.fail(e.getLocalizedMessage());
             }
         });
@@ -256,7 +265,22 @@ public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<
             Assert.assertEquals(original.getBody().getName(),
                                 rebuilt.getBody().getName());
         }
+        Assert.assertEquals(original.getName().toUpperCase(Locale.US), rebuilt.getName().toUpperCase(Locale.US));
+    }
+
+    private void checkOdMethodFacade(final OdMethodFacade original, final OdMethodFacade rebuilt) {
         Assert.assertEquals(original.getName(), rebuilt.getName());
+        Assert.assertEquals(original.getType(), rebuilt.getType());
+        Assert.assertEquals(original.getTool(), rebuilt.getTool());
+    }
+
+    private void checkOrbitStateHistory(final OrbitStateHistory original, final OrbitStateHistory rebuilt) {
+        // we don't use checkContainer here because the history getters are redundant
+        // with embedded metadata and states, and because the getFrame() method
+        // that would be called automatically may trhow an exception
+        // so we just jump down to metadata and states
+        Assert.assertTrue(recurseCheck(original.getMetadata(), rebuilt.getMetadata()));
+        checkList(original.getOrbitalStates(), rebuilt.getOrbitalStates());
     }
 
     private void checkDate(final AbsoluteDate original, final AbsoluteDate rebuilt) {
