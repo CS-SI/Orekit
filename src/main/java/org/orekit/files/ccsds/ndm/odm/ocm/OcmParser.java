@@ -63,12 +63,6 @@ import org.orekit.utils.units.Unit;
  */
 public class OcmParser extends CommonParser<OcmFile, OcmParser> implements EphemerisFileParser<OcmFile> {
 
-    /** Orbit line element for XML messages. */
-    private static final String ORB_LINE = "orbLine";
-
-    /** User-defined element. */
-    private static final String USER_DEFINED = "USER_DEFINED";
-
     /** Pattern for splitting strings at blanks. */
     private static final Pattern SPLIT_AT_BLANKS = Pattern.compile("\\s+");
 
@@ -147,7 +141,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
         final Map<String, XmlTokenBuilder> builders = super.getSpecialXmlElementsBuilders();
 
         // special handling of user-defined parameters
-        builders.put(USER_DEFINED, new UserDefinedXmlTokenBuilder());
+        builders.put(UserDefined.USER_DEFINED_XML_TAG, new UserDefinedXmlTokenBuilder());
 
         return builders;
 
@@ -463,7 +457,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
      * @return true if token was processed, false otherwise
      */
     private boolean processOrbitStateToken(final ParseToken token) {
-        if (token.getName() != null && !token.getName().equals(ORB_LINE)) {
+        if (token.getName() != null && !token.getName().equals(OcmFile.ORB_LINE)) {
             // we are in the section metadata part
             try {
                 return OrbitStateHistoryMetadataKey.valueOf(token.getName()).
@@ -523,7 +517,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
      * @return true if token was processed, false otherwise
      */
     private boolean processCovarianceToken(final ParseToken token) {
-        if (token.getName() != null) {
+        if (token.getName() != null && !token.getName().equals(OcmFile.COV_LINE)) {
             // we are in the section metadata part
             try {
                 return CovarianceHistoryMetadataKey.valueOf(token.getName()).
@@ -562,7 +556,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
      * @return true if token was processed, false otherwise
      */
     private boolean processManeuverToken(final ParseToken token) {
-        if (token.getName() != null) {
+        if (token.getName() != null && !token.getName().equals(OcmFile.MAN_LINE)) {
             // we are in the section metadata part
             try {
                 return ManeuverHistoryMetadataKey.valueOf(token.getName()).

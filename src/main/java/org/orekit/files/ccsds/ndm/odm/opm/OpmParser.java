@@ -67,9 +67,6 @@ import org.orekit.utils.IERSConventions;
  */
 public class OpmParser extends CommonParser<OpmFile, OpmParser> {
 
-    /** User-defined element. */
-    private static final String USER_DEFINED = "USER_DEFINED";
-
     /** Default mass to use if there are no spacecraft parameters block logical block in the file. */
     private final double defaultMass;
 
@@ -137,7 +134,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
         final Map<String, XmlTokenBuilder> builders = super.getSpecialXmlElementsBuilders();
 
         // special handling of user-defined parameters
-        builders.put(USER_DEFINED, new UserDefinedXmlTokenBuilder());
+        builders.put(UserDefined.USER_DEFINED_XML_TAG, new UserDefinedXmlTokenBuilder());
 
         return builders;
 
