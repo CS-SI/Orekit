@@ -113,7 +113,7 @@ class ManeuverHistoryWriter extends AbstractWriter {
         final StringBuilder           composition = new StringBuilder();
         for (int i = 0; i < types.size(); ++i) {
             if (i > 0) {
-                composition.append(' ');
+                composition.append(',');
             }
             composition.append(types.get(i).name());
         }
