@@ -57,7 +57,15 @@ class OrbitDeterminationWriter extends AbstractWriter {
         // identifiers
         generator.writeEntry(OrbitDeterminationKey.OD_ID.name(),      od.getId(),               false);
         generator.writeEntry(OrbitDeterminationKey.OD_PREV_ID.name(), od.getPrevId(),           false);
-        generator.writeEntry(OrbitDeterminationKey.OD_METHOD.name(),  od.getMethod().getName(), false);
+        if (od.getMethod() != null) {
+            final StringBuilder builder = new StringBuilder();
+            builder.append(od.getMethod().getName());
+            if (od.getMethod().getTool() != null) {
+                builder.append(':');
+                builder.append(od.getMethod().getTool());
+            }
+            generator.writeEntry(OrbitDeterminationKey.OD_METHOD.name(),  builder.toString(), false);
+        }
 
         // time
         generator.writeEntry(OrbitDeterminationKey.OD_EPOCH.name(),             timeConverter, od.getEpoch(),                false);
