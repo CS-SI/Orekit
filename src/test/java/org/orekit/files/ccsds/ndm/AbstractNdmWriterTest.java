@@ -37,6 +37,10 @@ import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndoints;
 import org.orekit.files.ccsds.ndm.adm.apm.ApmQuaternion;
+import org.orekit.files.ccsds.ndm.odm.ocm.CovarianceHistory;
+import org.orekit.files.ccsds.ndm.odm.ocm.ManeuverHistory;
+import org.orekit.files.ccsds.ndm.odm.ocm.OrbitState;
+import org.orekit.files.ccsds.ndm.odm.ocm.OrbitStateHistory;
 import org.orekit.files.ccsds.ndm.tdm.Observation;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Header;
@@ -49,6 +53,8 @@ import org.orekit.files.ccsds.utils.generation.XmlGenerator;
 import org.orekit.files.ccsds.utils.lexical.MessageParser;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.units.Unit;
 
 public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<?, ?>, F extends NdmFile<H, S>> {
 
@@ -76,6 +82,9 @@ public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<
                                               new KvnGenerator(caw, 25, "dummy.kvn") :
                                               new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml");
             getWriter().writeMessage(generator, original);
+            if (format == FileFormat.XML) {
+                System.out.println(caw);
+            }
 
             // reparse the written file
             final byte[]      bytes  = caw.toString().getBytes(StandardCharsets.UTF_8);
@@ -123,13 +132,15 @@ public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<
         } else if (original instanceof Map) {
             checkMap((Map<?, ?>) original, (Map<?, ?>) rebuilt);
             return true;
-        } else if (original instanceof CommentsContainer) {
-            checkContainer(original, rebuilt);
-            return true;
-        } else if (original instanceof ApmQuaternion) {
-            checkContainer(original, rebuilt);
-            return true;
-        } else if (original instanceof AttitudeEndoints) {
+        } else if (original instanceof CommentsContainer ||
+                   original instanceof ApmQuaternion     ||
+                   original instanceof AttitudeEndoints  ||
+                   original instanceof OrbitStateHistory ||
+                   original instanceof CovarianceHistory ||
+                   original instanceof ManeuverHistory   ||
+                   original instanceof OrbitState        ||
+                   original instanceof Observation       ||
+                   original instanceof PVCoordinates) {
             checkContainer(original, rebuilt);
             return true;
         } else if (original instanceof FrameFacade) {
@@ -138,14 +149,14 @@ public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<
         } else if (original instanceof BodyFacade) {
             checkBodyFacade((BodyFacade) original, (BodyFacade) rebuilt);
             return true;
-        } else if (original instanceof Observation) {
-            checkContainer(original, rebuilt);
-            return true;
         } else if (original instanceof Frame) {
             checkFrame((Frame) original, (Frame) rebuilt);
             return true;
         } else if (original instanceof AbsoluteDate) {
             checkDate((AbsoluteDate) original, (AbsoluteDate) rebuilt);
+            return true;
+        } else if (original instanceof Unit) {
+            checkUnit((Unit) original, (Unit) rebuilt);
             return true;
         } else if (original instanceof Vector3D) {
             checkVector3D((Vector3D) original, (Vector3D) rebuilt);
@@ -166,8 +177,9 @@ public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<
         Assert.assertEquals(original.getClass(), rebuilt.getClass());
         final Class<?> cls = original.getClass();
         Stream.of(cls.getMethods()).
-        filter(m -> m.getName().startsWith("get")   &&
-                    !m.getName().equals("getClass") &&
+        filter(m -> m.getName().startsWith("get")        &&
+                    !m.getName().equals("getClass")      &&
+                    !m.getName().equals("getPropagator") &&
                     m.getParameterCount() == 0).
         forEach(getter -> {
             try {
@@ -248,7 +260,12 @@ public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<
     }
 
     private void checkDate(final AbsoluteDate original, final AbsoluteDate rebuilt) {
-        Assert.assertEquals(0.0, rebuilt.durationFrom(original), 1.0e-15);
+        Assert.assertEquals(0.0, rebuilt.durationFrom(original), 1.0e-14);
+    }
+
+    private void checkUnit(final Unit original, final Unit rebuilt) {
+        Assert.assertTrue(Precision.equals(original.getScale(), rebuilt.getScale(), 1));
+        Assert.assertTrue(rebuilt.sameDimension(original));
     }
 
     private void checkFrame(final Frame original, final Frame rebuilt) {
