@@ -24,6 +24,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.section.AbstractWriter;
+import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.utils.AccurateFormatter;
 import org.orekit.utils.units.Unit;
@@ -90,8 +91,12 @@ class CovarianceHistoryWriter extends AbstractWriter {
                     line.append(' ');
                     line.append(AccurateFormatter.format(units.get(i).fromSI(units.get(j).fromSI(matrix.getEntry(i, j)))));
                 }
-                generator.writeRawData(line);
-                generator.newLine();
+                if (generator.getFormat() == FileFormat.XML) {
+                    generator.writeEntry(OcmFile.COV_LINE, line.toString(), true);
+                } else {
+                    generator.writeRawData(line);
+                    generator.newLine();
+                }
             }
 
         }
