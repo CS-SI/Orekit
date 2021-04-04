@@ -24,6 +24,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.section.AbstractWriter;
+import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.utils.AccurateFormatter;
 import org.orekit.utils.units.Unit;
@@ -71,9 +72,9 @@ class CovarianceHistoryWriter extends AbstractWriter {
         generator.writeEntry(CovarianceHistoryMetadataKey.COV_FRAME_EPOCH.name(), timeConverter, metadata.getCovFrameEpoch(), false);
 
         // scaling
-        generator.writeEntry(CovarianceHistoryMetadataKey.COV_SCALE_MIN.name(),  Unit.ONE.fromSI(metadata.getCovScaleMin()),       false);
-        generator.writeEntry(CovarianceHistoryMetadataKey.COV_SCALE_MAX.name(),  Unit.ONE.fromSI(metadata.getCovScaleMax()),       false);
-        generator.writeEntry(CovarianceHistoryMetadataKey.COV_CONFIDENCE.name(), Unit.PERCENT.fromSI(metadata.getCovConfidence()), false);
+        generator.writeEntry(CovarianceHistoryMetadataKey.COV_SCALE_MIN.name(),  metadata.getCovScaleMin(), Unit.ONE,       false);
+        generator.writeEntry(CovarianceHistoryMetadataKey.COV_SCALE_MAX.name(),  metadata.getCovScaleMax(), Unit.ONE,       false);
+        generator.writeEntry(CovarianceHistoryMetadataKey.COV_CONFIDENCE.name(), metadata.getCovConfidence(), Unit.PERCENT, false);
 
         // elements
         generator.writeEntry(CovarianceHistoryMetadataKey.COV_TYPE.name(),  metadata.getCovType(),                         false);
@@ -90,8 +91,12 @@ class CovarianceHistoryWriter extends AbstractWriter {
                     line.append(' ');
                     line.append(AccurateFormatter.format(units.get(i).fromSI(units.get(j).fromSI(matrix.getEntry(i, j)))));
                 }
-                generator.writeRawData(line);
-                generator.newLine();
+                if (generator.getFormat() == FileFormat.XML) {
+                    generator.writeEntry(OcmFile.COV_LINE, line.toString(), true);
+                } else {
+                    generator.writeRawData(line);
+                    generator.newLine();
+                }
             }
 
         }

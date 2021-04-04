@@ -23,6 +23,7 @@ import java.util.List;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.section.AbstractWriter;
+import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.utils.AccurateFormatter;
 import org.orekit.utils.units.Unit;
@@ -93,8 +94,12 @@ class OrbitStateHistoryWriter extends AbstractWriter {
                 line.append(' ');
                 line.append(AccurateFormatter.format(units.get(i).fromSI(elements[i])));
             }
-            generator.writeRawData(line);
-            generator.newLine();
+            if (generator.getFormat() == FileFormat.XML) {
+                generator.writeEntry(OcmFile.ORB_LINE, line.toString(), true);
+            } else {
+                generator.writeRawData(line);
+                generator.newLine();
+            }
         }
 
     }

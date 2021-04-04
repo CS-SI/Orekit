@@ -59,15 +59,15 @@ class SpinStabilizedWriter extends AbstractWriter {
                              true);
 
         // spin
-        generator.writeEntry(SpinStabilizedKey.SPIN_ALPHA.name(),     Unit.DEGREE.fromSI(spinStabilized.getSpinAlpha()),        true);
-        generator.writeEntry(SpinStabilizedKey.SPIN_DELTA.name(),     Unit.DEGREE.fromSI(spinStabilized.getSpinDelta()),        true);
-        generator.writeEntry(SpinStabilizedKey.SPIN_ANGLE.name(),     Unit.DEGREE.fromSI(spinStabilized.getSpinAngle()),        true);
-        generator.writeEntry(SpinStabilizedKey.SPIN_ANGLE_VEL.name(), Units.DEG_PER_S.fromSI(spinStabilized.getSpinAngleVel()), true);
+        generator.writeEntry(SpinStabilizedKey.SPIN_ALPHA.name(),     spinStabilized.getSpinAlpha(), Unit.DEGREE,        true);
+        generator.writeEntry(SpinStabilizedKey.SPIN_DELTA.name(),     spinStabilized.getSpinDelta(), Unit.DEGREE,        true);
+        generator.writeEntry(SpinStabilizedKey.SPIN_ANGLE.name(),     spinStabilized.getSpinAngle(), Unit.DEGREE,        true);
+        generator.writeEntry(SpinStabilizedKey.SPIN_ANGLE_VEL.name(), spinStabilized.getSpinAngleVel(), Units.DEG_PER_S, true);
 
         // nutation
-        generator.writeEntry(SpinStabilizedKey.NUTATION.name(),       Unit.DEGREE.fromSI(spinStabilized.getNutation()),       false);
-        generator.writeEntry(SpinStabilizedKey.NUTATION_PER.name(),   Unit.SECOND.fromSI(spinStabilized.getNutationPeriod()), false);
-        generator.writeEntry(SpinStabilizedKey.NUTATION_PHASE.name(), Unit.DEGREE.fromSI(spinStabilized.getNutationPhase()),  false);
+        generator.writeEntry(SpinStabilizedKey.NUTATION.name(),       spinStabilized.getNutation(), Unit.DEGREE,       false);
+        generator.writeEntry(SpinStabilizedKey.NUTATION_PER.name(),   spinStabilized.getNutationPeriod(), Unit.SECOND, false);
+        generator.writeEntry(SpinStabilizedKey.NUTATION_PHASE.name(), spinStabilized.getNutationPhase(), Unit.DEGREE,  false);
 
     }
 

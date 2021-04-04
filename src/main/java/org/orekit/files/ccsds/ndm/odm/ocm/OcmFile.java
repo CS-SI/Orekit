@@ -42,6 +42,15 @@ public class OcmFile extends NdmFile<Header, Segment<OcmMetadata, OcmData>>
     /** Key for format version. */
     public static final String FORMAT_VERSION_KEY = "CCSDS_OCM_VERS";
 
+    /** Orbit line element for XML messages. */
+    public static final String ORB_LINE = "orbLine";
+
+    /** Covariance line element for XML messages. */
+    public static final String COV_LINE = "covLine";
+
+    /** Maneuver line element for XML messages. */
+    public static final String MAN_LINE = "manLine";
+
     /** Gravitational coefficient to use for building Cartesian/Keplerian orbits. */
     private final double mu;
 

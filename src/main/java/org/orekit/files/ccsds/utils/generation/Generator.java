@@ -22,6 +22,7 @@ import java.util.List;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.units.Unit;
 
 /** Generation interface for CCSDS messages.
  * @author Luc Maisonobe
@@ -117,19 +118,21 @@ public interface Generator extends AutoCloseable {
 
     /** Write a single key/value entry.
      * @param key   the keyword to write
-     * @param value the value to write
+     * @param value the value to write (in SI units)
+     * @param unit output unit
      * @param mandatory if true, null values triggers exception, otherwise they are silently ignored
      * @throws IOException if an I/O error occurs.
      */
-    void writeEntry(String key, double value, boolean mandatory) throws IOException;
+    void writeEntry(String key, double value, Unit unit, boolean mandatory) throws IOException;
 
     /** Write a single key/value entry.
      * @param key   the keyword to write
-     * @param value the value to write
+     * @param value the value to write (in SI units)
+     * @param unit output unit
      * @param mandatory if true, null values triggers exception, otherwise they are silently ignored
      * @throws IOException if an I/O error occurs.
      */
-    void writeEntry(String key, Double value, boolean mandatory) throws IOException;
+    void writeEntry(String key, Double value, Unit unit, boolean mandatory) throws IOException;
 
     /** Finish current line.
      * @throws IOException if an I/O error occurs.

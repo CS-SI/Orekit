@@ -66,18 +66,18 @@ class ApmQuaternionWriter extends AbstractWriter {
 
         // quaternion
         final Quaternion q = quaternion.getQuaternion();
-        generator.writeEntry(ApmQuaternionKey.Q1.name(), Unit.ONE.fromSI(q.getQ1()), true);
-        generator.writeEntry(ApmQuaternionKey.Q2.name(), Unit.ONE.fromSI(q.getQ2()), true);
-        generator.writeEntry(ApmQuaternionKey.Q3.name(), Unit.ONE.fromSI(q.getQ3()), true);
-        generator.writeEntry(ApmQuaternionKey.QC.name(), Unit.ONE.fromSI(q.getQ0()), true);
+        generator.writeEntry(ApmQuaternionKey.Q1.name(), q.getQ1(), Unit.ONE, true);
+        generator.writeEntry(ApmQuaternionKey.Q2.name(), q.getQ2(), Unit.ONE, true);
+        generator.writeEntry(ApmQuaternionKey.Q3.name(), q.getQ3(), Unit.ONE, true);
+        generator.writeEntry(ApmQuaternionKey.QC.name(), q.getQ0(), Unit.ONE, true);
 
         // quaternion derivative
         if (quaternion.hasRates()) {
             final Quaternion qDot = quaternion.getQuaternionDot();
-            generator.writeEntry(ApmQuaternionKey.Q1_DOT.name(), Unit.ONE.fromSI(qDot.getQ1()), true);
-            generator.writeEntry(ApmQuaternionKey.Q2_DOT.name(), Unit.ONE.fromSI(qDot.getQ2()), true);
-            generator.writeEntry(ApmQuaternionKey.Q3_DOT.name(), Unit.ONE.fromSI(qDot.getQ3()), true);
-            generator.writeEntry(ApmQuaternionKey.QC_DOT.name(), Unit.ONE.fromSI(qDot.getQ0()), true);
+            generator.writeEntry(ApmQuaternionKey.Q1_DOT.name(), qDot.getQ1(), Unit.ONE, true);
+            generator.writeEntry(ApmQuaternionKey.Q2_DOT.name(), qDot.getQ2(), Unit.ONE, true);
+            generator.writeEntry(ApmQuaternionKey.Q3_DOT.name(), qDot.getQ3(), Unit.ONE, true);
+            generator.writeEntry(ApmQuaternionKey.QC_DOT.name(), qDot.getQ0(), Unit.ONE, true);
         }
 
     }

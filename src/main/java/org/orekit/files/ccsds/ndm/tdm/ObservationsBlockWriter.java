@@ -25,6 +25,7 @@ import org.orekit.files.ccsds.section.XmlStructureKey;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.units.Unit;
 
 
 /**
@@ -84,7 +85,7 @@ class ObservationsBlockWriter extends AbstractWriter {
             } else {
                 generator.enterSection(TdmDataKey.observation.name());
                 generator.writeEntry(TdmDataKey.EPOCH.name(), timeConverter, date, true);
-                generator.writeEntry(type.name(), rawValue, true);
+                generator.writeEntry(type.name(), rawValue, Unit.ONE, true);
                 generator.exitSection();
             }
         }

@@ -23,6 +23,7 @@ import java.util.List;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.section.AbstractWriter;
+import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.utils.AccurateFormatter;
 import org.orekit.utils.units.Unit;
@@ -75,19 +76,21 @@ class ManeuverHistoryWriter extends AbstractWriter {
         generator.writeEntry(ManeuverHistoryMetadataKey.MAN_PRED_SOURCE.name(),  metadata.getManPredSource(),                 false);
         generator.writeEntry(ManeuverHistoryMetadataKey.MAN_REF_FRAME.name(),    metadata.getManReferenceFrame().getName(),   false);
         generator.writeEntry(ManeuverHistoryMetadataKey.MAN_FRAME_EPOCH.name(),  timeConverter, metadata.getManFrameEpoch(),  false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.GRAV_ASSIST_NAME.name(), metadata.getGravitationalAssist().getName(), false);
+        if (metadata.getGravitationalAssist() != null) {
+            generator.writeEntry(ManeuverHistoryMetadataKey.GRAV_ASSIST_NAME.name(), metadata.getGravitationalAssist().getName(), false);
+        }
 
         // duty cycle
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_TYPE.name(),                metadata.getDcType(),                                  false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_WIN_OPEN.name(),            timeConverter, metadata.getDcWindowOpen(),             false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_WIN_CLOSE.name(),           timeConverter, metadata.getDcWindowClose(),            false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_MIN_CYCLES.name(),          metadata.getDcMinCycles(),                             false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_MAX_CYCLES.name(),          metadata.getDcMaxCycles(),                             false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_EXEC_START.name(),          timeConverter, metadata.getDcExecStart(),              false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_EXEC_STOP.name(),           timeConverter, metadata.getDcExecStop(),               false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_REF_TIME.name(),            timeConverter, metadata.getDcRefTime(),                false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_TIME_PULSE_DURATION.name(), Unit.SECOND.fromSI(metadata.getDcTimePulseDuration()), false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_TIME_PULSE_PERIOD.name(),   Unit.SECOND.fromSI(metadata.getDcTimePulsePeriod()),   false);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_TYPE.name(),                metadata.getDcType(),                           false);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_WIN_OPEN.name(),            timeConverter, metadata.getDcWindowOpen(),      false);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_WIN_CLOSE.name(),           timeConverter, metadata.getDcWindowClose(),     false);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_MIN_CYCLES.name(),          metadata.getDcMinCycles(),                      false);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_MAX_CYCLES.name(),          metadata.getDcMaxCycles(),                      false);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_EXEC_START.name(),          timeConverter, metadata.getDcExecStart(),       false);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_EXEC_STOP.name(),           timeConverter, metadata.getDcExecStop(),        false);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_REF_TIME.name(),            timeConverter, metadata.getDcRefTime(),         false);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_TIME_PULSE_DURATION.name(), metadata.getDcTimePulseDuration(), Unit.SECOND, false);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_TIME_PULSE_PERIOD.name(),   metadata.getDcTimePulsePeriod(),   Unit.SECOND, false);
         if (metadata.getDcRefDir() != null) {
             final StringBuilder value = new StringBuilder();
             value.append(AccurateFormatter.format(Unit.ONE.fromSI(metadata.getDcRefDir().getX())));
@@ -102,15 +105,15 @@ class ManeuverHistoryWriter extends AbstractWriter {
                                  metadata.getDcBodyFrame().toString().replace(' ', '_'),
                                  false);
         }
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_PA_START_ANGLE.name(), Unit.DEGREE.fromSI(metadata.getDcPhaseStartAngle()), false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_PA_STOP_ANGLE.name(),  Unit.DEGREE.fromSI(metadata.getDcPhaseStopAngle()),  false);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_PA_START_ANGLE.name(), metadata.getDcPhaseStartAngle(), Unit.DEGREE, false);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_PA_STOP_ANGLE.name(),  metadata.getDcPhaseStopAngle(), Unit.DEGREE,  false);
 
         // elements
         final List<ManeuverFieldType> types       = metadata.getManComposition();
         final StringBuilder           composition = new StringBuilder();
         for (int i = 0; i < types.size(); ++i) {
             if (i > 0) {
-                composition.append(' ');
+                composition.append(',');
             }
             composition.append(types.get(i).name());
         }
@@ -126,8 +129,12 @@ class ManeuverHistoryWriter extends AbstractWriter {
                 }
                 line.append(types.get(i).outputField(timeConverter, maneuver));
             }
-            generator.writeRawData(line);
-            generator.newLine();
+            if (generator.getFormat() == FileFormat.XML) {
+                generator.writeEntry(OcmFile.MAN_LINE, line.toString(), true);
+            } else {
+                generator.writeRawData(line);
+                generator.newLine();
+            }
         }
     }
 

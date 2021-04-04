@@ -58,12 +58,12 @@ public class StateVectorWriter extends AbstractWriter {
         final TimeStampedPVCoordinates pv = stateVector.toTimeStampedPVCoordinates();
         generator.writeComments(stateVector.getComments());
         generator.writeEntry(StateVectorKey.EPOCH.name(), timeConverter, pv.getDate(), true);
-        generator.writeEntry(StateVectorKey.X.name(),     Unit.KILOMETRE.fromSI(pv.getPosition().getX()), true);
-        generator.writeEntry(StateVectorKey.Y.name(),     Unit.KILOMETRE.fromSI(pv.getPosition().getY()), true);
-        generator.writeEntry(StateVectorKey.Z.name(),     Unit.KILOMETRE.fromSI(pv.getPosition().getZ()), true);
-        generator.writeEntry(StateVectorKey.X_DOT.name(), Unit.KILOMETRE.fromSI(pv.getVelocity().getX()), true);
-        generator.writeEntry(StateVectorKey.Y_DOT.name(), Unit.KILOMETRE.fromSI(pv.getVelocity().getY()), true);
-        generator.writeEntry(StateVectorKey.Z_DOT.name(), Unit.KILOMETRE.fromSI(pv.getVelocity().getZ()), true);
+        generator.writeEntry(StateVectorKey.X.name(),     pv.getPosition().getX(), Unit.KILOMETRE, true);
+        generator.writeEntry(StateVectorKey.Y.name(),     pv.getPosition().getY(), Unit.KILOMETRE, true);
+        generator.writeEntry(StateVectorKey.Z.name(),     pv.getPosition().getZ(), Unit.KILOMETRE, true);
+        generator.writeEntry(StateVectorKey.X_DOT.name(), pv.getVelocity().getX(), Unit.KILOMETRE, true);
+        generator.writeEntry(StateVectorKey.Y_DOT.name(), pv.getVelocity().getY(), Unit.KILOMETRE, true);
+        generator.writeEntry(StateVectorKey.Z_DOT.name(), pv.getVelocity().getZ(), Unit.KILOMETRE, true);
         // note that OPM format does not use X_DDOT, Y_DDOT, Z_DDOT, they are used only in OEM format
 
     }

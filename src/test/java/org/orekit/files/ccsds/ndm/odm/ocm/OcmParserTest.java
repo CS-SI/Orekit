@@ -881,7 +881,9 @@ public class OcmParserTest {
 
         // TODO test perturbation data
 
-        // TODO test user data
+        // test user data
+        Assert.assertEquals(1, file.getData().getUserDefinedBlock().getParameters().size());
+        Assert.assertEquals("OREKIT", file.getData().getUserDefinedBlock().getParameters().get("LIBRARY"));
 
     }
 

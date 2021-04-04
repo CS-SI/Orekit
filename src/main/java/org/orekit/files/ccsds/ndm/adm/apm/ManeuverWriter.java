@@ -59,16 +59,16 @@ class ManeuverWriter extends AbstractWriter {
 
         // time
         generator.writeEntry(ManeuverKey.MAN_EPOCH_START.name(), timeConverter, maneuver.getEpochStart(), true);
-        generator.writeEntry(ManeuverKey.MAN_DURATION.name(),    Unit.SECOND.fromSI(maneuver.getDuration()),        true);
+        generator.writeEntry(ManeuverKey.MAN_DURATION.name(),    maneuver.getDuration(), Unit.SECOND,     true);
 
         // frame
         generator.writeEntry(ManeuverKey.MAN_REF_FRAME.name(), maneuver.getRefFrameString(), false);
 
         // torque
         final Vector3D torque = maneuver.getTorque();
-        generator.writeEntry(ManeuverKey.MAN_TOR_1.name(), Units.N_M.fromSI(torque.getX()), true);
-        generator.writeEntry(ManeuverKey.MAN_TOR_2.name(), Units.N_M.fromSI(torque.getY()), true);
-        generator.writeEntry(ManeuverKey.MAN_TOR_3.name(), Units.N_M.fromSI(torque.getZ()), true);
+        generator.writeEntry(ManeuverKey.MAN_TOR_1.name(), torque.getX(), Units.N_M, true);
+        generator.writeEntry(ManeuverKey.MAN_TOR_2.name(), torque.getY(), Units.N_M, true);
+        generator.writeEntry(ManeuverKey.MAN_TOR_3.name(), torque.getZ(), Units.N_M, true);
 
     }
 

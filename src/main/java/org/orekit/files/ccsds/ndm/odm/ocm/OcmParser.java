@@ -63,12 +63,6 @@ import org.orekit.utils.units.Unit;
  */
 public class OcmParser extends CommonParser<OcmFile, OcmParser> implements EphemerisFileParser<OcmFile> {
 
-    /** Orbit line element for XML messages. */
-    private static final String ORB_LINE = "orbLine";
-
-    /** User-defined element. */
-    private static final String USER_DEFINED = "USER_DEFINED";
-
     /** Pattern for splitting strings at blanks. */
     private static final Pattern SPLIT_AT_BLANKS = Pattern.compile("\\s+");
 
@@ -147,7 +141,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
         final Map<String, XmlTokenBuilder> builders = super.getSpecialXmlElementsBuilders();
 
         // special handling of user-defined parameters
-        builders.put(USER_DEFINED, new UserDefinedXmlTokenBuilder());
+        builders.put(UserDefined.USER_DEFINED_XML_TAG, new UserDefinedXmlTokenBuilder());
 
         return builders;
 
@@ -280,6 +274,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
             currentOrbitStateHistory         = new ArrayList<>();
             setFallback(this::processOrbitStateToken);
         } else {
+            setFallback(structureProcessor);
             if (currentOrbitStateHistoryMetadata.getCenter().getBody() != null) {
                 setMuCreated(currentOrbitStateHistoryMetadata.getCenter().getBody().getGM());
             }
@@ -304,6 +299,8 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                 physicBlock = new PhysicalProperties(metadata.getEpochT0());
             }
             setFallback(this::processPhysicalPropertyToken);
+        } else {
+            setFallback(structureProcessor);
         }
         return true;
     }
@@ -323,6 +320,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
             currentCovarianceHistory         = new ArrayList<>();
             setFallback(this::processCovarianceToken);
         } else {
+            setFallback(structureProcessor);
             covarianceBlocks.add(new CovarianceHistory(currentCovarianceHistoryMetadata,
                                                        currentCovarianceHistory));
             currentCovarianceHistoryMetadata = null;
@@ -346,6 +344,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
             currentManeuverHistory         = new ArrayList<>();
             setFallback(this::processManeuverToken);
         } else {
+            setFallback(structureProcessor);
             maneuverBlocks.add(new ManeuverHistory(currentManeuverHistoryMetadata,
                                                    currentManeuverHistory));
             currentManeuverHistoryMetadata = null;
@@ -366,6 +365,8 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                 perturbationsBlock = new Perturbations(context.getDataContext().getCelestialBodies());
             }
             setFallback(this::processPerturbationToken);
+        } else {
+            setFallback(structureProcessor);
         }
         return true;
     }
@@ -382,6 +383,8 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                 orbitDeterminationBlock = new OrbitDetermination();
             }
             setFallback(this::processOrbitDeterminationToken);
+        } else {
+            setFallback(structureProcessor);
         }
         return true;
     }
@@ -463,7 +466,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
      * @return true if token was processed, false otherwise
      */
     private boolean processOrbitStateToken(final ParseToken token) {
-        if (token.getName() != null && !token.getName().equals(ORB_LINE)) {
+        if (token.getName() != null && !token.getName().equals(OcmFile.ORB_LINE)) {
             // we are in the section metadata part
             try {
                 return OrbitStateHistoryMetadataKey.valueOf(token.getName()).
@@ -523,7 +526,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
      * @return true if token was processed, false otherwise
      */
     private boolean processCovarianceToken(final ParseToken token) {
-        if (token.getName() != null) {
+        if (token.getName() != null && !token.getName().equals(OcmFile.COV_LINE)) {
             // we are in the section metadata part
             try {
                 return CovarianceHistoryMetadataKey.valueOf(token.getName()).
@@ -538,6 +541,9 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                 // we are starting the real data section, we can now check metadata is complete
                 currentCovarianceHistoryMetadata.checkMandatoryEntries();
                 setFallback(this::processDataSubStructureToken);
+            }
+            if (token.getType() == TokenType.START || token.getType() == TokenType.STOP) {
+                return true;
             }
             try {
                 final String[] fields = SPLIT_AT_BLANKS.split(token.getRawContent().trim());
@@ -562,7 +568,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
      * @return true if token was processed, false otherwise
      */
     private boolean processManeuverToken(final ParseToken token) {
-        if (token.getName() != null) {
+        if (token.getName() != null && !token.getName().equals(OcmFile.MAN_LINE)) {
             // we are in the section metadata part
             try {
                 return ManeuverHistoryMetadataKey.valueOf(token.getName()).
@@ -577,6 +583,9 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                 // we are starting the real data section, we can now check metadata is complete
                 currentManeuverHistoryMetadata.checkMandatoryEntries();
                 setFallback(this::processDataSubStructureToken);
+            }
+            if (token.getType() == TokenType.START || token.getType() == TokenType.STOP) {
+                return true;
             }
             try {
                 final String[] fields = SPLIT_AT_BLANKS.split(token.getRawContent().trim());
