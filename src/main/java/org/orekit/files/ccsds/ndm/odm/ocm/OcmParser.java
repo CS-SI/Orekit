@@ -274,6 +274,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
             currentOrbitStateHistory         = new ArrayList<>();
             setFallback(this::processOrbitStateToken);
         } else {
+            setFallback(structureProcessor);
             if (currentOrbitStateHistoryMetadata.getCenter().getBody() != null) {
                 setMuCreated(currentOrbitStateHistoryMetadata.getCenter().getBody().getGM());
             }
@@ -298,6 +299,8 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                 physicBlock = new PhysicalProperties(metadata.getEpochT0());
             }
             setFallback(this::processPhysicalPropertyToken);
+        } else {
+            setFallback(structureProcessor);
         }
         return true;
     }
@@ -317,6 +320,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
             currentCovarianceHistory         = new ArrayList<>();
             setFallback(this::processCovarianceToken);
         } else {
+            setFallback(structureProcessor);
             covarianceBlocks.add(new CovarianceHistory(currentCovarianceHistoryMetadata,
                                                        currentCovarianceHistory));
             currentCovarianceHistoryMetadata = null;
@@ -340,6 +344,7 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
             currentManeuverHistory         = new ArrayList<>();
             setFallback(this::processManeuverToken);
         } else {
+            setFallback(structureProcessor);
             maneuverBlocks.add(new ManeuverHistory(currentManeuverHistoryMetadata,
                                                    currentManeuverHistory));
             currentManeuverHistoryMetadata = null;
@@ -360,6 +365,8 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                 perturbationsBlock = new Perturbations(context.getDataContext().getCelestialBodies());
             }
             setFallback(this::processPerturbationToken);
+        } else {
+            setFallback(structureProcessor);
         }
         return true;
     }
@@ -376,6 +383,8 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                 orbitDeterminationBlock = new OrbitDetermination();
             }
             setFallback(this::processOrbitDeterminationToken);
+        } else {
+            setFallback(structureProcessor);
         }
         return true;
     }
