@@ -533,6 +533,9 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                 currentCovarianceHistoryMetadata.checkMandatoryEntries();
                 setFallback(this::processDataSubStructureToken);
             }
+            if (token.getType() == TokenType.START || token.getType() == TokenType.STOP) {
+                return true;
+            }
             try {
                 final String[] fields = SPLIT_AT_BLANKS.split(token.getRawContent().trim());
                 final int n = currentCovarianceHistoryMetadata.getCovUnits().size();
@@ -571,6 +574,9 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
                 // we are starting the real data section, we can now check metadata is complete
                 currentManeuverHistoryMetadata.checkMandatoryEntries();
                 setFallback(this::processDataSubStructureToken);
+            }
+            if (token.getType() == TokenType.START || token.getType() == TokenType.STOP) {
+                return true;
             }
             try {
                 final String[] fields = SPLIT_AT_BLANKS.split(token.getRawContent().trim());
