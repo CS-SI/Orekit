@@ -78,16 +78,16 @@ class ManeuverHistoryWriter extends AbstractWriter {
         generator.writeEntry(ManeuverHistoryMetadataKey.GRAV_ASSIST_NAME.name(), metadata.getGravitationalAssist().getName(), false);
 
         // duty cycle
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_TYPE.name(),                metadata.getDcType(),                                  false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_WIN_OPEN.name(),            timeConverter, metadata.getDcWindowOpen(),             false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_WIN_CLOSE.name(),           timeConverter, metadata.getDcWindowClose(),            false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_MIN_CYCLES.name(),          metadata.getDcMinCycles(),                             false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_MAX_CYCLES.name(),          metadata.getDcMaxCycles(),                             false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_EXEC_START.name(),          timeConverter, metadata.getDcExecStart(),              false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_EXEC_STOP.name(),           timeConverter, metadata.getDcExecStop(),               false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_REF_TIME.name(),            timeConverter, metadata.getDcRefTime(),                false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_TIME_PULSE_DURATION.name(), Unit.SECOND.fromSI(metadata.getDcTimePulseDuration()), false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_TIME_PULSE_PERIOD.name(),   Unit.SECOND.fromSI(metadata.getDcTimePulsePeriod()),   false);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_TYPE.name(),                metadata.getDcType(),                           false);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_WIN_OPEN.name(),            timeConverter, metadata.getDcWindowOpen(),      false);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_WIN_CLOSE.name(),           timeConverter, metadata.getDcWindowClose(),     false);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_MIN_CYCLES.name(),          metadata.getDcMinCycles(),                      false);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_MAX_CYCLES.name(),          metadata.getDcMaxCycles(),                      false);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_EXEC_START.name(),          timeConverter, metadata.getDcExecStart(),       false);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_EXEC_STOP.name(),           timeConverter, metadata.getDcExecStop(),        false);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_REF_TIME.name(),            timeConverter, metadata.getDcRefTime(),         false);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_TIME_PULSE_DURATION.name(), metadata.getDcTimePulseDuration(), Unit.SECOND, false);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_TIME_PULSE_PERIOD.name(),   metadata.getDcTimePulsePeriod(),   Unit.SECOND, false);
         if (metadata.getDcRefDir() != null) {
             final StringBuilder value = new StringBuilder();
             value.append(AccurateFormatter.format(Unit.ONE.fromSI(metadata.getDcRefDir().getX())));
@@ -102,8 +102,8 @@ class ManeuverHistoryWriter extends AbstractWriter {
                                  metadata.getDcBodyFrame().toString().replace(' ', '_'),
                                  false);
         }
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_PA_START_ANGLE.name(), Unit.DEGREE.fromSI(metadata.getDcPhaseStartAngle()), false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_PA_STOP_ANGLE.name(),  Unit.DEGREE.fromSI(metadata.getDcPhaseStopAngle()),  false);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_PA_START_ANGLE.name(), metadata.getDcPhaseStartAngle(), Unit.DEGREE, false);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_PA_STOP_ANGLE.name(),  metadata.getDcPhaseStopAngle(), Unit.DEGREE,  false);
 
         // elements
         final List<ManeuverFieldType> types       = metadata.getManComposition();

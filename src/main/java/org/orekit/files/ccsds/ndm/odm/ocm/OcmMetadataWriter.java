@@ -137,10 +137,8 @@ class OcmMetadataWriter extends AbstractWriter {
                              metadata.getOcmDataElements(), false);
 
         // other times
-        generator.writeEntry(OcmMetadataKey.SCLK_OFFSET_AT_EPOCH.name(),
-                             Unit.SECOND.fromSI(metadata.getSclkOffsetAtEpoch()), false);
-        generator.writeEntry(OcmMetadataKey.SCLK_SEC_PER_SI_SEC.name(),
-                             Unit.SECOND.fromSI(metadata.getSclkSecPerSISec()), false);
+        generator.writeEntry(OcmMetadataKey.SCLK_OFFSET_AT_EPOCH.name(), metadata.getSclkOffsetAtEpoch(), Unit.SECOND, false);
+        generator.writeEntry(OcmMetadataKey.SCLK_SEC_PER_SI_SEC.name(),  metadata.getSclkSecPerSISec(),   Unit.SECOND, false);
         generator.writeEntry(OcmMetadataKey.PREVIOUS_MESSAGE_EPOCH.name(), timeConverter,
                              metadata.getPreviousMessageEpoch(), false);
         generator.writeEntry(OcmMetadataKey.NEXT_MESSAGE_EPOCH.name(), timeConverter,
@@ -149,12 +147,9 @@ class OcmMetadataWriter extends AbstractWriter {
                              metadata.getStartTime(), false);
         generator.writeEntry(OcmMetadataKey.STOP_TIME.name(), timeConverter,
                              metadata.getStopTime(), false);
-        generator.writeEntry(OcmMetadataKey.TIME_SPAN.name(),
-                             Unit.DAY.fromSI(metadata.getTimeSpan()), false);
-        generator.writeEntry(OcmMetadataKey.TAIMUTC_AT_TZERO.name(),
-                             Unit.SECOND.fromSI(metadata.getTaimutcT0()), false);
-        generator.writeEntry(OcmMetadataKey.UT1MUTC_AT_TZERO.name(),
-                             Unit.SECOND.fromSI(metadata.getUt1mutcT0()), false);
+        generator.writeEntry(OcmMetadataKey.TIME_SPAN.name(),        metadata.getTimeSpan(),  Unit.DAY,    false);
+        generator.writeEntry(OcmMetadataKey.TAIMUTC_AT_TZERO.name(), metadata.getTaimutcT0(), Unit.SECOND, false);
+        generator.writeEntry(OcmMetadataKey.UT1MUTC_AT_TZERO.name(), metadata.getUt1mutcT0(), Unit.SECOND, false);
 
         // data sources
         generator.writeEntry(OcmMetadataKey.EOP_SOURCE.name(),

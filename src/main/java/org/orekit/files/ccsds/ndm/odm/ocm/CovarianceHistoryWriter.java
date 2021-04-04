@@ -71,9 +71,9 @@ class CovarianceHistoryWriter extends AbstractWriter {
         generator.writeEntry(CovarianceHistoryMetadataKey.COV_FRAME_EPOCH.name(), timeConverter, metadata.getCovFrameEpoch(), false);
 
         // scaling
-        generator.writeEntry(CovarianceHistoryMetadataKey.COV_SCALE_MIN.name(),  Unit.ONE.fromSI(metadata.getCovScaleMin()),       false);
-        generator.writeEntry(CovarianceHistoryMetadataKey.COV_SCALE_MAX.name(),  Unit.ONE.fromSI(metadata.getCovScaleMax()),       false);
-        generator.writeEntry(CovarianceHistoryMetadataKey.COV_CONFIDENCE.name(), Unit.PERCENT.fromSI(metadata.getCovConfidence()), false);
+        generator.writeEntry(CovarianceHistoryMetadataKey.COV_SCALE_MIN.name(),  metadata.getCovScaleMin(), Unit.ONE,       false);
+        generator.writeEntry(CovarianceHistoryMetadataKey.COV_SCALE_MAX.name(),  metadata.getCovScaleMax(), Unit.ONE,       false);
+        generator.writeEntry(CovarianceHistoryMetadataKey.COV_CONFIDENCE.name(), metadata.getCovConfidence(), Unit.PERCENT, false);
 
         // elements
         generator.writeEntry(CovarianceHistoryMetadataKey.COV_TYPE.name(),  metadata.getCovType(),                         false);

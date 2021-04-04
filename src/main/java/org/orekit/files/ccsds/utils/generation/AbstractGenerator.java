@@ -27,6 +27,7 @@ import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.utils.AccurateFormatter;
+import org.orekit.utils.units.Unit;
 
 /** Base class for both Key-Value Notation and eXtended Markup Language generators for CCSDS messages.
  * @author Luc Maisonobe
@@ -118,14 +119,14 @@ public abstract class AbstractGenerator implements Generator {
 
     /** {@inheritDoc} */
     @Override
-    public void writeEntry(final String key, final double value, final boolean mandatory) throws IOException {
-        writeEntry(key, doubleToString(value), mandatory);
+    public void writeEntry(final String key, final double value, final Unit unit, final boolean mandatory) throws IOException {
+        writeEntry(key, doubleToString(unit.fromSI(value)), mandatory);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void writeEntry(final String key, final Double value, final boolean mandatory) throws IOException {
-        writeEntry(key, value == null ? (String) null : doubleToString(value.doubleValue()), mandatory);
+    public void writeEntry(final String key, final Double value, final Unit unit, final boolean mandatory) throws IOException {
+        writeEntry(key, value == null ? (String) null : doubleToString(unit.fromSI(value.doubleValue())), mandatory);
     }
 
     /** {@inheritDoc} */
