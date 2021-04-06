@@ -17,17 +17,23 @@
 package org.orekit.files.ccsds.utils.generation;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.orekit.files.ccsds.definitions.TimeConverter;
-import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.units.Unit;
 
 /** Generation interface for CCSDS messages.
  * @author Luc Maisonobe
  * @since 11.0
  */
 public interface Generator extends AutoCloseable {
+
+    /** Get the name of the output (for error messages).
+     * @return name of the output
+     */
+    String getOutputName();
 
     /** Get the generated file format.
      * @return generated file format
@@ -36,16 +42,30 @@ public interface Generator extends AutoCloseable {
 
     /** Start CCSDS message.
      * @param messageTypeKey key for message type
+     * @param root root element for XML files
      * @param version format version
      * @throws IOException if an I/O error occurs.
      */
-    void startMessage(String messageTypeKey, double version) throws IOException;
+    void startMessage(String root, String messageTypeKey, double version) throws IOException;
+
+    /** End CCSDS message.
+     * @param root root element for XML files
+     * @throws IOException if an I/O error occurs.
+     */
+    void endMessage(String root) throws IOException;
 
     /** Write comment lines.
      * @param comments comments to write
      * @throws IOException if an I/O error occurs.
      */
-    void writeComments(CommentsContainer comments) throws IOException;
+    void writeComments(List<String> comments) throws IOException;
+
+    /** Write a user defined entry.
+     * @param parameter name of the user defined parameter
+     * @param value the value to write
+     * @throws IOException if an I/O error occurs.
+     */
+    void writeUserDefined(String parameter, String value) throws IOException;
 
     /** Write a single key/value entry.
      * @param key   the keyword to write
@@ -54,6 +74,14 @@ public interface Generator extends AutoCloseable {
      * @throws IOException if an I/O error occurs.
      */
     void writeEntry(String key, String value, boolean mandatory) throws IOException;
+
+    /** Write a single key/value entry.
+     * @param key   the keyword to write
+     * @param value the value to write
+     * @param mandatory if true, null values triggers exception, otherwise they are silently ignored
+     * @throws IOException if an I/O error occurs.
+     */
+    void writeEntry(String key, List<String> value, boolean mandatory) throws IOException;
 
     /** Write a single key/value entry.
      * @param key   the keyword to write
@@ -78,23 +106,33 @@ public interface Generator extends AutoCloseable {
      * @param mandatory if true, null values triggers exception, otherwise they are silently ignored
      * @throws IOException if an I/O error occurs.
      */
+    void writeEntry(String key, char value, boolean mandatory) throws IOException;
+
+    /** Write a single key/value entry.
+     * @param key   the keyword to write
+     * @param value the value to write
+     * @param mandatory if true, null values triggers exception, otherwise they are silently ignored
+     * @throws IOException if an I/O error occurs.
+     */
     void writeEntry(String key, int value, boolean mandatory) throws IOException;
 
     /** Write a single key/value entry.
      * @param key   the keyword to write
-     * @param value the value to write
+     * @param value the value to write (in SI units)
+     * @param unit output unit
      * @param mandatory if true, null values triggers exception, otherwise they are silently ignored
      * @throws IOException if an I/O error occurs.
      */
-    void writeEntry(String key, double value, boolean mandatory) throws IOException;
+    void writeEntry(String key, double value, Unit unit, boolean mandatory) throws IOException;
 
     /** Write a single key/value entry.
      * @param key   the keyword to write
-     * @param value the value to write
+     * @param value the value to write (in SI units)
+     * @param unit output unit
      * @param mandatory if true, null values triggers exception, otherwise they are silently ignored
      * @throws IOException if an I/O error occurs.
      */
-    void writeEntry(String key, Double value, boolean mandatory) throws IOException;
+    void writeEntry(String key, Double value, Unit unit, boolean mandatory) throws IOException;
 
     /** Finish current line.
      * @throws IOException if an I/O error occurs.

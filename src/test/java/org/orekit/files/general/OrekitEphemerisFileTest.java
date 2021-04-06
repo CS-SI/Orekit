@@ -42,10 +42,12 @@ import org.orekit.errors.OrekitException;
 import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.ndm.WriterBuilder;
+import org.orekit.files.ccsds.ndm.odm.oem.EphemerisWriter;
 import org.orekit.files.ccsds.ndm.odm.oem.OemMetadata;
 import org.orekit.files.ccsds.ndm.odm.oem.OemParser;
 import org.orekit.files.ccsds.ndm.odm.oem.OemSegment;
-import org.orekit.files.ccsds.ndm.odm.oem.OemWriter;
+import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.general.EphemerisFile.EphemerisSegment;
 import org.orekit.files.general.OrekitEphemerisFile.OrekitSatelliteEphemeris;
 import org.orekit.frames.Frame;
@@ -141,8 +143,9 @@ public class OrekitEphemerisFileTest {
         template.setObjectName(satId);
         template.setCenter(new BodyFacade("EARTH", CelestialBodyFactory.getCelestialBodies().getEarth()));
         template.setReferenceFrame(FrameFacade.map(FramesFactory.getEME2000()));
-        new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(), null, template).
-        write(tempOemFile, ephemerisFile);
+        EphemerisWriter writer = new EphemerisWriter(new WriterBuilder().buildOemWriter(),
+                                                     null, template, FileFormat.KVN, "dummy");
+        writer.write(tempOemFile, ephemerisFile);
 
         OemParser parser = new OemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                          null, body.getGM(), 2);

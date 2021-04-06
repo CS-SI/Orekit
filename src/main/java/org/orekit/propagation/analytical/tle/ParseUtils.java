@@ -79,7 +79,7 @@ class ParseUtils  {
             final Character alpha = ALPHA5_LETTERS.get(highDigits);
             if (alpha == null) {
                 throw new OrekitException(OrekitMessages.TLE_INVALID_PARAMETER,
-                                          satelliteNumber, name, alpha);
+                                          satelliteNumber, name, "null");
             }
             return alpha + addPadding(name, lowDigits, '0', 4, true, satelliteNumber);
         } else {

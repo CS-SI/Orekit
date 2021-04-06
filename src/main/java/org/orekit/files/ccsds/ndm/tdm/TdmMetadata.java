@@ -263,7 +263,7 @@ public class TdmMetadata extends Metadata {
      * @return the path
      */
     public int[] getPath() {
-        return path.clone();
+        return safeCopy(path);
     }
 
     /** Setter for the path.
@@ -271,14 +271,14 @@ public class TdmMetadata extends Metadata {
      */
     public void setPath(final int[] path) {
         refuseFurtherComments();
-        this.path = path.clone();
+        this.path = safeCopy(path);
     }
 
     /** Getter for the path1.
      * @return the path1
      */
     public int[] getPath1() {
-        return path1.clone();
+        return safeCopy(path1);
     }
 
     /** Setter for the path1.
@@ -286,14 +286,14 @@ public class TdmMetadata extends Metadata {
      */
     public void setPath1(final int[] path1) {
         refuseFurtherComments();
-        this.path1 = path1.clone();
+        this.path1 = safeCopy(path1);
     }
 
     /** Getter for the path2.
      * @return the path2
      */
     public int[] getPath2() {
-        return path2.clone();
+        return safeCopy(path2);
     }
 
     /** Setter for the path2.
@@ -301,7 +301,7 @@ public class TdmMetadata extends Metadata {
      */
     public void setPath2(final int[] path2) {
         refuseFurtherComments();
-        this.path2 = path2.clone();
+        this.path2 = safeCopy(path2);
     }
 
     /** Getter for the transmitBand.
@@ -696,6 +696,14 @@ public class TdmMetadata extends Metadata {
     public void setCorrectionsApplied(final CorrectionApplied correctionsApplied) {
         refuseFurtherComments();
         this.correctionsApplied = correctionsApplied;
+    }
+
+    /** Safe copy of an integer array.
+     * @param original original array
+     * @return copy of the array
+     */
+    private int[] safeCopy(final int[] original) {
+        return original == null ? null : original.clone();
     }
 
 }

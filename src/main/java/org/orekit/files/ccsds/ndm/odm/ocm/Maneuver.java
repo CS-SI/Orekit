@@ -1,5 +1,5 @@
 /* Copyright 2002-2021 CS GROUP
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,6 +18,7 @@
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.files.ccsds.definitions.OnOff;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
@@ -40,7 +41,7 @@ public class Maneuver implements TimeStamped {
     private double[] acceleration;
 
     /** Interpolation mode between current and next acceleration line. */
-    private String accelerationInterpolation;
+    private OnOff accelerationInterpolation;
 
     /** One σ percent error on acceleration magnitude. */
     private double accelerationSigma;
@@ -58,7 +59,7 @@ public class Maneuver implements TimeStamped {
     private double thrustEfficiency;
 
     /** Interpolation mode between current and next acceleration line. */
-    private String thrustInterpolation;
+    private OnOff thrustInterpolation;
 
     /** Thrust specific impulse. */
     private double thrustIsp;
@@ -152,14 +153,14 @@ public class Maneuver implements TimeStamped {
     /** Get interpolation mode between current and next acceleration line.
      * @return interpolation mode between current and next acceleration line
      */
-    public String getAccelerationInterpolation() {
+    public OnOff getAccelerationInterpolation() {
         return accelerationInterpolation;
     }
 
     /** Set interpolation mode between current and next acceleration line.
      * @param accelerationInterpolation interpolation mode between current and next acceleration line
      */
-    public void setAccelerationInterpolation(final String accelerationInterpolation) {
+    public void setAccelerationInterpolation(final OnOff accelerationInterpolation) {
         this.accelerationInterpolation = accelerationInterpolation;
     }
 
@@ -239,14 +240,14 @@ public class Maneuver implements TimeStamped {
     /** Get interpolation mode between current and next thrust line.
      * @return interpolation mode between current and next thrust line
      */
-    public String getThrustInterpolation() {
+    public OnOff getThrustInterpolation() {
         return thrustInterpolation;
     }
 
     /** Set interpolation mode between current and next thrust line.
      * @param thrustInterpolation interpolation mode between current and next thrust line
      */
-    public void setThrustInterpolation(final String thrustInterpolation) {
+    public void setThrustInterpolation(final OnOff thrustInterpolation) {
         this.thrustInterpolation = thrustInterpolation;
     }
 

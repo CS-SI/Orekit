@@ -29,7 +29,7 @@ import org.orekit.utils.units.Unit;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class ManeuverWriter extends AbstractWriter {
+class ManeuverWriter extends AbstractWriter {
 
     /** Maneuver parameters block. */
     private final Maneuver maneuver;
@@ -41,7 +41,7 @@ public class ManeuverWriter extends AbstractWriter {
      * @param maneuver maneuver to write
      * @param timeConverter converter for dates
      */
-    public ManeuverWriter(final Maneuver maneuver, final TimeConverter timeConverter) {
+    ManeuverWriter(final Maneuver maneuver, final TimeConverter timeConverter) {
         super(XmlSubStructureKey.maneuverParameters.name(), null);
         this.maneuver      = maneuver;
         this.timeConverter = timeConverter;
@@ -52,15 +52,15 @@ public class ManeuverWriter extends AbstractWriter {
     protected void writeContent(final Generator generator) throws IOException {
 
         // maneuver block
-        generator.writeComments(maneuver);
+        generator.writeComments(maneuver.getComments());
 
-        generator.writeEntry(ManeuverKey.MAN_EPOCH_IGNITION.name(), timeConverter, maneuver.getEpochIgnition(),     true);
-        generator.writeEntry(ManeuverKey.MAN_DURATION.name(),       Unit.SECOND.fromSI(maneuver.getDuration()),     true);
-        generator.writeEntry(ManeuverKey.MAN_DELTA_MASS.name(),     Unit.KILOGRAM.fromSI(maneuver.getDeltaMass()),  true);
-        generator.writeEntry(ManeuverKey.MAN_REF_FRAME.name(),      maneuver.getReferenceFrame().getName(),         true);
-        generator.writeEntry(ManeuverKey.MAN_DV_1.name(),           Units.KM_PER_S.fromSI(maneuver.getDV().getX()), true);
-        generator.writeEntry(ManeuverKey.MAN_DV_2.name(),           Units.KM_PER_S.fromSI(maneuver.getDV().getY()), true);
-        generator.writeEntry(ManeuverKey.MAN_DV_3.name(),           Units.KM_PER_S.fromSI(maneuver.getDV().getZ()), true);
+        generator.writeEntry(ManeuverKey.MAN_EPOCH_IGNITION.name(), timeConverter, maneuver.getEpochIgnition(), true);
+        generator.writeEntry(ManeuverKey.MAN_DURATION.name(),       maneuver.getDuration(), Unit.SECOND,        true);
+        generator.writeEntry(ManeuverKey.MAN_DELTA_MASS.name(),     maneuver.getDeltaMass(), Unit.KILOGRAM,     true);
+        generator.writeEntry(ManeuverKey.MAN_REF_FRAME.name(),      maneuver.getReferenceFrame().getName(),     true);
+        generator.writeEntry(ManeuverKey.MAN_DV_1.name(),           maneuver.getDV().getX(), Units.KM_PER_S,    true);
+        generator.writeEntry(ManeuverKey.MAN_DV_2.name(),           maneuver.getDV().getY(), Units.KM_PER_S,    true);
+        generator.writeEntry(ManeuverKey.MAN_DV_3.name(),           maneuver.getDV().getZ(), Units.KM_PER_S,    true);
 
     }
 

@@ -17,6 +17,8 @@
 
 package org.orekit.files.ccsds.ndm.odm.omm;
 
+import java.util.regex.Pattern;
+
 import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
 
 public class OmmMetadata extends CommonMetadata {
@@ -27,9 +29,19 @@ public class OmmMetadata extends CommonMetadata {
     /** Constant for DSST mean elements theory. */
     public static final String DSST_THEORY = "DSST";
 
+    /** Pattern for SGP or SDP theory. */
+    private static final Pattern SGP_SDP_PATTERN = Pattern.compile(".*S[GD]P.*");
+
     /** Description of the Mean Element Theory. Indicates the proper method to employ
      * to propagate the state. */
     private String meanElementTheory;
+
+    /** Check if mean element theory in SGP or SDP.
+     * @return true if mean element theory in SGP or SDP
+     */
+    public boolean theoryIsSgpSdp() {
+        return SGP_SDP_PATTERN.matcher(meanElementTheory).matches();
+    }
 
     /** Get the description of the Mean Element Theory.
      * @return the mean element theory

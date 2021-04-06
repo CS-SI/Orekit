@@ -40,6 +40,9 @@ import org.orekit.utils.IERSConventions;
  */
 public class OmmFile extends NdmFile<Header, Segment<OmmMetadata, OmmData>> implements TimeStamped {
 
+    /** Root element for XML files. */
+    public static final String ROOT = "omm";
+
     /** Key for format version. */
     public static final String FORMAT_VERSION_KEY = "CCSDS_OMM_VERS";
 

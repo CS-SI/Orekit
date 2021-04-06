@@ -16,6 +16,8 @@
  */
 package org.orekit.files.ccsds.definitions;
 
+import java.util.List;
+
 import org.orekit.utils.units.Unit;
 
 /**
@@ -28,8 +30,8 @@ public class Units {
     /** Seconds reciprocal unit. */
     public static final Unit ONE_PER_S = Unit.parse("s⁻¹");
 
-    /** kg/m² unit. */
-    public static final Unit KG_PER_M2 = Unit.parse("kg/m²");
+    /** kg.m² unit. */
+    public static final Unit KG_M2 = Unit.parse("kg.m²");
 
     /** km³/s² unit. */
     public static final Unit KM3_PER_S2 = Unit.parse("km³/s²");
@@ -37,8 +39,8 @@ public class Units {
     /** m² unit. */
     public static final Unit M2 = Unit.parse("m²");
 
-    /** #/yr unit. */
-    public static final Unit NB_PER_Y = Unit.parse("y⁻¹");
+    /** #/year unit. */
+    public static final Unit NB_PER_Y = Unit.parse("a⁻¹");
 
     /** Square kilometers units. */
     public static final Unit KM2 = Unit.parse("km²");
@@ -67,10 +69,48 @@ public class Units {
     /** Degree per second unit. */
     public static final Unit DEG_PER_S = Unit.parse("°/s");
 
+    /** Newton metre unit. */
+    public static final Unit N_M = Unit.parse("N.m");
+
+    /** Nano Tesla unit. */
+    public static final Unit NANO_TESLA = Unit.parse("nT");
+
+    /** HectoPascal unit. */
+    public static final Unit HECTO_PASCAL = Unit.parse("hPa");
+
+    /** Hertz per second unit. */
+    public static final Unit HZ_PER_S = Unit.parse("Hz/s");
+
     /** Private constructor for a utility class.
      */
     private Units() {
         // nothing to do
+    }
+
+    /** Convert a list of units to a bracketed string.
+     * @param units lists to output (may be null or empty)
+     * @return bracketed string (null if units list is null or empty)
+     */
+    public static String outputBracketed(final List<Unit> units) {
+
+        if (units == null || units.isEmpty()) {
+            // nothing to output
+            return null;
+        }
+
+        final StringBuilder builder = new StringBuilder();
+        builder.append('[');
+        boolean first = true;
+        for (final Unit unit : units) {
+            if (!first) {
+                builder.append(',');
+            }
+            builder.append(unit.getName());
+            first = false;
+        }
+        builder.append(']');
+        return builder.toString();
+
     }
 
 }

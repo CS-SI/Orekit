@@ -67,12 +67,6 @@ import org.orekit.utils.IERSConventions;
  */
 public class OpmParser extends CommonParser<OpmFile, OpmParser> {
 
-    /** Root element for XML files. */
-    private static final String ROOT = "opm";
-
-    /** User-defined element. */
-    private static final String USER_DEFINED = "USER_DEFINED";
-
     /** Default mass to use if there are no spacecraft parameters block logical block in the file. */
     private final double defaultMass;
 
@@ -113,6 +107,11 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
     private ProcessingState structureProcessor;
 
     /** Complete constructor.
+     * <p>
+     * Calling this constructor directly is not recommended. Users should rather use
+     * {@link org.orekit.files.ccsds.ndm.ParserBuilder#buildOpmParser()
+     * parserBuilder.buildOpmParser()}.
+     * </p>
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
@@ -124,7 +123,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
                      final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate, final double mu,
                      final double defaultMass) {
-        super(ROOT, OpmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate, mu);
+        super(OpmFile.ROOT, OpmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate, mu);
         this.defaultMass = defaultMass;
     }
 
@@ -135,7 +134,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
         final Map<String, XmlTokenBuilder> builders = super.getSpecialXmlElementsBuilders();
 
         // special handling of user-defined parameters
-        builders.put(USER_DEFINED, new UserDefinedXmlTokenBuilder());
+        builders.put(UserDefined.USER_DEFINED_XML_TAG, new UserDefinedXmlTokenBuilder());
 
         return builders;
 
@@ -162,7 +161,7 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
         maneuverBlocks            = new ArrayList<>();
         userDefinedBlock          = null;
         if (fileFormat == FileFormat.XML) {
-            structureProcessor = new XmlStructureProcessingState(ROOT, this);
+            structureProcessor = new XmlStructureProcessingState(OpmFile.ROOT, this);
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new ErrorState(); // should never be called

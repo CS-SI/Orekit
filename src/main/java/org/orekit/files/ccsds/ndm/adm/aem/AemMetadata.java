@@ -345,4 +345,53 @@ public class AemMetadata extends AdmMetadata {
         return getInterpolationDegree() + 1;
     }
 
+    /** Copy the instance, making sure mandatory fields have been initialized.
+     * @return a new copy
+     */
+    AemMetadata copy() {
+
+        checkMandatoryEntriesExceptDatesAndExternalFrame();
+
+        // allocate new instance
+        final AemMetadata copy = new AemMetadata(getInterpolationDegree());
+
+        // copy comments
+        for (String comment : getComments()) {
+            copy.addComment(comment);
+        }
+
+        // copy object
+        copy.setObjectName(getObjectName());
+        copy.setObjectID(getObjectID());
+        if (getCenter() != null) {
+            copy.setCenter(getCenter());
+        }
+
+        // copy frames (we may copy null references here)
+        copy.getEndpoints().setFrameA(getEndpoints().getFrameA());
+        copy.getEndpoints().setFrameB(getEndpoints().getFrameB());
+        copy.getEndpoints().setA2b(getEndpoints().isA2b());
+        copy.setRateFrameIsA(rateFrameIsA());
+
+        // copy time system only (ignore times themselves)
+        copy.setTimeSystem(getTimeSystem());
+
+        // copy attitude definitions
+        copy.setAttitudeType(getAttitudeType());
+        if (isFirst() != null) {
+            copy.setIsFirst(isFirst());
+        }
+        if (getEulerRotSeq() != null) {
+            copy.setEulerRotSeq(getEulerRotSeq());
+        }
+
+        // copy interpolation (degree has already been set up at construction)
+        if (getInterpolationMethod() != null) {
+            copy.setInterpolationMethod(getInterpolationMethod());
+        }
+
+        return copy;
+
+    }
+
 }

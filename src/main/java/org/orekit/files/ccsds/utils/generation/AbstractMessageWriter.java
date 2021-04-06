@@ -21,34 +21,38 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 import org.orekit.files.ccsds.definitions.TimeConverter;
+import org.orekit.files.ccsds.ndm.NdmFile;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderKey;
+import org.orekit.files.ccsds.section.Segment;
+import org.orekit.files.ccsds.section.XmlStructureKey;
 import org.orekit.files.ccsds.utils.ContextBinding;
+import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeComponents;
 
 /**
  * Base class for Navigation Data Message (NDM) files.
+ * @param <H> type of the header
+ * @param <S> type of the segments
  * @author Luc Maisonobe
  * @since 11.0
  */
-public abstract class AbstractMessageWriter {
+public abstract class AbstractMessageWriter<H extends Header, S extends Segment<?, ?>, F extends NdmFile<H, S>>
+    implements MessageWriter<H, S, F> {
 
     /** Default value for {@link HeaderKey#ORIGINATOR}. */
     public static final String DEFAULT_ORIGINATOR = "OREKIT";
 
-    /** File name for error messages. */
-    private final String fileName;
+    /** Root element for XML files. */
+    private final String root;
 
     /** Key for format version. */
     private final String formatVersionKey;
 
     /** Default format version. */
     private final double defaultVersion;
-
-    /** File header. */
-    private final Header header;
 
     /** Current context binding. */
     private ContextBinding context;
@@ -62,20 +66,17 @@ public abstract class AbstractMessageWriter {
      * <p>
      * If creation date and originator are not present in header, built-in defaults will be used
      * </p>
+     * @param root root element for XML files
      * @param formatVersionKey key for format version
      * @param defaultVersion default format version
-     * @param header file header (may be null)
      * @param context context binding (may be reset for each segment)
-     * @param fileName file name for error messages
      */
-    public AbstractMessageWriter(final String formatVersionKey, final double defaultVersion,
-                                 final Header header, final ContextBinding context,
-                                 final String fileName) {
+    public AbstractMessageWriter(final String root, final String formatVersionKey,
+                                 final double defaultVersion, final ContextBinding context) {
 
+        this.root             = root;
         this.defaultVersion   = defaultVersion;
         this.formatVersionKey = formatVersionKey;
-        this.header           = header;
-        this.fileName         = fileName;
 
         setContext(context);
 
@@ -103,26 +104,21 @@ public abstract class AbstractMessageWriter {
         return timeConverter;
     }
 
-    /** Get the file name.
-     * @return file name
-     */
-    public String getFileName() {
-        return fileName;
-    }
-
-    /** Writes the standard AEM header for the file.
-     * @param generator generator to use for producing output
-     * @throws IOException if the stream cannot write to stream
-     */
-    public void writeHeader(final Generator generator) throws IOException {
+    /** {@inheritDoc} */
+    @Override
+    public void writeHeader(final Generator generator, final H header) throws IOException {
 
         final double version = (header == null || Double.isNaN(header.getFormatVersion())) ?
                                defaultVersion : header.getFormatVersion();
-        generator.startMessage(formatVersionKey, version);
+        generator.startMessage(root, formatVersionKey, version);
+
+        if (generator.getFormat() == FileFormat.XML) {
+            generator.enterSection(XmlStructureKey.header.name());
+        }
 
         // comments are optional
         if (header != null) {
-            generator.writeComments(header);
+            generator.writeComments(header.getComments());
         }
 
         // creation date is informational only, but mandatory and always in UTC
@@ -152,9 +148,45 @@ public abstract class AbstractMessageWriter {
             generator.writeEntry(HeaderKey.MESSAGE_ID.name(), header.getMessageId(), false);
         }
 
+        if (generator.getFormat() == FileFormat.XML) {
+            generator.exitSection();
+        }
+
         // add an empty line for presentation
         generator.newLine();
 
+        if (generator.getFormat() == FileFormat.XML) {
+            generator.enterSection(XmlStructureKey.body.name());
+        }
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void writeSegment(final Generator generator, final S segment) throws IOException {
+        if (generator.getFormat() == FileFormat.XML) {
+            generator.enterSection(XmlStructureKey.segment.name());
+        }
+        writeSegmentContent(generator, segment);
+        if (generator.getFormat() == FileFormat.XML) {
+            generator.exitSection();
+        }
+    }
+
+    /** Write one segment content (without XML wrapping).
+     * @param generator generator to use for producing output
+     * @param segment segment to write
+     * @throws IOException if any buffer writing operations fails
+     */
+    public abstract void writeSegmentContent(Generator generator, S segment) throws IOException;
+
+    /** {@inheritDoc} */
+    @Override
+    public void writeFooter(final Generator generator) throws IOException {
+        if (generator.getFormat() == FileFormat.XML) {
+            generator.exitSection();
+        }
+        generator.endMessage(root);
     }
 
 }

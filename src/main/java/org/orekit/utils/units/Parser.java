@@ -1,5 +1,5 @@
 /* Copyright 2002-2021 CS GROUP
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -36,8 +36,9 @@ import org.hipparchus.fraction.Fraction;
  *   simple       → predefined   | '(' chain ')'
  * </pre>
  * <p>
- * This parses correctly units like MHz, km/√d, kg.m.s⁻¹, µas^(2/5)/(h**(2)×m)³, km/√(kg.s), √kg*km**  (3/2) /(µs^2*Ω⁻⁷).
- * Note that we don't accept both square root and power on the same operand, so km/√d³ is refused.
+ * This parses correctly units like MHz, km/√d, kg.m.s⁻¹, µas^(2/5)/(h**(2)×m)³, km/√(kg.s), √kg*km** (3/2) /(µs^2*Ω⁻⁷).
+ * Note that we don't accept both square root and power on the same operand, so km/√d³ is refused (but km/√(d³) is accepted).
+ * Note that "nd" does not stands for "not-defined" but for "nano-day"…
  * </p>
  * @author Luc Maisonobe
  * @since 11.0
@@ -101,7 +102,7 @@ class Parser {
         final Token token = lexer.next();
         if (checkType(token, TokenType.MULTIPLICATION)) {
             return lhs.multiply(null, chain(lexer));
-        } else if (token != null && token.getType() == TokenType.DIVISION) {
+        } else if (checkType(token, TokenType.DIVISION)) {
             return lhs.divide(null, chain(lexer));
         } else {
             lexer.pushBack();

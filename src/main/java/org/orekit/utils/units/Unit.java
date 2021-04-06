@@ -1,5 +1,5 @@
 /* Copyright 2002-2021 CS GROUP
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 package org.orekit.utils.units;
+
+import java.io.Serializable;
 
 import org.hipparchus.fraction.Fraction;
 import org.hipparchus.util.FastMath;
@@ -33,7 +35,7 @@ import org.hipparchus.util.FastMath;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class Unit {
+public class Unit implements Serializable {
 
     /** No unit. */
     public static final Unit NONE = new Unit("n/a", 1.0, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO);
@@ -126,6 +128,9 @@ public class Unit {
 
     /** Total Electron Content Unit. */
     public static final Unit TOTAL_ELECTRON_CONTENT_UNIT = METRE.power(null, new Fraction(-2)).scale("TECU", 1.0e+16);
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = 20210402L;
 
     /** Name name of the unit. */
     private final String name;
@@ -368,12 +373,28 @@ public class Unit {
         return value * scale;
     }
 
+    /** Convert a value to SI units.
+     * @param value value instance unit
+     * @return value in SI units
+     */
+    public double toSI(final Double value) {
+        return value == null ? Double.NaN : value.doubleValue() * scale;
+    }
+
     /** Convert a value from SI units.
      * @param value value SI unit
      * @return value in instance units
      */
     public double fromSI(final double value) {
         return value / scale;
+    }
+
+    /** Convert a value from SI units.
+     * @param value value SI unit
+     * @return value in instance units
+     */
+    public double fromSI(final Double value) {
+        return value == null ? Double.NaN : value.doubleValue() / scale;
     }
 
     /** Parse a unit.

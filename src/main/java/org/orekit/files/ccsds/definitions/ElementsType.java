@@ -1,5 +1,5 @@
 /* Copyright 2002-2021 CS GROUP
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -56,7 +56,7 @@ public enum ElementsType {
     },
 
     /** Cartesian 6-element position and velocity (X, Y, Z, XD, YD, ZD). */
-    CARTPV(" Cartesian 6-element position and velocity (X, Y, Z, XD, YD, ZD)",
+    CARTPV("Cartesian 6-element position and velocity (X, Y, Z, XD, YD, ZD)",
            "km", "km", "km", "km/s", "km/s", "km/s") {
         /** {@inheritDoc} */
         @Override
@@ -91,15 +91,15 @@ public enum ElementsType {
 
     /** 12 elements eigenvalue/eigenvectors (EigMaj, EigMed, EigMin, EigVecMaj, EigVecMed, EigVecMin). */
     EIGVAL3EIGVEC3("12 elements eigenvalue/eigenvectors (EigMaj, EigMed, EigMin, EigVecMaj, EigVecMed, EigVecMin)",
-                   "km", "km", "km", "nd", "nd", "nd", "nd", "nd", "nd", "nd", "nd", "nd"),
+                   "km", "km", "km", "n/a", "n/a", "n/a", "n/a", "n/a", "n/a", "n/a", "n/a", "n/a"),
 
     /** Equinoctial elements (a, af, ag, L=M+ω+frΩ, χ, ψ, fr). */
-    EQUINOCTIAL(" Equinoctial elements (a, af, ag, L=M+ω+frΩ, χ, ψ, fr)",
-                "km", "nd", "nd", "°", "nd", "nd", "nd"),
+    EQUINOCTIAL("Equinoctial elements (a, af, ag, L=M+ω+frΩ, χ, ψ, fr)",
+                "km", "n/a", "n/a", "°", "n/a", "n/a", "n/a"),
 
     /** Modified equinoctial elements (p=a(1−e²), af, ag, L'=υ+ω+frΩ, χ, ψ, fr). */
     EQUINOCTIALMOD("Modified equinoctial elements (p=a(1−e²), af, ag, L'=υ+ω+frΩ, χ, ψ, fr)",
-                   "km", "nd", "nd", "°", "nd", "nd", "nd"),
+                   "km", "n/a", "n/a", "°", "n/a", "n/a", "n/a"),
 
     /** Geodetic elements (λ, ΦGD, β, A, h, vre). */
     GEODETIC("Geodetic elements (λ, ΦGD, β, A, h, vre)",
@@ -107,19 +107,19 @@ public enum ElementsType {
 
     /** Keplerian 6-element classical set (a, e, i, Ω, ω, ν). */
     KEPLERIAN("Keplerian 6-elemnt classical set (a, e, i, Ω, ω, ν)",
-              "km", "nd", "°", "°", "°", "°"),
+              "km", "n/a", "°", "°", "°", "°"),
 
     /** Keplerian 6-element classical set (a, e, i, Ω, ω, M). */
     KEPLERIANMEAN("Keplerian 6-elemnt classical set (a, e, i, Ω, ω, M)",
-                  "km", "nd", "°", "°", "°", "°"),
+                  "km", "n/a", "°", "°", "°", "°"),
 
     /** Modified spherical 6-element set (λ, δ, β, A, r, v). */
-    LDBARV(" Modified spherical 6-element set (λ, δ, β, A, r, v)",
+    LDBARV("Modified spherical 6-element set (λ, δ, β, A, r, v)",
            "°", "°", "°", "°", "km", "km/s"),
 
     /** Geosynchronous on-station tailored set (a, ex, ey, ix, iy, λ). */
     ONSTATION("Geosynchronous on-station tailored set (a, ex, ey, ix, iy, λ)",
-              "km", "nd", "nd", "nd", "nd", "°"),
+              "km", "n/a", "n/a", "n/a", "n/a", "°"),
 
     /** Canonical counterpart of equinoctial 6-element set (λM=M+ω+Ω, gp, hp, Lp, Gp, Hp). */
     POINCARE("Canonical counterpart of equinoctial 6-element set (λM=M+ω+Ω, gp, hp, Lp, Gp, Hp)",

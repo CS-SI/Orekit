@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.utils.generation;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.List;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -26,6 +27,7 @@ import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.utils.AccurateFormatter;
+import org.orekit.utils.units.Unit;
 
 /** Base class for both Key-Value Notation and eXtended Markup Language generators for CCSDS messages.
  * @author Luc Maisonobe
@@ -39,20 +41,20 @@ public abstract class AbstractGenerator implements Generator {
     /** Destination of generated output. */
     private final Appendable output;
 
-    /** File name for error messages. */
-    private final String fileName;
+    /** Output name for error messages. */
+    private final String outputName;
 
     /** Sections stack. */
     private final Deque<String> sections;
 
     /** Simple constructor.
      * @param output destination of generated output
-     * @param fileName file name for error messages
+     * @param outputName output name for error messages
      */
-    public AbstractGenerator(final Appendable output, final String fileName) {
-        this.output   = output;
-        this.fileName = fileName;
-        this.sections = new ArrayDeque<>();
+    public AbstractGenerator(final Appendable output, final String outputName) {
+        this.output     = output;
+        this.outputName = outputName;
+        this.sections   = new ArrayDeque<>();
     }
 
     /** Append a character sequence to output stream.
@@ -67,6 +69,12 @@ public abstract class AbstractGenerator implements Generator {
 
     /** {@inheritDoc} */
     @Override
+    public String getOutputName() {
+        return outputName;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void close() throws IOException {
         // nothing to do
     }
@@ -75,6 +83,25 @@ public abstract class AbstractGenerator implements Generator {
     @Override
     public void newLine() throws IOException {
         output.append(NEW_LINE);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void writeEntry(final String key, final List<String> value, final boolean mandatory) throws IOException {
+        if (value == null || value.isEmpty()) {
+            complain(key, mandatory);
+        } else {
+            final StringBuilder builder = new StringBuilder();
+            boolean first = true;
+            for (final String v : value) {
+                if (!first) {
+                    builder.append(',');
+                }
+                builder.append(v);
+                first = false;
+            }
+            writeEntry(key, builder.toString(), mandatory);
+        }
     }
 
     /** {@inheritDoc} */
@@ -92,14 +119,20 @@ public abstract class AbstractGenerator implements Generator {
 
     /** {@inheritDoc} */
     @Override
-    public void writeEntry(final String key, final double value, final boolean mandatory) throws IOException {
-        writeEntry(key, doubleToString(value), mandatory);
+    public void writeEntry(final String key, final double value, final Unit unit, final boolean mandatory) throws IOException {
+        writeEntry(key, doubleToString(unit.fromSI(value)), mandatory);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void writeEntry(final String key, final Double value, final boolean mandatory) throws IOException {
-        writeEntry(key, value == null ? (String) null : doubleToString(value.doubleValue()), mandatory);
+    public void writeEntry(final String key, final Double value, final Unit unit, final boolean mandatory) throws IOException {
+        writeEntry(key, value == null ? (String) null : doubleToString(unit.fromSI(value.doubleValue())), mandatory);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void writeEntry(final String key, final char value, final boolean mandatory) throws IOException {
+        writeEntry(key, Character.toString(value), mandatory);
     }
 
     /** {@inheritDoc} */
@@ -138,7 +171,7 @@ public abstract class AbstractGenerator implements Generator {
      */
     protected void complain(final String key, final boolean mandatory) {
         if (mandatory) {
-            throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, key, fileName);
+            throw new OrekitException(OrekitMessages.CCSDS_MISSING_KEYWORD, key, outputName);
         }
     }
 

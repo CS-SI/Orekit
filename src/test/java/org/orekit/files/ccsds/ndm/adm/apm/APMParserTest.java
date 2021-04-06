@@ -16,7 +16,11 @@
  */
 package org.orekit.files.ccsds.ndm.adm.apm;
 
+import java.io.ByteArrayInputStream;
+import java.io.CharArrayWriter;
+import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
@@ -37,8 +41,11 @@ import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
+import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
 import org.orekit.files.ccsds.section.Segment;
+import org.orekit.files.ccsds.utils.generation.Generator;
+import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -128,26 +135,49 @@ public class APMParserTest {
 
     @Test
     public void testParseAPM2KVN() {
-        doTestParseAPM2("/ccsds/adm/apm/APMExample2.txt");
-    }
-
-    @Test
-    public void testParseAPM2XML() {
-        doTestParseAPM2("/ccsds/adm/apm/APMExample2.xml");
-    }
-
-    private void doTestParseAPM2(final String name) {
-
-        // Initialize the parser
         final ApmParser parser = new ParserBuilder().
                                  withMissionReferenceDate(new AbsoluteDate("2002-09-30T14:28:15.117",
                                                                            TimeScalesFactory.getUTC())).
                                  buildApmParser();
-
+        final String name = "/ccsds/adm/apm/APMExample2.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        validateAPM2(parser.parseMessage(source));
+    }
 
-        // Generated APM file
-        final ApmFile file = parser.parseMessage(source);
+    @Test
+    public void testParseAPM2XML() {
+        final ApmParser parser = new ParserBuilder().
+                        withMissionReferenceDate(new AbsoluteDate("2002-09-30T14:28:15.117",
+                                                                  TimeScalesFactory.getUTC())).
+                        buildApmParser();
+        final String name = "/ccsds/adm/apm/APMExample2.xml";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        validateAPM2(parser.parseMessage(source));
+    }
+
+    @Test
+    public void testWriteApm2() throws IOException {
+        final ApmParser parser = new ParserBuilder().
+                        withMissionReferenceDate(new AbsoluteDate("2002-09-30T14:28:15.117",
+                                                                  TimeScalesFactory.getUTC())).
+                        buildApmParser();
+        final String name = "/ccsds/adm/apm/APMExample2.xml";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        final ApmFile original = parser.parseMessage(source);
+
+        // write the parsed file back to a characters array
+        final CharArrayWriter caw = new CharArrayWriter();
+        final Generator generator = new KvnGenerator(caw, ApmWriter.KVN_PADDING_WIDTH, "dummy");
+        new WriterBuilder().buildApmWriter().writeMessage(generator, original);
+
+        // reparse the written file
+        final byte[]     bytes   = caw.toString().getBytes(StandardCharsets.UTF_8);
+        final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(bytes));
+        final ApmFile    rebuilt = new ParserBuilder().buildApmParser().parseMessage(source2);
+        validateAPM2(rebuilt);
+    }
+
+    private void validateAPM2(final ApmFile file) {
 
         // Verify general data
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());

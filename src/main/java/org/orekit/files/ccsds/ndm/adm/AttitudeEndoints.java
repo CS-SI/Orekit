@@ -54,6 +54,12 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  */
 public class AttitudeEndoints implements AttitudeBuilder {
 
+    /** Constant for A → B diraction. */
+    public static final String A2B = "A2B";
+
+    /** Constant for A ← B direction. */
+    public static final String B2A = "B2A";
+
     /** Frame A. */
     private FrameFacade frameA;
 

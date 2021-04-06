@@ -17,8 +17,10 @@
 package org.orekit.files.ccsds.utils.generation;
 
 import java.io.IOException;
+import java.util.List;
 
-import org.orekit.files.ccsds.section.CommentsContainer;
+import org.hipparchus.util.FastMath;
+import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.utils.AccurateFormatter;
 
@@ -45,16 +47,22 @@ public class KvnGenerator extends AbstractGenerator {
 
     /** Simple constructor.
      * @param output destination of generated output
-     * @param keyWidth minimum width of the key (can be used for aligning the '=' sign),
-     * TDM needs 25 characters for its longest key, other messages need 20 characters at most
-     * @param fileName file name for error messages
+     * @param paddingWidth padding width for aligning the '=' sign
+     * @param outputName output name for error messages
+     * @see org.orekit.files.ccsds.ndm.tdm.TdmWriter#KVN_PADDING_WIDTH     TdmWriter.KVN_PADDING_WIDTH
+     * @see org.orekit.files.ccsds.ndm.adm.aem.AemWriter#KVN_PADDING_WIDTH AemWriter.KVN_PADDING_WIDTH
+     * @see org.orekit.files.ccsds.ndm.adm.apm.ApmWriter#KVN_PADDING_WIDTH ApmWriter.KVN_PADDING_WIDTH
+     * @see org.orekit.files.ccsds.ndm.odm.opm.OpmWriter#KVN_PADDING_WIDTH OpmWriter.KVN_PADDING_WIDTH
+     * @see org.orekit.files.ccsds.ndm.odm.omm.OmmWriter#KVN_PADDING_WIDTH OmmWriter.KVN_PADDING_WIDTH
+     * @see org.orekit.files.ccsds.ndm.odm.oem.OemWriter#KVN_PADDING_WIDTH OemWriter.KVN_PADDING_WIDTH
+     * @see org.orekit.files.ccsds.ndm.odm.ocm.OcmWriter#KVN_PADDING_WIDTH OcmWriter.KVN_PADDING_WIDTH
      */
-    public KvnGenerator(final Appendable output, final int keyWidth, final String fileName) {
-        super(output, fileName);
-        kvFormat = "%-" + keyWidth + "s = %s%n";
+    public KvnGenerator(final Appendable output, final int paddingWidth, final String outputName) {
+        super(output, outputName);
+        kvFormat = "%-" + FastMath.max(1, paddingWidth) + "s = %s%n";
         final StringBuilder builder = new StringBuilder(COMMENT);
         builder.append(' ');
-        while (builder.length() < keyWidth + 3) {
+        while (builder.length() < paddingWidth + 3) {
             builder.append(' ');
         }
         builder.append("%s%n");
@@ -69,16 +77,28 @@ public class KvnGenerator extends AbstractGenerator {
 
     /** {@inheritDoc} */
     @Override
-    public void startMessage(final String messageTypeKey, final double version) throws IOException {
+    public void startMessage(final String root, final String messageTypeKey, final double version) throws IOException {
         writeEntry(messageTypeKey, String.format(AccurateFormatter.STANDARDIZED_LOCALE, "%.1f", version), true);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void writeComments(final CommentsContainer comments) throws IOException {
-        for (final String comment : comments.getComments()) {
+    public void endMessage(final String root) throws IOException {
+        // nothing to do
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void writeComments(final List<String> comments) throws IOException {
+        for (final String comment : comments) {
             append(String.format(AccurateFormatter.STANDARDIZED_LOCALE, commentFormat, comment));
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void writeUserDefined(final String parameter, final String value) throws IOException {
+        writeEntry(UserDefined.USER_DEFINED_PREFIX + parameter, value, false);
     }
 
     /** {@inheritDoc} */

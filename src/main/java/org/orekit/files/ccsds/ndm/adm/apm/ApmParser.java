@@ -54,9 +54,6 @@ import org.orekit.utils.IERSConventions;
  */
 public class ApmParser extends AdmParser<ApmFile, ApmParser> {
 
-    /** Root element for XML files. */
-    private static final String ROOT = "apm";
-
     /** File header. */
     private Header header;
 
@@ -94,6 +91,11 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
     private ProcessingState structureProcessor;
 
     /** Complete constructor.
+     * <p>
+     * Calling this constructor directly is not recommended. Users should rather use
+     * {@link org.orekit.files.ccsds.ndm.ParserBuilder#buildApmParser()
+     * parserBuilder.buildApmParser()}.
+     * </p>
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
@@ -103,7 +105,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
     public ApmParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate) {
-        super(ROOT, ApmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate);
+        super(ApmFile.ROOT, ApmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate);
     }
 
     /** {@inheritDoc} */
@@ -126,7 +128,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
         currentManeuver           = null;
         maneuvers                 = new ArrayList<>();
         if (fileFormat == FileFormat.XML) {
-            structureProcessor = new XmlStructureProcessingState(ROOT, this);
+            structureProcessor = new XmlStructureProcessingState(ApmFile.ROOT, this);
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new ErrorState(); // should never be called
@@ -263,7 +265,7 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
      * @return always return true
      */
     boolean manageEulerElementsSpinSection(final boolean starting) {
-        setFallback(starting ? this::processEulerToken : structureProcessor);
+        setFallback(starting ? this::processSpinStabilizedToken : structureProcessor);
         return true;
     }
 

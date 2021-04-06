@@ -1,5 +1,5 @@
 /* Copyright 2002-2021 CS GROUP
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -36,8 +36,20 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class OcmFile extends NdmFile<Header, Segment<OcmMetadata, OcmData>>
     implements EphemerisFile<TimeStampedPVCoordinates, OrbitStateHistory> {
 
+    /** Root element for XML messages. */
+    public static final String ROOT = "ocm";
+
     /** Key for format version. */
     public static final String FORMAT_VERSION_KEY = "CCSDS_OCM_VERS";
+
+    /** Orbit line element for XML messages. */
+    public static final String ORB_LINE = "orbLine";
+
+    /** Covariance line element for XML messages. */
+    public static final String COV_LINE = "covLine";
+
+    /** Maneuver line element for XML messages. */
+    public static final String MAN_LINE = "manLine";
 
     /** Gravitational coefficient to use for building Cartesian/Keplerian orbits. */
     private final double mu;

@@ -49,28 +49,18 @@ public class SpacecraftParametersWriter extends AbstractWriter {
     protected void writeContent(final Generator generator) throws IOException {
 
         // spacecraft parameters block
-        generator.writeComments(spacecraftParameters);
+        generator.writeComments(spacecraftParameters.getComments());
 
         // mass
-        generator.writeEntry(SpacecraftParametersKey.MASS.name(),
-                             Unit.KILOGRAM.fromSI(spacecraftParameters.getMass()),
-                             false);
+        generator.writeEntry(SpacecraftParametersKey.MASS.name(), spacecraftParameters.getMass(), Unit.KILOGRAM, false);
 
         // solar parameters
-        generator.writeEntry(SpacecraftParametersKey.SOLAR_RAD_AREA.name(),
-                             Units.M2.fromSI(spacecraftParameters.getSolarRadArea()),
-                             false);
-        generator.writeEntry(SpacecraftParametersKey.SOLAR_RAD_COEFF.name(),
-                             Unit.ONE.fromSI(spacecraftParameters.getSolarRadCoeff()),
-                             false);
+        generator.writeEntry(SpacecraftParametersKey.SOLAR_RAD_AREA.name(),  spacecraftParameters.getSolarRadArea(),  Units.M2, false);
+        generator.writeEntry(SpacecraftParametersKey.SOLAR_RAD_COEFF.name(), spacecraftParameters.getSolarRadCoeff(), Unit.ONE, false);
 
         // drag parameters
-        generator.writeEntry(SpacecraftParametersKey.DRAG_AREA.name(),
-                             Units.M2.fromSI(spacecraftParameters.getDragArea()),
-                             false);
-        generator.writeEntry(SpacecraftParametersKey.DRAG_COEFF.name(),
-                             Unit.ONE.fromSI(spacecraftParameters.getDragCoeff()),
-                             false);
+        generator.writeEntry(SpacecraftParametersKey.DRAG_AREA.name(),  spacecraftParameters.getDragArea(),  Units.M2, false);
+        generator.writeEntry(SpacecraftParametersKey.DRAG_COEFF.name(), spacecraftParameters.getDragCoeff(), Unit.ONE, false);
 
     }
 

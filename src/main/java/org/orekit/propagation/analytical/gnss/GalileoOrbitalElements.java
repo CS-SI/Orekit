@@ -31,9 +31,6 @@ public interface GalileoOrbitalElements extends GNSSOrbitalElements {
     /** Earth's universal gravitational parameter for Galileo user in m³/s². */
     double GALILEO_MU = 3.986004418e+14;
 
-    /** Value of Pi for conversion from semicircles to radian. */
-    double GALILEO_PI = 3.1415926535898;
-
     /** Duration of the Galileo week in seconds. */
     double GALILEO_WEEK_IN_SECONDS = 604800.;
 

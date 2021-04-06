@@ -55,9 +55,6 @@ import org.orekit.utils.IERSConventions;
  */
 public class TdmParser extends AbstractMessageParser<TdmFile, TdmParser> {
 
-    /** Root element for XML files. */
-    private static final String ROOT = "tdm";
-
     /** Converter for {@link RangeUnits#RU Range Units} (may be null). */
     private final RangeUnitsConverter converter;
 
@@ -80,6 +77,11 @@ public class TdmParser extends AbstractMessageParser<TdmFile, TdmParser> {
     private ProcessingState structureProcessor;
 
     /** Complete constructor.
+     * <p>
+     * Calling this constructor directly is not recommended. Users should rather use
+     * {@link org.orekit.files.ccsds.ndm.ParserBuilder#buildTdmParser(RangeUnitsConverter)
+     * parserBuilder.buildTdmParser(converter)}.
+     * </p>
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
@@ -88,7 +90,7 @@ public class TdmParser extends AbstractMessageParser<TdmFile, TdmParser> {
      */
     public TdmParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext, final RangeUnitsConverter converter) {
-        super(ROOT, TdmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext);
+        super(TdmFile.ROOT, TdmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext);
         this.converter = converter;
     }
 
@@ -107,7 +109,7 @@ public class TdmParser extends AbstractMessageParser<TdmFile, TdmParser> {
         context            = null;
         observationsBlock  = null;
         if (fileFormat == FileFormat.XML) {
-            structureProcessor = new XmlStructureProcessingState(ROOT, this);
+            structureProcessor = new XmlStructureProcessingState(TdmFile.ROOT, this);
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new KvnStructureProcessingState(this);

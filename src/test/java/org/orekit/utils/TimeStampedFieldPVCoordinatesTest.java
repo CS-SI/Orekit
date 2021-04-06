@@ -38,6 +38,7 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeStamped;
 
 
 public class TimeStampedFieldPVCoordinatesTest {
@@ -528,6 +529,31 @@ public class TimeStampedFieldPVCoordinatesTest {
         Assert.assertEquals(pv.getVelocity().getY().getValue(), shifted.getPosition().getY().getPartialDerivative(1), 1.0e-15);
         Assert.assertEquals(pv.getVelocity().getZ().getValue(), shifted.getPosition().getZ().getPartialDerivative(1), 1.0e-15);
         
+    }
+
+    @Test
+    public void testIssue774() {
+        doTestIssue774(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestIssue774(final Field<T> field) {
+
+        final T zero = field.getZero();
+
+        // Epoch
+        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
+
+        // Coordinates
+        final FieldPVCoordinates<T> pv =
+                        new FieldPVCoordinates<T>(new FieldVector3D<T>(zero, zero, zero),
+                                                  new FieldVector3D<T>(zero, zero, zero));
+
+        // Time stamped object
+        final FieldTimeStamped<T> timeStamped =
+                        new TimeStampedFieldPVCoordinates<>(date, pv);
+
+        // Verify
+        Assert.assertEquals(0.0, date.durationFrom(timeStamped.getDate()).getReal(), Double.MIN_VALUE);
     }
 
     private PolynomialFunction randomPolynomial(int degree, Random random) {

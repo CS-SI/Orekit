@@ -42,6 +42,7 @@ import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.ModifiedFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
+import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
@@ -141,20 +142,20 @@ public class StreamingOemWriterTest {
             Header header = new Header();
             header.setOriginator(originator);
             OemMetadata metadata = new OemMetadata(1);
-            metadata.setObjectName("will be overwritten");
+            metadata.setObjectName(objectName);
             metadata.setObjectID(objectID);
             metadata.setTimeSystem(TimeSystem.UTC);
             metadata.setCenter(ephemerisBlock.getMetadata().getCenter());
             metadata.setReferenceFrame(FrameFacade.map(FramesFactory.getEME2000())); // will be overwritten
             metadata.setStartTime(AbsoluteDate.J2000_EPOCH.shiftedBy(80 * Constants.JULIAN_CENTURY));
             metadata.setStopTime(metadata.getStartTime().shiftedBy(Constants.JULIAN_YEAR));
-            OemWriter oemWriter = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
-                                                header, metadata);
+
 
             // check using the Propagator / StepHandler interface
             final StringBuilder buffer1 = new StringBuilder();
-            StreamingOemWriter writer = new StreamingOemWriter(new KvnGenerator(buffer1, OemWriter.KEY_WIDTH, "some-name"), oemWriter);
-            oemWriter.getMetadata().setObjectName(objectName);
+            StreamingOemWriter writer = new StreamingOemWriter(new KvnGenerator(buffer1, OemWriter.KVN_PADDING_WIDTH, "some-name"),
+                                                               new WriterBuilder().buildOemWriter(),
+                                                               header, metadata);
             BoundedPropagator propagator = satellite.getPropagator();
             propagator.setMasterMode(step, writer.newSegment());
             propagator.propagate(propagator.getMinDate(), propagator.getMaxDate());
@@ -169,18 +170,17 @@ public class StreamingOemWriterTest {
 
             // check calling the methods directly
             final StringBuilder buffer2 = new StringBuilder();
-            oemWriter = new OemWriter(IERSConventions.IERS_2010, DataContext.getDefault(),
-                                      header, metadata);
-            try (Generator generator = new KvnGenerator(buffer2, OemWriter.KEY_WIDTH, "another-name")) {
-                oemWriter.writeHeader(generator);
-                oemWriter.getMetadata().setObjectName(objectName);
-                oemWriter.getMetadata().setStartTime(block.getStart());
-                oemWriter.getMetadata().setStopTime(block.getStop());
+            OemWriter oemWriter = new WriterBuilder().buildOemWriter();
+            try (Generator generator = new KvnGenerator(buffer2, OemWriter.KVN_PADDING_WIDTH, "another-name")) {
+                oemWriter.writeHeader(generator, header);
+                metadata.setObjectName(objectName);
+                metadata.setStartTime(block.getStart());
+                metadata.setStopTime(block.getStop());
                 final Frame      stateFrame = satellite.getPropagator().getFrame();
-                oemWriter.getMetadata().setReferenceFrame(FrameFacade.map(stateFrame));
-                oemWriter.writeMetadata(generator);
+                metadata.setReferenceFrame(FrameFacade.map(stateFrame));
+                oemWriter.writeMetadata(generator, metadata);
                 for (TimeStampedPVCoordinates coordinate : block.getCoordinates()) {
-                    oemWriter.writeOrbitEphemerisLine(generator, coordinate, true);
+                    oemWriter.writeOrbitEphemerisLine(generator, metadata, coordinate, true);
                 }
             }
 

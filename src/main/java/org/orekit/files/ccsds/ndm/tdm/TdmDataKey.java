@@ -35,7 +35,7 @@ public enum TdmDataKey {
             token.getType() == TokenType.ENTRY ? observationsBlock.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Epoch entry. */
-    EPOCH((token, context, observationsBlock) -> token.processAsDate(observationsBlock::addObservationEpoch, context)),;
+    EPOCH((token, context, observationsBlock) -> token.processAsDate(observationsBlock::addObservationEpoch, context));
 
     /** Processing method. */
     private final TokenProcessor processor;

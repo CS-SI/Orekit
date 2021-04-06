@@ -66,12 +66,6 @@ import org.orekit.utils.IERSConventions;
  */
 public class OmmParser extends CommonParser<OmmFile, OmmParser> {
 
-    /** Root element for XML files. */
-    private static final String ROOT = "omm";
-
-    /** User-defined element. */
-    private static final String USER_DEFINED = "USER_DEFINED";
-
     /** Default mass to use if there are no spacecraft parameters block logical block in the file. */
     private final double defaultMass;
 
@@ -106,6 +100,11 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
     private ProcessingState structureProcessor;
 
     /** Complete constructor.
+     * <p>
+     * Calling this constructor directly is not recommended. Users should rather use
+     * {@link org.orekit.files.ccsds.ndm.ParserBuilder#buildOmmParser()
+     * parserBuilder.buildOmmParser()}.
+     * </p>
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
@@ -116,7 +115,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
     public OmmParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext, final AbsoluteDate missionReferenceDate,
                      final double mu, final double defaultMass) {
-        super(ROOT, OmmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate, mu);
+        super(OmmFile.ROOT, OmmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate, mu);
         this.defaultMass = defaultMass;
     }
 
@@ -127,7 +126,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
         final Map<String, XmlTokenBuilder> builders = super.getSpecialXmlElementsBuilders();
 
         // special handling of user-defined parameters
-        builders.put(USER_DEFINED, new UserDefinedXmlTokenBuilder());
+        builders.put(UserDefined.USER_DEFINED_XML_TAG, new UserDefinedXmlTokenBuilder());
 
         return builders;
 
@@ -152,7 +151,7 @@ public class OmmParser extends CommonParser<OmmFile, OmmParser> {
         covarianceBlock           = null;
         userDefinedBlock          = null;
         if (fileFormat == FileFormat.XML) {
-            structureProcessor = new XmlStructureProcessingState(ROOT, this);
+            structureProcessor = new XmlStructureProcessingState(OmmFile.ROOT, this);
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new ErrorState(); // should never be called

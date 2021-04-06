@@ -198,6 +198,44 @@ public class OemMetadata extends CommonMetadata {
         this.interpolationDegree = interpolationDegree;
     }
 
+    /** Copy the instance, making sure mandatory fields have been initialized.
+     * @return a new copy
+     */
+    OemMetadata copy() {
+
+        checkMandatoryEntriesExceptDates();
+
+        // allocate new instance
+        final OemMetadata copy = new OemMetadata(getInterpolationDegree());
+
+        // copy comments
+        for (String comment : getComments()) {
+            copy.addComment(comment);
+        }
+
+        // copy object
+        copy.setObjectName(getObjectName());
+        copy.setObjectID(getObjectID());
+        if (getCenter().getName() != null) {
+            copy.setCenter(getCenter());
+        }
+
+        // copy frames
+        copy.setFrameEpoch(getFrameEpoch());
+        copy.setReferenceFrame(getReferenceFrame());
+
+        // copy time system only (ignore times themselves)
+        copy.setTimeSystem(getTimeSystem());
+
+        // copy interpolation (degree has already been set up at construction)
+        if (getInterpolationMethod() != null) {
+            copy.setInterpolationMethod(getInterpolationMethod());
+        }
+
+        return copy;
+
+    }
+
 }
 
 

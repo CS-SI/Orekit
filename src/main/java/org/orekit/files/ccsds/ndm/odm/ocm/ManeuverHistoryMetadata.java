@@ -1,5 +1,5 @@
 /* Copyright 2002-2021 CS GROUP
- * Licensed to CS Systèmes d'Information (CS) under one or more
+ * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -48,7 +48,7 @@ public class ManeuverHistoryMetadata extends CommentsContainer {
     private String manNextID;
 
     /** Basis of this maneuver history data. */
-    private String manBasis;
+    private ManBasis manBasis;
 
     /** Identification number of the orbit determination or simulation upon which this maneuver is based. */
     private String manBasisID;
@@ -134,7 +134,7 @@ public class ManeuverHistoryMetadata extends CommentsContainer {
     ManeuverHistoryMetadata(final AbsoluteDate epochT0) {
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
-        manBasis            = "PLANNED";
+        manBasis            = ManBasis.PLANNED;
         manReferenceFrame   = new FrameFacade(null, null,
                                               OrbitRelativeFrame.TNW_INERTIAL, null,
                                               OrbitRelativeFrame.TNW_INERTIAL.name());
@@ -239,14 +239,14 @@ public class ManeuverHistoryMetadata extends CommentsContainer {
     /** Get basis of this maneuver history data.
      * @return basis of this maneuver history data
      */
-    public String getManBasis() {
+    public ManBasis getManBasis() {
         return manBasis;
     }
 
     /** Set basis of this maneuver history data.
      * @param manBasis basis of this maneuver history data
      */
-    public void setManBasis(final String manBasis) {
+    public void setManBasis(final ManBasis manBasis) {
         refuseFurtherComments();
         this.manBasis = manBasis;
     }
