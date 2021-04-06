@@ -22,7 +22,8 @@ import org.hipparchus.fraction.Fraction;
  * <p>
  * This fairly basic parser uses recursive descent with the following grammar,
  * where '*' can in fact be either '*', '×' or '.', '/' can be either '/' or '⁄'
- * and '^' can be either '^', "**" or implicit with switch to superscripts.
+ * and '^' can be either '^', "**" or implicit with switch to superscripts,
+ * and fraction are either unicode fractions like ½ or ⅞ or the decimal value 0.5.
  * The special case "n/a" corresponds to {@link PredefinedUnit#NONE}.
  * </p>
  * <pre>
@@ -30,12 +31,13 @@ import org.hipparchus.fraction.Fraction;
  *   chain        ::=  operand { ('*' | '/') operand }
  *   operand      ::=  '√' simple   | simple power
  *   power        ::=  '^' exponent | ε
- *   exponent     ::=  integer      | '(' integer denominator ')'
+ *   exponent     ::=  'fraction'   | integer | '(' integer denominator ')'
  *   denominator  ::=  '/' integer  | ε
  *   simple       ::=  predefined   | '(' chain ')'
  * </pre>
  * <p>
- * This parses correctly units like MHz, km/√d, kg.m.s⁻¹, µas^(2/5)/(h**(2)×m)³, km/√(kg.s), √kg*km** (3/2) /(µs^2*Ω⁻⁷).
+ * This parses correctly units like MHz, km/√d, kg.m.s⁻¹, µas^⅖/(h**(2)×m)³, km/√(kg.s),
+ * √kg*km** (3/2) /(µs^2*Ω⁻⁷), km**0.5/s
  * Note that we don't accept both square root and power on the same operand, so km/√d³ is refused (but km/√(d³) is accepted).
  * Note that "nd" does not stands for "not-defined" but for "nano-day"…
  * </p>
@@ -125,12 +127,14 @@ class Parser {
      */
     private static Fraction exponent(final Lexer lexer) {
         final Token token = lexer.next();
-        if (checkType(token, TokenType.INTEGER)) {
-            return new Fraction(token.getValue());
+        if (checkType(token, TokenType.FRACTION)) {
+            return token.getFraction();
+        } else if (checkType(token, TokenType.INTEGER)) {
+            return new Fraction(token.getInt());
         } else {
             lexer.pushBack();
             accept(lexer, TokenType.OPEN);
-            final int num = accept(lexer, TokenType.INTEGER).getValue();
+            final int num = accept(lexer, TokenType.INTEGER).getInt();
             final int den = denominator(lexer);
             accept(lexer, TokenType.CLOSE);
             return new Fraction(num, den);
@@ -144,7 +148,7 @@ class Parser {
     private static int denominator(final Lexer lexer) {
         final Token token = lexer.next();
         if (checkType(token, TokenType.DIVISION)) {
-            return accept(lexer, TokenType.INTEGER).getValue();
+            return accept(lexer, TokenType.INTEGER).getInt();
         } else  {
             lexer.pushBack();
             return 1;

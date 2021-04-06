@@ -16,6 +16,7 @@
  */
 package org.orekit.utils.units;
 
+import org.hipparchus.fraction.Fraction;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -110,42 +111,90 @@ class Lexer {
         }
         if (current > start) {
             final String identifier = unitSpecification.subSequence(start, current).toString();
-            return emit(current, TokenType.PREFIXED_UNIT, PrefixedUnit.valueOf(identifier), 0);
+            return emit(current, TokenType.PREFIXED_UNIT, PrefixedUnit.valueOf(identifier), 0, 1);
         }
 
         // look for power
         if ((start < end - 1) &&
-            unitSpecification.charAt(start) == '*' &&
+            unitSpecification.charAt(start)     == '*' &&
             unitSpecification.charAt(start + 1) == '*') {
             // power indicator as **
-            return emit(start + 2, TokenType.POWER, null, 0);
+            return emit(start + 2, TokenType.POWER, null, 0, 1);
         } else if (unitSpecification.charAt(start) == '^') {
             // power indicator as ^
-            return emit(start + 1, TokenType.POWER, null, 0);
+            return emit(start + 1, TokenType.POWER, null, 0, 1);
         } else if (convertSuperscript(start) != ' ' &&
                    last != null &&
                    last.getType() != TokenType.POWER) {
             // virtual power indicator as we switch to superscript characters
-            return emit(start, TokenType.POWER, null, 0);
+            return emit(start, TokenType.POWER, null, 0, 1);
         }
 
         // look for one character tokens
         if (unitSpecification.charAt(start) == '*') {
-            return emit(start + 1, TokenType.MULTIPLICATION, null, 0);
+            return emit(start + 1, TokenType.MULTIPLICATION, null, 0, 1);
         } else if (unitSpecification.charAt(start) == '×') {
-            return emit(start + 1, TokenType.MULTIPLICATION, null, 0);
+            return emit(start + 1, TokenType.MULTIPLICATION, null, 0, 1);
         } else if (unitSpecification.charAt(start) == '.') {
-            return emit(start + 1, TokenType.MULTIPLICATION, null, 0);
+            return emit(start + 1, TokenType.MULTIPLICATION, null, 0, 1);
         } else if (unitSpecification.charAt(start) == '/') {
-            return emit(start + 1, TokenType.DIVISION, null, 0);
+            return emit(start + 1, TokenType.DIVISION, null, 0, 1);
         } else if (unitSpecification.charAt(start) == '⁄') {
-            return emit(start + 1, TokenType.DIVISION, null, 0);
+            return emit(start + 1, TokenType.DIVISION, null, 0, 1);
         } else if (unitSpecification.charAt(start) == '(') {
-            return emit(start + 1, TokenType.OPEN, null, 0);
+            return emit(start + 1, TokenType.OPEN, null, 0, 1);
         } else if (unitSpecification.charAt(start) == ')') {
-            return emit(start + 1, TokenType.CLOSE, null, 0);
+            return emit(start + 1, TokenType.CLOSE, null, 0, 1);
         } else if (unitSpecification.charAt(start) == '√') {
-            return emit(start + 1, TokenType.SQUARE_ROOT, null, 0);
+            return emit(start + 1, TokenType.SQUARE_ROOT, null, 0, 1);
+        }
+
+        // look for special case "0.5" (used by CCSDS for square roots)
+        if ((start < end - 2) &&
+             unitSpecification.charAt(start)     == '0' &&
+             unitSpecification.charAt(start + 1) == '.' &&
+             unitSpecification.charAt(start + 2) == '5') {
+            // ½ written as decimal number
+            return emit(start + 3, TokenType.FRACTION, null, 1, 2);
+        }
+
+        // look for unicode fractions
+        if (unitSpecification.charAt(start) == '¼') {
+            return emit(start + 1, TokenType.FRACTION, null, 1, 4);
+        } else if (unitSpecification.charAt(start) == '½') {
+            return emit(start + 1, TokenType.FRACTION, null, 1, 2);
+        } else if (unitSpecification.charAt(start) == '¾') {
+            return emit(start + 1, TokenType.FRACTION, null, 3, 4);
+        } else if (unitSpecification.charAt(start) == '⅐') {
+            return emit(start + 1, TokenType.FRACTION, null, 1, 7);
+        } else if (unitSpecification.charAt(start) == '⅑') {
+            return emit(start + 1, TokenType.FRACTION, null, 1, 9);
+        } else if (unitSpecification.charAt(start) == '⅒') {
+            return emit(start + 1, TokenType.FRACTION, null, 1, 10);
+        } else if (unitSpecification.charAt(start) == '⅓') {
+            return emit(start + 1, TokenType.FRACTION, null, 1, 3);
+        } else if (unitSpecification.charAt(start) == '⅔') {
+            return emit(start + 1, TokenType.FRACTION, null, 2, 3);
+        } else if (unitSpecification.charAt(start) == '⅕') {
+            return emit(start + 1, TokenType.FRACTION, null, 1, 5);
+        } else if (unitSpecification.charAt(start) == '⅖') {
+            return emit(start + 1, TokenType.FRACTION, null, 2, 5);
+        } else if (unitSpecification.charAt(start) == '⅗') {
+            return emit(start + 1, TokenType.FRACTION, null, 3, 5);
+        } else if (unitSpecification.charAt(start) == '⅘') {
+            return emit(start + 1, TokenType.FRACTION, null, 4, 5);
+        } else if (unitSpecification.charAt(start) == '⅙') {
+            return emit(start + 1, TokenType.FRACTION, null, 1, 6);
+        } else if (unitSpecification.charAt(start) == '⅚') {
+            return emit(start + 1, TokenType.FRACTION, null, 5, 6);
+        } else if (unitSpecification.charAt(start) == '⅛') {
+            return emit(start + 1, TokenType.FRACTION, null, 1, 8);
+        } else if (unitSpecification.charAt(start) == '⅜') {
+            return emit(start + 1, TokenType.FRACTION, null, 3, 8);
+        } else if (unitSpecification.charAt(start) == '⅝') {
+            return emit(start + 1, TokenType.FRACTION, null, 5, 8);
+        } else if (unitSpecification.charAt(start) == '⅞') {
+            return emit(start + 1, TokenType.FRACTION, null, 7, 8);
         }
 
         // it must be an integer, either as regular character or as superscript
@@ -180,7 +229,7 @@ class Lexer {
         }
         if (current > numberStart) {
             // there were some digits
-            return emit(current, TokenType.INTEGER, null, sign * value);
+            return emit(current, TokenType.INTEGER, null, sign * value, 1);
         }
 
         throw generateException();
@@ -198,15 +247,17 @@ class Lexer {
      * @param after index after token
      * @param type token type
      * @param unit prefixed unit value
-     * @param value integer value
+     * @param numerator value of the token numerator
+     * @param denominator value of the token denominator
      * @return new token
      */
-    private Token emit(final int after, final TokenType type,
-                       final PrefixedUnit unit, final int value) {
+    private Token emit(final int after, final TokenType type, final PrefixedUnit unit,
+                       final int numerator, final int denominator) {
         final CharSequence subString = unitSpecification.subSequence(start, after);
         start      = after;
         nextToLast = last;
-        last       = new Token(subString, type, unit, value);
+        last       = new Token(subString, type, unit, numerator,
+                               denominator == 1 ? null : new Fraction(numerator, denominator));
         return last;
     }
 
