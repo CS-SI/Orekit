@@ -31,9 +31,6 @@ public interface QZSSOrbitalElements extends GNSSOrbitalElements {
     /** WGS 84 value of the Earth's universal gravitational parameter for QZSS user in m³/s². */
     double QZSS_MU = 3.986005e+14;
 
-    /** Value of Pi for conversion from semicircles to radian. */
-    double QZSS_PI = 3.1415926535898;
-
     /** Duration of the QZSS week in seconds. */
     double QZSS_WEEK_IN_SECONDS = 604800.;
 

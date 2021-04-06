@@ -156,7 +156,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
                 acceleration.subtract(circularApproximation).getNorm(),
                 tol);
         //check derivatives
-        FieldSpacecraftState<DerivativeStructure> sDS = toDS(s, new LofOffset(s.getFrame(), LOFType.VVLH));
+        FieldSpacecraftState<DerivativeStructure> sDS = toDS(s, new LofOffset(s.getFrame(), LOFType.LVLH_CCSDS));
         final Vector3D actualDerivatives = relativity
                 .acceleration(sDS, relativity.getParameters(sDS.getDate().getField()))
                 .toVector3D();
@@ -180,7 +180,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         ));
 
         checkStateJacobianVs80Implementation(s, relativity,
-                                             new LofOffset(s.getFrame(), LOFType.VVLH),
+                                             new LofOffset(s.getFrame(), LOFType.LVLH_CCSDS),
                                              1.0e-50, false);
     }
 
@@ -198,7 +198,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         ));
 
         checkStateJacobianVs80ImplementationGradient(s, relativity,
-                                             new LofOffset(s.getFrame(), LOFType.VVLH),
+                                             new LofOffset(s.getFrame(), LOFType.LVLH_CCSDS),
                                              1.0e-50, false);
     }
 
@@ -234,7 +234,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
                 acceleration.subtract(circularApproximation).getNorm(),
                 tol);
         //check derivatives
-        FieldSpacecraftState<DerivativeStructure> sDS = toDS(state, new LofOffset(state.getFrame(), LOFType.VVLH));
+        FieldSpacecraftState<DerivativeStructure> sDS = toDS(state, new LofOffset(state.getFrame(), LOFType.LVLH_CCSDS));
         FieldVector3D<DerivativeStructure> gradient =
                 relativity.acceleration(sDS, relativity.getParameters(sDS.getDate().getField()));
         Assert.assertEquals(

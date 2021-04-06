@@ -25,31 +25,17 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
+  skinparam linetype              ortho
 
   package org.orekit #ECEBD8 {
 
-    package utils #DDEBD8 {
-
-      interface PVCoordinatesProvider {
-        +PVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
-      }
-
-    }
-
-
     package time #DDEBD8 {
 
-      interface TimeStamped {
-        +AbsoluteDate getDate()
-      }
+      interface TimeStamped
 
-      interface "TimeShiftable<T>" as TimeShiftable_T_ {
-        +T shiftedBy(double dt)
-      }
+      interface "TimeShiftable<T>" as TimeShiftable_T_
 
-      interface "TimeInterpolable<T>" as TimeInterpolable_T_ {
-        +T interpolate(AbsoluteDate date, Collection<T> sample)
-      }
+      interface "TimeInterpolable<T>" as TimeInterpolable_T_
 
     }
 
@@ -68,6 +54,11 @@
         always immutable
         addAdditionalState creates new instances
       end note
+
+      interface BoundedPropagator {
+        +AbsoluteDate getMinDate()
+        +AbsoluteDate getMaxDate()
+      }
 
       interface Propagator {
         +int getMode()
@@ -88,19 +79,23 @@
         +SpacecraftState propagate(AbsoluteDate start, AbsoluteDate target)
       }
 
-      interface BoundedPropagator {
-        +AbsoluteDate getMinDate()
-        +AbsoluteDate getMaxDate()
-      }
+      BoundedPropagator ..|> Propagator
+      SpacecraftState <-- Propagator : create
 
-      Propagator            <|..     BoundedPropagator
-      PVCoordinatesProvider <|.down. Propagator
-      Propagator            ->       SpacecraftState : create
-      TimeStamped           <|.right. SpacecraftState
-      TimeShiftable_T_      <|.right. SpacecraftState
-      TimeInterpolable_T_   <|.right. SpacecraftState
+     TimeStamped         ..|> SpacecraftState
+     TimeShiftable_T_    ..|> SpacecraftState
+     TimeInterpolable_T_ ..|> SpacecraftState
 
    }
+
+    package utils #DDEBD8 {
+
+      interface PVCoordinatesProvider {
+        +PVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
+      }
+
+      Propagator ..|> PVCoordinatesProvider
+    }
 
  }
 

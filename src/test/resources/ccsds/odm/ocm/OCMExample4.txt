@@ -1,0 +1,60 @@
+CCSDS_OCM_VERS            = 3.0
+
+COMMENT  This file is a dummy example with inconsistent data
+COMMENT  it is used to exercise all possible keys in Key-Value Notation
+
+CREATION_DATE             = 2019-07-23T10:29:31.576Z
+ORIGINATOR                = JPL
+MESSAGE_ID                = ABC-12_34
+
+META_START
+COMMENT Metadata comment
+CLASSIFICATION            = FOUO
+OBJECT_NAME               = UNKNOWN
+INTERNATIONAL_DESIGNATOR  = 2000-053A
+CATALOG_NAME              = COMSPOC
+OBJECT_DESIGNATOR         = 18SPCS 18571
+ALTERNATE_NAMES           = ALTERNATE, OTHER, RELATED
+ORIGINATOR_POC            = Mr. Rodgers
+ORIGINATOR_POSITION       = Flight Dynamics Mission Design Lead
+ORIGINATOR_PHONE          = +12345678901
+ORIGINATOR_ADDRESS        = JOHN.DOE@EXAMPLE.ORG
+TECH_ORG                  = NASA
+TECH_POC                  = Maxwell Smart
+TECH_POSITION             = Flight Dynamics Mission Design Lead
+TECH_PHONE                = +98765432109
+TECH_ADDRESS              = MAX@EXAMPLE.ORG
+PREVIOUS_MESSAGE_ID       = ABC-12_33
+NEXT_MESSAGE_ID           = ABC-12_35
+ADM_MESSAGE_LINK          = ADM-MSG-35132.TXT
+CDM_MESSAGE_LINK          = CDM-MSG-35132.TXT
+PRM_MESSAGE_LINK          = PRM-MSG-35132.TXT
+RDM_MESSAGE_LINK          = RDM-MSG-35132.TXT
+TDM_MESSAGE_LINK          = TDM-MSG-35132.TXT
+OPERATOR                  = INTELSAT
+OWNER                     = SIRIUS
+COUNTRY                   = FRANCE
+CONSTELLATION             = SPIRE
+OBJECT_TYPE               = PAYLOAD
+TIME_SYSTEM               = UTC
+EPOCH_TZERO               = 2019-07-23T00:00:00
+OPS_STATUS                = OPERATIONAL
+ORBIT_CATEGORY            = EGO
+OCM_DATA_ELEMENTS         = ORBIT, PHYSICAL DESCRIPTION, COVARIANCE, MANEUVER, PERTURBATIONS, OD, USER
+SCLK_OFFSET_AT_EPOCH      = 28800 [s]
+SCLK_SEC_PER_SI_SEC       = 2.5 [s]
+PREVIOUS_MESSAGE_EPOCH    = 2019-07-23T09:29:31.576
+NEXT_MESSAGE_EPOCH        = 2019-07-23T11:29:31.576
+START_TIME                = 2019-204T09:30:00Z
+STOP_TIME                 = 2019-204T10:29:50Z
+TIME_SPAN                 = 0.041550925925 [d]
+TAIMUTC_AT_TZERO          = 37 [s]
+UT1MUTC_AT_TZERO          = -0.1642060 [s]
+EOP_SOURCE                = IERS
+INTERP_METHOD_EOP         = LAGRANGE_ORDER_5
+CELESTIAL_SOURCE          = JPL_DE_430
+META_STOP
+USER_START
+USER_DEFINED_LIBRARY      = OREKIT
+USER_STOP
+

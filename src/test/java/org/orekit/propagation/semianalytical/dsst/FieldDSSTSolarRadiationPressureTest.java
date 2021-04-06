@@ -195,7 +195,7 @@ public class FieldDSSTSolarRadiationPressureTest {
                                                                                      0.2, 0.6);
         
         final AttitudeProvider attitudeProvider = new LofOffset(meanState.getFrame(),
-                                                                LOFType.VVLH, RotationOrder.XYZ,
+                                                                LOFType.LVLH_CCSDS, RotationOrder.XYZ,
                                                                 0.0, 0.0, 0.0);
 
         final DSSTForceModel srp = new DSSTSolarRadiationPressure(sun,
@@ -255,7 +255,7 @@ public class FieldDSSTSolarRadiationPressureTest {
         
         // Attitude
         final AttitudeProvider attitudeProvider = new LofOffset(meanState.getFrame(),
-                                                                LOFType.VVLH, RotationOrder.XYZ,
+                                                                LOFType.LVLH_CCSDS, RotationOrder.XYZ,
                                                                 0.0, 0.0, 0.0);
 
         // Force model
@@ -385,7 +385,7 @@ public class FieldDSSTSolarRadiationPressureTest {
         
         // Attitude
         final AttitudeProvider attitudeProvider = new LofOffset(meanState.getFrame(),
-                                                                LOFType.VVLH, RotationOrder.XYZ,
+                                                                LOFType.LVLH_CCSDS, RotationOrder.XYZ,
                                                                 0.0, 0.0, 0.0);
 
         // Force model

@@ -1000,7 +1000,7 @@ public class FieldDSSTPropagatorTest {
                                                                                      0.2, 0.6);
         final Atmosphere atmosphere = new HarrisPriester(CelestialBodyFactory.getSun(), earth, 6);
         final AttitudeProvider attitudeProvider = new LofOffset(osculatingState.getFrame(),
-                                                                LOFType.VVLH, RotationOrder.XYZ,
+                                                                LOFType.LVLH_CCSDS, RotationOrder.XYZ,
                                                                 0.0, 0.0, 0.0);
 
         // Surface force models that require an attitude provider
@@ -1037,7 +1037,7 @@ public class FieldDSSTPropagatorTest {
                                                             FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         final BoxAndSolarArraySpacecraft boxAndWing = new BoxAndSolarArraySpacecraft(5.0, 2.0, 2.0, sun, 50.0, Vector3D.PLUS_J, 2.0, 0.1, 0.2, 0.6);
         final Atmosphere atmosphere = new HarrisPriester(CelestialBodyFactory.getSun(), earth, 6);
-        final AttitudeProvider attitudeProvider = new LofOffset(osculatingState.getFrame(), LOFType.VVLH, RotationOrder.XYZ, 0.0, 0.0, 0.0);
+        final AttitudeProvider attitudeProvider = new LofOffset(osculatingState.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYZ, 0.0, 0.0, 0.0);
         // Surface force models that require an attitude provider
         final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
         forces.add(new DSSTAtmosphericDrag(atmosphere, boxAndWing, osculatingState.getMu().getReal()));

@@ -54,6 +54,7 @@ import org.orekit.utils.OrekitConfiguration;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.GenericTimeStampedCache;
 import org.orekit.utils.TimeStampedGenerator;
+import org.orekit.utils.units.UnitsConverter;
 
 /** Loader for JPL ephemerides binary files (DE 4xx) and similar formats (INPOP 06/08/10).
  * <p>JPL ephemerides binary files contain ephemerides for all solar system planets.</p>
@@ -374,7 +375,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
      * @return astronomical unit in meters
      */
     public double getLoadedAstronomicalUnit() {
-        return 1000.0 * getLoadedConstant(CONSTANT_AU);
+        return UnitsConverter.KILOMETRES_TO_METRES.convert(getLoadedConstant(CONSTANT_AU));
     }
 
     /** Get Earth/Moon mass ratio.
@@ -505,7 +506,7 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
         // (x, y, z) are contained in the file, positions are in kilometers
         // and times are in TDB
         components   = 3;
-        positionUnit = 1000.0;
+        positionUnit = UnitsConverter.KILOMETRES_TO_METRES.convert(1.0);
         timeScale    = timeScales.getTDB();
 
         if (deNum == INPOP_DE_NUMBER) {

@@ -46,7 +46,7 @@ public class CircularFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
     @Test
     public void testRollPitchYaw() {
         doTestFootprint(new CircularFieldOfView(Vector3D.PLUS_K, FastMath.toRadians(3.0), 0.0),
-                        new LofOffset(orbit.getFrame(), LOFType.VVLH, RotationOrder.XYZ,
+                        new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYZ,
                                       FastMath.toRadians(10),
                                       FastMath.toRadians(20),
                                       FastMath.toRadians(5)),
@@ -56,7 +56,7 @@ public class CircularFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
     @Test
     public void testFOVPartiallyTruncatedAtLimb() {
         doTestFootprint(new CircularFieldOfView(Vector3D.PLUS_K, FastMath.toRadians(3.0), 0.0),
-                        new LofOffset(orbit.getFrame(), LOFType.VVLH, RotationOrder.XYZ,
+                        new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYZ,
                                       FastMath.toRadians(-10),
                                       FastMath.toRadians(-39),
                                       FastMath.toRadians(-5)),
@@ -73,7 +73,7 @@ public class CircularFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
     @Test
     public void testFOVAwayFromEarth() {
         doTestFOVAwayFromEarth(new CircularFieldOfView(Vector3D.MINUS_K, FastMath.toRadians(3.0), 0.0),
-                               new LofOffset(orbit.getFrame(), LOFType.VVLH, RotationOrder.XYZ,
+                               new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYZ,
                                              FastMath.toRadians(-10),
                                              FastMath.toRadians(-39),
                                              FastMath.toRadians(-5)),

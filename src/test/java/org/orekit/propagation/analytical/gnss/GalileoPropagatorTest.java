@@ -32,6 +32,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.GalileoAlmanac;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.gnss.navigation.GalileoNavigationMessage;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScalesFactory;
@@ -43,17 +44,30 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class GalileoPropagatorTest {
 
-    private GalileoOrbitalElements goe;
+    private GalileoNavigationMessage goe;
 
     @Before
     public void setUp() {
-        // Input parameters (reference IGS, 12 April 2019 at 09:30:00 UTC)
-        goe = new GalileoEphemeris(4, 1024, 293400.0, 5440.602949142456,
-                                   3.7394414770330066E-9, 2.4088891223073006E-4, 0.9531656087278083,
-                                   -2.36081262303612E-10, -0.36639513583951266, -5.7695260382035525E-9,
-                                   -1.6870064194345724, -0.38716557650888, -8.903443813323975E-7,
-                                   6.61797821521759E-6, 194.0625, -18.78125,
-                                   3.166496753692627E-8, -1.862645149230957E-8);
+        goe = new GalileoNavigationMessage();
+        goe.setPRN(4);
+        goe.setWeek(1024);
+        goe.setToe(293400.0);
+        goe.setSqrtA(5440.602949142456);
+        goe.setDeltaN(3.7394414770330066E-9);
+        goe.setE(2.4088891223073006E-4);
+        goe.setI0(0.9531656087278083);
+        goe.setIDot(-2.36081262303612E-10);
+        goe.setOmega0(-0.36639513583951266);
+        goe.setOmegaDot(-5.7695260382035525E-9);
+        goe.setPa(-1.6870064194345724);
+        goe.setM0(-0.38716557650888);
+        goe.setCuc(-8.903443813323975E-7);
+        goe.setCus(6.61797821521759E-6);
+        goe.setCrc(194.0625);
+        goe.setCrs(-18.78125);
+        goe.setCic(3.166496753692627E-8);
+        goe.setCis(-1.862645149230957E-8);
+        goe.setDate(new GNSSDate(goe.getWeek(), 1000. * goe.getTime(), SatelliteSystem.GALILEO).getDate());
     }
     
     @BeforeClass
@@ -185,153 +199,6 @@ public class GalileoPropagatorTest {
         // Verify that an infinite loop did not occur
         Assert.assertEquals(Vector3D.NaN, pv0.getPosition());
         Assert.assertEquals(Vector3D.NaN, pv0.getVelocity()); 
-    }
-
-    private class GalileoEphemeris implements GalileoOrbitalElements {
-
-        private int satID;
-        private int week;
-        private double toe;
-        private double sma;
-        private double deltaN;
-        private double ecc;
-        private double inc;
-        private double iDot;
-        private double om0;
-        private double dom;
-        private double aop;
-        private double anom;
-        private double cuc;
-        private double cus;
-        private double crc;
-        private double crs;
-        private double cic;
-        private double cis;
-
-        /**
-         * Build a new instance.
-         */
-        public GalileoEphemeris(int satID, int week, double toe, double sqa,
-                                double deltaN, double ecc, double inc,
-                                double iDot, double om0, double dom, double aop,
-                                double anom, double cuc, double cus, double crc,
-                                double crs, double cic, double cis) {
-            this.satID = satID;
-            this.week = week;
-            this.toe = toe;
-            this.sma = sqa * sqa;
-            this.deltaN = deltaN;
-            this.ecc = ecc;
-            this.inc = inc;
-            this.iDot = iDot;
-            this.om0 = om0;
-            this.dom = dom;
-            this.aop = aop;
-            this.anom = anom;
-            this.cuc = cuc;
-            this.cus = cus;
-            this.crc = crc;
-            this.crs = crs;
-            this.cic = cic;
-            this.cis = cis;
-        }
-
-        @Override
-        public int getPRN() {
-            return satID;
-        }
-
-        @Override
-        public int getWeek() {
-            return week;
-        }
-
-        @Override
-        public double getTime() {
-            return toe;
-        }
-
-        @Override
-        public double getSma() {
-            return sma;
-        }
-
-        @Override
-        public double getMeanMotion() {
-            final double absA = FastMath.abs(sma);
-            return FastMath.sqrt(GALILEO_MU / absA) / absA + deltaN;
-        }
-
-        @Override
-        public double getE() {
-            return ecc;
-        }
-
-        @Override
-        public double getI0() {
-            return inc;
-        }
-
-        @Override
-        public double getIDot() {
-            return iDot;
-        }
-
-        @Override
-        public double getOmega0() {
-            return om0;
-        }
-
-        @Override
-        public double getOmegaDot() {
-            return dom;
-        }
-
-        @Override
-        public double getPa() {
-            return aop;
-        }
-
-        @Override
-        public double getM0() {
-            return anom;
-        }
-
-        @Override
-        public double getCuc() {
-            return cuc;
-        }
-
-        @Override
-        public double getCus() {
-            return cus;
-        }
-
-        @Override
-        public double getCrc() {
-            return crc;
-        }
-
-        @Override
-        public double getCrs() {
-            return crs;
-        }
-
-        @Override
-        public double getCic() {
-            return cic;
-        }
-
-        @Override
-        public double getCis() {
-            return cis;
-        }
-
-        @Override
-        public AbsoluteDate getDate() {
-            return new GNSSDate(week, toe * 1000., SatelliteSystem.GALILEO).getDate();
-        }
-        
     }
 
 }

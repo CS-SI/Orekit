@@ -16,7 +16,13 @@
  */
 package org.orekit.files.general;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import org.orekit.utils.TimeStampedAngularCoordinates;
 
 
 /**
@@ -45,12 +51,34 @@ public interface AttitudeEphemerisFileWriter {
      *            a configured Appendable to feed with text
      * @param ephemerisFile
      *            a populated ephemeris file to serialize into the buffer
+     * @param <C> type of the angular coordinates
+     * @param <S> type of the segment
      * @throws IOException
      *             if any buffer writing operations fail or if the underlying
      *             format doesn't support a configuration in the EphemerisFile
      *             (for example having multiple satellites in one file, having
      *             the origin at an unspecified celestial body, etc.)
      */
-    void write(Appendable writer, AttitudeEphemerisFile ephemerisFile) throws IOException;
+    <C extends TimeStampedAngularCoordinates, S extends AttitudeEphemerisFile.AttitudeEphemerisSegment<C>>
+        void write(Appendable writer, AttitudeEphemerisFile<C, S> ephemerisFile) throws IOException;
+
+    /**
+     * Write the passed in {@link AttitudeEphemerisFile} to a file at the output path specified.
+     * @param outputFilePath a file path that the corresponding file will be written to
+     * @param ephemerisFile a populated ephemeris file to serialize into the buffer
+     * @param <C> type of the angular coordinates
+     * @param <S> type of the segment
+     * @throws IOException if any file writing operations fail or if the underlying
+     *         format doesn't support a configuration in the EphemerisFile
+     *         (for example having multiple satellites in one file, having
+     *         the origin at an unspecified celestial body, etc.)
+     */
+    default <C extends TimeStampedAngularCoordinates, S extends AttitudeEphemerisFile.AttitudeEphemerisSegment<C>>
+        void write(final String outputFilePath, final AttitudeEphemerisFile<C, S> ephemerisFile)
+        throws IOException {
+        try (BufferedWriter appendable = Files.newBufferedWriter(Paths.get(outputFilePath), StandardCharsets.UTF_8)) {
+            write(appendable, ephemerisFile);
+        }
+    }
 
 }

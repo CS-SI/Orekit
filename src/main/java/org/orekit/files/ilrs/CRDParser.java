@@ -47,6 +47,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
+import org.orekit.utils.units.Unit;
+import org.orekit.utils.units.UnitsConverter;
 
 /**
  * A parser for the CRD data file format.
@@ -65,17 +67,17 @@ public class CRDParser {
     /** Default supported files name pattern for CRD files. */
     public static final String DEFAULT_CRD_SUPPORTED_NAMES = "^(?!0+$)\\w{1,12}\\_\\d{6,8}.\\w{3}$";
 
-    /** Nanometers to meters converter. */
-    private static final double NM_TO_M = 1.0e-9;
+    /** Nanometers units. */
+    private static final Unit NM = Unit.parse("nm");
 
-    /** Kilohertz to hertz converter. */
-    private static final double KHZ_TO_HZ = 1.0e3;
+    /** Kilohertz units. */
+    private static final Unit KHZ = Unit.parse("kHz");
 
-    /** Microseconds to seconds converter. */
-    private static final double US_TO_S = 1.0e-6;
+    /** Microseconds units. */
+    private static final Unit US = Unit.parse("µs");
 
-    /** Milli to none converter. */
-    private static final double MILLI_TO_NONE = 1.0e-3;
+    /** mbar to bar converter. */
+    private static final UnitsConverter MBAR_TO_BAR = new UnitsConverter(Unit.parse("mbar"), Unit.parse("bar"));
 
     /** File format. */
     private static final String FILE_FORMAT = "CRD";
@@ -465,7 +467,7 @@ public class CRDParser {
                 final String[] values = SEPARATOR.split(line);
 
                 // Wavelength
-                systemRecord.setWavelength(Double.parseDouble(values[2]) * NM_TO_M);
+                systemRecord.setWavelength(NM.toSI(Double.parseDouble(values[2])));
 
                 // System ID
                 systemRecord.setSystemId(values[3]);
@@ -500,7 +502,7 @@ public class CRDParser {
                 // Fill values
                 laserRecord.setLaserId(values[2]);
                 laserRecord.setLaserType(values[3]);
-                laserRecord.setPrimaryWavelength(Double.parseDouble(values[4]) * NM_TO_M);
+                laserRecord.setPrimaryWavelength(NM.toSI(Double.parseDouble(values[4])));
                 laserRecord.setNominalFireRate(Double.parseDouble(values[5]));
                 laserRecord.setPulseEnergy(Double.parseDouble(values[6]));
                 laserRecord.setPulseWidth(Double.parseDouble(values[7]));
@@ -536,13 +538,13 @@ public class CRDParser {
                 // Fill values
                 detectorRecord.setDetectorId(values[2]);
                 detectorRecord.setDetectorType(values[3]);
-                detectorRecord.setApplicableWavelength(Double.parseDouble(values[4]) * NM_TO_M);
+                detectorRecord.setApplicableWavelength(NM.toSI(Double.parseDouble(values[4])));
                 detectorRecord.setQuantumEfficiency(Double.parseDouble(values[5]));
                 detectorRecord.setAppliedVoltage(Double.parseDouble(values[6]));
-                detectorRecord.setDarkCount(Double.parseDouble(values[7]) * KHZ_TO_HZ);
+                detectorRecord.setDarkCount(KHZ.toSI(Double.parseDouble(values[7])));
                 detectorRecord.setOutputPulseType(values[8]);
                 detectorRecord.setOutputPulseWidth(Double.parseDouble(values[9]));
-                detectorRecord.setSpectralFilter(Double.parseDouble(values[10]) * NM_TO_M);
+                detectorRecord.setSpectralFilter(NM.toSI(Double.parseDouble(values[10])));
                 detectorRecord.setTransmissionOfSpectralFilter(Double.parseDouble(values[11]));
                 detectorRecord.setSpatialFilter(Double.parseDouble(values[12]));
                 detectorRecord.setExternalSignalProcessing(values[13]);
@@ -550,7 +552,7 @@ public class CRDParser {
                 // Check file version for additional data
                 if (pi.version == 2) {
                     detectorRecord.setAmplifierGain(Double.parseDouble(values[14]));
-                    detectorRecord.setAmplifierBandwidth(Double.parseDouble(values[15]) * KHZ_TO_HZ);
+                    detectorRecord.setAmplifierBandwidth(KHZ.toSI(Double.parseDouble(values[15])));
                     detectorRecord.setAmplifierInUse(values[16]);
                 }
 
@@ -586,7 +588,7 @@ public class CRDParser {
                 timingRecord.setFrequencySource(values[4]);
                 timingRecord.setTimer(values[5]);
                 timingRecord.setTimerSerialNumber(values[6]);
-                timingRecord.setEpochDelayCorrection(Double.parseDouble(values[7]) * US_TO_S);
+                timingRecord.setEpochDelayCorrection(US.toSI(Double.parseDouble(values[7])));
 
                 // Set the timing system configuration record
                 pi.configurationRecords.setTimingRecord(timingRecord);
@@ -616,9 +618,9 @@ public class CRDParser {
 
                 // Estimated offsets and drifts
                 transponderRecord.setTransponderId(values[2]);
-                transponderRecord.setStationUTCOffset(Double.parseDouble(values[3]) * NM_TO_M);
+                transponderRecord.setStationUTCOffset(NM.toSI(Double.parseDouble(values[3])));
                 transponderRecord.setStationOscDrift(Double.parseDouble(values[4]));
-                transponderRecord.setTranspUTCOffset(Double.parseDouble(values[5]) * NM_TO_M);
+                transponderRecord.setTranspUTCOffset(NM.toSI(Double.parseDouble(values[5])));
                 transponderRecord.setTranspOscDrift(Double.parseDouble(values[6]));
 
                 // Transponder clock reference time
@@ -822,7 +824,7 @@ public class CRDParser {
 
                 // Read data
                 final double secOfDay    = Double.parseDouble(values[1]);
-                final double pressure    = Double.parseDouble(values[2]) * MILLI_TO_NONE;
+                final double pressure    = MBAR_TO_BAR.convert(Double.parseDouble(values[2]));
                 final double temperature = Double.parseDouble(values[3]);
                 final double humidity    = Double.parseDouble(values[4]);
 

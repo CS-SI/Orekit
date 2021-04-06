@@ -34,10 +34,12 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.gnss.GLONASSEphemeris;
+import org.orekit.gnss.navigation.GLONASSNavigationMessage;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.gnss.GLONASSOrbitalElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.GLONASSDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
@@ -159,9 +161,17 @@ public class GLONASSNumericalPropagatorTest {
         final Frame pz90 = FramesFactory.getPZ9011(IERSConventions.IERS_2010, true);
         final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         // Initial GLONASS orbital elements (Ref: IGS)
-        final GLONASSEphemeris ge = new GLONASSEphemeris(6, 1342, 45900, -1.0705924E7, 2052.252685546875, 0.0,
-                                                         -1.5225037E7, 1229.055419921875, -2.7939677238464355E-6,
-                                                         -1.7389698E7, -2338.376953125, 1.862645149230957E-6);
+        final GLONASSNavigationMessage ge = new GLONASSNavigationMessage();
+        ge.setDate(new GLONASSDate(1342, 4, 45900).getDate());
+        ge.setX(-1.0705924E7);
+        ge.setXDot(2052.252685546875);
+        ge.setXDotDot(0.0);
+        ge.setY(-1.5225037E7);
+        ge.setYDot(1229.055419921875);
+        ge.setYDotDot(-2.7939677238464355E-6);
+        ge.setZ(-1.7389698E7);
+        ge.setZDot(-2338.376953125);
+        ge.setZDotDot(1.862645149230957E-6);
         // Date of the GLONASS orbital elements, 3 Septembre 2019 at 09:45:00 UTC
         final AbsoluteDate target = ge.getDate().shiftedBy(-18.0);
         // 4th order Runge-Kutta

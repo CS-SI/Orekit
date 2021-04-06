@@ -16,7 +16,7 @@
  */
 /**
  *
- *This package provides a parser for elements data stored in CCSDS Navigation Data Message format.
+ * This package is gathers sub-packages providing parsers/writers for various CCSDS messages.
  *
  * @author sports
  * @since 6.1

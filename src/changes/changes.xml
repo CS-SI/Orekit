@@ -21,6 +21,47 @@
   </properties>
   <body>
     <release version="11.0" date="TBD" description="TBD">
+      <action dev="bryan" type="update" issue="774">
+        TimeStampedFieldPVCoordinates now implements FieldTimeStamped.
+      </action>
+      <action dev="nfialton" type="fix" issue="775">
+        Fixed NullPointerException in FieldSpacecraftState when orbit is not defined.
+      </action>
+      <action dev="bryan" type="add" issue="763">
+        Added support for RTCM ephemeris messages.
+      </action>
+      <action dev="bryan" type="add" issue="769">
+        Added ionospheric model based on IM201 SSR message.
+      </action>
+      <action dev="bryan" type="add" issue="763">
+        Added support for Ntrip protocol.
+      </action>
+      <action dev="bryan" type="add" issue="763">
+        Added support for IGS SSR messages.
+      </action>
+      <action dev="afossa" type="fix" issue="772">
+        Fixed computation of velocity derivative in FieldNumericalPropagator.Main.addKeplerContribution()
+        with superGetOrbitType() == null.
+      </action>
+      <action dev="luc" type="add" >
+        Added AccurateFormatter to output double numbers and dates
+        with adaptive number of digits, preserving one ULP accuracy.
+      </action>
+      <action dev="luc" type="add" >
+        Added a units converter.
+      </action>
+      <action dev="luc" type="update" >
+        INCOMPATIBLE CHANGE! Now observations parsed from TDM files are in SI units.
+      </action>
+      <action dev="luc" type="update" issue="768">
+        Allow parsing several variations of ITRF specifications (like itrf-97, ITRF2000, ITRF_2014…).
+      </action>
+      <action dev="luc" type="add" >
+        Added a time scale for drifting on-board clocks.
+      </action>
+      <action dev="bryan" type="add" issue="523">
+        Added support for RINEX 3.X navigation files.
+      </action>
       <action dev="bryan" type="update" issue="691">
         Improved consistency between getParametersDrivers() method signatures.
       </action>
@@ -45,6 +86,25 @@
       </action>
       <action dev="luc" type="fix" issue="760">
         Fixed reference frame in tabulated attitude provider.
+      </action>
+      <action dev="luc" type="update" >
+      	Renamed SINEXLoader into SinexLoader.
+      </action>
+      <action dev="luc" type="update" >
+        Use DataSource in RinexLoader and SinexLoader.
+      </action>
+      <action dev="luc" type="update" >
+        Renamed NamedData into DataSource.
+      </action>
+      <action dev="luc" type="add" issue="474">
+        Added support for CCSDS ODM V3, with the new
+        Orbit Comprehensive Message format.
+      </action>
+      <action dev="luc" type="update">
+        Overhauled generic Ephemeris and AttitudeEphemeris writing.
+      </action>
+      <action dev="luc" type="update">
+        Overhauled CCSDS messages handling, both parsing and writing.
       </action>
       <action dev="amir" type="fix" issue="746">
         Fixed combination of measurements using GNSS phase measurements.
@@ -74,7 +134,7 @@
         Added new method signature in IodGibbs using Position measurement.
       </action>
       <action dev="luc" type="fix" issue="749">
-      	Allow building PVCoordinates and AngularCoordinates (as well as their Field,
+        Allow building PVCoordinates and AngularCoordinates (as well as their Field,
         Absolute and TimeStamped variations) to be build from UnivariateDerivative1
         and UnivariateDerivative2 in addition to DerivativeStructure.
       </action>

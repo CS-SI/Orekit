@@ -1107,7 +1107,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         SpacecraftState state = new SpacecraftState(orbit);
 
         checkStateJacobianVs80Implementation(state, hfModel,
-                                             new LofOffset(state.getFrame(), LOFType.VVLH),
+                                             new LofOffset(state.getFrame(), LOFType.LVLH_CCSDS),
                                              2.0e-15, false);
 
     }
@@ -1135,7 +1135,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         SpacecraftState state = new SpacecraftState(orbit);
 
         checkStateJacobianVs80ImplementationGradient(state, hfModel,
-                                             new LofOffset(state.getFrame(), LOFType.VVLH),
+                                             new LofOffset(state.getFrame(), LOFType.LVLH_CCSDS),
                                              2.0e-15, false);
 
     }

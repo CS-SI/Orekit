@@ -48,6 +48,7 @@ import org.orekit.attitudes.FieldAttitude;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.FieldKeplerianOrbit;
@@ -70,6 +71,7 @@ import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 
 public class FieldSpacecraftStateTest {
@@ -142,6 +144,11 @@ public class FieldSpacecraftStateTest {
     @Test
     public void testResetOnEventNumerical() {
         doTestAdditionalTestResetOnEventNumerical(Decimal64Field.getInstance());
+    }
+    
+    @Test
+    public void testIssue775() {
+        doTestIssue775(Decimal64Field.getInstance());
     }
 
     private <T extends RealFieldElement<T>> void doTestFieldVsReal(final Field<T> field) {
@@ -924,7 +931,40 @@ public class FieldSpacecraftStateTest {
         Assert.assertEquals(+1, finalState.getAdditionalState(name)[0].getReal(), 1.0e-15);
 
     }
+    
 
+    private <T extends RealFieldElement<T>> void doTestIssue775(final Field<T> field) {
+        final T zero = field.getZero();
+        // Conversion from double to Field
+         FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field, new AbsoluteDate(new DateComponents(2004, 01, 01), TimeComponents.H00, TimeScalesFactory.getUTC()));
+         FieldAbsoluteDate<T> finalDate = new FieldAbsoluteDate<>(field, new AbsoluteDate(new DateComponents(2004, 01, 02), TimeComponents.H00, TimeScalesFactory.getUTC()));
+         Frame inertialFrame = FramesFactory.getEME2000();
+
+         // Initial PV coordinates
+         FieldAbsolutePVCoordinates<T> initPV = new FieldAbsolutePVCoordinates<>(inertialFrame,
+                 new TimeStampedFieldPVCoordinates<>(initDate,
+                         new FieldPVCoordinates<>(new FieldVector3D<>(zero.add(-29536113.0), zero.add(30329259.0), zero.add(-100125.0)),
+                                           new FieldVector3D<>(zero.add(-2194.0), zero.add(-2141.0), zero.add(-8.0))))) ;
+
+         // Input parameters
+         int numberOfInterals = 15;
+         T deltaT = finalDate.durationFrom(initDate).divide(numberOfInterals);
+
+         // Build the list of spacecraft states
+         List<FieldSpacecraftState<T>> states = new ArrayList<FieldSpacecraftState<T>>(numberOfInterals + 1);
+         for (int j = 0; j<= numberOfInterals; j++) {
+             states.add(new FieldSpacecraftState<T>(initPV).shiftedBy(deltaT.multiply(j)));
+         }
+
+         // Get initial state without orbit
+          FieldSpacecraftState<T> withoutOrbit = states.get(0);
+         // Interpolation
+          withoutOrbit = withoutOrbit.interpolate(states.get(10).getDate(), states.stream());
+          Assert.assertEquals(0.0, FieldVector3D.distance(withoutOrbit.getAbsPVA().getPosition(), states.get(10).getAbsPVA().getPosition()).getReal(), 1.0e-10);
+    }
+    
+    
+    
     @Before
     public void setUp(){
         try {

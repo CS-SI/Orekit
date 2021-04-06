@@ -25,7 +25,6 @@ import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.FieldODEIntegrator;
-import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
@@ -556,11 +555,11 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
                 if (mu.getReal() > 0) {
                     // velocity derivative is Newtonian acceleration
                     final FieldVector3D<T> position = currentState.getPVCoordinates().getPosition();
-                    final double r2         = position.getNormSq().getReal();
-                    final double coeff      = -mu.getReal() / (r2 * FastMath.sqrt(r2));
-                    yDot[3] = yDot[3].add(coeff * position.getX().getReal());
-                    yDot[4] = yDot[4].add(coeff * position.getY().getReal());
-                    yDot[5] = yDot[5].add(coeff * position.getZ().getReal());
+                    final T r2         = position.getNormSq();
+                    final T coeff      = r2.multiply(r2.sqrt()).reciprocal().negate().multiply(mu);
+                    yDot[3] = yDot[3].add(coeff.multiply(position.getX()));
+                    yDot[4] = yDot[4].add(coeff.multiply(position.getY()));
+                    yDot[5] = yDot[5].add(coeff.multiply(position.getZ()));
                 }
 
             } else {
