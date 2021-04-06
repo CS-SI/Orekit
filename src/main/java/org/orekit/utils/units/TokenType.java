@@ -44,6 +44,9 @@ enum TokenType {
     SQUARE_ROOT,
 
     /** Integer. */
-    INTEGER;
+    INTEGER,
+
+    /** Fraction. */
+    FRACTION;
 
 }

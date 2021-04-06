@@ -60,14 +60,14 @@ public class ParserTest {
 
     @Test
     public void testChain() {
-        checkReference("kg.m.s⁻¹",
+        checkReference("kg.m^(3/4).s⁻¹",
                        1.0,
-                       Fraction.ONE, Fraction.ONE, Fraction.MINUS_ONE, Fraction.ZERO);
+                       Fraction.ONE, new Fraction(3, 4), Fraction.MINUS_ONE, Fraction.ZERO);
     }
 
     @Test
     public void testExponents() {
-        checkReference("µas^(2/5)/(h**(2)×m)³",
+        checkReference("µas^⅖/(h**(2)×m)³",
                        FastMath.pow(FastMath.toRadians(1.0 / 3.6e9), 0.4) / FastMath.pow(3600, 6),
                        Fraction.ZERO, new Fraction(-3, 1), new Fraction(-6, 1), new Fraction(2, 5));
     }
@@ -77,6 +77,29 @@ public class ParserTest {
         checkReference("km/√(kg.s)",
                        1000.0,
                        new Fraction(-1, 2), Fraction.ONE, new Fraction(-1, 2), Fraction.ZERO);
+    }
+
+    @Test
+    public void testLeftAssociativity() {
+        checkReference("(kg/m)/s²",
+                       1.0,
+                       Fraction.ONE, Fraction.MINUS_ONE, new Fraction(-2), Fraction.ZERO);
+        checkReference("kg/(m/s²)",
+                       1.0,
+                       Fraction.ONE, Fraction.MINUS_ONE, Fraction.TWO, Fraction.ZERO);
+        checkReference("kg/m/s²",
+                       1.0,
+                       Fraction.ONE, Fraction.MINUS_ONE, new Fraction(-2), Fraction.ZERO);
+    }
+
+    @Test
+    public void testCcsdsRoot() {
+        checkReference("km**0.5/s",
+                       FastMath.sqrt(1000.0),
+                       Fraction.ZERO, Fraction.ONE_HALF, Fraction.MINUS_ONE, Fraction.ZERO);
+        checkReference("km/s**0.5",
+                       1000.0,
+                       Fraction.ZERO, Fraction.ONE, new Fraction(-1, 2), Fraction.ZERO);
     }
 
     @Test

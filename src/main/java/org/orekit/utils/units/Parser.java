@@ -22,21 +22,22 @@ import org.hipparchus.fraction.Fraction;
  * <p>
  * This fairly basic parser uses recursive descent with the following grammar,
  * where '*' can in fact be either '*', '×' or '.', '/' can be either '/' or '⁄'
- * and '^' can be either '^', "**" or implicit with switch to superscripts.
+ * and '^' can be either '^', "**" or implicit with switch to superscripts,
+ * and fraction are either unicode fractions like ½ or ⅞ or the decimal value 0.5.
  * The special case "n/a" corresponds to {@link PredefinedUnit#NONE}.
  * </p>
  * <pre>
- *   unit         → "n/a"        | chain
- *   chain        → operand operation
- *   operand      → '√' simple   | simple power
- *   operation    → '*' chain    | '/' chain    | ε
- *   power        → '^' exponent | ε
- *   exponent     → integer      | '(' integer denominator ')'
- *   denominator  → '/' integer  | ε
- *   simple       → predefined   | '(' chain ')'
+ *   unit         ::=  "n/a"        | chain
+ *   chain        ::=  operand { ('*' | '/') operand }
+ *   operand      ::=  '√' simple   | simple power
+ *   power        ::=  '^' exponent | ε
+ *   exponent     ::=  'fraction'   | integer | '(' integer denominator ')'
+ *   denominator  ::=  '/' integer  | ε
+ *   simple       ::=  predefined   | '(' chain ')'
  * </pre>
  * <p>
- * This parses correctly units like MHz, km/√d, kg.m.s⁻¹, µas^(2/5)/(h**(2)×m)³, km/√(kg.s), √kg*km** (3/2) /(µs^2*Ω⁻⁷).
+ * This parses correctly units like MHz, km/√d, kg.m.s⁻¹, µas^⅖/(h**(2)×m)³, km/√(kg.s),
+ * √kg*km** (3/2) /(µs^2*Ω⁻⁷), km**0.5/s
  * Note that we don't accept both square root and power on the same operand, so km/√d³ is refused (but km/√(d³) is accepted).
  * Note that "nd" does not stands for "not-defined" but for "nano-day"…
  * </p>
@@ -73,7 +74,18 @@ class Parser {
      * @return chain unit
      */
     private static Unit chain(final Lexer lexer) {
-        return operation(operand(lexer), lexer);
+        Unit chain = operand(lexer);
+        for (Token token = lexer.next(); token != null; token = lexer.next()) {
+            if (checkType(token, TokenType.MULTIPLICATION)) {
+                chain = chain.multiply(null, operand(lexer));
+            } else if (checkType(token, TokenType.DIVISION)) {
+                chain = chain.divide(null, operand(lexer));
+            } else {
+                lexer.pushBack();
+                break;
+            }
+        }
+        return chain;
     }
 
     /** Parse an operand.
@@ -89,30 +101,15 @@ class Parser {
             return simple(lexer).power(null, Fraction.ONE_HALF);
         } else {
             lexer.pushBack();
-            return simple(lexer).power(null, power(lexer));
-        }
-    }
-
-    /** Parse an operation.
-     * @param lhs left hand side unit
-     * @param lexer lexer providing tokens
-     * @return simple unit
-     */
-    private static Unit operation(final Unit lhs, final Lexer lexer) {
-        final Token token = lexer.next();
-        if (checkType(token, TokenType.MULTIPLICATION)) {
-            return lhs.multiply(null, chain(lexer));
-        } else if (checkType(token, TokenType.DIVISION)) {
-            return lhs.divide(null, chain(lexer));
-        } else {
-            lexer.pushBack();
-            return lhs;
+            final Unit     simple   = simple(lexer);
+            final Fraction exponent = power(lexer);
+            return exponent == null ? simple : simple.power(null, exponent);
         }
     }
 
     /** Parse a power operation.
      * @param lexer lexer providing tokens
-     * @return exponent
+     * @return exponent, or null if no exponent
      */
     private static Fraction power(final Lexer lexer) {
         final Token token = lexer.next();
@@ -120,7 +117,7 @@ class Parser {
             return exponent(lexer);
         } else {
             lexer.pushBack();
-            return Fraction.ONE;
+            return null;
         }
     }
 
@@ -130,12 +127,14 @@ class Parser {
      */
     private static Fraction exponent(final Lexer lexer) {
         final Token token = lexer.next();
-        if (checkType(token, TokenType.INTEGER)) {
-            return new Fraction(token.getValue());
+        if (checkType(token, TokenType.FRACTION)) {
+            return token.getFraction();
+        } else if (checkType(token, TokenType.INTEGER)) {
+            return new Fraction(token.getInt());
         } else {
             lexer.pushBack();
             accept(lexer, TokenType.OPEN);
-            final int num = accept(lexer, TokenType.INTEGER).getValue();
+            final int num = accept(lexer, TokenType.INTEGER).getInt();
             final int den = denominator(lexer);
             accept(lexer, TokenType.CLOSE);
             return new Fraction(num, den);
@@ -149,7 +148,7 @@ class Parser {
     private static int denominator(final Lexer lexer) {
         final Token token = lexer.next();
         if (checkType(token, TokenType.DIVISION)) {
-            return accept(lexer, TokenType.INTEGER).getValue();
+            return accept(lexer, TokenType.INTEGER).getInt();
         } else  {
             lexer.pushBack();
             return 1;
