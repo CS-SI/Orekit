@@ -99,13 +99,15 @@ class Parser {
             return simple(lexer).power(null, Fraction.ONE_HALF);
         } else {
             lexer.pushBack();
-            return simple(lexer).power(null, power(lexer));
+            final Unit     simple   = simple(lexer);
+            final Fraction exponent = power(lexer);
+            return exponent == null ? simple : simple.power(null, exponent);
         }
     }
 
     /** Parse a power operation.
      * @param lexer lexer providing tokens
-     * @return exponent
+     * @return exponent, or null if no exponent
      */
     private static Fraction power(final Lexer lexer) {
         final Token token = lexer.next();
@@ -113,7 +115,7 @@ class Parser {
             return exponent(lexer);
         } else {
             lexer.pushBack();
-            return Fraction.ONE;
+            return null;
         }
     }
 
