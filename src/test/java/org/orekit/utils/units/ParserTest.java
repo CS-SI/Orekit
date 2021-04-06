@@ -80,6 +80,19 @@ public class ParserTest {
     }
 
     @Test
+    public void testLeftAssociativity() {
+        checkReference("(kg/m)/s²",
+                       1.0,
+                       Fraction.ONE, Fraction.MINUS_ONE, new Fraction(-2), Fraction.ZERO);
+        checkReference("kg/(m/s²)",
+                       1.0,
+                       Fraction.ONE, Fraction.MINUS_ONE, Fraction.TWO, Fraction.ZERO);
+        checkReference("kg/m/s²",
+                       1.0,
+                       Fraction.ONE, Fraction.MINUS_ONE, new Fraction(-2), Fraction.ZERO);
+    }
+
+    @Test
     public void testEmpty() {
         expectFailure("");
     }

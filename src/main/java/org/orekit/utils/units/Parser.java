@@ -26,14 +26,13 @@ import org.hipparchus.fraction.Fraction;
  * The special case "n/a" corresponds to {@link PredefinedUnit#NONE}.
  * </p>
  * <pre>
- *   unit         → "n/a"        | chain
- *   chain        → operand operation
- *   operand      → '√' simple   | simple power
- *   operation    → '*' chain    | '/' chain    | ε
- *   power        → '^' exponent | ε
- *   exponent     → integer      | '(' integer denominator ')'
- *   denominator  → '/' integer  | ε
- *   simple       → predefined   | '(' chain ')'
+ *   unit         ::=  "n/a"        | chain
+ *   chain        ::=  operand { ('*' | '/') operand }
+ *   operand      ::=  '√' simple   | simple power
+ *   power        ::=  '^' exponent | ε
+ *   exponent     ::=  integer      | '(' integer denominator ')'
+ *   denominator  ::=  '/' integer  | ε
+ *   simple       ::=  predefined   | '(' chain ')'
  * </pre>
  * <p>
  * This parses correctly units like MHz, km/√d, kg.m.s⁻¹, µas^(2/5)/(h**(2)×m)³, km/√(kg.s), √kg*km** (3/2) /(µs^2*Ω⁻⁷).
@@ -73,7 +72,18 @@ class Parser {
      * @return chain unit
      */
     private static Unit chain(final Lexer lexer) {
-        return operation(operand(lexer), lexer);
+        Unit chain = operand(lexer);
+        for (Token token = lexer.next(); token != null; token = lexer.next()) {
+            if (checkType(token, TokenType.MULTIPLICATION)) {
+                chain = chain.multiply(null, operand(lexer));
+            } else if (checkType(token, TokenType.DIVISION)) {
+                chain = chain.divide(null, operand(lexer));
+            } else {
+                lexer.pushBack();
+                break;
+            }
+        }
+        return chain;
     }
 
     /** Parse an operand.
@@ -90,23 +100,6 @@ class Parser {
         } else {
             lexer.pushBack();
             return simple(lexer).power(null, power(lexer));
-        }
-    }
-
-    /** Parse an operation.
-     * @param lhs left hand side unit
-     * @param lexer lexer providing tokens
-     * @return simple unit
-     */
-    private static Unit operation(final Unit lhs, final Lexer lexer) {
-        final Token token = lexer.next();
-        if (checkType(token, TokenType.MULTIPLICATION)) {
-            return lhs.multiply(null, chain(lexer));
-        } else if (checkType(token, TokenType.DIVISION)) {
-            return lhs.divide(null, chain(lexer));
-        } else {
-            lexer.pushBack();
-            return lhs;
         }
     }
 
