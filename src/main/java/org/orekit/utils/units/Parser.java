@@ -16,55 +16,69 @@
  */
 package org.orekit.utils.units;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.hipparchus.fraction.Fraction;
 
 /** Parser for units.
  * <p>
  * This fairly basic parser uses recursive descent with the following grammar,
  * where '*' can in fact be either '*', '×' or '.', '/' can be either '/' or '⁄'
- * and '^' can be either '^', "**" or implicit with switch to superscripts.
- * The special case "n/a" corresponds to {@link PredefinedUnit#NONE}.
+ * and '^' can be either '^', "**" or implicit with switch to superscripts,
+ * and fraction are either unicode fractions like ½ or ⅞ or the decimal value 0.5.
+ * The special cases "n/a" returns a null list. It is intended to manage the
+ * special unit {@link Unit.NONE}. The special case "1" returns a singleton with
+ * the base term set to "1" and the exponent set to 1. It is intended to manage the
+ * special unit {@link Unit.ONE}. This is the only case were a number can appear
+ * in a unit, it cannot be combined with other units (i.e. m.1/s is not allowed).
  * </p>
  * <pre>
- *   unit         → "n/a"        | chain
- *   chain        → operand operation
- *   operand      → '√' simple   | simple power
- *   operation    → '*' chain    | '/' chain    | ε
- *   power        → '^' exponent | ε
- *   exponent     → integer      | '(' integer denominator ')'
- *   denominator  → '/' integer  | ε
- *   simple       → predefined   | '(' chain ')'
+ *   unit         ::=  "n/a" | "1"  | chain
+ *   chain        ::=  operand { ('*' | '/') operand }
+ *   operand      ::=  '√' base     | base power
+ *   power        ::=  '^' exponent | ε
+ *   exponent     ::=  'fraction'   | integer | '(' integer denominator ')'
+ *   denominator  ::=  '/' integer  | ε
+ *   base         ::=  identifier   | '(' chain ')'
  * </pre>
  * <p>
- * This parses correctly units like MHz, km/√d, kg.m.s⁻¹, µas^(2/5)/(h**(2)×m)³, km/√(kg.s), √kg*km** (3/2) /(µs^2*Ω⁻⁷).
- * Note that we don't accept both square root and power on the same operand, so km/√d³ is refused (but km/√(d³) is accepted).
- * Note that "nd" does not stands for "not-defined" but for "nano-day"…
+ * This parses correctly units like MHz, km/√d, kg.m.s⁻¹, µas^⅖/(h**(2)×m)³, km/√(kg.s),
+ * √kg*km** (3/2) /(µs^2*Ω⁻⁷), km**0.5/s.
+ * </p>
+ * <p>
+ * Note that we don't accept both square root and power on the same operand, so km/√d³ is
+ * refused (but km/√(d³) is accepted).
  * </p>
  * @author Luc Maisonobe
  * @since 11.0
  */
-class Parser {
+public class Parser {
 
     /** Private constructor for a utility class.
      */
     private Parser() {
     }
 
-    /** Parse a string.
+    /** Build the power terms list.
      * @param unitSpecification unit specification to parse
-     * @return parsed unit
+     * @return list of power terms
      */
-    public static Unit parse(final String unitSpecification) {
+    public static List<PowerTerm> buildList(final String unitSpecification) {
         if (Unit.NONE.getName().equals(unitSpecification)) {
-            // special case
-            return Unit.NONE;
+            // special case for no units
+            return null;
+        } else if (Unit.ONE.getName().equals(unitSpecification)) {
+            // special case for dimensionless unit
+            return Collections.singletonList(new PowerTerm(unitSpecification, Fraction.ONE));
         } else {
             final Lexer lexer = new Lexer(unitSpecification);
-            final Unit parsed = chain(lexer);
+            final List<PowerTerm> chain = chain(lexer);
             if (lexer.next() != null) {
                 throw lexer.generateException();
             }
-            return parsed.alias(unitSpecification);
+            return chain;
         }
     }
 
@@ -72,47 +86,80 @@ class Parser {
      * @param lexer lexer providing tokens
      * @return chain unit
      */
-    private static Unit chain(final Lexer lexer) {
-        return operation(operand(lexer), lexer);
+    private static List<PowerTerm> chain(final Lexer lexer) {
+        final List<PowerTerm> chain = new ArrayList<>();
+        chain.addAll(operand(lexer));
+        for (Token token = lexer.next(); token != null; token = lexer.next()) {
+            if (checkType(token, TokenType.MULTIPLICATION)) {
+                chain.addAll(operand(lexer));
+            } else if (checkType(token, TokenType.DIVISION)) {
+                chain.addAll(reciprocate(operand(lexer)));
+            } else {
+                lexer.pushBack();
+                break;
+            }
+        }
+        return chain;
     }
 
     /** Parse an operand.
      * @param lexer lexer providing tokens
-     * @return operand unit
+     * @return operand term
      */
-    private static Unit operand(final Lexer lexer) {
+    private static List<PowerTerm> operand(final Lexer lexer) {
         final Token token = lexer.next();
         if (token == null) {
             throw lexer.generateException();
         }
         if (token.getType() == TokenType.SQUARE_ROOT) {
-            return simple(lexer).power(null, Fraction.ONE_HALF);
+            return applyExponent(base(lexer), Fraction.ONE_HALF);
         } else {
             lexer.pushBack();
-            return simple(lexer).power(null, power(lexer));
+            return applyExponent(base(lexer), power(lexer));
         }
     }
 
-    /** Parse an operation.
-     * @param lhs left hand side unit
-     * @param lexer lexer providing tokens
-     * @return simple unit
+    /** Apply an exponent to a base term.
+     * @param base base term
+     * @param exponent exponent (may be null)
+     * @return term with exponent applied (same as {@code if exponent is null)
      */
-    private static Unit operation(final Unit lhs, final Lexer lexer) {
-        final Token token = lexer.next();
-        if (checkType(token, TokenType.MULTIPLICATION)) {
-            return lhs.multiply(null, chain(lexer));
-        } else if (checkType(token, TokenType.DIVISION)) {
-            return lhs.divide(null, chain(lexer));
-        } else {
-            lexer.pushBack();
-            return lhs;
+    private static List<PowerTerm> applyExponent(final List<PowerTerm> base, final Fraction exponent) {
+
+        if (exponent == null) {
+            // no exponent at all, return the base term itself
+            return base;
         }
+
+        // combine exponent with existing ones, for example to handles compounds units like m/(kg.s²)³
+        final List<PowerTerm> powered = new ArrayList<>(base.size());
+        for (final PowerTerm term : base) {
+            powered.add(new PowerTerm(term.getBase(), exponent.multiply(term.getExponent())));
+        }
+
+        return powered;
+
+    }
+
+    /** Compute the reciprocal a base term.
+     * @param base base term
+     * @return reciprocal of base term
+     */
+    private static List<PowerTerm> reciprocate(final List<PowerTerm> base) {
+
+        // reciprocate individual terms
+        final List<PowerTerm> reciprocal = new ArrayList<>(base.size());
+        for (final PowerTerm term : base) {
+            reciprocal.add(new PowerTerm(term.getBase(), term.getExponent().negate()));
+        }
+
+        return reciprocal;
+
     }
 
     /** Parse a power operation.
      * @param lexer lexer providing tokens
-     * @return exponent
+     * @return exponent, or null if no exponent
      */
     private static Fraction power(final Lexer lexer) {
         final Token token = lexer.next();
@@ -120,7 +167,7 @@ class Parser {
             return exponent(lexer);
         } else {
             lexer.pushBack();
-            return Fraction.ONE;
+            return null;
         }
     }
 
@@ -130,12 +177,14 @@ class Parser {
      */
     private static Fraction exponent(final Lexer lexer) {
         final Token token = lexer.next();
-        if (checkType(token, TokenType.INTEGER)) {
-            return new Fraction(token.getValue());
+        if (checkType(token, TokenType.FRACTION)) {
+            return token.getFraction();
+        } else if (checkType(token, TokenType.INTEGER)) {
+            return new Fraction(token.getInt());
         } else {
             lexer.pushBack();
             accept(lexer, TokenType.OPEN);
-            final int num = accept(lexer, TokenType.INTEGER).getValue();
+            final int num = accept(lexer, TokenType.INTEGER).getInt();
             final int den = denominator(lexer);
             accept(lexer, TokenType.CLOSE);
             return new Fraction(num, den);
@@ -149,25 +198,25 @@ class Parser {
     private static int denominator(final Lexer lexer) {
         final Token token = lexer.next();
         if (checkType(token, TokenType.DIVISION)) {
-            return accept(lexer, TokenType.INTEGER).getValue();
+            return accept(lexer, TokenType.INTEGER).getInt();
         } else  {
             lexer.pushBack();
             return 1;
         }
     }
 
-    /** Parse a simple unit.
+    /** Parse a base term.
      * @param lexer lexer providing tokens
-     * @return simple unit
+     * @return base term
      */
-    private static Unit simple(final Lexer lexer) {
+    private static List<PowerTerm> base(final Lexer lexer) {
         final Token token = lexer.next();
-        if (checkType(token, TokenType.PREFIXED_UNIT)) {
-            return token.getPrefixedUnit();
+        if (checkType(token, TokenType.IDENTIFIER)) {
+            return Collections.singletonList(new PowerTerm(token.getSubString(), Fraction.ONE));
         } else {
             lexer.pushBack();
             accept(lexer, TokenType.OPEN);
-            final Unit chain = chain(lexer);
+            final List<PowerTerm> chain = chain(lexer);
             accept(lexer, TokenType.CLOSE);
             return chain;
         }

@@ -17,9 +17,12 @@
 package org.orekit.utils.units;
 
 import java.io.Serializable;
+import java.util.List;
 
 import org.hipparchus.fraction.Fraction;
 import org.hipparchus.util.FastMath;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 
 /** Basic handling of multiplicative units.
  * <p>
@@ -441,7 +444,33 @@ public class Unit implements Serializable {
      * @return parsed unit
      */
     public static Unit parse(final String unitSpecification) {
-        return Parser.parse(unitSpecification);
+
+        // parse the specification
+        final List<PowerTerm> chain = Parser.buildList(unitSpecification);
+
+        if (chain == null) {
+            // special handling of "n/a"
+            return Unit.NONE;
+        }
+
+        // build compound unit
+        Unit unit = Unit.ONE;
+        for (final PowerTerm term : chain) {
+            try {
+                final PrefixedUnit u = PrefixedUnit.valueOf(term.getBase().toString());
+                if (Fraction.ONE.equals(term.getExponent())) {
+                    unit = unit.multiply(null, u);
+                } else {
+                    unit = unit.multiply(null, u.power(null, term.getExponent()));
+                }
+            } catch (IllegalArgumentException iae) {
+                throw new OrekitException(OrekitMessages.UNKNOWN_UNIT, term.getBase());
+            }
+        }
+
+        // give final name to unit
+        return unit.alias(unitSpecification);
+
     }
 
     /** {@inheritDoc} */
