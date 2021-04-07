@@ -106,7 +106,7 @@ public class StreamingAemWriterTest {
 
             StringBuilder buffer = new StringBuilder();
             StreamingAemWriter writer =
-                            new StreamingAemWriter(new KvnGenerator(buffer, AemWriter.KVN_PADDING_WIDTH, ex + "-new"),
+                            new StreamingAemWriter(new KvnGenerator(buffer, AemWriter.KVN_PADDING_WIDTH, ex + "-new", 60),
                                                    new WriterBuilder(). buildAemWriter(),
                                                    header, metadata);
 

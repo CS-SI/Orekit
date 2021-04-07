@@ -22,6 +22,7 @@ import java.util.List;
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.utils.AccurateFormatter;
+import org.orekit.utils.units.Unit;
 
 /** Generator for eXtended Markup Language CCSDS messages.
  * @author Luc Maisonobe
@@ -44,8 +45,11 @@ public class XmlGenerator extends AbstractGenerator {
     /** Element end tag. */
     private static final String END_TAG = "</%s>%n";
 
-    /** Leaf element format. */
-    private static final String LEAF = "<%s>%s</%s>%n";
+    /** Leaf element format without units. */
+    private static final String LEAF_WITHOUT_UNITS = "<%s>%s</%s>%n";
+
+    /** Leaf element format with units. */
+    private static final String LEAF_WITH_UNITS = "<%s units=\"%s\">%s</%s>%n";
 
     /** User defined parameter element format. */
     private static final String USER_DEFINED = "<%s %s=\"%s\">%s</%s>%n";
@@ -63,10 +67,12 @@ public class XmlGenerator extends AbstractGenerator {
      * @param output destination of generated output
      * @param indentation number of space for each indentation level
      * @param outputName output name for error messages
+     * @param writeUnits if true, units must be written
      * @see #DEFAULT_INDENT
      */
-    public XmlGenerator(final Appendable output, final int indentation, final String outputName) {
-        super(output, outputName);
+    public XmlGenerator(final Appendable output, final int indentation,
+                        final String outputName, final boolean writeUnits) {
+        super(output, outputName, writeUnits);
         this.indentation = indentation;
         this.level       = 0;
     }
@@ -100,7 +106,7 @@ public class XmlGenerator extends AbstractGenerator {
     @Override
     public void writeComments(final List<String> comments) throws IOException {
         for (final String comment : comments) {
-            writeEntry(COMMENT, comment, false);
+            writeEntry(COMMENT, comment, null, false);
         }
     }
 
@@ -108,22 +114,28 @@ public class XmlGenerator extends AbstractGenerator {
     @Override
     public void writeUserDefined(final String parameter, final String value) throws IOException {
         indent();
-        append(String.format(AccurateFormatter.STANDARDIZED_LOCALE, USER_DEFINED,
-                             UserDefined.USER_DEFINED_XML_TAG,
-                             UserDefined.USER_DEFINED_XML_ATTRIBUTE,
-                             parameter,
-                             value,
-                             UserDefined.USER_DEFINED_XML_TAG));
+        writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, USER_DEFINED,
+                                   UserDefined.USER_DEFINED_XML_TAG,
+                                   UserDefined.USER_DEFINED_XML_ATTRIBUTE,
+                                   parameter,
+                                   value,
+                                   UserDefined.USER_DEFINED_XML_TAG));
     }
 
     /** {@inheritDoc} */
     @Override
-    public void writeEntry(final String key, final String value, final boolean mandatory) throws IOException {
+    public void writeEntry(final String key, final String value, final Unit unit, final boolean mandatory) throws IOException {
         if (value == null) {
             complain(key, mandatory);
         } else {
             indent();
-            append(String.format(AccurateFormatter.STANDARDIZED_LOCALE, LEAF, key, value, key));
+            if (writeUnits(unit)) {
+                writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, LEAF_WITH_UNITS,
+                                           key, siToCcsdsName(unit.getName()), value, key));
+            } else {
+                writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, LEAF_WITHOUT_UNITS,
+                                           key, value, key));
+            }
         }
     }
 
@@ -131,7 +143,7 @@ public class XmlGenerator extends AbstractGenerator {
     @Override
     public void enterSection(final String name) throws IOException {
         indent();
-        append(String.format(AccurateFormatter.STANDARDIZED_LOCALE, START_TAG, name));
+        writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, START_TAG, name));
         ++level;
         super.enterSection(name);
     }
@@ -142,7 +154,7 @@ public class XmlGenerator extends AbstractGenerator {
         final String name = super.exitSection();
         --level;
         indent();
-        append(String.format(AccurateFormatter.STANDARDIZED_LOCALE, END_TAG, name));
+        writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, END_TAG, name));
         return name;
     }
 

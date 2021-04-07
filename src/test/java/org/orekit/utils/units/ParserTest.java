@@ -16,8 +16,6 @@
  */
 package org.orekit.utils.units;
 
-import java.util.List;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
@@ -32,14 +30,15 @@ public class ParserTest {
 
     @Test
     public void testNotAUnit() {
-        Assert.assertNull(Parser.buildList("n/a"));
+        Assert.assertNull(Parser.buildTree("n/a"));
     }
 
     @Test
     public void testOne() {
-        final List<PowerTerm> list = Parser.buildList("1");
-        Assert.assertEquals(1, list.size());
-        checkTerm(list.get(0), "1", 1, 1);
+        final ParseTree tree = Parser.buildTree("1");
+        Assert.assertEquals(1, tree.getFactor());
+        Assert.assertEquals(1, tree.getTerms().size());
+        checkTerm(tree.getTerms().get(0), "1", 1, 1);
     }
 
     @Test
@@ -48,69 +47,86 @@ public class ParserTest {
     }
 
     @Test
+    public void testIntegerPrefix() {
+        final ParseTree tree = Parser.buildTree("30s");
+        Assert.assertEquals(30, tree.getFactor());
+        Assert.assertEquals(1, tree.getTerms().size());
+        checkTerm(tree.getTerms().get(0), "s", 1, 1);
+    }
+
+    @Test
     public void testSquareRoot() {
-        final List<PowerTerm> list = Parser.buildList("abcd/√ef");
-        Assert.assertEquals(2, list.size());
-        checkTerm(list.get(0), "abcd", 1, 1);
-        checkTerm(list.get(1), "ef", -1, 2);
+        final ParseTree tree = Parser.buildTree("abcd/√ef");
+        Assert.assertEquals(1, tree.getFactor());
+        Assert.assertEquals(2, tree.getTerms().size());
+        checkTerm(tree.getTerms().get(0), "abcd", 1, 1);
+        checkTerm(tree.getTerms().get(1), "ef", -1, 2);
     }
 
     @Test
     public void testChain() {
-        final List<PowerTerm> list = Parser.buildList("kg.m^(3/4).s⁻¹");
-        Assert.assertEquals(3, list.size());
-        checkTerm(list.get(0), "kg", 1, 1);
-        checkTerm(list.get(1), "m",  3, 4);
-        checkTerm(list.get(2), "s", -1, 1);
+        final ParseTree tree = Parser.buildTree("kg.m^(3/4).s⁻¹");
+        Assert.assertEquals(1, tree.getFactor());
+        Assert.assertEquals(3, tree.getTerms().size());
+        checkTerm(tree.getTerms().get(0), "kg", 1, 1);
+        checkTerm(tree.getTerms().get(1), "m",  3, 4);
+        checkTerm(tree.getTerms().get(2), "s", -1, 1);
     }
 
     @Test
     public void testExponents() {
-        final List<PowerTerm> list = Parser.buildList("µas^⅖/(h**(2)×m)³");
-        Assert.assertEquals(3, list.size());
-        checkTerm(list.get(0), "µas", 2, 5);
-        checkTerm(list.get(1), "h",  -6, 1);
-        checkTerm(list.get(2), "m",  -3, 1);
+        final ParseTree tree = Parser.buildTree("µas^⅖/(h**(2)×m)³");
+        Assert.assertEquals(1, tree.getFactor());
+        Assert.assertEquals(3, tree.getTerms().size());
+        checkTerm(tree.getTerms().get(0), "µas", 2, 5);
+        checkTerm(tree.getTerms().get(1), "h",  -6, 1);
+        checkTerm(tree.getTerms().get(2), "m",  -3, 1);
     }
 
     @Test
     public void testCompoundInSquareRoot() {
-        final List<PowerTerm> list = Parser.buildList("km/√(kg.s)");
-        Assert.assertEquals(3, list.size());
-        checkTerm(list.get(0), "km",  1, 1);
-        checkTerm(list.get(1), "kg", -1, 2);
-        checkTerm(list.get(2), "s",  -1, 2);
+        final ParseTree tree = Parser.buildTree("km/√(kg.s)");
+        Assert.assertEquals(1, tree.getFactor());
+        Assert.assertEquals(3, tree.getTerms().size());
+        checkTerm(tree.getTerms().get(0), "km",  1, 1);
+        checkTerm(tree.getTerms().get(1), "kg", -1, 2);
+        checkTerm(tree.getTerms().get(2), "s",  -1, 2);
     }
 
     @Test
     public void testLeftAssociativity() {
-        final List<PowerTerm> list1 = Parser.buildList("(kg/m)/s²");
-        Assert.assertEquals(3, list1.size());
-        checkTerm(list1.get(0), "kg",  1, 1);
-        checkTerm(list1.get(1), "m",  -1, 1);
-        checkTerm(list1.get(2), "s",  -2, 1);
-        final List<PowerTerm> list2 = Parser.buildList("kg/(m/s²)");
-        Assert.assertEquals(3, list2.size());
-        checkTerm(list2.get(0), "kg",  1, 1);
-        checkTerm(list2.get(1), "m",  -1, 1);
-        checkTerm(list2.get(2), "s",   2, 1);
-        final List<PowerTerm> list3 = Parser.buildList("kg/m/s²");
-        Assert.assertEquals(3, list3.size());
-        checkTerm(list3.get(0), "kg",  1, 1);
-        checkTerm(list3.get(1), "m",  -1, 1);
-        checkTerm(list3.get(2), "s",  -2, 1);
+        final ParseTree tree1 = Parser.buildTree("(kg/m)/s²");
+        Assert.assertEquals(1, tree1.getFactor());
+        Assert.assertEquals(3, tree1.getTerms().size());
+        checkTerm(tree1.getTerms().get(0), "kg",  1, 1);
+        checkTerm(tree1.getTerms().get(1), "m",  -1, 1);
+        checkTerm(tree1.getTerms().get(2), "s",  -2, 1);
+        final ParseTree tree2 = Parser.buildTree("kg/(m/s²)");
+        Assert.assertEquals(1, tree2.getFactor());
+        Assert.assertEquals(3, tree2.getTerms().size());
+        checkTerm(tree2.getTerms().get(0), "kg",  1, 1);
+        checkTerm(tree2.getTerms().get(1), "m",  -1, 1);
+        checkTerm(tree2.getTerms().get(2), "s",   2, 1);
+        final ParseTree tree3 = Parser.buildTree("kg/m/s²");
+        Assert.assertEquals(1, tree3.getFactor());
+        Assert.assertEquals(3, tree3.getTerms().size());
+        checkTerm(tree3.getTerms().get(0), "kg",  1, 1);
+        checkTerm(tree3.getTerms().get(1), "m",  -1, 1);
+        checkTerm(tree3.getTerms().get(2), "s",  -2, 1);
     }
 
     @Test
     public void testCcsdsRoot() {
-        final List<PowerTerm> list1 = Parser.buildList("km**0.5/s");
-        Assert.assertEquals(2, list1.size());
-        checkTerm(list1.get(0), "km",  1, 2);
-        checkTerm(list1.get(1), "s",  -1, 1);
-        final List<PowerTerm> list2 = Parser.buildList("km/s**0.5");
-        Assert.assertEquals(2, list2.size());
-        checkTerm(list2.get(0), "km",  1, 1);
-        checkTerm(list2.get(1), "s",  -1, 2);
+        final ParseTree tree1 = Parser.buildTree("km**0.5/s");
+        Assert.assertEquals(1, tree1.getFactor());
+        Assert.assertEquals(2, tree1.getTerms().size());
+        checkTerm(tree1.getTerms().get(0), "km",  1, 2);
+        checkTerm(tree1.getTerms().get(1), "s",  -1, 1);
+        final ParseTree tree2 = Parser.buildTree("km/s**0.5");
+        Assert.assertEquals(1, tree2.getFactor());
+        Assert.assertEquals(2, tree2.getTerms().size());
+        checkTerm(tree2.getTerms().get(0), "km",  1, 1);
+        checkTerm(tree2.getTerms().get(1), "s",  -1, 2);
     }
 
     @Test
@@ -155,21 +171,21 @@ public class ParserTest {
 
     @Test
     public void testRootAndParenthesisedPower() {
-        final List<PowerTerm> list = Parser.buildList("km/√(d³)");
-        Assert.assertEquals(2, list.size());
-        checkTerm(list.get(0), "km",  1, 1);
-        checkTerm(list.get(1), "d",  -3, 2);
+        final ParseTree tree = Parser.buildTree("km/√(d³)");
+        Assert.assertEquals(2, tree.getTerms().size());
+        checkTerm(tree.getTerms().get(0), "km",  1, 1);
+        checkTerm(tree.getTerms().get(1), "d",  -3, 2);
     }
 
     private void checkTerm(final PowerTerm term, final String base, final int numerator, final int denominator) {
-        Assert.assertEquals(base, term.getBase().toString());
-        Assert.assertEquals(numerator, term.getExponent().getNumerator());
+        Assert.assertEquals(base,        term.getBase().toString());
+        Assert.assertEquals(numerator,   term.getExponent().getNumerator());
         Assert.assertEquals(denominator, term.getExponent().getDenominator());
     }
 
     private void expectFailure(final String unitSpecification) {
         try {
-            Parser.buildList(unitSpecification);
+            Parser.buildTree(unitSpecification);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNKNOWN_UNIT, oe.getSpecifier());

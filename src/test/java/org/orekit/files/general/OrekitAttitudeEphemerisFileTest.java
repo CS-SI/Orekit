@@ -146,7 +146,7 @@ public class OrekitAttitudeEphemerisFileTest {
         String tempAemFile = Files.createTempFile("OrekitAttitudeEphemerisFileTest", ".aem").toString();
         try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(tempAemFile), StandardCharsets.UTF_8)) {
             new AttitudeWriter(new WriterBuilder().buildAemWriter(),
-                               null, dummyMetadata(), FileFormat.KVN, "").write(writer, ephemerisFile);
+                               null, dummyMetadata(), FileFormat.KVN, "", 60).write(writer, ephemerisFile);
         }
 
         AttitudeEphemerisFile<TimeStampedAngularCoordinates, AemSegment> ephemerisFromFile =

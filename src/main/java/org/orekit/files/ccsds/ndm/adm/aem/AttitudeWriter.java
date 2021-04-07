@@ -55,6 +55,9 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
     /** Output name for error messages. */
     private final String outputName;
 
+    /** Column number for aligning units. */
+    private final int unitsColumn;
+
     /**
      * Constructor used to create a new AEM writer configured with the necessary parameters
      * to successfully fill in all required fields that aren't part of a standard object.
@@ -79,16 +82,19 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
      * @param template template for metadata
      * @param fileFormat file format to use
      * @param outputName output name for error messages
+     * @param unitsColumn columns number for aligning units (if negative or zero, units are not output)
      * @since 11.0
      */
     public AttitudeWriter(final AemWriter writer,
                           final Header header, final AemMetadata template,
-                          final FileFormat fileFormat, final String outputName) {
-        this.writer     = writer;
-        this.header     = header;
-        this.metadata   = template.copy();
-        this.fileFormat = fileFormat;
-        this.outputName = outputName;
+                          final FileFormat fileFormat, final String outputName,
+                          final int unitsColumn) {
+        this.writer      = writer;
+        this.header      = header;
+        this.metadata    = template.copy();
+        this.fileFormat  = fileFormat;
+        this.outputName  = outputName;
+        this.unitsColumn = unitsColumn;
     }
 
     /** Get current metadata.
@@ -136,8 +142,8 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
         }
 
         try (Generator generator = fileFormat == FileFormat.KVN ?
-                                   new KvnGenerator(appendable, AemWriter.KVN_PADDING_WIDTH, outputName) :
-                                   new XmlGenerator(appendable, XmlGenerator.DEFAULT_INDENT, outputName)) {
+                                   new KvnGenerator(appendable, AemWriter.KVN_PADDING_WIDTH, outputName, unitsColumn) :
+                                   new XmlGenerator(appendable, XmlGenerator.DEFAULT_INDENT, outputName, unitsColumn > 0)) {
 
             writer.writeHeader(generator, header);
 

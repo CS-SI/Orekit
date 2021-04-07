@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.List;
 
 import org.orekit.files.ccsds.definitions.TimeConverter;
-import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.section.AbstractWriter;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
@@ -60,29 +59,29 @@ class OrbitStateHistoryWriter extends AbstractWriter {
         generator.writeComments(metadata.getComments());
 
         // identifiers
-        generator.writeEntry(OrbitStateHistoryMetadataKey.ORB_ID.name(),       metadata.getOrbID(),      false);
-        generator.writeEntry(OrbitStateHistoryMetadataKey.ORB_PREV_ID.name(),  metadata.getOrbPrevID(),  false);
-        generator.writeEntry(OrbitStateHistoryMetadataKey.ORB_NEXT_ID.name(),  metadata.getOrbNextID(),  false);
-        generator.writeEntry(OrbitStateHistoryMetadataKey.ORB_BASIS.name(),    metadata.getOrbBasis(),   false);
-        generator.writeEntry(OrbitStateHistoryMetadataKey.ORB_BASIS_ID.name(), metadata.getOrbBasisID(), false);
+        generator.writeEntry(OrbitStateHistoryMetadataKey.ORB_ID.name(),       metadata.getOrbID(),      null, false);
+        generator.writeEntry(OrbitStateHistoryMetadataKey.ORB_PREV_ID.name(),  metadata.getOrbPrevID(),  null, false);
+        generator.writeEntry(OrbitStateHistoryMetadataKey.ORB_NEXT_ID.name(),  metadata.getOrbNextID(),  null, false);
+        generator.writeEntry(OrbitStateHistoryMetadataKey.ORB_BASIS.name(),    metadata.getOrbBasis(),   null, false);
+        generator.writeEntry(OrbitStateHistoryMetadataKey.ORB_BASIS_ID.name(), metadata.getOrbBasisID(), null, false);
 
         // interpolation
         generator.writeEntry(OrbitStateHistoryMetadataKey.INTERPOLATION.name(),        metadata.getInterpolationMethod(), false);
         generator.writeEntry(OrbitStateHistoryMetadataKey.INTERPOLATION_DEGREE.name(), metadata.getInterpolationDegree(), false);
-        generator.writeEntry(OrbitStateHistoryMetadataKey.ORB_AVERAGING.name(),        metadata.getOrbAveraging(),        false);
+        generator.writeEntry(OrbitStateHistoryMetadataKey.ORB_AVERAGING.name(),        metadata.getOrbAveraging(), null,  false);
 
         // references
-        generator.writeEntry(OrbitStateHistoryMetadataKey.CENTER_NAME.name(),   metadata.getCenter().getName(),               false);
-        generator.writeEntry(OrbitStateHistoryMetadataKey.ORB_REF_FRAME.name(), metadata.getOrbReferenceFrame().getName(),    false);
-        generator.writeEntry(OrbitStateHistoryMetadataKey.ORB_FRAME_EPOCH.name(), timeConverter, metadata.getOrbFrameEpoch(), false);
+        generator.writeEntry(OrbitStateHistoryMetadataKey.CENTER_NAME.name(),   metadata.getCenter().getName(),               null, false);
+        generator.writeEntry(OrbitStateHistoryMetadataKey.ORB_REF_FRAME.name(), metadata.getOrbReferenceFrame().getName(),    null, false);
+        generator.writeEntry(OrbitStateHistoryMetadataKey.ORB_FRAME_EPOCH.name(), timeConverter, metadata.getOrbFrameEpoch(),       false);
 
         // time
         generator.writeEntry(OrbitStateHistoryMetadataKey.USEABLE_START_TIME.name(), timeConverter, metadata.getUseableStartTime(), false);
         generator.writeEntry(OrbitStateHistoryMetadataKey.USEABLE_STOP_TIME.name(),  timeConverter, metadata.getUseableStopTime(),  false);
 
         // elements
-        generator.writeEntry(OrbitStateHistoryMetadataKey.ORB_TYPE.name(), metadata.getOrbType(), true);
-        generator.writeEntry(OrbitStateHistoryMetadataKey.ORB_UNITS.name(), Units.outputBracketed(metadata.getOrbUnits()), false);
+        generator.writeEntry(OrbitStateHistoryMetadataKey.ORB_TYPE.name(),  metadata.getOrbType(),                                     true);
+        generator.writeEntry(OrbitStateHistoryMetadataKey.ORB_UNITS.name(), generator.unitsListToString(metadata.getOrbUnits()), null, false);
 
         // data
         final List<Unit> units = metadata.getOrbType().getUnits();
@@ -95,7 +94,7 @@ class OrbitStateHistoryWriter extends AbstractWriter {
                 line.append(AccurateFormatter.format(units.get(i).fromSI(elements[i])));
             }
             if (generator.getFormat() == FileFormat.XML) {
-                generator.writeEntry(OcmFile.ORB_LINE, line.toString(), true);
+                generator.writeEntry(OcmFile.ORB_LINE, line.toString(), null, true);
             } else {
                 generator.writeRawData(line);
                 generator.newLine();

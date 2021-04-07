@@ -56,7 +56,7 @@ class KvnLexicalAnalyzer implements LexicalAnalyzer {
     private static final String VALUE               = "(\\p{Graph}.*?)";
 
     /** Regular expression matching units that must be stored in the matcher. */
-    private static final String UNITS               = "(?:\\p{Blank}+\\[([-*/A-Za-z0-9]*)\\])?";
+    private static final String UNITS               = "(?:\\p{Blank}+\\[([-*/A-Za-z0-9%°◦′'″\"µ]*)\\])?";
 
     /** Regular expression matching blanks at end of line. */
     private static final String LINE_END            = "\\p{Blank}*$";

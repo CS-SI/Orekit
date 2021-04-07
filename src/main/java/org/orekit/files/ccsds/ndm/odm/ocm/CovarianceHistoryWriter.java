@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.files.ccsds.definitions.TimeConverter;
-import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.section.AbstractWriter;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
@@ -61,15 +60,15 @@ class CovarianceHistoryWriter extends AbstractWriter {
         generator.writeComments(metadata.getComments());
 
         // identifiers
-        generator.writeEntry(CovarianceHistoryMetadataKey.COV_ID.name(),       metadata.getCovID(),      false);
-        generator.writeEntry(CovarianceHistoryMetadataKey.COV_PREV_ID.name(),  metadata.getCovPrevID(),  false);
-        generator.writeEntry(CovarianceHistoryMetadataKey.COV_NEXT_ID.name(),  metadata.getCovNextID(),  false);
-        generator.writeEntry(CovarianceHistoryMetadataKey.COV_BASIS.name(),    metadata.getCovBasis(),   false);
-        generator.writeEntry(CovarianceHistoryMetadataKey.COV_BASIS_ID.name(), metadata.getCovBasisID(), false);
+        generator.writeEntry(CovarianceHistoryMetadataKey.COV_ID.name(),       metadata.getCovID(),      null, false);
+        generator.writeEntry(CovarianceHistoryMetadataKey.COV_PREV_ID.name(),  metadata.getCovPrevID(),  null, false);
+        generator.writeEntry(CovarianceHistoryMetadataKey.COV_NEXT_ID.name(),  metadata.getCovNextID(),  null, false);
+        generator.writeEntry(CovarianceHistoryMetadataKey.COV_BASIS.name(),    metadata.getCovBasis(),   null, false);
+        generator.writeEntry(CovarianceHistoryMetadataKey.COV_BASIS_ID.name(), metadata.getCovBasisID(), null, false);
 
         // references
-        generator.writeEntry(CovarianceHistoryMetadataKey.COV_REF_FRAME.name(),   metadata.getCovReferenceFrame().getName(),  false);
-        generator.writeEntry(CovarianceHistoryMetadataKey.COV_FRAME_EPOCH.name(), timeConverter, metadata.getCovFrameEpoch(), false);
+        generator.writeEntry(CovarianceHistoryMetadataKey.COV_REF_FRAME.name(),   metadata.getCovReferenceFrame().getName(),  null, false);
+        generator.writeEntry(CovarianceHistoryMetadataKey.COV_FRAME_EPOCH.name(), timeConverter, metadata.getCovFrameEpoch(),       false);
 
         // scaling
         generator.writeEntry(CovarianceHistoryMetadataKey.COV_SCALE_MIN.name(),  metadata.getCovScaleMin(), Unit.ONE,       false);
@@ -77,8 +76,8 @@ class CovarianceHistoryWriter extends AbstractWriter {
         generator.writeEntry(CovarianceHistoryMetadataKey.COV_CONFIDENCE.name(), metadata.getCovConfidence(), Unit.PERCENT, false);
 
         // elements
-        generator.writeEntry(CovarianceHistoryMetadataKey.COV_TYPE.name(),  metadata.getCovType(),                         false);
-        generator.writeEntry(CovarianceHistoryMetadataKey.COV_UNITS.name(), Units.outputBracketed(metadata.getCovUnits()), false);
+        generator.writeEntry(CovarianceHistoryMetadataKey.COV_TYPE.name(),  metadata.getCovType(),                                     false);
+        generator.writeEntry(CovarianceHistoryMetadataKey.COV_UNITS.name(), generator.unitsListToString(metadata.getCovUnits()), null, false);
 
         // data
         final List<Unit> units = metadata.getCovType().getUnits();
@@ -92,7 +91,7 @@ class CovarianceHistoryWriter extends AbstractWriter {
                     line.append(AccurateFormatter.format(units.get(i).fromSI(units.get(j).fromSI(matrix.getEntry(i, j)))));
                 }
                 if (generator.getFormat() == FileFormat.XML) {
-                    generator.writeEntry(OcmFile.COV_LINE, line.toString(), true);
+                    generator.writeEntry(OcmFile.COV_LINE, line.toString(), null, true);
                 } else {
                     generator.writeRawData(line);
                     generator.newLine();

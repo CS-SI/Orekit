@@ -58,21 +58,21 @@ class EulerWriter extends AbstractWriter {
         generator.writeComments(euler.getComments());
 
         // endpoints
-        generator.writeEntry(EulerKey.EULER_FRAME_A.name(), euler.getEndpoints().getFrameA().getName(), true);
-        generator.writeEntry(EulerKey.EULER_FRAME_B.name(), euler.getEndpoints().getFrameB().getName(), true);
+        generator.writeEntry(EulerKey.EULER_FRAME_A.name(), euler.getEndpoints().getFrameA().getName(), null, true);
+        generator.writeEntry(EulerKey.EULER_FRAME_B.name(), euler.getEndpoints().getFrameB().getName(), null, true);
         generator.writeEntry(EulerKey.EULER_DIR.name(),
                              euler.getEndpoints().isA2b() ? AttitudeEndoints.A2B : AttitudeEndoints.B2A,
-                             true);
+                             null, true);
 
         // angles
         final String   seq    = euler.getEulerRotSeq().name();
         final double[] angles = euler.getRotationAngles();
         generator.writeEntry(EulerKey.EULER_ROT_SEQ.name(),
                              seq.replace('X', '1').replace('Y', '2').replace('Z', '3'),
-                             true);
+                             null, true);
         generator.writeEntry(EulerKey.RATE_FRAME.name(),
                              euler.rateFrameIsA() ? EulerKey.EULER_FRAME_A.name() : EulerKey.EULER_FRAME_B.name(),
-                             true);
+                             null, true);
 
         // if we don't have rates, at least we need angles
         // (we may have only rates, as orientation is already given by mandatory quaternion)

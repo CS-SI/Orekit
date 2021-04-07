@@ -106,7 +106,7 @@ public class AttitudeWriterTest {
                            withDataContext(DataContext.getDefault()).
                            buildAemWriter();
         final CharArrayWriter caw = new CharArrayWriter();
-        writer.writeMessage(new KvnGenerator(caw, 0, ""), aemFile);
+        writer.writeMessage(new KvnGenerator(caw, 0, "", 60), aemFile);
         final byte[] bytes = caw.toString().getBytes(StandardCharsets.UTF_8);
 
         final AemFile generatedOemFile = new ParserBuilder().buildAemParser().
@@ -122,7 +122,8 @@ public class AttitudeWriterTest {
 
         AemMetadata metadata = dummyMetadata();
         metadata.setObjectID("12345");
-        AttitudeWriter writer = new AttitudeWriter(new WriterBuilder().buildAemWriter(), null, metadata, FileFormat.KVN, "");
+        AttitudeWriter writer = new AttitudeWriter(new WriterBuilder().buildAemWriter(), null, metadata,
+                                                   FileFormat.KVN, "", 60);
         try {
             writer.write(new CharArrayWriter(), aemFile);
             fail("an exception should have been thrown");
@@ -144,7 +145,7 @@ public class AttitudeWriterTest {
                                                    aemFile.getHeader(),
                                                    aemFile.getSegments().get(0).getMetadata(),
                                                    FileFormat.KVN,
-                                                   "dummy");
+                                                   "dummy", 0);
         try {
             writer.write((BufferedWriter) null, aemFile);
             fail("an exception should have been thrown");
@@ -162,7 +163,7 @@ public class AttitudeWriterTest {
         metadata.setObjectID("1996-062A");
         metadata.setObjectName("MARS GLOBAL SURVEYOR");
         AttitudeWriter writer = new AttitudeWriter(new WriterBuilder().buildAemWriter(),
-                                                   header, metadata, FileFormat.KVN, "TestNullEphemeris.aem");
+                                                   header, metadata, FileFormat.KVN, "TestNullEphemeris.aem", 0);
         CharArrayWriter caw = new CharArrayWriter();
         writer.write(caw, null);
         assertEquals(0, caw.size());
@@ -176,7 +177,7 @@ public class AttitudeWriterTest {
 
         AemWriter writer = new WriterBuilder().buildAemWriter();
         final CharArrayWriter caw = new CharArrayWriter();
-        writer.writeMessage(new KvnGenerator(caw, 0, ""), aemFile);
+        writer.writeMessage(new KvnGenerator(caw, 0, "", 0), aemFile);
         final byte[] bytes = caw.toString().getBytes(StandardCharsets.UTF_8);
 
         final AemFile generatedAemFile = new ParserBuilder().buildAemParser().
@@ -210,7 +211,7 @@ public class AttitudeWriterTest {
         AemMetadata metadata = dummyMetadata();
         metadata.setObjectID(id2);
         AttitudeWriter writer = new AttitudeWriter(new WriterBuilder().buildAemWriter(),
-                                                   null, metadata, FileFormat.KVN, "");
+                                                   null, metadata, FileFormat.KVN, "", 60);
         final CharArrayWriter caw = new CharArrayWriter();
         writer.write(caw, file);
         final byte[] bytes = caw.toString().getBytes(StandardCharsets.UTF_8);
@@ -235,7 +236,7 @@ public class AttitudeWriterTest {
 
         AttitudeWriter writer = new AttitudeWriter(new WriterBuilder().buildAemWriter(),
                                                    aemFile.getHeader(), aemFile.getSegments().get(0).getMetadata(),
-                                                   FileFormat.KVN, "TestAEMIssue723.aem");
+                                                   FileFormat.KVN, "TestAEMIssue723.aem", 0);
         final CharArrayWriter caw = new CharArrayWriter();
         writer.write(caw, aemFile);
         final byte[] bytes = caw.toString().getBytes(StandardCharsets.UTF_8);
@@ -254,7 +255,7 @@ public class AttitudeWriterTest {
 
         AemWriter writer = new WriterBuilder().buildAemWriter();
         final CharArrayWriter caw = new CharArrayWriter();
-        writer.writeMessage(new KvnGenerator(caw, 0, ""), aemFile);
+        writer.writeMessage(new KvnGenerator(caw, 0, "", 60), aemFile);
 
         String[] lines2 = caw.toString().split("\n");
 

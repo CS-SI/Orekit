@@ -463,7 +463,7 @@ public class OpmParserTest {
 
         // write the parsed file back to a characters array
         final CharArrayWriter caw = new CharArrayWriter();
-        final Generator generator = new KvnGenerator(caw, OpmWriter.KVN_PADDING_WIDTH, "dummy");
+        final Generator generator = new KvnGenerator(caw, OpmWriter.KVN_PADDING_WIDTH, "dummy", 60);
         new WriterBuilder().buildOpmWriter().writeMessage(generator, original);
 
         // reparse the written file

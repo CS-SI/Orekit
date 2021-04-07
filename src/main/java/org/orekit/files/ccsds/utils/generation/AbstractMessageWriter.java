@@ -127,7 +127,7 @@ public abstract class AbstractMessageWriter<H extends Header, S extends Segment<
             generator.writeEntry(HeaderKey.CREATION_DATE.name(),
                                  generator.dateToString(zdt.getYear(), zdt.getMonthValue(), zdt.getDayOfMonth(),
                                                         zdt.getHour(), zdt.getMinute(), (double) zdt.getSecond()),
-                                 true);
+                                 null, true);
         } else {
             final DateTimeComponents creationDate =
                             header.getCreationDate().getComponents(context.getDataContext().getTimeScales().getUTC());
@@ -136,16 +136,16 @@ public abstract class AbstractMessageWriter<H extends Header, S extends Segment<
             generator.writeEntry(HeaderKey.CREATION_DATE.name(),
                                  generator.dateToString(dc.getYear(), dc.getMonth(), dc.getDay(),
                                                         tc.getHour(), tc.getMinute(), tc.getSecond()),
-                                 true);
+                                 null, true);
         }
 
         // Use built-in default if mandatory originator not present
         generator.writeEntry(HeaderKey.ORIGINATOR.name(),
                              (header == null || header.getOriginator() == null) ? DEFAULT_ORIGINATOR : header.getOriginator(),
-                             true);
+                             null, true);
 
         if (header != null) {
-            generator.writeEntry(HeaderKey.MESSAGE_ID.name(), header.getMessageId(), false);
+            generator.writeEntry(HeaderKey.MESSAGE_ID.name(), header.getMessageId(), null, false);
         }
 
         if (generator.getFormat() == FileFormat.XML) {

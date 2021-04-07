@@ -62,7 +62,7 @@ class ManeuverWriter extends AbstractWriter {
         generator.writeEntry(ManeuverKey.MAN_DURATION.name(),    maneuver.getDuration(), Unit.SECOND,     true);
 
         // frame
-        generator.writeEntry(ManeuverKey.MAN_REF_FRAME.name(), maneuver.getRefFrameString(), false);
+        generator.writeEntry(ManeuverKey.MAN_REF_FRAME.name(), maneuver.getRefFrameString(), null, false);
 
         // torque
         final Vector3D torque = maneuver.getTorque();

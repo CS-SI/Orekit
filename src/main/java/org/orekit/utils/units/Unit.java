@@ -17,7 +17,6 @@
 package org.orekit.utils.units;
 
 import java.io.Serializable;
-import java.util.List;
 
 import org.hipparchus.fraction.Fraction;
 import org.hipparchus.util.FastMath;
@@ -415,12 +414,13 @@ public class Unit implements Serializable {
      * "\"" and "as".
      * </p>
      * <p>
-     * All the SI prefix (from "y", yocto, to "Y", Yotta) are accepted. Beware
-     * that some combinations are forbidden, for example "Pa" is Pascal, not
-     * peta-years, and "as" is arcsecond for this parser, not atto-seconds, because
-     * many people in the space field use mas for milli-arcseconds and µas for
-     * micro-arcseconds. Beware that prefixes are case-sensitive! Prefix and units
-     * must be joined without blanks.
+     * All the SI prefix (from "y", yocto, to "Y", Yotta) are accepted, as well
+     * as integer prefixes. Beware that some combinations are forbidden, for example
+     * "Pa" is Pascal, not peta-years, and "as" is arcsecond for this parser, not
+     * atto-seconds, because many people in the space field use mas for milli-arcseconds
+     * and µas for micro-arcseconds. Beware that prefixes are case-sensitive! Integer
+     * prefixes can be used to specify units like "30s". SI prefix and units must be
+     * joined without blanks (but integer prefixes can be separated from units).
      * </p>
      * <ul>
      *   <li>multiplication can specified with either "*", "×" or "." as the operator</li>
@@ -448,7 +448,7 @@ public class Unit implements Serializable {
      * </p>
      * <p>
      * These rules mean all the following (silly) examples are parsed properly:
-     * MHz, km/√d, kg.m.s⁻¹, µas^⅖/(h**(2)×m)³, km/√(kg.s), km**0.5
+     * MHz, km/√d, kg.m.s⁻¹, µas^⅖/(h**(2)×m)³, km/√(kg.s), km**0.5, 30s
      * </p>
      * @param unitSpecification unit specification to parse
      * @return parsed unit
@@ -456,16 +456,16 @@ public class Unit implements Serializable {
     public static Unit parse(final String unitSpecification) {
 
         // parse the specification
-        final List<PowerTerm> chain = Parser.buildList(unitSpecification);
+        final ParseTree tree = Parser.buildTree(unitSpecification);
 
-        if (chain == null) {
+        if (tree == null) {
             // special handling of "n/a"
             return Unit.NONE;
         }
 
         // build compound unit
-        Unit unit = Unit.ONE;
-        for (final PowerTerm term : chain) {
+        Unit unit = Unit.ONE.scale(null, tree.getFactor());
+        for (final PowerTerm term : tree.getTerms()) {
             try {
                 final PrefixedUnit u = PrefixedUnit.valueOf(term.getBase().toString());
                 if (Fraction.ONE.equals(term.getExponent())) {

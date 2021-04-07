@@ -144,7 +144,7 @@ public class OrekitEphemerisFileTest {
         template.setCenter(new BodyFacade("EARTH", CelestialBodyFactory.getCelestialBodies().getEarth()));
         template.setReferenceFrame(FrameFacade.map(FramesFactory.getEME2000()));
         EphemerisWriter writer = new EphemerisWriter(new WriterBuilder().buildOemWriter(),
-                                                     null, template, FileFormat.KVN, "dummy");
+                                                     null, template, FileFormat.KVN, "dummy", 60);
         writer.write(tempOemFile, ephemerisFile);
 
         OemParser parser = new OemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),

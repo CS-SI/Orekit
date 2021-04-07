@@ -31,25 +31,25 @@ import org.hipparchus.fraction.Fraction;
  * The special cases "n/a" returns a null list. It is intended to manage the
  * special unit {@link Unit.NONE}. The special case "1" returns a singleton with
  * the base term set to "1" and the exponent set to 1. It is intended to manage the
- * special unit {@link Unit.ONE}. This is the only case were a number can appear
- * in a unit, it cannot be combined with other units (i.e. m.1/s is not allowed).
+ * special unit {@link Unit.ONE}.
  * </p>
  * <pre>
- *   unit         ::=  "n/a" | "1"  | chain
+ *   unit         ::=  "n/a" | "1" | integer chain | chain
  *   chain        ::=  operand { ('*' | '/') operand }
- *   operand      ::=  '√' base     | base power
+ *   operand      ::=  '√' base | base power
  *   power        ::=  '^' exponent | ε
  *   exponent     ::=  'fraction'   | integer | '(' integer denominator ')'
  *   denominator  ::=  '/' integer  | ε
- *   base         ::=  identifier   | '(' chain ')'
+ *   base         ::=  identifier | '(' chain ')'
  * </pre>
  * <p>
  * This parses correctly units like MHz, km/√d, kg.m.s⁻¹, µas^⅖/(h**(2)×m)³, km/√(kg.s),
- * √kg*km** (3/2) /(µs^2*Ω⁻⁷), km**0.5/s.
+ * √kg*km** (3/2) /(µs^2*Ω⁻⁷), km**0.5/s, 30s.
  * </p>
  * <p>
- * Note that we don't accept both square root and power on the same operand, so km/√d³ is
- * refused (but km/√(d³) is accepted).
+ * Note that we don't accept combining square roots and power on the same operand; km/√d³
+ * is refused (but km/√(d³) is accepted). We also accept a single integer prefix and
+ * only at the start of the specification.
  * </p>
  * @author Luc Maisonobe
  * @since 11.0
@@ -61,24 +61,36 @@ public class Parser {
     private Parser() {
     }
 
-    /** Build the power terms list.
+    /** Build the parse tree.
      * @param unitSpecification unit specification to parse
-     * @return list of power terms
+     * @return parse tree
      */
-    public static List<PowerTerm> buildList(final String unitSpecification) {
+    public static ParseTree buildTree(final String unitSpecification) {
         if (Unit.NONE.getName().equals(unitSpecification)) {
             // special case for no units
             return null;
         } else if (Unit.ONE.getName().equals(unitSpecification)) {
             // special case for dimensionless unit
-            return Collections.singletonList(new PowerTerm(unitSpecification, Fraction.ONE));
+            return new ParseTree(1,
+                                 Collections.singletonList(new PowerTerm(unitSpecification, Fraction.ONE)));
         } else {
             final Lexer lexer = new Lexer(unitSpecification);
+            final Token first = lexer.next();
+            if (first == null) {
+                throw lexer.generateException();
+            }
+            final int factor;
+            if (first.getType() == TokenType.INTEGER) {
+                factor = first.getInt();
+            } else {
+                factor = 1;
+                lexer.pushBack();
+            }
             final List<PowerTerm> chain = chain(lexer);
             if (lexer.next() != null) {
                 throw lexer.generateException();
             }
-            return chain;
+            return new ParseTree(factor, chain);
         }
     }
 
@@ -122,7 +134,7 @@ public class Parser {
     /** Apply an exponent to a base term.
      * @param base base term
      * @param exponent exponent (may be null)
-     * @return term with exponent applied (same as {@code if exponent is null)
+     * @return term with exponent applied (same as {@code base} if exponent is null)
      */
     private static List<PowerTerm> applyExponent(final List<PowerTerm> base, final Fraction exponent) {
 
