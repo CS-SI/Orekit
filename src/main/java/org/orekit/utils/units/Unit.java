@@ -417,10 +417,10 @@ public class Unit implements Serializable {
      * <p>
      * All the SI prefix (from "y", yocto, to "Y", Yotta) are accepted. Beware
      * that some combinations are forbidden, for example "Pa" is Pascal, not
-     * peta-years, and "as" is arcsecond for us, not atto-seconds, because many people
-     * in the space field use mas for milli-arcseconds and µas for micro-arcseconds.
-     * Beware that prefixes are case-sensitive! Prefix and units must be joined
-     * without blanks.
+     * peta-years, and "as" is arcsecond for this parser, not atto-seconds, because
+     * many people in the space field use mas for milli-arcseconds and µas for
+     * micro-arcseconds. Beware that prefixes are case-sensitive! Prefix and units
+     * must be joined without blanks.
      * </p>
      * <ul>
      *   <li>multiplication can specified with either "*", "×" or "." as the operator</li>
@@ -433,12 +433,22 @@ public class Unit implements Serializable {
      *   </li>
      * </ul>
      * <p>
-     * Fractional exponents are allowed, but only with regular characters (because unicode
-     * does not provide a superscript '/'). Negative exponents can be used too.
+     * Exponents can be specified in different ways:
+     * <ul>
+     *   <li>as an integer, as in "m^-2" or "m⁻²"</li>
+     *   <li>directly as unicode characters for the few fractions that unicode supports, as in "Ω^⅞"</li>
+     *   <li>as the special decimal value 0.5 which is used by CCSDS, as in "km**0.5"</li>
+     *   <li>as a pair of parentheses surrounding two integers separated by a '/', as in "Pa^(11/12)"</li>
+     * </ul>
+     * For integer exponents, the digits must be ASCII digits from the Basic Latin block from
+     * unicode if explicit exponent maker "**" or "^" was used, or using unicode superscript
+     * digits if implicit exponentiation (i.e. no markers at all) is used. Unicode superscripts
+     * are not allowed fractional exponents because unicode does not provide a superscript '/'.
+     * Negative exponents can be used too.
      * </p>
      * <p>
      * These rules mean all the following (silly) examples are parsed properly:
-     * MHz, km/√d, kg.m.s⁻¹, µas^(2/5)/(h**(2)×m)³, km/√(kg.s)
+     * MHz, km/√d, kg.m.s⁻¹, µas^⅖/(h**(2)×m)³, km/√(kg.s), km**0.5
      * </p>
      * @param unitSpecification unit specification to parse
      * @return parsed unit

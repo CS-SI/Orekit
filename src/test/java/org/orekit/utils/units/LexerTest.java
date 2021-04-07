@@ -215,7 +215,7 @@ public class LexerTest {
     @Test
     public void testPushBackAtVirtualExponent() {
         final Lexer lexer = new Lexer("m²/s");
-        expect(lexer, "m",   TokenType.IDENTIFIER, 0, 1);
+       expect(lexer, "m",   TokenType.IDENTIFIER, 0, 1);
         expect(lexer, "",    TokenType.POWER, 0, 1);
         lexer.pushBack();
         expect(lexer, "",    TokenType.POWER, 0, 1);

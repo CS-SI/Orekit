@@ -115,7 +115,7 @@ class Lexer {
 
         // look for power
         if ((start < end - 1) &&
-            unitSpecification.charAt(start) == '*' &&
+            unitSpecification.charAt(start)     == '*' &&
             unitSpecification.charAt(start + 1) == '*') {
             // power indicator as **
             return emit(start + 2, TokenType.POWER, 0, 1);

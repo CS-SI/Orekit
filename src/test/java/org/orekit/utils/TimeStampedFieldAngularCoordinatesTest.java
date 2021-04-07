@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
@@ -30,6 +32,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well1024a;
 import org.hipparchus.util.Decimal64;
@@ -41,6 +44,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeScalesFactory;
 
 public class TimeStampedFieldAngularCoordinatesTest {
@@ -485,6 +489,30 @@ public class TimeStampedFieldAngularCoordinatesTest {
         Assert.assertEquals(0.0, FieldVector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()).getReal(), 1.0e-15);
         Assert.assertEquals(0.0, FieldVector3D.distance(ac.getRotationAcceleration(), rebuilt.getRotationAcceleration()).getReal(), 1.0e-15);
 
+    }
+
+    @Test
+    public void testIssue773() {
+        doTestIssue773(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestIssue773(final Field<T> field) {
+        // Epoch
+        final AbsoluteDate date = new AbsoluteDate();
+
+        // Coordinates
+        final TimeStampedAngularCoordinates angular =
+                        new TimeStampedAngularCoordinates(date,
+                                                          new Rotation(0., 0., 0., 0., false),
+                                                          Vector3D.ZERO,
+                                                          Vector3D.ZERO);
+
+        // Time stamped object
+        final FieldTimeStamped<T> timeStamped =
+                        new TimeStampedFieldAngularCoordinates<>(field, angular);
+
+        // Verify
+        Assert.assertEquals(0.0, date.durationFrom(timeStamped.getDate().toAbsoluteDate()), Double.MIN_VALUE);
     }
 
     private FieldVector3D<DerivativeStructure> randomVector(Random random, double norm) {
