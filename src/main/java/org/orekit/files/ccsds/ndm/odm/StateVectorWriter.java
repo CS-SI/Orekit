@@ -20,6 +20,7 @@ package org.orekit.files.ccsds.ndm.odm;
 import java.io.IOException;
 
 import org.orekit.files.ccsds.definitions.TimeConverter;
+import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.section.AbstractWriter;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -61,9 +62,9 @@ public class StateVectorWriter extends AbstractWriter {
         generator.writeEntry(StateVectorKey.X.name(),     pv.getPosition().getX(), Unit.KILOMETRE, true);
         generator.writeEntry(StateVectorKey.Y.name(),     pv.getPosition().getY(), Unit.KILOMETRE, true);
         generator.writeEntry(StateVectorKey.Z.name(),     pv.getPosition().getZ(), Unit.KILOMETRE, true);
-        generator.writeEntry(StateVectorKey.X_DOT.name(), pv.getVelocity().getX(), Unit.KILOMETRE, true);
-        generator.writeEntry(StateVectorKey.Y_DOT.name(), pv.getVelocity().getY(), Unit.KILOMETRE, true);
-        generator.writeEntry(StateVectorKey.Z_DOT.name(), pv.getVelocity().getZ(), Unit.KILOMETRE, true);
+        generator.writeEntry(StateVectorKey.X_DOT.name(), pv.getVelocity().getX(), Units.KM_PER_S, true);
+        generator.writeEntry(StateVectorKey.Y_DOT.name(), pv.getVelocity().getY(), Units.KM_PER_S, true);
+        generator.writeEntry(StateVectorKey.Z_DOT.name(), pv.getVelocity().getZ(), Units.KM_PER_S, true);
         // note that OPM format does not use X_DDOT, Y_DDOT, Z_DDOT, they are used only in OEM format
 
     }
