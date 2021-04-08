@@ -405,7 +405,6 @@ public enum CelestialBodyFrame {
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext to use when creating the frame.
      * @return frame corresponding to the CCSDS constant
-     * @see #isLof()
      * @since 10.1
      */
     public Frame getFrame(final IERSConventions conventions,

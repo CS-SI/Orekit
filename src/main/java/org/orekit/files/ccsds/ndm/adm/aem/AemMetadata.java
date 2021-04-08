@@ -121,15 +121,15 @@ public class AemMetadata extends AdmMetadata {
         return endpoints;
     }
 
-    /** Check if rates are specified in {@link #getFrameA() frame A}.
-     * @return true if rates are specified in {@link #getFrameA() frame A}
+    /** Check if rates are specified in {@link AttitudeEndoints#getFrameA() frame A}.
+     * @return true if rates are specified in {@link AttitudeEndoints#getFrameA() frame A}
      */
     public boolean rateFrameIsA() {
         return rateFrameIsA == null ? false : rateFrameIsA;
     }
 
     /** Set the frame in which rates are specified.
-     * @param rateFrameIsA if true, rates are specified in {@link #getFrameA() frame A}
+     * @param rateFrameIsA if true, rates are specified in {@link AttitudeEndoints#getFrameA() frame A}
      */
     public void setRateFrameIsA(final boolean rateFrameIsA) {
         refuseFurtherComments();

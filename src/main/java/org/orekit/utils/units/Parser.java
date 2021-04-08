@@ -29,9 +29,9 @@ import org.hipparchus.fraction.Fraction;
  * and '^' can be either '^', "**" or implicit with switch to superscripts,
  * and fraction are either unicode fractions like ½ or ⅞ or the decimal value 0.5.
  * The special cases "n/a" returns a null list. It is intended to manage the
- * special unit {@link Unit.NONE}. The special case "1" returns a singleton with
+ * special unit {@link Unit#NONE}. The special case "1" returns a singleton with
  * the base term set to "1" and the exponent set to 1. It is intended to manage the
- * special unit {@link Unit.ONE}.
+ * special unit {@link Unit#ONE}.
  * </p>
  * <pre>
  *   unit         ::=  "n/a" | "1" | integer chain | chain

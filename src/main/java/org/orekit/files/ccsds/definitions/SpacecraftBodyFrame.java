@@ -84,7 +84,7 @@ public class SpacecraftBodyFrame {
 
     /** {@inheritDoc}
      * <p>
-     * The CCSDS composite name combines the {@link #getgetBaseEquipment base equipment}
+     * The CCSDS composite name combines the {@link #getBaseEquipment() base equipment}
      * and the {@link #getLabel()}
      * </p>
      * @return CCSDS composite name, as a normalized string

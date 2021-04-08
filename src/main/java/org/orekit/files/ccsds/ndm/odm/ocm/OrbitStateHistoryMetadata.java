@@ -261,15 +261,15 @@ public class OrbitStateHistoryMetadata extends CommentsContainer {
         this.orbReferenceFrame = orbReferenceFrame;
     }
 
-    /** Get epoch of the {@link #getOrbRefFrame() orbit reference frame}.
-     * @return epoch of the {@link #getOrbRefFrame() orbit reference frame}
+    /** Get epoch of the {@link #getOrbReferenceFrame() orbit reference frame}.
+     * @return epoch of the {@link #getOrbReferenceFrame() orbit reference frame}
      */
     public AbsoluteDate getOrbFrameEpoch() {
         return orbFrameEpoch;
     }
 
-    /** Set epoch of the {@link #getOrbRefFrame() orbit reference frame}.
-     * @param orbFrameEpoch epoch of the {@link #getOrbRefFrame() orbit reference frame}
+    /** Set epoch of the {@link #getOrbReferenceFrame() orbit reference frame}.
+     * @param orbFrameEpoch epoch of the {@link #getOrbReferenceFrame() orbit reference frame}
      */
     public void setOrbFrameEpoch(final AbsoluteDate orbFrameEpoch) {
         refuseFurtherComments();

@@ -42,7 +42,7 @@ public class UnitsCache {
      * CCSDS messages with many entries).
      * </p>
      * @param specification units specification (may be null)
-     * @return parsed units ({@link Unit.NONE} if specification is null)
+     * @return parsed units ({@link Unit#NONE} if specification is null)
      */
     public Unit getUnits(final String specification) {
 

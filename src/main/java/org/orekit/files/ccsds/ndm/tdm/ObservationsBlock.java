@@ -68,7 +68,7 @@ public class ObservationsBlock extends CommentsContainer implements Data {
      * @param type type of the observation
      * @param measurement measurement of the observation
      */
-    void addObservationValue(final Observationtype type, final double measurement) {
+    void addObservationValue(final ObservationType type, final double measurement) {
         addObservation(type, currentObservationEpoch, measurement);
         currentObservationEpoch = null;
     }
@@ -101,7 +101,7 @@ public class ObservationsBlock extends CommentsContainer implements Data {
      * @param epoch the timetag
      * @param measurement the measurement
      */
-    public void addObservation(final Observationtype type,
+    public void addObservation(final ObservationType type,
                                final AbsoluteDate epoch,
                                final double measurement) {
         this.addObservation(new Observation(type, epoch, measurement));

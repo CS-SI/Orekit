@@ -232,7 +232,7 @@ public class TdmParser extends AbstractMessageParser<TdmFile, TdmParser> {
                        TdmDataKey.valueOf(token.getName()).process(token, context, observationsBlock);
             } catch (IllegalArgumentException iae) {
                 // observation
-                return Observationtype.valueOf(token.getName()).process(token, context, converter, metadata, observationsBlock);
+                return ObservationType.valueOf(token.getName()).process(token, context, converter, metadata, observationsBlock);
             }
         } catch (IllegalArgumentException iae) {
             // token has not been recognized

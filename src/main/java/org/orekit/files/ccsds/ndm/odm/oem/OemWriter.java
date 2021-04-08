@@ -45,7 +45,6 @@ import org.orekit.files.ccsds.utils.generation.AbstractMessageWriter;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScale;
 import org.orekit.utils.AccurateFormatter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.IERSConventions;
@@ -63,11 +62,6 @@ import org.orekit.utils.units.Unit;
  * default exits: {@link OdmMetadataKey#OBJECT_NAME}, and {@link CommonMetadataKey#OBJECT_ID}. The usage
  * column in the table indicates where the metadata item is used, either in the OEM header
  * or in the metadata section at the start of an OEM ephemeris segment.
- *
- * <p> The OEM metadata for the whole OEM file is set in the {@link
- * #StreamingOemWriter(Appendable, TimeScale, Map) constructor}. Any of the metadata may
- * be overridden for a particular segment using the {@code metadata} argument to {@link
- * #newSegment(Frame, Map)}.
  *
  * <table>
  * <caption>OEM metadata</caption>

@@ -25,7 +25,7 @@ package org.orekit.files.ccsds.utils.lexical;
  *   <li>bloc end</li>
  * </ul>
  * </p>
- * @see ParrseToken
+ * @see ParseToken
  * @author Luc Maisonobe
  * @since 11.0
  */

@@ -146,7 +146,6 @@ public abstract class AbstractMessageParser<T extends NdmFile<?, ?>, P extends A
 
     /** Get IERS conventions.
      * @return IERS conventions to use while parsing
-     * @see #withConventions(IERSConventions)
      */
     public IERSConventions getConventions() {
         return conventions;
@@ -154,7 +153,6 @@ public abstract class AbstractMessageParser<T extends NdmFile<?, ?>, P extends A
 
     /** Get EOP interpolation method.
      * @return true if tidal effects are ignored when interpolating EOP
-     * @see #withSimpleEOP(boolean)
      */
     public boolean isSimpleEOP() {
         return simpleEOP;

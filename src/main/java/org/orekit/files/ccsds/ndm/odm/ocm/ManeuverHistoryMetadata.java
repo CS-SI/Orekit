@@ -355,15 +355,15 @@ public class ManeuverHistoryMetadata extends CommentsContainer {
         this.manReferenceFrame = manReferenceFrame;
     }
 
-    /** Get epoch of the {@link #getManRefFrame() maneuver reference frame}.
-     * @return epoch of the {@link #getManRefFrame() maneuver reference frame}
+    /** Get epoch of the {@link #getManReferenceFrame() maneuver reference frame}.
+     * @return epoch of the {@link #getManReferenceFrame() maneuver reference frame}
      */
     public AbsoluteDate getManFrameEpoch() {
         return manFrameEpoch;
     }
 
-    /** Set epoch of the {@link #getManRefFrame() maneuver reference frame}.
-     * @param manFrameEpoch epoch of the {@link #getManRefFrame() maneuver reference frame}
+    /** Set epoch of the {@link #getManReferenceFrame() maneuver reference frame}.
+     * @param manFrameEpoch epoch of the {@link #getManReferenceFrame() maneuver reference frame}
      */
     public void setManFrameEpoch(final AbsoluteDate manFrameEpoch) {
         refuseFurtherComments();
