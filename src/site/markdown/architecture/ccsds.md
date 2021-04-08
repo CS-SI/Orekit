@@ -109,8 +109,8 @@ to the mandatory units specified in CCSDS standards.
 
 CCSDS standards are ambiguous with respect to units handling. In several
 places, they state that units are "for information purpose only" or
-even that "listing of units via the <insert keyword here> keyword does
-not override the mandatory units specified in the selected <insert type here>".
+even that "listing of units via the [insert keyword here] keyword does
+not override the mandatory units specified in the selected [insert type here]".
 This would mean that `IGNORE_PARSE` should be used for compliance with the
 standard and files specifying wrong units should be accepted silently. Other
 places set that the tables specify "the units to be used" and that "If units
@@ -247,6 +247,7 @@ The following class diagram presents the static structure of lexical analysis:
 ![parsing class diagram](../images/design/ccsds-lexical-class-diagram.png)
 
 The dynamic view of lexical analysis is depicted in the following sequence diagram:
+
 ![general parsing sequence diagram diagram](../images/design/ccsds-lexical-analysis-sequence-diagram.png)
 
 The second level of parsing is message parsing is semantic analysis. Its aim is
