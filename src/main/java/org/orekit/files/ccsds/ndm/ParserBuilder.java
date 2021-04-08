@@ -231,7 +231,7 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
                              getMu(), getDefaultMass(), getParsedUnitsBehavior());
     }
 
-    /** Build a parser for {@link org.orekit.files.ccsds.ndm.odm.opm.OmmFile Orbit Mean elements Messages}.
+    /** Build a parser for {@link org.orekit.files.ccsds.ndm.odm.omm.OmmFile Orbit Mean elements Messages}.
      * @return a new parser
      */
     public OmmParser buildOmmParser() {

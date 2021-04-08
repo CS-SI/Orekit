@@ -19,7 +19,6 @@ package org.orekit.files.ccsds.ndm.adm.aem;
 import java.io.IOException;
 import java.util.List;
 
-import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
@@ -31,7 +30,6 @@ import org.orekit.files.ccsds.utils.generation.XmlGenerator;
 import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.files.general.AttitudeEphemerisFile.SatelliteAttitudeEphemeris;
 import org.orekit.files.general.AttitudeEphemerisFileWriter;
-import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
 /** An {@link AttitudeEphemerisFileWriter} generating {@link AemFile AEM} files.
@@ -74,8 +72,7 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
      * </>
      * <p>
      * Calling this constructor directly is not recommended. Users should rather use
-     * {@link org.orekit.files.ccsds.ndm.WriterBuilder#buildA
-     * writerBuilder.buildAemWriter(template, fileName)}.
+     * {@link org.orekit.files.ccsds.ndm.WriterBuilder#buildAemWriter()}.
      * </p>
      * @param writer underlying writer
      * @param header file header (may be null)
@@ -111,7 +108,7 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
      * {@code ephemerisFile} will be the start time, stop time, reference frame, interpolation
      * method and interpolation degree. The missing values (like object name, local spacecraft
      * body frame, attitude type...) will be inherited from the template  metadata set at writer
-     * {@link #AEMWriter(IERSConventions, DataContext, Header, AemMetadata, String, String) construction}.
+     * {@link #AttitudeWriter(AemWriter, Header, AemMetadata, FileFormat, String, int) construction}.
      * </p>
      */
     @Override

@@ -72,7 +72,7 @@ class ObservationsBlockWriter extends AbstractWriter {
 
         // write the data
         for (final Observation observation : observationsBlock.getObservations()) {
-            final Observationtype type     = observation.getType();
+            final ObservationType type     = observation.getType();
             final AbsoluteDate    date     = observation.getEpoch();
             final double          siValue  = observation.getMeasurement();
             final double          rawValue = type.siToRaw(converter, metadata, date, siValue);

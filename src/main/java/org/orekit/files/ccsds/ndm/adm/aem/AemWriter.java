@@ -22,7 +22,6 @@ import java.util.Date;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
@@ -54,7 +53,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * or in the metadata section at the start of an AEM attitude segment.
  * </p>
  *
- * <p> The AEM header for the whole AEM file is set when calling {@link #writeHeader(Header)},
+ * <p> The AEM header for the whole AEM file is set when calling {@link #writeHeader(Generator, Header)},
  * the entries are defined in table 4-2 of the ADM standard.
  *
  * <table>
@@ -91,7 +90,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  *    </table>
  * </p>
  *
- * <p> The AEM metadata for the whole AEM file is set when calling {@link #newSegment(AemMetadata)},
+ * <p> The AEM metadata for the AEM file is set when calling {@link #writeSegment(Generator, AemSegment)},
  * the entries are defined in tables 4-3, 4-4 and annex A of the ADM standard.
  *
  * <table>
@@ -199,7 +198,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  *
  * <p> The {@link MetadataKey#TIME_SYSTEM} must be constant for the whole file and is used
  * to interpret all dates except {@link HeaderKey#CREATION_DATE} which is always in {@link
- * TimeConverter#UTC UTC}. The guessing algorithm is not guaranteed to work so it is recommended
+ * TimeSystem#UTC UTC}. The guessing algorithm is not guaranteed to work so it is recommended
  * to provide values for {@link AdmMetadataKey#CENTER_NAME} and {@link MetadataKey#TIME_SYSTEM}
  * to avoid any bugs associated with incorrect guesses.
  *

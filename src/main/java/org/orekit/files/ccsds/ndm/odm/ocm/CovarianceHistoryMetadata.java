@@ -183,15 +183,15 @@ public class CovarianceHistoryMetadata extends CommentsContainer {
         this.covReferenceFrame = covReferenceFrame;
     }
 
-    /** Get epoch of the {@link #getCovRefFrame() covariance reference frame}.
-     * @return epoch of the {@link #getCovRefFrame() covariance reference frame}
+    /** Get epoch of the {@link #getCovReferenceFrame() covariance reference frame}.
+     * @return epoch of the {@link #getCovReferenceFrame() covariance reference frame}
      */
     public AbsoluteDate getCovFrameEpoch() {
         return covFrameEpoch;
     }
 
-    /** Set epoch of the {@link #getCovRefFrame() covariance reference frame}.
-     * @param covFrameEpoch epoch of the {@link #getCovRefFrame() covariance reference frame}
+    /** Set epoch of the {@link #getCovReferenceFrame() covariance reference frame}.
+     * @param covFrameEpoch epoch of the {@link #getCovReferenceFrame() covariance reference frame}
      */
     public void setCovFrameEpoch(final AbsoluteDate covFrameEpoch) {
         refuseFurtherComments();

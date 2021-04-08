@@ -97,7 +97,7 @@ public class WriterBuilder extends AbstractBuilder<WriterBuilder> {
         return new OpmWriter(getConventions(), getDataContext(), getMissionReferenceDate());
     }
 
-    /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.opm.OmmFile Orbit Mean elements Messages}.
+    /** Build a writer for {@link org.orekit.files.ccsds.ndm.odm.omm.OmmFile Orbit Mean elements Messages}.
      * @return a new writer
      */
     public OmmWriter buildOmmWriter() {

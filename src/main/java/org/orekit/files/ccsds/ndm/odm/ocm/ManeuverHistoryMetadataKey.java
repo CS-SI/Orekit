@@ -77,7 +77,7 @@ public enum ManeuverHistoryMetadataKey {
     /** Reference frame of the maneuver. */
     MAN_REF_FRAME((token, context, container) -> token.processAsFrame(container::setManReferenceFrame, context, true, true, false)),
 
-    /** Epoch of the {@link #COV_REF_FRAME orbit reference frame}. */
+    /** Epoch of the {@link #MAN_REF_FRAME maneuver reference frame}. */
     MAN_FRAME_EPOCH((token, context, container) -> token.processAsDate(container::setManFrameEpoch, context)),
 
     /** Origin of maneuver gravitational assist body. */
@@ -128,11 +128,11 @@ public enum ManeuverHistoryMetadataKey {
     /** Reference direction for triggering duty cycle. */
     DC_REF_DIR((token, context, container) -> token.processAsVector(container::setDcRefDir)),
 
-    /** Spacecraft body frame in which {@link #dcBodyTrigger} is specified. */
+    /** Spacecraft body frame in which {@link #DC_BODY_TRIGGER} is specified. */
     DC_BODY_FRAME((token, context, container) -> token.processAsFrame(f -> container.setDcBodyFrame(f.asSpacecraftBodyFrame()),
                                                                      context, false, false, true)),
 
-    /** Direction in {@link #dcBodyFrame body frame} for triggering duty cycle. */
+    /** Direction in {@link #DC_BODY_FRAME body frame} for triggering duty cycle. */
     DC_BODY_TRIGGER((token, context, container) -> token.processAsVector(container::setDcBodyTrigger)),
 
     /** Phase angle of pulse start. */

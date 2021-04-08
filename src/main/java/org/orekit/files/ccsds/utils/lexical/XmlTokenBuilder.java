@@ -42,8 +42,8 @@ import org.xml.sax.Attributes;
  * If multiple attributes can be used to get the token name, they are tested
  * in turn and the first match is used. This is useful in ADM files where
  * the XML elements {@code rotation1},  {@code rotation2}, and {@code rotation3},
- * use attribute {@link angle} in rotation angle sub-section but use attribute
- * {@link rate} in rotation rate sub-section.
+ * use attribute {@code angle} in rotation angle sub-section but use attribute
+ * {@code rate} in rotation rate sub-section.
  * @author Luc Maisonobe
  * @since 11.0
  */

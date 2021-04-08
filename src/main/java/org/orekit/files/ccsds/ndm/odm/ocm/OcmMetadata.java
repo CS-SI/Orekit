@@ -634,15 +634,15 @@ public class OcmMetadata extends OdmMetadata {
         this.ocmDataElements = ocmDataElements;
     }
 
-    /** Get the spacecraft clock count at {@link #EPOCH_TZERO}.
-     * @return spacecraft clock count at {@link #EPOCH_TZERO}
+    /** Get the spacecraft clock count at {@link #getEpochT0()}.
+     * @return spacecraft clock count at {@link #getEpochT0()}
      */
     public double getSclkOffsetAtEpoch() {
         return sclkOffsetAtEpoch;
     }
 
-    /** Set the spacecraft clock count at {@link #EPOCH_TZERO}.
-     * @param sclkOffsetAtEpoch spacecraft clock count at {@link #EPOCH_TZERO}
+    /** Set the spacecraft clock count at {@link #getEpochT0()}.
+     * @param sclkOffsetAtEpoch spacecraft clock count at {@link #getEpochT0()}
      */
     public void setSclkOffsetAtEpoch(final double sclkOffsetAtEpoch) {
         refuseFurtherComments();

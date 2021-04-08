@@ -61,7 +61,7 @@ public class Unit implements Serializable {
     public static final Unit DAY = HOUR.scale("d", 24.0);
 
     /** Julian year unit.
-     * @see <a href="https://www.iau.org/publications/proceedings_rules/units/">SI Units</a> at IAU
+     * @see <a href="https://www.iau.org/publications/proceedings_rules/units/">SI Units at IAU</a>
      */
     public static final Unit YEAR = DAY.scale("a", 365.25);
 
