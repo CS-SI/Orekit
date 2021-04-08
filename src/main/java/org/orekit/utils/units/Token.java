@@ -30,9 +30,6 @@ class Token {
     /** Token type. */
     private final TokenType type;
 
-    /** Prefixed unit value. */
-    private final PrefixedUnit unit;
-
     /** Integer value. */
     private final int integer;
 
@@ -42,15 +39,12 @@ class Token {
     /** Build a token.
      * @param subString substring corresponding to the token
      * @param type token type
-     * @param unit prefixed unit value
      * @param integer integer value
      * @param fraction fraction value
      */
-    Token(final CharSequence subString, final TokenType type,
-          final PrefixedUnit unit, final int integer, final Fraction fraction) {
+    Token(final CharSequence subString, final TokenType type, final int integer, final Fraction fraction) {
         this.subString = subString;
         this.type      = type;
-        this.unit      = unit;
         this.integer   = integer;
         this.fraction  = fraction;
     }
@@ -67,13 +61,6 @@ class Token {
      */
     public TokenType getType() {
         return type;
-    }
-
-    /** Get the prefixed unit value.
-     * @return prefixed unit value
-     */
-    public PrefixedUnit getPrefixedUnit() {
-        return unit;
     }
 
     /** Get the integer value (numerator in case of fraction).

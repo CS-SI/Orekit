@@ -24,6 +24,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.section.Header;
@@ -259,7 +260,8 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, AemFile
                      final AbsoluteDate missionReferenceDate) {
         super(AemFile.ROOT, AemFile.FORMAT_VERSION_KEY, CCSDS_AEM_VERS,
               new ContextBinding(
-                  () -> conventions, () -> true, () -> dataContext,
+                  () -> conventions,
+                  () -> true, () -> dataContext, () -> ParsedUnitsBehavior.STRICT_COMPLIANCE,
                   () -> missionReferenceDate, () -> TimeSystem.UTC,
                   () -> 0.0, () -> 1.0));
     }
@@ -292,6 +294,7 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, AemFile
         setContext(new ContextBinding(oldContext::getConventions,
                                       oldContext::isSimpleEOP,
                                       oldContext::getDataContext,
+                                      oldContext::getParsedUnitsBehavior,
                                       oldContext::getReferenceDate,
                                       metadata::getTimeSystem,
                                       oldContext::getClockCount,
@@ -305,16 +308,16 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, AemFile
         generator.writeComments(metadata.getComments());
 
         // objects
-        generator.writeEntry(AdmMetadataKey.OBJECT_NAME.name(), metadata.getObjectName(),       true);
-        generator.writeEntry(AdmMetadataKey.OBJECT_ID.name(),   metadata.getObjectID(),         true);
+        generator.writeEntry(AdmMetadataKey.OBJECT_NAME.name(), metadata.getObjectName(),       null, true);
+        generator.writeEntry(AdmMetadataKey.OBJECT_ID.name(),   metadata.getObjectID(),         null, true);
         if (metadata.getCenter() != null) {
-            generator.writeEntry(AdmMetadataKey.CENTER_NAME.name(), metadata.getCenter().getName(), false);
+            generator.writeEntry(AdmMetadataKey.CENTER_NAME.name(), metadata.getCenter().getName(), null, false);
         }
 
         // frames
-        generator.writeEntry(AemMetadataKey.REF_FRAME_A.name(),  metadata.getEndpoints().getFrameA().getName(),     true);
-        generator.writeEntry(AemMetadataKey.REF_FRAME_B.name(),  metadata.getEndpoints().getFrameB().getName(),     true);
-        generator.writeEntry(AemMetadataKey.ATTITUDE_DIR.name(), metadata.getEndpoints().isA2b() ? A_TO_B : B_TO_A, true);
+        generator.writeEntry(AemMetadataKey.REF_FRAME_A.name(),  metadata.getEndpoints().getFrameA().getName(),     null, true);
+        generator.writeEntry(AemMetadataKey.REF_FRAME_B.name(),  metadata.getEndpoints().getFrameB().getName(),     null, true);
+        generator.writeEntry(AemMetadataKey.ATTITUDE_DIR.name(), metadata.getEndpoints().isA2b() ? A_TO_B : B_TO_A, null, true);
 
         // time
         generator.writeEntry(MetadataKey.TIME_SYSTEM.name(), metadata.getTimeSystem(), true);
@@ -329,11 +332,11 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, AemFile
 
         // types
         final AttitudeType attitudeType = metadata.getAttitudeType();
-        generator.writeEntry(AemMetadataKey.ATTITUDE_TYPE.name(), attitudeType.toString(), true);
+        generator.writeEntry(AemMetadataKey.ATTITUDE_TYPE.name(), attitudeType.toString(), null, true);
         if (attitudeType == AttitudeType.QUATERNION ||
             attitudeType == AttitudeType.QUATERNION_DERIVATIVE ||
             attitudeType == AttitudeType.QUATERNION_RATE) {
-            generator.writeEntry(AemMetadataKey.QUATERNION_TYPE.name(), metadata.isFirst() ? FIRST : LAST, false);
+            generator.writeEntry(AemMetadataKey.QUATERNION_TYPE.name(), metadata.isFirst() ? FIRST : LAST, null, false);
         }
 
         if (attitudeType == AttitudeType.EULER_ANGLE ||
@@ -345,23 +348,23 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, AemFile
             }
             generator.writeEntry(AemMetadataKey.EULER_ROT_SEQ.name(),
                                  metadata.getEulerRotSeq().name().replace('X', '1').replace('Y', '2').replace('Z', '3'),
-                                 false);
+                                 null, false);
         }
 
         if (attitudeType == AttitudeType.QUATERNION_RATE ||
             attitudeType == AttitudeType.EULER_ANGLE_RATE) {
             generator.writeEntry(AemMetadataKey.RATE_FRAME.name(),
                                  metadata.rateFrameIsA() ? REF_FRAME_A : REF_FRAME_B,
-                                 false);
+                                                         null, false);
         }
 
         // interpolation
         generator.writeEntry(AemMetadataKey.INTERPOLATION_METHOD.name(),
                              metadata.getInterpolationMethod(),
-                             false);
+                             null, false);
         generator.writeEntry(AemMetadataKey.INTERPOLATION_DEGREE.name(),
                              Integer.toString(metadata.getInterpolationDegree()),
-                             false);
+                             null, false);
 
         // Stop metadata
         generator.exitSection();

@@ -26,6 +26,7 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.files.ccsds.ndm.NdmFile;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.lexical.LexicalAnalyzerSelector;
@@ -71,6 +72,9 @@ public abstract class AbstractMessageParser<T extends NdmFile<?, ?>, P extends A
     /** Data context used for obtain frames and time scales. */
     private final DataContext dataContext;
 
+    /** Behavior adopted for units that have been parsed from a CCSDS message. */
+    private final ParsedUnitsBehavior parsedUnitsBehavior;
+
     /** Format of the file ready to be parsed. */
     private FileFormat format;
 
@@ -85,19 +89,29 @@ public abstract class AbstractMessageParser<T extends NdmFile<?, ?>, P extends A
      * @param formatVersionKey key for format version
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @param dataContext used to retrieve frames and time scales.
+     * @param dataContext used to retrieve frames and time scales
+     * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      */
     protected AbstractMessageParser(final String root,
                                     final String formatVersionKey,
                                     final IERSConventions conventions,
                                     final boolean simpleEOP,
-                                    final DataContext dataContext) {
-        this.root             = root;
-        this.formatVersionKey = formatVersionKey;
-        this.conventions      = conventions;
-        this.simpleEOP        = simpleEOP;
-        this.dataContext      = dataContext;
-        this.current          = null;
+                                    final DataContext dataContext,
+                                    final ParsedUnitsBehavior parsedUnitsBehavior) {
+        this.root                = root;
+        this.formatVersionKey    = formatVersionKey;
+        this.conventions         = conventions;
+        this.simpleEOP           = simpleEOP;
+        this.dataContext         = dataContext;
+        this.parsedUnitsBehavior = parsedUnitsBehavior;
+        this.current             = null;
+    }
+
+    /** Get the behavior to adopt for handling parsed units.
+     * @return behavior to adopt for handling parsed units
+     */
+    public ParsedUnitsBehavior getParsedUnitsBehavior() {
+        return parsedUnitsBehavior;
     }
 
     /** {@inheritDoc} */

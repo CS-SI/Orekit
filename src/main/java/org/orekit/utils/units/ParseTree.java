@@ -16,37 +16,41 @@
  */
 package org.orekit.utils.units;
 
-/** Unit token types.
+import java.util.List;
+
+/** A container for parsed units.
  * @author Luc Maisonobe
  * @since 11.0
  */
-enum TokenType {
+public class ParseTree {
 
-    /** Identifier. */
-    IDENTIFIER,
+    /** Integer factor. */
+    private final int factor;
 
-    /** Power operator. */
-    POWER,
+    /** Multiplicative terms. */
+    private final List<PowerTerm> terms;
 
-    /** Multiplication operator. */
-    MULTIPLICATION,
+    /** Simple constructor.
+     * @param factor integer factor
+     * @param terms multiplicative terms
+     */
+    ParseTree(final int factor, final List<PowerTerm> terms) {
+        this.factor = factor;
+        this.terms  = terms;
+    }
 
-    /** Division operator. */
-    DIVISION,
+    /** Get the integer factor.
+     * @return integer factor
+     */
+    public int getFactor() {
+        return factor;
+    }
 
-    /** Opening parenthesis. */
-    OPEN,
-
-    /** Closing parenthesis. */
-    CLOSE,
-
-    /** Square root prefix. */
-    SQUARE_ROOT,
-
-    /** Integer. */
-    INTEGER,
-
-    /** Fraction. */
-    FRACTION;
+    /** Get the multiplicative terms.
+     * @return multiplicative terms
+     */
+    public List<PowerTerm> getTerms() {
+        return terms;
+    }
 
 }

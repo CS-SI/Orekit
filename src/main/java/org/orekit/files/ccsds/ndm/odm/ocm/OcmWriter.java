@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.UserDefinedWriter;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
@@ -58,6 +59,7 @@ public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata
         super(OcmFile.ROOT, OcmFile.FORMAT_VERSION_KEY, CCSDS_OCM_VERS,
               new ContextBinding(
                   () -> conventions, () -> false, () -> dataContext,
+                  () -> ParsedUnitsBehavior.STRICT_COMPLIANCE,
                   () -> null, () -> TimeSystem.UTC,
                   () -> 0.0, () -> 1.0));
     }
@@ -76,6 +78,7 @@ public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata
         setContext(new ContextBinding(oldContext::getConventions,
                                       oldContext::isSimpleEOP,
                                       oldContext::getDataContext,
+                                      oldContext::getParsedUnitsBehavior,
                                       metadata::getEpochT0,
                                       metadata::getTimeSystem,
                                       metadata::getSclkOffsetAtEpoch,

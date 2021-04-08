@@ -16,6 +16,7 @@
  */
 package org.orekit.files.ccsds.utils.lexical;
 
+import org.orekit.utils.units.Unit;
 import org.xml.sax.Attributes;
 
 /** Builder for the root element with CCSDS message version.
@@ -43,10 +44,10 @@ public class MessageVersionXmlTokenBuilder implements XmlTokenBuilder {
             return new ParseToken(TokenType.ENTRY,
                                   attributes.getValue(ID),
                                   attributes.getValue(VERSION),
-                                  null,
+                                  Unit.NONE,
                                   lineNumber, fileName);
         } else {
-            return new ParseToken(TokenType.STOP, qName, null, null, lineNumber, fileName);
+            return new ParseToken(TokenType.STOP, qName, null, Unit.NONE, lineNumber, fileName);
         }
     }
 

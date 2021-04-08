@@ -16,7 +16,6 @@
  */
 package org.orekit.files.ccsds.section;
 
-import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.TimeSystem;
@@ -39,15 +38,13 @@ public class HeaderProcessingState implements ProcessingState {
     private final AbstractMessageParser<?, ?> parser;
 
     /** Simple constructor.
-     * @param dataContext used to retrieve frames, time scales, etc.
      * @param parser parser for the complete message
      */
-    public HeaderProcessingState(final DataContext dataContext, final AbstractMessageParser<?, ?> parser) {
+    public HeaderProcessingState(final AbstractMessageParser<?, ?> parser) {
         this.context = new ContextBinding(
-            () -> null, () -> true,
-            () -> dataContext, () -> null,
-            () -> TimeSystem.UTC,
-            () -> 0.0, () -> 1.0);
+            parser::getConventions, parser::isSimpleEOP,
+            parser::getDataContext, parser::getParsedUnitsBehavior, () -> null,
+            () -> TimeSystem.UTC, () -> 0.0, () -> 1.0);
         this.parser  = parser;
     }
 

@@ -70,10 +70,11 @@ public interface Generator extends AutoCloseable {
     /** Write a single key/value entry.
      * @param key   the keyword to write
      * @param value the value to write
+     * @param unit output unit (may be null)
      * @param mandatory if true, null values triggers exception, otherwise they are silently ignored
      * @throws IOException if an I/O error occurs.
      */
-    void writeEntry(String key, String value, boolean mandatory) throws IOException;
+    void writeEntry(String key, String value, Unit unit, boolean mandatory) throws IOException;
 
     /** Write a single key/value entry.
      * @param key   the keyword to write
@@ -198,5 +199,11 @@ public interface Generator extends AutoCloseable {
      * if value is null or {@code Double.NaN}
      */
     String doubleToString(double value);
+
+    /** Convert a list of units to a bracketed string.
+     * @param units lists to output (may be null or empty)
+     * @return bracketed string (null if units list is null or empty)
+     */
+    String unitsListToString(List<Unit> units);
 
 }

@@ -29,6 +29,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.definitions.Units;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
@@ -238,6 +239,7 @@ public class OemWriter extends AbstractMessageWriter<Header, OemSegment, OemFile
         super(OemFile.ROOT, OemFile.FORMAT_VERSION_KEY, CCSDS_OEM_VERS,
               new ContextBinding(
                   () -> conventions, () -> true, () -> dataContext,
+                  () -> ParsedUnitsBehavior.STRICT_COMPLIANCE,
                   () -> missionReferenceDate, () -> TimeSystem.UTC, () -> 0.0, () -> 1.0));
     }
 
@@ -285,12 +287,12 @@ public class OemWriter extends AbstractMessageWriter<Header, OemSegment, OemFile
         generator.writeComments(metadata.getComments());
 
         // objects
-        generator.writeEntry(OdmMetadataKey.OBJECT_NAME.name(),    metadata.getObjectName(), true);
-        generator.writeEntry(CommonMetadataKey.OBJECT_ID.name(),   metadata.getObjectID(),   true);
-        generator.writeEntry(CommonMetadataKey.CENTER_NAME.name(), metadata.getCenter().getName(), false);
+        generator.writeEntry(OdmMetadataKey.OBJECT_NAME.name(),    metadata.getObjectName(),       null, true);
+        generator.writeEntry(CommonMetadataKey.OBJECT_ID.name(),   metadata.getObjectID(),         null, true);
+        generator.writeEntry(CommonMetadataKey.CENTER_NAME.name(), metadata.getCenter().getName(), null, false);
 
         // frames
-        generator.writeEntry(CommonMetadataKey.REF_FRAME.name(), metadata.getReferenceFrame().getName(), true);
+        generator.writeEntry(CommonMetadataKey.REF_FRAME.name(), metadata.getReferenceFrame().getName(), null, true);
         if (metadata.getFrameEpoch() != null) {
             generator.writeEntry(CommonMetadataKey.REF_FRAME_EPOCH.name(),
                                  getTimeConverter(), metadata.getFrameEpoch(),
@@ -312,7 +314,7 @@ public class OemWriter extends AbstractMessageWriter<Header, OemSegment, OemFile
         generator.writeEntry(OemMetadataKey.INTERPOLATION.name(), metadata.getInterpolationMethod(), false);
         generator.writeEntry(OemMetadataKey.INTERPOLATION_DEGREE.name(),
                              Integer.toString(metadata.getInterpolationDegree()),
-                             false);
+                             null, false);
 
         // Stop metadata
         generator.exitSection();
@@ -420,7 +422,7 @@ public class OemWriter extends AbstractMessageWriter<Header, OemSegment, OemFile
             if (covariance.getReferenceFrame() != metadata.getReferenceFrame()) {
                 generator.writeEntry(CartesianCovarianceKey.COV_REF_FRAME.name(),
                                      covariance.getReferenceFrame().getName(),
-                                     false);
+                                     null, false);
             }
             final RealMatrix m = covariance.getCovarianceMatrix();
             for (int i = 0; i < m.getRowDimension(); ++i) {

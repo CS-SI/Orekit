@@ -17,6 +17,7 @@
 package org.orekit.files.ccsds.utils.lexical;
 
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
+import org.orekit.utils.units.Unit;
 import org.xml.sax.Attributes;
 
 /** Builder for user-defined parameters.
@@ -43,7 +44,7 @@ public class UserDefinedXmlTokenBuilder implements XmlTokenBuilder {
         final String name = attributes.getValue(UserDefined.USER_DEFINED_XML_ATTRIBUTE);
         return new ParseToken(tokenType,
                               UserDefined.USER_DEFINED_PREFIX + name,
-                              content, null,
+                              content, Unit.NONE,
                               lineNumber, fileName);
 
     }

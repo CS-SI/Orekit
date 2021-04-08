@@ -18,6 +18,7 @@ package org.orekit.files.ccsds.ndm.odm.omm;
 
 import org.junit.Test;
 import org.orekit.files.ccsds.ndm.AbstractNdmWriterTest;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.section.Header;
@@ -27,7 +28,10 @@ import org.orekit.time.AbsoluteDate;
 public class OmmWriterTest extends AbstractNdmWriterTest<Header, Segment<OmmMetadata, OmmData>, OmmFile> {
 
     protected OmmParser getParser() {
-        return new ParserBuilder().withMissionReferenceDate(AbsoluteDate.J2000_EPOCH).buildOmmParser();
+        return new ParserBuilder().
+               withParsedUnitsBehavior(ParsedUnitsBehavior.STRICT_COMPLIANCE).
+               withMissionReferenceDate(AbsoluteDate.J2000_EPOCH).
+               buildOmmParser();
     }
 
     protected OmmWriter getWriter() {

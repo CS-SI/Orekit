@@ -19,6 +19,8 @@ package org.orekit.files.ccsds.ndm.adm;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.lexical.XmlTokenBuilder;
+import org.orekit.utils.units.Unit;
+import org.orekit.utils.units.UnitsCache;
 import org.xml.sax.Attributes;
 
 /** Builder for rotation angles and rates.
@@ -39,6 +41,15 @@ public class RotationXmlTokenBuilder implements XmlTokenBuilder {
     /** Attribute name for units. */
     private static final String UNITS = "units";
 
+    /** Cache for parsed units. */
+    private final UnitsCache cache;
+
+    /** Simple constructor.
+     */
+    public RotationXmlTokenBuilder() {
+        this.cache = new UnitsCache();
+    }
+
     /** {@inheritDoc} */
     @Override
     public ParseToken buildToken(final boolean startTag, final String qName,
@@ -54,9 +65,11 @@ public class RotationXmlTokenBuilder implements XmlTokenBuilder {
         // elaborate the token type
         final TokenType type = (content == null) ? (startTag ? TokenType.START : TokenType.STOP) : TokenType.ENTRY;
 
+        // get units
+        final Unit units = cache.getUnits(attributes.getValue(UNITS));
+
         // final build
-        return new ParseToken(type, name, content, attributes.getValue(UNITS),
-                              lineNumber, fileName);
+        return new ParseToken(type, name, content, units, lineNumber, fileName);
 
     }
 

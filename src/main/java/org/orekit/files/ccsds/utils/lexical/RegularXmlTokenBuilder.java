@@ -16,6 +16,8 @@
  */
 package org.orekit.files.ccsds.utils.lexical;
 
+import org.orekit.utils.units.Unit;
+import org.orekit.utils.units.UnitsCache;
 import org.xml.sax.Attributes;
 
 /** Regular builder using XML elements names and content for tokens.
@@ -30,6 +32,15 @@ public class RegularXmlTokenBuilder implements XmlTokenBuilder {
     /** Attribute name for units. */
     private static final String UNITS = "units";
 
+    /** Cache for parsed units. */
+    private final UnitsCache cache;
+
+    /** Simple constructor.
+     */
+    public RegularXmlTokenBuilder() {
+        this.cache = new UnitsCache();
+    }
+
     /** {@inheritDoc} */
     @Override
     public ParseToken buildToken(final boolean startTag, final String qName,
@@ -41,9 +52,11 @@ public class RegularXmlTokenBuilder implements XmlTokenBuilder {
                                     (startTag ? TokenType.START : TokenType.STOP) :
                                     TokenType.ENTRY;
 
+        // get units
+        final Unit units = cache.getUnits(attributes.getValue(UNITS));
+
         // final build
-        return new ParseToken(tokenType, qName, content, attributes.getValue(UNITS),
-                              lineNumber, fileName);
+        return new ParseToken(tokenType, qName, content, units, lineNumber, fileName);
 
     }
 

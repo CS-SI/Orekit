@@ -53,7 +53,7 @@ class SpacecraftParametersWriter extends AbstractWriter {
         if (spacecraftParameters.getInertiaReferenceFrame() != null) {
             generator.writeEntry(SpacecraftParametersKey.INERTIA_REF_FRAME.name(),
                                  spacecraftParameters.getInertiaReferenceFrame().getName(),
-                                 false);
+                                 null, false);
         }
 
         // inertia matrix

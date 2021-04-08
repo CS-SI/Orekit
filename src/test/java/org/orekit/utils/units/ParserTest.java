@@ -16,16 +16,13 @@
  */
 package org.orekit.utils.units;
 
-import org.hipparchus.fraction.Fraction;
-import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.utils.Constants;
 
 /**
- * Unit tests for {@link Lexer}.
+ * Unit tests for {@link Parser}.
  *
  * @author Luc Maisonobe
  */
@@ -33,73 +30,103 @@ public class ParserTest {
 
     @Test
     public void testNotAUnit() {
-        Assert.assertSame(Unit.NONE, Parser.parse("n/a"));
+        Assert.assertNull(Parser.buildTree("n/a"));
     }
 
     @Test
-    public void testND() {
-        // nd does not mean "not defined", but nano-day…
-        checkReference("nd",
-                       Prefix.NANO.getFactor() * Constants.JULIAN_DAY,
-                       Fraction.ZERO, Fraction.ZERO, Fraction.ONE, Fraction.ZERO);
+    public void testOne() {
+        final ParseTree tree = Parser.buildTree("1");
+        Assert.assertEquals(1, tree.getFactor());
+        Assert.assertEquals(1, tree.getTerms().size());
+        checkTerm(tree.getTerms().get(0), "1", 1, 1);
     }
 
     @Test
-    public void testPredefinedUnit() {
-        checkReference("MHz",
-                       1.0e6,
-                       Fraction.ZERO, Fraction.ZERO, Fraction.MINUS_ONE, Fraction.ZERO);
+    public void testOneNotComposite() {
+        expectFailure("m.1/s");
+    }
+
+    @Test
+    public void testIntegerPrefix() {
+        final ParseTree tree = Parser.buildTree("30s");
+        Assert.assertEquals(30, tree.getFactor());
+        Assert.assertEquals(1, tree.getTerms().size());
+        checkTerm(tree.getTerms().get(0), "s", 1, 1);
     }
 
     @Test
     public void testSquareRoot() {
-        checkReference("km/√d",
-                       1000.0 / FastMath.sqrt(Constants.JULIAN_DAY),
-                       Fraction.ZERO, Fraction.ONE, new Fraction(-1, 2), Fraction.ZERO);
+        final ParseTree tree = Parser.buildTree("abcd/√ef");
+        Assert.assertEquals(1, tree.getFactor());
+        Assert.assertEquals(2, tree.getTerms().size());
+        checkTerm(tree.getTerms().get(0), "abcd", 1, 1);
+        checkTerm(tree.getTerms().get(1), "ef", -1, 2);
     }
 
     @Test
     public void testChain() {
-        checkReference("kg.m^(3/4).s⁻¹",
-                       1.0,
-                       Fraction.ONE, new Fraction(3, 4), Fraction.MINUS_ONE, Fraction.ZERO);
+        final ParseTree tree = Parser.buildTree("kg.m^(3/4).s⁻¹");
+        Assert.assertEquals(1, tree.getFactor());
+        Assert.assertEquals(3, tree.getTerms().size());
+        checkTerm(tree.getTerms().get(0), "kg", 1, 1);
+        checkTerm(tree.getTerms().get(1), "m",  3, 4);
+        checkTerm(tree.getTerms().get(2), "s", -1, 1);
     }
 
     @Test
     public void testExponents() {
-        checkReference("µas^⅖/(h**(2)×m)³",
-                       FastMath.pow(FastMath.toRadians(1.0 / 3.6e9), 0.4) / FastMath.pow(3600, 6),
-                       Fraction.ZERO, new Fraction(-3, 1), new Fraction(-6, 1), new Fraction(2, 5));
+        final ParseTree tree = Parser.buildTree("µas^⅖/(h**(2)×m)³");
+        Assert.assertEquals(1, tree.getFactor());
+        Assert.assertEquals(3, tree.getTerms().size());
+        checkTerm(tree.getTerms().get(0), "µas", 2, 5);
+        checkTerm(tree.getTerms().get(1), "h",  -6, 1);
+        checkTerm(tree.getTerms().get(2), "m",  -3, 1);
     }
 
     @Test
     public void testCompoundInSquareRoot() {
-        checkReference("km/√(kg.s)",
-                       1000.0,
-                       new Fraction(-1, 2), Fraction.ONE, new Fraction(-1, 2), Fraction.ZERO);
+        final ParseTree tree = Parser.buildTree("km/√(kg.s)");
+        Assert.assertEquals(1, tree.getFactor());
+        Assert.assertEquals(3, tree.getTerms().size());
+        checkTerm(tree.getTerms().get(0), "km",  1, 1);
+        checkTerm(tree.getTerms().get(1), "kg", -1, 2);
+        checkTerm(tree.getTerms().get(2), "s",  -1, 2);
     }
 
     @Test
     public void testLeftAssociativity() {
-        checkReference("(kg/m)/s²",
-                       1.0,
-                       Fraction.ONE, Fraction.MINUS_ONE, new Fraction(-2), Fraction.ZERO);
-        checkReference("kg/(m/s²)",
-                       1.0,
-                       Fraction.ONE, Fraction.MINUS_ONE, Fraction.TWO, Fraction.ZERO);
-        checkReference("kg/m/s²",
-                       1.0,
-                       Fraction.ONE, Fraction.MINUS_ONE, new Fraction(-2), Fraction.ZERO);
+        final ParseTree tree1 = Parser.buildTree("(kg/m)/s²");
+        Assert.assertEquals(1, tree1.getFactor());
+        Assert.assertEquals(3, tree1.getTerms().size());
+        checkTerm(tree1.getTerms().get(0), "kg",  1, 1);
+        checkTerm(tree1.getTerms().get(1), "m",  -1, 1);
+        checkTerm(tree1.getTerms().get(2), "s",  -2, 1);
+        final ParseTree tree2 = Parser.buildTree("kg/(m/s²)");
+        Assert.assertEquals(1, tree2.getFactor());
+        Assert.assertEquals(3, tree2.getTerms().size());
+        checkTerm(tree2.getTerms().get(0), "kg",  1, 1);
+        checkTerm(tree2.getTerms().get(1), "m",  -1, 1);
+        checkTerm(tree2.getTerms().get(2), "s",   2, 1);
+        final ParseTree tree3 = Parser.buildTree("kg/m/s²");
+        Assert.assertEquals(1, tree3.getFactor());
+        Assert.assertEquals(3, tree3.getTerms().size());
+        checkTerm(tree3.getTerms().get(0), "kg",  1, 1);
+        checkTerm(tree3.getTerms().get(1), "m",  -1, 1);
+        checkTerm(tree3.getTerms().get(2), "s",  -2, 1);
     }
 
     @Test
     public void testCcsdsRoot() {
-        checkReference("km**0.5/s",
-                       FastMath.sqrt(1000.0),
-                       Fraction.ZERO, Fraction.ONE_HALF, Fraction.MINUS_ONE, Fraction.ZERO);
-        checkReference("km/s**0.5",
-                       1000.0,
-                       Fraction.ZERO, Fraction.ONE, new Fraction(-1, 2), Fraction.ZERO);
+        final ParseTree tree1 = Parser.buildTree("km**0.5/s");
+        Assert.assertEquals(1, tree1.getFactor());
+        Assert.assertEquals(2, tree1.getTerms().size());
+        checkTerm(tree1.getTerms().get(0), "km",  1, 2);
+        checkTerm(tree1.getTerms().get(1), "s",  -1, 1);
+        final ParseTree tree2 = Parser.buildTree("km/s**0.5");
+        Assert.assertEquals(1, tree2.getFactor());
+        Assert.assertEquals(2, tree2.getTerms().size());
+        checkTerm(tree2.getTerms().get(0), "km",  1, 1);
+        checkTerm(tree2.getTerms().get(1), "s",  -1, 2);
     }
 
     @Test
@@ -144,26 +171,21 @@ public class ParserTest {
 
     @Test
     public void testRootAndParenthesisedPower() {
-        checkReference("km/√(d³)",
-                       1000.0 / (Constants.JULIAN_DAY * FastMath.sqrt(Constants.JULIAN_DAY)),
-                       Fraction.ZERO, Fraction.ONE, new Fraction(-3, 2), Fraction.ZERO);
+        final ParseTree tree = Parser.buildTree("km/√(d³)");
+        Assert.assertEquals(2, tree.getTerms().size());
+        checkTerm(tree.getTerms().get(0), "km",  1, 1);
+        checkTerm(tree.getTerms().get(1), "d",  -3, 2);
     }
 
-    private void checkReference(final String unitSpecification, final double scale,
-                                final Fraction mass, final Fraction length,
-                                final Fraction time, final Fraction angle) {
-        final Unit unit = Parser.parse(unitSpecification);
-        Assert.assertEquals(unitSpecification, unit.toString());
-        Assert.assertEquals(scale,  unit.getScale(), 1.0e-10 * scale);
-        Assert.assertEquals(mass,   unit.getMass());
-        Assert.assertEquals(length, unit.getLength());
-        Assert.assertEquals(time,   unit.getTime());
-        Assert.assertEquals(angle,  unit.getAngle());
+    private void checkTerm(final PowerTerm term, final String base, final int numerator, final int denominator) {
+        Assert.assertEquals(base,        term.getBase().toString());
+        Assert.assertEquals(numerator,   term.getExponent().getNumerator());
+        Assert.assertEquals(denominator, term.getExponent().getDenominator());
     }
 
     private void expectFailure(final String unitSpecification) {
         try {
-            Parser.parse(unitSpecification);
+            Parser.buildTree(unitSpecification);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNKNOWN_UNIT, oe.getSpecifier());

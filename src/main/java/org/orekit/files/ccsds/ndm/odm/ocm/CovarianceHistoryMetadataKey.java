@@ -55,13 +55,16 @@ public enum CovarianceHistoryMetadataKey {
     COV_FRAME_EPOCH((token, context, container) -> token.processAsDate(container::setCovFrameEpoch, context)),
 
     /** Minimum scale factor to apply to achieve realism. */
-    COV_SCALE_MIN((token, context, container) -> token.processAsDouble(Unit.ONE, container::setCovScaleMin)),
+    COV_SCALE_MIN((token, context, container) -> token.processAsDouble(Unit.ONE, context.getParsedUnitsBehavior(),
+                                                                       container::setCovScaleMin)),
 
     /** Maximum scale factor to apply to achieve realism. */
-    COV_SCALE_MAX((token, context, container) -> token.processAsDouble(Unit.ONE, container::setCovScaleMax)),
+    COV_SCALE_MAX((token, context, container) -> token.processAsDouble(Unit.ONE, context.getParsedUnitsBehavior(),
+                                                                       container::setCovScaleMax)),
 
     /** Masure of confidence in covariance error matching reality. */
-    COV_CONFIDENCE((token, context, container) -> token.processAsDouble(Unit.PERCENT, container::setCovConfidence)),
+    COV_CONFIDENCE((token, context, container) -> token.processAsDouble(Unit.PERCENT, context.getParsedUnitsBehavior(),
+                                                                        container::setCovConfidence)),
 
     /** Covariance element set type.
      * @see ElementsType

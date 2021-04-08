@@ -30,6 +30,8 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NdmFile;
 import org.orekit.files.ccsds.utils.FileFormat;
+import org.orekit.utils.units.Unit;
+import org.orekit.utils.units.UnitsCache;
 
 /** Lexical analyzer for Key-Value Notation CCSDS messages.
  * @author Luc Maisonobe
@@ -38,49 +40,74 @@ import org.orekit.files.ccsds.utils.FileFormat;
 class KvnLexicalAnalyzer implements LexicalAnalyzer {
 
     /** Regular expression matching blanks at start of line. */
-    private static final String LINE_START          = "^\\p{Blank}*";
+    private static final String LINE_START         = "^\\p{Blank}*";
 
     /** Regular expression matching the special COMMENT key that must be stored in the matcher. */
-    private static final String COMMENT_KEY         = "(COMMENT)\\p{Blank}*";
+    private static final String COMMENT_KEY        = "(COMMENT)\\p{Blank}*";
 
     /** Regular expression matching a non-comment key that must be stored in the matcher. */
-    private static final String NON_COMMENT_KEY     = "([A-Z][A-Z_0-9]*)\\p{Blank}*=\\p{Blank}*";
+    private static final String NON_COMMENT_KEY    = "([A-Z][A-Z_0-9]*)\\p{Blank}*=\\p{Blank}*";
 
     /** Regular expression matching a no-value key starting a block that must be stored in the matcher. */
-    private static final String START_KEY           = "([A-Z][A-Z_0-9]*)_START";
+    private static final String START_KEY          = "([A-Z][A-Z_0-9]*)_START";
 
     /** Regular expression matching a no-value key ending a block that must be stored in the matcher. */
-    private static final String STOP_KEY            = "([A-Z][A-Z_0-9]*)_STOP";
+    private static final String STOP_KEY           = "([A-Z][A-Z_0-9]*)_STOP";
 
     /** Regular expression matching a value that must be stored in the matcher. */
-    private static final String VALUE               = "(\\p{Graph}.*?)";
+    private static final String VALUE              = "(\\p{Graph}.*?)";
+
+    /** Operators allowed in units specifications. */
+    private static final String UNITS_OPERATORS    = "-+*×./⁄^√⁺⁻";
+
+    /** Letters allowed in units specifications. */
+    private static final String UNITS_LETTERS      = "A-Za-zµ";
+
+    /** Digits allowed in units specifications. */
+    private static final String UNITS_DIGITS       = "0-9⁰¹²³⁴⁵⁶⁷⁸⁹";
+
+    /** Fractions allowed in units specifications. */
+    private static final String UNITS_FRACTIONS    = "¼½¾⅐⅑⅒⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞";
+
+    /** Symbols allowed in units specifications. */
+    private static final String UNITS_SYMBOLS      = "%°◦′'″\\\"";
+
+    /** Parentheses allowed in units specifications. */
+    private static final String UNITS_PARENTHESES  = "()";
 
     /** Regular expression matching units that must be stored in the matcher. */
-    private static final String UNITS               = "(?:\\p{Blank}+\\[([-*/A-Za-z0-9]*)\\])?";
+    private static final String UNITS              = "(?:\\p{Blank}+\\[([" +
+                                                     UNITS_OPERATORS + UNITS_LETTERS + UNITS_DIGITS +
+                                                     UNITS_FRACTIONS + UNITS_SYMBOLS + UNITS_PARENTHESES +
+                                                    "]*)\\])?";
 
     /** Regular expression matching blanks at end of line. */
-    private static final String LINE_END            = "\\p{Blank}*$";
+    private static final String LINE_END           = "\\p{Blank}*$";
 
     /** Regular expression matching comment entry. */
-    private static final Pattern COMMENT_ENTRY      = Pattern.compile(LINE_START + COMMENT_KEY + VALUE + LINE_END);
+    private static final Pattern COMMENT_ENTRY     = Pattern.compile(LINE_START + COMMENT_KEY + VALUE + LINE_END);
 
     /** Regular expression matching non-comment entry with optional units. */
-    private static final Pattern NON_COMMENT_ENTRY  = Pattern.compile(LINE_START + NON_COMMENT_KEY + VALUE + UNITS + LINE_END);
+    private static final Pattern NON_COMMENT_ENTRY = Pattern.compile(LINE_START + NON_COMMENT_KEY + VALUE + UNITS + LINE_END);
 
     /** Regular expression matching no-value entry starting a block. */
-    private static final Pattern START_ENTRY        = Pattern.compile(LINE_START + START_KEY + LINE_END);
+    private static final Pattern START_ENTRY       = Pattern.compile(LINE_START + START_KEY + LINE_END);
 
     /** Regular expression matching no-value entry ending a block. */
-    private static final Pattern STOP_ENTRY         = Pattern.compile(LINE_START + STOP_KEY + LINE_END);
+    private static final Pattern STOP_ENTRY        = Pattern.compile(LINE_START + STOP_KEY + LINE_END);
 
     /** Source providing the data to analyze. */
     private final DataSource source;
+
+    /** Parsed units cache. */
+    private final UnitsCache cache;
 
     /** Simple constructor.
      * @param source source providing the data to parse
      */
     KvnLexicalAnalyzer(final DataSource source) {
         this.source = source;
+        this.cache  = new UnitsCache();
     }
 
     /** {@inheritDoc} */
@@ -107,10 +134,10 @@ class KvnLexicalAnalyzer implements LexicalAnalyzer {
                 final Matcher nonComment = NON_COMMENT_ENTRY.matcher(line);
                 if (nonComment.matches()) {
                     // regular key=value line
+                    final Unit units = cache.getUnits(nonComment.groupCount() > 2 ? nonComment.group(3) : null);
                     messageParser.process(new ParseToken(TokenType.ENTRY,
                                                          nonComment.group(1), nonComment.group(2),
-                                                         nonComment.groupCount() > 2 ? nonComment.group(3) : null,
-                                                         lineNumber, source.getName()));
+                                                         units, lineNumber, source.getName()));
                 } else {
                     final Matcher comment = COMMENT_ENTRY.matcher(line);
                     if (comment.matches()) {

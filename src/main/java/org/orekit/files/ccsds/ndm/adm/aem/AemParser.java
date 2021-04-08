@@ -24,6 +24,7 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.AdmParser;
 import org.orekit.files.ccsds.section.Header;
@@ -95,11 +96,13 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * (may be null if time system is absolute)
      * @param defaultInterpolationDegree default interpolation degree
+     * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      */
     public AemParser(final IERSConventions conventions, final boolean simpleEOP,
-                     final DataContext dataContext,
-                     final AbsoluteDate missionReferenceDate, final int defaultInterpolationDegree) {
-        super(AemFile.ROOT, AemFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate);
+                     final DataContext dataContext, final AbsoluteDate missionReferenceDate,
+                     final int defaultInterpolationDegree, final ParsedUnitsBehavior parsedUnitsBehavior) {
+        super(AemFile.ROOT, AemFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
+              missionReferenceDate, parsedUnitsBehavior);
         this.defaultInterpolationDegree  = defaultInterpolationDegree;
     }
 
@@ -127,14 +130,14 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new KvnStructureProcessingState(this);
-            reset(fileFormat, new HeaderProcessingState(getDataContext(), this));
+            reset(fileFormat, new HeaderProcessingState(this));
         }
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean prepareHeader() {
-        setFallback(new HeaderProcessingState(getDataContext(), this));
+        setFallback(new HeaderProcessingState(this));
         return true;
     }
 
@@ -160,7 +163,8 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
         }
         metadata  = new AemMetadata(defaultInterpolationDegree);
         context   = new ContextBinding(this::getConventions, this::isSimpleEOP,
-                                       this::getDataContext, this::getMissionReferenceDate,
+                                       this::getDataContext, this::getParsedUnitsBehavior,
+                                       this::getMissionReferenceDate,
                                        metadata::getTimeSystem, () -> 0.0, () -> 1.0);
         setFallback(this::processMetadataToken);
         return true;

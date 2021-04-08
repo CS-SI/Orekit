@@ -87,12 +87,17 @@ public class EphemerisWriterTest {
                         withDataContext(DataContext.getDefault()).
                         buildOemWriter();
         final CharArrayWriter caw = new CharArrayWriter();
-        writer.writeMessage(new KvnGenerator(caw, 0, ""), oemFile);
+        writer.writeMessage(new KvnGenerator(caw, 0, "", 60), oemFile);
         final byte[] bytes = caw.toString().getBytes(StandardCharsets.UTF_8);
 
-        final OemFile generatedOemFile = new OemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                                       null, CelestialBodyFactory.getMars().getGM(), 1).
-                        parseMessage(new DataSource("", () -> new ByteArrayInputStream(bytes)));
+        final OemFile generatedOemFile = new ParserBuilder().
+                                         withConventions(IERSConventions.IERS_2010).
+                                         withSimpleEOP(true).
+                                         withDataContext(DataContext.getDefault()).
+                                         withMu(CelestialBodyFactory.getMars().getGM()).
+                                         withDefaultInterpolationDegree(1).
+                                         buildOemParser().
+                                         parseMessage(new DataSource("", () -> new ByteArrayInputStream(bytes)));
         compareOemFiles(oemFile, generatedOemFile);
     }
 
@@ -104,7 +109,7 @@ public class EphemerisWriterTest {
         final OemFile oemFile = parser.parseMessage(source);
 
         EphemerisWriter writer = new EphemerisWriter(new WriterBuilder().buildOemWriter(),
-                                                     oemFile.getHeader(), dummyMetadata(), FileFormat.KVN, "");
+                                                     oemFile.getHeader(), dummyMetadata(), FileFormat.KVN, "", 0);
         try {
             writer.write(new CharArrayWriter(), oemFile);
             fail("an exception should have been thrown");
@@ -124,8 +129,7 @@ public class EphemerisWriterTest {
         EphemerisWriter writer = new EphemerisWriter(new WriterBuilder().buildOemWriter(),
                                                      oemFile.getHeader(),
                                                      oemFile.getSegments().get(0).getMetadata(),
-                                                     FileFormat.KVN,
-                                                     "dummy");
+                                                     FileFormat.KVN, "dummy", 0);
         try {
             writer.write((BufferedWriter) null, oemFile);
             fail("an exception should have been thrown");
@@ -138,7 +142,7 @@ public class EphemerisWriterTest {
     @Test
     public void testNullEphemeris() throws IOException {
         EphemerisWriter writer = new EphemerisWriter(new WriterBuilder().buildOemWriter(),
-                                                     null, dummyMetadata(), FileFormat.KVN, "nullEphemeris");
+                                                     null, dummyMetadata(), FileFormat.KVN, "nullEphemeris", 60);
         CharArrayWriter caw = new CharArrayWriter();
         writer.write(caw, null);
         assertEquals(0, caw.size());
@@ -153,7 +157,7 @@ public class EphemerisWriterTest {
 
         OemWriter writer = new WriterBuilder().buildOemWriter();
         final CharArrayWriter caw = new CharArrayWriter();
-        writer.writeMessage(new KvnGenerator(caw, 0, ""), oemFile);
+        writer.writeMessage(new KvnGenerator(caw, 0, "", 60), oemFile);
         final byte[] bytes = caw.toString().getBytes(StandardCharsets.UTF_8);
 
         final OemFile generatedOemFile = new ParserBuilder().
@@ -174,7 +178,7 @@ public class EphemerisWriterTest {
         EphemerisWriter writer = new EphemerisWriter(new WriterBuilder().buildOemWriter(),
                                                      oemFile.getHeader(),
                                                      oemFile.getSegments().get(0).getMetadata(), 
-                                                     FileFormat.KVN, "TestOEMIssue723.aem");
+                                                     FileFormat.KVN, "TestOEMIssue723.aem", 0);
         final CharArrayWriter caw = new CharArrayWriter();
         writer.write(caw, oemFile);
         final byte[] bytes = caw.toString().getBytes(StandardCharsets.UTF_8);
@@ -201,7 +205,7 @@ public class EphemerisWriterTest {
 
         OemWriter writer = new WriterBuilder().buildOemWriter();
         final CharArrayWriter caw = new CharArrayWriter();
-        writer.writeMessage(new KvnGenerator(caw, 0, ""), oemFile);
+        writer.writeMessage(new KvnGenerator(caw, 0, "", 60), oemFile);
 
         String[] lines2 = caw.toString().split("\n");
         assertEquals("2002-12-18T12:00:00.331 2789.619 -280.045 -1746.755 4.73372 -2.49586 -1.0419499999999997", lines2[21]);
@@ -232,7 +236,7 @@ public class EphemerisWriterTest {
         OemMetadata metadata = dummyMetadata();
         metadata.setObjectID(id2);
         EphemerisWriter writer = new EphemerisWriter(new WriterBuilder().withDataContext(context).buildOemWriter(),
-                                                     null, metadata, FileFormat.KVN, "");
+                                                     null, metadata, FileFormat.KVN, "", -1);
         final CharArrayWriter caw = new CharArrayWriter();
         writer.write(caw, file);
         final byte[] bytes = caw.toString().getBytes(StandardCharsets.UTF_8);

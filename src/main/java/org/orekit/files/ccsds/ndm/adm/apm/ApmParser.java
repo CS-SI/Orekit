@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.AdmParser;
@@ -101,11 +102,12 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * (may be null if time system is absolute)
+     * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      */
-    public ApmParser(final IERSConventions conventions, final boolean simpleEOP,
-                     final DataContext dataContext,
-                     final AbsoluteDate missionReferenceDate) {
-        super(ApmFile.ROOT, ApmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate);
+    public ApmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
+                     final AbsoluteDate missionReferenceDate, final ParsedUnitsBehavior parsedUnitsBehavior) {
+        super(ApmFile.ROOT, ApmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
+              missionReferenceDate, parsedUnitsBehavior);
     }
 
     /** {@inheritDoc} */
@@ -132,14 +134,14 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new ErrorState(); // should never be called
-            reset(fileFormat, new HeaderProcessingState(getDataContext(), this));
+            reset(fileFormat, new HeaderProcessingState(this));
         }
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean prepareHeader() {
-        setFallback(new HeaderProcessingState(getDataContext(), this));
+        setFallback(new HeaderProcessingState(this));
         return true;
     }
 
@@ -165,7 +167,8 @@ public class ApmParser extends AdmParser<ApmFile, ApmParser> {
         }
         metadata  = new AdmMetadata();
         context   = new ContextBinding(this::getConventions, this::isSimpleEOP,
-                                       this::getDataContext, this::getMissionReferenceDate,
+                                       this::getDataContext, this::getParsedUnitsBehavior,
+                                       this::getMissionReferenceDate,
                                        metadata::getTimeSystem, () -> 0.0, () -> 1.0);
         setFallback(this::processMetadataToken);
         return true;

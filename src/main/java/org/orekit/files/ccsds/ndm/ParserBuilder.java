@@ -54,6 +54,9 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
     /** Default interpolation degree. */
     private final int defaultInterpolationDegree;
 
+    /** Behavior adopted for units that have been parsed from a CCSDS message. */
+    private final ParsedUnitsBehavior parsedUnitsBehavior;
+
     /**
      * Simple constructor.
      * <p>
@@ -66,6 +69,7 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      *   <li>{@link #getMu() gravitational coefficient} set to {@code Double.NaN}</li>
      *   <li>{@link #getDefaultMass() default mass} set to {@code Double.NaN}</li>
      *   <li>{@link #getDefaultInterpolationDegree() default interpolation degree} set to {@code 1}</li>
+     *   <li>{@link #getParsedUnitsBehavior() parsed unit behavior} set to {@link ParsedUnitsBehavior#CONVERT_COMPATIBLE}</li>
      * </ul>
      * </p>
      */
@@ -85,12 +89,14 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      *   <li>{@link #getMu() gravitational coefficient} set to {@code Double.NaN}</li>
      *   <li>{@link #getDefaultMass() default mass} set to {@code Double.NaN}</li>
      *   <li>{@link #getDefaultInterpolationDegree() default interpolation degree} set to {@code 1}</li>
+     *   <li>{@link #getParsedUnitsBehavior() parsed unit behavior} set to {@link ParsedUnitsBehavior#CONVERT_COMPATIBLE}</li>
      * </ul>
      * </p>
      * @param dataContext data context used to retrieve frames, time scales, etc.
      */
     public ParserBuilder(final DataContext dataContext) {
-        this(IERSConventions.IERS_2010, dataContext, null, true, Double.NaN, Double.NaN, 1);
+        this(IERSConventions.IERS_2010, dataContext, null, true, Double.NaN,
+             Double.NaN, 1, ParsedUnitsBehavior.CONVERT_COMPATIBLE);
     }
 
     /** Complete constructor.
@@ -101,16 +107,19 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      * @param mu gravitational coefficient
      * @param defaultMass default mass
      * @param defaultInterpolationDegree default interpolation degree
+     * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      */
     private ParserBuilder(final IERSConventions conventions, final DataContext dataContext,
                           final AbsoluteDate missionReferenceDate, final boolean simpleEOP,
                           final double mu, final double defaultMass,
-                          final int defaultInterpolationDegree) {
+                          final int defaultInterpolationDegree,
+                          final ParsedUnitsBehavior parsedUnitsBehavior) {
         super(conventions, dataContext, missionReferenceDate);
         this.simpleEOP                  = simpleEOP;
         this.mu                         = mu;
         this.defaultMass                = defaultMass;
         this.defaultInterpolationDegree = defaultInterpolationDegree;
+        this.parsedUnitsBehavior        = parsedUnitsBehavior;
     }
 
     /** {@inheritDoc} */
@@ -118,7 +127,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
     protected ParserBuilder create(final IERSConventions newConventions, final DataContext newDataContext,
                                    final AbsoluteDate newMissionReferenceDate) {
         return new ParserBuilder(newConventions, newDataContext, newMissionReferenceDate,
-                                 simpleEOP, mu, defaultMass, defaultInterpolationDegree);
+                                 simpleEOP, mu, defaultMass, defaultInterpolationDegree,
+                                 parsedUnitsBehavior);
     }
 
     /** Set up flag for ignoring tidal effects when interpolating EOP.
@@ -127,7 +137,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      */
     public ParserBuilder withSimpleEOP(final boolean newSimpleEOP) {
         return new ParserBuilder(getConventions(), getDataContext(), getMissionReferenceDate(),
-                                 newSimpleEOP, getMu(), getDefaultMass(), getDefaultInterpolationDegree());
+                                 newSimpleEOP, getMu(), getDefaultMass(),
+                                 getDefaultInterpolationDegree(), getParsedUnitsBehavior());
     }
 
     /** Check if tidal effects are ignored when interpolating EOP.
@@ -144,7 +155,7 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
     public ParserBuilder withMu(final double newMu) {
         return new ParserBuilder(getConventions(), getDataContext(), getMissionReferenceDate(),
                                  isSimpleEOP(), newMu, getDefaultMass(),
-                                 getDefaultInterpolationDegree());
+                                 getDefaultInterpolationDegree(), getParsedUnitsBehavior());
     }
 
     /** Get the gravitational coefficient.
@@ -164,7 +175,7 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
     public ParserBuilder withDefaultMass(final double newDefaultMass) {
         return new ParserBuilder(getConventions(), getDataContext(), getMissionReferenceDate(),
                                  isSimpleEOP(), getMu(), newDefaultMass,
-                                 getDefaultInterpolationDegree());
+                                 getDefaultInterpolationDegree(), getParsedUnitsBehavior());
     }
 
     /** Get the default mass.
@@ -185,7 +196,7 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
     public ParserBuilder withDefaultInterpolationDegree(final int newDefaultInterpolationDegree) {
         return new ParserBuilder(getConventions(), getDataContext(), getMissionReferenceDate(),
                                  isSimpleEOP(), getMu(), getDefaultMass(),
-                                 newDefaultInterpolationDegree);
+                                 newDefaultInterpolationDegree, getParsedUnitsBehavior());
     }
 
     /** Get the default interpolation degree.
@@ -195,12 +206,29 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
         return defaultInterpolationDegree;
     }
 
+    /** Set up the behavior to adopt for handling parsed units.
+     * @param newParsedUnitsBehavior behavior to adopt for handling parsed units
+     * @return a new builder with updated configuration (the instance is not changed)
+     */
+    public ParserBuilder withParsedUnitsBehavior(final ParsedUnitsBehavior newParsedUnitsBehavior) {
+        return new ParserBuilder(getConventions(), getDataContext(), getMissionReferenceDate(),
+                                 isSimpleEOP(), getMu(), getDefaultMass(),
+                                 getDefaultInterpolationDegree(), newParsedUnitsBehavior);
+    }
+
+    /** Get the behavior to adopt for handling parsed units.
+     * @return behavior to adopt for handling parsed units
+     */
+    public ParsedUnitsBehavior getParsedUnitsBehavior() {
+        return parsedUnitsBehavior;
+    }
+
     /** Build a parser for {@link org.orekit.files.ccsds.ndm.odm.opm.OpmFile Orbit Parameters Messages}.
      * @return a new parser
      */
     public OpmParser buildOpmParser() {
         return new OpmParser(getConventions(), isSimpleEOP(), getDataContext(), getMissionReferenceDate(),
-                             getMu(), getDefaultMass());
+                             getMu(), getDefaultMass(), getParsedUnitsBehavior());
     }
 
     /** Build a parser for {@link org.orekit.files.ccsds.ndm.odm.opm.OmmFile Orbit Mean elements Messages}.
@@ -208,7 +236,7 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      */
     public OmmParser buildOmmParser() {
         return new OmmParser(getConventions(), isSimpleEOP(), getDataContext(), getMissionReferenceDate(),
-                             getMu(), getDefaultMass());
+                             getMu(), getDefaultMass(), getParsedUnitsBehavior());
     }
 
     /** Build a parser for {@link org.orekit.files.ccsds.ndm.odm.oem.OemFile Orbit Ephemeris Messages}.
@@ -216,21 +244,22 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      */
     public OemParser buildOemParser() {
         return new OemParser(getConventions(), isSimpleEOP(), getDataContext(), getMissionReferenceDate(),
-                             getMu(), getDefaultInterpolationDegree());
+                             getMu(), getDefaultInterpolationDegree(), getParsedUnitsBehavior());
     }
 
     /** Build a parser for {@link org.orekit.files.ccsds.ndm.odm.ocm.OcmFile Orbit Comprehensive Messages}.
      * @return a new parser
      */
     public OcmParser buildOcmParser() {
-        return new OcmParser(getConventions(), isSimpleEOP(), getDataContext(), getMu());
+        return new OcmParser(getConventions(), isSimpleEOP(), getDataContext(), getMu(), getParsedUnitsBehavior());
     }
 
     /** Build a parser for {@link org.orekit.files.ccsds.ndm.adm.apm.ApmFile Attitude Parameters Messages}.
      * @return a new parser
      */
     public ApmParser buildApmParser() {
-        return new ApmParser(getConventions(), isSimpleEOP(), getDataContext(), getMissionReferenceDate());
+        return new ApmParser(getConventions(), isSimpleEOP(), getDataContext(),
+                             getMissionReferenceDate(), getParsedUnitsBehavior());
     }
 
     /** Build a parser for {@link org.orekit.files.ccsds.ndm.adm.aem.AemFile Attitude Ephemeris Messages}.
@@ -238,7 +267,7 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      */
     public AemParser buildAemParser() {
         return new AemParser(getConventions(), isSimpleEOP(), getDataContext(), getMissionReferenceDate(),
-                             getDefaultInterpolationDegree());
+                             getDefaultInterpolationDegree(), getParsedUnitsBehavior());
     }
 
     /** Build a parser for {@link org.orekit.files.ccsds.ndm.tdm.TdmFile Tracking Data Messages}.
@@ -247,7 +276,7 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      * @return a new parser
      */
     public TdmParser buildTdmParser(final RangeUnitsConverter converter) {
-        return new TdmParser(getConventions(), isSimpleEOP(), getDataContext(), converter);
+        return new TdmParser(getConventions(), isSimpleEOP(), getDataContext(), getParsedUnitsBehavior(), converter);
     }
 
 }

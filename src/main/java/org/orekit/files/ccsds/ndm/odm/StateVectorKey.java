@@ -37,31 +37,40 @@ public enum StateVectorKey {
     EPOCH((token, context, container) -> token.processAsDate(container::setEpoch, context)),
 
     /** Position vector X-component. */
-    X((token, context, container) -> token.processAsIndexedDouble(0, Unit.KILOMETRE, container::setP)),
+    X((token, context, container) -> token.processAsIndexedDouble(0, Unit.KILOMETRE, context.getParsedUnitsBehavior(),
+                                                                  container::setP)),
 
     /** Position vector Y-component. */
-    Y((token, context, container) -> token.processAsIndexedDouble(1, Unit.KILOMETRE, container::setP)),
+    Y((token, context, container) -> token.processAsIndexedDouble(1, Unit.KILOMETRE, context.getParsedUnitsBehavior(),
+                                                                  container::setP)),
 
     /** Position vector Z-component. */
-    Z((token, context, container) -> token.processAsIndexedDouble(2, Unit.KILOMETRE, container::setP)),
+    Z((token, context, container) -> token.processAsIndexedDouble(2, Unit.KILOMETRE, context.getParsedUnitsBehavior(),
+                                                                  container::setP)),
 
     /** Velocity vector X-component. */
-    X_DOT((token, context, container) -> token.processAsIndexedDouble(0, Units.KM_PER_S, container::setV)),
+    X_DOT((token, context, container) -> token.processAsIndexedDouble(0, Units.KM_PER_S, context.getParsedUnitsBehavior(),
+                                                                      container::setV)),
 
     /** Velocity vector Y-component. */
-    Y_DOT((token, context, container) -> token.processAsIndexedDouble(1, Units.KM_PER_S, container::setV)),
+    Y_DOT((token, context, container) -> token.processAsIndexedDouble(1, Units.KM_PER_S, context.getParsedUnitsBehavior(),
+                                                                      container::setV)),
 
     /** Velocity vector Z-component. */
-    Z_DOT((token, context, container) -> token.processAsIndexedDouble(2, Units.KM_PER_S, container::setV)),
+    Z_DOT((token, context, container) -> token.processAsIndexedDouble(2, Units.KM_PER_S, context.getParsedUnitsBehavior(),
+                                                                      container::setV)),
 
     /** Acceleration vector X-component. */
-    X_DDOT((token, context, container) -> token.processAsIndexedDouble(0, Units.KM_PER_S2, container::setA)),
+    X_DDOT((token, context, container) -> token.processAsIndexedDouble(0, Units.KM_PER_S2, context.getParsedUnitsBehavior(),
+                                                                       container::setA)),
 
     /** Acceleration vector Y-component. */
-    Y_DDOT((token, context, container) -> token.processAsIndexedDouble(1, Units.KM_PER_S2, container::setA)),
+    Y_DDOT((token, context, container) -> token.processAsIndexedDouble(1, Units.KM_PER_S2, context.getParsedUnitsBehavior(),
+                                                                       container::setA)),
 
     /** Acceleration vector Z-component. */
-    Z_DDOT((token, context, container) -> token.processAsIndexedDouble(2, Units.KM_PER_S2, container::setA));
+    Z_DDOT((token, context, container) -> token.processAsIndexedDouble(2, Units.KM_PER_S2, context.getParsedUnitsBehavior(),
+                                                                       container::setA));
 
     /** Processing method. */
     private final TokenProcessor processor;

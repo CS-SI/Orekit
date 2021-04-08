@@ -23,6 +23,7 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NdmFile;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.lexical.XmlTokenBuilder;
@@ -69,11 +70,12 @@ public abstract class AdmParser<T extends NdmFile<?, ?>, P extends AbstractMessa
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * (may be null if time system is absolute)
+     * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      */
-    protected AdmParser(final String root, final String formatVersionKey,
-                        final IERSConventions conventions, final boolean simpleEOP,
-                        final DataContext dataContext, final AbsoluteDate missionReferenceDate) {
-        super(root, formatVersionKey, conventions, simpleEOP, dataContext);
+    protected AdmParser(final String root, final String formatVersionKey, final IERSConventions conventions,
+                        final boolean simpleEOP, final DataContext dataContext,
+                        final AbsoluteDate missionReferenceDate, final ParsedUnitsBehavior parsedUnitsBehavior) {
+        super(root, formatVersionKey, conventions, simpleEOP, dataContext, parsedUnitsBehavior);
         this.missionReferenceDate = missionReferenceDate;
     }
 

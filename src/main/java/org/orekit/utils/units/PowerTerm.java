@@ -16,37 +16,41 @@
  */
 package org.orekit.utils.units;
 
-/** Unit token types.
+import org.hipparchus.fraction.Fraction;
+
+/** A container for a term with associated power.
  * @author Luc Maisonobe
  * @since 11.0
  */
-enum TokenType {
+public class PowerTerm {
 
-    /** Identifier. */
-    IDENTIFIER,
+    /** Base term. */
+    private final CharSequence base;
 
-    /** Power operator. */
-    POWER,
+    /** Fractional exponent. */
+    private final Fraction exponent;
 
-    /** Multiplication operator. */
-    MULTIPLICATION,
+    /** Simple constructor.
+     * @param base base term
+     * @param exponent fractional exponent
+     */
+    PowerTerm(final CharSequence base, final Fraction exponent) {
+        this.base     = base;
+        this.exponent = exponent;
+    }
 
-    /** Division operator. */
-    DIVISION,
+    /** Get the base term.
+     * @return base term
+     */
+    public CharSequence getBase() {
+        return base;
+    }
 
-    /** Opening parenthesis. */
-    OPEN,
-
-    /** Closing parenthesis. */
-    CLOSE,
-
-    /** Square root prefix. */
-    SQUARE_ROOT,
-
-    /** Integer. */
-    INTEGER,
-
-    /** Fraction. */
-    FRACTION;
+    /** Get the fractional exponent.
+     * @return fractional exponent
+     */
+    public Fraction getExponent() {
+        return exponent;
+    }
 
 }

@@ -55,12 +55,12 @@ public class CommonMetadataWriter extends AbstractWriter {
         generator.writeComments(metadata.getComments());
 
         // object
-        generator.writeEntry(OdmMetadataKey.OBJECT_NAME.name(),  metadata.getObjectName(), true);
-        generator.writeEntry(CommonMetadataKey.OBJECT_ID.name(), metadata.getObjectID(),   true);
+        generator.writeEntry(OdmMetadataKey.OBJECT_NAME.name(),  metadata.getObjectName(), null, true);
+        generator.writeEntry(CommonMetadataKey.OBJECT_ID.name(), metadata.getObjectID(),   null, true);
 
         // frames
-        generator.writeEntry(CommonMetadataKey.CENTER_NAME.name(),     metadata.getCenter().getName(),          true);
-        generator.writeEntry(CommonMetadataKey.REF_FRAME.name(),       metadata.getReferenceFrame().getName(),  true);
+        generator.writeEntry(CommonMetadataKey.CENTER_NAME.name(),     metadata.getCenter().getName(),          null, true);
+        generator.writeEntry(CommonMetadataKey.REF_FRAME.name(),       metadata.getReferenceFrame().getName(),  null, true);
         generator.writeEntry(CommonMetadataKey.REF_FRAME_EPOCH.name(), timeConverter, metadata.getFrameEpoch(), false);
 
         // time

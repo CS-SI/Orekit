@@ -86,7 +86,7 @@
         end
       deactivate XyzLexicalAnalyzer
       create NDMFile
-      MessageParser -> NDMFile : new
+      MessageParser -> NDMFile : build
       MessageParser --> Main : NDMFile
     deactivate MessageParser
   deactivate Main

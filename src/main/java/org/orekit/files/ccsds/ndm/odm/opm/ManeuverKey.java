@@ -40,19 +40,24 @@ public enum ManeuverKey {
     MAN_REF_FRAME((token, context, container) -> token.processAsFrame(container::setReferenceFrame, context, true, true, false)),
 
     /** Maneuver duration (0 for impulsive maneuvers). */
-    MAN_DURATION((token, context, container) -> token.processAsDouble(Unit.SECOND, container::setDuration)),
+    MAN_DURATION((token, context, container) -> token.processAsDouble(Unit.SECOND, context.getParsedUnitsBehavior(),
+                                                                      container::setDuration)),
 
     /** Mass change during maneuver (value is &lt; 0). */
-    MAN_DELTA_MASS((token, context, container) -> token.processAsDouble(Unit.KILOGRAM, container::setDeltaMass)),
+    MAN_DELTA_MASS((token, context, container) -> token.processAsDouble(Unit.KILOGRAM, context.getParsedUnitsBehavior(),
+                                                                        container::setDeltaMass)),
 
     /** First component of the velocity increment. */
-    MAN_DV_1((token, context, container) -> token.processAsIndexedDouble(0, Units.KM_PER_S, container::setDV)),
+    MAN_DV_1((token, context, container) -> token.processAsIndexedDouble(0, Units.KM_PER_S, context.getParsedUnitsBehavior(),
+                                                                         container::setDV)),
 
     /** Second component of the velocity increment. */
-    MAN_DV_2((token, context, container) -> token.processAsIndexedDouble(1, Units.KM_PER_S, container::setDV)),
+    MAN_DV_2((token, context, container) -> token.processAsIndexedDouble(1, Units.KM_PER_S, context.getParsedUnitsBehavior(),
+                                                                         container::setDV)),
 
     /** Third component of the velocity increment. */
-    MAN_DV_3((token, context, container) -> token.processAsIndexedDouble(2, Units.KM_PER_S, container::setDV));
+    MAN_DV_3((token, context, container) -> token.processAsIndexedDouble(2, Units.KM_PER_S, context.getParsedUnitsBehavior(),
+                                                                         container::setDV));
 
     /** Processing method. */
     private final TokenProcessor processor;

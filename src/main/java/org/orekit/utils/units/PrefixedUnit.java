@@ -30,6 +30,9 @@ import org.orekit.errors.OrekitMessages;
  */
 class PrefixedUnit extends Unit {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 20210407L;
+
     /** Allowed units with SI prefixes, with various aliases for angles, year, sfu, and tecu. */
     private static final Map<String, PrefixedUnit> ALLOWED;
 
@@ -77,6 +80,10 @@ class PrefixedUnit extends Unit {
                 ALLOWED.put(pu.getName(), pu);
             }
         }
+
+        // dimensionless unit "1" does not accept any prefix
+        ALLOWED.put(Unit.ONE.getName(), new PrefixedUnit(null, Unit.ONE));
+
     }
 
     /** Simple constructor.

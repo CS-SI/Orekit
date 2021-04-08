@@ -71,11 +71,13 @@ public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<
     protected abstract MessageWriter<H, S, F> getWriter();
 
     protected  void doTest(final String name) {
-        doTest(name, FileFormat.KVN);
-        doTest(name, FileFormat.XML);
+        doTest(name, FileFormat.KVN, 60);
+        doTest(name, FileFormat.KVN,  0);
+        doTest(name, FileFormat.XML, 60);
+        doTest(name, FileFormat.XML,  0);
     }
 
-    protected  void doTest(final String name, final FileFormat format) {
+    protected  void doTest(final String name, final FileFormat format, final int unitsColumn) {
         try {
             final DataSource source1  = new DataSource(name, () -> getClass().getResourceAsStream(name));
             final F          original = getParser().parseMessage(source1);
@@ -83,8 +85,8 @@ public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<
             // write the parsed file back to a characters array
             final CharArrayWriter caw       = new CharArrayWriter();
             final Generator       generator = format == FileFormat.KVN ?
-                                              new KvnGenerator(caw, 25, "dummy.kvn") :
-                                              new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml");
+                                              new KvnGenerator(caw, 25, "dummy.kvn", unitsColumn) :
+                                              new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml", unitsColumn > 0);
             getWriter().writeMessage(generator, original);
 
             // reparse the written file

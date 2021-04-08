@@ -27,7 +27,8 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.odm.CommonParser;
+import org.orekit.files.ccsds.ndm.odm.OdmParser;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.files.ccsds.section.Header;
@@ -61,7 +62,7 @@ import org.orekit.utils.units.Unit;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OcmParser extends CommonParser<OcmFile, OcmParser> implements EphemerisFileParser<OcmFile> {
+public class OcmParser extends OdmParser<OcmFile, OcmParser> implements EphemerisFileParser<OcmFile> {
 
     /** Pattern for splitting strings at blanks. */
     private static final Pattern SPLIT_AT_BLANKS = Pattern.compile("\\s+");
@@ -128,10 +129,11 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param mu gravitational coefficient
+     * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      */
-    public OcmParser(final IERSConventions conventions, final boolean simpleEOP,
-                     final DataContext dataContext, final double mu) {
-        super(OcmFile.ROOT, OcmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, null, mu);
+    public OcmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
+                     final double mu, final ParsedUnitsBehavior parsedUnitsBehavior) {
+        super(OcmFile.ROOT, OcmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, null, mu, parsedUnitsBehavior);
     }
 
     /** {@inheritDoc} */
@@ -177,14 +179,14 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new KvnStructureProcessingState(this);
-            reset(fileFormat, new HeaderProcessingState(getDataContext(), this));
+            reset(fileFormat, new HeaderProcessingState(this));
         }
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean prepareHeader() {
-        setFallback(new HeaderProcessingState(getDataContext(), this));
+        setFallback(new HeaderProcessingState(this));
         return true;
     }
 
@@ -209,8 +211,8 @@ public class OcmParser extends CommonParser<OcmFile, OcmParser> implements Ephem
             return false;
         }
         metadata  = new OcmMetadata(getDataContext());
-        context   = new ContextBinding(this::getConventions, this::isSimpleEOP,
-                                       this::getDataContext, metadata::getEpochT0,
+        context   = new ContextBinding(this::getConventions, this::isSimpleEOP, this::getDataContext,
+                                       this::getParsedUnitsBehavior, metadata::getEpochT0,
                                        metadata::getTimeSystem, metadata::getSclkOffsetAtEpoch, metadata::getSclkSecPerSISec);
         setFallback(this::processMetadataToken);
         return true;

@@ -43,20 +43,24 @@ public enum PerturbationsKey {
     GRAVITY_MODEL(new GravityProcessor()),
 
     /** Oblate spheroid equatorial radius of central body. */
-    EQUATORIAL_RADIUS((token, context, container) -> token.processAsDouble(Unit.KILOMETRE, container::setEquatorialRadius)),
+    EQUATORIAL_RADIUS((token, context, container) -> token.processAsDouble(Unit.KILOMETRE, context.getParsedUnitsBehavior(),
+                                                                           container::setEquatorialRadius)),
 
     /** Central body oblate spheroid oblateness. */
-    GM((token, context, container) -> token.processAsDouble(Units.KM3_PER_S2, container::setGm)),
+    GM((token, context, container) -> token.processAsDouble(Units.KM3_PER_S2, context.getParsedUnitsBehavior(),
+                                                            container::setGm)),
 
     /** N-body perturbation bodies. */
     N_BODY_PERTURBATIONS((token, context, container) -> token.processAsCenterList(container::setNBodyPerturbations,
                                                                                   context.getDataContext().getCelestialBodies())),
 
     /** Central body angular rotation rate. */
-    CENTRAL_BODY_ROTATION((token, context, container) -> token.processAsAngle(container::setCentralBodyRotation)),
+    CENTRAL_BODY_ROTATION((token, context, container) -> token.processAsDouble(Unit.DEGREE, context.getParsedUnitsBehavior(),
+                                                                               container::setCentralBodyRotation)),
 
     /** Central body oblate spheroid oblateness. */
-    OBLATE_FLATTENING((token, context, container) -> token.processAsDouble(Unit.ONE, container::setOblateFlattening)),
+    OBLATE_FLATTENING((token, context, container) -> token.processAsDouble(Unit.ONE, context.getParsedUnitsBehavior(),
+                                                                           container::setOblateFlattening)),
 
     /** Ocean tides model. */
     OCEAN_TIDES_MODEL((token, context, container) -> token.processAsNormalizedString(container::setOceanTidesModel)),
@@ -102,37 +106,48 @@ public enum PerturbationsKey {
     SW_INTERP_METHOD((token, context, container) -> token.processAsNormalizedString(container::setInterpMethodSW)),
 
     /** Fixed (time invariant) value of the planetary 3-hour-range geomagnetic index Kₚ. */
-    FIXED_GEOMAG_KP((token, context, container) -> token.processAsDouble(Units.NANO_TESLA, container::setFixedGeomagneticKp)),
+    FIXED_GEOMAG_KP((token, context, container) -> token.processAsDouble(Units.NANO_TESLA, context.getParsedUnitsBehavior(),
+                                                                         container::setFixedGeomagneticKp)),
 
     /** Fixed (time invariant) value of the planetary 3-hour-range geomagnetic index aₚ. */
-    FIXED_GEOMAG_AP((token, context, container) -> token.processAsDouble(Units.NANO_TESLA, container::setFixedGeomagneticAp)),
+    FIXED_GEOMAG_AP((token, context, container) -> token.processAsDouble(Units.NANO_TESLA, context.getParsedUnitsBehavior(),
+                                                                         container::setFixedGeomagneticAp)),
 
     /** Fixed (time invariant) value of the planetary 1-hour-range geomagnetic index Dst. */
-    FIXED_GEOMAG_DST((token, context, container) -> token.processAsDouble(Units.NANO_TESLA, container::setFixedGeomagneticDst)),
+    FIXED_GEOMAG_DST((token, context, container) -> token.processAsDouble(Units.NANO_TESLA, context.getParsedUnitsBehavior(),
+                                                                          container::setFixedGeomagneticDst)),
 
     /** Fixed (time invariant) value of the Solar Flux Unit daily proxy F10.7. */
-    FIXED_F10P7((token, context, container) -> token.processAsDouble(Unit.SOLAR_FLUX_UNIT, container::setFixedF10P7)),
+    FIXED_F10P7((token, context, container) -> token.processAsDouble(Unit.SOLAR_FLUX_UNIT, context.getParsedUnitsBehavior(),
+                                                                     container::setFixedF10P7)),
 
     /** Fixed (time invariant) value of the Solar Flux Unit 81-day running center-average proxy F10.7. */
-    FIXED_F10P7_MEAN((token, context, container) -> token.processAsDouble(Unit.SOLAR_FLUX_UNIT, container::setFixedF10P7Mean)),
+    FIXED_F10P7_MEAN((token, context, container) -> token.processAsDouble(Unit.SOLAR_FLUX_UNIT, context.getParsedUnitsBehavior(),
+                                                                          container::setFixedF10P7Mean)),
 
     /** Fixed (time invariant) value of the Solar Flux daily proxy M10.7. */
-    FIXED_M10P7((token, context, container) -> token.processAsDouble(Unit.SOLAR_FLUX_UNIT, container::setFixedM10P7)),
+    FIXED_M10P7((token, context, container) -> token.processAsDouble(Unit.SOLAR_FLUX_UNIT, context.getParsedUnitsBehavior(),
+                                                                     container::setFixedM10P7)),
 
     /** Fixed (time invariant) value of the Solar Flux 81-day running center-average proxy M10.7. */
-    FIXED_M10P7_MEAN((token, context, container) -> token.processAsDouble(Unit.SOLAR_FLUX_UNIT, container::setFixedM10P7Mean)),
+    FIXED_M10P7_MEAN((token, context, container) -> token.processAsDouble(Unit.SOLAR_FLUX_UNIT, context.getParsedUnitsBehavior(),
+                                                                          container::setFixedM10P7Mean)),
 
     /** Fixed (time invariant) value of the Solar Flux daily proxy S10.7. */
-    FIXED_S10P7((token, context, container) -> token.processAsDouble(Unit.SOLAR_FLUX_UNIT, container::setFixedS10P7)),
+    FIXED_S10P7((token, context, container) -> token.processAsDouble(Unit.SOLAR_FLUX_UNIT, context.getParsedUnitsBehavior(),
+                                                                     container::setFixedS10P7)),
 
     /** Fixed (time invariant) value of the Solar Flux 81-day running center-average proxy S10.7. */
-    FIXED_S10P7_MEAN((token, context, container) -> token.processAsDouble(Unit.SOLAR_FLUX_UNIT, container::setFixedS10P7Mean)),
+    FIXED_S10P7_MEAN((token, context, container) -> token.processAsDouble(Unit.SOLAR_FLUX_UNIT, context.getParsedUnitsBehavior(),
+                                                                          container::setFixedS10P7Mean)),
 
     /** Fixed (time invariant) value of the Solar Flux daily proxy Y10.7. */
-    FIXED_Y10P7((token, context, container) -> token.processAsDouble(Unit.SOLAR_FLUX_UNIT, container::setFixedY10P7)),
+    FIXED_Y10P7((token, context, container) -> token.processAsDouble(Unit.SOLAR_FLUX_UNIT, context.getParsedUnitsBehavior(),
+                                                                     container::setFixedY10P7)),
 
     /** Fixed (time invariant) value of the Solar Flux 81-day running center-average proxy Y10.7. */
-    FIXED_Y10P7_MEAN((token, context, container) -> token.processAsDouble(Unit.SOLAR_FLUX_UNIT, container::setFixedY10P7Mean));
+    FIXED_Y10P7_MEAN((token, context, container) -> token.processAsDouble(Unit.SOLAR_FLUX_UNIT, context.getParsedUnitsBehavior(),
+                                                                          container::setFixedY10P7Mean));
 
     /** Processing method. */
     private final TokenProcessor processor;

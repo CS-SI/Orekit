@@ -118,10 +118,12 @@ public enum ManeuverHistoryMetadataKey {
     DC_REF_TIME((token, context, container) -> token.processAsDate(container::setDcRefTime, context)),
 
     /** Duty cycle pulse "ON" duration. */
-    DC_TIME_PULSE_DURATION((token, context, container) -> token.processAsDouble(Unit.SECOND, container::setDcTimePulseDuration)),
+    DC_TIME_PULSE_DURATION((token, context, container) -> token.processAsDouble(Unit.SECOND, context.getParsedUnitsBehavior(),
+                                                                                container::setDcTimePulseDuration)),
 
     /** Duty cycle elapsed time between start of a pulse and start of next pulse. */
-    DC_TIME_PULSE_PERIOD((token, context, container) -> token.processAsDouble(Unit.SECOND, container::setDcTimePulsePeriod)),
+    DC_TIME_PULSE_PERIOD((token, context, container) -> token.processAsDouble(Unit.SECOND, context.getParsedUnitsBehavior(),
+                                                                              container::setDcTimePulsePeriod)),
 
     /** Reference direction for triggering duty cycle. */
     DC_REF_DIR((token, context, container) -> token.processAsVector(container::setDcRefDir)),
@@ -134,10 +136,12 @@ public enum ManeuverHistoryMetadataKey {
     DC_BODY_TRIGGER((token, context, container) -> token.processAsVector(container::setDcBodyTrigger)),
 
     /** Phase angle of pulse start. */
-    DC_PA_START_ANGLE((token, context, container) -> token.processAsAngle(container::setDcPhaseStartAngle)),
+    DC_PA_START_ANGLE((token, context, container) -> token.processAsDouble(Unit.DEGREE, context.getParsedUnitsBehavior(),
+                                                                           container::setDcPhaseStartAngle)),
 
     /** Phase angle of pulse stop. */
-    DC_PA_STOP_ANGLE((token, context, container) -> token.processAsAngle(container::setDcPhaseStopAngle)),
+    DC_PA_STOP_ANGLE((token, context, container) -> token.processAsDouble(Unit.DEGREE, context.getParsedUnitsBehavior(),
+                                                                          container::setDcPhaseStopAngle)),
 
     /** Maneuver elements of information. */
     MAN_COMPOSITION((token, context, container) -> {

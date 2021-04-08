@@ -18,7 +18,7 @@ package org.orekit.files.ccsds.utils.lexical;
 
 import org.xml.sax.Attributes;
 
-/** Builder for building {@link ParseToken} fro XML elements.
+/** Builder for building {@link ParseToken} from XML elements.
  * <p>
  * The regular handling of regular XML elements is to used the element name
  * as the token name, the element content as the token content and the
