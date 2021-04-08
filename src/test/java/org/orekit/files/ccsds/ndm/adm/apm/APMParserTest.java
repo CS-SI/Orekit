@@ -863,10 +863,8 @@ public class APMParserTest {
             parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
-            Assert.assertEquals(34, ((Integer) oe.getParts()[0]).intValue());
-            Assert.assertEquals(name, oe.getParts()[1]);
-            Assert.assertEquals("Z_ANGLE", oe.getParts()[2]);
+            Assert.assertEquals(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, oe.getSpecifier());
+            Assert.assertEquals("EULER_ROT_SEQ", oe.getParts()[0]);
         }
     }
 
@@ -881,10 +879,8 @@ public class APMParserTest {
             parseMessage(source);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
-            Assert.assertEquals(37, ((Integer) oe.getParts()[0]).intValue());
-            Assert.assertEquals(name, oe.getParts()[1]);
-            Assert.assertEquals("Z_ANGLE", oe.getParts()[2]);
+            Assert.assertEquals(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, oe.getSpecifier());
+            Assert.assertEquals("{X|Y|Z}_ANGLE", oe.getParts()[0]);
         }
     }
 

@@ -63,56 +63,70 @@ public enum AttitudeEntryKey {
 
     /** Quaternion first vectorial component. */
     Q1((token, context, container) -> token.processAsIndexedDouble(container.getMetadata().isFirst() ? 1 : 0,
-                                                                   Unit.ONE, container::setComponent)),
+                                                                   Unit.ONE, context.getParsedUnitsBehavior(),
+                                                                   container::setComponent)),
 
     /** Quaternion second vectorial component. */
     Q2((token, context, container) -> token.processAsIndexedDouble(container.getMetadata().isFirst() ? 2 : 1,
-                                                                   Unit.ONE, container::setComponent)),
+                                                                   Unit.ONE, context.getParsedUnitsBehavior(),
+                                                                   container::setComponent)),
 
     /** Quaternion third vectorial component. */
     Q3((token, context, container) -> token.processAsIndexedDouble(container.getMetadata().isFirst() ? 3 : 2,
-                                                                   Unit.ONE, container::setComponent)),
+                                                                   Unit.ONE, context.getParsedUnitsBehavior(),
+                                                                   container::setComponent)),
 
     /** Quaternion scalar component. */
     QC((token, context, container) -> token.processAsIndexedDouble(container.getMetadata().isFirst() ? 0 : 3,
-                                                                   Unit.ONE, container::setComponent)),
+                                                                   Unit.ONE, context.getParsedUnitsBehavior(),
+                                                                   container::setComponent)),
 
     /** Quaternion first vectorial component. */
     Q1_DOT((token, context, container) -> token.processAsIndexedDouble(container.getMetadata().isFirst() ? 1 : 0,
-                                                                       Units.ONE_PER_S, container::setComponent)),
+                                                                       Units.ONE_PER_S, context.getParsedUnitsBehavior(),
+                                                                       container::setComponent)),
 
     /** Quaternion second vectorial component. */
     Q2_DOT((token, context, container) -> token.processAsIndexedDouble(container.getMetadata().isFirst() ? 2 : 1,
-                                                                       Units.ONE_PER_S, container::setComponent)),
+                                                                       Units.ONE_PER_S, context.getParsedUnitsBehavior(),
+                                                                       container::setComponent)),
 
     /** Quaternion third vectorial component. */
     Q3_DOT((token, context, container) -> token.processAsIndexedDouble(container.getMetadata().isFirst() ? 3 : 2,
-                                                                       Units.ONE_PER_S, container::setComponent)),
+                                                                       Units.ONE_PER_S, context.getParsedUnitsBehavior(),
+                                                                       container::setComponent)),
 
     /** Quaternion scalar component. */
     QC_DOT((token, context, container) -> token.processAsIndexedDouble(container.getMetadata().isFirst() ? 0 : 3,
-                                                                       Units.ONE_PER_S, container::setComponent)),
+                                                                       Units.ONE_PER_S, context.getParsedUnitsBehavior(),
+                                                                       container::setComponent)),
 
     /** Rotation about X axis. */
-    X_ANGLE((token, context, container) -> token.processAsIndexedAngle(0, container::setComponent)),
+    X_ANGLE((token, context, container) -> token.processAsIndexedDouble(0, Unit.DEGREE, context.getParsedUnitsBehavior(),
+                                                                        container::setComponent)),
 
     /** Rotation about Y axis. */
-    Y_ANGLE((token, context, container) -> token.processAsIndexedAngle(1, container::setComponent)),
+    Y_ANGLE((token, context, container) -> token.processAsIndexedDouble(1, Unit.DEGREE, context.getParsedUnitsBehavior(),
+                                                                        container::setComponent)),
 
     /** Rotation about Z axis. */
-    Z_ANGLE((token, context, container) -> token.processAsIndexedAngle(2, container::setComponent)),
+    Z_ANGLE((token, context, container) -> token.processAsIndexedDouble(2, Unit.DEGREE, context.getParsedUnitsBehavior(),
+                                                                        container::setComponent)),
 
     /** Rotation about X axis. */
-    X_RATE((token, context, container) -> token.processAsIndexedAngle(container.firstRotationIndex(),
-                                                                      container::setComponent)),
+    X_RATE((token, context, container) -> token.processAsIndexedDouble(container.firstRotationIndex(),
+                                                                       Unit.DEGREE, context.getParsedUnitsBehavior(),
+                                                                       container::setComponent)),
 
     /** Rotation about Y axis. */
-    Y_RATE((token, context, container) -> token.processAsIndexedAngle(container.firstRotationIndex() + 1,
-                                                                      container::setComponent)),
+    Y_RATE((token, context, container) -> token.processAsIndexedDouble(container.firstRotationIndex() + 1,
+                                                                       Unit.DEGREE, context.getParsedUnitsBehavior(),
+                                                                       container::setComponent)),
 
     /** Rotation about Z axis. */
-    Z_RATE((token, context, container) -> token.processAsIndexedAngle(container.firstRotationIndex() + 2,
-                                                                      container::setComponent));
+    Z_RATE((token, context, container) -> token.processAsIndexedDouble(container.firstRotationIndex() + 2,
+                                                                       Unit.DEGREE, context.getParsedUnitsBehavior(),
+                                                                       container::setComponent));
 
     /** Processing method. */
     private final TokenProcessor processor;

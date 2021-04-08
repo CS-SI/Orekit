@@ -34,19 +34,24 @@ public enum SpacecraftParametersKey {
             token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Spacecraft mass. */
-    MASS((token, context, container) -> token.processAsDouble(Unit.KILOGRAM, container::setMass)),
+    MASS((token, context, container) -> token.processAsDouble(Unit.KILOGRAM, context.getParsedUnitsBehavior(),
+                                                              container::setMass)),
 
     /** Solar radiation pressure area. */
-    SOLAR_RAD_AREA((token, context, container) -> token.processAsDouble(Units.M2, container::setSolarRadArea)),
+    SOLAR_RAD_AREA((token, context, container) -> token.processAsDouble(Units.M2, context.getParsedUnitsBehavior(),
+                                                                        container::setSolarRadArea)),
 
     /** Solar radiation pressure coefficient. */
-    SOLAR_RAD_COEFF((token, context, container) -> token.processAsDouble(Unit.ONE, container::setSolarRadCoeff)),
+    SOLAR_RAD_COEFF((token, context, container) -> token.processAsDouble(Unit.ONE, context.getParsedUnitsBehavior(),
+                                                                         container::setSolarRadCoeff)),
 
     /** Drag area. */
-    DRAG_AREA((token, context, container) -> token.processAsDouble(Units.M2, container::setDragArea)),
+    DRAG_AREA((token, context, container) -> token.processAsDouble(Units.M2, context.getParsedUnitsBehavior(),
+                                                                   container::setDragArea)),
 
     /** Drag coefficient. */
-    DRAG_COEFF((token, context, container) -> token.processAsDouble(Unit.ONE, container::setDragCoeff));
+    DRAG_COEFF((token, context, container) -> token.processAsDouble(Unit.ONE, context.getParsedUnitsBehavior(),
+                                                                    container::setDragCoeff));
 
     /** Processing method. */
     private final TokenProcessor processor;

@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
 import org.orekit.files.ccsds.section.KvnStructureProcessingState;
@@ -85,12 +86,13 @@ public class TdmParser extends AbstractMessageParser<TdmFile, TdmParser> {
      * @param conventions IERS Conventions
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
+     * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      * @param converter converter for {@link RangeUnits#RU Range Units} (may be null if there
      * are no range observations in {@link RangeUnits#RU Range Units})
      */
-    public TdmParser(final IERSConventions conventions, final boolean simpleEOP,
-                     final DataContext dataContext, final RangeUnitsConverter converter) {
-        super(TdmFile.ROOT, TdmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext);
+    public TdmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
+                     final ParsedUnitsBehavior parsedUnitsBehavior, final RangeUnitsConverter converter) {
+        super(TdmFile.ROOT, TdmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, parsedUnitsBehavior);
         this.converter = converter;
     }
 
@@ -113,7 +115,7 @@ public class TdmParser extends AbstractMessageParser<TdmFile, TdmParser> {
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new KvnStructureProcessingState(this);
-            reset(fileFormat, new HeaderProcessingState(getDataContext(), this));
+            reset(fileFormat, new HeaderProcessingState(this));
         }
     }
 
@@ -126,7 +128,7 @@ public class TdmParser extends AbstractMessageParser<TdmFile, TdmParser> {
     /** {@inheritDoc} */
     @Override
     public boolean prepareHeader() {
-        setFallback(new HeaderProcessingState(getDataContext(), this));
+        setFallback(new HeaderProcessingState(this));
         return true;
     }
 
@@ -151,9 +153,10 @@ public class TdmParser extends AbstractMessageParser<TdmFile, TdmParser> {
             return false;
         }
         metadata  = new TdmMetadata();
-        context   = new ContextBinding(this::getConventions, this::isSimpleEOP,
-                                       this::getDataContext, () -> null,
-                                       metadata::getTimeSystem, () -> 0.0, () -> 1.0);
+        context   = new ContextBinding(
+            this::getConventions, this::isSimpleEOP,
+            this::getDataContext, this::getParsedUnitsBehavior,
+            () -> null, metadata::getTimeSystem, () -> 0.0, () -> 1.0);
         setFallback(this::processMetadataToken);
         return true;
     }

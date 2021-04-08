@@ -21,11 +21,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
-import org.orekit.files.ccsds.ndm.odm.CommonParser;
+import org.orekit.files.ccsds.ndm.odm.OdmParser;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElementsKey;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
@@ -65,7 +66,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 6.1
  */
-public class OpmParser extends CommonParser<OpmFile, OpmParser> {
+public class OpmParser extends OdmParser<OpmFile, OpmParser> {
 
     /** Default mass to use if there are no spacecraft parameters block logical block in the file. */
     private final double defaultMass;
@@ -118,12 +119,14 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @param mu gravitational coefficient
      * @param defaultMass default mass to use if there are no spacecraft parameters block logical block in the file
+     * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      */
     public OpmParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate, final double mu,
-                     final double defaultMass) {
-        super(OpmFile.ROOT, OpmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, missionReferenceDate, mu);
+                     final double defaultMass, final ParsedUnitsBehavior parsedUnitsBehavior) {
+        super(OpmFile.ROOT, OpmFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
+              missionReferenceDate, mu, parsedUnitsBehavior);
         this.defaultMass = defaultMass;
     }
 
@@ -165,14 +168,14 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new ErrorState(); // should never be called
-            reset(fileFormat, new HeaderProcessingState(getDataContext(), this));
+            reset(fileFormat, new HeaderProcessingState(this));
         }
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean prepareHeader() {
-        setFallback(new HeaderProcessingState(getDataContext(), this));
+        setFallback(new HeaderProcessingState(this));
         return true;
     }
 
@@ -198,7 +201,8 @@ public class OpmParser extends CommonParser<OpmFile, OpmParser> {
         }
         metadata  = new CommonMetadata();
         context   = new ContextBinding(this::getConventions, this::isSimpleEOP,
-                                       this::getDataContext, this::getMissionReferenceDate,
+                                       this::getDataContext, this::getParsedUnitsBehavior,
+                                       this::getMissionReferenceDate,
                                        metadata::getTimeSystem, () -> 0.0, () -> 1.0);
         setFallback(this::processMetadataToken);
         return true;

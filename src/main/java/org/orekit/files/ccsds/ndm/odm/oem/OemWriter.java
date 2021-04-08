@@ -29,6 +29,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.definitions.Units;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
@@ -238,6 +239,7 @@ public class OemWriter extends AbstractMessageWriter<Header, OemSegment, OemFile
         super(OemFile.ROOT, OemFile.FORMAT_VERSION_KEY, CCSDS_OEM_VERS,
               new ContextBinding(
                   () -> conventions, () -> true, () -> dataContext,
+                  () -> ParsedUnitsBehavior.STRICT_COMPLIANCE,
                   () -> missionReferenceDate, () -> TimeSystem.UTC, () -> 0.0, () -> 1.0));
     }
 

@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
@@ -37,6 +36,7 @@ import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.units.Unit;
@@ -75,8 +75,8 @@ public class ParseToken {
     /** Entry content. */
     private final String content;
 
-    /** Units of the entry (may be null). */
-    private final String units;
+    /** Units of the entry. */
+    private final Unit units;
 
     /** Number of the line from which pair is extracted. */
     private final int lineNumber;
@@ -88,11 +88,11 @@ public class ParseToken {
      * @param type type of the token
      * @param name name of the block or entry
      * @param content entry content
-     * @param units units of the entry (may be null)
+     * @param units units of the entry
      * @param lineNumber number of the line in the CCSDS data message
      * @param fileName name of the file
      */
-    public ParseToken(final TokenType type, final String name, final String content, final String units,
+    public ParseToken(final TokenType type, final String name, final String content, final Unit units,
                       final int lineNumber, final String fileName) {
         this.type       = type;
         this.name       = name;
@@ -170,13 +170,6 @@ public class ParseToken {
         }
     }
 
-    /** Get the content of the entry as an angle.
-     * @return content as an angle
-     */
-    public double getContentAsAngle() {
-        return FastMath.toRadians(getContentAsDouble());
-    }
-
     /** Get the content of the entry as a vector.
      * @return content as a vector
      */
@@ -219,7 +212,7 @@ public class ParseToken {
     /** Get the units.
      * @return units of the entry (may be null)
      */
-    public String getUnits() {
+    public Unit getUnits() {
         return units;
     }
 
@@ -350,27 +343,47 @@ public class ParseToken {
     }
 
     /** Process the content as a double.
-     * @param unit units of parsed content
+     * @param standard units of parsed content as specified by CCSDS standard
+     * @param behavior behavior to adopt for parsed unit
      * @param consumer consumer of the double
      * @return always returns {@code true}
      */
-    public boolean processAsDouble(final Unit unit, final DoubleConsumer consumer) {
+    public boolean processAsDouble(final Unit standard, final ParsedUnitsBehavior behavior,
+                                   final DoubleConsumer consumer) {
         if (type == TokenType.ENTRY) {
-            consumer.accept(unit.toSI(getContentAsDouble()));
+            consumer.accept(behavior.select(getUnits(), standard).toSI(getContentAsDouble()));
+        }
+        return true;
+    }
+
+    /** Process the content as an labeled double.
+     * @param label label
+     * @param standard units of parsed content as specified by CCSDS standard
+     * @param behavior behavior to adopt for parsed unit
+     * @param consumer consumer of the indexed double
+     * @return always returns {@code true}
+     */
+    public boolean processAsLabeledDouble(final char label,
+                                          final Unit standard, final ParsedUnitsBehavior behavior,
+                                          final LabeledDoubleConsumer consumer) {
+        if (type == TokenType.ENTRY) {
+            consumer.accept(label, behavior.select(getUnits(), standard).toSI(getContentAsDouble()));
         }
         return true;
     }
 
     /** Process the content as an indexed double.
      * @param i index
-     * @param unit units of parsed content
+     * @param standard units of parsed content as specified by CCSDS standard
+     * @param behavior behavior to adopt for parsed unit
      * @param consumer consumer of the indexed double
      * @return always returns {@code true}
      */
-    public boolean processAsIndexedDouble(final int i, final Unit unit,
+    public boolean processAsIndexedDouble(final int i,
+                                          final Unit standard, final ParsedUnitsBehavior behavior,
                                           final IndexedDoubleConsumer consumer) {
         if (type == TokenType.ENTRY) {
-            consumer.accept(i, unit.toSI(getContentAsDouble()));
+            consumer.accept(i, behavior.select(getUnits(), standard).toSI(getContentAsDouble()));
         }
         return true;
     }
@@ -378,37 +391,16 @@ public class ParseToken {
     /** Process the content as a doubly-indexed double.
      * @param i first index
      * @param j second index
-     * @param unit units of parsed content
+     * @param standard units of parsed content as specified by CCSDS standard
+     * @param behavior behavior to adopt for parsed unit
      * @param consumer consumer of the doubly-indexed double
      * @return always returns {@code true}
      */
-    public boolean processAsDoublyIndexedDouble(final int i, final int j, final Unit unit,
+    public boolean processAsDoublyIndexedDouble(final int i, final int j,
+                                                final Unit standard, final ParsedUnitsBehavior behavior,
                                                 final DoublyIndexedDoubleConsumer consumer) {
         if (type == TokenType.ENTRY) {
-            consumer.accept(i, j, unit.toSI(getContentAsDouble()));
-        }
-        return true;
-    }
-
-    /** Process the content as an angle (i.e. converting from degrees to radians upon reading).
-     * @param consumer consumer of the angle in radians
-     * @return always returns {@code true}
-     */
-    public boolean processAsAngle(final DoubleConsumer consumer) {
-        if (type == TokenType.ENTRY) {
-            consumer.accept(getContentAsAngle());
-        }
-        return true;
-    }
-
-    /** Process the content as an indexed angle.
-     * @param index index
-     * @param consumer consumer of the indexed angle
-     * @return always returns {@code true}
-     */
-    public boolean processAsIndexedAngle(final int index, final IndexedDoubleConsumer consumer) {
-        if (type == TokenType.ENTRY) {
-            consumer.accept(index, FastMath.toRadians(getContentAsDouble()));
+            consumer.accept(i, j, behavior.select(getUnits(), standard).toSI(getContentAsDouble()));
         }
         return true;
     }
@@ -621,6 +613,15 @@ public class ParseToken {
          * @param value value to consume
          */
         void accept(double value);
+    }
+
+    /** Interface representing instance methods that consume labeled double values. */
+    public interface LabeledDoubleConsumer {
+        /** Consume an indexed double.
+         * @param label label
+         * @param value value to consume
+         */
+        void accept(char label, double value);
     }
 
     /** Interface representing instance methods that consume indexed double values. */

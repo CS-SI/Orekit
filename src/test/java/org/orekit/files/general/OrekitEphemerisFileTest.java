@@ -36,12 +36,12 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.ndm.odm.oem.EphemerisWriter;
 import org.orekit.files.ccsds.ndm.odm.oem.OemMetadata;
@@ -147,8 +147,7 @@ public class OrekitEphemerisFileTest {
                                                      null, template, FileFormat.KVN, "dummy", 60);
         writer.write(tempOemFile, ephemerisFile);
 
-        OemParser parser = new OemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                         null, body.getGM(), 2);
+        OemParser parser = new ParserBuilder().withMu(body.getGM()).withDefaultInterpolationDegree(2).buildOemParser();
         EphemerisFile<TimeStampedPVCoordinates, OemSegment> ephemerisFromFile = parser.parse(new DataSource(tempOemFile));
         Files.delete(Paths.get(tempOemFile));
         

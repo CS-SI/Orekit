@@ -24,6 +24,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.section.Header;
@@ -259,7 +260,8 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, AemFile
                      final AbsoluteDate missionReferenceDate) {
         super(AemFile.ROOT, AemFile.FORMAT_VERSION_KEY, CCSDS_AEM_VERS,
               new ContextBinding(
-                  () -> conventions, () -> true, () -> dataContext,
+                  () -> conventions,
+                  () -> true, () -> dataContext, () -> ParsedUnitsBehavior.STRICT_COMPLIANCE,
                   () -> missionReferenceDate, () -> TimeSystem.UTC,
                   () -> 0.0, () -> 1.0));
     }
@@ -292,6 +294,7 @@ public class AemWriter extends AbstractMessageWriter<Header, AemSegment, AemFile
         setContext(new ContextBinding(oldContext::getConventions,
                                       oldContext::isSimpleEOP,
                                       oldContext::getDataContext,
+                                      oldContext::getParsedUnitsBehavior,
                                       oldContext::getReferenceDate,
                                       metadata::getTimeSystem,
                                       oldContext::getClockCount,

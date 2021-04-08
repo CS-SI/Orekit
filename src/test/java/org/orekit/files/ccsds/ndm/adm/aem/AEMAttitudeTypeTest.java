@@ -34,6 +34,7 @@ import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.frames.FramesFactory;
@@ -55,8 +56,9 @@ public class AEMAttitudeTypeTest {
         throws Exception {
         Utils.setDataRoot("regular-data");
         metadata = new AemMetadata(4);
-        context  =  new ContextBinding(() -> IERSConventions.IERS_2010, () -> true,
-                                       () -> DataContext.getDefault(), () -> null,
+        context  =  new ContextBinding(() -> IERSConventions.IERS_2010,
+                                       () -> true, () -> DataContext.getDefault(),
+                                       () -> ParsedUnitsBehavior.STRICT_COMPLIANCE, () -> null,
                                        metadata::getTimeSystem, () -> 0.0, () -> 1.0);
         metadata.setTimeSystem(TimeSystem.TAI);
         metadata.getEndpoints().setFrameA(new FrameFacade(FramesFactory.getGCRF(), CelestialBodyFrame.GCRF,
@@ -464,8 +466,9 @@ public class AEMAttitudeTypeTest {
     private void checkSymmetry(AttitudeType type, TimeStampedAngularCoordinates tac,
                                boolean rateFrameIsA, boolean isFirst, RotationOrder order, boolean a2b,
                                double tolAngle, double tolRate) {
-        ContextBinding context = new ContextBinding(() -> IERSConventions.IERS_2010, () -> true,
-                                                    () -> DataContext.getDefault(), () -> null,
+        ContextBinding context = new ContextBinding(() -> IERSConventions.IERS_2010,
+                                                    () -> true, () -> DataContext.getDefault(),
+                                                    () -> ParsedUnitsBehavior.STRICT_COMPLIANCE, () -> null,
                                                     () -> TimeSystem.UTC,
                                                     () -> 0.0, () -> 1.0);
         AemMetadata metadata = new AemMetadata(3);

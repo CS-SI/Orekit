@@ -20,11 +20,12 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NdmFile;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.utils.parsing.AbstractMessageParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
-/** Common parser for Orbit Parameter/Ephemeris/Mean Message files.
+/** Common parser for Orbit Parameter/Ephemeris/Mean/Comprehensive Message files.
  * <p>
  * Note than starting with Orekit 11.0, CCSDS message parsers are
  * mutable objects that gather the data being parsed, until the
@@ -39,7 +40,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public abstract class CommonParser<T extends NdmFile<?, ?>, P extends CommonParser<T, ?>> extends AbstractMessageParser<T, P> {
+public abstract class OdmParser<T extends NdmFile<?, ?>, P extends OdmParser<T, ?>> extends AbstractMessageParser<T, P> {
 
     /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
     private final AbsoluteDate missionReferenceDate;
@@ -61,12 +62,13 @@ public abstract class CommonParser<T extends NdmFile<?, ?>, P extends CommonPars
      * @param dataContext used to retrieve frames and time scales
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @param mu gravitational coefficient
+     * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      */
-    protected CommonParser(final String root, final String formatVersionKey,
-                           final IERSConventions conventions, final boolean simpleEOP,
-                           final DataContext dataContext,
-                           final AbsoluteDate missionReferenceDate, final double mu) {
-        super(root, formatVersionKey, conventions, simpleEOP, dataContext);
+    protected OdmParser(final String root, final String formatVersionKey,
+                        final IERSConventions conventions, final boolean simpleEOP,
+                        final DataContext dataContext, final AbsoluteDate missionReferenceDate,
+                        final double mu, final ParsedUnitsBehavior parsedUnitsBehavior) {
+        super(root, formatVersionKey, conventions, simpleEOP, dataContext, parsedUnitsBehavior);
         this.missionReferenceDate = missionReferenceDate;
         this.muSet                = mu;
         this.muParsed             = Double.NaN;

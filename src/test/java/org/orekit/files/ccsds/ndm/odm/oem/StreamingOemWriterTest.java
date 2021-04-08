@@ -41,6 +41,7 @@ import org.orekit.files.ccsds.definitions.CenterName;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.ModifiedFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.section.Header;
@@ -163,8 +164,13 @@ public class StreamingOemWriterTest {
             // verify
             final DataSource source1 = new DataSource("buffer",
                                                     () -> new ByteArrayInputStream(buffer1.toString().getBytes(StandardCharsets.UTF_8)));
-            OemFile generatedOemFile = new OemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                                     null, CelestialBodyFactory.getEarth().getGM(), 1).
+            OemFile generatedOemFile = new ParserBuilder().
+                                       withConventions(IERSConventions.IERS_2010).
+                                       withSimpleEOP(true).
+                                       withDataContext(DataContext.getDefault()).
+                                       withMu(CelestialBodyFactory.getEarth().getGM()).
+                                       withDefaultInterpolationDegree(1).
+                                       buildOemParser().
                                        parseMessage(source1);
             compareOemFiles(oemFile, generatedOemFile, POSITION_PRECISION, VELOCITY_PRECISION);
 
@@ -187,8 +193,14 @@ public class StreamingOemWriterTest {
             // verify
             final DataSource source2 = new DataSource("buffer",
                                                     () -> new ByteArrayInputStream(buffer2.toString().getBytes(StandardCharsets.UTF_8)));
-            generatedOemFile = new OemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                             null, CelestialBodyFactory.getEarth().getGM(), 1).
+            generatedOemFile = new ParserBuilder().
+                               withConventions(IERSConventions.IERS_2010).
+                               withSimpleEOP(true).
+                               withDataContext(DataContext.getDefault()).
+                               withMu(CelestialBodyFactory.getEarth().getGM()).
+                               withDefaultInterpolationDegree(1).
+                               withParsedUnitsBehavior(ParsedUnitsBehavior.STRICT_COMPLIANCE).
+                               buildOemParser().
                                parseMessage(source2);
             compareOemFiles(oemFile, generatedOemFile, POSITION_PRECISION, VELOCITY_PRECISION);
 

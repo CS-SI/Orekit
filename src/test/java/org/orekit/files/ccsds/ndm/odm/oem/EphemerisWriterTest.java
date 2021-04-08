@@ -90,9 +90,14 @@ public class EphemerisWriterTest {
         writer.writeMessage(new KvnGenerator(caw, 0, "", 60), oemFile);
         final byte[] bytes = caw.toString().getBytes(StandardCharsets.UTF_8);
 
-        final OemFile generatedOemFile = new OemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(),
-                                                       null, CelestialBodyFactory.getMars().getGM(), 1).
-                        parseMessage(new DataSource("", () -> new ByteArrayInputStream(bytes)));
+        final OemFile generatedOemFile = new ParserBuilder().
+                                         withConventions(IERSConventions.IERS_2010).
+                                         withSimpleEOP(true).
+                                         withDataContext(DataContext.getDefault()).
+                                         withMu(CelestialBodyFactory.getMars().getGM()).
+                                         withDefaultInterpolationDegree(1).
+                                         buildOemParser().
+                                         parseMessage(new DataSource("", () -> new ByteArrayInputStream(bytes)));
         compareOemFiles(oemFile, generatedOemFile);
     }
 

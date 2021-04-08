@@ -24,11 +24,12 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
-import org.orekit.files.ccsds.ndm.odm.CommonParser;
+import org.orekit.files.ccsds.ndm.odm.OdmParser;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.StateVector;
 import org.orekit.files.ccsds.ndm.odm.StateVectorKey;
@@ -61,7 +62,7 @@ import org.orekit.utils.units.Unit;
  * @author sports
  * @since 6.1
  */
-public class OemParser extends CommonParser<OemFile, OemParser> implements EphemerisFileParser<OemFile> {
+public class OemParser extends OdmParser<OemFile, OemParser> implements EphemerisFileParser<OemFile> {
 
     /** Comment marker. */
     private static final String COMMENT = "COMMENT";
@@ -116,13 +117,14 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
      * (may be null if time system is absolute)
      * @param mu gravitational coefficient
      * @param defaultInterpolationDegree default interpolation degree
+     * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      */
     public OemParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate, final double mu,
-                     final int defaultInterpolationDegree) {
+                     final int defaultInterpolationDegree, final ParsedUnitsBehavior parsedUnitsBehavior) {
         super(OemFile.ROOT, OemFile.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
-              missionReferenceDate, mu);
+              missionReferenceDate, mu, parsedUnitsBehavior);
         this.defaultInterpolationDegree  = defaultInterpolationDegree;
     }
 
@@ -154,14 +156,14 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
             reset(fileFormat, structureProcessor);
         } else {
             structureProcessor = new KvnStructureProcessingState(this);
-            reset(fileFormat, new HeaderProcessingState(getDataContext(), this));
+            reset(fileFormat, new HeaderProcessingState(this));
         }
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean prepareHeader() {
-        setFallback(new HeaderProcessingState(getDataContext(), this));
+        setFallback(new HeaderProcessingState(this));
         return true;
     }
 
@@ -188,7 +190,8 @@ public class OemParser extends CommonParser<OemFile, OemParser> implements Ephem
         }
         metadata = new OemMetadata(defaultInterpolationDegree);
         context  = new ContextBinding(this::getConventions, this::isSimpleEOP,
-                                      this::getDataContext, this::getMissionReferenceDate,
+                                      this::getDataContext, this::getParsedUnitsBehavior,
+                                      this::getMissionReferenceDate,
                                       metadata::getTimeSystem, () -> 0.0, () -> 1.0);
         setFallback(this::processMetadataToken);
         return true;

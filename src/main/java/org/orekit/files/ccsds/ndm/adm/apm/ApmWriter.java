@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataWriter;
 import org.orekit.files.ccsds.section.Header;
@@ -61,7 +62,8 @@ public class ApmWriter extends AbstractMessageWriter<Header, Segment<AdmMetadata
                      final AbsoluteDate missionReferenceDate) {
         super(ApmFile.ROOT, ApmFile.FORMAT_VERSION_KEY, CCSDS_APM_VERS,
               new ContextBinding(
-                  () -> conventions, () -> false, () -> dataContext,
+                  () -> conventions,
+                  () -> false, () -> dataContext, () -> ParsedUnitsBehavior.STRICT_COMPLIANCE,
                   () -> missionReferenceDate, () -> TimeSystem.UTC,
                   () -> 0.0, () -> 1.0));
     }
@@ -77,6 +79,7 @@ public class ApmWriter extends AbstractMessageWriter<Header, Segment<AdmMetadata
         setContext(new ContextBinding(oldContext::getConventions,
                                       oldContext::isSimpleEOP,
                                       oldContext::getDataContext,
+                                      oldContext::getParsedUnitsBehavior,
                                       oldContext::getReferenceDate,
                                       metadata::getTimeSystem,
                                       oldContext::getClockCount,

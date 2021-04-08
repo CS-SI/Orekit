@@ -37,7 +37,6 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -45,10 +44,10 @@ import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
+import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.ndm.adm.aem.AemMetadata;
-import org.orekit.files.ccsds.ndm.adm.aem.AemParser;
 import org.orekit.files.ccsds.ndm.adm.aem.AemSegment;
 import org.orekit.files.ccsds.ndm.adm.aem.AttitudeWriter;
 import org.orekit.files.ccsds.utils.FileFormat;
@@ -63,7 +62,6 @@ import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.Constants;
-import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
 public class OrekitAttitudeEphemerisFileTest {
@@ -150,8 +148,7 @@ public class OrekitAttitudeEphemerisFileTest {
         }
 
         AttitudeEphemerisFile<TimeStampedAngularCoordinates, AemSegment> ephemerisFromFile =
-                        new AemParser(IERSConventions.IERS_2010, true, DataContext.getDefault(), null, 1).
-                        parseMessage(new DataSource(tempAemFile));
+                        new ParserBuilder().buildAemParser().parseMessage(new DataSource(tempAemFile));
         Files.delete(Paths.get(tempAemFile));
         
         segment = ephemerisFromFile.getSatellites().get(satId).getSegments().get(0);
