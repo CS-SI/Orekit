@@ -90,12 +90,12 @@ class CovarianceHistoryWriter extends AbstractWriter {
                     line.append(' ');
                     line.append(AccurateFormatter.format(units.get(i).fromSI(units.get(j).fromSI(matrix.getEntry(i, j)))));
                 }
-                if (generator.getFormat() == FileFormat.XML) {
-                    generator.writeEntry(OcmFile.COV_LINE, line.toString(), null, true);
-                } else {
-                    generator.writeRawData(line);
-                    generator.newLine();
-                }
+            }
+            if (generator.getFormat() == FileFormat.XML) {
+                generator.writeEntry(OcmFile.COV_LINE, line.toString(), null, true);
+            } else {
+                generator.writeRawData(line);
+                generator.newLine();
             }
 
         }

@@ -99,7 +99,7 @@ public class LexerTest {
 
     @Test
     public void testUnknownCharacter() {
-        final Lexer lexer = new Lexer("pW^2#");
+        final Lexer lexer = new Lexer("pW^2∇");
         expect(lexer, "pW", TokenType.IDENTIFIER, 0, 1);
         expect(lexer, "^",  TokenType.POWER, 0, 1);
         expect(lexer, "2",  TokenType.INTEGER, 2, 1);

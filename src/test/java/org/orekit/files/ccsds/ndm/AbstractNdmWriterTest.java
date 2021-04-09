@@ -37,6 +37,7 @@ import org.orekit.data.DataSource;
 import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OdMethodFacade;
+import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.ndm.adm.AttitudeEndoints;
 import org.orekit.files.ccsds.ndm.adm.apm.ApmQuaternion;
 import org.orekit.files.ccsds.ndm.odm.ocm.Covariance;
@@ -135,15 +136,16 @@ public abstract class AbstractNdmWriterTest<H extends Header, S extends Segment<
         } else if (original instanceof Map) {
             checkMap((Map<?, ?>) original, (Map<?, ?>) rebuilt);
             return true;
-        } else if (original instanceof CommentsContainer ||
-                   original instanceof ApmQuaternion     ||
-                   original instanceof AttitudeEndoints  ||
-                   original instanceof CovarianceHistory ||
-                   original instanceof ManeuverHistory   ||
-                   original instanceof OrbitState        ||
-                   original instanceof Covariance        ||
-                   original instanceof Maneuver          ||
-                   original instanceof Observation       ||
+        } else if (original instanceof CommentsContainer   ||
+                   original instanceof ApmQuaternion       ||
+                   original instanceof AttitudeEndoints    ||
+                   original instanceof CovarianceHistory   ||
+                   original instanceof ManeuverHistory     ||
+                   original instanceof OrbitState          ||
+                   original instanceof Covariance          ||
+                   original instanceof Maneuver            ||
+                   original instanceof Observation         ||
+                   original instanceof SpacecraftBodyFrame ||
                    original instanceof PVCoordinates) {
             checkContainer(original, rebuilt);
             return true;

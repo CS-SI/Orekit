@@ -70,8 +70,7 @@ class PrefixedUnit extends Unit {
                                               Unit.SOLAR_FLUX_UNIT,
                                               Unit.SOLAR_FLUX_UNIT.alias("SFU"),
                                               Unit.TOTAL_ELECTRON_CONTENT_UNIT,
-                                              Unit.TOTAL_ELECTRON_CONTENT_UNIT.alias("tecu"),
-                                              Unit.PERCENT);
+                                              Unit.TOTAL_ELECTRON_CONTENT_UNIT.alias("tecu"));
         ALLOWED = new HashMap<>(base.size() * Prefix.values().length);
         for (final Unit unit : base) {
             ALLOWED.put(unit.getName(), new PrefixedUnit(null, unit));
@@ -81,8 +80,10 @@ class PrefixedUnit extends Unit {
             }
         }
 
-        // dimensionless unit "1" does not accept any prefix
-        ALLOWED.put(Unit.ONE.getName(), new PrefixedUnit(null, Unit.ONE));
+        // units that don't accept any prefix
+        for (final Unit noPrefix : Arrays.asList(Unit.PERCENT, Unit.ONE, Unit.ONE.alias("#"))) {
+            ALLOWED.put(noPrefix.getName(), new PrefixedUnit(null, noPrefix));
+        }
 
     }
 

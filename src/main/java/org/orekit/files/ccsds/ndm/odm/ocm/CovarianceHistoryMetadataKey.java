@@ -69,14 +69,7 @@ public enum CovarianceHistoryMetadataKey {
     /** Covariance element set type.
      * @see ElementsType
      */
-    COV_TYPE((token, context, container) -> {
-        try {
-            container.setCovType(ElementsType.valueOf(token.getContentAsUppercaseString()));
-        } catch (IllegalArgumentException iae) {
-            throw token.generateException(iae);
-        }
-        return true;
-    }),
+    COV_TYPE((token, context, container) -> token.processAsEnum(ElementsType.class, container::setCovType)),
 
     /** SI units for each elements of the covariance. */
     COV_UNITS((token, context, container) -> token.processAsUnitList(container::setCovUnits));

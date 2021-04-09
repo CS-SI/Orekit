@@ -47,11 +47,21 @@ public class ParserTest {
     }
 
     @Test
+    public void testNumber() {
+        final ParseTree tree = Parser.buildTree("#/y");
+        Assert.assertEquals(1, tree.getFactor());
+        Assert.assertEquals(2, tree.getTerms().size());
+        checkTerm(tree.getTerms().get(0), "#",  1, 1);
+        checkTerm(tree.getTerms().get(1), "y", -1, 1);
+    }
+
+    @Test
     public void testIntegerPrefix() {
-        final ParseTree tree = Parser.buildTree("30s");
-        Assert.assertEquals(30, tree.getFactor());
-        Assert.assertEquals(1, tree.getTerms().size());
-        checkTerm(tree.getTerms().get(0), "s", 1, 1);
+        final ParseTree tree = Parser.buildTree("2rev/d²");
+        Assert.assertEquals(2, tree.getFactor());
+        Assert.assertEquals(2, tree.getTerms().size());
+        checkTerm(tree.getTerms().get(0), "rev", 1, 1);
+        checkTerm(tree.getTerms().get(1), "d",  -2, 1);
     }
 
     @Test
@@ -65,7 +75,7 @@ public class ParserTest {
 
     @Test
     public void testChain() {
-        final ParseTree tree = Parser.buildTree("kg.m^(3/4).s⁻¹");
+        final ParseTree tree = Parser.buildTree("kg.m^(3/4)·s⁻¹");
         Assert.assertEquals(1, tree.getFactor());
         Assert.assertEquals(3, tree.getTerms().size());
         checkTerm(tree.getTerms().get(0), "kg", 1, 1);

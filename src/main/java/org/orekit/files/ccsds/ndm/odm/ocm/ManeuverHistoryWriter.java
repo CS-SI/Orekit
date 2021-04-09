@@ -20,6 +20,8 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 import java.io.IOException;
 import java.util.List;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.files.ccsds.definitions.DutyCycleType;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.section.AbstractWriter;
 import org.orekit.files.ccsds.utils.FileFormat;
@@ -80,32 +82,27 @@ class ManeuverHistoryWriter extends AbstractWriter {
         }
 
         // duty cycle
+        final boolean notContinuous = metadata.getDcType() != DutyCycleType.CONTINUOUS;
+        final boolean timeAndAngle  = metadata.getDcType() == DutyCycleType.TIME_AND_ANGLE;
         generator.writeEntry(ManeuverHistoryMetadataKey.DC_TYPE.name(),                metadata.getDcType(),                           false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_WIN_OPEN.name(),            timeConverter, metadata.getDcWindowOpen(),      false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_WIN_CLOSE.name(),           timeConverter, metadata.getDcWindowClose(),     false);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_WIN_OPEN.name(),            timeConverter, metadata.getDcWindowOpen(),      notContinuous);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_WIN_CLOSE.name(),           timeConverter, metadata.getDcWindowClose(),     notContinuous);
         generator.writeEntry(ManeuverHistoryMetadataKey.DC_MIN_CYCLES.name(),          metadata.getDcMinCycles(),                      false);
         generator.writeEntry(ManeuverHistoryMetadataKey.DC_MAX_CYCLES.name(),          metadata.getDcMaxCycles(),                      false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_EXEC_START.name(),          timeConverter, metadata.getDcExecStart(),       false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_EXEC_STOP.name(),           timeConverter, metadata.getDcExecStop(),        false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_REF_TIME.name(),            timeConverter, metadata.getDcRefTime(),         false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_TIME_PULSE_DURATION.name(), metadata.getDcTimePulseDuration(), Unit.SECOND, false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_TIME_PULSE_PERIOD.name(),   metadata.getDcTimePulsePeriod(),   Unit.SECOND, false);
-        if (metadata.getDcRefDir() != null) {
-            final StringBuilder value = new StringBuilder();
-            value.append(AccurateFormatter.format(Unit.ONE.fromSI(metadata.getDcRefDir().getX())));
-            value.append(' ');
-            value.append(AccurateFormatter.format(Unit.ONE.fromSI(metadata.getDcRefDir().getY())));
-            value.append(' ');
-            value.append(AccurateFormatter.format(Unit.ONE.fromSI(metadata.getDcRefDir().getZ())));
-            generator.writeEntry(ManeuverHistoryMetadataKey.DC_REF_DIR.name(), value.toString(), null, false);
-        }
-        if (metadata.getDcBodyFrame() != null) {
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_EXEC_START.name(),          timeConverter, metadata.getDcExecStart(),       notContinuous);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_EXEC_STOP.name(),           timeConverter, metadata.getDcExecStop(),        notContinuous);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_REF_TIME.name(),            timeConverter, metadata.getDcRefTime(),         notContinuous);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_TIME_PULSE_DURATION.name(), metadata.getDcTimePulseDuration(), Unit.SECOND, notContinuous);
+        generator.writeEntry(ManeuverHistoryMetadataKey.DC_TIME_PULSE_PERIOD.name(),   metadata.getDcTimePulsePeriod(),   Unit.SECOND, notContinuous);
+        if (timeAndAngle) {
+            generator.writeEntry(ManeuverHistoryMetadataKey.DC_REF_DIR.name(), toString(metadata.getDcRefDir()), null, timeAndAngle);
             generator.writeEntry(ManeuverHistoryMetadataKey.DC_BODY_FRAME.name(),
                                  metadata.getDcBodyFrame().toString().replace(' ', '_'),
-                                 null, false);
+                                 null, timeAndAngle);
+            generator.writeEntry(ManeuverHistoryMetadataKey.DC_BODY_TRIGGER.name(),   toString(metadata.getDcBodyTrigger()), null,   timeAndAngle);
+            generator.writeEntry(ManeuverHistoryMetadataKey.DC_PA_START_ANGLE.name(), metadata.getDcPhaseStartAngle(), Unit.DEGREE,  timeAndAngle);
+            generator.writeEntry(ManeuverHistoryMetadataKey.DC_PA_STOP_ANGLE.name(),  metadata.getDcPhaseStopAngle(),  Unit.DEGREE,  timeAndAngle);
         }
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_PA_START_ANGLE.name(), metadata.getDcPhaseStartAngle(), Unit.DEGREE, false);
-        generator.writeEntry(ManeuverHistoryMetadataKey.DC_PA_STOP_ANGLE.name(),  metadata.getDcPhaseStopAngle(), Unit.DEGREE,  false);
 
         // elements
         final List<ManeuverFieldType> types       = metadata.getManComposition();
@@ -135,6 +132,20 @@ class ManeuverHistoryWriter extends AbstractWriter {
                 generator.newLine();
             }
         }
+    }
+
+    /** Convert a vector to a space separated string.
+     * @param vector vector to convert
+     * @return orrespondong string
+     */
+    private String toString(final Vector3D vector) {
+        final StringBuilder builder = new StringBuilder();
+        builder.append(AccurateFormatter.format(Unit.ONE.fromSI(vector.getX())));
+        builder.append(' ');
+        builder.append(AccurateFormatter.format(Unit.ONE.fromSI(vector.getY())));
+        builder.append(' ');
+        builder.append(AccurateFormatter.format(Unit.ONE.fromSI(vector.getZ())));
+        return builder.toString();
     }
 
 }

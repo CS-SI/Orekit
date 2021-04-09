@@ -18,7 +18,6 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
-import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.utils.units.Unit;
 
 
@@ -107,16 +106,7 @@ public enum OcmMetadataKey {
     /** Type of object.
      * @see ObjectType
      */
-    OBJECT_TYPE((token, context, container) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            try {
-                container.setObjectType(ObjectType.valueOf(token.getContentAsUppercaseString().replace(' ', '_')));
-            } catch (IllegalArgumentException iae) {
-                throw token.generateException(iae);
-            }
-        }
-        return true;
-    }),
+    OBJECT_TYPE((token, context, container) -> token.processAsEnum(ObjectType.class, container::setObjectType)),
 
     /** Default epoch to which <em>all</em> relative times are referenced in data blocks,
      * unless overridden by block-specific {@link #EPOCH_TZERO} values. */
@@ -125,30 +115,13 @@ public enum OcmMetadataKey {
     /** Operational status.
      * @see OpsStatus
      */
-    OPS_STATUS((token, context, container) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            try {
-                container.setOpsStatus(OpsStatus.valueOf(token.getContentAsUppercaseString().replace(' ', '_')));
-            } catch (IllegalArgumentException iae) {
-                throw token.generateException(iae);
-            }
-        }
-        return true;
-    }),
+    OPS_STATUS((token, context, container) -> token.processAsEnum(OpsStatus.class, container::setOpsStatus)),
 
     /** Orbit category.
      * @see OrbitCategory
      */
-    ORBIT_CATEGORY((token, context, container) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            try {
-                container.setOrbitCategory(OrbitCategory.valueOf(token.getContentAsUppercaseString().replace(' ', '_')));
-            } catch (IllegalArgumentException iae) {
-                throw token.generateException(iae);
-            }
-        }
-        return true;
-    }),
+    ORBIT_CATEGORY((token, context, container) -> token.processAsEnum(OrbitCategory.class, container::setOrbitCategory)),
+
 
     /** List of elements of information data blocks included in this message. */
     OCM_DATA_ELEMENTS((token, context, container) -> token.processAsUppercaseList(container::setOcmDataElements)),
