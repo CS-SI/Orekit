@@ -45,9 +45,15 @@ public class UserDefinedWriter extends AbstractWriter {
     /** {@inheritDoc} */
     @Override
     protected void writeContent(final Generator generator) throws IOException {
+
+        // user-defined parameters block
+        generator.writeComments(userDefined.getComments());
+
+        // entries
         for (Map.Entry<String, String> entry : userDefined.getParameters().entrySet()) {
             generator.writeUserDefined(entry.getKey(), entry.getValue());
         }
+
     }
 
 }
