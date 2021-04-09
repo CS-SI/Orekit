@@ -46,7 +46,10 @@ public class SpacecraftBodyFrame {
         /** Earth Sensor Assembly. */
         ESA,
 
-        /** Gyro reference frame. */
+        /** Gyro reference frame (this name was used in ADM V1.0 (CCSDS 504.0-B-1). */
+        GYRO,
+
+        /** Gyro reference frame (this name is used in SANA registry https://sanaregistry.org/r/spacecraft_body_reference_frames/). */
         GYRO_FRAME,
 
         /** Inertial Measurement Unit. */
