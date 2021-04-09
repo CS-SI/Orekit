@@ -234,7 +234,7 @@ public class OrekitAttitudeEphemerisFileTest {
                                                           null, null, "GCRF"));
         metadata.getEndpoints().setFrameB(new FrameFacade(null, null, null,
                                                           new SpacecraftBodyFrame(SpacecraftBodyFrame.BaseEquipment.GYRO_FRAME, "1"),
-                                                          "GYRO 1"));
+                                                          "GYRO FRAME 1"));
         metadata.getEndpoints().setA2b(true);
         metadata.setStartTime(AbsoluteDate.J2000_EPOCH.shiftedBy(80 * Constants.JULIAN_CENTURY));
         metadata.setStopTime(metadata.getStartTime().shiftedBy(Constants.JULIAN_YEAR));
