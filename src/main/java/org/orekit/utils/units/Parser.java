@@ -25,8 +25,8 @@ import org.hipparchus.fraction.Fraction;
 /** Parser for units.
  * <p>
  * This fairly basic parser uses recursive descent with the following grammar,
- * where '*' can in fact be either '*', '×' or '.', '/' can be either '/' or '⁄'
- * and '^' can be either '^', "**" or implicit with switch to superscripts,
+ * where '*' can in fact be either '*', '×', '.', or '·', '/' can be either
+ * '/' or '⁄' and '^' can be either '^', "**" or implicit with switch to superscripts,
  * and fraction are either unicode fractions like ½ or ⅞ or the decimal value 0.5.
  * The special cases "n/a" returns a null list. It is intended to manage the
  * special unit {@link Unit#NONE}. The special case "1" returns a singleton with
@@ -44,7 +44,7 @@ import org.hipparchus.fraction.Fraction;
  * </pre>
  * <p>
  * This parses correctly units like MHz, km/√d, kg.m.s⁻¹, µas^⅖/(h**(2)×m)³, km/√(kg.s),
- * √kg*km** (3/2) /(µs^2*Ω⁻⁷), km**0.5/s, 30s.
+ * √kg*km** (3/2) /(µs^2*Ω⁻⁷), km**0.5/s, #/y, 30s.
  * </p>
  * <p>
  * Note that we don't accept combining square roots and power on the same operand; km/√d³

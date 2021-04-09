@@ -106,7 +106,8 @@ class Lexer {
                 unitSpecification.charAt(current) == '\'' ||
                 unitSpecification.charAt(current) == '″'  ||
                 unitSpecification.charAt(current) == '"'  ||
-                unitSpecification.charAt(current) == '%')) {
+                unitSpecification.charAt(current) == '%'  ||
+                unitSpecification.charAt(current) == '#')) {
             ++current;
         }
         if (current > start) {
@@ -135,6 +136,8 @@ class Lexer {
         } else if (unitSpecification.charAt(start) == '×') {
             return emit(start + 1, TokenType.MULTIPLICATION, 0, 1);
         } else if (unitSpecification.charAt(start) == '.') {
+            return emit(start + 1, TokenType.MULTIPLICATION, 0, 1);
+        } else if (unitSpecification.charAt(start) == '·') {
             return emit(start + 1, TokenType.MULTIPLICATION, 0, 1);
         } else if (unitSpecification.charAt(start) == '/') {
             return emit(start + 1, TokenType.DIVISION, 0, 1);

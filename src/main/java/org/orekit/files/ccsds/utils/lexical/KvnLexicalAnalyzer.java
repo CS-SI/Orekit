@@ -58,10 +58,10 @@ class KvnLexicalAnalyzer implements LexicalAnalyzer {
     private static final String VALUE              = "(\\p{Graph}.*?)";
 
     /** Operators allowed in units specifications. */
-    private static final String UNITS_OPERATORS    = "-+*×./⁄^√⁺⁻";
+    private static final String UNITS_OPERATORS    = "-+*×.·/⁄^√⁺⁻";
 
     /** Letters allowed in units specifications. */
-    private static final String UNITS_LETTERS      = "A-Za-zµ";
+    private static final String UNITS_LETTERS      = "A-Za-zµμ"; // beware µ (U+00B5) and μ (U+03BC) look similar but are different
 
     /** Digits allowed in units specifications. */
     private static final String UNITS_DIGITS       = "0-9⁰¹²³⁴⁵⁶⁷⁸⁹";

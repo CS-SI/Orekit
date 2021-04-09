@@ -181,6 +181,23 @@ public class UnitTest {
     }
 
     @Test
+    public void testNumber() {
+        checkReference("#/y",
+                       1.0 / Constants.JULIAN_YEAR,
+                       Fraction.ZERO, Fraction.ZERO, Fraction.MINUS_ONE, Fraction.ZERO);
+    }
+
+    @Test
+    public void testSeveralMicro() {
+        checkReference("µs", // here we use U+00B5, MICRO SIGN
+                       1.0e-6,
+                       Fraction.ZERO, Fraction.ZERO, Fraction.ONE, Fraction.ZERO);
+        checkReference("μs", // here we use U+03BC, GREEK SMALL LETTER MU
+                       1.0e-6,
+                       Fraction.ZERO, Fraction.ZERO, Fraction.ONE, Fraction.ZERO);
+    }
+
+    @Test
     public void testEmpty() {
         expectFailure("");
     }
