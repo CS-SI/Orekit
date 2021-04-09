@@ -27,8 +27,15 @@ public class SpacecraftBodyFrame {
 
     /** Equipment on which the frame is located. */
     public enum BaseEquipment {
-        /** Actuator reference frame: could denote reaction wheels, solar arrays, thrusters, etc.. */
+
+        /** Accelerometer. */
+        ACC,
+
+        /** Actuator: could denote reaction wheels, solar arrays, thrusters, etc.. */
         ACTUATOR,
+
+        /** Autonomous Star Tracker. */
+        AST,
 
         /** Coarse Sun Sensor. */
         CSS,
@@ -36,14 +43,32 @@ public class SpacecraftBodyFrame {
         /** Digital Sun Sensor. */
         DSS,
 
-        /** Gyroscope. */
-        GYRO,
+        /** Earth Sensor Assembly. */
+        ESA,
+
+        /** Gyro reference frame. */
+        GYRO_FRAME,
+
+        /** Inertial Measurement Unit. */
+        IMU_FRAME,
 
         /** Instrument. */
         INSTRUMENT,
 
+        /** Magnetic Torque Assembly. */
+        MTA,
+
+        /** Reaction Wheel. */
+        RW,
+
+        /** Solar Array. */
+        SA,
+
         /** Spacecraft Body. */
         SC_BODY,
+
+        /** Sensor. */
+        SENSOR,
 
         /** Star Tracker. */
         STARTRACKER,
