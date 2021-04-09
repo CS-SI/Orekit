@@ -55,7 +55,7 @@ public enum PerturbationsKey {
                                                                                   context.getDataContext().getCelestialBodies())),
 
     /** Central body angular rotation rate. */
-    CENTRAL_BODY_ROTATION((token, context, container) -> token.processAsDouble(Unit.DEGREE, context.getParsedUnitsBehavior(),
+    CENTRAL_BODY_ROTATION((token, context, container) -> token.processAsDouble(Units.DEG_PER_S, context.getParsedUnitsBehavior(),
                                                                                container::setCentralBodyRotation)),
 
     /** Central body oblate spheroid oblateness. */
@@ -78,16 +78,7 @@ public enum PerturbationsKey {
     ALBEDO_GRID_SIZE((token, context, container) -> token.processAsInteger(container::setAlbedoGridSize)),
 
     /** Shadow model used for solar radiation pressure. */
-    SHADOW_MODEL((token, context, container) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            try {
-                container.setShadowModel(ShadowModel.valueOf(token.getContentAsUppercaseString()));
-            } catch (IllegalArgumentException iae) {
-                throw token.generateException(iae);
-            }
-        }
-        return true;
-    }),
+    SHADOW_MODEL((token, context, container) -> token.processAsEnum(ShadowModel.class, container::setShadowModel)),
 
     /** Names of shadow bodies. */
     SHADOW_BODIES((token, context, container) -> token.processAsCenterList(container::setShadowBodies,

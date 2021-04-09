@@ -16,8 +16,6 @@
  */
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.ElementsType;
 import org.orekit.files.ccsds.ndm.odm.oem.InterpolationMethod;
 import org.orekit.files.ccsds.utils.ContextBinding;
@@ -51,17 +49,7 @@ public enum OrbitStateHistoryMetadataKey {
     ORB_BASIS_ID((token, context, container) -> token.processAsUppercaseString(container::setOrbBasisID)),
 
     /** Interpolation method to be used. */
-    INTERPOLATION((token, context, container) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            try {
-                container.setInterpolationMethod(InterpolationMethod.valueOf(token.getContentAsUppercaseString()));
-            } catch (IllegalArgumentException iae) {
-                throw new OrekitException(iae, OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE,
-                                          token.getName(), token.getLineNumber(), token.getFileName());
-            }
-        }
-        return true;
-    }),
+    INTERPOLATION((token, context, container) -> token.processAsEnum(InterpolationMethod.class, container::setInterpolationMethod)),
 
     /** Interpolation degree. */
     INTERPOLATION_DEGREE((token, context, container) -> token.processAsInteger(container::setInterpolationDegree)),
@@ -71,7 +59,7 @@ public enum OrbitStateHistoryMetadataKey {
 
     /** Origin of the reference frame of the orbit. */
     CENTER_NAME((token, context, container) -> token.processAsCenter(container::setCenter,
-                                                                    context.getDataContext().getCelestialBodies())),
+                                                                     context.getDataContext().getCelestialBodies())),
 
     /** Reference frame of the orbit. */
     ORB_REF_FRAME((token, context, container) -> token.processAsFrame(container::setOrbReferenceFrame, context, true, false, false)),
@@ -88,16 +76,7 @@ public enum OrbitStateHistoryMetadataKey {
     /** Orbit element set type.
      * @see ElementsType
      */
-    ORB_TYPE((token, context, container) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            try {
-                container.setOrbType(ElementsType.valueOf(token.getContentAsUppercaseString()));
-            } catch (IllegalArgumentException iae) {
-                throw token.generateException(iae);
-            }
-        }
-        return true;
-    }),
+    ORB_TYPE((token, context, container) -> token.processAsEnum(ElementsType.class, container::setOrbType)),
 
     /** SI units for each elements of the orbit state. */
     ORB_UNITS((token, context, container) -> token.processAsUnitList(container::setOrbUnits));

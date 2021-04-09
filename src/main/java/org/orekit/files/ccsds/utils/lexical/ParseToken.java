@@ -159,6 +159,29 @@ public class ParseToken {
         return Arrays.asList(SPLIT_AT_COMMAS.split(getContentAsUppercaseString()));
     }
 
+    /** Get the content of the entry as an enum.
+     * @param cls enum class
+     * @param <T> type of the enum
+     * @return entry content
+     */
+    public <T extends Enum<T>> T getContentAsEnum(final Class<T> cls) {
+        return toEnum(cls, getRawContent());
+    }
+
+    /** Get the content of the entry as a list of enum.
+     * @param cls enum class
+     * @param <T> type of the enum
+     * @return entry content
+     */
+    public <T extends Enum<T>> List<T> getContentAsEnumList(final Class<T> cls) {
+        final String[] elements = SPLIT_AT_COMMAS.split(getRawContent());
+        final List<T> list = new ArrayList<>(elements.length);
+        for (int i = 0; i < elements.length; ++i) {
+            list.add(toEnum(cls, elements[i]));
+        }
+        return list;
+    }
+
     /** Get the content of the entry as a double.
      * @return content as a double
      */
@@ -296,6 +319,32 @@ public class ParseToken {
     public boolean processAsUppercaseList(final StringListConsumer consumer) {
         if (type == TokenType.ENTRY) {
             consumer.accept(getContentAsUppercaseList());
+        }
+        return true;
+    }
+
+    /** Process the content as an enum.
+     * @param cls enum class
+     * @param consumer consumer of the enum
+     * @param <T> type of the enum
+     * @return always returns {@code true}
+     */
+    public <T extends Enum<T>> boolean processAsEnum(final Class<T> cls, final EnumConsumer<T> consumer) {
+        if (type == TokenType.ENTRY) {
+            consumer.accept(getContentAsEnum(cls));
+        }
+        return true;
+    }
+
+    /** Process the content as a list of enums.
+     * @param cls enum class
+     * @param consumer consumer of the enums list
+     * @param <T> type of the enum
+     * @return always returns {@code true}
+     */
+    public <T extends Enum<T>> boolean processAsEnumsList(final Class<T> cls, final EnumListConsumer<T> consumer) {
+        if (type == TokenType.ENTRY) {
+            consumer.accept(getContentAsEnumList(cls));
         }
         return true;
     }
@@ -558,6 +607,29 @@ public class ParseToken {
 
     }
 
+    /** Convert a value to an enum.
+     * @param cls enum class
+     * @param value value to convert to an enum
+     * @param <T> type of the enum
+     * @return enumerate corresponding to the value
+     */
+    private <T extends Enum<T>> T toEnum(final Class<T> cls, final String value) {
+        // first replace space characters
+        final String noSpace = value.replace(' ', '_');
+        try {
+            // first try without changing case, as some CCSDS enums are mixed case (like RangeUnits for TDM)
+            return Enum.valueOf(cls, noSpace);
+        } catch (IllegalArgumentException iae1) {
+            try {
+                // second try, using more standard uppercase
+                return Enum.valueOf(cls, noSpace.toUpperCase(Locale.US));
+            } catch (IllegalArgumentException iae2) {
+                // use the first exception for the message
+                throw generateException(iae1);
+            }
+        }
+    }
+
     /** Interface representing instance methods that consume string values. */
     public interface StringConsumer {
         /** Consume a string.
@@ -581,6 +653,26 @@ public class ParseToken {
          * @param value value to consume
          */
         void accept(List<String> value);
+    }
+
+    /** Interface representing instance methods that consume enum values.
+     * <T> type of the enum
+     */
+    public interface EnumConsumer<T extends Enum<T>> {
+        /** Consume an enum.
+         * @param value value to consume
+         */
+        void accept(T value);
+    }
+
+    /** Interface representing instance methods that consume lists of enum values.
+     * <T> type of the enum
+     */
+    public interface EnumListConsumer<T extends Enum<T>> {
+        /** Consume an enum.
+         * @param value value to consume
+         */
+        void accept(List<T> value);
     }
 
     /** Interface representing instance methods that consume integer values. */

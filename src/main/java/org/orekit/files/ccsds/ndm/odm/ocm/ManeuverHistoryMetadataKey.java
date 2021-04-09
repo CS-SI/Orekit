@@ -16,8 +16,6 @@
  */
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
-import java.util.stream.Collectors;
-
 import org.orekit.files.ccsds.definitions.DutyCycleType;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
@@ -45,16 +43,7 @@ public enum ManeuverHistoryMetadataKey {
     MAN_NEXT_ID((token, context, container) -> token.processAsNormalizedString(container::setManNextID)),
 
     /** Basis of this maneuver history data. */
-    MAN_BASIS((token, context, container) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            try {
-                container.setManBasis(ManBasis.valueOf(token.getContentAsUppercaseString()));
-            } catch (IllegalArgumentException iae) {
-                throw token.generateException(iae);
-            }
-        }
-        return true;
-    }),
+    MAN_BASIS((token, context, container) -> token.processAsEnum(ManBasis.class, container::setManBasis)),
 
     /** Identification number of the orbit determination or simulation upon which this maneuver is based.*/
     MAN_BASIS_ID((token, context, container) -> token.processAsNormalizedString(container::setManBasisID)),
@@ -82,19 +71,10 @@ public enum ManeuverHistoryMetadataKey {
 
     /** Origin of maneuver gravitational assist body. */
     GRAV_ASSIST_NAME((token, context, container) -> token.processAsCenter(container::setGravitationalAssist,
-                                                                         context.getDataContext().getCelestialBodies())),
+                                                                          context.getDataContext().getCelestialBodies())),
 
     /** Type of duty cycle. */
-    DC_TYPE((token, context, container) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            try {
-                container.setDcType(DutyCycleType.valueOf(token.getContentAsUppercaseString()));
-            } catch (IllegalArgumentException iae) {
-                throw token.generateException(iae);
-            }
-        }
-        return true;
-    }),
+    DC_TYPE((token, context, container) -> token.processAsEnum(DutyCycleType.class, container::setDcType)),
 
     /** Start time of duty cycle-based maneuver window. */
     DC_WIN_OPEN((token, context, container) -> token.processAsDate(container::setDcWindowOpen, context)),
@@ -130,7 +110,7 @@ public enum ManeuverHistoryMetadataKey {
 
     /** Spacecraft body frame in which {@link #DC_BODY_TRIGGER} is specified. */
     DC_BODY_FRAME((token, context, container) -> token.processAsFrame(f -> container.setDcBodyFrame(f.asSpacecraftBodyFrame()),
-                                                                     context, false, false, true)),
+                                                                      context, false, false, true)),
 
     /** Direction in {@link #DC_BODY_FRAME body frame} for triggering duty cycle. */
     DC_BODY_TRIGGER((token, context, container) -> token.processAsVector(container::setDcBodyTrigger)),
@@ -144,20 +124,7 @@ public enum ManeuverHistoryMetadataKey {
                                                                           container::setDcPhaseStopAngle)),
 
     /** Maneuver elements of information. */
-    MAN_COMPOSITION((token, context, container) -> {
-        if (token.getType() == TokenType.ENTRY) {
-            try {
-                container.setManComposition(token.getContentAsNormalizedList().
-                                            stream().
-                                            map(s -> s.replace(' ', '_')).
-                                            map(s -> ManeuverFieldType.valueOf(s)).
-                                            collect(Collectors.toList()));
-            } catch (IllegalArgumentException iae) {
-                throw token.generateException(iae);
-            }
-        }
-        return true;
-    }),
+    MAN_COMPOSITION((token, context, container) -> token.processAsEnumsList(ManeuverFieldType.class, container::setManComposition)),
 
     /** SI units for each elements of the maneuver. */
     MAN_UNITS((token, context, container) -> token.processAsUnitList(container::setManUnits));
