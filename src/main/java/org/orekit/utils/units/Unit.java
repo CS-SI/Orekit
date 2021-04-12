@@ -17,6 +17,7 @@
 package org.orekit.utils.units;
 
 import java.io.Serializable;
+import java.util.List;
 
 import org.hipparchus.fraction.Fraction;
 import org.hipparchus.util.FastMath;
@@ -476,23 +477,23 @@ public class Unit implements Serializable {
     public static Unit parse(final String unitSpecification) {
 
         // parse the specification
-        final ParseTree tree = Parser.buildTree(unitSpecification);
+        final List<PowerTerm> terms = Parser.buildTermsList(unitSpecification);
 
-        if (tree == null) {
+        if (terms == null) {
             // special handling of "n/a"
             return Unit.NONE;
         }
 
         // build compound unit
-        Unit unit = Unit.ONE.scale(null, tree.getFactor());
-        for (final PowerTerm term : tree.getTerms()) {
+        Unit unit = Unit.ONE;
+        for (final PowerTerm term : terms) {
             try {
-                final PrefixedUnit u = PrefixedUnit.valueOf(term.getBase().toString());
-                if (Fraction.ONE.equals(term.getExponent())) {
-                    unit = unit.multiply(null, u);
-                } else {
-                    unit = unit.multiply(null, u.power(null, term.getExponent()));
+                Unit u = PrefixedUnit.valueOf(term.getBase().toString());
+                if (!Fraction.ONE.equals(term.getExponent())) {
+                    u = u.power(null, term.getExponent());
                 }
+                u = u.scale(null, term.getScale());
+                unit = unit.multiply(null, u);
             } catch (IllegalArgumentException iae) {
                 throw new OrekitException(OrekitMessages.UNKNOWN_UNIT, term.getBase());
             }

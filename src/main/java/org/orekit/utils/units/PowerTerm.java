@@ -24,6 +24,9 @@ import org.hipparchus.fraction.Fraction;
  */
 public class PowerTerm {
 
+    /** Scaling factor. */
+    private final double scale;
+
     /** Base term. */
     private final CharSequence base;
 
@@ -31,12 +34,21 @@ public class PowerTerm {
     private final Fraction exponent;
 
     /** Simple constructor.
+     * @param scale scaling factor
      * @param base base term
      * @param exponent fractional exponent
      */
-    PowerTerm(final CharSequence base, final Fraction exponent) {
+    PowerTerm(final double scale, final CharSequence base, final Fraction exponent) {
+        this.scale    = scale;
         this.base     = base;
         this.exponent = exponent;
+    }
+
+    /** Get the scaling factor.
+     * @return scaling factor
+     */
+    public double getScale() {
+        return scale;
     }
 
     /** Get the base term.
