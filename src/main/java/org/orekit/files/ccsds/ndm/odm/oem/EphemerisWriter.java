@@ -98,13 +98,6 @@ public class EphemerisWriter implements EphemerisFileWriter {
         this.unitsColumn = unitsColumn;
     }
 
-    /** Get current metadata.
-     * @return current metadata
-     */
-    OemMetadata getMetadata() {
-        return metadata;
-    }
-
     /** {@inheritDoc}
      * <p>
      * As {@link EphemerisFile.SatelliteEphemeris} does not have all the entries
