@@ -236,6 +236,15 @@ public class AemParser extends AdmParser<AemFile, AemParser> implements Attitude
         return true;
     }
 
+    /** Add a comment to the data section.
+     * @param comment comment to add
+     * @return always return true
+     */
+    boolean addDataComment(final String comment) {
+        currentBlock.addComment(comment);
+        return true;
+    }
+
     /** Process one metadata token.
      * @param token token to process
      * @return true if token was processed, false otherwise
