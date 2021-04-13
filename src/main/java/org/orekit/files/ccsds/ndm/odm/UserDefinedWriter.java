@@ -21,7 +21,9 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.orekit.files.ccsds.section.AbstractWriter;
+import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
+import org.orekit.files.ccsds.utils.generation.XmlGenerator;
 
 /** Writer for user defined parameters data.
  * @author Luc Maisonobe
@@ -50,8 +52,16 @@ public class UserDefinedWriter extends AbstractWriter {
         generator.writeComments(userDefined.getComments());
 
         // entries
-        for (Map.Entry<String, String> entry : userDefined.getParameters().entrySet()) {
-            generator.writeUserDefined(entry.getKey(), entry.getValue());
+        if (generator.getFormat() == FileFormat.XML) {
+            final XmlGenerator xmlGenerator = (XmlGenerator) generator;
+            for (Map.Entry<String, String> entry : userDefined.getParameters().entrySet()) {
+                xmlGenerator.writeOneAttributeElement(UserDefined.USER_DEFINED_XML_TAG,       entry.getValue(),
+                                                      UserDefined.USER_DEFINED_XML_ATTRIBUTE, entry.getKey());
+            }
+        } else {
+            for (Map.Entry<String, String> entry : userDefined.getParameters().entrySet()) {
+                generator.writeEntry(UserDefined.USER_DEFINED_PREFIX + entry.getKey(), entry.getValue(), null, false);
+            }
         }
 
     }
