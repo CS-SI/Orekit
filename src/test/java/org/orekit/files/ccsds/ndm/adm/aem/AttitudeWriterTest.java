@@ -24,6 +24,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -36,7 +37,9 @@ import java.util.Map;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
@@ -65,6 +68,9 @@ public class AttitudeWriterTest {
     // The default format writes 5O digits after the decimal point hence the quaternion precision
     private static final double QUATERNION_PRECISION = 1e-5;
     private static final double DATE_PRECISION = 1e-3;
+
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
 
     @Before
     public void setUp() throws Exception {
@@ -175,13 +181,12 @@ public class AttitudeWriterTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemFile aemFile = new ParserBuilder().buildAemParser().parseMessage(source);
 
-        AemWriter writer = new WriterBuilder().buildAemWriter();
-        final CharArrayWriter caw = new CharArrayWriter();
-        writer.writeMessage(new KvnGenerator(caw, 0, "", 0), aemFile);
-        final byte[] bytes = caw.toString().getBytes(StandardCharsets.UTF_8);
-
-        final AemFile generatedAemFile = new ParserBuilder().buildAemParser().
-                        parseMessage(new DataSource("", () -> new ByteArrayInputStream(bytes)));
+        final File temp = tempFolder.newFile("writeAEMExample01.xml");
+        AttitudeWriter writer = new AttitudeWriter(new WriterBuilder().buildAemWriter(),
+                                                   aemFile.getHeader(), aemFile.getSegments().get(0).getMetadata(),
+                                                   FileFormat.XML, temp.getName(), 1);
+        writer.write(temp.getAbsolutePath(), aemFile);
+        final AemFile generatedAemFile = new ParserBuilder().buildAemParser().parseMessage(new DataSource(temp));
         assertEquals(aemFile.getSegments().get(0).getMetadata().getObjectID(),
                      generatedAemFile.getSegments().get(0).getMetadata().getObjectID());
     }
