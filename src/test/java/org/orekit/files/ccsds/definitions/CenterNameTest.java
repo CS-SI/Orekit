@@ -22,6 +22,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.L2Frame;
+import org.orekit.frames.TopocentricFrame;
 
 
 public class CenterNameTest {
@@ -45,6 +50,32 @@ public class CenterNameTest {
                 // expected
             }
         }
+    }
+
+    @Test
+    public void testGuess() {
+        Assert.assertEquals("SATURN",
+                            CenterName.guessCenter(CelestialBodyFactory.getSaturn().getBodyOrientedFrame()));
+        Assert.assertEquals("MERCURY",
+                            CenterName.guessCenter(CelestialBodyFactory.getMercury().getInertiallyOrientedFrame()));
+        Assert.assertEquals("PLANET-X",
+                            CenterName.guessCenter(new ModifiedFrame(FramesFactory.getEME2000(), CelestialBodyFrame.EME2000,
+                                                                     CelestialBodyFactory.getMars(), "PLANET-X")));
+        Assert.assertEquals("SOLAR SYSTEM BARYCENTER",
+                            CenterName.guessCenter(FramesFactory.getICRF()));
+        Assert.assertEquals("EARTH",
+                            CenterName.guessCenter(Frame.getRoot()));
+        Assert.assertEquals("EARTH",
+                            CenterName.guessCenter(FramesFactory.getTOD(true)));
+        Assert.assertEquals("UNKNOWN",
+                            CenterName.guessCenter(new L2Frame(CelestialBodyFactory.getSun(), CelestialBodyFactory.getEarth())));
+    }
+
+    @Test
+    public void testMap() {
+        Assert.assertEquals(CenterName.SATURN,
+                            CenterName.map(CelestialBodyFactory.getSaturn().getBodyOrientedFrame()));
+        Assert.assertNull(CenterName.map(new L2Frame(CelestialBodyFactory.getSun(), CelestialBodyFactory.getEarth())));
     }
 
     @Before
