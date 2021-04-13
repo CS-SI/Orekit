@@ -94,13 +94,6 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
         this.unitsColumn = unitsColumn;
     }
 
-    /** Get current metadata.
-     * @return current metadata
-     */
-    AemMetadata getMetadata() {
-        return metadata;
-    }
-
     /** {@inheritDoc}
      * <p>
      * As {@link AttitudeEphemerisFile.SatelliteAttitudeEphemeris} does not have all the entries

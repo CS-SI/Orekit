@@ -188,6 +188,13 @@ public class UnitTest {
     }
 
     @Test
+    public void testReciprocal() {
+        checkReference("1/s",
+                       1.0,
+                       Fraction.ZERO, Fraction.ZERO, Fraction.MINUS_ONE, Fraction.ZERO);
+    }
+
+    @Test
     public void testSeveralMicro() {
         checkReference("µs", // here we use U+00B5, MICRO SIGN
                        1.0e-6,
@@ -223,8 +230,10 @@ public class UnitTest {
     }
 
     @Test
-    public void testSpuriousFactor() {
-        expectFailure("kg/3s");
+    public void testFactor() {
+        checkReference("kg/3s",
+                       1.0 / 3.0,
+                       Fraction.ONE, Fraction.ZERO, Fraction.MINUS_ONE, Fraction.ZERO);
     }
 
     @Test

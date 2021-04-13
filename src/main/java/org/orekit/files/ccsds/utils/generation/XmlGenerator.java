@@ -19,7 +19,6 @@ package org.orekit.files.ccsds.utils.generation;
 import java.io.IOException;
 import java.util.List;
 
-import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.utils.AccurateFormatter;
 import org.orekit.utils.units.Unit;
@@ -33,6 +32,9 @@ public class XmlGenerator extends AbstractGenerator {
     /** Default number of space for each indentation level. */
     public static final int DEFAULT_INDENT = 2;
 
+    /** Name of the units attribute. */
+    public static final String UNITS = "units";
+
     /** XML prolog. */
     private static final String PROLOG = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>%n";
 
@@ -45,14 +47,14 @@ public class XmlGenerator extends AbstractGenerator {
     /** Element end tag. */
     private static final String END_TAG = "</%s>%n";
 
-    /** Leaf element format without units. */
-    private static final String LEAF_WITHOUT_UNITS = "<%s>%s</%s>%n";
+    /** Leaf element format without attributes. */
+    private static final String LEAF_0_ATTRIBUTES = "<%s>%s</%s>%n";
 
-    /** Leaf element format with units. */
-    private static final String LEAF_WITH_UNITS = "<%s units=\"%s\">%s</%s>%n";
+    /** Leaf element format with one attribute. */
+    private static final String LEAF_1_ATTRIBUTE = "<%s %s=\"%s\">%s</%s>%n";
 
-    /** User defined parameter element format. */
-    private static final String USER_DEFINED = "<%s %s=\"%s\">%s</%s>%n";
+    /** Leaf element format with two attributes. */
+    private static final String LEAF_2_ATTRIBUTES = "<%s %s=\"%s\" %s=\"%s\">%s</%s>%n";
 
     /** Comment key. */
     private static final String COMMENT = "COMMENT";
@@ -110,16 +112,37 @@ public class XmlGenerator extends AbstractGenerator {
         }
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public void writeUserDefined(final String parameter, final String value) throws IOException {
+    /** Write an element with one attribute.
+     * @param name tag name
+     * @param value element value
+     * @param attributeName attribute name
+     * @param attributeValue attribute value
+     */
+    public void writeOneAttributeElement(final String name, final String value,
+                                         final String attributeName, final String attributeValue)
+        throws IOException {
         indent();
-        writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, USER_DEFINED,
-                                   UserDefined.USER_DEFINED_XML_TAG,
-                                   UserDefined.USER_DEFINED_XML_ATTRIBUTE,
-                                   parameter,
-                                   value,
-                                   UserDefined.USER_DEFINED_XML_TAG));
+        writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, LEAF_1_ATTRIBUTE,
+                                   name, attributeName, attributeValue, value, name));
+    }
+
+    /** Write an element with two attributes.
+     * @param name tag name
+     * @param value element value
+     * @param attribute1Name attribute 1 name
+     * @param attribute1Value attribute 1 value
+     * @param attribute2Name attribute 2 name
+     * @param attribute2Value attribute 2 value
+     */
+    public void writeTwoAttributesElement(final String name, final String value,
+                                          final String attribute1Name, final String attribute1Value,
+                                          final String attribute2Name, final String attribute2Value)
+        throws IOException {
+        indent();
+        writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, LEAF_2_ATTRIBUTES,
+                                   name,
+                                   attribute1Name, attribute1Value, attribute2Name, attribute2Value,
+                                   value, name));
     }
 
     /** {@inheritDoc} */
@@ -130,10 +153,10 @@ public class XmlGenerator extends AbstractGenerator {
         } else {
             indent();
             if (writeUnits(unit)) {
-                writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, LEAF_WITH_UNITS,
-                                           key, siToCcsdsName(unit.getName()), value, key));
+                writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, LEAF_1_ATTRIBUTE,
+                                           key, UNITS, siToCcsdsName(unit.getName()), value, key));
             } else {
-                writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, LEAF_WITHOUT_UNITS,
+                writeRawData(String.format(AccurateFormatter.STANDARDIZED_LOCALE, LEAF_0_ATTRIBUTES,
                                            key, value, key));
             }
         }

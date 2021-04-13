@@ -25,6 +25,10 @@ import org.orekit.files.ccsds.utils.lexical.TokenType;
  */
 enum XmlSubStructureKey {
 
+    /** Comment entry. */
+    COMMENT((token, parser) ->
+            token.getType() == TokenType.ENTRY ? parser.addDataComment(token.getContentAsNormalizedString()) : true),
+
     /** Attitude state section. */
     attitudeState((token, parser) -> parser.manageXmlAttitudeStateSection(token.getType() == TokenType.START));
 

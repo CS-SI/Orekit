@@ -115,11 +115,11 @@ public class SpacecraftBodyFrame {
      * The CCSDS composite name combines the {@link #getBaseEquipment() base equipment}
      * and the {@link #getLabel()}
      * </p>
-     * @return CCSDS composite name, as a normalized string
+     * @return CCSDS composite name
      */
     @Override
     public String toString() {
-        return getBaseEquipment().name().replace('_', ' ') + " " + getLabel();
+        return getBaseEquipment().name() + "_" + getLabel();
     }
 
     /** Build an instance from a normalized descriptor.

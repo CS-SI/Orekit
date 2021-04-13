@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.fraction.Fraction;
+import org.hipparchus.util.FastMath;
 
 /** Parser for units.
  * <p>
@@ -29,14 +30,13 @@ import org.hipparchus.fraction.Fraction;
  * '/' or '⁄' and '^' can be either '^', "**" or implicit with switch to superscripts,
  * and fraction are either unicode fractions like ½ or ⅞ or the decimal value 0.5.
  * The special cases "n/a" returns a null list. It is intended to manage the
- * special unit {@link Unit#NONE}. The special case "1" returns a singleton with
- * the base term set to "1" and the exponent set to 1. It is intended to manage the
- * special unit {@link Unit#ONE}.
+ * special unit {@link Unit#NONE}.
  * </p>
  * <pre>
- *   unit         ::=  "n/a" | "1" | integer chain | chain
+ *   unit         ::=  "n/a" | chain
  *   chain        ::=  operand { ('*' | '/') operand }
- *   operand      ::=  '√' base | base power
+ *   operand      ::=  integer | integer term | term
+ *   term         ::=  '√' base | base power
  *   power        ::=  '^' exponent | ε
  *   exponent     ::=  'fraction'   | integer | '(' integer denominator ')'
  *   denominator  ::=  '/' integer  | ε
@@ -44,7 +44,7 @@ import org.hipparchus.fraction.Fraction;
  * </pre>
  * <p>
  * This parses correctly units like MHz, km/√d, kg.m.s⁻¹, µas^⅖/(h**(2)×m)³, km/√(kg.s),
- * √kg*km** (3/2) /(µs^2*Ω⁻⁷), km**0.5/s, #/y, 30s.
+ * √kg*km** (3/2) /(µs^2*Ω⁻⁷), km**0.5/s, #/y, 2rev/d², 1/s.
  * </p>
  * <p>
  * Note that we don't accept combining square roots and power on the same operand; km/√d³
@@ -61,42 +61,27 @@ public class Parser {
     private Parser() {
     }
 
-    /** Build the parse tree.
-     * @param unitSpecification unit specification to parse
+    /** Build the list of terms corresponding to a units specification.
+     * @param unitsSpecification units specification to parse
      * @return parse tree
      */
-    public static ParseTree buildTree(final String unitSpecification) {
-        if (Unit.NONE.getName().equals(unitSpecification)) {
+    public static List<PowerTerm> buildTermsList(final String unitsSpecification) {
+        if (Unit.NONE.getName().equals(unitsSpecification)) {
             // special case for no units
             return null;
-        } else if (Unit.ONE.getName().equals(unitSpecification)) {
-            // special case for dimensionless unit
-            return new ParseTree(1,
-                                 Collections.singletonList(new PowerTerm(unitSpecification, Fraction.ONE)));
         } else {
-            final Lexer lexer = new Lexer(unitSpecification);
-            final Token first = lexer.next();
-            if (first == null) {
-                throw lexer.generateException();
-            }
-            final int factor;
-            if (first.getType() == TokenType.INTEGER) {
-                factor = first.getInt();
-            } else {
-                factor = 1;
-                lexer.pushBack();
-            }
+            final Lexer lexer = new Lexer(unitsSpecification);
             final List<PowerTerm> chain = chain(lexer);
             if (lexer.next() != null) {
                 throw lexer.generateException();
             }
-            return new ParseTree(factor, chain);
+            return chain;
         }
     }
 
-    /** Parse a chain unit.
+    /** Parse a units chain.
      * @param lexer lexer providing tokens
-     * @return chain unit
+     * @return parsed units chain
      */
     private static List<PowerTerm> chain(final Lexer lexer) {
         final List<PowerTerm> chain = new ArrayList<>();
@@ -116,57 +101,42 @@ public class Parser {
 
     /** Parse an operand.
      * @param lexer lexer providing tokens
-     * @return operand term
+     * @return parsed operand
      */
     private static List<PowerTerm> operand(final Lexer lexer) {
-        final Token token = lexer.next();
-        if (token == null) {
+        final Token token1 = lexer.next();
+        if (token1 == null) {
             throw lexer.generateException();
         }
+        if (checkType(token1, TokenType.INTEGER)) {
+            final int scale = token1.getInt();
+            final Token token2 = lexer.next();
+            lexer.pushBack();
+            if (token2 == null ||
+                checkType(token2, TokenType.MULTIPLICATION) ||
+                checkType(token2, TokenType.DIVISION)) {
+                return Collections.singletonList(new PowerTerm(scale, "1", Fraction.ONE));
+            } else {
+                return applyScale(term(lexer), scale);
+            }
+        } else {
+            lexer.pushBack();
+            return term(lexer);
+        }
+    }
+
+    /** Parse a term.
+     * @param lexer lexer providing tokens
+     * @return parsed term
+     */
+    private static List<PowerTerm> term(final Lexer lexer) {
+        final Token token = lexer.next();
         if (token.getType() == TokenType.SQUARE_ROOT) {
             return applyExponent(base(lexer), Fraction.ONE_HALF);
         } else {
             lexer.pushBack();
             return applyExponent(base(lexer), power(lexer));
         }
-    }
-
-    /** Apply an exponent to a base term.
-     * @param base base term
-     * @param exponent exponent (may be null)
-     * @return term with exponent applied (same as {@code base} if exponent is null)
-     */
-    private static List<PowerTerm> applyExponent(final List<PowerTerm> base, final Fraction exponent) {
-
-        if (exponent == null) {
-            // no exponent at all, return the base term itself
-            return base;
-        }
-
-        // combine exponent with existing ones, for example to handles compounds units like m/(kg.s²)³
-        final List<PowerTerm> powered = new ArrayList<>(base.size());
-        for (final PowerTerm term : base) {
-            powered.add(new PowerTerm(term.getBase(), exponent.multiply(term.getExponent())));
-        }
-
-        return powered;
-
-    }
-
-    /** Compute the reciprocal a base term.
-     * @param base base term
-     * @return reciprocal of base term
-     */
-    private static List<PowerTerm> reciprocate(final List<PowerTerm> base) {
-
-        // reciprocate individual terms
-        final List<PowerTerm> reciprocal = new ArrayList<>(base.size());
-        for (final PowerTerm term : base) {
-            reciprocal.add(new PowerTerm(term.getBase(), term.getExponent().negate()));
-        }
-
-        return reciprocal;
-
     }
 
     /** Parse a power operation.
@@ -224,7 +194,7 @@ public class Parser {
     private static List<PowerTerm> base(final Lexer lexer) {
         final Token token = lexer.next();
         if (checkType(token, TokenType.IDENTIFIER)) {
-            return Collections.singletonList(new PowerTerm(token.getSubString(), Fraction.ONE));
+            return Collections.singletonList(new PowerTerm(1.0, token.getSubString(), Fraction.ONE));
         } else {
             lexer.pushBack();
             accept(lexer, TokenType.OPEN);
@@ -232,6 +202,80 @@ public class Parser {
             accept(lexer, TokenType.CLOSE);
             return chain;
         }
+    }
+
+    /** Compute the reciprocal a base term.
+     * @param base base term
+     * @return reciprocal of base term
+     */
+    private static List<PowerTerm> reciprocate(final List<PowerTerm> base) {
+
+        // reciprocate individual terms
+        final List<PowerTerm> reciprocal = new ArrayList<>(base.size());
+        for (final PowerTerm term : base) {
+            reciprocal.add(new PowerTerm(1.0 / term.getScale(), term.getBase(), term.getExponent().negate()));
+        }
+
+        return reciprocal;
+
+    }
+
+    /** Apply a scaling factor to a base term.
+     * @param base base term
+     * @param scale scaling factor
+     * @return term with scaling factor applied (same as {@code base} if {@code scale} is 1)
+     */
+    private static List<PowerTerm> applyScale(final List<PowerTerm> base, final int scale) {
+
+        if (scale == 1) {
+            // no scaling at all, return the base term itself
+            return base;
+        }
+
+        // combine scaling factor with first term
+        final List<PowerTerm> powered = new ArrayList<>(base.size());
+        boolean first = true;
+        for (final PowerTerm term : base) {
+            if (first) {
+                powered.add(new PowerTerm(scale * term.getScale(), term.getBase(), term.getExponent()));
+                first = false;
+            } else {
+                powered.add(term);
+            }
+        }
+
+        return powered;
+
+    }
+
+    /** Apply an exponent to a base term.
+     * @param base base term
+     * @param exponent exponent (may be null)
+     * @return term with exponent applied (same as {@code base} if exponent is null)
+     */
+    private static List<PowerTerm> applyExponent(final List<PowerTerm> base, final Fraction exponent) {
+
+        if (exponent == null || exponent.equals(Fraction.ONE)) {
+            // return the base term itself
+            return base;
+        }
+
+        // combine exponent with existing ones, for example to handles compounds units like m/(kg.s²)³
+        final List<PowerTerm> powered = new ArrayList<>(base.size());
+        for (final PowerTerm term : base) {
+            final double poweredScale;
+            if (exponent.isInteger()) {
+                poweredScale = FastMath.pow(term.getScale(), exponent.getNumerator());
+            } else if (Fraction.ONE_HALF.equals(exponent)) {
+                poweredScale = FastMath.sqrt(term.getScale());
+            } else {
+                poweredScale = FastMath.pow(term.getScale(), exponent.doubleValue());
+            }
+            powered.add(new PowerTerm(poweredScale, term.getBase(), exponent.multiply(term.getExponent())));
+        }
+
+        return powered;
+
     }
 
     /** Accept a token.

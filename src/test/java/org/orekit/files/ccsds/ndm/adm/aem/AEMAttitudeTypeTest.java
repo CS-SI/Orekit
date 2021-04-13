@@ -363,6 +363,7 @@ public class AEMAttitudeTypeTest {
     public void testEulerAngleRate() {
         // Initialize the attitude type
         final AttitudeType eulerAngleRate = AttitudeType.parseType("EULER ANGLE/RATE");
+        final RotationOrder sequence = RotationOrder.ZXY;
 
         // Test computation of angular coordinates from attitude data
         final String[] attitudeData = new String[] {
@@ -370,20 +371,20 @@ public class AEMAttitudeTypeTest {
         };
         metadata.setRateFrameIsA(false);
         metadata.getEndpoints().setA2b(true);
-        metadata.setEulerRotSeq(RotationOrder.ZXZ);
+        metadata.setEulerRotSeq(sequence);
         final TimeStampedAngularCoordinates tsac = eulerAngleRate.parse(metadata.isFirst(),
                                                                         metadata.getEndpoints().isExternal2SpacecraftBody(),
                                                                         metadata.getEulerRotSeq(),
                                                                         metadata.isSpacecraftBodyRate(),
                                                                         context,
                                                                         attitudeData);
-        final double[] angles = tsac.getRotation().getAngles(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM);
+        final double[] angles = tsac.getRotation().getAngles(sequence, RotationConvention.FRAME_TRANSFORM);
         Assert.assertEquals(43.1,  FastMath.toDegrees(angles[0]), ANGLE_PRECISION);
         Assert.assertEquals(12.8,  FastMath.toDegrees(angles[1]), ANGLE_PRECISION);
         Assert.assertEquals(37.9,  FastMath.toDegrees(angles[2]), ANGLE_PRECISION);
-        Assert.assertEquals(1.452, FastMath.toDegrees(tsac.getRotationRate().getX()), ANGLE_PRECISION);
-        Assert.assertEquals(0.475, FastMath.toDegrees(tsac.getRotationRate().getY()), ANGLE_PRECISION);
-        Assert.assertEquals(1.112, FastMath.toDegrees(tsac.getRotationRate().getZ()), ANGLE_PRECISION);
+        Assert.assertEquals(1.452, FastMath.toDegrees(tsac.getRotationRate().getZ()), ANGLE_PRECISION);
+        Assert.assertEquals(0.475, FastMath.toDegrees(tsac.getRotationRate().getX()), ANGLE_PRECISION);
+        Assert.assertEquals(1.112, FastMath.toDegrees(tsac.getRotationRate().getY()), ANGLE_PRECISION);
 
         // Test computation of attitude data from angular coordinates
         AemMetadata metadata = new AemMetadata(3);
@@ -394,7 +395,7 @@ public class AEMAttitudeTypeTest {
                                                           "GYRO 1"));
         metadata.setRateFrameIsA(false);
         metadata.getEndpoints().setA2b(true);
-        metadata.setEulerRotSeq(RotationOrder.ZXZ);
+        metadata.setEulerRotSeq(sequence);
         final String[] attitudeDataBis = eulerAngleRate.createDataFields(metadata.isFirst(),
                                                                          metadata.getEndpoints().isExternal2SpacecraftBody(),
                                                                          metadata.getEulerRotSeq(),
@@ -452,14 +453,22 @@ public class AEMAttitudeTypeTest {
                                                                               new UnivariateDerivative1(q3, q3Dot),
                                                                               true));
         for (RotationOrder order : RotationOrder.values()) {
-            checkSymmetry(type, tac, true,  true,  order, true,  tolAngle, tolRate);
-            checkSymmetry(type, tac, true,  true,  order, false, tolAngle, tolRate);
-            checkSymmetry(type, tac, true,  false, order, true,  tolAngle, tolRate);
-            checkSymmetry(type, tac, true,  false, order, false, tolAngle, tolRate);
-            checkSymmetry(type, tac, false, true,  order, true,  tolAngle, tolRate);
-            checkSymmetry(type, tac, false, true,  order, false, tolAngle, tolRate);
-            checkSymmetry(type, tac, false, false, order, true,  tolAngle, tolRate);
-            checkSymmetry(type, tac, false, false, order, false, tolAngle, tolRate);
+            final double fixedTolRate;
+            if (type == AttitudeType.EULER_ANGLE_RATE &&
+                order.name().charAt(0) == order.name().charAt(2)) {
+                // the rate definition in CCSDS cannot handle Euler angles with repeated axes
+                fixedTolRate = Double.POSITIVE_INFINITY;
+            } else {
+                fixedTolRate = tolRate;
+            }
+            checkSymmetry(type, tac, true,  true,  order, true,  tolAngle, fixedTolRate);
+            checkSymmetry(type, tac, true,  true,  order, false, tolAngle, fixedTolRate);
+            checkSymmetry(type, tac, true,  false, order, true,  tolAngle, fixedTolRate);
+            checkSymmetry(type, tac, true,  false, order, false, tolAngle, fixedTolRate);
+            checkSymmetry(type, tac, false, true,  order, true,  tolAngle, fixedTolRate);
+            checkSymmetry(type, tac, false, true,  order, false, tolAngle, fixedTolRate);
+            checkSymmetry(type, tac, false, false, order, true,  tolAngle, fixedTolRate);
+            checkSymmetry(type, tac, false, false, order, false, tolAngle, fixedTolRate);
         }
     }
 

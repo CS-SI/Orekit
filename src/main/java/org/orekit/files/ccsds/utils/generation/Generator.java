@@ -60,13 +60,6 @@ public interface Generator extends AutoCloseable {
      */
     void writeComments(List<String> comments) throws IOException;
 
-    /** Write a user defined entry.
-     * @param parameter name of the user defined parameter
-     * @param value the value to write
-     * @throws IOException if an I/O error occurs.
-     */
-    void writeUserDefined(String parameter, String value) throws IOException;
-
     /** Write a single key/value entry.
      * @param key   the keyword to write
      * @param value the value to write
@@ -205,5 +198,11 @@ public interface Generator extends AutoCloseable {
      * @return bracketed string (null if units list is null or empty)
      */
     String unitsListToString(List<Unit> units);
+
+    /** Convert a SI unit name to a CCSDS name.
+     * @param siName si unit name
+     * @return CCSDS name for the unit
+     */
+    String siToCcsdsName(String siName);
 
 }

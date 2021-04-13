@@ -24,13 +24,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.hipparchus.fraction.Fraction;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.utils.AccurateFormatter;
-import org.orekit.utils.units.ParseTree;
 import org.orekit.utils.units.Parser;
 import org.orekit.utils.units.PowerTerm;
 import org.orekit.utils.units.Unit;
@@ -82,7 +83,7 @@ public abstract class AbstractGenerator implements Generator {
      * @param unit entry unit
      * @return true if units must be written
      */
-    protected boolean writeUnits(final Unit unit) {
+    public boolean writeUnits(final Unit unit) {
         return writeUnits &&
                unit != null &&
                !unit.getName().equals(Unit.NONE.getName()) &&
@@ -236,11 +237,9 @@ public abstract class AbstractGenerator implements Generator {
 
     }
 
-    /** Convert a SI unit name to a CCSDS name.
-     * @param siName si unit name
-     * @return CCSDS name for the unit
-     */
-    protected String siToCcsdsName(final String siName) {
+    /** {@inheritDoc} */
+    @Override
+    public String siToCcsdsName(final String siName) {
 
         if (!siToCcsds.containsKey(siName)) {
 
@@ -248,36 +247,41 @@ public abstract class AbstractGenerator implements Generator {
             final StringBuilder builder = new StringBuilder();
 
             // parse the SI name that may contain fancy features like unicode superscripts, square roots sign…
-            final ParseTree tree = Parser.buildTree(siName);
+            final List<PowerTerm> terms = Parser.buildTermsList(siName);
 
-            if (tree == null) {
+            if (terms == null) {
                 builder.append("n/a");
             } else {
-                if (tree.getFactor() != 1) {
-                    builder.append(tree.getFactor());
-                }
+
+                // put the positive exponent first
                 boolean first = true;
-                for (final PowerTerm term : tree.getTerms()) {
-                    String   base = term.getBase().toString();
-                    Fraction e    = term.getExponent();
-                    if (!first) {
-                        if (e.getNumerator() < 0) {
-                            builder.append('/');
-                            e = e.negate();
-                        } else {
+                for (final PowerTerm term : terms) {
+                    if (term.getExponent().getNumerator() >= 0) {
+                        if (!first) {
                             builder.append('*');
                         }
+                        appendScale(builder, term.getScale());
+                        appendBase(builder, term.getBase());
+                        appendExponent(builder, term.getExponent());
+                        first = false;
                     }
-                    if ("°".equals(base) || "◦".equals(base)) {
-                        base = "deg";
-                    }
-                    builder.append(base);
-                    if (!e.equals(Fraction.ONE)) {
-                        builder.append("**");
-                        builder.append(e.equals(Fraction.ONE_HALF) ? "0.5" : e);
-                    }
-                    first = false;
                 }
+
+                if (first) {
+                    // no positive exponents at all, we add "1" to get something like "1/s"
+                    builder.append('1');
+                }
+
+                // put the negative exponents last
+                for (final PowerTerm term : terms) {
+                    if (term.getExponent().getNumerator() < 0) {
+                        builder.append('/');
+                        appendScale(builder, term.getScale());
+                        appendBase(builder, term.getBase());
+                        appendExponent(builder, term.getExponent().negate());
+                    }
+                }
+
             }
 
             // put the converted name in the map for reuse
@@ -289,4 +293,43 @@ public abstract class AbstractGenerator implements Generator {
 
     }
 
+    /** Append a scaling factor.
+     * @param builder builder to which term must be added
+     * @param scale scaling factor
+     */
+    private void appendScale(final StringBuilder builder, final double scale) {
+        final int factor = (int) FastMath.rint(scale);
+        if (FastMath.abs(scale - factor) > 1.0e-12) {
+            // this should never happen with CCSDS units
+            throw new OrekitInternalError(null);
+        }
+        if (factor != 1) {
+            builder.append(factor);
+        }
+    }
+
+    /** Append a base term.
+     * @param builder builder to which term must be added
+     * @param base base term
+     */
+    private void appendBase(final StringBuilder builder, final CharSequence base) {
+        if ("°".equals(base) || "◦".equals(base)) {
+            builder.append("deg");
+        } else {
+            builder.append(base);
+        }
+    }
+
+    /** Append an exponent.
+     * @param builder builder to which term must be added
+     * @param exponent exponent to add
+     */
+    private void appendExponent(final StringBuilder builder, final Fraction exponent) {
+        if (!exponent.equals(Fraction.ONE)) {
+            builder.append("**");
+            builder.append(exponent.equals(Fraction.ONE_HALF) ? "0.5" : exponent);
+        }
+    }
+
 }
+

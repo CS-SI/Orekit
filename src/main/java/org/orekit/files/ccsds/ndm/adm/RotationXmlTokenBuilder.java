@@ -56,7 +56,7 @@ public class RotationXmlTokenBuilder implements XmlTokenBuilder {
                                  final String content, final Attributes attributes,
                                  final int lineNumber, final String fileName) {
 
-        // get the token name either from the first attitude found
+        // get the token name from the first attribute found
         String name = attributes.getValue(ANGLE);
         if (name == null) {
             name = attributes.getValue(RATE);

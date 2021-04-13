@@ -26,7 +26,7 @@ import org.orekit.utils.units.Unit;
 public class Units {
 
     /** Seconds reciprocal unit. */
-    public static final Unit ONE_PER_S = Unit.parse("s⁻¹");
+    public static final Unit ONE_PER_S = Unit.parse("1/s");
 
     /** kg.m² unit. */
     public static final Unit KG_M2 = Unit.parse("kg.m²");

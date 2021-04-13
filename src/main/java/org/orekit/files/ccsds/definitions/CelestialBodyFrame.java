@@ -407,11 +407,7 @@ public enum CelestialBodyFrame {
      * @return frame corresponding to the CCSDS constant
      * @since 10.1
      */
-    public Frame getFrame(final IERSConventions conventions,
-                          final boolean simpleEOP,
-                          final DataContext dataContext) {
-        throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, toString());
-    }
+    public abstract Frame getFrame(IERSConventions conventions, boolean simpleEOP, DataContext dataContext);
 
     /** Parse a CCSDS frame.
      * @param frameName name of the frame, as the value of a CCSDS key=value line
